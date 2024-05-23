@@ -53,10 +53,6 @@
                 <span ref="testResultsSpan" v-html="testResult.messageHtml"></span>
             </NotificationBox>
         </template>
-
-        <template #footerActions>
-            <div :id="footerActionsId"></div>
-        </template>
     </Panel>
 </template>
 
@@ -76,19 +72,6 @@
     import { CommunicationEntryTestResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryTestResponseBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { newGuid } from "@Obsidian/Utility/guid";
-
-    type FooterActionProperties = {
-        isButtonEnabled: boolean;
-        isButtonVisible: boolean;
-        buttonText: string;
-    };
-
-    type FooterActions = {
-        cancel: FooterActionProperties;
-        save: FooterActionProperties;
-        send: FooterActionProperties;
-        test: FooterActionProperties;
-    };
 
     const config = useConfigurationValues<CommunicationEntryInitializationBox>();
     const reloadBlock = useReloadBlock();
@@ -115,54 +98,6 @@
     //#endregion
 
     //#region Computed Values
-
-    const footerActions = computed<FooterActions>(() => {
-        const something = !!config.authorization?.isApproveActionAuthorized
-            || !!config.authorization?.isEditActionAuthorized
-            //|| !!config.authorization?.isCurrentPersonSender
-            ;
-
-        const somethingElse = !!config.authorization?.canApproveCommunication
-            && config.communication?.status === CommunicationStatus.PendingApproval;
-
-        return {
-            cancel: {
-                buttonText: "Cancel",
-                isButtonEnabled: true,
-                isButtonVisible: somethingElse
-            },
-            save: {
-                buttonText: "Save As Draft",
-                isButtonEnabled: something && isFullMode.value,
-                isButtonVisible: !somethingElse && isFullMode.value
-            },
-            send: {
-                buttonText: something ? "Save" : "Send",
-                isButtonEnabled: something,
-                isButtonVisible: true
-            },
-            test: {
-                buttonText: "Send Test",
-                isButtonEnabled: true,
-                isButtonVisible: isFullMode.value
-            },
-        };
-    });
-    
-    const isCancelButtonVisible = computed<boolean>(() => {
-        return !!config.authorization?.canApproveCommunication && config.communication?.status === CommunicationStatus.PendingApproval;
-    });
-
-    const sendButtonText = computed<string>(() => {
-        if (!!config.authorization?.canApproveCommunication
-            && config.communication?.status === CommunicationStatus.PendingApproval) {
-            return "Send";
-        }
-        else {
-            // The save button is hidden, so the send button should be labeled "Save".
-            return "Save";
-        }
-    });
 
     //#endregion
 
@@ -205,38 +140,11 @@
 
     //#region Event Handlers
 
-    /** Sends the communication. */
-    function onSend(): void {
-        // Clear the error message.
-        validationSummaryMessage.value = null;
-
-        communicationMedium.value?.send();
-    }
-
-    /** Sends a test communication. */
-    function onSendTest(): void {
-        // Clear the error message.
-        validationSummaryMessage.value = null;
-
-        // Clear the last test result.
-        testResult.value = null;
-
-        communicationMedium.value?.test();
-    }
-
     /** Event handler for an error occurring. */
     function onError(error: string): void {
         validationSummaryMessage.value = error;
         // Scroll to the top of the panel since the errors may be hidden behind the header.
         scrollToElement(panelDiv);
-    }
-
-    /** Event handler for the save button being clicked. */
-    function onSave(): void {
-        // Clear the error message.
-        validationSummaryMessage.value = null;
-
-        communicationMedium.value?.save();
     }
 
     /** Event handler for the communication being sent. */

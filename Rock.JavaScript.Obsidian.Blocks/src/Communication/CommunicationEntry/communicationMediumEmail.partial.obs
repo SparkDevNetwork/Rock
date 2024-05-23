@@ -149,10 +149,7 @@
                     label="Message"
                     :mergeFields="['GlobalAttribute', 'Rock.Model.Person', 'Communication.Subject|Subject', 'Communication.FromName|From Name', 'Communication.FromEmail|From Address', 'Communication.ReplyToEmail|Reply To', 'UnsubscribeOption']" />
 
-        <MountedTeleport :to="footerActionsSelector"
-                         :onPortalOpenedCallback="onFooterActionsPortalOpened"
-                         :onPortalClosedCallback="onFooterActionsPortalClosed">
-
+        <div class="actions">
             <RockButton id="btnSubmit"
                         class="btn btn-primary"
                         type="button"
@@ -168,14 +165,7 @@
                         class="btn btn-link"
                         type="button"
                         @click="save">Save as Draft</RockButton>
-
-            <NotificationBox v-if="testResult?.messageHtml"
-                    :alertType="getAlertType(testResult.messageType)"
-                    class="margin-t-md"
-                    id="nbTestResult">
-                <span ref="testResultsSpan" v-html="testResult.messageHtml"></span>
-            </NotificationBox>
-        </MountedTeleport>
+        </div>
     </RockForm>
 </template>
 
@@ -219,9 +209,6 @@
     import { CommunicationEntryEmailMediumOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryEmailMediumOptionsBag";
     import { CommunicationEntryGetMediumOptionsRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryGetMediumOptionsRequestBag";
     import { Guid } from "@Obsidian/Types";
-    import MountedTeleport from "./mountedTeleport.partial.obs";
-    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-import { AlertType } from "@Obsidian/Enums/Controls/alertType";
 
     const invokeBlockAction = useInvokeBlockAction();
     const props = defineProps({
@@ -406,11 +393,6 @@ import { AlertType } from "@Obsidian/Enums/Controls/alertType";
 
     //#region Functions
 
-    /** Converts a string to an alert type. */
-    function getAlertType(type: string | null | undefined): AlertType {
-        return type as AlertType ?? AlertType.Default;
-    }
-
     /** Converts recipients to list item bags. */
     function convertRecipientsToListItems(recipients: CommunicationEntryRecipientBag[]): ListItemBag[] {
         return recipients.map(item => ({
@@ -468,14 +450,6 @@ import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     //#endregion
 
     //#region Event Handlers
-
-    function onFooterActionsPortalOpened(portal: Element): void {
-        portal.classList.remove("d-none");
-    }
-
-    function onFooterActionsPortalClosed(portal: Element): void {
-        portal.classList.add("d-none");
-    }
 
     function onScheduleSendModalSave(): void {
         const dateTime = RockDateTime.parseISO(tempScheduleSendDateTime.value);
