@@ -211,6 +211,7 @@
     import { CommunicationEntryEmailMediumOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryEmailMediumOptionsBag";
     import { CommunicationEntryGetMediumOptionsRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryGetMediumOptionsRequestBag";
     import { Guid } from "@Obsidian/Types";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
 
     const invokeBlockAction = useInvokeBlockAction();
     const props = defineProps({
@@ -218,17 +219,9 @@
             type: Boolean as PropType<boolean>,
             default: false
         },
-        footerActionsSelector: {
-            type: String as PropType<string>,
-            required: true
-        },
         isFullMode: {
             type: Boolean as PropType<boolean>,
             default: false
-        },
-        mediumEntityTypeGuid: {
-            type: String as PropType<Guid>,
-            required: true
         },
 
         /** The communication info from which to load the initial control data. */
@@ -255,12 +248,6 @@
         /** Emits an event indicating the disabled state should be updated. */
         (e: "update:disabled", value: boolean): void,
     }>();
-
-    defineExpose({
-        save,
-        send,
-        test
-    });
 
     type LabelType = "label-default" | "label-success" | "label-warning" | "label-info" | "label-danger";
 
@@ -603,7 +590,7 @@
                 fromAddress: fromAddress.value,
                 fromName: fromName.value,
                 futureSendDateTime: scheduleSendDateTime.value,
-                mediumEntityTypeGuid: props.mediumEntityTypeGuid,
+                mediumEntityTypeGuid: EntityType.CommunicationMediumEmail,
                 message: message.value,
                 recipients: recipients.value,
                 replyAddress: replyToAddress.value,
@@ -641,7 +628,7 @@
                 fromAddress: fromAddress.value,
                 fromName: fromName.value,
                 futureSendDateTime: scheduleSendDateTime.value,
-                mediumEntityTypeGuid: props.mediumEntityTypeGuid,
+                mediumEntityTypeGuid: EntityType.CommunicationMediumEmail,
                 message: message.value,
                 recipients: recipients.value,
                 replyAddress: replyToAddress.value,
@@ -680,7 +667,7 @@
                 fromAddress: fromAddress.value,
                 fromName: fromName.value,
                 futureSendDateTime: scheduleSendDateTime.value,
-                mediumEntityTypeGuid: props.mediumEntityTypeGuid,
+                mediumEntityTypeGuid: EntityType.CommunicationMediumEmail,
                 message: message.value,
                 recipients: recipients.value,
                 replyAddress: replyToAddress.value,
@@ -766,7 +753,7 @@
         }
 
         const bag: CommunicationEntryGetMediumOptionsRequestBag = {
-            mediumEntityTypeGuid: props.mediumEntityTypeGuid
+            mediumEntityTypeGuid: EntityType.CommunicationMediumEmail
         };
 
         const response = await invokeBlockAction<CommunicationEntryEmailMediumOptionsBag>("GetMediumOptions", { bag });

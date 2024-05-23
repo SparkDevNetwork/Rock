@@ -27,17 +27,32 @@
                                  :dismissible="true"
                                  heading="Warning" />
 
-                <CommunicationMedium v-if="selectedMediumEntityTypeGuidOrEmptyString && config.communication && config.mediumOptions"
-                                     :communication="config.communication"
-                                     :footerActionsSelector="`#${footerActionsId}`"
-                                     :isFullMode="isFullMode"
-                                     :mediumEntityTypeGuid="selectedMediumEntityTypeGuidOrEmptyString"
-                                     :mediumOptions="config.mediumOptions"
-                                     ref="communicationMedium"
-                                     @error="onError"
-                                     @sent="onSent"
-                                     @saved="onSaved"
-                                     @tested="onTested" />
+                <KeepAlive v-if="selectedMediumEntityTypeGuidOrEmptyString && config.communication && config.mediumOptions">
+                    <Email v-if="areEqual(selectedMediumEntityTypeGuidOrEmptyString, EntityType.CommunicationMediumEmail)"
+                           :communication="config.communication"
+                           :isFullMode="isFullMode"
+                           :mediumOptions="(config.mediumOptions as CommunicationEntryEmailMediumOptionsBag)"
+                           @error="onError"
+                           @saved="onSaved"
+                           @sent="onSent"
+                           @tested="onTested" />
+
+                    <Sms v-else-if="areEqual(selectedMediumEntityTypeGuidOrEmptyString, EntityType.CommunicationMediumSms)"
+                         :isFullMode="isFullMode" />
+
+                    <PushNotification v-else-if="areEqual(selectedMediumEntityTypeGuidOrEmptyString, EntityType.CommunicationMediumPushNotification)"
+                                      :isFullMode="isFullMode" />
+
+                    <div v-else>
+                        Unknown communication medium (Guid: {{ selectedMediumEntityTypeGuidOrEmptyString }}).
+                        Options are
+                        <ul>
+                            <li>{{ EntityType.CommunicationMediumEmail }}</li>
+                            <li>{{ EntityType.CommunicationMediumSms }}</li>
+                            <li>{{ EntityType.CommunicationMediumPushNotification }}</li>
+                        </ul>
+                    </div>
+                </KeepAlive>
             </div>
 
             <div ref="sentResultsDiv" v-if="areResultsShown" id="pnlResult" class="js-pnl-result">
@@ -58,7 +73,6 @@
 
 <script setup lang="ts">
     import { Ref, computed, nextTick, ref } from "vue";
-    import CommunicationMedium from "./CommunicationEntry/communicationMedium.partial.obs";
     import PanelNavigationBar from "./CommunicationEntry/panelNavigationBar.partial.obs";
     import { Nullable } from "./CommunicationEntry/types.partial";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
@@ -71,11 +85,15 @@
     import { CommunicationEntrySendResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySendResponseBag";
     import { CommunicationEntryTestResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryTestResponseBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { newGuid } from "@Obsidian/Utility/guid";
+    import Email from "./CommunicationEntry/communicationMediumEmail.partial.obs";
+    import Sms from "./CommunicationEntry/communicationMediumSms.partial.obs";
+    import PushNotification from "./CommunicationEntry/communicationMediumPushNotification.partial.obs";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { CommunicationEntryEmailMediumOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryEmailMediumOptionsBag";
+    import { areEqual } from "@Obsidian/Utility/guid";
 
     const config = useConfigurationValues<CommunicationEntryInitializationBox>();
     const reloadBlock = useReloadBlock();
-    const footerActionsId = ref<string>(`communication-entry-footer-actions-${newGuid()}`);
 
     defineProps();
 
@@ -85,7 +103,6 @@
     const isFullMode = ref<boolean>(config.isFullMode);
     const statusLabel = ref<Nullable<string>>(config.communication ? getStatusLabel(config.communication.status) : null);
     const sentResultsDiv = ref<HTMLElement | undefined>();
-    const communicationMedium = ref<InstanceType<typeof CommunicationMedium>>();
     const mediums = computed<ListItemBag[]>(() => config.mediums ?? []);
     const selectedMediumEntityTypeGuidOrEmptyString = ref<string>("");
     const resultMessage = ref<Nullable<string>>("");
