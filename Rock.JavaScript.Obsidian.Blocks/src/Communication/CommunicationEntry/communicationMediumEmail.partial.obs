@@ -1,7 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockForm :submit="isFormSubmitted"
-              id="hello"
+    <RockForm v-model:submit="submitForm"
               @submit="onFormSubmitted">
         <div class="row">
             <div class="col-sm-12">
@@ -152,17 +151,20 @@
         <div class="actions">
             <RockButton id="btnSubmit"
                         class="btn btn-primary"
+                        :disabled="internalDisabled"
                         type="button"
                         @click="send">Send</RockButton>
 
             <RockButton v-if="isFullMode"
                         id="btnTest"
                         class="btn btn-link"
+                        :disabled="internalDisabled"
                         type="button"
                         @click="test">Send Test</RockButton>
 
             <RockButton id="btnSave"
                         class="btn btn-link"
+                        :disabled="internalDisabled"
                         type="button"
                         @click="save">Save as Draft</RockButton>
         </div>
@@ -290,7 +292,8 @@
     const message = ref<string>(props.communication?.message ?? "");
     const communicationGuid = ref<Guid>(props.communication.communicationGuid);
     const options = ref<CommunicationEntryEmailMediumOptionsBag>(props.mediumOptions);
-    const isFormSubmitted = ref<boolean>(false);
+    /** Programmatically submits the form when set to true. */
+    const submitForm = ref<boolean>(false);
     const pendingAction = ref<() => PromiseLike<void>>();
     const isRecipientRequired = ref<boolean>(false);
     const testResult = ref<CommunicationEntryTestResponseBag | null | undefined>();
@@ -501,20 +504,19 @@
      * Saves the communication.
      * If this is renamed, it must also be renamed in the other medium components.
      */
-    function save(): Promise<void> {
+    function save(): void {
         // Recipients are not required when saving.
         if (!isRecipientRequired.value) {
             // If validation is already turned off,
             // then trigger "save" immediately.
             triggerFormSubmission(doSave);
-            return Promise.resolve();
         }
         else {
             // If validation needs to be turned off,
             // then trigger "save" on the next tick
             // so the form has a chance to update the validation UI.
             isRecipientRequired.value = false;
-            return nextTick(() => triggerFormSubmission(doSave));
+            nextTick(() => triggerFormSubmission(doSave));
         }
     }
 
@@ -522,20 +524,19 @@
      * Sends the communication.
      * If this is renamed, it must also be renamed in the other medium components.
      */
-    function send(): Promise<void> {
+    function send(): void {
         // Recipients are required when sending.
         if (isRecipientRequired.value) {
             // If validation is already turned on,
             // then trigger "send" immediately.
             triggerFormSubmission(doSend);
-            return Promise.resolve();
         }
         else {
             // If validation needs to be turned on,
             // then trigger "send" on the next tick
             // so the form has a chance to update the validation UI.
             isRecipientRequired.value = true;
-            return nextTick(() => triggerFormSubmission(doSend));
+            nextTick(() => triggerFormSubmission(doSend));
         }
     }
 
@@ -543,20 +544,19 @@
      * Sends the communication.
      * If this is renamed, it must also be renamed in the other medium components.
      */
-    function test(): Promise<void> {
+    function test(): void {
         // Recipients are required when sending a test.
         if (isRecipientRequired.value) {
             // If validation is already turned on,
             // then trigger "sendTest" immediately.
             triggerFormSubmission(doSendTest);
-            return Promise.resolve();
         }
         else {
             // If validation needs to be turned on,
             // then trigger "sendTest" on the next tick
             // so the form has a chance to update the validation UI.
             isRecipientRequired.value = true;
-            return nextTick(() => triggerFormSubmission(doSendTest));
+            nextTick(() => triggerFormSubmission(doSendTest));
         }
     }
 
@@ -567,13 +567,13 @@
      */
     function triggerFormSubmission(action: () => PromiseLike<void>): void {
         pendingAction.value = action;
-        if (!isFormSubmitted.value) {
-            isFormSubmitted.value = true;
+        if (!submitForm.value) {
+            submitForm.value = true;
         }
         else {
             // Form is already submitted so resubmit it on the next tick.
-            isFormSubmitted.value = false;
-            nextTick(() => isFormSubmitted.value = true);
+            submitForm.value = false;
+            nextTick(() => submitForm.value = true);
         }
     }
 
