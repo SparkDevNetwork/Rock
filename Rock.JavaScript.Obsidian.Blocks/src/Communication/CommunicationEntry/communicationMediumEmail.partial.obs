@@ -1,5 +1,13 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
+    <NotificationBox v-if="errorMessage"
+                     heading="Please correct the following:"
+                     alertType="validation">
+        <ul>
+            <li>{{ errorMessage }}</li>
+        </ul>
+    </NotificationBox>
+
     <RockForm v-model:submit="submitForm"
               @submit="onFormSubmitted">
         <div class="row">
@@ -187,6 +195,7 @@
     import FileUploader from "@Obsidian/Controls/fileUploader.obs";
     import HtmlEditor from "@Obsidian/Controls/htmlEditor.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import Switch from "@Obsidian/Controls/switch.obs";
@@ -284,6 +293,7 @@
     const pendingAction = ref<() => PromiseLike<void>>();
     const isRecipientRequired = ref<boolean>(false);
     const testResult = ref<CommunicationEntryTestResponseBag | null | undefined>();
+    const errorMessage = ref<string | null | undefined>();
 
     //#endregion
 
@@ -437,6 +447,11 @@
         return recipients.value.find(item => item.personAliasGuid === personAliasGuid) ?? null;
     }
 
+    function raiseError(error: string): void {
+        errorMessage.value = error;
+        emit("error", error);
+    }
+
     //#endregion
 
     //#region Event Handlers
@@ -533,6 +548,7 @@
      */
     function test(): void {
         // Recipients are required when sending a test.
+
         if (isRecipientRequired.value) {
             // If validation is already turned on,
             // then trigger "sendTest" immediately.
@@ -601,7 +617,7 @@
             const result = await invokeBlockAction<CommunicationEntrySaveResponseBag>("Save", { bag });
 
             if (result.isError || !result.data) {
-                emit("error", result.errorMessage || "An error occurred while saving. Please try again.");
+                raiseError(result.errorMessage || "An error occurred while saving. Please try again.");
             }
             else {
                 emit("sent", result.data);
@@ -639,7 +655,7 @@
             const result = await invokeBlockAction<CommunicationEntrySendResponseBag>("Send", { bag });
 
             if (result.isError || !result.data) {
-                emit("error", result.errorMessage || "An error occurred while sending. Please try again.");
+                raiseError(result.errorMessage || "An error occurred while sending. Please try again.");
             }
             else {
                 communicationGuid.value = result.data.communicationGuid;
@@ -678,7 +694,7 @@
             const result = await invokeBlockAction<CommunicationEntryTestResponseBag>("Test", { bag });
 
             if (result.isError || !result.data) {
-                emit("error", result.errorMessage || "An error occurred while sending a test communication. Please try again.");
+                raiseError(result.errorMessage || "An error occurred while sending a test communication. Please try again.");
             }
             else {
                 emit("tested", result.data);
@@ -721,7 +737,7 @@
             const result = await invokeBlockAction<CommunicationEntryCommunicationBag>("GetTemplate", { templateGuid: templateGuid.value });
 
             if (result.isError || !result.data) {
-                emit("error", result.errorMessage || "An error occurred while getting the template.");
+                raiseError(result.errorMessage || "An error occurred while getting the template.");
             }
             else {
                 const template = result.data;
@@ -759,7 +775,7 @@
         const response = await invokeBlockAction<CommunicationEntryEmailMediumOptionsBag>("GetMediumOptions", { bag });
 
         if (!response?.data || response.isError) {
-            emit("error", response.errorMessage ?? "An error occurred while loading the communication. Please try again.");
+            raiseError(response.errorMessage ?? "An error occurred while loading the communication. Please try again.");
             return;
         }
 

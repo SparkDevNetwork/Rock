@@ -12,15 +12,6 @@
                 <PanelNavigationBar v-model="selectedMediumEntityTypeGuidOrEmptyString"
                                     :isFirstSelectedByDefault="true"
                                     :items="mediums" />
-
-                <NotificationBox v-if="validationSummaryMessage"
-                                 heading="Please correct the following:"
-                                 alertType="validation">
-                    <ul>
-                        <li>{{ validationSummaryMessage }}</li>
-                    </ul>
-                </NotificationBox>
-
                 <NotificationBox v-if="false"
                                  id="nbInvalidTransport"
                                  alertType="warning"
