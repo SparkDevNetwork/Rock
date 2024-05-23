@@ -37,7 +37,7 @@
                     :field="getRecipientKey('isEmailAllowed')"
                     title="Email">
                 <template #format="{ row }">
-                    <span>
+                    <span class="communication-medium-status">
                         <i :class="[
                             'fa fa-circle',
                             (row as CommunicationEntryRecipientBag).isDeceased
@@ -57,7 +57,7 @@
                     :field="getRecipientKey('isSmsAllowed')"
                     title="SMS">
                 <template #format="{ row }">
-                    <span>
+                    <span class="communication-medium-status">
                         <i :class="[
                             'fa fa-circle',
                             (row as CommunicationEntryRecipientBag).isDeceased
@@ -73,7 +73,7 @@
                     :field="getRecipientKey('isPushAllowed')"
                     title="Push">
                 <template #format="{ row }">
-                    <span>
+                    <span class="communication-medium-status">
                         <i :class="[
                             'fa fa-circle',
                             (row as CommunicationEntryRecipientBag).isDeceased
@@ -91,6 +91,12 @@
         </Grid>
     </Modal>
 </template>
+
+<style scoped>
+.communication-medium-status {
+    white-space: nowrap;
+}
+</style>
 
 <script setup lang="ts">
     import { PropType, computed, ref, Ref, watch } from "vue";
