@@ -612,6 +612,7 @@
     <TypeScriptCompile Include="Framework\Enums\Group\groupMemberStatus.ts" />
     <TypeScriptCompile Include="Framework\Enums\Group\meetsGroupRequirement.ts" />
     <TypeScriptCompile Include="Framework\Enums\Group\participationType.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Group\relationshipTrend.ts" />
     <TypeScriptCompile Include="Framework\Enums\Group\requirementCheckType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Group\scheduleConfirmationLogic.ts" />
     <TypeScriptCompile Include="Framework\Enums\Net\cookieSameSiteMode.ts" />

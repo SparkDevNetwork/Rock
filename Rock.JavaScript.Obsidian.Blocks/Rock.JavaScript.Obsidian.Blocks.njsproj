@@ -315,6 +315,7 @@
     <Folder Include="src\Cms\PersonalLinkSectionDetail\" />
     <Folder Include="src\Cms\SiteDetail\" />
     <Folder Include="src\Communication\" />
+    <Folder Include="src\Communication\CommunicationList\" />
     <Folder Include="src\Communication\SnippetDetail\" />
     <Folder Include="src\Communication\SnippetTypeDetail\" />
     <Folder Include="src\Communication\SystemCommunicationList\" />

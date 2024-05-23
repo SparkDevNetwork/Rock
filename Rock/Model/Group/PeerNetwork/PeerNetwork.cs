@@ -52,6 +52,7 @@ namespace Rock.Model
         /// The source person alias identifier.
         /// </value>
         [DataMember]
+        [IgnoreCanDelete]
         public int SourcePersonAliasId { get; set; }
 
         /// <summary>
@@ -61,6 +62,7 @@ namespace Rock.Model
         /// The target person alias identifier.
         /// </value>
         [DataMember]
+        [IgnoreCanDelete]
         public int TargetPersonAliasId { get; set; }
 
         /// <summary>
@@ -70,6 +72,7 @@ namespace Rock.Model
         /// The relationship type value identifier.
         /// </value>
         [DataMember]
+        [IgnoreCanDelete]
         public int RelationshipTypeValueId { get; set; }
 
         /// <summary>

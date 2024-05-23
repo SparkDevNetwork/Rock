@@ -268,6 +268,8 @@ namespace Rock.Model
                 return false;
             }
 
+            // ignoring PeerNetwork,RelationshipTypeValueId
+
             if ( new Service<Person>( Context ).Queryable().Any( a => a.ConnectionStatusValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Person.FriendlyTypeName );
