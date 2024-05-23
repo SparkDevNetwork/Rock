@@ -313,7 +313,7 @@ namespace Rock.Web.UI.Controls.Communication
 
                 if ( pushData.MobilePageQueryString != null )
                 {
-                    kvlQuerystring.Value = pushData.MobilePageQueryString.Select( a => string.Format( "{0}^{1}", a.Key, a.Value ) ).ToList().AsDelimited( "|" );
+                    kvlQuerystring.SetValue( pushData.MobilePageQueryString );
                 }
             }
 
@@ -346,7 +346,7 @@ namespace Rock.Web.UI.Controls.Communication
 
             if ( communication.PushOpenAction == PushOpenAction.LinkToMobilePage )
             {
-                pushData.MobilePageQueryString = kvlQuerystring.Value.AsDictionaryOrNull();
+                pushData.MobilePageQueryString = kvlQuerystring.GetValueAsDictionaryOrNull();
                 pushData.MobilePageId = ppMobilePage.SelectedValue.AsIntegerOrNull();
                 pushData.MobileApplicationId = pushData.MobilePageId.HasValue ? PageCache.Get( pushData.MobilePageId.Value )?.SiteId : null;
             }
