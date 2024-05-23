@@ -39,7 +39,7 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <Rock:DefinedValuePicker ID="dvpCampusStatus" runat="server" Label="Status" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="CampusStatusValueId" />
-                                <Rock:DatePicker ID="dpOpenedDate" runat="server" Label="Opened date" />
+                                <Rock:DatePicker ID="dpOpenedDate" runat="server" Label="Opened Date" />
                                 <Rock:DataTextBox ID="tbCampusCode" runat="server" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="ShortCode" Label="Code" />
                                 <Rock:RockDropDownList ID="ddlTimeZone" runat="server" CausesValidation="false" CssClass="input-width-xxl" Label="Time Zone" Help="The time zone you want certain time calculations of the Campus to operate in. Leave this blank to use the default Rock TimeZone." ></Rock:RockDropDownList>
                                 <Rock:PersonPicker ID="ppCampusLeader" runat="server" Label="Campus Leader" />

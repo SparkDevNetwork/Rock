@@ -133,8 +133,7 @@ namespace Rock.Blocks.Reporting
             {
                 Datasets = GetTimeSeriesDataset( rockContext ),
                 ChartStyle = ChartJsTimeSeriesChartStyleSpecifier.Line,
-                TimeScale = ChartJsTimeSeriesTimeScaleSpecifier.Month,
-                DateFormatString = "MMMM",
+                TimeScale = ChartJsTimeSeriesTimeScaleSpecifier.Week,
                 AreaFillOpacity = 0
             };
 
