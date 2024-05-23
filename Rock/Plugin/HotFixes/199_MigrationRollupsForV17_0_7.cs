@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 
-using Rock.SystemGuid;
+using System;
 
 namespace Rock.Plugin.HotFixes
 {
@@ -25,15 +25,31 @@ namespace Rock.Plugin.HotFixes
     [MigrationNumber( 199, "1.16.4" )]
     public class MigrationRollupsForV17_0_7: Migration
     {
+        // KH: Create Administrative Settings Page/Page Search Block and move various Admin Tool Settings Pages under the new Administrative Settings Page
         private const string AdministrativeSettingsPageGuid = "A7E36E7A-EFBD-4912-B46E-BB61A74B86FF";
 
+        //KA: D: V17 Migration to add Tithing overview metrics
+        const string TITHING_OVERVIEW_CATEGORY = "914E7A39-EA2D-469B-95B5-B6518DBE5F52";
+        const string TITHING_OVERVIEW_SCHEDULE_GUID = "5E51EA9E-8475-4955-875E-45F44270A462";
+        const string TITHING_OVERVIEW_BY_CAMPUS_METRIC_GUID = "F4951A42-9F71-4CB1-A46E-2A7ED84CD923";
+        const string TITHING_HOUSEHOLDS_BY_CAMPUS_METRIC_GUID = "2B798177-E8F4-46DB-A1D7-308D63CA519A";
+        const string GIVING_HOUSEHOLDS_BY_CAMPUS_METRIC_GUID = "B5BFAB51-9B46-4E7E-992E-B0119E4D25EC";
+
+        //KA: Create data-migration to add new page with new Tithing Overview block
+        const string TITHING_OVERVIEW_PAGE = "72BA5DD9-8685-4182-833D-22BB1E0F9A36";
+        const string TITHING_OVERVIEW_BLOCK_ENTITY_TYPE = "1E44B061-7767-487D-A98F-16912E8C7DE7";
+        const string TITHING_OVERVIEW_BLOCK_TYPE = "DB756565-8A35-42E2-BC79-8D11F57E4004";
+        const string TITHING_OVERVIEW_BLOCK = "E6956ECC-08DC-4EF0-9F9A-67F8BD2F5F91";
+
         /// <summary>
-        /// KH: v17 ONLY - Create Administrative Settings Page/Page Search Block and move various Admin Tool Settings Pages under the new Administrative Settings Page
+        /// Up methods
         /// </summary>
         public override void Up()
         {
             CreateAdministrativeSettingsPage();
             MoveSettingsPages();
+            TithingOverviewMetricsUp();
+            TithingOverviewPageAndBlockUp();
         }
 
         /// <summary>
@@ -41,6 +57,8 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Down()
         {
+            TithingOverviewMetricsDown();
+            TithingOverviewPageAndBlockDown();
         }
 
         private void CreateAdministrativeSettingsPage()
@@ -136,6 +154,317 @@ SET [InternalName] = 'System',
 WHERE [Page].[Guid] = '{systemSettingsPageGuid}'" );
 
             RockMigrationHelper.MovePage( systemSettingsPageGuid, AdministrativeSettingsPageGuid );
+        }
+
+        /// <summary>
+        /// KA: Migration to add Tithing overview metrics
+        /// </summary>
+        private void TithingOverviewMetricsUp()
+        {
+            AddSchedule();
+
+            RockMigrationHelper.UpdateCategory( SystemGuid.EntityType.METRICCATEGORY, "Tithing Overview", "icon-fw fa fa-chart-bar", "A few metrics to show high-level tithing statistics.", TITHING_OVERVIEW_CATEGORY );
+
+            AddTithingOverviewByCampusMetrics();
+            AddTithingHouseholdsByCampusMetrics();
+            AddGivingHouseholdsOverviewByCampusMetrics();
+        }
+
+        /// <summary>
+        /// KA: Migration to add Tithing overview metrics
+        /// </summary>
+        private void TithingOverviewMetricsDown()
+        {
+            DeleteMetric( TITHING_OVERVIEW_BY_CAMPUS_METRIC_GUID );
+            DeleteMetric( TITHING_HOUSEHOLDS_BY_CAMPUS_METRIC_GUID );
+            DeleteMetric( GIVING_HOUSEHOLDS_BY_CAMPUS_METRIC_GUID );
+
+            RockMigrationHelper.DeleteCategory( TITHING_OVERVIEW_CATEGORY );
+
+            Sql( $"DELETE FROM Schedule WHERE [Guid] = '{TITHING_OVERVIEW_SCHEDULE_GUID}'" );
+        }
+
+        private void AddSchedule()
+        {
+            Sql( $@"
+DECLARE @ScheduleId int = ( 
+    SELECT [Id] 
+    FROM [dbo].[Schedule] 
+    WHERE Guid = '{TITHING_OVERVIEW_SCHEDULE_GUID}'),
+
+@MetricsCategoryId int = ( 
+    SELECT [Id] 
+    FROM [dbo].[Category] 
+    WHERE Guid = '{SystemGuid.Category.SCHEDULE_METRICS}'
+)
+IF @ScheduleId IS NULL
+BEGIN
+	INSERT [dbo].[Schedule] ([Name], [Description], [iCalendarContent], [CategoryId], [Guid], [IsActive])
+	VALUES (N'Tithing Overview', NULL, N'BEGIN:VCALENDAR
+PRODID:-//github.com/SparkDevNetwork/Rock//NONSGML Rock//EN
+VERSION:2.0
+BEGIN:VEVENT
+DTEND:20240409T040200
+DTSTAMP:20240409T040100
+DTSTART:20240409T040000
+RRULE:FREQ=WEEKLY;BYDAY=TU
+SEQUENCE:0
+UID:407d07c9-36a8-430e-bbea-8b5062e9b5a6
+END:VEVENT
+END:VCALENDAR',
+@MetricsCategoryId, N'{TITHING_OVERVIEW_SCHEDULE_GUID}', 1)
+END" );
+        }
+
+        private void AddTithingOverviewByCampusMetrics()
+        {
+            const string sql = @"DECLARE @StartDate int = FORMAT( DATEADD( d, -365, GETDATE()), 'yyyyMMdd' )
+DECLARE @EndDate int = FORMAT( GETDATE(), 'yyyyMMdd' )
+-- Only Include Person Type Records
+DECLARE @PersonRecordTypeId INT = ( SELECT [Id] FROM [dbo].[DefinedValue] WHERE [Guid] = '36CF10D6-C695-413D-8E7C-4546EFEF385E' )
+
+;WITH CTE AS (
+    SELECT
+    [GivingLeaderId]
+    , [PrimaryCampusId]
+    , [PrimaryFamilyId]
+    , SUM(ftd.[Amount]) AS [GivingAmount]
+    , (SELECT TOP 1 
+            LEFT([PostalCode], 5)
+        FROM [dbo].[Location] l
+        INNER JOIN [dbo].[GroupLocation] gl ON gl.[LocationId] = l.[Id] AND gl.[GroupId] = [PrimaryFamilyId] AND gl.[IsMappedLocation] = 1
+      ) AS [PostalCode]
+    , (SELECT [FamiliesMedianIncome] * .1 FROM [dbo].[AnalyticsSourcePostalCode] WHERE [PostalCode] = (SELECT TOP 1 LEFT([PostalCode], 5) FROM [dbo].[Location] l INNER JOIN [dbo].[GroupLocation] gl ON gl.[LocationId] = l.[Id] AND gl.[GroupId] = [PrimaryFamilyId] AND gl.[IsMappedLocation] = 1) ) AS [FamiliesMedianTithe]
+	FROM
+		[Person] p
+		INNER JOIN [dbo].[PersonAlias] pa ON pa.[PersonId] = p.[Id]
+		INNER JOIN [dbo].[FinancialTransaction] ft ON ft.[AuthorizedPersonAliasId] = pa.[Id]
+		INNER JOIN [dbo].[FinancialTransactionDetail] ftd ON ftd.[TransactionId] = ft.[Id]
+		INNER JOIN [dbo].[FinancialAccount] fa ON fa.[Id] = ftd.[AccountId] 
+		INNER JOIN [dbo].[AnalyticsSourceDate] asd ON asd.[DateKey] = ft.[TransactionDateKey]
+	WHERE
+		fa.[IsTaxDeductible] = 1
+		AND asd.[DateKey] > = @StartDate AND asd.[DateKey] <= @EndDate
+-- Only include person type records.
+AND p.[RecordTypeValueId] = @PersonRecordTypeId
+	GROUP BY [GivingLeaderId], [PrimaryCampusId], [PrimaryFamilyId]
+)
+SELECT 
+    CAST(COUNT(CASE WHEN [GivingAmount] > [FamiliesMedianTithe] THEN 1 END) AS FLOAT) / COUNT(*) * 100 AS PercentageAboveMedianTithe,
+    [PrimaryCampusId],
+    COUNT(*) AS TotalFamilies,
+    COUNT(CASE WHEN [GivingAmount] > [FamiliesMedianTithe] THEN 1 END) AS FamiliesAboveMedianTithe
+FROM 
+    CTE
+-- Only include families that have a postal code and/or we have a [FamiliesMedianIncome] value
+WHERE ( [PostalCode] IS NOT NULL AND [PostalCode] != '') and [FamiliesMedianTithe] is NOT NULL
+GROUP BY [PrimaryCampusId];";
+            AddSqlSourcedMetric( TITHING_OVERVIEW_BY_CAMPUS_METRIC_GUID, "Tithing Overview By Campus (percent)", TITHING_OVERVIEW_CATEGORY, sql, "This a breakdown of the percentage of families above the median tithe for each campus. Only families with a recognized postal code are included in this metric value." );
+        }
+
+        private void AddTithingHouseholdsByCampusMetrics()
+        {
+            const string sql = @"DECLARE @StartDate int = FORMAT( DATEADD( d, -365, GETDATE()), 'yyyyMMdd' )
+DECLARE @EndDate int = FORMAT( GETDATE(), 'yyyyMMdd' )
+DECLARE @PersonRecordTypeId INT = ( SELECT [Id] FROM [dbo].[DefinedValue] WHERE [Guid] = '36CF10D6-C695-413D-8E7C-4546EFEF385E' )
+
+;WITH CTE AS (
+    SELECT
+    [GivingLeaderId]
+    , [PrimaryCampusId]
+    , [PrimaryFamilyId]
+    , SUM(ftd.[Amount]) AS [GivingAmount]
+    , (SELECT TOP 1 
+            LEFT([PostalCode], 5)
+        FROM [dbo].[Location] l
+        INNER JOIN [dbo].[GroupLocation] gl ON gl.[LocationId] = l.[Id] AND gl.[GroupId] = [PrimaryFamilyId] AND gl.[IsMailingLocation] = 1
+      ) AS [PostalCode]
+    , (SELECT [FamiliesMedianIncome] * .1 FROM [dbo].[AnalyticsSourcePostalCode] WHERE [PostalCode] = (SELECT TOP 1 LEFT([PostalCode], 5) FROM [dbo].[Location] l INNER JOIN [dbo].[GroupLocation] gl ON gl.[LocationId] = l.[Id] AND gl.[GroupId] = [PrimaryFamilyId] AND gl.[IsMailingLocation] = 1) ) AS [FamiliesMedianTithe]
+	FROM
+		[Person] p
+		INNER JOIN [dbo].[PersonAlias] pa ON pa.[PersonId] = p.[Id]
+		INNER JOIN [dbo].[FinancialTransaction] ft ON ft.[AuthorizedPersonAliasId] = pa.[Id]
+		INNER JOIN [dbo].[FinancialTransactionDetail] ftd ON ftd.[TransactionId] = ft.[Id]
+		INNER JOIN [dbo].[FinancialAccount] fa ON fa.[Id] = ftd.[AccountId] 
+		INNER JOIN [dbo].[AnalyticsSourceDate] asd ON asd.[DateKey] = ft.[TransactionDateKey]
+	WHERE
+		fa.[IsTaxDeductible] = 1
+		AND asd.[DateKey] > = @StartDate AND asd.[DateKey] <= @EndDate
+AND p.[RecordTypeValueId] = @PersonRecordTypeId
+	GROUP BY [GivingLeaderId], [PrimaryCampusId], [PrimaryFamilyId]
+)
+SELECT
+    SUM(CASE WHEN [GivingAmount] >= [FamiliesMedianTithe] THEN 1 ELSE 0 END) AS [TotalTithingHouseholds]
+    , PrimaryCampusId AS [CampusId]
+FROM CTE
+WHERE 
+   ( PostalCode IS NOT NULL AND PostalCode != '') and FamiliesMedianTithe is NOT NULL
+GROUP BY PrimaryCampusId;";
+            AddSqlSourcedMetric( TITHING_HOUSEHOLDS_BY_CAMPUS_METRIC_GUID, "Tithing Households Per Campus", TITHING_OVERVIEW_CATEGORY, sql, "This is the percent of households that are at/above the tithe. The tithe value is one tenth of the median family income for a family's location/postal code as determined by the AnalyticsSourcePostalCode table. Only families with a recognized postal code are included in this metric value." );
+        }
+
+        private void AddGivingHouseholdsOverviewByCampusMetrics()
+        {
+            const string sql = @"DECLARE @StartDate int = FORMAT( DATEADD( d, -365, GETDATE()), 'yyyyMMdd' )
+DECLARE @EndDate int = FORMAT( GETDATE(), 'yyyyMMdd' )
+DECLARE @PersonRecordTypeId INT = ( SELECT [Id] FROM [dbo].[DefinedValue] WHERE [Guid] = '36CF10D6-C695-413D-8E7C-4546EFEF385E' )
+
+;WITH CTE AS (
+    SELECT
+    [GivingLeaderId]
+    , [PrimaryCampusId]
+    , [PrimaryFamilyId]
+    , SUM(ftd.[Amount]) AS [GivingAmount]
+    , (SELECT TOP 1 
+            LEFT([PostalCode], 5)
+        FROM [dbo].[Location] l
+        INNER JOIN [dbo].[GroupLocation] gl ON gl.[LocationId] = l.[Id] AND gl.[GroupId] = [PrimaryFamilyId] AND gl.[IsMailingLocation] = 1
+      ) AS [PostalCode]
+    , (SELECT [FamiliesMedianIncome] * .1 FROM [dbo].[AnalyticsSourcePostalCode] WHERE [PostalCode] = (SELECT TOP 1 LEFT([PostalCode], 5) FROM [dbo].[Location] l INNER JOIN [dbo].[GroupLocation] gl ON gl.[LocationId] = l.[Id] AND gl.[GroupId] = [PrimaryFamilyId] AND gl.[IsMailingLocation] = 1) ) AS [FamiliesMedianTithe]
+	FROM
+		[Person] p
+		INNER JOIN [dbo].[PersonAlias] pa ON pa.[PersonId] = p.[Id]
+		INNER JOIN [dbo].[FinancialTransaction] ft ON ft.[AuthorizedPersonAliasId] = pa.[Id]
+		INNER JOIN [dbo].[FinancialTransactionDetail] ftd ON ftd.[TransactionId] = ft.[Id]
+		INNER JOIN [dbo].[FinancialAccount] fa ON fa.[Id] = ftd.[AccountId] 
+		INNER JOIN [dbo].[AnalyticsSourceDate] asd ON asd.[DateKey] = ft.[TransactionDateKey]
+	WHERE
+		fa.[IsTaxDeductible] = 1
+		AND asd.[DateKey] > = @StartDate AND asd.[DateKey] <= @EndDate
+AND p.[RecordTypeValueId] = @PersonRecordTypeId
+	GROUP BY [GivingLeaderId], [PrimaryCampusId], [PrimaryFamilyId]
+)
+SELECT
+    SUM(CASE WHEN [GivingAmount] >= 0 THEN 1 ELSE 0 END) AS [TotalGivingHouseholds]
+    , PrimaryCampusId AS [CampusId]
+FROM CTE
+WHERE ( PostalCode IS NOT NULL AND PostalCode != '') and FamiliesMedianTithe is NOT NULL
+GROUP BY PrimaryCampusId;";
+            AddSqlSourcedMetric( GIVING_HOUSEHOLDS_BY_CAMPUS_METRIC_GUID, "Giving Households Per Campus", TITHING_OVERVIEW_CATEGORY, sql, "This is the percent of households per campus that are giving. Only families with a recognized postal code are included in this metric value." );
+        }
+
+        private void AddSqlSourcedMetric( string guid, string title, string categoryGuid, string sourceSql, string description = null )
+        {
+            var formattedTitle = title?.Replace( "'", "''" ) ?? throw new ArgumentNullException( nameof( title ) );
+            var createMetricAndMetricCategorySql = $@"DECLARE @MetricId [int] = (SELECT [Id] FROM [dbo].[Metric] WHERE ([Guid] = '{guid}'))
+    , @SourceValueTypeId [int] = (SELECT [Id] FROM [dbo].[DefinedValue] WHERE ([Guid] = '{SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_SQL}'))
+    , @MetricCategoryId [int] = (SELECT [Id] FROM [dbo].[Category] WHERE ([Guid] = '{categoryGuid}'))
+    , @Description [varchar] (max) = {( string.IsNullOrWhiteSpace( description ) ? "NULL" : $"'{description.Replace( "'", "''" )}'" )};
+
+IF (@MetricId IS NULL AND @SourceValueTypeId IS NOT NULL AND @MetricCategoryId IS NOT NULL)
+BEGIN
+    DECLARE @Now [datetime] = GETDATE();
+    INSERT INTO [dbo].[Metric]
+    (
+        [IsSystem]
+        , [Title]
+        , [Description]
+        , [IsCumulative]
+        , [SourceValueTypeId]
+        , [SourceSql]
+        , [ScheduleId]
+        , [CreatedDateTime]
+        , [ModifiedDateTime]
+        , [Guid]
+        , [NumericDataType]
+        , [EnableAnalytics]
+    )
+    VALUES
+    (
+        0
+        , '{formattedTitle}'
+        , @Description
+        , 0
+        , @SourceValueTypeId
+        , '{sourceSql.Replace( "'", "''" )}'
+        , (SELECT [Id] FROM Schedule WHERE Guid = '{TITHING_OVERVIEW_SCHEDULE_GUID}')
+        , @Now
+        , @Now
+        , '{guid}'
+        , 1
+        , 0
+    );
+    SET @MetricId = SCOPE_IDENTITY();
+    INSERT INTO [dbo].[MetricCategory]
+    (
+        [MetricId]
+        , [CategoryId]
+        , [Order]
+        , [Guid]
+    )
+    VALUES
+    (
+        @MetricId
+        , @MetricCategoryId
+        , 0
+        , NEWID()
+    );
+    INSERT INTO [dbo].[MetricPartition]
+    (
+        [MetricId]
+        , [Label]
+        , [EntityTypeId]
+        , [IsRequired]
+        , [Order]
+        , [CreatedDateTime]
+        , [ModifiedDateTime]
+        , [Guid]
+    )
+    VALUES
+    (
+        @MetricId
+        , 'Campus'
+        , (SELECT Id FROM [dbo].[EntityType] WHERE GUID = '{SystemGuid.EntityType.CAMPUS}')
+        , 1
+        , 0
+        , @Now
+        , @Now
+        , NEWID()
+    );
+END
+";
+
+            Sql( createMetricAndMetricCategorySql );
+        }
+
+        private void DeleteMetric( string guid )
+        {
+            Sql( $@"DECLARE @MetricId [int] = (SELECT [Id] FROM [Metric] WHERE ([Guid] = '{guid}'));
+IF (@MetricId IS NOT NULL)
+BEGIN
+    DELETE FROM [dbo].[MetricPartition] WHERE ([MetricId] = @MetricId);
+    DELETE FROM [dbo].[MetricCategory] WHERE ([MetricId] = @MetricId);
+    DELETE FROM [dbo].[Metric] WHERE ([Id] = @MetricId);
+END" );
+        }
+
+        /// <summary>
+        /// Operations to be performed during the upgrade process.
+        /// </summary>
+        private void TithingOverviewPageAndBlockUp()
+        {
+            // Add the Tithing Overview Page
+            RockMigrationHelper.AddPage( true, "8D5917F1-4E0E-4F18-8815-62EFBF808995", SystemGuid.Layout.FULL_WIDTH_INTERNAL_SITE, "Tithing Overview", "Shows high-level statistics of the tithing overview.", TITHING_OVERVIEW_PAGE, "UpdateAgeBracketValues" );
+
+            RockMigrationHelper.AddOrUpdateEntityType( "Rock.Blocks.Reporting.TithingOverview", TITHING_OVERVIEW_BLOCK_ENTITY_TYPE, true, true );
+
+            // Add/Update the Tithing Overview block type
+            RockMigrationHelper.AddOrUpdateEntityBlockType( "Tithing Overview", "Shows high-level statistics of the tithing overview.", "Rock.Blocks.Reporting.TithingOverview", "Reporting", TITHING_OVERVIEW_BLOCK_TYPE );
+
+            // Add Tithing Overview block to the Tithing Overview Page
+            RockMigrationHelper.AddBlock( true, TITHING_OVERVIEW_PAGE, null, TITHING_OVERVIEW_BLOCK_TYPE, "Tithing Overview", "Main", "", "", 0, TITHING_OVERVIEW_BLOCK );
+        }
+
+        /// <summary>
+        /// Operations to be performed during the downgrade process.
+        /// </summary>
+        private void TithingOverviewPageAndBlockDown()
+        {
+            // Delete the Tithing Overview Block
+            RockMigrationHelper.DeleteBlock( TITHING_OVERVIEW_BLOCK );
+
+            // Delete the Tithing Overview Page
+            RockMigrationHelper.DeletePage( TITHING_OVERVIEW_PAGE );
         }
     }
 }
