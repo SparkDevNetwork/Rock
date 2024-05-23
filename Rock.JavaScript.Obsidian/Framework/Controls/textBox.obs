@@ -41,7 +41,7 @@
                                :placeholder="placeholder"
                                @input="onInput"
                                @change="onChange" />
-                            <i class="fa fa-times clear-icon clear-position-with-slots" @click="internalValue = ''"></i>
+                            <i class="fa fa-times clear-icon clear-position-with-slots" @click="onClear"></i>
                             <slot name="inputGroupAppend" :isInputGroupSupported="true" />
                         </template>
                         <template v-else>
@@ -55,7 +55,7 @@
                                    :placeholder="placeholder"
                                    @input="onInput"
                                    @change="onChange" />
-                                <i class="fa fa-times clear-icon" @click="internalValue = ''"></i>
+                                <i class="fa fa-times clear-icon" @click="onClear"></i>
                             </div>
                         </template>
                     </template>
@@ -236,6 +236,11 @@
         if (props.modelModifiers.lazy) {
             emit("update:modelValue", internalValue.value);
         }
+    }
+
+    function onClear(): void {
+        internalValue.value = "";
+        emit("update:modelValue", internalValue.value);
     }
 
     watch(() => props.modelValue, () => {
