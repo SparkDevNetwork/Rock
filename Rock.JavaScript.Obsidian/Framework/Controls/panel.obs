@@ -102,7 +102,7 @@
                 <div v-show="isPanelOpen" class="panel-body" :style="panelBodyStyle">
                     <slot />
 
-                    <div v-if="$slots.footerActions || $slots.footerSecondaryActions" class="actions">
+                    <div v-if="!slots.sidebar && ($slots.footerActions || $slots.footerSecondaryActions)" class="actions">
                         <div class="footer-actions">
                             <slot name="footerActions" />
                         </div>
@@ -113,6 +113,18 @@
                     </div>
                 </div>
             </TransitionVerticalCollapse>
+        </div>
+
+        <div v-if="slots.sidebar && ($slots.footerActions || $slots.footerSecondaryActions)" class="sidebar-footer">
+            <div class="actions">
+                <div class="footer-actions">
+                    <slot name="footerActions" />
+                </div>
+
+                <div class="footer-secondary-actions">
+                    <slot name="footerSecondaryActions" />
+                </div>
+            </div>
         </div>
     </Fullscreen>
 </template>
