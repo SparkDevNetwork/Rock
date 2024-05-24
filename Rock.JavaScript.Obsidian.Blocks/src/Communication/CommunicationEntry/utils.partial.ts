@@ -23,7 +23,6 @@ export function getAlertType(type: string | null | undefined): AlertType {
     return type as AlertType ?? AlertType.Default;
 }
 
-
 /**
  * Scrolls an element into view.
  */
@@ -48,4 +47,11 @@ export function scrollIntoView(elementGetter: () => (Element | undefined)): void
             console.log("scroll to element failed: element doesn't support 'scrollIntoView'", element);
         }
     });
+}
+
+/**
+ * Scrolls to the top of the window without scrolling horizontally.
+ */
+export function scrollToTopOfWindow(): void {
+    window.scrollTo(window.screenX, 0);
 }

@@ -3,7 +3,7 @@
     <NotificationBox v-if="errorMessage"
                      heading="Please correct the following:"
                      alertType="validation">
-        <ul ref="errorMessageElement">
+        <ul>
             <li>{{ errorMessage }}</li>
         </ul>
     </NotificationBox>
@@ -15,8 +15,6 @@
                      heading="Warning">
         The Email medium does not have an active transport configured. The communication will not be delivered until the transport is configured correctly.
     </NotificationBox>
-
-    <div ref="topFormElement"></div>
 
     <RockForm v-model:submit="submitForm"
               @visibleValidationChanged="onFormValidationChanged"
@@ -239,7 +237,7 @@
     import { CommunicationEntryGetMediumOptionsRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryGetMediumOptionsRequestBag";
     import { Guid } from "@Obsidian/Types";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import { getAlertType, scrollIntoView } from "./utils.partial";
+    import { getAlertType, scrollIntoView, scrollToTopOfWindow } from "./utils.partial";
 
     const invokeBlockAction = useInvokeBlockAction();
     const props = defineProps({
@@ -281,8 +279,6 @@
 
     //#region Values
 
-    const topFormElement = ref<HTMLElement | undefined>();
-    const errorMessageElement = ref<HTMLElement | undefined>();
     const testResultElement = ref<HTMLElement | undefined>();
     const isMounted = ref<boolean>(false);
     const internalDisabled = useVModelPassthrough(props, "disabled", emit);
@@ -471,7 +467,7 @@
 
     function raiseError(error: string): void {
         errorMessage.value = error;
-        scrollIntoView(() => errorMessageElement.value);
+        scrollToTopOfWindow();
 
         emit("error", error);
     }
@@ -481,6 +477,18 @@
         scrollIntoView(() => testResultElement.value);
 
         emit("tested", testResponse);
+    }
+
+    function raiseSaved(response: CommunicationEntrySendResponseBag): void {
+        communicationGuid.value = response.communicationGuid;
+        emit("saved", response);
+        scrollToTopOfWindow();
+    }
+
+    function raiseSent(response: CommunicationEntrySendResponseBag): void {
+        communicationGuid.value = response.communicationGuid;
+        emit("sent", response);
+        scrollToTopOfWindow();
     }
 
     //#endregion
@@ -613,7 +621,7 @@
 
     function onFormValidationChanged(errors: unknown[]): void {
         if (errors?.length) {
-            scrollIntoView(() => topFormElement.value);
+            scrollToTopOfWindow();
         }
     }
 
@@ -657,7 +665,7 @@
                 raiseError(result.errorMessage || "An error occurred while saving. Please try again.");
             }
             else {
-                emit("sent", result.data);
+                raiseSaved(result.data);
             }
 
         }
@@ -695,7 +703,7 @@
                 raiseError(result.errorMessage || "An error occurred while sending. Please try again.");
             }
             else {
-                communicationGuid.value = result.data.communicationGuid;
+                raiseSent(result.data);
             }
 
         }
