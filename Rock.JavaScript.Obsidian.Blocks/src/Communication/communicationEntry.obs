@@ -11,11 +11,13 @@
         <template #default>
             <div v-if="!areResultsShown">
                 <PanelNavigationBar v-model="selectedMediumEntityTypeGuidOrEmptyString"
+                                    :disabled="isDisabled"
                                     :isFirstSelectedByDefault="true"
                                     :items="mediums" />
 
                 <KeepAlive v-if="selectedMediumEntityTypeGuidOrEmptyString && config.communication && config.mediumOptions">
                     <Email v-if="areEqual(selectedMediumEntityTypeGuidOrEmptyString, EntityType.CommunicationMediumEmail)"
+                           v-model:disabled="isDisabled"
                            :communication="config.communication"
                            :isFullMode="isFullMode"
                            :mediumOptions="(config.mediumOptions as CommunicationEntryEmailMediumOptionsBag)"
@@ -87,6 +89,7 @@
     const selectedMediumEntityTypeGuidOrEmptyString = ref<string>("");
     const resultMessage = ref<Nullable<string>>("");
     const viewCommunicationUrl = ref<string>(window.location.href);
+    const isDisabled = ref<boolean>(false);
 
     //#endregion
 

@@ -3,7 +3,8 @@
     <div class="well well-pillwrap">
         <ul class="nav nav-pills">
             <li v-for="item in items"
-                :class="getItemClass(item)">
+                :class="getItemClass(item)"
+                role="presentation">
                 <a href="#" @click.prevent="onItemClicked(item)">{{ item.text }}</a>
             </li>
         </ul>
@@ -36,6 +37,11 @@
         isFirstSelectedByDefault: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 
@@ -56,11 +62,16 @@
     // #region Functions
 
     function getItemClass(item: ListItemBag): string {
+        const cssClasses: string[] = [];
+
         if (internalValue.value === item.value) {
-            return "active";
+            cssClasses.push("active");
+        }
+        if (props.disabled) {
+            cssClasses.push("disabled");
         }
 
-        return "";
+        return cssClasses.join(" ");
     }
 
     // #endregion
@@ -68,7 +79,9 @@
     // #region Event Handlers
 
     function onItemClicked(item: ListItemBag): void {
-        internalValue.value = item.value;
+        if (!props.disabled) {
+            internalValue.value = item.value;
+        }
     }
 
     // #endregion
