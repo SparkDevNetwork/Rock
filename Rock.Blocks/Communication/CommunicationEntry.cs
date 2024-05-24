@@ -360,11 +360,11 @@ namespace Rock.Blocks.Communication
                     // If this is a new communication, create a communication object temporarily so we can do the auth and edit logic.
                     communication = new Rock.Model.Communication
                     {
-                        Status = CommunicationStatus.Transient,
                         CreatedByPersonAlias = currentPerson.PrimaryAlias,
                         CreatedByPersonAliasId = currentPerson.PrimaryAliasId,
                         SenderPersonAlias = currentPerson.PrimaryAlias,
-                        SenderPersonAliasId = currentPerson.PrimaryAliasId
+                        SenderPersonAliasId = currentPerson.PrimaryAliasId,
+                        Status = CommunicationStatus.Transient,
                     };
                 }
                 else
@@ -1430,10 +1430,12 @@ namespace Rock.Blocks.Communication
             {
                 communication = new Rock.Model.Communication
                 {
-                    Status = CommunicationStatus.Transient,
-                    SenderPersonAliasId = sender.PrimaryAliasId,
                     EnabledLavaCommands = GetAttributeValue( AttributeKey.EnabledLavaCommands ),
-                    IsBulkCommunication = GetAttributeValue( AttributeKey.DefaultAsBulk ).AsBoolean()
+                    FromEmail = sender.Email,
+                    FromName = sender.FullName,
+                    IsBulkCommunication = GetAttributeValue( AttributeKey.DefaultAsBulk ).AsBoolean(),
+                    SenderPersonAliasId = sender.PrimaryAliasId,
+                    Status = CommunicationStatus.Transient,
                 };
 
                 box.Title = "New Communication".FormatAsHtmlTitle();
@@ -1520,6 +1522,8 @@ namespace Rock.Blocks.Communication
                 mediumGuid = box.Mediums.FirstOrDefault()?.Value.AsGuid();
             }
 
+            // Copy the communication to the initialization box.
+            // These props are not covered by the CommunicationEntryHelper.Copy method.
             box.Communication = new CommunicationEntryCommunicationBag
             {
                 CommunicationGuid = communication.Guid,
