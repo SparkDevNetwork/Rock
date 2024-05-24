@@ -124,7 +124,7 @@ namespace Rock.Blocks.Finance
 
             if ( !financialPledge.IsValid )
             {
-                errorMessage = string.Join("</br>", financialPledge.ValidationResults.Select( x => x.ErrorMessage ) );
+                errorMessage = string.Format( "Please correct the following:<ul><li>{0}</li></ul>", financialPledge.ValidationResults.AsDelimited( "</li><li>" ) ); ;
                 return false;
             }
 
