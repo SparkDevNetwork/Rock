@@ -118,7 +118,8 @@ namespace Rock.Blocks.Reporting
                 DisplayLegend = true,
                 LineTension = 0,
                 MaintainAspectRatio = false,
-                SizeToFitContainerWidth = true
+                SizeToFitContainerWidth = true,
+                IncludeNullDatapoints = false,
             };
         }
 
@@ -133,7 +134,7 @@ namespace Rock.Blocks.Reporting
             {
                 Datasets = GetTimeSeriesDataset( rockContext ),
                 ChartStyle = ChartJsTimeSeriesChartStyleSpecifier.Line,
-                TimeScale = ChartJsTimeSeriesTimeScaleSpecifier.Week,
+                TimeScale = ChartJsTimeSeriesTimeScaleSpecifier.Day,
                 AreaFillOpacity = 0
             };
 
@@ -158,8 +159,8 @@ namespace Rock.Blocks.Reporting
             var seriesNameKeyValue = new Dictionary<string, string>();
             foreach ( var dataSeriesDataset in dataSeriesDatasets )
             {
-                var seriesNamValue = GetSeriesPartitionName( dataSeriesDataset );
-                seriesNameKeyValue.Add( dataSeriesDataset, seriesNamValue );
+                var seriesNameValue = GetSeriesPartitionName( dataSeriesDataset );
+                seriesNameKeyValue.Add( dataSeriesDataset, seriesNameValue );
             }
 
             foreach ( var dataSeriesName in seriesNameKeyValue.Keys )
@@ -364,13 +365,9 @@ namespace Rock.Blocks.Reporting
                         MetricValueCampusIds = x.Key.MetricValuePartitionEntityIds,
                         DateTime = x.Key.DateKey.GetDateKeyDate(), // +1 to get first day of month
                         CampusId = x.PartitionEntityId,
+                        Value = x.Value.FirstOrDefault(),
                     } )
                     .ToList();
-
-                foreach ( var dataset in _tithingOverviewMetricValues )
-                {
-                    dataset.Value = GetPercentValue( rockContext, dataset, chartType );
-                }
             }
 
             return _tithingOverviewMetricValues;
@@ -409,25 +406,6 @@ namespace Rock.Blocks.Reporting
             }
 
             return metricValuesQry;
-        }
-
-        /// <summary>
-        /// Calculates the Tithing Overview metric value as a percentage by dividing the TithingHouseholds metric value by the GivingHouseholds metric value.
-        /// </summary>
-        /// <param name="rockContext">The RockContext.</param>
-        /// <param name="datasetInfo">The TithingOverview dataset.</param>
-        /// <param name="chartType">The current chart type configuration.</param>
-        /// <returns></returns>
-        private decimal? GetPercentValue( RockContext rockContext, ChartDatasetInfo datasetInfo, string chartType )
-        {
-            var givingHouseHoldsMetricValues = GetGivingHouseholdsMetricValues( rockContext, chartType );
-            var tithingHouseHoldsMetricValues = GetTithingHouseholdsMetricValues( rockContext, chartType );
-
-            var givingHouseHolds = givingHouseHoldsMetricValues.Find( d => d.CampusId == datasetInfo.CampusId && d.DateTime.Date == datasetInfo.DateTime.Date );
-            var tithingHouseHolds = tithingHouseHoldsMetricValues.Find( d => d.CampusId == datasetInfo.CampusId && d.DateTime.Date == datasetInfo.DateTime.Date );
-
-            var percentValue = givingHouseHolds == null || tithingHouseHolds == null ? 0 : ( tithingHouseHolds.Value / givingHouseHolds.Value ) * 100;
-            return Math.Round( percentValue ?? 0, 1 );
         }
 
         /// <summary>
@@ -494,7 +472,8 @@ namespace Rock.Blocks.Reporting
                 var campus = CampusCache.Get( entityTypeEntity.EntityId.Value );
                 if ( campus != null )
                 {
-                    seriesPartitionValues.Add( campus.Name );
+                    var partitionValue = string.IsNullOrWhiteSpace( campus.ShortCode ) ? campus.Name : campus.ShortCode;
+                    seriesPartitionValues.Add( partitionValue );
                 }
             }
 
@@ -577,23 +556,27 @@ namespace Rock.Blocks.Reporting
             {
                 var campusId = dataset.CampusId ?? 0;
                 var campus = CampusCache.Get( campusId );
-                var givingHouseHolds = givingHouseHoldsDatasets.Find( d => d.CampusId == campusId );
-                var tithingHouseHolds = tithingHouseHoldsDatasets.Find( d => d.CampusId == campusId );
 
-                var toolTipInfo = new TithingOverviewToolTipBag()
+                if ( campus != null )
                 {
-                    Campus = campus.Name,
-                    CampusAge = GetCampusAge( campus ),
-                    Date = dataset.DateTime.ToShortDateString(),
-                    GivingHouseHolds = givingHouseHolds.Value,
-                    TithingHouseHolds = tithingHouseHolds.Value,
-                    TitheMetric = campus.TitheMetric,
-                    Value = dataset.Value,
-                    CampusClosedDate = campus.ClosedDate,
-                    CampusOpenedDate = campus.OpenedDate,
-                };
+                    var givingHouseHolds = givingHouseHoldsDatasets.Find( d => d.CampusId == campusId );
+                    var tithingHouseHolds = tithingHouseHoldsDatasets.Find( d => d.CampusId == campusId );
 
-                toolTipData.AddOrReplace( campus.Name, toolTipInfo );
+                    var toolTipInfo = new TithingOverviewToolTipBag()
+                    {
+                        Campus = campus.Name,
+                        CampusAge = GetCampusAge( campus ),
+                        Date = dataset.DateTime.ToShortDateString(),
+                        GivingHouseHolds = givingHouseHolds?.Value,
+                        TithingHouseHolds = tithingHouseHolds?.Value,
+                        TitheMetric = campus.TitheMetric,
+                        Value = dataset.Value,
+                        CampusClosedDate = campus.ClosedDate,
+                        CampusOpenedDate = campus.OpenedDate,
+                    };
+
+                    toolTipData.AddOrReplace( campus.Name, toolTipInfo );
+                }
             }
 
             return toolTipData;

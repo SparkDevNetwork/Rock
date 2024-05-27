@@ -327,12 +327,13 @@ namespace Rock.Chart
             var categories = GetTimescaleCategories( this.TimeScale );
             var categoryNames = categories.Select( x => x.Category ).ToList();
             var colorGenerator = new ChartColorPaletteGenerator( this.ChartColors );
+            var labels = new List<string>();
 
             var jsDatasets = new List<object>();
             foreach ( var dataset in datasets )
             {
                 // Create a sequence of datapoints, ensuring there is a value for each of the categories.
-                var dataPoints = GetDataPointsForAllCategories( dataset, categoryNames );
+                var dataPoints = GetDataPointsForAllCategories( dataset, categoryNames, args.IncludeNullDatapoints );
                 var borderColorString = dataset.BorderColor;
                 var fillColorString = dataset.FillColor;
 
@@ -348,10 +349,12 @@ namespace Rock.Chart
                     data = dataPoints
                 };
 
+                labels.AddRange( dataPoints.ConvertAll( d => d.x as string ) );
+
                 jsDatasets.Add( jsDataset );
             }
 
-            var chartData = new { datasets = jsDatasets, labels = categoryNames };
+            var chartData = new { datasets = jsDatasets, labels = categoryNames.Where( c => labels.Contains( c ) ) };
 
             return chartData;
         }
@@ -544,10 +547,11 @@ namespace Rock.Chart
         /// <summary>
         /// Get a sequence of datapoints corresponding to a specific category, ensuring there is a value for each of the categories.
         /// </summary>
-        /// <param name="dataset"></param>
-        /// <param name="categoryNames"></param>
+        /// <param name="dataset">The dataset</param>
+        /// <param name="categoryNames">The list of category names</param>
+        /// <param name="includeNullDatapoints">If set to true categories without corresponding datapoints will be included with a value of zero</param>
         /// <returns></returns>
-        private List<dynamic> GetDataPointsForAllCategories( ChartJsCategorySeriesDataset dataset, List<string> categoryNames )
+        private List<dynamic> GetDataPointsForAllCategories( ChartJsCategorySeriesDataset dataset, List<string> categoryNames, bool includeNullDatapoints = true )
         {
             var dataValues = new List<dynamic>();
 
@@ -555,14 +559,31 @@ namespace Rock.Chart
             {
                 var datapoint = dataset.DataPoints.FirstOrDefault( x => x.Category == categoryName );
 
-                var dataValue = new
+                if ( !includeNullDatapoints )
                 {
-                    x = categoryName,
-                    y = datapoint?.Value ?? 0,
-                    customData = datapoint
-                };
+                    if ( datapoint != null )
+                    {
+                        var dataValue = new
+                        {
+                            x = categoryName,
+                            y = datapoint.Value,
+                            customData = datapoint
+                        };
 
-                dataValues.Add( dataValue );
+                        dataValues.Add( dataValue );
+                    }
+                }
+                else
+                {
+                    var dataValue = new
+                    {
+                        x = categoryName,
+                        y = datapoint?.Value ?? 0,
+                        customData = datapoint
+                    };
+
+                    dataValues.Add( dataValue );
+                }
             }
 
             return dataValues;
@@ -850,7 +871,15 @@ namespace Rock.Chart
         /// </summary>
         public sealed class GetJsonArgs : ChartJsDataFactory.GetJsonArgs
         {
-            // Add any arguments specific to this chart factory here.
+            // Add any arguments specific to this chart factory here.            
+
+            /// <summary>
+            /// Gets or sets a value indicating whether null data points should be included.
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [include null datapoints]; otherwise, <c>false</c>.
+            /// </value>
+            public bool IncludeNullDatapoints { get; set; } = true;
         }
     }
 

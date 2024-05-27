@@ -388,7 +388,7 @@ namespace Rock.Web.UI.Controls
             decimal? totalAmount;
             if ( this.AmountEntryMode == AccountAmountEntryMode.MultipleAccounts )
             {
-                isAllPositiveAmount = this.AccountAmounts.All( a => a.Amount >= 0 );
+                isAllPositiveAmount = !this.AccountAmounts.Any( a => a.Amount < 0 );
                 totalAmount = this.AccountAmounts.Sum( a => a.Amount ?? 0.00M );
             }
             else
