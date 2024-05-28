@@ -175,7 +175,7 @@ namespace Rock.CodeGeneration.Utility
         {
             return _dte?.Solution.Projects
                 .Cast<Project>()
-                .FirstOrDefault( p => p.Name == projectName );
+                .FirstOrDefault( p => p?.Name == projectName );
         }
 
         /// <summary>
