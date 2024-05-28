@@ -63,6 +63,14 @@ namespace Rock.Blocks.Reporting
         private List<ChartDatasetInfo> _givingHouseHoldsMetricValues;
         private List<ChartDatasetInfo> _tithingHouseHoldsMetricValues;
         private List<ChartDatasetInfo> _tithingOverviewMetricValues;
+        private readonly Dictionary<string, string> _legendLabelColorMap = new Dictionary<string, string>()
+        {
+            { "0-2 yrs", "#BAE6FD" },
+            { "3-6 yrs", "#38BDF8" },
+            { "7-11 yrs", "#0284C7" },
+            { "11+", "#075985" },
+            { "Unknown", "#A3A3A3" }
+        };
 
         #endregion
 
@@ -94,12 +102,14 @@ namespace Rock.Blocks.Reporting
         private TithingOverviewInitializationBox GetInitializationBox( RockContext rockContext, string chartType )
         {
             var json = GetChartData( rockContext, chartType );
+            var toolTipData = GetToolTipData( rockContext, chartType );
 
             var box = new TithingOverviewInitializationBox
             {
                 ChartDataJson = json,
                 ChartType = chartType,
-                ToolTipData = GetToolTipData( rockContext, chartType )
+                ToolTipData = GetToolTipData( rockContext, chartType ),
+                LegendData = GetLegendLabelColors( toolTipData )
             };
 
             return box;
@@ -494,6 +504,13 @@ namespace Rock.Blocks.Reporting
         {
             var campusAge = GetCampusAge( campus );
 
+            var campusColorAttribute = campus.GetAttributeTextValue( "core_CampusColor" );
+
+            if ( !string.IsNullOrWhiteSpace( campusColorAttribute ) )
+            {
+                return campusColorAttribute;
+            }
+
             if ( chartType == ChartTypeKey.LineChart )
             {
                 return FillColorSource().Skip( campus.Id ).FirstOrDefault();
@@ -561,9 +578,11 @@ namespace Rock.Blocks.Reporting
                 {
                     var givingHouseHolds = givingHouseHoldsDatasets.Find( d => d.CampusId == campusId );
                     var tithingHouseHolds = tithingHouseHoldsDatasets.Find( d => d.CampusId == campusId );
+                    var campusKey = string.IsNullOrWhiteSpace( campus.ShortCode ) ? campus.Name : campus.ShortCode;
 
                     var toolTipInfo = new TithingOverviewToolTipBag()
                     {
+                        CampusId = campus.Id,
                         Campus = campus.Name,
                         CampusAge = GetCampusAge( campus ),
                         Date = dataset.DateTime.ToShortDateString(),
@@ -573,9 +592,10 @@ namespace Rock.Blocks.Reporting
                         Value = dataset.Value,
                         CampusClosedDate = campus.ClosedDate,
                         CampusOpenedDate = campus.OpenedDate,
+                        CampusShortCode = campus.ShortCode
                     };
 
-                    toolTipData.AddOrReplace( campus.Name, toolTipInfo );
+                    toolTipData.AddOrReplace( campusKey, toolTipInfo );
                 }
             }
 
@@ -601,6 +621,27 @@ namespace Rock.Blocks.Reporting
             var age = ageDifference / 12;
 
             return age;
+        }
+
+        /// <summary>
+        /// Gets the legend label colors.
+        /// </summary>
+        /// <param name="toolTipData">The tool tip data.</param>
+        /// <returns></returns>
+        private Dictionary<string, string> GetLegendLabelColors( Dictionary<string, TithingOverviewToolTipBag> toolTipData )
+        {
+            var campusIds = toolTipData.Select( d => d.Value.CampusId ).ToList();
+            foreach ( var campus in CampusCache.GetMany( campusIds ).ToList() )
+            {
+                var color = campus.GetAttributeTextValue( "core_CampusColor" );
+                if ( !string.IsNullOrWhiteSpace( color ) )
+                {
+                    var campusKey = string.IsNullOrWhiteSpace( campus.ShortCode ) ? campus.Name : campus.ShortCode;
+                    _legendLabelColorMap.AddOrReplace( campusKey, color );
+                }
+            }
+
+            return _legendLabelColorMap;
         }
 
         #endregion

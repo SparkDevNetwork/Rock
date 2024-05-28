@@ -42,6 +42,13 @@
     const chartData = ref<ChartData>(JSON.parse(config.chartDataJson || "{}"));
     const chartType = ref<ChartTypeValue>(config.chartType as ChartTypeValue);
     const toolTipData = ref(config.toolTipData ?? {});
+    const legendLabelColorMap = ref(config.legendData ?? {
+        "0-2 yrs": "#BAE6FD",
+        "3-6 yrs": "#38BDF8",
+        "7-11 yrs": "#0284C7",
+        "11+": "#075985",
+        "Unknown": "#A3A3A3",
+    });
 
     const options = ref<ChartOptions>({
         responsive: true,
@@ -104,14 +111,6 @@
     const unselectedClasses = "btn btn-default";
     const onButtonSelectedClasses = `${selectedClasses}`;
     const offButtonSelectedClasses = `${selectedClasses}`;
-
-    const legendLabelColorMap = {
-        "0-2 yrs": "#BAE6FD",
-        "3-6 yrs": "#38BDF8",
-        "7-11 yrs": "#0284C7",
-        "11+": "#075985",
-        "Unknown": "#A3A3A3",
-    };
 
     // #endregion
 
@@ -231,10 +230,10 @@
         let legendItems = [] as LegendItem[];
 
         if (chartType.value == ChartTypeKey.BarChart) {
-            for (const label in legendLabelColorMap) {
+            for (const label in legendLabelColorMap.value) {
                 let legendItem = {
                     text: label,
-                    fillStyle: legendLabelColorMap[label]
+                    fillStyle: legendLabelColorMap.value[label]
                 } as LegendItem;
 
                 legendItems.push(legendItem);
@@ -277,8 +276,8 @@
 
                 // The legendLabel in bar mode is a range of ages, if the campus's age falls within the selected range
                 // select that dataset for hiding.
-                if (campusAgeInRange(campusAge, legendLabel)) {
-                    selectedDatasets.push(...datasets.filter(d => d.label === data.campus));
+                if (campusAgeInRange(campusAge, legendLabel) || data.campusShortCode === legendLabel) {
+                    selectedDatasets.push(...datasets.filter(d => d.label === data.campus || d.label === data.campusShortCode));
                 }
             }
         }
