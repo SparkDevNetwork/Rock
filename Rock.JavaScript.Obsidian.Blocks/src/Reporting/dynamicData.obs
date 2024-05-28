@@ -187,16 +187,22 @@
         return gridDefinition.value?.dynamicFields
             ?.filter((field: DynamicFieldDefinitionBag) => !!(field.columnType))
             ?.map((field: DynamicFieldDefinitionBag) => {
-                const columnFilter = defaultColumnFilters[field.columnType ?? ""]
+                const filter = defaultColumnFilters[field.columnType ?? ""]
                     ?? pickExistingValueFilter;
 
-                const filterValue = field.columnType === "person"
-                    ? "{{ row.person.nickName }} {{ row.person.lastName }}"
-                    : undefined;
+                let filterValue: string | undefined = undefined;
+                if (field.columnType === "person") {
+                    if (field.fieldProperties?.["showLastNameFirst"] === true) {
+                        filterValue = `{{ row.${field.name}.lastName }}, {{ row.${field.name}.nickName }}`;
+                    }
+                    else {
+                        filterValue = `{{ row.${field.name}.nickName }} {{ row.${field.name}.lastName }}`;
+                    }
+                }
 
                 return {
                     ...field,
-                    filter: field.enableFiltering ? columnFilter : undefined,
+                    filter: field.enableFiltering ? filter : undefined,
                     filterValue
                 };
             }) ?? [];
