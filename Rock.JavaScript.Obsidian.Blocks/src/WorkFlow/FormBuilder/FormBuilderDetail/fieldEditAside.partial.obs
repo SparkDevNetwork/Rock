@@ -20,7 +20,7 @@
                              label="Name" />
                     <TextBox v-model="fieldDescription"
                              label="Description"
-                             textMode="multiline" />
+                             textMode="multiline" allowHtml />
                     <FieldTypeEditor :modelValue="fieldTypeValue" :key="fieldTypeEditorKey" @update:modelValue="onFieldTypeModelValueUpdate" isFieldTypeReadOnly />
                 </Panel>
 
