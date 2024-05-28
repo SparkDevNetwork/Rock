@@ -1,7 +1,7 @@
 import Konva from "@Obsidian/Libs/konva";
-import { EllipseFieldConfigurationBag, HorizontalTextAlignment, IconFieldConfigurationBag, ImageFieldConfigurationBag, LabelFieldBag, LabelFieldType, LabelTextFieldSubType, LineFieldConfigurationBag, RectangleFieldConfigurationBag, StringRecord, TextFieldConfigurationBag } from "./types.partial";
+import { BarcodeFieldConfigurationBag, BarcodeFormat, EllipseFieldConfigurationBag, HorizontalTextAlignment, IconFieldConfigurationBag, ImageFieldConfigurationBag, LabelFieldBag, LabelFieldType, LabelTextFieldSubType, LineFieldConfigurationBag, RectangleFieldConfigurationBag, StringRecord, TextFieldConfigurationBag } from "./types.partial";
 import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
-import { IconImageMap, getPixelForOffset } from "./utils.partial";
+import { IconImageMap, code128Icon, getPixelForOffset, qrcodeIcon } from "./utils.partial";
 import { asBoolean } from "@Obsidian/Utility/booleanUtils";
 
 // #region Classes
@@ -315,7 +315,7 @@ export function createShapeForFieldType(fieldType: LabelFieldType): Konva.Group 
     else if (fieldType === LabelFieldType.Ellipse) {
         return new Ellipse();
     }
-    else if (fieldType === LabelFieldType.Icon || fieldType === LabelFieldType.Image) {
+    else if (fieldType === LabelFieldType.Icon || fieldType === LabelFieldType.Image || fieldType === LabelFieldType.Barcode) {
         const img = new window.Image(1, 1);
 
         const image = new Konva.Image({
@@ -371,6 +371,10 @@ export function updateShapeFromField(shape: Konva.Shape | Konva.Group, field: La
     }
     else if (field.fieldType === LabelFieldType.Image && shape instanceof Konva.Image) {
         updateImageShapeFromField(shape, field);
+        return true;
+    }
+    else if (field.fieldType === LabelFieldType.Barcode && shape instanceof Konva.Image) {
+        updateBarcodeShapeFromField(shape, field);
         return true;
     }
 
@@ -567,6 +571,32 @@ function updateImageShapeFromField(shape: Konva.Image, field: LabelFieldBag): vo
     const src = config.binaryFileGuid
         ? `/GetImage.ashx?Guid=${config.binaryFileGuid}`
         : "/Assets/Images/corrupt-image.jpg";
+
+    // Update configured values.
+    if (currentImage.src !== src) {
+        currentImage.src = src;
+    }
+}
+
+/**
+ * Updates the barcode shape with data from the field.
+ *
+ * @param shape The shape to be updated.
+ * @param field The field to use as the source of truth.
+ */
+function updateBarcodeShapeFromField(shape: Konva.Image, field: LabelFieldBag): void {
+    const config = field.configurationValues ?? {} as StringRecord<BarcodeFieldConfigurationBag>;
+
+    // Update the position of the shape.
+    shape.x(getPixelForOffset(field.left));
+    shape.y(getPixelForOffset(field.top));
+    shape.width(getPixelForOffset(field.width));
+    shape.height(getPixelForOffset(field.height));
+
+    const currentImage = shape.image() as HTMLImageElement;
+    const src = config.format === BarcodeFormat.Code128.toString()
+        ? code128Icon
+        : qrcodeIcon;
 
     // Update configured values.
     if (currentImage.src !== src) {

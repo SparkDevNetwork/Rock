@@ -116,6 +116,12 @@ export type ImageFieldConfigurationBag = {
     binaryFileGuid?: Guid | null;
 };
 
+export type BarcodeFieldConfigurationBag = {
+    format?: string | null;
+
+    isDynamic?: string | null;
+};
+
 /** Convert a type so that all properties are optional strings or nulls. */
 export type StringRecord<T> = {
     [K in keyof T]?: string | null
@@ -147,4 +153,10 @@ export enum LabelTextFieldSubType {
     CheckInInfo = 2,
 
     AchievementInfo = 3
+}
+
+export enum BarcodeFormat {
+    QRCode = 0,
+
+    Code128 = 1
 }

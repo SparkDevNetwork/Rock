@@ -1,0 +1,88 @@
+<template>
+    <div class="form-group">
+        <RockLabel>Barcode Type</RockLabel>
+
+        <div class="control-wrapper">
+            <div class="btn-group">
+                <RockButton :btnType="format === BarcodeFormat.QRCode.toString() ? 'primary' : 'default'"
+                            btnSize="sm"
+                            @click="format = BarcodeFormat.QRCode.toString()">
+                    <i class="fa fa-qrcode"></i> QR
+                </RockButton>
+
+                <RockButton :btnType="format === BarcodeFormat.Code128.toString() ? 'primary' : 'default'"
+                            btnSize="sm"
+                            @click="format = BarcodeFormat.Code128.toString()">
+                    <i class="fa fa-barcode"></i> Code 128
+                </RockButton>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="control-wrapper">
+            <div class="btn-group">
+                <RockButton :btnType="!isDynamic ? 'primary' : 'default'"
+                            btnSize="sm"
+                            @click="isDynamic = false">
+                    Person Identifier
+                </RockButton>
+
+                <RockButton :btnType="isDynamic ? 'primary' : 'default'"
+                            btnSize="sm"
+                            @click="isDynamic = true">
+                    Dynamic
+                </RockButton>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import { asBoolean, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
+    import { PropType, ref, watch } from "vue";
+    import { BarcodeFormat, StringRecord, BarcodeFieldConfigurationBag } from "./types.partial";
+    import { LabelUndoManager } from "./undoManager.partial";
+
+    const props = defineProps({
+        labelManager: {
+            type: Object as PropType<LabelUndoManager>,
+            required: true
+        }
+    });
+
+    const format = ref<string>("");
+    const isDynamic = ref(false);
+
+    /**
+     * Set the internal values to match those from the selected field.
+     */
+    function setInternalValues(): void {
+        const configuration = props.labelManager.selectedField.value
+            ?.configurationValues ?? {} as StringRecord<BarcodeFieldConfigurationBag>;
+
+        format.value = configuration.format ?? "";
+        isDynamic.value = asBoolean(configuration.isDynamic);
+    }
+
+    // Watch for changes in the UI that require an update to the label.
+    watch([format, isDynamic], () => {
+        props.labelManager.mutateSelectedField(field => {
+            field.configurationValues = field.configurationValues ?? {};
+
+            const fieldConfig = field.configurationValues as StringRecord<BarcodeFieldConfigurationBag>;
+
+            fieldConfig.format = format.value;
+            fieldConfig.isDynamic = asTrueOrFalseString(isDynamic.value);
+        });
+    });
+
+    // Watch for changes on the label that need to be reflected in the UI.
+    watch(props.labelManager.selectedField, () => {
+        setInternalValues();
+    });
+
+    setInternalValues();
+</script>

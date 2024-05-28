@@ -35,14 +35,14 @@
                            :type="LabelFieldType.Text"
                            :subtype="LabelTextFieldSubType.AchievementInfo" />
 
-            <ControlButton icon="fa fa-grip-lines"
-                           title="Line"
-                           :type="LabelFieldType.Line" />
-
             <ControlButton icon="fa fa-font"
                            title="Text"
                            :type="LabelFieldType.Text"
                            :subtype="LabelTextFieldSubType.Custom" />
+
+            <ControlButton icon="fa fa-grip-lines"
+                           title="Line"
+                           :type="LabelFieldType.Line" />
 
             <ControlButton icon="fa fa-square"
                            title="Rectangle"
@@ -135,6 +135,7 @@
 
 <script setup lang="ts">
     import ControlButton from "./controlButton.partial.obs";
+    import FieldConfigBarcode from "./fieldConfigBarcode.partial.obs";
     import FieldConfigCustomText from "./fieldConfigCustomText.partial.obs";
     import FieldConfigEllipse from "./fieldConfigEllipse.partial.obs";
     import FieldConfigIcon from "./fieldConfigIcon.partial.obs";
@@ -192,7 +193,7 @@
             return FieldConfigImage;
         }
         else if (field.fieldType === LabelFieldType.Barcode) {
-            return undefined;
+            return FieldConfigBarcode;
         }
         else {
             undefined;
