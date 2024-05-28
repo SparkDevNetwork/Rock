@@ -212,6 +212,7 @@
     <Compile Include="Prayer\PrayerRequestList.cs" />
     <Compile Include="Reporting\MetricValueDetail.cs" />
     <Compile Include="Reporting\InteractionComponentDetail.cs" />
+    <Compile Include="Reporting\DynamicData.cs" />
     <Compile Include="Reporting\MergeTemplateList.cs" />
     <Compile Include="Reporting\ReportList.cs" />
     <Compile Include="Reporting\VolunteerGenerosityAnalysis.cs" />
@@ -326,6 +327,10 @@
     <ProjectReference Include="..\Rock.Rest\Rock.Rest.csproj">
       <Project>{ADD1EDD0-A4CB-4E82-B6AD-6AD1D556DEAE}</Project>
       <Name>Rock.Rest</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Version\Rock.Version.csproj">
+      <Project>{6fe0930c-6832-4c2f-8a76-d4e4a2d80ddf}</Project>
+      <Name>Rock.Version</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rock.ViewModels\Rock.ViewModels.csproj">
       <Project>{05baaf85-9c53-4ccd-a535-036427b0df72}</Project>

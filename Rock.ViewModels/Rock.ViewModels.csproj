@@ -274,6 +274,14 @@
     <Compile Include="Blocks\Internal\IDetailBlockBox.cs" />
     <Compile Include="Blocks\Prayer\PrayerCommentList\PrayerCommentListOptionsBag.cs" />
     <Compile Include="Blocks\Prayer\PrayerRequestList\PrayerRequestListOptionsBag.cs" />
+    <Compile Include="Blocks\Reporting\DynamicData\ColumnConfigurationBag.cs" />
+    <Compile Include="Blocks\Reporting\DynamicData\DynamicDataCustomSettingsBag.cs" />
+    <Compile Include="Blocks\Reporting\DynamicData\DynamicDataCustomSettingsOptionsBag.cs" />
+    <Compile Include="Blocks\Reporting\DynamicData\GridResultsBag.cs" />
+    <Compile Include="Blocks\Reporting\DynamicData\DynamicDataInitializationBox.cs" />
+    <Compile Include="Blocks\Reporting\DynamicData\LavaTemplateResultsBag.cs" />
+    <Compile Include="Blocks\Reporting\DynamicData\ReloadColumnsRequestBag.cs" />
+    <Compile Include="Blocks\Reporting\DynamicData\ReloadColumnsResponseBag.cs" />
     <Compile Include="Blocks\Reporting\MergeTemplateDetail\MergeTemplateFileValidationBag.cs" />
     <Compile Include="Blocks\Finance\FinancialPledgeDetail\FinancialPledgeBag.cs" />
     <Compile Include="Blocks\Finance\FinancialPledgeDetail\FinancialPledgeDetailOptionsBag.cs" />
@@ -593,6 +601,7 @@
     <Compile Include="Rest\Controls\AttributeMatrixEditorNormalizeEditValueResultsBag.cs" />
     <Compile Include="Rest\Controls\AttributeMatrixEditorNormalizeEditValueOptionsBag.cs" />
     <Compile Include="Controls\UniversalItemSearchPickerItemBag.cs" />
+    <Compile Include="Core\Grid\DynamicFieldDefinitionBag.cs" />
     <Compile Include="Rest\Controls\CurrencyBoxGetCurrencyInfoResultsBag.cs" />
     <Compile Include="Rest\Controls\CurrencyBoxGetCurrencyInfoOptionsBag.cs" />
     <Compile Include="Controls\RockCacheabilityBag.cs" />

@@ -15,36 +15,31 @@
 // </copyright>
 //
 
-namespace Rock.ViewModels.Core.Grid
+namespace Rock.ViewModels.Blocks.Reporting.DynamicData
 {
     /// <summary>
-    /// The data bag that contains all the information required to display
-    /// a PersonColumn in a Grid.
+    /// The box that contains all the initialization information for the dynamic data block.
     /// </summary>
-    public class PersonFieldBag
+    public class DynamicDataInitializationBox : BlockBox
     {
         /// <summary>
-        /// Gets or sets the hashed identifier key.
+        /// Gets or sets the quick return page title.
         /// </summary>
-        /// <value>The hashed identifier key.</value>
-        public string IdKey { get; set; }
+        public string QuickReturnPageTitle { get; set; }
 
         /// <summary>
-        /// Gets or sets the nick name.
+        /// Gets or sets whether the results should be displayed using a lava template.
         /// </summary>
-        /// <value>The nick name.</value>
-        public string NickName { get; set; }
+        public bool IsLavaTemplateDisplayMode { get; set; }
 
         /// <summary>
-        /// Gets or sets the last name.
+        /// Gets or sets the lava template results.
         /// </summary>
-        /// <value>The last name.</value>
-        public string LastName { get; set; }
+        public LavaTemplateResultsBag LavaTemplateResults { get; set; }
 
         /// <summary>
-        /// Gets or sets the photo URL.
+        /// Gets or sets the grid results.
         /// </summary>
-        /// <value>The photo URL.</value>
-        public string PhotoUrl { get; set; }
+        public GridResultsBag GridResults { get; set; }
     }
 }
