@@ -1,5 +1,5 @@
 import Konva from "@Obsidian/Libs/konva";
-import { HorizontalTextAlignment, LabelFieldBag, LabelFieldType, LabelTextFieldSubType, LineFieldConfigurationBag, RectangleFieldConfigurationBag, StringRecord, TextFieldConfigurationBag } from "./types.partial";
+import { EllipseFieldConfigurationBag, HorizontalTextAlignment, LabelFieldBag, LabelFieldType, LabelTextFieldSubType, LineFieldConfigurationBag, RectangleFieldConfigurationBag, StringRecord, TextFieldConfigurationBag } from "./types.partial";
 import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { getPixelForOffset } from "./utils.partial";
 import { asBoolean } from "@Obsidian/Utility/booleanUtils";
@@ -11,14 +11,14 @@ import { asBoolean } from "@Obsidian/Utility/booleanUtils";
  * mode.
  */
 export class Rectangle extends Konva.Group {
-    public rect: Konva.Rect;
+    public innerShape: Konva.Rect;
 
     public constructor() {
         super();
 
-        this.rect = new Konva.Rect();
+        this.innerShape = new Konva.Rect();
 
-        this.rect.hitFunc((ctx, rc) => {
+        this.innerShape.hitFunc((ctx, rc) => {
             // By default a rectangle in outline mode will only hit test on the
             // outline and not the inner (empty) content. So we override that
             // to ensure the entire outline and fill area match a hit test.
@@ -29,15 +29,79 @@ export class Rectangle extends Konva.Group {
             ctx._stroke(rc);
         });
 
-        this.add(this.rect);
+        this.add(this.innerShape);
 
         this.on("widthChange", () => {
-            this.rect.width(this.width() - this.rect.strokeWidth());
+            this.innerShape.width(this.width() - this.innerShape.strokeWidth());
         });
 
         this.on("heightChange", () => {
-            this.rect.height(this.height() - this.rect.strokeWidth());
+            this.innerShape.height(this.height() - this.innerShape.strokeWidth());
         });
+    }
+}
+
+/**
+ * Custom ellipse shape so we can properly adjust border insets in outline
+ * mode.
+ */
+export class Ellipse extends Konva.Group {
+    public innerShape: Konva.Ellipse;
+
+    public constructor() {
+        super();
+
+        this.innerShape = new Konva.Ellipse();
+
+        // By default an ellipse draws itself with x,y at center. Override
+        // that to draw the ellipse to fit inside x,y - width,height.
+        this.innerShape.sceneFunc((ctx, el) => {
+            const strokeWidth = el.strokeEnabled() ? el.strokeWidth() : 0;
+
+            ctx.beginPath();
+            ctx.ellipse(el.x() - el.radiusX() - (strokeWidth / 2),
+                el.y() - el.radiusY() - (strokeWidth / 2),
+                el.radiusX(),
+                el.radiusY(),
+                el.rotation(),
+                0,
+                Math.PI * 2,
+                false);
+            ctx.closePath();
+            ctx.fillStrokeShape(el);
+        });
+
+        // By default an ellipse in outline mode will only hit test on the
+        // outline and not the inner (empty) content. So we override that
+        // to ensure the entire outline and fill area match a hit test.
+        this.innerShape.hitFunc((ctx, el) => {
+            const strokeWidth = el.strokeEnabled() ? el.strokeWidth() : 0;
+
+            ctx.beginPath();
+            ctx.ellipse(el.x() - el.radiusX() - (strokeWidth / 2),
+                el.y() - el.radiusY() - (strokeWidth / 2),
+                el.radiusX(),
+                el.radiusY(),
+                el.rotation(),
+                0,
+                Math.PI * 2,
+                false);
+            ctx.closePath();
+            ctx._fill(el);
+            ctx._stroke(el);
+        });
+
+        this.add(this.innerShape);
+
+        this.on("widthChange heightChange", () => this.resize());
+        this.innerShape.on("strokeWidthChange strokeEnabledChange", () => this.resize());
+    }
+
+    private resize(): void {
+        this.innerShape.x((this.width() / 2));
+        this.innerShape.y(this.height() / 2);
+        this.innerShape.width(this.width() - this.innerShape.strokeWidth());
+        this.innerShape.height(this.height() - this.innerShape.strokeWidth());
     }
 }
 
@@ -201,6 +265,9 @@ export function createShapeForFieldType(fieldType: LabelFieldType): Konva.Group 
     else if (fieldType === LabelFieldType.Line) {
         return new Konva.Line();
     }
+    else if (fieldType === LabelFieldType.Ellipse) {
+        return new Ellipse();
+    }
 
     return undefined;
 }
@@ -222,6 +289,10 @@ export function updateShapeFromField(shape: Konva.Shape | Konva.Group, field: La
     }
     else if (field.fieldType === LabelFieldType.Line && shape instanceof Konva.Line) {
         updateLineShapeFromField(shape, field);
+        return true;
+    }
+    else if (field.fieldType === LabelFieldType.Ellipse && shape instanceof Ellipse) {
+        updateEllipseShapeFromField(shape, field);
         return true;
     }
     else if (field.fieldType === LabelFieldType.Rectangle && shape instanceof Rectangle) {
@@ -297,13 +368,13 @@ function updateRectShapeFromField(shape: Rectangle, field: LabelFieldBag): void 
 
     // Update configured values.
     if (asBoolean(config.isFilled)) {
-        shape.rect.fillEnabled(true);
-        shape.rect.strokeEnabled(false);
-        shape.rect.strokeWidth(0);
-        shape.rect.fill(asBoolean(config.isBlack) ? "black" : "white");
+        shape.innerShape.fillEnabled(true);
+        shape.innerShape.strokeEnabled(false);
+        shape.innerShape.strokeWidth(0);
+        shape.innerShape.fill(asBoolean(config.isBlack) ? "black" : "white");
 
         // Reset rectangle to fill entire height and width.
-        shape.rect.setAttrs({
+        shape.innerShape.setAttrs({
             x: 0,
             y: 0,
             width: shape.width(),
@@ -311,22 +382,22 @@ function updateRectShapeFromField(shape: Rectangle, field: LabelFieldBag): void 
         });
     }
     else {
-        shape.rect.fillEnabled(false);
-        shape.rect.strokeEnabled(true);
-        shape.rect.strokeWidth(toNumber(config.borderThickness));
-        shape.rect.stroke(asBoolean(config.isBlack) ? "black" : "white");
+        shape.innerShape.fillEnabled(false);
+        shape.innerShape.strokeEnabled(true);
+        shape.innerShape.strokeWidth(Math.max(toNumber(config.borderThickness), 1));
+        shape.innerShape.stroke(asBoolean(config.isBlack) ? "black" : "white");
 
         // The HTML Context always draws borders on center, so we need to adjust
         // the rectangle to simulate an inner border.
-        shape.rect.setAttrs({
-            x: shape.rect.strokeWidth() / 2,
-            y: shape.rect.strokeWidth() / 2,
-            width: shape.width() - shape.rect.strokeWidth(),
-            height: shape.height() - shape.rect.strokeWidth()
+        shape.innerShape.setAttrs({
+            x: shape.innerShape.strokeWidth() / 2,
+            y: shape.innerShape.strokeWidth() / 2,
+            width: shape.width() - shape.innerShape.strokeWidth(),
+            height: shape.height() - shape.innerShape.strokeWidth()
         });
     }
 
-    shape.rect.cornerRadius(roundingIndex / 8 * getPixelForOffset(Math.min(field.width, field.height)) / 2);
+    shape.innerShape.cornerRadius(roundingIndex / 8 * getPixelForOffset(Math.min(field.width, field.height)) / 2);
 }
 
 /**
@@ -347,6 +418,36 @@ function updateLineShapeFromField(shape: Konva.Line, field: LabelFieldBag): void
     shape.strokeWidth(Math.max(toNumber(config.thickness), 1));
     shape.hitStrokeWidth(Math.max(toNumber(config.thickness), 4));
     shape.stroke(asBoolean(config.isBlack) ? "black" : "white");
+}
+
+/**
+ * Updates the ellipse shape with data from the field.
+ *
+ * @param shape The shape to be updated.
+ * @param field The field to use as the source of truth.
+ */
+function updateEllipseShapeFromField(shape: Ellipse, field: LabelFieldBag): void {
+    const config = field.configurationValues ?? {} as StringRecord<EllipseFieldConfigurationBag>;
+
+    // Update the position of the shape.
+    shape.x(getPixelForOffset(field.left));
+    shape.y(getPixelForOffset(field.top));
+    shape.width(getPixelForOffset(field.width));
+    shape.height(getPixelForOffset(field.height));
+
+    // Update configured values.
+    if (asBoolean(config.isFilled)) {
+        shape.innerShape.fillEnabled(true);
+        shape.innerShape.strokeEnabled(false);
+        shape.innerShape.strokeWidth(0);
+        shape.innerShape.fill(asBoolean(config.isBlack) ? "black" : "white");
+    }
+    else {
+        shape.innerShape.fillEnabled(false);
+        shape.innerShape.strokeEnabled(true);
+        shape.innerShape.strokeWidth(Math.max(toNumber(config.borderThickness), 1));
+        shape.innerShape.stroke(asBoolean(config.isBlack) ? "black" : "white");
+    }
 }
 
 // #endregion

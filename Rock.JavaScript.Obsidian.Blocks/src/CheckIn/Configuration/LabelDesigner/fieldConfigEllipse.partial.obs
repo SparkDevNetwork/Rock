@@ -13,14 +13,7 @@
 
     <NumberBox v-if="type === 'outline'"
                label="Border Thickness"
-               v-model="borderThickness"
-               :minimumValue="0" />
-
-    <NumberBox label="Corner Radius"
-               help="test"
-               v-model="cornerRadius"
-               :minimumValue="0"
-               :maximumValue="8" />
+               v-model="borderThickness" />
 </template>
 
 <script setup lang="ts">
@@ -30,7 +23,7 @@
     import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { PropType, ref, watch } from "vue";
-    import { RectangleFieldConfigurationBag, StringRecord } from "./types.partial";
+    import { EllipseFieldConfigurationBag, StringRecord } from "./types.partial";
     import { LabelUndoManager } from "./undoManager.partial";
 
     const props = defineProps({
@@ -43,7 +36,6 @@
     const color = ref<"black" | "white">("black");
     const type = ref<"filled" | "outline">("filled");
     const borderThickness = ref<number | null>(null);
-    const cornerRadius = ref<number | null>(null);
 
     const colorItems: ListItemBag[] = [
         {
@@ -70,29 +62,29 @@
     /**
      * Set the internal values to match those from the selected field.
      */
-     function setInternalValues(): void {
+    function setInternalValues(): void {
         const configuration = props.labelManager.selectedField.value
-            ?.configurationValues ?? {} as StringRecord<RectangleFieldConfigurationBag>;
+            ?.configurationValues ?? {} as StringRecord<EllipseFieldConfigurationBag>;
 
         color.value = asBoolean(configuration.isBlack) ? "black" : "white";
         type.value = asBoolean(configuration.isFilled) ? "filled" : "outline";
         borderThickness.value = toNumberOrNull(configuration.borderThickness);
-        cornerRadius.value = toNumberOrNull(configuration.cornerRadius);
     }
 
-    watch([color, type, borderThickness, cornerRadius], () => {
+    // Watch for changes in the UI that require an update to the label.
+    watch([color, type, borderThickness], () => {
         props.labelManager.mutateSelectedField(field => {
             field.configurationValues = field.configurationValues ?? {};
 
-            const fieldConfig = field.configurationValues as StringRecord<RectangleFieldConfigurationBag>;
+            const fieldConfig = field.configurationValues as StringRecord<EllipseFieldConfigurationBag>;
 
             fieldConfig.isBlack = color.value === "black" ? "true" : "false";
             fieldConfig.isFilled = type.value === "filled" ? "true" : "false";
             fieldConfig.borderThickness = borderThickness.value?.toString();
-            fieldConfig.cornerRadius = cornerRadius.value?.toString();
         });
     });
 
+    // Watch for changes on the label that need to be reflected in the UI.
     watch(props.labelManager.selectedField, () => {
         setInternalValues();
     });

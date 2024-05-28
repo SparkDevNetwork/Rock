@@ -1,5 +1,5 @@
 import Konva from "@Obsidian/Libs/konva";
-import { HorizontalTextAlignment, LabelFieldBag, LabelFieldType, LineFieldConfigurationBag, RectangleFieldConfigurationBag, StringRecord, TextFieldConfigurationBag } from "./types.partial";
+import { EllipseFieldConfigurationBag, HorizontalTextAlignment, LabelFieldBag, LabelFieldType, LineFieldConfigurationBag, RectangleFieldConfigurationBag, StringRecord, TextFieldConfigurationBag } from "./types.partial";
 import { newGuid } from "@Obsidian/Utility/guid";
 
 // #region Worksurface Utilities
@@ -190,6 +190,13 @@ export function createDefaultField(fieldType: LabelFieldType, subtype: number): 
         field.height = 0;
         config.isBlack = "true";
         config.thickness = "1";
+    }
+    else if (fieldType === LabelFieldType.Ellipse) {
+        const config = field.configurationValues as StringRecord<EllipseFieldConfigurationBag>;
+
+        config.isBlack = "true";
+        config.isFilled = "true";
+        config.borderThickness = "0";
     }
 
     return field;
