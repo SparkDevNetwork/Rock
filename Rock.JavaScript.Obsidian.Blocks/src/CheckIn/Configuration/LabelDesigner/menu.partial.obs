@@ -137,6 +137,8 @@
     import ControlButton from "./controlButton.partial.obs";
     import FieldConfigCustomText from "./fieldConfigCustomText.partial.obs";
     import FieldConfigEllipse from "./fieldConfigEllipse.partial.obs";
+    import FieldConfigIcon from "./fieldConfigIcon.partial.obs";
+    import FieldConfigImage from "./fieldConfigImage.partial.obs";
     import FieldConfigLine from "./fieldConfigLine.partial.obs";
     import FieldConfigRectangle from "./fieldConfigRectangle.partial.obs";
     import { Component, computed, PropType, ref, watch } from "vue";
@@ -184,10 +186,10 @@
             return FieldConfigEllipse;
         }
         else if (field.fieldType === LabelFieldType.Icon) {
-            return undefined;
+            return FieldConfigIcon;
         }
         else if (field.fieldType === LabelFieldType.Image) {
-            return undefined;
+            return FieldConfigImage;
         }
         else if (field.fieldType === LabelFieldType.Barcode) {
             return undefined;

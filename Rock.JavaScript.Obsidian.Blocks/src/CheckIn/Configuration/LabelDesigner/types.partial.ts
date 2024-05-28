@@ -108,6 +108,14 @@ export type EllipseFieldConfigurationBag = {
     borderThickness: number;
 };
 
+export type IconFieldConfigurationBag = {
+    icon: string;
+};
+
+export type ImageFieldConfigurationBag = {
+    binaryFileGuid?: Guid | null;
+};
+
 /** Convert a type so that all properties are optional strings or nulls. */
 export type StringRecord<T> = {
     [K in keyof T]?: string | null

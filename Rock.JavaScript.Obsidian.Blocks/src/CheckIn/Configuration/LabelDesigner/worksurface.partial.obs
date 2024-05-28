@@ -377,7 +377,7 @@
      *
      * @param line The line that was modified.
      */
-     function onLineTransformEnd(line: Konva.Line): void {
+    function onLineTransformEnd(line: Konva.Line): void {
         props.labelManager.mutate(label => {
             const field = label.fields?.find(f => areEqual(f.guid, line.id()));
 

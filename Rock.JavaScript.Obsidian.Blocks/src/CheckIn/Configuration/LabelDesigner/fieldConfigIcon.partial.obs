@@ -1,0 +1,52 @@
+<template>
+    <DropDownList label="Icon"
+                  v-model="icon"
+                  :items="iconItems" />
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { PropType, ref, watch } from "vue";
+    import { StringRecord, IconFieldConfigurationBag } from "./types.partial";
+    import { LabelUndoManager } from "./undoManager.partial";
+    import { IconImageMap } from "./utils.partial";
+
+    const props = defineProps({
+        labelManager: {
+            type: Object as PropType<LabelUndoManager>,
+            required: true
+        }
+    });
+
+    const icon = ref<string>("");
+
+    const iconItems = IconImageMap;
+
+    /**
+     * Set the internal values to match those from the selected field.
+     */
+    function setInternalValues(): void {
+        const configuration = props.labelManager.selectedField.value
+            ?.configurationValues ?? {} as StringRecord<IconFieldConfigurationBag>;
+
+        icon.value = configuration.icon ?? "";
+    }
+
+    // Watch for changes in the UI that require an update to the label.
+    watch([icon], () => {
+        props.labelManager.mutateSelectedField(field => {
+            field.configurationValues = field.configurationValues ?? {};
+
+            const fieldConfig = field.configurationValues as StringRecord<IconFieldConfigurationBag>;
+
+            fieldConfig.icon = icon.value;
+        });
+    });
+
+    // Watch for changes on the label that need to be reflected in the UI.
+    watch(props.labelManager.selectedField, () => {
+        setInternalValues();
+    });
+
+    setInternalValues();
+</script>

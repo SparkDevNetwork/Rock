@@ -1,7 +1,7 @@
 import Konva from "@Obsidian/Libs/konva";
-import { EllipseFieldConfigurationBag, HorizontalTextAlignment, LabelFieldBag, LabelFieldType, LabelTextFieldSubType, LineFieldConfigurationBag, RectangleFieldConfigurationBag, StringRecord, TextFieldConfigurationBag } from "./types.partial";
+import { EllipseFieldConfigurationBag, HorizontalTextAlignment, IconFieldConfigurationBag, ImageFieldConfigurationBag, LabelFieldBag, LabelFieldType, LabelTextFieldSubType, LineFieldConfigurationBag, RectangleFieldConfigurationBag, StringRecord, TextFieldConfigurationBag } from "./types.partial";
 import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
-import { getPixelForOffset } from "./utils.partial";
+import { IconImageMap, getPixelForOffset } from "./utils.partial";
 import { asBoolean } from "@Obsidian/Utility/booleanUtils";
 
 // #region Classes
@@ -249,6 +249,53 @@ export class LineTransformer extends Konva.Group {
 // #region Functions
 
 /**
+ * Sets the crop values for the image so that the image content is centered
+ * and either fits inside the bounds or covers all available space. The crop is
+ * set so that the aspect ratio is maintained.
+ *
+ * @param shape The image shape to be cropped.
+ * @param cover `true` if the crop should cover the entire shape.
+ */
+function applyCenterCrop(shape: Konva.Image, cover?: boolean): void {
+    const currentImage = shape.image() as HTMLImageElement;
+    const aspectRatio = shape.width() / shape.height();
+    const imageRatio = currentImage.naturalWidth / currentImage.naturalHeight;
+    let cropWidth: number;
+    let cropHeight: number;
+
+    if (cover) {
+        if (aspectRatio >= imageRatio) {
+            cropWidth = currentImage.naturalWidth;
+            cropHeight = currentImage.naturalWidth / aspectRatio;
+        }
+        else {
+            cropWidth = currentImage.naturalHeight * aspectRatio;
+            cropHeight = currentImage.naturalHeight;
+        }
+    }
+    else {
+        if (aspectRatio < imageRatio) {
+            cropWidth = currentImage.naturalWidth;
+            cropHeight = currentImage.naturalWidth / aspectRatio;
+        }
+        else {
+            cropWidth = currentImage.naturalHeight * aspectRatio;
+            cropHeight = currentImage.naturalHeight;
+        }
+    }
+
+    const cropX = (currentImage.naturalWidth - cropWidth) / 2;
+    const cropY = (currentImage.naturalHeight - cropHeight) / 2;
+
+    shape.setAttrs({
+        cropX,
+        cropY,
+        cropWidth,
+        cropHeight
+    });
+}
+
+/**
  * Creates a new shape for the specified field type.
  *
  * @param fieldType The field type that specifies what kind of shape to create.
@@ -267,6 +314,25 @@ export function createShapeForFieldType(fieldType: LabelFieldType): Konva.Group 
     }
     else if (fieldType === LabelFieldType.Ellipse) {
         return new Ellipse();
+    }
+    else if (fieldType === LabelFieldType.Icon || fieldType === LabelFieldType.Image) {
+        const img = new window.Image(1, 1);
+
+        const image = new Konva.Image({
+            image: img
+        });
+
+        image.on("widthChange heightChange", () => {
+            applyCenterCrop(image);
+        });
+
+        img.addEventListener("load", () => {
+            applyCenterCrop(image);
+
+            image._requestDraw();
+        });
+
+        return image;
     }
 
     return undefined;
@@ -297,6 +363,14 @@ export function updateShapeFromField(shape: Konva.Shape | Konva.Group, field: La
     }
     else if (field.fieldType === LabelFieldType.Rectangle && shape instanceof Rectangle) {
         updateRectShapeFromField(shape, field);
+        return true;
+    }
+    else if (field.fieldType === LabelFieldType.Icon && shape instanceof Konva.Image) {
+        updateIconShapeFromField(shape, field);
+        return true;
+    }
+    else if (field.fieldType === LabelFieldType.Image && shape instanceof Konva.Image) {
+        updateImageShapeFromField(shape, field);
         return true;
     }
 
@@ -447,6 +521,56 @@ function updateEllipseShapeFromField(shape: Ellipse, field: LabelFieldBag): void
         shape.innerShape.strokeEnabled(true);
         shape.innerShape.strokeWidth(Math.max(toNumber(config.borderThickness), 1));
         shape.innerShape.stroke(asBoolean(config.isBlack) ? "black" : "white");
+    }
+}
+
+/**
+ * Updates the icon shape with data from the field.
+ *
+ * @param shape The shape to be updated.
+ * @param field The field to use as the source of truth.
+ */
+function updateIconShapeFromField(shape: Konva.Image, field: LabelFieldBag): void {
+    const config = field.configurationValues ?? {} as StringRecord<IconFieldConfigurationBag>;
+
+    // Update the position of the shape.
+    shape.x(getPixelForOffset(field.left));
+    shape.y(getPixelForOffset(field.top));
+    shape.width(getPixelForOffset(field.width));
+    shape.height(getPixelForOffset(field.height));
+
+    const currentImage = shape.image() as HTMLImageElement;
+    const src = IconImageMap.find(i => i.value === config.icon)?.category ?? "/Assets/Images/corrupt-image.jpg";
+
+    // Update configured values.
+    if (currentImage.src !== src) {
+        currentImage.src = src;
+    }
+}
+
+/**
+ * Updates the image shape with data from the field.
+ *
+ * @param shape The shape to be updated.
+ * @param field The field to use as the source of truth.
+ */
+function updateImageShapeFromField(shape: Konva.Image, field: LabelFieldBag): void {
+    const config = field.configurationValues ?? {} as StringRecord<ImageFieldConfigurationBag>;
+
+    // Update the position of the shape.
+    shape.x(getPixelForOffset(field.left));
+    shape.y(getPixelForOffset(field.top));
+    shape.width(getPixelForOffset(field.width));
+    shape.height(getPixelForOffset(field.height));
+
+    const currentImage = shape.image() as HTMLImageElement;
+    const src = config.binaryFileGuid
+        ? `/GetImage.ashx?Guid=${config.binaryFileGuid}`
+        : "/Assets/Images/corrupt-image.jpg";
+
+    // Update configured values.
+    if (currentImage.src !== src) {
+        currentImage.src = src;
     }
 }
 
