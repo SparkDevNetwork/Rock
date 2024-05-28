@@ -2,7 +2,8 @@
 <template>
     <div class="grid-title-heading">
         <div class="grid-title">
-            {{ props.grid.itemTerm }} List
+            <template v-if="!isTitleHidden">{{ internalTitle }}</template>
+            <template v-else>&nbsp;</template>
         </div>
 
         <div class="grid-badges mr-3">
@@ -63,6 +64,21 @@
         },
 
         /**
+         * The title of the grid. If not provided and `isTitleHidden` is false,
+         * the default title of `${grid.itemTerm} List` will be shown.
+         */
+        title: {
+            type: String as PropType<string>,
+            required: false
+        },
+
+        /** When `true`, the grid's title will be hidden. */
+        isTitleHidden: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
          * The number of columns currently visible in the grid. This is used
          * as the colspan for this row so that we span the entire grid width.
          */
@@ -109,6 +125,14 @@
     // #endregion
 
     // #region Computed Values
+
+    const internalTitle = computed((): string => {
+        if (props.title) {
+            return props.title;
+        }
+
+        return `${props.grid.itemTerm} List`;
+    });
 
     const primaryGridActions = computed((): GridAction[] => {
         return props.gridActions.filter(a => a.isPrimary === true);

@@ -3651,11 +3651,11 @@ namespace Rock.Lava
 
             foreach ( var kvp in inputPageReference.Parameters )
             {
-                allParameters.AddOrIgnore( kvp.Key, kvp.Value );
+                allParameters.TryAdd( kvp.Key, kvp.Value );
             }
             foreach ( var nv in inputPageReference.QueryString.AllKeys )
             {
-                allParameters.AddOrIgnore( nv, inputPageReference.QueryString[nv] );
+                allParameters.TryAdd( nv, inputPageReference.QueryString[nv] );
             }
 
             // Add, remove or modify the target parameter.

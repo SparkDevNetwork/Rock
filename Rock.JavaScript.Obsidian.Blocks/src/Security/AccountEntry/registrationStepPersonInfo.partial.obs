@@ -54,8 +54,8 @@
             :disabled="disabled"
             :label="campusPickerLabel"
             @update:modelValue="onCampusChanged"
-            :forceVisible="true"
-            :includeInactive="true"
+            :campusStatusFilter="campusStatusFilter"
+            :campusTypeFilter="campusTypeFilter"
             :showBlankItem="true" />
 
         <AttributeValuesContainer
@@ -121,6 +121,8 @@
     const isCampusPickerShown = computed(() => props.config.isCampusPickerShown);
     const isEmailHidden = computed(() => props.config.isEmailHidden);
     const isGenderPickerShown = computed(() => props.config.isGenderPickerShown);
+    const campusStatusFilter = computed(() => props.config.campusStatusFilter ?? []);
+    const campusTypeFilter = computed(() => props.config.campusTypeFilter ?? []);
 
     const internalFirstName = computed<string>({
         get() {

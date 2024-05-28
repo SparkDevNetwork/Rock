@@ -99,6 +99,22 @@ namespace RockWeb.Blocks.CheckIn
         Category = "Attendance",
         IsRequired = true,
         Order = 6 )]
+    [DefinedValueField(
+        "Campus Types",
+        Key = AttributeKey.CampusTypes,
+        Description = "This setting filters the list of campuses by type that are displayed in the campus drop-down.",
+        IsRequired = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_TYPE,
+        AllowMultiple = true,
+        Order = 7 )]
+    [DefinedValueField(
+        "Campus Statuses",
+        Key = AttributeKey.CampusStatuses,
+        Description = "This setting filters the list of campuses by statuses that are displayed in the campus drop-down.",
+        IsRequired = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_STATUS,
+        AllowMultiple = true,
+        Order = 8 )]
 
     #endregion Attendance Block Attribute Settings
 
@@ -421,6 +437,8 @@ namespace RockWeb.Blocks.CheckIn
             public const string ParentGroup = "ParentGroup";
             public const string AttendanceAgeLimit = "AttendanceAgeLimit";
             public const string ShowCampus = "ShowCampus";
+            public const string CampusTypes = "CampusTypes";
+            public const string CampusStatuses = "CampusStatuses";
             public const string AttendanceGroup = "AttendanceGroup";
             public const string ShowCanCheckInRelationships = "ShowCanCheckInRelationships";
             public const string FamilyAttributes = "FamilyAttributes";
@@ -458,7 +476,7 @@ namespace RockWeb.Blocks.CheckIn
 
         #region Properties
 
-        private List<CampusCache> CachedCampuses => CampusCache.All( false );
+        private List<CampusCache> CachedCampuses => GetCampuses();
 
         #endregion Properties
 
@@ -553,7 +571,7 @@ namespace RockWeb.Blocks.CheckIn
                 {
                     if ( CachedCampuses.Count == 1 )
                     {
-                        cpCampus.SelectedCampusId = CurrentPerson.PrimaryCampusId;
+                        cpCampus.SelectedCampusId = CachedCampuses[0].Id;
                     }
                 }
             }
@@ -2154,6 +2172,34 @@ namespace RockWeb.Blocks.CheckIn
                     ShowMainEntryPersonDetail( searchResult );
                 }
             }
+        }
+
+        /// <summary>
+        /// Gets the list of available campuses after filtering by any selected statuses or types.
+        /// </summary>
+        /// <returns></returns>
+        private List<CampusCache> GetCampuses()
+        {
+            var campusTypeIds = GetAttributeValues( AttributeKey.CampusTypes )
+                .AsGuidOrNullList()
+                .Where( g => g.HasValue )
+                .Select( g => DefinedValueCache.GetId( g.Value ) )
+                .Where( id => id.HasValue )
+                .Select( id => id.Value )
+                .ToList();
+
+            var campusStatusIds = GetAttributeValues( AttributeKey.CampusStatuses )
+                .AsGuidOrNullList()
+                .Where( g => g.HasValue )
+                .Select( g => DefinedValueCache.GetId( g.Value ) )
+                .Where( id => id.HasValue )
+                .Select( id => id.Value )
+                .ToList();
+
+            return CampusCache.All( false )
+                .Where( c => ( !campusTypeIds.Any() || ( c.CampusTypeValueId.HasValue && campusTypeIds.Contains( c.CampusTypeValueId.Value ) ) )
+                    && ( !campusStatusIds.Any() || ( c.CampusStatusValueId.HasValue && campusStatusIds.Contains( c.CampusStatusValueId.Value ) ) ) )
+                .ToList();
         }
 
         #region Main Entry Person Methods

@@ -447,7 +447,7 @@ namespace RockWeb.Blocks.Reporting
                             value = entityItem.ToString();
                         }
 
-                        entityNameLookup.AddOrIgnore( metricValuePartition.EntityId.Value, value );
+                        entityNameLookup.TryAdd( metricValuePartition.EntityId.Value, value );
                     }
 
                     seriesNames.Add( entityNameLookup[metricValuePartition.EntityId.Value] );
@@ -558,8 +558,8 @@ namespace RockWeb.Blocks.Reporting
                 {
                     var entityTypeCache = EntityTypeCache.Get( metricPartition.EntityTypeId ?? 0 );
 
-                    _entityTypeEntityNameLookup.AddOrIgnore( entityTypeCache.Id, new Dictionary<int, string>() );
-                    _entityTypeEntityLookupQry.AddOrIgnore( entityTypeCache.Id, null );
+                    _entityTypeEntityNameLookup.TryAdd( entityTypeCache.Id, new Dictionary<int, string>() );
+                    _entityTypeEntityLookupQry.TryAdd( entityTypeCache.Id, null );
                     if ( entityTypeCache != null )
                     {
                         if ( entityTypeCache.GetEntityType() == typeof( Rock.Model.Group ) )

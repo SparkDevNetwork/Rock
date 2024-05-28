@@ -29,7 +29,9 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             RockMigrationHelper.AddPageRoute( "117B547B-9D71-4EE9-8047-176676F5DC8C", "web/content/category", "BB43E272-C69B-4D75-824A-B6C86A1C9D74" );
+#pragma warning restore CS0618 // Type or member is obsolete
         }
         
         /// <summary>

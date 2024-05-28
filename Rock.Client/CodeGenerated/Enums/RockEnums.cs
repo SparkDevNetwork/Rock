@@ -1117,15 +1117,15 @@ namespace Rock.Client.Enums.Crm
     public enum AgeBracket
     {
         Unknown = 0x0,
-        SixToTwelve = 0x1,
-        ThirteenToSeventeen = 0x2,
-        EighteenToTwentyFour = 0x3,
-        TwentyFiveToThirtyFour = 0x4,
-        ThirtyFiveToFortyFour = 0x5,
-        FortyFiveToFiftyFour = 0x6,
-        FiftyFiveToSixtyFour = 0x7,
-        SixtyFiveOrOlder = 0x8,
-        ZeroToFive = 0x9,
+        ZeroToFive = 0x1,
+        SixToTwelve = 0x2,
+        ThirteenToSeventeen = 0x3,
+        EighteenToTwentyFour = 0x4,
+        TwentyFiveToThirtyFour = 0x5,
+        ThirtyFiveToFortyFour = 0x6,
+        FortyFiveToFiftyFour = 0x7,
+        FiftyFiveToSixtyFour = 0x8,
+        SixtyFiveOrOlder = 0x9,
     }
 
 }
@@ -1636,6 +1636,27 @@ namespace Rock.Client.Enums.Blocks.Engagement.SignUp
 
 }
 
+namespace Rock.Client.Enums.Group
+{
+    /// <summary>
+    /// </summary>
+    public enum RelationshipTrend
+    {
+        Level = 0x0,
+        Down = 0x1,
+        Up = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum ScheduleConfirmationLogic
+    {
+        Ask = 0x0,
+        AutoAccept = 0x1,
+    }
+
+}
+
 namespace Rock.Client.Enums.Blocks.Group.Scheduling
 {
     /// <summary>
@@ -1685,18 +1706,6 @@ namespace Rock.Client.Enums.Blocks.Group.Scheduling
     {
         ReplacePreference = 0x0,
         AddToPreference = 0x1,
-    }
-
-}
-
-namespace Rock.Client.Enums.Group
-{
-    /// <summary>
-    /// </summary>
-    public enum ScheduleConfirmationLogic
-    {
-        Ask = 0x0,
-        AutoAccept = 0x1,
     }
 
 }

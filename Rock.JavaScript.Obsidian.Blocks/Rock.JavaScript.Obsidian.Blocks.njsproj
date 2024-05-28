@@ -52,6 +52,7 @@
     <Content Include="src\Cms\LibraryViewer\itemStampList.partial.obs" />
     <Content Include="src\Cms\pageRouteList.obs" />
     <Content Include="src\Core\auditList.obs" />
+    <Content Include="src\Communication\systemCommunicationList.obs" />
     <Content Include="src\Core\binaryFileDetail.obs" />
     <Content Include="src\Core\BinaryFileDetail\editPanel.partial.obs" />
     <Content Include="src\Core\BinaryFileDetail\viewPanel.partial.obs" />
@@ -61,6 +62,7 @@
     <Content Include="src\Core\CategoryDetail\viewPanel.partial.vue" />
     <Content Include="src\Core\definedValueList.obs" />
     <Content Include="src\Core\personSignalList.obs" />
+    <Content Include="src\Security\restKeyList.obs" />
     <Content Include="src\Crm\personMergeRequestList.obs" />
     <Content Include="src\Core\followingEventTypeDetail.obs" />
     <Content Include="src\Core\FollowingEventTypeDetail\editPanel.partial.obs" />
@@ -110,6 +112,7 @@
     <Content Include="src\Engagement\streakTypeExclusionDetail.obs" />
     <Content Include="src\Engagement\StreakTypeExclusionDetail\editPanel.partial.obs" />
     <Content Include="src\Engagement\StreakTypeExclusionDetail\viewPanel.partial.obs" />
+    <Content Include="src\Event\attendanceList.obs" />
     <Content Include="src\Event\eventCalendarDetail.obs" />
     <Content Include="src\Event\EventCalendarDetail\editPanel.partial.obs" />
     <Content Include="src\Event\EventCalendarDetail\viewPanel.partial.obs" />
@@ -181,6 +184,9 @@
     <Content Include="src\Group\groupRegistration.obs" />
     <Content Include="src\Group\GroupRegistration\editPanel.partial.obs" />
     <Content Include="src\Group\GroupRegistration\viewPanel.partial.obs" />
+    <Content Include="src\Reporting\dynamicData.obs" />
+    <Content Include="src\Reporting\dynamicDataCustomSettings.obs" />
+    <Content Include="src\Reporting\DynamicData\columnConfiguration.partial.obs" />
     <Content Include="src\Reporting\mergeTemplateList.obs" />
     <Content Include="src\Reporting\reportList.obs" />
     <Content Include="src\Security\ConfirmAccount.obs" />
@@ -312,8 +318,10 @@
     <Folder Include="src\Cms\PersonalLinkSectionDetail\" />
     <Folder Include="src\Cms\SiteDetail\" />
     <Folder Include="src\Communication\" />
+    <Folder Include="src\Communication\CommunicationList\" />
     <Folder Include="src\Communication\SnippetDetail\" />
     <Folder Include="src\Communication\SnippetTypeDetail\" />
+    <Folder Include="src\Communication\SystemCommunicationList\" />
     <Folder Include="src\Communication\SystemPhoneNumberDetail\" />
     <Folder Include="src\Core\" />
     <Folder Include="src\Core\AssetStorageProviderDetail\" />
@@ -322,6 +330,7 @@
     <Folder Include="src\Core\CategoryDetail\" />
     <Folder Include="src\Core\DefinedValueList\" />
     <Folder Include="src\Core\PersonSignalList\" />
+    <Folder Include="src\Security\RestKeyList\" />
     <Folder Include="src\Crm\PersonMergeRequestList\" />
     <Folder Include="src\Core\FollowingEventTypeDetail\" />
     <Folder Include="src\Core\InteractionChannelDetail\" />
@@ -349,6 +358,7 @@
     <Folder Include="src\Engagement\StreakDetail\" />
     <Folder Include="src\Engagement\StreakTypeDetail\" />
     <Folder Include="src\Engagement\StreakTypeExclusionDetail\" />
+    <Folder Include="src\Event\AttendanceList\" />
     <Folder Include="src\Event\EventCalendarDetail\" />
     <Folder Include="src\Event\EventItemDetail\" />
     <Folder Include="src\Event\RegistrationInstanceLinkageList\" />
@@ -370,6 +380,7 @@
     <Folder Include="src\Finance\FinancialPledgeDetail\" />
     <Folder Include="src\Group\" />
     <Folder Include="src\Group\GroupRegistration\" />
+    <Folder Include="src\Reporting\DynamicData\" />
     <Folder Include="src\Reporting\MergeTemplateList\" />
     <Folder Include="src\Reporting\ReportList\" />
     <Folder Include="src\Security\ConfirmAccount\" />
@@ -467,6 +478,7 @@
     <TypeScriptCompile Include="src\Cms\SiteDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Cms\SiteDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\SiteDetail\viewPanel.partial.ts" />
+    <TypeScriptCompile Include="src\Communication\CommunicationList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\assetStorageProviderDetail.ts" />
     <TypeScriptCompile Include="src\Core\AssetStorageProviderDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Core\AssetStorageProviderDetail\types.partial.ts" />
@@ -483,6 +495,7 @@
     <TypeScriptCompile Include="src\Core\CategoryDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\DefinedValueList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\PersonSignalList\types.partial.ts" />
+    <TypeScriptCompile Include="src\Security\RestKeyList\types.partial.ts" />
     <TypeScriptCompile Include="src\Crm\PersonMergeRequestList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\FollowingEventTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\InteractionChannelDetail\types.partial.ts" />
@@ -520,6 +533,7 @@
     <TypeScriptCompile Include="src\Engagement\SignUp\SignUpFinder\signUpFilterType.partial.ts" />
     <TypeScriptCompile Include="src\Engagement\StreakDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Engagement\StreakTypeExclusionDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Event\AttendanceList\types.partial.ts" />
     <TypeScriptCompile Include="src\Event\EventCalendarDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Event\EventItemDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Event\RegistrationInstanceLinkageList\types.partial.ts" />

@@ -4224,7 +4224,7 @@ function onTaskCompleted( resultData )
                             foreach ( var communicationListGroupMemberCommunicationType in communicationListGroupMemberCommunicationTypeList )
                             {
                                 var recipientPreference = communicationListGroupMemberCommunicationType.CommunicationPreference;
-                                communicationListGroupMemberCommunicationTypeLookup.AddOrIgnore( communicationListGroupMemberCommunicationType.PersonId, recipientPreference );
+                                communicationListGroupMemberCommunicationTypeLookup.TryAdd( communicationListGroupMemberCommunicationType.PersonId, recipientPreference );
                             }
                         }
                     }

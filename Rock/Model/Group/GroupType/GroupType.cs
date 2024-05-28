@@ -691,6 +691,73 @@ namespace Rock.Model
 
         //AttendanceReminderLastSentDateTime
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the Group Type has Peer Network enabled.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if peer network is enabled; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsPeerNetworkEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether relationship growth is enabled.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [relationship growth enabled]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool RelationshipGrowthEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets the relationship strength.
+        /// </summary>
+        /// <value>
+        /// The relationship strength.
+        /// </value>
+        [DataMember]
+        public int RelationshipStrength { get; set; }
+
+        /// <summary>
+        /// Gets or sets the leader to leader relationship multiplier.
+        /// </summary>
+        /// <value>
+        /// The leader to leader relationship multiplier.
+        /// </value>
+        [DataMember]
+        [DecimalPrecision( 8, 2 )]
+        public decimal LeaderToLeaderRelationshipMultiplier { get; set; }
+
+        /// <summary>
+        /// Gets or sets the leader to non leader relationship multiplier.
+        /// </summary>
+        /// <value>
+        /// The leader to non leader relationship multiplier.
+        /// </value>
+        [DataMember]
+        [DecimalPrecision( 8, 2 )]
+        public decimal LeaderToNonLeaderRelationshipMultiplier { get; set; }
+
+        /// <summary>
+        /// Gets or sets the non leader to non leader relationship multiplier.
+        /// </summary>
+        /// <value>
+        /// The non leader to non leader relationship multiplier.
+        /// </value>
+        [DataMember]
+        [DecimalPrecision( 8, 2 )]
+        public decimal NonLeaderToNonLeaderRelationshipMultiplier { get; set; }
+
+        /// <summary>
+        /// Gets or sets the non leader to leader relationship multiplier.
+        /// </summary>
+        /// <value>
+        /// The non leader to leader relationship multiplier.
+        /// </value>
+        [DataMember]
+        [DecimalPrecision( 8, 2 )]
+        public decimal NonLeaderToLeaderRelationshipMultiplier { get; set; }
+
         #endregion Entity Properties
 
         #region Group Scheduling Related

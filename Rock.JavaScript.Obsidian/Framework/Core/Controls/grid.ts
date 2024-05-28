@@ -27,6 +27,7 @@ import { DayOfWeek, RockDateTime } from "@Obsidian/Utility/rockDateTime";
 import { resolveMergeFields } from "@Obsidian/Utility/lava";
 import { deepEqual } from "@Obsidian/Utility/util";
 import { AttributeFieldDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/attributeFieldDefinitionBag";
+import { DynamicFieldDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/dynamicFieldDefinitionBag";
 import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
 import { GridEntitySetBag } from "@Obsidian/ViewModels/Core/Grid/gridEntitySetBag";
 import { GridEntitySetItemBag } from "@Obsidian/ViewModels/Core/Grid/gridEntitySetItemBag";
@@ -35,6 +36,7 @@ import mitt, { Emitter } from "mitt";
 import { CustomColumnDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/customColumnDefinitionBag";
 import { ColumnPositionAnchor } from "@Obsidian/Enums/Core/Grid/columnPositionAnchor";
 import { BooleanFilterMethod } from "@Obsidian/Enums/Core/Grid/booleanFilterMethod";
+import { getValueFromPath } from "@Obsidian/Utility/objectUtils";
 
 // #region Internal Types
 
@@ -624,7 +626,7 @@ export async function getEntitySetBag(grid: IGridState, keyFields: string[], opt
         // Search each of the key fields we were told to check and look
         // for any entity keys.
         for (const key of keyFields) {
-            const keyValue = row[key];
+            const keyValue = getValueFromPath(row, key);
 
             if (typeof keyValue === "number" && keyValue !== 0) {
                 entityKeyValues.push(keyValue.toString());
@@ -884,6 +886,57 @@ function buildAttributeColumns(columns: ColumnDefinition[], node: VNode): void {
 }
 
 /**
+ * Builds the column definitions for the dynamic columns defined on the node.
+ *
+ * @param columns The array of columns that the new dynamic columns will be appended to.
+ * @param node The node that defines the dynamic fields.
+ */
+function buildDynamicColumns(columns: ColumnDefinition[], node: VNode): void {
+    const dynamicFields = getVNodeProp<(DynamicFieldDefinitionBag & { filter?: ColumnFilter, filterValue?: FilterValueFunction | string })[]>(node, "dynamicFields");
+    if (!dynamicFields) {
+        return;
+    }
+
+    const columnComponents = getVNodeProp<Record<string, Component>>(node, "columnComponents") ?? {};
+    const defaultColumnComponent = getVNodeProp<Component>(node, "defaultColumnComponent");
+    if (!defaultColumnComponent) {
+        return;
+    }
+
+    for (const dynamicField of dynamicFields) {
+        if (!dynamicField.name) {
+            continue;
+        }
+
+        const columnComponent = columnComponents?.[dynamicField.columnType ?? ""]
+            ?? defaultColumnComponent;
+
+        const vNode = createElementVNode(columnComponent, {
+            name: dynamicField.name,
+            title: dynamicField.title,
+            field: dynamicField.name,
+            width: dynamicField.width,
+            filter: dynamicField.filter,
+            filterValue: dynamicField.filterValue ?? columnComponent["filterValue"],
+            hideOnScreen: dynamicField.hideOnScreen,
+            excludeFromExport: dynamicField.excludeFromExport,
+            visiblePriority: dynamicField.visiblePriority
+        });
+
+        if (dynamicField.fieldProperties) {
+            Object.entries(dynamicField.fieldProperties).forEach(([key, value]) => {
+                if (value && vNode.props) {
+                    vNode.props[key] = value;
+                }
+            });
+        }
+
+        const columnDefinition = buildColumn(dynamicField.name, vNode);
+        columns.push(columnDefinition);
+    }
+}
+
+/**
  * Builds and inserts the column definitions for the array of custom columns.
  *
  * @param columns The array of column definitions to be updated.
@@ -1135,13 +1188,14 @@ export function getColumnDefinitions(columnNodes: VNode[]): ColumnDefinition[] {
     for (const node of columnNodes) {
         const name = getVNodeProp<string>(node, "name");
 
-        // Check if this node is the special AttributeColumns node.
+        // Check if this node is the special AttributeColumns or DynamicColumns node.
         if (!name) {
-            if (getVNodeProp<boolean>(node, "__attributeColumns") !== true) {
-                continue;
+            if (getVNodeProp<boolean>(node, "__attributeColumns") === true) {
+                buildAttributeColumns(columns, node);
             }
-
-            buildAttributeColumns(columns, node);
+            else if (getVNodeProp<boolean>(node, "__dynamicColumns") === true) {
+                buildDynamicColumns(columns, node);
+            }
 
             continue;
         }
@@ -1167,7 +1221,7 @@ export function getRowKey(row: Record<string, unknown>, itemIdKey?: string): str
         return undefined;
     }
 
-    const rowKey = row[itemIdKey];
+    const rowKey = getValueFromPath(row, itemIdKey);
 
     if (typeof rowKey === "string") {
         return rowKey;

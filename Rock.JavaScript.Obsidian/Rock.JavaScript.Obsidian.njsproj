@@ -301,6 +301,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Bus\" />
     <Folder Include="Framework\ViewModels\Blocks\Bus\QueueDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\CheckIn\" />
+    <Folder Include="Framework\ViewModels\Blocks\CheckIn\AttendanceList\" />
     <Folder Include="Framework\ViewModels\Blocks\CheckIn\CheckInKiosk\" />
     <Folder Include="Framework\ViewModels\Blocks\CheckIn\Configuration\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\" />
@@ -325,6 +326,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Communication\EmailPreferenceEntry\" />
     <Folder Include="Framework\ViewModels\Blocks\Communication\SnippetDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Communication\SnippetTypeDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Communication\SystemCommunicationList\" />
     <Folder Include="Framework\ViewModels\Blocks\Communication\SystemPhoneNumberDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\AssetStorageProviderDetail\" />
@@ -412,6 +414,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Group\GroupRegistration\" />
     <Folder Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestList\" />
     <Folder Include="Framework\ViewModels\Blocks\Reporting\" />
+    <Folder Include="Framework\ViewModels\Blocks\Reporting\DynamicData\" />
     <Folder Include="Framework\ViewModels\Blocks\Reporting\MergeTemplateDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Reporting\MergeTemplateList\" />
     <Folder Include="Framework\ViewModels\Blocks\Reporting\ReportList\" />
@@ -421,6 +424,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Security\ForgotUserName\" />
     <Folder Include="Framework\ViewModels\Blocks\Security\ConfirmAccount\" />
     <Folder Include="Framework\ViewModels\Blocks\Security\RestKeyDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Security\RestKeyList\" />
     <Folder Include="Framework\ViewModels\Blocks\Tv\" />
     <Folder Include="Framework\ViewModels\Blocks\Tv\AppleTvAppDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Tv\AppleTvPageDetail\" />
@@ -620,6 +624,7 @@
     <TypeScriptCompile Include="Framework\Enums\Group\groupMemberStatus.ts" />
     <TypeScriptCompile Include="Framework\Enums\Group\meetsGroupRequirement.ts" />
     <TypeScriptCompile Include="Framework\Enums\Group\participationType.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Group\relationshipTrend.ts" />
     <TypeScriptCompile Include="Framework\Enums\Group\requirementCheckType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Group\scheduleConfirmationLogic.ts" />
     <TypeScriptCompile Include="Framework\Enums\Net\cookieSameSiteMode.ts" />
@@ -765,6 +770,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\blockBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Bus\QueueDetail\queueBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Bus\QueueDetail\queueDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\AttendanceList\attendanceListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\CheckInKiosk\promotionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\CheckInKiosk\webKioskBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\Configuration\checkInSimulatorOptionsBag.d.ts" />
@@ -818,6 +824,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\EmailPreferenceEntry\emailPreferenceEntrySaveRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\EmailPreferenceEntry\emailPreferenceEntrySaveResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\EmailPreferenceEntry\emailPreferenceIntializationBox.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\SystemCommunicationList\systemCommunicationListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\AssetStorageProviderDetail\assetStorageProviderBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\AssetStorageProviderDetail\assetStorageProviderDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\SnippetDetail\snippetBag.d.ts" />
@@ -1066,6 +1073,14 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestEntry\prayerRequestEntrySaveRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestEntry\prayerRequestEntrySaveResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestList\prayerRequestListOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\DynamicData\columnConfigurationBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\DynamicData\dynamicDataCustomSettingsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\DynamicData\dynamicDataCustomSettingsOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\DynamicData\dynamicDataInitializationBox.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\DynamicData\gridResultsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\DynamicData\lavaTemplateResultsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\DynamicData\reloadColumnsRequestBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\DynamicData\reloadColumnsResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\MergeTemplateDetail\mergeTemplateBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\MergeTemplateDetail\mergeTemplateDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\MergeTemplateDetail\mergeTemplateFileValidationBag.d.ts" />
@@ -1118,6 +1133,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\Login\passwordlessLoginMfaBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\RestKeyDetail\restKeyBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\RestKeyDetail\restKeyDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\RestKeyList\restKeyListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Tv\AppleTvAppDetail\appleTvAppBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Tv\AppleTvAppDetail\appleTvAppDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Tv\AppleTvPageDetail\appleTvPageBag.d.ts" />
@@ -1218,6 +1234,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\attributeFieldDefinitionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\customActionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\customColumnDefinitionBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\dynamicFieldDefinitionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\fieldDefinitionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\gridCommunicationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\gridDataBag.d.ts" />

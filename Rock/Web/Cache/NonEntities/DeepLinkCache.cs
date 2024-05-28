@@ -113,7 +113,7 @@ namespace Rock.Web.Cache
                     continue;
                 }
 
-                routes.AddOrIgnore( additionalSettings.DeepLinkPathPrefix, additionalSettings.DeepLinkRoutes );
+                routes.TryAdd( additionalSettings.DeepLinkPathPrefix, additionalSettings.DeepLinkRoutes );
             }
 
             return routes;

@@ -141,7 +141,7 @@ namespace Rock.Lava.DotLiquid
             {
                 foreach ( var item in scope )
                 {
-                    fields.AddOrIgnore( item.Key, item.Value );
+                    fields.TryAdd( item.Key, item.Value );
                 }
             }
 
@@ -150,7 +150,7 @@ namespace Rock.Lava.DotLiquid
             {
                 foreach ( var item in environment )
                 {
-                    fields.AddOrIgnore( item.Key, item.Value );
+                    fields.TryAdd( item.Key, item.Value );
                 }
             }
 

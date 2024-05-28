@@ -3,7 +3,7 @@
     <Modal v-model="isVisible">
         <RockForm v-model:submit="submitForm" @submit="onSubmitForm">
             <div ref="contentTextBox">
-                <TextBox v-model="internalValue" label="Content" textMode="multiline" />
+                <TextBox v-model="internalValue" label="Content" textMode="multiline" allowHtml />
             </div>
         </RockForm>
 

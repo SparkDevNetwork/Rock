@@ -183,7 +183,9 @@ namespace Rock.Migrations
         /// </summary>
         private void AddWorkflowLaunchPageRoute()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             RockMigrationHelper.AddPageRoute( Rock.SystemGuid.Page.WORKFLOW_ENTRY, "WorkflowLaunch/{WorkflowTypeId}/{WorkflowGuid}" );
+#pragma warning restore CS0618 // Type or member is obsolete
         }
     
     

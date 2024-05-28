@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -150,6 +150,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool CanManageMembers { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is excluded from peer network.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is excluded from peer network; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsExcludedFromPeerNetwork { get; set; }
 
         #endregion
 

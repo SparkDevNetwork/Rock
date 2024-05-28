@@ -373,12 +373,12 @@ namespace Rock.Web.Cache
 
             if ( item is List<string> )
             {
-                RockCache.StringConcurrentCacheKeyReferences.AddOrIgnore( cacheReferenceItem.ToString(), cacheReferenceItem );
+                RockCache.StringConcurrentCacheKeyReferences.TryAdd( cacheReferenceItem.ToString(), cacheReferenceItem );
             }
 
             if ( item is List<object> )
             {
-                RockCache.ObjectConcurrentCacheKeyReferences.AddOrIgnore( cacheReferenceItem.ToString(), cacheReferenceItem );
+                RockCache.ObjectConcurrentCacheKeyReferences.TryAdd( cacheReferenceItem.ToString(), cacheReferenceItem );
             }
         }
 

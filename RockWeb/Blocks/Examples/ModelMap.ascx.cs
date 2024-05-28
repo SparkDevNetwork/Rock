@@ -245,7 +245,7 @@ namespace RockWeb.Blocks.Examples
                                 .Select( s => s.Split( '^' ) )
                                 .Where( s => s.Length == 2 ) )
                 {
-                    categoryIcons.AddOrIgnore( keyVal[0], keyVal[1] );
+                    categoryIcons.TryAdd( keyVal[0], keyVal[1] );
                 }
             }
 

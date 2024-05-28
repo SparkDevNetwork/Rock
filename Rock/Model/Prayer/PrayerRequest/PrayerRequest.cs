@@ -68,7 +68,7 @@ namespace Rock.Model
         [DataMember]
         [MaxLength( 254 )]
         [Previewable]
-        [RegularExpression( @"[\w\.\'_%-]+(\+[\w-]*)?@([\w-]+\.)+[\w-]+", ErrorMessage = "The Email address is invalid" )]
+        [EmailAddressValidation]
         public string Email { get; set; }
 
         /// <summary>

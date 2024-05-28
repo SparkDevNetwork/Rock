@@ -256,6 +256,15 @@ namespace Rock.Model
                 }
             }
 
+            if ( !personQueryOptions.IncludeRestUsers )
+            {
+                int? recordTypeRestUserId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER.AsGuid() );
+                if ( recordTypeRestUserId.HasValue )
+                {
+                    excludedPersonRecordTypeIds.Add( recordTypeRestUserId.Value );
+                }
+            }
+
             if ( excludedPersonRecordTypeIds.Any() )
             {
                 if ( excludedPersonRecordTypeIds.Count == 1 )
@@ -4207,7 +4216,7 @@ namespace Rock.Model
 
             foreach ( var key in preferences.GetKeys() )
             {
-                prefs.AddOrIgnore( key, preferences.GetValue( key ) );
+                prefs.TryAdd( key, preferences.GetValue( key ) );
             }
 
             return prefs;

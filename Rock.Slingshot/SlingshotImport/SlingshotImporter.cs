@@ -2867,7 +2867,7 @@ namespace Rock.Slingshot
 
             foreach ( var personAttribute in personAttributes )
             {
-                this.PersonAttributeKeyLookup.AddOrIgnore( personAttribute.Key, personAttribute );
+                this.PersonAttributeKeyLookup.TryAdd( personAttribute.Key, personAttribute );
             }
 
             // Family Attributes

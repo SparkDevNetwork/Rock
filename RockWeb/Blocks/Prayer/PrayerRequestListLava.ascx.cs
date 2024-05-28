@@ -30,15 +30,31 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Prayer
 {
     /// <summary>
-    /// 
+    /// List Prayer Requests using a Lava template.
     /// </summary>
     [DisplayName( "Prayer Request List Lava" )]
     [Category( "Prayer" )]
     [Description( "List Prayer Requests using a Lava template." )]
-    
-    [CategoryField( "Category", "The category (or parent category) to limit the listed prayer requests to.", true, "Rock.Model.PrayerRequest", order: 0 )]
-    [LinkedPage( "Prayer Request Detail Page", "The Page Request Detail Page to use for the LinkUrl merge field.  The LinkUrl field will include a [Id] which can be replaced by the prayerrequestitem.Id.", order: 1 )]
-    [CodeEditorField( "Lava Template", "Lava template to use to display content", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"
+
+    [CategoryField( "Category",
+        Description = "The category (or parent category) to limit the listed prayer requests to.",
+        AllowMultiple = true,
+        EntityTypeName = "Rock.Model.PrayerRequest",
+        Order = 0,
+        Key = AttributeKey.Category )]
+
+    [LinkedPage( "Prayer Request Detail Page",
+        Description = "The Page Request Detail Page to use for the LinkUrl merge field.  The LinkUrl field will include a [Id] which can be replaced by the prayerrequestitem.Id.",
+        Order = 1,
+        Key = AttributeKey.PrayerRequestDetailPage )]
+
+    [CodeEditorField( "Lava Template",
+        Description = "Lava template to use to display content",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 400,
+        IsRequired = true,
+        DefaultValue = @"
 <div class='panel panel-block'> 
     <div class='panel-heading'>
        <h4 class='panel-title'>Prayer Requests</h4>
@@ -57,16 +73,66 @@ namespace RockWeb.Blocks.Prayer
         
     </div>
 </div>",
-       "", 2, "LavaTemplate" )]
-    
-    [IntegerField( "Max Results", "The maximum number of results to display.", false, 100, order: 3 )]
-    [CustomDropdownListField( "Sort by", "", "0^Entered Date Descending,1^Entered Date Ascending,2^Text", false, "0", order: 4 )]
-    [CustomDropdownListField("Approval Status", "Which statuses to display.", "1^Approved,2^Unapproved,3^All", true, "1", order: 5)]
-    [BooleanField( "Show Expired", "Includes expired prayer requests.", false, order: 6)]
-    [SlidingDateRangeField( "Date Range", "Date range to limit by.", false, "", enabledSlidingDateRangeTypes: "Last,Previous,Current", order: 7 )]
+        Category = "",
+        Order = 2,
+        Key = AttributeKey.LavaTemplate )]
+
+    [IntegerField( "Max Results",
+        Description = "The maximum number of results to display.",
+        IsRequired = false,
+        DefaultIntegerValue = 100,
+        Order = 3,
+        Key = AttributeKey.MaxResults )]
+
+    [CustomDropdownListField( "Sort by",
+        Description = "",
+        ListSource = "0^Entered Date Descending,1^Entered Date Ascending,2^Text",
+        IsRequired = false,
+        DefaultValue = "0",
+        Order = 4,
+        Key = AttributeKey.Sortby )]
+
+    [CustomDropdownListField("Approval Status",
+        Description = "Which statuses to display.",
+        ListSource = "1^Approved,2^Unapproved,3^All",
+        IsRequired = true,
+        DefaultValue = "1",
+        Order = 5,
+        Key = AttributeKey.ApprovalStatus )]
+
+    [BooleanField( "Show Expired",
+        Description = "Includes expired prayer requests.",
+        DefaultBooleanValue = false,
+        Order = 6,
+        Key = AttributeKey.ShowExpired )]
+
+    [SlidingDateRangeField( "Date Range",
+        Description = "Date range to limit by.",
+        IsRequired = false,
+        DefaultValue = "",
+        EnabledSlidingDateRangeTypes = "Last,Previous,Current",
+        Order = 7,
+        Key = AttributeKey.DateRange )]
+
     [Rock.SystemGuid.BlockTypeGuid( "AF0B20C3-B969-4246-81CD-76CC443CFDEB" )]
     public partial class PrayerRequestListLava : Rock.Web.UI.RockBlock
     {
+        #region Keys
+
+        private static class AttributeKey
+        {
+            public const string Category = "Category";
+            public const string PrayerRequestDetailPage = "PrayerRequestDetailPage";
+            public const string LavaTemplate = "LavaTemplate";
+            public const string MaxResults = "MaxResults";
+            public const string Sortby = "Sortby";
+            public const string ApprovalStatus = "ApprovalStatus";
+            public const string ShowExpired = "ShowExpired";
+            public const string DateRange = "DateRange";
+        }
+
+        #endregion
+
         #region Base Control Methods
 
         /// <summary>
@@ -122,40 +188,40 @@ namespace RockWeb.Blocks.Prayer
         protected void LoadContent()
         {
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-            
+
             RockContext rockContext = new RockContext();
 
             var prayerRequestService = new PrayerRequestService( rockContext );
             var qryPrayerRequests = prayerRequestService.Queryable();
 
             // filter out expired
-            if ( !GetAttributeValue( "Show Expired" ).AsBoolean() )
+            if ( !GetAttributeValue( AttributeKey.ShowExpired ).AsBoolean() )
             {
                 qryPrayerRequests = qryPrayerRequests.Where( r => r.ExpirationDate >= RockDateTime.Now );
             }
 
             // filter by date range
-            var requestDateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( GetAttributeValue( "DateRange" ) ?? "-1||" );
+            var requestDateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( GetAttributeValue( AttributeKey.DateRange ) ?? "-1||" );
 
             if ( requestDateRange.Start != null && requestDateRange.End != null )
             {
                 qryPrayerRequests = qryPrayerRequests.Where( r => r.EnteredDateTime >= requestDateRange.Start && r.EnteredDateTime <= requestDateRange.End );
             }
 
-            var categoryGuids = ( GetAttributeValue( "Category" ) ?? string.Empty ).SplitDelimitedValues().AsGuidList();
+            var categoryGuids = ( GetAttributeValue( AttributeKey.Category ) ?? string.Empty ).SplitDelimitedValues().AsGuidList();
             if ( categoryGuids.Any() )
             {
                 qryPrayerRequests = qryPrayerRequests.Where( a => a.CategoryId.HasValue && ( categoryGuids.Contains( a.Category.Guid ) || ( a.Category.ParentCategoryId.HasValue && categoryGuids.Contains( a.Category.ParentCategory.Guid ) ) ) );
             }
 
             // filter by status
-            int? statusFilterType = GetAttributeValue( "ApprovalStatus" ).AsIntegerOrNull();
+            int? statusFilterType = GetAttributeValue( AttributeKey.ApprovalStatus ).AsIntegerOrNull();
 
             if ( statusFilterType.HasValue )
             {
                 switch ( statusFilterType.Value )
                 {
-                    case 1: 
+                    case 1:
                         {
                             qryPrayerRequests = qryPrayerRequests.Where( a => a.IsApproved == true );
                             break;
@@ -168,8 +234,7 @@ namespace RockWeb.Blocks.Prayer
                 }
             }
 
-
-            int sortBy = GetAttributeValue( "Sortby" ).AsInteger();
+            int sortBy = GetAttributeValue( AttributeKey.Sortby ).AsInteger();
             switch ( sortBy )
             {
                 case 0: qryPrayerRequests = qryPrayerRequests.OrderBy( a => a.EnteredDateTime );
@@ -185,7 +250,7 @@ namespace RockWeb.Blocks.Prayer
                     break;
             }
 
-            int? maxResults = GetAttributeValue( "MaxResults" ).AsIntegerOrNull();
+            int? maxResults = GetAttributeValue( AttributeKey.MaxResults ).AsIntegerOrNull();
             if ( maxResults.HasValue && maxResults > 0 )
             {
                 qryPrayerRequests = qryPrayerRequests.Take( maxResults.Value );
@@ -195,7 +260,7 @@ namespace RockWeb.Blocks.Prayer
 
             var queryParams = new Dictionary<string, string>();
             queryParams.Add( "PrayerRequestId", "_PrayerRequestIdParam_" );
-            string url = LinkedPageUrl( "PrayerRequestDetailPage", queryParams );
+            string url = LinkedPageUrl( AttributeKey.PrayerRequestDetailPage, queryParams );
             if ( !string.IsNullOrWhiteSpace( url ) )
             {
                 url = url.Replace( "_PrayerRequestIdParam_", "[Id]" );
@@ -203,9 +268,8 @@ namespace RockWeb.Blocks.Prayer
 
             mergeFields.Add( "LinkUrl", url );
 
-            string template = GetAttributeValue( "LavaTemplate" );
+            string template = GetAttributeValue( AttributeKey.LavaTemplate );
             lContent.Text = template.ResolveMergeFields( mergeFields );
-
         }
 
         #endregion

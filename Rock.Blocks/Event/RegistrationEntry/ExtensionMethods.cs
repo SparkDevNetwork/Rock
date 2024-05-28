@@ -40,6 +40,8 @@ namespace Rock.Blocks.Event
                 ? null
                 : new RegistrationEntryPaymentPlanBag
                 {
+                    FinancialScheduledTransactionGuid = paymentPlan.FinancialScheduledTransactionGuid,
+
                     AmountPerPayment = paymentPlan.AmountPerPayment,
                     StartDate = paymentPlan.StartDate,
 

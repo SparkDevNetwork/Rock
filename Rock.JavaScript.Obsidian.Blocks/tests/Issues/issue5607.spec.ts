@@ -1,12 +1,12 @@
 import { HttpResult } from "@Obsidian/Types/Utility/http";
-import RegistrationEntry from "../../src/Event/registrationEntry";
+import RegistrationEntry from "../../src/Event/registrationEntry.obs";
 import * as http from "@Obsidian/Utility/http";
-import { RegistrationEntryBlockViewModel } from "../../src/Event/RegistrationEntry/types.partial";
 import { mockBlockActions, mountBlock } from "../blocks";
 import { waitFor } from "../utils";
 import { Guid } from "@Obsidian/Types";
+import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
 
-function getConfigurationValues(): RegistrationEntryBlockViewModel {
+function getConfigurationValues(): RegistrationEntryInitializationBox {
     // This is weird, but we have to do this because the block actually
     // modifies the configuration values which is non-standard.
     return JSON.parse(JSON.stringify(configurationValues));
@@ -109,7 +109,7 @@ describe("Issue 5607", () => {
 /**
  * Configuration values returned by the block to replicate this issue.
  */
-const configurationValues: RegistrationEntryBlockViewModel = {
+const configurationValues: RegistrationEntryInitializationBox = {
     "allowRegistrationUpdates": true,
     "timeoutMinutes": null,
     "session": {
@@ -136,7 +136,6 @@ const configurationValues: RegistrationEntryBlockViewModel = {
         "discountPercentage": 0.0,
         "discountMaxRegistrants": 0,
         "previouslyPaid": 0.0,
-        "savedAccountGuid": null
     },
     "isUnauthorized": false,
     "instructionsHtml": "",
@@ -157,7 +156,8 @@ const configurationValues: RegistrationEntryBlockViewModel = {
                     "preHtml": "<div class='row'><div class='col-md-6'>",
                     "postHtml": "    </div>",
                     "showOnWaitList": true,
-                    "isSharedValue": false
+                    "isSharedValue": false,
+                    "isLockedIfValuesExist": false
                 },
                 {
                     "guid": "26daa545-3b91-48e5-ada6-0646020dda3b",
@@ -170,7 +170,8 @@ const configurationValues: RegistrationEntryBlockViewModel = {
                     "preHtml": "    <div class='col-md-6'>",
                     "postHtml": "    </div></div>",
                     "showOnWaitList": true,
-                    "isSharedValue": false
+                    "isSharedValue": false,
+                    "isLockedIfValuesExist": false
                 },
                 {
                     "guid": "7a654283-07e5-4af5-ae58-280f9879596b",
@@ -183,7 +184,8 @@ const configurationValues: RegistrationEntryBlockViewModel = {
                     "preHtml": "",
                     "postHtml": "",
                     "showOnWaitList": false,
-                    "isSharedValue": false
+                    "isSharedValue": false,
+                    "isLockedIfValuesExist": false
                 }
             ]
         }
@@ -418,7 +420,9 @@ const configurationValues: RegistrationEntryBlockViewModel = {
         }
     ],
     "hideProgressBar": false,
-    "showSmsOptIn": false
+    "showSmsOptIn": false,
+    "isPaymentPlanAllowed": false,
+    "isPaymentPlanConfigured": false
 };
 
 const addressControlConfiguration = {

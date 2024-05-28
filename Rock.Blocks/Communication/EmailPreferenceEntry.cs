@@ -344,7 +344,20 @@ We have unsubscribed you from the following lists:
                     return name;
                 } ).ToList();
 
-                box.UnsubscribeFromListOptions = viewableCommunicationLists.ToListItemBagList();
+                // Call ToListItemBagList( Func<...> ) passing this function for setting the ListItemBag's Text value using
+                // the "PublicName" attribute name if it exists.
+                box.UnsubscribeFromListOptions = viewableCommunicationLists.ToListItemBagList( e =>
+                    {
+                        var a = ( ( Rock.Model.Group ) e );
+                        var name = a.GetAttributeValue( AttributeKey.PublicName );
+                        if ( name.IsNullOrWhiteSpace() )
+                        {
+                            name = a.Name;
+                        }
+
+                        return name;
+                    }
+                );
             }
 
             box.EmailsAllowedText = availableOptions.Contains( EMAILS_ALLOWED ) ? GetAttributeValue( AttributeKey.EmailsAllowedText ).ResolveMergeFields( mergeFields ) : null;
@@ -364,7 +377,7 @@ We have unsubscribed you from the following lists:
                 {
                     box.EmailPreference = UNSUBSCRIBE;
                     box.UnsubscribeFromList = new List<ViewModels.Utility.ListItemBag>() { box.UnsubscribeFromListOptions.Find( l => l.Value == communication.ListGroup.Guid.ToString() ) };
-                    box.SuccessfullyUnsubscribedText = isPersonUnsubscribed ? $"You have been successfully unsubscribed from the \"{communication.ListGroup}\" communication list. If you would like to be removed from all communications see the options below." : null;
+                    box.SuccessfullyUnsubscribedText = isPersonUnsubscribed ? $"You have been successfully unsubscribed from the \"{GetName(communication.ListGroup)}\" communication list. If you would like to be removed from all communications see the options below." : null;
                 }
 
                 var anyOptionChecked = false;
@@ -687,6 +700,27 @@ We have unsubscribed you from the following lists:
             return _communication;
         }
 
+        /// <summary>
+        /// Gets the name of a communication list (group) using the Public Name if it exists.
+        /// </summary>
+        /// <param name="group"></param>
+        /// <returns></returns>
+        private string GetName( Rock.Model.Group communicationList )
+        {
+            if ( communicationList == null )
+            {
+                return string.Empty;
+            }
+
+            communicationList.LoadAttributes();
+            var name = communicationList.GetAttributeValue( AttributeKey.PublicName );
+            if ( name.IsNullOrWhiteSpace() )
+            {
+                name = communicationList.Name;
+            }
+
+            return name;
+        }
         #endregion Methods
 
         #region Block Actions

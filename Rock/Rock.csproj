@@ -785,6 +785,7 @@
     <Compile Include="Bus\Consumer\RockConsumerAsync.cs" />
     <Compile Include="Bus\Exceptions\BusException.cs" />
     <Compile Include="Bus\Faults\ReceiveFaultObserver.cs" />
+    <Compile Include="Bus\Message\NewItemCacheAddedMessage.cs" />
     <Compile Include="Bus\Message\ClearReferencedEntityDependenciesMessage.cs" />
     <Compile Include="Bus\Message\CreditCardIsExpiringMessage.cs" />
     <Compile Include="Bus\Message\GiftWasGivenMessage.cs" />
@@ -1193,6 +1194,8 @@
     <Compile Include="Model\Event\InteractiveExperience\InteractiveExperienceService.cs" />
     <Compile Include="Model\Event\RegistrationTemplate\RegistrationTemplate.Logic.cs" />
     <Compile Include="Model\Finance\FinancialScheduledTransaction\FinancialScheduledTransactionExtensionMethods.cs" />
+    <Compile Include="Model\Finance\FinancialScheduledTransaction\FinancialScheduledTransactionPaymentPlanPair.cs" />
+    <Compile Include="Model\Finance\FinancialScheduledTransaction\PaymentPlan.cs" />
     <Compile Include="Model\Group\GroupLocationHistoricalSchedule\GroupLocationHistoricalScheduleService.cs" />
     <Compile Include="Model\Event\RegistrationTemplateFormField\RegistrationTemplateFormFieldException.cs" />
     <Compile Include="Model\Event\RegistrationTemplateForm\RegistrationTemplateFormService.cs" />
@@ -1204,12 +1207,14 @@
     <Compile Include="Model\Group\GroupSync\GroupSyncInfo.cs" />
     <Compile Include="Model\Group\GroupSync\GroupSyncResult.cs" />
     <Compile Include="Model\Group\GroupSync\GroupSyncService.cs" />
+    <Compile Include="Model\Group\PeerNetwork\PeerNetwork.cs" />
     <Compile Include="Model\Reporting\AnalyticsSourcePostalCode\AnalyticsSourcePostalCode.cs" />
     <Compile Include="Model\Reporting\AnalyticsSourcePostalCode\AnalyticsSourcePostalCode.Logic.cs" />
     <Compile Include="Model\Reporting\AnalyticsSourcePostalCode\ZipCodeBoundary.cs" />
     <Compile Include="Model\Reporting\DataViewFilter\DataViewFilter.SaveHook.cs" />
     <Compile Include="Model\Security\RemoteAuthenticationSessionExtensions.cs" />
     <Compile Include="Model\Security\RemoteAuthenticationSessionService.cs" />
+    <Compile Include="Model\Validation\EmailAddressValidationAttribute.cs" />
     <Compile Include="Net\BrowserCookie.cs" />
     <Compile Include="Net\IRockRequestContextAccessor.cs" />
     <Compile Include="Net\IRockResponseContext.cs" />
@@ -2247,6 +2252,7 @@
     <Compile Include="Web\Cache\NonEntities\PersonOrVisitorCache.cs" />
     <Compile Include="Web\Cache\NonEntities\PersonPreferenceCache.cs" />
     <Compile Include="Web\Cache\NonEntities\RateLimiterCache.cs" />
+    <Compile Include="Web\Cache\RockCacheAllIdUpdater.cs" />
     <Compile Include="Web\Cache\RockCacheConsumer.cs" />
     <Compile Include="Web\HttpModules\DeepLinks.cs" />
     <Compile Include="Web\HttpModules\Observability.cs" />

@@ -385,7 +385,7 @@ namespace RockWeb.Blocks.Store
         protected string FormatRating( int ratings )
         {
             var mergeValues = new Dictionary<string, object>();
-            mergeValues.AddOrIgnore( "Rating", ratings );
+            mergeValues.TryAdd( "Rating", ratings );
             return "{{ Rating | RatingMarkup }}".ResolveMergeFields( mergeValues );
         }
 

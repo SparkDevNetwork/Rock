@@ -151,9 +151,10 @@ mission. We are so grateful for your commitment.</p>
                 "Text To Give Setup",
                 string.Empty,
                 TEXT_TO_GIVE_PAGE_GUID );
-
+#pragma warning disable CS0618 // Type or member is obsolete
             // Create PageRoute.
             RockMigrationHelper.AddPageRoute( TEXT_TO_GIVE_PAGE_GUID, "give/setup", TEXT_TO_GIVE_PAGE_ROUTE_GUID );
+#pragma warning restore CS0618 // Type or member is obsolete
 
             // Set "Utility Payment Entry" BlockType Guid to known value.
             RockMigrationHelper.UpdateBlockType(

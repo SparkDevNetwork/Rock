@@ -74,7 +74,7 @@ namespace Rock.Tests.Integration.Modules.Core
             var globalFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
             foreach ( var kv in mergeDataResult.GlobalMergeObjects )
             {
-                globalFields.AddOrIgnore( kv.Key, kv.Value );
+                globalFields.TryAdd( kv.Key, kv.Value );
             }
 
             // Get the merge output as an XML Document and validate the content.
@@ -238,7 +238,7 @@ namespace Rock.Tests.Integration.Modules.Core
                             primaryGroupPerson.AdditionalLavaFields = primaryGroupPerson.AdditionalLavaFields ?? new Dictionary<string, object>();
                             if ( groupMember != null )
                             {
-                                primaryGroupPerson.AdditionalLavaFields.AddOrIgnore( "GroupMember", groupMember );
+                                primaryGroupPerson.AdditionalLavaFields.TryAdd( "GroupMember", groupMember );
                             }
                         }
 
@@ -264,7 +264,7 @@ namespace Rock.Tests.Integration.Modules.Core
                             mergeObject = primaryGroupPerson;
                         }
 
-                        mergeObjectsDictionary.AddOrIgnore( primaryGroupPerson.Id, mergeObject );
+                        mergeObjectsDictionary.TryAdd( primaryGroupPerson.Id, mergeObject );
                     }
 
                     // Add the records to the merge dictionary, preserving the selection order.
@@ -287,7 +287,7 @@ namespace Rock.Tests.Integration.Modules.Core
 
                         person.AdditionalLavaFields = new Dictionary<string, object>();
                         person.AdditionalLavaFields.Add( "GroupMember", groupMember );
-                        mergeObjectsDictionary.AddOrIgnore( groupMember.PersonId, person );
+                        mergeObjectsDictionary.TryAdd( groupMember.PersonId, person );
                         personIds.Add( person.Id );
                     }
                 }
@@ -295,7 +295,7 @@ namespace Rock.Tests.Integration.Modules.Core
                 {
                     foreach ( var item in qryEntity.AsNoTracking() )
                     {
-                        mergeObjectsDictionary.AddOrIgnore( item.Id, item );
+                        mergeObjectsDictionary.TryAdd( item.Id, item );
                     }
                 }
             }
@@ -341,7 +341,7 @@ namespace Rock.Tests.Integration.Modules.Core
 
                     // non-Entity merge object, so just use Dictionary
                     mergeObject = new Dictionary<string, object>();
-                    mergeObjectsDictionary.AddOrIgnore( entityId, mergeObject );
+                    mergeObjectsDictionary.TryAdd( entityId, mergeObject );
                 }
 
                 foreach ( var additionalMergeValue in additionalMergeValuesItem.AdditionalMergeValues )
@@ -367,13 +367,13 @@ namespace Rock.Tests.Integration.Modules.Core
                             }
                         }
 
-                        mergeEntity.AdditionalLavaFields.AddOrIgnore( additionalMergeValue.Key, mergeValueObject );
+                        mergeEntity.AdditionalLavaFields.TryAdd( additionalMergeValue.Key, mergeValueObject );
                     }
                     else if ( mergeObject is IDictionary<string, object> )
                     {
                         // anonymous object with no fields yet
                         IDictionary<string, object> nonEntityObject = mergeObject as IDictionary<string, object>;
-                        nonEntityObject.AddOrIgnore( additionalMergeValue.Key, additionalMergeValue.Value );
+                        nonEntityObject.TryAdd( additionalMergeValue.Key, additionalMergeValue.Value );
                     }
                     else
                     {

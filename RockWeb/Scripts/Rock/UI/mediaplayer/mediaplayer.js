@@ -125,6 +125,12 @@ var Rock;
                 hls.attachMedia(mediaElement);
             }
             initializePlayer(mediaElement, plyrOptions) {
+                if (this.isYouTubeEmbed(this.options.mediaUrl) || this.isVimeoEmbed(this.options.mediaUrl) || this.isHls(this.options.mediaUrl)) {
+                    var control = plyrOptions.controls;
+                    let index = control.findIndex(d => d === "download");
+                    control.splice(index, 1);
+                    plyrOptions.controls = control;
+                }
                 this.player = new Plyr(mediaElement, plyrOptions);
                 if (this.isYouTubeEmbed(this.options.mediaUrl)) {
                     let listenrsready = false;

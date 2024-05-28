@@ -185,6 +185,11 @@ namespace Rock.Blocks.Event
         /// </summary>
         public Dictionary<int, Dictionary<int, string>> MissingFieldsByFormId { get; set; }
 
+        /// <summary>
+        /// Gets the registration identifier page parameter.
+        /// </summary>
+        public int? RegistrationIdPageParameter => PageParameter( PageParameterKey.RegistrationId ).AsIntegerOrNull();
+
         #endregion Properties
 
         #region Obsidian Block Type Overrides
@@ -503,67 +508,6 @@ namespace Rock.Blocks.Event
         }
 
         /// <summary>
-        /// Fixes registration arguments, such as, approximated decimal values sent by a browser.
-        /// </summary>
-        /// <param name="args"></param>
-        /// <exception cref="NotImplementedException"></exception>
-        private void FixRegistrationArguments( RegistrationEntryArgsBag args )
-        {
-            // A browser may send approximated values;
-            // e.g., 0.020000000000000004 (instead of 0.02) or 0.0699999999999932 (instead of 0.07).
-            // Round currency amounts using the organization's currency settings.
-            var currencyInfo = new RockCurrencyCodeInfo();
-
-            args.AmountToPayNow = decimal.Round( args.AmountToPayNow, currencyInfo.DecimalPlaces );
-
-            if ( args.PaymentPlan != null )
-            {
-                args.PaymentPlan.AmountPerPayment = decimal.Round( args.PaymentPlan.AmountPerPayment, currencyInfo.DecimalPlaces );
-            }
-        }
-
-        /// <summary>
-        /// Determines if a payment plan is valid.
-        /// </summary>
-        /// <param name="paymentPlan">The payment plan to validate.</param>
-        /// <param name="errorMessage">The error message if validation fails.</param>
-        /// <returns><see langword="true"/> if the payment plan is valid; otherwise, <see langword="false"/> (<paramref name="errorMessage"/> will contain the validation error message).</returns>
-        private bool IsPaymentPlanValid( RegistrationEntryCreatePaymentPlanRequestBag paymentPlan, out string errorMessage )
-        {
-            if ( paymentPlan.TransactionFrequencyGuid == SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_FIRST_AND_FIFTEENTH.AsGuid() )
-            {
-                DateTime GetAllowedStartDate()
-                {
-                    var tomorrow = RockDateTime.Today.AddDays( 1 );
-                    if ( tomorrow.Day == 1 || tomorrow.Day == 15 )
-                    {
-                        return tomorrow;
-                    }
-                    else if ( tomorrow.Day < 15 )
-                    {
-                        return tomorrow.AddDays( 15 - tomorrow.Day );
-                    }
-                    else
-                    {
-                        // Day > 15 so return the 1st of the next month.
-                        return tomorrow.AddDays( -( tomorrow.Day - 1 ) ).AddMonths( 1 );
-                    }
-                }
-
-                var allowedStartDate = GetAllowedStartDate();
-
-                if ( paymentPlan.StartDate != allowedStartDate )
-                {
-                    errorMessage = $"The payment plan start date {paymentPlan.StartDate:d} is invalid";
-                    return false;
-                }
-            }
-
-            errorMessage = null;
-            return true;
-        }
-
-        /// <summary>
         /// Gets the signature document data for a specific registrant.
         /// </summary>
         /// <param name="args">The registration entry arguments.</param>
@@ -825,12 +769,12 @@ namespace Rock.Blocks.Event
                         if ( fieldViewModel.FieldSource == RegistrationFieldSource.PersonAttribute )
                         {
                             var personAttributeValue = GetEntityCurrentClientAttributeValue( rockContext, person, field );
-                            fieldValues.AddOrIgnore( fieldViewModel.Guid, personAttributeValue );
+                            fieldValues.TryAdd( fieldViewModel.Guid, personAttributeValue );
                         }
                         else if ( fieldViewModel.FieldSource == RegistrationFieldSource.RegistrantAttribute )
                         {
                             var registrantAttributeValue = GetEntityCurrentClientAttributeValue( rockContext, registrant, field );
-                            fieldValues.AddOrIgnore( fieldViewModel.Guid, registrantAttributeValue );
+                            fieldValues.TryAdd( fieldViewModel.Guid, registrantAttributeValue );
                         }
                     }
                 }
@@ -839,9 +783,178 @@ namespace Rock.Blocks.Event
             return ActionOk( fieldValues );
         }
 
+        /// <summary>
+        /// Deletes the payment plan for the current registration.
+        /// </summary>
+        [BlockAction]
+        public BlockActionResult DeletePaymentPlan()
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var context = GetContext( rockContext, out var getContextErrorMessage );
+
+                if ( context is null )
+                {
+                    return ActionBadRequest( getContextErrorMessage.ToStringOrDefault( "An unknown error occurred while deleting the payment plan" ) );
+                }
+                else
+                {
+                    var session = GetRegistrationEntryBlockSession( rockContext, context );
+
+                    if ( session is null )
+                    {
+                        return ActionBadRequest( "The registration session has expired" );
+                    }
+                    else if ( session.ActivePaymentPlan == null )
+                    {
+                        return ActionOk( "This registration has no payment plan or it has already been deleted" );
+                    }
+                    else
+                    {
+                        /* 
+                           2024-5-7 JMH (copied from mdDeleteTransaction_SaveClick() in ScheduledTransactionListLiquid.ascx.cs)
+              
+                           2021-08-27 MDP
+               
+                           We really don't want to actually delete a FinancialScheduledTransaction.
+                           Just inactivate it, even if there aren't FinancialTransactions associated with it.
+                           It is possible the the Gateway has processed a transaction on it that Rock doesn't know about yet.
+                           If that happens, Rock won't be able to match a record for that downloaded transaction!
+                           We also might want to match inactive or "deleted" schedules on the Gateway to a person in Rock,
+                           so we'll need the ScheduledTransaction to do that.
+
+                           So, don't delete ScheduledTransactions.
+                        */
+
+                        // context.Registration is null here. Get the registration from the service.
+                        IQueryable<Registration> registrationQuery = null;
+
+                        if ( session.RegistrationGuid.HasValue )
+                        {
+                            registrationQuery = new RegistrationService( rockContext )
+                                .Queryable()
+                                .Where( r => r.Guid == session.RegistrationGuid.Value );
+                        }
+                        else if ( this.RegistrationIdPageParameter.HasValue )
+                        {
+                            registrationQuery = new RegistrationService( rockContext )
+                                .Queryable()
+                                .Where( r => r.Id == this.RegistrationIdPageParameter.Value );
+                        }
+                        else
+                        {
+                            registrationQuery = Enumerable.Empty<Registration>().AsQueryable();
+                        }
+
+                        var registrationData = registrationQuery
+                            .Select( r => new
+                            {
+                                r.PaymentPlanFinancialScheduledTransactionId
+                            })
+                            .FirstOrDefault();
+
+                        if ( registrationData == null )
+                        {
+                            // This should not happen.
+                            return ActionInternalServerError( "The registration could not be found" );
+                        }
+                        else
+                        {
+                            var financialScheduledTransactionId = registrationData.PaymentPlanFinancialScheduledTransactionId;
+
+                            if ( !financialScheduledTransactionId.HasValue )
+                            {
+                                return ActionOk( "This registration has no payment plan or it has already been deleted" );
+                            }
+                            else
+                            {
+                                var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
+                                var financialScheduledTransaction = financialScheduledTransactionService.Get( registrationData.PaymentPlanFinancialScheduledTransactionId.Value );
+
+                                if ( !financialScheduledTransactionService.Cancel( financialScheduledTransaction, out var cancelErrorMessage ) )
+                                {
+                                    return ActionInternalServerError( $"An error occurred while canceling your scheduled transaction on the financial gateway. Message: {cancelErrorMessage}" );
+                                }
+                                else
+                                {
+                                    try
+                                    {
+                                        if ( !financialScheduledTransactionService.GetStatus( financialScheduledTransaction, out var getStatusErrorMessage ) )
+                                        {
+                                            return ActionInternalServerError( $"The scheduled transaction was canceled on the financial gateway but was not marked inactive in Rock. Message: {getStatusErrorMessage}" );
+                                        }
+                                    }
+                                    catch
+                                    {
+                                        // Ignore
+                                    }
+
+                                    rockContext.SaveChanges();
+                                    return ActionOk( "The payment plan was deleted successfully" );
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         #endregion Block Actions
 
         #region Methods
+
+        /// <summary>
+        /// Fixes registration arguments, such as, approximated decimal values sent by a browser.
+        /// </summary>
+        /// <param name="args"></param>
+        /// <exception cref="NotImplementedException"></exception>
+        private void FixRegistrationArguments( RegistrationEntryArgsBag args )
+        {
+            // A browser may send approximated values;
+            // e.g., 0.020000000000000004 (instead of 0.02) or 0.0699999999999932 (instead of 0.07).
+            // Round currency amounts using the organization's currency settings.
+            var currencyInfo = new RockCurrencyCodeInfo();
+
+            args.AmountToPayNow = decimal.Round( args.AmountToPayNow, currencyInfo.DecimalPlaces );
+
+            if ( args.PaymentPlan != null )
+            {
+                args.PaymentPlan.AmountPerPayment = decimal.Round( args.PaymentPlan.AmountPerPayment, currencyInfo.DecimalPlaces );
+            }
+        }
+
+        /// <summary>
+        /// Determines if a payment plan is valid.
+        /// </summary>
+        /// <param name="paymentPlan">The payment plan to validate.</param>
+        /// <param name="errorMessage">The error message if validation fails.</param>
+        /// <returns><see langword="true"/> if the payment plan is valid; otherwise, <see langword="false"/> (<paramref name="errorMessage"/> will contain the validation error message).</returns>
+        private bool IsPaymentPlanValid( RegistrationEntryCreatePaymentPlanRequestBag paymentPlan, out string errorMessage )
+        {
+            if ( paymentPlan.TransactionFrequencyGuid == SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_FIRST_AND_FIFTEENTH.AsGuid() )
+            {
+                bool IsAllowedStartDate( DateTime startDate )
+                {
+                    if ( startDate.Day == 1 || startDate.Day == 15 )
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+
+                if ( !IsAllowedStartDate( paymentPlan.StartDate.Date ) )
+                {
+                    errorMessage = $"The payment plan start date {paymentPlan.StartDate:d} is invalid";
+                    return false;
+                }
+            }
+
+            errorMessage = null;
+            return true;
+        }
 
         /// <inheritdoc/>
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
@@ -1148,7 +1261,7 @@ namespace Rock.Blocks.Event
             campusId = campusId ?? registrarFamily.CampusId;
 
             // Set the family guid for any other registrants that were selected to be in the same family
-            multipleFamilyGroupIds.AddOrIgnore( registrarFamily.Guid, registrarFamily.Id );
+            multipleFamilyGroupIds.TryAdd( registrarFamily.Guid, registrarFamily.Id );
 
             if ( !singleFamilyId.HasValue )
             {
@@ -1631,7 +1744,8 @@ namespace Rock.Blocks.Event
             {
                 var fields = form.Fields.Where( f =>
                 {
-                    if ( f.ShowCurrentValue && !f.IsInternal && ( f.Attribute == null || f.Attribute.IsActive ) )
+                    // ShowCurrentValue means "Default to the person's current value for this field"
+                    if ( ( f.ShowCurrentValue || f.IsLockedIfValuesExist ) && !f.IsInternal && ( f.Attribute == null || f.Attribute.IsActive ) )
                     {
                         return true;
                     }
@@ -1646,7 +1760,7 @@ namespace Rock.Blocks.Event
                         return true;
                     }
 
-                    if ( ( familySelection || f.ShowCurrentValue ) && f.FieldSource == RegistrationFieldSource.PersonField )
+                    if ( ( familySelection || f.ShowCurrentValue || f.IsLockedIfValuesExist ) && f.FieldSource == RegistrationFieldSource.PersonField )
                     {
                         return f.PersonFieldType == RegistrationPersonFieldType.FirstName || f.PersonFieldType == RegistrationPersonFieldType.LastName;
                     }
@@ -1886,7 +2000,7 @@ namespace Rock.Blocks.Event
                 if ( family != null )
                 {
                     familyId = family.Id;
-                    multipleFamilyGroupIds.AddOrIgnore( familyGuid, family.Id );
+                    multipleFamilyGroupIds.TryAdd( familyGuid, family.Id );
                     if ( !singleFamilyId.HasValue )
                     {
                         singleFamilyId = family.Id;
@@ -1920,7 +2034,7 @@ namespace Rock.Blocks.Event
                         familyId = familyGroup.Id;
 
                         // Store the family id for next person
-                        multipleFamilyGroupIds.AddOrIgnore( familyGuid, familyGroup.Id );
+                        multipleFamilyGroupIds.TryAdd( familyGuid, familyGroup.Id );
                         if ( !singleFamilyId.HasValue )
                         {
                             singleFamilyId = familyGroup.Id;
@@ -2215,8 +2329,6 @@ namespace Rock.Blocks.Event
 
                  Duplicate prevention may be enhanced in the future to include suffix
                  or other identifying information.
-
-                 Reason: Registrant person matching updates to reduce duplicates
             */
             var currentPerson = GetCurrentPerson();
             if ( person == null && currentPerson != null && registrar.PrimaryAliasId != currentPerson.PrimaryAliasId )
@@ -2963,9 +3075,10 @@ namespace Rock.Blocks.Event
                 var financialGatewayService = new FinancialGatewayService( rockContext );
                 var paymentFinancialGateway = financialGatewayService.Get( context.RegistrationSettings.FinancialGatewayId ?? 0 );
                 var gateway = paymentFinancialGateway?.GetGatewayComponent();
+                var paymentToken = string.Empty;
+                var wasRedirectedFromPayment = gateway is IPaymentTokenGateway paymentGateway && paymentGateway.TryGetPaymentTokenFromParameters( paymentFinancialGateway, RequestContext.GetPageParameters(), out paymentToken );
 
-                if ( gateway is IPaymentTokenGateway paymentGateway
-                     && paymentGateway.TryGetPaymentTokenFromParameters( paymentFinancialGateway, RequestContext.GetPageParameters(), out var paymentToken ) )
+                if ( wasRedirectedFromPayment )
                 {
                     args.GatewayToken = paymentToken;
 
@@ -3321,6 +3434,8 @@ namespace Rock.Blocks.Event
                 }
             }
 
+            var isPaymentPlanAllowed = context.RegistrationSettings.IsPaymentPlanAllowed;
+
             var currencyInfo = new RockCurrencyCodeInfo();
             var viewModel = new RegistrationEntryInitializationBox
             {
@@ -3418,9 +3533,9 @@ namespace Rock.Blocks.Event
                 SavedAccounts = savedAccounts,
 
                 // Payment plan
-                IsPaymentPlanAllowed = context.RegistrationSettings.IsPaymentPlanAllowed,
-                PaymentDeadlineDate = context.RegistrationSettings.PaymentDeadlineDate,
-                PaymentPlanFrequencies = GetPaymentPlanFrequencyListItemBags( context.RegistrationSettings.PaymentPlanFrequencyValueIds, rockContext ),
+                IsPaymentPlanAllowed = isPaymentPlanAllowed,
+                PaymentDeadlineDate = isPaymentPlanAllowed ? context.RegistrationSettings.PaymentDeadlineDate : null,
+                PaymentPlanFrequencies = isPaymentPlanAllowed ? GetPaymentPlanFrequencyListItemBags( context.RegistrationSettings.PaymentPlanFrequencyValueIds, rockContext ) : null,
                 IsPaymentPlanConfigured = context.Registration?.IsPaymentPlanActive ?? false,
 
                 // Currency Code
@@ -4017,7 +4132,7 @@ namespace Rock.Blocks.Event
 
             rockContext.SaveChanges();
 
-            // TODO Should message be published to event bus?
+            // TODO Should message be published to event bus? No. As indicated by the class name, this event is exclusively used for non-event giving (or real "gift" giving).
             //Task.Run( () => Rock.Bus.Message.ScheduledGiftWasModifiedMessage.PublishScheduledTransactionEvent( scheduledTransaction.Id, Rock.Bus.Message.ScheduledGiftEventTypes.ScheduledGiftCreated ) );
         }
 
@@ -4322,7 +4437,7 @@ namespace Rock.Blocks.Event
                         ( r.CreatedByPersonAliasId.HasValue && authorizedAliasIds.Contains( r.CreatedByPersonAliasId.Value ) )
                     ) &&
                     r.RegistrationInstanceId == registrationContext.RegistrationSettings.RegistrationInstanceId )
-                .GetPaymentPlanPairs()
+                .SelectPaymentPlanPairs()
                 .FirstOrDefault();
 
             var registration = registrationPaymentPlanPair?.Registration;
@@ -4355,7 +4470,7 @@ namespace Rock.Blocks.Event
                 Registrants = new List<RegistrantBag>(),
                 Registrar = new RegistrarBag(),
                 RegistrationGuid = registration.Guid,
-                PaymentPlan = activePaymentPlan?.AsRegistrationPaymentPlanBag(),
+                ActivePaymentPlan = activePaymentPlan?.AsRegistrationPaymentPlanBag(),
                 PreviouslyPaid = alreadyPaid,
                 Slug = PageParameter( PageParameterKey.Slug ),
                 GroupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull()

@@ -437,9 +437,14 @@ $('.template-form > .panel-body').on('validation-error', function() {
         {
             Literal literal = sender as Literal;
             RegistrationTemplateFormField field = e.Row.DataItem as RegistrationTemplateFormField;
-            if ( field != null && literal != null )
+
+            if ( field != null && literal != null && field.FieldSource != RegistrationFieldSource.PersonField )
             {
-                if ( field.FieldSource != RegistrationFieldSource.PersonField && field.Attribute.FieldTypeId != 0 )
+                if ( field.Attribute == null )
+                {
+                    literal.Text = "<span class=\"label label-danger\">Invalid Attribute</span>";
+                }
+                else if ( field.Attribute.FieldTypeId != 0 )
                 {
                     var fieldType = FieldTypeCache.Get( field.Attribute.FieldTypeId );
                     if ( fieldType != null )
@@ -474,10 +479,10 @@ $('.template-form > .panel-body').on('validation-error', function() {
         {
             Literal literal = sender as Literal;
             RegistrationTemplateFormField field = e.Row.DataItem as RegistrationTemplateFormField;
-            if ( field != null && literal != null )
+
+            if ( field != null && literal != null && field.FieldSource != RegistrationFieldSource.PersonField )
             {
-                literal.Text = ( field.FieldSource != RegistrationFieldSource.PersonField && field.Attribute != null ) ?
-                            field.Attribute.Name : field.PersonFieldType.ConvertToString();
+                literal.Text = field.Attribute == null ? "<span class=\"label label-danger\">Invalid Attribute</span>" : field.Attribute.Name;
             }
         }
 

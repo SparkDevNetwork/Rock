@@ -242,8 +242,10 @@ WHERE [Guid] = '{Rock.SystemGuid.Attribute.PERSON_ALLERGY}'
             // Change the /CheckinManager route to /checkinmanager. Routes aren't case sensitive, so that'll make it look consistent with other routes without breaking expected route
             RockMigrationHelper.UpdatePageRoute( Rock.SystemGuid.PageRoute.CHECK_IN_MANAGER, Rock.SystemGuid.Page.CHECK_IN_MANAGER_ROSTER, "checkinmanager" );
 
+#pragma warning disable CS0618 // Type or member is obsolete
             // Add /checkinmanager/attendance-detail route
             RockMigrationHelper.AddPageRoute( Rock.SystemGuid.Page.CHECK_IN_MANAGER_ATTENDANCE_DETAIL, "checkinmanager/attendance-detail", Rock.SystemGuid.PageRoute.CHECK_IN_MANAGER_ATTENDANCE_DETAIL );
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         /// <summary>

@@ -415,6 +415,64 @@ namespace Rock.Model
         [DataMember]
         public ScheduleConfirmationLogic? ScheduleConfirmationLogic { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether relationship growth is enabled.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [relationship growth enabled]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool? RelationshipGrowthEnabledOverride { get; set; }
+
+        /// <summary>
+        /// Gets or sets the relationship strength.
+        /// </summary>
+        /// <value>
+        /// The relationship strength.
+        /// </value>
+        [DataMember]
+        public int? RelationshipStrengthOverride { get; set; }
+
+        /// <summary>
+        /// Gets or sets the leader to leader relationship multiplier.
+        /// </summary>
+        /// <value>
+        /// The leader to leader relationship multiplier.
+        /// </value>
+        [DataMember]
+        [DecimalPrecision( 8, 2 )]
+        public decimal? LeaderToLeaderRelationshipMultiplierOverride { get; set; }
+
+        /// <summary>
+        /// Gets or sets the leader to non leader relationship multiplier.
+        /// </summary>
+        /// <value>
+        /// The leader to non leader relationship multiplier.
+        /// </value>
+        [DataMember]
+        [DecimalPrecision( 8, 2 )]
+        public decimal? LeaderToNonLeaderRelationshipMultiplierOverride { get; set; }
+
+        /// <summary>
+        /// Gets or sets the non leader to non leader relationship multiplier.
+        /// </summary>
+        /// <value>
+        /// The non leader to non leader relationship multiplier.
+        /// </value>
+        [DataMember]
+        [DecimalPrecision( 8, 2 )]
+        public decimal? NonLeaderToNonLeaderRelationshipMultiplierOverride { get; set; }
+
+        /// <summary>
+        /// Gets or sets the non leader to leader relationship multiplier.
+        /// </summary>
+        /// <value>
+        /// The non leader to leader relationship multiplier.
+        /// </value>
+        [DataMember]
+        [DecimalPrecision( 8, 2 )]
+        public decimal? NonLeaderToLeaderRelationshipMultiplierOverride { get; set; }
+
         #endregion
 
         #region Navigation Properties

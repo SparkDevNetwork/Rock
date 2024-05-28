@@ -147,6 +147,7 @@ namespace Rock.Model
             target.Name = source.Name;
             target.Notify = source.Notify;
             target.PaymentPlanFrequencyValueIds = source.PaymentPlanFrequencyValueIds;
+            target.PaymentPlanFrequencyValueIdsCollection = source.PaymentPlanFrequencyValueIdsCollection;
             target.PaymentReminderEmailTemplate = source.PaymentReminderEmailTemplate;
             target.PaymentReminderFromEmail = source.PaymentReminderFromEmail;
             target.PaymentReminderFromName = source.PaymentReminderFromName;

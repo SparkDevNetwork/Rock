@@ -69,7 +69,18 @@ namespace Rock.Communication
         private bool _allowLava = false;
         private bool _allowMultipleAddresses = false;
 
-        #region Static Methods
+        #region Static Members
+
+        /// <summary>
+        /// The regular expression used to validate a single email address.
+        /// </summary>
+        public static string EmailAddressRegex
+        {
+            get
+            {
+                return _emailAddressRegex;
+            }
+        }
 
         /// <summary>
         /// Validate the content of an email address field with the specified settings.
@@ -83,6 +94,23 @@ namespace Rock.Communication
             var validator = new EmailAddressFieldValidator { MultipleAddressesAreAllowed = allowMultipleAddresses, LavaIsAllowed = allowLava };
 
             return validator.Validate( content );
+        }
+
+        private static EmailAddressFieldValidator _defaultValidator = new EmailAddressFieldValidator
+        {
+            LavaIsAllowed = false,
+            MultipleAddressesAreAllowed = false
+        };
+
+        /// <summary>
+        /// Validate the content of a simple email address field.
+        /// </summary>
+        /// <param name="content"></param>
+        /// <returns></returns>
+        public static bool IsValid( string content )
+        {
+            var isValid = _defaultValidator.Validate( content ) == EmailFieldValidationResultSpecifier.Valid;
+            return isValid;
         }
 
         /// <summary>
@@ -145,6 +173,11 @@ namespace Rock.Communication
         /// <returns></returns>
         public EmailFieldValidationResultSpecifier Validate( string fieldContent )
         {
+            if ( string.IsNullOrWhiteSpace( fieldContent ) )
+            {
+                return EmailFieldValidationResultSpecifier.InvalidEmailAddressFormat;
+            }
+
             var regex = GetRegex();
 
             if ( regex.IsMatch( fieldContent ) )

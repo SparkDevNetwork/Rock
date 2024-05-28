@@ -228,7 +228,7 @@
 
                             <div class="row">
                                 <div class="col-md-6">
-                                    <Rock:DatePicker ID="dpPaymentDeadline" runat="server" Label="Payment Deadline"
+                                    <Rock:DatePicker ID="dpPaymentDeadline" runat="server" Label="Payment Deadline" Visible="false"
                                         Help="The date that all payments must be completed by. This date will be used by the payment plan feature to calculate the payment schedule and amount." />
                                 </div>
                             </div>

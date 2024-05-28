@@ -41,6 +41,12 @@ export type ObsidianBlockConfigBag = {
     blockGuid: Guid;
 
     /**
+     * Gets or sets the unique identifier of the block type that is being
+     * represented by this configuration.
+     */
+    blockTypeGuid: Guid;
+
+    /**
      * Gets or sets the custom configuration values for the block. This
      * object is made available to the block component.
      */

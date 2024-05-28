@@ -1650,6 +1650,7 @@ namespace RockWeb.Blocks.Event
 
                 lTemplateDescription.Text = registrationTemplate.Description;
                 dpPaymentDeadline.Required = registrationTemplate.IsPaymentPlanAllowed == true;
+                dpPaymentDeadline.Visible = registrationTemplate.IsPaymentPlanAllowed == true;
             }
         }
 

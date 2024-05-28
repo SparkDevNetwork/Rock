@@ -146,11 +146,26 @@ namespace RockWeb.Blocks.CheckIn
         order: 10,
         key: AttributeKeys.ShowCampusFilter )]
 
+    [DefinedValueField( name: "Campus Types",
+        description: "This setting filters the list of campuses by type that are displayed in the campus drop-down.",
+        definedTypeGuid: Rock.SystemGuid.DefinedType.CAMPUS_TYPE,
+        allowMultiple: true,
+        order: 11,
+        key: AttributeKeys.CampusTypes )]
+
+    [DefinedValueField(
+        name: "Campus Statuses",
+        description: "This setting filters the list of campuses by statuses that are displayed in the campus drop-down.",
+        definedTypeGuid: Rock.SystemGuid.DefinedType.CAMPUS_STATUS,
+        allowMultiple: true,
+        order: 12,
+        key: AttributeKeys.CampusStatuses )]
+
     [BooleanField( name: "Show View By Option",
         description: "Should the option to view 'Attendees' vs 'Parents of Attendees' vs 'Children of Attendees' be displayed when viewing the grid? If not displayed, the grid will always show attendees.",
         defaultValue: true,
         category: "",
-        order: 11,
+        order: 13,
         key: AttributeKeys.ShowViewByOption )]
 
     [BooleanField(
@@ -158,7 +173,7 @@ namespace RockWeb.Blocks.CheckIn
         description: "Should the Bulk Update option be allowed from the attendance grid?",
         defaultValue: true,
         category: "",
-        order: 12,
+        order: 14,
         key: AttributeKeys.ShowBulkUpdateOption )]
 
     [CustomDropdownListField(
@@ -167,7 +182,7 @@ namespace RockWeb.Blocks.CheckIn
         listSource: "vertical^Vertical,horizontal^Horizontal",
         required: true,
         defaultValue: "vertical",
-        order: 13,
+        order: 15,
         key: AttributeKeys.FilterColumnDirection )]
 
     [IntegerField(
@@ -175,9 +190,8 @@ namespace RockWeb.Blocks.CheckIn
         description: "The number of check boxes for each row.",
         required: false,
         defaultValue: 1,
-        order: 14,
+        order: 16,
         key: AttributeKeys.FilterColumnCount )]
-
 
     [IntegerField(
         "Database Timeout",
@@ -185,7 +199,7 @@ namespace RockWeb.Blocks.CheckIn
         Description = "The number of seconds to wait before reporting a database timeout.",
         IsRequired = false,
         DefaultIntegerValue = 180,
-        Order = 15 )]
+        Order = 17 )]
 
     [Rock.SystemGuid.BlockTypeGuid( "3CD3411C-C076-4344-A9D5-8F3B4F01E31D" )]
     public partial class AttendanceAnalytics : RockBlock
@@ -202,6 +216,8 @@ namespace RockWeb.Blocks.CheckIn
             public const string GroupSpecific = "GroupSpecific";
             public const string ShowScheduleFilter = "ShowScheduleFilter";
             public const string ShowCampusFilter = "ShowCampusFilter";
+            public const string CampusTypes = "CampusTypes";
+            public const string CampusStatuses = "CampusStatuses";
             public const string ShowViewByOption = "ShowViewByOption";
             public const string ShowBulkUpdateOption = "ShowBulkUpdateOption";
             public const string FilterColumnCount = "FilterColumnCount";
@@ -459,7 +475,7 @@ namespace RockWeb.Blocks.CheckIn
             noCampusListItem.Text = "<span title='Include records that are not associated with a campus'>No Campus</span>";
             noCampusListItem.Value = "null";
             clbCampuses.Items.Add( noCampusListItem );
-            foreach ( var campus in CampusCache.All( includeInactiveCampuses ) )
+            foreach ( var campus in GetCampuses( includeInactiveCampuses ) )
             {
                 var listItem = new ListItem();
                 listItem.Text = campus.Name;
@@ -490,6 +506,35 @@ namespace RockWeb.Blocks.CheckIn
             {
                 ddlAttendanceArea.Visible = false;
             }
+        }
+
+        /// <summary>
+        /// Gets the list of available campuses after filtering by any selected statuses or types.
+        /// </summary>
+        /// <param name="includeInactive">if set to <c>true</c> [include inactive].</param>
+        /// <returns></returns>
+        private List<CampusCache> GetCampuses( bool includeInactive )
+        {
+            var campusTypeIds = GetAttributeValues( AttributeKeys.CampusTypes )
+                .AsGuidOrNullList()
+                .Where( g => g.HasValue )
+                .Select( g => DefinedValueCache.GetId( g.Value ) )
+                .Where( id => id.HasValue )
+                .Select( id => id.Value )
+                .ToList();
+
+            var campusStatusIds = GetAttributeValues( AttributeKeys.CampusStatuses )
+                .AsGuidOrNullList()
+                .Where( g => g.HasValue )
+                .Select( g => DefinedValueCache.GetId( g.Value ) )
+                .Where( id => id.HasValue )
+                .Select( id => id.Value )
+                .ToList();
+
+            return CampusCache.All( includeInactive )
+                .Where( c => ( !campusTypeIds.Any() || ( c.CampusTypeValueId.HasValue && campusTypeIds.Contains( c.CampusTypeValueId.Value ) ) )
+                    && ( !campusStatusIds.Any() || ( c.CampusStatusValueId.HasValue && campusStatusIds.Contains( c.CampusStatusValueId.Value ) ) ) )
+                .ToList();
         }
 
         /// <summary>
@@ -1359,7 +1404,7 @@ var headerText = dp.label;
                     foreach ( DataRow row in dtAttendeeDates.Rows )
                     {
                         int personId = ( int ) row["PersonId"];
-                        allAttendeeVisits.AddOrIgnore( personId, new AttendeeVisits() );
+                        allAttendeeVisits.TryAdd( personId, new AttendeeVisits() );
                         var result = allAttendeeVisits[personId];
                         result.PersonId = personId;
 
@@ -1441,7 +1486,7 @@ var headerText = dp.label;
                         foreach ( DataRow row in dtAttendeeDatesMissed.Rows )
                         {
                             int personId = ( int ) row["PersonId"];
-                            missedResults.AddOrIgnore( personId, new AttendeeResult() );
+                            missedResults.TryAdd( personId, new AttendeeResult() );
                             var missedResult = missedResults[personId];
                             missedResult.PersonId = personId;
 
@@ -2040,7 +2085,7 @@ var headerText = dp.label;
                         } )
                         .Where( l => l.Location != null ) )
                     {
-                        _personLocations.AddOrIgnore( item.PersonId, item.Location );
+                        _personLocations.TryAdd( item.PersonId, item.Location );
                     }
                 }
             }

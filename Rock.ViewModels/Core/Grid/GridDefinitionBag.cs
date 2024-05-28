@@ -32,7 +32,15 @@ namespace Rock.ViewModels.Core.Grid
         public List<FieldDefinitionBag> Fields { get; set; }
 
         /// <summary>
-        /// Gets or sets the attribute fields that hav ebeen defined on the
+        /// Gets or sets the dynamic fields that have been defined on the
+        /// grid. Each dynamic field has a corresponding entry in the row
+        /// data object.
+        /// </summary>
+        /// <value>The dynamic fields.</value>
+        public List<DynamicFieldDefinitionBag> DynamicFields { get; set; }
+
+        /// <summary>
+        /// Gets or sets the attribute fields that have been defined on the
         /// grid. Each attribute field has a corresponding entry in the row
         /// data object.
         /// </summary>
@@ -62,7 +70,7 @@ namespace Rock.ViewModels.Core.Grid
 
         /// <summary>
         /// Gets or sets a value indicating whether the sticky header should
-        /// be enabled. This is additive, if the developer has explicitely turned
+        /// be enabled. This is additive, if the developer has explicitly turned
         /// off sticky headers then they will not be enabled by this.
         /// </summary>
         /// <value><c>true</c> if sticky headers should be enabled; otherwise, <c>false</c>.</value>
@@ -70,7 +78,7 @@ namespace Rock.ViewModels.Core.Grid
 
         /// <summary>
         /// Gets or sets a value indicating whether the launch workflow action
-        /// should be included. This is additive, if the developer has explicitely
+        /// should be included. This is additive, if the developer has explicitly
         /// turned off launch workflows then they will not be enabled by this.
         /// </summary>
         /// <value><c>true</c> if the launch workflow action should be enabled; otherwise, <c>false</c>.</value>

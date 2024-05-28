@@ -721,7 +721,7 @@ namespace Rock.Communication
 
             foreach ( var mergeField in mergeFields )
             {
-                rockMessageRecipient.MergeFields.AddOrIgnore( mergeField.Key, mergeField.Value );
+                rockMessageRecipient.MergeFields.TryAdd( mergeField.Key, mergeField.Value );
             }
 
             // To

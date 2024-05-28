@@ -755,7 +755,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                 {
                                     var location = new LocationService( rockContext ).Get( acAddress.Street1, acAddress.Street2, acAddress.City, acAddress.State, acAddress.PostalCode, acAddress.Country );
                                     locationId = location != null ? location.Id : ( int? ) null;
-                                    _verifiedLocations.AddOrIgnore( locationKey, locationId );
+                                    _verifiedLocations.TryAdd( locationKey, locationId );
                                 }
                             }
                         }

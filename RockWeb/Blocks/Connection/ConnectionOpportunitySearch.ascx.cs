@@ -79,29 +79,45 @@ namespace RockWeb.Blocks.Connection
         DefaultBooleanValue = true,
         Order = 5,
         Key = AttributeKey.DisplayInactiveCampuses )]
+    [DefinedValueField(
+        "Campus Types",
+        Key = AttributeKey.CampusTypes,
+        Description = "This setting filters the list of campuses by type that are displayed in the campus drop-down.",
+        IsRequired = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_TYPE,
+        AllowMultiple = true,
+        Order = 6 )]
+    [DefinedValueField(
+        "Campus Statuses",
+        Key = AttributeKey.CampusStatuses,
+        Description = "This setting filters the list of campuses by statuses that are displayed in the campus drop-down.",
+        IsRequired = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_STATUS,
+        AllowMultiple = true,
+        Order = 7 )]
     [BooleanField(
         "Display Attribute Filters",
         Description = "Display the attribute filters",
         DefaultBooleanValue = true,
-        Order = 6,
+        Order = 8,
         Key = AttributeKey.DisplayAttributeFilters )]
     [LinkedPage(
         "Detail Page",
         Description = "The page used to view a connection opportunity.",
-        Order = 7,
+        Order = 9,
         Key = AttributeKey.DetailPage )]
     [IntegerField(
         "Connection Type Id",
         Description = "The Id of the connection type whose opportunities are displayed.",
         IsRequired = true,
         DefaultIntegerValue = 1,
-        Order = 8,
+        Order = 10,
         Key = AttributeKey.ConnectionTypeId )]
     [BooleanField(
         "Show Search",
         Description = "Determines if the search fields should be displayed. Sometimes listing all the options is enough.",
         DefaultBooleanValue = true,
-        Order = 9,
+        Order = 11,
         Key = AttributeKey.ShowSearch )]
     [TextField(
         "Campus Label",
@@ -132,6 +148,8 @@ namespace RockWeb.Blocks.Connection
             public const string ConnectionTypeId = "ConnectionTypeId";
             public const string ShowSearch = "ShowSearch";
             public const string CampusLabel = "CampusLabel";
+            public const string CampusTypes = "CampusTypes";
+            public const string CampusStatuses = "CampusStatuses";
         }
 
         #endregion
@@ -216,6 +234,11 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
+            if ( GetAttributeValue( AttributeKey.DisplayCampusFilter ).AsBoolean() )
+            {
+                BindCampusFilter();
+            }
+
             UpdateList();
         }
 
@@ -369,9 +392,7 @@ namespace RockWeb.Blocks.Connection
 
                 if ( GetAttributeValue( AttributeKey.DisplayCampusFilter ).AsBoolean() )
                 {
-                    cblCampus.Visible = true;
-                    cblCampus.DataSource = CampusCache.All( GetAttributeValue( AttributeKey.DisplayInactiveCampuses ).AsBoolean() );
-                    cblCampus.DataBind();
+                    BindCampusFilter();
                 }
                 else
                 {
@@ -466,6 +487,44 @@ namespace RockWeb.Blocks.Connection
                     phAttributeFilters.Visible = false;
                 }
             }
+        }
+
+        /// <summary>
+        /// Binds the campus filter.
+        /// </summary>
+        private void BindCampusFilter()
+        {
+            cblCampus.Visible = true;
+            cblCampus.DataSource = GetCampuses();
+            cblCampus.DataBind();
+        }
+
+        /// <summary>
+        /// Gets the list of available campuses after filtering by any selected statuses or types.
+        /// </summary>
+        /// <returns></returns>
+        private List<CampusCache> GetCampuses()
+        {
+            var campusTypeIds = GetAttributeValues( AttributeKey.CampusTypes )
+                .AsGuidOrNullList()
+                .Where( g => g.HasValue )
+                .Select( g => DefinedValueCache.GetId( g.Value ) )
+                .Where( id => id.HasValue )
+                .Select( id => id.Value )
+                .ToList();
+
+            var campusStatusIds = GetAttributeValues( AttributeKey.CampusStatuses )
+                .AsGuidOrNullList()
+                .Where( g => g.HasValue )
+                .Select( g => DefinedValueCache.GetId( g.Value ) )
+                .Where( id => id.HasValue )
+                .Select( id => id.Value )
+                .ToList();
+
+            return CampusCache.All( GetAttributeValue( AttributeKey.DisplayInactiveCampuses ).AsBoolean() )
+                .Where( c => ( !campusTypeIds.Any() || ( c.CampusTypeValueId.HasValue && campusTypeIds.Contains( c.CampusTypeValueId.Value ) ) )
+                    && ( !campusStatusIds.Any() || ( c.CampusStatusValueId.HasValue && campusStatusIds.Contains( c.CampusStatusValueId.Value ) ) ) )
+                .ToList();
         }
 
         #endregion

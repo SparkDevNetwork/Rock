@@ -27,54 +27,54 @@ export const AgeBracket = {
     Unknown: 0,
 
     /** Age range 0 - 5 */
-    ZeroToFive: 9,
+    ZeroToFive: 1,
 
     /** Age range 6 - 12 */
-    SixToTwelve: 1,
+    SixToTwelve: 2,
 
     /** Age range 13 - 17 */
-    ThirteenToSeventeen: 2,
+    ThirteenToSeventeen: 3,
 
     /** Age range 18 - 24 */
-    EighteenToTwentyFour: 3,
+    EighteenToTwentyFour: 4,
 
     /** Age range 25 - 34 */
-    TwentyFiveToThirtyFour: 4,
+    TwentyFiveToThirtyFour: 5,
 
     /** Age range 35 - 44 */
-    ThirtyFiveToFortyFour: 5,
+    ThirtyFiveToFortyFour: 6,
 
     /** Age range 45 - 54 */
-    FortyFiveToFiftyFour: 6,
+    FortyFiveToFiftyFour: 7,
 
     /** Age range 55 - 64 */
-    FiftyFiveToSixtyFour: 7,
+    FiftyFiveToSixtyFour: 8,
 
     /** Age range 65+ */
-    SixtyFiveOrOlder: 8
+    SixtyFiveOrOlder: 9
 } as const;
 
 /** The age bracket of a person */
 export const AgeBracketDescription: Record<number, string> = {
     0: "Unknown",
 
-    9: "0 - 5",
+    1: "0 - 5",
 
-    1: "6 - 12",
+    2: "6 - 12",
 
-    2: "13 - 17",
+    3: "13 - 17",
 
-    3: "18 - 24",
+    4: "18 - 24",
 
-    4: "25 - 34",
+    5: "25 - 34",
 
-    5: "35 - 44",
+    6: "35 - 44",
 
-    6: "40 - 54",
+    7: "45 - 54",
 
-    7: "55 - 64",
+    8: "55 - 64",
 
-    8: "65+"
+    9: "65+"
 };
 
 /** The age bracket of a person */

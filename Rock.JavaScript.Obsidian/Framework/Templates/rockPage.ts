@@ -27,7 +27,8 @@ import { BasicSuspenseProvider, provideSuspense } from "@Obsidian/Utility/suspen
 import { alert } from "@Obsidian/Utility/dialogs";
 import { HttpBodyData, HttpMethod, HttpResult, HttpUrlParams } from "@Obsidian/Types/Utility/http";
 import { doApiCall, provideHttp } from "@Obsidian/Utility/http";
-import { createInvokeBlockAction, provideBlockGuid } from "@Obsidian/Utility/block";
+import { createInvokeBlockAction, provideBlockBrowserBus, provideBlockGuid, provideBlockTypeGuid } from "@Obsidian/Utility/block";
+import { useBrowserBus } from "@Obsidian/Utility/browserBus";
 
 type DebugTimingConfig = {
     elementId: string;
@@ -223,8 +224,9 @@ export async function initializeBlock(config: ObsidianBlockConfigBag): Promise<A
  * @param actionFileUrl The component file URL for the action handler.
  * @param pageGuid The unique identifier of the page.
  * @param blockGuid The unique identifier of the block.
+ * @param blockTypeGuid The unique identifier of the block type.
  */
-export async function showCustomBlockAction(actionFileUrl: string, pageGuid: string, blockGuid: string): Promise<void> {
+export async function showCustomBlockAction(actionFileUrl: string, pageGuid: string, blockGuid: string, blockTypeGuid: string): Promise<void> {
     let actionComponent: Component | null = null;
 
     try {
@@ -273,6 +275,8 @@ export async function showCustomBlockAction(actionFileUrl: string, pageGuid: str
             });
             provide("invokeBlockAction", invokeBlockAction);
             provideBlockGuid(blockGuid);
+            provideBlockTypeGuid(blockTypeGuid);
+            provideBlockBrowserBus(useBrowserBus({ block: blockGuid, blockType: blockTypeGuid }));
 
             return {
                 actionComponent,

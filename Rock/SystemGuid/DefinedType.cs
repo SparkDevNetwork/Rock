@@ -507,6 +507,11 @@ namespace Rock.SystemGuid
         public const string ADMINISTRATOR_CHECKLIST = "4BF34677-37E9-4E71-BD03-252B66C9373D";
 
         /// <summary>
+        /// List of different types of relationships and individual could have in their Peer Network.
+        /// </summary>
+        public const string PEER_NETWORK_RELATIONSHIP_TYPE = "F2E8E639-F16D-489D-AAFB-BE0133531E41";
+
+        /// <summary>
         /// The statement generator lava template (Legacy)
         /// </summary>
         [Obsolete("Use FinancialStatementTemplate instead")]

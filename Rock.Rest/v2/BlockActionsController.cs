@@ -329,7 +329,7 @@ namespace Rock.Rest.v2
                     // parameters take precedence.
                     foreach ( var kvp in bodyParameters.ToObject<Dictionary<string, JToken>>() )
                     {
-                        actionParameters.AddOrIgnore( kvp.Key, kvp.Value );
+                        actionParameters.TryAdd( kvp.Key, kvp.Value );
                     }
                 }
                 catch

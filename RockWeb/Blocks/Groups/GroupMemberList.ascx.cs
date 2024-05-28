@@ -1933,7 +1933,7 @@ namespace RockWeb.Blocks.Groups
                 _memberRequirements.Clear();
                 foreach ( var member in _group.Members )
                 {
-                    _memberRequirements.AddOrIgnore(
+                    _memberRequirements.TryAdd(
                         member.Id,
                         member.GetGroupRequirementsStatuses( rockContext )
                         	.Where( s => s.GroupRequirement.GroupRequirementType.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )

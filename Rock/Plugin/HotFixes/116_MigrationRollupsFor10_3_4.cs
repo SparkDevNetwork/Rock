@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -61,7 +61,9 @@ namespace Rock.Plugin.HotFixes
         {
             RockMigrationHelper.AddPage( true, "9CC19684-7AD2-4D4E-A7C4-10DAE56E7FA6", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Connection Campaigns", "", "B252FAA6-0E9D-41CD-A00D-E7159E881714", "" ); // Site:Rock RMS
             RockMigrationHelper.AddPage( true, "B252FAA6-0E9D-41CD-A00D-E7159E881714", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Campaign Configuration", "", "A22133B5-B5C6-455A-A300-690F7926356D", "" ); // Site:Rock RMS
+#pragma warning disable CS0618 // Type or member is obsolete
             RockMigrationHelper.AddPageRoute( "B252FAA6-0E9D-41CD-A00D-E7159E881714", "CampaignConfiguration", "57CEB84D-5EC7-4AE2-AA4C-CFE045F78456" );// for Page:Connection Campaigns
+#pragma warning restore CS0618 // Type or member is obsolete
 
             RockMigrationHelper.UpdateBlockType( "Add Campaign Requests", "Adds Campaign Connection Requests", "~/Blocks/Connection/AddCampaignRequests.ascx", "Connection Campaign", "11630BB9-E685-4582-91F8-620448AA34B0" );
             RockMigrationHelper.UpdateBlockType( "Campaign Configuration", "Block used for Campaign Connection configuration which is also used by job.", "~/Blocks/Connection/CampaignConfiguration.ascx", "Connection Campaign", "9E6C4174-5F2B-4A78-9781-55D7DD209B6C" );

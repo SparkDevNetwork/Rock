@@ -253,9 +253,15 @@ namespace Rock.Model
             target.IsPublic = source.IsPublic;
             target.IsSecurityRole = source.IsSecurityRole;
             target.IsSystem = source.IsSystem;
+            target.LeaderToLeaderRelationshipMultiplierOverride = source.LeaderToLeaderRelationshipMultiplierOverride;
+            target.LeaderToNonLeaderRelationshipMultiplierOverride = source.LeaderToNonLeaderRelationshipMultiplierOverride;
             target.Name = source.Name;
+            target.NonLeaderToLeaderRelationshipMultiplierOverride = source.NonLeaderToLeaderRelationshipMultiplierOverride;
+            target.NonLeaderToNonLeaderRelationshipMultiplierOverride = source.NonLeaderToNonLeaderRelationshipMultiplierOverride;
             target.Order = source.Order;
             target.ParentGroupId = source.ParentGroupId;
+            target.RelationshipGrowthEnabledOverride = source.RelationshipGrowthEnabledOverride;
+            target.RelationshipStrengthOverride = source.RelationshipStrengthOverride;
             target.ReminderAdditionalDetails = source.ReminderAdditionalDetails;
             target.ReminderOffsetDays = source.ReminderOffsetDays;
             target.ReminderSystemCommunicationId = source.ReminderSystemCommunicationId;

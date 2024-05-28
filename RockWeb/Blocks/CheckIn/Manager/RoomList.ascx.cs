@@ -578,7 +578,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
                 if ( groupLocation.ParentGroupId.HasValue )
                 {
-                    groupInfoByParentGroups.ParentGroupNames.AddOrIgnore( groupLocation.ParentGroupId.Value, groupLocation.ParentGroupName );
+                    groupInfoByParentGroups.ParentGroupNames.TryAdd( groupLocation.ParentGroupId.Value, groupLocation.ParentGroupName );
                 }
             }
             else

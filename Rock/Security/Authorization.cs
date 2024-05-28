@@ -234,13 +234,13 @@ namespace Rock.Security
 
             foreach ( var authEntityRule in authEntityRules )
             {
-                authorizations.AddOrIgnore( authEntityRule.EntityTypeId, new Dictionary<int, Dictionary<string, List<AuthRule>>>() );
+                authorizations.TryAdd( authEntityRule.EntityTypeId, new Dictionary<int, Dictionary<string, List<AuthRule>>>() );
                 var entityAuths = authorizations[authEntityRule.EntityTypeId];
 
-                entityAuths.AddOrIgnore( authEntityRule.AuthRule.EntityId ?? 0, new Dictionary<string, List<AuthRule>>( StringComparer.OrdinalIgnoreCase ) );
+                entityAuths.TryAdd( authEntityRule.AuthRule.EntityId ?? 0, new Dictionary<string, List<AuthRule>>( StringComparer.OrdinalIgnoreCase ) );
                 var instanceAuths = entityAuths[authEntityRule.AuthRule.EntityId ?? 0];
 
-                instanceAuths.AddOrIgnore( authEntityRule.Action, new List<AuthRule>() );
+                instanceAuths.TryAdd( authEntityRule.Action, new List<AuthRule>() );
                 var actionPermissions = instanceAuths[authEntityRule.Action];
 
                 actionPermissions.Add( authEntityRule.AuthRule );
@@ -1435,10 +1435,10 @@ namespace Rock.Security
             var authorizations = Get();
             if ( authorizations != null )
             {
-                authorizations.AddOrIgnore( entityTypeId, new Dictionary<int, Dictionary<string, List<AuthRule>>>() );
+                authorizations.TryAdd( entityTypeId, new Dictionary<int, Dictionary<string, List<AuthRule>>>() );
                 var entityAuths = authorizations[entityTypeId];
 
-                entityAuths.AddOrIgnore( entityId, new Dictionary<string, List<AuthRule>>( StringComparer.OrdinalIgnoreCase ) );
+                entityAuths.TryAdd( entityId, new Dictionary<string, List<AuthRule>>( StringComparer.OrdinalIgnoreCase ) );
                 var instanceAuths = entityAuths[entityId];
 
                 instanceAuths.AddOrReplace( action, new List<AuthRule>() );

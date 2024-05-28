@@ -55,6 +55,15 @@ namespace Rock.ViewModels.Cms
         public Guid BlockGuid { get; set; }
 
         /// <summary>
+        /// Gets or sets the unique identifier of the block type that is being
+        /// represented by this configuration.
+        /// </summary>
+        /// <value>
+        /// The unique identifier of the block type.
+        /// </value>
+        public Guid BlockTypeGuid { get; set; }
+
+        /// <summary>
         /// Gets or sets the custom configuration values for the block. This
         /// object is made available to the block component.
         /// </summary>

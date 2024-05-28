@@ -111,7 +111,7 @@ namespace Rock.Rest.Controllers
                 // workflow actions from showing up to the user. System user only.
                 if ( !categoryName.Equals( "HideFromUser", System.StringComparison.OrdinalIgnoreCase ) )
                 {
-                    categorizedActions.AddOrIgnore( categoryName, new List<EntityTypeCache>() );
+                    categorizedActions.TryAdd( categoryName, new List<EntityTypeCache>() );
                     categorizedActions[categoryName].Add( action.EntityType );
                 }
             }

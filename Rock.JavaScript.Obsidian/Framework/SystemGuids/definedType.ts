@@ -154,6 +154,8 @@ export const DefinedType = {
     MotivatorThemeType: "354715FA-564A-420A-8324-0411988AE7AB",
     /** Motivator Type */
     MotivatorType: "1DFF1804-0055-491E-9559-54EA3F8F89D1",
+    /** List of different types of relationships and individual could have in their Peer Network. */
+    PeerNetworkRelationshipType: "F2E8E639-F16D-489D-AAFB-BE0133531E41",
     /** Guid for the types of possible check-in system ability levels (such as Infant, Crawler, etc.) */
     PersonAbilityLevelType: "7BEEF4D4-0860-4913-9A3D-857634D1BF7C",
     /** Guid for the person's connection status (such as member, attendee, participant, etc.) */

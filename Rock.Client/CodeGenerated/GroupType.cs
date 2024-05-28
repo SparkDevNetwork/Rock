@@ -317,10 +317,19 @@ namespace Rock.Client
         public bool IsIndexEnabled { get; set; }
 
         /// <summary />
+        public bool IsPeerNetworkEnabled { get; set; }
+
+        /// <summary />
         public bool IsSchedulingEnabled { get; set; }
 
         /// <summary />
         public bool IsSystem { get; set; }
+
+        /// <summary />
+        public decimal LeaderToLeaderRelationshipMultiplier { get; set; }
+
+        /// <summary />
+        public decimal LeaderToNonLeaderRelationshipMultiplier { get; set; }
 
         /// <summary />
         public Rock.Client.Enums.GroupLocationPickerMode LocationSelectionMode { get; set; }
@@ -334,7 +343,19 @@ namespace Rock.Client
         public string Name { get; set; }
 
         /// <summary />
+        public decimal NonLeaderToLeaderRelationshipMultiplier { get; set; }
+
+        /// <summary />
+        public decimal NonLeaderToNonLeaderRelationshipMultiplier { get; set; }
+
+        /// <summary />
         public int Order { get; set; }
+
+        /// <summary />
+        public bool RelationshipGrowthEnabled { get; set; }
+
+        /// <summary />
+        public int RelationshipStrength { get; set; }
 
         /// <summary />
         public bool RequiresInactiveReason { get; set; }
@@ -469,12 +490,19 @@ namespace Rock.Client
             this.InheritedGroupTypeId = source.InheritedGroupTypeId;
             this.IsCapacityRequired = source.IsCapacityRequired;
             this.IsIndexEnabled = source.IsIndexEnabled;
+            this.IsPeerNetworkEnabled = source.IsPeerNetworkEnabled;
             this.IsSchedulingEnabled = source.IsSchedulingEnabled;
             this.IsSystem = source.IsSystem;
+            this.LeaderToLeaderRelationshipMultiplier = source.LeaderToLeaderRelationshipMultiplier;
+            this.LeaderToNonLeaderRelationshipMultiplier = source.LeaderToNonLeaderRelationshipMultiplier;
             this.LocationSelectionMode = source.LocationSelectionMode;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
+            this.NonLeaderToLeaderRelationshipMultiplier = source.NonLeaderToLeaderRelationshipMultiplier;
+            this.NonLeaderToNonLeaderRelationshipMultiplier = source.NonLeaderToNonLeaderRelationshipMultiplier;
             this.Order = source.Order;
+            this.RelationshipGrowthEnabled = source.RelationshipGrowthEnabled;
+            this.RelationshipStrength = source.RelationshipStrength;
             this.RequiresInactiveReason = source.RequiresInactiveReason;
             this.RequiresReasonIfDeclineSchedule = source.RequiresReasonIfDeclineSchedule;
             this.RSVPReminderOffsetDays = source.RSVPReminderOffsetDays;

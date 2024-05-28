@@ -53,10 +53,12 @@ namespace Rock.Migrations
             //  Site: Rock RMS
             RockMigrationHelper.AddPage( true, "7F1F4130-CB98-473B-9DE1-7A886D2283ED", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "CSV Import", "", "4033514D-23D6-493A-8558-591F6EB98D56", "fa fa-file-csv" );
 
+#pragma warning disable CS0618 // Type or member is obsolete
             // Add Page Route
             //   Page:CSV Import
             //   Route:admin/power-tools/csv-import
             RockMigrationHelper.AddPageRoute( "4033514D-23D6-493A-8558-591F6EB98D56", "admin/power-tools/csv-import", "36C8FD66-00CF-4388-966A-47A52C6CD69B" );
+#pragma warning restore CS0618 // Type or member is obsolete
 
             // Add/Update BlockType 
             //   Name: CSV Import
@@ -103,7 +105,9 @@ namespace Rock.Migrations
         private void PersonalizationSegmentResultsUp()
         {
             RockMigrationHelper.AddPage( true, "905F6132-AE1C-4C85-9752-18D22E604C3A","D65F783D-87A9-4CC9-8110-E83466A0EADB","Personalization Segment Results","","08C61FD2-B495-4EC2-8B35-C0D9427E4F46","");
+#pragma warning disable CS0618 // Type or member is obsolete
             RockMigrationHelper.AddPageRoute("08C61FD2-B495-4EC2-8B35-C0D9427E4F46","admin/cms/personalization-segments/{PersonalizationSegmentGuid}","5C1BE6E2-4255-4F7C-A015-2D418EDE8606");
+#pragma warning restore CS0618 // Type or member is obsolete
             RockMigrationHelper.UpdateBlockType("Personalization Segment Results","Block that lists existing Personalization Segments result.","~/Blocks/Cms/PersonalizationSegmentResults.ascx","Cms","438432E3-22A8-43D9-9F06-179C3B65D298");
             RockMigrationHelper.AddBlock( true, "08C61FD2-B495-4EC2-8B35-C0D9427E4F46".AsGuid(),null,"C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(),"438432E3-22A8-43D9-9F06-179C3B65D298".AsGuid(), "Personalization Segment Results","Main",@"",@"",0,"550F8870-9A8E-4072-BF07-36B0621F037C"); 
         }

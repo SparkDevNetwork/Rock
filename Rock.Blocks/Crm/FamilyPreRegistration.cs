@@ -1295,7 +1295,7 @@ namespace Rock.Blocks.Crm
                             foreach ( var adultId in adultIds )
                             {
                                 groupMemberService.CreateKnownRelationship( adultId, person.Id, canCheckInRole.Id );
-                                newRelationships.AddOrIgnore( person.Id, new List<int>() );
+                                newRelationships.TryAdd( person.Id, new List<int>() );
                                 newRelationships[person.Id].Add( canCheckInRole.Id );
                             }
                         }
@@ -1313,7 +1313,7 @@ namespace Rock.Blocks.Crm
                         foreach ( var adultId in adultIds )
                         {
                             groupMemberService.CreateKnownRelationship( adultId, person.Id, newRelationshipId.Value );
-                            newRelationships.AddOrIgnore( person.Id, new List<int>() );
+                            newRelationships.TryAdd( person.Id, new List<int>() );
                             newRelationships[person.Id].Add( newRelationshipId.Value );
                         }
                     }
