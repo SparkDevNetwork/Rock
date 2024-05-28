@@ -184,6 +184,9 @@
     <Content Include="src\Group\groupRegistration.obs" />
     <Content Include="src\Group\GroupRegistration\editPanel.partial.obs" />
     <Content Include="src\Group\GroupRegistration\viewPanel.partial.obs" />
+    <Content Include="src\Reporting\dynamicData.obs" />
+    <Content Include="src\Reporting\dynamicDataCustomSettings.obs" />
+    <Content Include="src\Reporting\DynamicData\columnConfiguration.partial.obs" />
     <Content Include="src\Reporting\mergeTemplateList.obs" />
     <Content Include="src\Reporting\reportList.obs" />
     <Content Include="src\Security\ConfirmAccount.obs" />
@@ -377,6 +380,7 @@
     <Folder Include="src\Finance\FinancialPledgeDetail\" />
     <Folder Include="src\Group\" />
     <Folder Include="src\Group\GroupRegistration\" />
+    <Folder Include="src\Reporting\DynamicData\" />
     <Folder Include="src\Reporting\MergeTemplateList\" />
     <Folder Include="src\Reporting\ReportList\" />
     <Folder Include="src\Security\ConfirmAccount\" />

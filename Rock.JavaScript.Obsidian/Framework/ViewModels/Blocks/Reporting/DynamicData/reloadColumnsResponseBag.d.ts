@@ -21,20 +21,10 @@
 // </copyright>
 //
 
-/**
- * The data bag that contains all the information required to display
- * a PersonColumn in a Grid.
- */
-export type PersonFieldBag = {
-    /** Gets or sets the hashed identifier key. */
-    idKey?: string | null;
+import { ColumnConfigurationBag } from "@Obsidian/ViewModels/Blocks/Reporting/DynamicData/columnConfigurationBag";
 
-    /** Gets or sets the last name. */
-    lastName?: string | null;
-
-    /** Gets or sets the nick name. */
-    nickName?: string | null;
-
-    /** Gets or sets the photo URL. */
-    photoUrl?: string | null;
+/** A bag that contains information about reloaded columns for the dynamic data block. */
+export type ReloadColumnsResponseBag = {
+    /** Gets or sets configuration objects describing how each column of the grid results should be displayed, as well as rules for filtering, exporting, Etc. */
+    columnConfigurations?: ColumnConfigurationBag[] | null;
 };

@@ -1727,6 +1727,36 @@ namespace Rock
             return null;
         }
 
+        /// <summary>
+        /// Returns a camelCase representation of the provided string.
+        /// <para>
+        /// https://code-maze.com/csharp-convert-string-titlecase-camelcase/
+        /// </para>
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns>A camelCase representation of the provided string.</returns>
+        public static string ToCamelCase( this string str )
+        {
+            if ( str.IsNullOrWhiteSpace() )
+            {
+                return str;
+            }
+
+            var words = str.Split(new[] { "_", " " }, StringSplitOptions.RemoveEmptyEntries);
+
+            var leadWord = Regex.Replace( words[0], @"([A-Z])([A-Z]+|[a-z0-9]+)($|[A-Z]\w*)",
+                m =>
+                {
+                    return m.Groups[1].Value.ToLower() + m.Groups[2].Value.ToLower() + m.Groups[3].Value;
+                } );
+
+            var tailWords = words.Skip(1)
+                .Select(word => char.ToUpper(word[0]) + word.Substring(1).ToLower())
+                .ToArray();
+
+            return $"{leadWord}{string.Join(string.Empty, tailWords)}";
+        }
+
         #endregion String Extensions
     }
 }

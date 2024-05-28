@@ -21,20 +21,16 @@
 // </copyright>
 //
 
-/**
- * The data bag that contains all the information required to display
- * a PersonColumn in a Grid.
- */
-export type PersonFieldBag = {
-    /** Gets or sets the hashed identifier key. */
-    idKey?: string | null;
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-    /** Gets or sets the last name. */
-    lastName?: string | null;
+/** The settings options that will be available for selection in the custom settings panel for the dynamic data block. */
+export type DynamicDataCustomSettingsOptionsBag = {
+    /** Gets or sets the column type items for the grid. */
+    columnTypeItems?: ListItemBag[] | null;
 
-    /** Gets or sets the nick name. */
-    nickName?: string | null;
+    /** Gets or sets the display mode items. */
+    displayModeItems?: ListItemBag[] | null;
 
-    /** Gets or sets the photo URL. */
-    photoUrl?: string | null;
+    /** Gets or sets the visible priority items for the grid. */
+    visiblePriorityItems?: ListItemBag[] | null;
 };

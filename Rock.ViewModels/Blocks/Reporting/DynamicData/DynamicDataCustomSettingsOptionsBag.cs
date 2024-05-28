@@ -15,35 +15,30 @@
 // </copyright>
 //
 
-namespace Rock.ViewModels.Core.Grid
+using System.Collections.Generic;
+
+using Rock.ViewModels.Utility;
+
+namespace Rock.ViewModels.Blocks.Reporting.DynamicData
 {
     /// <summary>
-    /// The data bag that contains all the information required to display
-    /// a PersonColumn in a Grid.
+    /// The settings options that will be available for selection in the custom settings panel for the dynamic data block.
     /// </summary>
-    public class PersonFieldBag
+    public class DynamicDataCustomSettingsOptionsBag
     {
         /// <summary>
-        /// Gets or sets the hashed identifier key.
+        /// Gets or sets the display mode items.
         /// </summary>
-        public string IdKey { get; set; }
+        public List<ListItemBag> DisplayModeItems { get; set; }
 
         /// <summary>
-        /// Gets or sets the nick name.
+        /// Gets or sets the column type items for the grid.
         /// </summary>
-        /// <value>The nick name.</value>
-        public string NickName { get; set; }
+        public List<ListItemBag> ColumnTypeItems { get; set; }
 
         /// <summary>
-        /// Gets or sets the last name.
+        /// Gets or sets the visible priority items for the grid.
         /// </summary>
-        /// <value>The last name.</value>
-        public string LastName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the photo URL.
-        /// </summary>
-        /// <value>The photo URL.</value>
-        public string PhotoUrl { get; set; }
+        public List<ListItemBag> VisiblePriorityItems { get; set; }
     }
 }

@@ -168,7 +168,7 @@
      * @param e The object that describes the event.
      */
     function onInput(e: Event): void {
-        if (e.target instanceof HTMLInputElement) {
+        if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
             internalValue.value = e.target.value;
         }
 
@@ -185,7 +185,7 @@
      * @param e The object that describes the event.
      */
     function onChange(e: Event): void {
-        if (e.target instanceof HTMLInputElement) {
+        if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
             internalValue.value = e.target.value;
         }
 

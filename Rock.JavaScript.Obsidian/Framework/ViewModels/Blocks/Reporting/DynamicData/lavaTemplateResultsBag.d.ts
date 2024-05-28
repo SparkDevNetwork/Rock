@@ -21,20 +21,8 @@
 // </copyright>
 //
 
-/**
- * The data bag that contains all the information required to display
- * a PersonColumn in a Grid.
- */
-export type PersonFieldBag = {
-    /** Gets or sets the hashed identifier key. */
-    idKey?: string | null;
-
-    /** Gets or sets the last name. */
-    lastName?: string | null;
-
-    /** Gets or sets the nick name. */
-    nickName?: string | null;
-
-    /** Gets or sets the photo URL. */
-    photoUrl?: string | null;
+/** A bag that contains the lava template results for the dynamic data block. */
+export type LavaTemplateResultsBag = {
+    /** Gets or sets the results HTML. */
+    resultsHtml?: string | null;
 };
