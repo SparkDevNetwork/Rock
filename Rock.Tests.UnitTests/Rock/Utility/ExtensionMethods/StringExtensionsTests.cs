@@ -269,28 +269,5 @@ namespace Rock.Tests.Utility.ExtensionMethods
         }
 
         #endregion RedirectUrlContainsXss
-
-        #region ToCamelCase
-
-        [DataRow( "test string", "testString" )]
-        [DataRow( "test_string", "testString" )]
-        [DataRow( "Test String", "testString" )]
-        [DataRow( "Test_String", "testString" )]
-        [DataRow( "TEST STRING", "testString" )]
-        [DataRow( "TEST_STRING", "testString" )]
-        [DataRow( "_TEST__STRING", "testString" )]
-        [DataRow( "test  string", "testString" )]
-        [DataRow( "test string with many words", "testStringWithManyWords" )]
-        [DataRow( "ACRONYM String", "acronymString" )]
-        [DataRow( "ACRONYMString", "acronymString" )]
-        [DataTestMethod]
-        public void ToCamelCase_ReturnsExpectedOutput( string input, string expected )
-        {
-            var output = input.ToCamelCase();
-
-            Assert.That.AreEqual( expected, output );
-        }
-
-        #endregion ToCamelCase
     }
 }

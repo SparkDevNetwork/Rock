@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -700,8 +701,42 @@ namespace Rock.Blocks.Reporting
             {
                 c.Name = c.Name ?? string.Empty;
                 c.SplitCaseName = c.Name.SplitCase().ReplaceWhileExists( "  ", " " );
-                c.CamelCaseName = c.SplitCaseName.ToCamelCase();
+
+                // Do not change this to use Rock's `ToCamelCase()` extension method,
+                // as this block's private `GetCamelCase()` method is more thorough,
+                // and will cover cases that are more likely to be encountered within
+                // the the block's dynamic query value.
+                c.CamelCaseName = GetCamelCase( c.SplitCaseName );
             } );
+        }
+
+        /// Gets the camelCase representation of the provided string.
+        /// <para>
+        /// https://code-maze.com/csharp-convert-string-titlecase-camelcase/
+        /// </para>
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns>A camelCase representation of the provided string.</returns>
+        private string GetCamelCase( string str )
+        {
+            if ( str.IsNullOrWhiteSpace() )
+            {
+                return str;
+            }
+
+            var words = str.Split( new[] { "_", " " }, StringSplitOptions.RemoveEmptyEntries );
+
+            var leadWord = Regex.Replace( words[0], @"([A-Z])([A-Z]+|[a-z0-9]+)($|[A-Z]\w*)",
+                m =>
+                {
+                    return m.Groups[1].Value.ToLower() + m.Groups[2].Value.ToLower() + m.Groups[3].Value;
+                } );
+
+            var tailWords = words.Skip( 1 )
+                .Select( word => char.ToUpper( word[0] ) + word.Substring( 1 ).ToLower() )
+                .ToArray();
+
+            return $"{leadWord}{string.Join( string.Empty, tailWords )}";
         }
 
         /// <summary>
