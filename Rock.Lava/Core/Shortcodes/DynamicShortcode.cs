@@ -259,6 +259,8 @@ namespace Rock.Lava
                 shortcodeCommands = context.GetEnabledCommands();
             }
 
+            var shortcodeTemplateContext = _engine.NewRenderContext( internalMergeFields, shortcodeCommands );
+
             var shortcodeTemplateMarkup = string.Empty;
 
             // Run Lava on the block markup, unless the shortcode has disabled it.
@@ -268,7 +270,6 @@ namespace Rock.Lava
             }
             else
             {
-                var shortcodeTemplateContext = _engine.NewRenderContext( internalMergeFields, shortcodeCommands );
                 var blockMarkupRenderResult = _engine.RenderTemplate( _blockMarkup.ToString(), LavaRenderParameters.WithContext( shortcodeTemplateContext ) );
                 shortcodeTemplateMarkup = blockMarkupRenderResult.Text;
             }
