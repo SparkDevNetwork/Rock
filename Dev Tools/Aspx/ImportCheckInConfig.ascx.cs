@@ -443,7 +443,8 @@ namespace RockWeb.Blocks.CheckIn.Config
                     {
                         groupType = new GroupType
                         {
-                            Guid = jsonGroupType.Guid
+                            Guid = jsonGroupType.Guid,
+                            TakesAttendance = true
                         };
 
                         groupTypesToAdd.Add( groupType );
