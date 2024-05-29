@@ -117,6 +117,8 @@
     <Compile Include="Cms\PageRouteList.cs" />
     <Compile Include="Core\PersonFollowingList.cs" />
     <Compile Include="Core\PersonSignalList.cs" />
+    <Compile Include="Finance\FinancialPledgeList.cs" />
+    <Compile Include="Security\RestKeyList.cs" />
     <Compile Include="Crm\PersonMergeRequestList.cs" />
     <Compile Include="Core\AuditList.cs" />
     <Compile Include="Event\RegistrationInstanceLinkageList.cs" />
