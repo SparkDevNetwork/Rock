@@ -118,7 +118,6 @@
     <Compile Include="Blocks\Core\Attributes\AttributesOptionsBag.cs" />
     <Compile Include="Blocks\Core\AttributeMatrixTemplateList\AttributeMatrixTemplateListOptionsBag.cs" />
     <Compile Include="Blocks\Core\AuditList\AuditListOptionsBag.cs" />
-    <Compile Include="Blocks\Communication\SystemCommunicationList\SystemCommunicationListOptionsBag.cs" />
     <Compile Include="Blocks\Core\BinaryFileDetail\BinaryFileBag.cs" />
     <Compile Include="Blocks\Core\BinaryFileDetail\BinaryFileDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\BinaryFileList\BinaryFileListOptionsBag.cs" />
