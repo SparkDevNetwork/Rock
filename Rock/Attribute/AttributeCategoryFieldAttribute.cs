@@ -15,8 +15,9 @@
 // </copyright>
 //
 using System;
+
+using Rock.Configuration;
 using Rock.Field.Types;
-using Rock.Utility.Settings;
 using Rock.Web.Cache;
 
 namespace Rock.Attribute
@@ -88,7 +89,7 @@ namespace Rock.Attribute
                 FieldConfigurationValues.AddOrReplace( ENTITY_TYPE_NAME_KEY, new Field.ConfigurationValue( "Rock.Model.Attribute" ) );
                 FieldConfigurationValues.AddOrReplace( QUALIFIER_COLUMN_KEY, new Field.ConfigurationValue( "EntityTypeId" ) );
 
-                if ( RockInstanceConfig.DatabaseIsAvailable )
+                if ( RockApp.Current.IsDatabaseAvailable() )
                 {
                     var entityType = EntityTypeCache.Get( value, false );
                     if ( entityType != null )

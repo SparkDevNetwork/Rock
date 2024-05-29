@@ -194,7 +194,7 @@ namespace Rock.Model
                         }
 
                         // When using a clustered environment we need to check the DB to make sure the code hasn't been assigned by another server
-                        if ( Rock.Utility.Settings.RockInstanceConfig.IsClustered )
+                        if ( WebFarm.RockWebFarm.IsEnabled() )
                         {
                             if ( service.IsCodeAlreadyInUse( code ) )
                             {

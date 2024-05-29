@@ -14,7 +14,6 @@ using DotNet.Testcontainers.Containers;
 using Rock.Model;
 using Rock.Tests.Shared.Lava;
 using Rock.Utility;
-using Rock.Utility.Settings;
 using Rock.Web;
 
 using Testcontainers.MsSql;
@@ -91,8 +90,7 @@ namespace Rock.Tests.Shared.TestFramework
                     MultipleActiveResultSets = true
                 };
 
-                RockInstanceConfig.Database.SetConnectionString( csb.ConnectionString );
-                RockInstanceConfig.SetDatabaseIsAvailable( true );
+                TestHelper.ConfigureRockApp( csb.ConnectionString );
 
                 MigrateDatabase( csb.ConnectionString );
 
@@ -102,8 +100,7 @@ namespace Rock.Tests.Shared.TestFramework
                     AddSampleData( sampleDataUrl );
                 }
 
-                RockInstanceConfig.SetDatabaseIsAvailable( false );
-                RockInstanceConfig.Database.SetConnectionString( string.Empty );
+                TestHelper.ConfigureRockApp( null );
             }
         }
 

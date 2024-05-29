@@ -21,6 +21,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Lava.Fluid;
@@ -137,7 +138,7 @@ namespace Rock.Tests.Integration.Modules.Core.Lava.Filters
         public void RockInstanceConfigFilter_MachineName_RendersExpectedValue()
         {
             var template = "{{ 'MachineName' | RockInstanceConfig }}";
-            var expectedValue = RockInstanceConfig.MachineName;
+            var expectedValue = RockApp.Current.HostingSettings.MachineName;
 
             TestHelper.AssertTemplateOutput( expectedValue, template );
         }
@@ -146,7 +147,7 @@ namespace Rock.Tests.Integration.Modules.Core.Lava.Filters
         public void RockInstanceConfigFilter_ApplicationDirectory_RendersExpectedValue()
         {
             var template = "{{ 'ApplicationDirectory' | RockInstanceConfig }}";
-            var expectedValue = RockInstanceConfig.ApplicationDirectory;
+            var expectedValue = RockApp.Current.HostingSettings.VirtualRootPath;
 
             TestHelper.AssertTemplateOutput( expectedValue, template );
         }
@@ -155,7 +156,7 @@ namespace Rock.Tests.Integration.Modules.Core.Lava.Filters
         public void RockInstanceConfigFilter_PhysicalDirectory_RendersExpectedValue()
         {
             var template = "{{ 'PhysicalDirectory' | RockInstanceConfig }}";
-            var expectedValue = RockInstanceConfig.PhysicalDirectory;
+            var expectedValue = RockApp.Current.HostingSettings.WebRootPath;
 
             TestHelper.AssertTemplateOutput( expectedValue, template );
         }
@@ -164,7 +165,7 @@ namespace Rock.Tests.Integration.Modules.Core.Lava.Filters
         public void RockInstanceConfigFilter_IsClustered_RendersExpectedValue()
         {
             var template = "{{ 'IsClustered' | RockInstanceConfig }}";
-            var expectedValue = RockInstanceConfig.IsClustered.ToTrueFalse();
+            var expectedValue = WebFarm.RockWebFarm.IsEnabled().ToTrueFalse();
 
             TestHelper.AssertTemplateOutput( expectedValue, template, new LavaTestRenderOptions { IgnoreCase = true } );
         }
@@ -173,7 +174,7 @@ namespace Rock.Tests.Integration.Modules.Core.Lava.Filters
         public void RockInstanceConfigFilter_SystemDateTime_RendersExpectedValue()
         {
             var template = "{{ 'SystemDateTime' | RockInstanceConfig | Date:'yyyy-MM-dd HH:mm:ss' }}";
-            var expectedValue = RockInstanceConfig.SystemDateTime;
+            var expectedValue = RockDateTime.SystemDateTime;
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
@@ -203,7 +204,7 @@ namespace Rock.Tests.Integration.Modules.Core.Lava.Filters
 
                 TestHelper.DebugWriteRenderResult( engine, template, result.Text );
 
-                var expectedOutput = RockInstanceConfig.LavaEngineName;
+                var expectedOutput = RockApp.Current.GetCurrentLavaEngineName();
 
                 Assert.That.AreEqual( expectedOutput, result.Text );
             } );
