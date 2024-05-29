@@ -11,18 +11,10 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.SystemGuid;
-using Rock.ViewModels.Blocks.Core.PersonSignalList;
 using Rock.ViewModels.Blocks.Crm.PhotoUpload;
-using Rock.ViewModels.Utility;
-using Rock.Web.UI.Controls;
 
 namespace Rock.Blocks.Crm
 {
-    /// <summary>
-    /// Allows a photo to be uploaded for the given person (logged in person) and optionally their family members.
-    /// </summary>
-    /// <seealso cref="Rock.Blocks.RockBlockType" />
-
     [DisplayName( "Photo Upload" )]
     [Category( "CRM" )]
     [Description( "Allows a photo to be uploaded for the given person (logged in person) and optionally their family members." )]
@@ -50,12 +42,17 @@ namespace Rock.Blocks.Crm
     [Rock.SystemGuid.BlockTypeGuid( "C523CABA-A32C-46A3-A8B4-8F962CDC6A78" )]
     public class PhotoUpload : RockBlockType
     {
+        #region Keys
 
         private static class AttributeKey
         {
             public const string IncludeFamilyMembers = "IncludeFamilyMembers";
             public const string AllowStaff = "AllowStaff";
         }
+
+        #endregion
+
+        #region Properties
 
         /// <summary>
         /// This is special "staff" group but it's only loaded when the AllowStaff block attribute is set to false.
@@ -67,14 +64,18 @@ namespace Rock.Blocks.Crm
         /// </summary>
         private Rock.Model.Group _photoRequestGroup = null;
 
+        #endregion
+
+        #region Methods
+
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
             if ( ! GetAttributeValue( AttributeKey.AllowStaff ).AsBoolean() )
-                {
-                    GroupService service = new GroupService( new RockContext() );
-                    _staffGroup = service.GetByGuid( new Guid( Rock.SystemGuid.Group.GROUP_STAFF_MEMBERS ) );
-                }
+            {
+                GroupService service = new GroupService( new RockContext() );
+                _staffGroup = service.GetByGuid( new Guid( Rock.SystemGuid.Group.GROUP_STAFF_MEMBERS ) );
+            }
 
             return GetPhotoUploadBag();
         }
@@ -88,16 +89,17 @@ namespace Rock.Blocks.Crm
             {
                 PersonPhotoList = new List<PersonPhotoBag>()
             };
-
             var loggedInPerson = RequestContext.CurrentPerson;
 
             if ( loggedInPerson != null )
             {
                 var isStaffMemberDisabled = false;
+
                 if ( _staffGroup != null && _staffGroup.Members.Where( m => m.PersonId == loggedInPerson.Id ).Count() > 0 )
                 {
                     isStaffMemberDisabled = true;
                 }
+
                 PersonPhotoBag currentPersonPhotoBag = new PersonPhotoBag
                 {
                     IdKey = loggedInPerson.IdKey,
@@ -116,6 +118,7 @@ namespace Rock.Blocks.Crm
                         {
                             isStaffMemberDisabled = true;
                         }
+
                         var familyMemberPhotoBag = new PersonPhotoBag
                         {
                             IdKey = member.Person.IdKey,
@@ -145,6 +148,7 @@ namespace Rock.Blocks.Crm
             }
 
             var groupMember = _photoRequestGroup.Members.Where( m => m.PersonId == person.Id ).FirstOrDefault();
+
             if ( groupMember == null )
             {
                 groupMember = new GroupMember();
@@ -153,9 +157,10 @@ namespace Rock.Blocks.Crm
                 groupMember.GroupRoleId = _photoRequestGroup.GroupType.DefaultGroupRoleId ?? -1;
                 _photoRequestGroup.Members.Add( groupMember );
             }
-
             groupMember.GroupMemberStatus = GroupMemberStatus.Pending;
         }
+
+        #endregion
 
         #region Block Actions
 
