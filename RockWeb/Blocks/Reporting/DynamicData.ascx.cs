@@ -546,7 +546,7 @@ namespace RockWeb.Blocks.Reporting
                 {
                     var mergeFields = GetDynamicDataMergeFields();
 
-                    // NOTE: there is already a PageParameters merge field from GetDynamicDataMergeFields, but for backwords compatibility, also add each of the PageParameters as plain merge fields
+                    // NOTE: there is already a PageParameters merge field from GetDynamicDataMergeFields, but for backwards compatibility, also add each of the PageParameters as plain merge fields
                     foreach ( var pageParam in PageParameters() )
                     {
                         mergeFields.AddOrReplace( pageParam.Key, pageParam.Value );
@@ -556,6 +556,26 @@ namespace RockWeb.Blocks.Reporting
 
                     var parameters = GetParameters();
                     int timeout = GetAttributeValue( AttributeKey.Timeout ).AsInteger();
+
+                    if ( schemaOnly && new Regex( @"#\w+" ).IsMatch( query ) )
+                    {
+                        /*
+                            5/28/2024 - JPH
+
+                            If this query makes use of any temporary tables, bypass the loading of schema
+                            only, and go straight to loading schema and data, as the underlying use of
+                            `SqlDataAdapter.FillSchema()` will throw an exception when temp tables are
+                            being used.
+
+                            The pattern being matched against here will catch both local (#table_name)
+                            and global (##table_name) temporary tables.
+
+                            Reason: The use of temporary SQL tables in dynamic data block queries causes
+                            cluttered Azure SQL error logs, and causes extra load on the database server.
+                            https://github.com/SparkDevNetwork/Rock/issues/5868
+                         */
+                        schemaOnly = false;
+                    }
 
                     if ( schemaOnly )
                     {
