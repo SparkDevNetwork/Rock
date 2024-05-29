@@ -569,19 +569,49 @@ namespace Rock.Blocks.Reporting
 
                 var mergeFields = config.MergeFields;
 
-                // NOTE: there is already a PageParameters merge field within common merge fields, but for backwards compatibility, also add each of the page parameters as plain merge fields.
+                // NOTE: There is already a PageParameters merge field within common merge fields, but for
+                // backwards compatibility, also add each of the page parameters as plain merge fields.
                 foreach ( var pageParam in this.RequestContext.GetPageParameters() )
                 {
                     mergeFields.AddOrReplace( pageParam.Key, pageParam.Value );
                 }
 
                 var query = config.Query.ResolveMergeFields( mergeFields, config.EnabledLavaCommands );
+                var schemaOnly = config.DataSetLoadingMode == DataSetLoadingMode.LoadSchemaOnly;
 
-                if ( config.DataSetLoadingMode == DataSetLoadingMode.LoadSchemaOnly )
+                if ( schemaOnly && new Regex( @"#\w+" ).IsMatch( query ) )
+                {
+                    /*
+                        5/28/2024 - JPH
+
+                        If this query makes use of any temporary tables, bypass the loading of schema
+                        only, and go straight to loading schema and data, as the underlying use of
+                        `SqlDataAdapter.FillSchema()` will throw an exception when temp tables are
+                        being used.
+
+                        The pattern being matched against here will catch both local (#table_name)
+                        and global (##table_name) temporary tables.
+
+                        Reason: The use of temporary SQL tables in dynamic data block queries causes
+                        cluttered Azure SQL error logs, and causes extra load on the database server.
+                        https://github.com/SparkDevNetwork/Rock/issues/5868
+                     */
+                    schemaOnly = false;
+                }
+
+                // A local function to add the schema and data to the results object.
+                void GetSchemaAndData()
+                {
+                    results.DataSet = DbService.GetDataSet( query, commandType, sqlParameters, timeout );
+                    results.WasFullDataSetLoaded = true;
+                }
+
+                if ( schemaOnly )
                 {
                     try
                     {
-                        // GetDataSetSchema won't work in some cases, for example, if the SQL references a TEMP table. So, fall back to use the regular GetDataSet if there is an exception or the schema does not return any tables.
+                        // GetDataSetSchema won't work in some cases; fall back to use the regular GetDataSet
+                        // if there is an exception or the schema does not return any tables.
                         var dataSet = DbService.GetDataSetSchema( query, commandType, sqlParameters, timeout );
                         if ( dataSet != null && dataSet.Tables.Count > 0 )
                         {
@@ -589,23 +619,20 @@ namespace Rock.Blocks.Reporting
                         }
                         else
                         {
-                            results.DataSet = DbService.GetDataSet( query, commandType, sqlParameters, timeout );
-                            results.WasFullDataSetLoaded = true;
+                            GetSchemaAndData();
                         }
                     }
                     catch
                     {
-                        results.DataSet = DbService.GetDataSet( query, commandType, sqlParameters, timeout );
-                        results.WasFullDataSetLoaded = true;
+                        GetSchemaAndData();
                     }
                 }
                 else
                 {
-                    results.DataSet = DbService.GetDataSet( query, commandType, sqlParameters, timeout );
-                    results.WasFullDataSetLoaded = true;
+                    GetSchemaAndData();
                 }
             }
-            catch ( System.Exception ex )
+            catch ( Exception ex )
             {
                 results.ErrorMessage = ex.Message;
             }
