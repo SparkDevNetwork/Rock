@@ -1,0 +1,43 @@
+<template>
+    <!-- Notification box -->
+    <div class="flex">
+        <div v-for="person in personPhotoList" :key="person.id">
+            <ImageEditor
+                v-model="person.profilePhoto"
+                :binaryFileTypeGuid="BinaryFiletype.PersonImage"
+                :disabled="person.isStaffMember || isLoading"
+                :label="person.fullName ?? ''"
+                :noPictureUrl="person.noPhotoUrl ?? '/Assets/Images/person-no-photo-unknown.svg'"
+                @update:modelValue="updatePersonProfilePhoto(person.id, person.profilePhoto?.value ?? null)" />
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
+    import ImageEditor from "@Obsidian/Controls/imageEditor.obs";
+    import { PhotoUploadBag } from "@Obsidian/ViewModels/Blocks/Crm/PhotoUpload/photoUploadBag";
+    import { PersonPhotoBag } from "@Obsidian/ViewModels/Blocks/Crm/PhotoUpload/personPhotoBag";
+
+    const config = useConfigurationValues<PhotoUploadBag>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const personPhotoList = ref<PersonPhotoBag[]>(config.personPhotoList ?? []);
+    const isLoading = ref<boolean>(false);
+
+    async function updatePersonProfilePhoto(personId: number, photoGuid: string): Promise<void> {
+        await invokeBlockAction<string>("UpdatePersonProfilePhoto", {
+            personId,
+            photoGuid
+        });
+    }
+</script>
+
+<style scoped>
+.flex {
+    display: flex;
+    column-gap: 45px;
+    flex-wrap: wrap;
+}
+</style>
