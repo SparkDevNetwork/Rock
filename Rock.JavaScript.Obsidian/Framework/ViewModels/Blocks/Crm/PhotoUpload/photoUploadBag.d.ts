@@ -24,17 +24,5 @@
 import { PersonPhotoBag } from "@Obsidian/ViewModels/Blocks/Crm/PhotoUpload/personPhotoBag";
 
 export type PhotoUploadBag = {
-    /** Gets or sets the type of the alert. */
-    alertType?: string | null;
-
-    /**
-     * Gets or sets the error message. A non-empty value indicates that
-     * an error is preventing the block from being displayed.
-     */
-    errorMessage?: string | null;
-
     personPhotoList?: PersonPhotoBag[] | null;
-
-    /** Gets or sets the success message. */
-    successMessage?: string | null;
 };

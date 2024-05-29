@@ -1,14 +1,14 @@
 <template>
     <!-- Notification box -->
-    <div class="flex">
-        <div v-for="person in personPhotoList" :key="person.id">
+    <div class="image-editor-list">
+        <div v-for="person in personPhotoList">
             <ImageEditor
                 v-model="person.profilePhoto"
                 :binaryFileTypeGuid="BinaryFiletype.PersonImage"
-                :disabled="person.isStaffMember || isLoading"
+                :disabled="person.isStaffMemberDisabled || isLoading"
                 :label="person.fullName ?? ''"
                 :noPictureUrl="person.noPhotoUrl ?? '/Assets/Images/person-no-photo-unknown.svg'"
-                @update:modelValue="updatePersonProfilePhoto(person.id, person.profilePhoto?.value ?? null)" />
+                @update:modelValue="updatePersonProfilePhoto(person.idKey ?? null, person.profilePhoto?.value ?? null)" />
         </div>
     </div>
 </template>
@@ -21,21 +21,36 @@
     import { PhotoUploadBag } from "@Obsidian/ViewModels/Blocks/Crm/PhotoUpload/photoUploadBag";
     import { PersonPhotoBag } from "@Obsidian/ViewModels/Blocks/Crm/PhotoUpload/personPhotoBag";
 
+    // #region Values
+
     const config = useConfigurationValues<PhotoUploadBag>();
     const invokeBlockAction = useInvokeBlockAction();
     const personPhotoList = ref<PersonPhotoBag[]>(config.personPhotoList ?? []);
     const isLoading = ref<boolean>(false);
 
-    async function updatePersonProfilePhoto(personId: number, photoGuid: string): Promise<void> {
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Uploads a photo to a person's profile.
+     *
+     * @param personIdKey The Id Key of the person that the photo is being uploaded for.
+     * @param photoGuid The Guid that is attached to the uploaded photo.
+     */
+    async function updatePersonProfilePhoto(personIdKey: string | null, photoGuid: string | null): Promise<void> {
         await invokeBlockAction<string>("UpdatePersonProfilePhoto", {
-            personId,
+            personIdKey,
             photoGuid
         });
     }
+
+    // #endregion
+
 </script>
 
 <style scoped>
-.flex {
+.image-editor-list {
     display: flex;
     column-gap: 45px;
     flex-wrap: wrap;

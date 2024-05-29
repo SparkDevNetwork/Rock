@@ -21,16 +21,16 @@
 // </copyright>
 //
 
-import { ListItemBag } from "Framework/ViewModels/Utility/listItemBag";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export type PersonPhotoBag = {
     fullName?: string | null;
 
-    id: number;
+    idKey?: string | null;
 
-    profilePhoto?: ListItemBag;
+    isStaffMemberDisabled: boolean;
 
     noPhotoUrl?: string | null;
 
-    isStaffMember: boolean;
+    profilePhoto?: ListItemBag | null;
 };

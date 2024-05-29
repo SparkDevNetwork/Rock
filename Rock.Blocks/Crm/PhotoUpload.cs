@@ -19,13 +19,16 @@ using Rock.Web.UI.Controls;
 namespace Rock.Blocks.Crm
 {
     /// <summary>
-    /// Allows a person to opt-out of future photo requests.
+    /// Allows a photo to be uploaded for the given person (logged in person) and optionally their family members.
     /// </summary>
     /// <seealso cref="Rock.Blocks.RockBlockType" />
 
     [DisplayName( "Photo Upload" )]
     [Category( "CRM" )]
     [Description( "Allows a photo to be uploaded for the given person (logged in person) and optionally their family members." )]
+    // [SupportedSiteTypes( Model.SiteType.Web )]
+
+    #region Block Attributes
 
     [BooleanField(
         "Include Family Members",
@@ -41,9 +44,10 @@ namespace Rock.Blocks.Crm
         DefaultBooleanValue = false,
         Order = 1 )]
 
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    #endregion
 
-
+    [Rock.SystemGuid.EntityTypeGuid( "E9B8A70B-BB59-4044-900F-44150DA73300" )]
+    [Rock.SystemGuid.BlockTypeGuid( "C523CABA-A32C-46A3-A8B4-8F962CDC6A78" )]
     public class PhotoUpload : RockBlockType
     {
 
@@ -75,6 +79,9 @@ namespace Rock.Blocks.Crm
             return GetPhotoUploadBag();
         }
 
+        /// <summary>
+        /// Sets the initial state of the Photo Upload Bag.
+        /// </summary>
         private PhotoUploadBag GetPhotoUploadBag()
         {
             var photoUploadBag = new PhotoUploadBag
@@ -86,18 +93,18 @@ namespace Rock.Blocks.Crm
 
             if ( loggedInPerson != null )
             {
-                var isStaffMember = false;
+                var isStaffMemberDisabled = false;
                 if ( _staffGroup != null && _staffGroup.Members.Where( m => m.PersonId == loggedInPerson.Id ).Count() > 0 )
                 {
-                    isStaffMember = true;
+                    isStaffMemberDisabled = true;
                 }
                 PersonPhotoBag currentPersonPhotoBag = new PersonPhotoBag
                 {
-                    Id = loggedInPerson.Id,
+                    IdKey = loggedInPerson.IdKey,
                     FullName = loggedInPerson.FullName,
                     ProfilePhoto = loggedInPerson.Photo.ToListItemBag(),
                     NoPhotoUrl = Rock.Model.Person.GetPersonNoPictureUrl( loggedInPerson ),
-                    IsStaffMember = isStaffMember,
+                    IsStaffMemberDisabled = isStaffMemberDisabled,
                 };
                 photoUploadBag.PersonPhotoList.Add( currentPersonPhotoBag );
 
@@ -107,11 +114,11 @@ namespace Rock.Blocks.Crm
                     {
                         if ( _staffGroup != null && _staffGroup.Members.Where( m => m.PersonId == member.Id ).Count() > 0 )
                         {
-                            isStaffMember = true;
+                            isStaffMemberDisabled = true;
                         }
                         var familyMemberPhotoBag = new PersonPhotoBag
                         {
-                            Id = member.Person.Id,
+                            IdKey = member.Person.IdKey,
                             FullName = member.Person.FullName,
                             ProfilePhoto = member.Person.Photo.ToListItemBag(),
                             NoPhotoUrl = Rock.Model.Person.GetPersonNoPictureUrl(member.Person)
@@ -152,17 +159,27 @@ namespace Rock.Blocks.Crm
 
         #region Block Actions
 
+        /// <summary>
+        /// Updates the Profile Photo associated with a given Person.
+        /// </summary>
+        /// <param name="personIdKey">The identifier of the Person.</param>
+        /// <param name="photoGuid">The identifier of the photo.</param>
+        /// <returns>An empty result that indicates if the operation succeeded.</returns>
         [BlockAction]
-        public BlockActionResult UpdatePersonProfilePhoto( int personId, string photoGuid )
+        public BlockActionResult UpdatePersonProfilePhoto( string personIdKey, string photoGuid )
         {
             using ( var rockContext = new RockContext() )
             {
                 PersonService personService = new PersonService( rockContext );
-                var person = personService.Get( personId );
+                var person = personService.Get( personIdKey );
+
+                if ( person == null )
+                {
+                    return ActionBadRequest( "Person not found." );
+                }
+
                 person.PhotoId = new BinaryFileService( rockContext ).GetId( photoGuid.AsGuid() );
-
                 AddOrUpdatePersonInPhotoRequestGroup( person, rockContext );
-
                 rockContext.SaveChanges();
 
                 return ActionOk();

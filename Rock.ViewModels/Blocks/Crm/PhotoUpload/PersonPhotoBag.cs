@@ -10,13 +10,14 @@ namespace Rock.ViewModels.Blocks.Crm.PhotoUpload
 {
     public class PersonPhotoBag
     {
-        public int Id { get; set; }
+        public string IdKey { get; set; }
 
         public string FullName { get; set; }
 
         public ListItemBag ProfilePhoto { get; set; }
 
         public string NoPhotoUrl { get; set; }
-        public bool IsStaffMember { get; internal set; }
+
+        public bool IsStaffMemberDisabled { get; internal set; }
     }
 }
