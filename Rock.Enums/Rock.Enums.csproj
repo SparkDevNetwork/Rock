@@ -80,6 +80,7 @@
     <Compile Include="Communication\CommunicationMessageFilter.cs" />
     <Compile Include="Communication\CommunicationRecipientStatus.cs" />
     <Compile Include="Communication\CommunicationStatus.cs" />
+    <Compile Include="Configuration\DatabasePlatform.cs" />
     <Compile Include="Controls\FieldSource.cs" />
     <Compile Include="Controls\AttributeFormat.cs" />
     <Compile Include="Controls\FieldFormat.cs" />

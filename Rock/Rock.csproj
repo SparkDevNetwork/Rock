@@ -972,6 +972,11 @@
     <Compile Include="Communication\Transport\EmailSendResponse.cs" />
     <Compile Include="Communication\EmailTransportComponent.cs" />
     <Compile Include="Communication\Transport\ThrottleHelper.cs" />
+    <Compile Include="Configuration\DatabaseConfiguration.cs" />
+    <Compile Include="Configuration\DatabaseConfigurationExtensions.cs" />
+    <Compile Include="Configuration\HostingSettings.cs" />
+    <Compile Include="Configuration\IConnectionStringProvider.cs" />
+    <Compile Include="Configuration\WebFormsConnectionStringProvider.cs" />
     <Compile Include="Core\NotificationMessageTypeComponent.cs" />
     <Compile Include="Core\NotificationMessageTypeContainer.cs" />
     <Compile Include="Core\NotificationMessageTypes\ConnectionRequestMention.cs" />
@@ -2153,7 +2158,14 @@
     <Compile Include="Utility\RockDynamic.cs" />
     <Compile Include="Cms\StructuredContent\StructuredContentHelper.cs" />
     <Compile Include="Utility\RockHtmlMarkupFormatter.cs" />
+    <Compile Include="Configuration\IDatabaseConfiguration.cs" />
+    <Compile Include="Configuration\IHostingSettings.cs" />
+    <Compile Include="Configuration\IInitializationSettings.cs" />
+    <Compile Include="Configuration\InitializationSettings.cs" />
+    <Compile Include="Configuration\RockAppExtensions.cs" />
     <Compile Include="Utility\Settings\Giving\GivingAutomationSettings.cs" />
+    <Compile Include="Configuration\RockApp.cs" />
+    <Compile Include="Configuration\WebFormsInitializationSettings.cs" />
     <Compile Include="Utility\TaskActivityMessageHub.cs" />
     <Compile Include="Utility\RockSerializableList.cs" />
     <Compile Include="Utility\CampaignItem.cs" />

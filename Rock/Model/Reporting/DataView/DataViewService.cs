@@ -31,7 +31,7 @@ using Rock.Data;
 using Rock.Logging;
 using Rock.Reporting.DataFilter;
 using Rock.SystemKey;
-using Rock.Utility.Settings;
+using Rock.Configuration;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -49,8 +49,8 @@ namespace Rock.Model
         {
             get
             {
-                var rockContext = RockInstanceConfig.Database.ConnectionString;
-                var readOnlyContext = RockInstanceConfig.Database.ReadOnlyConnectionString;
+                var rockContext = RockApp.Current.InitializationSettings.ConnectionString;
+                var readOnlyContext = RockApp.Current.InitializationSettings.ReadOnlyConnectionString;
 
                 if ( rockContext != null && readOnlyContext != null && !rockContext.Equals( readOnlyContext ) )
                 {

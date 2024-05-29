@@ -27,10 +27,11 @@ using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
+using Rock.Enums.Configuration;
 using Rock.Logging;
 using Rock.Model;
-using Rock.Utility.Settings;
 using Rock.Web.Cache;
 
 namespace Rock.Jobs
@@ -140,6 +141,8 @@ namespace Rock.Jobs
 
         #endregion
 
+        private readonly IDatabaseConfiguration _databaseConfiguration;
+
         /// <summary> 
         /// Empty constructor for job initialization
         /// <para>
@@ -149,6 +152,7 @@ namespace Rock.Jobs
         /// </summary>
         public DatabaseMaintenance()
         {
+            _databaseConfiguration = RockApp.Current.GetDatabaseConfiguration();
         }
 
         private List<DatabaseMaintenanceTaskResult> _databaseMaintenanceTaskResults = new List<DatabaseMaintenanceTaskResult>();
@@ -170,7 +174,7 @@ namespace Rock.Jobs
              * For Microsoft Azure, disable the Integrity Check and Statistics Update tasks.
              * Refer: https://azure.microsoft.com/en-us/blog/data-integrity-in-azure-sql-database/
              */
-            if ( RockInstanceConfig.Database.Platform == RockInstanceDatabaseConfiguration.PlatformSpecifier.AzureSql )
+            if ( _databaseConfiguration.Platform == DatabasePlatform.AzureSql )
             {
                 runIntegrityCheck = false;
 
@@ -358,8 +362,8 @@ namespace Rock.Jobs
             bool useONLINEIndexRebuild = GetAttributeValue( "UseONLINEIndexRebuild" ).AsBoolean();
 
             if ( useONLINEIndexRebuild
-                 && !( RockInstanceConfig.Database.Platform == RockInstanceDatabaseConfiguration.PlatformSpecifier.AzureSql
-                       || RockInstanceConfig.Database.Edition.Contains( "Enterprise" ) ) )
+                 && !( _databaseConfiguration.Platform == DatabasePlatform.AzureSql
+                       || _databaseConfiguration.Edition.Contains( "Enterprise" ) ) )
             {
                 // Online index rebuild is only available for Azure SQL or SQL Enterprise.
                 Logger.LogInformation( "Online Index Rebuild option is selected but not available for the current database platform." );

@@ -16,7 +16,7 @@
 //
 using System;
 
-using Rock.Utility.Settings;
+using Rock.Configuration;
 using Rock.Web.Cache;
 
 namespace Rock.Attribute
@@ -44,7 +44,7 @@ namespace Rock.Attribute
             var configValue = new Field.ConfigurationValue( mefContainerAssemblyName );
             FieldConfigurationValues.Add( "container", configValue );
 
-            if ( string.IsNullOrWhiteSpace( Name ) && RockInstanceConfig.DatabaseIsAvailable )
+            if ( string.IsNullOrWhiteSpace( Name ) && RockApp.Current.IsDatabaseAvailable() )
             {
                 try
                 {

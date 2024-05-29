@@ -458,7 +458,7 @@ Ted Decker<br/>Cindy Decker<br/>Noah Decker<br/>Alex Decker<br/>
 
                     var cookie = GetExistingCookie( simulator, "cookie1" );
 
-                    Assert.That.AreProximate( cookie.Expires, RockInstanceConfig.SystemDateTime, new System.TimeSpan( 0, 35, 0 ) );
+                    Assert.That.AreProximate( cookie.Expires, RockDateTime.SystemDateTime, new System.TimeSpan( 0, 35, 0 ) );
                 }
             } );
         }
