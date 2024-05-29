@@ -22,27 +22,43 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntry
     public class CommunicationEntryAuthorizationBag
     {
         /// <summary>
-        /// Gets or sets a value indicating whether the approve action is authorized.
+        /// Gets or sets a value indicating whether the approve action is authorized on the block for the logged in person.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if the approve action is authorized; otherwise, <c>false</c>.
+        ///   <c>true</c> if the approve action is authorized on the block; otherwise, <c>false</c>.
         /// </value>
-        public bool IsApproveActionAuthorized { get; set; }
+        public bool IsBlockApproveActionAuthorized { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the edit action is authorized.
+        /// Gets or sets a value indicating whether the edit action is authorized on the block for the logged in person.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if the edit action is authorized; otherwise, <c>false</c>.
+        ///   <c>true</c> if the edit action is authorized on the block; otherwise, <c>false</c>.
         /// </value>
-        public bool IsEditActionAuthorized { get; set; }
+        public bool IsBlockEditActionAuthorized { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the individual can approve the communication.
+        /// Gets or sets a value indicating whether the edit action is authorized on the communication for the logged in person.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if the individual can approve the communication; otherwise, <c>false</c>.
+        ///   <c>true</c> if the edit action is authorized on the communication; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsCommunicationEditActionAuthorized { get; internal set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the logged in person can approve the communication.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the logged in person can approve the communication; otherwise, <c>false</c>.
         /// </value>
         public bool CanApproveCommunication { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the logged in person can edit the communication.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the logged in person can edit the communication; otherwise, <c>false</c>.
+        /// </value>
+        public bool CanEditCommunication { get; internal set; }
     }
 }

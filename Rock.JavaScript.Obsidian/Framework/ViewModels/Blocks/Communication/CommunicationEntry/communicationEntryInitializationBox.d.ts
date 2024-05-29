@@ -77,6 +77,9 @@ export type CommunicationEntryInitializationBox = {
      */
     isHidden: boolean;
 
+    /** Gets a value indicating whether lava is supported. */
+    isLavaEnabled: boolean;
+
     /** Gets or sets whether the "schedule preferences" feature is enabled. */
     isSchedulePreferencesEnabled: boolean;
 

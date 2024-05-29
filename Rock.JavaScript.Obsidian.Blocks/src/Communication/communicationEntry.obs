@@ -5,7 +5,7 @@
            type="block">
 
         <template v-if="statusLabel" #subheaderRight>
-            <HighlightLabel labelType="default">{{ statusLabel }}</HighlightLabel>
+            <HighlightLabel :labelType="statusLabelCssClass">{{ statusLabel }}</HighlightLabel>
         </template>
 
         <template #default>
@@ -40,6 +40,8 @@
                         </ul>
                     </div>
                 </KeepAlive>
+                <!-- TODO JMH Figure out what should be used for enabing/disabling buttons.  -->
+                <pre><code>{{ JSON.stringify(config.authorization, null, 2) }}</code></pre>
             </div>
 
             <div v-else
@@ -58,7 +60,6 @@
 <script setup lang="ts">
     import { computed, ref } from "vue";
     import PanelNavigationBar from "./CommunicationEntry/panelNavigationBar.partial.obs";
-    import { Nullable } from "./CommunicationEntry/types.partial";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
@@ -83,11 +84,13 @@
 
     const areResultsShown = ref<boolean>(false);
     const isFullMode = ref<boolean>(config.isFullMode);
-    const statusLabel = ref<Nullable<string>>(config.communication ? getStatusLabel(config.communication.status) : null);
+    const status = ref<CommunicationStatus>(config.communication ? config.communication.status : CommunicationStatus.Draft);
+    const statusLabel = computed<string | null>(() => getStatusLabel(status.value));
+    const statusLabelCssClass = computed<"default" | "type" | "success" | "primary" | "danger" | "warning" | "info" | "custom" | "campus" | undefined>(() => getStatusLabelCssClass(status.value));
     const sentResultsDiv = ref<HTMLElement | undefined>();
     const mediums = computed<ListItemBag[]>(() => config.mediums ?? []);
     const selectedMediumEntityTypeGuidOrEmptyString = ref<string>("");
-    const resultMessage = ref<Nullable<string>>("");
+    const resultMessage = ref<string | null | undefined>("");
     const viewCommunicationUrl = ref<string>(window.location.href);
     const isDisabled = ref<boolean>(false);
 
@@ -109,21 +112,38 @@
         }
     }
 
+    function getStatusLabelCssClass(status: CommunicationStatus): "default" | "type" | "success" | "primary" | "danger" | "warning" | "info" | "custom" | "campus" | undefined {
+        switch (status) {
+            case CommunicationStatus.PendingApproval: {
+                return "warning";
+            }
+            case CommunicationStatus.Approved: {
+                return "success";
+            }
+            case CommunicationStatus.Denied: {
+                return "danger";
+            }
+            case CommunicationStatus.Transient:
+            case CommunicationStatus.Draft:
+            default: {
+                return "default";
+            }
+        }
+    }
+
     //#endregion
 
     //#region Event Handlers
 
     /** Event handler for the communication being sent. */
     function onSentOrSaved(value: CommunicationEntrySendResponseBag): void {
-        if (value.redirectToViewMode) {
-            const url = new URL(window.location.href);
-            const queryParams = url.searchParams;
+        const url = new URL(window.location.href);
+        const queryParams = url.searchParams;
 
-            queryParams.set("CommunicationId", (value.communicationId ?? "") + "");
-            viewCommunicationUrl.value = url.href;
-        }
+        queryParams.set("CommunicationId", (value.communicationId ?? "") + "");
+        viewCommunicationUrl.value = url.href;
 
-        statusLabel.value = getStatusLabel(value.communicationStatus ?? CommunicationStatus.Draft);
+        status.value = value.communicationStatus ?? CommunicationStatus.Draft;
         resultMessage.value = value.message;
         areResultsShown.value = true;
     }

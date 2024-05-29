@@ -6,11 +6,13 @@
            saveText="Save"
            title="Recipient Manager"
            @save="onSaveClicked">
-        <div class="d-flex flex-row justify-content-between align-items-center">
-            <PersonPicker @update:modelValue="onPersonPicked" label="Add Recipient" />
-            <div class="label label-info">Recipients: {{ pendingItems.length }}</div>
-        </div>
-        <hr>
+        <template v-if="!disableAdd">
+            <div class="d-flex flex-row justify-content-between align-items-center">
+                <PersonPicker @update:modelValue="onPersonPicked" label="Add Recipient" />
+                <div class="label label-info">Recipients: {{ pendingItems.length }}</div>
+            </div>
+            <hr>
+        </template>
         <TextBox v-model="recipientTextFilter" label="Filter" placeholder="Filter by name, email or phone number" />
         <Grid :definition="recipientsGridDefinition"
               :data="recipientsGridData"
@@ -123,12 +125,7 @@
             required: true
         },
 
-        items: {
-            type: Object as PropType<CommunicationEntryRecipientBag[]>,
-            required: true
-        },
-
-        isBulk: {
+        disableAdd: {
             type: Boolean as PropType<boolean>,
             required: false,
             default: false
@@ -138,6 +135,17 @@
             type: Function as PropType<(value: CommunicationEntryRecipientBag | null) => Ref<string>>,
             required: false,
             default: (_: string) => ""
+        },
+
+        isBulk: {
+            type: Boolean as PropType<boolean>,
+            required: false,
+            default: false
+        },
+
+        items: {
+            type: Object as PropType<CommunicationEntryRecipientBag[]>,
+            required: true
         },
     });
 

@@ -376,7 +376,9 @@
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Communication\CommunicationEntry\" />
+  </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="DefaultTvApplication.js" />
   </ItemGroup>

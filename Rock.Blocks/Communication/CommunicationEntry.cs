@@ -214,11 +214,21 @@ namespace Rock.Blocks.Communication
                 return mode.IsNullOrWhiteSpace() || mode == Mode.Full;
             }
         }
+        
+        /// <summary>
+        /// Gets a value indicating whether lava is supported.
+        /// </summary>
+        /// <value>
+        /// <see langword="true"/> if lava in the message should be resolved; otherwise, <see langword="false"/> if lava should be removed from the message without resolving it.
+        /// </value>
+        private bool IsLavaEnabled => GetAttributeValue( AttributeKey.EnableLava ).AsBoolean();
 
         /// <summary>
         /// Gets the maximum number of recipients allowed before communication will need to be approved.
         /// </summary>
         private int MaximumRecipients => GetAttributeValue( AttributeKey.MaximumRecipients ).AsInteger();
+
+        private bool IsEditMode => PageParameter( PageParameterKey.Edit ).AsBoolean();
 
         //protected int? CommunicationId
         //{
@@ -311,6 +321,7 @@ namespace Rock.Blocks.Communication
             var box = new CommunicationEntryInitializationBox
             {
                 IsFullMode = this.IsFullMode,
+                IsLavaEnabled = this.IsLavaEnabled,
                 MaximumRecipientsBeforeApprovalRequired = this.MaximumRecipients,
             };
 
@@ -341,11 +352,6 @@ namespace Rock.Blocks.Communication
                         } )
                         .ToList();
                 }
-                // TODO JMH Does this mean an approved item is being edited
-                // or that editing is approved?
-                // Editing is only authorized if the current person has block security to "Approve"
-                // and if currently editing a communication (indicated via page parameter).
-                box.Authorization = GetAuthorizationBag();
 
                 // Check page parameter for existing communication.
                 Model.Communication communication = null;
@@ -373,40 +379,25 @@ namespace Rock.Blocks.Communication
                     communication.GetAttachments( communication.CommunicationType );
                 }
 
-                // If viewing a new, transient, draft, or are the approver of a pending-approval communication, then use this block;
-                // otherwise, set this block visible=false and if there is a communication detail block on this page, it'll be shown instead.
-                var editableStatuses = new CommunicationStatus[]
+                // TODO JMH Does this mean an approved item is being edited
+                // or that editing is approved?
+                // Editing is only authorized if the current person has block security to "Approve"
+                // and if currently editing a communication (indicated via page parameter).
+                box.Authorization = GetAuthorizationBag( communication );
+
+                // If communication was just created only for authorization,
+                // set it to null so that showing of details works correctly.
+                if ( communication.Id == 0 )
                 {
-                    CommunicationStatus.Transient,
-                    CommunicationStatus.Draft,
-                    CommunicationStatus.Denied
-                };
-                if ( editableStatuses.Contains( communication.Status )
-                     || ( communication.Status == CommunicationStatus.PendingApproval && box.Authorization.CanApproveCommunication ) )
+                    communication = null;
+                }
+
+                if ( box.Authorization.CanEditCommunication )
                 {
-                    // Make sure they are authorized to edit, or the owner, or the approver/editor
-                    var isCreator = communication.CreatedByPersonAlias != null && communication.CreatedByPersonAlias.PersonId == currentPerson.Id;
-                    var isApprovalEditor = communication.Status == CommunicationStatus.PendingApproval && box.Authorization.CanApproveCommunication;
+                    // Communication is either new or ok to edit.
+                    SetCommunicationData( box, communication, currentPerson, rockContext );
 
-                    // If communication was just created only for authorization,
-                    // set it to null so that showing of details works correctly.
-                    if ( communication.Id == 0 )
-                    {
-                        communication = null;
-                    }
-
-                    if ( box.Authorization.IsEditActionAuthorized || isCreator || isApprovalEditor )
-                    {
-                        // Communication is either new or ok to edit.
-                        SetCommunicationData( box, communication, currentPerson, rockContext );
-
-                        box.IsHidden = false;
-                    }
-                    else
-                    {
-                        // Not authorized, so hide this block.
-                        box.IsHidden = true;
-                    }
+                    box.IsHidden = false;
                 }
                 else
                 {
@@ -419,18 +410,28 @@ namespace Rock.Blocks.Communication
             return box;
         }
 
-        private CommunicationEntryAuthorizationBag GetAuthorizationBag()
+        private CommunicationEntryAuthorizationBag GetAuthorizationBag( Rock.Model.Communication communication )
         {
             var currentPerson = GetCurrentPerson();
 
-            var isApproveAuthorized = BlockCache.IsAuthorized( Authorization.APPROVE, currentPerson );
+            var isBlockApproveActionAuthorized = BlockCache.IsAuthorized( Authorization.APPROVE, currentPerson );
+            var isBlockEditActionAuthorized = BlockCache.IsAuthorized( Authorization.EDIT, currentPerson );
+            var isCommunicationEditActionAuthorized = communication.IsAuthorized( Authorization.EDIT, currentPerson );
+            var isCommunicationCreator = communication.CreatedByPersonAlias != null && communication.CreatedByPersonAlias.PersonId == currentPerson.Id;
+            var canApproveCommunication = communication.Status == Rock.Model.CommunicationStatus.PendingApproval && isBlockApproveActionAuthorized && IsEditMode;
+            var isEditableStatus =
+                communication.Status == CommunicationStatus.Transient
+                || communication.Status == CommunicationStatus.Draft
+                || communication.Status == CommunicationStatus.Denied;
 
             return new CommunicationEntryAuthorizationBag
             {
-                IsApproveActionAuthorized = isApproveAuthorized,
-                IsEditActionAuthorized = BlockCache.IsAuthorized( Authorization.EDIT, currentPerson ),
-
-                CanApproveCommunication = isApproveAuthorized && PageParameter( PageParameterKey.Edit ).AsBoolean(),
+                IsBlockApproveActionAuthorized = isBlockApproveActionAuthorized,
+                IsBlockEditActionAuthorized = isBlockEditActionAuthorized,
+                IsCommunicationEditActionAuthorized = isCommunicationEditActionAuthorized,
+                CanApproveCommunication = canApproveCommunication,
+                CanEditCommunication = canApproveCommunication
+                    || (isEditableStatus && (isCommunicationEditActionAuthorized || isCommunicationCreator ) ),
             };
         }
 
@@ -1029,8 +1030,8 @@ namespace Rock.Blocks.Communication
                     mediumBehavior.OnCommunicationSave( rockContext, bag );
                 }
 
-                var authorization = GetAuthorizationBag();
-                if ( communication.Status == CommunicationStatus.PendingApproval && authorization.CanApproveCommunication )
+                var authorization = GetAuthorizationBag( communication );
+                if ( authorization.CanApproveCommunication )
                 {
                     rockContext.SaveChanges();
 
@@ -1047,7 +1048,7 @@ namespace Rock.Blocks.Communication
                 communication.Status = CommunicationStatus.Draft;
                 rockContext.SaveChanges();
 
-                if ( IsApprovalRequired( communication.Recipients.Count() ) && !authorization.IsApproveActionAuthorized )
+                if ( IsApprovalRequired( communication.Recipients.Count() ) && !authorization.IsBlockApproveActionAuthorized )
                 {
                     // Change the status to pending approval as the current person is not authorized to approve the communication.
                     communication.Status = CommunicationStatus.PendingApproval;
@@ -1084,7 +1085,7 @@ namespace Rock.Blocks.Communication
                 }
 
                 if ( communication.Status == CommunicationStatus.Approved
-                        && ( !communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value <= RockDateTime.Now ) )
+                     && ( !communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value <= RockDateTime.Now ) )
                 {
                     if ( GetAttributeValue( AttributeKey.SendWhenApproved ).AsBoolean() )
                     {
@@ -2022,7 +2023,7 @@ namespace Rock.Blocks.Communication
             }
 
             // If we are not allowing lava then remove the syntax
-            if ( !GetAttributeValue( AttributeKey.EnableLava ).AsBooleanOrNull() ?? false )
+            if ( !this.IsLavaEnabled )
             {
                 communication.Message = communication.Message.SanitizeLava();
                 communication.Subject = communication.Subject.SanitizeLava();

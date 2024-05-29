@@ -98,5 +98,13 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntry
         /// Gets or sets the maximum number of recipients allowed before communication will need to be approved.
         /// </summary>
         public int MaximumRecipientsBeforeApprovalRequired { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether lava is supported.
+        /// </summary>
+        /// <value>
+        /// <see langword="true"/> if lava in the message should be resolved; otherwise, <see langword="false"/> if lava should be removed from the message without resolving it.
+        /// </value>
+        public bool IsLavaEnabled { get; set; }
     }
 }
