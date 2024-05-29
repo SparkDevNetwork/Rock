@@ -100,33 +100,34 @@ namespace Rock.Blocks.Crm
                     isStaffMemberDisabled = true;
                 }
 
-                PersonPhotoBag currentPersonPhotoBag = new PersonPhotoBag
+                photoUploadBag.PersonPhotoList.Add( new PersonPhotoBag
                 {
                     IdKey = loggedInPerson.IdKey,
                     FullName = loggedInPerson.FullName,
                     ProfilePhoto = loggedInPerson.Photo.ToListItemBag(),
                     NoPhotoUrl = Rock.Model.Person.GetPersonNoPictureUrl( loggedInPerson ),
                     IsStaffMemberDisabled = isStaffMemberDisabled,
-                };
-                photoUploadBag.PersonPhotoList.Add( currentPersonPhotoBag );
+                } );
 
                 if ( GetAttributeValue( AttributeKey.IncludeFamilyMembers ).AsBoolean() )
                 {
                     foreach ( var member in loggedInPerson.GetFamilyMembers( includeSelf: false ).ToList() )
                     {
+                        isStaffMemberDisabled = false;
+
                         if ( _staffGroup != null && _staffGroup.Members.Where( m => m.PersonId == member.Id ).Count() > 0 )
                         {
                             isStaffMemberDisabled = true;
                         }
 
-                        var familyMemberPhotoBag = new PersonPhotoBag
+                        photoUploadBag.PersonPhotoList.Add( new PersonPhotoBag
                         {
                             IdKey = member.Person.IdKey,
                             FullName = member.Person.FullName,
                             ProfilePhoto = member.Person.Photo.ToListItemBag(),
-                            NoPhotoUrl = Rock.Model.Person.GetPersonNoPictureUrl(member.Person)
-                        };
-                        photoUploadBag.PersonPhotoList.Add( familyMemberPhotoBag );
+                            NoPhotoUrl = Rock.Model.Person.GetPersonNoPictureUrl( member.Person ),
+                            IsStaffMemberDisabled = isStaffMemberDisabled,
+                        } );
                     }
                 }
             }

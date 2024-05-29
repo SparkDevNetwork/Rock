@@ -1,15 +1,13 @@
 <template>
-    <!-- Notification box -->
     <div class="image-editor-list">
-        <div v-for="person in personPhotoList">
-            <ImageEditor
-                v-model="person.profilePhoto"
-                :binaryFileTypeGuid="BinaryFiletype.PersonImage"
-                :disabled="person.isStaffMemberDisabled || isLoading"
-                :label="person.fullName ?? ''"
-                :noPictureUrl="person.noPhotoUrl ?? '/Assets/Images/person-no-photo-unknown.svg'"
-                @update:modelValue="updatePersonProfilePhoto(person.idKey ?? null, person.profilePhoto?.value ?? null)" />
-        </div>
+        <ImageEditor
+            v-for="person in personPhotoList"
+            v-model="person.profilePhoto"
+            :binaryFileTypeGuid="BinaryFiletype.PersonImage"
+            :disabled="person.isStaffMemberDisabled || isLoading"
+            :label="person.fullName ?? ''"
+            :noPictureUrl="person.noPhotoUrl ?? '/Assets/Images/person-no-photo-unknown.svg'"
+            @update:modelValue="updatePersonProfilePhoto(person.idKey ?? null, person.profilePhoto?.value ?? null)" />
     </div>
 </template>
 
