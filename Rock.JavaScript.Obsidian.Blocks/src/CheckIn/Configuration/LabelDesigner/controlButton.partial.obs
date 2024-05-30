@@ -32,7 +32,7 @@
 
 <script setup lang="ts">
     import { onMounted, PropType, ref } from "vue";
-import { LabelFieldType } from "./types.partial";
+    import { LabelFieldType } from "@Obsidian/Enums/CheckIn/Labels/labelFieldType";
 
     const props = defineProps({
         icon: {

@@ -26,8 +26,8 @@
      * Set the internal values to match those from the selected field.
      */
     function setInternalValues(): void {
-        const configuration = props.labelManager.selectedField.value
-            ?.configurationValues ?? {} as StringRecord<IconFieldConfigurationBag>;
+        const configuration = (props.labelManager.selectedField.value
+            ?.configurationValues ?? {}) as StringRecord<IconFieldConfigurationBag>;
 
         icon.value = configuration.icon ?? "";
     }

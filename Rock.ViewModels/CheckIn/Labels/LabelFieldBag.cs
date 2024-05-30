@@ -51,7 +51,7 @@ namespace Rock.ViewModels.CheckIn.Labels
         /// source objects are available to be selected in the editor.
         /// </para>
         /// </summary>
-        public int SubFieldType { get; set; }
+        public int FieldSubType { get; set; }
 
         /// <summary>
         /// A value indicating whether the item is included on the generated

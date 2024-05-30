@@ -1,7 +1,12 @@
 import Konva from "@Obsidian/Libs/konva";
-import { BarcodeFieldConfigurationBag, BarcodeFormat, EllipseFieldConfigurationBag, HorizontalTextAlignment, IconFieldConfigurationBag, LabelFieldBag, LabelFieldType, LineFieldConfigurationBag, RectangleFieldConfigurationBag, StringRecord, TextFieldConfigurationBag } from "./types.partial";
+import { BarcodeFieldConfigurationBag, EllipseFieldConfigurationBag, IconFieldConfigurationBag, LineFieldConfigurationBag, RectangleFieldConfigurationBag, StringRecord } from "./types.partial";
 import { newGuid } from "@Obsidian/Utility/guid";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { LabelFieldType } from "@Obsidian/Enums/CheckIn/Labels/labelFieldType";
+import { LabelFieldBag } from "@Obsidian/ViewModels/CheckIn/Labels/labelFieldBag";
+import { TextFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/textFieldConfigurationBag";
+import { HorizontalTextAlignment } from "@Obsidian/Enums/CheckIn/Labels/horizontalTextAlignment";
+import { BarcodeFormat } from "@Obsidian/Enums/CheckIn/Labels/barcodeFormat";
 
 // #region Worksurface Utilities
 
@@ -165,7 +170,7 @@ export function createDefaultField(fieldType: LabelFieldType, subtype: number): 
     };
 
     if (fieldType === LabelFieldType.Text) {
-        const config = field.configurationValues as StringRecord<TextFieldConfigurationBag>;
+        const config = field.configurationValues as TextFieldConfigurationBag;
 
         config.fontSize = "14";
         config.horizontalAlignment = `${HorizontalTextAlignment.Left}`;
@@ -173,7 +178,7 @@ export function createDefaultField(fieldType: LabelFieldType, subtype: number): 
         config.isColorInverted = "false";
         config.isCondensed = "false";
         config.placeholderText = "Text";
-        config.staticTextTemplate = "Text";
+        config.staticText = "Text";
 
         field.width = 1.5;
         field.height = 14 / 72;

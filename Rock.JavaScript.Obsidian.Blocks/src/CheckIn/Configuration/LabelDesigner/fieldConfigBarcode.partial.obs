@@ -41,9 +41,10 @@
 <script setup lang="ts">
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import { BarcodeFormat } from "@Obsidian/Enums/CheckIn/Labels/barcodeFormat";
     import { asBoolean, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
     import { PropType, ref, watch } from "vue";
-    import { BarcodeFormat, StringRecord, BarcodeFieldConfigurationBag } from "./types.partial";
+    import { StringRecord, BarcodeFieldConfigurationBag } from "./types.partial";
     import { LabelUndoManager } from "./undoManager.partial";
 
     const props = defineProps({
@@ -60,8 +61,8 @@
      * Set the internal values to match those from the selected field.
      */
     function setInternalValues(): void {
-        const configuration = props.labelManager.selectedField.value
-            ?.configurationValues ?? {} as StringRecord<BarcodeFieldConfigurationBag>;
+        const configuration = (props.labelManager.selectedField.value
+            ?.configurationValues ?? {}) as StringRecord<BarcodeFieldConfigurationBag>;
 
         format.value = configuration.format ?? "";
         isDynamic.value = asBoolean(configuration.isDynamic);

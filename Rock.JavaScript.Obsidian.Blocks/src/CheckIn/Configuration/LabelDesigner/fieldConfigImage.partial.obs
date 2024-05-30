@@ -98,8 +98,8 @@
      * Set the internal values to match those from the selected field.
      */
     function setInternalValues(): void {
-        const configuration = props.labelManager.selectedField.value
-            ?.configurationValues ?? {} as StringRecord<ImageFieldConfigurationBag>;
+        const configuration = (props.labelManager.selectedField.value
+            ?.configurationValues ?? {}) as StringRecord<ImageFieldConfigurationBag>;
 
         if (configuration.binaryFileGuid) {
             image.value = {

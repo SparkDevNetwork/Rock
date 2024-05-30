@@ -1,8 +1,14 @@
 import Konva from "@Obsidian/Libs/konva";
-import { BarcodeFieldConfigurationBag, BarcodeFormat, EllipseFieldConfigurationBag, HorizontalTextAlignment, IconFieldConfigurationBag, ImageFieldConfigurationBag, LabelFieldBag, LabelFieldType, LabelTextFieldSubType, LineFieldConfigurationBag, RectangleFieldConfigurationBag, StringRecord, TextFieldConfigurationBag } from "./types.partial";
+import { BarcodeFieldConfigurationBag, EllipseFieldConfigurationBag, IconFieldConfigurationBag, ImageFieldConfigurationBag, LineFieldConfigurationBag, RectangleFieldConfigurationBag, StringRecord } from "./types.partial";
 import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { IconImageMap, code128Icon, getPixelForOffset, qrcodeIcon } from "./utils.partial";
 import { asBoolean } from "@Obsidian/Utility/booleanUtils";
+import { BarcodeFormat } from "@Obsidian/Enums/CheckIn/Labels/barcodeFormat";
+import { HorizontalTextAlignment } from "@Obsidian/Enums/CheckIn/Labels/horizontalTextAlignment";
+import { LabelFieldType } from "@Obsidian/Enums/CheckIn/Labels/labelFieldType";
+import { TextFieldSubType } from "@Obsidian/Enums/CheckIn/Labels/textFieldSubType";
+import { LabelFieldBag } from "@Obsidian/ViewModels/CheckIn/Labels/labelFieldBag";
+import { TextFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/textFieldConfigurationBag";
 
 // #region Classes
 
@@ -388,7 +394,7 @@ export function updateShapeFromField(shape: Konva.Shape | Konva.Group, field: La
  * @param field The field to use as the source of truth.
  */
 function updateTextShapeFromField(shape: Konva.Text, field: LabelFieldBag): void {
-    const config = field.configurationValues ?? {} as StringRecord<TextFieldConfigurationBag>;
+    const config = field.configurationValues ?? {} as TextFieldConfigurationBag;
 
     const fontSize = toNumberOrNull(config.fontSize) ?? 12;
     const alignment = toNumber(config.horizontalAlignment) as HorizontalTextAlignment;
@@ -405,12 +411,12 @@ function updateTextShapeFromField(shape: Konva.Text, field: LabelFieldBag): void
     shape.globalCompositeOperation(asBoolean(config.isColorInverted) ? "xor" : "source-over");
     shape.fontSize(fontSize * window.devicePixelRatio);
 
-    if (field.fieldSubType === LabelTextFieldSubType.Custom) {
+    if (field.fieldSubType === TextFieldSubType.Custom) {
         if (asBoolean(config.isDynamicText)) {
             shape.text(config.placeholderText ?? "");
         }
         else {
-            shape.text(config.staticTextTemplate ?? "");
+            shape.text(config.staticText ?? "");
         }
     }
     else {

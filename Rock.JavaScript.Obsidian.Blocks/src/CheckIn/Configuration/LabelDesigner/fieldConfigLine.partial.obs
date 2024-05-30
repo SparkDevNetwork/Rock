@@ -44,8 +44,8 @@
      * Set the internal values to match those from the selected field.
      */
     function setInternalValues(): void {
-        const configuration = props.labelManager.selectedField.value
-            ?.configurationValues ?? {} as StringRecord<LineFieldConfigurationBag>;
+        const configuration = (props.labelManager.selectedField.value
+            ?.configurationValues ?? {}) as StringRecord<LineFieldConfigurationBag>;
 
         color.value = asBoolean(configuration.isBlack) ? "black" : "white";
         thickness.value = toNumberOrNull(configuration.thickness) ?? 1;

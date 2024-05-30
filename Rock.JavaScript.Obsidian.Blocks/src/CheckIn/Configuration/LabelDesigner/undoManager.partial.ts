@@ -1,7 +1,8 @@
 import { Ref, ref } from "vue";
-import { LabelBag, LabelFieldBag } from "./types.partial";
+import { DesignerLabelBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/LabelDesigner/designerLabelBag";
 import { Guid } from "@Obsidian/Types";
 import { areEqual } from "@Obsidian/Utility/guid";
+import { LabelFieldBag } from "@Obsidian/ViewModels/CheckIn/Labels/labelFieldBag";
 
 /**
  * Simple interface to force a reference to be read-only so it can't be
@@ -196,7 +197,7 @@ export class ObjectUndoManager<TObject> {
  * Undo manager for the {@link LabelBag} object type. This provides some
  * additional functionality to make it easier to modify labels.
  */
-export class LabelUndoManager extends ObjectUndoManager<LabelBag> {
+export class LabelUndoManager extends ObjectUndoManager<DesignerLabelBag> {
     /** The currently selected field identifier. */
     private selectedFieldGuid?: Guid;
 
@@ -208,7 +209,7 @@ export class LabelUndoManager extends ObjectUndoManager<LabelBag> {
      *
      * @param label The initial label content.
      */
-    public constructor(label: LabelBag) {
+    public constructor(label: DesignerLabelBag) {
         super(label);
 
         this.selectedField = ref<LabelFieldBag>();

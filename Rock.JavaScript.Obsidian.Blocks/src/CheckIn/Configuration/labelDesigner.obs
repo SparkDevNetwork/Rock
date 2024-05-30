@@ -59,10 +59,12 @@
     import Menu from "./LabelDesigner/menu.partial.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { LabelFieldType } from "@Obsidian/Enums/CheckIn/Labels/labelFieldType";
+    import { DesignerLabelBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/LabelDesigner/designerLabelBag";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { computed } from "vue";
-    import { LabelBag, LabelFieldType, Size } from "./LabelDesigner/types.partial";
+    import { Size } from "./LabelDesigner/types.partial";
     import { LabelUndoManager } from "./LabelDesigner/undoManager.partial";
 
     const config = useConfigurationValues<unknown>();
@@ -89,7 +91,7 @@
         console.log(labelManager.current.value);
     }
 
-    const label2: LabelBag = {
+    const label2: DesignerLabelBag = {
         width: 4.0,
         height: 2.0,
         fields: [
@@ -103,7 +105,6 @@
                 width: 4,
                 height: 0.66,
                 rotationAngle: 0,
-                customDataValue: "",
                 configurationValues: {
                     isBlack: "true",
                     isFilled: "true",
@@ -119,7 +120,6 @@
                 width: 1.82,
                 height: 0.66,
                 rotationAngle: 0,
-                customDataValue: "",
                 configurationValues: {
                     staticTextTemplate: "WWW",
                     fontSize: "48",
@@ -136,7 +136,6 @@
                 width: 0.3,
                 height: 0.5,
                 rotationAngle: 0,
-                customDataValue: "",
                 configurationValues: {
                     staticTextTemplate: "3",
                     fontSize: "35",
@@ -153,7 +152,6 @@
                 width: 0.3,
                 height: 0.5,
                 rotationAngle: 0,
-                customDataValue: "",
                 configurationValues: {
                     staticTextTemplate: "2",
                     fontSize: "35",
@@ -170,7 +168,6 @@
                 width: 0.25,
                 height: 0.25,
                 rotationAngle: 0,
-                customDataValue: "",
                 configurationValues: {
                     staticTextTemplate: "4",
                     fontSize: "10",
@@ -187,7 +184,6 @@
                 width: 0.75,
                 height: 0.75,
                 rotationAngle: 0,
-                customDataValue: "",
                 configurationValues: {
                     staticTextTemplate: "5",
                     fontSize: "52",
@@ -204,7 +200,6 @@
                 width: 0.25,
                 height: 0.25,
                 rotationAngle: 0,
-                customDataValue: "",
                 configurationValues: {
                     staticTextTemplate: "6",
                     fontSize: "16",
@@ -221,7 +216,6 @@
                 width: 0.15,
                 height: 0.15,
                 rotationAngle: 0,
-                customDataValue: "",
                 configurationValues: {
                     staticTextTemplate: "9",
                     fontSize: "10",
@@ -238,7 +232,6 @@
                 width: 0.384,
                 height: 0.275,
                 rotationAngle: 0,
-                customDataValue: "",
                 configurationValues: {
                     isBlack: "true",
                     isFilled: "true",
@@ -254,7 +247,6 @@
                 width: 0.33,
                 height: 0.275,
                 rotationAngle: 0,
-                customDataValue: "",
                 configurationValues: {
                     isBlack: "true",
                     isFilled: "true",
@@ -270,7 +262,6 @@
                 width: 0.384,
                 height: 0.275,
                 rotationAngle: 0,
-                customDataValue: "",
                 configurationValues: {
                     staticTextTemplate: "AAA",
                     fontSize: "16",
@@ -287,7 +278,6 @@
                 width: 0.33,
                 height: 0.275,
                 rotationAngle: 0,
-                customDataValue: "",
                 configurationValues: {
                     staticTextTemplate: "LLL",
                     fontSize: "16",

@@ -306,6 +306,7 @@
     <Folder Include="Framework\ViewModels\Blocks\CheckIn\AttendanceList\" />
     <Folder Include="Framework\ViewModels\Blocks\CheckIn\CheckInKiosk\" />
     <Folder Include="Framework\ViewModels\Blocks\CheckIn\Configuration\" />
+    <Folder Include="Framework\ViewModels\Blocks\CheckIn\Configuration\LabelDesigner\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\AdaptiveMessageAdaptationDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\AdaptiveMessageDetail\" />
@@ -445,6 +446,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Workflow\" />
     <Folder Include="Framework\ViewModels\Blocks\Workflow\WorkflowTriggerDetail\" />
     <Folder Include="Framework\ViewModels\CheckIn\" />
+    <Folder Include="Framework\ViewModels\CheckIn\Labels\" />
     <Folder Include="Framework\ViewModels\Cms\" />
     <Folder Include="Framework\ViewModels\Communication\" />
     <Folder Include="Framework\ViewModels\Connection\" />
@@ -784,6 +786,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\CheckInKiosk\promotionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\CheckInKiosk\webKioskBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\Configuration\checkInSimulatorOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\Configuration\LabelDesigner\dataSourceBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\Configuration\LabelDesigner\designerLabelBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\AdaptiveMessageAdaptationDetail\adaptiveMessageAdaptationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\AdaptiveMessageAdaptationDetail\adaptiveMessageAdaptationDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\AdaptiveMessageDetail\adaptiveMessageBag.d.ts" />
@@ -1209,6 +1213,10 @@
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\groupOpportunityBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\kioskBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\kioskStatusBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\CheckIn\Labels\customFieldInputBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\CheckIn\Labels\dataFormatterOptionBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\CheckIn\Labels\labelFieldBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\CheckIn\Labels\textFieldConfigurationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\locationOpportunityBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\opportunityCollectionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\opportunitySelectionBag.d.ts" />

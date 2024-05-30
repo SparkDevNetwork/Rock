@@ -41,8 +41,8 @@
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { asBoolean } from "@Obsidian/Utility/booleanUtils";
     import { PropType, ref, watch } from "vue";
-    import { TextFieldConfigurationBag, StringRecord } from "./types.partial";
     import { LabelUndoManager } from "./undoManager.partial";
+    import { TextFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/textFieldConfigurationBag";
 
     const props = defineProps({
         labelManager: {
@@ -60,11 +60,11 @@
      * Set the internal values to match those from the selected field.
      */
      function setInternalValues(): void {
-        const configuration = props.labelManager.selectedField.value
-            ?.configurationValues ?? {} as StringRecord<TextFieldConfigurationBag>;
+        const configuration = (props.labelManager.selectedField.value
+            ?.configurationValues ?? {}) as TextFieldConfigurationBag;
 
         isDynamicText.value = asBoolean(configuration.isDynamicText);
-        staticText.value = configuration.staticTextTemplate ?? "";
+        staticText.value = configuration.staticText ?? "";
         dynamicText.value = configuration.dynamicTextTemplate ?? "";
         placeholderText.value = configuration.placeholderText ?? "";
     }
@@ -95,10 +95,10 @@
         props.labelManager.mutateSelectedField(field => {
             field.configurationValues = field.configurationValues ?? {};
 
-            const fieldConfig = field.configurationValues as StringRecord<TextFieldConfigurationBag>;
+            const fieldConfig = field.configurationValues as TextFieldConfigurationBag;
 
             fieldConfig.isDynamicText = isDynamicText.value ? "true" : "false";
-            fieldConfig.staticTextTemplate = staticText.value;
+            fieldConfig.staticText = staticText.value;
             fieldConfig.dynamicTextTemplate = dynamicText.value;
             fieldConfig.placeholderText = placeholderText.value;
         });

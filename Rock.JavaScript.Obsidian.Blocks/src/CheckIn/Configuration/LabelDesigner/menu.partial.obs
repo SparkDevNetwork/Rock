@@ -23,22 +23,22 @@
             <ControlButton icon="fa fa-user"
                            title="Attendee Info"
                            :type="LabelFieldType.Text"
-                           :subtype="LabelTextFieldSubType.AttendeeInfo" />
+                           :subtype="TextFieldSubType.AttendeeInfo" />
 
             <ControlButton icon="fa fa-calendar-check"
                            title="Check-in Info"
                            :type="LabelFieldType.Text"
-                           :subtype="LabelTextFieldSubType.CheckInInfo" />
+                           :subtype="TextFieldSubType.CheckInInfo" />
 
             <ControlButton icon="fa fa-medal"
                            title="Achievement Info"
                            :type="LabelFieldType.Text"
-                           :subtype="LabelTextFieldSubType.AchievementInfo" />
+                           :subtype="TextFieldSubType.AchievementInfo" />
 
             <ControlButton icon="fa fa-font"
                            title="Text"
                            :type="LabelFieldType.Text"
-                           :subtype="LabelTextFieldSubType.Custom" />
+                           :subtype="TextFieldSubType.Custom" />
 
             <ControlButton icon="fa fa-grip-lines"
                            title="Line"
@@ -143,8 +143,9 @@
     import FieldConfigLine from "./fieldConfigLine.partial.obs";
     import FieldConfigRectangle from "./fieldConfigRectangle.partial.obs";
     import { Component, computed, PropType, ref, watch } from "vue";
-    import { LabelFieldType, LabelTextFieldSubType } from "./types.partial";
     import { LabelUndoManager } from "./undoManager.partial";
+    import { LabelFieldType } from "@Obsidian/Enums/CheckIn/Labels/labelFieldType";
+    import { TextFieldSubType } from "@Obsidian/Enums/CheckIn/Labels/textFieldSubType";
     import { areEqual } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
@@ -164,13 +165,13 @@
         }
 
         if (field.fieldType === LabelFieldType.Text) {
-            if (field.fieldSubType === LabelTextFieldSubType.AttendeeInfo) {
+            if (field.fieldSubType === TextFieldSubType.AttendeeInfo) {
                 return undefined;
             }
-            else if (field.fieldSubType === LabelTextFieldSubType.CheckInInfo) {
+            else if (field.fieldSubType === TextFieldSubType.CheckInInfo) {
                 return undefined;
             }
-            else if (field.fieldSubType === LabelTextFieldSubType.AchievementInfo) {
+            else if (field.fieldSubType === TextFieldSubType.AchievementInfo) {
                 return undefined;
             }
             else {
@@ -209,13 +210,13 @@
         }
 
         if (field.fieldType === LabelFieldType.Text) {
-            if (field.fieldSubType === LabelTextFieldSubType.AttendeeInfo) {
+            if (field.fieldSubType === TextFieldSubType.AttendeeInfo) {
                 return "Attendee Info";
             }
-            else if (field.fieldSubType === LabelTextFieldSubType.CheckInInfo) {
+            else if (field.fieldSubType === TextFieldSubType.CheckInInfo) {
                 return "Check-in Info";
             }
-            else if (field.fieldSubType === LabelTextFieldSubType.AchievementInfo) {
+            else if (field.fieldSubType === TextFieldSubType.AchievementInfo) {
                 return "Achievement Info";
             }
             else {

@@ -71,8 +71,8 @@
      * Set the internal values to match those from the selected field.
      */
      function setInternalValues(): void {
-        const configuration = props.labelManager.selectedField.value
-            ?.configurationValues ?? {} as StringRecord<RectangleFieldConfigurationBag>;
+        const configuration = (props.labelManager.selectedField.value
+            ?.configurationValues ?? {}) as StringRecord<RectangleFieldConfigurationBag>;
 
         color.value = asBoolean(configuration.isBlack) ? "black" : "white";
         type.value = asBoolean(configuration.isFilled) ? "filled" : "outline";

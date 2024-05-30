@@ -42,14 +42,13 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import { HorizontalTextAlignment } from "@Obsidian/Enums/CheckIn/Labels/horizontalTextAlignment";
+    import { TextFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/textFieldConfigurationBag";
     import { asBoolean } from "@Obsidian/Utility/booleanUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { PropType, ref, watch } from "vue";
-    import { TextFieldConfigurationBag, StringRecord, HorizontalTextAlignment } from "./types.partial";
     import { LabelUndoManager } from "./undoManager.partial";
-    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-
-    type AlignmentValue = `${HorizontalTextAlignment.Left}` | `${HorizontalTextAlignment.Center}` | `${HorizontalTextAlignment.Right}`;
 
     const props = defineProps({
         labelManager: {
@@ -59,7 +58,7 @@
     });
 
     const fontSize = ref<number | null>(12);
-    const alignment = ref<AlignmentValue>(`${HorizontalTextAlignment.Left}`);
+    const alignment = ref<string>(`${HorizontalTextAlignment.Left}`);
     const isBold = ref(false);
     const isColorInverted = ref(false);
     const isCondensed = ref(false);
@@ -84,8 +83,8 @@
      * Set the internal values to match those from the selected field.
      */
     function setInternalValues(): void {
-        const configuration = props.labelManager.selectedField.value
-            ?.configurationValues ?? {} as StringRecord<TextFieldConfigurationBag>;
+        const configuration = (props.labelManager.selectedField.value
+            ?.configurationValues ?? {}) as TextFieldConfigurationBag;
 
         fontSize.value = toNumberOrNull(configuration.fontSize) ?? 12;
         alignment.value = getAlignment(configuration.horizontalAlignment);
@@ -102,7 +101,7 @@
      *
      * @returns The value for the UI control.
      */
-    function getAlignment(value: string | null | undefined): AlignmentValue {
+    function getAlignment(value: string | null | undefined): string {
         const align = toNumberOrNull(value) as HorizontalTextAlignment | undefined ?? HorizontalTextAlignment.Left;
 
         return `${align}`;
@@ -114,7 +113,7 @@
      * @param value The value that was selected.
      */
     function onAlignmentClick(value: string | undefined | null): void {
-        alignment.value = value as AlignmentValue;
+        alignment.value = value as string;
     }
 
     // Watch for changes in the UI that require an update to the label.
@@ -122,7 +121,7 @@
         props.labelManager.mutateSelectedField(field => {
             field.configurationValues = field.configurationValues ?? {};
 
-            const fieldConfig = field.configurationValues as StringRecord<TextFieldConfigurationBag>;
+            const fieldConfig = field.configurationValues as TextFieldConfigurationBag;
 
             fieldConfig.fontSize = `${fontSize.value}`;
             fieldConfig.horizontalAlignment = alignment.value.toString();
