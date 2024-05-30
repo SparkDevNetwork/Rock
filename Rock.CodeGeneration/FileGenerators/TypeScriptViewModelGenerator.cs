@@ -424,7 +424,7 @@ namespace Rock.CodeGeneration.FileGenerators
                     var refTypeName = segments[segments.Length - 2];
                     var refName = segments[segments.Length - 1];
 
-                    return $"{{@link {refTypeName}.{refName.CamelCase()}}}";
+                    return $"{{@link {refTypeName}.{refName.ToCamelCase()}}}";
                 }
             } );
 
