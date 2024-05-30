@@ -48,8 +48,9 @@ namespace Rock.Blocks.CheckIn.Configuration
     {
         public override object GetObsidianBlockInitialization()
         {
-            var x = Rock.CheckIn.v2.Labels.FieldDataSources.GetDataSources( LabelType.Person );
-            var personLabelSources = x.ToDictionary( p => p.Key, p => ToDataSourceBag( p.Value ) );
+            var personLabelSources = FieldDataSources.GetDataSources( LabelType.Person )
+                .Select( p => ToDataSourceBag( p.Value ) )
+                .ToList();
 
             return new
             {

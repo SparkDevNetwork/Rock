@@ -42,11 +42,22 @@ namespace Rock.CheckIn.v2.Labels
                         Key = "person.birthdate",
                         Name = "Birth Date",
                         TextSubType = TextFieldSubType.AttendeeInfo,
-                        SupportedComparisionTypes = ComparisonHelper.NumericFilterComparisonTypesRequired,
-                        Category = "Properties",
+                        SupportedComparisionTypes = ComparisonHelper.DateFilterComparisonTypes,
+                        Category = "Common",
                         Formatter = DateDataFormatter.Instance,
                         ComparisonValueFunc = ( source, field, printRequest ) => source.Person.BirthDate,
                         ValueFunc = ( source, field, printRequest ) => source.Person.BirthDate
+                    } );
+
+                    dataSources.Add( new SingleValueFieldDataSource<PersonLabelData>
+                    {
+                        Key = "person.id",
+                        Name = "Id",
+                        TextSubType = TextFieldSubType.AttendeeInfo,
+                        SupportedComparisionTypes = ComparisonHelper.NumericFilterComparisonTypesRequired,
+                        Category = "Properties",
+                        ComparisonValueFunc = ( source, field, printRequest ) => source.Person.Id,
+                        ValueFunc = ( source, field, printRequest ) => source.Person.Id
                     } );
                 }
 

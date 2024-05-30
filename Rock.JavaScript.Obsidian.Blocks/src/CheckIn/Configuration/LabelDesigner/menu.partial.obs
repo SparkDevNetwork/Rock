@@ -70,7 +70,8 @@
         </div>
 
         <div v-else class="p-3" style="overflow-y: auto;">
-            <component :is="fieldConfigurationComponent" :labelManager="labelManager" />
+            <component :is="fieldConfigurationComponent"
+                       :labelManager="labelManager" />
         </div>
     </div>
 </template>
@@ -135,6 +136,7 @@
 
 <script setup lang="ts">
     import ControlButton from "./controlButton.partial.obs";
+    import FieldConfigDataSourceText from "./fieldConfigDataSourceText.partial.obs";
     import FieldConfigBarcode from "./fieldConfigBarcode.partial.obs";
     import FieldConfigCustomText from "./fieldConfigCustomText.partial.obs";
     import FieldConfigEllipse from "./fieldConfigEllipse.partial.obs";
@@ -156,6 +158,7 @@
     });
 
     const isComponentMenuSelected = ref(!!props.labelManager.selectedField.value);
+
     const fieldConfigurationComponent = computed((): Component | undefined => {
         const field = props.labelManager?.current.value
             .fields?.find(f => areEqual(f.guid, props.labelManager.selectedField.value?.guid));
@@ -166,13 +169,13 @@
 
         if (field.fieldType === LabelFieldType.Text) {
             if (field.fieldSubType === TextFieldSubType.AttendeeInfo) {
-                return undefined;
+                return FieldConfigDataSourceText;
             }
             else if (field.fieldSubType === TextFieldSubType.CheckInInfo) {
-                return undefined;
+                return FieldConfigDataSourceText;
             }
             else if (field.fieldSubType === TextFieldSubType.AchievementInfo) {
-                return undefined;
+                return FieldConfigDataSourceText;
             }
             else {
                 return FieldConfigCustomText;

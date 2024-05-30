@@ -1,4 +1,8 @@
 <template>
+    <TextBox v-if="props.showPlaceholder"
+             label="Placeholder Text"
+             v-model="placeholderText" />
+
     <NumberBox label="Font Size"
                v-model.lazy="fontSize" />
 
@@ -38,10 +42,11 @@
 </template>
 
 <script setup lang="ts">
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
-    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { HorizontalTextAlignment } from "@Obsidian/Enums/CheckIn/Labels/horizontalTextAlignment";
     import { TextFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/textFieldConfigurationBag";
     import { asBoolean } from "@Obsidian/Utility/booleanUtils";
@@ -54,9 +59,15 @@
         labelManager: {
             type: Object as PropType<LabelUndoManager>,
             required: true
+        },
+
+        showPlaceholder: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 
+    const placeholderText = ref("");
     const fontSize = ref<number | null>(12);
     const alignment = ref<string>(`${HorizontalTextAlignment.Left}`);
     const isBold = ref(false);
@@ -86,6 +97,7 @@
         const configuration = (props.labelManager.selectedField.value
             ?.configurationValues ?? {}) as TextFieldConfigurationBag;
 
+        placeholderText.value = configuration.placeholderText ?? "";
         fontSize.value = toNumberOrNull(configuration.fontSize) ?? 12;
         alignment.value = getAlignment(configuration.horizontalAlignment);
         isBold.value = asBoolean(configuration.isBold);
@@ -117,12 +129,13 @@
     }
 
     // Watch for changes in the UI that require an update to the label.
-    watch([fontSize, alignment, isBold, isColorInverted, isCondensed, maxLength], () => {
+    watch([placeholderText, fontSize, alignment, isBold, isColorInverted, isCondensed, maxLength], () => {
         props.labelManager.mutateSelectedField(field => {
             field.configurationValues = field.configurationValues ?? {};
 
             const fieldConfig = field.configurationValues as TextFieldConfigurationBag;
 
+            fieldConfig.placeholderText = placeholderText.value;
             fieldConfig.fontSize = `${fontSize.value}`;
             fieldConfig.horizontalAlignment = alignment.value.toString();
             fieldConfig.isBold = isBold.value ? "true" : "false";

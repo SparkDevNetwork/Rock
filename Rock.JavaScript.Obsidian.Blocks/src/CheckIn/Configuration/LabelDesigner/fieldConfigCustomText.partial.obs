@@ -19,11 +19,8 @@
         </RockButton>
     </div>
 
-    <TextBox v-if="isDynamicText"
-             label="Placeholder Text"
-             v-model="placeholderText" />
-
-    <FieldConfigText :labelManager="labelManager">
+    <FieldConfigText :labelManager="labelManager"
+                     :showPlaceholder="isDynamicText">
         <template #iconButtons>
             <RockButton v-if="isDynamicText"
                         btnType="default"
@@ -54,19 +51,17 @@
     const isDynamicText = ref(false);
     const staticText = ref("");
     const dynamicText = ref("");
-    const placeholderText = ref("");
 
     /**
      * Set the internal values to match those from the selected field.
      */
-     function setInternalValues(): void {
+    function setInternalValues(): void {
         const configuration = (props.labelManager.selectedField.value
             ?.configurationValues ?? {}) as TextFieldConfigurationBag;
 
         isDynamicText.value = asBoolean(configuration.isDynamicText);
         staticText.value = configuration.staticText ?? "";
         dynamicText.value = configuration.dynamicTextTemplate ?? "";
-        placeholderText.value = configuration.placeholderText ?? "";
     }
 
     /**
@@ -91,7 +86,7 @@
     }
 
     // Watch for changes in the UI that require an update to the label.
-    watch([isDynamicText, staticText, dynamicText, placeholderText], () => {
+    watch([isDynamicText, staticText, dynamicText], () => {
         props.labelManager.mutateSelectedField(field => {
             field.configurationValues = field.configurationValues ?? {};
 
@@ -100,7 +95,6 @@
             fieldConfig.isDynamicText = isDynamicText.value ? "true" : "false";
             fieldConfig.staticText = staticText.value;
             fieldConfig.dynamicTextTemplate = dynamicText.value;
-            fieldConfig.placeholderText = placeholderText.value;
         });
     });
 
