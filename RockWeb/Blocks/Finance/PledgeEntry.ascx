@@ -27,7 +27,7 @@
                     <Rock:RockDropDownList ID="ddlFrequency" runat="server" Label="Gift Frequency" Help="How often you expect to be making gifts towards the total amount." />
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnSave" AccessKey="s" runat="server" ToolTip="Alt+s" Text="Save" OnClick="btnSave_Click" CssClass="btn btn-primary" />
+                        <asp:LinkButton ID="btnSave" data-shortcut-key="s" runat="server" ToolTip="Alt+s" Text="Save" OnClick="btnSave_Click" CssClass="btn btn-primary" />
                     </div>
 
                     <Rock:RockLiteral ID="lNote" runat="server" />
