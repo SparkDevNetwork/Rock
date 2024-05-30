@@ -53,8 +53,7 @@ namespace Rock.Tests.Shared.TestFramework
             };
 
             // Configure Rock to use the new database.
-            RockInstanceConfig.Database.SetConnectionString( csb.ConnectionString );
-            RockInstanceConfig.SetDatabaseIsAvailable( true );
+            TestHelper.ConfigureRockApp( csb.ConnectionString );
             RockCache.ClearAllCachedItems( false );
 
             _databaseContainer = container;
@@ -69,8 +68,7 @@ namespace Rock.Tests.Shared.TestFramework
             if ( _databaseContainer != null )
             {
                 RockCache.ClearAllCachedItems( false );
-                RockInstanceConfig.SetDatabaseIsAvailable( false );
-                RockInstanceConfig.Database.SetConnectionString( string.Empty );
+                TestHelper.ConfigureRockApp( null );
 
                 await _databaseContainer.DisposeAsync().AsTask();
             }

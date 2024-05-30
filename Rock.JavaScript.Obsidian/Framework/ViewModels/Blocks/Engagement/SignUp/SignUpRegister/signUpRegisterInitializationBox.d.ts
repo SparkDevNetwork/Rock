@@ -55,7 +55,7 @@ export type SignUpRegisterInitializationBox = {
     /**
      * Gets or sets the list of existing or possible registrants, including the registrar.
      * 
-     * Each <see cref="P:Rock.ViewModels.Blocks.Engagement.SignUp.SignUpRegister.SignUpRegistrantBag.WillAttend" /> value indicates whether they're already registered (<see langword="true" />) or available to be registered (<see langword="false" />).
+     * Each {@link SignUpRegistrantBag.willAttend} value indicates whether they're already registered (<see langword="true" />) or available to be registered (<see langword="false" />).
      */
     registrants?: SignUpRegistrantBag[] | null;
 

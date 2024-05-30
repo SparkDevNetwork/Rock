@@ -715,6 +715,51 @@ namespace Rock.Web.UI
             }
         }
 
+        /// <summary>
+        /// Occurs when [page initialized]. This event is for registering any custom event shortkeys for the page.
+        /// </summary>
+        protected virtual void RegisterShortcutKeys()
+        {
+            // Register the shortcut keys with debouncing
+            string script = @"
+                (function() {
+                    var lastDispatchTime = 0;
+                    var lastDispatchedElement = null;
+                    var debounceDelay = 500;
+
+                    document.addEventListener('keydown', function (event) {
+                        if (event.altKey) {
+                            var shortcutKey = event.key.toLowerCase();
+
+                            // Check if a shortcut key is registered for the pressed key
+                            var element = document.querySelector('[data-shortcut-key=""' + shortcutKey + '""]');
+
+                    
+                            if (element) {
+                                var currentTime = performance.now();
+
+                                if (lastDispatchedElement === element && (currentTime - lastDispatchTime) < debounceDelay) {
+                                    return;
+                                }
+
+                                lastDispatchTime = currentTime;
+                                lastDispatchedElement = element;
+
+                                if (shortcutKey === 'arrowright' || shortcutKey === 'arrowleft') {
+                                    event.preventDefault();
+                                }
+
+                                event.preventDefault();
+                                element.click();
+                            }
+                        }
+                    });
+                })();
+            ";
+
+            ScriptManager.RegisterStartupScript( this, typeof( RockPage ), "ShortcutKeys", script, true );
+        }
+
         #endregion
 
         #region Overridden Methods
@@ -795,9 +840,12 @@ namespace Rock.Web.UI
 
             var stopwatchInitEvents = Stopwatch.StartNew();
 
-#pragma warning disable 618
+            // Register shortcut keys
+            RegisterShortcutKeys();
+
+            #pragma warning disable 618
             ConvertLegacyContextCookiesToJSON();
-#pragma warning restore 618
+            #pragma warning restore 618
 
             RequestContext = new RockRequestContext( Request, new RockResponseContext( this ), CurrentUser );
 
@@ -1081,7 +1129,7 @@ namespace Rock.Web.UI
                     SessionStateSection sessionState = ( SessionStateSection ) ConfigurationManager.GetSection( "system.web/sessionState" );
                     string sidCookieName = sessionState.CookieName; // ASP.NET_SessionId
                     var cookie = Response.Cookies[sidCookieName];
-                    cookie.Expires = RockInstanceConfig.SystemDateTime.AddDays( -1 );
+                    cookie.Expires = RockDateTime.SystemDateTime.AddDays( -1 );
                     AddOrUpdateCookie( cookie );
 
                     Response.Redirect( redirectUrl, false );
@@ -3544,7 +3592,7 @@ Sys.Application.add_load(function () {
                 if ( LinkPersonAliasToDevice( ( int ) personAliasId, httpCookie.Values["ROCK_PERSONALDEVICE_ADDRESS"] ) )
                 {
                     var wiFiCookie = Response.Cookies["rock_wifi"];
-                    wiFiCookie.Expires = RockInstanceConfig.SystemDateTime.AddDays( -1 );
+                    wiFiCookie.Expires = RockDateTime.SystemDateTime.AddDays( -1 );
                     AddOrUpdateCookie( wiFiCookie );
                 }
             }

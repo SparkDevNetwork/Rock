@@ -1115,7 +1115,7 @@
                 isPrimary: true,
                 title: "Add item",
                 tooltip: "Add a new item. (Alt+N)",
-                accesskey: "n"
+                shortcutKey: "n"
             });
         }
 

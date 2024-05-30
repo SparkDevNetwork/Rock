@@ -16,7 +16,12 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
+
+using Microsoft.Extensions.DependencyInjection;
+
+using Rock.Configuration;
 
 namespace Rock.Tests.Shared
 {
@@ -55,7 +60,7 @@ namespace Rock.Tests.Shared
             {
                 testMethod();
             }
-            catch( Exception ex )
+            catch ( Exception ex )
             {
                 Log( $"** ERROR:\n{ex.Message}" );
             }
@@ -122,6 +127,92 @@ namespace Rock.Tests.Shared
             Log( $"**   END: {name} ({stopwatch.ElapsedMilliseconds}ms)" );
 
             return stopwatch;
+        }
+
+        #endregion
+
+        #region RockApp Initialization
+
+        /// <summary>
+        /// Configures the RockApp instance for unit testing with the provided
+        /// connection string, which may be <c>null</c>.
+        /// </summary>
+        /// <param name="connectionString">The connection string to use for configuring the RockApp.</param>
+        public static void ConfigureRockApp( string connectionString )
+        {
+            var sc = new ServiceCollection();
+
+            sc.AddSingleton<IConnectionStringProvider>( new TestConnectionStringProvider( connectionString ) );
+            sc.AddSingleton<IInitializationSettings, TestInitializationSettings>();
+            sc.AddSingleton<IDatabaseConfiguration, DatabaseConfiguration>();
+            sc.AddSingleton<IHostingSettings, HostingSettings>();
+
+            RockApp.Current = new RockApp( sc.BuildServiceProvider() );
+
+            ( RockApp.Current.GetDatabaseConfiguration() as DatabaseConfiguration ).IsDatabaseAvailable = connectionString.IsNotNullOrWhiteSpace();
+        }
+
+        /// <summary>
+        /// Connection string provider for running integration unit tests.
+        /// </summary>
+        private class TestConnectionStringProvider : IConnectionStringProvider
+        {
+            /// <inheritdoc/>
+            public string ConnectionString { get; }
+
+            /// <inheritdoc/>
+            public string ReadOnlyConnectionString { get; }
+
+            /// <inheritdoc/>
+            public string AnalyticsConnectionString { get; }
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="TestConnectionStringProvider"/> class.
+            /// </summary>
+            /// <param name="connectionString">The connection string to be used.</param>
+            public TestConnectionStringProvider( string connectionString )
+            {
+                ConnectionString = connectionString;
+                ReadOnlyConnectionString = connectionString;
+                AnalyticsConnectionString = connectionString;
+            }
+        }
+
+        /// <summary>
+        /// Provides the initialization settings for integration unit tests.
+        /// </summary>
+        private class TestInitializationSettings : InitializationSettings
+        {
+            /// <summary>
+            /// Initializes a new instance of the <see cref="TestInitializationSettings"/> class.
+            /// </summary>
+            /// <param name="connectionStringProvider">The interface for providing connection strings.</param>
+            public TestInitializationSettings( IConnectionStringProvider connectionStringProvider )
+                : base( connectionStringProvider )
+            {
+                // This should probably be updated to hard code most of these values
+                // rather than trying to pull them from the app.config.
+                var settings = ConfigurationManager.AppSettings;
+
+                IsRunScheduledJobsEnabled = settings["RunJobsInIISContext"]?.AsBoolean() ?? false;
+                OrganizationTimeZone = settings["OrgTimeZone"]?.ToStringSafe();
+                PasswordKey = settings["PasswordKey"]?.ToStringSafe();
+                DataEncryptionKey = settings["DataEncryptionKey"]?.ToStringSafe();
+                RockStoreUrl = settings["RockStoreUrl"]?.ToStringSafe();
+                IsDuplicateGroupMemberRoleAllowed = settings["AllowDuplicateGroupMembers"]?.AsBoolean() ?? false;
+                IsCacheStatisticsEnabled = settings["CacheManagerEnableStatistics"]?.AsBoolean() ?? false;
+                ObservabilityServiceName = settings["ObservabilityServiceName"]?.ToStringSafe();
+                AzureSignalREndpoint = settings["AzureSignalREndpoint"]?.ToStringSafe();
+                AzureSignalRAccessKey = settings["AzureSignalRAccessKey"]?.ToStringSafe();
+                SparkApiUrl = settings["SparkApiUrl"]?.ToStringSafe();
+                NodeName = settings["NodeName"]?.ToStringSafe();
+            }
+
+            /// <inheritdoc/>
+            public override void Save()
+            {
+                throw new NotImplementedException();
+            }
         }
 
         #endregion

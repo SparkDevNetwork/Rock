@@ -91,7 +91,7 @@
                                   text="Yes" />
                     </fieldset>
 
-                    <RockButton accesskey="s"
+                    <RockButton shortcutKey="s"
                                 btnType="primary"
                                 :disabled="isSaving || isNavigating"
                                 type="submit">{{ saveButtonText }}</RockButton>

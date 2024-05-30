@@ -32,37 +32,37 @@ import { ConfirmAccountDeleteConfirmationViewOptionsBag } from "@Obsidian/ViewMo
 export type ConfirmAccountViewBox = {
     /**
      * The bag containing the required information to display the Confirm Account Block's account confirmation view.
-     * Set when <see cref="P:Rock.ViewModels.Blocks.Security.ConfirmAccount.ConfirmAccountViewBox.ViewType" /> == <see cref="F:Rock.Enums.Blocks.Security.ConfirmAccount.ConfirmAccountViewType.AccountConfirmation" />; otherwise, <c>null</c>.
+     * Set when {@link ConfirmAccountViewBox.viewType} == {@link ConfirmAccountViewType.AccountConfirmation}; otherwise, `null`.
      */
     accountConfirmationViewOptions?: ConfirmAccountAccountConfirmationViewOptionsBag | null;
 
     /**
      * The bag containing the required information to display the Confirm Account Block's alert view.
-     * Set when <see cref="P:Rock.ViewModels.Blocks.Security.ConfirmAccount.ConfirmAccountViewBox.ViewType" /> == <see cref="F:Rock.Enums.Blocks.Security.ConfirmAccount.ConfirmAccountViewType.Alert" />; otherwise, <c>null</c>.
+     * Set when {@link ConfirmAccountViewBox.viewType} == {@link ConfirmAccountViewType.Alert}; otherwise, `null`.
      */
     alertViewOptions?: ConfirmAccountAlertViewOptionsBag | null;
 
     /**
      * The bag containing the required information to display the Confirm Account Block's change password view.
-     * Set when <see cref="P:Rock.ViewModels.Blocks.Security.ConfirmAccount.ConfirmAccountViewBox.ViewType" /> == <see cref="F:Rock.Enums.Blocks.Security.ConfirmAccount.ConfirmAccountViewType.ChangePassword" />; otherwise, <c>null</c>.
+     * Set when {@link ConfirmAccountViewBox.viewType} == {@link ConfirmAccountViewType.ChangePassword}; otherwise, `null`.
      */
     changePasswordViewOptions?: ConfirmAccountChangePasswordViewOptionsBag | null;
 
     /**
      * The bag containing the required information to display the Confirm Account Block's content view.
-     * Set when <see cref="P:Rock.ViewModels.Blocks.Security.ConfirmAccount.ConfirmAccountViewBox.ViewType" /> == <see cref="F:Rock.Enums.Blocks.Security.ConfirmAccount.ConfirmAccountViewType.Content" />; otherwise, <c>null</c>.
+     * Set when {@link ConfirmAccountViewBox.viewType} == {@link ConfirmAccountViewType.Content}; otherwise, `null`.
      */
     contentViewOptions?: ConfirmAccountContentViewOptionsBag | null;
 
     /**
      * The bag containing the required information to display the Confirm Account Block's delete confirmation view.
-     * Set when <see cref="P:Rock.ViewModels.Blocks.Security.ConfirmAccount.ConfirmAccountViewBox.ViewType" /> == <see cref="F:Rock.Enums.Blocks.Security.ConfirmAccount.ConfirmAccountViewType.DeleteConfirmation" />; otherwise, <c>null</c>.
+     * Set when {@link ConfirmAccountViewBox.viewType} == {@link ConfirmAccountViewType.DeleteConfirmation}; otherwise, `null`.
      */
     deleteConfirmationViewOptions?: ConfirmAccountDeleteConfirmationViewOptionsBag | null;
 
     /**
      * The view type to display.
-     * The corresponding view property will be set while the others will remain <c>null</c>.
+     * The corresponding view property will be set while the others will remain `null`.
      */
     viewType: ConfirmAccountViewType;
 };

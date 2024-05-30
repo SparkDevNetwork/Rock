@@ -62,7 +62,9 @@ namespace Rock.Obsidian.UI
                     IdKey = person.IdKey,
                     NickName = person.NickName,
                     LastName = person.LastName,
-                    PhotoUrl = person.PhotoUrl
+                    PhotoUrl = person.PhotoUrl,
+                    ConnectionStatus = person.ConnectionStatusValue?.Value
+
                 };
             } );
         }

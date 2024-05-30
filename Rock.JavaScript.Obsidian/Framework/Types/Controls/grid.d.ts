@@ -655,8 +655,8 @@ export type GridAction = {
     /** If true then the action will be disabled and not respond to clicks. */
     disabled?: boolean;
 
-    /** The accesskey prop to pass to the button. This is an experimental feature that may be changed or removed in the future.*/
-    accesskey?: string;
+    /** The shortcut key prop to pass to the button. */
+    shortcutKey?: string;
 };
 
 /** The type of unit the length value represents. */

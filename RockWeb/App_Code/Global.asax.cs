@@ -30,6 +30,7 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 using Rock;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
@@ -195,7 +196,7 @@ namespace RockWeb
                 RockApplicationStartupHelper.LogStartupMessage( "Application Started Successfully" );
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                 {
-                    System.Diagnostics.Debug.WriteLine( string.Format( "[{0,5:#} ms] Total Startup Time", ( RockDateTime.Now - RockApplicationStartupHelper.StartDateTime ).TotalMilliseconds ) );
+                    System.Diagnostics.Debug.WriteLine( string.Format( "[{0,5:#} ms] Total Startup Time", ( RockDateTime.Now - RockApp.Current.HostingSettings.ApplicationStartDateTime ).TotalMilliseconds ) );
                 }
 
                 ExceptionLogService.AlwaysLogToFile = false;
@@ -932,7 +933,7 @@ namespace RockWeb
                     "IISCallBack",
                     60,
                     null,
-                    RockInstanceConfig.SystemDateTime.AddSeconds( 60 ),
+                    RockDateTime.SystemDateTime.AddSeconds( 60 ),
                     Cache.NoSlidingExpiration,
                     CacheItemPriority.NotRemovable,
                     _onCacheRemove );

@@ -48,8 +48,8 @@
             </fieldset>
 
             <div class="actions">
-                <asp:LinkButton ID="lbSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Add" CssClass="btn btn-primary" onclick="lbSave_Click" />
-                <asp:LinkButton id="lbCancel" runat="server"  AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" OnClick="lbCancel_Click" CausesValidation="false" />
+                <asp:LinkButton ID="lbSave" runat="server" data-shortcut-key="s" ToolTip="Alt+s" Text="Add" CssClass="btn btn-primary" onclick="lbSave_Click" />
+                <asp:LinkButton id="lbCancel" runat="server"  data-shortcut-key="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" OnClick="lbCancel_Click" CausesValidation="false" />
             </div>
 
         </asp:Panel>

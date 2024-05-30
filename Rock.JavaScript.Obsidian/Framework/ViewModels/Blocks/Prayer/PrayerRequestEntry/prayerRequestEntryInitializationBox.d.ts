@@ -53,7 +53,7 @@ export type PrayerRequestEntryInitializationBox = {
 
     /**
      * The default category to use for all new prayer requests.
-     * If <see cref="P:Rock.ViewModels.Blocks.Prayer.PrayerRequestEntry.PrayerRequestEntryInitializationBox.Categories" /> contains this default value, then it will be selected by default.
+     * If {@link PrayerRequestEntryInitializationBox.categories} contains this default value, then it will be selected by default.
      */
     defaultCategoryGuid?: Guid | null;
 
@@ -92,7 +92,7 @@ export type PrayerRequestEntryInitializationBox = {
 
     /**
      * Determines if the campus field is required.
-     * If there is only one active campus, then the campus field will not show. If not show and if this is set to <c>true</c>, then the single campus is automatically used.
+     * If there is only one active campus, then the campus field will not show. If not show and if this is set to `true`, then the single campus is automatically used.
      */
     isCampusRequired: boolean;
 
@@ -116,7 +116,7 @@ export type PrayerRequestEntryInitializationBox = {
 
     /**
      * Determines if the current page will be refreshed on successful save.
-     * This is ignored if <see cref="P:Rock.ViewModels.Blocks.Prayer.PrayerRequestEntry.PrayerRequestEntryInitializationBox.IsPageRedirectedToParentOnSave" /> is <c>true</c>.
+     * This is ignored if {@link PrayerRequestEntryInitializationBox.isPageRedirectedToParentOnSave} is `true`.
      */
     isPageRefreshedOnSave: boolean;
 

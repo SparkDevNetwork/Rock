@@ -19,6 +19,8 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using Microsoft.Win32;
+
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -41,12 +43,14 @@ namespace Rock.Web.Utilities
             var envData = new Dictionary<string, string>();
             envData.Add( "AppRoot", rockUrl );
             envData.Add( "Architecture", ( IntPtr.Size == 4 ) ? "32bit" : "64bit" );
-            envData.Add( "AspNetVersion", GetDotNetVersion() );
+            envData.Add( "AspNetVersion", RockApp.Current.HostingSettings.DotNetVersion );
             envData.Add( "IisVersion", request.ServerVariables["SERVER_SOFTWARE"] );
             envData.Add( "ServerOs", Environment.OSVersion.ToString() );
 
             try
-            { envData.Add( "SqlVersion", Rock.Data.DbService.ExecuteScalar( "SELECT SERVERPROPERTY('productversion')" ).ToString() ); }
+            {
+                envData.Add( "SqlVersion", RockApp.Current.GetDatabaseConfiguration().VersionNumber );
+            }
             catch { }
 
             try
@@ -81,6 +85,8 @@ namespace Rock.Web.Utilities
         /// as per https://msdn.microsoft.com/en-us/library/hh925568(v=vs.110).aspx.
         /// </summary>
         /// <returns>a string containing the human readable version of the .Net framework</returns>
+        [Obsolete( "This method will be removed in the future." )]
+        [RockObsolete( "1.16.6" )]
         public static DotNetVersionCheckResult CheckDotNetVersionFromRegistry()
         {
             // Check if Release is >= 461808 (4.7.2)
@@ -98,29 +104,22 @@ namespace Rock.Web.Utilities
         /// Gets the dot net release number from the registry.
         /// </summary>
         /// <returns></returns>
+        [Obsolete( "This method will be removed in the future." )]
+        [RockObsolete( "1.16.6" )]
         public static int GetDotNetReleaseNumber()
         {
-            const string subkey = @"SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full\";
-            using ( RegistryKey ndpKey = RegistryKey.OpenBaseKey( RegistryHive.LocalMachine, RegistryView.Registry32 ).OpenSubKey( subkey ) )
-            {
-                if ( ndpKey != null && ndpKey.GetValue( "Release" ) != null )
-                {
-                    return ( int ) ndpKey.GetValue( "Release" );
-                }
-                else
-                {
-                    return 0;
-                }
-            }
+            return Configuration.HostingSettings.GetDotNetReleaseNumber();
         }
 
         /// <summary>
         /// Gets the friendly string of the dot net version.
         /// </summary>
         /// <returns></returns>
+        [Obsolete( "Use RockApp.HostingSettings.DotNetVersion instead." )]
+        [RockObsolete( "1.16.6" )]
         public static string GetDotNetVersion()
         {
-            return GetDotNetVersion( GetDotNetReleaseNumber() );
+            return RockApp.Current.HostingSettings.DotNetVersion;
         }
 
         /// <summary>
@@ -128,31 +127,11 @@ namespace Rock.Web.Utilities
         /// </summary>
         /// <param name="releaseNumber">The release number.</param>
         /// <returns></returns>
+        [Obsolete( "This method will be removed in the future." )]
+        [RockObsolete( "1.16.6" )]
         public static string GetDotNetVersion( int releaseNumber )
         {
-            var dotNetReleaseNumberVersionMap = new Dictionary<int, string>
-            {
-                { 528040, ".NET Framework 4.8" },
-                { 461808, ".NET Framework 4.7.2" },
-                { 461308, ".NET Framework 4.7.1" },
-                { 460798, ".NET Framework 4.7" },
-                { 394802, ".NET Framework 4.6.2" },
-                { 394254, ".NET Framework 4.6.1" },
-                { 393295, ".NET Framework 4.6" },
-                { 379893, ".NET Framework 4.5.2" },
-                { 378675, ".NET Framework 4.5.1" },
-                { 378389, ".NET Framework 4.5" },
-            };
-
-            foreach ( var key in dotNetReleaseNumberVersionMap.Keys )
-            {
-                if ( releaseNumber >= key )
-                {
-                    return dotNetReleaseNumberVersionMap[key];
-                }
-            }
-
-            return "Unknown";
+            return Configuration.HostingSettings.GetDotNetVersion( releaseNumber );
         }
     }
 }

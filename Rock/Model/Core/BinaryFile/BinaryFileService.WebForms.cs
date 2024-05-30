@@ -20,7 +20,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Web;
 
-using Rock.Utility.Settings;
+using Rock.Configuration;
 
 namespace Rock.Model
 {
@@ -64,7 +64,7 @@ namespace Rock.Model
         /// <returns></returns>
         private IAsyncResult BeginGet( AsyncCallback callback, HttpContext context, Guid fileGuid, int? fileId )
         {
-            SqlConnection conn = new SqlConnection( string.Format( "{0};Asynchronous Processing=true;", RockInstanceConfig.Database.ConnectionString ) );
+            SqlConnection conn = new SqlConnection( string.Format( "{0};Asynchronous Processing=true;", RockApp.Current.InitializationSettings.ConnectionString ) );
             conn.Open();
             SqlCommand cmd = conn.CreateCommand();
             cmd.CommandText = "spCore_BinaryFileGet";

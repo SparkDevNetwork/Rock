@@ -50,7 +50,7 @@
                     </div>
 
                     <div class="actions margin-t-md">
-                        <asp:LinkButton ID="btnTemplateSelectionNext" runat="server" AccessKey="n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" ValidationGroup="vgTemplateSelection" CausesValidation="true" OnClick="btnTemplateSelectionNext_Click" />
+                        <asp:LinkButton ID="btnTemplateSelectionNext" runat="server" data-shortcut-key="arrowright" Text="Next" ToolTip="Alt+🡆" DataLoadingText="Next" CssClass="btn btn-primary pull-right js-wizard-navigation" ValidationGroup="vgTemplateSelection" CausesValidation="true" OnClick="btnTemplateSelectionNext_Click" />
                     </div>
                 </asp:Panel>
 
@@ -67,7 +67,7 @@
                     <Rock:NotificationBox ID="nbPushValidation" runat="server" NotificationBoxType="Danger" Visible="false" />
 
                     <div class="actions margin-t-md">
-                        <asp:LinkButton ID="lbPushEditorPrevious" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="lbPushEditorPrevious_Click" />
+                        <asp:LinkButton ID="lbPushEditorPrevious" runat="server" data-shortcut-key="arrowleft" Text="Previous" ToolTip="Alt+🡄" CssClass="btn btn-default js-wizard-navigation" CausesValidation="false" OnClick="lbPushEditorPrevious_Click" />
                         <asp:LinkButton ID="lbPushEditorSendTest" runat="server" Text="Send Test" CssClass="btn btn-default" ValidationGroup="vgPushEditor" CausesValidation="true" OnClick="lbPushEditorSendTest_Click" />
                         <asp:LinkButton ID="lbPushEditorSend" runat="server" Text="Send" CssClass="btn btn-primary pull-right js-wizard-navigation" ValidationGroup="vgPushEditor" CausesValidation="true" OnClick="lbPushEditorSend_Click" />
                     </div>

@@ -1,0 +1,122 @@
+<template>
+    <Modal v-model="isVisible"
+           title="Settings"
+           saveText="Save"
+           @save="onSave">
+        <SectionHeader title="Filters" />
+
+        <div class="row">
+            <div v-if="showPersonFilter" class="col-md-4">
+                <PersonPicker v-model="person"
+                              label="Person" />
+            </div>
+
+            <div v-if="showAccountFilter" class="col-md-4">
+                <AccountPicker v-model="accounts"
+                               label="Accounts"
+                               enhanceForLongLists
+                               :multiple="true" />
+            </div>
+
+            <div v-if="showDateRangeFilter" class="col-md-4">
+                <DateRangePicker v-model="dateRange"
+                                 label="Date Range" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div v-if="showLastModifiedFilter" class="col-md-4">
+                <DateRangePicker v-model="lastModified"
+                                 label="Last Modified" />
+            </div>
+
+            <div class="col-md-4">
+                <CheckBox v-model="activeOnly"
+                          label="Active Only"
+                          help="When checked, this will include only those pledges whose active period encompasses the current date, meaning their start date has passed and their end date has not yet been reached." />
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { ref, PropType, watch, computed } from "vue";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import AccountPicker from "@Obsidian/Controls/accountPicker.obs";
+    import DateRangePicker from "@Obsidian/Controls/dateRangePicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { GridSettingsOptions } from "./types.partial";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { FinancialPledgeListOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialPledgeList/financialPledgeListOptionsBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        config: {
+            type: Object as PropType<ListBlockBox<FinancialPledgeListOptionsBag>>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GridSettingsOptions): void;
+        (e: "update:visible", value: boolean): void;
+        (e: "close"): void;
+    }>();
+
+    const dateRange = ref(props.modelValue.dateRange ?? {});
+    const lastModified = ref<DateRangeParts>(props.modelValue.lastModified ?? {});
+    const person = ref<ListItemBag | undefined>(props.modelValue.person ?? undefined);
+    const accounts = ref<ListItemBag[]>(props.modelValue.accounts ?? []);
+    const activeOnly = ref(props.modelValue.activeOnly ?? false);
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+
+    const showPersonFilter = computed(() => props.config.options?.showPersonFilter ?? true);
+    const showAccountFilter = computed(() => props.config.options?.showAccountFilter ?? true);
+    const showDateRangeFilter = computed(() => props.config.options?.showDateRangeFilter ?? true);
+    const showLastModifiedFilter = computed(() => props.config.options?.showLastModifiedFilter ?? true);
+
+    function onSave(): void {
+        const value: GridSettingsOptions = {
+            dateRange: dateRange.value,
+            lastModified: lastModified.value,
+            person: person.value,
+            accounts: accounts.value,
+            activeOnly: activeOnly.value,
+        };
+
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
+
+        isVisible.value = false;
+    }
+
+    watch(() => props.modelValue, () => {
+        dateRange.value = props.modelValue.dateRange ?? {};
+        lastModified.value = props.modelValue.lastModified ?? {};
+        person.value = props.modelValue.person ?? undefined;
+        accounts.value = props.modelValue.accounts ?? [];
+        activeOnly.value = props.modelValue.activeOnly ?? false;
+    });
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            emit("close");
+        }
+    });
+</script>

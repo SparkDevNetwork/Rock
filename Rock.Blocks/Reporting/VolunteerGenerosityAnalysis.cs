@@ -79,7 +79,7 @@ namespace Rock.Blocks.Reporting
 
                             box.UniqueCampuses = uniqueCampuses;
                             box.UniqueGroups = uniqueGroups;
-                            box.LastUpdated = dataset.LastRefreshDateTime.HasValue ? dataset.LastRefreshDateTime.Value.ToString( "yyyy-MM-dd HH:mm:ss" ) : "N/A";
+                            box.LastUpdated = dataset.LastRefreshDateTime.HasValue ? dataset.LastRefreshDateTime.Value.ToRockDateTimeOffset().ToString( "O" ) : null;
                             box.EstimatedRefreshTime = dataset.TimeToBuildMS.HasValue ? Math.Round( dataset.TimeToBuildMS.Value / 1000.0, 2 ) : 0.0;
                             box.ShowCampusFilter = hasMultipleCampuses;
 

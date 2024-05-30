@@ -13,13 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-using System.Collections.Generic;
-using System.Linq;
-
 using Rock.Bus.Queue;
+using Rock.Configuration;
 using Rock.Logging;
 using Rock.Model;
-using Rock.Utility.Settings;
 
 namespace Rock.Bus.Message
 {
@@ -41,7 +38,7 @@ namespace Rock.Bus.Message
                 // Don't publish events until Rock is all the way started
                 var logMessage = $"'Page Route Was Updated' message was not published because Rock is not fully started.";
 
-                var elapsedSinceProcessStarted = RockDateTime.Now - RockInstanceConfig.ApplicationStartedDateTime;
+                var elapsedSinceProcessStarted = RockDateTime.Now - RockApp.Current.HostingSettings.ApplicationStartDateTime;
 
                 if ( elapsedSinceProcessStarted.TotalSeconds > RockMessageBus.MAX_SECONDS_SINCE_STARTTIME_LOG_ERROR )
                 {

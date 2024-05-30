@@ -134,7 +134,7 @@
                     <asp:LinkButton
                         ID="lbSave"
                         runat="server"
-                        AccessKey="s"
+                        data-shortcut-key="s"
                         ToolTip="Alt+s"
                         Text="Save"
                         CssClass="btn btn-primary"
@@ -142,7 +142,7 @@
                     <asp:LinkButton
                         ID="lbCancel"
                         runat="server"
-                        AccessKey="c"
+                        data-shortcut-key="c"
                         ToolTip="Alt+c"
                         Text="Cancel"
                         CssClass="btn btn-link"
