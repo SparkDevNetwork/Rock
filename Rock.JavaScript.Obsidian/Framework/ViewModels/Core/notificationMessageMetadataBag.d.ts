@@ -41,12 +41,10 @@ export type NotificationMessageMetadataBag = {
      * the notification. For example, a notification that originates from
      * an action a person took might use the person's photo.
      * 
-     * 
      * The image should either be a full absolute URL including the scheme
-     * and hostname or should be a path only URL that begins with <c>~</c>.
-     * If it is a path that begins with <c>~</c> then the URL will be
+     * and hostname or should be a path only URL that begins with `~`.
+     * If it is a path that begins with `~` then the URL will be
      * automatically resolved to the proper scheme and hostname.
-     * 
      * 
      * The image must be square and should be around 128x128 pixels in size.
      */

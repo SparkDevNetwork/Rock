@@ -1,6 +1,6 @@
 ﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <button ref="element" :class="cssClass" :disabled="isButtonDisabled" @click="onButtonClick" :type="type" v-bind="tooltipAttrs">
+    <button ref="element" :class="cssClass" :disabled="isButtonDisabled" @click="onButtonClick" :type="type" v-bind="tooltipAttrs" :data-shortcut-key="shortcutKey">
         <template v-if="isButtonLoading">
             <slot name="loading">{{ loadingText }}</slot>
         </template>
@@ -69,6 +69,11 @@
         /** This gets turned into a tooltip as well as being the accessibility title */
         title: {
             type: String
+        },
+
+        shortcutKey: {
+            type: String as PropType<string>,
+            default: ""
         }
     });
 
