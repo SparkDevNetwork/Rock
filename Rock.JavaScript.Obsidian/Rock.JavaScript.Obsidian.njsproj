@@ -271,6 +271,7 @@
     <Folder Include="Framework\Enums\Blocks\Security\Login\" />
     <Folder Include="Framework\Enums\Cms\" />
     <Folder Include="Framework\Enums\Communication\" />
+    <Folder Include="Framework\Enums\Configuration\" />
     <Folder Include="Framework\Enums\Connection\" />
     <Folder Include="Framework\Enums\Controls\" />
     <Folder Include="Framework\Enums\Core\" />
@@ -519,6 +520,7 @@
     <TypeScriptCompile Include="Framework\Enums\Communication\communicationStatus.ts" />
     <TypeScriptCompile Include="Framework\Enums\Communication\notificationClassification.ts" />
     <TypeScriptCompile Include="Framework\Enums\Communication\segmentCriteria.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Configuration\databasePlatform.ts" />
     <TypeScriptCompile Include="Framework\Enums\Connection\connectionRequestViewModelSortProperty.ts" />
     <TypeScriptCompile Include="Framework\Enums\Connection\connectionTypeViewMode.ts" />
     <TypeScriptCompile Include="Framework\Enums\Connection\connectionWorkflowTriggerType.ts" />

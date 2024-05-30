@@ -22,22 +22,39 @@
 //
 
 /**
- * The data bag that contains all the information required to display
- * a PersonColumn in a Grid.
+ * A database server platform that is capable of hosting an instance of
+ * a Rock database.
  */
-export type PersonFieldBag = {
-    /** Gets or sets the connection status. */
-    connectionStatus?: string | null;
+export const DatabasePlatform = {
+    /** The database is unknown. */
+    Unknown: 0,
 
-    /** Gets or sets the hashed identifier key. */
-    idKey?: string | null;
+    /** The database is an edition of Microsoft SQL Server. */
+    SqlServer: 1,
 
-    /** Gets or sets the last name. */
-    lastName?: string | null;
+    /** The database is hosted on the Azure platform. */
+    AzureSql: 2,
 
-    /** Gets or sets the nick name. */
-    nickName?: string | null;
+    /** The database is hosted on an unspecified platform. */
+    Other: 3
+} as const;
 
-    /** Gets or sets the photo URL. */
-    photoUrl?: string | null;
+/**
+ * A database server platform that is capable of hosting an instance of
+ * a Rock database.
+ */
+export const DatabasePlatformDescription: Record<number, string> = {
+    0: "Unknown",
+
+    1: "Sql Server",
+
+    2: "Azure Sql",
+
+    3: "Other"
 };
+
+/**
+ * A database server platform that is capable of hosting an instance of
+ * a Rock database.
+ */
+export type DatabasePlatform = typeof DatabasePlatform[keyof typeof DatabasePlatform];

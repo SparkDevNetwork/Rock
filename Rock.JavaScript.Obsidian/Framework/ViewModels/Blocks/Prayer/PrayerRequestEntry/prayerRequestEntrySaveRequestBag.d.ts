@@ -45,7 +45,7 @@ export type PrayerRequestEntrySaveRequestBag = {
 
     /**
      * Determines if the prayer request is public.
-     * Defaults to the block setting value if <c>null</c>.
+     * Defaults to the block setting value if `null`.
      */
     isPublic?: boolean | null;
 
