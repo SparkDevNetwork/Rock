@@ -36,7 +36,7 @@
 
                 <RecipientModal v-model="isRecipientModalOpen"
                                 v-model:items="recipients"
-                                :disableAdd="!config.isFullMode"
+                                :disableAdd="!isFullMode"
                                 :getEmailTooltipRef="getEmailTooltipRef"
                                 :isBulk="isBulkCommunication" />
             </div>
@@ -44,7 +44,8 @@
 
         <div class="row d-flex">
             <div class="col-sm-6">
-                <DropDownList v-model="templateGuid"
+                <DropDownList v-if="isFullMode"
+                              v-model="templateGuid"
                               :disabled="internalDisabled"
                               :items="mediumOptions.templates ?? undefined"
                               label="Template" />
@@ -60,24 +61,33 @@
 
         <div class="row">
             <div class="col-sm-6">
-                <TextBox v-model="fromName"
+                <TextBox v-if="isFullMode"
+                         v-model="fromName"
                          :disabled="internalDisabled"
                          label="From Name"
                          rules="required" />
+                <StaticFormControl v-else
+                                   v-model="fromName"
+                                   label="From Name" />
             </div>
             <div class="col-sm-6">
-                <EmailBox v-model="fromAddress"
-                          :allowLava="config.isLavaEnabled"
+                <EmailBox v-if="isFullMode"
+                          v-model="fromAddress"
+                          :allowLava="isLavaEnabled"
                           :disabled="internalDisabled"
                           label="From Address"
                           rules="required" />
+                <StaticFormControl v-else
+                                   v-model="fromAddress"
+                                   label="From Address" />
             </div>
         </div>
 
         <div class="row d-flex">
             <div class="col-sm-6">
-                <EmailBox v-model="replyToAddress"
-                          :allowLava="config.isLavaEnabled"
+                <EmailBox v-if="isFullMode"
+                          v-model="replyToAddress"
+                          :allowLava="isLavaEnabled"
                           :disabled="internalDisabled"
                           label="Reply To Address" />
             </div>
@@ -94,18 +104,18 @@
             <div v-if="isCcShown" class="row">
                 <div class="col-sm-6">
                     <EmailBox v-model="ccAddresses"
-                              :allowLava="config.isLavaEnabled"
+                              :allowLava="isLavaEnabled"
                               :allowMultiple="true"
                               :disabled="internalDisabled"
-                              :help="`Any address in this field will be copied on the email sent to every recipient.${(config.isLavaEnabled ? ' Lava can be used to access recipient data. <span class=\'tip tip-lava\'></span>' : '')}`"
+                              :help="`Any address in this field will be copied on the email sent to every recipient.${(isLavaEnabled ? ' Lava can be used to access recipient data. <span class=\'tip tip-lava\'></span>' : '')}`"
                               label="CC Addresses" />
                 </div>
                 <div class="col-sm-6">
                     <EmailBox v-model="bccAddresses"
-                              :allowLava="config.isLavaEnabled"
+                              :allowLava="isLavaEnabled"
                               :allowMultiple="true"
                               :disabled="internalDisabled"
-                              :help="`Any address in this field will be copied on the email sent to every recipient.${(config.isLavaEnabled ? ' Lava can be used to access recipient data. <span class=\'tip tip-lava\'></span>' : '')}`"
+                              :help="`Any address in this field will be copied on the email sent to every recipient.${(isLavaEnabled ? ' Lava can be used to access recipient data. <span class=\'tip tip-lava\'></span>' : '')}`"
                               label="BCC Addresses" />
                 </div>
             </div>
@@ -115,12 +125,13 @@
             <div class="col-sm-6">
                 <TextBox v-model="subject"
                          :disabled="internalDisabled"
-                         :help="config.isLavaEnabled ? '<span class=\'tip tip-lava\'></span>' : ''"
+                         :help="isLavaEnabled ? '<span class=\'tip tip-lava\'></span>' : ''"
                          label="Subject"
                          rules="required" />
             </div>
             <div class="col-sm-4 align-self-center">
-                <Switch v-model="isScheduled"
+                <Switch v-if="isFullMode"
+                        v-model="isScheduled"
                         :disabled="internalDisabled"
                         :text="scheduleSendText" />
             </div>
@@ -142,6 +153,10 @@
                                  label="Attachments"
                                  @openPopup="onAddAttachmentClicked">
                     </PopupPicker>
+                    <NotificationBox v-if="attachmentErrorMessage" alertType="warning">
+                        <strong><i class="fa fa-exclamation-triangle"></i> Warning </strong>
+                        <span>{{ attachmentErrorMessage }}</span>
+                    </NotificationBox>
                 </div>
             </div>
         </VerticalTransitionCollapse>
@@ -159,6 +174,7 @@
 
         <div ref="fileInputWrapper" class="d-none">
             <FileUploader @update:modelValue="onAttachmentAdded"
+                          @error="onAttachmentError"
                           :disabled="internalDisabled"
                           :binaryFileTypeGuid="BinaryFiletype.CommunicationAttachment" />
         </div>
@@ -166,9 +182,9 @@
         <HtmlEditor v-model="message"
                     :disabled="internalDisabled"
                     :editorHeight="600"
-                    :help="`${config.isLavaEnabled ? '<span class=\'tip tip-lava\'></span> ' : ''}<span class='tip tip-html'>`"
+                    :help="`${isLavaEnabled ? '<span class=\'tip tip-lava\'></span> ' : ''}<span class='tip tip-html'>`"
                     label="Message"
-                    :mergeFields="config.isLavaEnabled ? ['GlobalAttribute', 'Rock.Model.Person', 'Communication.Subject|Subject', 'Communication.FromName|From Name', 'Communication.FromEmail|From Address', 'Communication.ReplyToEmail|Reply To', 'UnsubscribeOption'] : undefined" />
+                    :mergeFields="messageMergeFields" />
 
         <div class="actions">
             <RockButton id="btnSubmit"
@@ -184,7 +200,8 @@
                         type="button"
                         @click="test">Send Test</RockButton>
 
-            <RockButton id="btnSave"
+            <RockButton v-if="isFullMode"
+                        id="btnSave"
                         class="btn btn-link"
                         :disabled="internalDisabled"
                         type="button"
@@ -219,12 +236,13 @@
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
     import Switch from "@Obsidian/Controls/switch.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import VerticalTransitionCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
     import { CommunicationStatus } from "@Obsidian/Enums/Communication/communicationStatus";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
-    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { splitCase } from "@Obsidian/Utility/stringUtils";
@@ -243,7 +261,6 @@
     import { Guid } from "@Obsidian/Types";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { getAlertType, scrollIntoView, scrollToTopOfWindow } from "./utils.partial";
-    import { CommunicationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryInitializationBox";
 
     const invokeBlockAction = useInvokeBlockAction();
     const props = defineProps({
@@ -251,7 +268,13 @@
             type: Boolean as PropType<boolean>,
             default: false
         },
+
         isFullMode: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        isLavaEnabled: {
             type: Boolean as PropType<boolean>,
             default: false
         },
@@ -283,34 +306,32 @@
 
     type LabelType = "label-default" | "label-success" | "label-warning" | "label-info" | "label-danger";
 
-    const config = useConfigurationValues<CommunicationEntryInitializationBox>();
-
     //#region Values
 
     const testResultElement = ref<HTMLElement | undefined>();
     const isMounted = ref<boolean>(false);
     const internalDisabled = useVModelPassthrough(props, "disabled", emit);
-    const recipients = ref<CommunicationEntryRecipientBag[]>(props.communication?.recipients ?? []);
-    const attachments = ref<ListItemBag[]>(props.communication?.emailAttachmentBinaryFiles ?? []);
-    const internalIsBulkCommunication = ref<boolean>(!!props.communication?.isBulkCommunication);
-    const templateGuid = ref<string>(props.communication?.communicationTemplateGuid ?? "");
-    const fromName = ref<string>(props.communication?.fromName ?? "");
-    const fromAddress = ref<string>(props.communication?.fromAddress ?? "");
-    const replyToAddress = ref<string>(props.communication?.replyAddress ?? "");
-    const ccAddresses = ref<string>(props.communication?.ccAddresses ?? "");
-    const bccAddresses = ref<string>(props.communication?.bccAddresses ?? "");
-    // Should CC and BCC fields if the loaded communication has either value.
-    const isCcShown = ref<boolean>(!!(ccAddresses.value || bccAddresses));
-    const subject = ref<string>(props.communication?.subject ?? "");
-
+    const recipients = ref<CommunicationEntryRecipientBag[]>(props.communication.recipients ?? []);
+    const attachments = ref<ListItemBag[]>(props.communication.emailAttachmentBinaryFiles ?? []);
+    const internalIsBulkCommunication = ref<boolean>(!!props.communication.isBulkCommunication);
+    const templateGuid = ref<string>(props.communication.communicationTemplateGuid ?? "");
+    const fromName = ref<string>(props.communication.fromName ?? "");
+    const fromAddress = ref<string>(props.communication.fromAddress ?? "");
+    const replyToAddress = ref<string>(props.communication.replyAddress ?? "");
+    const ccAddresses = ref<string>(props.communication.ccAddresses ?? "");
+    const bccAddresses = ref<string>(props.communication.bccAddresses ?? "");
+    // Show CC and BCC fields if the loaded communication has either value.
+    const isCcShown = ref<boolean>(!!(ccAddresses.value || bccAddresses.value));
+    const subject = ref<string>(props.communication.subject ?? "");
+    const attachmentErrorMessage = ref<string | null | undefined>();
     const areAttachmentsShown = ref<boolean>(false);
     const isRecipientModalOpen = ref<boolean>(false);
-    const scheduleSendDateTime = ref<string>(props.communication?.futureSendDateTime ?? "");
-    const tempScheduleSendDateTime = ref<string>(props.communication?.futureSendDateTime ?? "");
+    const scheduleSendDateTime = ref<string>(props.communication.futureSendDateTime ?? "");
+    const tempScheduleSendDateTime = ref<string>(props.communication.futureSendDateTime ?? "");
     const isScheduled = ref<boolean>(!!scheduleSendDateTime.value);
     const isScheduleSendModalOpen = ref<boolean>(false);
     const fileInputWrapper = ref<HTMLInputElement | undefined>();
-    const message = ref<string>(props.communication?.message ?? "");
+    const message = ref<string>(props.communication.message ?? "");
     const communicationGuid = ref<Guid>(props.communication.communicationGuid);
     const options = ref<CommunicationEntryEmailMediumOptionsBag>(props.mediumOptions);
     /** Programmatically submits the form when set to true. */
@@ -323,6 +344,29 @@
     //#endregion
 
     //#region Computed Values
+
+    const messageMergeFields = computed<string[] | undefined>(() => {
+        if (!props.isLavaEnabled) {
+            // Lava is disabled.
+            return undefined;
+        }
+        else if (props.isFullMode) {
+            // Full mode.
+            return [
+                "GlobalAttribute",
+                "Rock.Model.Person",
+                "Communication.Subject|Subject",
+                "Communication.FromName|From Name",
+                "Communication.FromEmail|From Address",
+                "Communication.ReplyToEmail|Reply To",
+                "UnsubscribeOption"
+            ];
+        }
+        else {
+            // Simple mode.
+            return ["Rock.Model.Person"];
+        }
+    });
 
     const isBulkCommunication = computed<boolean>({
         get(): boolean {
@@ -530,12 +574,17 @@
     }
 
     function onAddAttachmentClicked(): void {
+        attachmentErrorMessage.value = null;
         if (fileInputWrapper.value) {
             const group = fileInputWrapper.value.querySelector(".fileupload-group") as HTMLElement;
             if (group) {
                 group.click();
             }
         }
+    }
+
+    function onAttachmentError(error: string): void {
+        attachmentErrorMessage.value = error;
     }
 
     function onAttachmentAdded(file: ListItemBag | undefined): void {

@@ -14,5 +14,3 @@
 // limitations under the License.
 // </copyright>
 //
-
-export type Nullable<T> = T | null | undefined;

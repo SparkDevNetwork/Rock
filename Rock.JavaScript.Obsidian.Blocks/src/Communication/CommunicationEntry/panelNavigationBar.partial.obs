@@ -20,13 +20,12 @@
 
 <script setup lang="ts">
     import { PropType, onMounted } from "vue";
-    import { Nullable } from "./types.partial";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
 
     const props = defineProps({
         modelValue: {
-            type: String as PropType<Nullable<string>>
+            type: String as PropType<string | null | undefined>
         },
 
         items: {

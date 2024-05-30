@@ -94,6 +94,7 @@
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: ListItemBag | undefined): void;
+        (e: "error", value: string): void;
     }>();
 
     const fileGuid = ref<Guid | null>(toGuidOrNull(props.modelValue?.value));
@@ -261,5 +262,11 @@
         }
 
         emit("update:modelValue", newValue);
+    });
+
+    watch(uploadErrorMessage, error => {
+        if (error) {
+            emit("error", error);
+        }
     });
 </script>

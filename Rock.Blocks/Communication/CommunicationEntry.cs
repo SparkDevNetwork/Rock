@@ -230,6 +230,11 @@ namespace Rock.Blocks.Communication
 
         private bool IsEditMode => PageParameter( PageParameterKey.Edit ).AsBoolean();
 
+        /// <summary>
+        /// Gets a value indicating whether new communications should be flagged as bulk communications.
+        /// </summary>
+        private bool DefaultAsBulk => GetAttributeValue( AttributeKey.DefaultAsBulk ).AsBoolean();
+
         //protected int? CommunicationId
         //{
         //    get { return ViewState["CommunicationId"] as int?; }
@@ -1434,7 +1439,7 @@ namespace Rock.Blocks.Communication
                     EnabledLavaCommands = GetAttributeValue( AttributeKey.EnabledLavaCommands ),
                     FromEmail = sender.Email,
                     FromName = sender.FullName,
-                    IsBulkCommunication = GetAttributeValue( AttributeKey.DefaultAsBulk ).AsBoolean(),
+                    IsBulkCommunication = this.DefaultAsBulk,
                     SenderPersonAliasId = sender.PrimaryAliasId,
                     Status = CommunicationStatus.Transient,
                 };
@@ -1543,6 +1548,14 @@ namespace Rock.Blocks.Communication
 
             // Get medium options.
             box.MediumOptions = GetMediumOptions( box.Communication.MediumEntityTypeGuid, sender );
+            // Enforce bulk communication if the number of recipients exceeds the threshold.
+            if ( box.MediumOptions is CommunicationEntryEmailMediumOptionsBag emailMediumOptionsBag
+                 && emailMediumOptionsBag.BulkEmailThreshold.HasValue
+                 && box.Communication?.Recipients != null
+                 && box.Communication.Recipients.Count > emailMediumOptionsBag.BulkEmailThreshold.Value )
+            {
+                box.Communication.IsBulkCommunication = true;
+            }
 
             // If the communication is transient, then override communication data from the template.
             if ( communication.Status == CommunicationStatus.Transient && template != null )

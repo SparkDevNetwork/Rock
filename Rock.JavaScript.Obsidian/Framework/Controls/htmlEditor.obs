@@ -125,10 +125,10 @@
         },
 
         /**
-         * Comma-delimited merge fields available for selection.
+         * Merge fields available for selection.
          * This should include either a list of entity type names (full name), or other non-object string values.
          *
-         * Format should be one of the following:
+         * Format for each string should be one of the following:
          * @example
          * "FieldName" // Label will be a case-delimited version of FieldName (i.e. "Field Name")
          * "FieldName|Label" // Same as previous but with a custom label.

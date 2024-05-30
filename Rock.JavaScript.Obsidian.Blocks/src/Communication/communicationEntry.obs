@@ -19,16 +19,17 @@
                     <Email v-if="areEqual(selectedMediumEntityTypeGuidOrEmptyString, EntityType.CommunicationMediumEmail)"
                            v-model:disabled="isDisabled"
                            :communication="config.communication"
-                           :isFullMode="isFullMode"
+                           :isFullMode="config.isFullMode"
+                           :isLavaEnabled="config.isLavaEnabled"
                            :mediumOptions="(config.mediumOptions as CommunicationEntryEmailMediumOptionsBag)"
                            @saved="onSentOrSaved"
                            @sent="onSentOrSaved" />
 
                     <Sms v-else-if="areEqual(selectedMediumEntityTypeGuidOrEmptyString, EntityType.CommunicationMediumSms)"
-                         :isFullMode="isFullMode" />
+                         :isFullMode="config.isFullMode" />
 
                     <PushNotification v-else-if="areEqual(selectedMediumEntityTypeGuidOrEmptyString, EntityType.CommunicationMediumPushNotification)"
-                                      :isFullMode="isFullMode" />
+                                      :isFullMode="config.isFullMode" />
 
                     <div v-else>
                         Unknown communication medium (Guid: {{ selectedMediumEntityTypeGuidOrEmptyString }}).
@@ -83,37 +84,29 @@
     //#region Values
 
     const areResultsShown = ref<boolean>(false);
-    const isFullMode = ref<boolean>(config.isFullMode);
     const status = ref<CommunicationStatus>(config.communication ? config.communication.status : CommunicationStatus.Draft);
-    const statusLabel = computed<string | null>(() => getStatusLabel(status.value));
-    const statusLabelCssClass = computed<"default" | "type" | "success" | "primary" | "danger" | "warning" | "info" | "custom" | "campus" | undefined>(() => getStatusLabelCssClass(status.value));
     const sentResultsDiv = ref<HTMLElement | undefined>();
     const mediums = computed<ListItemBag[]>(() => config.mediums ?? []);
     const selectedMediumEntityTypeGuidOrEmptyString = ref<string>("");
     const resultMessage = ref<string | null | undefined>("");
-    const viewCommunicationUrl = ref<string>(window.location.href);
+    const viewCommunicationUrl = ref<string>("#");
     const isDisabled = ref<boolean>(false);
 
     //#endregion
 
     //#region Computed Values
 
-    //#endregion
-
-    //#region Functions
-
-    /** Gets the label for a communication status. */
-    function getStatusLabel(status: CommunicationStatus): string {
-        if (status === CommunicationStatus.Transient) {
+    const statusLabel = computed<string | null>(() => {
+        if (status.value === CommunicationStatus.Transient) {
             return "Draft";
         }
         else {
-            return CommunicationStatusDescription[status];
+            return CommunicationStatusDescription[status.value];
         }
-    }
+    });
 
-    function getStatusLabelCssClass(status: CommunicationStatus): "default" | "type" | "success" | "primary" | "danger" | "warning" | "info" | "custom" | "campus" | undefined {
-        switch (status) {
+    const statusLabelCssClass = computed<"default" | "type" | "success" | "primary" | "danger" | "warning" | "info" | "custom" | "campus" | undefined>(() => {
+        switch (status.value) {
             case CommunicationStatus.PendingApproval: {
                 return "warning";
             }
@@ -129,7 +122,11 @@
                 return "default";
             }
         }
-    }
+    });
+
+    //#endregion
+
+    //#region Functions
 
     //#endregion
 

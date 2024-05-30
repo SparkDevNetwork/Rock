@@ -153,6 +153,14 @@ You can view an online version of this email here:
         /// <summary>
         /// Gets the number of recipients that need to be exceeded to automatically consider the email a bulk email.
         /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
         /// <returns>The bulk email threshold.</returns>
         [RockInternal( "1.17" )]
         internal int? GetBulkEmailThreshold()
