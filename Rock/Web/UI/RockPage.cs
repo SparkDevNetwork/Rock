@@ -44,14 +44,9 @@ using Rock.Security;
 using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Utility;
-using Rock.Utility.Settings;
-using Rock.ViewModels;
 using Rock.ViewModels.Crm;
-using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-
-using static Rock.Security.Authorization;
 
 using Page = System.Web.UI.Page;
 
@@ -849,9 +844,9 @@ namespace Rock.Web.UI
             // Register shortcut keys
             RegisterShortcutKeys();
 
-            #pragma warning disable 618
+#pragma warning disable 618
             ConvertLegacyContextCookiesToJSON();
-            #pragma warning restore 618
+#pragma warning restore 618
 
             RequestContext = new RockRequestContext( Request, new RockResponseContext( this ), CurrentUser );
 
@@ -1512,11 +1507,14 @@ Rock.settings.initialize({{
                                 currentPersonJson = new CurrentPersonBag
                                 {
                                     IdKey = CurrentPerson.IdKey,
+                                    Guid = CurrentPerson.Guid,
+                                    PrimaryAliasIdKey = CurrentPerson.PrimaryAlias.IdKey,
+                                    PrimaryAliasGuid = CurrentPerson.PrimaryAlias.Guid,
                                     FirstName = CurrentPerson.FirstName,
                                     NickName = CurrentPerson.NickName,
                                     LastName = CurrentPerson.LastName,
                                     FullName = CurrentPerson.FullName,
-                                    Email = CurrentPerson.Email
+                                    Email = CurrentPerson.Email,
                                 }.ToCamelCaseJson( false, false );
                             }
                             else if ( CurrentPerson != null )
