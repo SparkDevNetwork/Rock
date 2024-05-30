@@ -59,10 +59,16 @@
     import Menu from "./LabelDesigner/menu.partial.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { newGuid } from "@Obsidian/Utility/guid";
     import { computed } from "vue";
     import { LabelBag, LabelFieldType, Size } from "./LabelDesigner/types.partial";
-    import { newGuid } from "@Obsidian/Utility/guid";
     import { LabelUndoManager } from "./LabelDesigner/undoManager.partial";
+
+    const config = useConfigurationValues<unknown>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    console.log("config", config);
 
     const labelSize = computed<Size>({
         get() {

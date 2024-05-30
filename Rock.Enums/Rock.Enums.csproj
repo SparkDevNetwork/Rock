@@ -66,6 +66,12 @@
     <Compile Include="CheckIn\AutoSelectMode.cs" />
     <Compile Include="CheckIn\KioskCheckInMode.cs" />
     <Compile Include="CheckIn\FamilySearchMode.cs" />
+    <Compile Include="CheckIn\Labels\BarcodeFormat.cs" />
+    <Compile Include="CheckIn\Labels\HorizontalTextAlignment.cs" />
+    <Compile Include="CheckIn\Labels\LabelFieldType.cs" />
+    <Compile Include="CheckIn\Labels\LabelType.cs" />
+    <Compile Include="CheckIn\Labels\TextCollectionFormat.cs" />
+    <Compile Include="CheckIn\Labels\TextFieldSubType.cs" />
     <Compile Include="CheckIn\PhoneSearchMode.cs" />
     <Compile Include="CheckIn\SuccessLavaTemplateDisplayMode.cs" />
     <Compile Include="Cms\BlockReloadMode.cs" />

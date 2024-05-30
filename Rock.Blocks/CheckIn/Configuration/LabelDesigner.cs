@@ -15,9 +15,16 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 
 using Rock.Attribute;
+using Rock.CheckIn.v2.Labels;
+using Rock.Enums.CheckIn.Labels;
+using Rock.Model;
+using Rock.ViewModels.Blocks.CheckIn.Configuration.LabelDesigner;
+using Rock.ViewModels.CheckIn.Labels;
 
 namespace Rock.Blocks.CheckIn.Configuration
 {
@@ -39,5 +46,29 @@ namespace Rock.Blocks.CheckIn.Configuration
     [Rock.SystemGuid.BlockTypeGuid( "8c4ad18f-9f81-4145-8ad0-ab90e451d0d6" )]
     public class LabelDesigner : RockBlockType
     {
+        public override object GetObsidianBlockInitialization()
+        {
+            var x = Rock.CheckIn.v2.Labels.FieldDataSources.GetDataSources( LabelType.Person );
+            var personLabelSources = x.ToDictionary( p => p.Key, p => ToDataSourceBag( p.Value ) );
+
+            return new
+            {
+                PersonLabelSources = personLabelSources
+            };
+        }
+
+        private DataSourceBag ToDataSourceBag( FieldDataSource dataSource )
+        {
+            return new DataSourceBag
+            {
+                Key = dataSource.Key,
+                Name = dataSource.Name,
+                TextSubType = dataSource.TextSubType,
+                Category = dataSource.Category,
+                SupportedComparisionTypes = ( int ) dataSource.SupportedComparisionTypes,
+                CustomFields = dataSource.CustomFields,
+                FormatterOptions = dataSource.Formatter?.Options ?? new List<DataFormatterOptionBag>()
+            };
+        }
     }
 }

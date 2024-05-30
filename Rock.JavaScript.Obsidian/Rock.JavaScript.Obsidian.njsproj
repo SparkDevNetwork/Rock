@@ -270,6 +270,7 @@
     <Folder Include="Framework\Enums\Blocks\Security\AccountEntry\" />
     <Folder Include="Framework\Enums\Blocks\Security\Login\" />
     <Folder Include="Framework\Enums\CheckIn\" />
+    <Folder Include="Framework\Enums\CheckIn\Labels\" />
     <Folder Include="Framework\Enums\Cms\" />
     <Folder Include="Framework\Enums\Communication\" />
     <Folder Include="Framework\Enums\Connection\" />
@@ -509,6 +510,12 @@
     <TypeScriptCompile Include="Framework\Enums\CheckIn\autoSelectMode.ts" />
     <TypeScriptCompile Include="Framework\Enums\CheckIn\familySearchMode.ts" />
     <TypeScriptCompile Include="Framework\Enums\CheckIn\kioskCheckInMode.ts" />
+    <TypeScriptCompile Include="Framework\Enums\CheckIn\Labels\barcodeFormat.ts" />
+    <TypeScriptCompile Include="Framework\Enums\CheckIn\Labels\horizontalTextAlignment.ts" />
+    <TypeScriptCompile Include="Framework\Enums\CheckIn\Labels\labelFieldType.ts" />
+    <TypeScriptCompile Include="Framework\Enums\CheckIn\Labels\labelType.ts" />
+    <TypeScriptCompile Include="Framework\Enums\CheckIn\Labels\textCollectionFormat.ts" />
+    <TypeScriptCompile Include="Framework\Enums\CheckIn\Labels\textFieldSubType.ts" />
     <TypeScriptCompile Include="Framework\Enums\CheckIn\phoneSearchMode.ts" />
     <TypeScriptCompile Include="Framework\Enums\CheckIn\successLavaTemplateDisplayMode.ts" />
     <TypeScriptCompile Include="Framework\Enums\Cms\blockLocation.ts" />
