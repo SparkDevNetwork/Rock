@@ -124,7 +124,7 @@
                                   label="Entity Type"
                                   help="Set this to indicate which EntityType the JSON object should be associated with. This will be used by the PersistedDataset Lava Filter when entity related options such as 'AppendFollowing' are specified.'"
                                   :multiple="false"
-                                  :includeGlobalOption="false"
+                                  :showBlankItem="true"
                                   :disabled="isSystem" />
 
                 <CheckBox v-model="allowManualRefresh"

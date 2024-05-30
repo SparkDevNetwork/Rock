@@ -4,7 +4,9 @@
              :style="{ 'width': '24px', 'height': '24px', 'border-radius': '12px', 'background-image': `url('${photoUrl}')`, 'background-size': 'cover' }">
         </div>
         <div class="flex-grow-1">
-            {{ formattedName }}
+            <strong>
+                {{ formattedName }}
+            </strong>
             <div v-if="showDetailField && detailText" class="text-muted">{{ detailText }}</div>
         </div>
     </div>
