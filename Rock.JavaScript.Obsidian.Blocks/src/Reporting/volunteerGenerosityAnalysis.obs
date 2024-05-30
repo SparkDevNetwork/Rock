@@ -258,6 +258,7 @@
     import { PreferenceKey } from "./VolunteerGenerosityAnalyisis/types.partial";
     import Panel from "@Obsidian/Controls/panel.obs";
     import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
     const config = useConfigurationValues<ListBlockBox<VolunteerGenerosityDataBag>>();
     const bag = useConfigurationValues<VolunteerGenerosityInitializationBox>();
@@ -299,30 +300,41 @@
      * @param lastUpdatedString The last updated date
      * @returns A string representing the time difference
      */
-    const calculateTimeDifference = (lastUpdatedString: string | number | Date): string => {
-        const lastUpdatedDate = new Date(lastUpdatedString);
-        const now = new Date();
-        let diffInSeconds = Math.floor((now.getTime() - lastUpdatedDate.getTime()) / 1000);
+     const calculateTimeDifference = (lastUpdatedString: string): string => {
+        const lastUpdatedDate = RockDateTime.parseISO(lastUpdatedString);
+        const now = RockDateTime.now();
+
+        if (!lastUpdatedDate) {
+            return "Data last updated N/A";
+        }
+
+        // Convert both dates to the same time zone using the offset
+        const lastUpdatedDateUTC = lastUpdatedDate.universalDateTime;
+        const nowUTC = now.universalDateTime;
+
+        const diffInSeconds = Math.floor((nowUTC.toMilliseconds() - lastUpdatedDateUTC.toMilliseconds()) / 1000);
+
         let timeDiffStr = "Data Updated: ";
 
         if (diffInSeconds < 60) {
             timeDiffStr += `${diffInSeconds} seconds ago`;
         }
-        else if (diffInSeconds < 3600) { // Less than 1 hour
+    else if (diffInSeconds < 3600) { // Less than 1 hour
             const minutes = Math.floor(diffInSeconds / 60);
             timeDiffStr += `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
         }
-        else if (diffInSeconds < 86400) { // Less than 1 day
+    else if (diffInSeconds < 86400) { // Less than 1 day
             const hours = Math.floor(diffInSeconds / 3600);
             timeDiffStr += `${hours} hour${hours > 1 ? "s" : ""} ago`;
         }
-        else {
+    else {
             const days = Math.floor(diffInSeconds / 86400);
             timeDiffStr += `${days} day${days > 1 ? "s" : ""} ago`;
         }
 
         return timeDiffStr;
-    };
+};
+
 
     /**
      * Calculate the donation percentages for each month
@@ -384,16 +396,15 @@
      * @param lastUpdated The last updated date
      * @returns A formatted string representing the last updated date
      */
-    const formatLastUpdated = (lastUpdated): string => {
-        const lastUpdatedDate = new Date(lastUpdated);
-        const datePart = lastUpdatedDate.toLocaleDateString("en-US", { year: "numeric", month: "2-digit", day: "2-digit" });
-        let hours = lastUpdatedDate.getHours();
-        const minutes = lastUpdatedDate.getMinutes();
-        const ampm = hours >= 12 ? "PM" : "AM";
-        hours = hours % 12;
-        hours = hours ? hours : 12; // the hour '0' should be '12'
-        const minutesStr = minutes < 10 ? "0" + minutes : minutes;
-        const timePart = `${hours}:${minutesStr} ${ampm}`;
+     const formatLastUpdated = (lastUpdated): string => {
+        const lastUpdatedDate = RockDateTime.parseISO(lastUpdated);
+
+        if (!lastUpdatedDate) {
+            return "Data last updated N/A";
+        }
+
+        const datePart = lastUpdatedDate.toLocaleString({ year: "numeric", month: "2-digit", day: "2-digit" });
+        const timePart = lastUpdatedDate.toLocaleString({ hour: "numeric", minute: "2-digit", hour12: true }).replace(" ", "");
 
         return `Data last updated ${datePart} at ${timePart}`;
     };
