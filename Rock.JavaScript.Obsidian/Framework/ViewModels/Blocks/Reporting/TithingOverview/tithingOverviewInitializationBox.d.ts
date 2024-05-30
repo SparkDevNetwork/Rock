@@ -37,6 +37,9 @@ export type TithingOverviewInitializationBox = {
      */
     errorMessage?: string | null;
 
+    /** Gets or sets a value indicating whether the data required to create the chart exists. */
+    hasData: boolean;
+
     /** Gets or sets the legend data. */
     legendData?: Record<string, string> | null;
 

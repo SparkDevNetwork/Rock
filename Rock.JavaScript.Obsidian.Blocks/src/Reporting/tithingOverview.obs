@@ -1,5 +1,6 @@
 <template>
-    <Panel title="Tithing Overview By Campus" type="block">
+    <NotificationBox v-if="!hasData" alertType="info">There are no computed tithing metrics.</NotificationBox>
+    <Panel v-else title="Tithing Overview By Campus" type="block">
         <template #headerActions>
             <div class="control-wrapper mr-3">
                 <div class="toggle-container">
@@ -28,6 +29,7 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import Chart from "@Obsidian/Controls/chart.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { ChartData, ChartOptions, ChartDataset, ChartEvent, LegendElement, LegendItem, Chart as ChartInstance, ChartType } from "@Obsidian/Libs/chart";
     import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
     import { TithingOverviewInitializationBox } from "@Obsidian/ViewModels/Blocks/Reporting/TithingOverview/tithingOverviewInitializationBox";
@@ -49,6 +51,7 @@
         "11+": "#075985",
         "Unknown": "#A3A3A3",
     });
+    const hasData = ref(config.hasData);
 
     const options = ref<ChartOptions>({
         responsive: true,

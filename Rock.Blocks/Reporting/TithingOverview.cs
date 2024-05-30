@@ -103,13 +103,15 @@ namespace Rock.Blocks.Reporting
         {
             var json = GetChartData( rockContext, chartType );
             var toolTipData = GetToolTipData( rockContext, chartType );
+            var metricValues = GetTithingOverviewMetricValues( rockContext, chartType );
 
             var box = new TithingOverviewInitializationBox
             {
                 ChartDataJson = json,
                 ChartType = chartType,
                 ToolTipData = GetToolTipData( rockContext, chartType ),
-                LegendData = GetLegendLabelColors( toolTipData )
+                LegendData = GetLegendLabelColors( toolTipData ),
+                HasData = metricValues.Count > 0,
             };
 
             return box;

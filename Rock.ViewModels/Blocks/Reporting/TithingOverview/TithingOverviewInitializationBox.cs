@@ -56,5 +56,13 @@ namespace Rock.ViewModels.Blocks.Reporting.TithingOverview
         /// The legend data.
         /// </value>
         public Dictionary<string, string> LegendData { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the data required to create the chart exists.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the data exists, <c>false</c>.
+        /// </value>
+        public bool HasData { get; set; }
     }
 }
