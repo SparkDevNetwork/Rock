@@ -91,5 +91,10 @@ export default defineComponent({
             type: String as PropType<string>,
             default: "person"
         },
+
+        detailField: {
+            type: [String, Boolean] as PropType<string | boolean>,
+            default: "connectionStatus"
+        }
     }
 });

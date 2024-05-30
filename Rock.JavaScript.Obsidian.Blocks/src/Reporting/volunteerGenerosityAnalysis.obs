@@ -72,41 +72,12 @@
             </template>
 
             <!-- Grid Section -->
-            <Column name="name"
-                    title="Name"
-                    sortValue="{{ row.person.lastName }} {{ row.person.nickName }}"
-                    :filter="textValueFilter"
-                    filterValue="{{ row.person.nickName }} {{ row.person.lastName }}"
-                    quickFilterValue="{{ row.person.nickName }} {{ row.person.lastName }}"
-                    width="15%">
-                <template #format="{ row }">
-                    <div class="d-flex flex-fill align-items-center">
-                        <div class="mr-2 flex-shrink-0"
-                             :style="{ 'width': '40px', 'height': '40px', 'border-radius': '30px', 'background-image': `url('${row.person.photoUrl}')`, 'background-size': 'cover' }">
-                        </div>
-                        <div class="flex-grow-1">
-                            <strong>
-                                {{ row.person.nickName }} {{ row.person.lastName }}
-                            </strong>
-                            <div>
-                                {{ row.person.connectionStatus }}
-                            </div>
-                        </div>
-                    </div>
-                </template>
 
-                <template #skeleton>
-                    <div class="d-flex flex-fill align-items-center">
-                        <div class="mr-2 flex-shrink-0 skeleton skeleton-xs"
-                             style="width: 24px; height: 24px; border-radius: 12px;" />
-                        <div class="skeleton skeleton-text skeleton-sm skeleton-rounded flex-grow-1" />
-                    </div>
-                </template>
-
-                <template #export="{ row }">
-                    {{ row.person.nickName }} {{ row.person.lastName }}
-                </template>
-            </Column>
+            <PersonColumn name="person"
+                          title="Person"
+                          field="person"
+                          visiblePriority="xs"
+                          width="15%" />
 
             <TextColumn v-if="bag.showCampusFilter"
                         name="campus"
@@ -154,9 +125,8 @@
 </template>
 
 <style scoped>
-
 /* Months Giving Chart */
-.volunteer-generosity-analysis :deep( .grid-cell.giving-trends ) {
+.volunteer-generosity-analysis :deep(.grid-cell.giving-trends) {
     position: relative;
     overflow: visible;
 }
@@ -251,7 +221,7 @@
     import { VolunteerGenerosityDataBag } from "@Obsidian/ViewModels/Blocks/Reporting/VolunteerGenerosityAnalysis/volunteerGenerosityDataBag";
     import { VolunteerGenerosityInitializationBox } from "@Obsidian/ViewModels/Blocks/Reporting/VolunteerGenerosityAnalysis/volunteerGenerosityInitializationBox";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
-    import Grid, { TextColumn, textValueFilter, Column, dateValueFilter, DateColumn } from "@Obsidian/Controls/grid";
+    import Grid, { TextColumn, textValueFilter, Column, dateValueFilter, DateColumn, PersonColumn } from "@Obsidian/Controls/grid";
     import StandardFilterDaysBack from "@Obsidian/Controls/standardFilterDaysBack.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";

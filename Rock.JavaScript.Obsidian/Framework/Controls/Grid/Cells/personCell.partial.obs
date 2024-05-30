@@ -1,11 +1,11 @@
-<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="d-flex flex-fill align-items-center">
-        <div class="mr-2 flex-shrink-0"
+        <div v-if="!props.column.props.hideAvatar" class="mr-2 flex-shrink-0"
              :style="{ 'width': '24px', 'height': '24px', 'border-radius': '12px', 'background-image': `url('${photoUrl}')`, 'background-size': 'cover' }">
         </div>
         <div class="flex-grow-1">
             {{ formattedName }}
+            <div v-if="showDetailField && detailText" class="text-muted">{{ detailText }}</div>
         </div>
     </div>
 </template>
@@ -50,4 +50,37 @@
 
         return `${value.nickName ?? ""} ${value.lastName ?? ""}`;
     });
+
+    /** Determines whether to show the detail field */
+    const showDetailField = computed((): boolean => {
+        return props.column.props.detailField !== false;
+    });
+
+    /** Contains the detail text to display */
+    const detailText = computed((): string => {
+        if (!props.column.field || !showDetailField.value) {
+            return "";
+        }
+
+        const value = props.row[props.column.field] as PersonFieldBag;
+
+        if (!value || typeof value !== "object") {
+            return "";
+        }
+
+        const detailField = props.column.props.detailField;
+
+        if (typeof detailField === "string") {
+            if (detailField === "connectionStatus") {
+                return value.connectionStatus ?? "";
+            }
+ else {
+                // Treat detailField as a custom string value
+                return detailField;
+            }
+        }
+
+        return "";
+    });
+
 </script>

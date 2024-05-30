@@ -37,4 +37,7 @@ export type PersonFieldBag = {
 
     /** Gets or sets the photo URL. */
     photoUrl?: string | null;
+
+    /** Gets or sets the connection status. */
+    connectionStatus?: string | null;
 };
