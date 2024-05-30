@@ -30,6 +30,7 @@ using Rock.SystemGuid;
 using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Lms.LearningActivityCompletionDetail;
+using Rock.ViewModels.Blocks.Lms.LearningActivityComponent;
 using Rock.ViewModels.Blocks.Lms.LearningActivityDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
@@ -239,7 +240,6 @@ namespace Rock.Blocks.Lms
                 GradeText = entity.GradeText( scales ),
                 IsGradePassing = entity.Grade().IsPassing,
                 IsFacilitatorCompleted = entity.IsFacilitatorCompleted,
-                IsPastDue = entity.DueDate != null && entity.DueDate >= now,
                 IsStudentCompleted = entity.IsStudentCompleted,
                 PointsEarned = entity.PointsEarned,
                 Student = studentBag,
@@ -324,7 +324,7 @@ namespace Rock.Blocks.Lms
             return new Dictionary<string, string>
             {
                 [NavigationUrlKey.ParentPage] = ParentPageUrl()
-        };
+            };
         }
 
         private string ParentPageUrl()

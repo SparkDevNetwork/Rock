@@ -17,7 +17,7 @@
 
 using System;
 
-using Rock.Enums.Lms;
+using Rock.ViewModels.Blocks.Lms.LearningActivityComponent;
 using Rock.ViewModels.Blocks.Lms.LearningActivityDetail;
 using Rock.ViewModels.Utility;
 
@@ -37,6 +37,11 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityCompletionDetail
         /// Gets or sets the completion json for the activity component.
         /// </summary>
         public string ActivityComponentCompletionJson { get; set; }
+
+        /// <summary>
+        /// Gets or sets the available date for the activity instance.
+        /// </summary>
+        public DateTime? AvailableDate { get; set; }
 
         /// <summary>
         /// Gets or sets the binary file of the completion for use by the activity component.
@@ -65,6 +70,16 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityCompletionDetail
         public string GradeText { get; set; }
 
         /// <summary>
+        /// Indicates whether or not the activity is currently available.
+        /// </summary>
+        public bool IsAvailable => !AvailableDate.HasValue || AvailableDate.Value <= DateTime.Now;
+
+        /// <summary>
+        /// Indicates whether or not the activity is due within a week.
+        /// </summary>
+        public bool IsDueSoon => DueDate.HasValue && DueDate >= DateTime.Now && DueDate.Value <= DateTime.Now.AddDays( 7 );
+
+        /// <summary>
         /// Indicates whether or not the grade is a passing grade.
         /// </summary>
         public bool IsGradePassing { get; set; }
@@ -77,7 +92,7 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityCompletionDetail
         /// <summary>
         /// Indicates whether or not the related activity instance for the student is currently past due.
         /// </summary>
-        public bool IsPastDue { get; set; }
+        public bool IsPastDue => DueDate != null && DueDate <= DateTime.Now;
 
         /// <summary>
         /// Indicates whether or not student commenting is enabled for this activity.

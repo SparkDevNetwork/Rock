@@ -20,7 +20,7 @@ using System.ComponentModel;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.ViewModels.Blocks.Lms.PublicLearningPrograms;
+using Rock.ViewModels.Blocks.Lms.PublicLearningProgramList;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Blocks.Lms

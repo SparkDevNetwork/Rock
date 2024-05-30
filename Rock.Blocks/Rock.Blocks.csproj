@@ -111,6 +111,7 @@
     <Compile Include="Lms\LearningGradingSystemScaleList.cs" />
     <Compile Include="Finance\FinancialPersonBankAccountList.cs" />
     <Compile Include="Lms\LearningSemesterDetail.cs" />
+    <Compile Include="Lms\Public\PublicLearningClassWorkspace.cs" />
     <Compile Include="Lms\Public\PublicLearningCourseDetail.cs" />
     <Compile Include="Lms\Public\PublicLearningCourseList.cs" />
     <Compile Include="Lms\Public\PublicLearningProgramList.cs" />
@@ -206,7 +207,6 @@
     <Compile Include="Reporting\InteractionDetail.cs" />
     <Compile Include="Fundraising\FundraisingDonationList.cs" />
     <Compile Include="Group\Scheduling\GroupScheduleToolbox.cs" />
-    <Compile Include="Lms\LearningActivityList.cs" />
     <Compile Include="Lms\LearningClassList.cs" />
     <Compile Include="Lms\LearningCourseDetail.cs" />
     <Compile Include="Lms\LearningCourseList.cs" />

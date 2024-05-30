@@ -20,45 +20,16 @@ using System.Linq;
 
 using Rock.Data;
 using Rock.Enums.Lms;
-using Rock.ViewModels.Blocks.Lms.LearningActivityDetail;
+using Rock.Utility;
+using Rock.ViewModels.Blocks.Lms.LearningActivityComponent;
 
 namespace Rock.Model
 {
     public partial class LearningParticipantService
     {
         /// <summary>
-        /// Adds <see cref="LearningActivityCompletion">activity completions</see> for the <see cref="LearningParticipant">participant</see> .
-        /// If any activity completion already exists it will be not be recreated.
-        /// </summary>
-        /// <param name="learningParticipantId">The identifier of the <see cref="LearningParticipant"/> for which to add the completion records.</param>
-        /// <returns>The list of <see cref="LearningActivityCompletion"/> records to be saved when the Context is saved.</returns>
-        public List<LearningActivityCompletion> AddActivityCompletions( int learningParticipantId )
-        {
-            var rockContext = ( RockContext ) Context;
-
-            var completionsToAdd = GetActivities( learningParticipantId )
-                .AsNoTracking()
-                // If there happen to be some existing completions do not recreate them.
-                .Where( a => !a.LearningActivityCompletions.Any( c => c.StudentId == learningParticipantId && c.LearningActivityId == a.Id ) )
-                .Select( a => new LearningActivityCompletion
-                {
-                    StudentId = learningParticipantId,
-                    LearningActivityId = a.Id,
-                    AvailableDate = a.AvailableDateCalculated,
-                    DueDate = a.DueDateCalculated,
-                    NotificationCommunicationId = a.LearningClass.LearningCourse.SystemCommunicationId
-                } )
-                .ToList();
-
-            new LearningActivityCompletionService( rockContext ).AddRange( completionsToAdd );
-
-            return completionsToAdd;
-        }
-
-        /// <summary>
         /// <para>Gets a list of <see cref="LearningActivity">Activities</see> for the course that the <see cref="LearningParticipant"/>
-        /// is enrolled in.</para>
-        /// These are the activity templates. For instance data use <seealso cref="GetActivityCompletions"/>.
+        /// is enrolled in.</para>.
         /// This method will return only assignments for the role type (e.g. Student assignments when the Participant role type is not a leader).
         /// </summary>
         /// <param name="participantId">The Id of the <see cref="LearningParticipant"/> for which to get activities.</param>
@@ -68,6 +39,7 @@ namespace Rock.Model
             return Queryable()
                 .Include( p => p.LearningClass )
                 .Include( p => p.LearningClass.LearningActivities )
+                .Include( p => p.LearningClass.LearningSemester )
                 .Include( p => p.GroupRole )
                 .Where( p => p.Id == participantId )
                 .SelectMany( p =>
@@ -75,7 +47,6 @@ namespace Rock.Model
                     .Where( a => a.AssignTo == ( p.GroupRole.IsLeader ? AssignTo.Facilitator : AssignTo.Student ) )
                 );
         }
-
         /// <summary>
         /// <para>Gets a list of <see cref="LearningActivityCompletion">Activities</see> for the course that the <see cref="LearningParticipant"/>
         /// is enrolled in.</para>
@@ -89,6 +60,19 @@ namespace Rock.Model
                 .Include( p => p.LearningActivities )
                 .Where( p => p.Id == participantId )
                 .SelectMany( p => p.LearningActivities );
+        }
+
+        /// <summary>
+        /// <para>Gets a list of <see cref="LearningActivityCompletion">Activities</see> for the course that the <see cref="LearningParticipant"/>
+        /// is enrolled in.</para>
+        /// These are the activity instances. For template data use <seealso cref="GetActivities"/>.
+        /// </summary>
+        /// <param name="participantIdKey">The hashed identifier of the <see cref="LearningParticipant"/> for which to get activities.</param>
+        /// <returns>Queryable of LearningActivitCompletions for the given participant and class.</returns>
+        public IQueryable<LearningActivityCompletion> GetActivityCompletions( string participantIdKey )
+        {
+            var participantId = IdHasher.Instance.GetId( participantIdKey );
+            return participantId.HasValue ? GetActivityCompletions( participantId.Value ) : new List<LearningActivityCompletion>().AsQueryable();
         }
 
         /// <summary>
@@ -243,6 +227,5 @@ namespace Rock.Model
         {
             return GetParticipants( classId, true ).Where( a => !a.GroupRole.IsLeader );
         }
-
     }
 }

@@ -16,8 +16,7 @@
 //
 
 import { Guid } from "@Obsidian/Types";
-import { LearningComponentBaseDefaults } from "./learningActivity.partial";
-import { newGuid } from "@Obsidian/Utility/guid";
+import { LearningComponentBaseDefaults } from "./learningActivity";
 
 /** Determines how the component should be rendered. */
 export enum AssessmentItemType {
@@ -66,21 +65,20 @@ export class AssessmentItemBase extends AssessmentItem {
         this.pointsEarned = 0;
         this.response = "";
         this.typeName = typeName;
-        this.uniqueId = newGuid();
     }
 }
 
 export class MultipleChoiceItem extends AssessmentItemBase {
     answers: string[] = [];
-    correctAnswer: string;
+    correctAnswer?: string;
     helpText?: string;
     question!: string;
 
-    constructor() {
+    constructor(order = 0) {
         super(AssessmentItemType.MultipleChoice);
-        this.answers = [];
-        this.correctAnswer = "";
+        this.answers = ["", "", ""];
         this.helpText = "";
+        this.order = order;
         this.question = "";
     }
 }

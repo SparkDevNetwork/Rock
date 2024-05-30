@@ -43,6 +43,7 @@ namespace Rock.Model
             var mostRecentParticipation = participantService
                 .GetClasses( personId, true )
                 .AsNoTracking()
+                .OrderByDescending( p => p.CreatedDateTime )
                 .FirstOrDefault( p => p.LearningClass.LearningCourseId == courseId );
 
             var now = RockDateTime.Now;
@@ -61,7 +62,6 @@ namespace Rock.Model
                     CategoryColor = c.Category.HighlightColor,
                     CourseRequirements = c.LearningCourseRequirements.ToList(),
                     ImageFileGuid = c.ImageBinaryFile.Guid,
-                    MostRecentParticipation = mostRecentParticipation,
 
                     // Get the earliest semester with open enrollment and a future start date for this course.
                     NextSemester = c.LearningClasses
@@ -87,6 +87,7 @@ namespace Rock.Model
             if (mostRecentParticipation != null)
             {
                 course.LearningCompletionStatus = mostRecentParticipation.LearningCompletionStatus;
+                course.MostRecentParticipation = mostRecentParticipation;
             }
 
             course.Facilitators = participantService.GetFacilitators( courseId, course.NextSemester.Id ).ToList();
@@ -163,9 +164,11 @@ namespace Rock.Model
 
             if ( courses.Any( c => c.Entity.LearningCourseRequirements.Any() ))
             {
+                // Get the required courses in a single query.
                 var requiredCourseIds = courses.SelectMany( c => c.Entity.LearningCourseRequirements.Select( r => r.RequiredLearningCourseId ));
                 var requiredCourses = Queryable().Where( c => requiredCourseIds.Contains( c.Id ) );
 
+                // Then match them up based on the course id of the required course.
                 foreach ( var course in courses )
                 {
                     if (!course.Entity.LearningCourseRequirements.Any())
@@ -270,13 +273,7 @@ namespace Rock.Model
             /// Gets or sets the most recently attended class for the student.
             /// </summary>
             public LearningParticipant MostRecentParticipation { get; set; }
-
-            /// <summary>
-            /// Gets or sets the list of classes for this person and course.
-            /// </summary>
-            public List<LearningClass> StudentClasses { get; set; }
         }
-
 
         #endregion
     }

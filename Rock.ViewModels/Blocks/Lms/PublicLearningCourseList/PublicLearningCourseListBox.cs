@@ -1,4 +1,4 @@
-﻿namespace Rock.ViewModels.Blocks.Lms.PublicLearningPrograms
+﻿namespace Rock.ViewModels.Blocks.Lms.PublicLearningCourseList
 {
     public class PublicLearningCourseListBlockBox : BlockBox
     {

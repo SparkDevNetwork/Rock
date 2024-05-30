@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System.Linq;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -34,15 +36,53 @@ namespace Rock.Model
             /// </summary>
             protected override void PreSave()
             {
+                base.PreSave();
+
                 if ( PreSaveState == EntityContextState.Added )
                 {
-                    // Add the Activity Completion records for the participant (student or facilitator).
-                    new LearningParticipantService( RockContext ).AddActivityCompletions(Entity.Id);
-
-                    RockContext.SaveChanges();
+                    AddCompletionsToContextForParticipant();
                 }
+            }
 
-                base.PreSave();
+            /// <summary>
+            /// Adds all <see cref="LearningActivityCompletion"/> records for a class to the Context for the LearningParticipant.
+            /// </summary>
+            private void AddCompletionsToContextForParticipant()
+            {
+                var activityService = new LearningActivityService( RockContext );
+
+                // Get the activity data and transform it into the completions for the student.
+                var completionsToAdd = activityService.GetClassLearningPlan( Entity.LearningClassId, false )
+                   .Select( a => new
+                   {
+                       LearningActivityId = a.Id,
+                       EnrollmentDate = a.LearningClass.CreatedDateTime,
+                       SemesterStart = a.LearningClass.LearningSemester.StartDate,
+                       a.AvailableDateCalculationMethod,
+                       a.AvailableDateDefault,
+                       a.AvailableDateOffset,
+                       a.DueDateCalculationMethod,
+                       a.DueDateDefault,
+                       a.DueDateOffset,
+                       a.LearningClass.LearningCourse.SystemCommunicationId
+                   } )
+                    .ToList()
+                    .Select( a => new LearningActivityCompletion
+                    {
+                        StudentId = Entity.Id,
+                        LearningActivityId = a.LearningActivityId,
+                        AvailableDate = LearningActivity.CalculateAvailableDate(
+                            a.AvailableDateCalculationMethod,
+                            a.AvailableDateDefault,
+                            a.AvailableDateOffset,
+                            a.SemesterStart,
+                            a.EnrollmentDate
+                        ),
+                        DueDate = LearningActivity.CalculateDueDate( a.DueDateCalculationMethod, a.DueDateDefault, a.DueDateOffset, a.SemesterStart, a.EnrollmentDate ),
+                        NotificationCommunicationId = a.SystemCommunicationId
+                    } );
+
+                new LearningActivityCompletionService( RockContext ).AddRange( completionsToAdd );
             }
         }
     }

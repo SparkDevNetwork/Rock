@@ -155,12 +155,12 @@
     import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
     import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
     import FileUploader from "@Obsidian/Controls/fileUploader.obs";
+    import { ComponentScreen } from "@Obsidian/Controls/Internal/LearningActivity/learningActivity";
     import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
     import { LearningActivityDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityDetailOptionsBag";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
-    import { ComponentScreen } from "@Obsidian/Controls/learningActivity";
     import { LearningActivityComponentBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityComponent/learningActivityComponentBag";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -190,7 +190,7 @@
 
     // #region Values
 
-    // Keep track of the configuration if the user switches actyivity type components.
+    // Keep track of the configuration if the user switches activity type components.
     const typeConfigMap = new Map<string, string>();
 
     const availableDateCalculationMethods = ref<ListItemBag[]>(enumToListItemBag(AvailableDateCalculationMethodDescription ?? []));

@@ -3,9 +3,12 @@
     <fieldset>
         <PersonPicker
                 formControlClasses="input-width-md margin-l-sm"
-                v-model="personAlias"
-                :label="participantRole.text"
+                v-model="personSelection"
+                :excludeDeceased="true"
+                :enableSelfSelection="true"
+                label="Participant"
                 rules="required" />
+
         <DropDownList :show-blank-item="false"
                     formControlClasses="input-width-md margin-l-sm"
                     v-model="roleValue"
@@ -24,6 +27,7 @@
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { LearningParticipantBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningParticipantDetail/learningParticipantBag";
     import { LearningParticipantDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningParticipantDetail/learningParticipantDetailOptionsBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
         modelValue: {
@@ -46,10 +50,12 @@
 
     // #region Values
 
-
-    const personAlias = propertyRef(props.modelValue.personAlias ?? undefined, "PersonAlias");
+    const personSelection = ref<ListItemBag | undefined>(props.modelValue.personAlias ?? undefined);
+    const personAlias = propertyRef<ListItemBag>(
+        props.modelValue.personAlias ?? {value: "", text:""}, "PersonAlias"
+    );
     const participantRole = propertyRef(props.modelValue?.participantRole ?? {}, "ParticipantRole");
-    const isFacilitator = propertyRef(props.modelValue?.isFacilitator ?? {}, "IsFacilitator");
+    const isFacilitator = ref(props.modelValue?.isFacilitator ?? {});
 
     const roleValue = ref(participantRole.value.value ?? "");
 
@@ -71,27 +77,14 @@
     watch(() => props.modelValue, () => {
         updateRefValue(personAlias, props.modelValue.personAlias?.value ?? {});
         updateRefValue(roleValue, props.modelValue.participantRole?.value ?? "");
-        updateRefValue(isFacilitator, props.modelValue.isFacilitator ?? false);
-    });
-
-    watch(roleValue, () => {
-        if (participantRole.value?.value !== roleValue.value) {
-
-            participantRole.value = {
-                value: roleValue.value,
-                category: participantRole.value?.category,
-                text: participantRole.value?.text,
-                disabled: participantRole.value?.disabled
-            };
-        }
     });
 
     // Watch for changes to our monitored values and emit a modelValue change event when necessary.
-    watch([personAlias, roleValue], () => {
+    watch([personSelection, roleValue], () => {
         const newValue: LearningParticipantBag = {
             ...props.modelValue,
-            personAlias: personAlias.value,
-            participantRole: participantRole.value,
+            personAlias: personSelection.value,
+            participantRole: {value: roleValue.value},
             isFacilitator: isFacilitator.value
         };
 

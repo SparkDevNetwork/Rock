@@ -15,7 +15,7 @@
 // </copyright>
 //
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { LearningComponentBaseDefaults } from "./learningActivity.partial";
+import { LearningComponentBaseDefaults } from "./learningActivity";
 
 export type VideoWatchActivityConfiguration = {
     completionThreshold: number;

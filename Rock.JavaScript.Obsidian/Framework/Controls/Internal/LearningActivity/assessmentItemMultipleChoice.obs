@@ -3,7 +3,7 @@
     <div v-if="screenToShow !== ComponentScreen.Scoring" :class="containerClasses">
         <div v-if="screenToShow === ComponentScreen.Configuration">
             <TextBox v-model="question"
-                     label="Question"
+                     label="question"
                      rules="required" />
 
             <TextBox v-model="helpText"
@@ -26,7 +26,7 @@
                 <i class="fa fa-plus-circle" @click.prevent="answers.push('')"></i>
             </div>
             <div class="correct-answer-field">
-                <DropDownList v-model="internalValue.correctAnswer" :items="answersAsListItems" label="Correct Answer" :show-blank-item="false" />
+                <DropDownList v-model="correctAnswer" :items="answersAsListItems" label="Correct Answer" :show-blank-item="false" />
             </div>
         </div>
 
@@ -34,7 +34,7 @@
             <RadioButtonList v-model="response"
                              class="multiple-choice-item-answer completion-screen"
                              :help="helpText"
-                             label="question"
+                             :label="question"
                              rules="required"
                              :items="answersAsListItems" />
         </div>
@@ -131,13 +131,14 @@
 </style>
 
 <script setup lang="ts">
-    import { PropType, computed, ref, toValue, watch } from "vue";
+    import { PropType, computed, ref, toRef, toValue, watch } from "vue";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { ComponentScreen } from "./learningActivity.partial";
+    import { ComponentScreen } from "./learningActivity";
     import { AssessmentItem, MultipleChoiceItem } from "./assessmentLearningActivity.partial";
+    import { debounce } from "@Obsidian/Utility/util";
 
     const props = defineProps({
         /** The assessment item's configuration. */
@@ -153,22 +154,22 @@
     });
 
     const emit = defineEmits<{
-        (event: "update:modelValue", value: MultipleChoiceItem): void
+        (event: "update:modelValue", value: MultipleChoiceItem | AssessmentItem): void
     }>();
 
-    const internalValue = props.modelValue as MultipleChoiceItem;
+    const modelValue = toRef(() => props.modelValue as MultipleChoiceItem);
 
-    const question = ref(internalValue.question ?? "");
-    const helpText = ref(internalValue.helpText ?? "");
-    const answers = ref(internalValue.answers ?? []);
-    const response = ref(internalValue.response ?? "");
-    const correctAnswer = ref(internalValue.correctAnswer ?? "");
+    const question = ref(modelValue.value?.question ?? "");
+    const helpText = ref(modelValue.value?.helpText ?? "");
+    const answers = ref(modelValue.value?.answers ?? []);
+    const response = ref(modelValue.value?.response ?? "");
+    const correctAnswer = ref(modelValue.value?.correctAnswer ?? "");
     const isCorrect = computed(() => response.value === correctAnswer.value);
-    const answersAsListItems = computed(() => internalValue.answers.map(a => {
+    const answersAsListItems = computed(() => answers.value.map(a => {
         return {value: a, text: a} as ListItemBag;
     }));
 
-    const summaryAnswers = computed(() => internalValue.answers.map(a => {
+    const summaryAnswers = computed(() => answers.value.map(a => {
         let cssClass = "";
 
         if (a === response.value) {
@@ -197,17 +198,27 @@
         `<span class="badge-danger badge">Incorrect</span>`
     );
 
-    watch([question, helpText, answers, correctAnswer, response], () => {
+    watch([question, helpText, answers, correctAnswer], () => {
         const newModelValue = {
-                typeName: internalValue.typeName,
+                typeName: props.modelValue?.typeName,
                 question: question.value,
                 helpText: helpText.value,
                 answers: answers.value,
                 correctAnswer: correctAnswer.value,
-                response: response.value
+                uniqueId: props.modelValue?.uniqueId
             } as MultipleChoiceItem;
 
             emit("update:modelValue", newModelValue);
+    }, { deep: true });
+
+    /** Watch for modified component completion. */
+    watch(response, () => {
+        const newModelValue = {
+            ...toValue(modelValue.value),
+        } as MultipleChoiceItem;
+
+        newModelValue.response = response.value;
+        emit("update:modelValue", newModelValue);
     });
 
     /** CSS classes for the panel. */

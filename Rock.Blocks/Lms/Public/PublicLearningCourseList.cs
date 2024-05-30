@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
@@ -22,7 +23,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.ViewModels.Blocks.Lms.PublicLearningPrograms;
+using Rock.ViewModels.Blocks.Lms.PublicLearningCourseList;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Blocks.Lms
@@ -124,9 +125,10 @@ namespace Rock.Blocks.Lms
                 
                 <div class=""d-flex justify-content-between"">
     				<a class=""btn btn-default"" href=""{{ course.CourseDetailsLink }}"">Learn More</a>
-    				{% if course.CompletionStatus == 'Pass' %}
+    		
+    				{% if course.LearningCompletionStatus == 'Pass' %}
     					<span class=""badge badge-success p-2"" style=""line-height: normal;"">Completed</span>
-    				{% elseif course.CompletionStatus == 'Incomplete' %}
+    				{% elseif course.LearningCompletionStatus == 'Incomplete' %}
     					<span class=""badge badge-info p-2"" style=""line-height: normal;"">Enrolled</span>
     				{% elseif course.UnmetPrerequisites != empty %}
                         <a class=""text-muted"" href=""{{ course.PrerequisiteEnrollmentLink }}"">Prerequisites Not Met</a>
@@ -172,8 +174,15 @@ namespace Rock.Blocks.Lms
 
             var courses = new LearningCourseService( rockContext ).GetPublicCourses( programId, GetCurrentPerson().Id );
 
-            var courseDetailUrlTemplate = this.GetLinkedPageUrl( AttributeKey.DetailPage, "LearningCourseId", "((Key))" );
-            var courseEnrollmentUrlTemplate = this.GetLinkedPageUrl( AttributeKey.CourseEnrollmentPage, "LearningCourseId", "((Key))" );
+            var queryParams = new Dictionary<string, string>
+            {
+                [PageParameterKey.LearningProgramId] = PageParameter( PageParameterKey.LearningProgramId ),
+                ["LearningCourseId"] = "((Key))"
+            };
+
+
+            var courseDetailUrlTemplate = this.GetLinkedPageUrl( AttributeKey.DetailPage, queryParams );
+            var courseEnrollmentUrlTemplate = this.GetLinkedPageUrl( AttributeKey.CourseEnrollmentPage, queryParams );
 
             foreach ( var course in courses )
             {

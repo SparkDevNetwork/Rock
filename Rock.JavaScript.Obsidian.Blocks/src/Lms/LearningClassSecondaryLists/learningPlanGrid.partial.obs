@@ -32,15 +32,15 @@
         </Column>
 
         <Column
-                name="type"
+                name="componentName"
                 title="Type"
                 :filter="textValueFilter"
-                filterValue="type"
-                quickFilterValue="type"
+                filterValue="componentName"
+                quickFilterValue="componentName"
                 visiblePriority="xs">
             <template #format="{ row }">
-                <span class="label label-default component-label" :style="'background-color: oklch(from ' + row.componentHighlightColor + ' calc(l + .33) c h);'">
-                    <i :class="row.componentIconCssClass" :style="'color: ' + row.componentHighlightColor"></i>{{ row.componentName }}
+                <span class="label label-default component-label" :style="'background-color: oklch(from ' + row.componentHighlightColor + ' calc(l + .60) c h);'">
+                    <span :style="'color: ' + row.componentHighlightColor"><i :class="row.componentIconCssClass"></i> &nbsp;{{ row.componentName }}</span>
                 </span>
             </template>
         </Column>
@@ -199,7 +199,6 @@ span.past-due-dates {
 
         if (result.isSuccess && result.data) {
             gridData = reactive(result.data);
-
             return gridData;
         }
         else {

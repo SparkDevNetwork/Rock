@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-import { LearningComponentBaseDefaults } from "./learningActivity.partial";
+import { LearningComponentBaseDefaults } from "./learningActivity";
 
 export type PointAssessmentActivityConfiguration = {
     instructions: string;

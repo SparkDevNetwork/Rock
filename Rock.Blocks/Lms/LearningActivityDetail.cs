@@ -29,6 +29,7 @@ using Rock.Lms;
 using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
+using Rock.ViewModels.Blocks.Lms.LearningActivityComponent;
 using Rock.ViewModels.Blocks.Lms.LearningActivityDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;

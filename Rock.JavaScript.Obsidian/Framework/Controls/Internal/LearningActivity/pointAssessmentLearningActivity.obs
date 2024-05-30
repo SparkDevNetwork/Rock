@@ -37,7 +37,7 @@
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
     import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
-    import { learningActivityEmits, learningActivityProps, ComponentScreen, useLearningComponent } from "./learningActivity.partial";
+    import { learningActivityEmits, learningActivityProps, ComponentScreen, useLearningComponent } from "./learningActivity";
     import { PointAssessmentActivityConfiguration, PointAssessmentActivityCompletion, PointAssessmentActivityDefaults } from "./pointAssessmentLearningActivity.partial";
 
     // Get the required props and emits for learning activity components.

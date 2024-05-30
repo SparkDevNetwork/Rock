@@ -36,6 +36,9 @@ export type LearningActivityCompletionBag = {
     /** Gets or sets the completion json for the activity component. */
     activityComponentCompletionJson?: string | null;
 
+    /** Gets or sets the available date for the activity instance. */
+    availableDate?: string | null;
+
     /** Gets or sets the binary file of the completion for use by the activity component. */
     binaryFile?: ListItemBag | null;
 
@@ -50,8 +53,17 @@ export type LearningActivityCompletionBag = {
     /** Gets or sets the facilitator's comment. */
     facilitatorComment?: string | null;
 
+    /** Indicates whether or not the activity is currently available. */
+    isAvailable: boolean;
+
+    /** Indicates whether or not the activity is due within a week. */
+    isDueSoon: boolean;
+
     /** Indicates whether or not the related activity instance for the student has been completed by the facilitator. */
     isFacilitatorCompleted: boolean;
+
+    /** Indicates whether or not the grade is a passing grade. */
+    isGradePassing: boolean;
 
     /** Indicates whether or not the related activity instance for the student is currently past due. */
     isPastDue: boolean;

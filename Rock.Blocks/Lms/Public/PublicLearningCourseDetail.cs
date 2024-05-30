@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
@@ -22,7 +23,8 @@ using Rock.Attribute;
 using Rock.Cms.StructuredContent;
 using Rock.Data;
 using Rock.Model;
-using Rock.ViewModels.Blocks.Lms.PublicLearningPrograms;
+using Rock.Utility;
+using Rock.ViewModels.Blocks.Lms.PublicLearningCourseDetail;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Blocks.Lms
@@ -70,6 +72,7 @@ namespace Rock.Blocks.Lms
 
         private static class PageParameterKey
         {
+            public const string LearningProgramId = "LearningProgramId";
             public const string LearningCourseId = "LearningCourseId";
         }
 
@@ -197,8 +200,19 @@ namespace Rock.Blocks.Lms
             var course = new LearningCourseService( rockContext ).GetPublicCourseDetails( courseId, currentPerson.Id );
 
             course.DescriptionAsHtml = new StructuredContentHelper( course.Entity.Description ).Render();
-            course.ClassWorkspaceLink = this.GetLinkedPageUrl( AttributeKey.ClassWorkspacePage, "LearningCourseId", "((Key))" );
-            course.CourseEnrollmentLink = this.GetLinkedPageUrl( AttributeKey.CourseEnrollmentPage, "LearningCourseId", "((Key))" );
+
+            var enrolledClassIdKey = course.MostRecentParticipation?.LearningClassId > 0 ?
+                IdHasher.Instance.GetHash( course.MostRecentParticipation.LearningClassId ) :
+                course.NextSemester.LearningClasses.FirstOrDefault()?.IdKey;
+            var queryParams = new Dictionary<string, string>
+            {
+                [PageParameterKey.LearningProgramId] = PageParameter( PageParameterKey.LearningProgramId ),
+                [PageParameterKey.LearningCourseId] = course.Entity.IdKey,
+                ["LearningClassId"] = enrolledClassIdKey
+            };
+
+            course.ClassWorkspaceLink = this.GetLinkedPageUrl( AttributeKey.ClassWorkspacePage, queryParams );
+            course.CourseEnrollmentLink = this.GetLinkedPageUrl( AttributeKey.CourseEnrollmentPage, queryParams );
 
             var mergeFields = this.RequestContext.GetCommonMergeFields( currentPerson );
             mergeFields.Add( "Course", course );

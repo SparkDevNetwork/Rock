@@ -18,7 +18,7 @@
 using Rock.Enums.Lms;
 using Rock.ViewModels.Utility;
 
-namespace Rock.ViewModels.Blocks.Lms.LearningCourseDetail
+namespace Rock.ViewModels.Blocks.Lms.LearningCourseRequirement
 {
     public class LearningCourseRequirementBag : EntityBagBase
     {

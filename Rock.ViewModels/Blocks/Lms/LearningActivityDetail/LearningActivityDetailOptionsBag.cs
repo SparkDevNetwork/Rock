@@ -17,6 +17,7 @@
 
 using System.Collections.Generic;
 
+using Rock.ViewModels.Blocks.Lms.LearningActivityComponent;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Lms.LearningActivityDetail

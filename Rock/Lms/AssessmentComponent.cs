@@ -21,7 +21,7 @@ namespace Rock.Lms
         /// <summary>
         /// Gets the Highlight color for the component.
         /// </summary>
-        public override string HighlightColor => "#fbf3c9";
+        public override string HighlightColor => "#a9551d";
 
         /// <summary>
         /// Gets the icon CSS class for the component.
@@ -54,7 +54,7 @@ namespace Rock.Lms
 
                 foreach ( var correctAnswer in correctAnswers)
                 {
-                    correctAnswer.Remove();
+                    correctAnswer.Parent.Remove();
                 }
 
                 return jObject.ToJson();

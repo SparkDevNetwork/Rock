@@ -160,7 +160,10 @@ namespace Rock.Blocks.Lms
                 // New entity is being created, prepare for edit mode by default.
                 if ( box.IsEditable )
                 {
-                    box.Entity = GetEntityBagForEdit( entity );
+                    var bag = GetEntityBagForEdit( entity );
+                    box.Entity = bag;
+                    box.ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList();
+
                     box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
@@ -246,6 +249,19 @@ namespace Rock.Blocks.Lms
             if ( box.ValidProperties == null )
             {
                 return false;
+            }
+
+            if ( Guid.TryParse( box.Entity.PersonAlias.Value, out var primaryAliasGuid ) )
+            {
+                var person = new PersonAliasService( rockContext ).Get( primaryAliasGuid );
+                entity.PersonId = person.PersonId;
+            }
+
+            var classId = PageParameterAsId( PageParameterKey.LearningClassId );
+
+            if ( classId > 0 && Guid.TryParse( box.Entity.ParticipantRole.Value, out var roleGuid ) )
+            {
+                entity.GroupRoleId = new LearningClassService( rockContext ).GetClassRoles( classId ).First( r => r.Guid == roleGuid ).Id;
             }
 
             box.IfValidProperty( nameof( box.Entity.CurrentGradePercent ),
@@ -405,7 +421,7 @@ namespace Rock.Blocks.Lms
 
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${LearningParticipant.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {LearningParticipant.FriendlyTypeName}." );
                 return false;
             }
 
@@ -441,7 +457,7 @@ namespace Rock.Blocks.Lms
                 var classId = IdHasher.Instance.GetId( PageParameter( PageParameterKey.LearningClassId ) ).ToIntSafe();
                 if ( classId == 0 )
                 {
-                    error = ActionBadRequest( $"${LearningClass.FriendlyTypeName} not found." );
+                    error = ActionBadRequest( $"{LearningClass.FriendlyTypeName} not found." );
                     return false;
                 }
 
@@ -449,7 +465,7 @@ namespace Rock.Blocks.Lms
 
                 if ( group == null )
                 {
-                    error = ActionBadRequest( $"${LearningClass.FriendlyTypeName} not found." );
+                    error = ActionBadRequest( $"{LearningClass.FriendlyTypeName} not found." );
                     return false;
                 }
 
@@ -459,14 +475,14 @@ namespace Rock.Blocks.Lms
                 // Get the selected person.
                 if (!Guid.TryParse(participantBag.PersonAlias.Value, out var aliasGuid ))
                 {
-                    error = ActionBadRequest( $"Missing ${LearningParticipant.FriendlyTypeName}." );
+                    error = ActionBadRequest( $"Missing {LearningParticipant.FriendlyTypeName}." );
                 }
 
                 var personId = new PersonAliasService(rockContext).GetPersonId( aliasGuid ).ToIntSafe();
 
                 if ( personId == 0 )
                 {
-                    error = ActionBadRequest( $"${LearningParticipant.FriendlyTypeName} not found." );
+                    error = ActionBadRequest( $"{LearningParticipant.FriendlyTypeName} not found." );
                 }
 
                 entity.PersonId = personId;
@@ -474,14 +490,14 @@ namespace Rock.Blocks.Lms
                 // Get the Role type.
                 if (!Guid.TryParse( participantBag.ParticipantRole.Value, out var roleTypeGuid ) )
                 {
-                    error = ActionBadRequest( $"${GroupTypeRole.FriendlyTypeName} not found." );
+                    error = ActionBadRequest( $"{GroupTypeRole.FriendlyTypeName} not found." );
                 }
 
                 var groupRole = new GroupTypeRoleService( rockContext ).Get( roleTypeGuid );
 
                 if ( groupRole == null )
                 {
-                    error = ActionBadRequest( $"${GroupTypeRole.FriendlyTypeName} not found." );
+                    error = ActionBadRequest( $"{GroupTypeRole.FriendlyTypeName} not found." );
                 }
 
                 entity.GroupRole = groupRole;
@@ -497,7 +513,7 @@ namespace Rock.Blocks.Lms
 
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${LearningParticipant.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {LearningParticipant.FriendlyTypeName}." );
                 return false;
             }
 
@@ -526,9 +542,11 @@ namespace Rock.Blocks.Lms
 
                 entity.LoadAttributes( rockContext );
 
+                var bag = GetEntityBagForEdit( entity );
                 var box = new DetailBlockBox<LearningParticipantBag, LearningParticipantDetailOptionsBag>
                 {
-                    Entity = GetEntityBagForEdit( entity )
+                    Entity = bag,
+                    ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
                 };
 
                 return ActionOk( box );

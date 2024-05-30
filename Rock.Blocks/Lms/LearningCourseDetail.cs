@@ -26,12 +26,14 @@ using Rock.Cms.StructuredContent;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Enums.Lms;
+using Rock.Lms;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Lms.LearningCourseDetail;
+using Rock.ViewModels.Blocks.Lms.LearningCourseRequirement;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Lms
@@ -840,6 +842,7 @@ namespace Rock.Blocks.Lms
                     return ActionBadRequest( $"The {LearningCourse.FriendlyTypeName} was not found." );
                 }
 
+                var components = LearningActivityContainer.Instance.Components;
                 var now = DateTime.Now;
 
                 // Return all activities for the course.
@@ -852,9 +855,9 @@ namespace Rock.Blocks.Lms
                     .AddField( "isPastDue", a => a.DueDateCalculated == null ? false : a.DueDateCalculated >= now )
                     .AddField( "count", a => a.LearningActivityCompletions.Count() )
                     .AddField( "completedCount", a => a.LearningActivityCompletions.Count( c => c.IsStudentCompleted ) )
-                    .AddField( "componentIconCssClass", a => "fa fa-list" )
-                    .AddField( "componentHighlightColor", a => "#735f95" )
-                    .AddField( "componentName", a => "Check-Off" )
+                    .AddField( "componentIconCssClass", a => components.FirstOrDefault( c => c.Value.Value.EntityType.Id == a.ActivityComponentId ).Value.Value.IconCssClass )
+                    .AddField( "componentHighlightColor", a => components.FirstOrDefault( c => c.Value.Value.EntityType.Id == a.ActivityComponentId ).Value.Value.HighlightColor )
+                    .AddField( "componentName", a => components.FirstOrDefault( c => c.Value.Value.EntityType.Id == a.ActivityComponentId ).Value.Value.Name )
                     .AddField( "points", a => a.Points )
                     .AddField( "isAttentionNeeded", a => a.LearningActivityCompletions.Any( c => c.IsStudentCompleted && !c.IsFacilitatorCompleted ) )
                     .AddField( "hasStudentComments", a => a.LearningActivityCompletions.Any( c => c.StudentComment.ToStringSafe().Length > 0 ) );

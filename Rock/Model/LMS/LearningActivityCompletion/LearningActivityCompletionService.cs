@@ -15,7 +15,10 @@
 // </copyright>
 //
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
+
+using Rock.Utility;
 
 namespace Rock.Model
 {
@@ -31,7 +34,36 @@ namespace Rock.Model
         {
             var activityCompletions = Queryable().Where( c => activityCompletionIds.Contains( c.Id ) );
 
-            this.Context.BulkUpdate( activityCompletions, a => new LearningActivityCompletion { NotificationCommunicationId = systemCommunicationId } );
+            Context.BulkUpdate( activityCompletions, a => new LearningActivityCompletion { NotificationCommunicationId = systemCommunicationId } );
+        }
+
+        /// <summary>
+        /// Gets a list of class activies for the specified person and class.
+        /// </summary>
+        /// <param name="personId">The identifier of the person for whom to get the activities.</param>
+        /// <param name="classIdKey">The hashed identifier of the class for which to get the activities.</param>
+        /// <returns>An IQueryable of <see cref="LearningActivityCompletion"/> records for the specified person and class.</returns>
+        public IQueryable<LearningActivityCompletion> GetClassActivities( int personId, string classIdKey )
+        {
+            var classId = IdHasher.Instance.GetId( classIdKey );
+            return classId.HasValue ?
+                GetClassActivities( personId, classId.Value ) :
+                new List<LearningActivityCompletion>().AsQueryable();
+        }
+
+        /// <summary>
+        /// Gets a list of class activies for the specified person and class.
+        /// </summary>
+        /// <param name="personId">The identifier of the person for whom to get the activities.</param>
+        /// <param name="classId">The identifier of the class for which to get the activities.</param>
+        /// <returns>An IQueryable of <see cref="LearningActivityCompletion"/> records for the specified person and class.</returns>
+        public IQueryable<LearningActivityCompletion> GetClassActivities( int personId, int classId )
+        {
+            return Queryable()
+                .Include( c => c.LearningActivity )
+                .Include( c => c.Student )
+                .Where( c => c.Student.LearningClassId == classId )
+                .Where( c => c.Student.PersonId == personId );
         }
     }
 }

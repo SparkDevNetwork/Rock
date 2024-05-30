@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Panel :title="panelTitle" :hasFullscreen="true" :class="containerClasses">
+    <Panel v-if="screenToShow !== ComponentScreen.Completion" :title="panelTitle" :hasFullscreen="false" :class="containerClasses">
         <div v-if="screenToShow === ComponentScreen.Configuration">
             <div class="assessment-term-section">
                 <TextBox v-model="assessmentTerm"
@@ -33,7 +33,7 @@
                 <div class="assessment-items-title-bar">
                     <h4 class="assessment-items-header">Assessment Items</h4>
 
-                    <button aria-label="Add an assessment item" class="btn btn-default btn-small add-assessment-item-button text-muted" @click.prevent="addAssessmentItem">
+                    <button aria-label="Add an assessment item" class="btn btn-default btn-small add-assessment-item-button text-muted" @click.prevent="addAssessmentItem(0)">
                         <i class="fa fa-plus" aria-hidden="true"></i> Add Item
                     </button>
                 </div>
@@ -56,61 +56,9 @@
                 </div>
 
                 <div class="configuration-footer-buttons">
-                    <button v-if="items.length > 0" aria-label="Add an assessment item" class="btn btn-default btn-small add-assessment-item-button text-muted" @click.prevent="addAssessmentItem">
+                    <button v-if="items.length > 0" aria-label="Add an assessment item" class="btn btn-default btn-small add-assessment-item-button text-muted" @click.prevent="addAssessmentItem(items.length - 1)">
                         <i class="fa fa-plus" aria-hidden="true"></i> Add Item
                     </button>
-                </div>
-            </div>
-        </div>
-
-        <div v-if="screenToShow === ComponentScreen.Completion">
-            <fieldset v-if="isStudentAssignedAndIncomplete">
-                <div class="header-content-section">
-                    <StructuredContentEditor :disabled="true"
-                                             v-model="header" />
-                </div>
-
-                <div class="well well-sm assessment-item-container assessment-items-section">
-                    <div class="assessment-item" v-for="(item, index) in completedItems">
-                        <AssessmentItemMultipleChoice v-if="item.typeName === 'Multiple Choice'" v-model="completedItems[index]" :screenToShow="screenToShow" />
-                        <AssessmentItemSection v-if="item.typeName === 'Section'" v-model="completedItems[index]" :screenToShow="screenToShow" />
-                        <AssessmentItemShortAnswer v-if="item.typeName === 'Short Answer'" v-model="completedItems[index]" :screenToShow="screenToShow" />
-                    </div>
-                </div>
-
-                <div class="footer-content-section">
-                    <RockButton :btnType="BtnType.Primary" @click="emit('completed', true)">Complete</RockButton>
-                </div>
-            </fieldset>
-            <div v-if="isStudentAssignedAndCompleted && showResultsOnCompletion">
-                <div class="student-completion-summary-header">
-                    <h2> {{ activityBag.activityComponent?.name }} </h2>
-                    <div class="text-muted">{{ headerSubText }}</div>
-                </div>
-
-                <div v-if="hasMultipleChoiceQuestions" class="well well-sm student-completion-summary">
-                    <div class="results-summary-section">
-                        <h4>Results Summary</h4>
-                        <h5>{{ resultSummarySubHeader }}</h5>
-                        <div class="multiple-choice-summary-text text-muted">
-                            {{ multipleChoiceSummaryText }}
-                        </div>
-                    </div>
-                </div>
-
-                <div v-if="hasMultipleChoiceQuestions && hasIncorrectResponses">
-                    <div class="missed-questions-section">
-                        <h4>Missed Questions</h4>
-
-                        <div class="well well-sm student-completion-summary" v-for="question of incorrectMultipleChoiceItems">
-                            <div class="student-response-section">
-                                Your Answer: {{ question.response }}
-                            </div>
-                            <div>
-                                Correct Answer: {{ question.correctAnswer }}
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -142,6 +90,74 @@
         </div>
 
     </Panel>
+
+    <div v-if="screenToShow === ComponentScreen.Completion">
+        <fieldset v-if="isStudentAssignedAndIncomplete">
+            <div class="header-content-section-summary">
+                <StructuredContentEditor :disabled="true"
+                                            v-model="header" />
+            </div>
+
+            <div class="assessment-item-container assessment-items-section">
+                <div class="assessment-item" v-for="(item, index) in completedItems" >
+                    <template v-if="item.typeName === 'Multiple Choice'">
+                        <AssessmentItemMultipleChoice v-model="completedItems[index]" :screenToShow="screenToShow" />
+                    </template>
+
+                    <template v-if="item.typeName === 'Section'">
+                        <AssessmentItemSection v-model="completedItems[index]" :screenToShow="screenToShow" />
+                    </template>
+
+                    <template v-if="item.typeName === 'Short Answer'">
+                        <AssessmentItemShortAnswer v-model="completedItems[index]" :screenToShow="screenToShow" />
+                    </template>
+                </div>
+            </div>
+
+            <div v-if="showStudentComment" class="optional-comments-container">
+                <TextBox v-model="studentComment"
+                        label="Optional Comments"
+                        textMode="multiline"
+                        :rows="4" />
+            </div>
+
+            <div class="footer-content-section mt-3">
+                <RockButton :btnType="BtnType.Primary" @click="emit('completed', true)" :disabled="unansweredQuestions">Complete</RockButton>
+            </div>
+        </fieldset>
+        <div v-if="isStudentAssignedAndCompleted && showResultsOnCompletion">
+            <div class="student-completion-summary-header">
+                <h2> {{ activityBag.activityComponent?.name }} </h2>
+                <div class="text-muted">{{ headerSubText }}</div>
+            </div>
+
+            <div v-if="hasMultipleChoiceQuestions" class="well well-sm student-completion-summary">
+                <div class="results-summary-section">
+                    <h4>Results Summary</h4>
+                    <h5>{{ resultSummarySubHeader }}</h5>
+                    <div class="multiple-choice-summary-text text-muted">
+                        {{ multipleChoiceSummaryText }}
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="hasMultipleChoiceQuestions && hasIncorrectResponses">
+                <div class="missed-questions-section">
+                    <h4>Missed Questions</h4>
+
+                    <div class="well well-sm student-completion-summary" v-for="question of incorrectMultipleChoiceItems">
+                        <div class="student-response-section">
+                            Your Answer: {{ question.response }}
+                        </div>
+                        <div>
+                            Correct Answer: {{ question.correctAnswer }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </template>
 <style scoped>
 /* Multiple Choice Weight, Show Results checkboxes... should be on a single line. */
@@ -168,7 +184,6 @@
         grid-template-columns: 24px minmax(80px, 30%) 66%;
         row-gap: 8px;
         column-gap: 12px;
-        background-color: #f6f7f9;
 
         .assessment-item {
             display: flex;
@@ -210,7 +225,7 @@ div.summary-sub-title {
     margin-bottom: 12px;
 }
 
-.student-completion-summary-header {
+.header-content-section-summary {
     margin-bottom: 16px;
 }
 </style>
@@ -233,7 +248,7 @@ div.summary-sub-title {
     import AssessmentItemShortAnswer from "./assessmentItemShortAnswer.obs";
     import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
     import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
-    import { learningActivityEmits, learningActivityProps, ComponentScreen, useLearningComponent } from "./learningActivity.partial";
+    import { learningActivityEmits, learningActivityProps, ComponentScreen, useLearningComponent } from "./learningActivity";
     import { AssessmentActivityCompletion, AssessmentActivityConfiguration, AssessmentActivityDefaults, AssessmentItem, AssessmentItemType, MultipleChoiceItem, ShortAnswerItem } from "./assessmentLearningActivity.partial";
     import { DragSource as vDragSource, DragTarget as vDragTarget, useDragReorder, DragOperation } from "@Obsidian/Directives/dragDrop";
     import { AssignTo } from "@Obsidian/Enums/Lms/assignTo";
@@ -247,7 +262,10 @@ div.summary-sub-title {
     // Get the bags directly from the props when needed (to support the useLearningComponent computedRefs).
     const activityBag = toRef(() => props.activityBag);
     const completionBag = toRef(() => props.completionBag ?? {} as LearningActivityCompletionBag);
-    const screenToShow = toRef(() => props.screenToShow ?? ComponentScreen.Summary);
+    const screenToShow = toRef(() => props.screenToShow);
+
+    const studentComment = ref(completionBag.value.studentComment ?? "");
+    const showStudentComment = ref(activityBag.value?.isStudentCommentingEnabled);
 
     /** Initialize the base component and destructure the refs we need for use in this component. */
     const {
@@ -275,7 +293,7 @@ div.summary-sub-title {
         items.value.sort((a, b) => a.order - b.order);
     }
 
-    // Initialize the completion values to the current values plus any missing values.
+    // Initialize the completion values to the configuration, but include saved responses.
     completedItems.value = getItemsForStudentCompletion();
 
     // Add drag reorder functionality, updating the order on successful drop.
@@ -306,14 +324,16 @@ div.summary-sub-title {
     // #region Functions
 
     /** Adds an empty default item to the configuration. */
-    function addAssessmentItem(): void {
-        const defaultItem = { typeName: AssessmentItemType.MultipleChoice, answers: ["", "", ""], order: 0 } as MultipleChoiceItem;
+    function addAssessmentItem(toIndex: number): void {
         if (!Array.isArray(items.value)) {
-            items.value = [defaultItem];
+            items.value = [];
         }
-        else {
-            items.value.push(defaultItem);
-        }
+
+        // Set the order to the specified index location or min/max if outside the bounds of the array.
+        const lastIndex = items.value?.length ?? 0;
+        const order = toIndex < 0 ? 0 : toIndex > lastIndex ? lastIndex : 0;
+
+        items.value.push(new MultipleChoiceItem(order));
     }
 
     /**
@@ -321,10 +341,10 @@ div.summary-sub-title {
      * (Takes the configuration values and adds the student response).
      */
     function getItemsForStudentCompletion(): AssessmentItem[] {
-        return (toValue(items) ?? []).map(i => {
-            i.response = completedItems.value.find(c => c.uniqueId === i.uniqueId)?.response ?? "";
+        return toValue((toValue(items.value) ?? []).map(i => {
+            i.response = toValue(completedItems.value?.find(c => c.uniqueId === i.uniqueId)?.response ?? "");
             return i;
-        });
+        }));
     }
 
     // #endregion
@@ -407,6 +427,12 @@ div.summary-sub-title {
         };
     });
 
+    /** Determines whether the there are any items without a response. */
+    const unansweredQuestions = computed(() => {
+        const answerableItems: Array<AssessmentItem> = (multipleChoiceItems.value as Array<AssessmentItem>).concat(shortAnswerItems.value);
+        return answerableItems.some(i => i.response == null || i.response.length === 0);
+    });
+
     // #endregion
 
     /** Watch for modified component settings. */
@@ -440,17 +466,15 @@ div.summary-sub-title {
     }, { deep: true });
 
     /** Watch for modified component completion. */
-    const debouncedCompletionBagEmits = debounce(() => {
+    watch(completedItems, () => {
         const updatedCompletionBag = {
             ...toValue(completionBag)
         } as LearningActivityCompletionBag;
 
         updatedCompletionBag.activityComponentCompletionJson = JSON.stringify({
-            completedItems: completedItems.value
+            completedItems: toValue(completedItems.value)
         }) ?? "{}";
+
         emit("update:completionBag", updatedCompletionBag);
-    });
-    watch(completedItems, () => {
-        debouncedCompletionBagEmits();
-    }, { deep: true });
+    }, {deep:true});
 </script>

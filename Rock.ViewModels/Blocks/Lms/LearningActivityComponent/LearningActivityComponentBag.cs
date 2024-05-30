@@ -17,7 +17,7 @@
 
 using Rock.ViewModels.Utility;
 
-namespace Rock.ViewModels.Blocks.Lms.LearningActivityDetail
+namespace Rock.ViewModels.Blocks.Lms.LearningActivityComponent
 {
     /// <summary>
     /// The item details for the Learning Activity Detail block.

@@ -25,7 +25,7 @@ namespace Rock.Model
     public partial class LearningActivityService
     {
         /// <summary>
-        /// Gets a list of <see cref="LearningActivity"/>s for matching a specified <paramref name="activityFilterPredicate" />.
+        /// Gets a list of <see cref="LearningActivity">LearningActivities</see> matching the specified <paramref name="classId">LearningClassId</paramref>.
         /// Includes the <see cref="LearningActivityCompletion">LearningActivityCompletions</see> for each activity by default.
         /// </summary>
         /// <param name="classId">The identifier of the <see cref="LearningClass"/> for which to retreive activities.</param>
@@ -39,12 +39,14 @@ namespace Rock.Model
                     .AsNoTracking()
                     .Include( a => a.LearningActivityCompletions )
                     .Include( a => a.LearningClass )
+                    .Include( a => a.LearningClass.LearningSemester )
                     .Where( a => a.LearningClassId == classId )
                     .OrderBy( a => a.Order )
                     .ThenBy( a => a.Id ) :
                 Queryable()
                     .AsNoTracking()
                     .Include( a => a.LearningClass )
+                    .Include( a => a.LearningClass.LearningSemester )
                     .Where( a => a.LearningClassId == classId )
                     .OrderBy( a => a.Order )
                     .ThenBy( a => a.Id );

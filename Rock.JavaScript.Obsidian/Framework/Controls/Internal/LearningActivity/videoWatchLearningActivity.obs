@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Panel v-if="screenToShow !== ComponentScreen.Scoring" :title="panelTitle" :class="containerClasses" :hasFullscreen="true">
-        <div class="learning-activity-video-file-configuration-container" v-if="screenToShow === ComponentScreen.Configuration">
+    <Panel v-if="[ComponentScreen.Summary, ComponentScreen.Configuration].includes(screenToShow)" :title="panelTitle" :class="containerClasses" :hasFullscreen="false">
+        <div v-if="screenToShow === ComponentScreen.Configuration" class="learning-activity-video-file-configuration-container" >
             <div class="header-content-section" >
                 <RockLabel>Header Content</RockLabel>
                 <StructuredContentEditor
@@ -34,7 +34,14 @@
             </div>
         </div>
 
-        <div v-if="screenToShow === ComponentScreen.Completion">
+        <div v-if="screenToShow === ComponentScreen.Summary">
+            <NotificationBox :alertType="notificationAlertType">
+                {{ assignee?.name ?? defaultAssigneeDescription }} watched {{ watchedPercentage }}% of this video.
+            </NotificationBox>
+        </div>
+    </Panel>
+
+    <div v-if="screenToShow === ComponentScreen.Completion">
             <fieldset>
                 <div class="header-section">
                     <StructuredContentEditor :disabled="true" label="" v-model="headerContent" />
@@ -56,12 +63,6 @@
             </fieldset>
         </div>
 
-        <div v-if="screenToShow === ComponentScreen.Summary">
-            <NotificationBox :alertType="notificationAlertType">
-                {{ assignee?.name ?? defaultAssigneeDescription }} watched {{ watchedPercentage }}% of this video.
-            </NotificationBox>
-        </div>
-    </Panel>
 </template>
 <script setup lang="ts">
     import { computed, ref, toRef, toValue, watch } from "vue";
@@ -77,7 +78,7 @@
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
     import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
-    import { learningActivityEmits, learningActivityProps, ComponentScreen, useLearningComponent } from "./learningActivity.partial";
+    import { learningActivityEmits, learningActivityProps, ComponentScreen, useLearningComponent } from "./learningActivity";
     import { VideoWatchActivityCompletion, VideoWatchActivityConfiguration, VideoWatchActivityDefaults } from "./videoWatchLearningActivity.partial";
 
     // Get the required props and emits for learning activity components.

@@ -21,7 +21,7 @@ namespace Rock.Lms
         /// <summary>
         /// Gets the icon CSS class for the component.
         /// </summary>
-        public override string IconCssClass => "fa fa-check";
+        public override string IconCssClass => "far fa-check-square";
 
         /// <summary>
         /// Gets the name of the component.
