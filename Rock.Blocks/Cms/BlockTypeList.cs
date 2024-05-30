@@ -282,7 +282,7 @@ namespace Rock.Blocks.Cms
 
                 if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
-                    return ActionBadRequest( $"Not authorized to delete ${BlockType.FriendlyTypeName}." );
+                    return ActionBadRequest( $"Not authorized to delete {BlockType.FriendlyTypeName}." );
                 }
 
                 if ( !entityService.CanDelete( entity, out var errorMessage ) )

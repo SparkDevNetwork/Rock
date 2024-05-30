@@ -189,7 +189,7 @@ namespace Rock.Blocks.Engagement
 
                 if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
-                    return ActionBadRequest( $"Not authorized to delete ${ConnectionOpportunity.FriendlyTypeName}." );
+                    return ActionBadRequest( $"Not authorized to delete {ConnectionOpportunity.FriendlyTypeName}." );
                 }
 
                 if ( !entityService.CanDelete( entity, out var errorMessage ) )

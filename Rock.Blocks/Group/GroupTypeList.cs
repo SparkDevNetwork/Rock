@@ -252,7 +252,7 @@ namespace Rock.Blocks.Group
 
                 if ( !entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
                 {
-                    return ActionBadRequest( $"Not authorized to delete ${GroupType.FriendlyTypeName}." );
+                    return ActionBadRequest( $"Not authorized to delete {GroupType.FriendlyTypeName}." );
                 }
 
                 if ( !entityService.CanDelete( entity, out var errorMessage ) )

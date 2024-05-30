@@ -155,7 +155,7 @@ namespace Rock.Blocks.Communication
 
                 if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
-                    return ActionBadRequest( $"Not authorized to delete ${SmsPipeline.FriendlyTypeName}." );
+                    return ActionBadRequest( $"Not authorized to delete {SmsPipeline.FriendlyTypeName}." );
                 }
 
                 if ( !entityService.CanDelete( entity, out var errorMessage ) )

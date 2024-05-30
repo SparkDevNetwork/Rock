@@ -181,7 +181,7 @@ namespace Rock.Blocks.Crm
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                return ActionBadRequest( $"Not authorized to delete ${DocumentType.FriendlyTypeName}." );
+                return ActionBadRequest( $"Not authorized to delete {DocumentType.FriendlyTypeName}." );
             }
 
             if ( !entityService.CanDelete( entity, out var errorMessage ) )
