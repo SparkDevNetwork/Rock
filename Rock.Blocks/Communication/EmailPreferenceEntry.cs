@@ -258,8 +258,28 @@ We have unsubscribed you from the following lists:
                 box.EmailPreferenceUpdateMessage = "Unfortunately, we're unable to update your email preference, as we're not sure who you are.";
                 return box;
             }
+            
+            /*
+                5/31/2024 - JMH
 
-            if ( isPersonAutoUnsubscribing )
+                Some individuals were being unsubscribed from email automatically
+                without clicking an unsubscribe button in their email.       
+
+                Per the spec, https://datatracker.ietf.org/doc/html/rfc8058#section-3.2,
+                an email client must send a POST request with the key-value pair, list-unsubscribe=one-click
+                in order to perform a one-click unsubscription. It also states that an email client
+                "...MUST NOT perform a POST on the HTTPS URI without user consent...".
+
+                If an email client is following the spec, then it isn't likely that
+                POST requests are being sent without user consent (clicking an unsubscribe button);
+                however, an email client can still send HEAD, GET, OPTIONS or other requests to this URL.
+                Since this block didn't differentiate between requests, it would always unsubscribe a person automatically
+                regardless of the request type.
+
+                To prevent unintentional unsubscriptions, only unsubscribe a person from email
+                automatically if responding to a one-click unsubscribe request. 
+            */
+            if ( isPersonAutoUnsubscribing && IsOneClickUnsubscribeRequest() )
             {
                 var service = new PersonService( rockContext );
 
@@ -283,6 +303,19 @@ We have unsubscribed you from the following lists:
             SetEmailPreferenceData( rockContext, box, mergeFields, person, isPersonAutoUnsubscribing );
 
             return box;
+        }
+
+        /// <summary>
+        /// Determines if the current request is a one-click unsubscribe request.
+        /// </summary>
+        /// <returns><see langword="true"/> if the current request is a one-click unsubscribe request; otherwise, <see langword="false"/> is returned.</returns>
+        private bool IsOneClickUnsubscribeRequest()
+        {
+            // See https://datatracker.ietf.org/doc/html/rfc8058#section-3.2 for email client spec
+            // and https://datatracker.ietf.org/doc/html/rfc8058#section-8 for example POST requests.
+            return this.RequestContext.HttpMethod == "POST"
+                && this.RequestContext.Form != null
+                && this.RequestContext.Form.Get( "List-Unsubscribe" )?.Equals( "One-Click", StringComparison.OrdinalIgnoreCase ) == true;
         }
 
         /// <summary>
