@@ -989,6 +989,23 @@ namespace Rock.Communication
                 var httpValue = unsubscribeUrl.ResolveMergeFields( mergeFields, recipientEmail.CurrentPerson, recipientEmail.EnabledLavaCommands );
                 if ( httpValue.IsNotNullOrWhiteSpace() )
                 {
+                    try
+                    {
+                        // Add a utm=email-header parameter to the one-click unsubscribe URL
+                        // to identify when this URL is used to unsubscribe a person from email communications.
+                        var uriBuilder = new UriBuilder( httpValue );
+                        var queryString = uriBuilder.Query?.ParseQueryString() ?? new System.Collections.Specialized.NameValueCollection();
+                        queryString.Add( "utm", "email-header" );
+                        uriBuilder.Query = queryString.ToString();
+                        httpValue = uriBuilder.Uri.ToString();
+                    }
+                    catch ( UriFormatException ex )
+                    {
+                        // This could happen if the Email medium has an invalid UnsubscribeURL value.
+                        // Log the exception and move on.
+                        ExceptionLogService.LogException( ex, null );
+                    }
+
                     listUnsubscribeHeaderValues.Add( $"<{httpValue}>" );
                 }
             }
