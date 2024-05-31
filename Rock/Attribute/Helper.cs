@@ -1099,7 +1099,7 @@ This can be due to multiple threads updating the same attribute at the same time
                     // If the qualifier value is blank, that means the qualification
                     // is simply "does this property exist".
                     var needle = string.IsNullOrEmpty( a.EntityTypeQualifierValue )
-                        ? a.EntityTypeQualifierValue.ToLower()
+                        ? a.EntityTypeQualifierColumn.ToLower()
                         : string.Format( "{0}|{1}", a.EntityTypeQualifierColumn.ToLower(), a.EntityTypeQualifierValue );
 
                     return entityQualifications.Contains( needle );
