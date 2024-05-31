@@ -12,17 +12,16 @@
 
         <div class="row">
             <div class="col-md-6">
-                <div class="well col-md-offset-1 col-md-11 col-lg-10 flex-between" style="height: 620px;">
+                <RockForm class="well col-md-offset-1 col-md-11 col-lg-10 d-flex flex-column justify-content-between" style="height: 620px;" @submit="exportFile" :hideErrors="true">
                     <div>
                         <h3>Step 1: NCOA Export Tool</h3>
                         <div class="ml-2">
                             <p style="opacity: 0.6;">Select a data vew to filter your export.</p>
-                            <div class="input-width">
+                            <div class="col-lg-9 col-md-11 col-sm-8 col-xs-12 p-0">
                                 <DataViewPicker
                                     v-model="selectedPersonDataView"
                                     label="Person Data View"
-                                    help="Person data view filter to apply."
-                                    />
+                                    rules="required" />
                             </div>
                         </div>
                     </div>
@@ -31,15 +30,14 @@
                             :btnSize="BtnSize.Default"
                             :btnType="BtnType.Primary"
                             :disabled="isLoading"
-                            @click="exportFile"
-                            >
+                            type="submit" >
                             Export File
                         </RockButton>
                     </div>
-                </div>
+                </RockForm>
             </div>
             <div class="col-md-6">
-                <div class="well col-md-11 col-lg-offset-1 col-lg-10 flex-between" style="height: 620px;">
+                <RockForm class="well col-md-11 col-lg-offset-1 col-lg-10 d-flex flex-column justify-content-between" style="height: 620px;" @submit="processImportFile" :hideErrors="true">
                     <div>
                         <h3>STEP 2: NCOA Results Uploader</h3>
                         <div class="ml-2">
@@ -47,17 +45,20 @@
                             <FileUploader
                                 v-model="importedFile"
                                 label="TrueNCOA Results"
-                                help=""
+                                help="The results file from TrueNCOA."
+                                rules="required"
                                 :uploadAsTemporary="true"
                                 uploadButtonText="Upload"
                                 :showDeleteButton="true" />
-                            <div class="input-width">
-                                <NumberBox v-model="minMoveDistance" label="Minimum Move Distance to Inactivate"
-                                help="Minimum move distance that a person moved before marking the person's account to inactivate. Leaving the value blank disables this feature."
+                            <div class="col-lg-9 col-md-11 col-sm-8 col-xs-12 p-0">
+                                <NumberBox
+                                    v-model="minMoveDistance"
+                                    label="Minimum Move Distance to Inactivate"
+                                    help="Minimum move distance that a person moved before marking the person's account to inactivate. Leaving the value blank disables this feature."
                                     rules="required"
-                                    >
+                                    placeholder="200" >
                                     <template #inputGroupAppend>
-                                        <span class="input-group-addon">Miles</span>
+                                        <span class="input-group-addon">miles</span>
                                     </template>
                                 </NumberBox>
                             </div>
@@ -67,25 +68,25 @@
                             <CheckBox v-model="isMarkInvalidAddresses"
                                 label="Mark Invalid Addresses as Previous Address"
                                 help="Mark Invalid Addresses as Previous Addresses" />
-                                <div class="input-width">
+                                <div class="col-lg-9 col-md-11 col-sm-8 col-xs-12 p-0">
                                     <DefinedValuePicker
                                         v-model="selectedInactiveReason"
                                         label="Inactive Record Reason"
                                         :definedTypeGuid="DefinedType.PersonRecordStatusReason"
-                                        help="The reason to use when inactivating people due to moving beyond the configured number of miles." />
+                                        help="The reason to use when inactivating people due to moving beyond the configured number of miles."
+                                        rules="required" />
                                 </div>
                         </div>
                     </div>
                     <div class="ml-2">
                         <RockButton
-                        :btnSize="BtnSize.Default"
-                        :btnType="BtnType.Primary"
-                        @click="processImportFile"
-                        >
+                            :btnSize="BtnSize.Default"
+                            :btnType="BtnType.Primary"
+                            type="submit" >
                             Import File
                         </RockButton>
                     </div>
-                </div>
+                </RockForm>
             </div>
         </div>
         <NotificationBox v-if="successMessage"
@@ -101,6 +102,7 @@
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 import Panel from "@Obsidian/Controls/panel.obs";
 import RockButton from "@Obsidian/Controls/rockButton.obs";
+import RockForm from "@Obsidian/Controls/rockForm.obs";
 import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
 import FileUploader from "@Obsidian/Controls/fileUploader.obs";
 import NumberBox from "@Obsidian/Controls/numberBox.obs";
@@ -193,17 +195,3 @@ import { NcoaProcessPersonAddressBag } from "@Obsidian/ViewModels/Blocks/Communi
     }
 
 </script>
-
-<style scoped>
-.flex-between {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
-.input-width {
-    width: 70%;
-    min-width: 280px;
-}
-
-</style>

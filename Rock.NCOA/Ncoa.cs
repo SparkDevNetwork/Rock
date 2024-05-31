@@ -2,24 +2,16 @@
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Spatial;
-using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using CsvHelper;
-using CsvHelper.Configuration;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Rock.Data;
 using Rock.Model;
-using Rock.Tv;
 using Rock.Web.Cache;
 using Rock.ViewModels.Blocks.Communication.NcoaProcess;
 using Rock.SystemKey;
 using Rock.Utility.Settings.SparkData;
 using Rock.Jobs;
-using Rock.Utility.SparkDataApi;
 
 namespace Rock.NCOA
 {
@@ -114,7 +106,8 @@ namespace Rock.NCOA
                 if ( familyGroupType != null && homeLoc != null && inactiveStatus != null )
                 {
                     var groupMembers = new GroupMemberService( rockContext )
-                        .Queryable().AsNoTracking()
+                        .Queryable()
+                        .AsNoTracking()
                         .Where( m =>
                             m.Group.GroupTypeId == familyGroupType.Id && // SystemGuid.GroupType.GROUPTYPE_FAMILY
                             m.Person.RecordStatusValueId != inactiveStatus.Id && // SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE
@@ -161,7 +154,8 @@ namespace Rock.NCOA
                     var stateList = definedType
                         .DefinedValues
                         .Where( v => v.ContainsKey( "Country" ) && v["Country"] != null )
-                        .Select( v => new { State = v.Value, Country = v["Country"], Description = v.Description } ).ToLookup( v => v.Description, StringComparer.OrdinalIgnoreCase );
+                        .Select( v => new { State = v.Value, Country = v["Country"], Description = v.Description } )
+                        .ToLookup( v => v.Description, StringComparer.OrdinalIgnoreCase );
 
                     var badSequences = new List<string>() { "<", "&#" };
 
@@ -214,22 +208,18 @@ namespace Rock.NCOA
                 FilterDuplicateLocations( ncoaHistoryList );
 
                 // Making sure that the database is empty to avoid adding duplicate data.
-                using ( var rockContext = new RockContext() )
-                {
-                    NcoaHistoryService ncoaHistoryService = new NcoaHistoryService( rockContext );
-                    ncoaHistoryService.DeleteRange( ncoaHistoryService.Queryable() );
-                    rockContext.SaveChanges();
-                }
-
-                if ( ncoaReturnRecords != null && ncoaReturnRecords.Count != 0 )
-                {
-                    using ( var rockContext = new RockContext() )
-                    {
-                        var ncoaHistoryService = new NcoaHistoryService( rockContext );
-                        ncoaHistoryService.AddRange( ncoaHistoryList );
-                        rockContext.SaveChanges();
-                    }
-                }
+                using (var rockContext = new RockContext())
+                {
+                    var ncoaHistoryService = new NcoaHistoryService(rockContext);
+                    ncoaHistoryService.DeleteRange(ncoaHistoryService.Queryable());
+                    rockContext.SaveChanges();
+ 
+                    if (ncoaReturnRecords != null && ncoaReturnRecords.Count != 0)
+                    {
+                        ncoaHistoryService.AddRange(ncoaHistoryList);
+                        rockContext.SaveChanges();
+                    }
+                }
 
                 var (recordsUpdated, errorMessage) = ProcessNcoaResults( inactiveReason, markInvalidAsPrevious, mark48MonthAsPrevious, minMoveDistance, ncoaReturnRecords );
 
@@ -257,9 +247,11 @@ namespace Rock.NCOA
         private void FilterDuplicateLocations( List<NcoaHistory> ncoaHistoryList )
         {
             // Get all duplicate addresses/locations and sort the result by move date descending.
-            var duplicateLocations = ncoaHistoryList.OrderByDescending( x => x.MoveDate ).GroupBy( x => x.PersonAliasId + "_" + x.FamilyId + "_" + x.LocationId )
-          .Where( g => g.Count() > 1 )
-          .ToList();
+            var duplicateLocations = ncoaHistoryList
+                .OrderByDescending( x => x.MoveDate )
+                .GroupBy( x => x.PersonAliasId + "_" + x.FamilyId + "_" + x.LocationId )
+                .Where( g => g.Count() > 1 )
+                .ToList();
 
             // Find the latest valid move address
             foreach ( var duplicateLocationsGroup in duplicateLocations )
@@ -485,12 +477,12 @@ namespace Rock.NCOA
         {
             if ( ncoaHistory.LocationId.HasValue && previousValueId.HasValue )
             {
-                var groupLocation = groupLocationService.Queryable()
-                    .Where( gl =>
+                var groupLocation = groupLocationService
+                    .Queryable()
+                    .FirstOrDefault( gl =>
                         gl.GroupId == ncoaHistory.FamilyId &&
                         gl.LocationId == ncoaHistory.LocationId &&
-                        gl.Location.Street1 == ncoaHistory.OriginalStreet1 )
-                    .FirstOrDefault();
+                        gl.Location.Street1 == ncoaHistory.OriginalStreet1 );
                 if ( groupLocation != null )
                 {
                     if ( groupLocation.GroupLocationTypeValueId != previousValueId.Value )
@@ -519,7 +511,8 @@ namespace Rock.NCOA
             using ( var rockContext = new RockContext() )
             {
                 ncoaIds = new NcoaHistoryService( rockContext )
-                    .Queryable().AsNoTracking()
+                    .Queryable()
+                    .AsNoTracking()
                     .Where( n =>
                         n.Processed == Processed.NotProcessed &&
                         n.NcoaType == NcoaType.Month48Move )
@@ -645,7 +638,8 @@ namespace Rock.NCOA
 
                                 // Look for any other moves for the same family and to same address, and set their status to complete as well
                                 foreach ( var ncoaIndividual in ncoaHistoryService
-                                    .Queryable().Where( n =>
+                                    .Queryable()
+                                    .Where( n =>
                                         n.Processed == Processed.NotProcessed &&
                                         n.NcoaType == NcoaType.Move &&
                                         n.FamilyId == ncoaHistory.FamilyId &&
@@ -822,7 +816,7 @@ namespace Rock.NCOA
                     }
                     results.Add( recordDict );
                 }
-                return JsonConvert.SerializeObject( results );
+                return results.ToJson();
             }
         }
 
@@ -849,10 +843,7 @@ namespace Rock.NCOA
                 {
                     string jsonContent = ProcessCsvData( ncoaContent );
 
-                    List<NcoaReturnRecord> instanceRecords = JsonConvert.DeserializeObject<List<NcoaReturnRecord>>( jsonContent, new JsonSerializerSettings
-                    {
-                        MissingMemberHandling = MissingMemberHandling.Error
-                    } );
+                    List<NcoaReturnRecord> instanceRecords = jsonContent.FromJsonOrThrow<List<NcoaReturnRecord>>();
 
                     finished = true;
                     if ( instanceRecords == null )
@@ -902,7 +893,8 @@ namespace Rock.NCOA
             using ( var rockContext = new RockContext() )
             {
                 ncoaIds = new NcoaHistoryService( rockContext )
-                    .Queryable().AsNoTracking()
+                    .Queryable()
+                    .AsNoTracking()
                     .Where( n =>
                         n.Processed == Processed.NotProcessed &&
                         n.NcoaType == NcoaType.Move &&
@@ -956,7 +948,8 @@ namespace Rock.NCOA
 
                                         // Look for any other moves for the same person to same address, and set their process to complete also
                                         foreach ( var ncoaIndividual in ncoaHistoryService
-                                            .Queryable().Where( n =>
+                                            .Queryable()
+                                            .Where( n =>
                                                 n.Processed == Processed.NotProcessed &&
                                                 n.NcoaType == NcoaType.Move &&
                                                 n.MoveType == MoveType.Individual &&
