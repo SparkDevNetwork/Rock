@@ -4,18 +4,20 @@
     <Panel :hasTitle="false">
         <div class="row">
             <div class="col-md-3 col-lg-2" >
-                <ul style="list-style-type: none" class="pl-3" >
-                    <li v-for="(page, index) in pages" :key="index" @click="selectCategory(page, index)" class="category" :class="currentCategoryIndex === index ? selectedCategoryClasses : ''">{{ page.title }}</li>
+                <ul class="list-group" >
+                    <li v-for="(page, index) in pages" :key="index" @click="selectCategory(page, index)" class="list-group-item leading-snug cursor-pointer" :class="currentCategoryIndex === index ? selectedCategoryClasses : ''">{{ page.title }}</li>
                 </ul>
             </div>
             <div class="col-md-9 col-lg-10">
                 <div class="row">
-                    <div ref="searchContainer" class="col-md-9 col-sm-8">
-                        <TextBox v-model="searchText" placeholder="Search" class="form-control input-width-xxl" isClearable />
+                    <div ref="searchContainer" class="search-container col-md-9 col-sm-8">
+                        <div class="mb-3">
+                            <TextBox v-model="searchText" placeholder="Search" class="form-control" isClearable />
+                        </div>
                     </div>
                     <div class="control-wrapper col-md-3 col-sm-4">
                         <div class="pull-right">
-                            <div class="btn-group btn-toggle btn-group-sm">
+                            <div class="btn-group btn-toggle btn-group">
                                 <RockButton @click="toggleSortOrder(true)" :class="isSortedAlphabetically ? selectedButtonClasses : unselectedButtonClasses">
                                     <i class="icon-fw fa fa-sort-alpha-down"></i>
                                 </RockButton>
@@ -72,7 +74,7 @@
     const isSortedAlphabetically = ref(preferences.getValue(PreferenceKey.IsSortedAlphabetically) === "true");
     const selectedButtonClasses = "active btn btn-primary";
     const unselectedButtonClasses = "btn btn-default";
-    const selectedCategoryClasses = "bg-primary text-white";
+    const selectedCategoryClasses = "active";
 
     // #endregion
 
@@ -144,13 +146,8 @@
 
 <style scoped>
 
-.category {
-    cursor: pointer;
-    text-align: left;
-    padding: 2px 10px;
-    width: 70%;
-    min-width: 150px;
-    border-radius: 4px;
+.search-container input {
+    width: 100%;
 }
 
 </style>
