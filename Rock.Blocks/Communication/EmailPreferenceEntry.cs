@@ -243,7 +243,7 @@ We have unsubscribed you from the following lists:
             var mergeFields = RequestContext.GetCommonMergeFields();
             var box = new EmailPreferenceEntryInitializationBox();
             var communication = GetCommunication( rockContext );
-            var ( person, isPersonAutoUnsubscribing ) = GetPerson( rockContext );
+            var ( person, isFromPageParameter ) = GetPerson( rockContext );
 
             if ( communication != null )
             {
@@ -258,7 +258,7 @@ We have unsubscribed you from the following lists:
                 box.EmailPreferenceUpdateMessage = "Unfortunately, we're unable to update your email preference, as we're not sure who you are.";
                 return box;
             }
-            
+
             /*
                 5/31/2024 - JMH
 
@@ -279,7 +279,8 @@ We have unsubscribed you from the following lists:
                 To prevent unintentional unsubscriptions, only unsubscribe a person from email
                 automatically if responding to a one-click unsubscribe request. 
             */
-            if ( isPersonAutoUnsubscribing && IsOneClickUnsubscribeRequest() )
+            var isPersonAutoUnsubscribed = false;
+            if ( isFromPageParameter && IsOneClickUnsubscribeRequest() )
             {
                 var service = new PersonService( rockContext );
 
@@ -298,9 +299,11 @@ We have unsubscribed you from the following lists:
                 }
 
                 rockContext.SaveChanges();
+
+                isPersonAutoUnsubscribed = true;
             }
 
-            SetEmailPreferenceData( rockContext, box, mergeFields, person, isPersonAutoUnsubscribing );
+            SetEmailPreferenceData( rockContext, box, mergeFields, person, isPersonAutoUnsubscribed );
 
             return box;
         }
