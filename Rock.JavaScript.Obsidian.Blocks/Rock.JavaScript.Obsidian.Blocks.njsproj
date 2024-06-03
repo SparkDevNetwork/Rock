@@ -219,6 +219,7 @@
     <Content Include="src\Event\InteractiveExperiences\InteractiveExperienceDetail\actionsPanel.partial.vue" />
     <Content Include="src\Event\InteractiveExperiences\InteractiveExperienceDetail\editPanel.partial.vue" />
     <Content Include="src\Event\InteractiveExperiences\InteractiveExperienceDetail\viewPanel.partial.vue" />
+    <Content Include="src\Communication\ncoaProcess.obs" />
     <Content Include="src\Communication\snippetDetail.obs" />
     <Content Include="src\Communication\SnippetDetail\editPanel.partial.obs" />
     <Content Include="src\Communication\SnippetDetail\viewPanel.partial.obs" />
@@ -320,6 +321,7 @@
     <Folder Include="src\Cms\SiteDetail\" />
     <Folder Include="src\Communication\" />
     <Folder Include="src\Communication\CommunicationList\" />
+    <Folder Include="src\Communication\NcoaProcess\" />
     <Folder Include="src\Communication\SnippetDetail\" />
     <Folder Include="src\Communication\SnippetTypeDetail\" />
     <Folder Include="src\Communication\SystemCommunicationList\" />
@@ -485,6 +487,7 @@
     <TypeScriptCompile Include="src\Core\AssetStorageProviderDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Core\AssetStorageProviderDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\AssetStorageProviderDetail\viewPanel.partial.ts" />
+    <TypeScriptCompile Include="src\Communication\NcoaProcess\types.partial.ts" />
     <TypeScriptCompile Include="src\Communication\SnippetDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Communication\SnippetTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Communication\SystemPhoneNumberDetail\types.partial.ts" />

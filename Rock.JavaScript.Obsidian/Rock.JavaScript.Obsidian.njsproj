@@ -322,6 +322,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Cms\SiteDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Communication\" />
     <Folder Include="Framework\ViewModels\Blocks\Communication\EmailPreferenceEntry\" />
+    <Folder Include="Framework\ViewModels\Blocks\Communication\NcoaProcess\" />
     <Folder Include="Framework\ViewModels\Blocks\Communication\SnippetDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Communication\SnippetTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Communication\SystemCommunicationList\" />
@@ -814,6 +815,9 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\EmailPreferenceEntry\emailPreferenceEntrySaveResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\EmailPreferenceEntry\emailPreferenceIntializationBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\SystemCommunicationList\systemCommunicationListOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\NcoaProcess\ncoaProcessBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\NcoaProcess\ncoaProcessPersonAddressBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\NcoaProcess\ncoaProcessSavedSettingsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\AssetStorageProviderDetail\assetStorageProviderBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\AssetStorageProviderDetail\assetStorageProviderDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\SnippetDetail\snippetBag.d.ts" />
