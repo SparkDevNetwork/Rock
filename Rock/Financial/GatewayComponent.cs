@@ -481,5 +481,17 @@ namespace Rock.Financial
 
             return currencyCode.Value.Equals( organizationCurrencyCode, StringComparison.InvariantCultureIgnoreCase );
         }
+
+        /// <summary>
+        /// Gets the list of scheduled payment dates based on the frequency, start date, and number of payments.
+        /// <para>This is primarily for use with the <see cref="IScheduledNumberOfPaymentsGateway"/>.</para>
+        /// </summary>
+        /// <param name="scheduledTransactionFrequencyValueId">The scheduled transaction frequency value identifier.</param>
+        /// <param name="startDate">The start date of the first payment.</param>
+        /// <param name="numberOfPayments">The number of payments.</param>
+        public virtual List<DateTime> GetScheduledPaymentDates( int scheduledTransactionFrequencyValueId, DateTime startDate, int numberOfPayments )
+        {
+            return new List<DateTime>();
+        }
     }
 }

@@ -75,6 +75,7 @@
     <Compile Include="Cms\MobilePageType.cs" />
     <Compile Include="Cms\PersistedDatasetDataFormat.cs" />
     <Compile Include="Cms\PersistedDatasetScriptType.cs" />
+    <Compile Include="Cms\SiteTypeFlags.cs" />
     <Compile Include="Cms\SiteType.cs" />
     <Compile Include="Cms\TagType.cs" />
     <Compile Include="Communication\CommunicationMessageFilter.cs" />
