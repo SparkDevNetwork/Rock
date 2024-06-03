@@ -279,7 +279,7 @@
 
                 // The legendLabel in bar mode is a range of ages, if the campus's age falls within the selected range
                 // select that dataset for hiding.
-                if (campusAgeInRange(campusAge, legendLabel) || data.campusShortCode === legendLabel) {
+                if (campusAgeInRange(campusAge, legendLabel) || data.campusShortCode === legendLabel || data.campus === legendLabel) {
                     selectedDatasets.push(...datasets.filter(d => d.label === data.campus || d.label === data.campusShortCode));
                 }
             }
