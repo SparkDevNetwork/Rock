@@ -26,6 +26,7 @@ using Newtonsoft.Json;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Web.Cache;
+using Rock.Enums.Cms;
 
 namespace Rock.Model
 {

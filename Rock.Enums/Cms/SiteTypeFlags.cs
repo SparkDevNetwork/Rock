@@ -17,15 +17,14 @@
 
 using System;
 
-namespace Rock.Model
+namespace Rock.Enums.Cms
 {
     /// <summary>
-    /// Flags for the <see cref="SiteType"/>. This enum was introduced with the motivation to improve performance.
+    /// Flags for the <see cref="Rock.Model.SiteType"/>. This enum was introduced with the motivation to improve performance.
     /// Prior to this, reflection was the only way to get the SiteTypes on a BlockType which turned out to be expensive.
     /// With this enum, the computed SiteTypes could be stored in the database to be read later.
-    /// The developer should ensure that the values in this enum is in sync with the ones in <see cref="SiteType"/> enum.
+    /// The developer should ensure that the values in this enum is in sync with the ones in <see cref="Rock.Model.SiteType"/> enum.
     /// </summary>
-    [Enums.EnumDomain( "Cms" )]
     [Flags]
     public enum SiteTypeFlags
     {

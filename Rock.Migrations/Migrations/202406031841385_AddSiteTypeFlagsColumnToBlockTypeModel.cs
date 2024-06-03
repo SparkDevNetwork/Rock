@@ -16,7 +16,7 @@
 //
 namespace Rock.Migrations
 {
-    using Rock.Model;
+    using Rock.Enums.Cms;
 
     /// <summary>
     ///
