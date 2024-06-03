@@ -19,14 +19,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
-using System.Reflection;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
-using Rock.Blocks;
 using Rock.Data;
+using Rock.Enums.Cms;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -597,13 +596,13 @@ namespace RockWeb.Blocks.Administration
                     .AsEnumerable();
 
                 gSiteBlocks.DataSource = siteBlocks.Select( b => new
-                    {
-                        b.Id,
-                        b.Name,
-                        BlockTypeName = AddIconIfObsidianBlock( b.EntityTypeId, b.BlockTypeName ),
-                        b.BlockTypePath,
-                        b.BlockTypeCategory
-                    } )
+                {
+                    b.Id,
+                    b.Name,
+                    BlockTypeName = AddIconIfObsidianBlock( b.EntityTypeId, b.BlockTypeName ),
+                    b.BlockTypePath,
+                    b.BlockTypeCategory
+                } )
                     .ToList();
 
                 gSiteBlocks.DataBind();
@@ -621,28 +620,28 @@ namespace RockWeb.Blocks.Administration
                     .AsEnumerable();
 
                 gLayoutBlocks.DataSource = layoutBlocks.Select( b => new
-                    {
-                        b.Id,
-                        b.Name,
-                        BlockTypeName = AddIconIfObsidianBlock( b.EntityTypeId, b.BlockTypeName ),
-                        b.BlockTypePath,
-                        b.BlockTypeCategory
-                    } )
+                {
+                    b.Id,
+                    b.Name,
+                    BlockTypeName = AddIconIfObsidianBlock( b.EntityTypeId, b.BlockTypeName ),
+                    b.BlockTypePath,
+                    b.BlockTypeCategory
+                } )
                     .ToList();
 
                 gLayoutBlocks.DataBind();
 
                 var pageBlocks = blockService.GetByPageAndZone( _Page.Id, _ZoneName )
-                .Select( b => new
-                {
-                    b.Id,
-                    b.Name,
-                    EntityTypeId = b.BlockType.EntityTypeId ?? 0,
-                    BlockTypeName = b.BlockType.Name,
-                    BlockTypePath = b.BlockType.Path,
-                    BlockTypeCategory = b.BlockType.Category
-                } )
-                .AsEnumerable();
+                    .Select( b => new
+                    {
+                        b.Id,
+                        b.Name,
+                        EntityTypeId = b.BlockType.EntityTypeId ?? 0,
+                        BlockTypeName = b.BlockType.Name,
+                        BlockTypePath = b.BlockType.Path,
+                        BlockTypeCategory = b.BlockType.Category
+                    } )
+                    .AsEnumerable();
 
                 gPageBlocks.DataSource = pageBlocks.Select( b => new
                 {
@@ -666,8 +665,14 @@ namespace RockWeb.Blocks.Administration
         /// <returns></returns>
         private string AddIconIfObsidianBlock( int entityTypeId, string name )
         {
-            var entityType = EntityTypeCache.Get( entityTypeId )?.GetEntityType();
-            if ( entityType != null && typeof( IRockObsidianBlockType ).IsAssignableFrom( entityType ) )
+            var blockTypeForEntity = BlockTypeCache.All()
+                .Where( b => b.EntityTypeId == entityTypeId )
+                .FirstOrDefault();
+            // If the blockType happens to be of SiteType Web, append obsidian partyPopper to the name.
+            if ( blockTypeForEntity != null
+                && string.IsNullOrEmpty( blockTypeForEntity.Path )
+                && ( blockTypeForEntity.SiteTypeFlags.HasFlag( SiteTypeFlags.Web )
+                || blockTypeForEntity.SiteTypeFlags.HasFlag( SiteTypeFlags.None ) ) )
             {
                 return name + " \U0001f389";
             }
@@ -709,7 +714,7 @@ namespace RockWeb.Blocks.Administration
                 b.Name,
                 b.Category,
                 b.Description,
-                IsObsidian = typeof( IRockObsidianBlockType ).IsAssignableFrom( b.EntityType?.GetEntityType() )
+                IsObsidian = ( string.IsNullOrEmpty( b.Path ) && b.SiteTypeFlags == 0 ) || b.SiteTypeFlags.HasFlag( SiteTypeFlags.Web )
             } ).ToList();
 
             ddlBlockType.Items.Clear();

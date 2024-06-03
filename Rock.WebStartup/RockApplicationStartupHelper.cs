@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Data.Entity;
 using System.Data.Entity.Migrations.Infrastructure;
 using System.Data.SqlClient;
 using System.Diagnostics;
@@ -31,6 +30,7 @@ using DotLiquid;
 
 using Microsoft.Extensions.DependencyInjection;
 
+using Rock.Blocks;
 using Rock.Bus;
 using Rock.Configuration;
 using Rock.Data;
