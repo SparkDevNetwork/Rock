@@ -1019,6 +1019,36 @@ namespace Rock.Communication
             
             if ( unsubscribeEmail.IsNotNullOrWhiteSpace() )
             {
+                // Ensure the mailto address has the "subject=" email header.
+
+                var hasSubjectHeader = unsubscribeEmail.IndexOf( "?subject=", StringComparison.OrdinalIgnoreCase ) >= 0
+                    || unsubscribeEmail.IndexOf( "&subject=", StringComparison.OrdinalIgnoreCase ) >= 0;
+
+                if ( !hasSubjectHeader )
+                {
+                    string subjectHeaderValue;
+                    if ( communication?.Subject.IsNotNullOrWhiteSpace() == true )
+                    {
+                        subjectHeaderValue = $"unsubscribe {communication.Subject}".UrlEncode();
+                    }
+                    else
+                    {
+                        subjectHeaderValue = "unsubscribe";
+                    }
+                    
+                    string headerSeparator;
+                    if ( unsubscribeEmail.Contains( "?" ) )
+                    {
+                        headerSeparator = "&";
+                    }
+                    else
+                    {
+                        headerSeparator = "?";
+                    }
+
+                    unsubscribeEmail = $"{unsubscribeEmail}{headerSeparator}subject={subjectHeaderValue}";
+                }
+                
                 listUnsubscribeHeaderValues.Add( $"<mailto:{unsubscribeEmail}>" );
             }
 
