@@ -17,6 +17,7 @@
 using System.Collections.Generic;
 
 using Rock.Enums.CheckIn.Labels;
+using Rock.Model;
 using Rock.ViewModels.CheckIn.Labels;
 
 namespace Rock.ViewModels.Blocks.CheckIn.Configuration.LabelDesigner
@@ -63,7 +64,7 @@ namespace Rock.ViewModels.Blocks.CheckIn.Configuration.LabelDesigner
         /// <summary>
         /// The comparison types that are supported by by this data source.
         /// </summary>
-        public /* TODO: ComparisonType */int SupportedComparisionTypes { get; set; }
+        public ComparisonType SupportedComparisionTypes { get; set; }
 
         /// <summary>
         /// The custom fields to display when this source is selected.
