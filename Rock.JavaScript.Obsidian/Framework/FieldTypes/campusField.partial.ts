@@ -83,7 +83,7 @@ export class CampusFieldType extends FieldTypeBase {
     }
 
     public override getSupportedComparisonTypes(): ComparisonType {
-        return ComparisonType.None;
+        return 0;
     }
 
     public override getFilterValueText(value: ComparisonValue, configurationValues: Record<string, string>): string {

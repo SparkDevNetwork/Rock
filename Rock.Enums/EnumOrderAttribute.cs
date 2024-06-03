@@ -14,9 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
+
 using System;
 
-namespace Rock.Utility
+namespace Rock.Enums
 {
     /// <summary>
     /// Allow the display order of an enum to be specified (vs just sorting by the numeric value of the enum)
@@ -24,8 +25,6 @@ namespace Rock.Utility
     /// </summary>
     /// <seealso cref="System.Attribute" />
     [AttributeUsage( AttributeTargets.Field )]
-    [RockObsolete( "1.16.6" )]
-    [Obsolete( "Use the new Rock.Enums.EnumOrderAttribute instead." )]
     public class EnumOrderAttribute : System.Attribute
     {
         /// <summary>
