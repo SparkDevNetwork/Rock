@@ -28,7 +28,10 @@
  */
 export const FieldFilterSourceType = {
     /** The value will be read from an entity attribute value. */
-    Attribute: 0
+    Attribute: 0,
+
+    /** The value will be read from an entity property. */
+    Property: 1
 } as const;
 
 /**
@@ -37,7 +40,9 @@ export const FieldFilterSourceType = {
  * expanded to include other sources (such as properties).
  */
 export const FieldFilterSourceTypeDescription: Record<number, string> = {
-    0: "Attribute"
+    0: "Attribute",
+
+    1: "Property"
 };
 
 /**

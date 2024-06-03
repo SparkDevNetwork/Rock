@@ -24,25 +24,25 @@
 /** Also defined in Rock.Web.UI.Controls.SlidingDateRangePicker, so if changed, please update there as well */
 export const SlidingDateRangeType = {
     /** All */
-    All: -1,
+    All: 0xFFFFFFFF,
 
     /** The last X days,weeks,months, etc (inclusive of current day,week,month,...) but cuts off so it doesn't include future dates */
-    Last: 0,
+    Last: 0x0000,
 
     /** The current day,week,month,year */
-    Current: 1,
+    Current: 0x0001,
 
     /** The date range */
-    DateRange: 2,
+    DateRange: 0x0002,
 
     /** The previous X days,weeks,months, etc (excludes current day,week,month,...) */
-    Previous: 4,
+    Previous: 0x0004,
 
     /** The next X days,weeks,months, etc (inclusive of current day,week,month,...), but cuts off so it doesn't include past dates */
-    Next: 8,
+    Next: 0x0008,
 
     /** The upcoming X days,weeks,months, etc (excludes current day,week,month,...) */
-    Upcoming: 16
+    Upcoming: 0x0010
 } as const;
 
 /** Also defined in Rock.Web.UI.Controls.SlidingDateRangePicker, so if changed, please update there as well */

@@ -18,33 +18,35 @@
 using System;
 using System.Collections.Generic;
 
-using Rock.Model;
-
 namespace Rock.ViewModels.Reporting
 {
     /// <summary>
-    /// A group of filter rules/expressions that make up a logical comparison group.
+    /// Identifies a single property that can be used to filter an object. This
+    /// is most often used when displaying the filter editor UI.
     /// </summary>
-    public class FieldFilterGroupBag
+    public class FieldFilterPropertyBag
     {
         /// <summary>
-        /// The unique identifier of this filter group.
+        /// The name of the property.
         /// </summary>
-        public Guid Guid { get; set; }
+        public string Name { get; set; }
 
         /// <summary>
-        /// The logic operator to use when joining all rules and child-groups in this group.
+        /// The title of the property, this is the value that is displayed in
+        /// the UI so it should be a friendly version of the name.
         /// </summary>
-        public FilterExpressionType ExpressionType { get; set; }
+        public string Title { get; set; }
 
         /// <summary>
-        /// The collection of rules/expression that make up this group.
+        /// The unique identifier of the field type that will handle the UI for
+        /// editing the filter value.
         /// </summary>
-        public List<FieldFilterRuleBag> Rules { get; set; }
+        public Guid FieldTypeGuid { get; set; }
 
         /// <summary>
-        /// The collection of child groups that make up any nested expressions in this group.
+        /// The configuration values that will be passed to the field to allow
+        /// it to render the UI control correctly.
         /// </summary>
-        public List<FieldFilterGroupBag> Groups { get; set; }
+        public Dictionary<string, string> ConfigurationValues { get; set; }
     }
 }

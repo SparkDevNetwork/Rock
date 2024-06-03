@@ -192,7 +192,14 @@ namespace Rock.CodeGeneration.FileGenerators
 
                 if ( !isDescription )
                 {
-                    sb.Append( $"    {fieldName}: {field.GetRawConstantValue()}" );
+                    if ( type.GetCustomAttribute<FlagsAttribute>() != null )
+                    {
+                        sb.Append( $"    {fieldName}: 0x{( int ) field.GetRawConstantValue():X4}" );
+                    }
+                    else
+                    {
+                        sb.Append( $"    {fieldName}: {field.GetRawConstantValue()}" );
+                    }
                 }
                 else
                 {

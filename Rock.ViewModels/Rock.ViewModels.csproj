@@ -489,6 +489,7 @@
     <Compile Include="Communication\ConversationMessageBag.cs" />
     <Compile Include="Controls\PhoneNumberBoxWithSmsControlBag.cs" />
     <Compile Include="Controls\NoteMentionItemBag.cs" />
+    <Compile Include="Reporting\FieldFilterPropertyBag.cs" />
     <Compile Include="Rest\CheckIn\ConfigurationOptionsBag.cs" />
     <Compile Include="Rest\CheckIn\ConfigurationResponseBag.cs" />
     <Compile Include="Rest\CheckIn\ConfirmAttendanceOptionsBag.cs" />
