@@ -116,7 +116,7 @@ namespace Rock.Store
             string encodedOrganizationKey = HttpUtility.UrlEncode( Convert.ToBase64String( Encoding.UTF8.GetBytes( organizationKey ) ) );
             string encodedUserName = HttpUtility.UrlEncode( Convert.ToBase64String( Encoding.UTF8.GetBytes( username ) ) );
             string encodedPassword = HttpUtility.UrlEncode( Convert.ToBase64String( Encoding.UTF8.GetBytes( password ) ) );
-            string requestUrl = string.Format( $"api/Store/SetOrganizationSize/{encodedUserName}/{encodedPassword}/{encodedOrganizationKey}" );
+            string requestUrl = string.Format( $"api/Store/SetOrganizationSize/{encodedOrganizationKey}/{encodedUserName}/{encodedPassword}" );
 
             var request = new RestRequest( requestUrl, Method.POST );
             request.RequestFormat = DataFormat.Json;
