@@ -86,6 +86,50 @@ namespace Rock.Field.Types
             return string.Empty;
         }
 
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            var privateConfigurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
+
+            if ( publicConfigurationValues.ContainsKey( ENTITY_TYPE_NAME_KEY ) )
+            {
+                var entityTypeNameValue = privateConfigurationValues[ENTITY_TYPE_NAME_KEY].FromJsonOrNull<ListItemBag>();
+                if ( entityTypeNameValue != null )
+                {
+                    var entityType = EntityTypeCache.Get( entityTypeNameValue.Value.AsGuid() );
+
+                    if ( entityType != null )
+                    {
+                        privateConfigurationValues[ENTITY_TYPE_NAME_KEY] = entityType.Name;
+                    }
+                }
+            }
+
+            return privateConfigurationValues;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
+        {
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
+
+            if ( usage != ConfigurationValueUsage.View && publicConfigurationValues.ContainsKey( ENTITY_TYPE_NAME_KEY ) )
+            {
+                var entityTypeName = publicConfigurationValues[ENTITY_TYPE_NAME_KEY];
+                var entityType = EntityTypeCache.Get( entityTypeName );
+                if ( entityType != null )
+                {
+                    publicConfigurationValues[ENTITY_TYPE_NAME_KEY] = new ListItemBag()
+                    {
+                        Text = entityType.FriendlyName,
+                        Value = entityType.Guid.ToString()
+                    }.ToCamelCaseJson( false, true );
+                }
+            }
+
+            return publicConfigurationValues;
+        }
+
         #endregion
 
         #region Formatting
