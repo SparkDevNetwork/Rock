@@ -1,5 +1,5 @@
 <template>
-    <div class="image-editor-list">
+    <div class="d-flex flex-wrap gap-x-5">
         <ImageEditor
             v-for="person in personPhotoList"
             v-model="person.profilePhoto"
@@ -7,13 +7,17 @@
             :disabled="person.isStaffMemberDisabled || isLoading"
             :label="person.fullName ?? ''"
             :noPictureUrl="person.noPhotoUrl ?? '/Assets/Images/person-no-photo-unknown.svg'"
+            :hideDeleteButton="true"
+            :buttonCssClass="person.isStaffMemberDisabled ? 'btn btn-default btn-sm margin-t-sm text-muted' : 'btn btn-primary btn-sm margin-t-sm'"
+            :buttonIconCssClass="person.isStaffMemberDisabled ? 'fa fa-ban text-muted' : 'fa fa-pencil'"
+            :buttonText="person.isStaffMemberDisabled ? 'Staff Member' : 'Select Photo'"
             @update:modelValue="updatePersonProfilePhoto(person.idKey ?? null, person.profilePhoto?.value ?? null)" />
     </div>
 </template>
 
 <script setup lang="ts">
     import { ref } from "vue";
-    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import ImageEditor from "@Obsidian/Controls/imageEditor.obs";
     import { PhotoUploadBag } from "@Obsidian/ViewModels/Blocks/Crm/PhotoUpload/photoUploadBag";
@@ -45,12 +49,5 @@
 
     // #endregion
 
+    onConfigurationValuesChanged(useReloadBlock());
 </script>
-
-<style scoped>
-.image-editor-list {
-    display: flex;
-    column-gap: 45px;
-    flex-wrap: wrap;
-}
-</style>

@@ -152,10 +152,12 @@ namespace Rock.Blocks.Crm
 
             if ( groupMember == null )
             {
-                groupMember = new GroupMember();
-                groupMember.GroupId = _photoRequestGroup.Id;
-                groupMember.PersonId = person.Id;
-                groupMember.GroupRoleId = _photoRequestGroup.GroupType.DefaultGroupRoleId ?? -1;
+                groupMember = new GroupMember
+                {
+                    GroupId = _photoRequestGroup.Id,
+                    PersonId = person.Id,
+                    GroupRoleId = _photoRequestGroup.GroupType.DefaultGroupRoleId ?? -1
+                };
                 _photoRequestGroup.Members.Add( groupMember );
             }
             groupMember.GroupMemberStatus = GroupMemberStatus.Pending;
@@ -185,6 +187,12 @@ namespace Rock.Blocks.Crm
                 }
 
                 person.PhotoId = new BinaryFileService( rockContext ).GetId( photoGuid.AsGuid() );
+
+                if ( person.PhotoId == null )
+                {
+                    return ActionBadRequest( "Profile photo not found." );
+                }
+
                 AddOrUpdatePersonInPhotoRequestGroup( person, rockContext );
                 rockContext.SaveChanges();
 
