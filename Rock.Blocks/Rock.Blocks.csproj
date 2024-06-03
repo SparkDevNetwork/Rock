@@ -116,6 +116,7 @@
     <Compile Include="Cms\PersonalLinkSectionList.cs" />
     <Compile Include="Cms\PageRouteList.cs" />
     <Compile Include="Core\PersonFollowingList.cs" />
+    <Compile Include="Communication\NcoaProcess.cs" />
     <Compile Include="Core\PersonSignalList.cs" />
     <Compile Include="Finance\FinancialPledgeList.cs" />
     <Compile Include="Security\RestKeyList.cs" />
@@ -325,6 +326,10 @@
     <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj">
       <Project>{8820CD93-70EE-496D-B17B-0C4C68DD4957}</Project>
       <Name>Rock.Lava.Shared</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.NCOA\Rock.NCOA.csproj">
+      <Project>{6fc5781e-c9fc-41e9-87fb-2a9ca8aa2088}</Project>
+      <Name>Rock.NCOA</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rock.Rest\Rock.Rest.csproj">
       <Project>{ADD1EDD0-A4CB-4E82-B6AD-6AD1D556DEAE}</Project>
