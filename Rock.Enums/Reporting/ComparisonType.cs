@@ -15,7 +15,8 @@
 // </copyright>
 //
 using System;
-using Rock.Utility;
+
+using Rock.Enums;
 
 namespace Rock.Model
 {
@@ -23,6 +24,7 @@ namespace Rock.Model
     /// Reporting Field Comparison Types
     /// </summary>
     [Flags]
+    [EnumDomain( "Reporting" )]
     public enum ComparisonType
     {
         /// <summary>

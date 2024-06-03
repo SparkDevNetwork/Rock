@@ -143,6 +143,7 @@
     <Compile Include="Engagement\StreakOccurrenceFrequency.cs" />
     <Compile Include="Engagement\StreakStructureType.cs" />
     <Compile Include="EnumDomainAttribute.cs" />
+    <Compile Include="EnumOrderAttribute.cs" />
     <Compile Include="Event\AttendanceGraphBy.cs" />
     <Compile Include="Event\AttendanceStatus.cs" />
     <Compile Include="Event\CheckInStatus.cs" />
@@ -181,6 +182,7 @@
     <Compile Include="Net\CookieSameSiteMode.cs" />
     <Compile Include="Net\ResponseElementLocation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Reporting\ComparisonType.cs" />
     <Compile Include="Reporting\FieldFilterSourceType.cs" />
     <Compile Include="Reporting\FilterExpressionType.cs" />
     <Compile Include="Reporting\MetricNumericDataType.cs" />

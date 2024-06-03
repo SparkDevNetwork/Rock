@@ -138,7 +138,7 @@
                     </div>
 
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-12">
                             <asp:Literal ID="lblMainDetails" runat="server" />
                         </div>
                     </div>

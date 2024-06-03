@@ -21,21 +21,31 @@
 // </copyright>
 //
 
-import { FilterExpressionType } from "@Obsidian/Enums/Reporting/filterExpressionType";
 import { Guid } from "@Obsidian/Types";
-import { FieldFilterRuleBag } from "@Obsidian/ViewModels/Reporting/fieldFilterRuleBag";
 
-/** A group of filter rules/expressions that make up a logical comparison group. */
-export type FieldFilterGroupBag = {
-    /** The logic operator to use when joining all rules and child-groups in this group. */
-    expressionType: FilterExpressionType;
+/**
+ * Identifies a single property that can be used to filter an object. This
+ * is most often used when displaying the filter editor UI.
+ */
+export type FieldFilterPropertyBag = {
+    /**
+     * The configuration values that will be passed to the field to allow
+     * it to render the UI control correctly.
+     */
+    configurationValues?: Record<string, string> | null;
 
-    /** The collection of child groups that make up any nested expressions in this group. */
-    groups?: FieldFilterGroupBag[] | null;
+    /**
+     * The unique identifier of the field type that will handle the UI for
+     * editing the filter value.
+     */
+    fieldTypeGuid: Guid;
 
-    /** The unique identifier of this filter group. */
-    guid: Guid;
+    /** The name of the property. */
+    name?: string | null;
 
-    /** The collection of rules/expression that make up this group. */
-    rules?: FieldFilterRuleBag[] | null;
+    /**
+     * The title of the property, this is the value that is displayed in
+     * the UI so it should be a friendly version of the name.
+     */
+    title?: string | null;
 };

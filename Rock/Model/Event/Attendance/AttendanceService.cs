@@ -31,10 +31,10 @@ using Rock.BulkImport;
 using Rock.Chart;
 using Rock.Communication;
 using Rock.Data;
+using Rock.Enums;
 using Rock.Logging;
 using Rock.RealTime;
 using Rock.RealTime.Topics;
-using Rock.Utility;
 using Rock.ViewModels.Event;
 using Rock.Web.Cache;
 

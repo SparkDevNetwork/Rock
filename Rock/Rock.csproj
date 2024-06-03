@@ -1314,6 +1314,8 @@
     <Compile Include="RealTime\Topics\InteractiveExperienceParticipantTopic.cs" />
     <Compile Include="RealTime\Topics\ITestCommunicationTransport.cs" />
     <Compile Include="RealTime\Topics\TestCommunicationTransportTopic.cs" />
+    <Compile Include="Reporting\FieldFilterGroup.cs" />
+    <Compile Include="Reporting\FieldFilterRule.cs" />
     <Compile Include="Reporting\DataFilter\Group\SignUpOpportunityHasNoAttendanceFilter.cs" />
     <Compile Include="Reporting\DataFilter\Group\SignUpOpportunityHasNoMembersFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\GivingAlertsFilter.cs" />
@@ -1784,7 +1786,6 @@
     <Compile Include="Model\Reporting\AnalyticsSourceFamilyBase\AnalyticsSourceFamilyBase.cs" />
     <Compile Include="Model\Reporting\AnalyticsBaseFinancialTransaction\AnalyticsBaseFinancialTransaction.cs" />
     <Compile Include="Model\Reporting\AnalyticsSourcePersonBase\AnalyticsSourcePersonBase.cs" />
-    <Compile Include="Model\Reporting\DataViewFilter\ComparisonType.cs" />
     <Compile Include="Model\Reporting\DataViewFilter\DataViewFilter.Logic.cs" />
     <Compile Include="Model\Reporting\DataViewFilter\DataViewFilterOverride.cs" />
     <Compile Include="Model\Reporting\DataViewFilter\DataViewFilterOverrides.cs" />
