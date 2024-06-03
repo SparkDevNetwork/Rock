@@ -1,0 +1,95 @@
+:root {
+
+    /* ========================= COLOR =========================*/
+
+    /* INTERFACE COLOR  */
+    --color-interface-strongest: #181A1C;
+    --color-interface-stronger:  #2B3136;
+    --color-interface-strong:    #67717A;
+    --color-interface-medium:    #9AA7B3;
+    --color-interface-soft:      #E4E8EB;
+    --color-interface-softer:    #F6F7F9;
+    --color-interface-softest:   #FFFFFF;
+
+    /* APPLICATION COLOR */
+    --color-critical-soft:   #FEDEC8;
+    --color-critical-strong: #EE7624;
+    --color-danger-soft:     #FEE2E2;
+    --color-danger-strong:   #B91C1C;
+    --color-info-soft:       #E0F2FE;
+    --color-info-strong:     #0369A1;
+    --color-success-soft:    #D1FAE5;
+    --color-success-strong:  #047857;
+    --color-warning-soft:    #FEF3C7;
+    --color-warning-strong:  #B45309;
+
+    /* NAMING SYSTEM COLOR */
+    --color-link:      #006DCC;
+    --color-primary:   #EE7725;
+    --color-secondary: #83758F;
+
+    /* CATEGORICAL COLOR */
+    --color-categorical-1: #000BFF;
+    --color-categorical-2: #DE3D82;
+    --color-categorical-3: #949494;
+    --color-categorical-4: #14EBE2;
+    --color-categorical-5: #FF1C1C;
+    --color-categorical-6: #57FF4B;
+    --color-categorical-7: #7100FF;
+    --color-categorical-8: #FFDA00;
+    --color-categorical-9: #FF7500;
+
+    /* ========================= END COLOR ==========================*/
+
+
+
+    /* ========================= TYPOGRAPHY =========================*/
+
+    /* FONT SIZE */
+    --font-size-body-reg:   16px;
+    --font-size-body-sm:    14px;
+    --font-size-h1:     44px;
+    --font-size-h2:     36px;
+    --font-size-h3:     28px;
+    --font-size-h4:     22px;
+    --font-size-h5:     18px;
+    --font-size-h6:     16px;
+
+    /* FONT WEIGHT */
+    --font-weight-light:    300;
+    --font-weight-regular:  400;
+    --font-weight-medium:   500;
+    --font-weight-semibold: 600;
+    --font-weight-bold:     700;
+    --font-weight-black:    900;
+
+    /* LINE HEIGHT */
+    --line-height-normal:    150%;
+    --line-height-tight:     110%;
+    --line-height-compact: 105.5%;
+
+    /* FONT STYLE */
+    --font-style-normal:    normal;
+    --font-style-italic:    italic;
+    --font-style-oblique:   oblique;
+
+    /* FONT FAMILY */
+    --font-family-header:   "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    --font-family-body:     "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+
+    /* ========================= END TYPOGRAPHY =========================*/
+
+
+
+    /* ============================ SPACING =============================*/
+
+    /* SPACING */
+    --spacing-tiny:       4px;
+    --spacing-small:      8px;
+    --spacing-medium:    16px;
+    --spacing-large:     24px;
+    --spacing-xlarge:    48px;
+    --spacing-huge:      80px;
+
+    /* ========================== END SPACING ===========================*/
+}
