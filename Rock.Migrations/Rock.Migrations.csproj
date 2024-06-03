@@ -108,6 +108,10 @@
     <Compile Include="Migrations\202405231728102_CodeGenerated_20240523.Designer.cs">
       <DependentUpon>202405231728102_CodeGenerated_20240523.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202406031841385_AddSiteTypeFlagsColumnToBlockTypeModel.cs" />
+    <Compile Include="Migrations\202406031841385_AddSiteTypeFlagsColumnToBlockTypeModel.Designer.cs">
+      <DependentUpon>202406031841385_AddSiteTypeFlagsColumnToBlockTypeModel.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.5\202404071458052_AddTheme.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.5\202404071458052_AddTheme.designer.cs">
       <DependentUpon>202404071458052_AddTheme.cs</DependentUpon>
@@ -2098,6 +2102,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202405231728102_CodeGenerated_20240523.resx">
       <DependentUpon>202405231728102_CodeGenerated_20240523.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202406031841385_AddSiteTypeFlagsColumnToBlockTypeModel.resx">
+      <DependentUpon>202406031841385_AddSiteTypeFlagsColumnToBlockTypeModel.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.5\202404071458052_AddTheme.resx">
       <DependentUpon>202404071458052_AddTheme.cs</DependentUpon>

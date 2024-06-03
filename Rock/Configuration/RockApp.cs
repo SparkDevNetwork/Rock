@@ -35,12 +35,6 @@ namespace Rock.Configuration
         /// </summary>
         private readonly IServiceProvider _serviceProvider;
 
-        /// <summary>
-        /// The Rock initialization settings currently being used for this
-        /// instance of Rock.
-        /// </summary>
-        private readonly Lazy<IInitializationSettings> _initializationSettings;
-
         #endregion
 
         #region Properties
@@ -63,7 +57,7 @@ namespace Rock.Configuration
         /// </para>
         /// </summary>
         /// <value>The initialization settings of the running application.</value>
-        public virtual IInitializationSettings InitializationSettings => _initializationSettings.Value;
+        public virtual IInitializationSettings InitializationSettings => _serviceProvider.GetRequiredService<IInitializationSettings>();
 
         /// <summary>
         /// The hosting settings for the current Rock instance. These settings
@@ -77,13 +71,37 @@ namespace Rock.Configuration
         #region Constructors
 
         /// <summary>
+        /// Performs all static initialization of the RockApp class.
+        /// </summary>
+        static RockApp()
+        {
+#if WEBFORMS
+            if ( System.Diagnostics.Process.GetCurrentProcess().ProcessName == "ef6" )
+            {
+                // Special case for a process named "ef6". This means we are running
+                // an EF design time operation. I can't find any hooks for this in
+                // EF 6 (EF Core has them), which means we can't initialize a proper
+                // RockApp. So this is a special case where we manually initialize
+                // the current instance.
+                var sc = new ServiceCollection();
+
+                sc.AddSingleton<IConnectionStringProvider, WebFormsConnectionStringProvider>();
+                sc.AddSingleton<IInitializationSettings, WebFormsInitializationSettings>();
+                sc.AddSingleton<IDatabaseConfiguration, DatabaseConfiguration>();
+                sc.AddSingleton<IHostingSettings, HostingSettings>();
+
+                Current = new RockApp( sc.BuildServiceProvider() );
+            }
+#endif
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="RockApp"/> class.
         /// </summary>
         /// <param name="serviceProvider">The service provider used for dependency injection.</param>
         internal RockApp( IServiceProvider serviceProvider )
         {
             _serviceProvider = serviceProvider;
-            _initializationSettings = new Lazy<IInitializationSettings>( () => _serviceProvider.GetRequiredService<IInitializationSettings>() );
         }
 
         #endregion

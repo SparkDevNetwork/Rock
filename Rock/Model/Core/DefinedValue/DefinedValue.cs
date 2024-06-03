@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -107,6 +107,22 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? CategoryId { get; set; }
+
+        /// <summary>
+        /// Gets the Category Name if a Category is associated with the Defined Type. Otherwise returns an empty string.
+        /// </summary>
+        [DataMember]
+        public string CategoryName
+        {
+            get
+            {
+                if ( !CategoryId.HasValue )
+                {
+                    return string.Empty;
+                }
+                return CategoryCache.Get( CategoryId.Value )?.Name ?? string.Empty;
+            }
+        }
 
         #endregion
 

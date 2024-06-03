@@ -14,8 +14,6 @@
 // limitations under the License.
 // </copyright>
 
-using System.Web.Configuration;
-
 namespace Rock.Configuration
 {
     /// <inheritdoc cref="IConnectionStringProvider" path="/summary"/>
@@ -35,11 +33,11 @@ namespace Rock.Configuration
         /// </summary>
         public WebFormsConnectionStringProvider()
         {
-            var configuration = WebConfigurationManager.OpenWebConfiguration( "~" );
+            var connectionStrings = System.Configuration.ConfigurationManager.ConnectionStrings;
 
-            ConnectionString = configuration.ConnectionStrings.ConnectionStrings["RockContext"]?.ConnectionString ?? string.Empty;
-            ReadOnlyConnectionString = configuration.ConnectionStrings.ConnectionStrings["RockContextReadOnly"]?.ConnectionString ?? ConnectionString;
-            AnalyticsConnectionString = configuration.ConnectionStrings.ConnectionStrings["RockContextAnalytics"]?.ConnectionString ?? ConnectionString;
+            ConnectionString = connectionStrings["RockContext"]?.ConnectionString ?? string.Empty;
+            ReadOnlyConnectionString = connectionStrings["RockContextReadOnly"]?.ConnectionString ?? ConnectionString;
+            AnalyticsConnectionString = connectionStrings["RockContextAnalytics"]?.ConnectionString ?? ConnectionString;
         }
     }
 }

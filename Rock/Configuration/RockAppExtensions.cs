@@ -91,7 +91,7 @@ namespace Rock.Configuration
         /// <returns><c>true</c> if the database is available for the specified RockApp; otherwise, <c>false</c>.</returns>
         public static bool IsDatabaseAvailable( this RockApp app )
         {
-            return app.GetDatabaseConfiguration().IsDatabaseAvailable;
+            return app?.GetDatabaseConfiguration().IsDatabaseAvailable ?? false;
         }
     }
 }
