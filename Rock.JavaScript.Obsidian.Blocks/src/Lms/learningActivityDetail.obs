@@ -33,7 +33,7 @@
 <script setup lang="ts">
     import { computed, ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import { useConfigurationValues, useInvokeBlockAction, refreshDetailAttributes } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import DetailBlock from "@Obsidian/Templates/detailBlock";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
@@ -50,6 +50,7 @@
 
     const config = useConfigurationValues<DetailBlockBox<LearningActivityBag, LearningActivityDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
+    onConfigurationValuesChanged(useReloadBlock());
 
     const entityTypeGuid = EntityType.LearningProgram;
 
@@ -78,7 +79,7 @@
     /**
      * Additional labels to display in the block panel.
      */
-     const blockLabels = computed((): PanelAction[] | undefined => {
+    const blockLabels = computed((): PanelAction[] | undefined => {
         const labels: PanelAction[] = [];
 
         if (panelMode.value !== DetailPanelMode.View) {
@@ -106,13 +107,13 @@
     });
 
     const options = computed((): LearningActivityDetailOptionsBag => {
-        return config.options ?? { };
+        return config.options ?? {};
     });
 
     /**
      * The entity name to display in the block panel.
      */
-     const panelName = computed((): string => {
+    const panelName = computed((): string => {
         return learningActivityViewBag.value?.name ?? "";
     });
 
@@ -126,7 +127,7 @@
     /**
      * The footer secondary actions for the block panel.
      */
-     const footerSecondaryActions = computed((): PanelAction[] => {
+    const footerSecondaryActions = computed((): PanelAction[] => {
         if (panelMode.value != DetailPanelMode.View) {
             return [];
         }
@@ -156,10 +157,10 @@
     /**
      * Called when the copy icon on the detail block has been clicked.
      */
-     async function onCopy(): Promise<void> {
+    async function onCopy(): Promise<void> {
         errorMessage.value = "";
         var result = await invokeBlockAction<string>("Copy", {
-                    key: learningActivityViewBag.value?.idKey ?? ""
+            key: learningActivityViewBag.value?.idKey ?? ""
         });
         if (result.isSuccess && result.data && typeof result.data === "string") {
             window.location.href = makeUrlRedirectSafe(result.data);
@@ -174,7 +175,7 @@
      *
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
-     async function onCancelEdit(): Promise<boolean | string> {
+    async function onCancelEdit(): Promise<boolean | string> {
         if (!learningActivityEditBag.value?.bag?.idKey) {
             if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
                 return config.navigationUrls[NavigationUrlKey.ParentPage];
@@ -246,7 +247,7 @@
      *
      * @param propertyName The name of the C# property that was changed.
      */
-     function onPropertyChanged(propertyName: string): void {
+    function onPropertyChanged(propertyName: string): void {
         // If we don't have any qualified attribute properties or this property
         // is not one of them then do nothing.
         if (!config.qualifiedAttributeProperties || !config.qualifiedAttributeProperties.some(n => n.toLowerCase() === propertyName.toLowerCase())) {

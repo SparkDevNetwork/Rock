@@ -42,7 +42,7 @@
                                 <i v-if="activity.facilitatorComment" class="fa fa-comment"></i>
                             </div>
                             <div class="activity-item-time">
-                                <span>{{getActivityTimeText(activity)}}</span>
+                                <span>{{ getActivityTimeText(activity) }}</span>
                             </div>
                             <div class="activity-item-status text-right">
                                 <span v-html="getActivityStatusBadge(activity)"></span>
@@ -57,16 +57,16 @@
                 </div>
                 <div class="workspace-main-content">
                     <div class="h1">
-                        {{viewingCompletionBag.activityBag.name}}
+                        {{ viewingCompletionBag.activityBag.name }}
                     </div>
                     <div class="text-muted">
-                        {{getActivityTimeText(viewingCompletionBag)}}
+                        {{ getActivityTimeText(viewingCompletionBag) }}
                     </div>
                     <activityTypeComponent
-                                v-model:activityBag="viewingCompletionBag.activityBag"
-                                v-model:completionBag="viewingCompletionBag"
-                                :screenToShow="screenToShow"
-                                @completed="onCompleted" />
+                                           v-model:activityBag="viewingCompletionBag.activityBag"
+                                           v-model:completionBag="viewingCompletionBag"
+                                           :screenToShow="screenToShow"
+                                           @completed="onCompleted" />
                 </div>
             </div>
         </div>
@@ -226,17 +226,16 @@ span.icon-stack-container i.icon {
 
 /* Only show the currently selected activity for smaller devices. The stepper will be visible for changing selections. */
 @media (max-width: 993px) {
-    .workspace-navigation-pane > .activity-navigation-item-container:not(.is-selected)  {
+    .workspace-navigation-pane > .activity-navigation-item-container:not(.is-selected) {
         display: none;
     }
 }
-
 </style>
 
 <script setup lang="ts">
     import { Component, computed, defineAsyncComponent, ref, toValue } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction, useReloadBlock, onConfigurationValuesChanged } from "@Obsidian/Utility/block";
     import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
     import { PublicLearningClassWorkspaceBox } from "@Obsidian/ViewModels/Blocks/Lms/PublicLearningClassWorkspace/publicLearningClassWorkspaceBox";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
@@ -245,6 +244,7 @@ span.icon-stack-container i.icon {
 
     const config = useConfigurationValues<PublicLearningClassWorkspaceBox>();
     const invokeBlockAction = useInvokeBlockAction();
+    onConfigurationValuesChanged(useReloadBlock());
 
     // #region Values
 
@@ -257,14 +257,14 @@ span.icon-stack-container i.icon {
     const courseImageGuid = ref<string>(config.courseImageGuid ?? "");
 
     const params = new URLSearchParams(window.location.search);
-    const selectedActivityIdKey = params.get("selection")  ?? "";
+    const selectedActivityIdKey = params.get("selection") ?? "";
 
     const activities = ref<LearningActivityCompletionBag[]>(config.activities ?? []);
 
     const viewingCompletionBag = ref((
         selectedActivityIdKey.length > 0 ?
-        config.activities?.find(a => a.idKey === selectedActivityIdKey) :
-        config.activities?.find(a => a.isAvailable)
+            config.activities?.find(a => a.idKey === selectedActivityIdKey) :
+            config.activities?.find(a => a.isAvailable)
     ) ?? {} as LearningActivityCompletionBag);
 
     // #endregion
@@ -329,8 +329,8 @@ span.icon-stack-container i.icon {
             const pointsPossible = forActivity.activityBag?.points ?? 0;
             if (pointsPossible > 0) {
                 const badgeText = forActivity.isGradePassing === true ?
-                "Passed" :
-                "Failed";
+                    "Passed" :
+                    "Failed";
 
                 return `<span class="badge badge-success">${badgeText}</span>`;
             }

@@ -95,11 +95,11 @@
         <fieldset v-if="isStudentAssignedAndIncomplete">
             <div class="header-content-section-summary">
                 <StructuredContentEditor :disabled="true"
-                                            v-model="header" />
+                                         v-model="header" />
             </div>
 
             <div class="assessment-item-container assessment-items-section">
-                <div class="assessment-item" v-for="(item, index) in completedItems" >
+                <div class="assessment-item" v-for="(item, index) in completedItems">
                     <template v-if="item.typeName === 'Multiple Choice'">
                         <AssessmentItemMultipleChoice v-model="completedItems[index]" :screenToShow="screenToShow" />
                     </template>
@@ -116,9 +116,9 @@
 
             <div v-if="showStudentComment" class="optional-comments-container">
                 <TextBox v-model="studentComment"
-                        label="Optional Comments"
-                        textMode="multiline"
-                        :rows="4" />
+                         label="Optional Comments"
+                         textMode="multiline"
+                         :rows="4" />
             </div>
 
             <div class="footer-content-section mt-3">
@@ -476,5 +476,5 @@ div.summary-sub-title {
         }) ?? "{}";
 
         emit("update:completionBag", updatedCompletionBag);
-    }, {deep:true});
+    }, { deep: true });
 </script>

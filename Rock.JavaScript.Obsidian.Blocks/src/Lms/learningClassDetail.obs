@@ -46,7 +46,7 @@
     import EditPanel from "./LearningClassDetail/editPanel.partial.obs";
     import ViewPanel from "./LearningClassDetail/viewPanel.partial.obs";
     import LearningClassSecondaryLists from "./LearningClassSecondaryLists/learningClassSecondaryLists.partial.obs";
-    import { useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./LearningClassDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { LearningClassBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassDetail/learningClassBag";
@@ -56,6 +56,7 @@
 
     const config = useConfigurationValues<DetailBlockBox<LearningClassBag, LearningClassDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
+    onConfigurationValuesChanged(useReloadBlock());
 
     // #region Values
 
@@ -135,7 +136,7 @@
     /**
      * The footer secondary actions for the block panel.
      */
-     const footerSecondaryActions = computed((): PanelAction[] => {
+    const footerSecondaryActions = computed((): PanelAction[] => {
         if (panelMode.value != DetailPanelMode.View) {
             return [];
         }
@@ -188,10 +189,10 @@
     /**
      * Called when the copy icon on the detail block has been clicked.
      */
-     async function onCopy(): Promise<void> {
+    async function onCopy(): Promise<void> {
         errorMessage.value = "";
         var result = await invokeBlockAction<string>("Copy", {
-                    key: learningClassViewBag.value?.idKey ?? ""
+            key: learningClassViewBag.value?.idKey ?? ""
         });
         if (result.isSuccess && result.data && typeof result.data === "string") {
             window.location.href = makeUrlRedirectSafe(result.data);

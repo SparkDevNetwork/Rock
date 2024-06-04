@@ -45,16 +45,16 @@
 
     const props = defineProps({
         navigationUrls: {
-                type: Object as PropType<Record<string, string> | null>,
-                required: false
+            type: Object as PropType<Record<string, string> | null>,
+            required: false
         },
         isEditable: {
             type: Boolean as PropType<boolean>,
-                default: () => false
+            default: () => false
         },
         showAbsences: {
             type: Boolean as PropType<boolean>,
-                default: () => false
+            default: () => false
         }
     });
 
@@ -78,7 +78,7 @@
     /**
      * Called when the Add activity button has been clicked by the individual.
      */
-     function onActivityRowClick(key: string | null): void {
+    function onActivityRowClick(key: string | null): void {
         if (navigationUrls.value[NavigationUrlKey.ActivityDetailPage]) {
             const idKey = !key ? "0" : key;
             window.location.href = navigationUrls.value[NavigationUrlKey.ActivityDetailPage].replace("((Key))", idKey);

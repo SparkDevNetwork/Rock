@@ -29,7 +29,7 @@ export type VideoWatchActivityCompletion = {
 };
 
 export class VideoWatchActivityDefaults
-extends LearningComponentBaseDefaults<VideoWatchActivityConfiguration, VideoWatchActivityCompletion> {
+    extends LearningComponentBaseDefaults<VideoWatchActivityConfiguration, VideoWatchActivityCompletion> {
     constructor() {
         super();
         this.defaultConfig = {

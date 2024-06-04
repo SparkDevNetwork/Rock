@@ -29,7 +29,7 @@ export type CheckOffActivityCompletion = {
 };
 
 export class CheckOffActivityDefaults
-extends LearningComponentBaseDefaults<CheckOffActivityConfiguration, CheckOffActivityCompletion>{
+    extends LearningComponentBaseDefaults<CheckOffActivityConfiguration, CheckOffActivityCompletion> {
     constructor() {
         super();
         this.defaultConfig = {

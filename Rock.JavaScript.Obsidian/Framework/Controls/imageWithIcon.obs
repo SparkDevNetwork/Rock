@@ -1,8 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div ref="container" class="image-with-icon-container">
-        <img :src="imgSrc" />
-        <span class="icon-stack-container" :class="stackClass">
+        <img :src="imgSrc" v-if="guidIsValid" />
+        <span class="icon-stack-container" :class="stackClass" v-if="hasIcon">
             <i class="fa fa-circle fa-stack-2x" :style="stackColorStyle"></i>
             <i :style="highlightColorStyle" :class="iconCssClasses"></i>
         </span>
@@ -86,9 +86,11 @@
     const stackClass = computed(() => `fa-stack fa-${iconSize.value}x`);
 
     // The color style attribute value for the highlight color.
-    const highlightColorStyle = computed(() => `color: ${highlightColor};`);
+    const highlightColorStyle = computed(() => `color: ${highlightColor.value};`);
 
-    const iconCssClasses = computed(() => [iconCssClass, "fa-stack-1x"]);
+    const hasIcon = computed(() => iconCssClass.value.length > 0);
+
+    const iconCssClasses = computed(() => [iconCssClass.value, "fa-stack-1x"]);
 
     // The color style attribute value for the stack color.
     const stackColorStyle = computed(() => {

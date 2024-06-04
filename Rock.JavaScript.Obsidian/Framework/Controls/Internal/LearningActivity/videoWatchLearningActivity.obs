@@ -1,11 +1,11 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <Panel v-if="[ComponentScreen.Summary, ComponentScreen.Configuration].includes(screenToShow)" :title="panelTitle" :class="containerClasses" :hasFullscreen="false">
-        <div v-if="screenToShow === ComponentScreen.Configuration" class="learning-activity-video-file-configuration-container" >
-            <div class="header-content-section" >
+        <div v-if="screenToShow === ComponentScreen.Configuration" class="learning-activity-video-file-configuration-container">
+            <div class="header-content-section">
                 <RockLabel>Header Content</RockLabel>
                 <StructuredContentEditor
-                                        v-model="headerContent" />
+                                         v-model="headerContent" />
             </div>
             <div class="video-file-media-section">
                 <div class="media-account-field">
@@ -14,12 +14,12 @@
                 </div>
                 <div class="completion-threshold-field">
                     <NumberBox v-model="completionThresholdForView"
-                            :decimalCount="0"
-                            :minimumValue="0"
-                            :maximumValue="100"
-                            label="Completion Threshold"
-                            help="Set the minimum percentage of the video that must be watched to count as viewed."
-                            inputGroupClasses="input-width-md">
+                               :decimalCount="0"
+                               :minimumValue="0"
+                               :maximumValue="100"
+                               label="Completion Threshold"
+                               help="Set the minimum percentage of the video that must be watched to count as viewed."
+                               inputGroupClasses="input-width-md">
                         <template #inputGroupAppend>
                             <span class="input-group-addon">%</span>
                         </template>
@@ -30,7 +30,7 @@
             <div class="footer-content-section">
                 <RockLabel>Footer Content</RockLabel>
                 <StructuredContentEditor
-                                        v-model="footerContent" />
+                                         v-model="footerContent" />
             </div>
         </div>
 
@@ -42,27 +42,26 @@
     </Panel>
 
     <div v-if="screenToShow === ComponentScreen.Completion">
-            <fieldset>
-                <div class="header-section">
-                    <StructuredContentEditor :disabled="true" label="" v-model="headerContent" />
-                </div>
+        <fieldset>
+            <div class="header-section">
+                <StructuredContentEditor :disabled="true" label="" v-model="headerContent" />
+            </div>
 
-                <div class="video-section">
-                    <MediaPlayer v-model:watchedPercentage="watchedPercentage"
-                     :mediaElementGuid="video?.value ?? ''" />
-                </div>
-                <div class="footer-section">
-                    <StructuredContentEditor :disabled="true" label="" v-model="footerContent" />
-                </div>
-                <div class="footer-buttons">
-                    <RockButton :btnType="BtnType.Primary" :disabled="!hasPassedThreshold"
-                                @click="emits('completed', true)">
-                        Complete
-                    </RockButton>
-                </div>
-            </fieldset>
-        </div>
-
+            <div class="video-section">
+                <MediaPlayer v-model:watchedPercentage="watchedPercentage"
+                             :mediaElementGuid="video?.value ?? ''" />
+            </div>
+            <div class="footer-section">
+                <StructuredContentEditor :disabled="true" label="" v-model="footerContent" />
+            </div>
+            <div class="footer-buttons">
+                <RockButton :btnType="BtnType.Primary" :disabled="!hasPassedThreshold"
+                            @click="emits('completed', true)">
+                    Complete
+                </RockButton>
+            </div>
+        </fieldset>
+    </div>
 </template>
 <script setup lang="ts">
     import { computed, ref, toRef, toValue, watch } from "vue";
@@ -109,34 +108,34 @@
     );
 
     const hasPassedThreshold = computed(() => watchedPercentage.value >= completionThreshold.value);
-    const notificationAlertType = computed(() => hasPassedThreshold ? "success": "warning");
+    const notificationAlertType = computed(() => hasPassedThreshold ? "success" : "warning");
 
     // The threshold control should show as a number between 0 and 100;
     // while the saved value will be normalized as a decimal < 1.
     const completionThresholdForView = ref((
         completionThreshold.value < 1 ?
-        completionThreshold.value * 100 :
-        completionThreshold.value
+            completionThreshold.value * 100 :
+            completionThreshold.value
     ));
 
-    watch(completionThresholdForView,() => {
+    watch(completionThresholdForView, () => {
         completionThreshold.value = completionThresholdForView.value / 100;
     });
 
     /** Watch for modified component settings. */
     const debouncedActivityBagEmits = debounce(() => {
-            const updatedActivityBag = {
-                ...toValue(activityBag)
-            } as LearningActivityBag;
+        const updatedActivityBag = {
+            ...toValue(activityBag)
+        } as LearningActivityBag;
 
-            updatedActivityBag.activityComponentSettingsJson = JSON.stringify({
-                completionThreshold: completionThreshold.value,
-                footerContent: footerContent.value,
-                headerContent: headerContent.value,
-                video: video.value
-            }) ?? "";
+        updatedActivityBag.activityComponentSettingsJson = JSON.stringify({
+            completionThreshold: completionThreshold.value,
+            footerContent: footerContent.value,
+            headerContent: headerContent.value,
+            video: video.value
+        }) ?? "";
 
-            emits("update:activityBag", updatedActivityBag);
+        emits("update:activityBag", updatedActivityBag);
     });
     watch([completionThreshold, footerContent, headerContent, video], () => {
         debouncedActivityBagEmits();
@@ -157,6 +156,6 @@
         }
     });
     watch(watchedPercentage, () => {
-            debouncedCompletionBagEmits();
+        debouncedCompletionBagEmits();
     }, { deep: true });
 </script>

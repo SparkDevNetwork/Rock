@@ -9,8 +9,8 @@
             </div>
             <div class="col-md-6">
                 <DatePicker v-model="startDate"
-                         label="Start Date"
-                         rules="required" />
+                            label="Start Date"
+                            rules="required" />
             </div>
             <div class="col-md-6">
                 <DatePicker v-model="endDate"

@@ -14,7 +14,7 @@
                 <span v-for="(_, index) in answers" :class="'answer-row answer-row-' + index">
                     <TextBox v-model="answers[index]"
                              :inputClasses="'answer-text-box-' + index"
-                             :label="index === 0 ? 'Answers' : '' "
+                             :label="index === 0 ? 'Answers' : ''"
                              rules="required" />
 
                     <button aria-label="Remove this answer" class="btn btn-default btn-square remove-answer-button" @click.prevent="answers.splice(index, 1)">
@@ -98,6 +98,7 @@
     }
 
     .answer-row-0 {
+
         /* Add a margin-top to the first Remove button to offset the label of the first answer. */
         > .remove-answer-button {
             margin-top: 25px;
@@ -138,7 +139,6 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { ComponentScreen } from "./learningActivity";
     import { AssessmentItem, MultipleChoiceItem } from "./assessmentLearningActivity.partial";
-    import { debounce } from "@Obsidian/Utility/util";
 
     const props = defineProps({
         /** The assessment item's configuration. */
@@ -166,7 +166,7 @@
     const correctAnswer = ref(modelValue.value?.correctAnswer ?? "");
     const isCorrect = computed(() => response.value === correctAnswer.value);
     const answersAsListItems = computed(() => answers.value.map(a => {
-        return {value: a, text: a} as ListItemBag;
+        return { value: a, text: a } as ListItemBag;
     }));
 
     const summaryAnswers = computed(() => answers.value.map(a => {
@@ -194,21 +194,21 @@
 
     const correctnessLabel = ref(
         isCorrect.value === true ?
-        `<span class="badge-success badge">Correct</span>` :
-        `<span class="badge-danger badge">Incorrect</span>`
+            `<span class="badge-success badge">Correct</span>` :
+            `<span class="badge-danger badge">Incorrect</span>`
     );
 
     watch([question, helpText, answers, correctAnswer], () => {
         const newModelValue = {
-                typeName: props.modelValue?.typeName,
-                question: question.value,
-                helpText: helpText.value,
-                answers: answers.value,
-                correctAnswer: correctAnswer.value,
-                uniqueId: props.modelValue?.uniqueId
-            } as MultipleChoiceItem;
+            typeName: props.modelValue?.typeName,
+            question: question.value,
+            helpText: helpText.value,
+            answers: answers.value,
+            correctAnswer: correctAnswer.value,
+            uniqueId: props.modelValue?.uniqueId
+        } as MultipleChoiceItem;
 
-            emit("update:modelValue", newModelValue);
+        emit("update:modelValue", newModelValue);
     }, { deep: true });
 
     /** Watch for modified component completion. */

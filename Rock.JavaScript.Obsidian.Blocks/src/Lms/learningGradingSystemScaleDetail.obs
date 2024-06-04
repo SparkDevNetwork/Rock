@@ -29,7 +29,7 @@
     import DetailBlock from "@Obsidian/Templates/detailBlock";
     import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
     import EditPanel from "./LearningGradingSystemScaleDetail/editPanel.partial.obs";
-    import { useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./LearningGradingSystemScaleDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { LearningGradingSystemScaleBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningGradingSystemScaleDetail/learningGradingSystemScaleBag";
@@ -38,6 +38,7 @@
 
     const config = useConfigurationValues<DetailBlockBox<LearningGradingSystemScaleBag, LearningGradingSystemScaleDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
+    onConfigurationValuesChanged(useReloadBlock());
 
     // #region Values
 

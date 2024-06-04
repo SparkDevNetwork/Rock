@@ -35,6 +35,8 @@
     import { LearningCourseRequirementBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningCourseRequirement/learningCourseRequirementBag";
     import { LearningCourseDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningCourseDetail/learningCourseDetailOptionsBag";
     import TabbedContent from "@Obsidian/Controls/tabbedContent.obs";
+    import { RequirementTypeDescription } from "@Obsidian/Enums/Lms/requirementType";
+    import { pluralize } from "@Obsidian/Utility/stringUtils";
 
     const props = defineProps({
         modelValue: {
@@ -109,8 +111,20 @@
             return `<li><a target="_blank" href="${updatedUrl}">${r.requiredLearningCourseName}</a>${courseCodeElement}</li>`;
         };
 
-        const requirements = props.modelValue.courseRequirements?.map(r => requirementHtml(r)).join("");
-        valueBuilder.addHtmlValue("", `<h4>Prerequisites</h4><ul>${requirements ?? emptyValue}</ul>`);
+        // Get a distinct list of requirement types and build a section for each.
+        const courseRequirements = props.modelValue.courseRequirements ?? [];
+        if (courseRequirements) {
+            const distinctRequirementTypes = courseRequirements.map(r => r.requirementType).filter((v, i, a) => a.indexOf(v) == i);
+
+            if (distinctRequirementTypes) {
+                distinctRequirementTypes.forEach(requirementType => {
+
+                    const requirements = courseRequirements.filter(r => r.requirementType === requirementType).map(r => requirementHtml(r)).join("");
+                    valueBuilder.addHtmlValue("", `<h4>${pluralize(RequirementTypeDescription[requirementType])}</h4><ul>${requirements ?? emptyValue}</ul>`);
+                });
+
+            }
+        }
 
         return valueBuilder.build();
     });

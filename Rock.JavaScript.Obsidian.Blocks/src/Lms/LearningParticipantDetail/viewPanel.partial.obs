@@ -37,28 +37,28 @@
                 </Column>
 
                 <DateColumn
-                        name="dateCompleted"
-                        title="Date Completed"
-                        visiblePriority="sm">
+                            name="dateCompleted"
+                            title="Date Completed"
+                            visiblePriority="sm">
                 </DateColumn>
 
 
                 <DateColumn
-                        name="dateAvailable"
-                        title="Date Available"
-                        visiblePriority="sm">
+                            name="dateAvailable"
+                            title="Date Available"
+                            visiblePriority="sm">
                 </DateColumn>
 
                 <DateColumn
-                        name="dueDate"
-                        title="Due Date"
-                        visiblePriority="sm">
+                            name="dueDate"
+                            title="Due Date"
+                            visiblePriority="sm">
                 </DateColumn>
 
                 <TextColumn
-                        name="grade"
-                        title="Grade"
-                        visiblePriority="sm">
+                            name="grade"
+                            title="Grade"
+                            visiblePriority="sm">
                 </TextColumn>
             </Grid>
         </div>
@@ -79,8 +79,8 @@
     const invokeBlockAction = useInvokeBlockAction();
 
     const props = defineProps({
-    modelValue: {
-    type: Object as PropType<LearningParticipantBag | null>,
+        modelValue: {
+            type: Object as PropType<LearningParticipantBag | null>,
             required: false
         },
 
@@ -136,7 +136,7 @@
     /**
      * Called when the grid is requesting the row data be loaded.
      */
-     async function loadGridData(): Promise<GridDataBag> {
+    async function loadGridData(): Promise<GridDataBag> {
         const result = await invokeBlockAction<GridDataBag>("GetLearningPlan");
 
         if (result.isSuccess && result.data) {

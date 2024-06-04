@@ -10,65 +10,65 @@
           :onAddItem="config.isAddEnabled ? onAddItem : undefined">
 
         <TextColumn
-            v-if="config.options?.showCourseColumn"
-            name="course"
-            title="Course"
-            field="course"
-            width="25%"
-            visiblePriority="sm">
+                    v-if="config.options?.showCourseColumn"
+                    name="course"
+                    title="Course"
+                    field="course"
+                    width="25%"
+                    visiblePriority="sm">
         </TextColumn>
 
         <TextColumn
-            v-if="config.options?.showCourseColumn"
-            name="code"
-            title="Code"
-            field="code"
-            width="10%"
-            visiblePriority="xs">
+                    v-if="config.options?.showCourseColumn"
+                    name="code"
+                    title="Code"
+                    field="code"
+                    width="10%"
+                    visiblePriority="xs">
         </TextColumn>
 
         <TextColumn
-            v-if="config.options?.showSemesterColumn"
-            name="semester"
-            title="Semester"
-            field="semester"
-            width="10%"
-            visiblePriority="sm">
+                    v-if="config.options?.showSemesterColumn"
+                    name="semester"
+                    title="Semester"
+                    field="semester"
+                    width="10%"
+                    visiblePriority="sm">
         </TextColumn>
 
         <TextColumn
-            name="facilitators"
-            title="Facilitators"
-            field="facilitators"
-            width="20%"
-            visiblePriority="md">
+                    name="facilitators"
+                    title="Facilitators"
+                    field="facilitators"
+                    width="20%"
+                    visiblePriority="md">
         </TextColumn>
 
         <TextColumn
-            v-if="config.options?.showLocationColumn"
-            name="location"
-            title="Location"
-            field="location"
-            width="10%"
-            visiblePriority="sm">
+                    v-if="config.options?.showLocationColumn"
+                    name="location"
+                    title="Location"
+                    field="location"
+                    width="10%"
+                    visiblePriority="sm">
         </TextColumn>
 
         <TextColumn
-            v-if="config.options?.showScheduleColumn"
-            name="schedule"
-            title="Schedule"
-            field="schedule"
-            width="10%"
-            visiblePriority="sm">
+                    v-if="config.options?.showScheduleColumn"
+                    name="schedule"
+                    title="Schedule"
+                    field="schedule"
+                    width="10%"
+                    visiblePriority="sm">
         </TextColumn>
 
         <Column name="category"
-            title="Category"
-            :filter="textValueFilter"
-            filterValue="category"
-            quickFilterValue="category"
-            width="15%"
-            visiblePriority="lg">
+                title="Category"
+                :filter="textValueFilter"
+                filterValue="category"
+                quickFilterValue="category"
+                width="15%"
+                visiblePriority="lg">
             <template #format="{ row }">
                 <span class="label label-default category-label" :style="'color: ' + row.categoryColor">
                     {{ row.category }}
@@ -77,13 +77,13 @@
         </Column>
 
         <Column name="students"
-            title="Students"
-            field="students"
-            :filter="numberValueFilter"
-            filterValue="students"
-            quickFilterValue="students"
-            width="10%"
-            visiblePriority="lg">
+                title="Students"
+                field="students"
+                :filter="numberValueFilter"
+                filterValue="students"
+                quickFilterValue="students"
+                width="10%"
+                visiblePriority="lg">
         </Column>
 
         <SecurityColumn />

@@ -31,7 +31,7 @@ export type FileUploadActivityCompletion = {
 
 
 export class FileUploadActivityDefaults
-extends LearningComponentBaseDefaults<FileUploadActivityConfiguration, FileUploadActivityCompletion> {
+    extends LearningComponentBaseDefaults<FileUploadActivityConfiguration, FileUploadActivityCompletion> {
     constructor() {
         super();
         this.defaultConfig = {

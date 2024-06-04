@@ -91,7 +91,7 @@ namespace Rock.Blocks.Lms
 		</div>
 	</div>
 	
-	{% assign prerequisitesText = Course.CourseRequirements | Where:'RequirementType','Prerequisite' | Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:',',' and' | Default:'None' %}
+	{% assign requirementTypes = Course.CourseRequirements | Distinct:'RequirementType' %}
 	{% assign facilitatorCount = Course.Facilitators | Size %}
 	{% assign facilitators = Course.Facilitators | Join:', ' | ReplaceLast:',',' and' | Default:'TBD' %}
 	
@@ -135,8 +135,11 @@ namespace Rock.Blocks.Lms
 					<a class=""btn btn-info"" href=""{{ Course.ClassWorkspaceLink }}"">View Course</a>
 				</div>
 				
-				<div class=""sidebar-header text-bold"">Prerequisites</div>
-				<div class=""sidebar-value text-muted"">{{ prerequisitesText }}</div>
+                {% for requirementType in requirementTypes %}
+                	{% assign requirementsText = Course.CourseRequirements | Where:'RequirementType',requirementType | Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:',',' and' | Default:'None' %}
+                				<div class=""sidebar-header text-bold"">{{ requirementType | Pluralize }}</div>
+                				<div class=""sidebar-value text-muted"">{{ requirementsText }}</div>
+                {% endfor %}
 			{% when 'Passed' %} 
 				<div class=""sidebar-header text-bold"">History</div>
 				<div class=""sidebar-value text-muted"">You completed this class on {{ Course.MostRecentParticipation.LearningCompletionDateTime | Date: 'MMMM dd, yyyy' }}</div>
@@ -145,11 +148,17 @@ namespace Rock.Blocks.Lms
 					<a href=""{{ Course.ClassWorkspaceLink }}"">View Class Work</a>
 				</div>
 				
-				<div class=""sidebar-header text-bold"">Prerequisites</div>
-				<div class=""sidebar-value text-muted"">{{ prerequisitesText }}</div>
+                {% for requirementType in requirementTypes %}
+                	{% assign requirementsText = Course.CourseRequirements | Where:'RequirementType',requirementType | Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:',',' and' | Default:'None' %}
+                				<div class=""sidebar-header text-bold"">{{ requirementType | Pluralize }}</div>
+                				<div class=""sidebar-value text-muted"">{{ requirementsText }}</div>
+                {% endfor %}
 			{% else %} 
-				<div class=""sidebar-header text-bold"">Prerequisites</div>
-				<div class=""sidebar-value text-muted mb-4"">{{ prerequisitesText }}</div>
+                {% for requirementType in requirementTypes %}
+                	{% assign requirementsText = Course.CourseRequirements | Where:'RequirementType',requirementType | Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:',',' and' | Default:'None' %}
+                				<div class=""sidebar-header text-bold"">{{ requirementType | Pluralize }}</div>
+                				<div class=""sidebar-value text-muted"">{{ requirementsText }}</div>
+                {% endfor %}
 				
 				<div class=""sidebar-upcoming-schedule h4"">Upcoming Schedule</div>
 				

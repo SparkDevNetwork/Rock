@@ -15,9 +15,9 @@
         <AttributeValuesContainer :showCategoryLabel="false" :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
 
         <div class="row">
-            <div >
+            <div>
                 <StructuredContentEditor :disabled="true"
-                    v-model="description" />
+                                         v-model="description" />
             </div>
         </div>
     </fieldset>
@@ -35,9 +35,9 @@
 
     const props = defineProps({
         modelValue: {
-        type: Object as PropType<LearningProgramBag | null>,
-                required: false
-            },
+            type: Object as PropType<LearningProgramBag | null>,
+            required: false
+        },
     });
 
     // #region Values

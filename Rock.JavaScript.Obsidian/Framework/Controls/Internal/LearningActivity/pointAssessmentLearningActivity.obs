@@ -23,12 +23,6 @@
         </div>
     </Panel>
 </template>
-<style scoped>
-    .completion-section {
-        margin-bottom: 12px;
-    }
-</style>
-
 <script setup lang="ts">
     import { computed, toRef, toValue, watch, } from "vue";
     import { debounce } from "@Obsidian/Utility/util";

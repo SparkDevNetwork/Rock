@@ -91,11 +91,11 @@
         const newValue: ValidPropertiesBox<LearningGradingSystemBag> = {
             bag: { ...props.modelValue.bag } as LearningGradingSystemBag
         };
-        
-            setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
-            setPropertiesBoxValue(newValue, "description", description.value);
-            setPropertiesBoxValue(newValue, "isActive", isActive.value);
-            setPropertiesBoxValue(newValue, "name", name.value);
+
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "isActive", isActive.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
 
         emit("update:modelValue", newValue);
     });

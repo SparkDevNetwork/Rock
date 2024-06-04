@@ -180,7 +180,6 @@ namespace Rock.Blocks.Lms
                 ["LearningCourseId"] = "((Key))"
             };
 
-
             var courseDetailUrlTemplate = this.GetLinkedPageUrl( AttributeKey.DetailPage, queryParams );
             var courseEnrollmentUrlTemplate = this.GetLinkedPageUrl( AttributeKey.CourseEnrollmentPage, queryParams );
 

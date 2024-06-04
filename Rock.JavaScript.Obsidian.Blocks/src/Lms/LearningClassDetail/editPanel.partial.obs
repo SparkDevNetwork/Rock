@@ -78,6 +78,7 @@
     import { LearningClassDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassDetail/learningClassDetailOptionsBag";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
         modelValue: {
@@ -107,7 +108,7 @@
     const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
     const semester = propertyRef(props.modelValue.bag?.semester?.value ?? "", "Semester");
     const schedule = propertyRef(props.modelValue.bag?.schedule, "Schedule");
-    const location = propertyRef(props.modelValue.bag?.location ?? null, "Location");
+    const location = propertyRef<ListItemBag | undefined>(props.modelValue.bag?.location ?? undefined, "Location");
     const campus = propertyRef(props.modelValue.bag?.campus, "Campus");
     const gradingSystem = propertyRef(props.modelValue.bag?.gradingSystem?.value ?? "", "GradingSystem");
 
@@ -118,15 +119,15 @@
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
     const propRefs = [
-    name
-    , isActive
-    , isPublic
-    , description
-    , semester
-    , schedule
-    , location
-    , campus
-    , gradingSystem
+        name
+        , isActive
+        , isPublic
+        , description
+        , semester
+        , schedule
+        , location
+        , campus
+        , gradingSystem
     ];
 
     // #endregion
@@ -151,7 +152,7 @@
         updateRefValue(description, props.modelValue.bag?.description ?? "");
         updateRefValue(semester, props.modelValue.bag?.semester?.value ?? "");
         updateRefValue(schedule, props.modelValue.bag?.schedule ?? {});
-        updateRefValue(location, props.modelValue.bag?.location ?? null);
+        updateRefValue(location, props.modelValue.bag?.location ?? undefined);
         updateRefValue(campus, props.modelValue.bag?.campus ?? {});
         updateRefValue(gradingSystem, props.modelValue.bag?.gradingSystem?.value ?? "");
     });
@@ -167,11 +168,11 @@
         setPropertiesBoxValue(newValue, "isActive", isActive.value);
         setPropertiesBoxValue(newValue, "isPublic", isPublic.value);
         setPropertiesBoxValue(newValue, "description", description.value);
-        setPropertiesBoxValue(newValue, "semester", {value: semester.value});
+        setPropertiesBoxValue(newValue, "semester", { value: semester.value });
         setPropertiesBoxValue(newValue, "schedule", schedule.value);
         setPropertiesBoxValue(newValue, "location", location.value);
         setPropertiesBoxValue(newValue, "campus", campus.value);
-        setPropertiesBoxValue(newValue, "gradingSystem", {value: gradingSystem.value});
+        setPropertiesBoxValue(newValue, "gradingSystem", { value: gradingSystem.value });
 
         emit("update:modelValue", newValue);
     });

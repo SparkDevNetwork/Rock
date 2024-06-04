@@ -31,7 +31,7 @@
         <fieldset>
             <div class="header-content-section">
                 <StructuredContentEditor :disabled="true"
-                                            v-model="content" />
+                                         v-model="content" />
             </div>
             <div class="is-required-section" v-if="isConfirmationRequired">
                 <CheckBox v-model="isConfirmed" label="" :disabled="completionBag.isStudentCompleted" :text="confirmationText" />
@@ -90,17 +90,17 @@
 
     /** Watch for modified component settings. */
     const debouncedActivityBagEmits = debounce(() => {
-            const updatedActivityBag = {
-                ...toValue(activityBag)
-            } as LearningActivityBag;
+        const updatedActivityBag = {
+            ...toValue(activityBag)
+        } as LearningActivityBag;
 
-            updatedActivityBag.activityComponentSettingsJson = JSON.stringify({
-                content: content.value,
-                confirmationText: confirmationText.value,
-                isConfirmationRequired: isConfirmationRequired.value
-            }) ?? "{}";
+        updatedActivityBag.activityComponentSettingsJson = JSON.stringify({
+            content: content.value,
+            confirmationText: confirmationText.value,
+            isConfirmationRequired: isConfirmationRequired.value
+        }) ?? "{}";
 
-            emits("update:activityBag", updatedActivityBag);
+        emits("update:activityBag", updatedActivityBag);
     });
     watch([content, confirmationText, isConfirmationRequired], () => {
         debouncedActivityBagEmits();
@@ -108,15 +108,15 @@
 
     /** Watch for modified component completion. */
     const debouncedCompletionBagEmits = debounce(() => {
-            const updatedCompletionBag = {
-                ...toValue(completionBag)
-            } as LearningActivityCompletionBag;
+        const updatedCompletionBag = {
+            ...toValue(completionBag)
+        } as LearningActivityCompletionBag;
 
-            updatedCompletionBag.activityComponentCompletionJson = JSON.stringify({
-                isConfirmed: isConfirmed.value,
-                dateConfirmed: dateConfirmed.value
-            }) ?? "{}";
-            emits("update:completionBag", updatedCompletionBag);
+        updatedCompletionBag.activityComponentCompletionJson = JSON.stringify({
+            isConfirmed: isConfirmed.value,
+            dateConfirmed: dateConfirmed.value
+        }) ?? "{}";
+        emits("update:completionBag", updatedCompletionBag);
     });
     watch([isConfirmed, dateConfirmed], () => {
         debouncedCompletionBagEmits();

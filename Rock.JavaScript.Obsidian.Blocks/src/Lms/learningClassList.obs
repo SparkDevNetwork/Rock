@@ -97,7 +97,7 @@
 </template>
 
 <script setup lang="ts">
-    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import Grid, { numberValueFilter, textValueFilter, Column, TextColumn, DeleteColumn, SecurityColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
@@ -109,6 +109,7 @@
 
     const config = useConfigurationValues<ListBlockBox<LearningClassListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
+    onConfigurationValuesChanged(useReloadBlock());
 
     // #region Values
 
@@ -177,7 +178,7 @@
     /**
      * Called when the Add button has been clicked by the indivual.
      */
-     function onRowClick(idKey: string): void {
+    function onRowClick(idKey: string): void {
         let detailPageUrl = config.navigationUrls?.[NavigationUrlKey.DetailPage] ?? "";
 
         if (detailPageUrl.length > 0) {

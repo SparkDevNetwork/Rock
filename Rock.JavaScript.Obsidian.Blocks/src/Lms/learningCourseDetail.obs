@@ -54,7 +54,7 @@
     import ViewPanel from "./LearningCourseDetail/viewPanel.partial.obs";
     import ImageWithIcon from "@Obsidian/Controls/imageWithIcon.obs";
     import LearningClassSecondaryLists from "../Lms/LearningClassSecondaryLists/LearningClassSecondaryLists.partial.obs";
-    import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { getSecurityGrant, onConfigurationValuesChanged, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { debounce } from "@Obsidian/Utility/util";
     import { NavigationUrlKey } from "./LearningCourseDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
@@ -65,6 +65,7 @@
     const config = useConfigurationValues<DetailBlockBox<LearningCourseBag, LearningCourseDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
     const securityGrant = getSecurityGrant(config.securityGrantToken);
+    onConfigurationValuesChanged(useReloadBlock());
 
     // #region Values
 

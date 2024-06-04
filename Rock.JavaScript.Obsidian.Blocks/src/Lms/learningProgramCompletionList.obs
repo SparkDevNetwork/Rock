@@ -11,51 +11,51 @@
         <SelectColumn />
 
         <PersonColumn
-            name="individual"
-            title="Individual"
-            field="individual"
-            :filter="pickExistingValueFilter"
-            visiblePriority="sm" />
+                      name="individual"
+                      title="Individual"
+                      field="individual"
+                      :filter="pickExistingValueFilter"
+                      visiblePriority="sm" />
 
         <TextColumn
-            name="campus"
-            title="Campus"
-            field="campus"
-            :filter="textValueFilter"
-            visiblePriority="sm" />
+                    name="campus"
+                    title="Campus"
+                    field="campus"
+                    :filter="textValueFilter"
+                    visiblePriority="sm" />
 
         <TextColumn
-            v-if="config.options?.showSemesterColumn"
-            name="semester"
-            title="Semester"
-            field="semester"
-            :filter="textValueFilter"
-            visiblePriority="sm" />
+                    v-if="config.options?.showSemesterColumn"
+                    name="semester"
+                    title="Semester"
+                    field="semester"
+                    :filter="textValueFilter"
+                    visiblePriority="sm" />
 
         <DateColumn
-            name="startDate"
-            title="Start Date"
-            field="startDate"
-            :filter="dateValueFilter"
-            visiblePriority="sm" />
+                    name="startDate"
+                    title="Start Date"
+                    field="startDate"
+                    :filter="dateValueFilter"
+                    visiblePriority="sm" />
 
         <DateColumn
-            name="endDate"
-            title="End Date"
-            field="endDate"
-            :filter="dateValueFilter"
-            visiblePriority="sm" />
+                    name="endDate"
+                    title="End Date"
+                    field="endDate"
+                    :filter="dateValueFilter"
+                    visiblePriority="sm" />
 
         <Column
-            name="status"
-            title="Status"
-            :filter="textValueFilter"
-            filterValue="status"
-            quickFilterValue="status"
-            width="10%"
-            visiblePriority="sm">
+                name="status"
+                title="Status"
+                :filter="textValueFilter"
+                filterValue="status"
+                quickFilterValue="status"
+                width="10%"
+                visiblePriority="sm">
             <template #format="{ row }">
-                <span :class="'label label-' + statusLabelTypeMap[row.status] + ' category-label'" >
+                <span :class="'label label-' + statusLabelTypeMap[row.status] + ' category-label'">
                     {{ CompletionStatusDescription[row.status] }}
                 </span>
             </template>
@@ -66,7 +66,7 @@
 </template>
 
 <script setup lang="ts">
-    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import Grid, { textValueFilter, dateValueFilter, pickExistingValueFilter, Column, TextColumn, DateColumn, PersonColumn, SecurityColumn, SelectColumn } from "@Obsidian/Controls/grid";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
@@ -78,13 +78,14 @@
 
     const config = useConfigurationValues<ListBlockBox<LearningProgramCompletionListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
+    onConfigurationValuesChanged(useReloadBlock());
 
     // #region Values
 
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
 
-    const statusLabelTypeMap: Array<string> = [ "default", "default", "success", "warning" ];
+    const statusLabelTypeMap: Array<string> = ["default", "default", "success", "warning"];
 
     // #endregion
 

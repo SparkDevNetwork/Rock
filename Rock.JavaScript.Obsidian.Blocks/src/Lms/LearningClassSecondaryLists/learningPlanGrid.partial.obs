@@ -98,7 +98,7 @@
 
 <style scoped>
 span.past-due-dates {
-    color: #a9551d;
+    color: var(--color-warning, #a9551d);
 }
 </style>
 
@@ -159,7 +159,7 @@ span.past-due-dates {
      *
      * @param key The key of the row that was selected.
      */
-     function onSelectItem(key: string): void {
+    function onSelectItem(key: string): void {
         emit("rowClick", key);
     }
 

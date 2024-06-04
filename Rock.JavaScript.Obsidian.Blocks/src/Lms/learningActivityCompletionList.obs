@@ -12,19 +12,19 @@
         <SelectColumn />
 
         <PersonColumn name="student"
-                    title="Student"
-                    field="student"
-                    :filter="textValueFilter"
-                    width="15%"
-                    visiblePriority="xs" >
+                      title="Student"
+                      field="student"
+                      :filter="textValueFilter"
+                      width="15%"
+                      visiblePriority="xs">
         </PersonColumn>
 
         <DateTimeColumn name="completionDate"
-                    title="Completion Date"
-                    field="completionDate"
-                    width="15%"
-                    :filter="dateValueFilter"
-                    visiblePriority="xs" />
+                        title="Completion Date"
+                        field="completionDate"
+                        width="15%"
+                        :filter="dateValueFilter"
+                        visiblePriority="xs" />
 
         <DateColumn name="dueDate"
                     title="Due Date"
@@ -33,9 +33,10 @@
                     :filter="dateValueFilter"
                     visiblePriority="xs">
             <template #format="{ row }">
-                <span :class="{'text-warning': row.hadExtension}">
-                {{ RockDateTime.parseISO(row.dueDate as string)?.toLocaleString({
-                    dateStyle: "short"}) }}</span>
+                <span :class="{ 'text-warning': row.hadExtension }">
+                    {{ RockDateTime.parseISO(row.dueDate as string)?.toLocaleString({
+        dateStyle: "short"
+    }) }}</span>
             </template>
         </DateColumn>
 
@@ -81,7 +82,7 @@
 </template>
 
 <script setup lang="ts">
-    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import Grid, { numberValueFilter, dateValueFilter, textValueFilter, Column, DateColumn, DateTimeColumn, PersonColumn, SelectColumn } from "@Obsidian/Controls/grid";
@@ -93,6 +94,7 @@
 
     const config = useConfigurationValues<ListBlockBox<LearningActivityCompletionListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
+    onConfigurationValuesChanged(useReloadBlock());
 
     // #region Values
 
@@ -112,7 +114,7 @@
      *
      * @param row The row to be filtered.
      */
-     function getGradePercentFilterValue(row: Record<string, unknown>): number {
+    function getGradePercentFilterValue(row: Record<string, unknown>): number {
         return row.isCompleted ? (row.gradePercent as number) : -1;
     }
 
@@ -121,7 +123,7 @@
      *
      * @param row The row to be filtered.
      */
-     function getRowStatusesFilterValue(row: Record<string, unknown>): string {
+    function getRowStatusesFilterValue(row: Record<string, unknown>): string {
         return [
             row.isFacilitatorCompleted === false && !!row.completionDate ? "requires scoring" : "",
             !row.wasCompletedOnTime ? "late: " : "",
@@ -153,7 +155,7 @@
      *
      * @param row The row to be filtered.
      */
-     function getRowCommentsFilterValue(row: Record<string, unknown>): string {
+    function getRowCommentsFilterValue(row: Record<string, unknown>): string {
         // Include the comments as well as the keyword of the label.
         return [
             hasValue(row.studentComment as string) ? "student: " + row.studentComment as string : "",

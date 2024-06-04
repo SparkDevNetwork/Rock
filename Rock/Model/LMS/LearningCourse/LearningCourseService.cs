@@ -65,8 +65,8 @@ namespace Rock.Model
 
                     // Get the earliest semester with open enrollment and a future start date for this course.
                     NextSemester = c.LearningClasses
-                        .Select(cl => cl.LearningSemester )
-                        .FirstOrDefault( s => 
+                        .Select( cl => cl.LearningSemester )
+                        .FirstOrDefault( s =>
                             ( s.EnrollmentCloseDate == null || s.EnrollmentCloseDate >= now ) &&
                             s.StartDate >= now &&
                             s.LearningClasses.Any( sc => sc.LearningCourseId == c.Id )
@@ -79,12 +79,23 @@ namespace Rock.Model
                 var requiredCourseIds = course.CourseRequirements.Select( r => r.RequiredLearningCourseId );
                 var requiredCourses = Queryable().Where( c => requiredCourseIds.Contains( c.Id ) );
 
-                course.CourseRequirements.ForEach(cr =>
+                course.CourseRequirements.ForEach( cr =>
                     cr.RequiredLearningCourse =
-                        requiredCourses.FirstOrDefault( r => r.Id == cr.RequiredLearningCourseId ));
+                        requiredCourses.FirstOrDefault( r => r.Id == cr.RequiredLearningCourseId ) );
+
+                var completedClasses = new LearningParticipantService( rockContext )
+                    .GetClasses( personId )
+                    .AsNoTracking();
+
+                // Any Equivalent or PreRequisite classes that aren't already passed.
+                var unmetPrerequisiteTypes = new List<RequirementType> { RequirementType.Prerequisite, RequirementType.Equivalent };
+                course.UnmetPrerequisites = course.CourseRequirements.Where( cr =>
+                    unmetPrerequisiteTypes.Contains( cr.RequirementType ) &&
+                    !completedClasses.Any( c => c.LearningClass.LearningCourseId == cr.RequiredLearningCourseId && c.LearningCompletionStatus == LearningCompletionStatus.Pass )
+                    ).ToList();
             }
 
-            if (mostRecentParticipation != null)
+            if ( mostRecentParticipation != null )
             {
                 course.LearningCompletionStatus = mostRecentParticipation.LearningCompletionStatus;
                 course.MostRecentParticipation = mostRecentParticipation;
@@ -105,7 +116,7 @@ namespace Rock.Model
         {
             var rockContext = ( RockContext ) Context;
             var orderedPersonCompletions = new LearningParticipantService( rockContext )
-                .GetClasses(personId )
+                .GetClasses( personId )
                 .AsNoTracking()
                 // If the student has taken the class multiple times take in this order:
                 // 'Pass' - 'Incomplete' - 'Fail'.
@@ -122,6 +133,7 @@ namespace Rock.Model
                 .Include( s => s.LearningClasses )
                 .Where( s => s.LearningProgramId == programId );
 
+            var unmetPrerequisiteTypes = new List<RequirementType> { RequirementType.Prerequisite, RequirementType.Equivalent };
             var now = RockDateTime.Now;
             var courses = Queryable()
                 .Include( c => c.ImageBinaryFile )
@@ -143,35 +155,35 @@ namespace Rock.Model
 
                     // Get the earliest semester with open enrollment and a future start date for this course.
                     NextSemester = semesters.FirstOrDefault( s =>
-                        (s.EnrollmentCloseDate == null || s.EnrollmentCloseDate >= now) &&
+                        ( s.EnrollmentCloseDate == null || s.EnrollmentCloseDate >= now ) &&
                         s.StartDate >= now &&
                         s.LearningClasses.Any( sc => sc.LearningCourseId == c.Id )
                         ),
 
-                    // Only Prerequisites where the course completions for the student aren't 'Passed'.
+                    // Only Prerequisites/Equivalents where the course completions for the student aren't 'Passed'.
                     UnmetPrerequisites = c.LearningCourseRequirements
-                        .Where(r =>
+                        .Where( r =>
+                            unmetPrerequisiteTypes.Contains( r.RequirementType ) &&
                             !orderedPersonCompletions.Any( comp =>
                                 comp.LearningCompletionStatus == LearningCompletionStatus.Pass &&
-                                comp.LearningClass.LearningCourseId == r.RequiredLearningCourseId &&
-                                r.RequirementType == RequirementType.Prerequisite))
+                                comp.LearningClass.LearningCourseId == r.RequiredLearningCourseId ) )
                         .ToList()
                 } )
                 .ToList()
                 // Sort in memory (after calling ToList).
-                .OrderBy( c => c.Entity.Order)
+                .OrderBy( c => c.Entity.Order )
                 .ThenBy( c => c.Entity.Id );
 
-            if ( courses.Any( c => c.Entity.LearningCourseRequirements.Any() ))
+            if ( courses.Any( c => c.Entity.LearningCourseRequirements.Any() ) )
             {
                 // Get the required courses in a single query.
-                var requiredCourseIds = courses.SelectMany( c => c.Entity.LearningCourseRequirements.Select( r => r.RequiredLearningCourseId ));
+                var requiredCourseIds = courses.SelectMany( c => c.Entity.LearningCourseRequirements.Select( r => r.RequiredLearningCourseId ) );
                 var requiredCourses = Queryable().Where( c => requiredCourseIds.Contains( c.Id ) );
 
                 // Then match them up based on the course id of the required course.
                 foreach ( var course in courses )
                 {
-                    if (!course.Entity.LearningCourseRequirements.Any())
+                    if ( !course.Entity.LearningCourseRequirements.Any() )
                     {
                         continue;
                     }

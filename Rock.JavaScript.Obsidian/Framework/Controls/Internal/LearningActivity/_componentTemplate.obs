@@ -9,7 +9,7 @@
 <template>
     <Panel :title="panelTitle" :hasFullscreen="true" :class="containerClasses">
         <div v-if="screenToShow === ComponentScreen.Configuration">
-           <!-- TODO: Add Configuration Screen -->
+            <!-- TODO: Add Configuration Screen -->
         </div>
 
         <div v-if="screenToShow === ComponentScreen.Completion">
@@ -23,7 +23,7 @@
         </div>
 
         <div v-if="screenToShow === ComponentScreen.Summary">
-           <!-- TODO: Add Summary Screen -->
+            <!-- TODO: Add Summary Screen -->
             <NotificationBox v-if="showSuccess" alertType="success">
                 {{ assignee?.name ?? defaultAssigneeDescription }} ...
             </NotificationBox>
@@ -80,15 +80,15 @@
 
     /** Watch for modified component settings. */
     const debouncedActivityBagEmits = debounce(() => {
-            const updatedActivityBag = {
-                ...toValue(activityBag)
-            } as LearningActivityBag;
+        const updatedActivityBag = {
+            ...toValue(activityBag)
+        } as LearningActivityBag;
 
-            updatedActivityBag.activityComponentSettingsJson = JSON.stringify({
-                //TODO: Add my specific ref values for the component settings here.
-            }) ?? "{}";
+        updatedActivityBag.activityComponentSettingsJson = JSON.stringify({
+            //TODO: Add my specific ref values for the component settings here.
+        }) ?? "{}";
 
-            emits("update:activityBag", updatedActivityBag);
+        emits("update:activityBag", updatedActivityBag);
     });
     watch([/* TODO: Add my specific configuration ref values to watch here */], () => {
         debouncedActivityBagEmits();
@@ -96,14 +96,14 @@
 
     /** Watch for modified component completion. */
     const debouncedCompletionBagEmits = debounce(() => {
-            const updatedCompletionBag = {
-                ...toValue(completionBag)
-            } as LearningActivityCompletionBag;
+        const updatedCompletionBag = {
+            ...toValue(completionBag)
+        } as LearningActivityCompletionBag;
 
-            updatedCompletionBag.activityComponentCompletionJson = JSON.stringify({
-                //TODO: Add my specific ref values for the component completion here.
-            }) ?? "{}";
-            emits("update:completionBag", updatedCompletionBag);
+        updatedCompletionBag.activityComponentCompletionJson = JSON.stringify({
+            //TODO: Add my specific ref values for the component completion here.
+        }) ?? "{}";
+        emits("update:completionBag", updatedCompletionBag);
     });
     watch([/* TODO: Add my specific completion ref values to watch here */], () => {
         debouncedCompletionBagEmits();

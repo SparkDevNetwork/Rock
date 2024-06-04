@@ -29,12 +29,12 @@
         </Column>
 
         <NumberColumn name="threshold"
-                       title="Threshold %"
-                       field="threshold"
-                       :filter="numberValueFilter"
-                       quickFilterValue="threshold"
-                       width="15%"
-                       visiblePriority="xs" />
+                      title="Threshold %"
+                      field="threshold"
+                      :filter="numberValueFilter"
+                      quickFilterValue="threshold"
+                      width="15%"
+                      visiblePriority="xs" />
 
         <BooleanColumn name="isPassing"
                        title="Passing"
@@ -51,7 +51,7 @@
 </template>
 
 <script setup lang="ts">
-    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import Grid, { numberValueFilter, textValueFilter, AttributeColumns, BooleanColumn, NumberColumn, Column, DeleteColumn, ReorderColumn, SecurityColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
@@ -63,6 +63,7 @@
 
     const config = useConfigurationValues<ListBlockBox<LearningGradingSystemScaleListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
+    onConfigurationValuesChanged(useReloadBlock());
 
     // #region Values
 
@@ -78,7 +79,7 @@
      *
      * @param row The row to be filtered.
      */
-     function getRowScaleFilterValue(row: Record<string, unknown>): string {
+    function getRowScaleFilterValue(row: Record<string, unknown>): string {
         return row.name + " " + row.description;
     }
 

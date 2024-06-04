@@ -63,7 +63,7 @@
     // #region Values
 
     // The dynamically imported activity component for the learning activity.
-    let activityTypeComponent: Component| null;
+    let activityTypeComponent: Component | null;
 
     const activityBag = ref(props.modelValue.bag?.activityBag ?? {} as LearningActivityBag);
     const completionBag = ref(props.modelValue.bag ?? {} as LearningActivityCompletionBag);
@@ -81,7 +81,7 @@
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
     const propRefs = [
-          completionJson
+        completionJson
         , isFacilitatorCompleted
         , facilitatorComment
         , pointsEarned

@@ -23,7 +23,7 @@
 
 <style scoped>
 span.past-due-dates {
-    color: #a9551d;
+    color: var(--color-warning, #a9551d);
 }
 </style>
 

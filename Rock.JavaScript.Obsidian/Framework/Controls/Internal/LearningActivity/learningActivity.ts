@@ -220,7 +220,7 @@ export function useLearningComponent<TConfig extends object, TCompletion extends
         Assuming the LearningComponentBaseDefaults was given with proper values
         all fields should be initialized and therefore returned as ref's.
      */
-    const dynamicProps: {[key: string]: unknown} = {};
+    const dynamicProps: { [key: string]: unknown } = {};
     for (const key in configuration) {
         if (Object.prototype.hasOwnProperty.call(configuration, key)) {
             const value = configuration[key];

@@ -69,7 +69,7 @@
     import ImageWithIcon from "@Obsidian/Controls/imageWithIcon.obs";
     import Kpi from "@Obsidian/Controls/kpi.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { getSecurityGrant, onConfigurationValuesChanged, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { debounce } from "@Obsidian/Utility/util";
     import { NavigationUrlKey } from "./LearningProgramDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
@@ -81,6 +81,7 @@
     const config = useConfigurationValues<DetailBlockBox<LearningProgramBag, LearningProgramDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
     const securityGrant = getSecurityGrant(config.securityGrantToken);
+    onConfigurationValuesChanged(useReloadBlock());
 
     // #region Values
 

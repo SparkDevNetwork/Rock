@@ -24,7 +24,7 @@ export type PointAssessmentActivityConfiguration = {
 export type PointAssessmentActivityCompletion = Record<string, never>;
 
 export class PointAssessmentActivityDefaults
-extends LearningComponentBaseDefaults<PointAssessmentActivityConfiguration, PointAssessmentActivityCompletion> {
+    extends LearningComponentBaseDefaults<PointAssessmentActivityConfiguration, PointAssessmentActivityCompletion> {
     override defaultConfig: PointAssessmentActivityConfiguration;
     constructor() {
         super();

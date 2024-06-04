@@ -14,7 +14,7 @@
             </div>
         </div>
 
-</fieldset>
+    </fieldset>
 </template>
 
 <script setup lang="ts">
@@ -24,11 +24,11 @@
     import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
     import { LearningSemesterBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningSemesterDetail/learningSemesterBag";
     import { LearningSemesterDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningSemesterDetail/learningSemesterDetailOptionsBag";
-    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { DateTimeFormat, RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
     const props = defineProps({
-    modelValue: {
-    type: Object as PropType<LearningSemesterBag | null>,
+        modelValue: {
+            type: Object as PropType<LearningSemesterBag | null>,
             required: false
         },
 
@@ -64,8 +64,8 @@
             return valueBuilder.build();
         }
 
-        valueBuilder.addTextValue("Name", props.modelValue.name);
-        valueBuilder.addTextValue("End Date", formatAsDate(props.modelValue.endDate));
+        valueBuilder.addTextValue("Name", props.modelValue.name ?? "");
+        valueBuilder.addTextValue("End Date", formatAsDate(props.modelValue.endDate ?? ""));
 
         return valueBuilder.build();
     });
@@ -78,8 +78,8 @@
             return valueBuilder.build();
         }
 
-        valueBuilder.addTextValue("Start Date", formatAsDate(props.modelValue.startDate));
-        valueBuilder.addTextValue("Enrollment Close Date", formatAsDate(props.modelValue.enrollmentCloseDate));
+        valueBuilder.addTextValue("Start Date", formatAsDate(props.modelValue.startDate ?? ""));
+        valueBuilder.addTextValue("Enrollment Close Date", formatAsDate(props.modelValue.enrollmentCloseDate ?? ""));
 
         return valueBuilder.build();
     });
@@ -88,8 +88,8 @@
 
     // #region Functions
 
-    function formatAsDate(isoDate: string | Date): string {
-        return RockDateTime.parseISO(isoDate)?.toLocaleString();
+    function formatAsDate(isoDate: string): string {
+        return RockDateTime.parseISO(isoDate)?.toLocaleString(DateTimeFormat.DateShort) ?? "";
     }
 
     // #endregion

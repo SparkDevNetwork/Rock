@@ -28,11 +28,11 @@
 
                 <div class="file-upload-section">
                     <FileUploader v-model="binaryFile"
-                              label="Upload File"
-                              rules="required"
-                              :binaryFileTypeGuid="BinaryFiletype.LearningManagementSystem"
-                              uploadButtonText="Upload"
-                              :showDeleteButton="true" />
+                                  label="Upload File"
+                                  rules="required"
+                                  :binaryFileTypeGuid="BinaryFiletype.LearningManagementSystem"
+                                  uploadButtonText="Upload"
+                                  :showDeleteButton="true" />
                 </div>
                 <div class="footer-section">
                     <RockButton :btnType="BtnType.Primary"
@@ -56,16 +56,16 @@
                 <div class="grading-section">
                     <div class="file-section">
                         <RockLabel>File</RockLabel>
-                        <a v-if="fileUrl" :href="fileUrl" target="_blank">{{binaryFile?.text}}</a>
+                        <a v-if="fileUrl" :href="fileUrl" target="_blank">{{ binaryFile?.text }}</a>
                     </div>
 
                     <div class="score-section">
                         <NumberBox v-model="completionBag.pointsEarned"
-                            label="Score"
-                            rules="required"
-                            :min="0"
-                            :max="activityBag.points"
-                            inputGroupClasses="input-width-md">
+                                   label="Score"
+                                   rules="required"
+                                   :min="0"
+                                   :max="activityBag.points"
+                                   inputGroupClasses="input-width-md">
                             <template #inputGroupAppend>
                                 <span class="input-group-addon">out of {{ activityBag.points }}</span>
                             </template>
@@ -89,7 +89,7 @@
         <div v-if="screenToShow === ComponentScreen.Summary">
             <NotificationBox v-if="binaryFile" alertType="success">
                 {{ assignee?.name ?? defaultAssigneeDescription }} uploaded the following file:
-                <a v-if="fileUrl" :href="fileUrl" target="_blank">{{binaryFile.text}}</a>.
+                <a v-if="fileUrl" :href="fileUrl" target="_blank">{{ binaryFile.text }}</a>.
             </NotificationBox>
             <NotificationBox v-if="!binaryFile" alertType="warning">
                 {{ assignee?.name ?? defaultAssigneeDescription }} has not uploaded a file.
@@ -98,25 +98,25 @@
     </Panel>
 </template>
 <style scoped>
-    .grading-section {
-        margin-top: 12px;
-        display: grid;
-        grid-template-columns: 50%;
+.grading-section {
+    margin-top: 12px;
+    display: grid;
+    grid-template-columns: 50%;
 
-        .file-section {
-            grid-row: 1;
-            grid-column: 1;
-        }
-
-        .score-section {
-            grid-row: 1;
-            grid-column: 2;
-        }
+    .file-section {
+        grid-row: 1;
+        grid-column: 1;
     }
 
-    .footer-section {
-        margin-right: 4px;
+    .score-section {
+        grid-row: 1;
+        grid-column: 2;
     }
+}
+
+.footer-section {
+    margin-right: 4px;
+}
 </style>
 
 <script setup lang="ts">
@@ -167,18 +167,18 @@
 
     /** Watch for modified component settings. */
     const debouncedActivityBagEmits = debounce(() => {
-            const updatedActivityBag = {
-                ...toValue(activityBag)
-            } as LearningActivityBag;
+        const updatedActivityBag = {
+            ...toValue(activityBag)
+        } as LearningActivityBag;
 
-            updatedActivityBag.activityComponentSettingsJson = JSON.stringify({
-                instructions: instructions.value,
-                rubric: rubric.value,
-                showRubricOnScoring: showRubricOnScoring.value,
-                showRubricOnUpload: showRubricOnUpload.value
-            }) ?? "{}";
+        updatedActivityBag.activityComponentSettingsJson = JSON.stringify({
+            instructions: instructions.value,
+            rubric: rubric.value,
+            showRubricOnScoring: showRubricOnScoring.value,
+            showRubricOnUpload: showRubricOnUpload.value
+        }) ?? "{}";
 
-            emits("update:activityBag", updatedActivityBag);
+        emits("update:activityBag", updatedActivityBag);
     });
     watch([instructions, rubric, showRubricOnScoring, showRubricOnUpload], () => {
         debouncedActivityBagEmits();
@@ -186,14 +186,14 @@
 
     /** Watch for modified component completion. */
     const debouncedCompletionBagEmits = debounce(() => {
-            const updatedCompletionBag = {
-                ...toValue(completionBag)
-            } as LearningActivityCompletionBag;
+        const updatedCompletionBag = {
+            ...toValue(completionBag)
+        } as LearningActivityCompletionBag;
 
-            updatedCompletionBag.activityComponentCompletionJson = JSON.stringify({
-                binaryFile: binaryFile.value
-            }) ?? "{}";
-            emits("update:completionBag", updatedCompletionBag);
+        updatedCompletionBag.activityComponentCompletionJson = JSON.stringify({
+            binaryFile: binaryFile.value
+        }) ?? "{}";
+        emits("update:completionBag", updatedCompletionBag);
     });
     watch(binaryFile, () => {
         debouncedCompletionBagEmits();

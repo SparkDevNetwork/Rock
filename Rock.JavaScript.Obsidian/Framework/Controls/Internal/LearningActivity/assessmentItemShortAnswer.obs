@@ -51,16 +51,16 @@
             <div class="scoring-screen-question-header question-header">
                 <span class="question-section">{{ question }}</span>
                 <NumberBox v-model="pointsEarned"
-                            label="Score"
-                            :min="0"
-                            :max="questionWeight"
-                            :rules="'lte:' + questionWeight"
-                            inputGroupClasses="input-width-md">
+                           label="Score"
+                           :min="0"
+                           :max="questionWeight"
+                           :rules="'lte:' + questionWeight"
+                           inputGroupClasses="input-width-md">
                     <template #inputGroupAppend>
                         <span class="input-group-addon">out of {{ questionWeight }}</span>
                     </template>
                 </NumberBox>
-                </div>
+            </div>
             <div class="answer-section text-muted">
                 {{ response }}
             </div>
@@ -80,11 +80,11 @@
 </template>
 
 <style>
-
 .question-header {
     display: flex;
     justify-content: space-between;
 }
+
 .summary-screen-question-header {
     margin-bottom: 16px;
 }

@@ -12,52 +12,52 @@
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           @selectItem="onSelectItem">
 
-          <Column name="program"
+        <Column name="program"
                 title="Program"
                 width="50%"
                 visiblePriority="xs">
-                <template #format="{ row }" >
-                    <div class="col-md-1 flex-column">
-                        <span class="fa-stack">
-                            <i class="fa fa-circle fa-stack-2x" :style="'color: oklch(from ' + row.highlightColor +' calc(l + .33) c h);'"></i>
-                            <i :style="'color: ' + row.highlightColor" :class="row.iconCssClass + ' fa-stack-1x'"></i>
-                        </span>
-                    </div>
-                    <div class="col-md-11">
-                        <span class="text-semibold">{{ row.name }}</span>
+            <template #format="{ row }">
+                <div class="col-md-1 flex-column">
+                    <span class="fa-stack">
+                        <i class="fa fa-circle fa-stack-2x" :style="'color: oklch(from ' + row.highlightColor + ' calc(l + .33) c h);'"></i>
+                        <i :style="'color: ' + row.highlightColor" :class="row.iconCssClass + ' fa-stack-1x'"></i>
+                    </span>
+                </div>
+                <div class="col-md-11">
+                    <span class="text-semibold">{{ row.name }}</span>
 
-                        <div class="text-muted">{{ row.summary }}</div>
-                    </div>
-                </template>
-            </Column>
-            <Column name="category"
+                    <div class="text-muted">{{ row.summary }}</div>
+                </div>
+            </template>
+        </Column>
+        <Column name="category"
                 title="Category"
                 :filter="textValueFilter"
                 filterValue="category"
                 quickFilterValue="category"
                 width="15%"
                 visiblePriority="lg">
-                <template #format="{ row }">
-                    <span class="label label-default category-label" :style="'color: ' + row.categoryColor">
-                        {{ row.category }}
-                    </span>
-                </template>
-            </Column>
-            <BooleanColumn name="isPublic"
-                title="Public"
-                field="isPublic"
-                width="5%"
-                visiblePriority="xs" />
-
-            <BooleanColumn name="isActive"
-                title="Active"
-                field="isActive"
-                width="5%"
-                visiblePriority="xs" />
-
-            <template #skeleton>
-                <div class="skeleton skeleton-text skeleton-rounded" />
+            <template #format="{ row }">
+                <span class="label label-default category-label" :style="'color: ' + row.categoryColor">
+                    {{ row.category }}
+                </span>
             </template>
+        </Column>
+        <BooleanColumn name="isPublic"
+                       title="Public"
+                       field="isPublic"
+                       width="5%"
+                       visiblePriority="xs" />
+
+        <BooleanColumn name="isActive"
+                       title="Active"
+                       field="isActive"
+                       width="5%"
+                       visiblePriority="xs" />
+
+        <template #skeleton>
+            <div class="skeleton skeleton-text skeleton-rounded" />
+        </template>
 
         <SecurityColumn />
 
@@ -66,22 +66,22 @@
 </template>
 
 <style scoped>
-    .flex-column {
-        display: flex;
-        flex-direction: column;
-        min-height: 100%;
-        align-items: center;
-        justify-content: center;
-    }
+.flex-column {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    align-items: center;
+    justify-content: center;
+}
 
-    .category-label {
-        scale: 1.3;
-        align-self: center
-    }
+.category-label {
+    scale: 1.3;
+    align-self: center
+}
 </style>
 
 <script setup lang="ts">
-    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import Grid, { textValueFilter, BooleanColumn, Column, DeleteColumn, SecurityColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
@@ -93,6 +93,7 @@
 
     const config = useConfigurationValues<ListBlockBox<LearningProgramListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
+    onConfigurationValuesChanged(useReloadBlock());
 
     // #region Values
 
