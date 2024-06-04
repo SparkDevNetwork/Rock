@@ -1340,6 +1340,9 @@
     <Compile Include="RealTime\Topics\TestCommunicationTransportTopic.cs" />
     <Compile Include="Reporting\DataFilter\Group\SignUpOpportunityHasNoAttendanceFilter.cs" />
     <Compile Include="Reporting\DataFilter\Group\SignUpOpportunityHasNoMembersFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\HasCompletedActivityFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\HasCompletedCourseFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\HasCompletedProgramFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\GivingAlertsFilter.cs" />
     <Compile Include="RealTime\Context.cs" />
     <Compile Include="RealTime\Engine.cs" />
@@ -1376,6 +1379,8 @@
     <Compile Include="Reporting\DataFilter\Person\InteractionIntentsFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\PersonalDevicesFilter.cs" />
     <Compile Include="Bulk\SampleData\SampleDataManager.cs" />
+    <Compile Include="Reporting\DataSelect\Person\HasCompletedCourseSelect.cs" />
+    <Compile Include="Reporting\DataSelect\Person\HasCompletedProgramSelect.cs" />
     <Compile Include="Reporting\DataTransform\Person\AllowedCheckInChildrenTransform.cs" />
     <Compile Include="Reporting\DataTransform\Person\AllowedCheckInTransform.cs" />
     <Compile Include="Reporting\DataViewQueryBuilder.cs" />

@@ -705,7 +705,7 @@ namespace Rock.Blocks.Lms
                 }
 
                 var now = DateTime.Now;
-                rockContext.SqlLogging( true );
+
                 // Get the grade scales first since we'll need them for the grade caluculations.
                 var gradeScales = new LearningParticipantService( rockContext ).Queryable()
                     .Where( p => p.Id == entity.Id )

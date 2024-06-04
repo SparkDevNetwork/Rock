@@ -107,8 +107,6 @@ namespace Rock.Jobs
                         return;
                     }
 
-                    rockContext.SqlLogging( true );
-
                     var courseDataByPerson = GetAggregateData();
 
                     if ( !courseDataByPerson.Any() )

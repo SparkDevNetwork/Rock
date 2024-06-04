@@ -268,7 +268,6 @@ namespace Rock.Blocks.Lms
         {
             using ( var rockContext = new RockContext() )
             {
-                rockContext.SqlLogging( true );
                 var completionId = IdHasher.Instance.GetId( activityCompletionBag.IdKey );
                 var currentPersonId = GetCurrentPerson().Id;
 
