@@ -89,7 +89,7 @@ namespace Rock.Store
             string encodedUserName = HttpUtility.UrlEncode( Convert.ToBase64String( Encoding.UTF8.GetBytes( username ) ) );
             string encodedPassword = HttpUtility.UrlEncode( Convert.ToBase64String( Encoding.UTF8.GetBytes( password ) ) );
 
-            var response = ExecuteRestGetRequest<PurchaseResponse>( $"api/Store/Purchase/{encodedUserName}/{encodedPassword}/{organizationKey}/{packageId}" );
+            var response = ExecuteRestGetRequest<PurchaseResponse>( $"api/Store/ProcessPurchase/{organizationKey}/{packageId}/{encodedUserName}/{encodedPassword}" );
 
             if ( response.ResponseStatus == ResponseStatus.Completed )
             {
