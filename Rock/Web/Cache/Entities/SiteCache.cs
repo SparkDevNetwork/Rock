@@ -730,16 +730,6 @@ namespace Rock.Web.Cache
         #region Static Methods
 
         /// <summary>
-        /// Flushes this instance.
-        /// </summary>
-        [Obsolete( "This will not work with a distributed cache system such as Redis. Flush the Site from the cache instead.", true )]
-        [RockObsolete( "1.10" )]
-        public static void RemoveSiteDomains()
-        {
-            _siteDomains = new ConcurrentDictionary<string, int?>();
-        }
-
-        /// <summary>
         /// Returns site based on domain
         /// </summary>
         /// <param name="host">The host.</param>

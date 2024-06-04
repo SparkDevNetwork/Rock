@@ -153,37 +153,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the Linq expression for the DataViewFilter.
-        /// </summary>
-        /// <param name="filteredEntityType">The object type of the filtered entity.</param>
-        /// <param name="serviceInstance">A <see cref="System.Object"/> that contains the service reference.</param>
-        /// <param name="parameter">A <see cref="System.Linq.Expressions.ParameterExpression"/> containing the parameter for the expression.</param>
-        /// <param name="errorMessages">A <see cref="System.Collections.Generic.List{String}"/> that contains any error/exception messages that are returned.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Use GetExpression( Type dataViewEntityTypeType, IService serviceInstance, ParameterExpression parameter, DataViewFilterOverrides dataViewFilterOverrides )" )]
-        public virtual Expression GetExpression( Type filteredEntityType, IService serviceInstance, ParameterExpression parameter, List<string> errorMessages )
-        {
-            return GetExpression( filteredEntityType, serviceInstance, parameter, null, errorMessages );
-        }
-
-        /// <summary>
-        /// Gets the Linq expression for the DataViewFilter.
-        /// </summary>
-        /// <param name="filteredEntityType">Type of the filtered entity.</param>
-        /// <param name="serviceInstance">The service instance.</param>
-        /// <param name="parameter">The parameter.</param>
-        /// <param name="dataViewFilterOverrides">The data view filter overrides.</param>
-        /// <param name="errorMessages">The error messages.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Use GetExpression( Type dataViewEntityTypeType, IService serviceInstance, ParameterExpression parameter, DataViewFilterOverrides dataViewFilterOverrides )" )]
-        public virtual Expression GetExpression( Type filteredEntityType, IService serviceInstance, ParameterExpression parameter, DataViewFilterOverrides dataViewFilterOverrides, List<string> errorMessages )
-        {
-            return GetExpression( filteredEntityType, serviceInstance, parameter, dataViewFilterOverrides );
-        }
-
-        /// <summary>
         /// Gets the expression.
         /// </summary>
         /// <param name="dataViewEntityTypeType">Type of the data view entity type.</param>

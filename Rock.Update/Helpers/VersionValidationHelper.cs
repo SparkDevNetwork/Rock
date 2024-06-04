@@ -119,39 +119,6 @@ namespace Rock.Update.Helpers
         }
 
         /// <summary>
-        /// Checks the SQL server version and returns false if not at the needed
-        /// level to proceed.
-        /// </summary>
-        /// <returns></returns>
-        [Obsolete( "No longer required after successful update to v1.11.0" )]
-        [RockObsolete( "1.11.1" )]
-        public static bool CheckSqlServerVersionGreaterThenSqlServer2012()
-        {
-            var isOk = false;
-            var sqlVersion = string.Empty;
-
-            try
-            {
-                sqlVersion = DbService.ExecuteScaler( "SELECT SERVERPROPERTY('productversion')" ).ToString();
-                var versionParts = sqlVersion.Split( '.' );
-
-                int.TryParse( versionParts[0], out var majorVersion );
-
-                if ( majorVersion > 11 )
-                {
-                    isOk = true;
-                }
-            }
-            catch
-            {
-                // This would be pretty bad, but regardless we'll just
-                // return the isOk (not) and let the caller proceed.
-            }
-
-            return isOk;
-        }
-
-        /// <summary>
         /// Validates the version install.
         /// </summary>
         /// <param name="targetVersion">The target version.</param>

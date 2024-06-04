@@ -491,68 +491,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Ensures that an AttendanceOccurrence record exists for the specified date, schedule, locationId and group. If it doesn't exist, it is created and saved to the database
-        /// </summary>
-        /// <param name="occurrenceDate">The occurrence date.</param>
-        /// <param name="scheduleId">The schedule identifier.</param>
-        /// <param name="locationId">The location identifier.</param>
-        /// <param name="groupId">The group identifier.</param>
-        /// <returns>AttendanceOccurrence</returns>
-        [Obsolete( "Use GetOrAdd instead", true )]
-        [RockObsolete( "1.10" )]
-        public AttendanceOccurrence GetOrCreateAttendanceOccurrence( DateTime occurrenceDate, int scheduleId, int? locationId, int groupId )
-        {
-            // There is a unique constraint on OccurrenceDate, ScheduleId, LocationId and GroupId. So there is at most one record.
-            var attendanceOccurrenceQuery = this.Queryable().Where( a =>
-                     a.OccurrenceDate == occurrenceDate.Date
-                     && a.ScheduleId.HasValue && a.ScheduleId == scheduleId
-                     && a.GroupId.HasValue && a.GroupId == groupId );
-
-            if ( locationId.HasValue )
-            {
-                attendanceOccurrenceQuery = attendanceOccurrenceQuery.Where( a => a.LocationId.HasValue && a.LocationId.Value == locationId.Value );
-            }
-            else
-            {
-                attendanceOccurrenceQuery = attendanceOccurrenceQuery.Where( a => a.LocationId.HasValue == false );
-            }
-
-            var attendanceOccurrence = attendanceOccurrenceQuery.FirstOrDefault();
-
-            if ( attendanceOccurrence != null )
-            {
-                return attendanceOccurrence;
-            }
-            else
-            {
-                // if the attendance occurrence is not found, create and save it using a separate context, then get it with this context using the created attendanceOccurrence.Id
-                int attendanceOccurrenceId;
-                using ( var rockContext = new RockContext() )
-                {
-                    var attendanceOccurrenceService = new AttendanceOccurrenceService( rockContext );
-
-                    if ( attendanceOccurrence == null )
-                    {
-                        attendanceOccurrence = new AttendanceOccurrence
-                        {
-                            GroupId = groupId,
-                            LocationId = locationId,
-                            ScheduleId = scheduleId,
-                            OccurrenceDate = occurrenceDate
-                        };
-
-                        attendanceOccurrenceService.Add( attendanceOccurrence );
-                        rockContext.SaveChanges();
-                    }
-
-                    attendanceOccurrenceId = attendanceOccurrence.Id;
-                }
-
-                return this.Get( attendanceOccurrence.Id );
-            }
-        }
-
-        /// <summary>
         /// Creates and returns a list of missing attendance occurrences for the specified dates, scheduleId and groupLocationIds.
         /// These will be new AttendanceOccurrence records that haven't been saved to the database yet.
         /// </summary>

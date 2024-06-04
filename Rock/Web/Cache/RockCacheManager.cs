@@ -89,16 +89,6 @@ namespace Rock.Web.Cache
         /// <value>
         /// The cache.
         /// </value>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Do not access the cache manager directly. Instead use the method available on this class." )]
-        public BaseCacheManager<T> Cache => CacheManager;
-
-        /// <summary>
-        /// Gets the cache.
-        /// </summary>
-        /// <value>
-        /// The cache.
-        /// </value>
         private BaseCacheManager<T> CacheManager
         {
             get

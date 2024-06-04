@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -368,50 +368,6 @@ namespace Rock.Reporting.DataFilter
             string result = values.ToJson();
             return result;
         }
-
-        /// <summary>
-        /// Optional: The Entity that should be used when determining which PropertyFields and Attributes to show (instead of just basing it off of EntityType)
-        /// </summary>
-        /// <value>
-        /// The entity.
-        /// </value>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Not Supported. Could cause inconsistent results." )]
-        public IEntity Entity
-        {
-            get
-            {
-                if ( HttpContext.Current != null )
-                {
-                    return HttpContext.Current.Items[$"{this.GetType().FullName}:Entity"] as IEntity;
-                }
-
-                return _nonHttpContextEntity;
-            }
-
-            set
-            {
-                if ( HttpContext.Current != null )
-                {
-                    HttpContext.Current.Items[$"{this.GetType().FullName}:Entity"] = value;
-                }
-                else
-                {
-                    _nonHttpContextEntity = value;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Thread safe storage of property when HttpContext.Current is null
-        /// NOTE: ThreadStatic is per thread, but ASP.NET threads are ThreadPool threads, so they will be used again.
-        /// see https://www.hanselman.com/blog/ATaleOfTwoTechniquesTheThreadStaticAttributeAndSystemWebHttpContextCurrentItems.aspx
-        /// So be careful and only use the [ThreadStatic] trick if absolutely necessary
-        /// </summary>
-        [ThreadStatic]
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Not Supported. Could cause inconsistent results." )]
-        private static IEntity _nonHttpContextEntity;
 
         /// <summary>
         /// Sets the selection.

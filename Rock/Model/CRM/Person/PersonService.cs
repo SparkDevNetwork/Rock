@@ -2432,21 +2432,6 @@ namespace Rock.Model
         /// Get the person associated with the phone number. Filter to any matching phone number, regardless
         /// of type. Then order by those with a matching number and SMS enabled; then further order
         /// by matching number with type == mobile; finally order by person Id to get the oldest
-        /// person in the case of duplicate records.
-        /// </summary>
-        /// <param name="phoneNumber">The phone number.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.10" )]
-        [Obsolete( "Use other GetPersonFromMobilePhoneNumber that has createNamelessPersonIfNotFound parameter", true )]
-        public Person GetPersonFromMobilePhoneNumber( string phoneNumber )
-        {
-            return GetPersonFromMobilePhoneNumber( phoneNumber, false );
-        }
-
-        /// <summary>
-        /// Get the person associated with the phone number. Filter to any matching phone number, regardless
-        /// of type. Then order by those with a matching number and SMS enabled; then further order
-        /// by matching number with type == mobile; finally order by person Id to get the oldest
         /// person in the case of duplicate records. If no person is found and <paramref name="createNamelessPersonIfNotFound" /> = true, a
         /// Nameless person record will created which can later be matched to a person
         /// </summary>
@@ -3078,35 +3063,6 @@ namespace Rock.Model
         #endregion
 
         #region Update Person
-
-        /// <summary>
-        /// Inactivates a person and adds additional info to the HistoryChangeList. The Person model already checks for and adds changes to the History table.
-        /// Using the HistoryChangeList obj in this method's out param will create duplicate changes in the History table for "Record Status", "Record Status Reason", and "Inactive Reason Note".
-        /// </summary>
-        /// <param name="person">The person.</param>
-        /// <param name="reason">The reason.</param>
-        /// <param name="reasonNote">The reason note.</param>
-        /// <param name="historyChangeList">The history change list.</param>
-        [RockObsolete( "1.12" )]
-        [Obsolete( @"Use one of the InactivatePerson overloads without the HistoryChangeList out param. The Person model takes care of updating the HistoryChangeList.
-            Using the HistoryChangeList obj in this method's out param will create duplicate changes in the History table for
-            ""Record Status"", ""Record Status Reason"", and ""Inactive Reason Note""." )]
-        public void InactivatePerson( Person person, DefinedValueCache reason, string reasonNote, out History.HistoryChangeList historyChangeList )
-        {
-            historyChangeList = new History.HistoryChangeList();
-
-            var inactiveStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() );
-            if ( inactiveStatus != null && reason != null )
-            {
-                History.EvaluateChange( historyChangeList, "Record Status", person.RecordStatusValue?.Value, inactiveStatus.Value );
-                History.EvaluateChange( historyChangeList, "Record Status Reason", person.RecordStatusReasonValue?.Value, reason.Value );
-                History.EvaluateChange( historyChangeList, "Inactive Reason Note", person.InactiveReasonNote, reasonNote );
-
-                person.RecordStatusValueId = inactiveStatus.Id;
-                person.RecordStatusReasonValueId = reason.Id;
-                person.InactiveReasonNote = reasonNote;
-            }
-        }
 
         /// <summary>
         /// Inactivates the person.

@@ -42,18 +42,6 @@ namespace Rock.Badge
         }
 
         /// <summary>
-        /// Gets the badge label
-        /// </summary>
-        /// <param name="person">The person.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.10" )]
-        [Obsolete( "Use the IEntity param instead.", true )]
-        public virtual HighlightLabel GetLabel( Person person )
-        {
-            return null;
-        }
-
-        /// <summary>
         /// Renders the badge HTML content that should be inserted into the DOM.
         /// </summary>
         /// <param name="badge">The badge cache that describes this badge.</param>
@@ -77,9 +65,7 @@ namespace Rock.Badge
                 }
                 else
                 {
-#pragma warning disable CS0618 // Type or member is obsolete
                     label = GetLabel( entity as Person );
-#pragma warning restore CS0618 // Type or member is obsolete
 
                     if ( label != null )
                     {

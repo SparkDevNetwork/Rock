@@ -131,8 +131,6 @@ export const Attribute = {
     GroupCommunicationListCategory: "E3810936-182E-2585-4F8E-030A0E18B27A",
     /** Group attribute for groups of GroupType CommunicationList to defined additional dataviews that can be used as communication segments */
     GroupCommunicationListSegments: "73A53BC1-2178-46A1-8413-C7A4DD49F0B4",
-    /** The groupmember (of a communication list) preferred communication medium */
-    GroupmemberCommunicationListPreferredCommunicationMedium: "D7941908-1F65-CC9B-416C-CCFABE4221B9",
     /** The Sign-up Group - Group Type's project type attribute */
     GrouptypeSignupGroupProjectType: "46FFBB10-6E4B-4B3A-A560-61B36C6B0E09",
     /** The Active attribute for the observability HTTP filter. */

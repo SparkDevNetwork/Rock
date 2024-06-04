@@ -260,46 +260,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the interaction device type. If it can't be found, a new InteractionDeviceType record will be created and returned.
-        /// </summary>
-        /// <param name="application">The application.</param>
-        /// <param name="operatingSystem">The operating system.</param>
-        /// <param name="clientType">Type of the client.</param>
-        /// <param name="deviceTypeData">The device type data (either a plain DeviceType name or the whole useragent string).</param>
-        /// <returns></returns>
-        [Obsolete]
-        [RockObsolete( "1.11" )]
-        public InteractionDeviceType GetInteractionDeviceType( string application, string operatingSystem, string clientType, string deviceTypeData )
-        {
-            /*
-             * 2020-10-22 ETD
-             * This method was used by GetInteractionDeviceTypeId(). Discussed with Mike and Nick and it was
-             * decided to mark it as obsolete and create private method GetOrCreateInteractionDeviceTypeId()
-             * instead.
-             */
-
-            var rockContext = new RockContext();
-            InteractionDeviceTypeService interactionDeviceTypeService = new InteractionDeviceTypeService( rockContext );
-            InteractionDeviceType interactionDeviceType = interactionDeviceTypeService.Queryable()
-                .Where( a => a.Application == application && a.OperatingSystem == operatingSystem && a.ClientType == clientType )
-                .FirstOrDefault();
-
-            if ( interactionDeviceType == null )
-            {
-                interactionDeviceType = new InteractionDeviceType();
-                interactionDeviceType.DeviceTypeData = deviceTypeData;
-                interactionDeviceType.ClientType = clientType;
-                interactionDeviceType.OperatingSystem = operatingSystem;
-                interactionDeviceType.Application = application;
-                interactionDeviceType.Name = string.Format( "{0} - {1}", operatingSystem, application );
-                interactionDeviceTypeService.Add( interactionDeviceType );
-                rockContext.SaveChanges();
-            }
-
-            return interactionDeviceType;
-        }
-
-        /// <summary>
         /// Gets the InteractionDeveiceTypeId or creates one if it does not exist.
         /// This method uses its own RockContext so it doesn't interfere with the Interaction.
         /// </summary>

@@ -372,5 +372,10 @@ namespace Rock.SystemGuid
         /// The <see cref="Rock.Jobs.UpdatePersistedDatasets" /> job.
         /// </summary>
         public const string UPDATE_PERSISTED_DATASETS = "B6D3B48A-039A-4A1C-87BE-3FC0152AB5DA";
+
+        /// <summary>
+        /// The post update data migration job to remove the legacy Communication Recipient List Webforms block.
+        /// </summary>
+        public const string DATA_MIGRATIONS_170_REMOVE_DISC_BLOCK = "795AE7B0-8B61-4577-B50A-350907CA0C65";
     }
 }

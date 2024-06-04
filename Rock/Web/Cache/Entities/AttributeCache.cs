@@ -1061,16 +1061,6 @@ namespace Rock.Web.Cache
         #region Entity Attributes Cache
 
         /// <summary>
-        /// Flushes the entity attributes.
-        /// </summary>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Use EntityTypeAttributesCache.Clear() instead." )]
-        public static void RemoveEntityAttributes()
-        {
-            EntityAttributesCache.Remove();
-        }
-
-        /// <summary>
         /// Gets the person attributes of given list of field types class names. If no Field types are specified, all the person attributes are retrieved.
         /// </summary>
         /// <returns>A queryable of the personAttributes</returns>

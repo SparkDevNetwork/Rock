@@ -886,15 +886,6 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
-    public enum SchedulerResourceListSourceType
-    {
-        Group = 0x0,
-        AlternateGroup = 0x1,
-        DataView = 0x2,
-    }
-
-    /// <summary>
-    /// </summary>
     [Flags]
     public enum ScheduleType
     {

@@ -15,13 +15,13 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
+
+using Microsoft.Extensions.Logging; 
 
 using Rock.Bus;
 using Rock.Bus.Consumer;
 using Rock.Bus.Message;
 using Rock.Bus.Queue;
-using Rock.Logging;
 
 namespace Rock.Web.Cache
 {
@@ -46,11 +46,11 @@ namespace Rock.Web.Cache
         {
             if ( RockMessageBus.IsFromSelf( message ) )
             {
-                RockLogger.Log.Debug( RockLogDomains.Bus, $"Cache NewItemCacheAddedMessage was from ourselves( {message.SenderNodeName} ). Skipping. {message.ToDebugString()}." );
+                Logger.LogDebug( $"Cache NewItemCacheAddedMessage was from ourselves( {message.SenderNodeName} ). Skipping. {message.ToDebugString()}." );
                 return;
             }
 
-            RockLogger.Log.Debug( RockLogDomains.Bus, $"Consumed NewItemCacheAddedMessage from {message.SenderNodeName} node. {message.ToDebugString()}." );
+            Logger.LogDebug( $"Consumed NewItemCacheAddedMessage from {message.SenderNodeName} node. {message.ToDebugString()}." );
 
             var newEntityIdKey = message.IdKey;
             var cacheTypeName = message.CacheTypeName;

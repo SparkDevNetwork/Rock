@@ -41,36 +41,6 @@ namespace Rock.Transactions
         private static readonly ConcurrentQueue<InteractionTransactionInfo> InteractionInfoQueue = new ConcurrentQueue<InteractionTransactionInfo>();
 
         /// <summary>
-        /// Optional: Gets or sets the interaction summary. Leave null to use the Page Browser Title or Page Title
-        /// </summary>
-        /// <value>
-        /// The interaction summary.
-        /// </value>
-        [Obsolete( "Use a constructor that takes InteractionTransactionInfo." )]
-        [RockObsolete( "1.11" )]
-        public string InteractionSummary { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value the Interaction should get logged when the page is viewed by the crawler (default False)
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [log crawlers]; otherwise, <c>false</c>.
-        /// </value>
-        [Obsolete( "Use a constructor that takes InteractionTransactionInfo." )]
-        [RockObsolete( "1.11" )]
-        public bool LogCrawlers { get; set; } = false;
-
-        /// <summary>
-        /// Gets or sets the current person alias identifier.
-        /// </summary>
-        /// <value>
-        /// The current person alias identifier.
-        /// </value>
-        [Obsolete( "Use a constructor that takes InteractionTransactionInfo." )]
-        [RockObsolete( "1.11" )]
-        public int? CurrentPersonAliasId { get; set; }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="Transactions.InteractionTransaction"/> class.
         /// </summary>
         /// <param name="channelMediumTypeValue">The channel medium type value.</param>

@@ -89,28 +89,6 @@ namespace Rock.Model
         /// Determines whether this request can be connected.
         /// </summary>
         /// <param name="request">The request.</param>
-        /// <param name="connectionType">Type of the connection.</param>
-        /// <returns>
-        ///   <c>true</c> if this instance can connect; otherwise, <c>false</c>.
-        /// </returns>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Use CanConnect( ConnectionRequestViewModel request, ConnectionOpportunity connectionOpportunity, ConnectionTypeCache connectionType )" )]
-        public bool CanConnect( ConnectionRequestViewModel request, ConnectionTypeCache connectionType )
-        {
-            var rockContext = Context as RockContext;
-            var connectionOpportunityService = new ConnectionOpportunityService( rockContext );
-
-            var connectionOpportunity = connectionOpportunityService.Queryable()
-                .AsNoTracking()
-                .FirstOrDefault( co => co.Id == request.ConnectionOpportunityId );
-
-            return CanConnect( request, connectionOpportunity, connectionType );
-        }
-
-        /// <summary>
-        /// Determines whether this request can be connected.
-        /// </summary>
-        /// <param name="request">The request.</param>
         /// <returns>
         ///   <c>true</c> if this instance can connect; otherwise, <c>false</c>.
         /// </returns>

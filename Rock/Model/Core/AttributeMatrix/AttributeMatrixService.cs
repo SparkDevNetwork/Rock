@@ -14,13 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 using Rock.Data;
-using Rock.Field.Types;
-using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -29,23 +23,5 @@ namespace Rock.Model
     /// </summary>
     public partial class AttributeMatrixService : Service<AttributeMatrix>
     {
-        /// <summary>
-        /// Gets the orphaned attribute matrices.
-        /// </summary>
-        /// <returns></returns>
-        [Obsolete("No longer used. It could have returned false positives, especially if Plugins reference this.") ]
-        [RockObsolete( "1.12.5" )]
-        public IEnumerable<AttributeMatrix> GetOrphanedAttributeMatrices()
-        {
-            /* 07-22-2021 MDP
-              
-            After researching why there were sometimes performance issues with this query, we found a few things:
-            1) It could return false positives, especially if Plugins reference the AttributeMatrix table.
-            2) There could be performance issues that make that query timeout, depending on the system.
-             
-            */
-
-            return new List<AttributeMatrix>().AsQueryable();
-        }
     }
 }
