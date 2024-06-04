@@ -147,7 +147,27 @@ namespace Rock.Web.Cache
         }
         private Field.IFieldType _field = null;
 
+        /// <summary>
+        /// The Field Type unique identifier that is used by clients so they
+        /// can render the correct field type user interface. If this field type
+        /// is a universal field type then the universal field type identifier
+        /// will be returned.
+        /// </summary>
+        internal Guid ControlFieldTypeGuid => _controlFieldTypeGuid.Value;
+        private readonly Lazy<Guid> _controlFieldTypeGuid;
+
         #endregion
+
+        /// <summary>
+        /// Default constructor for FieldTypeCache class.
+        /// </summary>
+        public FieldTypeCache()
+        {
+            _controlFieldTypeGuid = new Lazy<Guid>( () =>
+            {
+                return Field?.GetType().GetCustomAttribute<Field.UniversalFieldTypeGuidAttribute>()?.Guid ?? Guid;
+            } );
+        }
 
         #region Public Methods
 

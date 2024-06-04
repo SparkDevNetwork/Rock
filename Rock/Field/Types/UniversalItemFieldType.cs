@@ -443,13 +443,12 @@ namespace Rock.Field.Types
                     continue;
                 }
 
-                var clientFieldTypeGuidAttribute = fieldTypeCache.Field.GetType().GetCustomAttribute<UniversalFieldTypeGuidAttribute>();
                 var configurationValues = fieldTypeAttribute.FieldConfigurationValues
                     .ToDictionary( k => k.Key, k => k.Value.Value );
 
                 var bag = new PublicAttributeBag
                 {
-                    FieldTypeGuid = clientFieldTypeGuidAttribute?.Guid ?? fieldTypeCache.Guid,
+                    FieldTypeGuid = fieldTypeCache.ControlFieldTypeGuid,
                     AttributeGuid = Guid.NewGuid(),
                     Name = fieldTypeAttribute.Name,
                     Order = order++,
