@@ -836,9 +836,6 @@ namespace Rock.NCOA
             records = new List<NcoaReturnRecord>();
             while ( !finished )
             {
-                     
-
-                Dictionary<string, object> obj = null;
                 try
                 {
                     string jsonContent = ProcessCsvData( ncoaContent );
