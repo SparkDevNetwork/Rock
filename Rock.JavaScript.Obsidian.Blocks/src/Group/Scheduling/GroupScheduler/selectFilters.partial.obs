@@ -37,6 +37,7 @@
             <SlidingDateRangePicker v-model="selectedDateRange"
                                     label="Dates"
                                     previewLocation="Top"
+                                    :enabledTimeUnits="[1, 2, 3, 4]"
                                     :disabled="isBusy" />
 
             <DropDownList v-model="selectedLocationValues"
@@ -118,8 +119,9 @@
     const availableSchedules = ref<ListItemBag[]>(props.filters?.schedules?.availableSchedules ?? []);
     const selectedSchedules = ref<ListItemBag[]>(props.filters?.schedules?.selectedSchedules ?? []);
     const selectedDateRange = ref<SlidingDateRange | null>(getSlidingDateRange(props.filters?.dateRange));
-    const firstEndOfWeekDate = ref<string | null | undefined>(props.filters?.firstEndOfWeekDate);
-    const lastEndOfWeekdDate = ref<string | null | undefined>(props.filters?.lastEndOfWeekDate);
+    const startDate = ref<string | null | undefined>(props.filters?.startDate);
+    const endDate = ref<string | null | undefined>(props.filters?.endDate);
+    const numberOfDays = ref<number>(props.filters?.numberOfDays ?? 0);
     const friendlyDateRange = ref<string | null | undefined>(props.filters?.friendlyDateRange);
 
     // #endregion
@@ -200,8 +202,9 @@
                 selectedSchedules: selectedSchedules.value
             },
             dateRange,
-            firstEndOfWeekDate: firstEndOfWeekDate.value,
-            lastEndOfWeekDate: lastEndOfWeekdDate.value,
+            startDate: startDate.value,
+            endDate: endDate.value,
+            numberOfDays: numberOfDays.value,
             friendlyDateRange: friendlyDateRange.value
         };
     }
@@ -218,8 +221,8 @@
         availableSchedules.value = filters?.schedules?.availableSchedules ?? [];
         selectedSchedules.value = filters?.schedules?.selectedSchedules ?? [];
         selectedDateRange.value = getSlidingDateRange(filters?.dateRange);
-        firstEndOfWeekDate.value = filters?.firstEndOfWeekDate;
-        lastEndOfWeekdDate.value = filters?.lastEndOfWeekDate;
+        startDate.value = filters?.startDate;
+        endDate.value = filters?.endDate;
         friendlyDateRange.value = filters?.friendlyDateRange;
     }
 

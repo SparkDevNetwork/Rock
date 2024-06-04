@@ -103,6 +103,7 @@
     <Compile Include="Blocks\Core\RestActionList\RestActionListOptionsBag.cs" />
     <Compile Include="Blocks\Finance\FinancialPledgeList\FinancialPledgeListBag.cs" />
     <Compile Include="Blocks\Finance\FinancialPledgeList\FinancialPledgeListOptionsBag.cs" />
+    <Compile Include="Blocks\Group\Scheduling\GroupScheduler\GroupSchedulerGroupLocationScheduleNamesBag.cs" />
     <Compile Include="Blocks\Security\RestKeyList\RestKeyListOptionsBag.cs" />
     <Compile Include="Blocks\Crm\PersonMergeRequestList\PersonMergeRequestListOptionsBag.cs" />
     <Compile Include="Blocks\Event\RegistrationInstanceLinkageList\RegistrationInstanceLinkageListOptionsBag.cs" />
@@ -388,7 +389,7 @@
     <Compile Include="Blocks\Group\Scheduling\GroupScheduler\GroupSchedulerLocationsBag.cs" />
     <Compile Include="Blocks\Group\Scheduling\GroupScheduler\GroupSchedulerApplyResourceSettingsBag.cs" />
     <Compile Include="Blocks\Group\Scheduling\GroupScheduler\GroupSchedulerSchedulesBag.cs" />
-    <Compile Include="Blocks\Group\Scheduling\GroupScheduler\GroupSchedulerSendNowResponseBag.cs" />
+    <Compile Include="Blocks\Group\Scheduling\GroupScheduler\GroupSchedulerSendConfirmationsResponseBag.cs" />
     <Compile Include="Blocks\Group\Scheduling\GroupScheduler\GroupSchedulerUpdatePreferenceBag.cs" />
     <Compile Include="Blocks\Group\GroupRegistration\GroupRegistrationBag.cs" />
     <Compile Include="Blocks\Group\GroupRegistration\GroupRegistrationBlockBox.cs" />
