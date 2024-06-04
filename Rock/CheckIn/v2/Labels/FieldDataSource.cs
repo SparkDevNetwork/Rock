@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using Rock.Enums.CheckIn.Labels;
 using Rock.Model;
 using Rock.ViewModels.CheckIn.Labels;
+using Rock.ViewModels.Reporting;
 
 namespace Rock.CheckIn.v2.Labels
 {
@@ -39,8 +40,10 @@ namespace Rock.CheckIn.v2.Labels
         /// property path represented by the source such as <c>person.id</c>.
         /// </para>
         /// <para>
-        /// Attributes should use a lowercase key that contains the unique
-        /// identifier of the attribute prefixed with <c>attribute:</c>.
+        /// Attributes should use a lowercase key that contains a <c>attribute:</c>
+        /// prefix, the property path to the entity followed by another <c>:</c>
+        /// and then the attribute guid. Such as
+        /// <c>attribute:person:e801638a-2b9a-4382-ad8f-36001c7bc0ee</c>
         /// </para>
         /// </summary>
         public string Key { get; set; }
@@ -65,11 +68,6 @@ namespace Rock.CheckIn.v2.Labels
         public string Category { get; set; }
 
         /// <summary>
-        /// The comparison types that are supported by by this data source.
-        /// </summary>
-        public ComparisonType SupportedComparisionTypes { get; set; }
-
-        /// <summary>
         /// The custom formatter that will convert the raw data value into a
         /// friendly text string. If <c>null</c> then the value will be converted
         /// with a call to <see cref="object.ToString"/>.
@@ -89,23 +87,6 @@ namespace Rock.CheckIn.v2.Labels
         public abstract bool IsCollection { get; }
 
         /// <summary>
-        /// The custom fields to display in the UI when editing the field. This
-        /// allows a small amount of customization without requiring custom
-        /// logic in the UI to show/hide inputs.
-        /// </summary>
-        public List<CustomFieldInputBag> CustomFields { get; set; }
-
-        /// <summary>
-        /// Gest the value to use when comparing the value represented by the
-        /// data source with a filter. The returned value is passed to the
-        /// standard filtering logic that is also used in reporting.
-        /// </summary>
-        /// <param name="field">The field that this data source is representing.</param>
-        /// <param name="printRequest">The print request we are getting the value for.</param>
-        /// <returns>The value to be used for comparison or <c>null</c>.</returns>
-        public abstract object GetComparisionValue( LabelField field, PrintLabelRequest printRequest );
-
-        /// <summary>
         /// Gest the values to use when displaying the field value on a label.
         /// The returned values will be passed to the formatter.
         /// </summary>
@@ -113,25 +94,5 @@ namespace Rock.CheckIn.v2.Labels
         /// <param name="printRequest">The print request we are getting the values for.</param>
         /// <returns>The values to be formatted. A list with a single empty string should be returned instead of <c>null</c> or an empty list.</returns>
         public abstract List<object> GetValues( LabelField field, PrintLabelRequest printRequest );
-    }
-
-    /// <summary>
-    /// Represents a data source for whose label data is expected to be an
-    /// instance of <typeparamref name="TLabelData"/>.
-    /// </summary>
-    /// <typeparam name="TLabelData">The type of label data expected.</typeparam>
-    internal abstract class FieldDataSource<TLabelData> : FieldDataSource
-    {
-        /// <summary>
-        /// The function that will get the value to use when performing
-        /// comparisons for conditional display of fields and labels.
-        /// </summary>
-        public Func<TLabelData, LabelField, PrintLabelRequest, object> ComparisonValueFunc { get; set; }
-
-        /// <inheritdoc/>
-        public sealed override object GetComparisionValue( LabelField field, PrintLabelRequest printRequest )
-        {
-            return ComparisonValueFunc?.Invoke( ( TLabelData ) printRequest.LabelData, field, printRequest );
-        }
     }
 }

@@ -66,8 +66,7 @@ namespace Rock.Blocks.CheckIn.Configuration
                 Name = dataSource.Name,
                 TextSubType = dataSource.TextSubType,
                 Category = dataSource.Category,
-                SupportedComparisionTypes = dataSource.SupportedComparisionTypes,
-                CustomFields = dataSource.CustomFields,
+                CustomFields = dataSource.Formatter?.CustomFields,
                 FormatterOptions = dataSource.Formatter?.Options ?? new List<DataFormatterOptionBag>()
             };
         }

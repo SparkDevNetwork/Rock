@@ -42,6 +42,13 @@ namespace Rock.CheckIn.v2.Labels
         public List<DataFormatterOptionBag> Options { get; } = new List<DataFormatterOptionBag>();
 
         /// <summary>
+        /// The custom fields to display in the UI when editing the field. This
+        /// allows a small amount of customization without requiring custom
+        /// logic in the UI to show/hide inputs.
+        /// </summary>
+        public List<CustomFieldInputBag> CustomFields { get; set; }
+
+        /// <summary>
         /// Gets the formatted values from the raw values provided by the field.
         /// </summary>
         /// <param name="values">The raw values to be formatted.</param>

@@ -25,7 +25,7 @@ namespace Rock.CheckIn.v2.Labels
     /// is expected to be an instance of <typeparamref name="TLabelData"/>.
     /// </summary>
     /// <typeparam name="TLabelData">The type of label data expected.</typeparam>
-    internal class MultiValueFieldDataSource<TLabelData> : FieldDataSource<TLabelData>
+    internal class MultiValueFieldDataSource<TLabelData> : FieldDataSource
     {
         /// <summary>
         /// The function that will get the list of values from the label data.
