@@ -21,17 +21,11 @@
 // </copyright>
 //
 
-/** The outcome of a request to send confirmation communications to scheduled individuals. */
-export type GroupSchedulerSendNowResponseBag = {
-    /** Gets or sets whether there are any communications to send. */
-    anyCommunicationsToSend: boolean;
+/** A bag that contains information about a group's unique, ordered location and schedule names. */
+export type GroupSchedulerGroupLocationScheduleNamesBag = {
+    /** Gets or sets the group name. */
+    groupName?: string | null;
 
-    /** Gets or sets the count of communications sent. */
-    communicationsSentCount: number;
-
-    /** Gets or sets the errors encountered while attempting to send communications. */
-    errors?: string[] | null;
-
-    /** Gets or sets the warnings encountered while attempting to send communications. */
-    warnings?: string[] | null;
+    /** Gets or sets this group's unique, ordered location and schedule names. */
+    locationWithSchedules?: string[] | null;
 };

@@ -22,7 +22,7 @@ namespace Rock.ViewModels.Blocks.Group.Scheduling.GroupScheduler
     /// <summary>
     /// The outcome of a request to send confirmation communications to scheduled individuals.
     /// </summary>
-    public class GroupSchedulerSendNowResponseBag
+    public class GroupSchedulerSendConfirmationsResponseBag
     {
         /// <summary>
         /// Gets or sets the errors encountered while attempting to send communications.

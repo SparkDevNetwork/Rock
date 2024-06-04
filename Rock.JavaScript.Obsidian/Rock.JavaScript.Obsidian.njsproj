@@ -1027,6 +1027,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerCloneSettingsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerFiltersBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerGetPreferencesBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerGroupLocationScheduleNamesBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerInitializationBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerLocationsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerOccurrenceBag.d.ts" />
@@ -1034,7 +1035,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerPreferencesBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerResourceSettingsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerSchedulesBag.d.ts" />
-    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerSendNowResponseBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerSendConfirmationsResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerUnassignedResourceCountBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerUpdatePreferenceBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduleToolbox\assignmentOptionsBag.d.ts" />
