@@ -18,6 +18,7 @@
 
         <Column name="donor"
                 title="Donor"
+                width="10%"
                 visiblePriority="xs">
             <template #format="{ row }">
                 <div v-html="row.donor">
@@ -29,6 +30,7 @@
         <Column v-if="!config.options?.columnsToHide?.includes(ColumnKey.DonorAddress)"
                 name="donorAddress"
                 title="Donor Address"
+                width="18%"
                 visiblePriority="md">
             <template #format="{ row }">
                 <div v-html="row.donorAddress">
@@ -41,13 +43,14 @@
                     name="donorEmail"
                     title="Donor Email"
                     field="donorEmail"
+                    width="18%"
                     :filter="textValueFilter"
                     visiblePriority="md" />
 
         <Column v-if="!config.options?.columnsToHide?.includes(ColumnKey.Participant) && !config.options?.isContextEntityGroupMember"
                 name="participant"
                 title="Participant"
-                width="15%"
+                width="18%"
                 visiblePriority="xs">
             <template #format="{ row }">
                 <div v-html="row.participant" />
@@ -57,13 +60,16 @@
         <DateColumn name="date"
                     title="Date"
                     field="date"
+                    width="0%"
                     :filter="dateValueFilter"
+                    itemClass="grid-pull-left"
                     visiblePriority="md" />
 
         <TextColumn v-if="!config.options?.columnsToHide?.includes(ColumnKey.Amount)"
                     name="amount"
                     title="Amount"
                     field="amount"
+                    width="3%"
                     :filter="numberValueFilter"
                     visiblePriority="xs" />
     </Grid>
