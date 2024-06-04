@@ -322,8 +322,6 @@ namespace RockWeb.Blocks.Cms
                 AdditionalFilterConfiguration.InteractionFilterExpressionType = FilterExpressionType.GroupAny;
             }
 
-            personalizationSegment.AdditionalFilterConfiguration = this.AdditionalFilterConfiguration;
-
             // Mark segment as dirty to signal the PostSave hook to update the sometimes long running Personalization data on a background task.
             personalizationSegment.IsDirty = isSegmentDefinitionChanged;
 
