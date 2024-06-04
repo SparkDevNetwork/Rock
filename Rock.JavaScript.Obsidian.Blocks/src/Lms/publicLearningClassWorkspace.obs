@@ -57,7 +57,7 @@
                 </div>
                 <div class="workspace-main-content">
                     <div class="h1">
-                        {{ viewingCompletionBag.activityBag.name }}
+                        {{ viewingCompletionBag.activityBag?.name ?? "" }}
                     </div>
                     <div class="text-muted">
                         {{ getActivityTimeText(viewingCompletionBag) }}
@@ -267,19 +267,13 @@ span.icon-stack-container i.icon {
             config.activities?.find(a => a.isAvailable)
     ) ?? {} as LearningActivityCompletionBag);
 
+    const activityTypeComponent = ref(defineAsyncComponent(() => import(componentUrl.value)));
+
     // #endregion
 
     // #region Computed Values
 
-    /** The dynamically loaded activity component. */
-    const activityTypeComponent = computed((): Component | null => {
-        const componentUrl = viewingCompletionBag.value?.activityBag?.activityComponent?.componentUrl ?? "";
-
-        if (componentUrl.length > 0) {
-            return defineAsyncComponent(() => import(componentUrl));
-        }
-        return null;
-    });
+    const componentUrl = computed(() => viewingCompletionBag.value?.activityBag?.activityComponent?.componentUrl ?? "");
 
     /** Whether the course has a valid image guid. */
     const hasCourseImage = computed(() => courseImageGuid.value.length > 0 && isValidGuid(toValue(courseImageGuid) ?? ""));
@@ -372,11 +366,11 @@ span.icon-stack-container i.icon {
         return RockDateTime.parseISO(date)?.localDateTime.humanizeElapsed() ?? "";
     }
 
-    function hasAvailableAfter(currentIndex: number): void {
+    function hasAvailableAfter(currentIndex: number): boolean {
         return activities.value.find((a, i) => i > currentIndex && a.isAvailable) != null;
     }
 
-    function hasAvailableBefore(currentIndex: number): void {
+    function hasAvailableBefore(currentIndex: number): boolean {
         return activities.value.find((a, i) => i < currentIndex && a.isAvailable) != null;
     }
 
@@ -401,6 +395,9 @@ span.icon-stack-container i.icon {
         queryParams.set("selection", activity.idKey?.toString() ?? "");
         history.pushState(null, "", "?" + queryParams.toString());
         viewingCompletionBag.value = activity;
+
+        // Update the activity component.
+        activityTypeComponent.value = defineAsyncComponent(() => import(componentUrl.value));
     }
 
     function selectNext(currentIndex: number): void {
