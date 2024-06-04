@@ -2593,7 +2593,7 @@ Sys.Application.add_load(function () {
                 UrlReferrerHostAddress = Request.UrlReferrerNormalize(),
                 UrlReferrerSearchTerms = Request.UrlReferrerSearchTerms(),
                 UserAgent = Request.UserAgent.SanitizeHtml(),
-                UserHostAddress = Request.UserHostAddress.SanitizeHtml(),
+                UserHostAddress = GetClientIpAddress().SanitizeHtml(),
                 UserIdKey = CurrentPersonAlias?.IdKey
             };
 
