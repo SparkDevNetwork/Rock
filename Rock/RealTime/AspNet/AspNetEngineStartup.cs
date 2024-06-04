@@ -165,7 +165,10 @@ namespace Rock.RealTime.AspNet
         /// <returns>A Task that indicates when this process has completed.</returns>
         private static Task FixNegotiateConnectionData( IOwinContext context, Func<Task> nextHandler )
         {
-            if ( context.Request.Path.Value != "/negotiate" && context.Request.Path.Value != "/start" )
+            if ( context.Request.Path.Value != "/negotiate"
+                && context.Request.Path.Value != "/start"
+                && context.Request.Path.Value != "/connect"
+                && context.Request.Path.Value != "/poll" )
             {
                 return nextHandler();
             }
