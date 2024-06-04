@@ -71,7 +71,7 @@
     const chartData = ref<ChartData>(JSON.parse(props.modelValue?.chartData ?? "{}"));
     const kpi = ref(props.modelValue?.kpi ?? "");
     const showChart = ref(props.modelValue?.showChart);
-    const notificationMessage = ref("");
+    const notificationMessage = ref(props.modelValue?.chartData ? "" : "There are no Steps matching the current filter.");
     const filterDate = ref(props.modelValue?.defaultDateRange as SlidingDateRange);
     const isRefreshLoading = ref(false);
     const options = ref<ChartOptions>({
@@ -138,11 +138,11 @@
 
             if (result.data.chartData) {
                 chartData.value = JSON.parse(result.data.chartData ?? "{}") as ChartData;
-                showChart.value = true;
+                showChart.value = result.data.showChart;
             }
             else {
                 notificationMessage.value = "There are no Steps matching the current filter.";
-                showChart.value = false;
+                showChart.value = result.data.showChart;
             }
         }
         else {

@@ -241,11 +241,6 @@ namespace Rock.Blocks.Finance
 
             bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
 
-            if ( entity.EndDate.Date != DateTime.MaxValue.Date && entity.EndDate.Date != DateTime.MinValue.Date )
-            {
-                bag.EndDate = entity.EndDate;
-            }
-
             return bag;
         }
 
@@ -264,11 +259,6 @@ namespace Rock.Blocks.Finance
             var bag = GetCommonEntityBag( entity, rockContext );
 
             bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
-
-            if ( entity.EndDate.Date != DateTime.MinValue.Date )
-            {
-                bag.EndDate = entity.EndDate;
-            }
 
             return bag;
         }
