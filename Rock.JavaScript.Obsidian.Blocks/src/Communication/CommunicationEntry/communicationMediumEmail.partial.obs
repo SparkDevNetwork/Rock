@@ -378,9 +378,14 @@
     });
 
     const isBulkEmailThresholdExceeded = computed<boolean>(() => {
-        const threshold = props.mediumOptions.bulkEmailThreshold;
-        return !!(threshold ?? "undefined" !== "undefined")
-            && recipients.value.length > threshold!;
+        const threshold = props.mediumOptions.bulkEmailThreshold ?? null;
+        if (threshold == null) {
+            // There is no threshold so it can't be exceeded.
+            return false;
+        }
+        else {
+            return recipients.value.length > threshold;
+        }
     });
 
     const recipientsRules = computed<string>(() => {

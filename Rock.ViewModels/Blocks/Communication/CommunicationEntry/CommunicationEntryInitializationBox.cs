@@ -106,5 +106,7 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntry
         /// <see langword="true"/> if lava in the message should be resolved; otherwise, <see langword="false"/> if lava should be removed from the message without resolving it.
         /// </value>
         public bool IsLavaEnabled { get; set; }
+        public bool IsBulkVisible { get; set; }
+        public bool IsBulkForced { get; set; }
     }
 }

@@ -68,6 +68,10 @@ export type CommunicationEntryInitializationBox = {
     /** Gets or sets whether the "additional time sign-ups" feature is enabled. */
     isAdditionalTimeSignUpsEnabled: boolean;
 
+    isBulkForced: boolean;
+
+    isBulkVisible: boolean;
+
     /** Gets or sets a value indicating whether the block should use full mode. */
     isFullMode: boolean;
 

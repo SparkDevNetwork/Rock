@@ -235,6 +235,21 @@ namespace Rock.Blocks.Communication
         /// </summary>
         private bool DefaultAsBulk => GetAttributeValue( AttributeKey.DefaultAsBulk ).AsBoolean();
 
+        /// <summary>
+        /// Should simple mode communications be sent as a bulk communication?
+        /// </summary>
+        private bool IsSendSimpleAsBulkEnabled => GetAttributeValue( AttributeKey.SendSimpleAsBulk ).AsBoolean();
+
+        /// <summary>
+        /// When enabled, allows passing a 'Person' or 'PersonId' querystring parameter with a person Id to the block to create a communication for that person.
+        /// </summary>
+        private bool IsPersonPageParameterEnabled => GetAttributeValue( AttributeKey.EnablePersonParameter ).AsBoolean();
+
+        /// <summary>
+        /// 'Person' or 'PersonId' querystring parameter with a person Id to the block to create a communication for that person.
+        /// </summary>
+        private int? PersonOrPersonIdPageParameter => PageParameter( PageParameterKey.Person ).AsIntegerOrNull() ?? PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull();
+
         //protected int? CommunicationId
         //{
         //    get { return ViewState["CommunicationId"] as int?; }
@@ -488,6 +503,7 @@ namespace Rock.Blocks.Communication
                         ImageFolderRoot = GetAttributeValue( AttributeKey.ImageRootFolder ),
                         IsAttachmentUploaderShown = GetAttributeValue( AttributeKey.ShowAttachmentUploader ).AsBoolean(),
                         IsUserSpecificRoot = GetAttributeValue( AttributeKey.UserSpecificFolders ).AsBoolean(),
+                        MediumEntityTypeId = medium.EntityType.Id,
                         Templates = GetCommunicationTemplates( emailMedium, rockContext ).ToListItemBagList(),
                     };
                 }
@@ -501,6 +517,7 @@ namespace Rock.Blocks.Communication
                 return new CommunicationEntrySmsMediumOptionsBag
                 {
                     HasActiveTransport = smsMedium.Transport?.IsActive ?? false,
+                    MediumEntityTypeId = medium.EntityType.Id,
                     SmsFromNumbers = SystemPhoneNumberCache
                         .All( includeInactive: false )
                         .Where( spn => spn.IsAuthorized( Authorization.VIEW, currentPerson ) && allowedSmsFromNumberGuids.ContainsOrEmpty( spn.Guid ) )
@@ -1425,6 +1442,91 @@ namespace Rock.Blocks.Communication
             return ConvertAll().ToList();
         }
 
+        private class BulkConfig
+        {
+            public bool IsVisible { get; set; }
+
+            private bool _isBulk;
+            public bool IsBulk { get => _isBulk || this.IsForced; set => _isBulk = value; }
+
+            public bool IsForced { get; set; }
+        }
+
+        private class BulkConfigService
+        {
+            private readonly CommunicationEntry _block;
+
+            public bool IsFullMode => _block.IsFullMode;
+            public bool IsDefaultAsBulkEnabled => _block.DefaultAsBulk;
+            public bool IsPersonPageParameterEnabled => _block.IsPersonPageParameterEnabled;
+            public int? PersonOrPersonIdPageParameter => _block.PersonOrPersonIdPageParameter;
+            public bool IsSendSimpleAsBulkEnabled => _block.IsSendSimpleAsBulkEnabled;
+
+            public BulkConfigService( CommunicationEntry block )
+            {
+                _block = block;
+            }
+
+            public BulkConfig GetBulkConfig( CommunicationEntryInitializationBox box )
+            {
+                if ( box.MediumOptions.MediumType == MediumType.Email
+                     && MediumContainer.GetComponentByEntityTypeId( box.MediumOptions.MediumEntityTypeId ) is Rock.Communication.Medium.Email emailMediumComponent
+                     && emailMediumComponent.IsBulkEmailThresholdExceeded( box.Communication?.Recipients?.Count() ?? 0 ) )
+                {
+                    return new BulkConfig
+                    {
+                        // Hide when bulk mode is forced.
+                        IsVisible = false,
+
+                        // Force bulk communication since the recipient count has exceeded the threshold.
+                        IsForced = true,
+
+                        IsBulk = true,
+                    };
+                }
+                else
+                {
+                    return new BulkConfig
+                    {
+                        // The bulk option is only visible if full mode is set.
+                        IsVisible = this.IsFullMode,
+
+                        // Do not force bulk communication since the recipient count has not exceeded the threshold.
+                        IsForced = false,
+
+                        IsBulk =
+                            // Bulk if this is a new communication and "default as bulk" is enabled and there is no person page parameter.
+                            (
+                                box.Communication.CommunicationId == 0
+                                && this.IsDefaultAsBulkEnabled
+                                && (
+                                    !this.IsPersonPageParameterEnabled
+                                    || !this.PersonOrPersonIdPageParameter.HasValue
+                                )
+                            )
+                            // Or if this is simple mode and "send simple as bulk" is enabled (this overrides the current communication value).
+                            || (
+                                !this.IsFullMode
+                                && this.IsSendSimpleAsBulkEnabled
+                            )
+                            // Or if this is an existing bulk communication.
+                            || (
+                                box.Communication.CommunicationId != 0
+                                && box.Communication.IsBulkCommunication
+                            ),
+                    };
+                }
+            }
+
+            public void SetBulkConfig( CommunicationEntryInitializationBox box )
+            {
+                var bulkConfig = GetBulkConfig( box );
+                box.IsBulkVisible = bulkConfig.IsVisible;
+                box.IsBulkForced = bulkConfig.IsForced;
+                box.Communication.IsBulkCommunication = bulkConfig.IsBulk;
+            }
+        }
+
         /// <summary>
         /// Shows the detail.
         /// </summary>
@@ -1439,21 +1541,22 @@ namespace Rock.Blocks.Communication
                     EnabledLavaCommands = GetAttributeValue( AttributeKey.EnabledLavaCommands ),
                     FromEmail = sender.Email,
                     FromName = sender.FullName,
-                    IsBulkCommunication = this.DefaultAsBulk,
+                    // TODO JMH This will be set by the bulk service.
+                    //IsBulkCommunication = this.DefaultAsBulk,
                     SenderPersonAliasId = sender.PrimaryAliasId,
                     Status = CommunicationStatus.Transient,
                 };
 
                 box.Title = "New Communication".FormatAsHtmlTitle();
-                if ( GetAttributeValue( AttributeKey.EnablePersonParameter ).AsBoolean() )
+                if ( this.IsPersonPageParameterEnabled )
                 {
                     // If either 'Person' or 'PersonId' is specified then add that person to the communication.
-                    var personId = PageParameter( PageParameterKey.Person ).AsIntegerOrNull()
-                        ?? PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull();
+                    var personId = this.PersonOrPersonIdPageParameter;
 
                     if ( personId.HasValue )
                     {
-                        communication.IsBulkCommunication = false;
+                        // TODO JMH This will be set by the bulk service.
+                        //communication.IsBulkCommunication = false;
                         var personAlias = new PersonAliasService( rockContext )
                             .GetPrimaryAliasQuery()
                             .Where( p => p.PersonId == personId.Value )
@@ -1477,11 +1580,12 @@ namespace Rock.Blocks.Communication
                 communicationRecipientBags = GetRecipientBags( rockContext, RecipientQueryOptions.Filter.ByCommunication( communication.Id ) );
             }
 
+            // TODO JMH This will be set by the bulk service.
             // Override bulk communication if not full mode.
-            if ( !box.IsFullMode )
-            {
-                communication.IsBulkCommunication = GetAttributeValue( AttributeKey.SendSimpleAsBulk ).AsBoolean();
-            }
+            //if ( !box.IsFullMode )
+            //{
+            //    //communication.IsBulkCommunication = this.IsSendSimpleAsBulkEnabled;
+            //}
 
             var template = communication.CommunicationTemplate;
 
@@ -1532,10 +1636,12 @@ namespace Rock.Blocks.Communication
             // These props are not covered by the CommunicationEntryHelper.Copy method.
             box.Communication = new CommunicationEntryCommunicationBag
             {
+                CommunicationId = communication.Id,
                 CommunicationGuid = communication.Guid,
                 CommunicationTemplateGuid = template?.Guid,
                 FutureSendDateTime = communication.FutureSendDateTime,
-                IsBulkCommunication = communication.IsBulkCommunication,
+                // TODO JMH This will be set by the bulk service.
+                // IsBulkCommunication = communication.IsBulkCommunication,
                 MediumEntityTypeGuid = mediumGuid ?? Guid.Empty,
                 Recipients = communicationRecipientBags,
                 SMSAttachmentBinaryFileIds = communication.SMSAttachmentBinaryFileIds.ToList(),
@@ -1548,14 +1654,15 @@ namespace Rock.Blocks.Communication
 
             // Get medium options.
             box.MediumOptions = GetMediumOptions( box.Communication.MediumEntityTypeGuid, sender );
+            // TODO JMH This will be set by the bulk service.
             // Enforce bulk communication if the number of recipients exceeds the threshold.
-            if ( box.MediumOptions is CommunicationEntryEmailMediumOptionsBag emailMediumOptionsBag
-                 && emailMediumOptionsBag.BulkEmailThreshold.HasValue
-                 && box.Communication?.Recipients != null
-                 && box.Communication.Recipients.Count > emailMediumOptionsBag.BulkEmailThreshold.Value )
-            {
-                box.Communication.IsBulkCommunication = true;
-            }
+            //if ( box.MediumOptions is CommunicationEntryEmailMediumOptionsBag emailMediumOptionsBag
+            //     && emailMediumOptionsBag.BulkEmailThreshold.HasValue
+            //     && box.Communication?.Recipients != null
+            //     && box.Communication.Recipients.Count > emailMediumOptionsBag.BulkEmailThreshold.Value )
+            //{
+            //    box.Communication.IsBulkCommunication = true;
+            //}
 
             // If the communication is transient, then override communication data from the template.
             if ( communication.Status == CommunicationStatus.Transient && template != null )
@@ -1566,6 +1673,10 @@ namespace Rock.Blocks.Communication
                     CommunicationEntryHelper.CopyTemplate( template, communicationCopyTarget, this.RequestContext );
                 }
             }
+
+            // TODO JMH Finally, set the bulk stuff.
+            var bulkOptions = new BulkConfigService( this );
+            bulkOptions.SetBulkConfig( box );
 
             //box.IsCommunicationSender = communication.SenderPersonAliasId.HasValue && communication.SenderPersonAliasId == GetCurrentPerson()?.PrimaryAliasId;
         }

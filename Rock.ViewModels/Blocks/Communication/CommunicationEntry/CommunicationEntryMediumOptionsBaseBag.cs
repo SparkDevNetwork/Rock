@@ -54,6 +54,11 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntry
         public bool HasActiveTransport { get; set; }
 
         /// <summary>
+        /// Internal for server-side processing only.
+        /// </summary>
+        internal int? MediumEntityTypeId { get; set; }
+
+        /// <summary>
         /// Gets a value indicating whether this communication medium is unknown.
         /// </summary>
         /// <value>

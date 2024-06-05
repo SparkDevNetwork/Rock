@@ -41,8 +41,6 @@
                         </ul>
                     </div>
                 </KeepAlive>
-                <!-- TODO JMH Figure out what should be used for enabing/disabling buttons.  -->
-                <pre><code>{{ JSON.stringify(config.authorization, null, 2) }}</code></pre>
             </div>
 
             <div v-else

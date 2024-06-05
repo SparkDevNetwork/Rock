@@ -13,6 +13,11 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntry
     public class CommunicationEntryCommunicationBag
     {
         /// <summary>
+        /// Internal for server-side processing only.
+        /// </summary>
+        internal int CommunicationId { get; set; }
+
+        /// <summary>
         /// Gets or sets the communication unique identifier.
         /// </summary>
         /// <value>
