@@ -23,8 +23,11 @@ using Rock.Attribute;
 using Rock.CheckIn.v2.Labels;
 using Rock.Enums.CheckIn.Labels;
 using Rock.Model;
+using Rock.Reporting;
 using Rock.ViewModels.Blocks.CheckIn.Configuration.LabelDesigner;
 using Rock.ViewModels.CheckIn.Labels;
+using Rock.ViewModels.Reporting;
+using Rock.Web.Cache;
 
 namespace Rock.Blocks.CheckIn.Configuration
 {
@@ -48,13 +51,25 @@ namespace Rock.Blocks.CheckIn.Configuration
     {
         public override object GetObsidianBlockInitialization()
         {
-            var personLabelSources = FieldDataSources.GetDataSources( LabelType.Person )
+            var personLabelSources = FieldSourceHelper.GetDataSources( LabelType.Person )
                 .Select( p => ToDataSourceBag( p.Value ) )
+                .OrderByDescending( ds => ds.Category == "Common" )
+                .ThenByDescending( ds => ds.Category.Contains( "Properties" ) )
+                .ThenBy( ds => ds.Category )
+                .ThenBy( ds => ds.Name )
+                .ToList();
+
+            var filterSources = FieldSourceHelper.GetFilterSources( LabelType.Person )
+                .OrderByDescending( s => s.Category == "Common" )
+                .ThenByDescending( s => s.Category.Contains( "Properties" ) )
+                .ThenBy( s => s.Category )
+                .ThenBy( s => s.Property?.Title ?? s.Attribute?.Name )
                 .ToList();
 
             return new
             {
-                PersonLabelSources = personLabelSources
+                PersonLabelSources = personLabelSources,
+                FilterSources = filterSources,
             };
         }
 
@@ -69,6 +84,104 @@ namespace Rock.Blocks.CheckIn.Configuration
                 CustomFields = dataSource.Formatter?.CustomFields,
                 FormatterOptions = dataSource.Formatter?.Options ?? new List<DataFormatterOptionBag>()
             };
+        }
+
+        /// <summary>
+        /// Creates a <see cref="FieldFilterGroup"/> object from its view
+        /// model representation.
+        /// </summary>
+        /// <param name="viewModel">The view model that represents the object.</param>
+        /// <returns>The object created from the view model.</returns>
+        private static FieldFilterGroup FromViewModel( FieldFilterGroupBag viewModel )
+        {
+            return new FieldFilterGroup
+            {
+                FilterExpressionType = viewModel.ExpressionType,
+                Rules = viewModel.Rules.Select( FromViewModel ).ToList()
+            };
+        }
+
+        /// <summary>
+        /// Creates a <see cref="FieldFilterRule"/> object from its view
+        /// model representation.
+        /// </summary>
+        /// <param name="viewModel">The view model that represents the object.</param>
+        /// <returns>The object created from the view model.</returns>
+        private static FieldFilterRule FromViewModel( FieldFilterRuleBag viewModel )
+        {
+            var rule = new FieldFilterRule
+            {
+                Guid = viewModel.Guid,
+                ComparisonType = viewModel.ComparisonType,
+            };
+
+            var comparisonValue = new ComparisonValue
+            {
+                ComparisonType = rule.ComparisonType,
+                Value = viewModel.Value
+            };
+
+            if ( viewModel.AttributeGuid.HasValue )
+            {
+                rule.AttributeGuid = viewModel.AttributeGuid;
+
+                var attribute = AttributeCache.Get( rule.AttributeGuid.Value );
+
+                if ( attribute?.FieldType?.Field != null )
+                {
+                    var filterValues = attribute.FieldType.Field.GetPrivateFilterValue( comparisonValue, attribute.ConfigurationValues ).FromJsonOrNull<List<string>>();
+
+                    if ( filterValues != null && filterValues.Count == 2 )
+                    {
+                        rule.ComparedToValue = filterValues[1];
+                    }
+                    else if ( filterValues != null && filterValues.Count == 1 )
+                    {
+                        rule.ComparedToValue = filterValues[0];
+                    }
+                }
+            }
+            else if ( viewModel.PropertyName.IsNotNullOrWhiteSpace() )
+            {
+                rule.PropertyName = viewModel.PropertyName;
+
+                var field = EntityHelper.GetEntityField( typeof( Person ), EntityHelper.MakePropertyNameUnique( rule.PropertyName ) );
+
+                if ( field != null )
+                {
+                    var filterValues = field.FieldType.Field.GetPrivateFilterValue( comparisonValue, field.FieldConfig.ToDictionary( c => c.Key, c => c.Value.Value ) ).FromJsonOrNull<List<string>>();
+
+                    if ( filterValues != null && filterValues.Count == 2 )
+                    {
+                        rule.ComparedToValue = filterValues[1];
+                    }
+                    else if ( filterValues != null && filterValues.Count == 1 )
+                    {
+                        rule.ComparedToValue = filterValues[0];
+                    }
+                }
+            }
+
+            return rule;
+        }
+
+        [BlockAction]
+        public BlockActionResult DoFilter( FieldFilterGroupBag filter )
+        {
+            var f = FromViewModel( filter );
+
+            var ted = new Person
+            {
+                FirstName = "Ted",
+                LastName = "Decker"
+            };
+
+            ted.LoadAttributes();
+            ted.SetAttributeValue( "Allergy", "nuts" );
+
+            var result = f.Evaluate( ted );
+
+            return ActionOk( result );
         }
     }
 }

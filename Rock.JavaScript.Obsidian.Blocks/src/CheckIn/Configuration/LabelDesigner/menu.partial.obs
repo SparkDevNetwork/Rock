@@ -72,6 +72,31 @@
         <div v-else class="p-3" style="overflow-y: auto;">
             <component :is="fieldConfigurationComponent"
                        :labelManager="labelManager" />
+
+            <Panel title="Conditionals" :modelValue="true" :hasCollapse="true">
+                <div v-if="hasConditions">
+                    <div v-html="conditionalTitle"></div>
+                    <ul>
+                        <li v-for="rule in conditionalRules" :key="rule.guid!">{{ getRuleDescription(rule) }}</li>
+                    </ul>
+                </div>
+
+                <div class="d-flex justify-content-end">
+                    <RockButton btnType="default" btnSize="sm" @click="isConditionalSettingsVisible = true">
+                        <i class="fa fa-pencil"></i>
+                    </RockButton>
+                </div>
+            </Panel>
+
+            <Modal v-model="isConditionalSettingsVisible" title="Conditional Settings" saveText="Save" @save="onConditionalSettingsSave">
+                <div style="min-height: 290px;">
+                    <FieldFilterEditor v-model="visibilityRule"
+                                       title="Title"
+                                       :sources="blockConfig.filterSources ?? []"
+                                       enhanceForLongSourceLists
+                                       groupSources />
+                </div>
+            </Modal>
         </div>
     </div>
 </template>
@@ -146,9 +171,18 @@
     import FieldConfigRectangle from "./fieldConfigRectangle.partial.obs";
     import { Component, computed, PropType, ref, watch } from "vue";
     import { LabelUndoManager } from "./undoManager.partial";
+    import { getFilterGroupTitle, getFilterRuleDescription } from "./utils.partial";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import FieldFilterEditor from "@Obsidian/Controls/fieldFilterEditor.obs";
     import { LabelFieldType } from "@Obsidian/Enums/CheckIn/Labels/labelFieldType";
     import { TextFieldSubType } from "@Obsidian/Enums/CheckIn/Labels/textFieldSubType";
-    import { areEqual } from "@Obsidian/Utility/guid";
+    import { areEqual, newGuid } from "@Obsidian/Utility/guid";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterGroupBag";
+    import { FilterExpressionType } from "@Obsidian/Enums/Reporting/filterExpressionType";
+    import { FieldFilterRuleBag } from "@Obsidian/ViewModels/Reporting/fieldFilterRuleBag";
 
     const props = defineProps({
         labelManager: {
@@ -157,7 +191,15 @@
         }
     });
 
+    const blockConfig = useConfigurationValues<any>();
+    const invokeBlockAction = useInvokeBlockAction();
+
     const isComponentMenuSelected = ref(!!props.labelManager.selectedField.value);
+    const isConditionalSettingsVisible = ref(false);
+    const visibilityRule = ref<FieldFilterGroupBag>({
+        expressionType: FilterExpressionType.GroupAll,
+        guid: newGuid()
+    });
 
     const fieldConfigurationComponent = computed((): Component | undefined => {
         const field = props.labelManager?.current.value
@@ -249,12 +291,47 @@
         }
     });
 
+    /** Determines if we have any active conditional rules. */
+    const hasConditions = computed((): boolean => {
+        return !!visibilityRule.value?.rules && visibilityRule.value.rules.length > 0;
+    });
+
+    /** Contains the "Show/Hide any/all" title of the field visibility rule. */
+    const conditionalTitle = computed((): string => {
+        return visibilityRule.value
+            ? getFilterGroupTitle(visibilityRule.value)
+            : "";
+    });
+
+    /** The individual rules that decide if this field will be visible. */
+    const conditionalRules = computed((): FieldFilterRuleBag[] => {
+        return visibilityRule.value?.rules ?? [];
+    });
+
+    /**
+     * Gets the description of a single filter rule, including the source name.
+     *
+     * @param rule The rule that needs to be translated into description text.
+     *
+     * @returns A string that contains a human friendly description about the rule.
+     */
+    function getRuleDescription(rule: FieldFilterRuleBag): string {
+        return getFilterRuleDescription(rule, blockConfig.filterSources ?? []);
+    }
+
     function onControlsClick(): void {
         isComponentMenuSelected.value = false;
     }
 
     function onComponentClick(): void {
         isComponentMenuSelected.value = true;
+    }
+
+    function onConditionalSettingsSave(): void {
+        console.log(visibilityRule.value);
+        isConditionalSettingsVisible.value = false;
+
+        invokeBlockAction("DoFilter", { filter: visibilityRule.value });
     }
 
     watch(props.labelManager.selectedField, () => {
