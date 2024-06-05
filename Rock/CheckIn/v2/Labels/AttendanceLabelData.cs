@@ -18,32 +18,42 @@
 using System.Collections.Generic;
 
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.CheckIn.v2.Labels
 {
     /// <summary>
     /// <para>
-    /// The label data for a person label to be printed during the check-in
-    /// session. A person label is printed once per person per session.
+    /// Attendance labels are printed for every single attendance record.
     /// </para>
     /// <para>
-    /// Meaning, if Noah is checked in to the 9am service and the 11am service
-    /// in the same session, he gets one Person label.
-    /// </para>
-    /// <para>
-    /// However, if Noah is checked in to the 9am service and then a new
-    /// check-in session is done to check him in to the 11am service, he will
-    /// get 2 Person labels (one for each session).
+    /// Meaning if Noah is checked in to the Bunnies room at the 9am service
+    /// and also the Bunnies room at the 11am service, he will get two
+    /// attendance labels.
     /// </para>
     /// </summary>
-    internal class PersonLabelData : ILabelDataHasPerson
+    internal class AttendanceLabelData
     {
-        /// <inheritdoc/>
-        public Person Person { get; set; }
+        /// <summary>
+        /// The data that describes the attendance record this label is being
+        /// printed for.
+        /// </summary>
+        public AttendanceLabel Attendance { get; set; }
+
+        /// <summary>
+        /// The person that was checked in that this label is being printed for.
+        /// </summary>
+        public Person Person => Attendance.Person;
+
+        /// <summary>
+        /// The location that represents the room this attendance label is being
+        /// printed for.
+        /// </summary>
+        public NamedLocationCache Location => Attendance.Location;
 
         /// <summary>
         /// The attendance records for the <see cref="Person"/> during this
-        /// check-in session.
+        /// check-in session. This includes the <see cref="Attendance"/> record.
         /// </summary>
         public List<AttendanceLabel> PersonAttendance { get; set; }
 

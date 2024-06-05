@@ -23,34 +23,20 @@ namespace Rock.CheckIn.v2.Labels
 {
     /// <summary>
     /// <para>
-    /// The label data for a person label to be printed during the check-in
-    /// session. A person label is printed once per person per session.
+    /// A family label is printed once per session.
     /// </para>
     /// <para>
-    /// Meaning, if Noah is checked in to the 9am service and the 11am service
-    /// in the same session, he gets one Person label.
-    /// </para>
-    /// <para>
-    /// However, if Noah is checked in to the 9am service and then a new
-    /// check-in session is done to check him in to the 11am service, he will
-    /// get 2 Person labels (one for each session).
+    /// Meaning, if Jordan Greggs has a "can check-in" relationship to Noah
+    /// then Jordan will show up when checking in the Decker family. If both
+    /// Noah and Jordan are checked in at the same time, only one family
+    /// label will print even though Jordan is technically in a different
+    /// family.
     /// </para>
     /// </summary>
-    internal class PersonLabelData : ILabelDataHasPerson
+    internal class FamilyLabelData
     {
-        /// <inheritdoc/>
-        public Person Person { get; set; }
-
         /// <summary>
-        /// The attendance records for the <see cref="Person"/> during this
-        /// check-in session.
-        /// </summary>
-        public List<AttendanceLabel> PersonAttendance { get; set; }
-
-        /// <summary>
-        /// All attendance records for this session, including those from
-        /// other people being checked in as well as those from
-        /// <see cref="PersonAttendance"/>.
+        /// All attendance records for this session.
         /// </summary>
         public List<AttendanceLabel> AllAttendance { get; set; }
 

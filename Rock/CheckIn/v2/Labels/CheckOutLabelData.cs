@@ -15,44 +15,40 @@
 // </copyright>
 //
 
-using System.Collections.Generic;
-
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.CheckIn.v2.Labels
 {
     /// <summary>
     /// <para>
-    /// The label data for a person label to be printed during the check-in
-    /// session. A person label is printed once per person per session.
+    /// A check-out label is printed for every attendance record during the
+    /// check-out process.
     /// </para>
     /// <para>
-    /// Meaning, if Noah is checked in to the 9am service and the 11am service
-    /// in the same session, he gets one Person label.
-    /// </para>
-    /// <para>
-    /// However, if Noah is checked in to the 9am service and then a new
-    /// check-in session is done to check him in to the 11am service, he will
-    /// get 2 Person labels (one for each session).
+    /// Meaning if Noah is checked in to the 9am service and the 11am service
+    /// and is checked out from both at the same time, he will get two check-out
+    /// labels.
     /// </para>
     /// </summary>
-    internal class PersonLabelData : ILabelDataHasPerson
+    internal class CheckOutLabelData
     {
-        /// <inheritdoc/>
-        public Person Person { get; set; }
+        /// <summary>
+        /// The data that describes the attendance record this label is being
+        /// printed for.
+        /// </summary>
+        public AttendanceLabel Attendance { get; set; }
 
         /// <summary>
-        /// The attendance records for the <see cref="Person"/> during this
-        /// check-in session.
+        /// The person that was checked in that this label is being printed for.
         /// </summary>
-        public List<AttendanceLabel> PersonAttendance { get; set; }
+        public Person Person => Attendance.Person;
 
         /// <summary>
-        /// All attendance records for this session, including those from
-        /// other people being checked in as well as those from
-        /// <see cref="PersonAttendance"/>.
+        /// The location that represents the room this attendance label is being
+        /// printed for.
         /// </summary>
-        public List<AttendanceLabel> AllAttendance { get; set; }
+        public NamedLocationCache Location => Attendance.Location;
 
         /// <summary>
         /// The family object that was determined via either kiosk search

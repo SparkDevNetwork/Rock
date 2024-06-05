@@ -814,6 +814,10 @@
     <Compile Include="CheckIn\v2\DefaultSaveProvider.cs" />
     <Compile Include="CheckIn\v2\Filters\BirthMonthOpportunityFilter.cs" />
     <Compile Include="CheckIn\v2\Filters\LocationClosedOpportunityFilter.cs" />
+    <Compile Include="CheckIn\v2\Labels\AttendanceLabel.cs" />
+    <Compile Include="CheckIn\v2\Labels\AttendanceLabelData.cs" />
+    <Compile Include="CheckIn\v2\Labels\CheckOutLabelData.cs" />
+    <Compile Include="CheckIn\v2\Labels\FamilyLabelData.cs" />
     <Compile Include="CheckIn\v2\Labels\Formatters\CallbackDataFormatter.cs" />
     <Compile Include="CheckIn\v2\Labels\DataFormatter.cs" />
     <Compile Include="CheckIn\v2\Labels\DateAttributeFieldDataSource.cs" />
@@ -824,6 +828,7 @@
     <Compile Include="CheckIn\v2\Labels\Formatters\GenderDataFormatter.cs" />
     <Compile Include="CheckIn\v2\Labels\Formatters\GradeDataFormatter.cs" />
     <Compile Include="CheckIn\v2\Labels\Formatters\WeekdayDateDataFormatter.cs" />
+    <Compile Include="CheckIn\v2\Labels\ILabelDataHasPerson.cs" />
     <Compile Include="CheckIn\v2\Labels\LabelField.cs" />
     <Compile Include="CheckIn\v2\Labels\MultiValueFieldDataSource.cs" />
     <Compile Include="CheckIn\v2\Labels\Formatters\PersonAgeDataFormatter.cs" />
