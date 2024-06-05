@@ -1,27 +1,62 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    communicationMediumSms works!
+    <NotificationBox v-if="errorMessage"
+                     heading="Please correct the following:"
+                     alertType="validation">
+        <ul>
+            <li>{{ errorMessage }}</li>
+        </ul>
+    </NotificationBox>
+
+    <NotificationBox v-if="!mediumOptions"
+                     alertType="error">
+        <ul>
+            <li>Unable to load</li>
+        </ul>
+    </NotificationBox>
+
+    <template v-else>
+        <DropDownList v-model="fromNumberGuidOrEmptyString"
+                      :items="mediumOptions.smsFromNumbers ?? undefined"
+                      label="From" />
+    </template>
 </template>
 
 <script setup lang="ts">
-    import { PropType } from "vue";
+    import { PropType, onMounted, ref } from "vue";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { CommunicationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryInitializationBox";
+    import { CommunicationEntrySmsMediumOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySmsMediumOptionsBag";
+    import { CommunicationEntryGetMediumOptionsRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryGetMediumOptionsRequestBag";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { scrollToTopOfWindow } from "./utils.partial";
+    import { CommunicationEntryMediumOptionsBaseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryMediumOptionsBaseBag";
+    import { MediumType } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntry/mediumType";
 
     const props = defineProps({
         disabled: {
-            type: Boolean as PropType<boolean>,
-            default: false
-        },
-        isFullMode: {
             type: Boolean as PropType<boolean>,
             default: false
         }
     });
 
     const emit = defineEmits<{
-        (e: "update:disabled", value: boolean): void
+        /** Emits an error message. */
+        (e: "error", value: string): void,
+        /** Emits an event indicating the disabled state should be updated. */
+        (e: "update:disabled", value: boolean): void,
     }>();
 
+    const config = useConfigurationValues<CommunicationEntryInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+
     //#region Values
+
+    const fromNumberGuidOrEmptyString = ref<string>("");
+    const mediumOptions = ref<CommunicationEntrySmsMediumOptionsBag | null>(isSmsMediumOptions(config.mediumOptions) ? config.mediumOptions : null);
+    const errorMessage = ref<string | null | undefined>();
 
     //#endregion
 
@@ -31,6 +66,17 @@
 
     //#region Functions
 
+    function isSmsMediumOptions(options: CommunicationEntryMediumOptionsBaseBag | null | undefined): options is CommunicationEntrySmsMediumOptionsBag {
+        return options?.mediumType === MediumType.Sms;
+    }
+
+    function raiseError(error: string): void {
+        errorMessage.value = error;
+        scrollToTopOfWindow();
+
+        emit("error", error);
+    }
+
     //#endregion
 
     //#region Event Handlers
@@ -38,6 +84,31 @@
     //#endregion
 
     //#region Watchers
+
+    /**
+     * Load the options if they haven't been loaded yet.
+     * This is necessary when switching to a different medium (Email or SMS) after the block is loaded.
+     */
+    onMounted(async () => {
+        if (mediumOptions.value) {
+            return;
+        }
+
+        const bag: CommunicationEntryGetMediumOptionsRequestBag = {
+            mediumEntityTypeGuid: EntityType.CommunicationMediumSms
+        };
+
+        const response = await invokeBlockAction<CommunicationEntrySmsMediumOptionsBag>("GetMediumOptions", {
+            bag
+        });
+
+        if (!response?.data || response.isError || !isSmsMediumOptions(response.data)) {
+            raiseError(response.errorMessage ?? "An error occurred while loading the communication. Please try again.");
+        }
+        else {
+            mediumOptions.value = response.data;
+        }
+    });
 
     //#endregion
 </script>
