@@ -22,8 +22,12 @@ namespace Rock.ViewModels.Blocks.Crm.PhotoUpload
     /// <summary>
     /// 
     /// </summary>
-    public class PhotoUploadBag
+    public class PhotoUploadInitializationBox : BlockBox
     {
+        /// <summary>
+        /// Gets or sets the list of profile photos for the people
+        /// within the same family as the person logged in.
+        /// </summary>
         public List<PersonPhotoBag> PersonPhotoList { get; set; }
     }
 }

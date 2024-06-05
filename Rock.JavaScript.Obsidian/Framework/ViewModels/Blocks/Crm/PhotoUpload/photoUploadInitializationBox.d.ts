@@ -23,6 +23,22 @@
 
 import { PersonPhotoBag } from "@Obsidian/ViewModels/Blocks/Crm/PhotoUpload/personPhotoBag";
 
-export type PhotoUploadBag = {
+export type PhotoUploadInitializationBox = {
+    /**
+     * Gets or sets the error message. A non-empty value indicates that
+     * an error is preventing the block from being displayed.
+     */
+    errorMessage?: string | null;
+
+    /** Gets or sets the navigation urls. */
+    navigationUrls?: Record<string, string> | null;
+
+    /**
+     * Gets or sets the list of profile photos for the people
+     * within the same family as the person logged in.
+     */
     personPhotoList?: PersonPhotoBag[] | null;
+
+    /** Gets or sets the security grant token. */
+    securityGrantToken?: string | null;
 };

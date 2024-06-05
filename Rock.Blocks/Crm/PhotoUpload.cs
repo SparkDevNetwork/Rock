@@ -1,11 +1,24 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using DotLiquid;
 
 using Rock.Attribute;
 using Rock.Data;
@@ -52,40 +65,20 @@ namespace Rock.Blocks.Crm
 
         #endregion
 
-        #region Properties
-
-        /// <summary>
-        /// This is special "staff" group but it's only loaded when the AllowStaff block attribute is set to false.
-        /// </summary>
-        private Rock.Model.Group _staffGroup = null;
-
-        /// <summary>
-        /// Group that manages the people using the Photo Request system.
-        /// </summary>
-        private Rock.Model.Group _photoRequestGroup = null;
-
-        #endregion
-
         #region Methods
 
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            if ( ! GetAttributeValue( AttributeKey.AllowStaff ).AsBoolean() )
-            {
-                GroupService service = new GroupService( new RockContext() );
-                _staffGroup = service.GetByGuid( new Guid( Rock.SystemGuid.Group.GROUP_STAFF_MEMBERS ) );
-            }
-
-            return GetPhotoUploadBag();
+            return GetPhotoUploadInitializationBox();
         }
 
         /// <summary>
         /// Sets the initial state of the Photo Upload Bag.
         /// </summary>
-        private PhotoUploadBag GetPhotoUploadBag()
+        private PhotoUploadInitializationBox GetPhotoUploadInitializationBox()
         {
-            var photoUploadBag = new PhotoUploadBag
+            var photoUploadInitializationBox = new PhotoUploadInitializationBox
             {
                 PersonPhotoList = new List<PersonPhotoBag>()
             };
@@ -94,13 +87,20 @@ namespace Rock.Blocks.Crm
             if ( loggedInPerson != null )
             {
                 var isStaffMemberDisabled = false;
+                Rock.Model.Group staffGroup = null;
 
-                if ( _staffGroup != null && _staffGroup.Members.Where( m => m.PersonId == loggedInPerson.Id ).Count() > 0 )
+                if ( !GetAttributeValue( AttributeKey.AllowStaff ).AsBoolean() )
+                {
+                    GroupService service = new GroupService( new RockContext() );
+                    staffGroup = service.GetByGuid( new Guid( Rock.SystemGuid.Group.GROUP_STAFF_MEMBERS ) );
+                }
+
+                if ( staffGroup != null && staffGroup.Members.Where( m => m.PersonId == loggedInPerson.Id ).Count() > 0 )
                 {
                     isStaffMemberDisabled = true;
                 }
 
-                photoUploadBag.PersonPhotoList.Add( new PersonPhotoBag
+                photoUploadInitializationBox.PersonPhotoList.Add( new PersonPhotoBag
                 {
                     IdKey = loggedInPerson.IdKey,
                     FullName = loggedInPerson.FullName,
@@ -115,12 +115,12 @@ namespace Rock.Blocks.Crm
                     {
                         isStaffMemberDisabled = false;
 
-                        if ( _staffGroup != null && _staffGroup.Members.Where( m => m.PersonId == member.Id ).Count() > 0 )
+                        if ( staffGroup != null && staffGroup.Members.Where( m => m.PersonId == member.Id ).Count() > 0 )
                         {
                             isStaffMemberDisabled = true;
                         }
 
-                        photoUploadBag.PersonPhotoList.Add( new PersonPhotoBag
+                        photoUploadInitializationBox.PersonPhotoList.Add( new PersonPhotoBag
                         {
                             IdKey = member.Person.IdKey,
                             FullName = member.Person.FullName,
@@ -132,7 +132,7 @@ namespace Rock.Blocks.Crm
                 }
             }
 
-            return photoUploadBag;
+            return photoUploadInitializationBox;
         }
 
         /// <summary>
@@ -142,23 +142,20 @@ namespace Rock.Blocks.Crm
         /// <param name="rockContext">The rock context.</param>
         private void AddOrUpdatePersonInPhotoRequestGroup( Rock.Model.Person person, RockContext rockContext )
         {
-            if ( _photoRequestGroup == null )
-            {
-                GroupService service = new GroupService( rockContext );
-                _photoRequestGroup = service.GetByGuid( Rock.SystemGuid.Group.GROUP_PHOTO_REQUEST.AsGuid() );
-            }
+            GroupService service = new GroupService( rockContext );
+            var photoRequestGroup = service.GetByGuid( Rock.SystemGuid.Group.GROUP_PHOTO_REQUEST.AsGuid() );
 
-            var groupMember = _photoRequestGroup.Members.Where( m => m.PersonId == person.Id ).FirstOrDefault();
+            var groupMember = photoRequestGroup.Members.Where( m => m.PersonId == person.Id ).FirstOrDefault();
 
             if ( groupMember == null )
             {
                 groupMember = new GroupMember
                 {
-                    GroupId = _photoRequestGroup.Id,
+                    GroupId = photoRequestGroup.Id,
                     PersonId = person.Id,
-                    GroupRoleId = _photoRequestGroup.GroupType.DefaultGroupRoleId ?? -1
+                    GroupRoleId = photoRequestGroup.GroupType.DefaultGroupRoleId ?? -1
                 };
-                _photoRequestGroup.Members.Add( groupMember );
+                photoRequestGroup.Members.Add( groupMember );
             }
             groupMember.GroupMemberStatus = GroupMemberStatus.Pending;
         }
@@ -174,7 +171,7 @@ namespace Rock.Blocks.Crm
         /// <param name="photoGuid">The identifier of the photo.</param>
         /// <returns>An empty result that indicates if the operation succeeded.</returns>
         [BlockAction]
-        public BlockActionResult UpdatePersonProfilePhoto( string personIdKey, string photoGuid )
+        public BlockActionResult UpdatePersonProfilePhoto( string personIdKey, Guid photoGuid )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -186,7 +183,7 @@ namespace Rock.Blocks.Crm
                     return ActionBadRequest( "Person not found." );
                 }
 
-                person.PhotoId = new BinaryFileService( rockContext ).GetId( photoGuid.AsGuid() );
+                person.PhotoId = new BinaryFileService( rockContext ).GetId( photoGuid );
 
                 if ( person.PhotoId == null )
                 {

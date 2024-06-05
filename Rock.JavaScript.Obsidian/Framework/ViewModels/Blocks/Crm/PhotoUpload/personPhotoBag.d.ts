@@ -24,13 +24,31 @@
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export type PersonPhotoBag = {
+    /**
+     * Gets or sets the FullName of the person with which
+     * the profile photo belongs to.
+     */
     fullName?: string | null;
 
+    /**
+     * Gets or sets the IdKey of the person with which
+     * the profile photo belongs to.
+     */
     idKey?: string | null;
 
+    /**
+     * Gets or sets IsStaffMemberDisabled which is used
+     * to determine if the is a staff member that should
+     * be disabled from the photo upload process.
+     */
     isStaffMemberDisabled: boolean;
 
+    /**
+     * Gets or sets the Url of the photo to be displayed
+     * when the person does not have a profile photo.
+     */
     noPhotoUrl?: string | null;
 
+    /** Gets or sets the ProfilePhoto for the person */
     profilePhoto?: ListItemBag | null;
 };
