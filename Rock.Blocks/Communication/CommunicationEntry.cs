@@ -34,6 +34,7 @@ using Rock.ViewModels.Utility;
 using Rock.ViewModels.Blocks.Communication.CommunicationEntry;
 using Rock.Net;
 using System.ComponentModel.DataAnnotations;
+using System.Reflection.Emit;
 
 namespace Rock.Blocks.Communication
 {
@@ -1541,8 +1542,7 @@ namespace Rock.Blocks.Communication
                     EnabledLavaCommands = GetAttributeValue( AttributeKey.EnabledLavaCommands ),
                     FromEmail = sender.Email,
                     FromName = sender.FullName,
-                    // TODO JMH This will be set by the bulk service.
-                    //IsBulkCommunication = this.DefaultAsBulk,
+                    IsBulkCommunication = this.DefaultAsBulk,
                     SenderPersonAliasId = sender.PrimaryAliasId,
                     Status = CommunicationStatus.Transient,
                 };
@@ -1555,8 +1555,7 @@ namespace Rock.Blocks.Communication
 
                     if ( personId.HasValue )
                     {
-                        // TODO JMH This will be set by the bulk service.
-                        //communication.IsBulkCommunication = false;
+                        communication.IsBulkCommunication = false;
                         var personAlias = new PersonAliasService( rockContext )
                             .GetPrimaryAliasQuery()
                             .Where( p => p.PersonId == personId.Value )
@@ -1580,12 +1579,11 @@ namespace Rock.Blocks.Communication
                 communicationRecipientBags = GetRecipientBags( rockContext, RecipientQueryOptions.Filter.ByCommunication( communication.Id ) );
             }
 
-            // TODO JMH This will be set by the bulk service.
             // Override bulk communication if not full mode.
-            //if ( !box.IsFullMode )
-            //{
-            //    //communication.IsBulkCommunication = this.IsSendSimpleAsBulkEnabled;
-            //}
+            if ( !box.IsFullMode )
+            {
+                communication.IsBulkCommunication = this.IsSendSimpleAsBulkEnabled;
+            }
 
             var template = communication.CommunicationTemplate;
 
@@ -1640,8 +1638,7 @@ namespace Rock.Blocks.Communication
                 CommunicationGuid = communication.Guid,
                 CommunicationTemplateGuid = template?.Guid,
                 FutureSendDateTime = communication.FutureSendDateTime,
-                // TODO JMH This will be set by the bulk service.
-                // IsBulkCommunication = communication.IsBulkCommunication,
+                IsBulkCommunication = communication.IsBulkCommunication,
                 MediumEntityTypeGuid = mediumGuid ?? Guid.Empty,
                 Recipients = communicationRecipientBags,
                 SMSAttachmentBinaryFileIds = communication.SMSAttachmentBinaryFileIds.ToList(),
@@ -1654,15 +1651,9 @@ namespace Rock.Blocks.Communication
 
             // Get medium options.
             box.MediumOptions = GetMediumOptions( box.Communication.MediumEntityTypeGuid, sender );
-            // TODO JMH This will be set by the bulk service.
-            // Enforce bulk communication if the number of recipients exceeds the threshold.
-            //if ( box.MediumOptions is CommunicationEntryEmailMediumOptionsBag emailMediumOptionsBag
-            //     && emailMediumOptionsBag.BulkEmailThreshold.HasValue
-            //     && box.Communication?.Recipients != null
-            //     && box.Communication.Recipients.Count > emailMediumOptionsBag.BulkEmailThreshold.Value )
-            //{
-            //    box.Communication.IsBulkCommunication = true;
-            //}
+
+            var bulkConfigService = new BulkConfigService( this );
+            bulkConfigService.SetBulkConfig( box );
 
             // If the communication is transient, then override communication data from the template.
             if ( communication.Status == CommunicationStatus.Transient && template != null )
@@ -1673,10 +1664,6 @@ namespace Rock.Blocks.Communication
                     CommunicationEntryHelper.CopyTemplate( template, communicationCopyTarget, this.RequestContext );
                 }
             }
-
-            // TODO JMH Finally, set the bulk stuff.
-            var bulkOptions = new BulkConfigService( this );
-            bulkOptions.SetBulkConfig( box );
 
             //box.IsCommunicationSender = communication.SenderPersonAliasId.HasValue && communication.SenderPersonAliasId == GetCurrentPerson()?.PrimaryAliasId;
         }

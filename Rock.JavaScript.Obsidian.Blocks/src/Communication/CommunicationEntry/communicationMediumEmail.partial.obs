@@ -313,7 +313,7 @@
     const internalDisabled = useVModelPassthrough(props, "disabled", emit);
     const recipients = ref<CommunicationEntryRecipientBag[]>(props.communication.recipients ?? []);
     const attachments = ref<ListItemBag[]>(props.communication.emailAttachmentBinaryFiles ?? []);
-    const internalIsBulkCommunication = ref<boolean>(!!props.communication.isBulkCommunication);
+    const isBulkCommunication = ref<boolean>(!!props.communication.isBulkCommunication);
     const templateGuid = ref<string>(props.communication.communicationTemplateGuid ?? "");
     const fromName = ref<string>(props.communication.fromName ?? "");
     const fromAddress = ref<string>(props.communication.fromAddress ?? "");
@@ -365,15 +365,6 @@
         else {
             // Simple mode.
             return ["Rock.Model.Person"];
-        }
-    });
-
-    const isBulkCommunication = computed<boolean>({
-        get(): boolean {
-            return internalIsBulkCommunication.value || isBulkEmailThresholdExceeded.value;
-        },
-        set(value: boolean): void {
-            internalIsBulkCommunication.value = value;
         }
     });
 
@@ -862,6 +853,13 @@
                 attachments.value = template.emailAttachmentBinaryFiles ?? [];
                 message.value = template.message ?? "";
             }
+        }
+    });
+
+    // Override is bulk whenever the threshold is exceeded.
+    watch(isBulkEmailThresholdExceeded, isBulkForced => {
+        if (isBulkForced) {
+            isBulkCommunication.value = true;
         }
     });
 
