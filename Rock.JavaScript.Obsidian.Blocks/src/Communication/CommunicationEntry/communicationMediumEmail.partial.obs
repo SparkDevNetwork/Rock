@@ -50,7 +50,7 @@
                               :items="mediumOptions.templates ?? undefined"
                               label="Template" />
             </div>
-            <div v-if="!isBulkEmailThresholdExceeded" class="col-sm-6 align-self-center">
+            <div v-if="!isBulkEmailThresholdExceeded && isFullMode" class="col-sm-6 align-self-center">
                 <div class="float-right">
                     <Switch v-model="isBulkCommunication"
                             :disabled="internalDisabled"

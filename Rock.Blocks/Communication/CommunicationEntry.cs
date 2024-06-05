@@ -197,22 +197,26 @@ namespace Rock.Blocks.Communication
 
         #endregion
 
-        private static class Mode
-        {
-            public const string Simple = "Simple";
-            public const string Full = "Full";
-        }
-
         #region Properties
 
-        private bool IsFullMode
+        /// <summary>
+        /// Gets the mode to use ( 'Simple' mode will prevent users from searching/adding new people to communication).
+        /// </summary>
+        private Mode Mode
         {
             get
             {
                 var mode = GetAttributeValue( AttributeKey.Mode );
 
                 // Full mode when mode is empty or when mode == "Full".
-                return mode.IsNullOrWhiteSpace() || mode == Mode.Full;
+                if ( mode.IsNullOrWhiteSpace() || mode.Equals( "Full", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    return Mode.Full;
+                }
+                else
+                {
+                    return Mode.Simple;
+                }
             }
         }
         
@@ -341,9 +345,9 @@ namespace Rock.Blocks.Communication
             var currentPerson = GetCurrentPerson();
             var box = new CommunicationEntryInitializationBox
             {
-                IsFullMode = this.IsFullMode,
                 IsLavaEnabled = this.IsLavaEnabled,
                 MaximumRecipientsBeforeApprovalRequired = this.MaximumRecipients,
+                Mode = this.Mode,
             };
 
             // "Simple" mode will prevent users from searching/adding new people to communication.
@@ -1443,91 +1447,6 @@ namespace Rock.Blocks.Communication
             return ConvertAll().ToList();
         }
 
-        private class BulkConfig
-        {
-            public bool IsVisible { get; set; }
-
-            private bool _isBulk;
-            public bool IsBulk { get => _isBulk || this.IsForced; set => _isBulk = value; }
-
-            public bool IsForced { get; set; }
-        }
-
-        private class BulkConfigService
-        {
-            private readonly CommunicationEntry _block;
-
-            public bool IsFullMode => _block.IsFullMode;
-            public bool IsDefaultAsBulkEnabled => _block.DefaultAsBulk;
-            public bool IsPersonPageParameterEnabled => _block.IsPersonPageParameterEnabled;
-            public int? PersonOrPersonIdPageParameter => _block.PersonOrPersonIdPageParameter;
-            public bool IsSendSimpleAsBulkEnabled => _block.IsSendSimpleAsBulkEnabled;
-
-            public BulkConfigService( CommunicationEntry block )
-            {
-                _block = block;
-            }
-
-            public BulkConfig GetBulkConfig( CommunicationEntryInitializationBox box )
-            {
-                if ( box.MediumOptions.MediumType == MediumType.Email
-                     && MediumContainer.GetComponentByEntityTypeId( box.MediumOptions.MediumEntityTypeId ) is Rock.Communication.Medium.Email emailMediumComponent
-                     && emailMediumComponent.IsBulkEmailThresholdExceeded( box.Communication?.Recipients?.Count() ?? 0 ) )
-                {
-                    return new BulkConfig
-                    {
-                        // Hide when bulk mode is forced.
-                        IsVisible = false,
-
-                        // Force bulk communication since the recipient count has exceeded the threshold.
-                        IsForced = true,
-
-                        IsBulk = true,
-                    };
-                }
-                else
-                {
-                    return new BulkConfig
-                    {
-                        // The bulk option is only visible if full mode is set.
-                        IsVisible = this.IsFullMode,
-
-                        // Do not force bulk communication since the recipient count has not exceeded the threshold.
-                        IsForced = false,
-
-                        IsBulk =
-                            // Bulk if this is a new communication and "default as bulk" is enabled and there is no person page parameter.
-                            (
-                                box.Communication.CommunicationId == 0
-                                && this.IsDefaultAsBulkEnabled
-                                && (
-                                    !this.IsPersonPageParameterEnabled
-                                    || !this.PersonOrPersonIdPageParameter.HasValue
-                                )
-                            )
-                            // Or if this is simple mode and "send simple as bulk" is enabled (this overrides the current communication value).
-                            || (
-                                !this.IsFullMode
-                                && this.IsSendSimpleAsBulkEnabled
-                            )
-                            // Or if this is an existing bulk communication.
-                            || (
-                                box.Communication.CommunicationId != 0
-                                && box.Communication.IsBulkCommunication
-                            ),
-                    };
-                }
-            }
-
-            public void SetBulkConfig( CommunicationEntryInitializationBox box )
-            {
-                var bulkConfig = GetBulkConfig( box );
-                box.IsBulkVisible = bulkConfig.IsVisible;
-                box.IsBulkForced = bulkConfig.IsForced;
-                box.Communication.IsBulkCommunication = bulkConfig.IsBulk;
-            }
-        }
-
         /// <summary>
         /// Shows the detail.
         /// </summary>
@@ -1580,7 +1499,7 @@ namespace Rock.Blocks.Communication
             }
 
             // Override bulk communication if not full mode.
-            if ( !box.IsFullMode )
+            if ( box.Mode != Mode.Full )
             {
                 communication.IsBulkCommunication = this.IsSendSimpleAsBulkEnabled;
             }
@@ -1652,8 +1571,25 @@ namespace Rock.Blocks.Communication
             // Get medium options.
             box.MediumOptions = GetMediumOptions( box.Communication.MediumEntityTypeGuid, sender );
 
-            var bulkConfigService = new BulkConfigService( this );
-            bulkConfigService.SetBulkConfig( box );
+            // TODO JMH Should this be on the server??? I don't think so.
+            // The server should return
+            // 
+            //  - ✅ the "box.Communication.IsBulkCommunication" value (this could be an existing communication value, the "default as bulk" or "simple as bulk" settings for new communications), 
+            //
+            //  - ✅ the recipients threshold (overrides "box.Communication.IsBulkCommunication" = true and "is bulk slider visible" = false when threshold exceeded)
+            //
+            //  - ✅ the mode (simple/full)
+            //
+            // The client should
+            //
+            //  - 🔲 Display the "is bulk slider" if
+            //    box.mode == "full" && ( box.recipientsThreshold == null || communication.recipients.length <= box.recipientsThreshold )
+            //    otherwise, the "is bulk slider" should be hidden
+            //    box.mode == "simple" || ( box.recipientThreshold != null && communication.recipients.length > box.recipientsThreshold )
+            //
+            //  - 🔲 The "is bulk slider" should be bound to the box.communication.isBulkCommunication
+            //
+            //  - 🔲 The box.communication.isBulkCommunication should be set to true if communication.recipients.length > box.recipientsThreshold.
 
             // If the communication is transient, then override communication data from the template.
             if ( communication.Status == CommunicationStatus.Transient && template != null )

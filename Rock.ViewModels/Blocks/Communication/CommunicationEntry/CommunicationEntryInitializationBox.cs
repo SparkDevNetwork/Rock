@@ -17,6 +17,7 @@
 
 using System.Collections.Generic;
 
+using Rock.Enums.Blocks.Communication.CommunicationEntry;
 using Rock.ViewModels.Blocks.Group.Scheduling.GroupScheduleToolbox;
 using Rock.ViewModels.Utility;
 
@@ -28,14 +29,6 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntry
     /// <seealso cref="Rock.ViewModels.Blocks.Group.Scheduling.GroupScheduleToolbox.InitializationBox" />
     public class CommunicationEntryInitializationBox : InitializationBox
     {
-        /// <summary>
-        /// Gets or sets a value indicating whether the block should use full mode.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if the block should use full mode; otherwise, <c>false</c>.
-        /// </value>
-        public bool IsFullMode { get; set; }
-
         /// <summary>
         /// Gets or sets the mediums for the tab control.
         /// </summary>
@@ -106,7 +99,13 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntry
         /// <see langword="true"/> if lava in the message should be resolved; otherwise, <see langword="false"/> if lava should be removed from the message without resolving it.
         /// </value>
         public bool IsLavaEnabled { get; set; }
-        public bool IsBulkVisible { get; set; }
-        public bool IsBulkForced { get; set; }
+
+        /// <summary>
+        /// Gets or sets the mode.
+        /// </summary>
+        /// <value>
+        /// <see cref="Mode.Simple" /> will prevent users from searching/adding new people to the communication.
+        /// </value>
+        public Mode Mode { get; set; }
     }
 }

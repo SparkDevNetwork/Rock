@@ -19,17 +19,17 @@
                     <Email v-if="areEqual(selectedMediumEntityTypeGuidOrEmptyString, EntityType.CommunicationMediumEmail)"
                            v-model:disabled="isDisabled"
                            :communication="config.communication"
-                           :isFullMode="config.isFullMode"
+                           :isFullMode="config.mode == Mode.Full"
                            :isLavaEnabled="config.isLavaEnabled"
                            :mediumOptions="(config.mediumOptions as CommunicationEntryEmailMediumOptionsBag)"
                            @saved="onSentOrSaved"
                            @sent="onSentOrSaved" />
 
                     <Sms v-else-if="areEqual(selectedMediumEntityTypeGuidOrEmptyString, EntityType.CommunicationMediumSms)"
-                         :isFullMode="config.isFullMode" />
+                         :isFullMode="config.mode === Mode.Full" />
 
                     <PushNotification v-else-if="areEqual(selectedMediumEntityTypeGuidOrEmptyString, EntityType.CommunicationMediumPushNotification)"
-                                      :isFullMode="config.isFullMode" />
+                                      :isFullMode="config.mode === Mode.Full" />
 
                     <div v-else>
                         Unknown communication medium (Guid: {{ selectedMediumEntityTypeGuidOrEmptyString }}).
@@ -63,6 +63,7 @@
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import { CommunicationStatus, CommunicationStatusDescription } from "@Obsidian/Enums/Communication/communicationStatus";
+    import { Mode } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntry/mode";
     import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
     import { CommunicationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryInitializationBox";
     import { CommunicationEntrySendResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySendResponseBag";

@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { Mode } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntry/mode";
 import { ToolboxActionType } from "@Obsidian/Enums/Blocks/Group/Scheduling/toolboxActionType";
 import { CommunicationEntryAuthorizationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryAuthorizationBag";
 import { CommunicationEntryCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryCommunicationBag";
@@ -68,13 +69,6 @@ export type CommunicationEntryInitializationBox = {
     /** Gets or sets whether the "additional time sign-ups" feature is enabled. */
     isAdditionalTimeSignUpsEnabled: boolean;
 
-    isBulkForced: boolean;
-
-    isBulkVisible: boolean;
-
-    /** Gets or sets a value indicating whether the block should use full mode. */
-    isFullMode: boolean;
-
     /**
      * Gets or sets a value indicating whether the entire Communication Entry block is hidden.
      * There should be another block on the page that will display the Communication details in view mode when this is true.
@@ -98,6 +92,9 @@ export type CommunicationEntryInitializationBox = {
 
     /** Gets or sets the mediums for the tab control. */
     mediums?: ListItemBag[] | null;
+
+    /** Gets or sets the mode. */
+    mode: Mode;
 
     /** Gets or sets the navigation urls. */
     navigationUrls?: Record<string, string> | null;
