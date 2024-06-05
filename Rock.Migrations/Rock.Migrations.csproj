@@ -116,6 +116,10 @@
     <Compile Include="Migrations\202406040120175_WidenColumnInteractionSessionLocationRegionCode.Designer.cs">
       <DependentUpon>202406040120175_WidenColumnInteractionSessionLocationRegionCode.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202406051555015_UpdatePersonalizationSegmentModel.cs" />
+    <Compile Include="Migrations\202406051555015_UpdatePersonalizationSegmentModel.Designer.cs">
+      <DependentUpon>202406051555015_UpdatePersonalizationSegmentModel.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.5\202404071458052_AddTheme.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.5\202404071458052_AddTheme.designer.cs">
       <DependentUpon>202404071458052_AddTheme.cs</DependentUpon>
@@ -2112,6 +2116,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202406040120175_WidenColumnInteractionSessionLocationRegionCode.resx">
       <DependentUpon>202406040120175_WidenColumnInteractionSessionLocationRegionCode.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202406051555015_UpdatePersonalizationSegmentModel.resx">
+      <DependentUpon>202406051555015_UpdatePersonalizationSegmentModel.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.5\202404071458052_AddTheme.resx">
       <DependentUpon>202404071458052_AddTheme.cs</DependentUpon>
