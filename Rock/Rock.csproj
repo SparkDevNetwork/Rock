@@ -2925,7 +2925,6 @@
     <Compile Include="Jobs\CalculatePersonSignals.cs" />
     <Compile Include="Jobs\CommunicationQueueAlert.cs" />
     <Compile Include="Jobs\DatabaseMaintenance.cs" />
-    <Compile Include="Jobs\GetNcoa.cs" />
     <Compile Include="Jobs\IndexRockSite.cs" />
     <Compile Include="Jobs\ProcessBIAnalytics.cs" />
     <Compile Include="Jobs\PbxCdrDownload.cs" />
@@ -3739,13 +3738,6 @@
     <Compile Include="Utility\FileUtilities.cs" />
     <Compile Include="Utility\FontAwesomeHelper.cs" />
     <Compile Include="Utility\IRockOwinStartup.cs" />
-    <Compile Include="Utility\Ncoa.cs" />
-    <Compile Include="Utility\SparkDataApi\PersonAddressItem.cs" />
-    <Compile Include="Utility\SparkDataApi\NcoaApi.cs" />
-    <Compile Include="Utility\SparkDataApi\NcoaReturnRecord.cs" />
-    <Compile Include="Utility\SparkDataApi\NcoaResponse.cs" />
-    <Compile Include="Utility\SparkDataApi\GroupNameTransactionKey.cs" />
-    <Compile Include="Utility\SparkDataApi\UsernamePassword.cs" />
     <Compile Include="Utility\Settings\DataAutomation\InactivatePeople.cs" />
     <Compile Include="Utility\Settings\DataAutomation\InteractionItem.cs" />
     <Compile Include="Utility\Settings\DataAutomation\MoveAdultChildren.cs" />
@@ -3755,7 +3747,6 @@
     <Compile Include="Utility\Settings\DataAutomation\UpdateFamilyCampus.cs" />
     <Compile Include="Utility\Settings\SparkData\NcoaSettings.cs" />
     <Compile Include="Utility\Settings\SparkData\SparkDataConfig.cs" />
-    <Compile Include="Utility\SparkDataApi\SparkDataApi.cs" />
     <Compile Include="Utility\TextToWorkflow.cs" />
     <Compile Include="Utility\ZebraPrint.cs" />
     <Compile Include="Web\HttpModules\ResponseHeaders.cs" />

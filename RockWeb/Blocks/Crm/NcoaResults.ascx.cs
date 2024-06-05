@@ -26,7 +26,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Utility;
+using Rock.NCOA;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
