@@ -19,7 +19,7 @@ using System;
 
 using Rock.ViewModels.CheckIn.Labels;
 
-namespace Rock.CheckIn.v2.Labels
+namespace Rock.CheckIn.v2.Labels.Formatters
 {
     /// <summary>
     /// Formats a <see cref="DateTime"/> value into a selected format from

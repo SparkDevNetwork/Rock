@@ -17,7 +17,7 @@
 
 using System;
 
-namespace Rock.CheckIn.v2.Labels
+namespace Rock.CheckIn.v2.Labels.Formatters
 {
     /// <summary>
     /// A data formatter that uses a callback function to perform the conversion
