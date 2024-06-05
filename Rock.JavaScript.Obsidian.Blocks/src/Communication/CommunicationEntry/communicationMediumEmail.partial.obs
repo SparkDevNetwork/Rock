@@ -36,7 +36,7 @@
 
                 <RecipientModal v-model="isRecipientModalOpen"
                                 v-model:items="recipients"
-                                :disableAdd="!isFullMode"
+                                :disableAdd="config.mode !== Mode.Full"
                                 :getEmailTooltipRef="getEmailTooltipRef"
                                 :isBulk="isBulkCommunication" />
             </div>
@@ -44,13 +44,13 @@
 
         <div class="row d-flex">
             <div class="col-sm-6">
-                <DropDownList v-if="isFullMode"
+                <DropDownList v-if="config.mode === Mode.Full"
                               v-model="templateGuid"
                               :disabled="internalDisabled"
                               :items="mediumOptions.templates ?? undefined"
                               label="Template" />
             </div>
-            <div v-if="!isBulkEmailThresholdExceeded && isFullMode" class="col-sm-6 align-self-center">
+            <div v-if="!isBulkEmailThresholdExceeded && config.mode === Mode.Full" class="col-sm-6 align-self-center">
                 <div class="float-right">
                     <Switch v-model="isBulkCommunication"
                             :disabled="internalDisabled"
@@ -61,7 +61,7 @@
 
         <div class="row">
             <div class="col-sm-6">
-                <TextBox v-if="isFullMode"
+                <TextBox v-if="config.mode === Mode.Full"
                          v-model="fromName"
                          :disabled="internalDisabled"
                          label="From Name"
@@ -71,9 +71,9 @@
                                    label="From Name" />
             </div>
             <div class="col-sm-6">
-                <EmailBox v-if="isFullMode"
+                <EmailBox v-if="config.mode === Mode.Full"
                           v-model="fromAddress"
-                          :allowLava="isLavaEnabled"
+                          :allowLava="config.isLavaEnabled"
                           :disabled="internalDisabled"
                           label="From Address"
                           rules="required" />
@@ -85,9 +85,9 @@
 
         <div class="row d-flex">
             <div class="col-sm-6">
-                <EmailBox v-if="isFullMode"
+                <EmailBox v-if="config.mode === Mode.Full"
                           v-model="replyToAddress"
-                          :allowLava="isLavaEnabled"
+                          :allowLava="config.isLavaEnabled"
                           :disabled="internalDisabled"
                           label="Reply To Address" />
             </div>
@@ -104,18 +104,18 @@
             <div v-if="isCcShown" class="row">
                 <div class="col-sm-6">
                     <EmailBox v-model="ccAddresses"
-                              :allowLava="isLavaEnabled"
+                              :allowLava="config.isLavaEnabled"
                               :allowMultiple="true"
                               :disabled="internalDisabled"
-                              :help="`Any address in this field will be copied on the email sent to every recipient.${(isLavaEnabled ? ' Lava can be used to access recipient data. <span class=\'tip tip-lava\'></span>' : '')}`"
+                              :help="`Any address in this field will be copied on the email sent to every recipient.${(config.isLavaEnabled ? ' Lava can be used to access recipient data. <span class=\'tip tip-lava\'></span>' : '')}`"
                               label="CC Addresses" />
                 </div>
                 <div class="col-sm-6">
                     <EmailBox v-model="bccAddresses"
-                              :allowLava="isLavaEnabled"
+                              :allowLava="config.isLavaEnabled"
                               :allowMultiple="true"
                               :disabled="internalDisabled"
-                              :help="`Any address in this field will be copied on the email sent to every recipient.${(isLavaEnabled ? ' Lava can be used to access recipient data. <span class=\'tip tip-lava\'></span>' : '')}`"
+                              :help="`Any address in this field will be copied on the email sent to every recipient.${(config.isLavaEnabled ? ' Lava can be used to access recipient data. <span class=\'tip tip-lava\'></span>' : '')}`"
                               label="BCC Addresses" />
                 </div>
             </div>
@@ -125,17 +125,17 @@
             <div class="col-sm-6">
                 <TextBox v-model="subject"
                          :disabled="internalDisabled"
-                         :help="isLavaEnabled ? '<span class=\'tip tip-lava\'></span>' : ''"
+                         :help="config.isLavaEnabled ? '<span class=\'tip tip-lava\'></span>' : ''"
                          label="Subject"
                          rules="required" />
             </div>
             <div class="col-sm-4 align-self-center">
-                <Switch v-if="isFullMode"
+                <Switch v-if="config.mode === Mode.Full"
                         v-model="isScheduled"
                         :disabled="internalDisabled"
                         :text="scheduleSendText" />
             </div>
-            <div class="col-sm-2 align-self-center">
+            <div v-if="mediumOptions.isAttachmentUploaderShown" class="col-sm-2 align-self-center">
                 <div class="float-right">
                     <RockButton btnType="link"
                                 :disabled="internalDisabled"
@@ -176,13 +176,13 @@
             <FileUploader @update:modelValue="onAttachmentAdded"
                           @error="onAttachmentError"
                           :disabled="internalDisabled"
-                          :binaryFileTypeGuid="BinaryFiletype.CommunicationAttachment" />
+                          :binaryFileTypeGuid="mediumOptions.binaryFileTypeGuid" />
         </div>
 
         <HtmlEditor v-model="message"
                     :disabled="internalDisabled"
                     :editorHeight="600"
-                    :help="`${isLavaEnabled ? '<span class=\'tip tip-lava\'></span> ' : ''}<span class='tip tip-html'>`"
+                    :help="`${config.isLavaEnabled ? '<span class=\'tip tip-lava\'></span> ' : ''}<span class='tip tip-html'>`"
                     label="Message"
                     :mergeFields="messageMergeFields" />
 
@@ -193,14 +193,14 @@
                         type="button"
                         @click="send">Send</RockButton>
 
-            <RockButton v-if="isFullMode"
+            <RockButton v-if="config.mode === Mode.Full"
                         id="btnTest"
                         class="btn btn-link"
                         :disabled="internalDisabled"
                         type="button"
                         @click="test">Send Test</RockButton>
 
-            <RockButton v-if="isFullMode"
+            <RockButton v-if="config.mode === Mode.Full"
                         id="btnSave"
                         class="btn btn-link"
                         :disabled="internalDisabled"
@@ -242,7 +242,7 @@
     import VerticalTransitionCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
     import { CommunicationStatus } from "@Obsidian/Enums/Communication/communicationStatus";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
-    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { splitCase } from "@Obsidian/Utility/stringUtils";
@@ -261,20 +261,12 @@
     import { Guid } from "@Obsidian/Types";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { getAlertType, scrollIntoView, scrollToTopOfWindow } from "./utils.partial";
+import { CommunicationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryInitializationBox";
+import { Mode } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntry/mode";
 
     const invokeBlockAction = useInvokeBlockAction();
     const props = defineProps({
         disabled: {
-            type: Boolean as PropType<boolean>,
-            default: false
-        },
-
-        isFullMode: {
-            type: Boolean as PropType<boolean>,
-            default: false
-        },
-
-        isLavaEnabled: {
             type: Boolean as PropType<boolean>,
             default: false
         },
@@ -305,6 +297,8 @@
     }>();
 
     type LabelType = "label-default" | "label-success" | "label-warning" | "label-info" | "label-danger";
+
+    const config = useConfigurationValues<CommunicationEntryInitializationBox>();
 
     //#region Values
 
@@ -346,11 +340,11 @@
     //#region Computed Values
 
     const messageMergeFields = computed<string[] | undefined>(() => {
-        if (!props.isLavaEnabled) {
+        if (!config.isLavaEnabled) {
             // Lava is disabled.
             return undefined;
         }
-        else if (props.isFullMode) {
+        else if (config.mode === Mode.Full) {
             // Full mode.
             return [
                 "GlobalAttribute",
@@ -729,6 +723,7 @@
     /** Sends the communication. */
     async function doSend(): Promise<void> {
         try {
+            debugger;
             internalDisabled.value = true;
 
             const bag: CommunicationEntrySendRequestBag = {

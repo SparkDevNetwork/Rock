@@ -499,7 +499,7 @@ namespace Rock.Blocks.Communication
                 {
                     return new CommunicationEntryEmailMediumOptionsBag
                     {
-                        BinaryFileTypeGuid = GetAttributeValue( AttributeKey.AttachmentBinaryFileType ).AsGuidOrNull() ?? Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid(),
+                        BinaryFileTypeGuid = GetAttributeValue( AttributeKey.AttachmentBinaryFileType ).AsGuidOrNull() ?? Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT.AsGuid(),
                         BulkEmailThreshold = emailMedium.GetBulkEmailThreshold(),
                         DocumentFolderRoot = GetAttributeValue( AttributeKey.DocumentRootFolder ),
                         FromName = sender?.FullName,
