@@ -821,6 +821,9 @@
     <Compile Include="CheckIn\v2\Labels\FieldDataSource.cs" />
     <Compile Include="CheckIn\v2\Labels\FieldSourceHelper.cs" />
     <Compile Include="CheckIn\v2\Labels\Formatters\FullNameDataFormatter.cs" />
+    <Compile Include="CheckIn\v2\Labels\Formatters\GenderDataFormatter.cs" />
+    <Compile Include="CheckIn\v2\Labels\Formatters\GradeDataFormatter.cs" />
+    <Compile Include="CheckIn\v2\Labels\Formatters\WeekdayDateDataFormatter.cs" />
     <Compile Include="CheckIn\v2\Labels\LabelField.cs" />
     <Compile Include="CheckIn\v2\Labels\MultiValueFieldDataSource.cs" />
     <Compile Include="CheckIn\v2\Labels\Formatters\PersonAgeDataFormatter.cs" />

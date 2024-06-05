@@ -57,27 +57,29 @@ namespace Rock.CheckIn.v2.Labels
 
         private static List<FieldDataSource> GetPersonLabelDataSources()
         {
-            var dataSources = new List<FieldDataSource>();
+            var keysToMakeCommon = new List<string>
+            {
+                "person.nickname",
+                "person.lastname",
+                "person.daysuntilbirthday",
+                $"attribute:person:{SystemGuid.Attribute.PERSON_LEGAL_NOTE.ToLower()}",
+                $"attribute:person:{SystemGuid.Attribute.PERSON_ALLERGY.ToLower()}"
+            };
 
+            var dataSources = new List<FieldDataSource>();
             var entityFields = EntityHelper.GetEntityFields( typeof( Person ), true, false );
 
             foreach ( var entityField in entityFields )
             {
+                FieldDataSource dataSource = null;
+
                 if ( entityField.FieldKind == FieldKind.Property )
                 {
-                    var dataSource = GetPropertyDataSource( entityField, "person" );
-
-                    if ( dataSource != null )
-                    {
-                        dataSource.TextSubType = TextFieldSubType.AttendeeInfo;
-
-                        dataSources.Add( dataSource );
-                    }
+                    dataSource = GetPropertyDataSource<PersonLabelData>( entityField, "person", data => data.Person );
                 }
                 else
                 {
                     var attributeCache = AttributeCache.Get( entityField.AttributeGuid.Value );
-                    FieldDataSource dataSource;
 
                     if ( entityField.FieldType.Field is DateFieldType || entityField.FieldType.Field is DateTimeFieldType )
                     {
@@ -87,14 +89,22 @@ namespace Rock.CheckIn.v2.Labels
                     {
                         dataSource = new SingleValueFieldDataSource<PersonLabelData>
                         {
-                            Key = $"attribute:{entityField.AttributeGuid}",
+                            Key = $"attribute:person:{entityField.AttributeGuid}",
                             Name = entityField.Title,
                             Category = "Attributes",
                             ValueFunc = ( source, field, printRequest ) => source.Person.GetAttributeValue( entityField.AttributeGuid.Value )
                         };
                     }
+                }
 
+                if ( dataSource != null )
+                {
                     dataSource.TextSubType = TextFieldSubType.AttendeeInfo;
+
+                    if ( keysToMakeCommon.Contains( dataSource.Key ) )
+                    {
+                        dataSource.Category = "Common";
+                    }
 
                     dataSources.Add( dataSource );
                 }
@@ -109,9 +119,49 @@ namespace Rock.CheckIn.v2.Labels
             return dataSources;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage( "Style", "IDE0028:Simplify collection initialization", Justification = "Because the list of options is so long it is more clear to use the Add() method." )]
         private static List<FieldDataSource> GetCustomPersonLabelSources()
         {
             var dataSources = new List<FieldDataSource>();
+
+            dataSources.Add( new SingleValueFieldDataSource<PersonLabelData>
+            {
+                Key = "person.fullname",
+                Name = "Full Name",
+                TextSubType = TextFieldSubType.AttendeeInfo,
+                Category = "Common",
+                Formatter = FullNameDataFormatter.Instance,
+                ValueFunc = ( source, field, printRequest ) => source.Person
+            } );
+
+            dataSources.Add( new SingleValueFieldDataSource<PersonLabelData>
+            {
+                Key = "person.gender",
+                Name = "Gender",
+                TextSubType = TextFieldSubType.AttendeeInfo,
+                Category = "Common",
+                Formatter = GenderDataFormatter.Instance,
+                ValueFunc = ( source, field, printRequest ) => source.Person.Gender
+            } );
+
+            dataSources.Add( new SingleValueFieldDataSource<PersonLabelData>
+            {
+                Key = "person.gradeoffset",
+                Name = "Grade Offset",
+                TextSubType = TextFieldSubType.AttendeeInfo,
+                Category = "Common",
+                ValueFunc = ( source, field, printRequest ) => source.Person.GradeOffset
+            } );
+
+            dataSources.Add( new SingleValueFieldDataSource<PersonLabelData>
+            {
+                Key = "person.gradeformatted",
+                Name = "Grade Formatted",
+                TextSubType = TextFieldSubType.AttendeeInfo,
+                Category = "Common",
+                Formatter = GradeDataFormatter.Instance,
+                ValueFunc = ( source, field, printRequest ) => source.Person.GraduationYear
+            } );
 
             dataSources.Add( new SingleValueFieldDataSource<PersonLabelData>
             {
@@ -125,12 +175,12 @@ namespace Rock.CheckIn.v2.Labels
 
             dataSources.Add( new SingleValueFieldDataSource<PersonLabelData>
             {
-                Key = "person.fullname",
-                Name = "Full Name",
+                Key = "person.birthdaydayofweek",
+                Name = "Birthday Day Of Week",
                 TextSubType = TextFieldSubType.AttendeeInfo,
                 Category = "Common",
-                Formatter = FullNameDataFormatter.Instance,
-                ValueFunc = ( source, field, printRequest ) => source.Person
+                Formatter = WeekdayDateDataFormatter.Instance,
+                ValueFunc = ( source, field, printRequest ) => source.Person.ThisYearsBirthdate
             } );
 
             return dataSources;
@@ -180,15 +230,14 @@ namespace Rock.CheckIn.v2.Labels
             return filterSources;
         }
 
-        private static FieldDataSource GetPropertyDataSource( EntityField entityField, string propertyPath )
+        private static FieldDataSource GetPropertyDataSource<TLabelData>( EntityField entityField, string propertyPath, Func<TLabelData, object> propertySelector )
         {
-            var dataSource = new SingleValueFieldDataSource<PersonLabelData>
+            var dataSource = new SingleValueFieldDataSource<TLabelData>
             {
                 Key = $"{propertyPath}.{entityField.Name.ToLower()}",
                 Name = entityField.Title,
-                TextSubType = TextFieldSubType.AttendeeInfo,
-                Category = entityField.IsPreviewable ? "Common" : "Properties",
-                ValueFunc = ( source, field, printRequest ) => source.Person.GetPropertyValue( entityField.Name )
+                Category = "Properties",
+                ValueFunc = ( source, field, printRequest ) => propertySelector( source ).GetPropertyValue( entityField.Name )
             };
 
             // Special handling for defined values, we want to display the
@@ -197,7 +246,7 @@ namespace Rock.CheckIn.v2.Labels
             {
                 dataSource.ValueFunc = ( source, field, printRequest ) =>
                 {
-                    var definedValueId = ( int? ) source.Person.GetPropertyValue( entityField.Name );
+                    var definedValueId = ( int? ) propertySelector( source ).GetPropertyValue( entityField.Name );
 
                     if ( !definedValueId.HasValue )
                     {

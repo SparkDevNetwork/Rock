@@ -51,13 +51,6 @@ namespace Rock.CheckIn.v2.Labels.Formatters
 
             Options.Add( new DataFormatterOptionBag
             {
-                Key = "582cd1ea-24d4-4480-b5d8-dda7d748facd",
-                Name = "2",
-                Value = "Short"
-            } );
-
-            Options.Add( new DataFormatterOptionBag
-            {
                 Key = "a0ae4663-3abe-40a0-8fb2-3a63b7a22e72",
                 Name = "2yrs",
                 Value = "Long"
@@ -68,6 +61,13 @@ namespace Rock.CheckIn.v2.Labels.Formatters
                 Key = "7e6c1da8-b411-43d4-9dd0-da32753368a6",
                 Name = "2yo",
                 Value = "Medium"
+            } );
+
+            Options.Add( new DataFormatterOptionBag
+            {
+                Key = "582cd1ea-24d4-4480-b5d8-dda7d748facd",
+                Name = "2",
+                Value = "Short"
             } );
         }
 
