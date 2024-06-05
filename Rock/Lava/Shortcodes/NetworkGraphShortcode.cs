@@ -467,7 +467,8 @@ namespace Rock.Lava.Shortcodes
                     {
                         Id = element.Parameters.GetValueOrNull( "id" ) ?? element.Parameters["label"],
                         Label = element.Parameters["label"],
-                        Color = element.Parameters.GetValueOrNull( "color" )
+                        Color = element.Parameters.GetValueOrNull( "color" ),
+                        Size = element.Parameters.GetValueOrNull( "size" ).AsIntegerOrNull()
                     };
 
                     nodes.Add( node );
@@ -486,7 +487,7 @@ namespace Rock.Lava.Shortcodes
                         Target = element.Parameters["target"],
                         Label = element.Parameters.GetValueOrNull( "label" ),
                         Color = element.Parameters.GetValueOrNull( "color" ),
-                        Size = element.Parameters.GetValueOrNull( "size" ).AsIntegerOrNull() ?? 1
+                        Size = element.Parameters.GetValueOrNull( "size" ).AsIntegerOrNull()
                     };
 
                     edges.Add( edge );
