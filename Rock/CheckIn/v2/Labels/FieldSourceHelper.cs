@@ -16,20 +16,16 @@
 //
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web.UI;
 
 using Rock.Attribute;
 using Rock.CheckIn.v2.Labels.Formatters;
-using Rock.Data;
 using Rock.Enums.CheckIn.Labels;
 using Rock.Field;
 using Rock.Field.Types;
 using Rock.Model;
 using Rock.Reporting;
-using Rock.ViewModels.CheckIn.Labels;
 using Rock.ViewModels.Reporting;
 using Rock.Web.Cache;
 
@@ -104,16 +100,19 @@ namespace Rock.CheckIn.v2.Labels
                 }
             }
 
-            AddCustomPersonLabelSources( dataSources );
+            var customDataSources = GetCustomPersonLabelSources();
+            var customKeys = customDataSources.Select( ds => ds.Key ).ToList();
+
+            dataSources.RemoveAll( ds => customKeys.Contains( ds.Key ) );
+            dataSources.AddRange( customDataSources );
 
             return dataSources;
         }
 
-        private static void AddCustomPersonLabelSources( List<FieldDataSource> dataSources )
+        private static List<FieldDataSource> GetCustomPersonLabelSources()
         {
-            FieldDataSource dataSource;
+            var dataSources = new List<FieldDataSource>();
 
-            dataSources.RemoveAll( s => s.Key == "person.age" );
             dataSources.Add( new SingleValueFieldDataSource<PersonLabelData>
             {
                 Key = "person.age",
@@ -124,8 +123,7 @@ namespace Rock.CheckIn.v2.Labels
                 ValueFunc = ( source, field, printRequest ) => source.Person.AgePrecise
             } );
 
-            dataSources.RemoveAll( s => s.Key == "person.fullname" );
-            dataSource = new SingleValueFieldDataSource<PersonLabelData>
+            dataSources.Add( new SingleValueFieldDataSource<PersonLabelData>
             {
                 Key = "person.fullname",
                 Name = "Full Name",
@@ -133,7 +131,9 @@ namespace Rock.CheckIn.v2.Labels
                 Category = "Common",
                 Formatter = FullNameDataFormatter.Instance,
                 ValueFunc = ( source, field, printRequest ) => source.Person
-            };
+            } );
+
+            return dataSources;
         }
 
         private static List<FieldFilterSourceBag> GetPersonLabelFilterSources()

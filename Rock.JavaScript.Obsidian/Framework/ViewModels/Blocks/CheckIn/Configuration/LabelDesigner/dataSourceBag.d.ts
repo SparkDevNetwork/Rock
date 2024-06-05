@@ -59,9 +59,6 @@ export type DataSourceBag = {
      */
     name?: string | null;
 
-    /** The comparison types that are supported by by this data source. */
-    supportedComparisionTypes: number;
-
     /**
      * The text field sub-type that this data source is associated with.
      * This is used to filter the available data sources depending on

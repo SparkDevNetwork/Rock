@@ -12,7 +12,6 @@ import { FilterExpressionType } from "@Obsidian/Enums/Reporting/filterExpression
 import { FieldFilterRuleBag } from "@Obsidian/ViewModels/Reporting/fieldFilterRuleBag";
 import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
 import { getFieldType } from "@Obsidian/Utility/fieldTypes";
-import { IFieldType } from "@Obsidian/Types/fieldType";
 
 // #region Worksurface Utilities
 

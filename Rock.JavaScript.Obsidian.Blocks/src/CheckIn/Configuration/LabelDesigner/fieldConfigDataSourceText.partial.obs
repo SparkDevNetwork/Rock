@@ -13,17 +13,26 @@
 
     <FieldConfigText :labelManager="labelManager"
                      showPlaceholder />
+
+    <TextBox v-for="customField in customFields"
+             :label="customField.label || undefined"
+             :help="customField.helpText || undefined"
+             :modelValue="customFieldData[customField.key!]"
+             :modelModifiers="{ lazy: true }"
+             @update:modelValue="v => onCustomFieldDataChanged(customField.key!, v)" />
 </template>
 
 <script setup lang="ts">
     import FieldConfigText from "./fieldConfigText.partial.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { computed, PropType, ref, watch } from "vue";
     import { LabelUndoManager } from "./undoManager.partial";
     import { DataSourceBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/LabelDesigner/dataSourceBag";
     import { TextFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/textFieldConfigurationBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { CustomFieldInputBag } from "@Obsidian/ViewModels/CheckIn/Labels/customFieldInputBag";
 
     const blockConfig = useConfigurationValues<{ personLabelSources?: DataSourceBag[] | null }>();
 
@@ -36,6 +45,7 @@
 
     const selectedField = ref("");
     const formatterOption = ref("");
+    const customFieldData = ref<Record<string, string>>({});
 
     const fieldItems = getFieldItems();
 
@@ -54,6 +64,18 @@
                 text: o.name
             };
         });
+    });
+
+    const customFields = computed((): CustomFieldInputBag[] => {
+        const field = blockConfig.personLabelSources
+            ?.find(s => s.textSubType === props.labelManager.selectedField.value?.fieldSubType
+                && s.key == selectedField.value);
+
+        if (!field?.customFields) {
+            return [];
+        }
+
+        return field.customFields.filter(f => !!f.key && !!f.label);
     });
 
     function getFieldItems(): ListItemBag[] {
@@ -77,6 +99,14 @@
 
         selectedField.value = configuration.sourceKey ?? "";
         formatterOption.value = configuration.formatterOptionKey ?? "";
+        customFieldData.value = props.labelManager.selectedField.value?.customData ?? {};
+    }
+
+    function onCustomFieldDataChanged(key: string, value: string): void {
+        props.labelManager.mutateSelectedField(field => {
+            field.customData = field.customData ?? {};
+            field.customData[key] = value;
+        });
     }
 
     // Watch for changes in the UI that require an update to the label.

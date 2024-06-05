@@ -62,11 +62,6 @@ namespace Rock.ViewModels.Blocks.CheckIn.Configuration.LabelDesigner
         public string Category { get; set; }
 
         /// <summary>
-        /// The comparison types that are supported by by this data source.
-        /// </summary>
-        public ComparisonType SupportedComparisionTypes { get; set; }
-
-        /// <summary>
         /// The custom fields to display when this source is selected.
         /// </summary>
         public List<CustomFieldInputBag> CustomFields { get; set; }
