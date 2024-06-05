@@ -57,6 +57,20 @@ namespace Rock.CheckIn.v2.Labels
 
         private static List<FieldDataSource> GetPersonLabelDataSources()
         {
+            return GetPersonLabelAttendeeInfoSources()
+                .Concat( GetPersonLabelCheckInInfoSources() )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Gets all the data source objects for a Person object on the label
+        /// data.
+        /// </summary>
+        /// <typeparam name="TLabelData">The type of label data expected.</typeparam>
+        /// <returns>A list of field data sources.</returns>
+        private static List<FieldDataSource> GetPersonDataSources<TLabelData>()
+            where TLabelData : ILabelDataHasPerson
+        {
             var keysToMakeCommon = new List<string>
             {
                 "person.nickname",
@@ -75,7 +89,7 @@ namespace Rock.CheckIn.v2.Labels
 
                 if ( entityField.FieldKind == FieldKind.Property )
                 {
-                    dataSource = GetPropertyDataSource<PersonLabelData>( entityField, "person", data => data.Person );
+                    dataSource = GetPropertyDataSource<TLabelData>( entityField, "person", data => data.Person );
                 }
                 else
                 {
@@ -83,11 +97,11 @@ namespace Rock.CheckIn.v2.Labels
 
                     if ( entityField.FieldType.Field is DateFieldType || entityField.FieldType.Field is DateTimeFieldType )
                     {
-                        dataSource = new DateAttributeFieldDataSource<PersonLabelData>( attributeCache, "person", data => data.Person );
+                        dataSource = new DateAttributeFieldDataSource<TLabelData>( attributeCache, "person", data => data.Person );
                     }
                     else
                     {
-                        dataSource = new SingleValueFieldDataSource<PersonLabelData>
+                        dataSource = new SingleValueFieldDataSource<TLabelData>
                         {
                             Key = $"attribute:person:{entityField.AttributeGuid}",
                             Name = entityField.Title,
@@ -110,17 +124,15 @@ namespace Rock.CheckIn.v2.Labels
                 }
             }
 
-            var customDataSources = GetCustomPersonLabelSources();
-            var customKeys = customDataSources.Select( ds => ds.Key ).ToList();
-
-            dataSources.RemoveAll( ds => customKeys.Contains( ds.Key ) );
-            dataSources.AddRange( customDataSources );
-
             return dataSources;
         }
 
+        /// <summary>
+        /// Gets the attendee information data sources for a person label.
+        /// </summary>
+        /// <returns>A list of field data sources.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage( "Style", "IDE0028:Simplify collection initialization", Justification = "Because the list of options is so long it is more clear to use the Add() method." )]
-        private static List<FieldDataSource> GetCustomPersonLabelSources()
+        private static List<FieldDataSource> GetPersonLabelAttendeeInfoSources()
         {
             var dataSources = new List<FieldDataSource>();
 
@@ -181,6 +193,70 @@ namespace Rock.CheckIn.v2.Labels
                 Category = "Common",
                 Formatter = WeekdayDateDataFormatter.Instance,
                 ValueFunc = ( source, field, printRequest ) => source.Person.ThisYearsBirthdate
+            } );
+
+            var personDataSources = GetPersonDataSources<PersonLabelData>();
+            var existingKeys = dataSources.Select( ds => ds.Key ).ToList();
+
+            return dataSources
+                .Concat( personDataSources.Where( ds => !existingKeys.Contains( ds.Key ) ) )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Gets the attendee information data sources for a person label.
+        /// </summary>
+        /// <returns>A list of field data sources.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage( "Style", "IDE0028:Simplify collection initialization", Justification = "Because the list of options is so long it is more clear to use the Add() method." )]
+        private static List<FieldDataSource> GetPersonLabelCheckInInfoSources()
+        {
+            var dataSources = new List<FieldDataSource>();
+
+            dataSources.Add( new MultiValueFieldDataSource<PersonLabelData>
+            {
+                Key = "personattendance.area.name",
+                Name = "Area Name",
+                TextSubType = TextFieldSubType.CheckInInfo,
+                Category = "Common",
+                ValuesFunc = ( source, field, printRequest ) => source.PersonAttendance.Select( a => a.Area.Name )
+            } );
+
+            dataSources.Add( new SingleValueFieldDataSource<PersonLabelData>
+            {
+                Key = "personattendance.startdatetime",
+                Name = "Check-in Time",
+                TextSubType = TextFieldSubType.CheckInInfo,
+                Category = "Common",
+                ValueFunc = ( source, field, printRequest ) => source.PersonAttendance.Min( a => a.StartDateTime )
+            } );
+
+            dataSources.Add( new SingleValueFieldDataSource<PersonLabelData>
+            {
+                Key = "currenttime",
+                Name = "Current Time",
+                TextSubType = TextFieldSubType.CheckInInfo,
+                Category = "Common",
+                ValueFunc = ( source, field, printRequest ) => RockDateTime.Now
+            } );
+
+            dataSources.Add( new MultiValueFieldDataSource<PersonLabelData>
+            {
+                Key = "personattendance.group.name",
+                Name = "Group Name",
+                TextSubType = TextFieldSubType.CheckInInfo,
+                Category = "Common",
+                ValuesFunc = ( source, field, printRequest ) => source.PersonAttendance.Select( a => a.Group.Name )
+            } );
+
+            dataSources.Add( new MultiValueFieldDataSource<PersonLabelData>
+            {
+                Key = "personattendance.group.name",
+                Name = "Group Name",
+                TextSubType = TextFieldSubType.CheckInInfo,
+                Category = "Common",
+                ValuesFunc = ( source, field, printRequest ) => source.PersonAttendance
+                    .SelectMany( a => a.GroupMembers )
+                    .Select( )
             } );
 
             return dataSources;

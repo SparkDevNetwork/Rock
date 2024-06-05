@@ -16,7 +16,9 @@
 //
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Rock.CheckIn.v2.Labels
 {
@@ -30,7 +32,7 @@ namespace Rock.CheckIn.v2.Labels
         /// <summary>
         /// The function that will get the list of values from the label data.
         /// </summary>
-        public Func<TLabelData, LabelField, PrintLabelRequest, List<object>> ValuesFunc { get; set; }
+        public Func<TLabelData, LabelField, PrintLabelRequest, IEnumerable> ValuesFunc { get; set; }
 
         /// <inheritdoc/>
         public sealed override bool IsCollection => true;
@@ -38,7 +40,14 @@ namespace Rock.CheckIn.v2.Labels
         /// <inheritdoc/>
         public override List<object> GetValues( LabelField field, PrintLabelRequest printRequest )
         {
-            return ValuesFunc?.Invoke( ( TLabelData ) printRequest.LabelData, field, printRequest );
+            var values = ValuesFunc?.Invoke( ( TLabelData ) printRequest.LabelData, field, printRequest );
+
+            if ( values == null )
+            {
+                return new List<object>();
+            }
+
+            return values.Cast<object>().ToList();
         }
     }
 }

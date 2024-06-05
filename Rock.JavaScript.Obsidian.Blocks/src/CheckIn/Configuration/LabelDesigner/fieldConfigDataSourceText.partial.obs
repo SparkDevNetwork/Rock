@@ -111,6 +111,7 @@
 
     // Watch for changes in the UI that require an update to the label.
     watch([selectedField, formatterOption], () => {
+        // TODO: When selectedField changes, also change the placeholder text.
         props.labelManager.mutateSelectedField(field => {
             field.configurationValues = field.configurationValues ?? {};
 
