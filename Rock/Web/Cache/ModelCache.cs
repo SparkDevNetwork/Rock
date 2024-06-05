@@ -131,7 +131,7 @@ namespace Rock.Web.Cache
         /// The created by person alias identifier.
         /// </value>
         [DataMember]
-        public int? CreatedByPersonAliasId { get; set; }
+        public int? CreatedByPersonAliasId { get; protected set; }
 
         /// <summary>
         /// Gets or sets the modified by person alias identifier.
@@ -140,7 +140,7 @@ namespace Rock.Web.Cache
         /// The modified by person alias identifier.
         /// </value>
         [DataMember]
-        public int? ModifiedByPersonAliasId { get; set; }
+        public int? ModifiedByPersonAliasId { get; protected set; }
 
         /// <summary>
         /// A parent authority.  If a user is not specifically allowed or denied access to
