@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\EntityFramework.6.4.4\build\EntityFramework.props" Condition="Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -84,10 +84,6 @@
     <Compile Include="Migrations\202404251817274_CodeGenerated_20240425.Designer.cs">
       <DependentUpon>202404251817274_CodeGenerated_20240425.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202405031646264_AddPersonalizationSegmentColumns.cs" />
-    <Compile Include="Migrations\202405031646264_AddPersonalizationSegmentColumns.designer.cs">
-      <DependentUpon>202405031646264_AddPersonalizationSegmentColumns.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\202405091644314_Rollup_20240509.cs" />
     <Compile Include="Migrations\202405091644314_Rollup_20240509.Designer.cs">
       <DependentUpon>202405091644314_Rollup_20240509.cs</DependentUpon>
@@ -119,6 +115,10 @@
     <Compile Include="Migrations\202406040120175_WidenColumnInteractionSessionLocationRegionCode.cs" />
     <Compile Include="Migrations\202406040120175_WidenColumnInteractionSessionLocationRegionCode.Designer.cs">
       <DependentUpon>202406040120175_WidenColumnInteractionSessionLocationRegionCode.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202406051555015_UpdatePersonalizationSegmentModel.cs" />
+    <Compile Include="Migrations\202406051555015_UpdatePersonalizationSegmentModel.Designer.cs">
+      <DependentUpon>202406051555015_UpdatePersonalizationSegmentModel.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.5\202404071458052_AddTheme.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.5\202404071458052_AddTheme.designer.cs">
@@ -2093,9 +2093,6 @@
     <EmbeddedResource Include="Migrations\202404251817274_CodeGenerated_20240425.resx">
       <DependentUpon>202404251817274_CodeGenerated_20240425.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202405031646264_AddPersonalizationSegmentColumns.resx">
-      <DependentUpon>202405031646264_AddPersonalizationSegmentColumns.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202405091644314_Rollup_20240509.resx">
       <DependentUpon>202405091644314_Rollup_20240509.cs</DependentUpon>
     </EmbeddedResource>
@@ -2119,6 +2116,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202406040120175_WidenColumnInteractionSessionLocationRegionCode.resx">
       <DependentUpon>202406040120175_WidenColumnInteractionSessionLocationRegionCode.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202406051555015_UpdatePersonalizationSegmentModel.resx">
+      <DependentUpon>202406051555015_UpdatePersonalizationSegmentModel.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.5\202404071458052_AddTheme.resx">
       <DependentUpon>202404071458052_AddTheme.cs</DependentUpon>
