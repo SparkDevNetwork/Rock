@@ -58,6 +58,22 @@ namespace Rock.WebStartup
 
         #region Properties
 
+        /// <summary>
+        /// Gets the DateTime that <seealso cref="RunApplicationStartup"/> started
+        /// </summary>
+        /// <value>
+        /// The start date time.
+        /// </value>
+        [RockObsolete( "16.6" )]
+        [Obsolete( "Use RockApp.Current.HostingSettings.ApplicationStartDateTime instead." )]
+        public static DateTime StartDateTime
+        {
+            get
+            {
+                return RockApp.Current.HostingSettings.ApplicationStartDateTime;
+            }
+        }
+
         private static Stopwatch _debugTimingStopwatch = Stopwatch.StartNew();
 
         #endregion Properties
