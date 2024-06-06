@@ -430,7 +430,7 @@ namespace Rock.Blocks.Engagement
 
                 if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
-                    return ActionBadRequest( $"Not authorized to delete ${Step.FriendlyTypeName}." );
+                    return ActionBadRequest( $"Not authorized to delete {Step.FriendlyTypeName}." );
                 }
 
                 if ( !entityService.CanDelete( entity, out var errorMessage ) )

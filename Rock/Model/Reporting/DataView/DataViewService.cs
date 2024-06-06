@@ -25,13 +25,12 @@ using System.Linq;
 using EF6.TagWith;
 
 using Microsoft.Extensions.Logging;
-using Microsoft.SqlServer.Types;
 
 using Rock.Data;
 using Rock.Logging;
 using Rock.Reporting.DataFilter;
 using Rock.SystemKey;
-using Rock.Utility.Settings;
+using Rock.Configuration;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -49,8 +48,8 @@ namespace Rock.Model
         {
             get
             {
-                var rockContext = RockInstanceConfig.Database.ConnectionString;
-                var readOnlyContext = RockInstanceConfig.Database.ReadOnlyConnectionString;
+                var rockContext = RockApp.Current.InitializationSettings.ConnectionString;
+                var readOnlyContext = RockApp.Current.InitializationSettings.ReadOnlyConnectionString;
 
                 if ( rockContext != null && readOnlyContext != null && !rockContext.Equals( readOnlyContext ) )
                 {
@@ -442,15 +441,7 @@ END CATCH;";
                     if ( objectParameter.Value is DbGeography geography )
                     {
                         // We need to manually convert DbGeography to SqlGeography since we're sidestepping EF here.
-                        // https://stackoverflow.com/a/45099842 (Use SqlGeography instead of DbGeography)
-                        // https://stackoverflow.com/a/23187033 (Entity Framework: SqlGeography vs DbGeography)
-                        return new SqlParameter
-                        {
-                            ParameterName = objectParameter.Name,
-                            Value = SqlGeography.Parse( geography.AsText() ),
-                            SqlDbType = SqlDbType.Udt,
-                            UdtTypeName = "geography"
-                        };
+                        return Location.GetGeographySqlParameter( objectParameter.Name, geography );
                     }
 
                     return new SqlParameter( objectParameter.Name, objectParameter.Value ?? DBNull.Value );

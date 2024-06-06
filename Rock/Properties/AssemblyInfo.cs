@@ -40,6 +40,8 @@ using System.Runtime.InteropServices;
 [assembly: InternalsVisibleTo( "Rock.Tests.UnitTests" )]
 [assembly: InternalsVisibleTo( "Rock.Tests.Integration" )]
 [assembly: InternalsVisibleTo( "Rock.Tests.Integration.Performance" )]
+[assembly: InternalsVisibleTo( "Rock.Tests.Performance" )]
+[assembly: InternalsVisibleTo( "Rock.Update" )]
 [assembly: InternalsVisibleTo( "Rock.WebStartup" )]
 [assembly: InternalsVisibleTo( "Rock.AI.OpenAI" )]
 
@@ -153,3 +155,6 @@ using System.Runtime.InteropServices;
 [assembly: TypeForwardedTo( typeof( Rock.Model.ScheduledAttendanceItemMatchesPreference ) )]
 [assembly: TypeForwardedTo( typeof( Rock.Model.ScheduledAttendanceItemStatus ) )]
 [assembly: TypeForwardedTo( typeof( Rock.Model.SchedulerResourceGroupMemberFilterType ) )]
+
+// The following type forwardings were setup in Rock 1.16.6
+[assembly: TypeForwardedTo( typeof( Rock.Model.ComparisonType ) )]

@@ -479,23 +479,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Determines the medium entity type identifier.
-        /// Given the email and sms medium entity type ids and the available communication preferences
-        /// this method will determine which medium entity type id should be used and return that id.
-        /// If a preference could not be determined the email medium entity type id will be returned.
-        /// </summary>
-        /// <param name="emailMediumEntityTypeId">The email medium entity type identifier.</param>
-        /// <param name="smsMediumEntityTypeId">The SMS medium entity type identifier.</param>
-        /// <param name="recipientPreference">The recipient preference.</param>
-        /// <returns></returns>
-        [Obsolete( "Use the override that includes 'pushMediumEntityTypeId' instead." )]
-        [RockObsolete( "1.11" )]
-        public static int DetermineMediumEntityTypeId( int emailMediumEntityTypeId, int smsMediumEntityTypeId, params CommunicationType[] recipientPreference )
-        {
-            return DetermineMediumEntityTypeId( emailMediumEntityTypeId, smsMediumEntityTypeId, 0, recipientPreference );
-        }
-
-        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>

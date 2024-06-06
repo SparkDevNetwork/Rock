@@ -21,20 +21,34 @@
 // </copyright>
 //
 
-/** The additional configuration options for the Financial Pledge List block. */
 export type FinancialPledgeListOptionsBag = {
+    /** Determines if the amount column should be displayed. */
+    hideAmount: boolean;
+
     /** Determines if the results should be limited to pledges for the current person. */
     limitPledgesToCurrentPerson: boolean;
 
     /** Determines if the accounts column should be displayed. */
-    showAccountsColumn: boolean;
+    showAccountColumn: boolean;
+
+    /** Determines if the account filter should be displayed. */
+    showAccountFilter: boolean;
 
     /** Determines if the account summary should be displayed at the bottom of the list. */
     showAccountSummary: boolean;
+
+    /** Determines if the date range filter should be displayed. */
+    showDateRangeFilter: boolean;
 
     /** Determines if the group column should be displayed. */
     showGroupColumn: boolean;
 
     /** Determines if the last modified date column should be displayed. */
     showLastModifiedDateColumn: boolean;
+
+    /** Determines if the last modified date range filter should be displayed. */
+    showLastModifiedFilter: boolean;
+
+    /** Determines if the person filter should be displayed. */
+    showPersonFilter: boolean;
 };

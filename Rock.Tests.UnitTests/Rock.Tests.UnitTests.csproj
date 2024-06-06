@@ -50,8 +50,7 @@
       <HintPath>..\packages\EntityFramework.6.4.4\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
     <Reference Include="HtmlAgilityPack, Version=1.4.9.5, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\RockWeb\Bin\HtmlAgilityPack.dll</HintPath>
+      <HintPath>..\packages\HtmlAgilityPack.1.4.9.5\lib\Net45\HtmlAgilityPack.dll</HintPath>
     </Reference>
     <Reference Include="HttpSimulator, Version=2.3.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\HttpSimulator.2.3.0\lib\net40\HttpSimulator.dll</HintPath>
@@ -235,6 +234,7 @@
     <Compile Include="Rock\Utility\TimeIntervalTests.cs" />
     <Compile Include="Rock\Utility\MethodRetryTests.cs" />
     <Compile Include="Rock\Utility\WebRequestHelperTests.cs" />
+    <Compile Include="Rock\Web\UI\Controls\KeyValueListTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

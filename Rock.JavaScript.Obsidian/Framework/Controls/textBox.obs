@@ -41,7 +41,7 @@
                                :placeholder="placeholder"
                                @input="onInput"
                                @change="onChange" />
-                            <i class="fa fa-times clear-icon clear-position-with-slots" @click="internalValue = ''"></i>
+                            <i class="fa fa-times text-muted clear-icon clear-position-with-slots" @click="onClear"></i>
                             <slot name="inputGroupAppend" :isInputGroupSupported="true" />
                         </template>
                         <template v-else>
@@ -55,7 +55,7 @@
                                    :placeholder="placeholder"
                                    @input="onInput"
                                    @change="onChange" />
-                                <i class="fa fa-times clear-icon" @click="internalValue = ''"></i>
+                                <i class="fa fa-times text-muted clear-icon" @click="onClear"></i>
                             </div>
                         </template>
                     </template>
@@ -211,7 +211,7 @@
      * @param e The object that describes the event.
      */
     function onInput(e: Event): void {
-        if (e.target instanceof HTMLInputElement) {
+        if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
             internalValue.value = e.target.value;
         }
 
@@ -228,7 +228,7 @@
      * @param e The object that describes the event.
      */
     function onChange(e: Event): void {
-        if (e.target instanceof HTMLInputElement) {
+        if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
             internalValue.value = e.target.value;
         }
 
@@ -236,6 +236,11 @@
         if (props.modelModifiers.lazy) {
             emit("update:modelValue", internalValue.value);
         }
+    }
+
+    function onClear(): void {
+        internalValue.value = "";
+        emit("update:modelValue", internalValue.value);
     }
 
     watch(() => props.modelValue, () => {
@@ -251,10 +256,9 @@
 }
 
 .clear-icon {
-    margin-left: -30px;
-    padding: 10px;
+    margin-left: -34px;
     cursor: pointer;
-    color: #67717A;
+    padding: 10px;
 }
 
 .clear-position-with-slots {

@@ -188,7 +188,7 @@ namespace Rock.Blocks.Crm
 
                 if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
-                    return ActionBadRequest( $"Not authorized to delete ${Model.Badge.FriendlyTypeName}." );
+                    return ActionBadRequest( $"Not authorized to delete {Model.Badge.FriendlyTypeName}." );
                 }
 
                 if ( !entityService.CanDelete( entity, out var errorMessage ) )

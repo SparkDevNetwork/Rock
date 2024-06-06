@@ -346,8 +346,6 @@ namespace Rock.Model
         /// <summary>
         /// List leaders names, in order by males → females.
         /// Examples: Ted &#38; Cindy Decker -or- Ted Decker &#38; Cindy Wright.
-        /// This is populated from the logic in <seealso cref="Person.GetFamilySalutation(Person, bool, bool, bool, string, string)"/>
-        /// with includeChildren=false, and useFormalNames=false.
         /// </summary>
         /// <value>
         /// The group salutation.
@@ -359,8 +357,6 @@ namespace Rock.Model
         /// <summary>
         /// List all active group members, or order by leaders males → females - non leaders by age.
         /// Examples: Ted, Cindy, Noah and Alex Decker.
-        /// This is populated from the logic in <seealso cref="Person.GetFamilySalutation(Person, bool, bool, bool, string, string)"/>
-        /// with includeChildren=true, and useFormalNames=false.
         /// </summary>
         /// <value>
         /// The group salutation.

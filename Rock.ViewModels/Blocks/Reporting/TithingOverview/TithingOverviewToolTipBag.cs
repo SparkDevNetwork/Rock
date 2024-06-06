@@ -25,6 +25,14 @@ namespace Rock.ViewModels.Blocks.Reporting.TithingOverview
     public class TithingOverviewToolTipBag
     {
         /// <summary>
+        /// Gets or sets the campus identifier key.
+        /// </summary>
+        /// <value>
+        /// The campus identifier key.
+        /// </value>
+        public int CampusId { get; set; }
+
+        /// <summary>
         /// Gets or sets the date.
         /// </summary>
         /// <value>
@@ -95,5 +103,13 @@ namespace Rock.ViewModels.Blocks.Reporting.TithingOverview
         /// The campus closing date.
         /// </value>
         public DateTime? CampusClosedDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the campus short code.
+        /// </summary>
+        /// <value>
+        /// The campus short code.
+        /// </value>
+        public string CampusShortCode { get; set; }
     }
 }

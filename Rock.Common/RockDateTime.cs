@@ -87,6 +87,13 @@ namespace Rock
         }
 
         /// <summary>
+        /// Returns the date and time of the application host server. This prperty
+        /// should be used whenever it is necessary to use the local server clock
+        /// instead of <see cref="Now"/>.
+        /// </summary>
+        public static DateTime SystemDateTime => DateTime.Now;
+
+        /// <summary>
         /// Gets current datetime based on the OrgTimeZone setting set in web.config.
         /// </summary>
         /// <value>

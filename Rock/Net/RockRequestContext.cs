@@ -163,6 +163,34 @@ namespace Rock.Net
         internal NameValueCollection QueryString { get; private set; }
 
         /// <summary>
+        /// Gets the HTTP method from the request.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "1.16" )]
+        internal string HttpMethod { get; private set; }
+
+        /// <summary>
+        /// Gets the form from the request.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "1.16" )]
+        internal NameValueCollection Form { get; private set; }
+
+        /// <summary>
         /// Gets or sets the headers.
         /// </summary>
         /// <value>
@@ -232,6 +260,9 @@ namespace Rock.Net
 
             RequestUri = request.UrlProxySafe();
             RootUrlPath = GetRootUrlPath( RequestUri );
+
+            HttpMethod = request.HttpMethod;
+            Form = new NameValueCollection( request.Form );
 
             ClientInformation = new ClientInformation( request );
 

@@ -230,7 +230,7 @@ namespace Rock.Blocks.Core
 
                 if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
-                    return ActionBadRequest( $"Not authorized to delete ${BinaryFile.FriendlyTypeName}." );
+                    return ActionBadRequest( $"Not authorized to delete {BinaryFile.FriendlyTypeName}." );
                 }
 
                 if ( !entityService.CanDelete( entity, out var errorMessage ) )

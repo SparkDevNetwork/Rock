@@ -226,32 +226,6 @@ namespace Rock.Web.Cache
         public int Order { get; private set; }
 
         /// <summary>
-        /// Gets or sets the duration (in seconds) of the output cache.
-        /// </summary>
-        /// <value>
-        /// The duration (in seconds) of the output cache.
-        /// </value>
-        [Obsolete( "You should use the new cache control header property." )]
-        [RockObsolete( "1.12" )]
-        [DataMember]
-        public int OutputCacheDuration
-        {
-            get
-            {
-                if ( CacheControlHeader == null || CacheControlHeader.MaxAge == null )
-                {
-                    return 0;
-                }
-
-                return this.CacheControlHeader.MaxAge.ToSeconds();
-            }
-
-            private set
-            {
-            }
-        }
-
-        /// <summary>
         /// Gets or sets the description.
         /// </summary>
         /// <value>
@@ -870,26 +844,6 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Flushes the cached block instances.
-        /// </summary>
-        [Obsolete( "This will not work with a distributed cache system such as Redis. Remove the page from the cache so it can safely reload all its properties on Get().", true )]
-        [RockObsolete( "1.10" )]
-        public void RemoveBlocks()
-        {
-            _blockIds = null;
-        }
-
-        /// <summary>
-        /// Flushes the cached child pages.
-        /// </summary>
-        [Obsolete( "This will not work with a distributed cache system such as Redis. Remove the page from the cache so it can safely reload all its properties on Get().", true )]
-        [RockObsolete( "1.10" )]
-        public void RemoveChildPages()
-        {
-            _pageIds = null;
-        }
-
-        /// <summary>
         /// Gets all routes that match the given parameters. A route is considered
         /// matching if the parameters contains all the parameter names of the route.
         /// If there are extra parameters the route is still considered a match.
@@ -1199,38 +1153,6 @@ namespace Rock.Web.Cache
                 if ( page != null && page.LayoutId == layoutId )
                 {
                     Remove( page.Id );
-                }
-            }
-        }
-
-        /// <summary>
-        /// Flushes the block instances for all the pages that use a specific layout.
-        /// </summary>
-        [Obsolete( "This will not work with a distributed cache system such as Redis. In order to refresh the list of blocks in the PageCache obj we need to flush the page. Use FlushPagesForLayout( int ) instead.", true )]
-        [RockObsolete( "1.10" )]
-        public static void RemoveLayoutBlocks( int layoutId )
-        {
-            foreach ( var page in All() )
-            {
-                if ( page != null && page.LayoutId == layoutId )
-                {
-                    page.RemoveBlocks();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Flushes the block instances for all the pages that use a specific site.
-        /// </summary>
-        [Obsolete( "This will not work with a distributed cache system such as Redis. In order to refresh the list of blocks in the PageCache obj we need to flush the page. Use FlushPagesForSite( int ) instead.", true )]
-        [RockObsolete( "1.10" )]
-        public static void RemoveSiteBlocks( int siteId )
-        {
-            foreach ( var page in All() )
-            {
-                if ( page != null && page.SiteId == siteId )
-                {
-                    page.RemoveBlocks();
                 }
             }
         }

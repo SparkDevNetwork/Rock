@@ -5,6 +5,8 @@
             <FilterHeaderRow v-if="!light"
                              v-model:quickFilterValue="quickFilterValue"
                              :grid="gridState"
+                             :title="title"
+                             :isTitleHidden="isTitleHidden"
                              :gridActions="gridActions"
                              :visibleColumnCount="visibleColumnCount"
                              :countMessage="countMessage"
@@ -73,16 +75,18 @@
         <div class="grid-footing">
             <slot name="gridFooterPrepend" />
 
-            <PagerRow v-if="!light"
-                      v-model:pageSize="pageSize"
-                      v-model:currentPage="currentPage"
-                      :pageCount="pageCount"
-                      :pageSizes="pageSizes"
-                      :visibleColumnCount="visibleColumnCount" />
+            <template v-if="!isFooterHidden">
+                <PagerRow v-if="isPagerRowVisible"
+                          v-model:pageSize="pageSize"
+                          v-model:currentPage="currentPage"
+                          :pageCount="pageCount"
+                          :pageSizes="pageSizes"
+                          :visibleColumnCount="visibleColumnCount" />
 
-            <LightFooterRow v-else
-                            :grid="gridState"
-                            :gridActions="gridActions" />
+                <LightFooterRow v-else
+                                :grid="gridState"
+                                :gridActions="gridActions" />
+            </template>
 
             <slot name="gridFooterAppend" />
         </div>
@@ -336,7 +340,7 @@
     gap: 8px;
 }
 
-.grid-column-header > .grid-filter-popup  .alert {
+.grid-column-header > .grid-filter-popup .alert {
     border-top: 0;
     box-shadow: none;
     padding: 8px;
@@ -554,6 +558,21 @@
         definition: {
             type: Object as PropType<GridDefinitionBag>,
             required: false
+        },
+
+        /**
+         * The title of the grid. If not provided and `isTitleHidden` is `false`,
+         * the default title of `${itemTerm} List` will be shown.
+         */
+        title: {
+            type: String as PropType<string>,
+            required: false
+        },
+
+        /** When `true`, the grid's title will be hidden. */
+        isTitleHidden: {
+            type: Boolean as PropType<boolean>,
+            default: false
         },
 
         /**
@@ -854,6 +873,35 @@
             default: true
         },
 
+        /**
+         * Light mode: When `true`, the actions row will be hidden.
+         *
+
+         * Full mode: When `true`, paging will be disabled, making all data rows
+         * visible. Both the pager and actions rows will be hidden. If instead,
+         * you only want to disable paging, but still want the actions row to be
+         * shown, leave this property set to `false`, and set the `disablePaging`
+         * property to `true`.
+         */
+        isFooterHidden: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * Light mode: This property will have no effect.
+         *
+         * Full mode: When `true`, paging will be disabled, making all data rows
+         * visible. The pager row will be hidden but the actions row will be
+         * shown. If instead, you want to hide BOTH the pager and actions rows,
+         * leave this property set to `false`, and set the `isFooterHidden`
+         * property to `true`.
+         */
+        disablePaging: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
     });
 
     const emit = defineEmits<{
@@ -1067,7 +1115,7 @@
                 isPrimary: true,
                 title: "Add item",
                 tooltip: "Add a new item. (Alt+N)",
-                accesskey: "n"
+                shortcutKey: "n"
             });
         }
 
@@ -1201,6 +1249,21 @@
         return !!props.onSelectItem;
     });
 
+    /**
+     * Contains `true` if paging should be disabled on this grid.
+     */
+    const isPagingDisabled = computed((): boolean => {
+        return props.isFooterHidden || props.disablePaging;
+    });
+
+    /**
+     * Contains `true` if this grid is not operating in light mode
+     * and paging has not been disabled.
+     */
+    const isPagerRowVisible = computed((): boolean => {
+        return !props.light && !isPagingDisabled.value;
+    });
+
     // #endregion
 
     // #region Functions
@@ -1226,9 +1289,14 @@
      * Updates the {@link visibleRows} value based on the current selections.
      */
     function updateVisibleRows(): void {
-        const startIndex = (currentPage.value - 1) * pageSize.value;
+        if (isPagingDisabled.value) {
+            visibleRows.value = gridState.sortedRows.slice();
+        }
+        else {
+            const startIndex = (currentPage.value - 1) * pageSize.value;
 
-        visibleRows.value = gridState.sortedRows.slice(startIndex, startIndex + pageSize.value);
+            visibleRows.value = gridState.sortedRows.slice(startIndex, startIndex + pageSize.value);
+        }
     }
 
     /**
@@ -1236,7 +1304,12 @@
      * selected page size.
      */
     function updatePageCount(): void {
-        pageCount.value = Math.ceil(gridState.filteredRows.length / pageSize.value);
+        if (isPagingDisabled.value) {
+            pageCount.value = 1;
+        }
+        else {
+            pageCount.value = Math.ceil(gridState.filteredRows.length / pageSize.value);
+        }
     }
 
     /**

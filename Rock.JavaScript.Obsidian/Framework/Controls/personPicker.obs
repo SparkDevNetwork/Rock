@@ -225,7 +225,7 @@
 
     /** Whether or not to show the self-selection button */
     const isSelfSelectionEnabled = computed(() => {
-        return props.enableSelfSelection && (currentPerson?.idKey ?? false);
+        return props.enableSelfSelection && (currentPerson?.primaryAliasGuid ?? false);
     });
 
     /**
@@ -394,7 +394,7 @@
     }
 
     function selectSelf(): void {
-        selectPerson({ primaryAliasGuid: currentPerson?.idKey, name: currentPerson?.fullName });
+        selectPerson({ primaryAliasGuid: currentPerson?.primaryAliasGuid, name: currentPerson?.fullName });
     }
 
     /** Set a given search result as the selected person */

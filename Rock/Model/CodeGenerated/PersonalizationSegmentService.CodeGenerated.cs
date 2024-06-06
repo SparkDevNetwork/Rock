@@ -118,6 +118,8 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.AdditionalFilterJson = source.AdditionalFilterJson;
+            target.CategoryId = source.CategoryId;
+            target.Description = source.Description;
             target.FilterDataViewId = source.FilterDataViewId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
@@ -125,6 +127,7 @@ namespace Rock.Model
             target.IsDirty = source.IsDirty;
             target.Name = source.Name;
             target.SegmentKey = source.SegmentKey;
+            target.TimeToUpdateDurationMilliseconds = source.TimeToUpdateDurationMilliseconds;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

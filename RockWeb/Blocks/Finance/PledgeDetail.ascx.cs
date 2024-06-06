@@ -49,6 +49,7 @@ namespace RockWeb.Blocks.Finance
         {
             public const string PledgeId = "PledgeId";
             public const string PersonActionIdentifier = "rckid";
+            public const string ReturnUrl = "ReturnUrl";
         }
 
         #endregion Keys
@@ -136,7 +137,16 @@ namespace RockWeb.Blocks.Finance
             rockContext.SaveChanges();
             pledge.SaveAttributeValues( rockContext );
 
-            NavigateToParentPage();
+            var returnUrl = PageParameter( PageParameterKey.ReturnUrl );
+            if ( returnUrl.IsNullOrWhiteSpace() )
+            {
+                NavigateToParentPage();
+            }
+            else
+            {
+                Response.Redirect( returnUrl );
+                Context.ApplicationInstance.CompleteRequest();
+            }
         }
 
         /// <summary>
@@ -176,6 +186,7 @@ namespace RockWeb.Blocks.Finance
                     lActionTitle.Text = ActionTitle.Add( FinancialPledge.FriendlyTypeName ).FormatAsHtmlTitle();
                     // hide the panel drawer that show created and last modified dates
                     pdAuditDetails.Visible = false;
+                    HideSecondaryBlocks( true );
                 }
 
                 var isReadOnly = !IsUserAuthorized( Authorization.EDIT );
@@ -220,8 +231,8 @@ namespace RockWeb.Blocks.Finance
                 tbAmount.Value = !isNewPledge ? pledge.TotalAmount : ( decimal? ) null;
                 tbAmount.ReadOnly = isReadOnly;
 
-                dpDateRange.LowerValue = pledge.StartDate;
-                dpDateRange.UpperValue = pledge.EndDate;
+                dpDateRange.LowerValue = pledge.StartDate == DateTime.MinValue.Date ? ( DateTime? ) null : pledge.StartDate;
+                dpDateRange.UpperValue = pledge.EndDate == DateTime.MaxValue.Date ? ( DateTime? ) null : pledge.EndDate;
                 dpDateRange.ReadOnly = isReadOnly;
 
                 dvpFrequencyType.SelectedValue = !isNewPledge ? pledge.PledgeFrequencyValueId.ToString() : string.Empty;

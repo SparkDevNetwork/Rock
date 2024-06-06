@@ -81,10 +81,9 @@ namespace Rock.Jobs
         public override void Execute()
         {
             int sqlCommandTimeout = GetAttributeValue( AttributeKey.SqlCommandTimeout ).AsIntegerOrNull() ?? 300;
-            StringBuilder results = new StringBuilder();
             int updatedDataViewCount = 0;
-            var errors = new List<string>();
-            List<Exception> exceptions = new List<Exception>();
+            var failedDataViews = new List<string>();
+            var exceptions = new List<Exception>();
 
             using ( var rockContextList = new RockContext() )
             {
@@ -177,10 +176,11 @@ namespace Rock.Jobs
                             // Capture and log the exception because we're not going to fail this job
                             // unless all the data views fail.
                             var errorMessage = $"An error occurred while trying to update persisted data view '{name}' so it was skipped. Error: {ex.Message}";
-                            errors.Add( errorMessage );
+                            failedDataViews.Add( name );
                             var ex2 = new Exception( errorMessage, ex );
                             exceptions.Add( ex2 );
                             ExceptionLogService.LogException( ex2, null );
+                            Logger.LogError( ex, errorMessage );
                             continue;
                         }
                         finally
@@ -195,26 +195,26 @@ namespace Rock.Jobs
                 }
             }
 
+            StringBuilder results = new StringBuilder();
             // Format the result message
-            results.AppendLine( $"Updated {updatedDataViewCount} {"dataview".PluralizeIf( updatedDataViewCount != 1 )}" );
+            results.AppendLine( $"<i class='fa fa-circle text-success'></i> Updated {updatedDataViewCount} {"dataview".PluralizeIf( updatedDataViewCount != 1 )}" );
+
+            if ( failedDataViews.Any() )
+            {
+                var topTwenty = failedDataViews.Take( 20 ).ToList();
+                results.Append( $"<i class='fa fa-circle text-warning'></i> Skipped: {failedDataViews.Count} dataviews due to encountered errors:" );
+                results.Append( "<ul>" );
+                topTwenty.ForEach( e => results.Append( $"<li>{e}</li>" ) );
+                results.Append( "</ul>" );
+                results.AppendLine( "Enable \"Warning\" and \"Jobs\" domain under Rock Logs to view details" );
+            }
+
             this.Result = results.ToString();
 
-            if ( errors.Any() )
+            if ( exceptions.Any() )
             {
-                StringBuilder sb = new StringBuilder();
-                sb.AppendLine();
-                sb.Append( "Errors: " );
-                errors.ForEach( e => { sb.AppendLine(); sb.Append( e ); } );
-                string errorMessage = sb.ToString();
-                this.Result += errorMessage;
-
-                // We're not going to throw an aggregate exception unless there were no successes.
-                // Otherwise the status message does not show any of the success messages in
-                // the last status message.
-                if ( updatedDataViewCount == 0 )
-                {
-                    throw new AggregateException( exceptions.ToArray() );
-                }
+                var exceptionList = new AggregateException( "One or more exceptions occurred in RockCleanup.", exceptions );
+                throw new RockJobWarningException( "Update Persisted Dataviews completed with warnings", exceptionList );
             }
         }
     }

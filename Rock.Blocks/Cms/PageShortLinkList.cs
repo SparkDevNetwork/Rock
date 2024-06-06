@@ -161,7 +161,7 @@ namespace Rock.Blocks.CMS
 
                 if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
-                    return ActionBadRequest( $"Not authorized to delete ${PageShortLink.FriendlyTypeName}." );
+                    return ActionBadRequest( $"Not authorized to delete {PageShortLink.FriendlyTypeName}." );
                 }
 
                 if ( !entityService.CanDelete( entity, out var errorMessage ) )

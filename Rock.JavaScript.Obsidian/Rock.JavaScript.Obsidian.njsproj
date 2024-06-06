@@ -271,6 +271,7 @@
     <Folder Include="Framework\Enums\Blocks\Security\Login\" />
     <Folder Include="Framework\Enums\Cms\" />
     <Folder Include="Framework\Enums\Communication\" />
+    <Folder Include="Framework\Enums\Configuration\" />
     <Folder Include="Framework\Enums\Connection\" />
     <Folder Include="Framework\Enums\Controls\" />
     <Folder Include="Framework\Enums\Core\" />
@@ -321,6 +322,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Cms\SiteDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Communication\" />
     <Folder Include="Framework\ViewModels\Blocks\Communication\EmailPreferenceEntry\" />
+    <Folder Include="Framework\ViewModels\Blocks\Communication\NcoaProcess\" />
     <Folder Include="Framework\ViewModels\Blocks\Communication\SnippetDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Communication\SnippetTypeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Communication\SystemCommunicationList\" />
@@ -390,6 +392,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Finance\FinancialBatchList\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\FinancialGatewayDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\FinancialPledgeDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Finance\FinancialPledgeList\" />
     <Folder Include="Framework\ViewModels\Blocks\Fundraising\" />
     <Folder Include="Framework\ViewModels\Blocks\Fundraising\FundraisingDonationList\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\SavedAccountList\" />
@@ -411,6 +414,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Group\GroupRegistration\" />
     <Folder Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestList\" />
     <Folder Include="Framework\ViewModels\Blocks\Reporting\" />
+    <Folder Include="Framework\ViewModels\Blocks\Reporting\DynamicData\" />
     <Folder Include="Framework\ViewModels\Blocks\Reporting\MergeTemplateDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Reporting\MergeTemplateList\" />
     <Folder Include="Framework\ViewModels\Blocks\Reporting\ReportList\" />
@@ -511,12 +515,14 @@
     <TypeScriptCompile Include="Framework\Enums\Cms\persistedDatasetDataFormat.ts" />
     <TypeScriptCompile Include="Framework\Enums\Cms\persistedDatasetScriptType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Cms\siteType.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Cms\siteTypeFlags.ts" />
     <TypeScriptCompile Include="Framework\Enums\Cms\tagType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Communication\communicationMessageFilter.ts" />
     <TypeScriptCompile Include="Framework\Enums\Communication\communicationRecipientStatus.ts" />
     <TypeScriptCompile Include="Framework\Enums\Communication\communicationStatus.ts" />
     <TypeScriptCompile Include="Framework\Enums\Communication\notificationClassification.ts" />
     <TypeScriptCompile Include="Framework\Enums\Communication\segmentCriteria.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Configuration\databasePlatform.ts" />
     <TypeScriptCompile Include="Framework\Enums\Connection\connectionRequestViewModelSortProperty.ts" />
     <TypeScriptCompile Include="Framework\Enums\Connection\connectionTypeViewMode.ts" />
     <TypeScriptCompile Include="Framework\Enums\Connection\connectionWorkflowTriggerType.ts" />
@@ -809,6 +815,9 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\EmailPreferenceEntry\emailPreferenceEntrySaveResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\EmailPreferenceEntry\emailPreferenceIntializationBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\SystemCommunicationList\systemCommunicationListOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\NcoaProcess\ncoaProcessBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\NcoaProcess\ncoaProcessPersonAddressBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\NcoaProcess\ncoaProcessSavedSettingsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\AssetStorageProviderDetail\assetStorageProviderBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\AssetStorageProviderDetail\assetStorageProviderDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Communication\SnippetDetail\snippetBag.d.ts" />
@@ -889,6 +898,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\PersonDetail\Badges\badgesConfigurationBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\PersonMergeRequestList\personMergeRequestListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\PhotoOptOut\photoOptOutBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\PhotoUpload\photoUploadInitializationBox.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\PhotoUpload\personPhotoBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\detailBlockBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\AchievementAttemptDetail\achievementAttemptBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\AchievementAttemptDetail\achievementAttemptDetailOptionsBag.d.ts" />
@@ -979,6 +990,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialBatchList\setBulkBatchStatusResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialGatewayDetail\financialGatewayBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialGatewayDetail\financialGatewayDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialPledgeList\financialPledgeListBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialPledgeList\financialPledgeListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Fundraising\FundraisingDonationList\fundraisingDonationListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\SavedAccountList\savedAccountListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Groups\GroupRegistration\groupRegistrationBag.d.ts" />
@@ -1016,6 +1029,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerCloneSettingsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerFiltersBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerGetPreferencesBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerGroupLocationScheduleNamesBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerInitializationBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerLocationsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerOccurrenceBag.d.ts" />
@@ -1023,7 +1037,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerPreferencesBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerResourceSettingsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerSchedulesBag.d.ts" />
-    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerSendNowResponseBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerSendConfirmationsResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerUnassignedResourceCountBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduler\groupSchedulerUpdatePreferenceBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\Scheduling\GroupScheduleToolbox\assignmentOptionsBag.d.ts" />
@@ -1057,6 +1071,14 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestEntry\prayerRequestEntrySaveRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestEntry\prayerRequestEntrySaveResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Prayer\PrayerRequestList\prayerRequestListOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\DynamicData\columnConfigurationBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\DynamicData\dynamicDataCustomSettingsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\DynamicData\dynamicDataCustomSettingsOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\DynamicData\dynamicDataInitializationBox.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\DynamicData\gridResultsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\DynamicData\lavaTemplateResultsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\DynamicData\reloadColumnsRequestBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\DynamicData\reloadColumnsResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\MergeTemplateDetail\mergeTemplateBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\MergeTemplateDetail\mergeTemplateDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\MergeTemplateDetail\mergeTemplateFileValidationBag.d.ts" />
@@ -1186,6 +1208,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\attributeFieldDefinitionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\customActionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\customColumnDefinitionBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\dynamicFieldDefinitionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\fieldDefinitionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\gridCommunicationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Core\Grid\gridDataBag.d.ts" />
@@ -1219,6 +1242,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Prayer\PrayerRequestEntry\prayerRequestEntrySaveRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Prayer\PrayerRequestEntry\prayerRequestEntrySaveResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Reporting\fieldFilterGroupBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Reporting\fieldFilterPropertyBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Reporting\fieldFilterRuleBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Reporting\fieldFilterSourceBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\Controls\accountPickerGetChildrenOptionsBag.d.ts" />

@@ -394,7 +394,7 @@ namespace Rock.Web.Cache
             {
                 // skip if parent group type and current group type are the same (a situation that should not be possible) to prevent stack overflow
                 if ( groupType.Id == parentGroupType.Id ||
-                    // also skip if the parent group type and starting group type are the same as this is a circular reference and can cause a stack overflow
+                     // also skip if the parent group type and starting group type are the same as this is a circular reference and can cause a stack overflow
                      startingGroup.Id == parentGroupType.Id )
                 {
                     continue;

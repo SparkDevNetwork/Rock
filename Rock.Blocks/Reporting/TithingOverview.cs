@@ -94,12 +94,16 @@ namespace Rock.Blocks.Reporting
         private TithingOverviewInitializationBox GetInitializationBox( RockContext rockContext, string chartType )
         {
             var json = GetChartData( rockContext, chartType );
+            var toolTipData = GetToolTipData( rockContext, chartType );
+            var metricValues = GetTithingOverviewMetricValues( rockContext, chartType );
 
             var box = new TithingOverviewInitializationBox
             {
                 ChartDataJson = json,
                 ChartType = chartType,
-                ToolTipData = GetToolTipData( rockContext, chartType )
+                ToolTipData = GetToolTipData( rockContext, chartType ),
+                LegendData = GetLegendLabelColors( toolTipData ),
+                HasData = metricValues.Count > 0,
             };
 
             return box;
@@ -118,7 +122,8 @@ namespace Rock.Blocks.Reporting
                 DisplayLegend = true,
                 LineTension = 0,
                 MaintainAspectRatio = false,
-                SizeToFitContainerWidth = true
+                SizeToFitContainerWidth = true,
+                IncludeNullDatapoints = false,
             };
         }
 
@@ -133,7 +138,7 @@ namespace Rock.Blocks.Reporting
             {
                 Datasets = GetTimeSeriesDataset( rockContext ),
                 ChartStyle = ChartJsTimeSeriesChartStyleSpecifier.Line,
-                TimeScale = ChartJsTimeSeriesTimeScaleSpecifier.Week,
+                TimeScale = ChartJsTimeSeriesTimeScaleSpecifier.Day,
                 AreaFillOpacity = 0
             };
 
@@ -158,8 +163,8 @@ namespace Rock.Blocks.Reporting
             var seriesNameKeyValue = new Dictionary<string, string>();
             foreach ( var dataSeriesDataset in dataSeriesDatasets )
             {
-                var seriesNamValue = GetSeriesPartitionName( dataSeriesDataset );
-                seriesNameKeyValue.Add( dataSeriesDataset, seriesNamValue );
+                var seriesNameValue = GetSeriesPartitionName( dataSeriesDataset );
+                seriesNameKeyValue.Add( dataSeriesDataset, seriesNameValue );
             }
 
             foreach ( var dataSeriesName in seriesNameKeyValue.Keys )
@@ -364,13 +369,9 @@ namespace Rock.Blocks.Reporting
                         MetricValueCampusIds = x.Key.MetricValuePartitionEntityIds,
                         DateTime = x.Key.DateKey.GetDateKeyDate(), // +1 to get first day of month
                         CampusId = x.PartitionEntityId,
+                        Value = x.Value.FirstOrDefault(),
                     } )
                     .ToList();
-
-                foreach ( var dataset in _tithingOverviewMetricValues )
-                {
-                    dataset.Value = GetPercentValue( rockContext, dataset, chartType );
-                }
             }
 
             return _tithingOverviewMetricValues;
@@ -409,25 +410,6 @@ namespace Rock.Blocks.Reporting
             }
 
             return metricValuesQry;
-        }
-
-        /// <summary>
-        /// Calculates the Tithing Overview metric value as a percentage by dividing the TithingHouseholds metric value by the GivingHouseholds metric value.
-        /// </summary>
-        /// <param name="rockContext">The RockContext.</param>
-        /// <param name="datasetInfo">The TithingOverview dataset.</param>
-        /// <param name="chartType">The current chart type configuration.</param>
-        /// <returns></returns>
-        private decimal? GetPercentValue( RockContext rockContext, ChartDatasetInfo datasetInfo, string chartType )
-        {
-            var givingHouseHoldsMetricValues = GetGivingHouseholdsMetricValues( rockContext, chartType );
-            var tithingHouseHoldsMetricValues = GetTithingHouseholdsMetricValues( rockContext, chartType );
-
-            var givingHouseHolds = givingHouseHoldsMetricValues.Find( d => d.CampusId == datasetInfo.CampusId && d.DateTime.Date == datasetInfo.DateTime.Date );
-            var tithingHouseHolds = tithingHouseHoldsMetricValues.Find( d => d.CampusId == datasetInfo.CampusId && d.DateTime.Date == datasetInfo.DateTime.Date );
-
-            var percentValue = givingHouseHolds == null || tithingHouseHolds == null ? 0 : ( tithingHouseHolds.Value / givingHouseHolds.Value ) * 100;
-            return Math.Round( percentValue ?? 0, 1 );
         }
 
         /// <summary>
@@ -494,7 +476,8 @@ namespace Rock.Blocks.Reporting
                 var campus = CampusCache.Get( entityTypeEntity.EntityId.Value );
                 if ( campus != null )
                 {
-                    seriesPartitionValues.Add( campus.Name );
+                    var partitionValue = string.IsNullOrWhiteSpace( campus.ShortCode ) ? campus.Name : campus.ShortCode;
+                    seriesPartitionValues.Add( partitionValue );
                 }
             }
 
@@ -514,6 +497,13 @@ namespace Rock.Blocks.Reporting
         private string GetFillColor( CampusCache campus, string chartType )
         {
             var campusAge = GetCampusAge( campus );
+
+            var campusColorAttribute = campus.GetAttributeTextValue( "core_CampusColor" );
+
+            if ( !string.IsNullOrWhiteSpace( campusColorAttribute ) )
+            {
+                return campusColorAttribute;
+            }
 
             if ( chartType == ChartTypeKey.LineChart )
             {
@@ -577,23 +567,30 @@ namespace Rock.Blocks.Reporting
             {
                 var campusId = dataset.CampusId ?? 0;
                 var campus = CampusCache.Get( campusId );
-                var givingHouseHolds = givingHouseHoldsDatasets.Find( d => d.CampusId == campusId );
-                var tithingHouseHolds = tithingHouseHoldsDatasets.Find( d => d.CampusId == campusId );
 
-                var toolTipInfo = new TithingOverviewToolTipBag()
+                if ( campus != null )
                 {
-                    Campus = campus.Name,
-                    CampusAge = GetCampusAge( campus ),
-                    Date = dataset.DateTime.ToShortDateString(),
-                    GivingHouseHolds = givingHouseHolds.Value,
-                    TithingHouseHolds = tithingHouseHolds.Value,
-                    TitheMetric = campus.TitheMetric,
-                    Value = dataset.Value,
-                    CampusClosedDate = campus.ClosedDate,
-                    CampusOpenedDate = campus.OpenedDate,
-                };
+                    var givingHouseHolds = givingHouseHoldsDatasets.Find( d => d.CampusId == campusId );
+                    var tithingHouseHolds = tithingHouseHoldsDatasets.Find( d => d.CampusId == campusId );
+                    var campusKey = string.IsNullOrWhiteSpace( campus.ShortCode ) ? campus.Name : campus.ShortCode;
 
-                toolTipData.AddOrReplace( campus.Name, toolTipInfo );
+                    var toolTipInfo = new TithingOverviewToolTipBag()
+                    {
+                        CampusId = campus.Id,
+                        Campus = campus.Name,
+                        CampusAge = GetCampusAge( campus ),
+                        Date = dataset.DateTime.ToShortDateString(),
+                        GivingHouseHolds = givingHouseHolds?.Value,
+                        TithingHouseHolds = tithingHouseHolds?.Value,
+                        TitheMetric = campus.TitheMetric,
+                        Value = dataset.Value,
+                        CampusClosedDate = campus.ClosedDate,
+                        CampusOpenedDate = campus.OpenedDate,
+                        CampusShortCode = campus.ShortCode
+                    };
+
+                    toolTipData.AddOrReplace( campusKey, toolTipInfo );
+                }
             }
 
             return toolTipData;
@@ -618,6 +615,43 @@ namespace Rock.Blocks.Reporting
             var age = ageDifference / 12;
 
             return age;
+        }
+
+        /// <summary>
+        /// Gets the legend label colors.
+        /// </summary>
+        /// <param name="toolTipData">The tool tip data.</param>
+        /// <returns></returns>
+        private Dictionary<string, string> GetLegendLabelColors( Dictionary<string, TithingOverviewToolTipBag> toolTipData )
+        {
+            var campusIds = toolTipData.Select( d => d.Value.CampusId ).ToList();
+            var includeDefaultLegend = false;
+            var legendLabelColorMap = new Dictionary<string, string>();
+
+            foreach ( var campus in CampusCache.GetMany( campusIds ).ToList() )
+            {
+                var color = campus.GetAttributeTextValue( "core_CampusColor" );
+                if ( !string.IsNullOrWhiteSpace( color ) )
+                {
+                    var campusKey = string.IsNullOrWhiteSpace( campus.ShortCode ) ? campus.Name : campus.ShortCode;
+                    legendLabelColorMap.AddOrReplace( campusKey, color );
+                }
+                else
+                {
+                    includeDefaultLegend = true;
+                }
+            }
+
+            if ( includeDefaultLegend )
+            {
+                legendLabelColorMap.Add( "0-2 yrs", "#BAE6FD" );
+                legendLabelColorMap.Add( "3-6 yrs", "#38BDF8" );
+                legendLabelColorMap.Add( "7-11 yrs", "#0284C7" );
+                legendLabelColorMap.Add( "11+", "#075985" );
+                legendLabelColorMap.Add( "Unknown", "#A3A3A3" );
+            }
+
+            return legendLabelColorMap;
         }
 
         #endregion

@@ -970,20 +970,6 @@ namespace Rock
         /// <param name="startIndex">The 0-based starting position.</param>
         /// <param name="maxLength">The maximum length.</param>
         /// <returns></returns>
-        [Obsolete( "Use SubstringSafe() instead. Obsolete as of 1.12.0" )]
-        [RockObsolete( "1.12" )]
-        public static string SafeSubstring( this string str, int startIndex, int maxLength )
-        {
-            return str.SubstringSafe( startIndex, maxLength );
-        }
-
-        /// <summary>
-        /// Returns a substring of a string. Uses an empty string for any part that doesn't exist and will return a partial substring if the string isn't long enough for the requested length (the built-in method would throw an exception in these cases).
-        /// </summary>
-        /// <param name="str">The string.</param>
-        /// <param name="startIndex">The 0-based starting position.</param>
-        /// <param name="maxLength">The maximum length.</param>
-        /// <returns></returns>
         public static string SubstringSafe( this string str, int startIndex, int maxLength )
         {
             if ( str == null || maxLength < 0 || startIndex < 0 || startIndex > str.Length )

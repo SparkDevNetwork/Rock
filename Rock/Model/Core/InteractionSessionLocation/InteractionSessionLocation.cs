@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -112,7 +112,7 @@ namespace Rock.Model
         /// <value>
         /// The region code.
         /// </value>
-        [MaxLength( 2 )]
+        [MaxLength( 3 )]
         [DataMember]
         public string RegionCode { get; set; }
 

@@ -19,9 +19,9 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 
 using Rock.Bus.Queue;
+using Rock.Configuration;
 using Rock.Logging;
 using Rock.Model;
-using Rock.Utility.Settings;
 
 namespace Rock.Bus.Message
 {
@@ -67,7 +67,7 @@ namespace Rock.Bus.Message
                 // Don't publish events until Rock is all the way started
                 var logMessage = $"'Giving Unit Was Classified' message was not published because Rock is not fully started yet.";
 
-                var elapsedSinceProcessStarted = RockDateTime.Now - RockInstanceConfig.ApplicationStartedDateTime;
+                var elapsedSinceProcessStarted = RockDateTime.Now - RockApp.Current.HostingSettings.ApplicationStartDateTime;
 
                 if ( elapsedSinceProcessStarted.TotalSeconds > RockMessageBus.MAX_SECONDS_SINCE_STARTTIME_LOG_ERROR )
                 {

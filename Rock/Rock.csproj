@@ -202,6 +202,12 @@
     <Reference Include="MassTransit.RabbitMqTransport, Version=5.5.2.0, Culture=neutral, PublicKeyToken=b8e0e9f2f1e657fa, processorArchitecture=MSIL">
       <HintPath>..\packages\MassTransit.RabbitMQ.5.5.2\lib\net452\MassTransit.RabbitMqTransport.dll</HintPath>
     </Reference>
+    <Reference Include="MaxMind.Db, Version=2.0.0.0, Culture=neutral, PublicKeyToken=66afa4cc5ae853ac, processorArchitecture=MSIL">
+      <HintPath>..\packages\MaxMind.Db.3.0.0\lib\net461\MaxMind.Db.dll</HintPath>
+    </Reference>
+    <Reference Include="MaxMind.GeoIP2, Version=4.0.0.0, Culture=neutral, PublicKeyToken=66afa4cc5ae853ac, processorArchitecture=MSIL">
+      <HintPath>..\packages\MaxMind.GeoIP2.4.1.0\lib\net461\MaxMind.GeoIP2.dll</HintPath>
+    </Reference>
     <Reference Include="MessagePack, Version=1.7.3.4, Culture=neutral, PublicKeyToken=b4a0369545f0a1be, processorArchitecture=MSIL">
       <HintPath>..\packages\MessagePack.1.7.3.4\lib\net47\MessagePack.dll</HintPath>
     </Reference>
@@ -972,6 +978,12 @@
     <Compile Include="Communication\Transport\EmailSendResponse.cs" />
     <Compile Include="Communication\EmailTransportComponent.cs" />
     <Compile Include="Communication\Transport\ThrottleHelper.cs" />
+    <Compile Include="Configuration\DatabaseConfiguration.cs" />
+    <Compile Include="Configuration\DatabaseConfigurationExtensions.cs" />
+    <Compile Include="Configuration\HostingSettings.cs" />
+    <Compile Include="Configuration\IConnectionStringProvider.cs" />
+    <Compile Include="Configuration\WebFormsConnectionStringProvider.cs" />
+    <Compile Include="Core\InteractionInfo.cs" />
     <Compile Include="Core\NotificationMessageTypeComponent.cs" />
     <Compile Include="Core\NotificationMessageTypeContainer.cs" />
     <Compile Include="Core\NotificationMessageTypes\ConnectionRequestMention.cs" />
@@ -1027,6 +1039,9 @@
     <Compile Include="Field\UniversalFieldTypeGuidAttribute.cs" />
     <Compile Include="Financial\IScheduledNumberOfPaymentsGateway.cs" />
     <Compile Include="Financial\ISettlementGateway.cs" />
+    <Compile Include="Net\Geolocation\IpGeoException.cs" />
+    <Compile Include="Net\Geolocation\IpGeolocation.cs" />
+    <Compile Include="Net\Geolocation\IpGeoLookup.cs" />
     <Compile Include="IpAddress\Classes\IpLocation.cs" />
     <Compile Include="IpAddress\IpLocationUtilities.cs" />
     <Compile Include="Jobs\IndexContentCollections.cs" />
@@ -1178,6 +1193,7 @@
     <Compile Include="Model\Event\InteractiveExperience\InteractiveExperience.Logic.cs" />
     <Compile Include="Model\Event\InteractiveExperience\InteractiveExperienceService.cs" />
     <Compile Include="Model\Event\RegistrationTemplate\RegistrationTemplate.Logic.cs" />
+    <Compile Include="Model\Finance\FinancialPledge\FinancialPledge.SaveHook.cs" />
     <Compile Include="Model\Finance\FinancialScheduledTransaction\FinancialScheduledTransactionExtensionMethods.cs" />
     <Compile Include="Model\Finance\FinancialScheduledTransaction\FinancialScheduledTransactionPaymentPlanPair.cs" />
     <Compile Include="Model\Finance\FinancialScheduledTransaction\PaymentPlan.cs" />
@@ -1280,6 +1296,7 @@
     <Compile Include="Plugin\HotFixes\178_FixLockedOutCaptionLoginBlockSetting.cs" />
     <Compile Include="Plugin\HotFixes\177_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge.cs" />
     <Compile Include="Plugin\HotFixes\195_MigrationRollupForV17_0_4.cs" />
+    <Compile Include="Plugin\HotFixes\201_MigrationRollupsForV17_0_8.cs" />
     <Compile Include="Plugin\HotFixes\199_MigrationRollupsForV17_0_7.cs" />
     <Compile Include="Plugin\HotFixes\198_MigrationRollupsForV17_0_6.cs" />
     <Compile Include="Plugin\HotFixes\197_MigrationRollupsForV17_0_5.cs" />
@@ -1287,6 +1304,7 @@
     <Compile Include="Plugin\HotFixes\194_MigratoinRollupForV17_0_3.cs" />
     <Compile Include="Plugin\HotFixes\193_MigratoinRollupForV15_4_1.cs" />
     <Compile Include="Plugin\HotFixes\192_MailgunCopyApiKeyToHttpWebhookSigningKey.cs" />
+    <Compile Include="Plugin\HotFixes\200_AddMaxMindGeolocation.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -1309,6 +1327,8 @@
     <Compile Include="RealTime\Topics\InteractiveExperienceParticipantTopic.cs" />
     <Compile Include="RealTime\Topics\ITestCommunicationTransport.cs" />
     <Compile Include="RealTime\Topics\TestCommunicationTransportTopic.cs" />
+    <Compile Include="Reporting\FieldFilterGroup.cs" />
+    <Compile Include="Reporting\FieldFilterRule.cs" />
     <Compile Include="Reporting\DataFilter\Group\SignUpOpportunityHasNoAttendanceFilter.cs" />
     <Compile Include="Reporting\DataFilter\Group\SignUpOpportunityHasNoMembersFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\GivingAlertsFilter.cs" />
@@ -1531,7 +1551,6 @@
     <Compile Include="Model\Core\Schedule\InetCalendarHelper.cs" />
     <Compile Include="Model\Core\Schedule\Schedule.Logic.cs" />
     <Compile Include="Model\Core\Schedule\Schedule.SaveHook.cs" />
-    <Compile Include="Model\Core\Schedule\ScheduleICalHelper.cs" />
     <Compile Include="Model\Core\Schedule\ScheduleOccurrence.cs" />
     <Compile Include="Model\Core\Schedule\ScheduleService.cs" />
     <Compile Include="Model\Core\Schedule\ScheduleType.cs" />
@@ -1715,7 +1734,6 @@
     <Compile Include="Model\Group\GroupTypeRole\GroupTypeRole.Logic.cs" />
     <Compile Include="Model\Group\GroupType\GroupType.Logic.cs" />
     <Compile Include="Model\Group\GroupType\GroupType.SaveHook.cs" />
-    <Compile Include="Model\Group\GroupType\GroupTypePath.cs" />
     <Compile Include="Model\Group\Group\Group.Logic.cs" />
     <Compile Include="Model\Group\Group\Group.SaveHook.cs" />
     <Compile Include="Model\Group\Group\GroupParentCircularReferenceException.cs" />
@@ -1779,7 +1797,6 @@
     <Compile Include="Model\Reporting\AnalyticsSourceFamilyBase\AnalyticsSourceFamilyBase.cs" />
     <Compile Include="Model\Reporting\AnalyticsBaseFinancialTransaction\AnalyticsBaseFinancialTransaction.cs" />
     <Compile Include="Model\Reporting\AnalyticsSourcePersonBase\AnalyticsSourcePersonBase.cs" />
-    <Compile Include="Model\Reporting\DataViewFilter\ComparisonType.cs" />
     <Compile Include="Model\Reporting\DataViewFilter\DataViewFilter.Logic.cs" />
     <Compile Include="Model\Reporting\DataViewFilter\DataViewFilterOverride.cs" />
     <Compile Include="Model\Reporting\DataViewFilter\DataViewFilterOverrides.cs" />
@@ -2013,7 +2030,6 @@
     <Compile Include="Jobs\PostInstallDataMigrations.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV122_UpdateInteractionIndex.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV124DataMigrationsUpdateGroupSalutations.cs" />
-    <Compile Include="Jobs\PostUpdateJobs\PostV124DataMigrationUnencryptPaymentDetailFields.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV125DataMigrationsAddSystemCommunicationIndexToCommunication.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV12DataMigrationsAddStatusIndexToCommunicationRecipient.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV12DataMigrationsAddIndexToCommunication.cs" />
@@ -2153,7 +2169,14 @@
     <Compile Include="Utility\RockDynamic.cs" />
     <Compile Include="Cms\StructuredContent\StructuredContentHelper.cs" />
     <Compile Include="Utility\RockHtmlMarkupFormatter.cs" />
+    <Compile Include="Configuration\IDatabaseConfiguration.cs" />
+    <Compile Include="Configuration\IHostingSettings.cs" />
+    <Compile Include="Configuration\IInitializationSettings.cs" />
+    <Compile Include="Configuration\InitializationSettings.cs" />
+    <Compile Include="Configuration\RockAppExtensions.cs" />
     <Compile Include="Utility\Settings\Giving\GivingAutomationSettings.cs" />
+    <Compile Include="Configuration\RockApp.cs" />
+    <Compile Include="Configuration\WebFormsInitializationSettings.cs" />
     <Compile Include="Utility\TaskActivityMessageHub.cs" />
     <Compile Include="Utility\RockSerializableList.cs" />
     <Compile Include="Utility\CampaignItem.cs" />
@@ -2251,7 +2274,7 @@
     <Compile Include="Web\Cache\RockCacheAllIdUpdater.cs" />
     <Compile Include="Web\Cache\RockCacheConsumer.cs" />
     <Compile Include="Web\HttpModules\DeepLinks.cs" />
-    <Compile Include="Web\HttpModules\Observability.cs" />
+    <Compile Include="Web\HttpModules\RockGateway.cs" />
     <Compile Include="Web\HttpModules\SignalRErrorModule.cs" />
     <Compile Include="Web\IBreadCrumb.cs" />
     <Compile Include="Blocks\IBreadCrumbBlock.cs" />
@@ -2406,7 +2429,6 @@
     <Compile Include="Web\Cache\Entities\ContentChannelTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\DocumentTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\PersistedDatasetCache.cs" />
-    <Compile Include="Web\Cache\Entities\Obsolete\PersonBadgeCache.cs" />
     <Compile Include="Web\Cache\Entities\AchievementTypePrerequisiteCache.cs" />
     <Compile Include="Web\Cache\Entities\AchievementTypeCache.cs" />
     <Compile Include="Web\Cache\NonEntities\EntityDocumentTypesCache.cs" />
@@ -2676,7 +2698,6 @@
     <Compile Include="Web\Cache\Entities\PageCache.cs" />
     <Compile Include="Web\Cache\Entities\SiteCache.cs" />
     <Compile Include="Web\Cache\NonEntities\AttributeValueCache.cs" />
-    <Compile Include="Web\Cache\Entities\Obsolete\EntityAttributesCache.cs" />
     <Compile Include="Web\Cache\NonEntities\GlobalAttributesCache.cs" />
     <Compile Include="Web\Cache\NonEntities\LavaTemplateCache.cs" />
     <Compile Include="Web\Cache\NonEntities\RoleCache.cs" />
@@ -2719,7 +2740,6 @@
     <Compile Include="Communication\Medium\Email.cs" />
     <Compile Include="Communication\Medium\PushNotification.cs" />
     <Compile Include="Communication\Medium\Sms.cs" />
-    <Compile Include="Communication\RecipientData.cs" />
     <Compile Include="Communication\RockEmailMessage.cs" />
     <Compile Include="Communication\RockMessage.cs" />
     <Compile Include="Communication\RockPushMessage.cs" />
@@ -2734,7 +2754,6 @@
     <Compile Include="Configuration\AttributeValuesConfig.cs" />
     <Compile Include="Configuration\RockConfig.cs" />
     <Compile Include="Constants\DisplayStrings.cs" />
-    <Compile Include="Constants\SystemSettingKeys.cs" />
     <Compile Include="Data\BoundFieldTypeAttribute.cs" />
     <Compile Include="Data\DbContext.cs" />
     <Compile Include="Data\DbService.cs" />
@@ -2942,7 +2961,6 @@
     <Compile Include="Jobs\CalculatePersonSignals.cs" />
     <Compile Include="Jobs\CommunicationQueueAlert.cs" />
     <Compile Include="Jobs\DatabaseMaintenance.cs" />
-    <Compile Include="Jobs\GetNcoa.cs" />
     <Compile Include="Jobs\IndexRockSite.cs" />
     <Compile Include="Jobs\ProcessBIAnalytics.cs" />
     <Compile Include="Jobs\PbxCdrDownload.cs" />
@@ -3560,8 +3578,6 @@
     <Compile Include="Model\Workflow\WorkflowTrigger\WorkflowTrigger.cs" />
     <Compile Include="Model\Workflow\WorkflowTrigger\WorkflowTriggerService.cs" />
     <Compile Include="Model\Workflow\WorkflowType\WorkflowType.cs" />
-    <Compile Include="PersonProfile\BadgeComponent.cs" />
-    <Compile Include="PersonProfile\BadgeContainer.cs" />
     <Compile Include="Badge\Component\AlertNote.cs" />
     <Compile Include="Badge\Component\AttendingDuration.cs" />
     <Compile Include="Badge\Component\Campus.cs" />
@@ -3572,8 +3588,6 @@
     <Compile Include="Badge\Component\InGroupWithPurpose.cs" />
     <Compile Include="Badge\Component\LastVisitOnSite.cs" />
     <Compile Include="Badge\Component\Liquid.cs" />
-    <Compile Include="PersonProfile\HighlightLabelBadge.cs" />
-    <Compile Include="PersonProfile\IconBadge.cs" />
     <Compile Include="Plugin\HotFixes\002_CheckinGradeRequired.cs" />
     <Compile Include="Plugin\HotFixes\003_FixSystemEmailQuote.cs" />
     <Compile Include="Plugin\HotFixes\004_FixGradeRequiredAttribute.cs" />
@@ -3755,13 +3769,6 @@
     <Compile Include="Utility\FileUtilities.cs" />
     <Compile Include="Utility\FontAwesomeHelper.cs" />
     <Compile Include="Utility\IRockOwinStartup.cs" />
-    <Compile Include="Utility\Ncoa.cs" />
-    <Compile Include="Utility\SparkDataApi\PersonAddressItem.cs" />
-    <Compile Include="Utility\SparkDataApi\NcoaApi.cs" />
-    <Compile Include="Utility\SparkDataApi\NcoaReturnRecord.cs" />
-    <Compile Include="Utility\SparkDataApi\NcoaResponse.cs" />
-    <Compile Include="Utility\SparkDataApi\GroupNameTransactionKey.cs" />
-    <Compile Include="Utility\SparkDataApi\UsernamePassword.cs" />
     <Compile Include="Utility\Settings\DataAutomation\InactivatePeople.cs" />
     <Compile Include="Utility\Settings\DataAutomation\InteractionItem.cs" />
     <Compile Include="Utility\Settings\DataAutomation\MoveAdultChildren.cs" />
@@ -3771,7 +3778,6 @@
     <Compile Include="Utility\Settings\DataAutomation\UpdateFamilyCampus.cs" />
     <Compile Include="Utility\Settings\SparkData\NcoaSettings.cs" />
     <Compile Include="Utility\Settings\SparkData\SparkDataConfig.cs" />
-    <Compile Include="Utility\SparkDataApi\SparkDataApi.cs" />
     <Compile Include="Utility\TextToWorkflow.cs" />
     <Compile Include="Utility\ZebraPrint.cs" />
     <Compile Include="Web\HttpModules\ResponseHeaders.cs" />
@@ -3780,8 +3786,6 @@
     <Compile Include="Blocks\IRockBlockType.cs" />
     <Compile Include="Web\UI\Adapters\ListControlAdaptor.cs" />
     <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
-    <Compile Include="Web\UI\Controls\Badges\PersonProfileBadgeList.cs" />
-    <Compile Include="Web\UI\Controls\Badges\PersonProfileBadge.cs" />
     <Compile Include="Web\UI\Controls\Grid\CustomActionConfig.cs" />
     <Compile Include="Web\UI\Controls\DefinedValueEditor.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DefinedValuePickerWithAdd.cs" />
@@ -4564,6 +4568,7 @@
   <ItemGroup>
     <Folder Include="Pbx\Provider\" />
     <Folder Include="RealTime\AspNetCore\" />
+    <Folder Include="Web\Cache\Entities\Obsolete\" />
     <Folder Include="Web\UI\Controls\Finance\" />
   </ItemGroup>
   <ItemGroup>

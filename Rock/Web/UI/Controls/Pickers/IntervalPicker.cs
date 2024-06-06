@@ -384,6 +384,7 @@ namespace Rock.Web.UI.Controls
             writer.RenderEndTag();
 
             writer.RenderEndTag();
+            writer.RenderEndTag();
         }
         #endregion
 

@@ -89,6 +89,7 @@ namespace Rock.Migrations.RockStartup
             SystemGuid.ServiceJob.DATA_MIGRATIONS_166_ADD_INTERACTION_CREATED_DATE_TIME_INDEX.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_170_REMOVE_COMMUNICATION_RECIPIENT_LIST_BLOCK.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_170_REMOVE_LEGACY_PREFERENCES.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_170_REMOVE_DISC_BLOCK.AsGuid()
         };
 
 

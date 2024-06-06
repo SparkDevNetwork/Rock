@@ -259,19 +259,9 @@ namespace Rock.Lava
                 shortcodeCommands = context.GetEnabledCommands();
             }
 
-            var shortcodeTemplateMarkup = string.Empty;
-
-            // Run Lava on the block markup, unless the shortcode has disabled it.
-            if ( internalMergeFields.Contains( "disablelavamerge" ) && internalMergeFields["disablelavamerge"].ToString().AsBoolean() == true )
-            {
-                shortcodeTemplateMarkup = _blockMarkup.ToString();
-            }
-            else
-            {
-                var shortcodeTemplateContext = _engine.NewRenderContext( internalMergeFields, shortcodeCommands );
-                var blockMarkupRenderResult = _engine.RenderTemplate( _blockMarkup.ToString(), LavaRenderParameters.WithContext( shortcodeTemplateContext ) );
-                shortcodeTemplateMarkup = blockMarkupRenderResult.Text;
-            }
+            var shortcodeTemplateContext = _engine.NewRenderContext( internalMergeFields, shortcodeCommands );
+            var blockMarkupRenderResult = _engine.RenderTemplate( _blockMarkup.ToString(), LavaRenderParameters.WithContext( shortcodeTemplateContext ) );
+            var shortcodeTemplateMarkup = blockMarkupRenderResult.Text;
 
             // Extract child elements from the shortcode template content.
             // One or more child elements can be added to a shortcode block using the syntax "[[ <childElementName> <paramName1>:value1 <paramName2>:value2 ... ]] ... [[ end<childElementName> ]]",
@@ -279,28 +269,22 @@ namespace Rock.Lava
             // Child elements are grouped by <childElementName>, and each collection is passed as a separate parameter to the shortcode template
             // using the variable name "<childElementNameItems>". The first element of the array is also added using the variable name "<childElementName>".
             // Parameters declared on child elements can be referenced in the shortcode template as <childElementName>.<paramName>.
-            string residualMarkup = string.Empty;
+            Dictionary<string, object> childElements;
 
-            var shouldParseChildElements = internalMergeFields.Contains( "disablechildelementsparse" ) == false || ( internalMergeFields.Contains( "disablechildelementsparse" ) && internalMergeFields["disablechildelementsparse"].ToString().AsBoolean() == false );
-            if ( shouldParseChildElements )
+            string residualMarkup;
+            var childElementsAreValid = ExtractShortcodeBlockChildElements( shortcodeTemplateMarkup, out childElements, out residualMarkup );
+
+            if ( !childElementsAreValid )
             {
-                Dictionary<string, object> childElements;
+                // The residual block markup contains the error message, so write it to the output stream.
+                result.Write( residualMarkup );
+                return;
+            }
 
-                var childElementsAreValid = ExtractShortcodeBlockChildElements( shortcodeTemplateMarkup, out childElements, out residualMarkup );
-
-                if ( !childElementsAreValid )
-                {
-                    // The residual block markup contains the error message, so write it to the output stream.
-                    result.Write( residualMarkup );
-                    return;
-                }
-
-                // Add the collections of child to the set of parameters that will be passed to the shortcode template.
-                foreach ( var item in childElements )
-                {
-                    parms.AddOrReplace( item.Key, item.Value );
-                }
-
+            // Add the collections of child to the set of parameters that will be passed to the shortcode template.
+            foreach ( var item in childElements )
+            {
+                parms.AddOrReplace( item.Key, item.Value );
             }
 
             // Set context variables related to the block content so they can be referenced by the shortcode template.

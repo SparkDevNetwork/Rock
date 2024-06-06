@@ -202,7 +202,7 @@ namespace Rock.Blocks.CheckIn
 
                 if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
-                    return ActionBadRequest( $"Not authorized to delete ${Attendance.FriendlyTypeName}." );
+                    return ActionBadRequest( $"Not authorized to delete {Attendance.FriendlyTypeName}." );
                 }
 
                 entity.DidAttend = false;

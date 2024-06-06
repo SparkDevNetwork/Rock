@@ -45,6 +45,7 @@ using Microsoft.Extensions.Logging;
 using Rock;
 using Rock.Attribute;
 using Rock.Cms.StructuredContent;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava.DotLiquid;
 using Rock.Logging;
@@ -4849,7 +4850,7 @@ namespace Rock.Lava
 
             if ( expiryMinutes.HasValue )
             {
-                cookie.Expires = Rock.Utility.Settings.RockInstanceConfig.SystemDateTime.AddMinutes( expiryMinutes.Value );
+                cookie.Expires = RockDateTime.SystemDateTime.AddMinutes( expiryMinutes.Value );
             }
 
             response.Cookies.Set( cookie );
@@ -5458,31 +5459,31 @@ namespace Rock.Lava
 
             if ( valueName == "applicationdirectory" )
             {
-                return Rock.Utility.Settings.RockInstanceConfig.ApplicationDirectory;
+                return RockApp.Current.HostingSettings.VirtualRootPath;
             }
             else if ( valueName == "isclustered" )
             {
-                return Rock.Utility.Settings.RockInstanceConfig.IsClustered;
+                return WebFarm.RockWebFarm.IsEnabled();
             }
             else if ( valueName == "machinename" )
             {
-                return Rock.Utility.Settings.RockInstanceConfig.MachineName;
+                return RockApp.Current.HostingSettings.MachineName;
             }
             else if ( valueName == "physicaldirectory" )
             {
-                return Rock.Utility.Settings.RockInstanceConfig.PhysicalDirectory;
+                return RockApp.Current.HostingSettings.WebRootPath;
             }
             else if ( valueName == "systemdatetime" )
             {
-                return Rock.Utility.Settings.RockInstanceConfig.SystemDateTime;
+                return RockDateTime.SystemDateTime;
             }
             else if ( valueName == "aspnetversion" )
             {
-                return Rock.Utility.Settings.RockInstanceConfig.AspNetVersion;
+                return RockApp.Current.HostingSettings.DotNetVersion;
             }
             else if ( valueName == "lavaengine" )
             {
-                return Rock.Utility.Settings.RockInstanceConfig.LavaEngineName;
+                return RockApp.Current.GetCurrentLavaEngineName();
             }
 
             return $"Configuration setting \"{ input }\" is not available.";

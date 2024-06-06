@@ -113,6 +113,8 @@ export const Category = {
     SystemCommunicationWorkflow: "D8EC958D-ADD5-48FC-B539-CB919F5C9D32",
     /** The System Email Workflow Category guid */
     SystemEmailWorkflow: "C7B9B5F1-9D90-485F-93E4-5D7D81EC2B12",
+    /** The tithing overview Category Guid */
+    TithingOverview: "914E7A39-EA2D-469B-95B5-B6518DBE5F52",
     /** The GUID for the WorkflowType category "Check-in" */
     WorkflowTypeCheckin: "8F8B272D-D351-485E-86D6-3EE5B7C84D99",
     /** The GUID for the WorkflowType category "Data Integrity" */

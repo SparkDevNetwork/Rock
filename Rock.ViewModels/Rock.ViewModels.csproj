@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -79,6 +79,8 @@
     <Compile Include="Blocks\Cms\PageSearch\PageSearchPageBag.cs" />
     <Compile Include="Blocks\Cms\PageSearch\PageSearchBag.cs" />
     <Compile Include="Blocks\Crm\DocumentTypeList\DocumentTypeListOptionsBag.cs" />
+    <Compile Include="Blocks\Crm\PhotoUpload\PersonPhotoBag.cs" />
+    <Compile Include="Blocks\Crm\PhotoUpload\PhotoUploadInitializationBox.cs" />
     <Compile Include="Blocks\Event\RegistrationInstanceActiveList\RegistrationInstanceListOptionsBag.cs" />
     <Compile Include="Blocks\Core\ScheduledJobHistoryList\ScheduledJobHistoryListOptionsBag.cs" />
     <Compile Include="Blocks\Example\ControlGallery\ControlGalleryInitializationBox.cs" />
@@ -95,9 +97,15 @@
     <Compile Include="Blocks\Cms\PersonalLinkSectionList\PersonalLinkSectionListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageRouteList\PageRouteListOptionsBag.cs" />
     <Compile Include="Blocks\Core\PersonFollowingList\PersonFollowingListOptionsBag.cs" />
+    <Compile Include="Blocks\Communication\NcoaProcess\NcoaProcessBag.cs" />
+    <Compile Include="Blocks\Communication\NcoaProcess\NcoaProcessSavedSettingsBag.cs" />
+    <Compile Include="Blocks\Communication\NcoaProcess\NcoaProcessPersonAddressBag.cs" />
     <Compile Include="Blocks\Core\PersonSignalList\PersonSignalBag.cs" />
     <Compile Include="Blocks\Core\PersonSignalList\PersonSignalListOptionsBag.cs" />
     <Compile Include="Blocks\Core\RestActionList\RestActionListOptionsBag.cs" />
+    <Compile Include="Blocks\Finance\FinancialPledgeList\FinancialPledgeListBag.cs" />
+    <Compile Include="Blocks\Finance\FinancialPledgeList\FinancialPledgeListOptionsBag.cs" />
+    <Compile Include="Blocks\Group\Scheduling\GroupScheduler\GroupSchedulerGroupLocationScheduleNamesBag.cs" />
     <Compile Include="Blocks\Security\RestKeyList\RestKeyListOptionsBag.cs" />
     <Compile Include="Blocks\Crm\PersonMergeRequestList\PersonMergeRequestListOptionsBag.cs" />
     <Compile Include="Blocks\Event\RegistrationInstanceLinkageList\RegistrationInstanceLinkageListOptionsBag.cs" />
@@ -118,7 +126,6 @@
     <Compile Include="Blocks\Core\Attributes\AttributesOptionsBag.cs" />
     <Compile Include="Blocks\Core\AttributeMatrixTemplateList\AttributeMatrixTemplateListOptionsBag.cs" />
     <Compile Include="Blocks\Core\AuditList\AuditListOptionsBag.cs" />
-    <Compile Include="Blocks\Communication\SystemCommunicationList\SystemCommunicationListOptionsBag.cs" />
     <Compile Include="Blocks\Core\BinaryFileDetail\BinaryFileBag.cs" />
     <Compile Include="Blocks\Core\BinaryFileDetail\BinaryFileDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\BinaryFileList\BinaryFileListOptionsBag.cs" />
@@ -223,7 +230,6 @@
     <Compile Include="Blocks\Engagement\StreakTypeExclusionDetail\StreakTypeExclusionBag.cs" />
     <Compile Include="Blocks\Engagement\StreakTypeExclusionDetail\StreakTypeExclusionDetailOptionsBag.cs" />
     <Compile Include="Blocks\Finance\FinancialGatewayList\FinancialGatewayListOptionsBag.cs" />
-    <Compile Include="Blocks\Finance\FinancialPledgeList\FinancialPledgeListOptionsBag.cs" />
     <Compile Include="Blocks\Finance\FinancialStatementTemplateDetail\FinancialStatementTemplateBag.cs" />
     <Compile Include="Blocks\Finance\FinancialStatementTemplateDetail\FinancialStatementTemplateDetailOptionsBag.cs" />
     <Compile Include="Blocks\CheckIn\Config\CheckinTypeDetail\CheckinTypeBag.cs" />
@@ -274,6 +280,14 @@
     <Compile Include="Blocks\Internal\IDetailBlockBox.cs" />
     <Compile Include="Blocks\Prayer\PrayerCommentList\PrayerCommentListOptionsBag.cs" />
     <Compile Include="Blocks\Prayer\PrayerRequestList\PrayerRequestListOptionsBag.cs" />
+    <Compile Include="Blocks\Reporting\DynamicData\ColumnConfigurationBag.cs" />
+    <Compile Include="Blocks\Reporting\DynamicData\DynamicDataCustomSettingsBag.cs" />
+    <Compile Include="Blocks\Reporting\DynamicData\DynamicDataCustomSettingsOptionsBag.cs" />
+    <Compile Include="Blocks\Reporting\DynamicData\GridResultsBag.cs" />
+    <Compile Include="Blocks\Reporting\DynamicData\DynamicDataInitializationBox.cs" />
+    <Compile Include="Blocks\Reporting\DynamicData\LavaTemplateResultsBag.cs" />
+    <Compile Include="Blocks\Reporting\DynamicData\ReloadColumnsRequestBag.cs" />
+    <Compile Include="Blocks\Reporting\DynamicData\ReloadColumnsResponseBag.cs" />
     <Compile Include="Blocks\Reporting\MergeTemplateDetail\MergeTemplateFileValidationBag.cs" />
     <Compile Include="Blocks\Finance\FinancialPledgeDetail\FinancialPledgeBag.cs" />
     <Compile Include="Blocks\Finance\FinancialPledgeDetail\FinancialPledgeDetailOptionsBag.cs" />
@@ -377,7 +391,7 @@
     <Compile Include="Blocks\Group\Scheduling\GroupScheduler\GroupSchedulerLocationsBag.cs" />
     <Compile Include="Blocks\Group\Scheduling\GroupScheduler\GroupSchedulerApplyResourceSettingsBag.cs" />
     <Compile Include="Blocks\Group\Scheduling\GroupScheduler\GroupSchedulerSchedulesBag.cs" />
-    <Compile Include="Blocks\Group\Scheduling\GroupScheduler\GroupSchedulerSendNowResponseBag.cs" />
+    <Compile Include="Blocks\Group\Scheduling\GroupScheduler\GroupSchedulerSendConfirmationsResponseBag.cs" />
     <Compile Include="Blocks\Group\Scheduling\GroupScheduler\GroupSchedulerUpdatePreferenceBag.cs" />
     <Compile Include="Blocks\Group\GroupRegistration\GroupRegistrationBag.cs" />
     <Compile Include="Blocks\Group\GroupRegistration\GroupRegistrationBlockBox.cs" />
@@ -592,7 +606,9 @@
     <Compile Include="Rest\Controls\AttributeMatrixEditorPublicItemBag.cs" />
     <Compile Include="Rest\Controls\AttributeMatrixEditorNormalizeEditValueResultsBag.cs" />
     <Compile Include="Rest\Controls\AttributeMatrixEditorNormalizeEditValueOptionsBag.cs" />
+    <Compile Include="Reporting\FieldFilterPropertyBag.cs" />
     <Compile Include="Controls\UniversalItemSearchPickerItemBag.cs" />
+    <Compile Include="Core\Grid\DynamicFieldDefinitionBag.cs" />
     <Compile Include="Rest\Controls\CurrencyBoxGetCurrencyInfoResultsBag.cs" />
     <Compile Include="Rest\Controls\CurrencyBoxGetCurrencyInfoOptionsBag.cs" />
     <Compile Include="Controls\RockCacheabilityBag.cs" />

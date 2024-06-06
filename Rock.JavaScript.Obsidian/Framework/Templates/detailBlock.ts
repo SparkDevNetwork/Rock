@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-import { computed, defineComponent, PropType, ref, watch } from "vue";
+import { computed, defineComponent, onMounted, onUnmounted, PropType, ref, watch } from "vue";
 import Panel from "@Obsidian/Controls/panel.obs";
 import Modal from "@Obsidian/Controls/modal.obs";
 import { Guid } from "@Obsidian/Types";
@@ -862,12 +862,12 @@ export default defineComponent({
 
     <template #footerActions>
         <template v-if="isEditMode">
-            <RockButton btnType="primary" accesskey="s" autoDisable @click="onSaveClick">Save</RockButton>
-            <RockButton btnType="link" accesskey="c" @click="onEditCancelClick">Cancel</RockButton>
+            <RockButton btnType="primary" autoDisable @click="onSaveClick" shortcutKey="s">Save</RockButton>
+            <RockButton btnType="link" @click="onEditCancelClick" shortcutKey="c">Cancel</RockButton>
         </template>
 
         <template v-else>
-            <RockButton v-if="isEditVisible" accesskey="e" btnType="primary" @click="onEditClick" autoDisable>Edit</RockButton>
+            <RockButton v-if="isEditVisible" btnType="primary" @click="onEditClick" autoDisable shortcutKey="e">Edit</RockButton>
             <RockButton v-if="isDeleteVisible" btnType="link" @click="onDeleteClick" autoDisable>Delete</RockButton>
         </template>
 

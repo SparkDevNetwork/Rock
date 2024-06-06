@@ -104,20 +104,6 @@ namespace Rock.Web.Cache
         [DataMember]
         public int? EntityId { get; private set; }
 
-        /// <summary>
-        /// Gets or sets the channel identifier.
-        /// </summary>
-        /// <value>
-        /// The channel identifier.
-        /// </value>
-        [DataMember]
-        [Obsolete( "Use InteractionChannelId instead." )]
-        [RockObsolete( "1.11" )]
-        public int ChannelId
-        {
-            get { return InteractionChannelId; }
-        }
-
         /// <inheritdoc cref="InteractionComponent.InteractionChannelId"/>
         [DataMember]
         public int InteractionChannelId { get; private set; }
@@ -175,43 +161,7 @@ namespace Rock.Web.Cache
         {
             return Name;
         }
-        
-        /// <summary>
-        /// Gets the component by entity identifier, and creates it if it doesn't exist
-        /// </summary>
-        /// <param name="interactionChannelId">The interaction channel identifier (so we know what EntityType the entityId is for).</param>
-        /// <param name="componentEntityId">The component entity identifier.</param>
-        /// <param name="componentName">Name of the component.</param>
-        /// <returns></returns>
-        [Obsolete( "Use the GetComponentIdByChannelIdAndEntityId method instead." )]
-        [RockObsolete( "1.11" )]
-        public static int GetComponentIdByEntityId( int interactionChannelId, int componentEntityId, string componentName )
-        {
-            var lookupKey = $"{interactionChannelId}|{componentEntityId}";
-
-            if ( InteractionComponentLookupComponentIdByEntityId.TryGetValue( lookupKey, out int componentId ) )
-            {
-                return componentId;
-            }
-
-            using ( var rockContext = new RockContext() )
-            {
-                int? interactionComponentId = null;
-                var interactionComponent = new InteractionComponentService( rockContext ).GetComponentByEntityId( interactionChannelId, componentEntityId, componentName );
-
-                // If a new component was added above we need to save the change
-                rockContext.SaveChanges();
-
-                if ( interactionComponent != null )
-                {
-                    interactionComponentId = Get( interactionComponent ).Id;
-                    InteractionComponentLookupComponentIdByEntityId.AddOrUpdate( lookupKey, interactionComponent.Id, (k,v) => interactionComponent.Id );
-                }
-
-                return interactionComponentId.Value;
-            }
-        }
-
+    
         /// <summary>
         /// Gets the component identifier by channel identifier and component entity identifier, and creates it if it doesn't exist.
         /// </summary>

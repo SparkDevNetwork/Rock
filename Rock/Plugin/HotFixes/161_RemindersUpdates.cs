@@ -231,7 +231,9 @@ DELETE FROM [PageRoute] WHERE [PageId] = @PageId;" );
                 SystemGuid.Page.REMINDER_TYPES,
                 "fa fa-bell" );
 
+#pragma warning disable CS0618 // Type or member is obsolete
             RockMigrationHelper.AddPageRoute( SystemGuid.Page.REMINDER_TYPES, "admin/general/reminder-types", REMINDER_TYPES_ROUTE );
+#pragma warning restore CS0618
 
             // This is temporary, to prevent the Reminder Types page from showing up in pre-alpha.
             // REMOVE THIS FOR PRODUCTION RELEASE.

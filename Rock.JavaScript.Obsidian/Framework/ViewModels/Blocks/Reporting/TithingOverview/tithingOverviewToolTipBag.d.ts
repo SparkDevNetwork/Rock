@@ -32,8 +32,14 @@ export type TithingOverviewToolTipBag = {
     /** Gets or sets the campus closing date. */
     campusClosedDate?: string | null;
 
+    /** Gets or sets the campus identifier key. */
+    campusId: number;
+
     /** Gets or sets the campus opening date. */
     campusOpenedDate?: string | null;
+
+    /** Gets or sets the campus short code. */
+    campusShortCode?: string | null;
 
     /** Gets or sets the date. */
     date?: string | null;

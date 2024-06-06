@@ -59,10 +59,12 @@ namespace Rock.Obsidian.UI
 
                 return new PersonFieldBag
                 {
+                    IdKey = person.IdKey,
                     NickName = person.NickName,
                     LastName = person.LastName,
                     PhotoUrl = person.PhotoUrl,
-                    IdKey    = person.IdKey
+                    ConnectionStatus = person.ConnectionStatusValue?.Value
+
                 };
             } );
         }

@@ -50,21 +50,6 @@ namespace Rock.Reporting
         }
 
         /// <summary>
-        /// Gets the cache key for the EntityFields
-        /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <param name="entity">The entity.</param>
-        /// <param name="includeOnlyReportingFields">if set to <c>true</c> [include only reporting fields].</param>
-        /// <param name="limitToFilterableFields">if set to <c>true</c> [limit to filterable fields].</param>
-        /// <returns></returns>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Use other GetCacheKey" )]
-        public static string GetCacheKey( Type entityType, IEntity entity, bool includeOnlyReportingFields = true, bool limitToFilterableFields = true )
-        {
-            return GetCacheKey( entityType, includeOnlyReportingFields, limitToFilterableFields );
-        }
-
-        /// <summary>
         /// Gets the entity field identified by it's uniqueFieldName ( the consistently unique name of the field in the form of "Property: {{ Name }}" for properties and "Attribute:{{ Name }} (Guid:{{ Guid }})" for attribute )
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
@@ -129,20 +114,6 @@ namespace Rock.Reporting
                     );
 
             return entityFields.ToList();
-        }
-
-        /// <summary>
-        /// Gets the entity fields for a specific Entity
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <param name="includeOnlyReportingFields">if set to <c>true</c> [include only reporting fields].</param>
-        /// <param name="limitToFilterableFields">if set to <c>true</c> [limit to filterable fields].</param>
-        /// <returns></returns>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Not Supported. Could cause inconsistent results." )]
-        public static List<EntityField> GetEntityFields( IEntity entity, bool includeOnlyReportingFields = true, bool limitToFilterableFields = true )
-        {
-            return GetEntityFields( entity?.GetType(), includeOnlyReportingFields, limitToFilterableFields );
         }
 
         /// <summary>
@@ -307,7 +278,10 @@ namespace Rock.Reporting
             }
 
             // Get Attributes
-            var entityTypeCache = EntityTypeCache.Get( entityType, true );
+            var entityTypeCache = typeof( IHasAttributes ).IsAssignableFrom( entityType )
+                ? EntityTypeCache.Get( entityType, true )
+                : null;
+
             if ( entityTypeCache != null )
             {
                 int entityTypeId = entityTypeCache.Id;
@@ -434,26 +408,6 @@ namespace Rock.Reporting
             }
 
             return false;
-        }
-
-        /// <summary>
-        /// Adds the entity field for attribute.
-        /// </summary>
-        /// <param name="entityFields">The entity fields.</param>
-        /// <param name="attribute">The attribute.</param>
-        /// <param name="limitToFilterableAttributes">if set to <c>true</c> [limit to filterable attributes].</param>
-        [Obsolete( "Use AddEntityFieldsForAttributeList instead", true )]
-        [RockObsolete( "1.10" )]
-        public static void AddEntityFieldForAttribute( List<EntityField> entityFields, AttributeCache attribute, bool limitToFilterableAttributes = true )
-        {
-            var attributeList = new List<AttributeCache>();
-            attributeList.Add( attribute );
-
-            HashSet<string> legacyNameHash = new HashSet<string>( entityFields.Select( a => a.LegacyName ).ToArray() );
-            foreach ( var attributeItem in attributeList )
-            {
-                AddEntityFieldForAttribute( entityFields, legacyNameHash, attributeItem, limitToFilterableAttributes );
-            }
         }
 
         /// <summary>
@@ -645,6 +599,18 @@ namespace Rock.Reporting
 
             return entityField;
         }
+
+        /// <summary>
+        /// Takes a property name and returns the <see cref="EntityField.UniqueName"/>
+        /// version of it.
+        /// </summary>
+        /// <param name="name">The name of the property.</param>
+        /// <returns>A new string that represents the unique name.</returns>
+        [RockInternal( "1.16.6", true )]
+        internal static string MakePropertyNameUnique( string name )
+        {
+            return $"Property_{name}";
+        }
     }
 
     #region Helper Classes
@@ -670,7 +636,7 @@ namespace Rock.Reporting
                 }
                 else
                 {
-                    return string.Format( "Property_{0}", this.Name );
+                    return EntityHelper.MakePropertyNameUnique( Name );
                 }
             }
         }

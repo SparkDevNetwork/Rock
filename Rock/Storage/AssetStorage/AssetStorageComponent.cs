@@ -72,23 +72,6 @@ namespace Rock.Storage.AssetStorage
         }
 
         /// <summary>
-        /// Gets or sets the file system compont HTTP context.
-        /// </summary>
-        /// <value>
-        /// The file system compont HTTP context.
-        /// </value>
-        [RockObsolete( "1.11" )]
-        [Obsolete( "Use FileSystemComponentHttpContext instead, and using the setter is no longer supported" )]
-        public System.Web.HttpContext FileSystemCompontHttpContext
-        {
-            get => FileSystemComponentHttpContext;
-            set
-            {
-                // do nothing, the getter will always use HttpContext.Current
-            }
-        }
-
-        /// <summary>
         /// Specify the font awesome icon for the AssetStorageComponent here. It will display in the folder tree.
         /// Default is fa fa-server.
         /// </summary>
