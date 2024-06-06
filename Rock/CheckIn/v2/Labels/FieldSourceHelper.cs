@@ -565,7 +565,12 @@ namespace Rock.CheckIn.v2.Labels
         /// <returns>A list of data sources.</returns>
         public static List<FieldDataSource> GetCheckoutLabelDataSources()
         {
-            return GetAttendanceLabelDataSources();
+            // Use the same information as attendance label except for achievement
+            // information, since we don't have that data now.
+            return GetAttendanceLabelAttendeeInfoSources()
+                .Concat( GetAttendanceLabelCheckInInfoSources() )
+                .DistinctBy( ds => ds.Key )
+                .ToList();
         }
 
         #endregion

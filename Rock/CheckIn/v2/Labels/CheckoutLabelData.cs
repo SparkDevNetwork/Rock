@@ -22,8 +22,8 @@ namespace Rock.CheckIn.v2.Labels
 {
     /// <summary>
     /// <para>
-    /// A check-out label is printed for every attendance record during the
-    /// check-out process.
+    /// A checkout label is printed for every attendance record during the
+    /// checkout process.
     /// </para>
     /// <para>
     /// Meaning if Noah is checked in to the 9am service and the 11am service
@@ -31,7 +31,7 @@ namespace Rock.CheckIn.v2.Labels
     /// labels.
     /// </para>
     /// </summary>
-    internal class CheckOutLabelData
+    internal class CheckoutLabelData
     {
         /// <summary>
         /// The data that describes the attendance record this label is being
