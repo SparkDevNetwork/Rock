@@ -19,7 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Net;
-
+using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR;
 
 namespace Rock.RealTime.AspNet
@@ -46,6 +46,21 @@ namespace Rock.RealTime.AspNet
         /// <inheritdoc/>
         public IDictionary<string, string> Cookies { get; }
 
+        /// <inheritdoc/>
+        public string Method { get; }
+        
+        /// <summary>
+        /// Gets the form values.
+        /// <para><see cref="Initialization"/> should be awaited before accessing this property.</para>
+        /// </summary>
+        public NameValueCollection Form { get; private set; }
+
+        /// <summary>
+        /// Gets the asynchronous initialization task for this instance.
+        /// <para>This should be awaited if access to <see cref="Form"/> property.</para>
+        /// </summary>
+        public Task Initialization { get; }
+
         #endregion
 
         #region Constructors
@@ -68,6 +83,8 @@ namespace Rock.RealTime.AspNet
             // make much sense anyway since it would just be the /rock-rt endpoint.
             // Therefore, do not set a RequestUri.
 
+            Method = GetMethodAsUppercaseString( request );
+
             QueryString = new NameValueCollection( StringComparer.InvariantCultureIgnoreCase );
             foreach ( var qs in request.QueryString )
             {
@@ -84,6 +101,34 @@ namespace Rock.RealTime.AspNet
             foreach ( var cookie in request.Cookies )
             {
                 Cookies.AddOrReplace( cookie.Key, cookie.Value.Value );
+            }
+
+            // Perform async initialization.
+            // Client code using an instance of this class
+            // can await the Initialization property.
+            Initialization = InitializeAsync( request );
+        }
+
+        private async Task InitializeAsync( IRequest request )
+        {
+            Form = new NameValueCollection( StringComparer.OrdinalIgnoreCase );
+
+            var form = await request.ReadForm();
+            foreach ( var item in form )
+            {
+                Form.Add( item.Key, item.Value );
+            }
+        }
+
+        private string GetMethodAsUppercaseString( IRequest request )
+        {
+            if ( request is Microsoft.AspNet.SignalR.Owin.ServerRequest owinRequest )
+            {
+                return owinRequest.GetHttpContext()?.Request?.HttpMethod?.ToUpper();
+            }
+            else
+            {
+                return null;
             }
         }
 

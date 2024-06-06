@@ -173,6 +173,9 @@ namespace Rock.Net
         ///         release and should therefore not be directly used in any plug-ins.
         ///     </para>
         /// </remarks>
+        /// <value>
+        /// This will always be uppercase, such as <c>"GET"</c>. The value can also be <see langword="null"/>, so perform checks accordingly.
+        /// </value>
         [RockInternal( "1.16" )]
         internal string HttpMethod { get; private set; }
 
@@ -242,6 +245,8 @@ namespace Rock.Net
             Cookies = new Dictionary<string, string>();
             QueryString = new NameValueCollection( StringComparer.OrdinalIgnoreCase );
             RootUrlPath = string.Empty;
+            HttpMethod = null;
+            Form = new NameValueCollection( StringComparer.OrdinalIgnoreCase );
         }
 
         /// <summary>
@@ -314,6 +319,9 @@ namespace Rock.Net
 
             RequestUri = request.RequestUri != null ? request.UrlProxySafe() : null;
             RootUrlPath = GetRootUrlPath( RequestUri );
+            
+            HttpMethod = request.Method?.ToUpper();
+            Form = new NameValueCollection( request.Form );
 
             ClientInformation = new ClientInformation( request );
 

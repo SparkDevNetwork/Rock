@@ -20,6 +20,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
 using System.Web;
 
 using Rock.Net;
@@ -49,6 +50,21 @@ namespace Rock.Rest
         /// <inheritdoc/>
         public IDictionary<string, string> Cookies { get; }
 
+        /// <inheritdoc/>
+        public string Method { get; }
+        
+        /// <summary>
+        /// Gets the form values.
+        /// <para><see cref="Initialization"/> should be awaited before accessing this property.</para>
+        /// </summary>
+        public NameValueCollection Form { get; private set; }
+
+        /// <summary>
+        /// Gets the asynchronous initialization task for this instance.
+        /// <para>This should be awaited if access to <see cref="Form"/> property.</para>
+        /// </summary>
+        public Task Initialization { get; }
+
         #endregion
 
         #region Constructors
@@ -72,6 +88,8 @@ namespace Rock.Rest
             }
 
             RequestUri = request.RequestUri;
+            
+            Method = GetMethodAsUppercaseString( request.Method );
 
             QueryString = new NameValueCollection( StringComparer.OrdinalIgnoreCase );
             foreach ( var kvp in request.GetQueryNameValuePairs() )
@@ -114,6 +132,67 @@ namespace Rock.Rest
             foreach ( var cookie in request.Headers.GetCookies().SelectMany( c => c.Cookies ) )
             {
                 Cookies.AddOrReplace( cookie.Name, cookie.Value );
+            }
+
+            Initialization = InitializeAsync( request );
+        }
+
+        #endregion
+
+        #region Methods
+
+        private async Task InitializeAsync( HttpRequestMessage request )
+        {
+            Form = new NameValueCollection( StringComparer.OrdinalIgnoreCase );
+
+            if ( request.Content.IsFormData() )
+            {
+                var form = await request.Content.ReadAsFormDataAsync();
+                
+                // Reset the stream position so other code can read the content.
+                var stream = await request.Content.ReadAsStreamAsync();
+                stream.Seek(0, System.IO.SeekOrigin.Begin);
+
+                if ( form != null )
+                {
+                    Form = new NameValueCollection( form );
+                }
+            }
+        }
+
+        private string GetMethodAsUppercaseString( HttpMethod method )
+        {
+            if ( method == HttpMethod.Delete )
+            {
+                return "DELETE";
+            }
+            else if ( method == HttpMethod.Get )
+            {
+                return "GET";
+            }
+            else if ( method == HttpMethod.Head )
+            {
+                return "HEAD";
+            }
+            else if ( method == HttpMethod.Options )
+            {
+                return "OPTIONS";
+            }
+            else if ( method == HttpMethod.Post )
+            {
+                return "POST";
+            }
+            else if ( method == HttpMethod.Put )
+            {
+                return "PUT";
+            }
+            else if ( method == HttpMethod.Trace )
+            {
+                return "TRACE";
+            }
+            else
+            {
+                return null;
             }
         }
 

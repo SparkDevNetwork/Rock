@@ -58,8 +58,11 @@ namespace Rock.Rest.Handler
                     request.Properties["RockServiceProvider"] = scope.ServiceProvider;
 
                     var responseContext = new RockMessageResponseContext();
-                    var wrapper = new HttpRequestMessageWrapper( request );
                     var user = UserLoginService.GetCurrentUser( false, rockContext );
+
+                    var wrapper = new HttpRequestMessageWrapper( request );
+                    await wrapper.Initialization;
+
                     var rockRequestContext = new RockRequestContext( wrapper, responseContext, user );
 
                     if ( accessor is RockRequestContextAccessor internalAccessor )
