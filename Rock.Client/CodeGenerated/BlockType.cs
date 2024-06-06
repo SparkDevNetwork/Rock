@@ -66,6 +66,9 @@ namespace Rock.Client
         /// <summary />
         public string Path { get; set; }
 
+        /// <summary />
+        public Rock.Client.Enums.Cms.SiteTypeFlags SiteTypeFlags { get; set; }
+
         /// <summary>
         /// Leave this as NULL to let Rock set this
         /// </summary>
@@ -109,6 +112,7 @@ namespace Rock.Client
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.Path = source.Path;
+            this.SiteTypeFlags = source.SiteTypeFlags;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
