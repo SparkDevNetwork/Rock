@@ -1,10 +1,18 @@
 import { Guid } from "@Obsidian/Types";
 import { LabelFieldType } from "@Obsidian/Enums/CheckIn/Labels/labelFieldType";
+import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
+import { DataSourceBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/LabelDesigner/dataSourceBag";
 
 export type Size = {
     width: number;
 
     height: number;
+};
+
+export type BlockConfiguration = {
+    dataSources?: DataSourceBag[] | null;
+
+    filterSources?: FieldFilterSourceBag[] | null;
 };
 
 export type DragData = {

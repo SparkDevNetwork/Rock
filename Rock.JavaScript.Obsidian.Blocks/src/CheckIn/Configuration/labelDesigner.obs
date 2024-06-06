@@ -64,10 +64,10 @@
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { computed } from "vue";
-    import { Size } from "./LabelDesigner/types.partial";
+    import { BlockConfiguration, Size } from "./LabelDesigner/types.partial";
     import { LabelUndoManager } from "./LabelDesigner/undoManager.partial";
 
-    const config = useConfigurationValues<unknown>();
+    const config = useConfigurationValues<BlockConfiguration>();
     const invokeBlockAction = useInvokeBlockAction();
 
     console.log("config", config);

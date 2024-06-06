@@ -57,7 +57,11 @@ namespace Rock.CheckIn.v2.Labels
 
         #region Person Label
 
-        private static List<FieldDataSource> GetPersonLabelDataSources()
+        /// <summary>
+        /// Gets all data sources for a <see cref="LabelType.Person"/> label.
+        /// </summary>
+        /// <returns>A list of data sources.</returns>
+        public static List<FieldDataSource> GetPersonLabelDataSources()
         {
             return GetPersonLabelAttendeeInfoSources()
                 .Concat( GetPersonLabelCheckInInfoSources() )
@@ -67,148 +71,12 @@ namespace Rock.CheckIn.v2.Labels
         }
 
         /// <summary>
-        /// Gets all the data source objects for a Person object on the label
-        /// data.
-        /// </summary>
-        /// <typeparam name="TLabelData">The type of label data expected.</typeparam>
-        /// <returns>A list of field data sources.</returns>
-        private static List<FieldDataSource> GetPersonDataSources<TLabelData>()
-            where TLabelData : ILabelDataHasPerson
-        {
-            var keysToMakeCommon = new List<string>
-            {
-                "person.nickname",
-                "person.lastname",
-                "person.daysuntilbirthday",
-                $"attribute:person:{SystemGuid.Attribute.PERSON_LEGAL_NOTE.ToLower()}",
-                $"attribute:person:{SystemGuid.Attribute.PERSON_ALLERGY.ToLower()}"
-            };
-
-            var dataSources = new List<FieldDataSource>();
-            var entityFields = EntityHelper.GetEntityFields( typeof( Person ), true, false );
-
-            foreach ( var entityField in entityFields )
-            {
-                FieldDataSource dataSource = null;
-
-                if ( entityField.FieldKind == FieldKind.Property )
-                {
-                    dataSource = GetPropertyDataSource<TLabelData>( entityField, "person", data => data.Person );
-                }
-                else
-                {
-                    var attributeCache = AttributeCache.Get( entityField.AttributeGuid.Value );
-
-                    if ( entityField.FieldType.Field is DateFieldType || entityField.FieldType.Field is DateTimeFieldType )
-                    {
-                        dataSource = new DateAttributeFieldDataSource<TLabelData>( attributeCache, "person", data => data.Person );
-                    }
-                    else
-                    {
-                        dataSource = new SingleValueFieldDataSource<TLabelData>
-                        {
-                            Key = $"attribute:person:{entityField.AttributeGuid}",
-                            Name = entityField.Title,
-                            Category = "Attributes",
-                            ValueFunc = ( source, field, printRequest ) => source.Person.GetAttributeValue( entityField.AttributeGuid.Value )
-                        };
-                    }
-                }
-
-                if ( dataSource != null )
-                {
-                    dataSource.TextSubType = TextFieldSubType.AttendeeInfo;
-
-                    if ( keysToMakeCommon.Contains( dataSource.Key ) )
-                    {
-                        dataSource.Category = "Common";
-                    }
-
-                    dataSources.Add( dataSource );
-                }
-            }
-
-            return dataSources;
-        }
-
-        /// <summary>
         /// Gets the attendee information data sources for a person label.
         /// </summary>
         /// <returns>A list of field data sources.</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage( "Style", "IDE0028:Simplify collection initialization", Justification = "Because the list of options is so long it is more clear to use the Add() method." )]
         private static List<FieldDataSource> GetPersonLabelAttendeeInfoSources()
         {
-            var dataSources = new List<FieldDataSource>();
-
-            dataSources.Add( new SingleValueFieldDataSource<PersonLabelData>
-            {
-                Key = "ea92317c-65b9-4d8e-b4c4-7fc7ab9ad932",
-                Name = "Full Name",
-                TextSubType = TextFieldSubType.AttendeeInfo,
-                Category = "Common",
-                Formatter = FullNameDataFormatter.Instance,
-                ValueFunc = ( source, field, printRequest ) => source.Person
-            } );
-
-            dataSources.Add( new SingleValueFieldDataSource<PersonLabelData>
-            {
-                Key = "1c1f5c30-5b23-484f-9993-f60d07952b33",
-                Name = "Gender",
-                TextSubType = TextFieldSubType.AttendeeInfo,
-                Category = "Common",
-                Formatter = GenderDataFormatter.Instance,
-                ValueFunc = ( source, field, printRequest ) => source.Person.Gender
-            } );
-
-            dataSources.Add( new SingleValueFieldDataSource<PersonLabelData>
-            {
-                Key = "c37608a7-9a93-4eb7-b045-208117575533",
-                Name = "Grade Offset",
-                TextSubType = TextFieldSubType.AttendeeInfo,
-                Category = "Common",
-                ValueFunc = ( source, field, printRequest ) => source.Person.GradeOffset
-            } );
-
-            dataSources.Add( new SingleValueFieldDataSource<PersonLabelData>
-            {
-                Key = "ae113ac5-a0b3-4225-be33-d82bb139077e",
-                Name = "Grade Formatted",
-                TextSubType = TextFieldSubType.AttendeeInfo,
-                Category = "Common",
-                Formatter = GradeDataFormatter.Instance,
-                ValueFunc = ( source, field, printRequest ) => source.Person.GraduationYear
-            } );
-
-            dataSources.Add( new SingleValueFieldDataSource<PersonLabelData>
-            {
-                Key = "d07f698e-9c3b-4330-a82e-be45a64b813d",
-                Name = "Age",
-                TextSubType = TextFieldSubType.AttendeeInfo,
-                Category = "Common",
-                Formatter = PersonAgeDataFormatter.Instance,
-                ValueFunc = ( source, field, printRequest ) => source.Person.AgePrecise
-            } );
-
-            dataSources.Add( new SingleValueFieldDataSource<PersonLabelData>
-            {
-                Key = "10a7d224-d0e7-4620-b52b-cf34e7b5e4ca",
-                Name = "Birthday Day Of Week",
-                TextSubType = TextFieldSubType.AttendeeInfo,
-                Category = "Common",
-                Formatter = WeekdayDateDataFormatter.Instance,
-                ValueFunc = ( source, field, printRequest ) => source.Person.ThisYearsBirthdate
-            } );
-
-            var personDataSources = GetPersonDataSources<PersonLabelData>();
-            var excludedKeys = new string[]
-            {
-                "person.gender",
-                "person.age"
-            };
-
-            return dataSources
-                .Concat( personDataSources.Where( ds => !excludedKeys.Contains( ds.Key ) ) )
-                .ToList();
+            return GetStandardPersonAttendeeInfoSources<PersonLabelData>();
         }
 
         /// <summary>
@@ -393,6 +261,153 @@ namespace Rock.CheckIn.v2.Labels
         }
 
         #endregion
+
+        /// <summary>
+        /// Gets the attendee information data sources for a label that has a
+        /// single Person property.
+        /// </summary>
+        /// <returns>A list of field data sources.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage( "Style", "IDE0028:Simplify collection initialization", Justification = "Because the list of options is so long it is more clear to use the Add() method." )]
+        private static List<FieldDataSource> GetStandardPersonAttendeeInfoSources<TLabelData>()
+            where TLabelData : ILabelDataHasPerson
+        {
+            var dataSources = new List<FieldDataSource>();
+
+            dataSources.Add( new SingleValueFieldDataSource<TLabelData>
+            {
+                Key = "ea92317c-65b9-4d8e-b4c4-7fc7ab9ad932",
+                Name = "Full Name",
+                TextSubType = TextFieldSubType.AttendeeInfo,
+                Category = "Common",
+                Formatter = FullNameDataFormatter.Instance,
+                ValueFunc = ( source, field, printRequest ) => source.Person
+            } );
+
+            dataSources.Add( new SingleValueFieldDataSource<TLabelData>
+            {
+                Key = "1c1f5c30-5b23-484f-9993-f60d07952b33",
+                Name = "Gender",
+                TextSubType = TextFieldSubType.AttendeeInfo,
+                Category = "Common",
+                Formatter = GenderDataFormatter.Instance,
+                ValueFunc = ( source, field, printRequest ) => source.Person.Gender
+            } );
+
+            dataSources.Add( new SingleValueFieldDataSource<TLabelData>
+            {
+                Key = "c37608a7-9a93-4eb7-b045-208117575533",
+                Name = "Grade Offset",
+                TextSubType = TextFieldSubType.AttendeeInfo,
+                Category = "Common",
+                ValueFunc = ( source, field, printRequest ) => source.Person.GradeOffset
+            } );
+
+            dataSources.Add( new SingleValueFieldDataSource<TLabelData>
+            {
+                Key = "ae113ac5-a0b3-4225-be33-d82bb139077e",
+                Name = "Grade Formatted",
+                TextSubType = TextFieldSubType.AttendeeInfo,
+                Category = "Common",
+                Formatter = GradeDataFormatter.Instance,
+                ValueFunc = ( source, field, printRequest ) => source.Person.GraduationYear
+            } );
+
+            dataSources.Add( new SingleValueFieldDataSource<TLabelData>
+            {
+                Key = "d07f698e-9c3b-4330-a82e-be45a64b813d",
+                Name = "Age",
+                TextSubType = TextFieldSubType.AttendeeInfo,
+                Category = "Common",
+                Formatter = PersonAgeDataFormatter.Instance,
+                ValueFunc = ( source, field, printRequest ) => source.Person.AgePrecise
+            } );
+
+            dataSources.Add( new SingleValueFieldDataSource<TLabelData>
+            {
+                Key = "10a7d224-d0e7-4620-b52b-cf34e7b5e4ca",
+                Name = "Birthday Day Of Week",
+                TextSubType = TextFieldSubType.AttendeeInfo,
+                Category = "Common",
+                Formatter = WeekdayDateDataFormatter.Instance,
+                ValueFunc = ( source, field, printRequest ) => source.Person.ThisYearsBirthdate
+            } );
+
+            var personDataSources = GetPersonDataSources<TLabelData>();
+            var excludedKeys = new string[]
+            {
+                "person.gender",
+                "person.age"
+            };
+
+            return dataSources
+                .Concat( personDataSources.Where( ds => !excludedKeys.Contains( ds.Key ) ) )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Gets all the data source objects for a Person object on the label
+        /// data.
+        /// </summary>
+        /// <typeparam name="TLabelData">The type of label data expected.</typeparam>
+        /// <returns>A list of field data sources.</returns>
+        private static List<FieldDataSource> GetPersonDataSources<TLabelData>()
+            where TLabelData : ILabelDataHasPerson
+        {
+            var keysToMakeCommon = new List<string>
+            {
+                "person.nickname",
+                "person.lastname",
+                "person.daysuntilbirthday",
+                $"attribute:person:{SystemGuid.Attribute.PERSON_LEGAL_NOTE.ToLower()}",
+                $"attribute:person:{SystemGuid.Attribute.PERSON_ALLERGY.ToLower()}"
+            };
+
+            var dataSources = new List<FieldDataSource>();
+            var entityFields = EntityHelper.GetEntityFields( typeof( Person ), true, false );
+
+            foreach ( var entityField in entityFields )
+            {
+                FieldDataSource dataSource = null;
+
+                if ( entityField.FieldKind == FieldKind.Property )
+                {
+                    dataSource = GetPropertyDataSource<TLabelData>( entityField, "person", data => data.Person );
+                }
+                else
+                {
+                    var attributeCache = AttributeCache.Get( entityField.AttributeGuid.Value );
+
+                    if ( entityField.FieldType.Field is DateFieldType || entityField.FieldType.Field is DateTimeFieldType )
+                    {
+                        dataSource = new DateAttributeFieldDataSource<TLabelData>( attributeCache, "person", data => data.Person );
+                    }
+                    else
+                    {
+                        dataSource = new SingleValueFieldDataSource<TLabelData>
+                        {
+                            Key = $"attribute:person:{entityField.AttributeGuid}",
+                            Name = entityField.Title,
+                            Category = "Attributes",
+                            ValueFunc = ( source, field, printRequest ) => source.Person.GetAttributeValue( entityField.AttributeGuid.Value )
+                        };
+                    }
+                }
+
+                if ( dataSource != null )
+                {
+                    dataSource.TextSubType = TextFieldSubType.AttendeeInfo;
+
+                    if ( keysToMakeCommon.Contains( dataSource.Key ) )
+                    {
+                        dataSource.Category = "Common";
+                    }
+
+                    dataSources.Add( dataSource );
+                }
+            }
+
+            return dataSources;
+        }
 
         private static FieldDataSource GetPropertyDataSource<TLabelData>( EntityField entityField, string propertyPath, Func<TLabelData, object> propertySelector )
         {

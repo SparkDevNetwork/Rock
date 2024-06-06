@@ -200,6 +200,7 @@
     import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterGroupBag";
     import { FilterExpressionType } from "@Obsidian/Enums/Reporting/filterExpressionType";
     import { FieldFilterRuleBag } from "@Obsidian/ViewModels/Reporting/fieldFilterRuleBag";
+    import { BlockConfiguration } from "./types.partial";
 
     const props = defineProps({
         labelManager: {
@@ -208,7 +209,7 @@
         }
     });
 
-    const blockConfig = useConfigurationValues<any>();
+    const blockConfig = useConfigurationValues<BlockConfiguration>();
     const invokeBlockAction = useInvokeBlockAction();
 
     const isComponentMenuSelected = ref(!!props.labelManager.selectedField.value);
