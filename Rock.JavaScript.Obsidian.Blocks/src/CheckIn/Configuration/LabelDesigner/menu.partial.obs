@@ -69,11 +69,17 @@
                            :type="LabelFieldType.Barcode" />
         </div>
 
-        <div v-else class="p-3" style="overflow-y: auto;">
-            <component :is="fieldConfigurationComponent"
-                       :labelManager="labelManager" />
+        <div v-else class="field-settings" style="overflow-y: auto;">
+            <Panel title="Properties"
+                   :modelValue="true"
+                   hasCollapse>
+                <component :is="fieldConfigurationComponent"
+                           :labelManager="labelManager" />
+            </Panel>
 
-            <Panel title="Conditionals" :modelValue="true" :hasCollapse="true">
+            <Panel title="Conditionals"
+                   :modelValue="true"
+                   hasCollapse>
                 <div v-if="hasConditions">
                     <div v-html="conditionalTitle"></div>
                     <ul>
@@ -156,6 +162,17 @@
     padding: 20px;
     gap: 10px;
     overflow-y: auto;
+}
+
+.field-settings :deep(.panel) {
+    border-radius: 0;
+    box-shadow: none;
+    margin-bottom: 0;
+    border: 0;
+}
+
+.field-settings :deep(.panel-heading) {
+    border-radius: 0;
 }
 </style>
 
