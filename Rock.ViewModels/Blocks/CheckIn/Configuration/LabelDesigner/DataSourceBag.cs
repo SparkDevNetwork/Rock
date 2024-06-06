@@ -56,6 +56,12 @@ namespace Rock.ViewModels.Blocks.CheckIn.Configuration.LabelDesigner
         public TextFieldSubType TextSubType { get; set; }
 
         /// <summary>
+        /// Indicates if this data source represents a value that is a collection
+        /// of multiple values.
+        /// </summary>
+        public bool IsCollection { get; set; }
+
+        /// <summary>
         /// A string that identifies the category to use in the drop down UI
         /// when designing the label.
         /// </summary>

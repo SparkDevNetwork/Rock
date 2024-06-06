@@ -43,6 +43,12 @@ export type DataSourceBag = {
     formatterOptions?: DataFormatterOptionBag[] | null;
 
     /**
+     * Indicates if this data source represents a value that is a collection
+     * of multiple values.
+     */
+    isCollection: boolean;
+
+    /**
      * The unique key that identifies this data source.
      * 
      * Properties should use a lowercase key that corresponds to the

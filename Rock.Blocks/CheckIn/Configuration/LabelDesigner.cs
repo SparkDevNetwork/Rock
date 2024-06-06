@@ -80,6 +80,7 @@ namespace Rock.Blocks.CheckIn.Configuration
                 Key = dataSource.Key,
                 Name = dataSource.Name,
                 TextSubType = dataSource.TextSubType,
+                IsCollection = dataSource.IsCollection,
                 Category = dataSource.Category,
                 CustomFields = dataSource.Formatter?.CustomFields,
                 FormatterOptions = dataSource.Formatter?.Options ?? new List<DataFormatterOptionBag>()

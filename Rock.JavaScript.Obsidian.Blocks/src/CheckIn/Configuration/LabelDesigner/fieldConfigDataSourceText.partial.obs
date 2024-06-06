@@ -5,6 +5,12 @@
                   enhanceForLongLists
                   grouped />
 
+    <DropDownList v-if="isSelectedFieldCollection"
+                  label="Multiple Values"
+                  v-model="collectionFormat"
+                  :items="collectionFormatItems"
+                  :showBlankItem="false" />
+
     <DropDownList v-if="formatterOptionItems.length > 0"
                   label="Format"
                   :showBlankItem="false"
@@ -26,6 +32,7 @@
     import FieldConfigText from "./fieldConfigText.partial.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { TextCollectionFormat, TextCollectionFormatDescription } from "@Obsidian/Enums/CheckIn/Labels/textCollectionFormat";
     import { computed, PropType, ref, watch } from "vue";
     import { LabelUndoManager } from "./undoManager.partial";
     import { DataSourceBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/LabelDesigner/dataSourceBag";
@@ -33,6 +40,7 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { useConfigurationValues } from "@Obsidian/Utility/block";
     import { CustomFieldInputBag } from "@Obsidian/ViewModels/CheckIn/Labels/customFieldInputBag";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
 
     const blockConfig = useConfigurationValues<{ personLabelSources?: DataSourceBag[] | null }>();
 
@@ -44,10 +52,23 @@
     });
 
     const selectedField = ref("");
+    const collectionFormat = ref("");
     const formatterOption = ref("");
     const customFieldData = ref<Record<string, string>>({});
 
     const fieldItems = getFieldItems();
+
+    const isSelectedFieldCollection = computed((): boolean => {
+        const field = blockConfig.personLabelSources
+            ?.find(s => s.textSubType === props.labelManager.selectedField.value?.fieldSubType
+                && s.key == selectedField.value);
+
+        return field?.isCollection === true;
+    });
+
+    const collectionFormatItems = computed((): ListItemBag[] => {
+        return enumToListItemBag(TextCollectionFormatDescription);
+    });
 
     const formatterOptionItems = computed((): ListItemBag[] => {
         const field = blockConfig.personLabelSources
@@ -98,6 +119,7 @@
             ?.configurationValues ?? {}) as TextFieldConfigurationBag;
 
         selectedField.value = configuration.sourceKey ?? "";
+        collectionFormat.value = configuration.collectionFormat ?? TextCollectionFormat.FirstItemOnly.toString();
         formatterOption.value = configuration.formatterOptionKey ?? "";
         customFieldData.value = props.labelManager.selectedField.value?.customData ?? {};
     }
@@ -110,15 +132,27 @@
     }
 
     // Watch for changes in the UI that require an update to the label.
-    watch([selectedField, formatterOption], () => {
-        // TODO: When selectedField changes, also change the placeholder text.
+    watch([selectedField, collectionFormat, formatterOption], (newValues, oldValues) => {
         props.labelManager.mutateSelectedField(field => {
             field.configurationValues = field.configurationValues ?? {};
 
             const fieldConfig = field.configurationValues as TextFieldConfigurationBag;
 
             fieldConfig.sourceKey = selectedField.value;
+            fieldConfig.collectionFormat = collectionFormat.value;
             fieldConfig.formatterOptionKey = formatterOption.value;
+
+            // If the field source changed, then update the placeholder text
+            // to match the name of the field.
+            if (newValues[0] !== oldValues[0]) {
+                const field = blockConfig.personLabelSources
+                    ?.find(s => s.textSubType === props.labelManager.selectedField.value?.fieldSubType
+                        && s.key == selectedField.value);
+
+                if (field) {
+                    fieldConfig.placeholderText = field.name;
+                }
+            }
         });
     });
 
