@@ -969,11 +969,16 @@ namespace Rock.Data
         /// <param name="guid">The unique identifier.</param>
         public void AddOrUpdatePageRoute( string pageGuid, string route, string guid )
         {
-            guid = guid != null ? $"'{guid}'" : "NEWID()";
+            guid = guid ?? Guid.NewGuid().ToString();
 
             string sql = $@"
                 DECLARE @pageId INT = (SELECT [Id] FROM [dbo].[Page] WHERE [Guid] = '{pageGuid}')
-                IF (EXISTS(SELECT [Id] FROM [dbo].[PageRoute] WHERE [Guid] = '{guid}') AND @pageId IS NOT NULL)
+                IF @pageId IS NULL
+                BEGIN
+                    RETURN;
+                END
+
+                IF (EXISTS(SELECT [Id] FROM [dbo].[PageRoute] WHERE [Guid] = '{guid}'))
                 BEGIN
                     UPDATE [dbo].[PageRoute]
                     SET [PageId] = @pageId, [Route] = '{route}'
@@ -982,7 +987,7 @@ namespace Rock.Data
                 ELSE
                 BEGIN
                     INSERT INTO [dbo].[PageRoute] ([IsSystem],[PageId],[Route],[Guid])
-                    VALUES(1, @PageId, '{route}', {guid} )
+                    VALUES(1, @PageId, '{route}', '{guid}' )
                 END";
 
             Migration.Sql( sql );
