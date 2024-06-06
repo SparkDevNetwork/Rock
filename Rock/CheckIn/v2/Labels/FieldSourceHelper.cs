@@ -132,7 +132,10 @@ namespace Rock.CheckIn.v2.Labels
                 Category = "Common",
                 ValuesFunc = ( source, field, printRequest ) => source.PersonAttendance
                     .SelectMany( a => a.GroupMembers )
-                    .Select( gm => GroupTypeCache.Get( gm.GroupTypeId ).Roles.FirstOrDefault( r => r.Id == gm.GroupRoleId )?.Name )
+                    .Select( gm => GroupTypeCache.Get( gm.GroupTypeId, printRequest.RockContext )
+                        ?.Roles
+                        .FirstOrDefault( r => r.Id == gm.GroupRoleId )
+                        ?.Name )
                     .Where( n => n != null )
                     .FirstOrDefault()
                     ?? string.Empty
@@ -216,7 +219,7 @@ namespace Rock.CheckIn.v2.Labels
             return dataSources;
         }
 
-        private static List<FieldFilterSourceBag> GetPersonLabelFilterSources()
+        public static List<FieldFilterSourceBag> GetPersonLabelFilterSources()
         {
             var filterSources = new List<FieldFilterSourceBag>();
 
@@ -258,6 +261,172 @@ namespace Rock.CheckIn.v2.Labels
             }
 
             return filterSources;
+        }
+
+        #endregion
+
+        #region Attendance Label
+
+        /// <summary>
+        /// Gets all data sources for a <see cref="LabelType.Attendance"/> label.
+        /// </summary>
+        /// <returns>A list of data sources.</returns>
+        public static List<FieldDataSource> GetAttendanceLabelDataSources()
+        {
+            return GetAttendanceLabelAttendeeInfoSources()
+                .Concat( GetAttendanceLabelCheckInInfoSources() )
+                .Concat( GetAttendanceLabelAchievementInfoSources() )
+                .DistinctBy( ds => ds.Key )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Gets the attendee information data sources for an attendance label.
+        /// </summary>
+        /// <returns>A list of field data sources.</returns>
+        private static List<FieldDataSource> GetAttendanceLabelAttendeeInfoSources()
+        {
+            return GetStandardPersonAttendeeInfoSources<PersonLabelData>();
+        }
+
+        /// <summary>
+        /// Gets the check-in information data sources for an attendance label.
+        /// </summary>
+        /// <returns>A list of field data sources.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage( "Style", "IDE0028:Simplify collection initialization", Justification = "Because the list of options is so long it is more clear to use the Add() method." )]
+        private static List<FieldDataSource> GetAttendanceLabelCheckInInfoSources()
+        {
+            var dataSources = new List<FieldDataSource>();
+
+            dataSources.Add( new SingleValueFieldDataSource<AttendanceLabelData>
+            {
+                Key = "6b58e4d4-1cd7-4908-abe6-ba0ff070f95c",
+                Name = "Area Name",
+                TextSubType = TextFieldSubType.CheckInInfo,
+                Category = "Common",
+                ValueFunc = ( source, field, printRequest ) => source.Attendance.Area.Name
+            } );
+
+            dataSources.Add( new SingleValueFieldDataSource<AttendanceLabelData>
+            {
+                Key = "f69b47f6-40f0-4cf3-93f8-9a7f49c400e7",
+                Name = "Check-in Time",
+                TextSubType = TextFieldSubType.CheckInInfo,
+                Category = "Common",
+                ValueFunc = ( source, field, printRequest ) => source.Attendance.StartDateTime
+            } );
+
+            dataSources.Add( new SingleValueFieldDataSource<AttendanceLabelData>
+            {
+                Key = "d3f07ec5-4444-4d20-adc3-4f979e8a29cb",
+                Name = "Current Time",
+                TextSubType = TextFieldSubType.CheckInInfo,
+                Category = "Common",
+                ValueFunc = ( source, field, printRequest ) => RockDateTime.Now
+            } );
+
+            dataSources.Add( new SingleValueFieldDataSource<AttendanceLabelData>
+            {
+                Key = "d7baf5ab-3b5a-4304-a29c-a3d3a8de4c6c",
+                Name = "Group Name",
+                TextSubType = TextFieldSubType.CheckInInfo,
+                Category = "Common",
+                ValueFunc = ( source, field, printRequest ) => source.Attendance.Group.Name
+            } );
+
+            dataSources.Add( new SingleValueFieldDataSource<AttendanceLabelData>
+            {
+                Key = "55c0d92b-792a-48b1-97d1-00048156043c",
+                Name = "Group Role Name",
+                TextSubType = TextFieldSubType.CheckInInfo,
+                Category = "Common",
+                ValueFunc = ( source, field, printRequest ) => source.Attendance
+                    .GroupMembers
+                    .Select( gm => GroupTypeCache.Get( gm.GroupTypeId, printRequest.RockContext )
+                        ?.Roles
+                        .FirstOrDefault( r => r.Id == gm.GroupRoleId )
+                        ?.Name )
+                    .Where( n => n != null )
+                    .FirstOrDefault()
+                    ?? string.Empty
+            } );
+
+            dataSources.Add( new SingleValueFieldDataSource<AttendanceLabelData>
+            {
+                Key = "602af35f-2bbd-4147-ae2c-1123478a30ee",
+                Name = "Location Name",
+                TextSubType = TextFieldSubType.CheckInInfo,
+                Category = "Common",
+                ValueFunc = ( source, field, printRequest ) => source.Attendance.Location.Name
+            } );
+
+            dataSources.Add( new SingleValueFieldDataSource<AttendanceLabelData>
+            {
+                Key = "b6fd6684-187e-4bc3-a85c-b25d1367c914",
+                Name = "Schedule Name",
+                TextSubType = TextFieldSubType.CheckInInfo,
+                Category = "Common",
+                ValueFunc = ( source, field, printRequest ) => source.Attendance.Schedule.Name
+            } );
+
+            dataSources.Add( new SingleValueFieldDataSource<AttendanceLabelData>
+            {
+                Key = "1e01aa11-7171-4124-bdaf-e316ca34390b",
+                Name = "Schedule Time",
+                TextSubType = TextFieldSubType.CheckInInfo,
+                Category = "Common",
+                ValueFunc = ( source, field, printRequest ) => source.Attendance.Schedule.GetNextCheckInStartTime( source.Attendance.StartDateTime )
+            } );
+
+            dataSources.Add( new SingleValueFieldDataSource<AttendanceLabelData>
+            {
+                Key = "5bfa4351-3f18-4ec8-be29-18e4aa44323d",
+                Name = "Security Code",
+                TextSubType = TextFieldSubType.CheckInInfo,
+                Category = "Common",
+                ValueFunc = ( source, field, printRequest ) => source.Attendance.SecurityCode
+            } );
+
+            return dataSources;
+        }
+
+        /// <summary>
+        /// Gets the achievement information data sources for an attendance label.
+        /// </summary>
+        /// <returns>A list of field data sources.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage( "Style", "IDE0028:Simplify collection initialization", Justification = "Because the list of options is so long it is more clear to use the Add() method." )]
+        private static List<FieldDataSource> GetAttendanceLabelAchievementInfoSources()
+        {
+            var dataSources = new List<FieldDataSource>();
+
+            dataSources.Add( new MultiValueFieldDataSource<AttendanceLabelData>
+            {
+                Key = "fca51f2b-44ab-44e0-929a-3f5cd43368ea",
+                Name = "Just Completed Achievements",
+                TextSubType = TextFieldSubType.AchievementInfo,
+                Category = "Common",
+                ValuesFunc = ( source, field, printRequest ) => source.JustCompletedAchievements
+            } );
+
+            dataSources.Add( new MultiValueFieldDataSource<AttendanceLabelData>
+            {
+                Key = "92c258a0-d7ff-4f26-a670-07b80eb422b4",
+                Name = "In Progress Achievements",
+                TextSubType = TextFieldSubType.AchievementInfo,
+                Category = "Common",
+                ValuesFunc = ( source, field, printRequest ) => source.InProgressAchievements
+            } );
+
+            dataSources.Add( new MultiValueFieldDataSource<AttendanceLabelData>
+            {
+                Key = "c3281631-1949-480b-9732-5978678e7551",
+                Name = "Previously Completed Achievements",
+                TextSubType = TextFieldSubType.AchievementInfo,
+                Category = "Common",
+                ValuesFunc = ( source, field, printRequest ) => source.PreviouslyCompletedAchievements
+            } );
+
+            return dataSources;
         }
 
         #endregion

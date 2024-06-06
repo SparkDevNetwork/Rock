@@ -35,14 +35,14 @@
     import { TextCollectionFormat, TextCollectionFormatDescription } from "@Obsidian/Enums/CheckIn/Labels/textCollectionFormat";
     import { computed, PropType, ref, watch } from "vue";
     import { LabelUndoManager } from "./undoManager.partial";
-    import { DataSourceBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/LabelDesigner/dataSourceBag";
     import { TextFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/textFieldConfigurationBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { useConfigurationValues } from "@Obsidian/Utility/block";
     import { CustomFieldInputBag } from "@Obsidian/ViewModels/CheckIn/Labels/customFieldInputBag";
     import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { BlockConfiguration } from "./types.partial";
 
-    const blockConfig = useConfigurationValues<{ personLabelSources?: DataSourceBag[] | null }>();
+    const blockConfig = useConfigurationValues<BlockConfiguration>();
 
     const props = defineProps({
         labelManager: {
@@ -59,7 +59,7 @@
     const fieldItems = getFieldItems();
 
     const isSelectedFieldCollection = computed((): boolean => {
-        const field = blockConfig.personLabelSources
+        const field = blockConfig.dataSources
             ?.find(s => s.textSubType === props.labelManager.selectedField.value?.fieldSubType
                 && s.key == selectedField.value);
 
@@ -71,7 +71,7 @@
     });
 
     const formatterOptionItems = computed((): ListItemBag[] => {
-        const field = blockConfig.personLabelSources
+        const field = blockConfig.dataSources
             ?.find(s => s.textSubType === props.labelManager.selectedField.value?.fieldSubType
                 && s.key == selectedField.value);
 
@@ -88,7 +88,7 @@
     });
 
     const customFields = computed((): CustomFieldInputBag[] => {
-        const field = blockConfig.personLabelSources
+        const field = blockConfig.dataSources
             ?.find(s => s.textSubType === props.labelManager.selectedField.value?.fieldSubType
                 && s.key == selectedField.value);
 
@@ -100,7 +100,7 @@
     });
 
     function getFieldItems(): ListItemBag[] {
-        return blockConfig.personLabelSources
+        return blockConfig.dataSources
             ?.filter(s => s.textSubType === props.labelManager.selectedField.value?.fieldSubType)
             .map(s => {
                 return {
@@ -145,7 +145,7 @@
             // If the field source changed, then update the placeholder text
             // to match the name of the field.
             if (newValues[0] !== oldValues[0]) {
-                const field = blockConfig.personLabelSources
+                const field = blockConfig.dataSources
                     ?.find(s => s.textSubType === props.labelManager.selectedField.value?.fieldSubType
                         && s.key == selectedField.value);
 

@@ -51,7 +51,7 @@ namespace Rock.Blocks.CheckIn.Configuration
     {
         public override object GetObsidianBlockInitialization()
         {
-            var dataSources = FieldSourceHelper.GetPersonLabelDataSources()
+            var dataSources = FieldSourceHelper.GetAttendanceLabelDataSources()
                 .Select( ds => ToDataSourceBag( ds ) )
                 .OrderByDescending( ds => ds.Category == "Common" )
                 .ThenByDescending( ds => ds.Category.Contains( "Properties" ) )
@@ -59,7 +59,7 @@ namespace Rock.Blocks.CheckIn.Configuration
                 .ThenBy( ds => ds.Name )
                 .ToList();
 
-            var filterSources = FieldSourceHelper.GetFilterSources( LabelType.Person )
+            var filterSources = FieldSourceHelper.GetPersonLabelFilterSources()
                 .OrderByDescending( s => s.Category == "Common" )
                 .ThenByDescending( s => s.Category.Contains( "Properties" ) )
                 .ThenBy( s => s.Category )

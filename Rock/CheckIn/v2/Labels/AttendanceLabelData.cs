@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 
 using Rock.Model;
@@ -70,5 +71,45 @@ namespace Rock.CheckIn.v2.Labels
         /// person by API call.
         /// </summary>
         public Group Family { get; set; }
+
+        /// <summary>
+        /// The achievement type names that were completed by the person this
+        /// label is being printed for during this check-in session.
+        /// </summary>
+        public List<string> JustCompletedAchievements { get; set; }
+
+        /// <summary>
+        /// The achievement type identifiers that were completed by the person
+        /// this label is being printed for during this check-in session.
+        /// </summary>
+        public List<Guid> JustCompletedAchievemenIds { get; set; }
+
+        /// <summary>
+        /// The achievement type names that are currently in progress for
+        /// the person this label is being printed for during this check-in
+        /// session.
+        /// </summary>
+        public List<string> InProgressAchievements { get; set; }
+
+        /// <summary>
+        /// The achievement type identifiers that are currently in progress for
+        /// the person this label is being printed for during this check-in
+        /// session.
+        /// </summary>
+        public List<string> InProgressAchievementIds { get; set; }
+
+        /// <summary>
+        /// The achievement type names that were previously completed for
+        /// the person this label is being printed for during this check-in
+        /// session.
+        /// </summary>
+        public List<string> PreviouslyCompletedAchievements { get; set; }
+
+        /// <summary>
+        /// The achievement type identifiers that were previously completed for
+        /// the person this label is being printed for during this check-in
+        /// session.
+        /// </summary>
+        public List<string> PreviouslyCompletedAchievementIds { get; set; }
     }
 }
