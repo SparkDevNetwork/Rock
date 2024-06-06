@@ -515,6 +515,7 @@
     <TypeScriptCompile Include="Framework\Enums\Cms\persistedDatasetDataFormat.ts" />
     <TypeScriptCompile Include="Framework\Enums\Cms\persistedDatasetScriptType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Cms\siteType.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Cms\siteTypeFlags.ts" />
     <TypeScriptCompile Include="Framework\Enums\Cms\tagType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Communication\communicationMessageFilter.ts" />
     <TypeScriptCompile Include="Framework\Enums\Communication\communicationRecipientStatus.ts" />

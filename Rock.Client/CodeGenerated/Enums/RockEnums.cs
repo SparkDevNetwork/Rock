@@ -1292,6 +1292,17 @@ namespace Rock.Client.Enums.Cms
         ExternalWebPage = 0x2,
     }
 
+    /// <summary>
+    /// </summary>
+    [Flags]
+    public enum SiteTypeFlags
+    {
+        None = 0x0,
+        Web = 0x1,
+        Mobile = 0x2,
+        Tv = 0x4,
+    }
+
 }
 
 namespace Rock.Client.Enums.Core.Grid
@@ -1463,6 +1474,20 @@ namespace Rock.Client.Enums.Net
 
 }
 
+namespace Rock.Client.Enums.Configuration
+{
+    /// <summary>
+    /// </summary>
+    public enum DatabasePlatform
+    {
+        Unknown = 0x0,
+        SqlServer = 0x1,
+        AzureSql = 0x2,
+        Other = 0x3,
+    }
+
+}
+
 namespace Rock.Client.Enums.Controls
 {
     /// <summary>
@@ -1567,6 +1592,7 @@ namespace Rock.Client.Enums.Reporting
     public enum FieldFilterSourceType
     {
         Attribute = 0x0,
+        Property = 0x1,
     }
 
 }

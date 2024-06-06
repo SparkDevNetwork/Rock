@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 import { FieldFilterSourceType } from "@Obsidian/Enums/Reporting/fieldFilterSourceType";
 import { Guid } from "@Obsidian/Types";
 
@@ -40,7 +41,7 @@ export type FieldFilterRuleBag = {
      * The type of comparison to use when comparing the source value (left-hand
      * side) and Rock.ViewModels.Reporting.FieldFilterRuleBag.Value (right-hand side).
      */
-    comparisonType: number;
+    comparisonType: ComparisonType;
 
     /** The unique identifier of this rule. */
     guid: Guid;
