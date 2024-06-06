@@ -1296,6 +1296,7 @@
     <Compile Include="Plugin\HotFixes\178_FixLockedOutCaptionLoginBlockSetting.cs" />
     <Compile Include="Plugin\HotFixes\177_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge.cs" />
     <Compile Include="Plugin\HotFixes\195_MigrationRollupForV17_0_4.cs" />
+    <Compile Include="Plugin\HotFixes\201_MigrationRollupsForV17_0_8.cs" />
     <Compile Include="Plugin\HotFixes\199_MigrationRollupsForV17_0_7.cs" />
     <Compile Include="Plugin\HotFixes\198_MigrationRollupsForV17_0_6.cs" />
     <Compile Include="Plugin\HotFixes\197_MigrationRollupsForV17_0_5.cs" />
