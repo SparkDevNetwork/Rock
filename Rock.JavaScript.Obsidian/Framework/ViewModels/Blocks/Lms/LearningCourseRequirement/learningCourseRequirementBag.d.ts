@@ -41,5 +41,5 @@ export type LearningCourseRequirementBag = {
     requiredLearningCourseCode?: string | null;
 
     /** Gets or sets the requirement type. */
-    requirementType?: RequirementType | null;
+    requirementType: RequirementType;
 };

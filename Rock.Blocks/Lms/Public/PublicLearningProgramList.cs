@@ -63,13 +63,61 @@ namespace Rock.Blocks.Lms
         private static class AttributeDefault
         {
             public const string ProgramListTemplate = @"
-<div class=""page-container d-flex flex-column"" >
-	<div class=""page-header-section mb-5"" style=""align-items: center; border-radius: 12px; background-image: url('/GetImage.ashx?guid=4812baaf-a173-472c-a9a7-8ceb83c06f53'); background-size: cover;"">
-		<div class=""d-flex flex-column header-block text-center"" style=""position: relative; bottom: -40px; background-color: white; border-radius: 12px; width: 80%; margin-top: 130px; margin-left: 10%; margin-right: 10%;"">
-			<h2>
+//- Styles
+{% stylesheet %}
+    .page-container {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .page-header-section {
+        height: 280px; 
+        align-items: center; 
+        border-radius: 12px; 
+        background-image: url('/GetImage.ashx?guid=4812baaf-a173-472c-a9a7-8ceb83c06f53'); 
+        background-size: cover;
+    }
+    
+    .programs-list-header-section {
+        margin-top: 100px;   
+    }
+    
+    .header-block {
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        left: 10%;
+        bottom: -80%;
+        -webkit-transform: translateY(-30%);
+        transform: translateY(-30%);
+        background-color: white; 
+        border-radius: 12px; 
+        width: 80%; 
+    }
+    
+    .page-sub-header {
+        padding-left: 10%; 
+        padding-right: 10%; 
+        margin-bottom: 12px;
+        padding-bottom: 12px;
+    }
+    
+    .program-item-container {
+        background-color: white; 
+        border-radius: 12px;
+        margin: 8px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+{% endstylesheet %}
+<div class=""page-container"" >
+	<div class=""page-header-section"">
+		<div class=""header-block text-center"">
+			<div class=""h1 text-bold"">
 				Growth Through Learning
-			</h2>
-			<div class=""page-sub-header"" style=""padding-left: 20%; padding-right: 20%; padding-bottom: 8px;"">
+			</div>
+			<div class=""page-sub-header"">
 				We believe that spiritual growth is deeply intertwined with continuous learning. 
 				""Growth Through Learning"" is our commitment to nurture your faith journey, providing resources and opportunies to deepen your understanding of God's Word and his purpose for your life.
 			</div>
@@ -86,9 +134,9 @@ namespace Rock.Blocks.Lms
 		</div>
 	</div>
 	
-	<div class=""program-list-container d-flex"">
+	<div class=""program-list-container d-flex flex-fill"">
 		{% for program in Programs %}
-		<div class=""program-item-container mr-2 justify-content-between d-flex flex-column"" style=""background-color: white; border-radius: 12px;"">
+		<div class=""program-item-container"">
 		
 			{% if program.ImageFileGuid and program.ImageFileGuid != '' %}
 			<div class=""program-image program-item-header"" >

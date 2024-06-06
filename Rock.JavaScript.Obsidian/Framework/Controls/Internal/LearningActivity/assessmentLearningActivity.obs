@@ -43,6 +43,10 @@
                     <div class="well well-sm assessment-item-container" v-for="(item, index) in items">
                         <div class="assessment-item assessment-item-reorder-section">
                             <i class="fa fa-bars reorder-handle" :style="reorderIconStyle"></i>
+
+                            <button aria-label="Remove this item" class="btn btn-default btn-square remove-item-button" @click.prevent="items.splice(index, 1)">
+                                <i class="fa fa-times" aria-hidden="true"></i>
+                            </button>
                         </div>
                         <div class="assessment-item assessment-item-type-section">
                             <DropDownList v-model="item.typeName" :items="itemTypes" label="Type" :show-blank-item="false" />
@@ -192,8 +196,13 @@
 
         .assessment-item-reorder-section {
             grid-column: 1;
-            align-self: center;
             padding-left: 4px;
+
+            /* Stack the reorder and delete buttons with space between. */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
         }
 
         .assessment-item-type-section {
@@ -360,11 +369,11 @@ div.summary-sub-title {
     );
 
     const shortAnswerItems = computed(() =>
-        (toValue(items) ?? []).filter(i => i.typeName === AssessmentItemType.ShortAnswer) as ShortAnswerItem[]
+        (completedItems.value ?? []).filter(i => i.typeName === AssessmentItemType.ShortAnswer) as ShortAnswerItem[]
     );
 
     const multipleChoiceItems = computed(() =>
-        (toValue(items) ?? []).filter(i => i.typeName === AssessmentItemType.MultipleChoice) as MultipleChoiceItem[]
+        (completedItems.value ?? []).filter(i => i.typeName === AssessmentItemType.MultipleChoice) as MultipleChoiceItem[]
     );
 
     const correctMultipleChoiceItems = computed(() => multipleChoiceItems.value.filter(i => i.response === i.correctAnswer));
@@ -427,11 +436,11 @@ div.summary-sub-title {
         };
     });
 
+    const assessmentItemTypesRequiringResponse = [AssessmentItemType.MultipleChoice.toString(), AssessmentItemType.ShortAnswer.toString()];
     /** Determines whether the there are any items without a response. */
-    const unansweredQuestions = computed(() => {
-        const answerableItems: Array<AssessmentItem> = (multipleChoiceItems.value as Array<AssessmentItem>).concat(shortAnswerItems.value);
-        return answerableItems.some(i => i.response == null || i.response.length === 0);
-    });
+    const unansweredQuestions = computed(() =>
+        (completedItems.value ?? []).some(i => assessmentItemTypesRequiringResponse.includes(i.typeName) && (i.response ?? "").length === 0)
+    );
 
     // #endregion
 

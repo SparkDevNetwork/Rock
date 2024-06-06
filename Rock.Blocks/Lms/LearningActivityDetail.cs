@@ -508,6 +508,10 @@ namespace Rock.Blocks.Lms
             }
 
             var isNew = entity.Id == 0;
+            if ( isNew )
+            {
+                entity.LearningClassId = PageParameterAsId( PageParameterKey.LearningClassId );
+            }
 
             RockContext.WrapTransaction( () =>
             {

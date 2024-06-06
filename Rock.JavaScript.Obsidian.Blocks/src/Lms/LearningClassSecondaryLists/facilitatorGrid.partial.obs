@@ -21,12 +21,6 @@
     </Grid>
 </template>
 
-<style scoped>
-span.past-due-dates {
-    color: var(--color-warning, #a9551d);
-}
-</style>
-
 <script setup lang="ts">
     import { PropType, reactive, ref } from "vue";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";

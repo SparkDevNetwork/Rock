@@ -40,6 +40,7 @@ namespace Rock.Model
                     .Include( a => a.LearningActivityCompletions )
                     .Include( a => a.LearningClass )
                     .Include( a => a.LearningClass.LearningSemester )
+                    .Include( a => a.LearningClass.LearningSemester.LearningProgram )
                     .Where( a => a.LearningClassId == classId )
                     .OrderBy( a => a.Order )
                     .ThenBy( a => a.Id ) :
@@ -47,6 +48,7 @@ namespace Rock.Model
                     .AsNoTracking()
                     .Include( a => a.LearningClass )
                     .Include( a => a.LearningClass.LearningSemester )
+                    .Include( a => a.LearningClass.LearningSemester.LearningProgram )
                     .Where( a => a.LearningClassId == classId )
                     .OrderBy( a => a.Order )
                     .ThenBy( a => a.Id );

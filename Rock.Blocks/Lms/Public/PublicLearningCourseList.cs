@@ -37,7 +37,7 @@ namespace Rock.Blocks.Lms
     [Description( "Displays a list of public learning courses." )]
     [IconCssClass( "fa fa-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
-    
+
     [LinkedPage( "Detail Page",
         Description = "The page that will show the course details.",
         Key = AttributeKey.DetailPage )]
@@ -76,13 +76,66 @@ namespace Rock.Blocks.Lms
         private static class AttributeDefault
         {
             public const string CourseListTemplate = @"
-<div class=""page-container d-flex flex-column mb-3"">
-	<div class=""page-header-section mb-5"" style=""align-items: center; border-radius: 12px; background-image: url('/GetImage.ashx?guid=dcc4ff9c-51dd-4c5c-89be-3d676dfe2803'); background-size: cover;"">
-		<div class=""d-flex flex-column header-block text-center"" style=""position: relative; bottom: -40px; background-color: white; border-radius: 12px; width: 80%; margin-top: 130px; margin-left: 10%; margin-right: 10%;"">
+//- Variables
+{% assign imageFileNameLength = Program.ImageBinaryFile.Guid | Size %}
+
+//- Styles
+{% stylesheet %}
+    .page-container {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 12px;
+    }
+    
+    .page-header-section {
+        {% if imageFileNameLength > 0 %}
+            height: 280px; 
+        {% endif %}
+        align-items: center; 
+        border-radius: 12px; 
+        background-image: url('/GetImage.ashx?guid={{Program.ImageBinaryFile.Guid}}'); 
+        background-size: cover;
+    }
+    
+    .header-block {
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        left: 10%;
+        {% if imageFileNameLength > 0 %}
+            bottom: -85%;
+            -webkit-transform: translateY(-30%);
+            transform: translateY(-30%);
+        {% endif %}
+        background-color: white; 
+        border-radius: 12px; 
+        width: 80%; 
+    }
+    
+    .page-sub-header {
+        padding-left: 10%; 
+        padding-right: 10%; 
+        padding-bottom: 12px;
+        margin-bottom: 12px;
+    }
+    
+    .course-item-container {
+        max-width: 300px;
+        background-color: white; 
+        border-radius: 12px;
+        margin: 8px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+{% endstylesheet %}
+<div class=""page-container"">
+	<div class=""page-header-section mb-5"">
+		<div class=""header-block text-center"">
 			<h2>
 				{{ Program.Name }}
 			</h2>
-			<div class=""page-sub-header"" style=""padding-left: 20%; padding-right: 20%; padding-bottom: 8px;"">
+			<div class=""page-sub-header"">
 				{{ Program.Summary }}
 			</div>
 		</div>
@@ -96,14 +149,14 @@ namespace Rock.Blocks.Lms
 	
 	<div class=""course-list-container d-flex flex-fill"">
 		{% for course in Courses %}
-		<div class=""course-item-container mr-2 justify-content-between d-flex flex-column"" style=""background-color: white; border-radius: 12px;"">
+		<div class=""course-item-container"">
 			<div class=""course-item-middle p-3"">
 			
 				<h4 class=""course-name"">
 					{{ course.Entity.PublicName }}
 				</h4>
 				<div class=""course-category d-flex justify-content-between mb-2"">
-				    {% if course.Category and course.Category != '' %}
+				    {% if course.Category and course.Category <> '' %}
 					    <span class=""badge badge-info"">{{ course.Category }}</span>
 					{% else %}
 					    <span> </span>
@@ -125,7 +178,7 @@ namespace Rock.Blocks.Lms
                 
                 <div class=""d-flex justify-content-between"">
     				<a class=""btn btn-default"" href=""{{ course.CourseDetailsLink }}"">Learn More</a>
-    		
+    				
     				{% if course.LearningCompletionStatus == 'Pass' %}
     					<span class=""badge badge-success p-2"" style=""line-height: normal;"">Completed</span>
     				{% elseif course.LearningCompletionStatus == 'Incomplete' %}
@@ -133,7 +186,7 @@ namespace Rock.Blocks.Lms
     				{% elseif course.UnmetPrerequisites != empty %}
                         <a class=""text-muted"" href=""{{ course.PrerequisiteEnrollmentLink }}"">Prerequisites Not Met</a>
                     {% else %}
-                        <a class=""text-bold"" href=""{{ course.CourseEnrollmentLink }}"">Enroll</a>
+                        <a class=""text-bold ml-3"" href=""{{ course.CourseEnrollmentLink }}"">Enroll</a>
     				{% endif %}
 			    </div>
 			</div>

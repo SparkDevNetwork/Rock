@@ -39,7 +39,6 @@
     <LearningClassSecondaryLists v-if="!isAcademicMode && panelMode === DetailPanelMode.View"
                                  :isEditable="isEditable"
                                  :navigationUrls="config.navigationUrls"
-                                 :takesAttendance="options.takesAttendance"
                                  v-model="learningCourseViewBag" />
 </template>
 
@@ -167,7 +166,7 @@
     });
 
     const options = computed((): LearningCourseDetailOptionsBag => {
-        return config.options ?? { takesAttendance: false };
+        return config.options ?? { };
     });
 
     // #endregion

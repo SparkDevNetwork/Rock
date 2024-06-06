@@ -19,6 +19,15 @@ namespace Rock.ViewModels.Blocks.Lms.LearningClassList
 {
     public class LearningClassListOptionsBag
     {
+
+        /// <summary>
+        /// Gets or sets whether the block has a valid course parameter.
+        /// </summary>
+        /// <remarks>
+        /// If the course parameter is not present we can't add new classes. This is used to tell the grid to hide the Add button.
+        /// </remarks>
+        public bool HasValidCourse { get; set; }
+
         /// <summary>
         /// Gets or sets whether the course column is shown.
         /// </summary>
@@ -43,5 +52,6 @@ namespace Rock.ViewModels.Blocks.Lms.LearningClassList
         /// Gets or sets whether the block should be shown.
         /// </summary>
         public bool ShowBlock { get; set; }
+
     }
 }

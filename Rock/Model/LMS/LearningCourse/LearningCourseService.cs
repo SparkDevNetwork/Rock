@@ -22,6 +22,7 @@ using System.Linq;
 using Rock.Data;
 using Rock.Enums.Lms;
 using Rock.Utility;
+using Rock.ViewModels.Blocks.Lms.LearningCourseRequirement;
 
 using WebGrease.Css.Extensions;
 
@@ -74,6 +75,20 @@ namespace Rock.Model
                 } )
                 .FirstOrDefault();
 
+            if ( course == null )
+            {
+                // This can happen if a course is still being configured.
+                return new PublicLearningCourseDetailBag
+                {
+                    CourseRequirements = new List<LearningCourseRequirement>(),
+                    Entity = new LearningCourse(),
+                    Facilitators = new List<LearningParticipant>(),
+                    MostRecentParticipation = new LearningParticipant(),
+                    NextSemester = new LearningSemester(),
+                    UnmetPrerequisites = new List<LearningCourseRequirement>()
+                };
+            }
+
             if ( course.CourseRequirements.Any() )
             {
                 var requiredCourseIds = course.CourseRequirements.Select( r => r.RequiredLearningCourseId );
@@ -101,7 +116,9 @@ namespace Rock.Model
                 course.MostRecentParticipation = mostRecentParticipation;
             }
 
-            course.Facilitators = participantService.GetFacilitators( courseId, course.NextSemester.Id ).ToList();
+            var nextSemesterId = course.NextSemester?.Id ?? 0;
+
+            course.Facilitators = nextSemesterId == 0 ? new List<LearningParticipant>() : participantService.GetFacilitators( courseId, nextSemesterId ).ToList();
 
             return course;
         }
@@ -197,11 +214,37 @@ namespace Rock.Model
             return courses.ToList();
         }
 
+        /// <summary>
+        /// Get a list of required courses for the specified course. 
+        /// </summary>
+        /// <param name="courseId">The identifier of the <see cref="LearningCourse"/> to get requirements for.</param>
+        /// <returns>A list of <see cref="LearningCourseRequirementBag"/> records.</returns>
+        public LearningCourse GetCourseWithRequirements( int courseId )
+        {
+            var course = Queryable()
+                .Include( a => a.LearningProgram )
+                .Include( a => a.LearningClasses )
+                .Include( a => a.LearningCourseRequirements )
+                .FirstOrDefault( a => a.Id == courseId );
+
+            if ( course.LearningCourseRequirements.Any() )
+            {
+                var requiredCourseIds = course.LearningCourseRequirements.Select( r => r.RequiredLearningCourseId );
+                var requiredCourses = Queryable().Where( c => requiredCourseIds.Contains( c.Id ) );
+
+                course.LearningCourseRequirements.ForEach( cr =>
+                    cr.RequiredLearningCourse =
+                        requiredCourses.FirstOrDefault( r => r.Id == cr.RequiredLearningCourseId ) );
+            }
+
+            return course;
+        }
+
         #region Nested Classes
 
-        /// <summary>
-        /// Represents the Lava enabled data sent to the public courses list block.
-        /// </summary>
+            /// <summary>
+            /// Represents the Lava enabled data sent to the public courses list block.
+            /// </summary>
         public class PublicLearningCourseBag : RockDynamic
         {
             /// <summary>

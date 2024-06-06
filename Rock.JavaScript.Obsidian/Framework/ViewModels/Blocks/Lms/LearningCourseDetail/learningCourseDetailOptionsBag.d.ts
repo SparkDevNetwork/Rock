@@ -24,7 +24,4 @@
 export type LearningCourseDetailOptionsBag = {
     /** Gets or sets the configuration mode of the course's learning program. */
     configurationMode?: number | null;
-
-    /** Gets or sets the whether the Class/GroupType takes attendance. */
-    takesAttendance: boolean;
 };

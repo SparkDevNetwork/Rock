@@ -79,24 +79,87 @@ namespace Rock.Blocks.Lms
         private static class AttributeDefault
         {
             public const string CourseDetailTemplate = @"
-<div class=""page-container d-flex flex-column mb-3"">
-	<div class=""page-header-section mb-5"" style=""align-items: center; border-radius: 12px; background-image: url('/GetImage.ashx?guid={{Course.ImageFileGuid}}'); background-size: cover;"">
-		<div class=""d-flex flex-column header-block text-center"" style=""position: relative; bottom: -40px; background-color: white; border-radius: 12px; width: 80%; margin-top: 130px; margin-left: 10%; margin-right: 10%;"">
+//- Variable Assignments
+{% assign requirementTypes = Course.CourseRequirements | Distinct:'RequirementType' %}
+{% assign prerequisitesText = Course.CourseRequirements | Where:'RequirementType','Prerequisite' | Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:',',' and' | Default:'None' %}
+{% assign facilitatorCount = Course.Facilitators | Size %}
+{% assign facilitators = Course.Facilitators | Join:', ' | ReplaceLast:',',' and' | Default:'TBD' %}
+{% assign imageFileNameLength = Course.ImageFileGuid | Size %}
+
+//- Styles
+{% stylesheet %}
+    .page-container {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 12px;
+    }
+    
+    .page-header-section {
+        {% if imageFileNameLength > 0 %}
+            height: 280px;
+            background-image: url('/GetImage.ashx?guid={{Course.ImageFileGuid}}'); 
+            background-size: cover;
+        {% endif %}
+        align-items: center; 
+        border-radius: 12px; 
+    }
+    
+    .header-block {
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        left: 10%;
+        {% if imageFileNameLength > 0 %}
+            bottom: -85%;
+            -webkit-transform: translateY(-30%);
+            transform: translateY(-30%);
+        {% endif %}
+        background-color: white; 
+        border-radius: 12px; 
+        width: 80%; 
+    }
+    
+    .page-sub-header {
+        padding-left: 10%; 
+        padding-right: 10%; 
+        padding-bottom: 12px;
+        margin-bottom: 12px;
+    }
+    
+    .page-main-content {
+        margin-top: 30px;   
+    }
+    
+    .course-detail-container {
+        background-color: white; 
+        border-radius: 12px;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .course-status-sidebar-container {
+        padding: 12px; 
+        margin-left: 12px;
+        background-color: white; 
+        border-radius: 12px;
+        width: 300px;
+    }
+{% endstylesheet %}
+<div class=""page-container"">
+	<div class=""page-header-section mb-5"">
+		<div class=""header-block text-center"">
 			<h2>
 				{{ Course.Entity.PublicName }}
 			</h2>
-			<div class=""page-sub-header"" style=""padding-left: 20%; padding-right: 20%; padding-bottom: 12px;"">
+			<div class=""page-sub-header"">
 				{{ Course.Entity.Summary }}
 			</div>
 		</div>
 	</div>
 	
-	{% assign requirementTypes = Course.CourseRequirements | Distinct:'RequirementType' %}
-	{% assign facilitatorCount = Course.Facilitators | Size %}
-	{% assign facilitators = Course.Facilitators | Join:', ' | ReplaceLast:',',' and' | Default:'TBD' %}
-	
-	<div class=""page-main-content d-flex mt-2"">
-		<div class=""course-detail-container d-flex flex-column text-muted p-3 mr-3"" style=""background-color: white; border-radius: 12px;"">
+	<div class=""page-main-content d-flex"">
+		<div class=""course-detail-container text-muted"">
 			<div class=""description-header h4"">Course Description</div>
 			
 			<div class=""course-item-pair-container course-code"">
@@ -124,7 +187,7 @@ namespace Rock.Blocks.Lms
 		
 		
 		<div class=""course-side-panel d-flex flex-column"">
-			<div class=""course-status-sidebar-container p-3 mb-2"" style=""background-color: white; border-radius: 12px;"">
+			<div class=""course-status-sidebar-container"">
 				
 			{% case Course.LearningCompletionStatus %}
 			{% when 'Incomplete' %} 
@@ -208,11 +271,11 @@ namespace Rock.Blocks.Lms
             var rockContext = new RockContext();
             var course = new LearningCourseService( rockContext ).GetPublicCourseDetails( courseId, currentPerson.Id );
 
-            course.DescriptionAsHtml = new StructuredContentHelper( course.Entity.Description ).Render();
+            course.DescriptionAsHtml = new StructuredContentHelper( course.Entity?.Description ?? string.Empty ).Render();
 
             var enrolledClassIdKey = course.MostRecentParticipation?.LearningClassId > 0 ?
                 IdHasher.Instance.GetHash( course.MostRecentParticipation.LearningClassId ) :
-                course.NextSemester.LearningClasses.FirstOrDefault()?.IdKey;
+                course.NextSemester?.LearningClasses?.FirstOrDefault()?.IdKey;
             var queryParams = new Dictionary<string, string>
             {
                 [PageParameterKey.LearningProgramId] = PageParameter( PageParameterKey.LearningProgramId ),

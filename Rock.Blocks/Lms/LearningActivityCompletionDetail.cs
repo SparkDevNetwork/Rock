@@ -177,19 +177,7 @@ namespace Rock.Blocks.Lms
                 return null;
             }
 
-            // Get the LearningActivityComponent based on the EntityType
-            var componentEntityType = EntityTypeCache.Get( entity.LearningActivity.ActivityComponentId );
-            var activityComponent = Rock.Lms.LearningActivityContainer.GetComponent( componentEntityType.Name );
-
-            var activityComponentBag = new LearningActivityComponentBag
-            {
-                Name = activityComponent?.Name,
-                ComponentUrl = activityComponent?.ComponentUrl,
-                HighlightColor = activityComponent?.HighlightColor,
-                IconCssClass = activityComponent?.IconCssClass,
-                IdKey = activityComponent?.EntityType.IdKey,
-                Guid = activityComponent?.EntityType.Guid.ToString()
-            };
+            var activityComponentBag = GetLearningActivityComponentBag( entity.LearningActivity?.ActivityComponentId );
 
             var binaryFile = entity.BinaryFileId > 0 ?
                 new BinaryFileService( RockContext ).GetNoTracking( entity.BinaryFileId.Value ) :
@@ -246,6 +234,30 @@ namespace Rock.Blocks.Lms
                 StudentComment = entity.StudentComment,
                 WasCompletedOnTime = entity.WasCompletedOnTime
             };
+        }
+
+        private LearningActivityComponentBag GetLearningActivityComponentBag( int? activityComponentId )
+        {
+            var componentId = activityComponentId.ToIntSafe();
+            if ( componentId == 0 )
+            {
+                return new LearningActivityComponentBag();
+            }
+            else
+            {
+                var componentEntityType = EntityTypeCache.Get( componentId );
+                var activityComponent = Rock.Lms.LearningActivityContainer.GetComponent( componentEntityType.Name );
+
+                return new LearningActivityComponentBag
+                {
+                    Name = activityComponent?.Name,
+                    ComponentUrl = activityComponent?.ComponentUrl,
+                    HighlightColor = activityComponent?.HighlightColor,
+                    IconCssClass = activityComponent?.IconCssClass,
+                    IdKey = activityComponent?.EntityType.IdKey,
+                    Guid = activityComponent?.EntityType.Guid.ToString()
+                };
+            }
         }
 
         /// <inheritdoc/>

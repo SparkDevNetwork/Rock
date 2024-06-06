@@ -50,12 +50,6 @@ namespace Rock.Reporting.DataFilter.Person
             get { return typeof( Rock.Model.Person ).FullName; }
         }
 
-        /// <inheritdoc/>
-        public override string Section
-        {
-            get { return "LMS"; }
-        }
-
         #endregion
 
         #region Public Methods
@@ -342,11 +336,11 @@ function() {
             var comparisonType = selectionConfig
                 .PointsComparisonType
                 .ConvertToEnumOrNull<ComparisonType>();
-            
+
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( selectionConfig.SlidingDateRangeDelimitedValues );
             var activityId = selectionConfig.LearningActivityId.ToIntSafe();
             var rockContext = serviceInstance.Context as RockContext;
-            
+
             var completionQuery = new LearningActivityCompletionService( rockContext ).Queryable()
                 .Include( c => c.Student )
                 .Where( c => c.LearningActivityId == activityId );

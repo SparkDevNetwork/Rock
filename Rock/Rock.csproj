@@ -1207,6 +1207,7 @@
     <Compile Include="Model\LMS\LearningCourse\LearningCourse.cs" />
     <Compile Include="Model\LMS\LearningProgramCompletion\LearningProgramCompletion.cs" />
     <Compile Include="Model\LMS\LearningProgram\LearningProgram.Logic.cs" />
+    <Compile Include="Model\LMS\LearningProgram\LearningProgram.SaveHook.cs" />
     <Compile Include="Model\LMS\LearningProgram\LearningProgramService.cs" />
     <Compile Include="Model\LMS\LearningProgram\LearningProgram.cs" />
     <Compile Include="Model\LMS\LearningClass\LearningClass.cs" />

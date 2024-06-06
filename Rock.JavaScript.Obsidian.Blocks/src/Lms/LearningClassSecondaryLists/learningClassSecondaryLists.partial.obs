@@ -14,7 +14,6 @@
             <div v-else-if="item === 'Students'">
                 <StudentGrid :isAddEnabled="isEditable"
                              :isDeleteEnabled="isEditable"
-                             :showAbsences="showAbsences"
                              @addClick="onStudentClick('0')"
                              @rowClick="onStudentClick"
                              @deleteClick="onDeleteParticipantClick" />
@@ -89,7 +88,7 @@
      * Called when the Add activity button has been clicked by the individual.
      */
     function onAddActivityClick(): void {
-        onActivityRowClick("0");
+        onActivityRowClick("0?autoEdit=true&returnUrl=" + window.location);
     }
 
     /**

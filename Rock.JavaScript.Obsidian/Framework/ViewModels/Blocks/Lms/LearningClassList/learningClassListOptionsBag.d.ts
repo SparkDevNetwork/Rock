@@ -22,6 +22,9 @@
 //
 
 export type LearningClassListOptionsBag = {
+    /** Gets or sets whether the block has a valid course parameter. */
+    hasValidCourse: boolean;
+
     /** Gets or sets whether the block should be shown. */
     showBlock: boolean;
 

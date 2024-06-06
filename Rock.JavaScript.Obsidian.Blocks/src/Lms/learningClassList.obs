@@ -9,7 +9,7 @@
           stickyHeader
           :expectedRowCount="config.expectedRowCount ?? undefined"
           liveUpdates
-          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          :onAddItem="config.isAddEnabled && hasValidCourse ? onAddItem : undefined"
           :onSelectItem="onRowClick"
           @deleteClick="onDeleteClick">
 
@@ -122,6 +122,7 @@
     let gridData: GridDataBag | undefined;
 
     const showBlock = ref(config.options?.showBlock || false);
+    const hasValidCourse = ref(config.options?.hasValidCourse || false);
     // #endregion
 
     // #region Functions

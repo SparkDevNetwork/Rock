@@ -15,7 +15,10 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Dynamic.Core;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -31,21 +34,22 @@ namespace Rock.Model
             /// <summary>
             /// Called after the save operation is executed.
             /// </summary>
-            protected override void PostSave()
+            protected override void PreSave()
             {
-                base.PostSave();
+                base.PreSave();
                 if ( State == EntityContextState.Added )
                 {
-                    var semesterService = new LearningSemesterService( RockContext );
-
-                    // Ensure there's at least one semester available.
-                    if ( !semesterService.Queryable().Any() )
+                    if ( Entity.LearningSemesters == null || !Entity.LearningSemesters.Any() )
                     {
-                        semesterService.Add( new LearningSemester
+                        Entity.LearningSemesters = new List<LearningSemester>
                         {
-                            Name = "Default Semester",
-                            Guid = Guid.NewGuid()
-                        } );
+                            new LearningSemester
+                            {
+                                Name = "Default",
+                                Guid = Guid.NewGuid(),
+                                LearningProgramId = Entity.Id
+                            }
+                        };
                     }
                 }
             }

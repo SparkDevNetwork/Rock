@@ -24,6 +24,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Lms;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
@@ -659,6 +660,7 @@ namespace Rock.Blocks.Lms
                 return ActionBadRequest( $"The {LearningCourse.FriendlyTypeName} was not found." );
             }
 
+            var components = LearningActivityContainer.Instance.Components;
             var now = DateTime.Now;
 
             // Return all activities for the course.
@@ -668,12 +670,12 @@ namespace Rock.Blocks.Lms
                 .AddField( "assignTo", a => a.AssignTo )
                 .AddField( "type", a => a.ActivityComponentId )
                 .AddField( "dates", a => a.DatesDescription )
-                .AddField( "isPastDue", a => a.DueDateCalculated == null ? false : a.DueDateCalculated >= now )
+                .AddField( "isPastDue", a => a.DueDateCalculated == null ? false : a.DueDateCalculated <= now )
                 .AddField( "count", a => a.LearningActivityCompletions.Count() )
                 .AddField( "completedCount", a => a.LearningActivityCompletions.Count( c => c.IsStudentCompleted ) )
-                .AddField( "componentIconCssClass", a => "fa fa-list" )
-                .AddField( "componentHighlightColor", a => "#735f95" )
-                .AddField( "componentName", a => "Check-Off" )
+                .AddField( "componentIconCssClass", a => components.FirstOrDefault( c => c.Value.Value.EntityType.Id == a.ActivityComponentId ).Value.Value.IconCssClass )
+                .AddField( "componentHighlightColor", a => components.FirstOrDefault( c => c.Value.Value.EntityType.Id == a.ActivityComponentId ).Value.Value.HighlightColor )
+                .AddField( "componentName", a => components.FirstOrDefault( c => c.Value.Value.EntityType.Id == a.ActivityComponentId ).Value.Value.Name )
                 .AddField( "points", a => a.Points )
                 .AddField( "isAttentionNeeded", a => a.LearningActivityCompletions.Any( c => c.IsStudentCompleted && !c.IsFacilitatorCompleted ) )
                 .AddField( "hasStudentComments", a => a.LearningActivityCompletions.Any( c => c.StudentComment.ToStringSafe().Length > 0 ) );
@@ -870,26 +872,20 @@ namespace Rock.Blocks.Lms
         {
             var classId = PageParameterAsId( PageParameterKey.LearningClassId );
 
-            var contextClass = RequestContext?.GetContextEntity<LearningClass>();
-            var filteredClassId = classId > 0 ? classId : contextClass?.Id ?? 0;
-
-            if ( filteredClassId > 0 )
+            if ( classId > 0 )
             {
                 return new LearningActivityService( rockContext )
-                    .GetClassLearningPlan( filteredClassId )
+                    .GetClassLearningPlan( classId )
                     .AsNoTracking();
             }
 
             // Get the page parameter value (either IdKey or Id).
             var courseId = PageParameterAsId( PageParameterKey.LearningCourseId );
 
-            var contextCourse = RequestContext?.GetContextEntity<LearningCourse>();
-            int filteredCourseId = courseId > 0 ? courseId : contextCourse?.Id ?? 0;
-
-            if ( filteredCourseId > 0 )
+            if ( courseId > 0 )
             {
                 // Get the default class (prevents duplicates from showing in the activity list).
-                var defaultClassId = new LearningClassService( rockContext ).GetCourseDefaultClass( filteredCourseId, c => c.Id );
+                var defaultClassId = new LearningClassService( rockContext ).GetCourseDefaultClass( courseId, c => c.Id );
 
                 return new LearningActivityService( rockContext )
                     .GetClassLearningPlan( defaultClassId )

@@ -29,7 +29,6 @@ using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Lms.LearningClassList;
 using Rock.Web.Cache;
-using Rock.Web.UI;
 
 namespace Rock.Blocks.Lms
 {
@@ -43,13 +42,11 @@ namespace Rock.Blocks.Lms
     ///         on a page with a Course Detail block which provides additional filtering.
     ///     </para>
     /// </remarks>
-
     [DisplayName( "Learning Class List" )]
     [Category( "LMS" )]
     [Description( "Displays a list of learning classes." )]
     [IconCssClass( "fa fa-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
-    [ContextAware( typeof( LearningProgram ), typeof( LearningCourse ) )]
 
     #region Block Attributes
 
@@ -161,8 +158,18 @@ namespace Rock.Blocks.Lms
         {
             var options = new LearningClassListOptionsBag();
 
+            var courseKey = PageParameter( PageParameterKey.LearningCourseId ) ?? string.Empty;
+
+            var course = courseKey.Length > 0 ? new LearningCourseService( RockContext ).GetInclude( courseKey, c => c.LearningProgram ): null;
+            var isNewCourse = courseKey == "0";
+
+            var programKey = PageParameter( PageParameterKey.LearningProgramId ) ?? string.Empty;
+            var program = programKey.Length > 0 ? new LearningProgramService( RockContext ).Get( programKey ) : course?.LearningProgram;
+            var isNewProgram = programKey == "0";
+
             // Only add the course column if the results aren't filtered to a course already.
-            options.ShowCourseColumn = RequestContext.GetContextEntity<LearningCourse>() == null;
+            options.ShowCourseColumn = course == null;
+            options.HasValidCourse = course != null;
 
             options.ShowLocationColumn = GetAttributeValue( AttributeKey.ShowLocationColumn ).AsBoolean();
             options.ShowScheduleColumn = GetAttributeValue( AttributeKey.ShowScheduleColumn ).AsBoolean();
@@ -170,43 +177,11 @@ namespace Rock.Blocks.Lms
 
             // Show the block if the block setting for ShowOnlyInAcademicCalendarMode is false
             // or the program context entity is academic calendar mode.
+            var isProgramAcademicCalendarMode = program?.ConfigurationMode == ConfigurationMode.AcademicCalendar;
             var showOnlyForAcademicCalendarMode = GetAttributeValue( AttributeKey.DisplayMode ).ToStringSafe() == DisplayMode.AcademicCalendarOnly;
-            options.ShowBlock = !showOnlyForAcademicCalendarMode || ProgramIsAcademicConfigurationMode();
+            options.ShowBlock = !isNewCourse && !isNewProgram && ( !showOnlyForAcademicCalendarMode || !isProgramAcademicCalendarMode );
 
             return options;
-        }
-
-        /// <summary>
-        /// Determines if the current learning program is in academic configuration mode.
-        /// </summary>
-        /// <returns><c>true</c> if the current program is in academic configuration mode; otherwise <c>false</c>.</returns>
-        private bool ProgramIsAcademicConfigurationMode()
-        {
-            // Parse out the Id if the parameter is an IdKey or take the Id
-            // If the site allows predictable Ids in parameters.
-            var programId = PageParameterAsId( PageParameterKey.LearningProgramId );
-
-            if ( programId > 0 )
-            {
-                return new LearningProgramService( RockContext )
-                    .Queryable()
-                    .AsNoTracking()
-                    .Any( p => p.Id == programId && p.ConfigurationMode == ConfigurationMode.AcademicCalendar );
-            }
-
-            var programContextEntity = RequestContext.GetContextEntity<LearningProgram>();
-            if ( programContextEntity?.ConfigurationMode == ConfigurationMode.AcademicCalendar )
-            {
-                return true;
-            }
-
-            var courseContextEntity = RequestContext.GetContextEntity<LearningCourse>();
-            if (courseContextEntity?.LearningProgram?.ConfigurationMode == ConfigurationMode.AcademicCalendar )
-            {
-                return true;
-            }
-
-            return false;
         }
 
         /// <summary>
@@ -226,11 +201,11 @@ namespace Rock.Blocks.Lms
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
-            var courseId = PageParameter( PageParameterKey.LearningCourseId ) ?? string.Empty;
+            var courseKey = PageParameter( PageParameterKey.LearningCourseId ) ?? string.Empty;
             var queryParams = new Dictionary<string, string>
             {
                 [PageParameterKey.LearningProgramId] = PageParameter( PageParameterKey.LearningProgramId ),
-                [PageParameterKey.LearningCourseId] = courseId.Length > 0 ? courseId : "((LearningCourseIdKey))",
+                [PageParameterKey.LearningCourseId] = courseKey.Length > 0 ? courseKey : "((LearningCourseIdKey))",
                 ["LearningClassId"] = "((Key))"
             };
 
@@ -248,20 +223,16 @@ namespace Rock.Blocks.Lms
                 .Include( c => c.LearningSemester )
                 .Include( c => c.LearningParticipants );
 
-            // If the Page is includes a LearningProgram block and the Page Context Entity is set
-            // then filter the courses to that program.
-            var programContextEntity = RequestContext.GetContextEntity<LearningProgram>();
-            if ( programContextEntity?.Id > 0 )
+            var programId = PageParameterAsId( PageParameterKey.LearningProgramId );
+            if ( programId > 0 )
             {
-                baseQuery = baseQuery.Where( c => c.LearningCourse.LearningProgramId == programContextEntity.Id );
+                baseQuery = baseQuery.Where( c => c.LearningCourse.LearningProgramId == programId );
             }
 
-            // If the Page is includes a LearningCourse block and the Page Context Entity is set
-            // then filter the courses to that course.
-            var courseContextEntity = RequestContext.GetContextEntity<LearningCourse>();
-            if ( courseContextEntity?.Id > 0 )
+            var courseId = PageParameterAsId( PageParameterKey.LearningCourseId );
+            if ( courseId > 0 )
             {
-                baseQuery = baseQuery.Where( c => c.LearningCourseId == courseContextEntity.Id );
+                baseQuery = baseQuery.Where( c => c.LearningCourseId == courseId );
             }
 
             return baseQuery;
@@ -274,13 +245,15 @@ namespace Rock.Blocks.Lms
                 .WithBlock( this )
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddField( "facilitators", a => a.LearningParticipants.Where( p => p.GroupRole.IsLeader ).Select( p => p.Person.FullName ).JoinStrings( ", " ) )
-                .AddTextField( "category", a => a.LearningCourse.CategoryId.HasValue ? CategoryCache.Get( a.LearningCourse.CategoryId.Value )?.Name : null)
+                .AddTextField( "category", a => a.LearningCourse.CategoryId.HasValue ? CategoryCache.Get( a.LearningCourse.CategoryId.Value )?.Name : null )
                 .AddTextField( "categoryColor", a => a.LearningCourse.CategoryId.HasValue ? CategoryCache.Get( a.LearningCourse.CategoryId.Value )?.HighlightColor : null )
-                .AddField( "students", a => a.LearningParticipants.Count( p => !p.GroupRole?.IsLeader ?? false) )
+                .AddField( "students", a => a.LearningParticipants.Count( p => !p.GroupRole?.IsLeader ?? false ) )
                 .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) );
 
+            var courseKey = PageParameter( PageParameterKey.LearningCourseId ) ?? string.Empty;
+
             // Only add the course column if the results aren't filtered to a course already.
-            if ( RequestContext.GetContextEntity<LearningCourse>() == null )
+            if ( courseKey.Length == 0 )
             {
                 grid.AddTextField( "course", a => a.LearningCourse.Name );
                 grid.AddTextField( "learningCourseIdKey", a => a.LearningCourse.IdKey );

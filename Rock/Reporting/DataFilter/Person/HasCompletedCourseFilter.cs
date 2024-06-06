@@ -52,12 +52,6 @@ namespace Rock.Reporting.DataFilter.Person
             get { return typeof( Rock.Model.Person ).FullName; }
         }
 
-        /// <inheritdoc/>
-        public override string Section
-        {
-            get { return "LMS"; }
-        }
-
         #endregion
 
         #region Public Methods
@@ -225,7 +219,7 @@ namespace Rock.Reporting.DataFilter.Person
 
                 foreach ( ListItem item in cblStatuses.Items )
                 {
-                    if ( item.Selected && Enum.TryParse<LearningCompletionStatus>(item.Value, out var enumValue) )
+                    if ( item.Selected && Enum.TryParse<LearningCompletionStatus>( item.Value, out var enumValue ) )
                     {
                         selectionConfig.LearningCompletionStatuses.Add( enumValue );
                     }
@@ -250,7 +244,7 @@ namespace Rock.Reporting.DataFilter.Person
             foreach ( ListItem item in cblStatuses.Items )
             {
                 var isSelected = false;
-                if ( selectionConfig.LearningCompletionStatuses != null && Enum.TryParse<LearningCompletionStatus>(item.Value, out var enumValue))
+                if ( selectionConfig.LearningCompletionStatuses != null && Enum.TryParse<LearningCompletionStatus>( item.Value, out var enumValue ) )
                 {
                     isSelected = selectionConfig.LearningCompletionStatuses.Contains( enumValue );
                 }
@@ -264,10 +258,10 @@ namespace Rock.Reporting.DataFilter.Person
         {
             SelectionConfig selectionConfig = SelectionConfig.Parse( selection );
             var selectedCourseId = selectionConfig.LearningCourseId.ToIntSafe();
-           
+
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( selectionConfig.SlidingDateRangeDelimitedValues );
             var rockContext = serviceInstance.Context as RockContext;
-            
+
             var participantQuery = selectedCourseId == 0 ?
                 new List<LearningParticipant>().AsQueryable() :
                 new LearningParticipantService( rockContext ).Queryable()
@@ -285,14 +279,14 @@ namespace Rock.Reporting.DataFilter.Person
                 var endDate = dateRange.End.Value;
                 participantQuery = participantQuery.Where( c => c.LearningCompletionDateTime.HasValue && c.LearningCompletionDateTime <= endDate );
             }
-            
+
             // Filter to the selected statuses or to all available options (if nothing is selected).
             var filterToStatuses = selectionConfig.LearningCompletionStatuses.Any() ?
                 selectionConfig.LearningCompletionStatuses :
                 CompletionStatusesWithCompletedDateValue;
 
             participantQuery.Where( c => filterToStatuses.Contains( c.LearningCompletionStatus ) );
-            
+
             // Create the query that will be used for extracting the Person.
             var personQuery = new PersonService( rockContext ).Queryable().Where( p => participantQuery.Any( c => c.PersonId == p.Id ) );
 

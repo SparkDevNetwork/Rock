@@ -40,7 +40,12 @@ namespace Rock.Model
 
                 if ( PreSaveState == EntityContextState.Added )
                 {
-                    AddCompletionsToContextForParticipant();
+                    var isStudent = !Entity.GroupRole.IsLeader;
+
+                    if ( isStudent )
+                    {
+                        AddCompletionsToContextForParticipant();
+                    }
                 }
             }
 
@@ -64,9 +69,13 @@ namespace Rock.Model
                        a.DueDateCalculationMethod,
                        a.DueDateDefault,
                        a.DueDateOffset,
-                       a.LearningClass.LearningCourse.SystemCommunicationId
+                       a.SendNotificationCommunication,
+                       a.Order,
+                       NotificationCommunicationId = a.LearningClass.LearningSemester.LearningProgram.SystemCommunicationId
                    } )
                     .ToList()
+                    .OrderBy( a => a.Order )
+                    .ThenBy( a => a.LearningActivityId )
                     .Select( a => new LearningActivityCompletion
                     {
                         StudentId = Entity.Id,
@@ -79,7 +88,7 @@ namespace Rock.Model
                             a.EnrollmentDate
                         ),
                         DueDate = LearningActivity.CalculateDueDate( a.DueDateCalculationMethod, a.DueDateDefault, a.DueDateOffset, a.SemesterStart, a.EnrollmentDate ),
-                        NotificationCommunicationId = a.SystemCommunicationId
+                        NotificationCommunicationId = a.SendNotificationCommunication ? ( int? ) a.NotificationCommunicationId : null
                     } );
 
                 new LearningActivityCompletionService( RockContext ).AddRange( completionsToAdd );

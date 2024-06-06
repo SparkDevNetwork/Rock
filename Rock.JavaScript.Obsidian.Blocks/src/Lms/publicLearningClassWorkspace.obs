@@ -106,6 +106,7 @@
     margin-bottom: 20px;
     align-items: center;
     border-radius: 12px;
+    height: 280px;
 
     .workspace-header-text-block {
         display: flex;
@@ -130,9 +131,8 @@
 
     .workspace-header-text-block:not(.no-course-image) {
         position: relative;
-        bottom: -40px;
+        top: 220px;
         background-size: cover;
-        margin-top: 130px;
     }
 }
 
@@ -233,7 +233,7 @@ span.icon-stack-container i.icon {
 </style>
 
 <script setup lang="ts">
-    import { Component, computed, defineAsyncComponent, ref, toValue } from "vue";
+    import { Component, computed, defineAsyncComponent, onMounted, ref, toValue } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { useConfigurationValues, useInvokeBlockAction, useReloadBlock, onConfigurationValuesChanged } from "@Obsidian/Utility/block";
     import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
@@ -267,13 +267,13 @@ span.icon-stack-container i.icon {
             config.activities?.find(a => a.isAvailable)
     ) ?? {} as LearningActivityCompletionBag);
 
-    const activityTypeComponent = ref(defineAsyncComponent(() => import(componentUrl.value)));
-
     // #endregion
 
     // #region Computed Values
 
     const componentUrl = computed(() => viewingCompletionBag.value?.activityBag?.activityComponent?.componentUrl ?? "");
+
+    const activityTypeComponent = ref<Component | null>(null);
 
     /** Whether the course has a valid image guid. */
     const hasCourseImage = computed(() => courseImageGuid.value.length > 0 && isValidGuid(toValue(courseImageGuid) ?? ""));
@@ -451,4 +451,10 @@ span.icon-stack-container i.icon {
     if (config.errorMessage) {
         blockError.value = config.errorMessage;
     }
+
+    onMounted(() => {
+        if (componentUrl.value.length > 0) {
+            activityTypeComponent.value = defineAsyncComponent(() => import(componentUrl.value));
+        }
+    });
 </script>

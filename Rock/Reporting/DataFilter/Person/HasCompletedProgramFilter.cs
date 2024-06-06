@@ -50,12 +50,6 @@ namespace Rock.Reporting.DataFilter.Person
             get { return typeof( Rock.Model.Person ).FullName; }
         }
 
-        /// <inheritdoc/>
-        public override string Section
-        {
-            get { return "LMS"; }
-        }
-
         #endregion
 
         #region Public Methods
@@ -87,7 +81,7 @@ namespace Rock.Reporting.DataFilter.Person
                 var dateRangeString = string.Empty;
                 if ( selectionConfig.SlidingDateRangeDelimitedValues.IsNotNullOrWhiteSpace() )
                 {
-                    dateRangeString =  "in the Date Range: " + SlidingDateRangePicker.FormatDelimitedValues( selectionConfig.SlidingDateRangeDelimitedValues );
+                    dateRangeString = "in the Date Range: " + SlidingDateRangePicker.FormatDelimitedValues( selectionConfig.SlidingDateRangeDelimitedValues );
                 }
 
                 s = string.Format(
@@ -107,8 +101,9 @@ namespace Rock.Reporting.DataFilter.Person
             ddlProgram.AddCssClass( "js-program" );
             ddlProgram.Label = "Program";
             filterControl.Controls.Add( ddlProgram );
+            // Only include active and tracked programs (non-tracked programs won't have LearningProgramCompletion records).
             var programs = new LearningProgramService( new RockContext() ).Queryable().AsNoTracking()
-                .Where( p => p.IsActive )
+                .Where( p => p.IsActive  && p.IsCompletionStatusTracked )
                 .ToList()
                 .OrderBy( a => a.Name );
             ddlProgram.Items.Clear();
@@ -129,7 +124,7 @@ namespace Rock.Reporting.DataFilter.Person
 
             // convert pipe to comma delimited
             var defaultDelimitedValues = slidingDateRangePicker.DelimitedValues.Replace( "|", "," );
-            
+
             // set the default values in case this is a newly added filter
             var selectionConfig = new SelectionConfig()
             {
@@ -207,7 +202,7 @@ namespace Rock.Reporting.DataFilter.Person
         {
             SelectionConfig selectionConfig = SelectionConfig.Parse( selection );
             var selectedProgramId = selectionConfig.LearningProgramId.ToIntSafe();
-            
+
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( selectionConfig.SlidingDateRangeDelimitedValues );
             var rockContext = serviceInstance.Context as RockContext;
 

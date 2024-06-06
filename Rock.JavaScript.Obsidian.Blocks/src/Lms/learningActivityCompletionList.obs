@@ -7,7 +7,6 @@
           :entityTypeGuid="EntityType.LearningActivityCompletion"
           stickyHeader
           liveUpdates
-          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           @selectItem="onSelectItem">
         <SelectColumn />
 
@@ -210,15 +209,6 @@
     function onSelectItem(key: string): void {
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
             window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
-        }
-    }
-
-    /**
-     * Called when the Add button has been clicked by the indivual.
-     */
-    function onAddItem(): void {
-        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
-            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
         }
     }
 

@@ -25,10 +25,5 @@ namespace Rock.ViewModels.Blocks.Lms.LearningCourseDetail
         /// Gets or sets the configuration mode of the course's learning program.
         /// </summary>
         public ConfigurationMode ConfigurationMode { get; set; }
-
-        /// <summary>
-        /// Gets or sets the whether the Class/GroupType takes attendance.
-        /// </summary>
-        public bool TakesAttendance { get; set; }
     }
 }

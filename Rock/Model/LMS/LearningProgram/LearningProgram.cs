@@ -86,7 +86,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
-        public string IconCssClass { get; set; }
+        public string IconCssClass { get; set; } = "fa fa-university";
 
         /// <summary>
         /// Gets or sets the color of the highlight.

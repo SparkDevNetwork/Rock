@@ -38,6 +38,7 @@
                                           v-model="systemCommunicationValue"
                                           label="Default Communication Template"
                                           help="The template to use when sending emails for communications about this program and it's courses."
+                                          rules="required"
                                           :items="systemCommunications" />
 
                             <WorkflowTypePicker
@@ -157,6 +158,7 @@
     const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
     const isPublic = propertyRef(props.modelValue.isPublic ?? false, "IsPublic");
     const name = propertyRef(props.modelValue.name ?? "", "Name");
+    const publicName = propertyRef(props.modelValue.publicName ?? name.value, "PublicName");
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -175,7 +177,8 @@
         imageBinaryFile,
         isActive,
         isPublic,
-        name
+        name,
+        publicName
     ];
 
     // #endregion
@@ -201,6 +204,7 @@
         updateRefValue(isPublic, props.modelValue.isPublic ?? false);
         updateRefValue(isCompletionStatusTracked, props.modelValue.isCompletionStatusTracked ?? false);
         updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(publicName, props.modelValue.name ?? "");
         updateRefValue(summary, props.modelValue.summary ?? "");
         updateRefValue(configurationMode, props.modelValue.configurationMode?.toString() ?? "1");
         updateRefValue(systemCommunicationValue, props.modelValue.systemCommunication?.value ?? "");
@@ -221,6 +225,7 @@
             attributeValues: attributeValues.value,
             description: description.value,
             name: name.value,
+            publicName: name.value,
             summary: summary.value,
             configurationMode: parseInt(configurationMode.value) as ConfigurationMode,
             category: category.value,

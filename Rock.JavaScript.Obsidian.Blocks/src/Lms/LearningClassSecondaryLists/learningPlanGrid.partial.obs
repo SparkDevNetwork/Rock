@@ -53,7 +53,7 @@
                 quickFilterValue="dates"
                 visiblePriority="sm">
             <template #format="{ row }">
-                <span :class="row.isPastDue ? 'past-due-dates' : ''">{{ row.dates }}</span>
+                <span :class="row.isPastDue ? 'text-warning' : ''">{{ row.dates }}</span>
             </template>
         </Column>
 
@@ -95,12 +95,6 @@
         <DeleteColumn v-if="isDeleteEnabled" @click="(r) => $emit('deleteClick', r, gridData)" />
     </Grid>
 </template>
-
-<style scoped>
-span.past-due-dates {
-    color: var(--color-warning, #a9551d);
-}
-</style>
 
 <script setup lang="ts">
     import { PropType, reactive, ref } from "vue";

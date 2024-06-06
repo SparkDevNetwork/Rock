@@ -3,7 +3,7 @@
     <div v-if="screenToShow !== ComponentScreen.Scoring" :class="containerClasses">
         <div v-if="screenToShow === ComponentScreen.Configuration">
             <TextBox v-model="question"
-                     label="question"
+                     label="Question"
                      rules="required" />
 
             <TextBox v-model="helpText"

@@ -22,16 +22,15 @@ namespace Rock.ViewModels.Blocks.Lms.LearningCourseRequirement
 {
     public class LearningCourseRequirementBag : EntityBagBase
     {
-
-        /// <summary>
-        /// Gets or sets the id key of the course requirement.
-        /// </summary>
-        public string LearningCourseRequirementIdKey { get; set; }
-
         /// <summary>
         /// Gets or sets the id key of the course with requirements.
         /// </summary>
         public string LearningCourseIdKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the course code of the course that's required.
+        /// </summary>
+        public string RequiredLearningCourseCode { get; set; }
 
         /// <summary>
         /// Gets or sets the id key of the course that's required.
@@ -42,11 +41,6 @@ namespace Rock.ViewModels.Blocks.Lms.LearningCourseRequirement
         /// Gets or sets the name of the course that's required.
         /// </summary>
         public string RequiredLearningCourseName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the course code of the course that's required.
-        /// </summary>
-        public string RequiredLearningCourseCode { get; set; }
 
         /// <summary>
         /// Gets or sets the requirement type.

@@ -129,16 +129,12 @@ namespace Rock.Blocks.Lms
         {
             // Get the ConfigurationMode for the parent Program.
             var courseId = IdHasher.Instance.GetId( entity.IdKey );
-            var options = new LearningClassService( rockContext )
-                .Queryable()
-                .Include( c => c.LearningCourse )
-                .Include( c => c.GroupType )
-                .Where( c => c.LearningCourseId == courseId )
-                .OrderBy( c => c.Order )
+            var options = new LearningCourseService( rockContext ).Queryable()
+                .AsNoTracking()
+                .Include( c => c.LearningProgram )
                 .Select( c => new LearningCourseDetailOptionsBag
                 {
-                    ConfigurationMode = c.LearningCourse.LearningProgram.ConfigurationMode,
-                    TakesAttendance = c.GroupType.TakesAttendance,
+                    ConfigurationMode = c.LearningProgram.ConfigurationMode
                 } ).FirstOrDefault();
 
             return options;
@@ -245,11 +241,11 @@ namespace Rock.Blocks.Lms
                 CourseRequirements = entity.LearningCourseRequirements?.Select( r =>
                     new LearningCourseRequirementBag
                     {
-                        LearningCourseRequirementIdKey = r.IdKey,
+                        IdKey = r.IdKey,
                         LearningCourseIdKey = entity.IdKey,
                         RequiredLearningCourseIdKey = IdHasher.Instance.GetHash( r.RequiredLearningCourseId ),
-                        RequiredLearningCourseName = r.RequiredLearningCourse.Name,
-                        RequiredLearningCourseCode = r.RequiredLearningCourse.CourseCode,
+                        RequiredLearningCourseName = r.RequiredLearningCourse?.Name,
+                        RequiredLearningCourseCode = r.RequiredLearningCourse?.CourseCode,
                         RequirementType = r.RequirementType
                     } ).ToList()
             };
@@ -357,6 +353,8 @@ namespace Rock.Blocks.Lms
                     entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
                 } );
 
+            UpdateRequiredCourses( box.Entity, entity, rockContext );
+
             return true;
         }
 
@@ -375,25 +373,20 @@ namespace Rock.Blocks.Lms
             {
                 return new LearningCourse
                 {
+                    LearningProgramId = PageParameterAsId( PageParameterKey.LearningProgramId ),
                     Id = 0,
                     Guid = Guid.Empty
                 };
             }
 
-            var entityService = new LearningCourseService( rockContext );
-
-            return entityService.Queryable()
-                .AsNoTracking()
-                .Include( a => a.LearningProgram )
-                .Include( a => a.LearningClasses )
-                .FirstOrDefault( a => a.Id == entityId );
+            return new LearningCourseService( rockContext ).GetCourseWithRequirements( entityId );
         }
 
         /// <summary>
         /// Gets the box navigation URLs required for the page to operate.
         /// </summary>
         /// <returns>A dictionary of key names and URL values.</returns>
-        private Dictionary<string, string> GetBoxNavigationUrls( LearningCourseBag entity)
+        private Dictionary<string, string> GetBoxNavigationUrls( LearningCourseBag entity )
         {
             var queryParams = new Dictionary<string, string>
             {
@@ -475,7 +468,7 @@ namespace Rock.Blocks.Lms
             {
                 // If editing an existing entity then load it and make sure it
                 // was found and can still be edited.
-                entity = entityService.Get( idKey, !PageCache.Layout.Site.DisablePredictableIds );
+                entity = entityService.GetInclude( idKey, c => c.LearningCourseRequirements, !PageCache.Layout.Site.DisablePredictableIds );
             }
             else
             {
@@ -521,9 +514,11 @@ namespace Rock.Blocks.Lms
 
                 entity.LoadAttributes( rockContext );
 
+                var bag = GetEntityBagForEdit( entity );
                 var box = new DetailBlockBox<LearningCourseBag, LearningCourseDetailOptionsBag>
                 {
-                    Entity = GetEntityBagForEdit( entity )
+                    Entity = bag,
+                    ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
                 };
 
                 return ActionOk( box );
@@ -561,6 +556,14 @@ namespace Rock.Blocks.Lms
 
                 var isNew = entity.Id == 0;
 
+                if ( isNew )
+                {
+                    // Need to ensure the program is tied to the Course when creating a new Course.
+                    entity.LearningProgramId = PageParameterAsId( PageParameterKey.LearningProgramId );
+                }
+
+                entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+
                 rockContext.WrapTransaction( () =>
                 {
                     rockContext.SaveChanges();
@@ -576,7 +579,7 @@ namespace Rock.Blocks.Lms
                 }
 
                 // Ensure navigation properties will work now.
-                entity = entityService.Get( entity.Id );
+                entity = entityService.GetCourseWithRequirements( entity.Id );
                 entity.LoadAttributes( rockContext );
 
                 return ActionOk( GetEntityBagForView( entity ) );
@@ -604,6 +607,8 @@ namespace Rock.Blocks.Lms
                 {
                     return ActionBadRequest( errorMessage );
                 }
+
+                entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
                 entityService.Delete( entity );
                 rockContext.SaveChanges();
@@ -678,26 +683,28 @@ namespace Rock.Blocks.Lms
             {
                 var entityService = new LearningCourseService( rockContext );
 
-                var currentRequirementIds = entityService.GetQueryableByKey( key )
-                    .Include( c => c.LearningCourseRequirements )
-                    .SelectMany( c => c.LearningCourseRequirements.Select( r => r.RequiredLearningCourseId ) )
-                    .ToList();
+                var hasKey = key?.Length > 0;
+
+                var currentRequirementIds = hasKey ?
+                    entityService.GetQueryableByKey( key )
+                        .Include( c => c.LearningCourseRequirements )
+                        .SelectMany( c => c.LearningCourseRequirements.Select( r => r.RequiredLearningCourseId ) )
+                        .ToList() :
+                    new List<int>();
 
                 var currentId = Rock.Utility.IdHasher.Instance.GetId( key );
 
-                if ( !currentId.HasValue || currentId.Value == 0 )
+                if ( hasKey )
                 {
-                    return ActionBadRequest( "Invalid key parameter" );
+                    currentRequirementIds.Add( currentId.Value );
                 }
-
-                currentRequirementIds.Add( currentId.Value );
 
                 // Return all courses that the current user is authorized to view.
                 var allCourses = entityService.Queryable()
                     .Where( c => c.IsActive )
                     .Where( c => !currentRequirementIds.Contains( c.Id ) )
                     .ToList()
-                    // Make sure the current user is authorized to view the 
+                    // Make sure the current user is authorized to view the course.
                     .Where( c => c.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
                     .ToListItemBagList();
 
@@ -706,19 +713,19 @@ namespace Rock.Blocks.Lms
         }
 
         /// <summary>
-        /// Add a requirement to a course.
+        /// Get the detail for a course requirement.
         /// </summary>
-        /// <param name="key">The identifier of the course the requirement will be added to.</param>
+        /// <param name="key">The identifier of the course the requirement will be added to (for including the relationship).</param>
         /// <param name="guid">The Guid identifier of the required course.</param>
         /// <param name="requirementType">The type of requirement for the required course.</param>
-        /// <returns>The Newly created course requirement.</returns>
+        /// <returns>The <see cref="LearningCourseRequirementBag"/> containing the course requirement details.</returns>
         [BlockAction]
-        public BlockActionResult AddCourseRequirement( string key, string guid, RequirementType requirementType )
+        public BlockActionResult GetCourseRequirementDetail( string key, string guid, RequirementType requirementType )
         {
             using ( var rockContext = new RockContext() )
             {
                 var courseService = new LearningCourseService( rockContext );
-                var courseId = IdHasher.Instance.GetId( key );
+                var courseId = IdHasher.Instance.GetId( key ).ToIntSafe();
 
                 // Make sure the Guid of the required course is valid.
                 if ( !Guid.TryParse( guid, out var requiredCourseGuid ) )
@@ -726,49 +733,31 @@ namespace Rock.Blocks.Lms
                     return ActionBadRequest( $"Required {nameof( guid )} was invalid." );
                 }
 
-                // Make sure the Id of the course with a requirement is valid.
-                if ( courseId == null )
-                {
-                    return ActionBadRequest( $"Required {nameof( key )} was invalid." );
-                }
-
-                // Make sure both courses exist.
-                var relatedCourses = courseService.Queryable()
-                    .Where( c => c.Id == courseId || c.Guid == requiredCourseGuid )
+                // Make sure the required course exists.
+                var requiredCourse = courseService.Queryable()
+                    .Where( c => c.Guid == requiredCourseGuid )
                     .Select( c => new
                     {
                         c.Id,
                         c.CourseCode,
                         c.Name
-                    } );
+                    } ).FirstOrDefault();
 
-                // If there aren't exactly 2 courses we've probably got an incorrect Id
-                // or a change has been made.
-                if ( relatedCourses.Count() != 2 )
+                if ( requiredCourse == null )
                 {
-                    return ActionBadRequest( $"One or more {LearningCourse.FriendlyTypeName.Pluralize()} not found." );
+                    return ActionBadRequest( $"The required {LearningCourse.FriendlyTypeName} was found." );
                 }
-
-                // Separate out the parent and required courses.
-                var parentCourse = relatedCourses.First( c => c.Id == courseId );
-                var requiredCourse = relatedCourses.First( c => c.Id != courseId );
-
-                var requirementService = new LearningCourseRequirementService( rockContext );
 
                 var newCourseRequirement = new LearningCourseRequirement
                 {
-                    LearningCourseId = parentCourse.Id,
+                    LearningCourseId = courseId,
                     RequiredLearningCourseId = requiredCourse.Id,
                     RequirementType = requirementType
                 };
 
-                requirementService.Add( newCourseRequirement );
-
-                rockContext.SaveChanges();
-
                 return ActionOk( new LearningCourseRequirementBag
                 {
-                    LearningCourseRequirementIdKey = newCourseRequirement.IdKey,
+                    IdKey = newCourseRequirement.IdKey,
                     RequiredLearningCourseIdKey = Rock.Utility.IdHasher.Instance.GetHash( requiredCourse.Id ),
                     RequiredLearningCourseCode = requiredCourse.CourseCode,
                     RequiredLearningCourseName = requiredCourse.Name,
@@ -932,7 +921,7 @@ namespace Rock.Blocks.Lms
         /// </summary>
         /// <returns>A list of students</returns>
         [BlockAction]
-        public BlockActionResult GetStudents(bool includeAbsences = false)
+        public BlockActionResult GetStudents()
         {
             using ( var rockContext = new RockContext() )
             {
@@ -950,6 +939,10 @@ namespace Rock.Blocks.Lms
                     return ActionBadRequest( $"The {LearningCourse.FriendlyTypeName} has no classes." );
                 }
 
+                var defaultClassTakesAttendance = new LearningClassService( rockContext ).Queryable()
+                    .Include( c => c.GroupType )
+                    .Any( c => c.GroupType.TakesAttendance && c.Id == defaultClass.Id );
+
                 // Return all students for the course's default class.
                 var gridBuilder = new GridBuilder<LearningParticipant>()
                     .AddTextField( "idKey", a => a.IdKey )
@@ -964,7 +957,7 @@ namespace Rock.Blocks.Lms
                         .FirstOrDefault( t => !t.IsStudentCompleted )?
                         .LearningActivity?.Name );
 
-                if ( includeAbsences )
+                if ( defaultClassTakesAttendance )
                 {
                     var groupAttendance = new AttendanceService( rockContext )
                     .Queryable()
@@ -973,7 +966,7 @@ namespace Rock.Blocks.Lms
                         a.DidAttend.HasValue &&
                         a.DidAttend.Value &&
                         a.Occurrence.GroupId == defaultClass.Id &&
-                        a.PersonAlias != null)
+                        a.PersonAlias != null )
                     .GroupBy( a => a.PersonAlias.PersonId )
                     .ToList();
 
@@ -1076,27 +1069,21 @@ namespace Rock.Blocks.Lms
         private IQueryable<LearningActivity> GetOrderedLearningPlan( RockContext rockContext )
         {
             var classId = PageParameterAsId( PageParameterKey.LearningClassId );
-            
-            var contextClass = RequestContext?.GetContextEntity<LearningClass>();
-            var filteredClassId = classId > 0 ? classId : contextClass?.Id ?? 0;
 
-            if ( filteredClassId > 0 )
+            if ( classId > 0 )
             {
                 return new LearningActivityService( rockContext )
-                    .GetClassLearningPlan( filteredClassId )
+                    .GetClassLearningPlan( classId )
                     .AsNoTracking();
             }
 
             // Get the page parameter value (either IdKey or Id).
             var courseId = PageParameterAsId( PageParameterKey.LearningCourseId );
 
-            var contextCourse= RequestContext?.GetContextEntity<LearningCourse>();
-            int filteredCourseId = courseId > 0 ? courseId : contextCourse?.Id ?? 0;
-
-            if ( filteredCourseId > 0 )
+            if ( courseId > 0 )
             {
                 // Get the default class (prevents duplicates from showing in the activity list).
-                var defaultClassId = new LearningClassService( rockContext ).GetCourseDefaultClass( filteredCourseId, c => c.Id );
+                var defaultClassId = new LearningClassService( rockContext ).GetCourseDefaultClass( courseId, c => c.Id );
 
                 return new LearningActivityService( rockContext )
                     .GetClassLearningPlan( defaultClassId )
@@ -1104,6 +1091,34 @@ namespace Rock.Blocks.Lms
             }
 
             return new List<LearningActivity>().AsQueryable();
+        }
+
+        /// <summary>
+        /// Updates the required courses for the current course.
+        /// </summary>
+        /// <param name="bag">The bag.</param>
+        /// <param name="contentChannel">The content channel.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void UpdateRequiredCourses( LearningCourseBag bag, LearningCourse entity, RockContext rockContext )
+        {
+            var currentRequirements = bag.CourseRequirements.Select( cr => new LearningCourseRequirement
+            {
+                Id = IdHasher.Instance.GetId( cr.IdKey ) ?? 0,
+                RequiredLearningCourseId = IdHasher.Instance.GetId( cr.RequiredLearningCourseIdKey ) ?? 0,
+                LearningCourseId = IdHasher.Instance.GetId( cr.LearningCourseIdKey ) ?? 0,
+                RequirementType = cr.RequirementType
+            } )
+            .Where( cr => cr.RequiredLearningCourseId > 0 )
+            .ToList();
+
+            //var existingIds = currentRequirements.Where( cr => cr.Id > 0 ).Select( cr => cr.Id ).ToList();
+            var requirementsRemoved = entity.LearningCourseRequirements.Where( prev => !currentRequirements.Any( cur => prev.Id == cur.Id ) );
+            var newRequirements = currentRequirements.Where( cur => !entity.LearningCourseRequirements.Any( prev => prev.Id == cur.Id ) );
+
+            var entityService = new LearningCourseRequirementService( rockContext );
+
+            entityService.DeleteRange( requirementsRemoved );
+            entityService.AddRange( newRequirements );
         }
 
         #endregion

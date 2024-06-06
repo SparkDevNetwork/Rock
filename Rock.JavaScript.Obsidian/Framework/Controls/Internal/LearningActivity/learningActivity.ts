@@ -149,8 +149,8 @@ export function useLearningComponent<TConfig extends object, TCompletion extends
     screenToShow: MaybeRefOrGetter<ComponentScreen>,
     defaults: LearningComponentBaseDefaults<TConfig, TCompletion>
 ): LearningComponent<TConfig, TCompletion> {
-    let configuration = defaults.defaultConfig;
 
+    let configuration = defaults.defaultConfig;
     try {
         configuration = JSON.parse(toValue(activityBag)?.activityComponentSettingsJson ?? "") as TConfig;
     }

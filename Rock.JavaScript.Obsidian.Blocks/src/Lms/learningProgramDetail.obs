@@ -20,7 +20,7 @@
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
                  entityTypeName="LearningProgram"
-                 :isBadgesVisible="true"
+                 :isBadgesVisible="false"
                  :isSecurityHidden="false"
                  :footerSecondaryActions="footerSecondaryActions"
                  :onDelete="onDelete"
@@ -34,8 +34,8 @@
         <template #view>
             <ViewPanel :modelValue="learningProgramViewBag" :options="options" :hasFullScreen="false" />
 
-            <div class="view-link-buttons">
-                <RockButton v-for="action in footerActions" :btnType="action.type" @click="action.handler">
+            <div>
+                <RockButton v-for="action in footerActions" :btnType="action.type" @click="action.handler" class="mr-3">
                     {{ action.title }}
                 </RockButton>
             </div>
@@ -48,12 +48,6 @@
         </template>
     </DetailBlock>
 </template>
-
-<style scoped>
-.view-link-buttons > * {
-    margin-right: 12px;
-}
-</style>
 
 <script setup lang="ts">
     import { computed, ref } from "vue";

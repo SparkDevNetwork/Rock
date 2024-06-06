@@ -72,10 +72,14 @@ namespace Rock.Model
         {
             var context = ( RockContext ) Context;
             var now = RockDateTime.Now;
+            context.SqlLogging( true );
 
             // Get the class and student data in aggregate together.
             var classAndStudentData = new LearningClassService( context )
                 .Queryable()
+                //.Include( c => c.LearningCourse )
+                //.Include( c => c.LearningSemester )
+                //.Include( c => c.LearningParticipants )
                 .AsNoTracking()
                 .Where( c => c.IsActive )
                 .Where( c => c.LearningCourse.LearningProgramId == learningProgramId )
@@ -132,6 +136,18 @@ namespace Rock.Model
                     ImageFileGuid = p.ImageBinaryFile.Guid
                 } )
                 .ToList();
+        }
+
+        /// <summary>
+        /// Determines if the <see cref="LearningProgram"/> has any existing enrollments (students or facilitators).
+        /// </summary>
+        /// <param name="learningProgramId">The identifier of the <see cref="LearningProgram"/>.</param>
+        /// <returns><c>True</c> if anyone has enrolled in the program; false otherwise.</returns>
+        public bool HasEnrollments( int learningProgramId )
+        {
+            return new LearningClassService( ( RockContext ) Context ).Queryable()
+                .AsNoTracking()
+                .Any( c => c.LearningCourse.LearningProgramId == learningProgramId && c.LearningParticipants.Any() );
         }
 
         #region Nested Classes

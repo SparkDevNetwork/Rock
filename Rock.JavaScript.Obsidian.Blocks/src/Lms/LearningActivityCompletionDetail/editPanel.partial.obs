@@ -1,15 +1,31 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <fieldset>
-        <div class="points-earned-section">
-            <NumberBox v-model="pointsEarned"
-                       label="Points Earned"
-                       :rules="'required|lte:' + pointsPossible"
-                       inputGroupClasses="input-width-md">
-                <template #inputGroupAppend>
-                    <span class="input-group-addon">out of {{ pointsPossible }}</span>
-                </template>
-            </NumberBox>
+        <div class="row">
+            <div class="col-md-3">
+                <NumberBox v-model="pointsEarned"
+                           label="Points Earned"
+                           :rules="'required|lte:' + pointsPossible"
+                           inputGroupClasses="input-width-md">
+                    <template #inputGroupAppend>
+                        <span class="input-group-addon">out of {{ pointsPossible }}</span>
+                    </template>
+                </NumberBox>
+            </div>
+            <div class="col-md-3">
+                <DatePicker v-model="availableDate"
+                            label="Available Date" />
+            </div>
+
+            <div class="col-md-3">
+                <DatePicker v-model="dueDate"
+                            label="Due Date" />
+            </div>
+
+            <div class="col-md-3">
+                <DatePicker v-model="completedDate"
+                            label="Completed Date" />
+            </div>
         </div>
         <div class="student-comments-section" v-if="isStudentCommentingEnabled">
             {{ studentComment }}
@@ -37,6 +53,7 @@
     import { defineAsyncComponent, propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
     import { ComponentScreen } from "@Obsidian/Controls/Internal/LearningActivity/learningActivity";
     import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
     import { LearningActivityCompletionDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionDetailOptionsBag";
@@ -68,6 +85,9 @@
     const activityBag = ref(props.modelValue.bag?.activityBag ?? {} as LearningActivityBag);
     const completionBag = ref(props.modelValue.bag ?? {} as LearningActivityCompletionBag);
 
+    const availableDate = ref(completionBag.value.availableDate);
+    const completedDate = ref(completionBag.value.completedDate);
+    const dueDate = ref(completionBag.value.dueDate);
     const isStudentCommentingEnabled = ref(completionBag.value.isStudentCommentingEnabled ?? false);
     const studentComment = ref(completionBag.value.studentComment ?? "");
     const pointsPossible = ref(activityBag.value?.points);
@@ -77,6 +97,8 @@
     const facilitatorComment = propertyRef(completionBag.value.facilitatorComment ?? "", "FacilitatorComments");
     const pointsEarned = propertyRef(completionBag.value.pointsEarned, "PointedEarned");
     const completionJson = propertyRef(completionBag.value.activityComponentCompletionJson, "ActivityComponentCompletionJson");
+
+
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
