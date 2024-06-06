@@ -18,14 +18,32 @@
     <template v-else>
         <DropDownList v-model="fromNumberGuidOrEmptyString"
                       :items="mediumOptions.smsFromNumbers ?? undefined"
-                      label="From" />
+                      help="The number to originate message from (configured under Admin Tools > Communications > System Phone Numbers)."
+                      label="From"
+                      rules="required" />
+
+        <RockFormField v-model="message" :name="`rcwMessage_${id}`">
+            <MergeFieldPicker additionalFields="GlobalAttribute,Rock.Model.Person"
+                              class="margin-b-sm pull-right"
+                              label="Message"
+                              @update:modelValue="onMergeFieldPicked" />
+
+            <TextBox v-model="message"
+                     :rows="3"
+                     rules="required"
+                     :showCountDown="true"
+                     textMode="multiline" />
+        </RockFormField>
     </template>
 </template>
 
 <script setup lang="ts">
     import { PropType, onMounted, ref } from "vue";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import MergeFieldPicker from "@Obsidian/Controls/mergeFieldPicker.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { CommunicationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryInitializationBox";
     import { CommunicationEntrySmsMediumOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySmsMediumOptionsBag";
@@ -34,6 +52,8 @@
     import { scrollToTopOfWindow } from "./utils.partial";
     import { CommunicationEntryMediumOptionsBaseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryMediumOptionsBaseBag";
     import { MediumType } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntry/mediumType";
+    import { newGuid } from "@Obsidian/Utility/guid";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
         disabled: {
@@ -51,12 +71,14 @@
 
     const config = useConfigurationValues<CommunicationEntryInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
+    const id = newGuid();
 
     //#region Values
 
     const fromNumberGuidOrEmptyString = ref<string>("");
     const mediumOptions = ref<CommunicationEntrySmsMediumOptionsBag | null>(isSmsMediumOptions(config.mediumOptions) ? config.mediumOptions : null);
     const errorMessage = ref<string | null | undefined>();
+    const message = ref<string>("");
 
     //#endregion
 
@@ -80,6 +102,20 @@
     //#endregion
 
     //#region Event Handlers
+
+    function onMergeFieldPicked(value: ListItemBag | ListItemBag[] | null): void {
+        if (value === null) {
+            // Do nothing.
+            return;
+        }
+        else if (Array.isArray(value)) {
+            message.value += value.filter(v => !!v.value).map(v => `{{ ${v.value} }}`).join("");
+        }
+        else if (value.value) {
+            message.value += `{{ ${value.value} }}`;
+        }
+        console.log(value);
+    }
 
     //#endregion
 
