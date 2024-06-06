@@ -23,7 +23,7 @@ namespace Rock.Plugin.HotFixes
     /// </summary>
     /// <seealso cref="Rock.Plugin.Migration" />
     [MigrationNumber( 201, "1.16.4" )]
-    public class MigrationRollupsForV17_0_8: Migration
+    public class MigrationRollupsForV17_0_8 : Migration
     {
         /// <summary>
         /// Up methods
@@ -32,6 +32,7 @@ namespace Rock.Plugin.HotFixes
         {
             AddWarningMessagesForActiveObsoletedBlock();
             ChopDISCBlock();
+            UpdateCmsLayout();
         }
 
         /// <summary>
@@ -39,7 +40,7 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Down()
         {
-            
+
         }
 
         /// <summary>
@@ -229,6 +230,20 @@ SELECT @Order = ISNULL(MAX([order]) + 1, 0) FROM [DefinedValue] WHERE [DefinedTy
                 jobGuid:
             SystemGuid.ServiceJob.DATA_MIGRATIONS_170_REMOVE_DISC_BLOCK,
                 blockAttributeKeysToIgnore: null );
+        }
+
+        /// <summary>
+        /// KH: Fix CMS Lava Layout
+        /// </summary>
+        private void UpdateCmsLayout()
+        {
+            RockMigrationHelper.AddBlockAttributeValue( "BEDFF750-3EB8-4EE7-A8B4-23863FB0315D", "1322186A-862A-4CF1-B349-28ECB67229BA", "{% include '~~/Assets/Lava/PageListAsBlocks.lava' %}" );
+
+            RockMigrationHelper.DeletePage( "CCDFEA8F-CF33-49C7-86C0-C4B10DCF1E89" ); // Website Configuration Section
+            RockMigrationHelper.DeletePage( "889D7F7F-EB0F-40CD-9E80-E58A00EE69F7" ); // Content Channels Section
+            RockMigrationHelper.DeletePage( "B892DF6D-4789-4AC3-9E6C-2BFE0D9E30E4" ); // Personalization Section
+            RockMigrationHelper.DeletePage( "04FE297E-D45E-44EC-B521-181423F05A1C" ); // Content Platform Section
+            RockMigrationHelper.DeletePage( "82726ACD-3480-4514-A920-FE920A71C046" ); // Digital Media Applications Section
         }
     }
 }
