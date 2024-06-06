@@ -1,5 +1,5 @@
 <template>
-    <NotificationBox v-if="!hasData" alertType="info">There are no computed tithing metrics.</NotificationBox>
+    <NotificationBox v-if="!config.hasData" alertType="info">There are no computed tithing metrics.</NotificationBox>
     <Panel v-else title="Tithing Overview By Campus" type="block">
         <template #headerActions>
             <div class="control-wrapper mr-3">
@@ -16,32 +16,39 @@
             </div>
         </template>
         <template #default>
-            <div style="height: 500px; width: 98%;">
-                <Chart :type="chartType" :data="chartData" :options="options" />
+            <div class="chart-container" style="height: 500px; width: 98%;">
+                <canvas ref="canvasElement"></canvas>
             </div>
         </template>
     </Panel>
 </template>
 
 <script setup lang="ts">
-    import { computed, ref } from "vue";
+    import { computed, onMounted, ref, shallowRef } from "vue";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
-    import Chart from "@Obsidian/Controls/chart.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import { ChartData, ChartOptions, ChartDataset, ChartEvent, LegendElement, LegendItem, Chart as ChartInstance, ChartType } from "@Obsidian/Libs/chart";
+    import { ChartData, ChartOptions, ChartDataset, ChartEvent, LegendElement, LegendItem, Chart, ChartType, ChartTypeRegistry, ChartConfiguration, AnnotationPluginOptions } from "@Obsidian/Libs/chart";
     import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
     import { TithingOverviewInitializationBox } from "@Obsidian/ViewModels/Blocks/Reporting/TithingOverview/tithingOverviewInitializationBox";
     import { ChartTypeValue, ChartTypeKey, CampusAgeRangeKey } from "./TithingOverview/types.partial";
     import { TithingOverviewToolTipBag } from "@Obsidian/ViewModels/Blocks/Reporting/TithingOverview/tithingOverviewToolTipBag";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
+    declare module "@Obsidian/Libs/chart" {
+        // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-unused-vars
+        interface PluginOptionsByType<TType extends ChartType = ChartType> {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            annotation: AnnotationPluginOptions;
+        }
+    }
+
     const config = useConfigurationValues<TithingOverviewInitializationBox>();
 
     // #region Values
 
-    const chartData = ref<ChartData>(JSON.parse(config.chartDataJson || "{}"));
+    const chartData = ref<ChartData<keyof ChartTypeRegistry, number[]>>(JSON.parse(config.chartDataJson || "{}"));
     const chartType = ref<ChartTypeValue>(config.chartType as ChartTypeValue);
     const toolTipData = ref(config.toolTipData ?? {});
     const legendLabelColorMap = ref(config.legendData ?? {
@@ -51,7 +58,9 @@
         "11+": "#075985",
         "Unknown": "#A3A3A3",
     });
-    const hasData = ref(config.hasData);
+
+    const canvasElement = shallowRef<HTMLCanvasElement | null>(null);
+    let chart: Chart<keyof ChartTypeRegistry, number[]> | null = null;
 
     const options = ref<ChartOptions>({
         responsive: true,
@@ -81,6 +90,19 @@
             tooltip: {
                 enabled: false,
                 external: createToolTip,
+            },
+            annotation: {
+                annotations: {
+                    averageAnnotation: {
+                        type: "line",
+                        borderColor: "gray",
+                        borderDash: [6, 6],
+                        borderDashOffset: 0,
+                        borderWidth: 3,
+                        scaleID: "y",
+                        value: (ctx) => average(ctx)
+                    }
+                }
             }
         },
         scales: {
@@ -132,18 +154,32 @@
      * @param selectedChartType
      */
     async function onChartTypeClick(selectedChartType: ChartTypeValue): Promise<void> {
+        if (chartType.value !== selectedChartType) {
+            const result = await invokeBlockAction<TithingOverviewInitializationBox>("ChartData", {
+                chartType: selectedChartType
+            });
 
-        const result = await invokeBlockAction<TithingOverviewInitializationBox>("ChartData", {
-            chartType: selectedChartType
-        });
+            if (!chart) {
+                return;
+            }
 
-        if (result.isSuccess && result.data) {
-            chartData.value = JSON.parse(result.data.chartDataJson || "{}") as ChartData;
-            chartType.value = selectedChartType;
-            toolTipData.value = result.data.toolTipData ?? {};
-        }
-        else {
-            chartData.value = {} as ChartData;
+            if (result.isSuccess && result.data && canvasElement.value) {
+                chartData.value = JSON.parse(result.data.chartDataJson || "{}") as ChartData<keyof ChartTypeRegistry, number[]>;
+                chartType.value = selectedChartType;
+                toolTipData.value = result.data.toolTipData ?? {};
+
+                // Since Chart Type has changes we recreate the chart.
+                chart.destroy();
+                chart = new Chart(canvasElement.value, getChartConfig());
+            }
+            else {
+                chartData.value = {} as ChartData<keyof ChartTypeRegistry, number[]>;
+                chartType.value = selectedChartType;
+
+                chart.data = chartData.value;
+                chart.options = options.value;
+                chart.update();
+            }
         }
     }
 
@@ -229,7 +265,7 @@
      * in Line mode the Campuses are used as legend items.
      * @param chart
      */
-    function generateLegendLabels(chart: ChartInstance): LegendItem[] {
+    function generateLegendLabels(chart: Chart): LegendItem[] {
         let legendItems = [] as LegendItem[];
 
         if (chartType.value == ChartTypeKey.BarChart) {
@@ -266,7 +302,7 @@
      * @param legend The LegendElement
      */
     function legendClickHandler(e: ChartEvent, legendItem: LegendItem, legend: LegendElement<ChartType>): void {
-        const chart = legend.chart as ChartInstance;
+        const chart = legend.chart as Chart;
         const datasets = chart.data.datasets;
         const legendLabel = legendItem.text as CampusAgeRangeKey;
         const selectedDatasets: ChartDataset[] = [];
@@ -361,7 +397,40 @@
         }
     }
 
+    /**
+    * Gets the configuration data that will be used to draw the chart.
+    *
+    * @returns The chart configuration data that can be passed to Chart.JS.
+    */
+    function getChartConfig(): ChartConfiguration<keyof ChartTypeRegistry, number[]> {
+
+        const config: ChartConfiguration<keyof ChartTypeRegistry, number[]> = {
+            type: chartType.value,
+            data: chartData.value,
+            options: options.value
+        };
+
+        return config;
+    }
+
+    /**
+     * Calculates the average value of the charts datasets.
+     * @param ctx The Chart context
+     */
+    function average(ctx): number {
+        const values = ctx.chart.data.datasets[0].data;
+        return values.reduce((a, b) => a + b, 0) / values.length;
+    }
+
     // #endregion
+
+    onMounted(() => {
+        if (!canvasElement.value) {
+            return;
+        }
+
+        chart = new Chart(canvasElement.value, getChartConfig());
+    });
 
     onConfigurationValuesChanged(useReloadBlock());
 
