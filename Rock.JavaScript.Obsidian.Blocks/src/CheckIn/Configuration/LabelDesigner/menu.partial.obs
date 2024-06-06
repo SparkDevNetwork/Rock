@@ -74,6 +74,7 @@
                    :modelValue="true"
                    hasCollapse>
                 <component :is="fieldConfigurationComponent"
+                           :key="labelManager.selectedField.value?.guid"
                            :labelManager="labelManager" />
             </Panel>
 
