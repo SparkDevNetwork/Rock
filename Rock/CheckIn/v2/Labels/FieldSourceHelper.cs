@@ -557,6 +557,19 @@ namespace Rock.CheckIn.v2.Labels
 
         #endregion
 
+        #region Checkout Label
+
+        /// <summary>
+        /// Gets all data sources for a <see cref="LabelType.Checkout"/> label.
+        /// </summary>
+        /// <returns>A list of data sources.</returns>
+        public static List<FieldDataSource> GetCheckoutLabelDataSources()
+        {
+            return GetAttendanceLabelDataSources();
+        }
+
+        #endregion
+
         /// <summary>
         /// Gets the attendee information data sources for a label that has a
         /// single Person property.
