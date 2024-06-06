@@ -71,7 +71,9 @@ namespace Rock.Plugin.HotFixes
             // Add Page Route
             //   Page:Administrative Settings
             //   Route:admin/settings
+#pragma warning disable CS0618 // Type or member is obsolete
             RockMigrationHelper.AddPageRoute( AdministrativeSettingsPageGuid, "admin/settings", "A000D38F-D19C-4F99-B498-227E3509A5C7" );
+#pragma warning restore CS0618 // Type or member is obsolete
 
             // Update page order
             Sql( $@"UPDATE [dbo].[Page] SET [Order] = 0 WHERE [Guid] = '{AdministrativeSettingsPageGuid}'" );

@@ -135,6 +135,8 @@ export const Attribute = {
     GrouptypeSignupGroupProjectType: "46FFBB10-6E4B-4B3A-A560-61B36C6B0E09",
     /** The Active attribute for the observability HTTP filter. */
     HttpModuleObservabilityActive: "DAC40EF2-1616-4E15-A897-8CCD7CF2C588",
+    /** the Active attribute for the rock gateway HTTP module. */
+    HttpModuleRockGatewayActive: "DAC40EF2-1616-4E15-A897-8CCD7CF2C588",
     /** Language in ISO639-1 */
     Iso6391: "F5E8B6D2-6483-0F8D-4C20-07C51E7548AD",
     /** Language in ISO639 */

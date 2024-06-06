@@ -46,7 +46,11 @@ namespace Rock.Plugin.HotFixes
         private void FixRouteForAdaptiveMessageUp()
         {
             RockMigrationHelper.UpdatePageRoute( "E612018C-FD4B-4F6F-9BCD-3B76B58CC8AB", "222ED9E3-06C0-438F-B520-C899B8835650", "admin/cms/adaptive-messages/attributes" );
+
+#pragma warning disable CS0618 // Type or member is obsolete
             RockMigrationHelper.AddPageRoute( "73112D38-E051-4452-AEF9-E473EEDD0BCB", "admin/cms/adaptive-messages", "3B35F17E-B2DE-4512-8873-06A82F572ABD" );
+#pragma warning restore CS0618 // Type or member is obsolete
+
             Sql( @"UPDATE 
                 [Page]
             SET [DisplayInNavWhen] = 2

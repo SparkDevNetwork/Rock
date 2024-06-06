@@ -1398,6 +1398,8 @@ export const Page = {
      * ParentPage: System Settings
      */
     SearchServices: "1719F597-5BA9-458D-9362-9C3E558E5C82",
+    /** Gets the Search Type page guid */
+    SearchType: "3E0327B1-EE0E-41DC-87DB-C4C14922A7CA",
     /**
      * Gets the Security page guid
      * ParentPage: Admin Tools
