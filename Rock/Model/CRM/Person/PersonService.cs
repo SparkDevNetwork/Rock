@@ -4653,16 +4653,16 @@ FROM (
             bool includeDeceased = true;
             bool includeArchived = false;
 
-            /* Determine people in security role groups with ElevatedSecurityLevel.High */
+            /* Determine people in security role groups with ElevatedSecurityLevel.Extreme */
             var groupMemberService = new GroupMemberService( rockContext );
-            var personIdsInGroupsWithHighSecurityLevelQuery = groupMemberService
+            var personIdsInGroupsWithExtremeSecurityLevelQuery = groupMemberService
                 .Queryable( includeDeceased, includeArchived )
                 .IsInSecurityRoleGroupOrSecurityRoleGroupType()
                 .Where( gm => gm.Group.IsActive && gm.Group.ElevatedSecurityLevel == ElevatedSecurityLevel.Extreme )
                 .Select( gm => gm.PersonId );
 
-            /* Determine people in security role groups with ElevatedSecurityLevel.Low */
-            var personIdsInGroupsWithLowSecurityLevelQuery = groupMemberService
+            /* Determine people in security role groups with ElevatedSecurityLevel.High */
+            var personIdsInGroupsWithHighSecurityLevelQuery = groupMemberService
                 .Queryable( includeDeceased, includeArchived )
                 .IsInSecurityRoleGroupOrSecurityRoleGroupType()
                 .Where( gm => gm.Group.IsActive && gm.Group.ElevatedSecurityLevel == ElevatedSecurityLevel.High )
@@ -4721,16 +4721,21 @@ FROM (
                   - No Risk Items
 
                 Medium
-                  - Individual Has Login
+                  - one or more of the following -
+                    + Individual Has Login
+                    + Individual has a Family Member with Medium Security
 
                 High
                   - one or more of the following -
                     + Active Scheduled Financial Transaction (inactive are not viewable)
                     + Saved Payment Account
-                    + in a Security Role Marked w/ Low Elevated Security 
+                    + in a Security Role Marked w/ High Elevated Security
+                    + Individual has a Family Member with High Security
 
                 Extreme
-                  - in a Security Role marked w/ High Elevated Security Level 
+                  - one or more of the following -
+                    + in a Security Role marked w/ Extreme Elevated Security Level
+                    + Individual has a Family Member with Extreme Security
              */
 
 
@@ -4739,43 +4744,58 @@ FROM (
             var personIdsInFamilyWithMediumSecurity = personService
                 .Queryable()
                 .Where( p => p.AgeClassification != AgeClassification.Child )
+                .Where( p => p.PrimaryFamilyId != null )
                 .GroupBy( p => p.PrimaryFamilyId )
                 .Where( group =>
                     (group.Max( p => p.AccountProtectionProfile ) == AccountProtectionProfile.Medium // Check if the highest APP is Medium in the family
-                        || ( group.Any( p => personIdsWithLoginsQuery.Contains( p.Id ) ) && !(group.Max( p => p.AccountProtectionProfile ) > AccountProtectionProfile.Medium) ) ) // Or check for newly set medium accounts that do not contain a family member greater than Medium
-                        && group.Any( p =>
-                            !personIdsInGroupsWithLowSecurityLevelQuery.Contains( p.Id ) // Check to see if any family members will be promoted to high APP based on Group
-                            && !personAliasIdsWithFinancialDataQuery.Any( fdPersonAliasId => p.Aliases.Any( pa => pa.Id == fdPersonAliasId ) ) // Check to see if any family members will be promoted to high APP based on Financial data
-                            && !personIdsInGroupsWithHighSecurityLevelQuery.Contains( p.Id ) // Check to see if any family members will be promoted to extreme APP based on Group
-                        )
+                        || ( group.Any( p => personIdsWithLoginsQuery.Contains( p.Id ) ) && (group.Max( p => p.AccountProtectionProfile ) < AccountProtectionProfile.Medium) ) ) // Or check for newly set medium accounts that do not contain a family member greater than Medium
+                    && group.Any( p =>
+                        !personIdsInGroupsWithHighSecurityLevelQuery.Contains( p.Id ) // Check to see if any family members will be promoted to high APP based on Group
+                        && !personAliasIdsWithFinancialDataQuery.Any( fdPersonAliasId => p.Aliases.Any( pa => pa.Id == fdPersonAliasId ) ) // Check to see if any family members will be promoted to high APP based on Financial data
+                        && !personIdsInGroupsWithExtremeSecurityLevelQuery.Contains( p.Id ) // Check to see if any family members will be promoted to extreme APP based on Group
                     )
-                .SelectMany( group => group.Select( p => p.Id ) );
+                )
+                .SelectMany( group => group
+                   // Exclude people who already have Medium APP.
+                   .Where( p => p.AccountProtectionProfile != AccountProtectionProfile.Medium )
+                   .Select( p => p.Id )
+               );
 
             var personIdsInFamilyWithHighSecurity = personService
                .Queryable()
                .Where( p => p.AgeClassification != AgeClassification.Child )
+               .Where( p => p.PrimaryFamilyId != null )
                .GroupBy( p => p.PrimaryFamilyId )
                .Where( group =>
                    (group.Max( p => p.AccountProtectionProfile ) == AccountProtectionProfile.High ||
-                        (group.Any( p => personIdsInGroupsWithLowSecurityLevelQuery.Contains( p.Id )
+                        (group.Any( p => personIdsInGroupsWithHighSecurityLevelQuery.Contains( p.Id )
                                 || personAliasIdsWithFinancialDataQuery.Any( fdPersonAliasId => p.Aliases.Any( pa => pa.Id == fdPersonAliasId ) )
                             )
-                            && !( group.Max( p => p.AccountProtectionProfile ) > AccountProtectionProfile.High )
+                            && ( group.Max( p => p.AccountProtectionProfile ) < AccountProtectionProfile.High )
                         )
                    ) && group.Any( p =>
-                            !personIdsInGroupsWithHighSecurityLevelQuery.Contains( p.Id ) // Check to see if any family members will be promoted to extreme APP based on Group
+                            !personIdsInGroupsWithExtremeSecurityLevelQuery.Contains( p.Id ) // Check to see if any family members will be promoted to extreme APP based on Group
                         )
-                )
-               .SelectMany( group => group.Select( p => p.Id ) );
+               )
+               .SelectMany( group => group
+                   // Exclude people who already have High APP.
+                   .Where( p => p.AccountProtectionProfile != AccountProtectionProfile.High )
+                   .Select( p => p.Id )
+               );
 
             var personIdsInFamilyWithExtremeSecurity = personService
                .Queryable()
                .Where( p => p.AgeClassification != AgeClassification.Child )
+               .Where( p => p.PrimaryFamilyId != null )
                .GroupBy( p => p.PrimaryFamilyId )
                .Where( group =>
-                    group.Max( p => p.AccountProtectionProfile ) == AccountProtectionProfile.Extreme || group.Any( p => personIdsInGroupsWithHighSecurityLevelQuery.Contains( p.Id ) )
-                )
-               .SelectMany( group => group.Select( p => p.Id ) );
+                    group.Max( p => p.AccountProtectionProfile ) == AccountProtectionProfile.Extreme || group.Any( p => personIdsInGroupsWithExtremeSecurityLevelQuery.Contains( p.Id ) )
+               )
+               .SelectMany( group => group
+                   // Exclude people who already have Extreme APP.
+                   .Where( p => p.AccountProtectionProfile != AccountProtectionProfile.Extreme )
+                   .Select( p => p.Id )
+               );
 
             // set up query as all person records regardless of Deceased, record type, etc
             var personQuery = personService.AsNoFilter();
@@ -4792,7 +4812,8 @@ FROM (
                     && !personIdsInFamilyWithMediumSecurity.Contains( p.Id )
                     && !personIdsInFamilyWithHighSecurity.Contains( p.Id )
                     && !personIdsInFamilyWithExtremeSecurity.Contains( p.Id )
-                    && p.AccountProtectionProfile != AccountProtectionProfile.Low );
+                    && p.AccountProtectionProfile != AccountProtectionProfile.Low
+                    && p.AccountProtectionProfile < AccountProtectionProfile.Medium );
 
             rowsUpdated += rockContext.BulkUpdate( personToSetAsAccountProtectionProfileLowQuery, p => new Person { AccountProtectionProfile = AccountProtectionProfile.Low } );
 
