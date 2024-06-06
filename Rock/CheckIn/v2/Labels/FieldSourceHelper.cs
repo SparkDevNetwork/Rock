@@ -22,6 +22,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.CheckIn.v2.Labels.Formatters;
 using Rock.Enums.CheckIn.Labels;
+using Rock.Enums.Reporting;
 using Rock.Field;
 using Rock.Field.Types;
 using Rock.Model;
@@ -33,6 +34,50 @@ namespace Rock.CheckIn.v2.Labels
 {
     internal static class FieldSourceHelper
     {
+        /// <summary>
+        /// The person property names that should be made common so they are
+        /// easily accessible when picking a data source or filter.
+        /// </summary>
+        private static readonly HashSet<string> PersonPropertyNamesToMakeCommon = new HashSet<string>
+        {
+            nameof( Person.NickName ),
+            nameof( Person.LastName ),
+            nameof( Person.DaysUntilBirthday )
+        };
+
+        /// <summary>
+        /// The person attributes that should be made common so they are easily
+        /// accessible when picking a data source or filter.
+        /// </summary>
+        private static readonly HashSet<Guid> PersonAttributesToMakeCommon = new HashSet<Guid>
+        {
+            SystemGuid.Attribute.PERSON_LEGAL_NOTE.AsGuid(),
+            SystemGuid.Attribute.PERSON_ALLERGY.AsGuid()
+        };
+
+        /// <summary>
+        /// The person property names that should be excluded from data sources.
+        /// These are excluded either because we don't want them or because we
+        /// are going to provide a custom version of them.
+        /// </summary>
+        private static readonly HashSet<string> PersonPropertyNamesToExcludeFromDataSources = new HashSet<string>
+        {
+            nameof( Person.Gender ),
+            nameof( Person.Age )
+        };
+
+        /// <summary>
+        /// The person attributes that should be excluded from data sources.
+        /// These are excluded either because we don't want them or because we
+        /// are going to provide a custom version of them.
+        /// </summary>
+        private static readonly HashSet<Guid> PersonAttributesToExcludeFromDataSources = new HashSet<Guid>();
+
+        /// <summary>
+        /// Retrieves the data sources for the specified label type.
+        /// </summary>
+        /// <param name="labelType">The type of label for which to retrieve data sources.</param>
+        /// <returns>A read-only dictionary containing the data sources for the specified label type.</returns>
         public static IReadOnlyDictionary<string, FieldDataSource> GetDataSources( LabelType labelType )
         {
             var dataSources = new List<FieldDataSource>();
@@ -221,46 +266,7 @@ namespace Rock.CheckIn.v2.Labels
 
         public static List<FieldFilterSourceBag> GetPersonLabelFilterSources()
         {
-            var filterSources = new List<FieldFilterSourceBag>();
-
-            foreach ( var entityField in EntityHelper.GetEntityFields( typeof( Person ) ) )
-            {
-                if ( entityField.FieldKind == FieldKind.Attribute )
-                {
-                    var filterSource = new FieldFilterSourceBag
-                    {
-                        Guid = Guid.NewGuid(),
-                        Type = Enums.Reporting.FieldFilterSourceType.Attribute,
-                        Category = "Attributes",
-                        Attribute = PublicAttributeHelper.GetPublicAttributeForEdit( AttributeCache.Get( entityField.AttributeGuid.Value ) )
-                    };
-
-                    filterSources.Add( filterSource );
-                }
-                else
-                {
-                    var privateConfigValues = entityField.FieldConfig.ToDictionary( c => c.Key, c => c.Value.Value );
-                    var configValues = entityField.FieldType.Field.GetPublicConfigurationValues( privateConfigValues, ConfigurationValueUsage.Edit, string.Empty );
-
-                    var filterSource = new FieldFilterSourceBag
-                    {
-                        Guid = Guid.NewGuid(),
-                        Type = Enums.Reporting.FieldFilterSourceType.Property,
-                        Category = entityField.IsPreviewable ? "Common" : "Person Properties",
-                        Property = new FieldFilterPropertyBag
-                        {
-                            Title = entityField.Title,
-                            Name = entityField.Name,
-                            FieldTypeGuid = entityField.FieldType.ControlFieldTypeGuid,
-                            ConfigurationValues = configValues
-                        }
-                    };
-
-                    filterSources.Add( filterSource );
-                }
-            }
-
-            return filterSources;
+            return GetPersonFilterSources();
         }
 
         #endregion
@@ -646,14 +652,9 @@ namespace Rock.CheckIn.v2.Labels
             } );
 
             var personDataSources = GetPersonDataSources<TLabelData>();
-            var excludedKeys = new string[]
-            {
-                "person.gender",
-                "person.age"
-            };
 
             return dataSources
-                .Concat( personDataSources.Where( ds => !excludedKeys.Contains( ds.Key ) ) )
+                .Concat( personDataSources.Where( ds => !PersonPropertyNamesToExcludeFromDataSources.Contains( ds.Key ) ) )
                 .ToList();
         }
 
@@ -666,15 +667,6 @@ namespace Rock.CheckIn.v2.Labels
         private static List<FieldDataSource> GetPersonDataSources<TLabelData>()
             where TLabelData : ILabelDataHasPerson
         {
-            var keysToMakeCommon = new List<string>
-            {
-                "person.nickname",
-                "person.lastname",
-                "person.daysuntilbirthday",
-                $"attribute:person:{SystemGuid.Attribute.PERSON_LEGAL_NOTE.ToLower()}",
-                $"attribute:person:{SystemGuid.Attribute.PERSON_ALLERGY.ToLower()}"
-            };
-
             var dataSources = new List<FieldDataSource>();
             var entityFields = EntityHelper.GetEntityFields( typeof( Person ), true, false );
 
@@ -684,10 +676,25 @@ namespace Rock.CheckIn.v2.Labels
 
                 if ( entityField.FieldKind == FieldKind.Property )
                 {
+                    if ( PersonPropertyNamesToExcludeFromDataSources.Contains( entityField.PropertyInfo.Name ) )
+                    {
+                        continue;
+                    }
+
                     dataSource = GetPropertyDataSource<TLabelData>( entityField, "person", data => data.Person );
+
+                    if ( PersonPropertyNamesToMakeCommon.Contains( entityField.PropertyInfo.Name ) )
+                    {
+                        dataSource.Category = "Common";
+                    }
                 }
                 else
                 {
+                    if ( PersonAttributesToExcludeFromDataSources.Contains( entityField.AttributeGuid.Value ) )
+                    {
+                        continue;
+                    }
+
                     var attributeCache = AttributeCache.Get( entityField.AttributeGuid.Value );
 
                     if ( entityField.FieldType.Field is DateFieldType || entityField.FieldType.Field is DateTimeFieldType )
@@ -704,22 +711,73 @@ namespace Rock.CheckIn.v2.Labels
                             ValueFunc = ( source, field, printRequest ) => source.Person.GetAttributeValue( entityField.AttributeGuid.Value )
                         };
                     }
-                }
 
-                if ( dataSource != null )
-                {
-                    dataSource.TextSubType = TextFieldSubType.AttendeeInfo;
-
-                    if ( keysToMakeCommon.Contains( dataSource.Key ) )
+                    if ( PersonAttributesToMakeCommon.Contains( entityField.AttributeGuid.Value ) )
                     {
                         dataSource.Category = "Common";
                     }
-
-                    dataSources.Add( dataSource );
                 }
+
+                dataSource.TextSubType = TextFieldSubType.AttendeeInfo;
+
+                dataSources.Add( dataSource );
             }
 
             return dataSources;
+        }
+
+        public static List<FieldFilterSourceBag> GetPersonFilterSources()
+        {
+            var filterSources = new List<FieldFilterSourceBag>();
+
+            foreach ( var entityField in EntityHelper.GetEntityFields( typeof( Person ) ) )
+            {
+                FieldFilterSourceBag filterSource;
+
+                if ( entityField.FieldKind == FieldKind.Property )
+                {
+                    var privateConfigValues = entityField.FieldConfig.ToDictionary( c => c.Key, c => c.Value.Value );
+                    var configValues = entityField.FieldType.Field.GetPublicConfigurationValues( privateConfigValues, ConfigurationValueUsage.Edit, string.Empty );
+
+                    filterSource = new FieldFilterSourceBag
+                    {
+                        Guid = Guid.NewGuid(),
+                        Type = FieldFilterSourceType.Property,
+                        Category = "Properties",
+                        Property = new FieldFilterPropertyBag
+                        {
+                            Title = entityField.Title,
+                            Name = entityField.Name,
+                            FieldTypeGuid = entityField.FieldType.ControlFieldTypeGuid,
+                            ConfigurationValues = configValues
+                        }
+                    };
+
+                    if ( PersonPropertyNamesToMakeCommon.Contains( entityField.PropertyInfo.Name ) )
+                    {
+                        filterSource.Category = "Common";
+                    }
+                }
+                else
+                {
+                    filterSource = new FieldFilterSourceBag
+                    {
+                        Guid = Guid.NewGuid(),
+                        Type = FieldFilterSourceType.Attribute,
+                        Category = "Attributes",
+                        Attribute = PublicAttributeHelper.GetPublicAttributeForEdit( AttributeCache.Get( entityField.AttributeGuid.Value ) )
+                    };
+
+                    if ( PersonAttributesToMakeCommon.Contains( entityField.AttributeGuid.Value ) )
+                    {
+                        filterSource.Category = "Common";
+                    }
+                }
+
+                filterSources.Add( filterSource );
+            }
+
+            return filterSources;
         }
 
         private static FieldDataSource GetPropertyDataSource<TLabelData>( EntityField entityField, string propertyPath, Func<TLabelData, object> propertySelector )
