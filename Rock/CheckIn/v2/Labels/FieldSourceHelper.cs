@@ -55,10 +55,14 @@ namespace Rock.CheckIn.v2.Labels
             return new List<FieldFilterSourceBag>();
         }
 
+        #region Person Label
+
         private static List<FieldDataSource> GetPersonLabelDataSources()
         {
             return GetPersonLabelAttendeeInfoSources()
                 .Concat( GetPersonLabelCheckInInfoSources() )
+                .Concat( GetPersonLabelAchievementInfoSources() )
+                .DistinctBy( ds => ds.Key )
                 .ToList();
         }
 
@@ -138,7 +142,7 @@ namespace Rock.CheckIn.v2.Labels
 
             dataSources.Add( new SingleValueFieldDataSource<PersonLabelData>
             {
-                Key = "person.fullname",
+                Key = "ea92317c-65b9-4d8e-b4c4-7fc7ab9ad932",
                 Name = "Full Name",
                 TextSubType = TextFieldSubType.AttendeeInfo,
                 Category = "Common",
@@ -148,7 +152,7 @@ namespace Rock.CheckIn.v2.Labels
 
             dataSources.Add( new SingleValueFieldDataSource<PersonLabelData>
             {
-                Key = "person.gender",
+                Key = "1c1f5c30-5b23-484f-9993-f60d07952b33",
                 Name = "Gender",
                 TextSubType = TextFieldSubType.AttendeeInfo,
                 Category = "Common",
@@ -158,7 +162,7 @@ namespace Rock.CheckIn.v2.Labels
 
             dataSources.Add( new SingleValueFieldDataSource<PersonLabelData>
             {
-                Key = "person.gradeoffset",
+                Key = "c37608a7-9a93-4eb7-b045-208117575533",
                 Name = "Grade Offset",
                 TextSubType = TextFieldSubType.AttendeeInfo,
                 Category = "Common",
@@ -167,7 +171,7 @@ namespace Rock.CheckIn.v2.Labels
 
             dataSources.Add( new SingleValueFieldDataSource<PersonLabelData>
             {
-                Key = "person.gradeformatted",
+                Key = "ae113ac5-a0b3-4225-be33-d82bb139077e",
                 Name = "Grade Formatted",
                 TextSubType = TextFieldSubType.AttendeeInfo,
                 Category = "Common",
@@ -177,7 +181,7 @@ namespace Rock.CheckIn.v2.Labels
 
             dataSources.Add( new SingleValueFieldDataSource<PersonLabelData>
             {
-                Key = "person.age",
+                Key = "d07f698e-9c3b-4330-a82e-be45a64b813d",
                 Name = "Age",
                 TextSubType = TextFieldSubType.AttendeeInfo,
                 Category = "Common",
@@ -187,7 +191,7 @@ namespace Rock.CheckIn.v2.Labels
 
             dataSources.Add( new SingleValueFieldDataSource<PersonLabelData>
             {
-                Key = "person.birthdaydayofweek",
+                Key = "10a7d224-d0e7-4620-b52b-cf34e7b5e4ca",
                 Name = "Birthday Day Of Week",
                 TextSubType = TextFieldSubType.AttendeeInfo,
                 Category = "Common",
@@ -196,15 +200,19 @@ namespace Rock.CheckIn.v2.Labels
             } );
 
             var personDataSources = GetPersonDataSources<PersonLabelData>();
-            var existingKeys = dataSources.Select( ds => ds.Key ).ToList();
+            var excludedKeys = new string[]
+            {
+                "person.gender",
+                "person.age"
+            };
 
             return dataSources
-                .Concat( personDataSources.Where( ds => !existingKeys.Contains( ds.Key ) ) )
+                .Concat( personDataSources.Where( ds => !excludedKeys.Contains( ds.Key ) ) )
                 .ToList();
         }
 
         /// <summary>
-        /// Gets the attendee information data sources for a person label.
+        /// Gets the check-in information data sources for a person label.
         /// </summary>
         /// <returns>A list of field data sources.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage( "Style", "IDE0028:Simplify collection initialization", Justification = "Because the list of options is so long it is more clear to use the Add() method." )]
@@ -214,7 +222,7 @@ namespace Rock.CheckIn.v2.Labels
 
             dataSources.Add( new MultiValueFieldDataSource<PersonLabelData>
             {
-                Key = "personattendance.area.name",
+                Key = "056a1d46-de60-413d-bf90-3e8d62128730",
                 Name = "Area Name",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
@@ -223,7 +231,7 @@ namespace Rock.CheckIn.v2.Labels
 
             dataSources.Add( new SingleValueFieldDataSource<PersonLabelData>
             {
-                Key = "personattendance.startdatetime",
+                Key = "e654e589-f4f6-4946-b973-49743eb637f4",
                 Name = "Check-in Time",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
@@ -232,7 +240,7 @@ namespace Rock.CheckIn.v2.Labels
 
             dataSources.Add( new SingleValueFieldDataSource<PersonLabelData>
             {
-                Key = "currenttime",
+                Key = "9d96337a-61b2-48c6-b3df-dec5b4ec8584",
                 Name = "Current Time",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
@@ -241,7 +249,7 @@ namespace Rock.CheckIn.v2.Labels
 
             dataSources.Add( new MultiValueFieldDataSource<PersonLabelData>
             {
-                Key = "personattendance.group.name",
+                Key = "15e42323-9f41-4258-b49f-4f206df37fad",
                 Name = "Group Name",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
@@ -250,7 +258,7 @@ namespace Rock.CheckIn.v2.Labels
 
             dataSources.Add( new MultiValueFieldDataSource<PersonLabelData>
             {
-                Key = "personattendance.groupmembers.grouprolename",
+                Key = "4389a134-cc1e-47e4-b435-fee0ad050cf0",
                 Name = "Group Role Name",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
@@ -264,7 +272,7 @@ namespace Rock.CheckIn.v2.Labels
 
             dataSources.Add( new MultiValueFieldDataSource<PersonLabelData>
             {
-                Key = "personattendance.location.name",
+                Key = "d390728a-2886-49c1-a580-c84995bb5fb2",
                 Name = "Location Name",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
@@ -273,7 +281,7 @@ namespace Rock.CheckIn.v2.Labels
 
             dataSources.Add( new MultiValueFieldDataSource<PersonLabelData>
             {
-                Key = "personattendance.schedule.name",
+                Key = "331038d5-c959-4a37-9978-10c2a3a851b1",
                 Name = "Schedule Name",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
@@ -282,7 +290,7 @@ namespace Rock.CheckIn.v2.Labels
 
             dataSources.Add( new MultiValueFieldDataSource<PersonLabelData>
             {
-                Key = "personattendance.schedule.checkinstarttime",
+                Key = "f8693f9e-0163-44ca-a5e8-396a4547cadf",
                 Name = "Schedule Time",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
@@ -291,11 +299,50 @@ namespace Rock.CheckIn.v2.Labels
 
             dataSources.Add( new SingleValueFieldDataSource<PersonLabelData>
             {
-                Key = "personattendance.securitycode",
+                Key = "42961db8-eee8-401c-b8df-f13a20cac31b",
                 Name = "Security Code",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
                 ValueFunc = ( source, field, printRequest ) => source.PersonAttendance.Select( a => a.SecurityCode ).FirstOrDefault() ?? string.Empty
+            } );
+
+            return dataSources;
+        }
+
+        /// <summary>
+        /// Gets the achievement information data sources for a person label.
+        /// </summary>
+        /// <returns>A list of field data sources.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage( "Style", "IDE0028:Simplify collection initialization", Justification = "Because the list of options is so long it is more clear to use the Add() method." )]
+        private static List<FieldDataSource> GetPersonLabelAchievementInfoSources()
+        {
+            var dataSources = new List<FieldDataSource>();
+
+            dataSources.Add( new MultiValueFieldDataSource<PersonLabelData>
+            {
+                Key = "14ee31ed-aa52-4840-bc2e-5af39fd0d620",
+                Name = "Just Completed Achievements",
+                TextSubType = TextFieldSubType.AchievementInfo,
+                Category = "Common",
+                ValuesFunc = ( source, field, printRequest ) => source.JustCompletedAchievements
+            } );
+
+            dataSources.Add( new MultiValueFieldDataSource<PersonLabelData>
+            {
+                Key = "e4cb1548-0e69-4a7d-ab4f-32b70bd4d066",
+                Name = "In Progress Achievements",
+                TextSubType = TextFieldSubType.AchievementInfo,
+                Category = "Common",
+                ValuesFunc = ( source, field, printRequest ) => source.InProgressAchievements
+            } );
+
+            dataSources.Add( new MultiValueFieldDataSource<PersonLabelData>
+            {
+                Key = "4d1db5c1-7f6c-48db-8c5b-39aeabff64b1",
+                Name = "Previously Completed Achievements",
+                TextSubType = TextFieldSubType.AchievementInfo,
+                Category = "Common",
+                ValuesFunc = ( source, field, printRequest ) => source.PreviouslyCompletedAchievements
             } );
 
             return dataSources;
@@ -344,6 +391,8 @@ namespace Rock.CheckIn.v2.Labels
 
             return filterSources;
         }
+
+        #endregion
 
         private static FieldDataSource GetPropertyDataSource<TLabelData>( EntityField entityField, string propertyPath, Func<TLabelData, object> propertySelector )
         {

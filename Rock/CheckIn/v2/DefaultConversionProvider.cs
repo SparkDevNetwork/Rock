@@ -21,7 +21,6 @@ using System.Linq;
 
 using Rock.Model;
 using Rock.ViewModels.CheckIn;
-using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.CheckIn.v2
@@ -410,11 +409,12 @@ namespace Rock.CheckIn.v2
         /// <returns>A new instance of <see cref="AchievementBag"/>.</returns>
         public virtual AchievementBag GetAchievementBag( AchievementAttempt achievementAttempt )
         {
-            var achievementType = AchievementTypeCache.Get( achievementAttempt.AchievementTypeId );
+            var achievementType = AchievementTypeCache.Get( achievementAttempt.AchievementTypeId, Session.RockContext );
 
             return new AchievementBag
             {
                 Guid = achievementAttempt.Guid,
+                AchievementTypeGuid = achievementType?.Guid ?? Guid.Empty,
                 Name = achievementType?.Name ?? "Unknown Achievement",
                 IsSuccess = achievementAttempt.IsSuccessful,
                 IsClosed = achievementAttempt.IsClosed,

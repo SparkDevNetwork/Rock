@@ -15,13 +15,9 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 
 using Rock.Enums.CheckIn.Labels;
-using Rock.Model;
-using Rock.ViewModels.CheckIn.Labels;
-using Rock.ViewModels.Reporting;
 
 namespace Rock.CheckIn.v2.Labels
 {
@@ -33,16 +29,21 @@ namespace Rock.CheckIn.v2.Labels
     {
         /// <summary>
         /// <para>
-        /// The unique key that identifies this data source.
+        /// The unique key that identifies this data source. This value must
+        /// never change for the life of a data source so it is important to
+        /// follow the convention.
         /// </para>
         /// <para>
-        /// Properties should use a lowercase key that corresponds to the
-        /// property path represented by the source such as <c>person.id</c>.
+        /// Manually defined data sources should use a guid value.
         /// </para>
         /// <para>
-        /// Attributes should use a lowercase key that contains a <c>attribute:</c>
-        /// prefix, the property path to the entity followed by another <c>:</c>
-        /// and then the attribute guid. Such as
+        /// Generated properties should use a lowercase key that corresponds to
+        /// the property path represented by the source such as <c>person.id</c>.
+        /// </para>
+        /// <para>
+        /// Generated attributes should use a lowercase key that contains a
+        /// <c>attribute:</c> prefix, the property path to the entity followed
+        /// by another <c>:</c> and then the attribute guid. Such as
         /// <c>attribute:person:e801638a-2b9a-4382-ad8f-36001c7bc0ee</c>
         /// </para>
         /// </summary>
