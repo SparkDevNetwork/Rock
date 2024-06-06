@@ -250,13 +250,52 @@ namespace Rock.CheckIn.v2.Labels
 
             dataSources.Add( new MultiValueFieldDataSource<PersonLabelData>
             {
-                Key = "personattendance.group.name",
-                Name = "Group Name",
+                Key = "personattendance.groupmembers.grouprolename",
+                Name = "Group Role Name",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
                 ValuesFunc = ( source, field, printRequest ) => source.PersonAttendance
                     .SelectMany( a => a.GroupMembers )
-                    .Select( )
+                    .Select( gm => GroupTypeCache.Get( gm.GroupTypeId ).Roles.FirstOrDefault( r => r.Id == gm.GroupRoleId )?.Name )
+                    .Where( n => n != null )
+                    .FirstOrDefault()
+                    ?? string.Empty
+            } );
+
+            dataSources.Add( new MultiValueFieldDataSource<PersonLabelData>
+            {
+                Key = "personattendance.location.name",
+                Name = "Location Name",
+                TextSubType = TextFieldSubType.CheckInInfo,
+                Category = "Common",
+                ValuesFunc = ( source, field, printRequest ) => source.PersonAttendance.Select( a => a.Location.Name )
+            } );
+
+            dataSources.Add( new MultiValueFieldDataSource<PersonLabelData>
+            {
+                Key = "personattendance.schedule.name",
+                Name = "Schedule Name",
+                TextSubType = TextFieldSubType.CheckInInfo,
+                Category = "Common",
+                ValuesFunc = ( source, field, printRequest ) => source.PersonAttendance.Select( a => a.Schedule.Name )
+            } );
+
+            dataSources.Add( new MultiValueFieldDataSource<PersonLabelData>
+            {
+                Key = "personattendance.schedule.checkinstarttime",
+                Name = "Schedule Time",
+                TextSubType = TextFieldSubType.CheckInInfo,
+                Category = "Common",
+                ValuesFunc = ( source, field, printRequest ) => source.PersonAttendance.Select( a => a.Schedule.GetNextCheckInStartTime( a.StartDateTime ) )
+            } );
+
+            dataSources.Add( new SingleValueFieldDataSource<PersonLabelData>
+            {
+                Key = "personattendance.securitycode",
+                Name = "Security Code",
+                TextSubType = TextFieldSubType.CheckInInfo,
+                Category = "Common",
+                ValueFunc = ( source, field, printRequest ) => source.PersonAttendance.Select( a => a.SecurityCode ).FirstOrDefault() ?? string.Empty
             } );
 
             return dataSources;
