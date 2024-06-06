@@ -821,12 +821,14 @@
     <Compile Include="CheckIn\v2\Labels\Formatters\CallbackDataFormatter.cs" />
     <Compile Include="CheckIn\v2\Labels\DataFormatter.cs" />
     <Compile Include="CheckIn\v2\Labels\DateAttributeFieldDataSource.cs" />
+    <Compile Include="CheckIn\v2\Labels\Formatters\CheckInDetailDataFormatter.cs" />
     <Compile Include="CheckIn\v2\Labels\Formatters\DateDataFormatter.cs" />
     <Compile Include="CheckIn\v2\Labels\FieldDataSource.cs" />
     <Compile Include="CheckIn\v2\Labels\FieldSourceHelper.cs" />
     <Compile Include="CheckIn\v2\Labels\Formatters\FullNameDataFormatter.cs" />
     <Compile Include="CheckIn\v2\Labels\Formatters\GenderDataFormatter.cs" />
     <Compile Include="CheckIn\v2\Labels\Formatters\GradeDataFormatter.cs" />
+    <Compile Include="CheckIn\v2\Labels\Formatters\SecurityCodeAndNameDataFormatter.cs" />
     <Compile Include="CheckIn\v2\Labels\Formatters\WeekdayDateDataFormatter.cs" />
     <Compile Include="CheckIn\v2\Labels\ILabelDataHasPerson.cs" />
     <Compile Include="CheckIn\v2\Labels\LabelField.cs" />

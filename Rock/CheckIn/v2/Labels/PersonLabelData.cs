@@ -74,7 +74,7 @@ namespace Rock.CheckIn.v2.Labels
         /// The achievement type identifiers that were completed by the person
         /// this label is being printed for during this check-in session.
         /// </summary>
-        public List<Guid> JustCompletedAchievemenIds { get; set; }
+        public List<int> JustCompletedAchievemenIds { get; set; }
 
         /// <summary>
         /// The achievement type names that are currently in progress for
@@ -88,7 +88,7 @@ namespace Rock.CheckIn.v2.Labels
         /// the person this label is being printed for during this check-in
         /// session.
         /// </summary>
-        public List<string> InProgressAchievementIds { get; set; }
+        public List<int> InProgressAchievementIds { get; set; }
 
         /// <summary>
         /// The achievement type names that were previously completed for
@@ -102,6 +102,6 @@ namespace Rock.CheckIn.v2.Labels
         /// the person this label is being printed for during this check-in
         /// session.
         /// </summary>
-        public List<string> PreviouslyCompletedAchievementIds { get; set; }
+        public List<int> PreviouslyCompletedAchievementIds { get; set; }
     }
 }

@@ -51,7 +51,7 @@ namespace Rock.Blocks.CheckIn.Configuration
     {
         public override object GetObsidianBlockInitialization()
         {
-            var dataSources = FieldSourceHelper.GetAttendanceLabelDataSources()
+            var dataSources = FieldSourceHelper.GetFamilyLabelDataSources()
                 .Select( ds => ToDataSourceBag( ds ) )
                 .OrderByDescending( ds => ds.Category == "Common" )
                 .ThenByDescending( ds => ds.Category.Contains( "Properties" ) )

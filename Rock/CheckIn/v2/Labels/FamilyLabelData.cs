@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 
 using Rock.Model;
@@ -46,5 +47,17 @@ namespace Rock.CheckIn.v2.Labels
         /// person by API call.
         /// </summary>
         public Group Family { get; set; }
+
+        /// <summary>
+        /// The achievement type names that were completed by any person during
+        /// this check-in session.
+        /// </summary>
+        public List<string> JustCompletedAchievements { get; set; }
+
+        /// <summary>
+        /// The achievement type identifiers that were completed by any person
+        /// during this check-in session.
+        /// </summary>
+        public List<int> JustCompletedAchievemenIds { get; set; }
     }
 }

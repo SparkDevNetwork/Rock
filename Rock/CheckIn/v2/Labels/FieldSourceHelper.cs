@@ -431,6 +431,132 @@ namespace Rock.CheckIn.v2.Labels
 
         #endregion
 
+        #region Family Label
+
+        /// <summary>
+        /// Gets all data sources for a <see cref="LabelType.Family"/> label.
+        /// </summary>
+        /// <returns>A list of data sources.</returns>
+        public static List<FieldDataSource> GetFamilyLabelDataSources()
+        {
+            return GetFamilyLabelAttendeeInfoSources()
+                .Concat( GetFamilyLabelCheckInInfoSources() )
+                .Concat( GetFamilyLabelAchievementInfoSources() )
+                .DistinctBy( ds => ds.Key )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Gets the attendee information data sources for a family label.
+        /// </summary>
+        /// <returns>A list of field data sources.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage( "Style", "IDE0028:Simplify collection initialization", Justification = "Because the list of options is so long it is more clear to use the Add() method." )]
+        private static List<FieldDataSource> GetFamilyLabelAttendeeInfoSources()
+        {
+            var dataSources = new List<FieldDataSource>();
+
+            dataSources.Add( new MultiValueFieldDataSource<FamilyLabelData>
+            {
+                Key = "4f87ee6a-5ccf-46ea-b3b3-20d079f6f7eb",
+                Name = "Nick Name",
+                TextSubType = TextFieldSubType.AttendeeInfo,
+                Category = "Common",
+                ValuesFunc = ( source, field, printRequest ) => source.AllAttendance
+                    .Select( a => a.Person )
+                    .DistinctBy( a => a.Id )
+                    .Select( a => a.NickName )
+            } );
+
+            dataSources.Add( new MultiValueFieldDataSource<FamilyLabelData>
+            {
+                Key = "4e7ef55c-5a25-4332-9f49-56e9443c8aac",
+                Name = "Full Name",
+                TextSubType = TextFieldSubType.AttendeeInfo,
+                Category = "Common",
+                Formatter = FullNameDataFormatter.Instance,
+                ValuesFunc = ( source, field, printRequest ) => source.AllAttendance
+                    .Select( a => a.Person )
+            } );
+
+            return dataSources;
+        }
+
+        /// <summary>
+        /// Gets the check-in information data sources for a family label.
+        /// </summary>
+        /// <returns>A list of field data sources.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage( "Style", "IDE0028:Simplify collection initialization", Justification = "Because the list of options is so long it is more clear to use the Add() method." )]
+        private static List<FieldDataSource> GetFamilyLabelCheckInInfoSources()
+        {
+            var dataSources = new List<FieldDataSource>();
+
+            dataSources.Add( new SingleValueFieldDataSource<FamilyLabelData>
+            {
+                Key = "7bae9b91-3653-4796-9698-c01b2d3b5049",
+                Name = "Check-in Time",
+                TextSubType = TextFieldSubType.CheckInInfo,
+                Category = "Common",
+                Formatter = DateDataFormatter.Instance,
+                ValueFunc = ( source, field, printRequest ) => source.AllAttendance
+                    .Min( a => a.StartDateTime )
+            } );
+
+            dataSources.Add( new SingleValueFieldDataSource<FamilyLabelData>
+            {
+                Key = "2309804e-e2dc-43b8-b5f4-ce78ced088b3",
+                Name = "Current Time",
+                TextSubType = TextFieldSubType.CheckInInfo,
+                Category = "Common",
+                Formatter = DateDataFormatter.Instance,
+                ValueFunc = ( source, field, printRequest ) => RockDateTime.Now
+            } );
+
+            dataSources.Add( new MultiValueFieldDataSource<FamilyLabelData>
+            {
+                Key = "c62d2d38-4c0e-490d-81d9-4b2ac88d25ad",
+                Name = "Security Codes",
+                TextSubType = TextFieldSubType.CheckInInfo,
+                Category = "Common",
+                Formatter = SecurityCodeAndNameDataFormatter.Instance,
+                ValuesFunc = ( source, field, printRequest ) => source.AllAttendance
+            } );
+
+            dataSources.Add( new MultiValueFieldDataSource<FamilyLabelData>
+            {
+                Key = "2f63ab4e-38ec-4704-be9c-426825bc3bf5",
+                Name = "Check-in Details",
+                TextSubType = TextFieldSubType.CheckInInfo,
+                Category = "Common",
+                Formatter = CheckInDetailDataFormatter.Instance,
+                ValuesFunc = ( source, field, printRequest ) => source.AllAttendance
+            } );
+
+            return dataSources;
+        }
+
+        /// <summary>
+        /// Gets the achievement information data sources for a family label.
+        /// </summary>
+        /// <returns>A list of field data sources.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage( "Style", "IDE0028:Simplify collection initialization", Justification = "Because the list of options is so long it is more clear to use the Add() method." )]
+        private static List<FieldDataSource> GetFamilyLabelAchievementInfoSources()
+        {
+            var dataSources = new List<FieldDataSource>();
+
+            dataSources.Add( new MultiValueFieldDataSource<FamilyLabelData>
+            {
+                Key = "fca51f2b-44ab-44e0-929a-3f5cd43368ea",
+                Name = "Just Completed Achievements",
+                TextSubType = TextFieldSubType.AchievementInfo,
+                Category = "Common",
+                ValuesFunc = ( source, field, printRequest ) => source.JustCompletedAchievements
+            } );
+
+            return dataSources;
+        }
+
+        #endregion
+
         /// <summary>
         /// Gets the attendee information data sources for a label that has a
         /// single Person property.
