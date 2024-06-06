@@ -24,37 +24,28 @@ using Microsoft.Extensions.Logging;
 
 using Rock.Logging;
 using Rock.Net;
+using Rock.Net.Geolocation;
 using Rock.Observability;
+using Rock.Utility;
 using Rock.Web.UI;
 
 namespace Rock.Web.HttpModules
 {
     /// <summary>
-    /// A HTTP module to add headers to the response. This module is provided more as a pattern for future HTTP modules than as 
-    /// useful module for the masses.
+    ///Rock Gateway is a versatile HTTP module for IIS, designed to streamline routing, observability
+    ///and configure request/response handling specifically for Rock RMS environments.
     /// </summary>
     /// <seealso cref="Rock.Web.HttpModules.HttpModuleComponent" />
-    [Description( "A HTTP Module that process HTTP requests for Rock's observability features." )]
+    [Description( "Rock Gateway is a versatile HTTP module for IIS, designed to streamline routing, observability and configure request/response handling specifically for Rock RMS environments." )]
     [Export( typeof( HttpModuleComponent ) )]
-    [ExportMetadata( "ComponentName", "Observability" )]
-    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.HTTP_MODULE_OBSERVABILITY )]
-    public class Observability : HttpModuleComponent
+    [ExportMetadata( "ComponentName", "Rock Gateway" )]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.HTTP_MODULE_ROCK_GATEWAY )]
+    public class RockGateway : HttpModuleComponent
     {
         /// <summary>
-        /// The key used to store the Activity on the HttpContext.
+        /// Initializes a new instance of the <see cref="RockGateway"/> class.
         /// </summary>
-        private const string ContextKey = "__AspnetObservabilityContext__";
-
-        /// <summary>
-        /// This is used to ensure single access when adding the control adapter
-        /// to the browser context.
-        /// </summary>
-        private static readonly object _controlAdapterLock = new object();
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Observability"/> class.
-        /// </summary>
-        public Observability()
+        public RockGateway()
         {
         }
 
@@ -88,8 +79,50 @@ namespace Rock.Web.HttpModules
             HttpApplication application = ( HttpApplication ) sender;
             HttpContext context = application.Context;
 
+            BeginAddObservabilityToRequest( context );
+
             BeginLogRequest( context );
 
+            AddGeolocationToRequest( context );
+        }
+
+        /// <summary>
+        /// Processes the end request event.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Application_EndRequest( object sender, EventArgs e )
+        {
+            // Create HttpApplication and HttpContext objects to access request and response properties.
+            HttpApplication application = ( HttpApplication ) sender;
+            HttpContext context = application.Context;
+
+            // Intentionally end the log request before the activity so that it
+            // gets attached to the activity.
+            EndLogRequest( context );
+
+            EndAddObservabilityToRequest( context );
+        }
+
+        #region Observability
+
+        /// <summary>
+        /// The key used to store the Activity on the HttpContext.
+        /// </summary>
+        private const string ObservabilityContextKey = "__AspnetObservabilityContext__";
+
+        /// <summary>
+        /// This is used to ensure single access when adding the control adapter
+        /// to the browser context.
+        /// </summary>
+        private static readonly object _controlAdapterLock = new object();
+
+        /// <summary>
+        /// Begins the addition of observability data for the current request.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        private void BeginAddObservabilityToRequest( HttpContext context )
+        {
             // Register a control adapter for handling Rock block events if we have not already registered one
             if ( !context.Request.Browser.Adapters.Contains( typeof( RockBlock ).FullName ) )
             {
@@ -135,7 +168,7 @@ namespace Rock.Web.HttpModules
                 activity = ObservabilityHelper.StartActivity( $"API: {context.Request.HttpMethod} {context.Request.Url.AbsolutePath}" );
                 activity?.AddTag( "rock.otel_type", "rock-api" );
 
-                RockMetricSource.ApiRequestCounter?.Add( 1, RockMetricSource.CommonTags ); 
+                RockMetricSource.ApiRequestCounter?.Add( 1, RockMetricSource.CommonTags );
             }
             else
             {
@@ -160,32 +193,33 @@ namespace Rock.Web.HttpModules
                                                     ?? context.Request.ServerVariables["REMOTE_ADDR"]
                                                     ?? string.Empty );
 
-                context.Items[ContextKey] = activity;
+                context.Items[ObservabilityContextKey] = activity;
             }
         }
 
         /// <summary>
-        /// Processes the end request event.
+        /// Ends the addition of observability data for the current request.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Application_EndRequest( object sender, EventArgs e )
+        /// <param name="context">The context.</param>
+        private void EndAddObservabilityToRequest( HttpContext context )
         {
-            // Create HttpApplication and HttpContext objects to access request and response properties.
-            HttpApplication application = ( HttpApplication ) sender;
-            HttpContext context = application.Context;
-
-            // Intentionally end the log request before the activity so that it
-            // gets attached to the activity.
-            EndLogRequest( context );
-
-            if ( context.Items[ContextKey] is Activity activity )
+            if ( context.Items[ObservabilityContextKey] is Activity activity )
             {
                 activity.AddTag( "http.status_code", context.Response.StatusCode );
+
+                if ( context.Items[GeolocationContextKey] is IpGeolocation geolocation )
+                {
+                    activity.AddTag( "client.city", geolocation.City );
+                    activity.AddTag( "client.region_code", geolocation.RegionCode );
+                    activity.AddTag( "client.country_code", geolocation.CountryCode );
+                    activity.AddTag( "client.postal_code", geolocation.PostalCode );
+                }
 
                 activity.Dispose();
             }
         }
+
+        #endregion Observability
 
         #region Request Logging
 
@@ -197,7 +231,7 @@ namespace Rock.Web.HttpModules
         /// <summary>
         /// The request log format template.
         /// </summary>
-        private const string RequestLogFormat = "{DateTime} {ServerIp} {Method} {Path} {Query} {ServerPort} {Username} {ClientIp} {UserAgent} {Referer} {Status} {Substatus} {Duration}";
+        private const string RequestLogFormat = "{DateTime} {ServerIp} {Method} {Path} {Query} {ServerPort} {Username} {ClientIp} {UserAgent} {Referer} {Status} {Substatus} {Duration} {ClientCity} {ClientRegionCode} {ClientCountryCode} {ClientPostalCode}";
 
         /// <summary>
         /// The logger that will be used for logs.
@@ -256,6 +290,8 @@ namespace Rock.Web.HttpModules
             request.Status = context.Response.StatusCode;
             request.Substatus = context.Response.SubStatusCode;
 
+            var geolocation = context.Items[GeolocationContextKey] as IpGeolocation;
+
             _requestLogger.LogInformation( RequestLogFormat,
                 request.DateTime.ToString( "O" ),
                 request.ServerIp,
@@ -269,7 +305,11 @@ namespace Rock.Web.HttpModules
                 request.Referer,
                 request.Status,
                 request.Substatus,
-                request.Duration );
+                request.Duration,
+                geolocation?.City,
+                geolocation?.RegionCode,
+                geolocation?.CountryCode,
+                geolocation?.PostalCode );
         }
 
         private class RequestDetail
@@ -301,6 +341,36 @@ namespace Rock.Web.HttpModules
             public string Referer { get; set; }
         }
 
-        #endregion
+        #endregion Request Logging
+
+        #region Geolocation
+
+        /// <summary>
+        /// The key used to store the geolocation for this request on the HttpContext.
+        /// </summary>
+        internal const string GeolocationContextKey = "__RockGeolocationContext__";
+
+        /// <summary>
+        /// Adds geolocation data to the current request.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        private void AddGeolocationToRequest( HttpContext context )
+        {
+            var ipAddress = WebRequestHelper.GetClientIpAddress( new HttpRequestWrapper( context.Request ) );
+            if ( ipAddress.IsNullOrWhiteSpace() )
+            {
+                return;
+            }
+
+            var geolocation = IpGeoLookup.Instance.GetGeolocation( ipAddress );
+            if ( geolocation == null )
+            {
+                return;
+            }
+
+            context.Items[GeolocationContextKey] = geolocation;
+        }
+
+        #endregion Geolocation
     }
 }

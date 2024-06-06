@@ -46,6 +46,8 @@ namespace Rock.IpAddress
         Order = 0,
         Key = AttributeKey.APIKey )]
     [Rock.SystemGuid.EntityTypeGuid( "7AFE6DFA-5FC4-4554-98D2-5BD4C909558B" )]
+    [RockObsolete( "1.17" )]
+    [Obsolete( "Use IpGeoLookup instead." )]
     public class IpRegistry : IpAddressLookupComponent
     {
         #region Keys
@@ -426,6 +428,8 @@ namespace Rock.IpAddress
     /// <summary>
     /// Information about the current status of the service.
     /// </summary>
+    [RockObsolete( "1.17" )]
+    [Obsolete( "Use IpGeoLookup instead." )]
     internal class IpRegistryStatusInfo
     {
         /// <summary>
@@ -462,6 +466,8 @@ namespace Rock.IpAddress
     /// <summary>
     /// POCO for the Result body
     /// </summary>
+    [RockObsolete( "1.17" )]
+    [Obsolete( "Use IpGeoLookup instead." )]
     public class Result
     {
         /// <summary>
@@ -522,6 +528,8 @@ namespace Rock.IpAddress
     /// <summary>
     /// POCO for Location information
     /// </summary>
+    [RockObsolete( "1.17" )]
+    [Obsolete( "Use IpGeoLookup instead." )]
     public class Location
     {
         /// <summary>
@@ -582,6 +590,8 @@ namespace Rock.IpAddress
     /// <summary>
     /// POCO for Region
     /// </summary>
+    [RockObsolete( "1.17" )]
+    [Obsolete( "Use IpGeoLookup instead." )]
     public class Region
     {
         /// <summary>
@@ -606,6 +616,8 @@ namespace Rock.IpAddress
     /// <summary>
     /// POCO for Country Info
     /// </summary>
+    [RockObsolete( "1.17" )]
+    [Obsolete( "Use IpGeoLookup instead." )]
     public class Country
     {
         /// <summary>
@@ -630,6 +642,8 @@ namespace Rock.IpAddress
     /// <summary>
     /// POCO for Company Information
     /// </summary>
+    [RockObsolete( "1.17" )]
+    [Obsolete( "Use IpGeoLookup instead." )]
     public class Company
     {
         /// <summary>
@@ -645,6 +659,8 @@ namespace Rock.IpAddress
     /// <summary>
     /// POCO for Root Response
     /// </summary>
+    [RockObsolete( "1.17" )]
+    [Obsolete( "Use IpGeoLookup instead." )]
     public class Root
     {
         /// <summary>

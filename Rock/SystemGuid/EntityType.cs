@@ -1876,9 +1876,16 @@ namespace Rock.SystemGuid
         public const string NOTIFICATION_MESSAGE_TYPE = "36FB1038-8836-429F-BAD4-04D32892D6D0";
 
         /// <summary>
-        /// The EntityType Guid for <see cref="Rock.Web.HttpModules.Observability"/> 
+        /// The EntityType Guid for <see cref="Rock.Web.HttpModules.RockGateway"/> 
         /// </summary>
+        [RockObsolete( "1.17" )]
+        [Obsolete( "Use HTTP_MODULE_ROCK_GATEWAY instead." )]
         public const string HTTP_MODULE_OBSERVABILITY = "FE7A8295-9383-4FD8-9FB2-FF77A8042462";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Web.HttpModules.RockGateway"/> 
+        /// </summary>
+        public const string HTTP_MODULE_ROCK_GATEWAY = "FE7A8295-9383-4FD8-9FB2-FF77A8042462";
 
         /// <summary>
         /// The EntityType Guid for <see cref="Rock.Model.AdaptiveMessage"/> 

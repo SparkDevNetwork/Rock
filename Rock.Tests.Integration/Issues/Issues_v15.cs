@@ -80,8 +80,6 @@ namespace Rock.Tests.Integration.BugFixes
             interactionService.Add( interaction2 );
 
             var settings = new PopulateInteractionSessionData.PopulateInteractionSessionDataJobSettings();
-            settings.IpAddressLookupIsDisabled = true;
-            settings.MaxRecordsToProcessPerRun = 10;
 
             var job = new PopulateInteractionSessionData();
             var jobResult = job.Execute( settings );

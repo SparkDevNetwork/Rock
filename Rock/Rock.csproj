@@ -202,6 +202,12 @@
     <Reference Include="MassTransit.RabbitMqTransport, Version=5.5.2.0, Culture=neutral, PublicKeyToken=b8e0e9f2f1e657fa, processorArchitecture=MSIL">
       <HintPath>..\packages\MassTransit.RabbitMQ.5.5.2\lib\net452\MassTransit.RabbitMqTransport.dll</HintPath>
     </Reference>
+    <Reference Include="MaxMind.Db, Version=2.0.0.0, Culture=neutral, PublicKeyToken=66afa4cc5ae853ac, processorArchitecture=MSIL">
+      <HintPath>..\packages\MaxMind.Db.3.0.0\lib\net461\MaxMind.Db.dll</HintPath>
+    </Reference>
+    <Reference Include="MaxMind.GeoIP2, Version=4.0.0.0, Culture=neutral, PublicKeyToken=66afa4cc5ae853ac, processorArchitecture=MSIL">
+      <HintPath>..\packages\MaxMind.GeoIP2.4.1.0\lib\net461\MaxMind.GeoIP2.dll</HintPath>
+    </Reference>
     <Reference Include="MessagePack, Version=1.7.3.4, Culture=neutral, PublicKeyToken=b4a0369545f0a1be, processorArchitecture=MSIL">
       <HintPath>..\packages\MessagePack.1.7.3.4\lib\net47\MessagePack.dll</HintPath>
     </Reference>
@@ -977,6 +983,7 @@
     <Compile Include="Configuration\HostingSettings.cs" />
     <Compile Include="Configuration\IConnectionStringProvider.cs" />
     <Compile Include="Configuration\WebFormsConnectionStringProvider.cs" />
+    <Compile Include="Core\InteractionInfo.cs" />
     <Compile Include="Core\NotificationMessageTypeComponent.cs" />
     <Compile Include="Core\NotificationMessageTypeContainer.cs" />
     <Compile Include="Core\NotificationMessageTypes\ConnectionRequestMention.cs" />
@@ -1032,6 +1039,9 @@
     <Compile Include="Field\UniversalFieldTypeGuidAttribute.cs" />
     <Compile Include="Financial\IScheduledNumberOfPaymentsGateway.cs" />
     <Compile Include="Financial\ISettlementGateway.cs" />
+    <Compile Include="Net\Geolocation\IpGeoException.cs" />
+    <Compile Include="Net\Geolocation\IpGeolocation.cs" />
+    <Compile Include="Net\Geolocation\IpGeoLookup.cs" />
     <Compile Include="IpAddress\Classes\IpLocation.cs" />
     <Compile Include="IpAddress\IpLocationUtilities.cs" />
     <Compile Include="Jobs\IndexContentCollections.cs" />
@@ -1293,6 +1303,7 @@
     <Compile Include="Plugin\HotFixes\194_MigratoinRollupForV17_0_3.cs" />
     <Compile Include="Plugin\HotFixes\193_MigratoinRollupForV15_4_1.cs" />
     <Compile Include="Plugin\HotFixes\192_MailgunCopyApiKeyToHttpWebhookSigningKey.cs" />
+    <Compile Include="Plugin\HotFixes\200_AddMaxMindGeolocation.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -2262,7 +2273,7 @@
     <Compile Include="Web\Cache\RockCacheAllIdUpdater.cs" />
     <Compile Include="Web\Cache\RockCacheConsumer.cs" />
     <Compile Include="Web\HttpModules\DeepLinks.cs" />
-    <Compile Include="Web\HttpModules\Observability.cs" />
+    <Compile Include="Web\HttpModules\RockGateway.cs" />
     <Compile Include="Web\HttpModules\SignalRErrorModule.cs" />
     <Compile Include="Web\IBreadCrumb.cs" />
     <Compile Include="Blocks\IBreadCrumbBlock.cs" />

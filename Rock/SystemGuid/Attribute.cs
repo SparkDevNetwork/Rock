@@ -110,14 +110,17 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string SAME_SITE_COOKIE_SETTING = "03F55022-C1E0-45F3-84E1-C2BE8C38E22B";
 
-        #region Observability
-
         /// <summary>
         /// The Active attribute for the observability HTTP filter.
         /// </summary>
+        [RockObsolete( "1.17" )]
+        [Obsolete( "Use HTTP_MODULE_ROCK_GATEWAY_ACTIVE instead." )]
         public const string HTTP_MODULE_OBSERVABILITY_ACTIVE = "DAC40EF2-1616-4E15-A897-8CCD7CF2C588";
 
-        #endregion
+        /// <summary>
+        /// the Active attribute for the rock gateway HTTP module.
+        /// </summary>
+        public const string HTTP_MODULE_ROCK_GATEWAY_ACTIVE = "DAC40EF2-1616-4E15-A897-8CCD7CF2C588";
 
         #region Assessment Test Related
 

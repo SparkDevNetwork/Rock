@@ -164,7 +164,6 @@
     <Compile Include="Lava\MockFileInfo.cs" />
     <Compile Include="Lava\MockFileProvider.cs" />
     <Compile Include="Lava\NullTemplateCacheService.cs" />
-    <Compile Include="Mocks\IpRegistryMock.cs" />
     <Compile Include="Rock\Core\Schedules\ScheduleTestHelper.cs" />
     <Compile Include="TestFramework\DatabaseContainerImageBuilder.cs" />
     <Compile Include="TestFramework\DatabaseTestsBase.cs" />
