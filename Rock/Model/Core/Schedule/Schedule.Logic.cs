@@ -615,8 +615,23 @@ namespace Rock.Model
         /// <param name="beginDateTime">The begin date time.</param>
         /// <param name="endDateTime">The end date time.</param>
         /// <param name="scheduleStartDateTimeOverride">The schedule start date time override.</param>
-        /// <returns></returns>
+        /// <returns>A list of <see cref="Occurrence"/> objects that fall within the specified date range.</returns>
         public IList<Occurrence> GetICalOccurrences( DateTime beginDateTime, DateTime? endDateTime, DateTime? scheduleStartDateTimeOverride )
+        {
+            return GetICalOccurrences( beginDateTime, endDateTime, scheduleStartDateTimeOverride, CategoryId, iCalendarContent, () => GetICalEvent() );
+        }
+
+        /// <summary>
+        /// Gets the occurrences with option to override the ICal.Event.DTStart
+        /// </summary>
+        /// <param name="beginDateTime">The begin date time.</param>
+        /// <param name="endDateTime">The end date time.</param>
+        /// <param name="scheduleStartDateTimeOverride">The schedule start date time override.</param>
+        /// <param name="categoryId">The category identifier that the schedule is in.</param>
+        /// <param name="iCalendarContent">The raw iCal content.</param>
+        /// <param name="calendarEventFactory">The calendar event factory that will return an instance of the <see cref="CalendarEvent"/>.</param>
+        /// <returns>A list of <see cref="Occurrence" /> objects that fall within the specified date range.</returns>
+        internal static IList<Occurrence> GetICalOccurrences( DateTime beginDateTime, DateTime? endDateTime, DateTime? scheduleStartDateTimeOverride, int? categoryId, string iCalendarContent, Func<CalendarEvent> calendarEventFactory )
         {
             var occurrences = new List<Occurrence>();
 
@@ -628,7 +643,7 @@ namespace Rock.Model
             }
             else
             {
-                var calEvent = GetICalEvent();
+                var calEvent = calendarEventFactory();
                 if ( calEvent == null )
                 {
                     return occurrences;
@@ -640,9 +655,9 @@ namespace Rock.Model
             if ( scheduleStartDateTime != null )
             {
                 var exclusionDates = new List<DateRange>();
-                if ( this.CategoryId.HasValue && this.CategoryId.Value > 0 )
+                if ( categoryId.HasValue && categoryId.Value > 0 )
                 {
-                    var category = CategoryCache.Get( this.CategoryId.Value );
+                    var category = CategoryCache.Get( categoryId.Value );
                     if ( category != null )
                     {
                         exclusionDates = category.ScheduleExclusions
@@ -682,37 +697,54 @@ namespace Rock.Model
         /// <returns></returns>
         public virtual List<CheckInTimes> GetCheckInTimes( DateTime beginDateTime )
         {
-            var result = new List<CheckInTimes>();
-
             if ( IsCheckInEnabled )
             {
-                var occurrences = GetICalOccurrences( beginDateTime, beginDateTime.Date.AddDays( 1 ) );
-                foreach ( var occurrence in occurrences
-                    .Where( a =>
-                        a.Period != null &&
-                        a.Period.StartTime != null &&
-                        a.Period.EndTime != null )
-                    .Select( a => new
-                    {
-                        Start = a.Period.StartTime.Value,
-                        End = a.Period.EndTime.Value
-                    } ) )
-                {
-                    var checkInTimes = new CheckInTimes();
-                    checkInTimes.Start = DateTime.SpecifyKind( occurrence.Start, DateTimeKind.Local );
-                    checkInTimes.End = DateTime.SpecifyKind( occurrence.End, DateTimeKind.Local );
-                    checkInTimes.CheckInStart = checkInTimes.Start.AddMinutes( 0 - CheckInStartOffsetMinutes.Value );
-                    if ( CheckInEndOffsetMinutes.HasValue )
-                    {
-                        checkInTimes.CheckInEnd = checkInTimes.Start.AddMinutes( CheckInEndOffsetMinutes.Value );
-                    }
-                    else
-                    {
-                        checkInTimes.CheckInEnd = checkInTimes.End;
-                    }
+                return GetCheckInTimes( beginDateTime, CheckInStartOffsetMinutes.Value, CheckInEndOffsetMinutes, iCalendarContent, () => GetICalEvent() );
+            }
 
-                    result.Add( checkInTimes );
+            return new List<CheckInTimes>();
+        }
+
+        /// <summary>
+        /// Gets the check in times.
+        /// </summary>
+        /// <param name="beginDateTime">The begin date time.</param>
+        /// <param name="checkInStartOffsetMinutes">The check in start offset minutes.</param>
+        /// <param name="checkInEndOffsetMinutes">The check in end offset minutes.</param>
+        /// <param name="iCalendarContent">The raw iCal content.</param>
+        /// <param name="calendarEventFactory">The calendar event factory that will return an instance of the <see cref="CalendarEvent"/>.</param>
+        /// <returns>A list of <see cref="CheckInTimes"/> objects.</returns>
+        internal static List<CheckInTimes> GetCheckInTimes( DateTime beginDateTime, int checkInStartOffsetMinutes, int? checkInEndOffsetMinutes, string iCalendarContent, Func<CalendarEvent> calendarEventFactory )
+        {
+            var result = new List<CheckInTimes>();
+
+            var occurrences = GetICalOccurrences( beginDateTime, beginDateTime.Date.AddDays( 1 ), null, null, iCalendarContent, calendarEventFactory );
+
+            foreach ( var occurrence in occurrences
+                .Where( a =>
+                    a.Period != null &&
+                    a.Period.StartTime != null &&
+                    a.Period.EndTime != null )
+                .Select( a => new
+                {
+                    Start = a.Period.StartTime.Value,
+                    End = a.Period.EndTime.Value
+                } ) )
+            {
+                var checkInTimes = new CheckInTimes();
+                checkInTimes.Start = DateTime.SpecifyKind( occurrence.Start, DateTimeKind.Local );
+                checkInTimes.End = DateTime.SpecifyKind( occurrence.End, DateTimeKind.Local );
+                checkInTimes.CheckInStart = checkInTimes.Start.AddMinutes( 0 - checkInStartOffsetMinutes );
+                if ( checkInEndOffsetMinutes.HasValue )
+                {
+                    checkInTimes.CheckInEnd = checkInTimes.Start.AddMinutes( checkInEndOffsetMinutes.Value );
                 }
+                else
+                {
+                    checkInTimes.CheckInEnd = checkInTimes.End;
+                }
+
+                result.Add( checkInTimes );
             }
 
             return result;
@@ -1025,11 +1057,23 @@ namespace Rock.Model
         /// <summary>
         /// Returns value indicating if the schedule was active at the specified time.
         /// </summary>
-        /// <param name="time">The time.</param>
-        /// <returns></returns>
+        /// <param name="time">The time at which to use when determining if check-in was active.</param>
+        /// <returns><c>true</c> if the schedule was active; <c>false</c> otherwise.</returns>
         public bool WasScheduleActive( DateTime time )
         {
-            var calEvent = this.GetICalEvent();
+            return WasScheduleActive( time, GetICalEvent(), CategoryId, iCalendarContent );
+        }
+
+        /// <summary>
+        /// Returns value indicating if the schedule was active at the specified time.
+        /// </summary>
+        /// <param name="time">The time at which to use when determining if check-in was active.</param>
+        /// <param name="calEvent">The calendar event.</param>
+        /// <param name="categoryId">The category identifier the schedule belongs to.</param>
+        /// <param name="iCalendarContent">The iCal calendar content text.</param>
+        /// <returns><c>true</c> if the schedule was active; <c>false</c> otherwise.</returns>
+        internal static bool WasScheduleActive( DateTime time, CalendarEvent calEvent, int? categoryId, string iCalendarContent )
+        {
             if ( calEvent != null && calEvent.DtStart != null )
             {
                 // If compare is greater than zero, then the End Day is in the next day.
@@ -1066,7 +1110,7 @@ namespace Rock.Model
                 }
 
                 // After verifying the times, get the occurrences for this schedule for the provided date.
-                var occurrences = GetICalOccurrences( time.Date );
+                var occurrences = GetICalOccurrences( time.Date, null, null, categoryId, iCalendarContent, () => calEvent );
                 return occurrences.Count > 0;
             }
 
@@ -1076,8 +1120,8 @@ namespace Rock.Model
         /// <summary>
         /// Returns value indicating if check-in was active at the specified time.
         /// </summary>
-        /// <param name="time">The time.</param>
-        /// <returns></returns>
+        /// <param name="time">The time at which to use when determining if check-in was active.</param>
+        /// <returns><c>true</c> if check-in was active; <c>false</c> otherwise.</returns>
         public bool WasCheckInActive( DateTime time )
         {
             if ( !IsCheckInEnabled )
@@ -1085,20 +1129,39 @@ namespace Rock.Model
                 return false;
             }
 
-            var calEvent = this.GetICalEvent();
+            return WasCheckInActive( time,
+                GetICalEvent(),
+                CheckInStartOffsetMinutes.Value,
+                CheckInEndOffsetMinutes,
+                CategoryId,
+                iCalendarContent );
+        }
+
+        /// <summary>
+        /// Returns value indicating if check-in was active at the specified time.
+        /// </summary>
+        /// <param name="time">The time at which to use when determining if check-in was active.</param>
+        /// <param name="calEvent">The calendar event.</param>
+        /// <param name="checkInStartOffsetMinutes">The check in start offset minutes.</param>
+        /// <param name="checkInEndOffsetMinutes">The check in end offset minutes.</param>
+        /// <param name="categoryId">The category identifier the schedule belongs to.</param>
+        /// <param name="iCalendarContent">The iCal calendar content text.</param>
+        /// <returns><c>true</c> if check-in was active; <c>false</c> otherwise.</returns>
+        internal static bool WasCheckInActive( DateTime time, CalendarEvent calEvent, int checkInStartOffsetMinutes, int? checkInEndOffsetMinutes, int? categoryId, string iCalendarContent )
+        {
             if ( calEvent != null && calEvent.DtStart != null )
             {
                 // Is the current time earlier the event's allowed check-in window?
-                var checkInStart = calEvent.DtStart.AddMinutes( 0 - CheckInStartOffsetMinutes.Value );
+                var checkInStart = calEvent.DtStart.AddMinutes( 0 - checkInStartOffsetMinutes );
                 if ( time.TimeOfDay.TotalSeconds < checkInStart.Value.TimeOfDay.TotalSeconds )
                 {
                     return false;
                 }
 
                 var checkInEnd = calEvent.DtEnd;
-                if ( CheckInEndOffsetMinutes.HasValue )
+                if ( checkInEndOffsetMinutes.HasValue )
                 {
-                    checkInEnd = calEvent.DtStart.AddMinutes( CheckInEndOffsetMinutes.Value );
+                    checkInEnd = calEvent.DtStart.AddMinutes( checkInEndOffsetMinutes.Value );
                 }
 
                 // If compare is greater than zero, then check-in offset end resulted in an end time in next day, in 
@@ -1118,7 +1181,7 @@ namespace Rock.Model
                     return false;
                 }
 
-                var occurrences = GetICalOccurrences( time.Date );
+                var occurrences = GetICalOccurrences( time.Date, null, null, categoryId, iCalendarContent, () => calEvent );
                 return occurrences.Count > 0;
             }
 
@@ -1144,7 +1207,32 @@ namespace Rock.Model
         /// </returns>
         private bool IsScheduleActiveForCheckOut( DateTime time )
         {
-            var calEvent = GetICalEvent();
+            return IsScheduleActiveForCheckOut( time, GetICalEvent(), CheckInStartOffsetMinutes.Value, CategoryId, iCalendarContent );
+        }
+
+        /// <summary>
+        /// Determines whether a schedule is active for check-out for the specified time.
+        /// </summary>
+        /// <example>
+        /// CheckOut Window: 5/1/2013 11:00:00 PM - 5/2/2013 2:00:00 AM
+        /// 
+        ///  * Current time: 8/8/2019 11:01:00 PM - returns true
+        ///  * Current time: 8/8/2019 10:59:00 PM - returns false
+        ///  * Current time: 8/8/2019 1:00:00 AM - returns true
+        ///  * Current time: 8/8/2019 2:01:00 AM - returns false
+        ///
+        /// Note: Add any other test cases you want to test to the "Rock.Tests.Rock.Model.ScheduleCheckInTests" project.
+        /// </example>
+        /// <param name="time">The time.</param>
+        /// <param name="calEvent">The calendar event that represents the schedule.</param>
+        /// <param name="checkInStartOffsetMinutes">The check in start offset minutes.</param>
+        /// <param name="categoryId">The category identifier the schedule belongs to.</param>
+        /// <param name="iCalendarContent">The iCal calendar content text.</param>
+        /// <returns>
+        ///   <c>true</c> if the schedule is active for check out at the specified time; otherwise, <c>false</c>.
+        /// </returns>
+        internal static bool IsScheduleActiveForCheckOut( DateTime time, CalendarEvent calEvent, int checkInStartOffsetMinutes, int? categoryId, string iCalendarContent )
+        {
             if ( calEvent == null || calEvent.DtStart == null )
             {
                 return false;
@@ -1153,7 +1241,7 @@ namespace Rock.Model
             // For check-out, we use the start time + duration to determine the end of the window...
             // ...in iCal, this is the DTEnd value
             var checkOutEnd = calEvent.DtEnd;
-            var checkInStart = calEvent.DtStart.AddMinutes( 0 - CheckInStartOffsetMinutes.Value );
+            var checkInStart = calEvent.DtStart.AddMinutes( 0 - checkInStartOffsetMinutes );
 
             // Check if the end time spilled over to a different day...
             int checkOutEndDateCompare = checkOutEnd.Date.CompareTo( checkInStart.Date );
@@ -1194,7 +1282,7 @@ namespace Rock.Model
                 }
             }
 
-            var occurrences = GetICalOccurrences( time.Date );
+            var occurrences = GetICalOccurrences( time.Date, null, null, categoryId, iCalendarContent, () => calEvent );
             return occurrences.Count > 0;
         }
 

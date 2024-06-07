@@ -43,6 +43,7 @@ using System.Runtime.InteropServices;
 [assembly: InternalsVisibleTo( "Rock.Update" )]
 [assembly: InternalsVisibleTo( "Rock.WebStartup" )]
 [assembly: InternalsVisibleTo( "Rock.AI.OpenAI" )]
+[assembly: InternalsVisibleTo( "DynamicProxyGenAssembly2" )] // Used by Moq
 
 // The following type forwardings were setup in Rock 1.13.0
 [assembly: TypeForwardedTo( typeof( Rock.RockObsolete ) )]
