@@ -165,29 +165,21 @@ namespace Rock.Net
         /// <summary>
         /// Gets the HTTP method from the request.
         /// </summary>
-        /// <remarks>
-        ///     <para>
-        ///         <strong>This is an internal API</strong> that supports the Rock
-        ///         infrastructure and not subject to the same compatibility standards
-        ///         as public APIs. It may be changed or removed without notice in any
-        ///         release and should therefore not be directly used in any plug-ins.
-        ///     </para>
-        /// </remarks>
-        [RockInternal( "1.16" )]
+        /// <value>
+        /// This will always be uppercase, such as <c>"GET"</c>. The value can also be <see langword="null"/>, so perform checks accordingly.
+        /// </value>
         internal string HttpMethod { get; private set; }
 
         /// <summary>
         /// Gets the form from the request.
         /// </summary>
         /// <remarks>
+        ///     Please do not make this <see langword="public"/> without discussion.
         ///     <para>
-        ///         <strong>This is an internal API</strong> that supports the Rock
-        ///         infrastructure and not subject to the same compatibility standards
-        ///         as public APIs. It may be changed or removed without notice in any
-        ///         release and should therefore not be directly used in any plug-ins.
+        ///         There are lots of loose ends to figure out before we do, such as,
+        ///         contexts where form data in contexts where it can only be retrieved asynchronously.
         ///     </para>
         /// </remarks>
-        [RockInternal( "1.16" )]
         internal NameValueCollection Form { get; private set; }
 
         /// <summary>
@@ -242,6 +234,8 @@ namespace Rock.Net
             Cookies = new Dictionary<string, string>();
             QueryString = new NameValueCollection( StringComparer.OrdinalIgnoreCase );
             RootUrlPath = string.Empty;
+            HttpMethod = null;
+            Form = new NameValueCollection( StringComparer.OrdinalIgnoreCase );
         }
 
         /// <summary>
@@ -314,6 +308,22 @@ namespace Rock.Net
 
             RequestUri = request.RequestUri != null ? request.UrlProxySafe() : null;
             RootUrlPath = GetRootUrlPath( RequestUri );
+            
+            HttpMethod = request.Method?.ToUpper();
+
+            /*
+                6/7/2024 - JMH
+
+                Do not set the Form data for Rock real-time and Rest API requests.
+
+                These types of requests either do not use form content
+                (application/x-www-form-urlencoded or multipart/form-data)
+                or we have not had to pass form data along in the RockRequestContext.
+                Setting it at this point would require asynchronous reads of the request content.
+                Since further architectural discussions are required around this,
+                we have opted to set Form data to an empty collection for now.
+              */
+            Form = new NameValueCollection( StringComparer.OrdinalIgnoreCase );
 
             ClientInformation = new ClientInformation( request );
 
