@@ -16,6 +16,7 @@
 //
 
 using System.Collections.Generic;
+using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Fundraising.FundraisingDonationList
 {
@@ -56,5 +57,13 @@ namespace Rock.ViewModels.Blocks.Fundraising.FundraisingDonationList
         ///   <c>true</c> if the is block visible; otherwise, <c>false</c>.
         /// </value>
         public bool IsBlockVisible { get; set; }
+
+        /// <summary>
+        /// Gets or sets the currency information.
+        /// </summary>
+        /// <value>
+        /// The currency information.
+        /// </value>
+        public CurrencyInfoBag CurrencyInfo { get; set; }
     }
 }

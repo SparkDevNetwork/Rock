@@ -207,7 +207,7 @@
     <Compile Include="Group\GroupRequirementTypeDetail.cs" />
     <Compile Include="Reporting\PersistedDataViewList.cs" />
     <Compile Include="Reporting\InteractionDetail.cs" />
-    <Compile Include="Fundraising\FundraisingDonationList.cs" />
+    <Compile Include="Finance\FundraisingDonationList.cs" />
     <Compile Include="Group\Scheduling\GroupScheduleToolbox.cs" />
     <Compile Include="Prayer\PrayerCommentList.cs" />
     <Compile Include="Prayer\PrayerRequestList.cs" />

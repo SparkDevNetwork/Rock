@@ -60,30 +60,44 @@
         <DateColumn name="date"
                     title="Date"
                     field="date"
-                    width="0%"
+                    width="120"
+                    itemClass="grid-item-pull-left"
                     :filter="dateValueFilter"
-                    itemClass="grid-pull-left"
                     visiblePriority="md" />
 
-        <TextColumn v-if="!config.options?.columnsToHide?.includes(ColumnKey.Amount)"
-                    name="amount"
-                    title="Amount"
-                    field="amount"
-                    width="3%"
-                    :filter="numberValueFilter"
-                    visiblePriority="xs" />
+        <CurrencyColumn v-if="!config.options?.columnsToHide?.includes(ColumnKey.Amount)"
+                        name="amount"
+                        title="Amount"
+                        field="amount"
+                        :filter="numberValueFilter"
+                        width="3%"
+                        visiblePriority="xs">
+            <template #format="{ row }">
+                <div class="flex-grow-1 text-right">
+                    {{ toCurrencyOrNull(row.amount, config.options?.currencyInfo) }}
+                </div>
+            </template>
+        </CurrencyColumn>
     </Grid>
 </template>
+
+<style>
+.grid-item-pull-left {
+    flex-direction: column;
+    align-items: end;
+}
+</style>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { numberValueFilter, textValueFilter, dateValueFilter, SelectColumn, TextColumn, DateColumn, Column } from "@Obsidian/Controls/grid";
+    import Grid, { numberValueFilter, textValueFilter, dateValueFilter, SelectColumn, TextColumn, DateColumn, Column, CurrencyColumn } from "@Obsidian/Controls/grid";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
-    import { FundraisingDonationListOptionsBag } from "@Obsidian/ViewModels/Blocks/Fundraising/FundraisingDonationList/fundraisingDonationListOptionsBag";
+    import { FundraisingDonationListOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FundraisingDonationList/fundraisingDonationListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { ActionKey, ColumnKey } from "./FundraisingDonationList/types.partial";
     import { computed, reactive, ref } from "vue";
+    import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
 
     const config = useConfigurationValues<ListBlockBox<FundraisingDonationListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();

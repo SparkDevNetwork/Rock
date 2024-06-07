@@ -21,6 +21,8 @@
 // </copyright>
 //
 
+import { CurrencyInfoBag } from "@Obsidian/ViewModels/Utility/currencyInfoBag";
+
 /** The additional configuration options for the Financial Transaction Detail List block. */
 export type FundraisingDonationListOptionsBag = {
     /** Gets or sets the actions to hide. */
@@ -28,6 +30,9 @@ export type FundraisingDonationListOptionsBag = {
 
     /** Gets or sets the columns to hide. */
     columnsToHide?: string[] | null;
+
+    /** Gets or sets the currency information. */
+    currencyInfo?: CurrencyInfoBag | null;
 
     /**
      * Gets or sets a value indicating whether the is block visible.

@@ -28,6 +28,7 @@ using Rock.Financial;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
+using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Fundraising.FundraisingDonationList;
 using Rock.Web.Cache;
@@ -132,12 +133,19 @@ namespace Rock.Blocks.Fundraising
         /// <returns>The options that provide additional details to the block.</returns>
         private FundraisingDonationListOptionsBag GetBoxOptions()
         {
+            var currencyInfo = new RockCurrencyCodeInfo();
             var options = new FundraisingDonationListOptionsBag()
             {
                 ColumnsToHide = GetAttributeValue( AttributeKey.HideGridColumns ).Split( ',' ).ToList(),
                 ActionsToHide = GetAttributeValue( AttributeKey.HideGridActions ).Split( ',' ).ToList(),
                 IsContextEntityGroupMember = RequestContext.GetContextEntity<GroupMember>() != null,
-                IsBlockVisible = IsContextGroupFundraisingGroupType()
+                IsBlockVisible = IsContextGroupFundraisingGroupType(),
+                CurrencyInfo = new ViewModels.Utility.CurrencyInfoBag
+                {
+                    Symbol = currencyInfo.Symbol,
+                    DecimalPlaces = currencyInfo.DecimalPlaces,
+                    SymbolLocation = currencyInfo.SymbolLocation
+                }
             };
             return options;
         }
@@ -223,7 +231,7 @@ namespace Rock.Blocks.Fundraising
                 .AddTextField( "donor", a => GetDonorText( a ) )
                 .AddTextField( "donorEmail", a => a.Transaction.AuthorizedPersonAlias.Person.Email )
                 .AddTextField( "participant", a => GetParticipantText( a ) )
-                .AddTextField( "amount", a => a.Amount.FormatAsCurrency() )
+                .AddField( "amount", a => a.Amount )
                 .AddTextField( "donorAddress", a => a.Transaction.AuthorizedPersonAlias.Person.GetHomeLocation().ToStringSafe().ConvertCrLfToHtmlBr() )
                 .AddDateTimeField( "date", a => a.Transaction.TransactionDateTime );
         }
