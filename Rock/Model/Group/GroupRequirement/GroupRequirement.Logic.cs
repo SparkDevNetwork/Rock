@@ -907,6 +907,41 @@ namespace Rock.Model
                 rockContext = new RockContext();
             }
 
+            if ( personId > 0 && groupId > 0 )
+            {
+                var metRequirement = new GroupMemberRequirementService( rockContext )
+                    .Queryable()
+                    .AsNoTracking()
+                    .FirstOrDefault( gmr =>
+                        gmr.GroupRequirementId == this.Id
+                        && gmr.GroupMember.GroupId == groupId
+                        && gmr.GroupMember.PersonId == personId
+                        && (
+                            gmr.RequirementMetDateTime.HasValue
+                            || gmr.WasManuallyCompleted
+                            || gmr.WasOverridden
+                        )
+                        && (
+                            !gmr.GroupRequirement.GroupRoleId.HasValue
+                            || (
+                                groupRoleId.HasValue
+                                && gmr.GroupRequirement.GroupRoleId == groupRoleId.Value
+                            )
+                        )
+                    );
+
+                if ( metRequirement != null )
+                {
+                    return new PersonGroupRequirementStatus
+                    {
+                        GroupRequirement = this,
+                        MeetsGroupRequirement = MeetsGroupRequirement.Meets,
+                        GroupMemberRequirementId = metRequirement.Id,
+                        PersonId = personId
+                    };
+                }
+            }
+
             var personQuery = new PersonService( rockContext ).Queryable().Where( a => a.Id == personId );
             var result = this.PersonQueryableMeetsGroupRequirement( rockContext, personQuery, groupId, groupRoleId ).FirstOrDefault();
             if ( result == null )
