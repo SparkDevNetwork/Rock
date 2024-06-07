@@ -1684,7 +1684,8 @@ namespace Rock.Model
                     OccurrenceId = s.OccurrenceId,
                     OccurrenceGroupId = s.Occurrence.GroupId.Value,
                     OccurrenceGroupTypeId = s.Occurrence.Group.GroupTypeId,
-                    OccurrenceOccurrenceDate = s.Occurrence.OccurrenceDate
+                    OccurrenceOccurrenceDate = s.Occurrence.OccurrenceDate,
+                    CheckInStatus = s.CheckInStatus
                 } ).FirstOrDefault();
 
             if ( attendanceInfo == null )
@@ -1692,9 +1693,9 @@ namespace Rock.Model
                 return;
             }
 
-            if ( attendanceInfo.DidAttend != true )
+            if ( attendanceInfo.DidAttend != true || attendanceInfo.CheckInStatus == Enums.Event.CheckInStatus.Pending )
             {
-                // If DidAttend is false, then don't do anything for the streak type. We should not unset the bit for the day/week because
+                // If DidAttend is false or the check-in status is pending, then don't do anything for the streak type. We should not unset the bit for the day/week because
                 // we don't know if they had some other engagement besides this and cannot assume it should be unset.
                 return;
             }
