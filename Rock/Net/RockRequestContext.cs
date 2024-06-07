@@ -165,6 +165,9 @@ namespace Rock.Net
         /// <summary>
         /// Gets the HTTP method from the request.
         /// </summary>
+        /// <value>
+        /// This will always be uppercase, such as <c>"GET"</c>. The value can also be <see langword="null"/>, so perform checks accordingly.
+        /// </value>
         internal string HttpMethod { get; private set; }
 
         /// <summary>
