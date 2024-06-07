@@ -137,6 +137,15 @@
             default: defaultControlCompareValue
         },
 
+        /**
+         * If set then this element will contain the popup picker, otherwise
+         * a default container will be chosen.
+         */
+        popupContainerOverride: {
+            type: Object as PropType<HTMLElement>,
+            required: false
+        },
+
         ...standardRockFormFieldProps
     });
 
@@ -325,7 +334,9 @@
      * @returns The HTML element to place the popup into.
      */
     const getPopupContainer = (): HTMLElement => {
-        return controlWrapper.value ?? document.body;
+        return props.popupContainerOverride
+            ?? controlWrapper.value
+            ?? document.body;
     };
 
     // #endregion
