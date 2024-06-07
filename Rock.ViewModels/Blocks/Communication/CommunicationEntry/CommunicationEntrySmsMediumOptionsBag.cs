@@ -44,5 +44,10 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntry
         /// The SMS from numbers.
         /// </value>
         public List<ListItemBag> SmsFromNumbers { get; set; }
+
+        /// <summary>
+        /// Gets or sets the character limit for the message.
+        /// </summary>
+        public int CharacterLimit { get; set; } = 160;
     }
 }

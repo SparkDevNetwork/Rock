@@ -521,6 +521,7 @@ namespace Rock.Blocks.Communication
                 var currentPerson = GetCurrentPerson();
                 return new CommunicationEntrySmsMediumOptionsBag
                 {
+                    CharacterLimit = smsMedium.GetAttributeValue( "CharacterLimit" ).AsIntegerOrNull() ?? 160,
                     HasActiveTransport = smsMedium.Transport?.IsActive ?? false,
                     MediumEntityTypeId = medium.EntityType.Id,
                     SmsFromNumbers = SystemPhoneNumberCache
