@@ -795,6 +795,7 @@ namespace Rock.Net
                 mergeFields.Add( "Device", Headers["X-Rock-DeviceData"].FirstOrDefault().FromJsonOrNull<Common.Mobile.DeviceData>() );
             }
 
+            mergeFields.Add( "Geolocation", ClientInformation?.Geolocation );
             mergeFields.Add( $"{LavaHelper.InternalMergeFieldPrefix}RockRequestContext", this );
 
             return mergeFields;
