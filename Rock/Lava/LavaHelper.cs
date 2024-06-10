@@ -181,6 +181,12 @@ namespace Rock.Lava
                 mergeFields.Add( "Campuses", CampusCache.All() );
             }
 
+            // Add client information 
+            if ( rockPage != null )
+            {
+                mergeFields.Add( "Geolocation", rockPage.RequestContext?.ClientInformation?.Geolocation );
+            }
+
             return mergeFields;
         }
 
