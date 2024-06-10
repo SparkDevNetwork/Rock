@@ -15,15 +15,20 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 
 using Rock.Attribute;
 using Rock.CheckIn.v2.Labels;
-using Rock.Enums.CheckIn.Labels;
+using Rock.Data;
+using Rock.Enums.Reporting;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.Utility;
 using Rock.ViewModels.Blocks.CheckIn.Configuration.LabelDesigner;
 using Rock.ViewModels.CheckIn.Labels;
 using Rock.ViewModels.Reporting;
@@ -51,7 +56,7 @@ namespace Rock.Blocks.CheckIn.Configuration
     {
         public override object GetObsidianBlockInitialization()
         {
-            var dataSources = FieldSourceHelper.GetFamilyLabelDataSources()
+            var dataSources = FieldSourceHelper.GetPersonLabelDataSources()
                 .Select( ds => ToDataSourceBag( ds ) )
                 .OrderByDescending( ds => ds.Category == "Common" )
                 .ThenByDescending( ds => ds.Category.Contains( "Properties" ) )
@@ -93,11 +98,11 @@ namespace Rock.Blocks.CheckIn.Configuration
         /// </summary>
         /// <param name="viewModel">The view model that represents the object.</param>
         /// <returns>The object created from the view model.</returns>
-        private static FieldFilterGroup FromViewModel( FieldFilterGroupBag viewModel )
+        private static FieldFilterGroupBag FromViewModel( FieldFilterGroupBag viewModel )
         {
-            return new FieldFilterGroup
+            return new FieldFilterGroupBag
             {
-                FilterExpressionType = viewModel.ExpressionType,
+                ExpressionType = viewModel.ExpressionType,
                 Rules = viewModel.Rules.Select( FromViewModel ).ToList()
             };
         }
@@ -108,12 +113,15 @@ namespace Rock.Blocks.CheckIn.Configuration
         /// </summary>
         /// <param name="viewModel">The view model that represents the object.</param>
         /// <returns>The object created from the view model.</returns>
-        private static FieldFilterRule FromViewModel( FieldFilterRuleBag viewModel )
+        private static FieldFilterRuleBag FromViewModel( FieldFilterRuleBag viewModel )
         {
-            var rule = new FieldFilterRule
+            var rule = new FieldFilterRuleBag
             {
                 Guid = viewModel.Guid,
                 ComparisonType = viewModel.ComparisonType,
+                SourceType = viewModel.SourceType,
+                AttributeGuid = viewModel.AttributeGuid,
+                PropertyName = viewModel.PropertyName
             };
 
             var comparisonValue = new ComparisonValue
@@ -122,7 +130,7 @@ namespace Rock.Blocks.CheckIn.Configuration
                 Value = viewModel.Value
             };
 
-            if ( viewModel.AttributeGuid.HasValue )
+            if ( viewModel.SourceType == FieldFilterSourceType.Attribute && viewModel.AttributeGuid.HasValue )
             {
                 rule.AttributeGuid = viewModel.AttributeGuid;
 
@@ -134,15 +142,15 @@ namespace Rock.Blocks.CheckIn.Configuration
 
                     if ( filterValues != null && filterValues.Count == 2 )
                     {
-                        rule.ComparedToValue = filterValues[1];
+                        rule.Value = filterValues[1];
                     }
                     else if ( filterValues != null && filterValues.Count == 1 )
                     {
-                        rule.ComparedToValue = filterValues[0];
+                        rule.Value = filterValues[0];
                     }
                 }
             }
-            else if ( viewModel.PropertyName.IsNotNullOrWhiteSpace() )
+            else if ( viewModel.SourceType == FieldFilterSourceType.Property && viewModel.PropertyName.IsNotNullOrWhiteSpace() )
             {
                 rule.PropertyName = viewModel.PropertyName;
 
@@ -154,11 +162,11 @@ namespace Rock.Blocks.CheckIn.Configuration
 
                     if ( filterValues != null && filterValues.Count == 2 )
                     {
-                        rule.ComparedToValue = filterValues[1];
+                        rule.Value = filterValues[1];
                     }
                     else if ( filterValues != null && filterValues.Count == 1 )
                     {
-                        rule.ComparedToValue = filterValues[0];
+                        rule.Value = filterValues[0];
                     }
                 }
             }
@@ -169,20 +177,169 @@ namespace Rock.Blocks.CheckIn.Configuration
         [BlockAction]
         public BlockActionResult DoFilter( FieldFilterGroupBag filter )
         {
-            var f = FromViewModel( filter );
-
             var ted = new Person
             {
                 FirstName = "Ted",
-                LastName = "Decker"
+                LastName = "Decker",
+                PrimaryFamily = new Model.Group
+                {
+                    GroupTypeId = 10,
+                    Name = "Decker Family"
+                }
             };
 
-            ted.LoadAttributes();
-            ted.SetAttributeValue( "Allergy", "nuts" );
+            //ted.LoadAttributes();
+            //ted.SetAttributeValue( "Allergy", "nuts" );
+            ted.PrimaryFamily.LoadAttributes();
+            ted.PrimaryFamily.SetAttributeValue( "IsFake", "true" );
 
-            var result = f.Evaluate( ted );
+            // PrimaryFamily.Name == "Decker Family" && PrimaryFamily.AttrValu["IsFake"] == True
+            filter = new FieldFilterGroupBag
+            {
+                ExpressionType = FilterExpressionType.GroupAll,
+                Rules = new List<FieldFilterRuleBag>
+                {
+                    new FieldFilterRuleBag
+                    {
+                        SourceType = FieldFilterSourceType.Property,
+                        Path = "PrimaryFamily",
+                        ComparisonType = ComparisonType.EqualTo,
+                        PropertyName = "Name",
+                        Value = "Decker Family"
+                    },
+                    new FieldFilterRuleBag
+                    {
+                        SourceType = FieldFilterSourceType.Attribute,
+                        Path = "PrimaryFamily",
+                        ComparisonType = ComparisonType.EqualTo,
+                        AttributeGuid = Guid.Parse( "86146773-15b5-4f86-9227-1cbaf063047a" ), // Is Fake Attrib
+                        Value = "True"
+                    }
+                },
+                Groups = new List<FieldFilterGroupBag>
+                {
+                    new FieldFilterGroupBag
+                    {
+                        ExpressionType = FilterExpressionType.GroupAny,
+                        Rules = new List<FieldFilterRuleBag>
+                        {
+                            // ...
+                        }
+                    },
+                    new FieldFilterGroupBag
+                    {
+                        ExpressionType = FilterExpressionType.GroupAny,
+                        Rules = new List<FieldFilterRuleBag>
+                        {
+                            // ...
+                        }
+                    }
+                }
+            };
+
+            var builder = new CustomFieldFilterBuilder();
+            var fn = builder.GetIsMatchFunction<Person>( filter ); // GetIsMatchFunction() ?
+
+            var tedMatch = builder.IsMatch( ted, filter ); //change to IsMatch()
+            var tedMatch2 = fn( ted );
+
+            var personService = new PersonService( RockContext );
+            var pExpr = Expression.Parameter( typeof( Person ), "p" );
+            var dbExpr = builder.GetDatabaseExpression( pExpr, filter, RockContext );
+            var people = personService.Queryable().Where( pExpr, dbExpr ).ToList();
+
+            // JustCompletedAchievements.Any( s => s.StartsWith( "10-" ) )
+            filter = new FieldFilterGroupBag
+            {
+                ExpressionType = FilterExpressionType.GroupAll,
+                Rules = new List<FieldFilterRuleBag>
+                {
+                    new FieldFilterRuleBag
+                    {
+                        SourceType = FieldFilterSourceType.Property,
+                        Path = "",
+                        ComparisonType = ComparisonType.StartsWith,
+                        PropertyName = "JustCompletedAchievements",
+                        Value = "10-"
+                    }
+                }
+            };
+            var familyLabelData = new FamilyLabelData
+            {
+                JustCompletedAchievements = new List<string>
+                {
+                    "10-Weeks",
+                    "20 Weeks"
+                }
+            };
+
+            var result = builder.IsMatch( familyLabelData, filter );
 
             return ActionOk( result );
+        }
+
+        private class CustomFieldFilterBuilder : FieldFilterExpressionBuilder
+        {
+            /// <summary>
+            /// The MethodInfo that describes the Enumerable.Any method taking
+            /// a <see cref="string"/> as a generic type.
+            /// </summary>
+            private static readonly Lazy<MethodInfo> _anyStringMethod = new Lazy<MethodInfo>( () => typeof( Enumerable )
+                .GetMethods()
+                .Where( m => m.Name == nameof( Enumerable.Any )
+                    && m.GetParameters().Length == 2
+                    && m.GetParameters()[1].ParameterType.IsGenericType
+                    && m.GetParameters()[1].ParameterType.GetGenericTypeDefinition() == typeof( Func<,> ) )
+                .FirstOrDefault()
+                .MakeGenericMethod( typeof( string ) ) );
+
+            /// <inheritdoc/>
+            protected override Expression GetRulePropertyExpression( Expression instanceExpression, FieldFilterRuleBag rule, RockContext rockContext )
+            {
+                // If the instance is an entity, then we don't need to do
+                // anything special. We should never be called with a RockContext
+                // but bail out just in case.
+                if ( typeof( Data.IEntity ).IsAssignableFrom( instanceExpression.Type ) || rockContext != null )
+                {
+                    return base.GetRulePropertyExpression( instanceExpression, rule, rockContext );
+                }
+
+                var property = instanceExpression.Type.GetProperty( rule.PropertyName );
+
+                // If property was not found, return an expression that
+                // never matches.
+                if ( property == null )
+                {
+                    return Expression.Constant( false );
+                }
+
+                if ( typeof( ICollection<string> ).IsAssignableFrom( property.PropertyType ) )
+                {
+                    // If the property is a collection of strings, then we want
+                    // to run the normal text expression on all strings in the
+                    // collection and return true if any of them match. We also
+                    // need to convert everything to lower case so so that the
+                    // comparisons happen case-insensitive.
+                    var filterValues = new List<string>
+                    {
+                        rule.ComparisonType.ConvertToString( false ),
+                        rule.Value?.ToLower()
+                    };
+
+                    var propertyExpression = Expression.Property( instanceExpression, property );
+
+                    // Create an expression for prop.Any( (s) => s.ToLower() == value ) and then pass
+                    // that value to the property filter expression.
+                    var innerParameterExpression = Expression.Parameter( typeof( string ), "s" );
+                    var lowerStringExpression = Expression.Call( innerParameterExpression, nameof( string.ToLower ), Type.EmptyTypes );
+                    var propertyFilterExpression = ExpressionHelper.PropertyFilterExpression( filterValues, lowerStringExpression );
+                    var propertyFilterFunc = Expression.Lambda<Func<string, bool>>( propertyFilterExpression, innerParameterExpression );
+
+                    return Expression.Call( _anyStringMethod.Value, propertyExpression, propertyFilterFunc );
+                }
+
+                return base.GetRulePropertyExpression( instanceExpression, rule, rockContext );
+            }
         }
     }
 }
