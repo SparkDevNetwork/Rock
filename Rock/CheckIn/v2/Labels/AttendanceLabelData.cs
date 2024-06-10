@@ -15,8 +15,11 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -32,7 +35,7 @@ namespace Rock.CheckIn.v2.Labels
     /// attendance labels.
     /// </para>
     /// </summary>
-    internal class AttendanceLabelData
+    internal class AttendanceLabelData : ILabelDataHasPerson
     {
         /// <summary>
         /// The data that describes the attendance record this label is being
@@ -40,9 +43,7 @@ namespace Rock.CheckIn.v2.Labels
         /// </summary>
         public AttendanceLabel Attendance { get; set; }
 
-        /// <summary>
-        /// The person that was checked in that this label is being printed for.
-        /// </summary>
+        /// <inheritdoc/>
         public Person Person => Attendance.Person;
 
         /// <summary>
@@ -81,7 +82,7 @@ namespace Rock.CheckIn.v2.Labels
         /// The achievement type identifiers that were completed by the person
         /// this label is being printed for during this check-in session.
         /// </summary>
-        public List<int> JustCompletedAchievemenIds { get; set; }
+        public List<int> JustCompletedAchievementIds { get; set; }
 
         /// <summary>
         /// The achievement type names that are currently in progress for
@@ -110,5 +111,100 @@ namespace Rock.CheckIn.v2.Labels
         /// session.
         /// </summary>
         public List<int> PreviouslyCompletedAchievementIds { get; set; }
+
+        /// <summary>
+        /// The date and time this person was checked in for this label.
+        /// </summary>
+        public DateTime CheckInTime { get; }
+
+        /// <summary>
+        /// The current date and time the label is being printed at.
+        /// </summary>
+        public DateTime CurrentTime { get; }
+
+        /// <summary>
+        /// The names of any group roles for any group membership records
+        /// the person has in the group they were checked into.
+        /// </summary>
+        public List<string> GroupRoleNames { get; }
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AttendanceLabelData"/> class.
+        /// </summary>
+        /// <param name="attendance">The attendance data for the label that is being generated.</param>
+        /// <param name="family">The family group used during the check-in process.</param>
+        /// <param name="allAttendance">The list of all attendance labels.</param>
+        /// <param name="rockContext">The <see cref="RockContext"/> for data operations.</param>
+        public AttendanceLabelData( AttendanceLabel attendance, Group family, List<AttendanceLabel> allAttendance, RockContext rockContext )
+        {
+            Attendance = attendance;
+            Family = family;
+            AllAttendance = allAttendance;
+
+            PersonAttendance = allAttendance
+                .Where( a => a.Person.Id == attendance.Person.Id )
+                .ToList();
+
+            CheckInTime = PersonAttendance.Min( a => a.StartDateTime );
+            CurrentTime = RockDateTime.Now;
+
+            GroupRoleNames = PersonAttendance
+                .SelectMany( a => a.GroupMembers )
+                .Select( gm => GroupTypeCache.Get( gm.GroupTypeId, rockContext )
+                    ?.Roles
+                    .FirstOrDefault( r => r.Id == gm.GroupRoleId )
+                    ?.Name )
+                .Where( n => n != null )
+                .ToList();
+
+            // Just completed achievements.
+            var justCompletedAchievements = PersonAttendance
+                .SelectMany( a => a.JustCompletedAchievements.Select( ach => ach.AchievementTypeGuid ) )
+                .Distinct()
+                .Select( guid => AchievementTypeCache.Get( guid, rockContext ) )
+                .Where( a => a != null )
+                .ToList();
+
+            JustCompletedAchievementIds = justCompletedAchievements
+                .Select( a => a.Id )
+                .ToList();
+            JustCompletedAchievements = justCompletedAchievements
+                .Select( a => a.Name )
+                .ToList();
+
+            // In progress achievements.
+            var inProgressAchievements = PersonAttendance
+                .SelectMany( a => a.InProgressAchievements.Select( ach => ach.AchievementTypeGuid ) )
+                .Distinct()
+                .Select( guid => AchievementTypeCache.Get( guid, rockContext ) )
+                .Where( a => a != null )
+                .ToList();
+
+            InProgressAchievementIds = inProgressAchievements
+                .Select( a => a.Id )
+                .ToList();
+            InProgressAchievements = inProgressAchievements
+                .Select( a => a.Name )
+                .ToList();
+
+            // Just completed achievements.
+            var previouslyCompletedAchievements = PersonAttendance
+                .SelectMany( a => a.PreviouslyCompletedAchievements.Select( ach => ach.AchievementTypeGuid ) )
+                .Distinct()
+                .Select( guid => AchievementTypeCache.Get( guid, rockContext ) )
+                .Where( a => a != null )
+                .ToList();
+
+            PreviouslyCompletedAchievementIds = previouslyCompletedAchievements
+                .Select( a => a.Id )
+                .ToList();
+            PreviouslyCompletedAchievements = previouslyCompletedAchievements
+                .Select( a => a.Name )
+                .ToList();
+        }
+
+        #endregion
     }
 }

@@ -507,19 +507,86 @@ namespace Rock.CheckIn.v2.Labels
             return dataSources;
         }
 
+        /// <summary>
+        /// Gets the filter sources that will be used with <see cref="LabelType.Attendance"/>.
+        /// </summary>
+        /// <returns>A list of <see cref="FieldFilterSourceBag"/> objects that represent the filtering options.</returns>
         public static List<FieldFilterSourceBag> GetAttendanceLabelFilterSources()
         {
-            var filterSources = GetPersonFilterSources( nameof( PersonLabelData.Person ) );
+            var filterSources = GetPersonFilterSources( nameof( AttendanceLabelData.Person ) );
 
             // Add in the IsFirstTime filter.
             filterSources.Add( CreateBooleanPropertyFilter(
-                propertyName: nameof( PersonLabelData.IsFirstTime ),
+                propertyName: nameof( AttendanceLabelData.Attendance.IsFirstTime ),
+                path: nameof( AttendanceLabelData.Attendance ),
                 category: "Common" ) );
 
-            // Add in the AreaNames filter.
+            // Add in the Check-in Info filters.
             filterSources.Add( CreateStringPropertyFilter(
-                propertyName: nameof( PersonLabelData.AreaNames ),
+                title: "Area Name",
+                propertyName: nameof( AttendanceLabelData.Attendance.Area.Name ),
+                path: $"{nameof( AttendanceLabelData.Attendance )}.{nameof( AttendanceLabelData.Attendance.Area )}",
                 category: "Check-in Info" ) );
+
+            filterSources.Add( CreateDateTimePropertyFilter(
+                propertyName: nameof( AttendanceLabelData.CheckInTime ),
+                category: "Check-in Info" ) );
+
+            filterSources.Add( CreateDateTimePropertyFilter(
+                propertyName: nameof( AttendanceLabelData.CurrentTime ),
+                category: "Check-in Info" ) );
+
+            filterSources.Add( CreateStringPropertyFilter(
+                title: "Group Name",
+                propertyName: nameof( AttendanceLabelData.Attendance.Group.Name ),
+                path: $"{nameof( AttendanceLabelData.Attendance )}.{nameof( AttendanceLabelData.Attendance.Group )}",
+                category: "Check-in Info" ) );
+
+            filterSources.Add( CreateStringPropertyFilter(
+                propertyName: nameof( AttendanceLabelData.GroupRoleNames ),
+                category: "Check-in Info" ) );
+
+            filterSources.Add( CreateStringPropertyFilter(
+                title: "Location Name",
+                propertyName: nameof( AttendanceLabelData.Attendance.Location.Name ),
+                path: $"{nameof( AttendanceLabelData.Attendance )}.{nameof( AttendanceLabelData.Attendance.Location )}",
+                category: "Check-in Info" ) );
+
+            filterSources.Add( CreateStringPropertyFilter(
+                title: "Schedule Name",
+                propertyName: nameof( AttendanceLabelData.Attendance.Schedule.Name ),
+                path: $"{nameof( AttendanceLabelData.Attendance )}.{nameof( AttendanceLabelData.Attendance.Schedule )}",
+                category: "Check-in Info" ) );
+
+            filterSources.Add( CreateStringPropertyFilter(
+                propertyName: nameof( AttendanceLabelData.Attendance.SecurityCode ),
+                path: nameof( AttendanceLabelData.Attendance ),
+                category: "Check-in Info" ) );
+
+            // Add in the Achievement Info filters.
+            filterSources.Add( CreateStringPropertyFilter(
+                propertyName: nameof( AttendanceLabelData.InProgressAchievements ),
+                category: "Achievement Info" ) );
+
+            filterSources.Add( CreateIntegerPropertyFilter(
+                propertyName: nameof( AttendanceLabelData.InProgressAchievementIds ),
+                category: "Achievement Info" ) );
+
+            filterSources.Add( CreateStringPropertyFilter(
+                propertyName: nameof( AttendanceLabelData.JustCompletedAchievements ),
+                category: "Achievement Info" ) );
+
+            filterSources.Add( CreateIntegerPropertyFilter(
+                propertyName: nameof( AttendanceLabelData.JustCompletedAchievementIds ),
+                category: "Achievement Info" ) );
+
+            filterSources.Add( CreateStringPropertyFilter(
+                propertyName: nameof( AttendanceLabelData.PreviouslyCompletedAchievements ),
+                category: "Achievement Info" ) );
+
+            filterSources.Add( CreateIntegerPropertyFilter(
+                propertyName: nameof( AttendanceLabelData.PreviouslyCompletedAchievementIds ),
+                category: "Achievement Info" ) );
 
             return filterSources;
         }
@@ -650,6 +717,65 @@ namespace Rock.CheckIn.v2.Labels
             return dataSources;
         }
 
+        /// <summary>
+        /// Gets the filter sources that will be used with <see cref="LabelType.Family"/>.
+        /// </summary>
+        /// <returns>A list of <see cref="FieldFilterSourceBag"/> objects that represent the filtering options.</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage( "Style", "IDE0028:Simplify collection initialization", Justification = "Because the list of options is so long it is more clear to use the Add() method." )]
+        public static List<FieldFilterSourceBag> GetFamilyLabelFilterSources()
+        {
+            var filterSources = new List<FieldFilterSourceBag>();
+
+            // Add in the Attendee Info filters.
+            filterSources.Add( CreateStringPropertyFilter(
+                propertyName: nameof( FamilyLabelData.NickNames ),
+                category: "Attendee Info" ) );
+
+            filterSources.Add( CreateStringPropertyFilter(
+                propertyName: nameof( FamilyLabelData.FirstNames ),
+                category: "Attendee Info" ) );
+
+            filterSources.Add( CreateStringPropertyFilter(
+                propertyName: nameof( FamilyLabelData.LastNames ),
+                category: "Attendee Info" ) );
+
+            // Add in the Check-in Info filters.
+            filterSources.Add( CreateStringPropertyFilter(
+                propertyName: nameof( FamilyLabelData.AreaNames ),
+                category: "Check-in Info" ) );
+
+            filterSources.Add( CreateDateTimePropertyFilter(
+                propertyName: nameof( FamilyLabelData.CheckInTime ),
+                category: "Check-in Info" ) );
+
+            filterSources.Add( CreateDateTimePropertyFilter(
+                propertyName: nameof( FamilyLabelData.CurrentTime ),
+                category: "Check-in Info" ) );
+
+            filterSources.Add( CreateStringPropertyFilter(
+                propertyName: nameof( FamilyLabelData.GroupNames ),
+                category: "Check-in Info" ) );
+
+            filterSources.Add( CreateStringPropertyFilter(
+                propertyName: nameof( FamilyLabelData.LocationNames ),
+                category: "Check-in Info" ) );
+
+            filterSources.Add( CreateStringPropertyFilter(
+                propertyName: nameof( FamilyLabelData.ScheduleNames ),
+                category: "Check-in Info" ) );
+
+            // Add in the Achievement Info filters.
+            filterSources.Add( CreateStringPropertyFilter(
+                propertyName: nameof( FamilyLabelData.JustCompletedAchievements ),
+                category: "Achievement Info" ) );
+
+            filterSources.Add( CreateIntegerPropertyFilter(
+                propertyName: nameof( FamilyLabelData.JustCompletedAchievementIds ),
+                category: "Achievement Info" ) );
+
+            return filterSources;
+        }
+
         #endregion
 
         #region Checkout Label
@@ -666,6 +792,65 @@ namespace Rock.CheckIn.v2.Labels
                 .Concat( GetAttendanceLabelCheckInInfoDataSources() )
                 .DistinctBy( ds => ds.Key )
                 .ToList();
+        }
+
+        /// <summary>
+        /// Gets the filter sources that will be used with <see cref="LabelType.Checkout"/>.
+        /// </summary>
+        /// <returns>A list of <see cref="FieldFilterSourceBag"/> objects that represent the filtering options.</returns>
+        public static List<FieldFilterSourceBag> GetCheckoutLabelFilterSources()
+        {
+            var filterSources = GetPersonFilterSources( nameof( CheckoutLabelData.Person ) );
+
+            // Add in the IsFirstTime filter.
+            filterSources.Add( CreateBooleanPropertyFilter(
+                propertyName: nameof( CheckoutLabelData.Attendance.IsFirstTime ),
+                path: nameof( CheckoutLabelData.Attendance ),
+                category: "Common" ) );
+
+            // Add in the Check-in Info filters.
+            filterSources.Add( CreateStringPropertyFilter(
+                title: "Area Name",
+                propertyName: nameof( CheckoutLabelData.Attendance.Area.Name ),
+                path: $"{nameof( CheckoutLabelData.Attendance )}.{nameof( CheckoutLabelData.Attendance.Area )}",
+                category: "Check-in Info" ) );
+
+            filterSources.Add( CreateDateTimePropertyFilter(
+                propertyName: nameof( CheckoutLabelData.CheckInTime ),
+                category: "Check-in Info" ) );
+
+            filterSources.Add( CreateDateTimePropertyFilter(
+                propertyName: nameof( CheckoutLabelData.CurrentTime ),
+                category: "Check-in Info" ) );
+
+            filterSources.Add( CreateStringPropertyFilter(
+                title: "Group Name",
+                propertyName: nameof( CheckoutLabelData.Attendance.Group.Name ),
+                path: $"{nameof( CheckoutLabelData.Attendance )}.{nameof( CheckoutLabelData.Attendance.Group )}",
+                category: "Check-in Info" ) );
+
+            filterSources.Add( CreateStringPropertyFilter(
+                propertyName: nameof( AttendanceLabelData.GroupRoleNames ),
+                category: "Check-in Info" ) );
+
+            filterSources.Add( CreateStringPropertyFilter(
+                title: "Location Name",
+                propertyName: nameof( CheckoutLabelData.Attendance.Location.Name ),
+                path: $"{nameof( CheckoutLabelData.Attendance )}.{nameof( CheckoutLabelData.Attendance.Location )}",
+                category: "Check-in Info" ) );
+
+            filterSources.Add( CreateStringPropertyFilter(
+                title: "Schedule Name",
+                propertyName: nameof( CheckoutLabelData.Attendance.Schedule.Name ),
+                path: $"{nameof( CheckoutLabelData.Attendance )}.{nameof( CheckoutLabelData.Attendance.Schedule )}",
+                category: "Check-in Info" ) );
+
+            filterSources.Add( CreateStringPropertyFilter(
+                propertyName: nameof( CheckoutLabelData.Attendance.SecurityCode ),
+                path: nameof( CheckoutLabelData.Attendance ),
+                category: "Check-in Info" ) );
+
+            return filterSources;
         }
 
         #endregion

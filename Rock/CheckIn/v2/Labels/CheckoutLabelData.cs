@@ -15,8 +15,13 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
+using System;
+
 using Rock.Model;
 using Rock.Web.Cache;
+using Rock.Data;
+using System.Linq;
 
 namespace Rock.CheckIn.v2.Labels
 {
@@ -31,7 +36,7 @@ namespace Rock.CheckIn.v2.Labels
     /// labels.
     /// </para>
     /// </summary>
-    internal class CheckoutLabelData
+    internal class CheckoutLabelData : ILabelDataHasPerson
     {
         /// <summary>
         /// The data that describes the attendance record this label is being
@@ -39,9 +44,7 @@ namespace Rock.CheckIn.v2.Labels
         /// </summary>
         public AttendanceLabel Attendance { get; set; }
 
-        /// <summary>
-        /// The person that was checked in that this label is being printed for.
-        /// </summary>
+        /// <inheritdoc/>
         public Person Person => Attendance.Person;
 
         /// <summary>
@@ -56,5 +59,48 @@ namespace Rock.CheckIn.v2.Labels
         /// person by API call.
         /// </summary>
         public Group Family { get; set; }
+
+        /// <summary>
+        /// The date and time this person was checked in for this label.
+        /// </summary>
+        public DateTime CheckInTime { get; }
+
+        /// <summary>
+        /// The current date and time the label is being printed at.
+        /// </summary>
+        public DateTime CurrentTime { get; }
+
+        /// <summary>
+        /// The names of any group roles for any group membership records
+        /// the person has in the group they were checked into.
+        /// </summary>
+        public List<string> GroupRoleNames { get; }
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CheckoutLabelData"/> class.
+        /// </summary>
+        /// <param name="attendance">The attendance data for the label that is being generated.</param>
+        /// <param name="family">The family group used during the check-in process.</param>
+        /// <param name="rockContext">The <see cref="RockContext"/> for data operations.</param>
+        public CheckoutLabelData( AttendanceLabel attendance, Group family, RockContext rockContext )
+        {
+            Attendance = attendance;
+            Family = family;
+
+            CheckInTime = Attendance.StartDateTime;
+            CurrentTime = RockDateTime.Now;
+
+            GroupRoleNames = Attendance.GroupMembers
+                .Select( gm => GroupTypeCache.Get( gm.GroupTypeId, rockContext )
+                    ?.Roles
+                    .FirstOrDefault( r => r.Id == gm.GroupRoleId )
+                    ?.Name )
+                .Where( n => n != null )
+                .ToList();
+        }
+
+        #endregion
     }
 }

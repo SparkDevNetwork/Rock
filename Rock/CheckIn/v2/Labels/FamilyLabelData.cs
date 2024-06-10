@@ -17,8 +17,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
+using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.CheckIn.v2.Labels
 {
@@ -39,25 +42,133 @@ namespace Rock.CheckIn.v2.Labels
         /// <summary>
         /// All attendance records for this session.
         /// </summary>
-        public List<AttendanceLabel> AllAttendance { get; set; }
+        public List<AttendanceLabel> AllAttendance { get; }
 
         /// <summary>
         /// The family object that was determined via either kiosk search
         /// or <see cref="Person.PrimaryFamily"/> if checking in a single
         /// person by API call.
         /// </summary>
-        public Group Family { get; set; }
+        public Group Family { get; }
 
         /// <summary>
         /// The achievement type names that were completed by any person during
         /// this check-in session.
         /// </summary>
-        public List<string> JustCompletedAchievements { get; set; }
+        public List<string> JustCompletedAchievements { get; }
 
         /// <summary>
         /// The achievement type identifiers that were completed by any person
         /// during this check-in session.
         /// </summary>
-        public List<int> JustCompletedAchievemenIds { get; set; }
+        public List<int> JustCompletedAchievementIds { get; }
+
+        /// <summary>
+        /// The date and time these people were checked in for this label.
+        /// </summary>
+        public DateTime CheckInTime { get; }
+
+        /// <summary>
+        /// The current date and time the label is being printed at.
+        /// </summary>
+        public DateTime CurrentTime { get; }
+
+        /// <summary>
+        /// The nick name of each person that was checked in.
+        /// </summary>
+        public List<string> NickNames { get; set; }
+
+        /// <summary>
+        /// The first name of each person that was checked in.
+        /// </summary>
+        public List<string> FirstNames { get; set; }
+
+        /// <summary>
+        /// The last name of each person that was checked in.
+        /// </summary>
+        public List<string> LastNames { get; set; }
+
+        /// <summary>
+        /// The names of the check-in areas that any person was checked into.
+        /// </summary>
+        public List<string> AreaNames { get; }
+
+        /// <summary>
+        /// The names of the check-in groups that any person was checked into.
+        /// </summary>
+        public List<string> GroupNames { get; }
+
+        /// <summary>
+        /// The names of the locations that any person was checked into.
+        /// </summary>
+        public List<string> LocationNames { get; }
+
+        /// <summary>
+        /// The names of the schedules that any person was checked into.
+        /// </summary>
+        public List<string> ScheduleNames { get; }
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FamilyLabelData"/> class.
+        /// </summary>
+        /// <param name="family">The family group used during the check-in process.</param>
+        /// <param name="allAttendance">The list of all attendance labels.</param>
+        /// <param name="rockContext">The <see cref="RockContext"/> for data operations.</param>
+        public FamilyLabelData( Group family, List<AttendanceLabel> allAttendance, RockContext rockContext )
+        {
+            Family = family;
+            AllAttendance = allAttendance;
+
+            CheckInTime = AllAttendance.Min( a => a.StartDateTime );
+            CurrentTime = RockDateTime.Now;
+
+            NickNames = AllAttendance.Select( a => a.Person )
+                .DistinctBy( p => p.Id )
+                .Select( p => p.NickName )
+                .ToList();
+            FirstNames = AllAttendance.Select( a => a.Person )
+                .DistinctBy( p => p.Id )
+                .Select( p => p.FirstName )
+                .ToList();
+            LastNames = AllAttendance.Select( a => a.Person )
+                .DistinctBy( p => p.Id )
+                .Select( p => p.LastName )
+                .ToList();
+
+            AreaNames = AllAttendance.Select( a => a.Area.Name )
+                .Distinct()
+                .ToList();
+
+            GroupNames = AllAttendance.Select( a => a.Group.Name )
+                .Distinct()
+                .ToList();
+
+            LocationNames = AllAttendance.Select( a => a.Location.Name )
+                .Distinct()
+                .ToList();
+
+            ScheduleNames = AllAttendance.Select( a => a.Schedule.Name )
+                .Distinct()
+                .ToList();
+
+            // Just completed achievements.
+            var justCompletedAchievements = AllAttendance
+                .SelectMany( a => a.JustCompletedAchievements.Select( ach => ach.AchievementTypeGuid ) )
+                .Distinct()
+                .Select( guid => AchievementTypeCache.Get( guid, rockContext ) )
+                .Where( a => a != null )
+                .ToList();
+
+            JustCompletedAchievementIds = justCompletedAchievements
+                .Select( a => a.Id )
+                .ToList();
+            JustCompletedAchievements = justCompletedAchievements
+                .Select( a => a.Name )
+                .ToList();
+        }
+
+        #endregion
     }
 }

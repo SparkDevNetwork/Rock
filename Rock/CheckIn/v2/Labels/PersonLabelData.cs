@@ -113,7 +113,7 @@ namespace Rock.CheckIn.v2.Labels
         public bool IsFirstTime { get; }
 
         /// <summary>
-        /// The names of the check-in areas that the person as checked into.
+        /// The names of the check-in areas that the person was checked into.
         /// </summary>
         public List<string> AreaNames { get; }
 
@@ -128,7 +128,7 @@ namespace Rock.CheckIn.v2.Labels
         public DateTime CurrentTime { get; }
 
         /// <summary>
-        /// The names of the check-in groups that the person as checked into.
+        /// The names of the check-in groups that the person was checked into.
         /// </summary>
         public List<string> GroupNames { get; }
 
@@ -139,12 +139,12 @@ namespace Rock.CheckIn.v2.Labels
         public List<string> GroupRoleNames { get; }
 
         /// <summary>
-        /// The names of the locations that the person as checked into.
+        /// The names of the locations that the person was checked into.
         /// </summary>
         public List<string> LocationNames { get; }
 
         /// <summary>
-        /// The names of the schedules the this person as checked into.
+        /// The names of the schedules that the person was checked into.
         /// </summary>
         public List<string> ScheduleNames { get; }
 
@@ -159,7 +159,7 @@ namespace Rock.CheckIn.v2.Labels
         /// Initializes a new instance of the <see cref="PersonLabelData"/> class.
         /// </summary>
         /// <param name="person">The person for whom the label data is being generated.</param>
-        /// <param name="family">The family group of the person.</param>
+        /// <param name="family">The family group used during the check-in process.</param>
         /// <param name="allAttendance">The list of all attendance labels.</param>
         /// <param name="rockContext">The <see cref="RockContext"/> for data operations.</param>
         public PersonLabelData( Person person, Group family, List<AttendanceLabel> allAttendance, RockContext rockContext )

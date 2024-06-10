@@ -263,18 +263,18 @@ namespace Rock.Blocks.CheckIn.Configuration
                     }
                 }
             };
-            var familyLabelData = new FamilyLabelData
-            {
-                JustCompletedAchievements = new List<string>
-                {
-                    "10-Weeks",
-                    "20 Weeks"
-                }
-            };
+            //var familyLabelData = new FamilyLabelData()
+            //{
+            //    JustCompletedAchievements = new List<string>
+            //    {
+            //        "10-Weeks",
+            //        "20 Weeks"
+            //    }
+            //};
 
-            var result = builder.IsMatch( familyLabelData, filter );
+            //var result = builder.IsMatch( familyLabelData, filter );
 
-            return ActionOk( result );
+            return ActionOk( true );
         }
 
         private class CustomFieldFilterBuilder : FieldFilterExpressionBuilder
