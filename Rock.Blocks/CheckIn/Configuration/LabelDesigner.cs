@@ -66,7 +66,6 @@ namespace Rock.Blocks.CheckIn.Configuration
 
             var filterSources = FieldSourceHelper.GetPersonLabelFilterSources()
                 .OrderByDescending( s => s.Category == "Common" )
-                .ThenByDescending( s => s.Category.Contains( "Properties" ) )
                 .ThenBy( s => s.Category )
                 .ThenBy( s => s.Property?.Title ?? s.Attribute?.Name )
                 .ToList();
