@@ -23,6 +23,7 @@ using System.Linq;
 using System.Web;
 
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -41,12 +42,14 @@ namespace Rock.Net
         #region Fields
 
         /// <summary>
-        /// The cache object for the site this request is related to.
+        /// The cache object for the site this request is related to. This
+        /// may be <c>null</c> if no page is associated with this request.
         /// </summary>
         private SiteCache _siteCache;
 
         /// <summary>
-        /// The cache object for the page this request is related to.
+        /// The cache object for the page this request is related to. This
+        /// may be <c>null</c> if no page is associated with this request.
         /// </summary>
         private PageCache _pageCache;
 
@@ -54,12 +57,12 @@ namespace Rock.Net
         /// The person preference collections. This is used as a cache so that
         /// we return the same instance for the entire request.
         /// </summary>
-        private ConcurrentDictionary<string, PersonPreferenceCollection> _personPreferenceCollections = new ConcurrentDictionary<string, PersonPreferenceCollection>();
+        private readonly ConcurrentDictionary<string, PersonPreferenceCollection> _personPreferenceCollections = new ConcurrentDictionary<string, PersonPreferenceCollection>();
 
         /// <summary>
         /// Whether this object represents a legacy, `System.Web` request.
         /// </summary>
-        private bool _isLegacyRequest;
+        private readonly bool _isLegacyRequest;
 
         #endregion
 
@@ -215,7 +218,8 @@ namespace Rock.Net
         public bool IsCaptchaValid { get; internal set; }
 
         /// <summary>
-        /// Gets the cache object for the page this request is related to.
+        /// Gets the cache object for the page this request is related to. This
+        /// may be <c>null</c> if no page is associated with this request.
         /// </summary>
         internal PageCache Page => _pageCache;
 
@@ -927,42 +931,20 @@ namespace Rock.Net
         }
 
         /// <summary>
-        /// Resolves the rock URL.
+        /// Resolves the rock URL to the absolute path it refers to on this site.
         /// </summary>
         /// <remarks>
-        ///     <para>An input starting with "~~/" will return a theme URL like, "/Themes/{CurrentSiteTheme}/{input}".</para>
-        ///     <para>An input starting with "~/" will return the input without the leading "~".</para>
+        ///     <para>An input starting with "~~/" will return a theme URL like, "{SiteRoot}/Themes/{CurrentSiteTheme}/{input}" without the leading "~~".</para>
+        ///     <para>An input starting with "~/" will return the site root like, {SiteRoot}/{input}" without the leading "~".</para>
+        ///     <para>An input of "~~" will return a theme URL like "{SiteRoot}/Themes/{CurrentSiteTheme}" without a trailing slash.</para>
+        ///     <para>An input of "~" will return the site root "{SiteRoot}/" with a trailing slash. </para>
         ///     <para>The input will be returned as supplied for all other cases.</para>
-        ///     <para>
-        ///         <strong>This is an internal API</strong> that supports the Rock
-        ///         infrastructure and not subject to the same compatibility standards
-        ///         as public APIs. It may be changed or removed without notice in any
-        ///         release and should therefore not be directly used in any plug-ins.
-        ///     </para>
         /// </remarks>
-        /// <param name="input">The input with prefix <c>"~~/"</c> or <c>"~/"</c>.</param>
+        /// <param name="input">The input with prefix <c>"~~"</c> or <c>"~"</c>.</param>
         /// <returns>The resolved URL.</returns>
-        [RockInternal( "1.15" )]
         public string ResolveRockUrl( string input )
         {
-            if ( input.IsNullOrWhiteSpace() )
-            {
-                return input;
-            }
-
-            if ( input.StartsWith( "~~/" ) )
-            {
-                var themeRoot = $"/Themes/{_pageCache.SiteTheme}/";
-                return themeRoot + ( input.Length > 3 ? input.Substring( 3 ) : string.Empty );
-            }
-
-            if ( input.StartsWith( "~" ) && input.Length > 1 )
-            {
-                return input.Substring( 1 );
-            }
-
-            // The input format is unrecognized so return it.
-            return input;
+            return RockApp.Current.ResolveRockUrl( input, _pageCache?.Layout?.Site?.Theme ?? "Rock" );
         }
 
         #endregion

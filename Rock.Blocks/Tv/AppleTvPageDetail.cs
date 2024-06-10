@@ -66,8 +66,6 @@ namespace Rock.Blocks.Tv
 
         #endregion Keys
 
-        public override string ObsidianFileUrl => $"{base.ObsidianFileUrl}";
-
         #region Methods
 
         /// <inheritdoc/>
