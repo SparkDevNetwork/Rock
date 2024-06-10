@@ -30,12 +30,14 @@
                   @submit="onFormSubmitted">
             <div class="row">
                 <div class="col-sm-12">
-                    <RecipientPicker v-model="recipients"
+                    <RecipientPicker :modelValue="recipients"
+                                     @update:modelValue="$emit('update:recipients', $event)"
                                      v-model:isDisabled="internalDisabled"
                                      :isAddRecipientHidden="config.mode !== Mode.Full"
                                      :isForBulkCommunication="isBulkCommunication"
                                      label="Recipients"
-                                     :minimumRecipientCount="minimumRecipientCount" />
+                                     :minimumRecipientCount="minimumRecipientCount"
+                                     mode="email" />
                 </div>
             </div>
 
@@ -222,7 +224,7 @@
 </style>
 
 <script setup lang="ts">
-    import { PropType, computed, nextTick, onMounted, ref, watch, watchEffect } from "vue";
+    import { PropType, Ref, computed, nextTick, onMounted, ref, watch, watchEffect } from "vue";
     import PopupPicker from "./popupPicker.partial.obs";
     import RecipientPicker from "./recipientPicker.partial.obs";
     import DateTimePicker from "@Obsidian/Controls/dateTimePicker.obs";
@@ -268,6 +270,11 @@
             type: Boolean as PropType<boolean>,
             default: false
         },
+
+        recipients: {
+            type: Array as PropType<CommunicationEntryRecipientBag[]>,
+            required: true
+        },
     });
 
     const emit = defineEmits<{
@@ -281,6 +288,8 @@
         (e: "tested", value: CommunicationEntryTestResponseBag): void,
         /** Emits an event indicating the disabled state should be updated. */
         (e: "update:disabled", value: boolean): void,
+        /** Emits an event indicating the recipients state should be updated. */
+        (e: "update:recipients", value: CommunicationEntryRecipientBag[]): void,
     }>();
 
     const config = useConfigurationValues<CommunicationEntryInitializationBox>();
@@ -289,7 +298,6 @@
 
     const testResultElement = ref<HTMLElement | undefined>();
     const internalDisabled = useVModelPassthrough(props, "disabled", emit);
-    const recipients = ref<CommunicationEntryRecipientBag[]>(config.communication?.recipients ?? []);
     const attachments = ref<ListItemBag[]>(config.communication?.emailAttachmentBinaryFiles ?? []);
     const isBulkCommunication = ref<boolean>(!!config.communication?.isBulkCommunication);
     const templateGuid = ref<string>(config.communication?.communicationTemplateGuid ?? "");
@@ -352,7 +360,7 @@
             return false;
         }
         else {
-            return recipients.value.length > threshold;
+            return props.recipients.length > threshold;
         }
     });
 
@@ -578,7 +586,7 @@
                 futureSendDateTime: scheduleSendDateTime.value,
                 mediumEntityTypeGuid: EntityType.CommunicationMediumEmail,
                 message: message.value,
-                recipients: recipients.value,
+                recipients: props.recipients,
                 replyAddress: replyToAddress.value,
                 subject: subject.value,
                 communicationGuid: communicationGuid.value
@@ -616,7 +624,7 @@
                 futureSendDateTime: scheduleSendDateTime.value,
                 mediumEntityTypeGuid: EntityType.CommunicationMediumEmail,
                 message: message.value,
-                recipients: recipients.value,
+                recipients: props.recipients,
                 replyAddress: replyToAddress.value,
                 subject: subject.value,
                 communicationGuid: communicationGuid.value,
@@ -655,7 +663,7 @@
                 futureSendDateTime: scheduleSendDateTime.value,
                 mediumEntityTypeGuid: EntityType.CommunicationMediumEmail,
                 message: message.value,
-                recipients: recipients.value,
+                recipients: props.recipients,
                 replyAddress: replyToAddress.value,
                 subject: subject.value,
                 communicationGuid: communicationGuid.value

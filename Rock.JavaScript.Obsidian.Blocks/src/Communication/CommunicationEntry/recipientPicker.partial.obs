@@ -2,7 +2,7 @@
     <PopupPicker v-model="recipientListItems"
                  :disabled="isDisabled"
                  :getLabelTypeRef="getLabelTypeRef"
-                 :getTooltipRef="personAliasGuid => getEmailTooltipRef(findRecipient(personAliasGuid))"
+                 :getTooltipRef="personAliasGuid => getTooltipRef(findRecipient(personAliasGuid))"
                  :label="label"
                  :rules="rules"
                  validationTitle="At least one recipient"
@@ -61,6 +61,15 @@
             type: Number as PropType<number>,
             default: 0
         },
+
+        mode: {
+            type: String as PropType<"email" | "sms">,
+            required: true,
+        },
+
+        getRecipientTooltipRef: {
+
+        }
     });
 
     const emit = defineEmits<{
@@ -207,37 +216,66 @@
             // Get the recipient.
             const recipient = findRecipient(personAliasGuid);
 
-            if (!recipient
-                || (props.isForBulkCommunication && recipient.isBulkEmailAllowed)
-                || (!props.isForBulkCommunication && recipient.isEmailAllowed)) {
-                // Default label when recipient is missing or email is allowed.
-                return "label-default";
+            if (props.mode === "email") {
+                if (!recipient
+                    || (props.isForBulkCommunication && recipient.isBulkEmailAllowed)
+                    || (!props.isForBulkCommunication && recipient.isEmailAllowed)) {
+                    // Default label when recipient is missing or email is allowed.
+                    return "label-default";
+                }
+                else {
+                    return "label-danger";
+                }
+            }
+            else if (props.mode === "sms") {
+                if (!recipient || recipient.isSmsAllowed) {
+                    // Default label when recipient is missing or email is allowed.
+                    return "label-default";
+                }
+                else {
+                    return "label-danger";
+                }
             }
             else {
-                return "label-danger";
+                // Unknown medium type. Use the default label type by... default.
+                return "label-default";
             }
         });
     }
 
     /** Gets the reactive email tooltip. */
-    function getEmailTooltipRef(recipient: CommunicationEntryRecipientBag | null): Ref<string> {
+    function getTooltipRef(recipient: CommunicationEntryRecipientBag | null): Ref<string> {
         return computed<string>(() => {
-            if (!recipient
-                || (props.isForBulkCommunication && recipient.isBulkEmailAllowed)
-                || (!props.isForBulkCommunication && recipient.isEmailAllowed)) {
-                // No tooltip when recipient is missing or email is allowed.
-                return "";
-            }
+            if (props.mode === "email") {
+                if (!recipient
+                    || (props.isForBulkCommunication && recipient.isBulkEmailAllowed)
+                    || (!props.isForBulkCommunication && recipient.isEmailAllowed)) {
+                    // No tooltip when recipient is missing or email is allowed.
+                    return "";
+                }
 
-            // Get the error message tooltip.
-            if (!recipient.email) {
-                return `${recipient.name ?? "This recipient"} doesn't have an email address.`;
+                // This recipient cannot receive email messages. Get the error.
+                if (!recipient.email) {
+                    return `${recipient.name ?? "This recipient"} doesn't have an email address.`;
+                }
+                else if (!recipient.isEmailActive) {
+                    return `${recipient.name ?? "This recipient"} has an inactive email.`;
+                }
+                else {
+                    return `${recipient.name ?? "This recipient"} has email preference set to "${splitCase(recipient.emailPreference ?? "")}".`;
+                }
             }
-            else if (!recipient.isEmailActive) {
-                return `${recipient.name ?? "This recipient"} has an inactive email.`;
+            else if (props.mode === "sms") {
+                if (!recipient || recipient.isSmsAllowed) {
+                    // No tooltip when recipient is missing.
+                    return "";
+                }
+
+                // This recipient cannot receive SMS messages. Get the error.
+                return `${recipient.name ?? "This recipient"} doesn't have a phone number with SMS enabled.`;
             }
             else {
-                return `${recipient.name ?? "This recipient"} has email preference set to "${splitCase(recipient.emailPreference ?? "")}".`;
+                return "";
             }
         });
     }

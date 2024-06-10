@@ -16,6 +16,11 @@
     </NotificationBox>
 
     <template v-else>
+        <RecipientPicker :modelValue="recipients"
+                         @update:modelValue="$emit('update:recipients', $event)"
+                         label="Recipients"
+                         mode="sms" />
+
         <DropDownList v-model="fromNumberGuidOrEmptyString"
                       :items="mediumOptions.smsFromNumbers ?? undefined"
                       help="The number to originate message from (configured under Admin Tools > Communications > System Phone Numbers)."
@@ -41,7 +46,7 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, onMounted, ref, watch } from "vue";
+    import { PropType, onMounted, ref } from "vue";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import MergeFieldPicker from "@Obsidian/Controls/mergeFieldPicker.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -57,11 +62,18 @@
     import { MediumType } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntry/mediumType";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import RecipientPicker from "./recipientPicker.partial.obs";
+    import { CommunicationEntryRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryRecipientBag";
 
     const props = defineProps({
         disabled: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        recipients: {
+            type: Array as PropType<CommunicationEntryRecipientBag[]>,
+            required: true,
         }
     });
 
@@ -70,6 +82,7 @@
         (e: "error", value: string): void,
         /** Emits an event indicating the disabled state should be updated. */
         (e: "update:disabled", value: boolean): void,
+        (e: "update:recipients", value: CommunicationEntryRecipientBag[]): void;
     }>();
 
     const config = useConfigurationValues<CommunicationEntryInitializationBox>();

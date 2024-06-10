@@ -18,10 +18,12 @@
                 <KeepAlive v-if="selectedMediumEntityTypeGuidOrEmptyString && config.communication && config.mediumOptions">
                     <Email v-if="areEqual(selectedMediumEntityTypeGuidOrEmptyString, EntityType.CommunicationMediumEmail)"
                            v-model:disabled="isDisabled"
+                           v-model:recipients="recipients"
                            @saved="onSentOrSaved"
                            @sent="onSentOrSaved" />
 
-                    <Sms v-else-if="areEqual(selectedMediumEntityTypeGuidOrEmptyString, EntityType.CommunicationMediumSms)" />
+                    <Sms v-else-if="areEqual(selectedMediumEntityTypeGuidOrEmptyString, EntityType.CommunicationMediumSms)"
+                         v-model:recipients="recipients" />
 
                     <PushNotification v-else-if="areEqual(selectedMediumEntityTypeGuidOrEmptyString, EntityType.CommunicationMediumPushNotification)"
                                       :isFullMode="config.mode === Mode.Full" />
@@ -68,6 +70,7 @@
     import PushNotification from "./CommunicationEntry/communicationMediumPushNotification.partial.obs";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { areEqual } from "@Obsidian/Utility/guid";
+    import { CommunicationEntryRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryRecipientBag";
 
     const config = useConfigurationValues<CommunicationEntryInitializationBox>();
     const reloadBlock = useReloadBlock();
@@ -84,6 +87,7 @@
     const resultMessage = ref<string | null | undefined>("");
     const viewCommunicationUrl = ref<string>("#");
     const isDisabled = ref<boolean>(false);
+    const recipients = ref<CommunicationEntryRecipientBag[]>(config.communication?.recipients ?? []);
 
     //#endregion
 
