@@ -68,7 +68,12 @@
         "attributeValues",
         "site",
         "token",
-        "url"
+        "url",
+        "utmSourceValue",
+        "utmMediumValue",
+        "utmCampaignValue",
+        "utmTerm",
+        "utmContent"
     ];
 
     const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(pageShortLinkEditBag, validProperties, invokeBlockAction), undefined, true);
