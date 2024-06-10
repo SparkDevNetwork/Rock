@@ -22,6 +22,51 @@
                  rules="required"
                  help="The URL that short link will direct users to." />
         <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+
+        <Panel title="Advanced Settings" hasCollapse>
+            <div class="row">
+                <div class="col-md-6">
+                    <DefinedValuePicker
+                        v-model="utmSourceValue"
+                        label="UTM Source"
+                        :definedTypeGuid="DefinedType.UtmSource"
+                        help="The UTM source parameter identifies the origin of your traffic, like a search engine, newsletter, or specific website, helping to pinpoint which platforms are directing visitors to your site."
+                        showBlankItem
+                        allowAdd />
+                    <DefinedValuePicker
+                        v-model="utmCampaignValue"
+                        label="UTM Campaign"
+                        :definedTypeGuid="DefinedType.UtmCampaign"
+                        help="The UTM campaign parameter tags your traffic with specific campaign names, enabling you to measure the performance of individual marketing campaigns and understand their impact on your traffic."
+                        showBlankItem
+                        allowAdd />
+                </div>
+
+                <div class="col-md-6">
+                    <DefinedValuePicker
+                        v-model="utmMediumValue"
+                        label="UTM Medium"
+                        :definedTypeGuid="DefinedType.UtmMedium"
+                        help='The UTM medium parameter is used to identify the marketing or advertising medium that directed a user to your site. Examples include "email", "social", "cpc" (cost per click), or "organic" for non-paid search engine traffic.'
+                        showBlankItem
+                        allowAdd />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <TextBox
+                        v-model="utmTerm"
+                        label="UTM Term"
+                        help="The UTM term parameter is used to track the keywords or terms in a paid search campaign, providing insights into which specific words or phrases are most effective in driving traffic to your website."/>
+                </div>
+                <div class="col-md-6">
+                    <TextBox
+                        v-model="utmContent"
+                        label="UTM Content"
+                        help="The UTM content parameter helps differentiate between links that point to the same URL within the same ad or campaign, allowing you to test the effectiveness of various content elements, like text or images, in your marketing efforts."/>
+                </div>
+            </div>
+        </Panel>
     </fieldset>
 </template>
 
@@ -29,10 +74,13 @@
     import { computed, PropType, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import Panel from "@Obsidian/Controls/panel.obs";
     import { PageShortLinkBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkDetail/pageShortLinkBag";
     import { PageShortLinkDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkDetail/pageShortLinkDetailOptionsBag";
 
@@ -60,12 +108,22 @@
     const site = propertyRef(props?.modelValue?.site?.value ?? "", "SiteId");
     const url = propertyRef(props.modelValue.url ?? "", "Url");
     const token = propertyRef(props.modelValue.token ?? "", "Token");
+    const utmSourceValue = propertyRef(props.modelValue.utmSourceValue ?? {}, "AdditionalSettingsJSON");
+    const utmMediumValue = propertyRef(props.modelValue.utmMediumValue ?? {}, "AdditionalSettingsJSON");
+    const utmCampaignValue = propertyRef(props.modelValue.utmCampaignValue ?? {}, "AdditionalSettingsJSON");
+    const utmTerm = propertyRef(props.modelValue.utmTerm ?? "", "AdditionalSettingsJSON");
+    const utmContent = propertyRef(props.modelValue.utmContent ?? "", "AdditionalSettingsJSON");
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
     const propRefs = [url,
         token,
-        site];
+        site,
+        utmSourceValue,
+        utmMediumValue,
+        utmCampaignValue,
+        utmTerm,
+        utmContent];
 
     // #endregion
 
@@ -92,6 +150,11 @@
         updateRefValue(site, props.modelValue.site?.value ?? "");
         updateRefValue(url, props.modelValue.url ?? "");
         updateRefValue(token, props.modelValue.token ?? "");
+        updateRefValue(utmSourceValue, props.modelValue.utmSourceValue ?? {});
+        updateRefValue(utmMediumValue, props.modelValue.utmMediumValue ?? {});
+        updateRefValue(utmCampaignValue, props.modelValue.utmCampaignValue ?? {});
+        updateRefValue(utmTerm, props.modelValue.utmTerm ?? "");
+        updateRefValue(utmContent, props.modelValue.utmContent ?? "");
     });
 
     // Determines which values we want to track changes on (defined in the
@@ -102,7 +165,12 @@
             attributeValues: attributeValues.value,
             url: url.value,
             token: token.value,
-            site: { value: site.value }
+            site: { value: site.value },
+            utmSourceValue : utmSourceValue.value,
+            utmMediumValue : utmMediumValue.value,
+            utmCampaignValue: utmCampaignValue.value,
+            utmTerm: utmTerm.value,
+            utmContent: utmContent.value
         };
 
         emit("update:modelValue", newValue);
