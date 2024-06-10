@@ -94,5 +94,11 @@ namespace Rock.CheckIn.v2.Labels
         /// the check-in session was completed.
         /// </summary>
         public List<AchievementBag> InProgressAchievements { get; set; }
+
+        /// <summary>
+        /// The details of any achievements that were previously completed
+        /// before the check-in session was started.
+        /// </summary>
+        public List<AchievementBag> PreviouslyCompletedAchievements { get; set; }
     }
 }

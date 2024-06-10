@@ -42,7 +42,8 @@ namespace Rock.CheckIn.v2.Labels
         {
             nameof( Person.NickName ),
             nameof( Person.LastName ),
-            nameof( Person.DaysUntilBirthday )
+            nameof( Person.DaysUntilBirthday ),
+            nameof( Person.Gender )
         };
 
         /// <summary>
@@ -63,6 +64,16 @@ namespace Rock.CheckIn.v2.Labels
         private static readonly HashSet<string> PersonPropertyNamesToExcludeFromDataSources = new HashSet<string>
         {
             nameof( Person.Gender ),
+            nameof( Person.Age )
+        };
+
+        /// <summary>
+        /// The person property names that should be excluded from data sources.
+        /// These are excluded either because we don't want them or because we
+        /// are going to provide a custom version of them.
+        /// </summary>
+        private static readonly HashSet<string> PersonPropertyNamesToExcludeFromDataFilters = new HashSet<string>
+        {
             nameof( Person.Age )
         };
 
@@ -108,9 +119,9 @@ namespace Rock.CheckIn.v2.Labels
         /// <returns>A list of data sources.</returns>
         public static List<FieldDataSource> GetPersonLabelDataSources()
         {
-            return GetPersonLabelAttendeeInfoSources()
-                .Concat( GetPersonLabelCheckInInfoSources() )
-                .Concat( GetPersonLabelAchievementInfoSources() )
+            return GetPersonLabelAttendeeInfoDataSources()
+                .Concat( GetPersonLabelCheckInInfoDataSources() )
+                .Concat( GetPersonLabelAchievementInfoDataSources() )
                 .DistinctBy( ds => ds.Key )
                 .ToList();
         }
@@ -119,9 +130,9 @@ namespace Rock.CheckIn.v2.Labels
         /// Gets the attendee information data sources for a person label.
         /// </summary>
         /// <returns>A list of field data sources.</returns>
-        private static List<FieldDataSource> GetPersonLabelAttendeeInfoSources()
+        private static List<FieldDataSource> GetPersonLabelAttendeeInfoDataSources()
         {
-            return GetStandardPersonAttendeeInfoSources<PersonLabelData>();
+            return GetStandardPersonAttendeeInfoDataSources<PersonLabelData>();
         }
 
         /// <summary>
@@ -129,7 +140,7 @@ namespace Rock.CheckIn.v2.Labels
         /// </summary>
         /// <returns>A list of field data sources.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage( "Style", "IDE0028:Simplify collection initialization", Justification = "Because the list of options is so long it is more clear to use the Add() method." )]
-        private static List<FieldDataSource> GetPersonLabelCheckInInfoSources()
+        private static List<FieldDataSource> GetPersonLabelCheckInInfoDataSources()
         {
             var dataSources = new List<FieldDataSource>();
 
@@ -139,7 +150,7 @@ namespace Rock.CheckIn.v2.Labels
                 Name = "Area Name",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
-                ValuesFunc = ( source, field, printRequest ) => source.PersonAttendance.Select( a => a.Area.Name )
+                ValuesFunc = ( source, field, printRequest ) => source.AreaNames
             } );
 
             dataSources.Add( new SingleValueFieldDataSource<PersonLabelData>
@@ -148,7 +159,7 @@ namespace Rock.CheckIn.v2.Labels
                 Name = "Check-in Time",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
-                ValueFunc = ( source, field, printRequest ) => source.PersonAttendance.Min( a => a.StartDateTime )
+                ValueFunc = ( source, field, printRequest ) => source.CheckInTime
             } );
 
             dataSources.Add( new SingleValueFieldDataSource<PersonLabelData>
@@ -157,7 +168,7 @@ namespace Rock.CheckIn.v2.Labels
                 Name = "Current Time",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
-                ValueFunc = ( source, field, printRequest ) => RockDateTime.Now
+                ValueFunc = ( source, field, printRequest ) => source.CurrentTime
             } );
 
             dataSources.Add( new MultiValueFieldDataSource<PersonLabelData>
@@ -166,7 +177,7 @@ namespace Rock.CheckIn.v2.Labels
                 Name = "Group Name",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
-                ValuesFunc = ( source, field, printRequest ) => source.PersonAttendance.Select( a => a.Group.Name )
+                ValuesFunc = ( source, field, printRequest ) => source.GroupNames
             } );
 
             dataSources.Add( new MultiValueFieldDataSource<PersonLabelData>
@@ -175,15 +186,7 @@ namespace Rock.CheckIn.v2.Labels
                 Name = "Group Role Name",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
-                ValuesFunc = ( source, field, printRequest ) => source.PersonAttendance
-                    .SelectMany( a => a.GroupMembers )
-                    .Select( gm => GroupTypeCache.Get( gm.GroupTypeId, printRequest.RockContext )
-                        ?.Roles
-                        .FirstOrDefault( r => r.Id == gm.GroupRoleId )
-                        ?.Name )
-                    .Where( n => n != null )
-                    .FirstOrDefault()
-                    ?? string.Empty
+                ValuesFunc = ( source, field, printRequest ) => source.GroupRoleNames
             } );
 
             dataSources.Add( new MultiValueFieldDataSource<PersonLabelData>
@@ -192,7 +195,7 @@ namespace Rock.CheckIn.v2.Labels
                 Name = "Location Name",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
-                ValuesFunc = ( source, field, printRequest ) => source.PersonAttendance.Select( a => a.Location.Name )
+                ValuesFunc = ( source, field, printRequest ) => source.LocationNames
             } );
 
             dataSources.Add( new MultiValueFieldDataSource<PersonLabelData>
@@ -201,7 +204,7 @@ namespace Rock.CheckIn.v2.Labels
                 Name = "Schedule Name",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
-                ValuesFunc = ( source, field, printRequest ) => source.PersonAttendance.Select( a => a.Schedule.Name )
+                ValuesFunc = ( source, field, printRequest ) => source.ScheduleNames
             } );
 
             dataSources.Add( new MultiValueFieldDataSource<PersonLabelData>
@@ -219,7 +222,7 @@ namespace Rock.CheckIn.v2.Labels
                 Name = "Security Code",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
-                ValueFunc = ( source, field, printRequest ) => source.PersonAttendance.Select( a => a.SecurityCode ).FirstOrDefault() ?? string.Empty
+                ValueFunc = ( source, field, printRequest ) => source.SecurityCode
             } );
 
             return dataSources;
@@ -230,7 +233,7 @@ namespace Rock.CheckIn.v2.Labels
         /// </summary>
         /// <returns>A list of field data sources.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage( "Style", "IDE0028:Simplify collection initialization", Justification = "Because the list of options is so long it is more clear to use the Add() method." )]
-        private static List<FieldDataSource> GetPersonLabelAchievementInfoSources()
+        private static List<FieldDataSource> GetPersonLabelAchievementInfoDataSources()
         {
             var dataSources = new List<FieldDataSource>();
 
@@ -264,9 +267,78 @@ namespace Rock.CheckIn.v2.Labels
             return dataSources;
         }
 
+        /// <summary>
+        /// Gets the filter sources that will be used with <see cref="LabelType.Person"/>.
+        /// </summary>
+        /// <returns>A list of <see cref="FieldFilterSourceBag"/> objects that represent the filtering options.</returns>
         public static List<FieldFilterSourceBag> GetPersonLabelFilterSources()
         {
-            return GetPersonFilterSources();
+            var filterSources = GetPersonFilterSources( nameof( PersonLabelData.Person ) );
+
+            // Add in the IsFirstTime filter.
+            filterSources.Add( CreateBooleanPropertyFilter(
+                propertyName: nameof( PersonLabelData.IsFirstTime ),
+                category: "Common" ) );
+
+            // Add in the Check-in Info filters.
+            filterSources.Add( CreateStringPropertyFilter(
+                propertyName: nameof( PersonLabelData.AreaNames ),
+                category: "Check-in Info" ) );
+
+            filterSources.Add( CreateDateTimePropertyFilter(
+                propertyName: nameof( PersonLabelData.CheckInTime ),
+                category: "Check-in Info" ) );
+
+            filterSources.Add( CreateDateTimePropertyFilter(
+                propertyName: nameof( PersonLabelData.CurrentTime ),
+                category: "Check-in Info" ) );
+
+            filterSources.Add( CreateStringPropertyFilter(
+                propertyName: nameof( PersonLabelData.GroupNames ),
+                category: "Check-in Info" ) );
+
+            filterSources.Add( CreateStringPropertyFilter(
+                propertyName: nameof( PersonLabelData.GroupRoleNames ),
+                category: "Check-in Info" ) );
+
+            filterSources.Add( CreateStringPropertyFilter(
+                propertyName: nameof( PersonLabelData.LocationNames ),
+                category: "Check-in Info" ) );
+
+            filterSources.Add( CreateStringPropertyFilter(
+                propertyName: nameof( PersonLabelData.ScheduleNames ),
+                category: "Check-in Info" ) );
+
+            filterSources.Add( CreateStringPropertyFilter(
+                propertyName: nameof( PersonLabelData.SecurityCode ),
+                category: "Check-in Info" ) );
+
+            // Add in the Achievement Info filters.
+            filterSources.Add( CreateStringPropertyFilter(
+                propertyName: nameof( PersonLabelData.InProgressAchievements ),
+                category: "Achievement Info" ) );
+
+            filterSources.Add( CreateIntegerPropertyFilter(
+                propertyName: nameof( PersonLabelData.InProgressAchievementIds ),
+                category: "Achievement Info" ) );
+
+            filterSources.Add( CreateStringPropertyFilter(
+                propertyName: nameof( PersonLabelData.JustCompletedAchievements ),
+                category: "Achievement Info" ) );
+
+            filterSources.Add( CreateIntegerPropertyFilter(
+                propertyName: nameof( PersonLabelData.JustCompletedAchievementIds ),
+                category: "Achievement Info" ) );
+
+            filterSources.Add( CreateStringPropertyFilter(
+                propertyName: nameof( PersonLabelData.PreviouslyCompletedAchievements ),
+                category: "Achievement Info" ) );
+
+            filterSources.Add( CreateIntegerPropertyFilter(
+                propertyName: nameof( PersonLabelData.PreviouslyCompletedAchievementIds ),
+                category: "Achievement Info" ) );
+
+            return filterSources;
         }
 
         #endregion
@@ -279,9 +351,9 @@ namespace Rock.CheckIn.v2.Labels
         /// <returns>A list of data sources.</returns>
         public static List<FieldDataSource> GetAttendanceLabelDataSources()
         {
-            return GetAttendanceLabelAttendeeInfoSources()
-                .Concat( GetAttendanceLabelCheckInInfoSources() )
-                .Concat( GetAttendanceLabelAchievementInfoSources() )
+            return GetAttendanceLabelAttendeeInfoDataSources()
+                .Concat( GetAttendanceLabelCheckInInfoDataSources() )
+                .Concat( GetAttendanceLabelAchievementInfoDataSources() )
                 .DistinctBy( ds => ds.Key )
                 .ToList();
         }
@@ -290,9 +362,9 @@ namespace Rock.CheckIn.v2.Labels
         /// Gets the attendee information data sources for an attendance label.
         /// </summary>
         /// <returns>A list of field data sources.</returns>
-        private static List<FieldDataSource> GetAttendanceLabelAttendeeInfoSources()
+        private static List<FieldDataSource> GetAttendanceLabelAttendeeInfoDataSources()
         {
-            return GetStandardPersonAttendeeInfoSources<PersonLabelData>();
+            return GetStandardPersonAttendeeInfoDataSources<PersonLabelData>();
         }
 
         /// <summary>
@@ -300,7 +372,7 @@ namespace Rock.CheckIn.v2.Labels
         /// </summary>
         /// <returns>A list of field data sources.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage( "Style", "IDE0028:Simplify collection initialization", Justification = "Because the list of options is so long it is more clear to use the Add() method." )]
-        private static List<FieldDataSource> GetAttendanceLabelCheckInInfoSources()
+        private static List<FieldDataSource> GetAttendanceLabelCheckInInfoDataSources()
         {
             var dataSources = new List<FieldDataSource>();
 
@@ -401,7 +473,7 @@ namespace Rock.CheckIn.v2.Labels
         /// </summary>
         /// <returns>A list of field data sources.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage( "Style", "IDE0028:Simplify collection initialization", Justification = "Because the list of options is so long it is more clear to use the Add() method." )]
-        private static List<FieldDataSource> GetAttendanceLabelAchievementInfoSources()
+        private static List<FieldDataSource> GetAttendanceLabelAchievementInfoDataSources()
         {
             var dataSources = new List<FieldDataSource>();
 
@@ -435,6 +507,23 @@ namespace Rock.CheckIn.v2.Labels
             return dataSources;
         }
 
+        public static List<FieldFilterSourceBag> GetAttendanceLabelFilterSources()
+        {
+            var filterSources = GetPersonFilterSources( nameof( PersonLabelData.Person ) );
+
+            // Add in the IsFirstTime filter.
+            filterSources.Add( CreateBooleanPropertyFilter(
+                propertyName: nameof( PersonLabelData.IsFirstTime ),
+                category: "Common" ) );
+
+            // Add in the AreaNames filter.
+            filterSources.Add( CreateStringPropertyFilter(
+                propertyName: nameof( PersonLabelData.AreaNames ),
+                category: "Check-in Info" ) );
+
+            return filterSources;
+        }
+
         #endregion
 
         #region Family Label
@@ -445,9 +534,9 @@ namespace Rock.CheckIn.v2.Labels
         /// <returns>A list of data sources.</returns>
         public static List<FieldDataSource> GetFamilyLabelDataSources()
         {
-            return GetFamilyLabelAttendeeInfoSources()
-                .Concat( GetFamilyLabelCheckInInfoSources() )
-                .Concat( GetFamilyLabelAchievementInfoSources() )
+            return GetFamilyLabelAttendeeInfoDataSources()
+                .Concat( GetFamilyLabelCheckInInfoDataSources() )
+                .Concat( GetFamilyLabelAchievementInfoDataSources() )
                 .DistinctBy( ds => ds.Key )
                 .ToList();
         }
@@ -457,7 +546,7 @@ namespace Rock.CheckIn.v2.Labels
         /// </summary>
         /// <returns>A list of field data sources.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage( "Style", "IDE0028:Simplify collection initialization", Justification = "Because the list of options is so long it is more clear to use the Add() method." )]
-        private static List<FieldDataSource> GetFamilyLabelAttendeeInfoSources()
+        private static List<FieldDataSource> GetFamilyLabelAttendeeInfoDataSources()
         {
             var dataSources = new List<FieldDataSource>();
 
@@ -492,7 +581,7 @@ namespace Rock.CheckIn.v2.Labels
         /// </summary>
         /// <returns>A list of field data sources.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage( "Style", "IDE0028:Simplify collection initialization", Justification = "Because the list of options is so long it is more clear to use the Add() method." )]
-        private static List<FieldDataSource> GetFamilyLabelCheckInInfoSources()
+        private static List<FieldDataSource> GetFamilyLabelCheckInInfoDataSources()
         {
             var dataSources = new List<FieldDataSource>();
 
@@ -545,7 +634,7 @@ namespace Rock.CheckIn.v2.Labels
         /// </summary>
         /// <returns>A list of field data sources.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage( "Style", "IDE0028:Simplify collection initialization", Justification = "Because the list of options is so long it is more clear to use the Add() method." )]
-        private static List<FieldDataSource> GetFamilyLabelAchievementInfoSources()
+        private static List<FieldDataSource> GetFamilyLabelAchievementInfoDataSources()
         {
             var dataSources = new List<FieldDataSource>();
 
@@ -573,8 +662,8 @@ namespace Rock.CheckIn.v2.Labels
         {
             // Use the same information as attendance label except for achievement
             // information, since we don't have that data now.
-            return GetAttendanceLabelAttendeeInfoSources()
-                .Concat( GetAttendanceLabelCheckInInfoSources() )
+            return GetAttendanceLabelAttendeeInfoDataSources()
+                .Concat( GetAttendanceLabelCheckInInfoDataSources() )
                 .DistinctBy( ds => ds.Key )
                 .ToList();
         }
@@ -587,7 +676,7 @@ namespace Rock.CheckIn.v2.Labels
         /// </summary>
         /// <returns>A list of field data sources.</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage( "Style", "IDE0028:Simplify collection initialization", Justification = "Because the list of options is so long it is more clear to use the Add() method." )]
-        private static List<FieldDataSource> GetStandardPersonAttendeeInfoSources<TLabelData>()
+        private static List<FieldDataSource> GetStandardPersonAttendeeInfoDataSources<TLabelData>()
             where TLabelData : ILabelDataHasPerson
         {
             var dataSources = new List<FieldDataSource>();
@@ -726,7 +815,12 @@ namespace Rock.CheckIn.v2.Labels
             return dataSources;
         }
 
-        public static List<FieldFilterSourceBag> GetPersonFilterSources()
+        /// <summary>
+        /// Retrieves a list of all the filter sources for a person object.
+        /// </summary>
+        /// <param name="filterPath">The path to the person object.</param>
+        /// <returns>A list of <see cref="FieldFilterSourceBag"/> objects that represent all the filtering objects.</returns>
+        public static List<FieldFilterSourceBag> GetPersonFilterSources( string filterPath )
         {
             var filterSources = new List<FieldFilterSourceBag>();
 
@@ -743,7 +837,8 @@ namespace Rock.CheckIn.v2.Labels
                     {
                         Guid = Guid.NewGuid(),
                         Type = FieldFilterSourceType.Property,
-                        Category = "Properties",
+                        Path = filterPath,
+                        Category = "Person Properties",
                         Property = new FieldFilterPropertyBag
                         {
                             Title = entityField.Title,
@@ -764,7 +859,8 @@ namespace Rock.CheckIn.v2.Labels
                     {
                         Guid = Guid.NewGuid(),
                         Type = FieldFilterSourceType.Attribute,
-                        Category = "Attributes",
+                        Path = filterPath,
+                        Category = "Person Attributes",
                         Attribute = PublicAttributeHelper.GetPublicAttributeForEdit( AttributeCache.Get( entityField.AttributeGuid.Value ) )
                     };
 
@@ -777,9 +873,23 @@ namespace Rock.CheckIn.v2.Labels
                 filterSources.Add( filterSource );
             }
 
+            // Add in the Age filter, which will actually use AgePrecise.
+            filterSources.Add( CreateDecimalPropertyFilter(
+                propertyName: nameof( Person.AgePrecise ),
+                title: "Age",
+                path: filterPath,
+                category: "Common" ) );
+
+            // Add in the GradeOffset filter.
+            filterSources.Add( CreateIntegerPropertyFilter(
+                propertyName: nameof( Person.GradeOffset ),
+                path: filterPath,
+                category: "Common" ) );
+
             return filterSources;
         }
 
+        // TODO: Probably change this to a class.
         private static FieldDataSource GetPropertyDataSource<TLabelData>( EntityField entityField, string propertyPath, Func<TLabelData, object> propertySelector )
         {
             var dataSource = new SingleValueFieldDataSource<TLabelData>
@@ -814,6 +924,136 @@ namespace Rock.CheckIn.v2.Labels
             }
 
             return dataSource;
+        }
+
+        /// <summary>
+        /// Creates a boolean property filter based on the provided parameters.
+        /// </summary>
+        /// <param name="propertyName">The name of the property to use in the filter.</param>
+        /// <param name="path">The path to the property (optional).</param>
+        /// <param name="category">The category of the property (optional).</param>
+        /// <param name="title">The title of the property (optional).</param>
+        /// <returns>A new instance of <see cref="FieldFilterSourceBag"/> that represents the filtering options.</returns>
+        private static FieldFilterSourceBag CreateBooleanPropertyFilter( string propertyName, string path = null, string category = null, string title = null )
+        {
+            return new FieldFilterSourceBag
+            {
+                Guid = Guid.NewGuid(),
+                Type = FieldFilterSourceType.Property,
+                Path = path,
+                Category = category,
+                Property = new FieldFilterPropertyBag
+                {
+                    Title = title ?? propertyName.SplitCase(),
+                    Name = propertyName,
+                    FieldTypeGuid = SystemGuid.FieldType.BOOLEAN.AsGuid(),
+                    ConfigurationValues = new Dictionary<string, string>()
+                }
+            };
+        }
+
+        /// <summary>
+        /// Creates a filter for an integer property using the specified parameters.
+        /// </summary>
+        /// <param name="propertyName">The name of the property to filter.</param>
+        /// <param name="path">The path to the property.</param>
+        /// <param name="category">The category of the property.</param>
+        /// <param name="title">The title of the property filter.</param>
+        /// <returns>A new instance of <see cref="FieldFilterSourceBag"/> that represents the filtering options.</returns>
+        private static FieldFilterSourceBag CreateIntegerPropertyFilter( string propertyName, string path = null, string category = null, string title = null )
+        {
+            return new FieldFilterSourceBag
+            {
+                Guid = Guid.NewGuid(),
+                Type = FieldFilterSourceType.Property,
+                Path = path,
+                Category = category,
+                Property = new FieldFilterPropertyBag
+                {
+                    Title = title ?? propertyName.SplitCase(),
+                    Name = propertyName,
+                    FieldTypeGuid = SystemGuid.FieldType.INTEGER.AsGuid(),
+                    ConfigurationValues = new Dictionary<string, string>()
+                }
+            };
+        }
+
+        /// <summary>
+        /// Creates a filter for a decimal property using the specified parameters.
+        /// </summary>
+        /// <param name="propertyName">The name of the property to filter.</param>
+        /// <param name="path">The path of the property (optional).</param>
+        /// <param name="category">The category of the property (optional).</param>
+        /// <param name="title">The title of the property (optional).</param>
+        /// <returns>A new instance of <see cref="FieldFilterSourceBag"/> that represents the filtering options.</returns>
+        private static FieldFilterSourceBag CreateDecimalPropertyFilter( string propertyName, string path = null, string category = null, string title = null )
+        {
+            return new FieldFilterSourceBag
+            {
+                Guid = Guid.NewGuid(),
+                Type = FieldFilterSourceType.Property,
+                Path = path,
+                Category = category,
+                Property = new FieldFilterPropertyBag
+                {
+                    Title = title ?? propertyName.SplitCase(),
+                    Name = propertyName,
+                    FieldTypeGuid = SystemGuid.FieldType.DECIMAL.AsGuid(),
+                    ConfigurationValues = new Dictionary<string, string>()
+                }
+            };
+        }
+
+        /// <summary>
+        /// Creates a filter for the string property using the specified parameters.
+        /// </summary>
+        /// <param name="propertyName">The name of the property to filter.</param>
+        /// <param name="path">The path to the property (optional).</param>
+        /// <param name="category">The category of the property (optional).</param>
+        /// <param name="title">The title of the property (optional).</param>
+        /// <returns>A new instance of <see cref="FieldFilterSourceBag"/> that represents the filtering options.</returns>
+        private static FieldFilterSourceBag CreateStringPropertyFilter( string propertyName, string path = null, string category = null, string title = null )
+        {
+            return new FieldFilterSourceBag
+            {
+                Guid = Guid.NewGuid(),
+                Type = FieldFilterSourceType.Property,
+                Path = path,
+                Category = category,
+                Property = new FieldFilterPropertyBag
+                {
+                    Title = title ?? propertyName.SplitCase(),
+                    Name = propertyName,
+                    FieldTypeGuid = SystemGuid.FieldType.TEXT.AsGuid(),
+                    ConfigurationValues = new Dictionary<string, string>()
+                }
+            };
+        }
+
+        /// <summary>
+        /// Creates a filter for the DateTime property using the specified parameters.
+        /// </summary>
+        /// <param name="propertyName">The name of the property to filter.</param>
+        /// <param name="path">The path to the property (optional).</param>
+        /// <param name="category">The category of the property (optional).</param>
+        /// <param name="title">The title of the property (optional).</param>
+        /// <returns>A new instance of <see cref="FieldFilterSourceBag"/> that represents the filtering options.</returns>
+        private static FieldFilterSourceBag CreateDateTimePropertyFilter( string propertyName, string path = null, string category = null, string title = null )
+        {
+            return new FieldFilterSourceBag
+            {
+                Guid = Guid.NewGuid(),
+                Type = FieldFilterSourceType.Property,
+                Path = path,
+                Category = category,
+                Property = new FieldFilterPropertyBag
+                {
+                    Title = title ?? propertyName.SplitCase(),
+                    Name = propertyName,
+                    FieldTypeGuid = SystemGuid.FieldType.DATE_TIME.AsGuid(),
+                    ConfigurationValues = new Dictionary<string, string>()
+                }
+            };
         }
     }
 }
