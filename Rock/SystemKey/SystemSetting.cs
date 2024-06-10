@@ -397,5 +397,10 @@ namespace Rock.SystemKey
         /// Whether the giving month should use Sunday date for the analytics calendar dimension.
         /// </summary>
         public const string ANALYTICS_CALENDAR_DIMENSION_GIVING_MONTH_USE_SUNDAY_DATE = "core_AnalyticsCalendarDimensionGivingMonthUseSundayDate";
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public const string SEND_LEARNING_ACTIVITY_NOTIFICATIONS_JOB_SETTINGS = "lms_SendLearningActivityNotificationsJobSettings";
     }
 }

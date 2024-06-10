@@ -1,0 +1,262 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+
+    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+
+    <DetailBlock
+                 v-if="!blockError"
+                 v-model:mode="panelMode"
+                 :isFullScreenVisible="false"
+                 :isAuditHidden="false"
+                 :name="panelName"
+                 :labels="blockLabels"
+                 :entityKey="entityKey"
+                 :entityTypeGuid="entityTypeGuid"
+                 entityTypeName="Activity"
+                 :isBadgesVisible="false"
+                 :isSecurityHidden="false"
+                 :footerSecondaryActions="footerSecondaryActions"
+                 :isEditVisible="isEditable"
+                 @cancelEdit="onCancelEdit"
+                 @edit="onEdit"
+                 @save="onSave">
+        <template #view>
+            <ViewPanel :modelValue="learningActivityViewBag" :options="options" :hasFullScreen="false" />
+        </template>
+        <template #edit>
+            <EditPanel v-model="learningActivityEditBag" :options="options" @propertyChanged="onPropertyChanged" :hasFullScreen="false" />
+        </template>
+    </DetailBlock>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { onConfigurationValuesChanged, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import DetailBlock from "@Obsidian/Templates/detailBlock";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
+    import { LearningActivityDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import EditPanel from "./LearningActivityDetail/editPanel.partial.obs";
+    import ViewPanel from "./LearningActivityDetail/viewPanel.partial.obs";
+    import { debounce } from "@Obsidian/Utility/util";
+    import { NavigationUrlKey } from "./LearningActivityDetail/types.partial";
+    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+
+    const config = useConfigurationValues<DetailBlockBox<LearningActivityBag, LearningActivityDetailOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    onConfigurationValuesChanged(useReloadBlock());
+
+    const entityTypeGuid = EntityType.LearningProgram;
+
+    // #region Values
+
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
+
+    const blockError = ref("");
+    const errorMessage = ref("");
+
+    const learningActivityViewBag = ref(config.entity);
+    const learningActivityEditBag = ref<ValidPropertiesBox<LearningActivityBag>>({
+        bag: {} as LearningActivityBag
+    });
+
+    // The properties that are being edited in the UI. This is used to
+    // inform the server which incoming values have valid data in them.
+    const validProperties = [];
+
+    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(learningActivityEditBag, validProperties, invokeBlockAction), undefined, true);
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * Additional labels to display in the block panel.
+     */
+    const blockLabels = computed((): PanelAction[] | undefined => {
+        const labels: PanelAction[] = [];
+
+        if (panelMode.value !== DetailPanelMode.View) {
+            return undefined;
+        }
+
+        labels.push({
+            title: `Completions: ${learningActivityViewBag.value?.completeCount ?? "0"} (${learningActivityViewBag.value?.percentComplete?.toFixed(0) ?? 0}%)`,
+            type: "info",
+            iconCssClass: "fa fa-group"
+        });
+
+        if (learningActivityViewBag.value?.isPastDue) {
+            labels.push({
+                title: "Past Due",
+                type: "warning"
+            });
+        }
+
+        return labels;
+    });
+
+    const isEditable = computed((): boolean => {
+        return config.isEditable === true;
+    });
+
+    const options = computed((): LearningActivityDetailOptionsBag => {
+        return config.options ?? {};
+    });
+
+    /**
+     * The entity name to display in the block panel.
+     */
+    const panelName = computed((): string => {
+        return learningActivityViewBag.value?.name ?? "";
+    });
+
+    /**
+     * The identifier key value for this entity.
+     */
+    const entityKey = computed((): string => {
+        return learningActivityViewBag.value?.idKey ?? "";
+    });
+
+    /**
+     * The footer secondary actions for the block panel.
+     */
+    const footerSecondaryActions = computed((): PanelAction[] => {
+        if (panelMode.value != DetailPanelMode.View) {
+            return [];
+        }
+
+        const secondaryActions: PanelAction[] = [];
+
+        if (isEditable) {
+            secondaryActions.push({
+                iconCssClass: "fa fa-copy",
+                title: "Copy Activity",
+                type: "default",
+                handler: onCopy
+            });
+        }
+
+        return secondaryActions;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when the copy icon on the detail block has been clicked.
+     */
+    async function onCopy(): Promise<void> {
+        errorMessage.value = "";
+        var result = await invokeBlockAction<string>("Copy", {
+            key: learningActivityViewBag.value?.idKey ?? ""
+        });
+        if (result.isSuccess && result.data && typeof result.data === "string") {
+            window.location.href = makeUrlRedirectSafe(result.data);
+            return;
+        }
+        errorMessage.value = result.errorMessage ?? "Unknown error while trying to copy activity.";
+    }
+
+    /**
+     * Event handler for the Cancel button being clicked while in Edit mode.
+     * Handles redirect to parent page if creating a new entity.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onCancelEdit(): Promise<boolean | string> {
+        if (!learningActivityEditBag.value?.bag?.idKey) {
+            if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+                return config.navigationUrls[NavigationUrlKey.ParentPage];
+            }
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Event handler for the Edit button being clicked. Request the edit
+     * details from the server and then enter edit mode.
+     *
+     * @returns true if the panel should enter edit mode; otherwise false.
+     */
+    async function onEdit(): Promise<boolean> {
+        const result = await invokeBlockAction<ValidPropertiesBox<LearningActivityBag>>("Edit", {
+            key: learningActivityViewBag.value?.idKey
+        });
+
+        if (result.isSuccess && result.data && result.data.bag) {
+            learningActivityEditBag.value = {
+                bag: result.data.bag,
+                validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
+            };
+
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    /**
+     * Event handler for the panel's Save event. Send the data to the server
+     * to be saved and then leave edit mode or redirect to target page.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onSave(): Promise<boolean | string> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<ValidPropertiesBox<LearningActivityBag> | string>("Save", {
+            box: learningActivityEditBag.value
+        });
+
+        if (result.isSuccess && result.data) {
+            if (result.statusCode === 200 && typeof result.data === "object") {
+                learningActivityViewBag.value = result.data.bag;
+
+                return true;
+            }
+            else if (result.statusCode === 201 && typeof result.data === "string") {
+                return result.data;
+            }
+        }
+
+        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save learning activity.";
+
+        return false;
+    }
+
+    /**
+     * Event handler for when a value has changed that has an associated
+     * C# property name. This is used to detect changes to values that
+     * might cause qualified attributes to either show up or not show up.
+     *
+     * @param propertyName The name of the C# property that was changed.
+     */
+    function onPropertyChanged(propertyName: string): void {
+        // If we don't have any qualified attribute properties or this property
+        // is not one of them then do nothing.
+        if (!config.qualifiedAttributeProperties || !config.qualifiedAttributeProperties.some(n => n.toLowerCase() === propertyName.toLowerCase())) {
+            return;
+        }
+
+        refreshAttributesDebounce();
+    }
+
+    // #endregion
+
+</script>

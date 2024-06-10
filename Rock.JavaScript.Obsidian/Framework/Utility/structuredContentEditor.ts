@@ -16,6 +16,7 @@
 
 import { useHttp } from "./http";
 import { StructuredContentEditorConfigurationBag } from "@Obsidian/ViewModels/Rest/Controls/structuredContentEditorConfigurationBag";
+import { StructuredContentBag } from "@Obsidian/ViewModels/Rest/Controls/StructuredContentBag";
 import { StructuredContentEditorGetConfigurationOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/structuredContentEditorGetConfigurationOptionsBag";
 
 const http = useHttp();
@@ -31,6 +32,23 @@ export async function getStructuredContentEditorConfiguration(options: Structure
     throw new Error(result.errorMessage || "Error fetching structured content editor configuration");
 }
 
+/** Fetches structured content as html. */
+export async function getStructuredContentAsHtml(structuredContent: StructuredContentBag): Promise<string> {
+    try {
+        const result = await http.post<string>("/api/v2/Controls/StructuredContentAsHtml", undefined, {...structuredContent});
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+    }
+    catch (error)  {
+        /* Error intentionally ignored */
+    }
+    return "";
+}
+
+
 export default {
+    getStructuredContentAsHtml,
     getStructuredContentEditorConfiguration
 };

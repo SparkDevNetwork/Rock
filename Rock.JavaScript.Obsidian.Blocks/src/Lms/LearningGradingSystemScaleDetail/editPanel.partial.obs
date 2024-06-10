@@ -1,0 +1,132 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+            </div>
+
+            <div class="col-md-12">
+                <TextBox v-model="description"
+                         label="Description"
+                         textMode="multiline" />
+
+            </div>
+
+            <div class="col-md-3">
+                <NumberBox v-model="thresholdPercentage"
+                           :decimalCount="3"
+                           :minimumValue="0"
+                           :maximumValue="100"
+                           label="Threshold Percentage"
+                           help="Enter the minimum percentage a student must achieve to receive this grade."
+                           inputGroupClasses="input-width-md">
+                    <template #inputGroupAppend>
+                        <span class="input-group-addon">%</span>
+                    </template>
+                </NumberBox>
+            </div>
+            <div class="col-md-6 col-md-offset-3">
+                <CheckBox v-model="isPassing"
+                          label="Is Passing"
+                          class="col-md-6 col-md-offset-3"
+                          help="Specify whether this grade is considered passing." />
+            </div>
+
+        </div>
+
+
+        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { LearningGradingSystemScaleBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningGradingSystemScaleDetail/learningGradingSystemScaleBag";
+    import { LearningGradingSystemScaleDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningGradingSystemScaleDetail/learningGradingSystemScaleDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<LearningGradingSystemScaleBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<LearningGradingSystemScaleDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<LearningGradingSystemScaleBag>): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue.bag?.attributeValues ?? {});
+    const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
+    const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
+    const thresholdPercentage = propertyRef(props.modelValue.bag?.thresholdPercentage ?? 0, "ThresholdPercentage");
+    const isPassing = propertyRef(props.modelValue.bag?.isPassing ?? false, "IsPassing");
+
+
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [description, name, thresholdPercentage, isPassing];
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.bag?.attributeValues ?? {});
+        updateRefValue(description, props.modelValue.bag?.description ?? "");
+        updateRefValue(name, props.modelValue.bag?.name ?? "");
+        updateRefValue(thresholdPercentage, props.modelValue.bag?.thresholdPercentage ?? 0);
+        updateRefValue(isPassing, props.modelValue.bag?.isPassing ?? false);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, ...propRefs], () => {
+        const newValue: ValidPropertiesBox<LearningGradingSystemScaleBag> = {
+            bag: { ...props.modelValue.bag } as LearningGradingSystemScaleBag
+        };
+
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "thresholdPercentage", thresholdPercentage.value);
+        setPropertiesBoxValue(newValue, "isPassing", isPassing.value);
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

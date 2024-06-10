@@ -21,36 +21,36 @@
 // </copyright>
 //
 
-/** Determines the completion status of a LearningProgramCompletion. */
+/** Determines the method for calculating the available date. */
 export const AvailableDateCalculationMethod = {
     /** A specific date. */
-    Specific: 1,
+    Specific: 0,
 
     /** An offset of the class start date. */
-    ClassStartOffset: 2,
+    ClassStartOffset: 1,
 
     /** An offset of the class enrollment date. */
-    EnrollmentOffset: 3,
-
-    /** No calculation. */
-    NoDate: 4,
+    EnrollmentOffset: 2,
 
     /** Always available. */
-    AlwaysAvailable: 5
+    AlwaysAvailable: 3,
+
+    /** No calculation (becomes available after previous is completed). */
+    AfterPreviousCompleted: 4
 } as const;
 
-/** Determines the completion status of a LearningProgramCompletion. */
+/** Determines the method for calculating the available date. */
 export const AvailableDateCalculationMethodDescription: Record<number, string> = {
-    1: "Specific",
+    0: "Specific",
 
-    2: "Class Start Offset",
+    1: "Class Start Offset",
 
-    3: "Enrollment Offset",
+    2: "Enrollment Offset",
 
-    4: "No Date",
+    3: "Always Available",
 
-    5: "Always Available"
+    4: "After Previous Completed"
 };
 
-/** Determines the completion status of a LearningProgramCompletion. */
+/** Determines the method for calculating the available date. */
 export type AvailableDateCalculationMethod = typeof AvailableDateCalculationMethod[keyof typeof AvailableDateCalculationMethod];

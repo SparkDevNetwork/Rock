@@ -112,5 +112,10 @@ namespace Rock.SystemGuid
         /// Sign-up Group group type guid
         /// </summary>
         public const string GROUPTYPE_SIGNUP_GROUP = "499B1367-06B3-4538-9D56-56D53F55DCB1";
+
+        /// <summary>
+        /// Learning Management System (LMS) Class group type guid
+        /// </summary>
+        public const string GROUPTYPE_LMS_CLASS = "4BBC41E2-0A37-4289-B7A7-756B9FE8F775";
     }
 }

@@ -24,22 +24,22 @@
 /** The type of course requirement. */
 export const RequirementType = {
     /** Prior completion of the LearningCourse. */
-    Prerequisite: 1,
+    Prerequisite: 0,
 
     /** Simultaneous enrollment of the LearningCourse. */
-    Corequisite: 2,
+    Corequisite: 1,
 
     /** Completion of an equivalent LearningCourse. */
-    Equivalent: 3
+    Equivalent: 2
 } as const;
 
 /** The type of course requirement. */
 export const RequirementTypeDescription: Record<number, string> = {
-    1: "Prerequisite",
+    0: "Prerequisite",
 
-    2: "Corequisite",
+    1: "Corequisite",
 
-    3: "Equivalent"
+    2: "Equivalent"
 };
 
 /** The type of course requirement. */
