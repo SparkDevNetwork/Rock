@@ -25,10 +25,13 @@ import { Guid } from "@Obsidian/Types";
 
 /** Defines the details of an achievement for the check-in process. */
 export type AchievementBag = {
+    /** Gets or sets the unique identifier of the achievement type. */
+    achievementTypeGuid: Guid;
+
     /** Gets or sets the end date time. */
     endDateTime?: string | null;
 
-    /** Gets or sets the unique identifier. */
+    /** Gets or sets the unique identifier of the achievement attempt. */
     guid: Guid;
 
     /**
@@ -40,7 +43,7 @@ export type AchievementBag = {
     /** Gets or sets a value indicating whether this achievement was successful. */
     isSuccess: boolean;
 
-    /** Gets or sets the name of the achievement. */
+    /** Gets or sets the name of the achievement type. */
     name?: string | null;
 
     /**
