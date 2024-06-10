@@ -158,45 +158,6 @@ namespace Rock.Utility
         /// Handles printing labels for the given parameters using the
         /// label data stored on the AttendanceData model.
         /// </summary>
-        /// <param name="fileGuids">The file guids of the label types to print.</param>
-        /// <param name="personId">The person whose labels to print.</param>
-        /// <param name="selectedAttendanceIds">The attendance Ids that have the labels to be reprinted.</param>
-        /// <param name="control">The control to register/inject the client side printing into. This should be
-        /// a control that is inside an UpdatePanel control so that the ScriptManager can register the needed client script block.</param>
-        /// <param name="request">The HTTP Request so that the request's URL can be used when needed for client printing.</param>
-        /// <param name="printerAddress">The IP Address of a printer to send the print job to, overriding what is in the label.</param>
-        /// <returns>
-        /// A list of any messages that occur during printing.
-        /// </returns>
-        [Obsolete( "Use the ReprintZebraLabels with the ReprintLabelOptions option" )]
-        [RockObsolete( "1.12" )]
-        public static List<string> ReprintZebraLabels( List<Guid> fileGuids, int personId, List<int> selectedAttendanceIds, Control control, System.Web.HttpRequest request, string printerAddress = null )
-        {
-            ReprintLabelOptions reprintLabelOptions;
-            if ( printerAddress.IsNotNullOrWhiteSpace() )
-            {
-                reprintLabelOptions = new ReprintLabelOptions
-                {
-                    ServerPrinterIPAddress = printerAddress,
-                    PrintFrom = PrintFrom.Server
-                };
-            }
-            else
-            {
-                reprintLabelOptions = new ReprintLabelOptions
-                {
-                    ServerPrinterIPAddress = null,
-                    PrintFrom = null
-                };
-            }
-
-            return ReprintZebraLabels( fileGuids, personId, selectedAttendanceIds, control, request, reprintLabelOptions );
-        }
-
-        /// <summary>
-        /// Handles printing labels for the given parameters using the
-        /// label data stored on the AttendanceData model.
-        /// </summary>
         /// <param name="fileGuids">The file guids.</param>
         /// <param name="personId">The person identifier.</param>
         /// <param name="selectedAttendanceIds">The selected attendance ids.</param>

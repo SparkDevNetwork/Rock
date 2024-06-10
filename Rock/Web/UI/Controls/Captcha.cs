@@ -51,26 +51,12 @@ namespace Rock.Web.UI.Controls
         protected CustomValidator CustomValidator { get; set; }
 
         /// <summary>
-        /// Cached value to contain if the user response is valid.
-        /// </summary>
-        [Obsolete( "Use ValidatedResult instead." )]
-        [RockObsolete( "1.12.5" )]
-        protected bool? _isResponseValid { get; set; }
-
-        /// <summary>
         /// Gets or sets the cached response result.
         /// </summary>
         /// <value>
         /// The cached response result.
         /// </value>
-        protected bool? ValidatedResult
-        {
-#pragma warning disable CS0618 // Type or member is obsolete
-            // When _isResponseValid is removed, this can be changed to a simple get;set;
-            get => _isResponseValid;
-            set => _isResponseValid = value;
-#pragma warning restore CS0618 // Type or member is obsolete
-        }
+        protected bool? ValidatedResult { get; set; }
 
         #endregion
 

@@ -94,6 +94,34 @@ namespace Rock.Model
         [DataMember]
         public bool IsDirty { get; set; }
 
+        /// <summary>
+        /// Gets or sets the description of the segment.
+        /// </summary>
+        /// <value>
+        /// The description of the segment.
+        /// </value>
+        [DataMember]
+        public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the CategoryId for the segment.
+        /// </summary>
+        /// <value>
+        /// The CategoryId of the segment.
+        /// </value>
+        [DataMember]
+        public int? CategoryId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the duration in milliseconds it takes to update the segment.
+        /// </summary>
+        /// <value>
+        /// The time to update duration in milliseconds.
+        /// </value>
+        [DataMember]
+        public double? TimeToUpdateDurationMilliseconds { get; set; }
+
+
         #endregion Entity Properties
 
         #region Navigation Properties
@@ -104,6 +132,15 @@ namespace Rock.Model
         /// <value>The filter data view.</value>
         [DataMember]
         public virtual DataView FilterDataView { get; set; }
+
+        /// <summary>
+        /// Gets or sets the category associated with the segment.
+        /// </summary>
+        /// <value>
+        /// The category associated with the segment.
+        /// </value>
+        [DataMember]
+        public virtual Category Category { get; set; }
 
         #endregion Navigation Properties
     }

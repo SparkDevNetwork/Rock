@@ -34,6 +34,7 @@ using Rock.Core;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
+using Rock.Net.Geolocation;
 using Rock.Observability;
 using Rock.Web.Cache;
 
@@ -325,6 +326,8 @@ namespace Rock.Jobs
             RunCleanupTask( "stale anonymous visitor", () => RemoveStaleAnonymousVisitorRecord() );
 
             RunCleanupTask( "update campus tithe metric", () => UpdateCampusTitheMetric() );
+            
+            RunCleanupTask( "update geolocation database", () => UpdateGeolocationDatabase() );
 
             /*
              * 21-APR-2022 DMV
@@ -3172,7 +3175,7 @@ END
         /// </summary>
         /// <returns></returns>
         private int UpdateMissingPrimaryFamily()
-       {
+        {
             using ( var rockContext = CreateRockContext() )
             {
                 var personService = new PersonService( rockContext );
@@ -3276,6 +3279,17 @@ END
 
                 return rockContext.SaveChanges();
             }
+        }
+
+        /// <summary>
+        /// Updates Rock's geolocation database.
+        /// </summary>
+        /// <returns>1 if the database was updated successfully.</returns>
+        private int UpdateGeolocationDatabase()
+        {
+            IpGeoLookup.Instance.UpdateDatabase();
+
+            return 1;
         }
 
         /// <summary>

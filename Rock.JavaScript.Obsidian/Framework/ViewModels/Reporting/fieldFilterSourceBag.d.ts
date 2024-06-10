@@ -23,6 +23,7 @@
 
 import { FieldFilterSourceType } from "@Obsidian/Enums/Reporting/fieldFilterSourceType";
 import { Guid } from "@Obsidian/Types";
+import { FieldFilterPropertyBag } from "@Obsidian/ViewModels/Reporting/fieldFilterPropertyBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 /**
@@ -35,8 +36,17 @@ export type FieldFilterSourceBag = {
     /** Gets or sets the attribute if the source type is Attribute. */
     attribute?: PublicAttributeBag | null;
 
+    /**
+     * Groups sources together visually in the source field picker when
+     * painting the UI for editing filter rules.
+     */
+    category?: string | null;
+
     /** Gets or sets the unique identifier of this source item. */
     guid: Guid;
+
+    /** Gets or sets the property if the source type is Property. */
+    property?: FieldFilterPropertyBag | null;
 
     /**
      * Gets or sets the type of this source item. This indicates which

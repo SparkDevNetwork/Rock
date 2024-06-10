@@ -31,8 +31,8 @@
                             <span style="opacity: 0.75">Uploading...</span>
                         </div>
                         <div class="image-container" :style="thumbnailStyle"></div>
-                        <div class="options">
-                            <a @click.prevent.stop="onSelectFileClick" aria-label="Select an Image File" title="Select an Image File"><i class="fa fa-pencil" aria-hidden></i></a>
+                        <div :class="{'options': !buttonCssClass}">
+                            <a aria-label="Select an Image File" title="Select an Image File" :class="buttonCssClass"><i :class="buttonIconCssClass" aria-hidden></i> {{ buttonText }}</a>
                             <a @click.prevent.stop="onRemoveFileClick" v-if="isDeleteVisible" aria-label="Clear Image" title="Clear Image"><i class="fa fa-times" aria-hidden></i></a>
                         </div>
                         <div class="image-editor-fileinput">
@@ -116,6 +116,19 @@
         hideDeleteButton: {
             type: Boolean,
             default: false
+        },
+
+        buttonIconCssClass: {
+            type: String,
+            default: "fa fa-pencil"
+        },
+
+        buttonCssClass: {
+            type: String,
+        },
+
+        buttonText: {
+            type: String,
         },
 
         ...standardRockFormFieldProps

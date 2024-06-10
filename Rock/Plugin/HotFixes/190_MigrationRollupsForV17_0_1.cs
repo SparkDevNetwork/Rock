@@ -52,7 +52,10 @@ namespace Rock.Plugin.HotFixes
             RockMigrationHelper.AddPage( true, "B892DF6D-4789-4AC3-9E6C-2BFE0D9E30E4", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Adaptive Messages", "", "73112D38-E051-4452-AEF9-E473EEDD0BCB", "fa fa-comment" );
             RockMigrationHelper.AddPage( true, "73112D38-E051-4452-AEF9-E473EEDD0BCB", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Adaptive Message Detail", "", "BEC30E90-0434-43C4-B839-09E11775E497", "" );
             RockMigrationHelper.AddPage( true, "BEC30E90-0434-43C4-B839-09E11775E497", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Adaptive Message Adaptation Detail", "", "FE12A90C-C20F-4F23-A1B1-528E0C5FDA83", "" );
+
+#pragma warning disable CS0618 // Type or member is obsolete
             RockMigrationHelper.AddPageRoute( "222ED9E3-06C0-438F-B520-C899B8835650", "admin/cms/adaptive-message/attributes", "E612018C-FD4B-4F6F-9BCD-3B76B58CC8AB" );
+#pragma warning restore CS0618 // Type or member is obsolete
 
             RockMigrationHelper.AddBlock( true, "222ED9E3-06C0-438F-B520-C899B8835650".AsGuid(), null, "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "791DB49B-58A4-44E1-AEF5-ABFF2F37E197".AsGuid(), "Attributes", "Main", @"", @"", 0, "F1233621-77CC-4CBE-AE21-9221B2EC4034" );
             RockMigrationHelper.AddBlock( true, "73112D38-E051-4452-AEF9-E473EEDD0BCB".AsGuid(), null, "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "CBA57502-8C9A-4414-B0D4-DB0D57EF89BD".AsGuid(), "Adaptive Message List", "Main", @"", @"", 0, "2DBFA85E-BA20-4FF2-8372-80688C8B9CD1" );

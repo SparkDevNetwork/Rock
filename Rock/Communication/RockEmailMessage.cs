@@ -227,6 +227,7 @@ namespace Rock.Communication
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RockEmailMessage"/> class.
+        /// This method would be removed in future along with the obsoleted <see cref="SystemEmail"/> Model.
         /// </summary>
         /// <param name="systemEmail">The system email.</param>
         [Obsolete( "Use constructor RockEmailMessage( SystemCommunication ) instead.", true )]
@@ -238,6 +239,7 @@ namespace Rock.Communication
 
         /// <summary>
         /// Initializes the email message.
+        /// This method would be removed in future along with the obsoleted <see cref="SystemEmail"/> Model.
         /// </summary>
         /// <param name="systemEmail">The system email.</param>
         [Obsolete("", true)]

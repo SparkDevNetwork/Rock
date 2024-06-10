@@ -44,6 +44,7 @@ using System.Runtime.InteropServices;
 [assembly: InternalsVisibleTo( "Rock.Update" )]
 [assembly: InternalsVisibleTo( "Rock.WebStartup" )]
 [assembly: InternalsVisibleTo( "Rock.AI.OpenAI" )]
+[assembly: InternalsVisibleTo( "DynamicProxyGenAssembly2" )] // Used by Moq
 
 // Register friendly logging category names.
 [assembly: Rock.Logging.RockLoggingCategory( "Rock.Jobs" )]
@@ -155,3 +156,6 @@ using System.Runtime.InteropServices;
 [assembly: TypeForwardedTo( typeof( Rock.Model.ScheduledAttendanceItemMatchesPreference ) )]
 [assembly: TypeForwardedTo( typeof( Rock.Model.ScheduledAttendanceItemStatus ) )]
 [assembly: TypeForwardedTo( typeof( Rock.Model.SchedulerResourceGroupMemberFilterType ) )]
+
+// The following type forwardings were setup in Rock 1.16.6
+[assembly: TypeForwardedTo( typeof( Rock.Model.ComparisonType ) )]

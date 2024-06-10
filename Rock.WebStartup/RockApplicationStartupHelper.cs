@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Data.Entity;
 using System.Data.Entity.Migrations.Infrastructure;
 using System.Data.SqlClient;
 using System.Diagnostics;
@@ -31,6 +30,7 @@ using DotLiquid;
 
 using Microsoft.Extensions.DependencyInjection;
 
+using Rock.Blocks;
 using Rock.Bus;
 using Rock.Configuration;
 using Rock.Data;
@@ -59,6 +59,22 @@ namespace Rock.WebStartup
         #endregion Constants
 
         #region Properties
+
+        /// <summary>
+        /// Gets the DateTime that <seealso cref="RunApplicationStartup"/> started
+        /// </summary>
+        /// <value>
+        /// The start date time.
+        /// </value>
+        [RockObsolete( "16.6" )]
+        [Obsolete( "Use RockApp.Current.HostingSettings.ApplicationStartDateTime instead." )]
+        public static DateTime StartDateTime
+        {
+            get
+            {
+                return RockApp.Current.HostingSettings.ApplicationStartDateTime;
+            }
+        }
 
         private static Stopwatch _debugTimingStopwatch = Stopwatch.StartNew();
 

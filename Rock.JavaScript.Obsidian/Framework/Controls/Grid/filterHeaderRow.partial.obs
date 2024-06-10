@@ -210,10 +210,10 @@
             return;
         }
 
-        // If the quick filter has the focus and the escape key is pressed
-        // then clear the search.
+        // If the quick filter has the focus, investigate further.
         if (quickFilterContainerElement.value?.contains(event.target)) {
             if (event.key === "Escape") {
+                // If the escape key is pressed then clear the search.
                 if (quickFilterValue.value === "") {
                     const searchBox = quickFilterContainerElement.value?.querySelector(".grid-quick-filter-search input") as HTMLInputElement | null;
 
@@ -223,6 +223,13 @@
                 else {
                     quickFilterValue.value = "";
                 }
+            }
+            else if (event.key === "Enter") {
+                // If the enter/return key is pressed, it signifies the individual
+                // is done typing and is ready to "search"; if the event is not
+                // cancelled, this can lead to other grid actions (i.e. row delete)
+                // from trying to handle the event.
+                event.preventDefault();
             }
         }
 

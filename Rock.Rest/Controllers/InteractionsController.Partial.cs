@@ -199,7 +199,7 @@ namespace Rock.Rest.Controllers
                 }
                 if ( string.IsNullOrWhiteSpace( interactionInfo.UserHostAddress ) )
                 {
-                    interactionInfo.UserHostAddress = request.UserHostAddress;
+                    interactionInfo.UserHostAddress = WebRequestHelper.GetClientIpAddress( new HttpRequestWrapper( request ) );
                 }
             }
 

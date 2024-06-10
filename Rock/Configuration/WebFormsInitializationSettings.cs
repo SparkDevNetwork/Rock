@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Web.Configuration;
@@ -32,29 +33,41 @@ namespace Rock.Configuration
         public WebFormsInitializationSettings( IConnectionStringProvider connectionStringProvider )
             : base( connectionStringProvider )
         {
-            var configuration = WebConfigurationManager.OpenWebConfiguration( "~" );
-            var settings = configuration.AppSettings.Settings;
+            Func<string, string> GetValue;
 
-            IsRunScheduledJobsEnabled = settings["RunJobsInIISContext"]?.Value.AsBoolean() ?? false;
-            OrganizationTimeZone = settings["OrgTimeZone"]?.Value.ToStringSafe();
-            PasswordKey = settings["PasswordKey"]?.Value.ToStringSafe();
-            DataEncryptionKey = settings["DataEncryptionKey"]?.Value.ToStringSafe();
-            RockStoreUrl = settings["RockStoreUrl"]?.Value.ToStringSafe();
-            IsDuplicateGroupMemberRoleAllowed = settings["AllowDuplicateGroupMembers"]?.Value.AsBoolean() ?? false;
-            IsCacheStatisticsEnabled = settings["CacheManagerEnableStatistics"]?.Value.AsBoolean() ?? false;
-            ObservabilityServiceName = settings["ObservabilityServiceName"]?.Value.ToStringSafe();
-            AzureSignalREndpoint = settings["AzureSignalREndpoint"]?.Value.ToStringSafe();
-            AzureSignalRAccessKey = settings["AzureSignalRAccessKey"]?.Value.ToStringSafe();
-            SparkApiUrl = settings["SparkApiUrl"]?.Value.ToStringSafe();
-            NodeName = settings["NodeName"]?.Value.ToStringSafe();
+            try
+            {
+                var configuration = WebConfigurationManager.OpenWebConfiguration( "~" );
+
+                GetValue = key => configuration.AppSettings.Settings[key]?.Value;
+            }
+            catch ( ArgumentException )
+            {
+                // If we are not operating in a web environment, this exception
+                // gets thrown.
+                GetValue = key => ConfigurationManager.AppSettings[key];
+            }
+
+            IsRunScheduledJobsEnabled = GetValue( "RunJobsInIISContext" )?.AsBoolean() ?? false;
+            OrganizationTimeZone = GetValue( "OrgTimeZone" )?.ToStringSafe();
+            PasswordKey = GetValue( "PasswordKey" )?.ToStringSafe();
+            DataEncryptionKey = GetValue( "DataEncryptionKey" )?.ToStringSafe();
+            RockStoreUrl = GetValue( "RockStoreUrl" )?.ToStringSafe();
+            IsDuplicateGroupMemberRoleAllowed = GetValue( "AllowDuplicateGroupMembers" )?.AsBoolean() ?? false;
+            IsCacheStatisticsEnabled = GetValue( "CacheManagerEnableStatistics" )?.AsBoolean() ?? false;
+            ObservabilityServiceName = GetValue( "ObservabilityServiceName" )?.ToStringSafe();
+            AzureSignalREndpoint = GetValue( "AzureSignalREndpoint" )?.ToStringSafe();
+            AzureSignalRAccessKey = GetValue( "AzureSignalRAccessKey" )?.ToStringSafe();
+            SparkApiUrl = GetValue( "SparkApiUrl" )?.ToStringSafe();
+            NodeName = GetValue( "NodeName" )?.ToStringSafe();
 
             // Load old password keys.
             var oldPasswordKeys = new List<string>();
-            for (int i = 0; ; i++)
+            for ( int i = 0; ; i++ )
             {
-                var passwordKey = settings[$"OldPasswordKey{i}"]?.Value;
+                var passwordKey = GetValue( $"OldPasswordKey{i}" );
 
-                if (passwordKey.IsNullOrWhiteSpace())
+                if ( passwordKey.IsNullOrWhiteSpace() )
                 {
                     break;
                 }
@@ -66,7 +79,7 @@ namespace Rock.Configuration
             var oldDataEncryptionKeys = new List<string>();
             for ( int i = 0; ; i++ )
             {
-                var dataEncryptionKey = settings[$"OldDataEncryptionKey{i}"]?.Value;
+                var dataEncryptionKey = GetValue( $"OldDataEncryptionKey{i}" );
 
                 if ( dataEncryptionKey.IsNullOrWhiteSpace() )
                 {

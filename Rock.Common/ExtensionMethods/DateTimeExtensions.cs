@@ -437,28 +437,6 @@ namespace Rock
         }
 
         /// <summary>
-        /// Sundays the date.
-        /// </summary>
-        /// <param name="dt">The date to check.</param>
-        /// <param name="startOfWeek">The start of week.</param>
-        /// <returns></returns>
-        [Obsolete( "Use SundayDate without the firstDayOfWeek parameter", true )]
-        [RockObsolete( "1.10" )]
-        public static DateTime SundayDate( this DateTime dt, DayOfWeek startOfWeek = DayOfWeek.Monday )
-        {
-            if ( dt.DayOfWeek == DayOfWeek.Sunday )
-            {
-                return dt.Date;
-            }
-            else
-            {
-                int intDayofWeek = (int)dt.DayOfWeek;
-                int diff = 7 - (int)dt.DayOfWeek;
-                return dt.AddDays( diff ).Date;
-            }
-        }
-
-        /// <summary>
         /// Gets the week of month.
         /// from http://stackoverflow.com/a/2136549/1755417 but with an option to specify the FirstDayOfWeek
         /// </summary>

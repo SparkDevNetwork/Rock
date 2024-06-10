@@ -166,9 +166,6 @@ namespace Rock.Blocks.Group.Scheduling
         private List<GroupLocationSchedule> _unfilteredGroupLocationSchedules;
         private List<GroupLocationSchedule> _filteredGroupLocationSchedules;
 
-        private readonly string _dateFormat = "M/d";
-        private readonly string _dateFormatWithYear = "M/d/yyyy";
-
         private IDictionary<string, string> _pageParameters;
         private PersonPreferenceCollection _personPreferences;
 
@@ -238,6 +235,7 @@ namespace Rock.Blocks.Group.Scheduling
             {
                 Filters = filters,
                 ScheduleOccurrences = scheduleOccurrences,
+                GroupLocationScheduleNames = GetGroupLocationScheduleNames( scheduleOccurrences ),
                 UnassignedResourceCounts = GetUnassignedResourceCounts( rockContext, scheduleOccurrences ),
                 NavigationUrls = GetNavigationUrls( filters )
             };
@@ -433,10 +431,28 @@ namespace Rock.Blocks.Group.Scheduling
             //  3) If only an end date is selected, set start date = end date.
             //  4) If end date >= start date, set end date = start date.
             //  5) Allow any other valid selections (knowing they might be selecting an excessively-large range).
-            // 
-            // Our goal is to "translate" the sliding date range selection to weeks, as the Group Scheduler is designed to work
-            // against a week at a time. More specifically, we need to determine the "end of week dates" we're working against,
-            // and from those values, we can then determine the "start of week dates" to have blocks of 7-day ranges.
+
+            /*
+                5/31/2024 - JPH
+
+                While the group scheduler has historically shown occurrences for an entire week
+                at a time, a request was made for it to only show occurrences for the specific
+                dates selected within the filters. For example:
+
+                Today's date is 5/31/2024 and an individual selects "Next 7 Days" in the filters.
+
+                --------------
+                Past behavior: The scheduler shows occurrences for "Weeks [ending on]: 6/2, 6/9"
+                since the selected date filter spans those two weeks. This effectively shows any
+                occurrence for all days between 5/27 - 6/9 (14 days), even though the individual
+                only selected 7.
+
+                --------------
+                New behavior: The scheduler shows occurrences for the 7 days between "5/31 - 6/6"
+                since those were the specific dates selected.
+
+                Reason: Show occurrences for the exact dates asked for.
+             */
 
             var defaultDateRange = new SlidingDateRangeBag
             {
@@ -444,10 +460,6 @@ namespace Rock.Blocks.Group.Scheduling
                 TimeUnit = TimeUnitType.Week,
                 TimeValue = 6
             };
-
-            var defaultStartDate = RockDateTime.Today;
-            // Add 35 days to today's "end of week" date, so we'll include this current week + the following 5 weeks.
-            var defaultEndDate = RockDateTime.Today.EndOfWeek( RockDateTime.FirstDayOfWeek ).AddDays( 35 );
 
             if ( filters.DateRange == null )
             {
@@ -476,8 +488,7 @@ namespace Rock.Blocks.Group.Scheduling
                 }
                 else
                 {
-                    filters.DateRange.LowerDate = defaultStartDate;
-                    filters.DateRange.UpperDate = defaultEndDate;
+                    filters.DateRange = defaultDateRange;
                 }
             }
 
@@ -503,46 +514,51 @@ namespace Rock.Blocks.Group.Scheduling
                 dateRange = GetDateRange( filters.DateRange );
             }
 
-            var firstEndOfWeekDate = ( dateRange?.Start ?? defaultStartDate ).EndOfWeek( RockDateTime.FirstDayOfWeek );
-            var lastEndOfWeekDate = ( dateRange?.End ?? defaultEndDate ).EndOfWeek( RockDateTime.FirstDayOfWeek );
+            // These fallback values should never be needed, but we'll include them just in case
+            // the `CalculateDateRange...` method fails to return valid values for some reason.
+            if ( dateRange?.Start == null || dateRange?.End == null )
+            {
+                // These are the values we would expect from "Next 6 Weeks".
+                var defaultStartDate = RockDateTime.Today;
+                // Add 35 days to today's "end of week" date, so we'll include this current week + the following 5 weeks.
+                var defaultEndDate = RockDateTime.Today.EndOfWeek( RockDateTime.FirstDayOfWeek ).AddDays( 35 );
+
+                dateRange = new DateRange( defaultStartDate, defaultEndDate );
+            }
+
+            var actualStartDate = dateRange.Start.Value;
+            var actualEndDate = dateRange.End.Value;
+            var actualSlidingDateRange = filters.DateRange;
 
             string friendlyDateRange;
 
-            // This doesn't need to be precise; just need to determine if we should try to list all "end of week" dates or just a range.
-            var numberOfWeeks = ( lastEndOfWeekDate - firstEndOfWeekDate ).TotalDays / 7;
-            if ( numberOfWeeks > 4 )
+            switch ( actualSlidingDateRange.RangeType )
             {
-                friendlyDateRange = $"{FormatDate( firstEndOfWeekDate )} - {FormatDate( lastEndOfWeekDate )}";
-            }
-            else
-            {
-                var endOfWeekDates = new List<DateTime>();
-                var endOfWeekDate = firstEndOfWeekDate;
-                while ( endOfWeekDate <= lastEndOfWeekDate )
-                {
-                    endOfWeekDates.Add( endOfWeekDate );
-                    endOfWeekDate = endOfWeekDate.AddDays( 7 );
-                }
+                case SlidingDateRangeType.DateRange:
+                    if ( actualStartDate.Date == actualEndDate.Date )
+                    {
+                        friendlyDateRange = actualStartDate.ToString( "d" );
+                    }
+                    else
+                    {
+                        friendlyDateRange = $"{actualStartDate:d} - {actualEndDate:d}";
+                    }
 
-                friendlyDateRange = string.Join( ", ", endOfWeekDates.Select( d => FormatDate( d ) ) );
+                    break;
+                default:
+                    var rangeType = actualSlidingDateRange.RangeType.ConvertToString();
+                    var timeValue = actualSlidingDateRange.TimeValue.GetValueOrDefault();
+                    var timeUnit = actualSlidingDateRange.TimeUnit.ConvertToString();
+
+                    friendlyDateRange = $"{rangeType}{( timeValue > 0 ? $" {timeValue}" : string.Empty )} {timeUnit.PluralizeIf( timeValue > 1 )}";
+
+                    break;
             }
 
-            filters.FirstEndOfWeekDate = firstEndOfWeekDate;
-            filters.LastEndOfWeekDate = lastEndOfWeekDate;
+            filters.StartDate = actualStartDate;
+            filters.EndDate = actualEndDate;
+            filters.NumberOfDays = ( actualEndDate - actualStartDate ).Days + 1; // Add 1 since the start date is inclusive.
             filters.FriendlyDateRange = friendlyDateRange;
-        }
-
-        /// <summary>
-        /// Formats the provided date.
-        /// </summary>
-        /// <param name="date">The date to format.</param>
-        /// <returns>A formatted date string.</returns>
-        private string FormatDate( DateTime date )
-        {
-            var currentYear = RockDateTime.Now.Year;
-            var format = date.Year == currentYear ? _dateFormat : _dateFormatWithYear;
-
-            return date.ToString( format );
         }
 
         /// <summary>
@@ -649,9 +665,10 @@ namespace Rock.Blocks.Group.Scheduling
                 .AsNoTracking();
 
             // Determine the actual start and end dates, based on the date range validation that has already taken place.
-            // For the end date, add a day so we can follow Rock's rule: let your start be "inclusive" and your end be "exclusive".
-            var actualStartDate = filters.FirstEndOfWeekDate.DateTime.StartOfWeek( RockDateTime.FirstDayOfWeek );
-            var actualEndDate = filters.LastEndOfWeekDate.DateTime.AddDays( 1 );
+            // For the end date, add a day (and set it to the START of that day) so we can follow Rock's rule: let your
+            // start be "inclusive" and your end be "exclusive".
+            var actualStartDate = filters.StartDate.DateTime;
+            var actualEndDate = filters.EndDate.DateTime.AddDays( 1 ).StartOfDay();
 
             // Get all locations and schedules tied to the selected group(s) initially, so we can properly load the "available" lists.
             // Go ahead and materialize the list so we can:
@@ -893,6 +910,7 @@ namespace Rock.Blocks.Group.Scheduling
                     return new GroupSchedulerOccurrenceBag
                     {
                         AttendanceOccurrenceId = attendanceOccurrenceId,
+                        GroupOrder = gls.Group.Order,
                         GroupId = gls.Group.Id,
                         GroupName = gls.Group.Name,
                         ParentGroupId = gls.Group.ParentGroupId,
@@ -914,6 +932,7 @@ namespace Rock.Blocks.Group.Scheduling
                 .OrderBy( o => o.OccurrenceDate )
                 .ThenBy( o => o.ScheduleOrder )
                 .ThenBy( o => o.OccurrenceDateTime )
+                .ThenBy( o => o.GroupOrder )
                 .ThenBy( o => o.GroupName )
                 .ThenBy( o => o.GroupLocationOrder )
                 .ThenBy( o => o.LocationName )
@@ -923,6 +942,72 @@ namespace Rock.Blocks.Group.Scheduling
             _actualScheduleIds = occurrences.Select( o => o.ScheduleId ).Distinct().ToList();
 
             return occurrences;
+        }
+
+        /// <summary>
+        /// Gets the unique, ordered group, location and schedule name combinations.
+        /// </summary>
+        /// <param name="scheduleOccurrences">The current list of [group, location, schedule, occurrence date] occurrences.</param>
+        /// <returns>The unique, ordered group, location and schedule name combinations.</returns>
+        private List<GroupSchedulerGroupLocationScheduleNamesBag> GetGroupLocationScheduleNames( List<GroupSchedulerOccurrenceBag> scheduleOccurrences )
+        {
+            if ( scheduleOccurrences?.Any() != true )
+            {
+                return null;
+            }
+
+            var groupsWithLocationsAndSchedules = scheduleOccurrences
+                .GroupBy( scheduleOccurrence => new
+                {
+                    scheduleOccurrence.GroupOrder,
+                    scheduleOccurrence.GroupId,
+                    scheduleOccurrence.GroupName
+                } )
+                .OrderBy( groupOccurrenceGrouping => groupOccurrenceGrouping.Key.GroupOrder )
+                .ThenBy( groupOccurrenceGrouping => groupOccurrenceGrouping.Key.GroupName )
+                .Select( groupOccurrenceGrouping => new
+                {
+                    groupOccurrenceGrouping.Key.GroupName,
+                    Locations = groupOccurrenceGrouping.GroupBy( groupOccurrence => new
+                    {
+                        groupOccurrence.GroupLocationOrder,
+                        groupOccurrence.LocationId,
+                        groupOccurrence.LocationName
+                    } )
+                    .OrderBy( locationOccurrenceGrouping => locationOccurrenceGrouping.Key.GroupLocationOrder )
+                    .ThenBy( locationOccurrenceGrouping => locationOccurrenceGrouping.Key.LocationName )
+                    .Select( locationOccurrenceGrouping => new
+                    {
+                        locationOccurrenceGrouping.Key.LocationName,
+                        Schedules = locationOccurrenceGrouping.GroupBy( locationOccurrence => new
+                        {
+                            locationOccurrence.ScheduleOrder,
+                            locationOccurrence.ScheduleId,
+                            locationOccurrence.ScheduleName
+                        } )
+                        .OrderBy( scheduleOccurrenceGrouping => scheduleOccurrenceGrouping.Key.ScheduleOrder )
+                        .ThenBy( scheduleOccurrenceGrouping => scheduleOccurrenceGrouping.Key.ScheduleName )
+                        .Select( scheduleOccurrenceGrouping => scheduleOccurrenceGrouping.Key.ScheduleName )
+                    } )
+                } )
+                .Select( groupLocationSchedules =>
+                {
+                    var bag = new GroupSchedulerGroupLocationScheduleNamesBag
+                    {
+                        GroupName = groupLocationSchedules.GroupName,
+                        LocationWithSchedules = new List<string>()
+                    };
+
+                    foreach ( var location in groupLocationSchedules.Locations )
+                    {
+                        bag.LocationWithSchedules.Add( $"{location.LocationName}: {location.Schedules.JoinStrings( ", " )}" );
+                    }
+
+                    return bag;
+                } )
+                .ToList();
+
+            return groupsWithLocationsAndSchedules;
         }
 
         /// <summary>
@@ -1128,6 +1213,7 @@ namespace Rock.Blocks.Group.Scheduling
             {
                 Filters = filters,
                 ScheduleOccurrences = scheduleOccurrences,
+                GroupLocationScheduleNames = GetGroupLocationScheduleNames( scheduleOccurrences ),
                 UnassignedResourceCounts = GetUnassignedResourceCounts( rockContext, scheduleOccurrences ),
                 NavigationUrls = GetNavigationUrls( filters )
             };
@@ -1422,7 +1508,7 @@ namespace Rock.Blocks.Group.Scheduling
         private string GetFriendlyWeekRange( DateTime d )
         {
             var f = RockDateTime.FirstDayOfWeek;
-            return $"{d.StartOfWeek( f ).ToString( _dateFormatWithYear )} to {d.EndOfWeek( f ).ToString( _dateFormatWithYear )}";
+            return $"{d.StartOfWeek( f ):d} to {d.EndOfWeek( f ):d}";
         }
 
         /// <summary>
@@ -1730,6 +1816,7 @@ namespace Rock.Blocks.Group.Scheduling
             {
                 Filters = filters,
                 ScheduleOccurrences = scheduleOccurrences,
+                GroupLocationScheduleNames = GetGroupLocationScheduleNames( scheduleOccurrences ),
                 UnassignedResourceCounts = GetUnassignedResourceCounts( rockContext, scheduleOccurrences ),
                 NavigationUrls = GetNavigationUrls( filters )
             };
@@ -1743,9 +1830,9 @@ namespace Rock.Blocks.Group.Scheduling
         /// <param name="rockContext">The rock context.</param>
         /// <param name="filters">The filters containing the groups with individuals who should receive confirmations.</param>
         /// <returns>An object containing the outcome of the send communications attempt.</returns>
-        private GroupSchedulerSendNowResponseBag SendNow( RockContext rockContext, GroupSchedulerFiltersBag filters )
+        private GroupSchedulerSendConfirmationsResponseBag SendConfirmations( RockContext rockContext, GroupSchedulerFiltersBag filters )
         {
-            var response = new GroupSchedulerSendNowResponseBag();
+            var response = new GroupSchedulerSendConfirmationsResponseBag();
 
             RefineFilters( rockContext, filters );
 
@@ -2134,11 +2221,11 @@ namespace Rock.Blocks.Group.Scheduling
         /// <param name="bag">The filters containing the groups with individuals who should receive confirmations.</param>
         /// <returns>An object containing the outcome of the send communications attempt.</returns>
         [BlockAction]
-        public BlockActionResult SendNow( GroupSchedulerFiltersBag bag )
+        public BlockActionResult SendConfirmations( GroupSchedulerFiltersBag bag )
         {
             using ( var rockContext = new RockContext() )
             {
-                var response = SendNow( rockContext, ValidateClientFilters( rockContext, bag ) );
+                var response = SendConfirmations( rockContext, ValidateClientFilters( rockContext, bag ) );
 
                 return ActionOk( response );
             }

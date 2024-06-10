@@ -25,7 +25,6 @@ using System.Linq;
 using EF6.TagWith;
 
 using Microsoft.Extensions.Logging;
-using Microsoft.SqlServer.Types;
 
 using Rock.Data;
 using Rock.Logging;
@@ -442,15 +441,7 @@ END CATCH;";
                     if ( objectParameter.Value is DbGeography geography )
                     {
                         // We need to manually convert DbGeography to SqlGeography since we're sidestepping EF here.
-                        // https://stackoverflow.com/a/45099842 (Use SqlGeography instead of DbGeography)
-                        // https://stackoverflow.com/a/23187033 (Entity Framework: SqlGeography vs DbGeography)
-                        return new SqlParameter
-                        {
-                            ParameterName = objectParameter.Name,
-                            Value = SqlGeography.Parse( geography.AsText() ),
-                            SqlDbType = SqlDbType.Udt,
-                            UdtTypeName = "geography"
-                        };
+                        return Location.GetGeographySqlParameter( objectParameter.Name, geography );
                     }
 
                     return new SqlParameter( objectParameter.Name, objectParameter.Value ?? DBNull.Value );

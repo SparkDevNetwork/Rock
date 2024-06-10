@@ -63,14 +63,6 @@ namespace Rock.Blocks.Reporting
         private List<ChartDatasetInfo> _givingHouseHoldsMetricValues;
         private List<ChartDatasetInfo> _tithingHouseHoldsMetricValues;
         private List<ChartDatasetInfo> _tithingOverviewMetricValues;
-        private readonly Dictionary<string, string> _legendLabelColorMap = new Dictionary<string, string>()
-        {
-            { "0-2 yrs", "#BAE6FD" },
-            { "3-6 yrs", "#38BDF8" },
-            { "7-11 yrs", "#0284C7" },
-            { "11+", "#075985" },
-            { "Unknown", "#A3A3A3" }
-        };
 
         #endregion
 
@@ -633,17 +625,33 @@ namespace Rock.Blocks.Reporting
         private Dictionary<string, string> GetLegendLabelColors( Dictionary<string, TithingOverviewToolTipBag> toolTipData )
         {
             var campusIds = toolTipData.Select( d => d.Value.CampusId ).ToList();
+            var includeDefaultLegend = false;
+            var legendLabelColorMap = new Dictionary<string, string>();
+
             foreach ( var campus in CampusCache.GetMany( campusIds ).ToList() )
             {
                 var color = campus.GetAttributeTextValue( "core_CampusColor" );
                 if ( !string.IsNullOrWhiteSpace( color ) )
                 {
                     var campusKey = string.IsNullOrWhiteSpace( campus.ShortCode ) ? campus.Name : campus.ShortCode;
-                    _legendLabelColorMap.AddOrReplace( campusKey, color );
+                    legendLabelColorMap.AddOrReplace( campusKey, color );
+                }
+                else
+                {
+                    includeDefaultLegend = true;
                 }
             }
 
-            return _legendLabelColorMap;
+            if ( includeDefaultLegend )
+            {
+                legendLabelColorMap.Add( "0-2 yrs", "#BAE6FD" );
+                legendLabelColorMap.Add( "3-6 yrs", "#38BDF8" );
+                legendLabelColorMap.Add( "7-11 yrs", "#0284C7" );
+                legendLabelColorMap.Add( "11+", "#075985" );
+                legendLabelColorMap.Add( "Unknown", "#A3A3A3" );
+            }
+
+            return legendLabelColorMap;
         }
 
         #endregion

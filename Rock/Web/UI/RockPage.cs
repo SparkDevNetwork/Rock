@@ -46,6 +46,7 @@ using Rock.Transactions;
 using Rock.Utility;
 using Rock.ViewModels.Crm;
 using Rock.Web.Cache;
+using Rock.Web.HttpModules;
 using Rock.Web.UI.Controls;
 
 using Page = System.Web.UI.Page;
@@ -2559,13 +2560,34 @@ Sys.Application.add_load(function () {
                 return;
             }
 
+            // Attempt to retrieve geolocation data.
+            var geolocation = this.RequestContext?.ClientInformation?.Geolocation;
+
             // If we have identified a logged-in user, record the page interaction immediately and return.
             if ( CurrentPerson != null )
             {
+                var info = new InteractionTransactionInfo
+                {
+                    InteractionTimeToServe = _tsDuration.TotalSeconds,
+                    InteractionChannelCustomIndexed1 = Request.UrlReferrerNormalize(),
+                    InteractionChannelCustom2 = Request.UrlReferrerSearchTerms(),
+                    GeolocationIpAddress = geolocation?.IpAddress,
+                    GeolocationLookupDateTime = geolocation?.LookupDateTime,
+                    City = geolocation?.City,
+                    RegionName = geolocation?.RegionName,
+                    RegionCode = geolocation?.RegionCode,
+                    RegionValueId = geolocation?.RegionValueId,
+                    CountryCode = geolocation?.CountryCode,
+                    CountryValueId = geolocation?.CountryValueId,
+                    PostalCode = geolocation?.PostalCode,
+                    Latitude = geolocation?.Latitude,
+                    Longitude = geolocation?.Longitude
+                };
+
                 var pageViewTransaction = new InteractionTransaction( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE ),
                     this.Site,
                     _pageCache,
-                    new InteractionTransactionInfo { InteractionTimeToServe = _tsDuration.TotalSeconds, InteractionChannelCustomIndexed1 = Request.UrlReferrerNormalize(), InteractionChannelCustom2 = Request.UrlReferrerSearchTerms() } );
+                    info );
 
                 pageViewTransaction.Enqueue();
 
@@ -2600,8 +2622,19 @@ Sys.Application.add_load(function () {
                 UrlReferrerHostAddress = Request.UrlReferrerNormalize(),
                 UrlReferrerSearchTerms = Request.UrlReferrerSearchTerms(),
                 UserAgent = Request.UserAgent.SanitizeHtml(),
-                UserHostAddress = Request.UserHostAddress.SanitizeHtml(),
-                UserIdKey = CurrentPersonAlias?.IdKey
+                UserHostAddress = GetClientIpAddress().SanitizeHtml(),
+                UserIdKey = CurrentPersonAlias?.IdKey,
+                GeolocationIpAddress = geolocation?.IpAddress,
+                GeolocationLookupDateTime = geolocation?.LookupDateTime,
+                City = geolocation?.City,
+                RegionName = geolocation?.RegionName,
+                RegionCode = geolocation?.RegionCode,
+                RegionValueId = geolocation?.RegionValueId,
+                CountryCode = geolocation?.CountryCode,
+                CountryValueId = geolocation?.CountryValueId,
+                PostalCode = geolocation?.PostalCode,
+                Latitude = geolocation?.Latitude,
+                Longitude = geolocation?.Longitude
             };
 
             // This script adds a callback to record a View interaction for this page.

@@ -49,13 +49,6 @@ namespace Rock.Financial
         #region Keys
 
         /// <summary>
-        /// Use this key to set metadata that will be used as the description of the transaction in some gateways
-        /// </summary>
-        [Obsolete( "Use the 'MetadataKey' static class constants instead.", true )]
-        [RockObsolete( "1.10" )]
-        public const string DescriptionMetadataKey = "description";
-
-        /// <summary>
         /// Commonly used keys within the transaction metadata
         /// </summary>
         public static class MetadataKey

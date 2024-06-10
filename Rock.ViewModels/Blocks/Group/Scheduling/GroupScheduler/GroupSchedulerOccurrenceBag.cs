@@ -42,6 +42,14 @@ namespace Rock.ViewModels.Blocks.Group.Scheduling.GroupScheduler
         public int? AttendanceOccurrenceId { get; set; }
 
         /// <summary>
+        /// Gets or sets the group order for this occurrence.
+        /// </summary>
+        /// <value>
+        /// The group order for this occurrence.
+        /// </value>
+        public int GroupOrder { get; set; }
+
+        /// <summary>
         /// Gets or sets the group ID for this occurrence.
         /// </summary>
         /// <value>

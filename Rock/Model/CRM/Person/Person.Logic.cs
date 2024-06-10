@@ -1317,32 +1317,6 @@ namespace Rock.Model
         #region Static Helper Methods
 
         /// <summary>
-        /// Gets the family salutation.
-        /// </summary>
-        /// <param name="person">The person.</param>
-        /// <param name="includeChildren">if set to <c>true</c> [include children].</param>
-        /// <param name="includeInactive">if set to <c>true</c> [include inactive].</param>
-        /// <param name="useFormalNames">if set to <c>true</c> [use formal names].</param>
-        /// <param name="finalSeparator">The final separator.</param>
-        /// <param name="separator">The separator.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.12.4" )]
-        [Obsolete( "Use Person.PrimaryFamily.GroupSalutation instead" )]
-        public static string GetFamilySalutation( Person person, bool includeChildren = false, bool includeInactive = true, bool useFormalNames = false, string finalSeparator = "&", string separator = "," )
-        {
-            var args = new CalculateFamilySalutationArgs( includeChildren )
-            {
-                IncludeInactive = includeInactive,
-                UseFormalNames = useFormalNames,
-                FinalSeparator = finalSeparator,
-                Separator = separator,
-                LimitToPersonIds = null
-            };
-
-            return CalculateFamilySalutation( person, args );
-        }
-
-        /// <summary>
         ///
         /// </summary>
         public sealed class CalculateFamilySalutationArgs

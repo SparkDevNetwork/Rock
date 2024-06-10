@@ -134,22 +134,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Sets the note.
-        /// </summary>
-        /// <value>
-        /// The note.
-        /// </value>
-        [Obsolete( "Use SetNote instead" )]
-        [RockObsolete( "1.12" )]
-        public Rock.Model.Note Note
-        {
-            set
-            {
-                SetNote( value );
-            }
-        }
-
-        /// <summary>
         /// Gets or sets the note type identifier.
         /// </summary>
         /// <value>

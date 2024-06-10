@@ -204,8 +204,8 @@ namespace Rock.Blocks.Finance
 
             if ( entity.Id != 0 )
             {
-                bag.StartDate = entity.StartDate == DateTime.MinValue ? ( DateTime? ) null : entity.StartDate;
-                bag.EndDate = entity.EndDate;
+                bag.StartDate = entity.StartDate == DateTime.MinValue.Date ? ( DateTime? ) null : entity.StartDate;
+                bag.EndDate = entity.EndDate == DateTime.MaxValue.Date ? ( DateTime? ) null : entity.EndDate;
             }
 
             return bag;
@@ -241,11 +241,6 @@ namespace Rock.Blocks.Finance
 
             bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
 
-            if ( entity.EndDate.Date != DateTime.MaxValue.Date && entity.EndDate.Date != DateTime.MinValue.Date )
-            {
-                bag.EndDate = entity.EndDate;
-            }
-
             return bag;
         }
 
@@ -264,11 +259,6 @@ namespace Rock.Blocks.Finance
             var bag = GetCommonEntityBag( entity, rockContext );
 
             bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
-
-            if ( entity.EndDate.Date != DateTime.MinValue.Date )
-            {
-                bag.EndDate = entity.EndDate;
-            }
 
             return bag;
         }

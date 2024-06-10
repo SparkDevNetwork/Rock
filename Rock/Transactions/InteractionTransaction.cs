@@ -22,8 +22,10 @@ using System.Threading.Tasks;
 using System.Web;
 
 using Rock;
+using Rock.Core;
 using Rock.Data;
 using Rock.Model;
+using Rock.Net.Geolocation;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -39,36 +41,6 @@ namespace Rock.Transactions
         /// Keep a list of all the Interactions that have been queued up then insert them all at once 
         /// </summary>
         private static readonly ConcurrentQueue<InteractionTransactionInfo> InteractionInfoQueue = new ConcurrentQueue<InteractionTransactionInfo>();
-
-        /// <summary>
-        /// Optional: Gets or sets the interaction summary. Leave null to use the Page Browser Title or Page Title
-        /// </summary>
-        /// <value>
-        /// The interaction summary.
-        /// </value>
-        [Obsolete( "Use a constructor that takes InteractionTransactionInfo." )]
-        [RockObsolete( "1.11" )]
-        public string InteractionSummary { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value the Interaction should get logged when the page is viewed by the crawler (default False)
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [log crawlers]; otherwise, <c>false</c>.
-        /// </value>
-        [Obsolete( "Use a constructor that takes InteractionTransactionInfo." )]
-        [RockObsolete( "1.11" )]
-        public bool LogCrawlers { get; set; } = false;
-
-        /// <summary>
-        /// Gets or sets the current person alias identifier.
-        /// </summary>
-        /// <value>
-        /// The current person alias identifier.
-        /// </value>
-        [Obsolete( "Use a constructor that takes InteractionTransactionInfo." )]
-        [RockObsolete( "1.11" )]
-        public int? CurrentPersonAliasId { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Transactions.InteractionTransaction"/> class.
@@ -269,43 +241,7 @@ namespace Rock.Transactions
 
             foreach ( var info in interactionTransactionInfos.Where( a => a.InteractionComponentId.HasValue ) )
             {
-                /*
-                 * 2020-06-29 - JH
-                 *
-                 * The 'CreateInteraction(...)' method called below sets the following properties on the Interaction object:
-                 *
-                 * - InteractionComponentId
-                 * - InteractionDateTime (but with the wrong value)
-                 * - InteractionSessionId
-                 * - Source
-                 * - Medium
-                 * - Campaign
-                 * - Content
-                 * - Term
-                 */
-                var interaction = interactionService.CreateInteraction( info.InteractionComponentId.Value, info.UserAgent, info.InteractionData, info.IPAddress, info.BrowserSessionId );
-
-                // The rest of the properties need to be manually set.
-                interaction.EntityId = info.InteractionEntityId;
-                interaction.Operation = info.InteractionOperation.IsNotNullOrWhiteSpace() ? info.InteractionOperation.Trim() : "View";
-                interaction.InteractionSummary = info.InteractionSummary?.Trim();
-                interaction.PersonAliasId = info.PersonAliasId;
-                interaction.InteractionDateTime = info.InteractionDateTime;
-                interaction.InteractionTimeToServe = info.InteractionTimeToServe;
-                interaction.RelatedEntityTypeId = info.InteractionRelatedEntityTypeId;
-                interaction.RelatedEntityId = info.InteractionRelatedEntityId;
-                interaction.ChannelCustom1 = info.InteractionChannelCustom1?.Trim();
-                interaction.ChannelCustom2 = info.InteractionChannelCustom2?.Trim();
-                interaction.ChannelCustomIndexed1 = info.InteractionChannelCustomIndexed1?.Trim();
-                interaction.Source = interaction.Source ?? info.InteractionSource?.Trim();
-                interaction.Medium = interaction.Medium ?? info.InteractionMedium?.Trim();
-                interaction.Campaign = interaction.Campaign ?? info.InteractionCampaign?.Trim();
-                interaction.Content = interaction.Content ?? info.InteractionContent?.Trim();
-                interaction.Term = interaction.Term ?? info.InteractionTerm?.Trim();
-                interaction.InteractionLength = info.InteractionLength;
-                interaction.InteractionEndDateTime = info.InteractionEndDateTime;
-
-                interaction.SetInteractionData( info.InteractionData?.Trim() );
+                var interaction = interactionService.CreateInteraction( new InteractionInfo( info ) );
                 interactionsToInsert.Add( interaction );
             }
 
@@ -391,9 +327,9 @@ namespace Rock.Transactions
         #region InteractionSession Properties
 
         /// <inheritdoc cref="InteractionSession.IpAddress"/>
-        ///<remarks>
+        /// <remarks>
         /// If this is not specified, it will be determined from <see cref="RockPage.GetClientIpAddress()"/>
-        ///</remarks>
+        /// </remarks>
         public string IPAddress { get; set; }
 
         /// <summary>
@@ -408,6 +344,43 @@ namespace Rock.Transactions
         public Guid? BrowserSessionId { get; set; }
 
         #endregion InteractionSession Properties
+
+        #region InteractionSessionLocation Properties
+
+        /// <inheritdoc cref="IpGeolocation.IpAddress"/>
+        public string GeolocationIpAddress { get; set; }
+
+        /// <inheritdoc cref="InteractionSessionLocation.LookupDateTime"/>
+        public DateTime? GeolocationLookupDateTime { get; set; }
+
+        /// <inheritdoc cref="IpGeolocation.City"/>
+        public string City { get; set; }
+
+        /// <inheritdoc cref="IpGeolocation.RegionName"/>
+        public string RegionName { get; set; }
+
+        /// <inheritdoc cref="InteractionSessionLocation.RegionCode"/>
+        public string RegionCode { get; set; }
+
+        /// <inheritdoc cref="InteractionSessionLocation.RegionValueId"/>
+        public int? RegionValueId { get; set; }
+
+        /// <inheritdoc cref="InteractionSessionLocation.CountryCode"/>
+        public string CountryCode { get; set; }
+
+        /// <inheritdoc cref="InteractionSessionLocation.CountryValueId"/>
+        public int? CountryValueId { get; set; }
+
+        /// <inheritdoc cref="InteractionSessionLocation.PostalCode"/>
+        public string PostalCode { get; set; }
+
+        /// <inheritdoc cref="IpGeolocation.Latitude"/>
+        public double? Latitude { get; set; }
+
+        /// <inheritdoc cref="IpGeolocation.Longitude"/>
+        public double? Longitude { get; set; }
+
+        #endregion InteractionSessionLocation Properties
 
         #region InteractionDeviceType Properties
 
