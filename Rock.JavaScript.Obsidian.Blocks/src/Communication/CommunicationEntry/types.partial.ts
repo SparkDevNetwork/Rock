@@ -14,3 +14,40 @@
 // limitations under the License.
 // </copyright>
 //
+
+export type LabelType = "label-default" | "label-success" | "label-warning" | "label-info" | "label-danger";
+
+export enum AgeClassification {
+    Unknown = 0,
+    Adult = 1,
+    Child = 2
+}
+
+export type PersonSearchResult = {
+    guid?: string | null;
+    primaryAliasGuid?: string | null;
+    name?: string | null;
+    isActive?: boolean;
+    isDeceased?: boolean;
+    isBusiness?: boolean;
+    imageUrl?: string | null;
+    age?: number | null;
+    formattedAge?: string | null;
+    ageClassification?: AgeClassification;
+    gender?: string | null;
+    connectionStatus?: string | null;
+    connectionStatusColor?: string | null;
+    recordStatus?: string | null;
+    email?: string | null;
+    spouseName?: string | null;
+    spouseNickName?: string | null;
+    address?: string | null;
+    phoneNumbers?: PersonSearchPhoneNumber[] | null;
+    campusShortCode?: string | null;
+};
+
+export type PersonSearchPhoneNumber = {
+    type?: string | null;
+    number?: string | null;
+    isUnlisted?: boolean;
+};

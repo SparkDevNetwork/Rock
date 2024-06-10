@@ -67,8 +67,6 @@
     import Sms from "./CommunicationEntry/communicationMediumSms.partial.obs";
     import PushNotification from "./CommunicationEntry/communicationMediumPushNotification.partial.obs";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import { CommunicationEntryEmailMediumOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryEmailMediumOptionsBag";
-    import { CommunicationEntrySmsMediumOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySmsMediumOptionsBag";
     import { areEqual } from "@Obsidian/Utility/guid";
 
     const config = useConfigurationValues<CommunicationEntryInitializationBox>();

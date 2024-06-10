@@ -30,24 +30,12 @@
                   @submit="onFormSubmitted">
             <div class="row">
                 <div class="col-sm-12">
-                    <PopupPicker v-model="recipientListItems"
-                                 :disabled="internalDisabled"
-                                 :getLabelTypeRef="getLabelTypeRef"
-                                 :getTooltipRef="personAliasGuid => getEmailTooltipRef(getRecipient(personAliasGuid))"
-                                 label="Recipients"
-                                 :rules="recipientsRules"
-                                 validationTitle="At least one recipient"
-                                 @openPopup="isRecipientModalOpen = true">
-                        <template #itemImage="{ label, value, closable, disabled }">
-                            <img :src="getRecipient(value)?.photoUrl ?? undefined" style="border-radius: 24px; width: 24px; height: 24px" />
-                        </template>
-                    </PopupPicker>
-
-                    <RecipientModal v-model="isRecipientModalOpen"
-                                    v-model:items="recipients"
-                                    :disableAdd="config.mode !== Mode.Full"
-                                    :getEmailTooltipRef="getEmailTooltipRef"
-                                    :isBulk="isBulkCommunication" />
+                    <RecipientPicker v-model="recipients"
+                                     v-model:isDisabled="internalDisabled"
+                                     :isAddRecipientHidden="config.mode !== Mode.Full"
+                                     :isForBulkCommunication="isBulkCommunication"
+                                     label="Recipients"
+                                     :minimumRecipientCount="minimumRecipientCount" />
                 </div>
             </div>
 
@@ -234,9 +222,9 @@
 </style>
 
 <script setup lang="ts">
-    import { PropType, Ref, computed, nextTick, onMounted, ref, watch, watchEffect } from "vue";
+    import { PropType, computed, nextTick, onMounted, ref, watch, watchEffect } from "vue";
     import PopupPicker from "./popupPicker.partial.obs";
-    import RecipientModal from "./recipientModal.partial.obs";
+    import RecipientPicker from "./recipientPicker.partial.obs";
     import DateTimePicker from "@Obsidian/Controls/dateTimePicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
@@ -254,8 +242,6 @@
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-    import { splitCase } from "@Obsidian/Utility/stringUtils";
-    import { CommunicationEntryGetRecipientsRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryGetRecipientsRequestBag";
     import { CommunicationEntryRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryRecipientBag";
     import { CommunicationEntrySaveRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySaveRequestBag";
     import { CommunicationEntrySaveResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySaveResponseBag";
@@ -297,8 +283,6 @@
         (e: "update:disabled", value: boolean): void,
     }>();
 
-    type LabelType = "label-default" | "label-success" | "label-warning" | "label-info" | "label-danger";
-
     const config = useConfigurationValues<CommunicationEntryInitializationBox>();
 
     //#region Values
@@ -319,7 +303,6 @@
     const subject = ref<string>(config.communication?.subject ?? "");
     const attachmentErrorMessage = ref<string | null | undefined>();
     const areAttachmentsShown = ref<boolean>(false);
-    const isRecipientModalOpen = ref<boolean>(false);
     const scheduleSendDateTime = ref<string>(config.communication?.futureSendDateTime ?? "");
     const tempScheduleSendDateTime = ref<string>(config.communication?.futureSendDateTime ?? "");
     const isScheduled = ref<boolean>(!!scheduleSendDateTime.value);
@@ -331,7 +314,7 @@
     /** Programmatically submits the form when set to true. */
     const submitForm = ref<boolean>(false);
     const pendingAction = ref<() => PromiseLike<void>>();
-    const isRecipientRequired = ref<boolean>(false);
+    const minimumRecipientCount = ref<number>(0);
     const testResult = ref<CommunicationEntryTestResponseBag | null | undefined>();
     const errorMessage = ref<string | null | undefined>();
 
@@ -373,60 +356,6 @@
         }
     });
 
-    const recipientsRules = computed<string>(() => {
-        if (isRecipientRequired.value) {
-            return "required";
-        }
-        else {
-            return "";
-        }
-    });
-
-    const recipientListItems = computed<ListItemBag[]>({
-        get() {
-            return convertRecipientsToListItems(recipients.value);
-        },
-        set(newValue: ListItemBag[]) {
-            const currentListItems = convertRecipientsToListItems(recipients.value);
-
-            // Whenever items are removed from the list, we should remove them from the source items as well.
-            const removedListItems = currentListItems.filter(currentItem => !newValue.some(newItem => newItem.value === currentItem.value));
-            const addedListItems = newValue.filter(newItem => !currentListItems.some(currentItem => currentItem.value === newItem.value));
-
-            // If nothing changed, then exit.
-            if (removedListItems.length === 0 && addedListItems.length === 0) {
-                return;
-            }
-
-            // Copy the current array.
-            let newRecipients: CommunicationEntryRecipientBag[] = [...recipients.value];
-
-            if (removedListItems.length) {
-                // Remove old items.
-                newRecipients = newRecipients.filter(currentItem => !removedListItems.some(removedItem => removedItem.value === currentItem.personAliasGuid));
-            }
-
-            if (addedListItems.length) {
-                // Add new items.
-                const bag: CommunicationEntryGetRecipientsRequestBag = {
-                    personAliasGuids: addedListItems.filter(value => !!value.value).map(value => value.value!)
-                };
-
-                invokeBlockAction<CommunicationEntryRecipientBag[]>("GetRecipients", { bag }).then(result => {
-                    if (!result.isSuccess || !result.data) {
-                        recipients.value = newRecipients;
-                    }
-                    else {
-                        recipients.value = [...newRecipients, ...result.data];
-                    }
-                });
-            }
-            else {
-                recipients.value = newRecipients;
-            }
-        }
-    });
-
     const scheduleSendText = computed<string>(() => {
         const dateTimeString = RockDateTime.parseISO(scheduleSendDateTime.value)?.toASPString("M/d/yyyy hh:mm tt");
 
@@ -451,60 +380,6 @@
     //#endregion
 
     //#region Functions
-
-    /** Converts recipients to list item bags. */
-    function convertRecipientsToListItems(recipients: CommunicationEntryRecipientBag[]): ListItemBag[] {
-        return recipients.map(item => ({
-            text: item.name,
-            value: item.personAliasGuid
-        }));
-    }
-
-    /** Gets the label type for a recipient. */
-    function getLabelTypeRef(personAliasGuid: string): Ref<LabelType> {
-        return computed<LabelType>(() => {
-            // Get the recipient.
-            const recipient = getRecipient(personAliasGuid);
-
-            if (!recipient
-                || (isBulkCommunication.value && recipient.isBulkEmailAllowed)
-                || (!isBulkCommunication.value && recipient.isEmailAllowed)) {
-                // Default label when recipient is missing or email is allowed.
-                return "label-default";
-            }
-            else {
-                return "label-danger";
-            }
-        });
-    }
-
-    /** Gets the reactive email tooltip. */
-    function getEmailTooltipRef(recipient: CommunicationEntryRecipientBag | null): Ref<string> {
-        return computed<string>(() => {
-            if (!recipient
-                || (isBulkCommunication.value && recipient.isBulkEmailAllowed)
-                || (!isBulkCommunication.value && recipient.isEmailAllowed)) {
-                // No tooltip when recipient is missing or email is allowed.
-                return "";
-            }
-
-            // Get the error message tooltip.
-            if (!recipient.email) {
-                return `${recipient.name ?? "This recipient"} doesn't have an email address.`;
-            }
-            else if (!recipient.isEmailActive) {
-                return `${recipient.name ?? "This recipient"} has an inactive email.`;
-            }
-            else {
-                return `${recipient.name ?? "This recipient"} has email preference set to "${splitCase(recipient.emailPreference ?? "")}".`;
-            }
-        });
-    }
-
-    /** Gets the recipient for a person. */
-    function getRecipient(personAliasGuid: string): CommunicationEntryRecipientBag | null {
-        return recipients.value.find(item => item.personAliasGuid === personAliasGuid) ?? null;
-    }
 
     function raiseError(error: string): void {
         errorMessage.value = error;
@@ -597,7 +472,7 @@
      */
     function save(): void {
         // Recipients are not required when saving.
-        if (!isRecipientRequired.value) {
+        if (minimumRecipientCount.value === 0) {
             // If validation is already turned off,
             // then trigger "save" immediately.
             validateFormAndExecuteAction(doSave);
@@ -606,7 +481,7 @@
             // If validation needs to be turned off,
             // then trigger "save" on the next tick
             // so the form has a chance to update the validation UI.
-            isRecipientRequired.value = false;
+            minimumRecipientCount.value = 0;
             nextTick(() => validateFormAndExecuteAction(doSave));
         }
     }
@@ -617,7 +492,7 @@
      */
     function send(): void {
         // Recipients are required when sending.
-        if (isRecipientRequired.value) {
+        if (minimumRecipientCount.value !== 0) {
             // If validation is already turned on,
             // then trigger "send" immediately.
             validateFormAndExecuteAction(doSend);
@@ -626,7 +501,7 @@
             // If validation needs to be turned on,
             // then trigger "send" on the next tick
             // so the form has a chance to update the validation UI.
-            isRecipientRequired.value = true;
+            minimumRecipientCount.value = 1;
             nextTick(() => validateFormAndExecuteAction(doSend));
         }
     }
@@ -638,7 +513,7 @@
     function test(): void {
         // Recipients are required when sending a test.
 
-        if (isRecipientRequired.value) {
+        if (minimumRecipientCount.value !== 0) {
             // If validation is already turned on,
             // then trigger "sendTest" immediately.
             validateFormAndExecuteAction(doSendTest);
@@ -647,7 +522,7 @@
             // If validation needs to be turned on,
             // then trigger "sendTest" on the next tick
             // so the form has a chance to update the validation UI.
-            isRecipientRequired.value = true;
+            minimumRecipientCount.value = 1;
             nextTick(() => validateFormAndExecuteAction(doSendTest));
         }
     }

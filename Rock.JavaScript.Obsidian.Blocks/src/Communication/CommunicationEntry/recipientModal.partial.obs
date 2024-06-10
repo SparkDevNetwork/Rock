@@ -6,7 +6,7 @@
            saveText="Save"
            title="Recipient Manager"
            @save="onSaveClicked">
-        <template v-if="!disableAdd">
+        <template v-if="!isAddRecipientHidden">
             <div class="d-flex flex-row justify-content-between align-items-center">
                 <PersonPicker @update:modelValue="onPersonPicked" label="Add Recipient" />
                 <div class="label label-info">Recipients: {{ pendingItems.length }}</div>
@@ -125,7 +125,7 @@
             required: true
         },
 
-        disableAdd: {
+        isAddRecipientHidden: {
             type: Boolean as PropType<boolean>,
             required: false,
             default: false
@@ -143,7 +143,7 @@
             default: false
         },
 
-        items: {
+        recipients: {
             type: Object as PropType<CommunicationEntryRecipientBag[]>,
             required: true
         },
@@ -151,7 +151,7 @@
 
     const emit = defineEmits<{
         (e: "update:modelValue", newValue: boolean): void,
-        (e: "update:items", newValue: CommunicationEntryRecipientBag[]): void
+        (e: "update:recipients", newValue: CommunicationEntryRecipientBag[]): void
     }>();
 
     const internalIsOpen = useVModelPassthrough(props, "modelValue", emit);
@@ -188,7 +188,7 @@
 
     //#region Values
 
-    const pendingItems = ref<CommunicationEntryRecipientBag[]>([...props.items]);
+    const pendingItems = ref<CommunicationEntryRecipientBag[]>([...props.recipients]);
     const recipientTextFilter = ref<string>("");
 
     //#endregion
@@ -284,7 +284,7 @@
     }
 
     function onSaveClicked(): void {
-        emit("update:items", pendingItems.value);
+        emit("update:recipients", pendingItems.value);
         internalIsOpen.value = false;
     }
 
@@ -295,7 +295,7 @@
     watch(() => props.modelValue, (newValue: boolean, oldValue: boolean) => {
         // If opening the modal, reset the pending items.
         if (newValue && !oldValue) {
-            pendingItems.value = [...props.items];
+            pendingItems.value = [...props.recipients];
         }
     });
 

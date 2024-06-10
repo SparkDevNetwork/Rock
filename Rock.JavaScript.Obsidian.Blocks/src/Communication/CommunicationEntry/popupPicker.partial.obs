@@ -35,7 +35,7 @@
             <div ref="maxTagPlaceholder">
                 <RockButton class="item label label-default rounded-pill"
                             :disabled="disabled"
-                            @click.stop="onOpenPopupClicked"
+                            @click.stop="onShowMoreClicked"
                             @mousedown.stop>
                     <span class="item-content">{{ omittedValues.length }} more</span>
                 </RockButton>
@@ -92,8 +92,9 @@
     const standardProps = useStandardAsyncPickerProps(props);
 
     const emit = defineEmits<{
-        (e: "update:modelValue", newValue: ListItemBag[]): void,
-        (e: "openPopup"): void
+        (e: "update:modelValue", newValue: ListItemBag[]): void;
+        (e: "openPopup"): void;
+        (e: "showMore"): void;
     }>();
 
     //#region Values
@@ -165,6 +166,15 @@
                 internalValue.value = newValue;
             }
         }
+    }
+
+    function onShowMoreClicked(): void {
+        if (props.disabled) {
+            // Skip if the component is disabled.
+            return;
+        }
+
+        emit("showMore");
     }
 
     //#endregion
