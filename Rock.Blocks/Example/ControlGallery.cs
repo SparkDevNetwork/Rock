@@ -50,9 +50,6 @@ namespace Rock.Blocks.Example
         }
 
         /// <inheritdoc/>
-        public override string ObsidianFileUrl => base.ObsidianFileUrl.ReplaceIfEndsWith( ".obs", string.Empty );
-
-        /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
             var box = new ControlGalleryInitializationBox();
