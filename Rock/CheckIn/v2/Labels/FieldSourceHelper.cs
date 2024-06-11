@@ -68,11 +68,11 @@ namespace Rock.CheckIn.v2.Labels
         };
 
         /// <summary>
-        /// The person property names that should be excluded from data sources.
+        /// The person property names that should be excluded from filter sources.
         /// These are excluded either because we don't want them or because we
         /// are going to provide a custom version of them.
         /// </summary>
-        private static readonly HashSet<string> PersonPropertyNamesToExcludeFromDataFilters = new HashSet<string>
+        private static readonly HashSet<string> PersonPropertyNamesToExcludeFromFilterSources = new HashSet<string>
         {
             nameof( Person.Age )
         };
@@ -1015,6 +1015,11 @@ namespace Rock.CheckIn.v2.Labels
 
                 if ( entityField.FieldKind == FieldKind.Property )
                 {
+                    if ( PersonPropertyNamesToExcludeFromFilterSources.Contains( entityField.PropertyInfo.Name ) )
+                    {
+                        continue;
+                    }
+
                     var privateConfigValues = entityField.FieldConfig.ToDictionary( c => c.Key, c => c.Value.Value );
                     var configValues = entityField.FieldType.Field.GetPublicConfigurationValues( privateConfigValues, ConfigurationValueUsage.Edit, string.Empty );
 
