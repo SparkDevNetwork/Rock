@@ -36,7 +36,7 @@ namespace Rock.Lms
         /// <summary>
         /// Initializes a new instance of the CheckOffComponent.
         /// </summary>
-        public AssessmentComponent(): base( @"/Obsidian/Controls/Internal/LearningActivity/assessmentLearningActivity.obs" ) { }
+        public AssessmentComponent() : base( @"/Obsidian/Controls/Internal/LearningActivity/assessmentLearningActivity.obs" ) { }
 
         /// <summary>
         /// Removes the isCorrect flag from any multiple choice assessment items.
@@ -52,7 +52,7 @@ namespace Rock.Lms
                 var jObject = JObject.Parse( rawConfigurationJsonString );
                 var correctAnswers = jObject.SelectTokens( correctAnswerPath );
 
-                foreach ( var correctAnswer in correctAnswers)
+                foreach ( var correctAnswer in correctAnswers )
                 {
                     correctAnswer.Parent.Remove();
                 }

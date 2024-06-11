@@ -32,7 +32,7 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityDetail
         /// Gets or sets the learning activity component for the activity.
         /// </summary>
         public LearningActivityComponentBag ActivityComponent { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the json config for the activity component before completion.
         /// </summary>
@@ -102,7 +102,7 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityDetail
         /// <summary>
         /// Gets or sets the description of the activity as html.
         /// </summary>
-        public string DescriptionAsHtml {  get; set; }
+        public string DescriptionAsHtml { get; set; }
 
         /// <summary>
         /// The calculation method used for determing the DueDate of the activity.

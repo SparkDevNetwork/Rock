@@ -131,11 +131,11 @@ namespace Rock.Blocks.Lms
         {
             errorMessage = null;
 
-            if (learningActivity.Name.IsNullOrWhiteSpace() )
+            if ( learningActivity.Name.IsNullOrWhiteSpace() )
             {
                 errorMessage = "Name is a required field";
             }
-            else if (learningActivity.ActivityComponentId == 0)
+            else if ( learningActivity.ActivityComponentId == 0 )
             {
                 errorMessage = "Activity Type is a required field";
             }

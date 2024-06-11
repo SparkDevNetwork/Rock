@@ -157,7 +157,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return EnumExtensions.ConvertToStringSafe(CompletionStatus);
+            return EnumExtensions.ConvertToStringSafe( CompletionStatus );
         }
 
         #endregion

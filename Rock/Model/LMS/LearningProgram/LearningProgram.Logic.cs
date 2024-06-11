@@ -20,7 +20,7 @@ namespace Rock.Model
 {
     public partial class LearningProgram
     {
-      
+
     }
 
     /// <summary>
@@ -44,7 +44,7 @@ namespace Rock.Model
         ///     Currently defined as the number of unique student person Ids enrolled in any class
         ///     within the program where the <see cref="LearningCompletionStatus"/> is incomplete.
         /// </remarks>
-        public int ActiveStudents{ get; set; }
+        public int ActiveStudents { get; set; }
 
         /// <summary>
         ///     Gets or sets the number of students who have completed this Program.

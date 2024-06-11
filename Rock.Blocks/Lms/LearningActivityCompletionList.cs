@@ -124,7 +124,7 @@ namespace Rock.Blocks.Lms
             {
                 [PageParameterKey.AutoEdit] = "true",
                 [PageParameterKey.LearningActivityCompletionId] = "((Key))",
-                [PageParameterKey.LearningProgramId] = PageParameter(PageParameterKey.LearningProgramId ),
+                [PageParameterKey.LearningProgramId] = PageParameter( PageParameterKey.LearningProgramId ),
                 [PageParameterKey.LearningCourseId] = PageParameter( PageParameterKey.LearningCourseId ),
                 [PageParameterKey.LearningClassId] = PageParameter( PageParameterKey.LearningClassId ),
                 [PageParameterKey.LearningActivityId] = PageParameter( PageParameterKey.LearningActivityId )

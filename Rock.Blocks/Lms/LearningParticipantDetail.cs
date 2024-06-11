@@ -37,7 +37,6 @@ namespace Rock.Blocks.Lms
     /// <summary>
     /// Displays the details of a particular learning participant.
     /// </summary>
-
     [DisplayName( "Learning Participant Detail" )]
     [Category( "LMS" )]
     [Description( "Displays the details of a particular learning participant." )]
@@ -471,14 +470,14 @@ namespace Rock.Blocks.Lms
 
                 entity.LearningClass = group;
                 entity.GroupId = classId;
-                
+
                 // Get the selected person.
-                if (!Guid.TryParse(participantBag.PersonAlias.Value, out var aliasGuid ))
+                if ( !Guid.TryParse( participantBag.PersonAlias.Value, out var aliasGuid ) )
                 {
                     error = ActionBadRequest( $"Missing {LearningParticipant.FriendlyTypeName}." );
                 }
 
-                var personId = new PersonAliasService(rockContext).GetPersonId( aliasGuid ).ToIntSafe();
+                var personId = new PersonAliasService( rockContext ).GetPersonId( aliasGuid ).ToIntSafe();
 
                 if ( personId == 0 )
                 {
@@ -488,7 +487,7 @@ namespace Rock.Blocks.Lms
                 entity.PersonId = personId;
 
                 // Get the Role type.
-                if (!Guid.TryParse( participantBag.ParticipantRole.Value, out var roleTypeGuid ) )
+                if ( !Guid.TryParse( participantBag.ParticipantRole.Value, out var roleTypeGuid ) )
                 {
                     error = ActionBadRequest( $"{GroupTypeRole.FriendlyTypeName} not found." );
                 }
@@ -582,7 +581,7 @@ namespace Rock.Blocks.Lms
                 }
 
                 var isNew = entity.Id == 0;
-                
+
                 rockContext.WrapTransaction( () =>
                 {
                     rockContext.SaveChanges();
@@ -735,7 +734,7 @@ namespace Rock.Blocks.Lms
                     .AddField( "dueDate", a => a.DueDate )
                     .AddField( "isPastDue", a => a.DueDate != null && a.DueDate >= now && !a.CompletedDateTime.HasValue )
                     .AddField( "isAvailableNow", a => a.AvailableDateTime != null && now >= a.AvailableDateTime )
-                    .AddTextField( "grade", a => a.GradeText( gradeScales) );
+                    .AddTextField( "grade", a => a.GradeText( gradeScales ) );
 
                 return ActionOk( gridBuilder.Build( learningPlan ) );
             }

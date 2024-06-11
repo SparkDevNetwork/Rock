@@ -27,7 +27,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets the grade as a percentage for the student <see cref="LearningActivityCompletion">Activity</see>.
         /// </summary>
-        public decimal GradePercent => LearningActivity?.Points > 0 ? Math.Round((decimal)PointsEarned / ( decimal ) LearningActivity.Points * 100, 3)  : 0;
+        public decimal GradePercent => LearningActivity?.Points > 0 ? Math.Round( ( decimal ) PointsEarned / ( decimal ) LearningActivity.Points * 100, 3 ) : 0;
 
         /// <summary>
         /// Gets the grade text for the activity.
@@ -37,10 +37,10 @@ namespace Rock.Model
         ///     Assumes the scales are ordered by ThresholdPercentage descending so the first match can be taken.
         /// </param>
         /// <returns>A string representing the text for the percentage and earned grade.</returns>
-        public string GradeText(IEnumerable<LearningGradingSystemScale> scales = null )
+        public string GradeText( IEnumerable<LearningGradingSystemScale> scales = null )
         {
             var percent = GradePercent;
-            var grade = Grade(scales);
+            var grade = Grade( scales );
 
             return grade?.Name.Length > 0 ? $"{grade?.Name} ({percent}%)" : $"{percent}%";
         }
@@ -56,7 +56,7 @@ namespace Rock.Model
         /// <returns>A string representing the text for the percentage and earned grade.</returns>
         public LearningGradingSystemScale Grade( IEnumerable<LearningGradingSystemScale> scales = null )
         {
-            if (scales == null)
+            if ( scales == null )
             {
                 scales = Student?.LearningClass?.LearningGradingSystem?.LearningGradingSystemScales.OrderByDescending( s => s.ThresholdPercentage );
             }

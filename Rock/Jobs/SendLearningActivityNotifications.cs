@@ -290,7 +290,7 @@ namespace Rock.Jobs
 
             if ( _notificationsSent > 0 )
             {
-                jobSummaryBuilder.AppendLine( $"<i class='fa fa-circle text-success'></i> {_notificationsSent} {"notification".PluralizeIf( _notificationsSent != 1) } sent" );
+                jobSummaryBuilder.AppendLine( $"<i class='fa fa-circle text-success'></i> {_notificationsSent} {"notification".PluralizeIf( _notificationsSent != 1 )} sent" );
             }
 
             foreach ( var warning in _warnings )

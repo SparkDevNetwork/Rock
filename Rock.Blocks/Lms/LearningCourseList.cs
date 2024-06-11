@@ -33,7 +33,6 @@ namespace Rock.Blocks.Lms
     /// <summary>
     /// Displays a list of learning courses.
     /// </summary>
-
     [DisplayName( "Learning Course List" )]
     [Category( "LMS" )]
     [Description( "Displays a list of learning courses." )]
@@ -147,7 +146,7 @@ namespace Rock.Blocks.Lms
                 .AddTextField( "summary", a => a.Summary )
                 .AddTextField( "category", a => a.CategoryId.HasValue ? CategoryCache.Get( a.CategoryId.Value )?.Name : null )
                 .AddTextField( "categoryIconCssClass", a => a.CategoryId.HasValue ? CategoryCache.Get( a.CategoryId.Value )?.IconCssClass : null )
-                .AddTextField( "categoryColor", a => a.CategoryId.HasValue ? CategoryCache.Get( a.CategoryId.Value )?.HighlightColor : null)
+                .AddTextField( "categoryColor", a => a.CategoryId.HasValue ? CategoryCache.Get( a.CategoryId.Value )?.HighlightColor : null )
                 .AddField( "isPublic", a => a.IsPublic )
                 .AddField( "isActive", a => a.IsActive )
                 .AddTextField( "code", a => a.CourseCode )

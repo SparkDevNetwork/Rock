@@ -26,7 +26,7 @@ namespace Rock.Model
         /// <returns>The type of label to use based on the number of absences ("success", "warning", "danger" or "").</returns>
         public string AbsencesLabelStyle( int count, LearningProgram program = null )
         {
-            if (program == null )
+            if ( program == null )
             {
                 program = LearningCourse?.LearningProgram;
             }

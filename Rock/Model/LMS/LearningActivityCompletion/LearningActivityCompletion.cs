@@ -18,6 +18,7 @@ using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -218,7 +219,7 @@ namespace Rock.Model
         /// </summary>
         public LearningActivityCompletionConfiguration()
         {
-            this.HasRequired( a => a.LearningActivity ).WithMany( a => a.LearningActivityCompletions ).HasForeignKey( a => a.LearningActivityId ).WillCascadeOnDelete( true ); 
+            this.HasRequired( a => a.LearningActivity ).WithMany( a => a.LearningActivityCompletions ).HasForeignKey( a => a.LearningActivityId ).WillCascadeOnDelete( true );
             this.HasRequired( a => a.Student ).WithMany( a => a.LearningActivities ).HasForeignKey( a => a.StudentId ).WillCascadeOnDelete( true );
             this.HasOptional( a => a.CompletedByPersonAlias ).WithMany().HasForeignKey( a => a.CompletedByPersonAliasId ).WillCascadeOnDelete( false );
         }

@@ -33,7 +33,7 @@ using Rock.Web.Utilities;
 namespace Rock.Reporting.DataSelect.Group
 {
     /// <summary>
-    /// 
+    /// The Data Select responsible for including completed learning program details.
     /// </summary>
     [Description( "Select the Person's Completed Learning Program" )]
     [Export( typeof( DataSelectComponent ) )]
@@ -142,9 +142,6 @@ namespace Rock.Reporting.DataSelect.Group
             return "Has Completed Program";
         }
 
-        private const string _CtlProgram = "ddlProgram";
-        private const string _CtlSlidingDateRange = "slidingDateRangePicker";
-
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -162,7 +159,8 @@ namespace Rock.Reporting.DataSelect.Group
                .Where( p => p.IsActive )
                .Select( p => new
                {
-                   p.Id, p.Name
+                   p.Id,
+                   p.Name
                } )
                .ToList()
                .OrderBy( a => a.Name );
@@ -241,12 +239,12 @@ namespace Rock.Reporting.DataSelect.Group
         {
             var settings = new HasCompletedProgramSelectSettings( selection );
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( settings.SlidingDateRangeDelimitedValues );
-            
+
             var programQuery = settings.LearningProgramId.HasValue ?
                 new LearningProgramCompletionService( context ).Queryable()
                     .AsNoTracking()
                     .Include( c => c.PersonAlias )
-                    .Where( c => c.LearningProgramId == settings .LearningProgramId ) :
+                    .Where( c => c.LearningProgramId == settings.LearningProgramId ) :
                 new List<LearningProgramCompletion>().AsQueryable();
 
             if ( dateRange.Start.HasValue || dateRange.End.HasValue )
@@ -283,6 +281,9 @@ namespace Rock.Reporting.DataSelect.Group
         }
 
         #endregion
+
+        private const string _CtlProgram = "ddlProgram";
+        private const string _CtlSlidingDateRange = "slidingDateRangePicker";
 
         private class ProgramCompletionData
         {

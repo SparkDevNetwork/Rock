@@ -18,7 +18,6 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 
-using Rock.Data;
 using Rock.Enums.Lms;
 using Rock.Utility;
 using Rock.ViewModels.Blocks.Lms.LearningActivityComponent;
@@ -176,10 +175,10 @@ namespace Rock.Model
             var baseQuery = personIds?.Any() == true ?
                 GetParticipants( classId )
                     .Where( p => personIds.Contains( p.PersonId ) ) :
-                GetParticipants(classId );
+                GetParticipants( classId );
 
             // Optionally filter by facilitators only.
-            if (facilitatorsOnly )
+            if ( facilitatorsOnly )
             {
                 baseQuery = baseQuery.Where( p => p.GroupRole.IsLeader );
             }

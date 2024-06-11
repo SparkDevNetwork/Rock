@@ -27,7 +27,6 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.SystemGuid;
-using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Lms.LearningActivityCompletionDetail;
 using Rock.ViewModels.Blocks.Lms.LearningActivityComponent;
@@ -132,7 +131,7 @@ namespace Rock.Blocks.Lms
 
             var isViewable = BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
             box.IsEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
-            
+
             if ( entity.Id != 0 )
             {
                 // Existing entity was found, prepare for view mode by default.
@@ -215,7 +214,7 @@ namespace Rock.Blocks.Lms
                 Order = entity.LearningActivity.Order,
                 Points = entity.LearningActivity.Points
             };
-            
+
             return new LearningActivityCompletionBag
             {
                 IdKey = entity.IdKey,
@@ -312,7 +311,7 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         protected override LearningActivityCompletion GetInitialEntity()
         {
-            var completionId = PageParameterAsId(PageParameterKey.LearningActivityCompletionId);
+            var completionId = PageParameterAsId( PageParameterKey.LearningActivityCompletionId );
             if ( completionId > 0 )
             {
                 return new LearningActivityCompletionService( RockContext )

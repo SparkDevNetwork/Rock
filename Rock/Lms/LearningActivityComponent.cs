@@ -31,15 +31,15 @@ namespace Rock.Lms
         /// Initializes a new instance of the <see cref="LearningActivityComponent"/> class.
         /// </summary>
         /// <param name="componentFilePath">The path to the Obsidian component's .obs file.</param>
-        public LearningActivityComponent(string componentFilePath ): base (componentFilePath )
+        public LearningActivityComponent( string componentFilePath ) : base( componentFilePath )
         {
-            
+
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LearningActivityComponent" /> class.
         /// </summary>
-        public LearningActivityComponent() : base( )
+        public LearningActivityComponent() : base()
         {
         }
 

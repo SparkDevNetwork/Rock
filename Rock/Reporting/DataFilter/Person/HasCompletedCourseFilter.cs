@@ -34,7 +34,6 @@ using Rock.Web.Utilities;
 
 namespace Rock.Reporting.DataFilter.Person
 {
-
     /// <summary>
     /// The Data View Filter  responsible for determining if a <see cref="Person"/> has completed a <see cref="LearningCourse"/>.
     /// </summary>

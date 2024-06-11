@@ -62,7 +62,7 @@ namespace Rock.Obsidian
         /// Initializes a new instance of the <see cref="ObsidianComponent"/> class.
         /// </summary>
         /// <param name="componentFilePath">The path to the Obsidian component's .obs file.</param>
-        public ObsidianComponent(string componentFilePath)
+        public ObsidianComponent( string componentFilePath )
         {
             ComponentUrl = componentFilePath;
         }
@@ -70,7 +70,7 @@ namespace Rock.Obsidian
         /// <summary>
         /// Initializes a new instance of the <see cref="ObsidianComponent"/> class.
         /// </summary>
-        public ObsidianComponent(): base()
+        public ObsidianComponent() : base()
         {
 
         }

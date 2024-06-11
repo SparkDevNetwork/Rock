@@ -29,7 +29,6 @@ namespace Rock.Model
         /// <seealso cref="Rock.Data.EntitySaveHook{TEntity}" />
         new internal class SaveHook : EntitySaveHook<LearningParticipant>
         {
-
             /// <summary>
             /// Ensures the Particpiant has the necessary <see cref="LearningActivityCompletion"/> records
             /// for the <see cref="LearningClass"/>.

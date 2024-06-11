@@ -282,9 +282,9 @@ namespace Rock.Blocks.Lms
                 return false;
             }
 
-            if ( entity.GroupTypeId == 0)
+            if ( entity.GroupTypeId == 0 )
             {
-                if (Guid.TryParse( SystemGuid.GroupType.GROUPTYPE_LMS_CLASS, out var groupTypeGuid ) )
+                if ( Guid.TryParse( SystemGuid.GroupType.GROUPTYPE_LMS_CLASS, out var groupTypeGuid ) )
                 {
                     entity.GroupTypeId = new GroupTypeService( RockContext ).GetId( groupTypeGuid ).Value;
                 }
@@ -385,7 +385,7 @@ namespace Rock.Blocks.Lms
                 .FirstOrDefault( a => a.Id == entityId );
         }
 
-        private Dictionary<string, string> GetCurrentPageParams(string keyPlaceholder = "")
+        private Dictionary<string, string> GetCurrentPageParams( string keyPlaceholder = "" )
         {
             if ( !string.IsNullOrWhiteSpace( keyPlaceholder ) )
             {
@@ -416,7 +416,7 @@ namespace Rock.Blocks.Lms
             var currentPageParams = GetCurrentPageParams();
             var activityDetailParams = GetCurrentPageParams( "LearningActivityId" );
             var participantDetailParams = GetCurrentPageParams( "LearningParticipantId" );
-            
+
             return new Dictionary<string, string>
             {
                 [NavigationUrlKey.AttendancePage] = this.GetLinkedPageUrl( AttributeKey.AttendancePage, currentPageParams ),

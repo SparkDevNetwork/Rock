@@ -37,7 +37,7 @@ namespace Rock.ViewModels.Blocks.Lms.LearningClassList
         /// Gets or sets whether the location column is shown.
         /// </summary>
         public bool ShowLocationColumn { get; set; }
-        
+
         /// <summary>
         /// Gets or sets whether the schedule column is shown.
         /// </summary>

@@ -15,7 +15,6 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
@@ -37,13 +36,12 @@ namespace Rock.Blocks.Lms
     /// <summary>
     /// Displays a list of learning program completions.
     /// </summary>
-
     [DisplayName( "Learning Program Completion List" )]
     [Category( "LMS" )]
     [Description( "Displays a list of learning program completions." )]
     [IconCssClass( "fa fa-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
-    [ContextAware( typeof( LearningProgram ) ) ]
+    [ContextAware( typeof( LearningProgram ) )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the learning program completion details.",

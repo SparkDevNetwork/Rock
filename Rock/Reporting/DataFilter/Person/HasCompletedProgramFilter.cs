@@ -43,7 +43,6 @@ namespace Rock.Reporting.DataFilter.Person
     {
         #region Properties
 
-
         /// <inheritdoc/>
         public override string AppliesToEntityType
         {
@@ -103,7 +102,7 @@ namespace Rock.Reporting.DataFilter.Person
             filterControl.Controls.Add( ddlProgram );
             // Only include active and tracked programs (non-tracked programs won't have LearningProgramCompletion records).
             var programs = new LearningProgramService( new RockContext() ).Queryable().AsNoTracking()
-                .Where( p => p.IsActive  && p.IsCompletionStatusTracked )
+                .Where( p => p.IsActive && p.IsCompletionStatusTracked )
                 .ToList()
                 .OrderBy( a => a.Name );
             ddlProgram.Items.Clear();

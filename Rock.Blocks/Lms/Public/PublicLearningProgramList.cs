@@ -34,7 +34,7 @@ namespace Rock.Blocks.Lms
     [Description( "Displays a list of public learning programs." )]
     [IconCssClass( "fa fa-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
-    
+
     [LinkedPage( "Detail Page",
         Description = "The page that will show the courses for the program.",
         Key = AttributeKey.DetailPage )]

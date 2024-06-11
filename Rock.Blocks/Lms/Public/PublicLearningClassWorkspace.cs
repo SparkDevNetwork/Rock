@@ -159,7 +159,7 @@ namespace Rock.Blocks.Lms
 
             var activityCompletionService = new LearningActivityCompletionService( rockContext );
 
-            var activities = activityCompletionService.GetClassActivities( currentPerson.Id, classId ).ToList().OrderBy( a => a.LearningActivity.Order);
+            var activities = activityCompletionService.GetClassActivities( currentPerson.Id, classId ).ToList().OrderBy( a => a.LearningActivity.Order );
 
             // Get the necessary properties for all the binary files at once.
             var binaryFileIds = activities.Where( a => a.BinaryFileId.HasValue && a.BinaryFileId > 0 ).Select( a => a.BinaryFileId.Value ).ToList();
@@ -275,7 +275,7 @@ namespace Rock.Blocks.Lms
                 var activity = new LearningActivityCompletionService( rockContext ).Queryable()
                     .Include( a => a.LearningActivity )
                     .Include( a => a.Student )
-                    .FirstOrDefault( a => a.Id == completionId && a.Student.PersonId == currentPersonId ); 
+                    .FirstOrDefault( a => a.Id == completionId && a.Student.PersonId == currentPersonId );
 
                 if ( activity == null )
                 {

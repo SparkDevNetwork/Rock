@@ -242,9 +242,9 @@ namespace Rock.Model
 
         #region Nested Classes
 
-            /// <summary>
-            /// Represents the Lava enabled data sent to the public courses list block.
-            /// </summary>
+        /// <summary>
+        /// Represents the Lava enabled data sent to the public courses list block.
+        /// </summary>
         public class PublicLearningCourseBag : RockDynamic
         {
             /// <summary>

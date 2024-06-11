@@ -160,7 +160,7 @@ namespace Rock.Blocks.Lms
 
             var courseKey = PageParameter( PageParameterKey.LearningCourseId ) ?? string.Empty;
 
-            var course = courseKey.Length > 0 ? new LearningCourseService( RockContext ).GetInclude( courseKey, c => c.LearningProgram ): null;
+            var course = courseKey.Length > 0 ? new LearningCourseService( RockContext ).GetInclude( courseKey, c => c.LearningProgram ) : null;
             var isNewCourse = courseKey == "0";
 
             var programKey = PageParameter( PageParameterKey.LearningProgramId ) ?? string.Empty;

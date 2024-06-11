@@ -67,7 +67,7 @@ namespace Rock.Model
         ///     A new class whose properties and <see cref="AttributeValue" />s match the properties and <see cref="AttributeValue" />s
         ///     of the provided class.
         /// </returns>
-        public LearningClass Copy( LearningClass learningClass, bool includeActivities = true)
+        public LearningClass Copy( LearningClass learningClass, bool includeActivities = true )
         {
             var newLearningClass = learningClass.CloneWithoutIdentity();
             newLearningClass.Name += " - Copy";

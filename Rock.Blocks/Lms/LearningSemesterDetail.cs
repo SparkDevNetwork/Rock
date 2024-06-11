@@ -34,7 +34,6 @@ namespace Rock.Blocks.Lms
     /// <summary>
     /// Displays the details of a particular learning semester.
     /// </summary>
-
     [DisplayName( "Learning Semester Detail" )]
     [Category( "LMS" )]
     [Description( "Displays the details of a particular learning semester." )]
@@ -322,7 +321,7 @@ namespace Rock.Blocks.Lms
             }
 
             // Set the LearningProgramId from the page parameter if the entity doesn't yet have one.
-            if (entity.LearningProgramId == 0)
+            if ( entity.LearningProgramId == 0 )
             {
                 entity.LearningProgramId = PageParameterAsId( PageParameterKey.LearningProgramId );
             }

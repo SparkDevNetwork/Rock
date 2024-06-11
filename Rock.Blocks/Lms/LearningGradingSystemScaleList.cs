@@ -17,7 +17,6 @@
 
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
@@ -35,7 +34,6 @@ namespace Rock.Blocks.Lms
     /// <summary>
     /// Displays a list of learning grading system scales.
     /// </summary>
-
     [DisplayName( "Learning Grading System Scale List" )]
     [Category( "LMS" )]
     [Description( "Displays a list of learning grading system scales." )]

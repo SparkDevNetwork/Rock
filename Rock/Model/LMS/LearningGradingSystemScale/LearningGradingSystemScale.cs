@@ -18,6 +18,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -59,7 +60,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.Decimal"/> representing the percentage threshold for the LearningGradingSystemScale.
         /// </value>
-        [DecimalPrecision(8, 3)]
+        [DecimalPrecision( 8, 3 )]
         public decimal? ThresholdPercentage { get; set; }
 
         /// <summary>

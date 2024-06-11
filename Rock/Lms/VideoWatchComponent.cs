@@ -31,6 +31,6 @@ namespace Rock.Lms
         /// <summary>
         /// Initializes a new instance of the CheckOffComponent.
         /// </summary>
-        public VideoWatchComponent(): base( @"/Obsidian/Controls/Internal/LearningActivity/videoWatchLearningActivity.obs" ) { }
+        public VideoWatchComponent() : base( @"/Obsidian/Controls/Internal/LearningActivity/videoWatchLearningActivity.obs" ) { }
     }
 }

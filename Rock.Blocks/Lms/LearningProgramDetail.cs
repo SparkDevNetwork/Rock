@@ -36,7 +36,6 @@ namespace Rock.Blocks.Lms
     /// <summary>
     /// Displays the details of a particular learning program.
     /// </summary>
-
     [DisplayName( "Learning Program Detail" )]
     [Category( "LMS" )]
     [Description( "Displays the details of a particular learning program." )]
@@ -151,7 +150,7 @@ namespace Rock.Blocks.Lms
             var options = new LearningProgramDetailOptionsBag();
 
             options.SystemCommunications = isEditable ? GetCommunicationTemplates( rockContext ) : new List<ListItemBag>();
-            
+
             return options;
         }
 
@@ -190,7 +189,7 @@ namespace Rock.Blocks.Lms
         {
             errorMessage = null;
 
-            if (learningProgram.Name.IsNullOrWhiteSpace())
+            if ( learningProgram.Name.IsNullOrWhiteSpace() )
             {
                 errorMessage = "Name is required";
                 return false;
@@ -382,7 +381,7 @@ namespace Rock.Blocks.Lms
                 box.Entity.ConfigurationMode == Enums.Lms.ConfigurationMode.OnDemandLearning;
 
             // We're unable to move to academic calendar mode from On-Demand due to the fact that none of the current participants will have records.
-            if ( isMovingToOnDemandMode)
+            if ( isMovingToOnDemandMode )
             {
                 throw new ApplicationException( "Unable to move from Academic Calendar mode to On-Demand mode." );
             }

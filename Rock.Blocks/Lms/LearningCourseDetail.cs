@@ -354,7 +354,7 @@ namespace Rock.Blocks.Lms
                 } );
 
             box.IfValidProperty( nameof( box.Entity.CourseRequirements ),
-                () => UpdateRequiredCourses( box.Entity, entity, rockContext ));
+                () => UpdateRequiredCourses( box.Entity, entity, rockContext ) );
 
             return true;
         }

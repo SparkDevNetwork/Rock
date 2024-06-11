@@ -33,7 +33,7 @@ using Rock.Web.Utilities;
 namespace Rock.Reporting.DataSelect.Group
 {
     /// <summary>
-    /// 
+    /// The Data Select responsible for including completed learning course details.
     /// </summary>
     [Description( "Select the Person's completed Learning Course" )]
     [Export( typeof( DataSelectComponent ) )]
@@ -128,10 +128,6 @@ namespace Rock.Reporting.DataSelect.Group
             return "Has Completed Course";
         }
 
-        private const string _CtlCourse = "ddlCourse";
-        private const string _CtlSlidingDateRange = "slidingDateRangePicker";
-        private const string _CtlStatuses = "cblStatuses";
-
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -149,7 +145,8 @@ namespace Rock.Reporting.DataSelect.Group
                .Where( c => c.IsActive )
                .Select( c => new
                {
-                   c.Id, c.Name
+                   c.Id,
+                   c.Name
                } )
                .ToList()
                .OrderBy( a => a.Name );
@@ -275,7 +272,7 @@ namespace Rock.Reporting.DataSelect.Group
         {
             var settings = new HasCompletedCourseSelectSettings( selection );
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( settings.SlidingDateRangeDelimitedValues );
-            
+
             var courseQuery = settings.LearningCourseId.HasValue ?
                 new LearningParticipantService( context ).Queryable()
                     .AsNoTracking()
@@ -329,6 +326,10 @@ namespace Rock.Reporting.DataSelect.Group
         }
 
         #endregion
+
+        private const string _CtlCourse = "ddlCourse";
+        private const string _CtlSlidingDateRange = "slidingDateRangePicker";
+        private const string _CtlStatuses = "cblStatuses";
 
         private class CourseCompletionData
         {

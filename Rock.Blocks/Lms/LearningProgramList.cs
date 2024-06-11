@@ -33,7 +33,6 @@ namespace Rock.Blocks.Lms
     /// <summary>
     /// Displays a list of learning programs.
     /// </summary>
-
     [DisplayName( "Learning Program List" )]
     [Category( "LMS" )]
     [Description( "Displays a list of learning programs." )]

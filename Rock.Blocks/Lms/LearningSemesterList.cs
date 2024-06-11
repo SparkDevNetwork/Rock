@@ -35,7 +35,6 @@ namespace Rock.Blocks.Lms
     /// <summary>
     /// Displays a list of learning semesters.
     /// </summary>
-
     [DisplayName( "Learning Semester List" )]
     [Category( "LMS" )]
     [Description( "Displays a list of learning semesters." )]
@@ -99,7 +98,7 @@ namespace Rock.Blocks.Lms
             var options = new LearningSemesterListOptionsBag();
 
             var contextEntity = RequestContext.GetContextEntity<LearningProgram>();
-            if (contextEntity != null)
+            if ( contextEntity != null )
             {
                 options.LearningProgramIdKey = contextEntity.IdKey;
                 options.LearningProgramName = contextEntity.Name;
@@ -138,7 +137,7 @@ namespace Rock.Blocks.Lms
         protected override IQueryable<LearningSemester> GetListQueryable( RockContext rockContext )
         {
             var entityId = PageParameterAsId( PageParameterKey.LearningProgramId );
-                
+
             // If the PageParameter has a value then use that
             // otherwise try to get the Id for filtering from the ContextEntity.
             if ( entityId > 0 )
