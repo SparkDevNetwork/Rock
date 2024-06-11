@@ -515,10 +515,11 @@ namespace Rock.Blocks.Communication
             }
             else if ( medium is Rock.Communication.Medium.Sms smsMedium )
             {
+                var currentPerson = GetCurrentPerson();
                 var allowedSmsFromNumberGuids = GetAttributeValue( AttributeKey.AllowedSMSNumbers )
                     .SplitDelimitedValues( whitespace: true )
                     .AsGuidList();
-                var currentPerson = GetCurrentPerson();
+
                 return new CommunicationEntrySmsMediumOptionsBag
                 {
                     CharacterLimit = smsMedium.GetAttributeValue( "CharacterLimit" ).AsIntegerOrNull() ?? 160,
@@ -527,6 +528,9 @@ namespace Rock.Blocks.Communication
                     SmsFromNumbers = SystemPhoneNumberCache
                         .All( includeInactive: false )
                         .Where( spn => spn.IsAuthorized( Authorization.VIEW, currentPerson ) && allowedSmsFromNumberGuids.ContainsOrEmpty( spn.Guid ) )
+                        .OrderBy( spn => spn.Order )
+                        .ThenBy( spn => spn.Name )
+                        .ThenBy( spn => spn.Id )
                         .ToListItemBagList(),
                 };
             }
