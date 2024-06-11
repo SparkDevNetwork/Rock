@@ -470,7 +470,7 @@
     <Compile Include="CheckIn\KioskBag.cs" />
     <Compile Include="CheckIn\KioskStatusBag.cs" />
     <Compile Include="CheckIn\Labels\DataFormatterOptionBag.cs" />
-    <Compile Include="Blocks\CheckIn\Configuration\LabelDesigner\DesignerLabelBag.cs" />
+    <Compile Include="CheckIn\Labels\DesignedLabelBag.cs" />
     <Compile Include="CheckIn\Labels\CustomFieldInputBag.cs" />
     <Compile Include="CheckIn\Labels\LabelFieldBag.cs" />
     <Compile Include="CheckIn\Labels\TextFieldConfigurationBag.cs" />

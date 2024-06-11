@@ -23,6 +23,7 @@
 
 import { LabelFieldType } from "@Obsidian/Enums/CheckIn/Labels/labelFieldType";
 import { Guid } from "@Obsidian/Types";
+import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterGroupBag";
 
 /**
  * Represents a single field on a check-in label. This contains all the
@@ -31,6 +32,12 @@ import { Guid } from "@Obsidian/Types";
  * also included.
  */
 export type LabelFieldBag = {
+    /**
+     * An optional filter that controls the visibility of this field on
+     * the label.
+     */
+    conditionalVisibility?: FieldFilterGroupBag | null;
+
     /**
      * The dictionary of configuration values. This represents the actual
      * settings of the field type, such as color or border width.

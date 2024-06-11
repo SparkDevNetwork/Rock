@@ -88,7 +88,7 @@ namespace Rock.CheckIn.v2.Labels
         /// Retrieves the data sources for the specified label type.
         /// </summary>
         /// <param name="labelType">The type of label for which to retrieve data sources.</param>
-        /// <returns>A read-only dictionary containing the data sources for the specified label type.</returns>
+        /// <returns>A read-only list containing the data sources for the specified label type.</returns>
         public static IReadOnlyList<FieldDataSource> GetDataSources( LabelType labelType )
         {
             if ( labelType == LabelType.Family )
@@ -111,6 +111,11 @@ namespace Rock.CheckIn.v2.Labels
             return new List<FieldDataSource>();
         }
 
+        /// <summary>
+        /// Retrieves the filter sources for the specified label type.
+        /// </summary>
+        /// <param name="labelType">The type of label for which to retrieve filter sources.</param>
+        /// <returns>A read-only list containing the filter sources for the specified label type.</returns>
         public static IReadOnlyList<FieldFilterSourceBag> GetFilterSources( LabelType labelType )
         {
             if ( labelType == LabelType.Person )

@@ -791,9 +791,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\Configuration\CheckInLabelDetail\checkInLabelBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\Configuration\CheckInLabelDetail\checkInLabelDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\Configuration\CheckInLabelList\checkInLabelListOptionsBag.d.ts" />
-    <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\Configuration\checkInSimulatorOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\Configuration\LabelDesigner\dataSourceBag.d.ts" />
-    <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\Configuration\LabelDesigner\designerLabelBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\CheckIn\Labels\designedLabelBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\AdaptiveMessageAdaptationDetail\adaptiveMessageAdaptationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\AdaptiveMessageAdaptationDetail\adaptiveMessageAdaptationDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\AdaptiveMessageDetail\adaptiveMessageBag.d.ts" />

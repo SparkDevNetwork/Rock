@@ -18,18 +18,15 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Enums.CheckIn.Labels;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.CheckIn.Configuration.CheckInLabelList;
-using Rock.ViewModels.Blocks.CheckIn.Configuration.LabelDesigner;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.CheckIn.Configuration
@@ -139,25 +136,8 @@ namespace Rock.Blocks.CheckIn.Configuration
                 .AddField( "previewImage", a => a.PreviewImage != null
                     ? Convert.ToBase64String( a.PreviewImage )
                     : string.Empty )
-                .AddTextField( "labelSize", GetLabelSize )
+                .AddTextField( "labelSize", a => a.GetLabelSizeDescription() )
                 .AddAttributeFields( GetGridAttributes() );
-        }
-
-        private static string GetLabelSize( CheckInLabel label )
-        {
-            if ( label.LabelFormat != LabelFormat.Designed )
-            {
-                return string.Empty;
-            }
-
-            var designer = label.Content.FromJsonOrNull<DesignerLabelBag>();
-
-            if ( designer == null )
-            {
-                return string.Empty;
-            }
-
-            return $"{designer.Width}x{designer.Height}";
         }
 
         #endregion

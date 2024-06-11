@@ -17,15 +17,13 @@
 
 using System.Collections.Generic;
 
-using Rock.ViewModels.CheckIn.Labels;
-
-namespace Rock.ViewModels.Blocks.CheckIn.Configuration.LabelDesigner
+namespace Rock.ViewModels.CheckIn.Labels
 {
     /// <summary>
     /// Represents a single check-in label built with the designer UI and
     /// all the information required to edit or print the label.
     /// </summary>
-    public class DesignerLabelBag
+    public class DesignedLabelBag
     {
         /// <summary>
         /// The width of the label in inches.

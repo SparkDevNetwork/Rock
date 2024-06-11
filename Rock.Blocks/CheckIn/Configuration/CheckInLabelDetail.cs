@@ -24,13 +24,10 @@ using Rock.Attribute;
 using Rock.CheckIn.v2.Labels;
 using Rock.Constants;
 using Rock.Data;
-using Rock.Enums.CheckIn.Labels;
 using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.CheckIn.Configuration.CheckInLabelDetail;
-using Rock.ViewModels.Blocks.CheckIn.Configuration.LabelDesigner;
-using Rock.ViewModels.Reporting;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
@@ -190,13 +187,13 @@ namespace Rock.Blocks.CheckIn.Configuration
 
             return new CheckInLabelBag
             {
-                ConditionalPrintCriteria = entity.GetAdditionalSettings<FieldFilterGroupBag>( "Rock.Model.CheckInLabel.ConditionalCriteria" ),
+                ConditionalPrintCriteria = entity.GetConditionalPrintCriteria(),
                 IdKey = entity.IdKey,
                 Description = entity.Description,
                 IsActive = entity.IsActive,
                 IsSystem = entity.IsSystem,
                 LabelFormat = entity.LabelFormat,
-                LabelSize = GetLabelSize( entity ),
+                LabelSize = entity.GetLabelSizeDescription(),
                 LabelType = entity.LabelType,
                 Name = entity.Name,
                 PreviewImage = entity.PreviewImage != null
@@ -264,7 +261,7 @@ namespace Rock.Blocks.CheckIn.Configuration
                 () => entity.Name = box.Bag.Name );
 
             box.IfValidProperty( nameof( box.Bag.ConditionalPrintCriteria ),
-                () => entity.SetAdditionalSettings( "Rock.Model.CheckInLabel.ConditionalCriteria", box.Bag.ConditionalPrintCriteria ) );
+                () => entity.SetConditionalPrintCriteria( box.Bag.ConditionalPrintCriteria ) );
 
             box.IfValidProperty( nameof( box.Bag.AttributeValues ),
                 () =>
@@ -329,23 +326,6 @@ namespace Rock.Blocks.CheckIn.Configuration
             }
 
             return true;
-        }
-
-        private static string GetLabelSize( CheckInLabel label )
-        {
-            if ( label.LabelFormat != LabelFormat.Designed )
-            {
-                return string.Empty;
-            }
-
-            var designer = label.Content.FromJsonOrNull<DesignerLabelBag>();
-
-            if ( designer == null )
-            {
-                return string.Empty;
-            }
-
-            return $"{designer.Width}x{designer.Height}";
         }
 
         #endregion

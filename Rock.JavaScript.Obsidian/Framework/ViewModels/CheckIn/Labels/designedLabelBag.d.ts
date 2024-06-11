@@ -27,7 +27,7 @@ import { LabelFieldBag } from "@Obsidian/ViewModels/CheckIn/Labels/labelFieldBag
  * Represents a single check-in label built with the designer UI and
  * all the information required to edit or print the label.
  */
-export type DesignerLabelBag = {
+export type DesignedLabelBag = {
     /**
      * The list of objects that describe each field that exists on the
      * label.

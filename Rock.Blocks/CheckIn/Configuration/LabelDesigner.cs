@@ -87,7 +87,7 @@ namespace Rock.Blocks.CheckIn.Configuration
             return new
             {
                 IdKey = label.IdKey,
-                Label = label.Content.FromJsonOrNull<DesignerLabelBag>(),
+                Label = label.Content.FromJsonOrNull<DesignedLabelBag>(),
                 DataSources = dataSources,
                 FilterSources = filterSources,
             };
@@ -190,7 +190,7 @@ namespace Rock.Blocks.CheckIn.Configuration
         }
 
         [BlockAction]
-        public BlockActionResult Save( string key, DesignerLabelBag label, string previewData )
+        public BlockActionResult Save( string key, DesignedLabelBag label, string previewData )
         {
             var entityService = new CheckInLabelService( RockContext );
             var checkInLabel = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );

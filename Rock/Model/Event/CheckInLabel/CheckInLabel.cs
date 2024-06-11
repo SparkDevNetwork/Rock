@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -22,13 +23,15 @@ using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Enums.CheckIn.Labels;
 using Rock.Utility;
+using Rock.ViewModels.CheckIn.Labels;
+using Rock.ViewModels.Reporting;
 
 namespace Rock.Model
 {
     /// <summary>
     /// Represents a single label that will be used by the check-in system.
     /// </summary>
-    [RockDomain( "Event" )]
+    [RockDomain( "Check-in" )]
     [Table( "CheckInLabel" )]
     [DataContract]
     [Rock.SystemGuid.EntityTypeGuid( "8B651EB1-492F-46D0-821B-CA7355C6E6E7" )]
@@ -114,6 +117,69 @@ namespace Rock.Model
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// <para>
+        /// Gets the filter criteria used to determine if this label should be
+        /// printed during a check-in or check out operation.
+        /// </para>
+        /// <para>
+        /// This will never return <c>null</c>. If no filter is defined then
+        /// an instance with no rules will be returned.
+        /// </para>
+        /// </summary>
+        /// <returns>A new instance of <see cref="FieldFilterGroupBag"/> that defines the criteria.</returns>
+        public FieldFilterGroupBag GetConditionalPrintCriteria()
+        {
+            return this.GetAdditionalSettings<FieldFilterGroupBag>( "Rock.Model.CheckInLabel.ConditionalCriteria" );
+        }
+
+        /// <summary>
+        /// Sets the filter critiera used to determine if this label should be
+        /// printed during a check-in or check out operation.
+        /// </summary>
+        /// <param name="conditionalPrintCriteria">The filter criteria for the label.</param>
+        public void SetConditionalPrintCriteria( FieldFilterGroupBag conditionalPrintCriteria )
+        {
+            if ( conditionalPrintCriteria == null )
+            {
+                conditionalPrintCriteria = new FieldFilterGroupBag
+                {
+                    Rules = new List<FieldFilterRuleBag>()
+                };
+            }
+
+            this.SetAdditionalSettings( "Rock.Model.CheckInLabel.ConditionalCriteria", conditionalPrintCriteria );
+        }
+
+        /// <summary>
+        /// <para>
+        /// Gets the size of the label as a text string in the format of <c>WxH</c>,
+        /// such as <c>4x2</c>. The diminsions are in inches.
+        /// </para>
+        /// <para>
+        /// If the diminsions are unkonwn, such as when <see cref="LabelFormat"/>
+        /// is not <see cref="LabelFormat.Designed"/> then an empty string will
+        /// be returned.
+        /// </para>
+        /// </summary>
+        /// <returns>A string that represents the size of the label or <c>string.Empty</c> if it is unknown.</returns>
+        public string GetLabelSizeDescription()
+        {
+            if ( LabelFormat != LabelFormat.Designed )
+            {
+                return string.Empty;
+            }
+
+            var designer = Content.FromJsonOrNull<DesignedLabelBag>();
+
+            if ( designer == null )
+            {
+                return string.Empty;
+            }
+
+            return $"{designer.Width}x{designer.Height}";
+        }
 
         /// <inheritdoc/>
         public override string ToString()
