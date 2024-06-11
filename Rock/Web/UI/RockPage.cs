@@ -35,6 +35,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Rock.Attribute;
 using Rock.Blocks;
+using Rock.Cms.Utm;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
@@ -2555,10 +2556,28 @@ Sys.Application.add_load(function () {
             // If we have identified a logged-in user, record the page interaction immediately and return.
             if ( CurrentPerson != null )
             {
+                var interactionInfo = new InteractionTransactionInfo
+                {
+                    InteractionTimeToServe = _tsDuration.TotalSeconds,
+                    InteractionChannelCustomIndexed1 = Request.UrlReferrerNormalize(),
+                    InteractionChannelCustom2 = Request.UrlReferrerSearchTerms()
+                };
+
+                // If we have a UTM cookie, add the information to the interaction.
+                var utmInfo = this.GetCookieValueFromRequest( UtmCookieData.UTM_COOKIE_NAME ).FromJsonOrNull<UtmCookieData>();
+                if ( utmInfo != null )
+                {
+                    interactionInfo.InteractionSource = utmInfo.Source;
+                    interactionInfo.InteractionMedium = utmInfo.Medium;
+                    interactionInfo.InteractionCampaign = utmInfo.Campaign;
+                    interactionInfo.InteractionTerm = utmInfo.Term;
+                    interactionInfo.InteractionContent = utmInfo.Content;
+                }
+
                 var pageViewTransaction = new InteractionTransaction( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE ),
                     this.Site,
                     _pageCache,
-                    new InteractionTransactionInfo { InteractionTimeToServe = _tsDuration.TotalSeconds, InteractionChannelCustomIndexed1 = Request.UrlReferrerNormalize(), InteractionChannelCustom2 = Request.UrlReferrerSearchTerms() } );
+                    interactionInfo );
 
                 pageViewTransaction.Enqueue();
 

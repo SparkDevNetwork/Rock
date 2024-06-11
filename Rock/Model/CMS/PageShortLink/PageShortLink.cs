@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,6 +18,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Lava;
 
@@ -29,8 +30,8 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "PageShortLink" )]
     [DataContract]
-    [Rock.SystemGuid.EntityTypeGuid( "83D8C6DF-1D53-438B-93B2-75A2038BBEE6")]
-    public partial class PageShortLink : Model<PageShortLink>
+    [Rock.SystemGuid.EntityTypeGuid( "83D8C6DF-1D53-438B-93B2-75A2038BBEE6" )]
+    public partial class PageShortLink : Model<PageShortLink>, IHasAdditionalSettings
     {
         #region Entity Properties
 
@@ -64,6 +65,11 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public string Url { get; set; }
+
+        /// <inheritdoc/>
+        [RockInternal( "1.16.6" )]
+        [DataMember]
+        public string AdditionalSettingsJson { get; set; }
 
         #endregion Entity Properties
 
@@ -110,6 +116,50 @@ namespace Rock.Model
         }
 
         #endregion Methods
+
+        #region IHasAdditionalSettings Models
+
+        /// <summary>
+        /// ShortLink UTM (Urchin Tracking Module) settings.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "1.16.6" )]
+        public class UtmSettings
+        {
+            /// <summary>
+            /// Identifies a UtmSource Defined Value describing the origin of traffic to this link, such as a search engine, newsletter, or specific website.
+            /// </summary>
+            public int? UtmSourceValueId { get; set; }
+
+            /// <summary>
+            /// Identifies a UtmMedium Defined Value describing the marketing or advertising medium that directed a user to your site.
+            /// </summary>
+            public int? UtmMediumValueId { get; set; }
+
+            /// <summary>
+            /// Identifies a UtmCampaign Defined Value that tags traffic with a specific campaign name.
+            /// </summary>
+            public int? UtmCampaignValueId { get; set; }
+
+            /// <summary>
+            /// The search keywords or terms that are associated with this link.
+            /// </summary>
+            public string UtmTerm { get; set; }
+
+            /// <summary>
+            /// Differentiates between links that point to the same URL within the same ad or campaign, such as text or images.
+            /// </summary>
+            public string UtmContent { get; set; }
+        }
+
+        #endregion IHasAdditionalSettings Models
     }
 
     #region Entity Configuration
