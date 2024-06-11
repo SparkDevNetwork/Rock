@@ -22,7 +22,7 @@ namespace Rock.Migrations
     using System.Text;
 
     /// <summary>
-    ///
+    /// Migration to add Measurement Classification Defined Type and new Weekly metrics.
     /// </summary>
     public partial class AddMeasurementClassificationDefinedTypeAndValues : Rock.Migrations.RockMigration
     {
@@ -45,7 +45,7 @@ namespace Rock.Migrations
         private const string WeeklyScheduleGuid = "C31DF106-D7C8-4B64-81E7-5C4AB20DBA7B";
         private const string MonthlyScheduleGuid = "599A64CF-41CD-476C-AC0A-52BA9E71D354";
 
-        // Metric Guids
+        // Metric Guids 
         private const string TotalWeekendAttendanceMetric = "89553EEE-91F3-4169-9D7C-04A17471E035";
         private const string VolunteerAttendanceMetric = "4F965AE3-D455-4346-988F-2A2B5E236C0C";
         private const string PrayerRequestsMetric = "2B5ECA35-47D8-4690-A8AD-72488485F2B4";
@@ -207,19 +207,29 @@ FROM [Person] p
     INNER JOIN [GroupMember] gm ON gm.[PersonId] = p.[Id]
     INNER JOIN [Group] g ON g.[Id] = gm.[GroupId] AND g.[GroupTypeId] = @FamilyGroupTypeId
 WHERE ([RecordTypeValueId] = 1) AND ([RecordStatusValueId] = 3)
-GROUP BY p.PrimaryCampusId'
+GROUP BY p.PrimaryCampusId',
+[ScheduleId] = (SELECT [Id] FROM Schedule WHERE Guid = '{WeeklyScheduleGuid}'),
+[MeasurementClassificationValueId] = (SELECT [Id] FROM dbo.[DefinedValue] WHERE [Guid] = '{ActiveFamiliesValue}')
 WHERE [Guid] = '{ActiveFamiliesMetric}'
 " );
 
             // Add Campus Partition to Active Families Metric
             Sql( $@"
-IF NOT EXISTS (SELECT [Id] FROM dbo.[MetricPartition] WHERE [Guid] = '{ActiveFamiliesMetricPartitionGuid}')
+DECLARE @ActiveFamiliesMetricId int = (SELECT TOP 1 [Id] FROM dbo.[Metric] WHERE [Guid] = '{ActiveFamiliesMetric}')
+DECLARE @CampusEntityTypeId int = (SELECT TOP 1 [Id] FROM dbo.[EntityType] WHERE [Guid] = '{SystemGuid.EntityType.CAMPUS}')
+IF NOT EXISTS (SELECT [Id] FROM dbo.[MetricPartition] WHERE [Guid] = 'F879279D-3484-4F58-A16D-F64BDB277358')
 BEGIN
-	DECLARE @ActiveFamiliesMetricId int = (SELECT TOP 1 [Id] FROM dbo.[Metric] WHERE [Guid] = '{ActiveFamiliesMetric}')
 	INSERT INTO dbo.[MetricPartition]
 		([MetricId], [Label],[EntityTypeId],[IsRequired],[Guid],[Order])
 	VALUES 
-		(@ActiveFamiliesMetricId, 'Campus', 67, 1, '{ActiveFamiliesMetricPartitionGuid}',0)
+		(@ActiveFamiliesMetricId, 'Campus', @CampusEntityTypeId, 1, 'F879279D-3484-4F58-A16D-F64BDB277358',0)
+END
+ELSE
+BEGIN
+ UPDATE dbo.[MetricPartition]
+    SET [Label] = 'Campus',
+     [EntityTypeId] = @CampusEntityTypeId
+     WHERE [Guid] = 'F879279D-3484-4F58-A16D-F64BDB277358'
 END
 " );
 
@@ -231,7 +241,7 @@ END
 DECLARE @STARTDATE DATETIME = DATEADD(DAY, -7, GETDATE())
 DECLARE @ENDDATE DATETIME = GETDATE() 
 
-SELECT COUNT(1) as AttendanceCount, a.[CampusId]
+SELECT COUNT(1) as AttendanceCount, a.[CampusId], oa.[ScheduleId]
 FROM [Attendance] a
 INNER JOIN [AttendanceOccurrence] oa ON oa.Id = a.OccurrenceId
 INNER JOIN [Group] g ON g.Id = oa.[GroupId]
@@ -240,9 +250,9 @@ WHERE
    gt.[AttendanceCountsAsWeekendService] = 1
    AND a.[DidAttend] = 1 
    AND a.[StartDateTime] BETWEEN @STARTDATE AND @ENDDATE
-GROUP BY ALL a.[CampusId]
+GROUP BY ALL a.[CampusId], oa.[ScheduleId]
 ",
-                new List<PartitionDetails>() { new PartitionDetails( "Campus", Rock.SystemGuid.EntityType.CAMPUS ) },
+                new List<PartitionDetails>() { new PartitionDetails( "Campus", Rock.SystemGuid.EntityType.CAMPUS ), new PartitionDetails( "Schedule", SystemGuid.EntityType.SCHEDULE ) },
                 WeeklyScheduleGuid,
                 "This metric represents attendance records (total for the week) for any group(s) per campus of GroupTypes that have the Weekend Service field checked.",
                 TotalWeekendAttendanceValue );
@@ -256,7 +266,7 @@ DECLARE @STARTDATE DATETIME = DATEADD(DAY, -7, GETDATE())
 DECLARE @ENDDATE DATETIME = GETDATE()
 DECLARE @ServiceAreaDefinedValueId INT = (SELECT Id FROM dbo.[DefinedValue] WHERE [Guid] = '36A554CE-7815-41B9-A435-93F3D52A2828')
 
-SELECT COUNT(1) as AttendanceCount, a.[CampusId]
+SELECT COUNT(1) as AttendanceCount, a.[CampusId], oa.ScheduleId
 FROM [Attendance] a
 INNER JOIN [AttendanceOccurrence] oa ON oa.Id = a.OccurrenceId
 INNER JOIN [Group] g ON g.Id = oa.[GroupId]
@@ -265,9 +275,9 @@ WHERE
    gt.[GroupTypePurposeValueId] = @ServiceAreaDefinedValueId
    AND a.[DidAttend] = 1 
    AND a.[StartDateTime] BETWEEN @STARTDATE AND @ENDDATE
-GROUP BY ALL a.[CampusId]
+GROUP BY ALL a.[CampusId], oa.ScheduleId
 ",
-                new List<PartitionDetails>() { new PartitionDetails( "Campus", Rock.SystemGuid.EntityType.CAMPUS ) },
+                new List<PartitionDetails>() { new PartitionDetails( "Campus", Rock.SystemGuid.EntityType.CAMPUS ), new PartitionDetails( "Schedule", SystemGuid.EntityType.SCHEDULE ) },
                 WeeklyScheduleGuid,
                 "This metric represents attendance records (total for the week) for any group(s) per campus of GroupTypes that have a Purpose of Serving Area.",
                 VolunteerAttendanceValue );
@@ -346,7 +356,51 @@ GROUP BY ALL p.PrimaryCampusId
             AddMetric( GivingMetric,
                 "Giving",
                 WeeklyMetricsCategory,
-                "",
+                @"
+DECLARE @STARTDATE int = FORMAT( DATEADD(DAY, -7, GETDATE()), 'yyyyMMdd' )
+DECLARE @ENDDATE int = FORMAT( GETDATE(), 'yyyyMMdd' )
+DECLARE @PersonRecordTypeId INT = ( SELECT [Id] FROM [dbo].[DefinedValue] WHERE [Guid] = '36CF10D6-C695-413D-8E7C-4546EFEF385E' )
+DECLARE @Accounts VARCHAR(100) = '1,2'; -- Comma separated accounts to extract giving information from, their child accounts will be included
+DECLARE @AccountsWithChildren TABLE (Id INT);
+-- Recursively get accounts and their children.
+WITH AccountHierarchy AS (
+    SELECT [Id]
+    FROM dbo.[FinancialAccount] fa
+    WHERE [Id] IN (SELECT CAST(value AS INT) FROM STRING_SPLIT(@Accounts, ','))
+    UNION ALL
+    SELECT e.[Id]
+    FROM FinancialAccount e
+    INNER JOIN AccountHierarchy ah ON e.ParentAccountId = ah.Id
+)
+INSERT INTO @AccountsWithChildren SELECT * FROM AccountHierarchy;
+
+;WITH CTE AS (
+    SELECT
+	fa.[Name] AS AccountName
+    , fa.[CampusId] AS AccountCampusId
+    , [PrimaryFamilyId]
+    , SUM(ftd.[Amount]) AS [GivingAmount]
+	FROM
+		[Person] p
+		INNER JOIN [dbo].[PersonAlias] pa ON pa.[PersonId] = p.[Id]
+		INNER JOIN [dbo].[FinancialTransaction] ft ON ft.[AuthorizedPersonAliasId] = pa.[Id]
+		INNER JOIN [dbo].[FinancialTransactionDetail] ftd ON ftd.[TransactionId] = ft.[Id]
+		INNER JOIN [dbo].[FinancialAccount] fa ON fa.[Id] = ftd.[AccountId] 
+		INNER JOIN [dbo].[AnalyticsSourceDate] asd ON asd.[DateKey] = ft.[TransactionDateKey]
+	WHERE
+		fa.[IsTaxDeductible] = 1
+		AND asd.[DateKey] > = @STARTDATE AND asd.[DateKey] <= @ENDDATE
+		AND fa.[Id] IN (SELECT * FROM @AccountsWithChildren)
+AND p.[RecordTypeValueId] = @PersonRecordTypeId
+	GROUP BY fa.[CampusId], fa.[Name], [PrimaryFamilyId]
+)
+SELECT
+    [GivingAmount] AS [GivingAmount]
+    , [AccountCampusId] AS [CampusId]
+	, [AccountName]
+FROM CTE
+GROUP BY [AccountCampusId], [AccountName], GivingAmount;
+",
                 new List<PartitionDetails>() { new PartitionDetails( "Campus", Rock.SystemGuid.EntityType.CAMPUS ) },
                 WeeklyScheduleGuid,
                 "This metric represents weekly giving to the tithe per campus of the financial account.",
@@ -516,7 +570,7 @@ BEGIN
         public override void Down()
         {
             DeleteMetrics();
-            DeleteMetricSchedules();
+            //DeleteMetricSchedules();
             DeleteDefinedValues();
             DeleteDefinedTypeAndAttribute();
         }
