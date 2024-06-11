@@ -179,7 +179,7 @@ namespace Rock
         [RockInternal( "1.16.4" )]
         public static void SetAdditionalSettings( this IHasAdditionalSettings settings, string categoryKey, object categorySettings )
         {
-            if ( categoryKey.IsNullOrWhiteSpace() || !categoryKey.EndsWith( "Settings" ) || categorySettings == null )
+            if ( categoryKey.IsNullOrWhiteSpace() || categorySettings == null )
             {
                 return;
             }
