@@ -16,54 +16,99 @@
     </NotificationBox>
 
     <template v-else>
-        <RecipientPicker :modelValue="recipients"
-                         @update:modelValue="$emit('update:recipients', $event)"
-                         label="Recipients"
-                         mode="sms" />
+        <NotificationBox v-if="isInvalidTransportNotificationVisible"
+                         alertType="warning"
+                         :dismissible="true"
+                         heading="Warning"
+                         @dismiss="onDismissInvalidTransportNotification">
+            The SMS medium does not have an active transport configured. The communication will not be delivered until the transport is configured correctly.
+        </NotificationBox>
 
-        <DropDownList v-model="fromNumberGuidOrEmptyString"
-                      :items="mediumOptions.smsFromNumbers ?? undefined"
-                      help="The number to originate message from (configured under Admin Tools > Communications > System Phone Numbers)."
-                      label="From"
-                      rules="required" />
+        <RockForm v-model:submit="submitForm"
+                  @visibleValidationChanged="onFormValidationChanged"
+                  @submit="onFormSubmitted">
+            <div class="row">
+                <div class="col-sm-12">
+                    <RecipientPicker :modelValue="recipients"
+                                     @update:modelValue="$emit('update:recipients', $event)"
+                                     label="Recipients"
+                                     mode="sms" />
+                </div>
+            </div>
 
-        <RockFormField v-model="message" :name="`rcwMessage_${id}`">
-            <MergeFieldPicker v-model="mergeFieldValue"
-                              additionalFields="GlobalAttribute,Rock.Model.Person"
-                              class="margin-b-sm pull-right"
-                              label="Message"
-                              placeholder="Add Merge Field"
-                              @update:modelValue="onMergeFieldPicked" />
+            <div class="row">
+                <div class="col-sm-6">
+                    <DropDownList v-model="fromNumberGuidOrEmptyString"
+                                  :items="mediumOptions.smsFromNumbers ?? undefined"
+                                  help="The number to originate message from (configured under Admin Tools > Communications > System Phone Numbers)."
+                                  label="From"
+                                  rules="required"
+                                  :showBlankItem="false" />
+                </div>
 
-            <TextBox v-model="message"
-                     :rows="3"
-                     :maxLength="mediumOptions.characterLimit"
-                     rules="required"
-                     :showCountDown="true"
-                     textMode="multiline" />
-        </RockFormField>
+                <div class="col-xs-12 col-sm-6 d-sm-flex justify-content-sm-end">
+                    <ScheduleSend v-if="config.mode === Mode.Full"
+                                  class="mr-sm-3"
+                                  :modelValue="scheduleSendIsoString"
+                                  @update:modelValue="$emit('update:scheduleSendIsoString', $event)"
+                                  :label="breakpointHelper.isSmOrLarger ? ' ' : ''"
+                                  :disabled="disabled" />
+
+                    <Switch :modelValue="isBulkCommunication"
+                            @update:modelValue="$emit('update:isBulkCommunication', $event)"
+                            :disabled="disabled"
+                            :label="breakpointHelper.isSmOrLarger ? ' ' : ''"
+                            text="Bulk Communication" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-xs-12">
+                    <RockFormField v-model="message" :name="`rcwMessage_${id}`">
+                        <MergeFieldPicker v-model="mergeFieldValue"
+                                          additionalFields="GlobalAttribute,Rock.Model.Person"
+                                          class="margin-b-sm pull-right"
+                                          label="Message"
+                                          placeholder="Add Merge Field"
+
+                                          @update:modelValue="onMergeFieldPicked" />
+
+                        <TextBox v-model="message"
+                                 :rows="3"
+                                 :maxLength="mediumOptions.characterLimit"
+                                 rules="required"
+                                 :showCountDown="true"
+                                 textMode="multiline" />
+                    </RockFormField>
+                </div>
+            </div>
+        </RockForm>
     </template>
 </template>
 
 <script setup lang="ts">
-    import { PropType, onMounted, ref } from "vue";
+    import { PropType, computed, onMounted, ref, watch } from "vue";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import MergeFieldPicker from "@Obsidian/Controls/mergeFieldPicker.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
     import RockFormField from "@Obsidian/Controls/rockFormField.obs";
+    import Switch from "@Obsidian/Controls/switch.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { CommunicationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryInitializationBox";
     import { CommunicationEntrySmsMediumOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySmsMediumOptionsBag";
     import { CommunicationEntryGetMediumOptionsRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryGetMediumOptionsRequestBag";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import { scrollToTopOfWindow } from "./utils.partial";
+    import { scrollToTopOfWindow, useSelectedMediumType, useBreakpoint, useBreakpointHelper } from "./utils.partial";
     import { CommunicationEntryMediumOptionsBaseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryMediumOptionsBaseBag";
     import { MediumType } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntry/mediumType";
+    import { Mode } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntry/mode";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import RecipientPicker from "./recipientPicker.partial.obs";
     import { CommunicationEntryRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryRecipientBag";
+    import ScheduleSend from "./Controls/scheduleSend.partial.obs";
 
     const props = defineProps({
         disabled: {
@@ -71,23 +116,41 @@
             default: false
         },
 
+        isBulkCommunication: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
         recipients: {
             type: Array as PropType<CommunicationEntryRecipientBag[]>,
-            required: true,
+            required: true
+        },
+
+        /** The schedule send datetime value in ISO 8601 format. */
+        scheduleSendIsoString: {
+            type: String as PropType<string>,
+            required: true
         }
     });
 
     const emit = defineEmits<{
         /** Emits an error message. */
-        (e: "error", value: string): void,
+        (e: "error", value: string): void;
         /** Emits an event indicating the disabled state should be updated. */
-        (e: "update:disabled", value: boolean): void,
+        (e: "update:disabled", value: boolean): void;
+        /** Emits an event indicating the isBulkCommunication state should be updated. */
+        (e: "update:isBulkCommunication", value: boolean): void;
+        /** Emits an event indicating the recipients state should be updated. */
         (e: "update:recipients", value: CommunicationEntryRecipientBag[]): void;
+        /** Emits an event indicating the scheduleSendIsoString state should be updated. */
+        (e: "update:scheduleSendIsoString", value: string): void;
     }>();
 
     const config = useConfigurationValues<CommunicationEntryInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
     const id = newGuid();
+    const selectedMediumType = useSelectedMediumType();
+    const breakpointHelper = useBreakpointHelper();
 
     //#region Values
 
@@ -96,10 +159,17 @@
     const errorMessage = ref<string | null | undefined>();
     const message = ref<string>("");
     const mergeFieldValue = ref<ListItemBag | ListItemBag[] | null | undefined>();
+    const isInvalidTransportNotificationDismissed = ref<boolean>(false);
+    const submitForm = ref<boolean>(false);
+    const pendingAction = ref<() => PromiseLike<void>>();
 
     //#endregion
 
     //#region Computed Values
+
+    const isInvalidTransportNotificationVisible = computed<boolean>(() => {
+        return mediumOptions.value?.hasActiveTransport === false && !isInvalidTransportNotificationDismissed.value;
+    });
 
     //#endregion
 
@@ -119,6 +189,28 @@
     //#endregion
 
     //#region Event Handlers
+
+    /** Event handler for the form being submitted. */
+    async function onFormSubmitted(): Promise<void> {
+        const action = pendingAction.value;
+        pendingAction.value = undefined;
+
+        if (!action) {
+            return;
+        }
+
+        await action();
+    }
+
+    function onFormValidationChanged(errors: unknown[]): void {
+        if (errors?.length) {
+            scrollToTopOfWindow();
+        }
+    }
+
+    function onDismissInvalidTransportNotification(): void {
+        isInvalidTransportNotificationDismissed.value = true;
+    }
 
     function onMergeFieldPicked(value: ListItemBag | ListItemBag[] | null): void {
         if (value === null) {
@@ -168,6 +260,18 @@
         }
         else {
             mediumOptions.value = response.data;
+        }
+    });
+
+    //#endregion
+
+    //#region Watchers
+
+    // Whenever the selected medium changes, mark the invalid transport notification
+    // as not dismissed so it can be shown again if this medium is revisited.
+    watch(selectedMediumType, () => {
+        if (isInvalidTransportNotificationDismissed.value) {
+            isInvalidTransportNotificationDismissed.value = false;
         }
     });
 

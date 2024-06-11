@@ -1,60 +1,68 @@
 <template>
-    <Panel v-if="!config.isHidden"
-           :title="config.title ?? 'New Communication'"
-           titleIconCssClass="fa fa-comment-o"
-           type="block">
+    <BreakpointObserver>
+        <Panel v-if="!config.isHidden"
+               :title="config.title ?? 'New Communication'"
+               titleIconCssClass="fa fa-comment-o"
+               type="block">
 
-        <template v-if="statusLabel" #subheaderRight>
-            <HighlightLabel :labelType="statusLabelCssClass">{{ statusLabel }}</HighlightLabel>
-        </template>
+            <template v-if="statusLabel" #subheaderRight>
+                <HighlightLabel :labelType="statusLabelCssClass">{{ statusLabel }}</HighlightLabel>
+            </template>
 
-        <template #default>
-            <div v-if="!areResultsShown">
-                <PanelNavigationBar v-model="selectedMediumEntityTypeGuidOrEmptyString"
-                                    :disabled="isDisabled"
-                                    :isFirstSelectedByDefault="true"
-                                    :items="mediums" />
+            <template #default>
+                <div v-if="!areResultsShown">
+                    <PanelNavigationBar v-model="selectedMediumEntityTypeGuidOrEmptyString"
+                                        :disabled="isDisabled"
+                                        :isFirstSelectedByDefault="true"
+                                        :items="mediums" />
 
-                <KeepAlive v-if="selectedMediumEntityTypeGuidOrEmptyString && config.communication && config.mediumOptions">
-                    <Email v-if="areEqual(selectedMediumEntityTypeGuidOrEmptyString, EntityType.CommunicationMediumEmail)"
-                           v-model:disabled="isDisabled"
-                           v-model:recipients="recipients"
-                           @saved="onSentOrSaved"
-                           @sent="onSentOrSaved" />
+                    <KeepAlive v-if="selectedMediumEntityTypeGuidOrEmptyString && config.communication && config.mediumOptions">
+                        <Email v-if="selectedMedium === 'email'"
+                               v-model:disabled="isDisabled"
+                               v-model:recipients="recipients"
+                               v-model:isBulkCommunication="isBulkCommunication"
+                               v-model:scheduleSendIsoString="scheduleSendIsoString"
+                               @saved="onSentOrSaved"
+                               @sent="onSentOrSaved" />
 
-                    <Sms v-else-if="areEqual(selectedMediumEntityTypeGuidOrEmptyString, EntityType.CommunicationMediumSms)"
-                         v-model:recipients="recipients" />
+                        <Sms v-else-if="selectedMedium === 'sms'"
+                             v-model:disabled="isDisabled"
+                             v-model:recipients="recipients"
+                             v-model:isBulkCommunication="isBulkCommunication"
+                             v-model:scheduleSendIsoString="scheduleSendIsoString" />
 
-                    <PushNotification v-else-if="areEqual(selectedMediumEntityTypeGuidOrEmptyString, EntityType.CommunicationMediumPushNotification)"
-                                      :isFullMode="config.mode === Mode.Full" />
+                        <PushNotification v-else-if="selectedMedium === 'push'"
+                                          :isFullMode="config.mode === Mode.Full" />
 
-                    <div v-else>
-                        Unknown communication medium (Guid: {{ selectedMediumEntityTypeGuidOrEmptyString }}).
-                        Options are
-                        <ul>
-                            <li>{{ EntityType.CommunicationMediumEmail }}</li>
-                            <li>{{ EntityType.CommunicationMediumSms }}</li>
-                            <li>{{ EntityType.CommunicationMediumPushNotification }}</li>
-                        </ul>
-                    </div>
-                </KeepAlive>
-            </div>
+                        <div v-else>
+                            Unknown communication medium (Guid: {{ selectedMediumEntityTypeGuidOrEmptyString }}).
+                            Options are
+                            <ul>
+                                <li>{{ EntityType.CommunicationMediumEmail }}</li>
+                                <li>{{ EntityType.CommunicationMediumSms }}</li>
+                                <li>{{ EntityType.CommunicationMediumPushNotification }}</li>
+                            </ul>
+                        </div>
+                    </KeepAlive>
+                </div>
 
-            <div v-else
-                 id="pnlResult"
-                 ref="sentResultsDiv"
-                 class="js-pnl-result">
+                <div v-else
+                     id="pnlResult"
+                     ref="sentResultsDiv"
+                     class="js-pnl-result">
 
-                <NotificationBox alertType="success">{{ resultMessage }}</NotificationBox>
-                <br />
-                <a :href="viewCommunicationUrl">View Communication</a>
-            </div>
-        </template>
-    </Panel>
+                    <NotificationBox alertType="success">{{ resultMessage }}</NotificationBox>
+                    <br />
+                    <a :href="viewCommunicationUrl">View Communication</a>
+                </div>
+            </template>
+        </Panel>
+    </BreakpointObserver>
 </template>
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
+    import BreakpointObserver from "./CommunicationEntry/breakpointObserver.partial.obs";
     import PanelNavigationBar from "./CommunicationEntry/panelNavigationBar.partial.obs";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -71,6 +79,8 @@
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { areEqual } from "@Obsidian/Utility/guid";
     import { CommunicationEntryRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryRecipientBag";
+    import { provideSelectedMediumType } from "./CommunicationEntry/utils.partial";
+    import { MediumType } from "./CommunicationEntry/types.partial";
 
     const config = useConfigurationValues<CommunicationEntryInitializationBox>();
     const reloadBlock = useReloadBlock();
@@ -80,7 +90,7 @@
     //#region Values
 
     const areResultsShown = ref<boolean>(false);
-    const status = ref<CommunicationStatus>(config.communication ? config.communication.status : CommunicationStatus.Draft);
+    const status = ref<CommunicationStatus>(config.communication?.status ?? CommunicationStatus.Draft);
     const sentResultsDiv = ref<HTMLElement | undefined>();
     const mediums = computed<ListItemBag[]>(() => config.mediums ?? []);
     const selectedMediumEntityTypeGuidOrEmptyString = ref<string>("");
@@ -88,6 +98,8 @@
     const viewCommunicationUrl = ref<string>("#");
     const isDisabled = ref<boolean>(false);
     const recipients = ref<CommunicationEntryRecipientBag[]>(config.communication?.recipients ?? []);
+    const isBulkCommunication = ref<boolean>(config.communication?.isBulkCommunication ?? false);
+    const scheduleSendIsoString = ref<string>(config.communication?.futureSendDateTime ?? "");
 
     //#endregion
 
@@ -121,6 +133,21 @@
         }
     });
 
+    const selectedMedium = computed<MediumType>(() => {
+        if (areEqual(selectedMediumEntityTypeGuidOrEmptyString.value, EntityType.CommunicationMediumEmail)) {
+            return "email";
+        }
+        else if (areEqual(selectedMediumEntityTypeGuidOrEmptyString.value, EntityType.CommunicationMediumSms)) {
+            return "sms";
+        }
+        else if (areEqual(selectedMediumEntityTypeGuidOrEmptyString.value, EntityType.CommunicationMediumPushNotification)) {
+            return "push";
+        }
+        else {
+            return "unknown";
+        }
+    });
+
     //#endregion
 
     //#region Functions
@@ -151,6 +178,8 @@
     //#region Hooks
 
     //#endregion
+
+    provideSelectedMediumType(selectedMedium);
 
     onConfigurationValuesChanged(reloadBlock);
 

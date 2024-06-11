@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+export type MediumType = "email" | "sms" | "push" | "unknown";
+
 export type LabelType = "label-default" | "label-success" | "label-warning" | "label-info" | "label-danger";
 
 export enum AgeClassification {
@@ -50,4 +52,28 @@ export type PersonSearchPhoneNumber = {
     type?: string | null;
     number?: string | null;
     isUnlisted?: boolean;
+};
+
+export type Breakpoint = "xs" | "sm" | "md" | "lg" | "xl" | "unknown";
+
+export type BreakpointHelper = {
+    breakpoint: Breakpoint;
+
+    isXs: boolean;
+    isSm: boolean;
+    isMd: boolean;
+    isLg: boolean;
+    isXl: boolean;
+
+    isXsOrSmaller: boolean;
+    isSmOrSmaller: boolean;
+    isMdOrSmaller: boolean;
+    isLgOrSmaller: boolean;
+    isXlOrSmaller: boolean;
+
+    isXsOrLarger: boolean;
+    isSmOrLarger: boolean;
+    isMdOrLarger: boolean;
+    isLgOrLarger: boolean;
+    isXlOrLarger: boolean;
 };
