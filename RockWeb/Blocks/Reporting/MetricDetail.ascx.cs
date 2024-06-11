@@ -433,6 +433,33 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
                 return;
             }
 
+            var measurementClassificationId = dvpMeasurementClassification.SelectedValueAsId();
+
+            if ( measurementClassificationId.HasValue )
+            {
+                var measurementClassificationValue = DefinedValueCache.Get( measurementClassificationId.Value );
+                if ( measurementClassificationValue != null )
+                {
+                    measurementClassificationValue.LoadAttributes();
+                    var allowMultiple = measurementClassificationValue.GetAttributeValue( "AllowMultiple" ).AsBoolean();
+
+                    if ( !allowMultiple )
+                    {
+                        var exists = metricService.Queryable().Any( m => m.Id != metric.Id && m.MeasurementClassificationValueId.HasValue
+                            && m.MeasurementClassificationValueId == measurementClassificationId.Value );
+
+                        if ( exists )
+                        {
+                            nbEditModeMessage.Text = "The selected measurement classification does not allow multiple values.";
+                            nbEditModeMessage.NotificationBoxType = NotificationBoxType.Warning;
+                            nbEditModeMessage.Visible = true;
+                            return;
+                        }
+                    }
+                }
+            }
+            metric.MeasurementClassificationValueId = dvpMeasurementClassification.SelectedValueAsId();
+
             // do a WrapTransaction since we are doing multiple SaveChanges()
             rockContext.WrapTransaction( () =>
             {
@@ -1108,6 +1135,9 @@ The Lava can include Lava merge fields:";
 
             metric.LoadAttributes();
             avcEditAttributeValues.AddEditControls( metric, Rock.Security.Authorization.EDIT, CurrentPerson );
+
+            dvpMeasurementClassification.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.MEASUREMENT_CLASSIFICATION.AsGuid() ).Id;
+            dvpMeasurementClassification.SetValue( metric.MeasurementClassificationValueId );
         }
 
         /// <summary>

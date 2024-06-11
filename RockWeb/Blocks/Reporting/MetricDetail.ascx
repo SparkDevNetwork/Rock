@@ -50,6 +50,9 @@
                         <div class="col-md-6">
                             <Rock:PersonPicker ID="ppAdminPerson" runat="server" Label="Administrator" Help="Person responsible for entering the metric values." />
                         </div>
+                        <div class="col-md-6">
+                            <Rock:DefinedValuePicker ID="dvpMeasurementClassification" runat="server" Label="Measurement Classification" Help="Choose the purpose of this metric based on what you're measuring" />
+                        </div>
                     </div>
 
                     <div class="row">
@@ -85,8 +88,11 @@
 
                                 <asp:Panel ID="pnlDataviewSourceType" runat="server">
                                     <div class="row">
-                                        <div class="col-md-6"><Rock:DataViewItemPicker ID="dvpDataView" runat="server" Label="Source Data View" OnSelectItem="dvpDataView_SelectItem" /></div>
-                                        <div class="col-md-6"><Rock:RockCheckBox ID="cbAutoPartionPrimaryCampus" runat="server" Label="Auto Partition on Primary Campus" Visible="false" Help="Enabling this feature will auto partition the individuals in the data view based on their primary campus. This must be selected for the campus partion to work." /></div>
+                                        <div class="col-md-6">
+                                            <Rock:DataViewItemPicker ID="dvpDataView" runat="server" Label="Source Data View" OnSelectItem="dvpDataView_SelectItem" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <Rock:RockCheckBox ID="cbAutoPartionPrimaryCampus" runat="server" Label="Auto Partition on Primary Campus" Visible="false" Help="Enabling this feature will auto partition the individuals in the data view based on their primary campus. This must be selected for the campus partion to work." /></div>
                                     </div>
                                     <Rock:NotificationBox ID="nbDataViewHelp" runat="server" Visible="false" />
                                 </asp:Panel>
@@ -153,7 +159,8 @@
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
                         <div class="pull-right">
-                            <Rock:HighlightLabel ID="hlDataView" runat="server" CssClass="" /> &nbsp;
+                            <Rock:HighlightLabel ID="hlDataView" runat="server" CssClass="" />
+                            &nbsp;
                             <Rock:ModalAlert ID="mdManualRunInfo" runat="server" />
                             <asp:LinkButton ID="btnManualRun" runat="server" CssClass="btn btn-sm btn-square btn-default" OnClick="btnManualRun_Click" ToolTip="Run Now"><i class="fa fa-play"></i></asp:LinkButton>
                             <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-square btn-security" />

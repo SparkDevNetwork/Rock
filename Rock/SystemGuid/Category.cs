@@ -294,6 +294,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string TITHING_OVERVIEW = "914E7A39-EA2D-469B-95B5-B6518DBE5F52";
 
+        /// <summary>
+        /// The metric Category Guid
+        /// </summary>
+        public const string METRIC = "67DA5B5A-E5CF-4F1A-B76A-D8460BAF5F8C";
+
         #endregion
 
         #region WorkflowType Categories
