@@ -7,7 +7,8 @@
                     iconCssClass="fa fa-file"
                     :provider="itemProvider"
                     :multiple="multiple"
-                    :autoExpand="true">
+                    :autoExpand="true"
+                    :blankValue="blankValue">
     </TreeItemPicker>
 </template>
 
@@ -37,6 +38,12 @@
         multiple: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        /** The optional value to show when nothing is selected. */
+        blankValue: {
+            type: String as PropType<string>,
+            default: ""
         },
 
         ...standardRockFormFieldProps

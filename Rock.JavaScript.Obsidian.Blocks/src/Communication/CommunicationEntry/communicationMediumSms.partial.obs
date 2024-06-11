@@ -63,23 +63,25 @@
             </div>
 
             <div class="row">
-                <div class="col-xs-12">
-                    <RockFormField v-model="message" :name="`rcwMessage_${id}`">
-                        <MergeFieldPicker v-model="mergeFieldValue"
-                                          additionalFields="GlobalAttribute,Rock.Model.Person"
-                                          class="margin-b-sm pull-right"
-                                          label="Message"
-                                          placeholder="Add Merge Field"
+                <div class="col-xs-6">
+                    <MergeFieldPicker v-if="config.isLavaEnabled"
+                                      v-model="mergeFieldValue"
+                                      additionalFields="GlobalAttribute,Rock.Model.Person"
+                                      blankValue="Add Merge Field"
+                                      class="margin-b-sm pull-right"
+                                      :help="config.isLavaEnabled ? '<span class=\'tip tip-lava\'></span>' : ''"
+                                      label="Message"
+                                      placeholder="Add Merge Field"
+                                      @update:modelValue="onMergeFieldPicked" />
 
-                                          @update:modelValue="onMergeFieldPicked" />
-
-                        <TextBox v-model="message"
-                                 :rows="3"
-                                 :maxLength="mediumOptions.characterLimit"
-                                 rules="required"
-                                 :showCountDown="true"
-                                 textMode="multiline" />
-                    </RockFormField>
+                    <TextBox v-model="message"
+                             :canExceedMaxLength="true"
+                             :label="config.isLavaEnabled ? '' : 'Message'"
+                             :maxLength="mediumOptions.characterLimit"
+                             :rows="3"
+                             rules="required"
+                             :showCountDown="true"
+                             textMode="multiline" />
                 </div>
             </div>
         </RockForm>
@@ -92,7 +94,6 @@
     import MergeFieldPicker from "@Obsidian/Controls/mergeFieldPicker.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
-    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
     import Switch from "@Obsidian/Controls/switch.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
@@ -100,17 +101,16 @@
     import { CommunicationEntrySmsMediumOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySmsMediumOptionsBag";
     import { CommunicationEntryGetMediumOptionsRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryGetMediumOptionsRequestBag";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import { scrollToTopOfWindow, useSelectedMediumType, useBreakpoint, useBreakpointHelper } from "./utils.partial";
+    import { scrollToTopOfWindow, useSelectedMediumType, useBreakpointHelper } from "./utils.partial";
     import { CommunicationEntryMediumOptionsBaseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryMediumOptionsBaseBag";
     import { MediumType } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntry/mediumType";
     import { Mode } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntry/mode";
-    import { newGuid } from "@Obsidian/Utility/guid";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import RecipientPicker from "./recipientPicker.partial.obs";
     import { CommunicationEntryRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryRecipientBag";
     import ScheduleSend from "./Controls/scheduleSend.partial.obs";
 
-    const props = defineProps({
+    defineProps({
         disabled: {
             type: Boolean as PropType<boolean>,
             default: false
@@ -148,7 +148,6 @@
 
     const config = useConfigurationValues<CommunicationEntryInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
-    const id = newGuid();
     const selectedMediumType = useSelectedMediumType();
     const breakpointHelper = useBreakpointHelper();
 
@@ -217,13 +216,13 @@
             // Do nothing.
             return;
         }
-
+        
         // Copy the selected value to the end of the message text box.
         if (Array.isArray(value)) {
-            message.value = (message.value + value.filter(v => !!v.value).map(v => `{{ ${v.value} }}`).join("")).substring(0, mediumOptions.value?.characterLimit ?? 160);
+            message.value += value.filter(v => !!v.value).map(v => `{{ ${v.value} }}`).join("");
         }
         else if (value.value) {
-            message.value = (message.value + `{{ ${value.value} }}`).substring(0, mediumOptions.value?.characterLimit ?? 160);
+            message.value += `{{ ${value.value} }}`;
         }
 
         // Clear the merge field picker.
