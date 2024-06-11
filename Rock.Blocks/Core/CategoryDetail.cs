@@ -27,6 +27,7 @@ using Rock.Model;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Core.CategoryDetail;
 using Rock.ViewModels.Cms;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Core
@@ -72,7 +73,7 @@ namespace Rock.Blocks.Core
 
     [Rock.SystemGuid.EntityTypeGuid( "2889352c-52ba-45f6-8ee1-9afa61211582" )]
     [Rock.SystemGuid.BlockTypeGuid( "515dc5c2-4fbd-4eea-9d8e-a807409defde" )]
-    public class CategoryDetail : RockDetailBlockType, IHasCustomActions
+    public class CategoryDetail : RockEntityDetailBlockType<Category, CategoryBag>, IHasCustomActions
     {
         #region Keys
 
@@ -106,18 +107,14 @@ namespace Rock.Blocks.Core
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var box = new DetailBlockBox<CategoryBag, CategoryDetailOptionsBag>();
+            var box = new DetailBlockBox<CategoryBag, CategoryDetailOptionsBag>();
 
-                SetBoxInitialEntityState( box, rockContext );
+            SetBoxInitialEntityState( box );
 
-                box.NavigationUrls = GetBoxNavigationUrls();
-                box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<Category>();
+            box.NavigationUrls = GetBoxNavigationUrls();
+            box.Options = GetBoxOptions( box.IsEditable );
 
-                return box;
-            }
+            return box;
         }
 
         /// <summary>
@@ -125,9 +122,8 @@ namespace Rock.Blocks.Core
         /// or edit the entity.
         /// </summary>
         /// <param name="isEditable"><c>true</c> if the entity is editable; otherwise <c>false</c>.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>The options that provide additional details to the block.</returns>
-        private CategoryDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext )
+        private CategoryDetailOptionsBag GetBoxOptions( bool isEditable )
         {
             var options = new CategoryDetailOptionsBag();
 
@@ -138,11 +134,10 @@ namespace Rock.Blocks.Core
         /// Validates the Category for any final information that might not be
         /// valid after storing all the data from the client.
         /// </summary>
-        /// <param name="category">The Category to be validated.</param>
-        /// <param name="rockContext">The rock context.</param>
+        /// <param name="category">The Category to be validated.</param
         /// <param name="errorMessage">On <c>false</c> return, contains the error message.</param>
         /// <returns><c>true</c> if the Category is valid, <c>false</c> otherwise.</returns>
-        private bool ValidateCategory( Category category, RockContext rockContext, out string errorMessage )
+        private bool ValidateCategory( Category category, out string errorMessage )
         {
             errorMessage = null;
 
@@ -168,10 +163,9 @@ namespace Rock.Blocks.Core
         /// ErrorMessage properties depending on the entity and permissions.
         /// </summary>
         /// <param name="box">The box to be populated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        private void SetBoxInitialEntityState( DetailBlockBox<CategoryBag, CategoryDetailOptionsBag> box, RockContext rockContext )
+        private void SetBoxInitialEntityState( DetailBlockBox<CategoryBag, CategoryDetailOptionsBag> box )
         {
-            var entity = GetInitialEntity( rockContext );
+            var entity = GetInitialEntity();
 
             if ( entity == null )
             {
@@ -182,7 +176,7 @@ namespace Rock.Blocks.Core
             var isViewable = entity.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson );
             box.IsEditable = entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson );
 
-            entity.LoadAttributes( rockContext );
+            entity.LoadAttributes( RockContext );
 
             if ( entity.Id != 0 )
             {
@@ -190,7 +184,6 @@ namespace Rock.Blocks.Core
                 if ( isViewable )
                 {
                     box.Entity = GetEntityBagForView( entity );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
                 {
@@ -203,13 +196,14 @@ namespace Rock.Blocks.Core
                 if ( box.IsEditable )
                 {
                     box.Entity = GetEntityBagForEdit( entity );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
                 {
                     box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( Category.FriendlyTypeName );
                 }
             }
+
+            PrepareDetailBox( box, entity );
         }
 
         /// <summary>
@@ -239,12 +233,8 @@ namespace Rock.Blocks.Core
             };
         }
 
-        /// <summary>
-        /// Gets the bag for viewing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for view purposes.</param>
-        /// <returns>A <see cref="CategoryBag"/> that represents the entity.</returns>
-        private CategoryBag GetEntityBagForView( Category entity )
+        /// <inheritdoc/>
+        protected override CategoryBag GetEntityBagForView( Category entity )
         {
             if ( entity == null )
             {
@@ -253,17 +243,19 @@ namespace Rock.Blocks.Core
 
             var bag = GetCommonEntityBag( entity );
 
+            if ( bag != null )
+            {
+                var categoryService = new CategoryService( RockContext );
+                bag.IsDeletable = categoryService.CanDelete( entity, out var _ );
+            }
+
             bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
 
             return bag;
         }
 
-        /// <summary>
-        /// Gets the bag for editing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for edit purposes.</param>
-        /// <returns>A <see cref="CategoryBag"/> that represents the entity.</returns>
-        private CategoryBag GetEntityBagForEdit( Category entity )
+        /// <inheritdoc/>
+        protected override CategoryBag GetEntityBagForEdit( Category entity )
         {
             if ( entity == null )
             {
@@ -294,58 +286,46 @@ namespace Rock.Blocks.Core
             return bag;
         }
 
-        /// <summary>
-        /// Updates the entity from the data in the save box.
-        /// </summary>
-        /// <param name="entity">The entity to be updated.</param>
-        /// <param name="box">The box containing the information to be updated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns><c>true</c> if the box was valid and the entity was updated, <c>false</c> otherwise.</returns>
-        private bool UpdateEntityFromBox( Category entity, DetailBlockBox<CategoryBag, CategoryDetailOptionsBag> box, RockContext rockContext )
+        /// <inheritdoc/>
+        protected override bool UpdateEntityFromBox( Category entity, ValidPropertiesBox<CategoryBag> box )
         {
             if ( box.ValidProperties == null )
             {
                 return false;
             }
 
-            box.IfValidProperty( nameof( box.Entity.Description ),
-                () => entity.Description = box.Entity.Description );
+            box.IfValidProperty( nameof( box.Bag.Description ),
+                () => entity.Description = box.Bag.Description );
 
-            box.IfValidProperty( nameof( box.Entity.HighlightColor ),
-                () => entity.HighlightColor = box.Entity.HighlightColor );
+            box.IfValidProperty( nameof( box.Bag.HighlightColor ),
+                () => entity.HighlightColor = box.Bag.HighlightColor );
 
-            box.IfValidProperty( nameof( box.Entity.IconCssClass ),
-                () => entity.IconCssClass = box.Entity.IconCssClass );
+            box.IfValidProperty( nameof( box.Bag.IconCssClass ),
+                () => entity.IconCssClass = box.Bag.IconCssClass );
 
-            box.IfValidProperty( nameof( box.Entity.IsSystem ),
-                () => entity.IsSystem = box.Entity.IsSystem );
+            box.IfValidProperty( nameof( box.Bag.IsSystem ),
+                () => entity.IsSystem = box.Bag.IsSystem );
 
-            box.IfValidProperty( nameof( box.Entity.Name ),
-                () => entity.Name = box.Entity.Name );
+            box.IfValidProperty( nameof( box.Bag.Name ),
+                () => entity.Name = box.Bag.Name );
 
-            box.IfValidProperty( nameof( box.Entity.ParentCategory ),
-                () => entity.ParentCategoryId = box.Entity.ParentCategory.GetEntityId<Category>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.ParentCategory ),
+                () => entity.ParentCategoryId = box.Bag.ParentCategory.GetEntityId<Category>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.AttributeValues ),
+            box.IfValidProperty( nameof( box.Bag.AttributeValues ),
                 () =>
                 {
-                    entity.LoadAttributes( rockContext );
-
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.LoadAttributes( RockContext );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson );
                 } );
 
             return true;
         }
 
-        /// <summary>
-        /// Gets the initial entity from page parameters or creates a new entity
-        /// if page parameters requested creation.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns>The <see cref="Category"/> to be viewed or edited on the page.</returns>
-        private Category GetInitialEntity( RockContext rockContext )
+        /// <inheritdoc/>
+        protected override Category GetInitialEntity()
         {
-            return GetInitialEntity<Category, CategoryService>( rockContext, PageParameterKey.CategoryId );
+            return GetInitialEntity<Category, CategoryService>( RockContext, PageParameterKey.CategoryId );
         }
 
         /// <summary>
@@ -360,47 +340,10 @@ namespace Rock.Blocks.Core
             };
         }
 
-        /// <inheritdoc/>
-        protected override string RenewSecurityGrantToken()
+        // <inheritdoc/>
+        protected override bool TryGetEntityForEditAction( string idKey, out Category entity, out BlockActionResult error )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var entity = GetInitialEntity( rockContext );
-
-                if ( entity != null )
-                {
-                    entity.LoadAttributes( rockContext );
-                }
-
-                return GetSecurityGrantToken( entity );
-            }
-        }
-
-        /// <summary>
-        /// Gets the security grant token that will be used by UI controls on
-        /// this block to ensure they have the proper permissions.
-        /// </summary>
-        /// <returns>A string that represents the security grant token.</string>
-        private string GetSecurityGrantToken( Category entity )
-        {
-            var securityGrant = new Rock.Security.SecurityGrant();
-
-            securityGrant.AddRulesForAttributes( entity, RequestContext.CurrentPerson );
-
-            return securityGrant.ToToken();
-        }
-
-        /// <summary>
-        /// Attempts to load an entity to be used for an edit action.
-        /// </summary>
-        /// <param name="idKey">The identifier key of the entity to load.</param>
-        /// <param name="rockContext">The database context to load the entity from.</param>
-        /// <param name="entity">Contains the entity that was loaded when <c>true</c> is returned.</param>
-        /// <param name="error">Contains the action error result when <c>false</c> is returned.</param>
-        /// <returns><c>true</c> if the entity was loaded and passed security checks.</returns>
-        private bool TryGetEntityForEditAction( string idKey, RockContext rockContext, out Category entity, out BlockActionResult error )
-        {
-            var entityService = new CategoryService( rockContext );
+            var entityService = new CategoryService( RockContext );
             error = null;
 
             // Determine if we are editing an existing entity or creating a new one.
@@ -430,17 +373,6 @@ namespace Rock.Blocks.Core
             }
 
             return true;
-        }
-
-        /// <summary>
-        /// Gets the security grant token that will be used by UI controls on
-        /// this block to ensure they have the proper permissions.
-        /// </summary>
-        /// <returns>A string that represents the security grant token.</string>
-        private string GetSecurityGrantToken()
-        {
-            return new Rock.Security.SecurityGrant()
-                .ToToken();
         }
 
         #endregion
@@ -478,22 +410,20 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                entity.LoadAttributes( rockContext );
-
-                var box = new DetailBlockBox<CategoryBag, CategoryDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity )
-                };
-
-                return ActionOk( box );
+                return actionError;
             }
+
+            entity.LoadAttributes( RockContext );
+
+            var bag = GetEntityBagForEdit( entity );
+
+            return ActionOk( new ValidPropertiesBox<CategoryBag>
+            {
+                Bag = bag,
+                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
+            } );
         }
 
         /// <summary>
@@ -502,60 +432,63 @@ namespace Rock.Blocks.Core
         /// <param name="box">The box that contains all the information required to save.</param>
         /// <returns>A new entity bag to be used when returning to view mode, or the URL to redirect to after creating a new entity.</returns>
         [BlockAction]
-        public BlockActionResult Save( DetailBlockBox<CategoryBag, CategoryDetailOptionsBag> box )
+        public BlockActionResult Save( ValidPropertiesBox<CategoryBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new CategoryService( RockContext );
+
+            if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )
             {
-                var entityService = new CategoryService( rockContext );
-
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                var isNew = entity.Id == 0;
-                if ( isNew )
-                {
-                    if ( Guid.TryParse( GetAttributeValue( AttributeKey.EntityType ), out Guid entityTypeGuid ) )
-                    {
-                        entity.EntityTypeId = EntityTypeCache.Get( entityTypeGuid ).Id;
-                    }
-                    entity.EntityTypeQualifierColumn = GetAttributeValue( AttributeKey.EntityTypeQualifierProperty );
-                    entity.EntityTypeQualifierValue = GetAttributeValue( AttributeKey.EntityTypeQualifierValue );
-                }
-
-                // Ensure everything is valid before saving.
-                if ( !ValidateCategory( entity, rockContext, out var validationMessage ) )
-                {
-                    return ActionBadRequest( validationMessage );
-                }
-
-                rockContext.WrapTransaction( () =>
-                {
-                    rockContext.SaveChanges();
-                    entity.SaveAttributeValues( rockContext );
-                } );
-
-                if ( isNew )
-                {
-                    return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
-                    {
-                        [PageParameterKey.CategoryId] = entity.IdKey
-                    } ) );
-                }
-
-                // Ensure navigation properties will work now.
-                entity = entityService.Get( entity.Id );
-                entity.LoadAttributes( rockContext );
-
-                return ActionOk( GetEntityBagForView( entity ) );
+                return actionError;
             }
+
+            // Update the entity instance from the information in the bag.
+            if ( !UpdateEntityFromBox( entity, box ) )
+            {
+                return ActionBadRequest( "Invalid data." );
+            }
+
+            var isNew = entity.Id == 0;
+            if ( isNew )
+            {
+                if ( Guid.TryParse( GetAttributeValue( AttributeKey.EntityType ), out Guid entityTypeGuid ) )
+                {
+                    entity.EntityTypeId = EntityTypeCache.Get( entityTypeGuid ).Id;
+                }
+                entity.EntityTypeQualifierColumn = GetAttributeValue( AttributeKey.EntityTypeQualifierProperty );
+                entity.EntityTypeQualifierValue = GetAttributeValue( AttributeKey.EntityTypeQualifierValue );
+            }
+
+            // Ensure everything is valid before saving.
+            if ( !ValidateCategory( entity, out var validationMessage ) )
+            {
+                return ActionBadRequest( validationMessage );
+            }
+
+            RockContext.WrapTransaction( () =>
+            {
+                RockContext.SaveChanges();
+                entity.SaveAttributeValues( RockContext );
+            } );
+
+            if ( isNew )
+            {
+                return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
+                {
+                    [PageParameterKey.CategoryId] = entity.IdKey
+                } ) );
+            }
+
+            // Ensure navigation properties will work now.
+            entity = entityService.Get( entity.Id );
+            entity.LoadAttributes( RockContext );
+
+            var bag = GetEntityBagForEdit( entity );
+
+            return ActionOk( new ValidPropertiesBox<CategoryBag>
+            {
+                Bag = bag,
+                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
+            } );
         }
 
         /// <summary>
@@ -566,79 +499,22 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new CategoryService( RockContext );
+
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                var entityService = new CategoryService( rockContext );
-
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                return ActionOk( this.GetParentPageUrl() );
+                return actionError;
             }
-        }
 
-        /// <summary>
-        /// Refreshes the list of attributes that can be displayed for editing
-        /// purposes based on any modified values on the entity.
-        /// </summary>
-        /// <param name="box">The box that contains all the information about the entity being edited.</param>
-        /// <returns>A box that contains the entity and attribute information.</returns>
-        [BlockAction]
-        public BlockActionResult RefreshAttributes( DetailBlockBox<CategoryBag, CategoryDetailOptionsBag> box )
-        {
-            using ( var rockContext = new RockContext() )
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
             {
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                // Reload attributes based on the new property values.
-                entity.LoadAttributes( rockContext );
-
-                var refreshedBox = new DetailBlockBox<CategoryBag, CategoryDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity )
-                };
-
-                var oldAttributeGuids = box.Entity.Attributes.Values.Select( a => a.AttributeGuid ).ToList();
-                var newAttributeGuids = refreshedBox.Entity.Attributes.Values.Select( a => a.AttributeGuid );
-
-                // If the attributes haven't changed then return a 204 status code.
-                if ( oldAttributeGuids.SequenceEqual( newAttributeGuids ) )
-                {
-                    return ActionStatusCode( System.Net.HttpStatusCode.NoContent );
-                }
-
-                // Replace any values for attributes that haven't changed with
-                // the value sent by the client. This ensures any unsaved attribute
-                // value changes are not lost.
-                foreach ( var kvp in refreshedBox.Entity.Attributes )
-                {
-                    if ( oldAttributeGuids.Contains( kvp.Value.AttributeGuid ) )
-                    {
-                        refreshedBox.Entity.AttributeValues[kvp.Key] = box.Entity.AttributeValues[kvp.Key];
-                    }
-                }
-
-                return ActionOk( refreshedBox );
+                return ActionBadRequest( errorMessage );
             }
+
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
+
+            return ActionOk( this.GetParentPageUrl() );
         }
 
         /// <summary>
@@ -649,36 +525,33 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult GetCustomSettings()
         {
-            using ( var rockContext = new RockContext() )
+            if ( !BlockCache.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
             {
-                if ( !BlockCache.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
-                {
-                    return ActionForbidden( "Not authorized to edit block settings." );
-                }
-
-                var options = new CustomSettingsOptionsBag();
-                var rootCategoryGuid = GetAttributeValue( AttributeKey.RootCategory ).AsGuidOrNull();
-                var excludeCategoryGuids = GetAttributeValue( AttributeKey.ExcludeCategories ).SplitDelimitedValues().AsGuidList();
-                var categoryGuids = excludeCategoryGuids.ToList();
-                if ( rootCategoryGuid.HasValue )
-                {
-                    categoryGuids.Add( rootCategoryGuid.Value );
-                }
-                var categories = new CategoryService( rockContext ).GetByGuids( categoryGuids );
-                var settings = new CustomSettingsBag
-                {
-                    RootCategory = rootCategoryGuid.HasValue ? categories.FirstOrDefault( a => a.Guid == rootCategoryGuid.Value ).ToListItemBag() : null,
-                    ExcludeCategories = categories.Where( a => excludeCategoryGuids.Contains( a.Guid ) ).ToListItemBagList(),
-                    EntityTypeGuid = GetAttributeValue( AttributeKey.EntityType ).AsGuidOrNull()
-                };
-
-                return ActionOk( new CustomSettingsBox<CustomSettingsBag, CustomSettingsOptionsBag>
-                {
-                    Settings = settings,
-                    Options = options,
-                    SecurityGrantToken = GetSecurityGrantToken()
-                } );
+                return ActionForbidden( "Not authorized to edit block settings." );
             }
+
+            var options = new CustomSettingsOptionsBag();
+            var rootCategoryGuid = GetAttributeValue( AttributeKey.RootCategory ).AsGuidOrNull();
+            var excludeCategoryGuids = GetAttributeValue( AttributeKey.ExcludeCategories ).SplitDelimitedValues().AsGuidList();
+            var categoryGuids = excludeCategoryGuids.ToList();
+            if ( rootCategoryGuid.HasValue )
+            {
+                categoryGuids.Add( rootCategoryGuid.Value );
+            }
+            var categories = new CategoryService( RockContext ).GetByGuids( categoryGuids );
+            var settings = new CustomSettingsBag
+            {
+                RootCategory = rootCategoryGuid.HasValue ? categories.FirstOrDefault( a => a.Guid == rootCategoryGuid.Value ).ToListItemBag() : null,
+                ExcludeCategories = categories.Where( a => excludeCategoryGuids.Contains( a.Guid ) ).ToListItemBagList(),
+                EntityTypeGuid = GetAttributeValue( AttributeKey.EntityType ).AsGuidOrNull()
+            };
+
+            return ActionOk( new CustomSettingsBox<CustomSettingsBag, CustomSettingsOptionsBag>
+            {
+                Settings = settings,
+                Options = options,
+                SecurityGrantToken = new Rock.Security.SecurityGrant().ToToken()
+            } );
         }
 
         /// <summary>
@@ -689,26 +562,23 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult SaveCustomSettings( CustomSettingsBox<CustomSettingsBag, CustomSettingsOptionsBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            if ( !BlockCache.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
             {
-                if ( !BlockCache.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
-                {
-                    return ActionForbidden( "Not authorized to edit block settings." );
-                }
-
-                var block = new BlockService( rockContext ).Get( BlockId );
-                block.LoadAttributes( rockContext );
-
-                box.IfValidProperty( nameof( box.Settings.RootCategory ),
-                    () => block.SetAttributeValue( AttributeKey.RootCategory, box.Settings.RootCategory?.Value ) );
-
-                box.IfValidProperty( nameof( box.Settings.ExcludeCategories ),
-                    () => block.SetAttributeValue( AttributeKey.ExcludeCategories, box.Settings.ExcludeCategories.Select( a => a.Value ).ToList().AsDelimited( "," ) ) );
-
-                block.SaveAttributeValues( rockContext );
-
-                return ActionOk();
+                return ActionForbidden( "Not authorized to edit block settings." );
             }
+
+            var block = new BlockService( RockContext ).Get( BlockId );
+            block.LoadAttributes( RockContext );
+
+            box.IfValidProperty( nameof( box.Settings.RootCategory ),
+                () => block.SetAttributeValue( AttributeKey.RootCategory, box.Settings.RootCategory?.Value ) );
+
+            box.IfValidProperty( nameof( box.Settings.ExcludeCategories ),
+                () => block.SetAttributeValue( AttributeKey.ExcludeCategories, box.Settings.ExcludeCategories.Select( a => a.Value ).ToList().AsDelimited( "," ) ) );
+
+            block.SaveAttributeValues( RockContext );
+
+            return ActionOk();
         }
 
         #endregion
