@@ -1154,6 +1154,7 @@
     <Compile Include="Model\CodeGenerated\AdaptiveMessageAdaptationSegmentService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\AdaptiveMessageAdaptationService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\AdaptiveMessageService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\CheckInLabelService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\ContentCollectionService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\ContentCollectionSourceService.CodeGenerated.cs" />
     <Compile Include="Jobs\UpdatePersonalizationData.cs" />
@@ -1209,6 +1210,7 @@
     <Compile Include="Model\Core\PersonPreference\PersonPreferenceService.cs" />
     <Compile Include="Model\Engagement\AchievementType\AchievementType.SaveHook.cs" />
     <Compile Include="Model\Event\AttendanceOccurrence\AttendanceOccurrence.SaveHook.cs" />
+    <Compile Include="Model\Event\CheckInLabel\CheckInLabel.cs" />
     <Compile Include="Model\Event\InteractiveExperienceAction\InteractiveExperienceAction.cs" />
     <Compile Include="Model\Event\InteractiveExperienceAction\InteractiveExperienceActionService.cs" />
     <Compile Include="Model\Event\InteractiveExperienceAnswer\InteractiveExperienceAnswer.cs" />

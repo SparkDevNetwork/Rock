@@ -550,6 +550,18 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<CheckInLabel>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, CheckInLabel.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<CheckInLabel>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, CheckInLabel.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<Communication>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, Communication.FriendlyTypeName );
