@@ -69,6 +69,7 @@
     <Compile Include="CheckIn\Labels\BarcodeFormat.cs" />
     <Compile Include="CheckIn\Labels\HorizontalTextAlignment.cs" />
     <Compile Include="CheckIn\Labels\LabelFieldType.cs" />
+    <Compile Include="CheckIn\Labels\LabelFormat.cs" />
     <Compile Include="CheckIn\Labels\LabelType.cs" />
     <Compile Include="CheckIn\Labels\TextCollectionFormat.cs" />
     <Compile Include="CheckIn\Labels\TextFieldSubType.cs" />
