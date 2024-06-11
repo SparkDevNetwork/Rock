@@ -89,16 +89,26 @@ namespace Rock.CheckIn.v2.Labels
         /// </summary>
         /// <param name="labelType">The type of label for which to retrieve data sources.</param>
         /// <returns>A read-only dictionary containing the data sources for the specified label type.</returns>
-        public static IReadOnlyDictionary<string, FieldDataSource> GetDataSources( LabelType labelType )
+        public static IReadOnlyList<FieldDataSource> GetDataSources( LabelType labelType )
         {
-            var dataSources = new List<FieldDataSource>();
-
-            if ( labelType == LabelType.Person )
+            if ( labelType == LabelType.Family )
             {
-                dataSources = GetPersonLabelDataSources();
+                return GetFamilyLabelDataSources();
+            }
+            else if ( labelType == LabelType.Person )
+            {
+                return GetPersonLabelDataSources();
+            }
+            else if ( labelType == LabelType.Attendance )
+            {
+                return GetAttendanceLabelDataSources();
+            }
+            else if ( labelType == LabelType.Checkout )
+            {
+                return GetCheckoutLabelDataSources();
             }
 
-            return dataSources.ToDictionary( d => d.Key, d => d );
+            return new List<FieldDataSource>();
         }
 
         public static IReadOnlyList<FieldFilterSourceBag> GetFilterSources( LabelType labelType )
@@ -106,6 +116,18 @@ namespace Rock.CheckIn.v2.Labels
             if ( labelType == LabelType.Person )
             {
                 return GetPersonLabelFilterSources();
+            }
+            else if ( labelType == LabelType.Person )
+            {
+                return GetPersonLabelFilterSources();
+            }
+            else if ( labelType == LabelType.Attendance )
+            {
+                return GetAttendanceLabelFilterSources();
+            }
+            else if ( labelType == LabelType.Checkout )
+            {
+                return GetCheckoutLabelFilterSources();
             }
 
             return new List<FieldFilterSourceBag>();
