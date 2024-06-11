@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 
 using Rock.Enums.CheckIn.Labels;
+using Rock.ViewModels.Reporting;
 
 namespace Rock.ViewModels.CheckIn.Labels
 {
@@ -52,6 +53,12 @@ namespace Rock.ViewModels.CheckIn.Labels
         /// </para>
         /// </summary>
         public int FieldSubType { get; set; }
+
+        /// <summary>
+        /// An optional filter that controls the visibility of this field on
+        /// the label.
+        /// </summary>
+        public FieldFilterGroupBag ConditionalVisibility { get; set; }
 
         /// <summary>
         /// A value indicating whether the item is included on the generated

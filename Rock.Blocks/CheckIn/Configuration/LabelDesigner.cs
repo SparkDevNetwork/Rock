@@ -25,9 +25,11 @@ using System.Reflection;
 using Rock.Attribute;
 using Rock.CheckIn.v2.Labels;
 using Rock.Data;
+using Rock.Enums.CheckIn.Labels;
 using Rock.Enums.Reporting;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.Security;
 using Rock.Utility;
 using Rock.ViewModels.Blocks.CheckIn.Configuration.LabelDesigner;
 using Rock.ViewModels.CheckIn.Labels;
@@ -44,7 +46,7 @@ namespace Rock.Blocks.CheckIn.Configuration
     [Category( "Check-in > Configuration" )]
     [Description( "Designs a check-in label with a nice drag and drop experience." )]
     [IconCssClass( "fa fa-question" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -54,9 +56,21 @@ namespace Rock.Blocks.CheckIn.Configuration
     [Rock.SystemGuid.BlockTypeGuid( "8c4ad18f-9f81-4145-8ad0-ab90e451d0d6" )]
     public class LabelDesigner : RockBlockType
     {
+        private static class PageParameterKey
+        {
+            public const string CheckInLabelId = "CheckInLabelId";
+        }
+
         public override object GetObsidianBlockInitialization()
         {
-            var dataSources = FieldSourceHelper.GetPersonLabelDataSources()
+            var label = new CheckInLabelService( RockContext ).Get( PageParameter( PageParameterKey.CheckInLabelId ), !RequestContext.Page.Layout.Site.DisablePredictableIds );
+
+            if ( label == null )
+            {
+                return new { };
+            }
+
+            var dataSources = FieldSourceHelper.GetDataSources( label?.LabelType ?? LabelType.Family )
                 .Select( ds => ToDataSourceBag( ds ) )
                 .OrderByDescending( ds => ds.Category == "Common" )
                 .ThenByDescending( ds => ds.Category.Contains( "Properties" ) )
@@ -64,7 +78,7 @@ namespace Rock.Blocks.CheckIn.Configuration
                 .ThenBy( ds => ds.Name )
                 .ToList();
 
-            var filterSources = FieldSourceHelper.GetPersonLabelFilterSources()
+            var filterSources = FieldSourceHelper.GetFilterSources( label?.LabelType ?? LabelType.Family )
                 .OrderByDescending( s => s.Category == "Common" )
                 .ThenBy( s => s.Category )
                 .ThenBy( s => s.Property?.Title ?? s.Attribute?.Name )
@@ -72,6 +86,8 @@ namespace Rock.Blocks.CheckIn.Configuration
 
             return new
             {
+                IdKey = label.IdKey,
+                Label = label.Content.FromJsonOrNull<DesignerLabelBag>(),
                 DataSources = dataSources,
                 FilterSources = filterSources,
             };
@@ -174,107 +190,40 @@ namespace Rock.Blocks.CheckIn.Configuration
         }
 
         [BlockAction]
-        public BlockActionResult DoFilter( FieldFilterGroupBag filter )
+        public BlockActionResult Save( string key, DesignerLabelBag label, string previewData )
         {
-            var ted = new Person
+            var entityService = new CheckInLabelService( RockContext );
+            var checkInLabel = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( checkInLabel == null )
             {
-                FirstName = "Ted",
-                LastName = "Decker",
-                PrimaryFamily = new Model.Group
-                {
-                    GroupTypeId = 10,
-                    Name = "Decker Family"
-                }
-            };
+                return ActionBadRequest( $"{CheckInLabel.FriendlyTypeName} not found." );
+            }
 
-            //ted.LoadAttributes();
-            //ted.SetAttributeValue( "Allergy", "nuts" );
-            ted.PrimaryFamily.LoadAttributes();
-            ted.PrimaryFamily.SetAttributeValue( "IsFake", "true" );
-
-            // PrimaryFamily.Name == "Decker Family" && PrimaryFamily.AttrValu["IsFake"] == True
-            filter = new FieldFilterGroupBag
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                ExpressionType = FilterExpressionType.GroupAll,
-                Rules = new List<FieldFilterRuleBag>
-                {
-                    new FieldFilterRuleBag
-                    {
-                        SourceType = FieldFilterSourceType.Property,
-                        Path = "PrimaryFamily",
-                        ComparisonType = ComparisonType.EqualTo,
-                        PropertyName = "Name",
-                        Value = "Decker Family"
-                    },
-                    new FieldFilterRuleBag
-                    {
-                        SourceType = FieldFilterSourceType.Attribute,
-                        Path = "PrimaryFamily",
-                        ComparisonType = ComparisonType.EqualTo,
-                        AttributeGuid = Guid.Parse( "86146773-15b5-4f86-9227-1cbaf063047a" ), // Is Fake Attrib
-                        Value = "True"
-                    }
-                },
-                Groups = new List<FieldFilterGroupBag>
-                {
-                    new FieldFilterGroupBag
-                    {
-                        ExpressionType = FilterExpressionType.GroupAny,
-                        Rules = new List<FieldFilterRuleBag>
-                        {
-                            // ...
-                        }
-                    },
-                    new FieldFilterGroupBag
-                    {
-                        ExpressionType = FilterExpressionType.GroupAny,
-                        Rules = new List<FieldFilterRuleBag>
-                        {
-                            // ...
-                        }
-                    }
-                }
-            };
+                return ActionBadRequest( $"Not authorized to edit ${CheckInLabel.FriendlyTypeName}." );
+            }
 
-            var builder = new CustomFieldFilterBuilder();
-            var fn = builder.GetIsMatchFunction<Person>( filter ); // GetIsMatchFunction() ?
+            checkInLabel.Content = label.ToJson();
 
-            var tedMatch = builder.IsMatch( ted, filter ); //change to IsMatch()
-            var tedMatch2 = fn( ted );
-
-            var personService = new PersonService( RockContext );
-            var pExpr = Expression.Parameter( typeof( Person ), "p" );
-            var dbExpr = builder.GetDatabaseExpression( pExpr, filter, RockContext );
-            var people = personService.Queryable().Where( pExpr, dbExpr ).ToList();
-
-            // JustCompletedAchievements.Any( s => s.StartsWith( "10-" ) )
-            filter = new FieldFilterGroupBag
+            if ( previewData.IsNotNullOrWhiteSpace() )
             {
-                ExpressionType = FilterExpressionType.GroupAll,
-                Rules = new List<FieldFilterRuleBag>
-                {
-                    new FieldFilterRuleBag
-                    {
-                        SourceType = FieldFilterSourceType.Property,
-                        Path = "",
-                        ComparisonType = ComparisonType.StartsWith,
-                        PropertyName = "JustCompletedAchievements",
-                        Value = "10-"
-                    }
-                }
-            };
-            //var familyLabelData = new FamilyLabelData()
-            //{
-            //    JustCompletedAchievements = new List<string>
-            //    {
-            //        "10-Weeks",
-            //        "20 Weeks"
-            //    }
-            //};
+                checkInLabel.PreviewImage = Convert.FromBase64String( previewData );
+            }
+            else
+            {
+                checkInLabel.PreviewImage = new byte[0];
+            }
 
-            //var result = builder.IsMatch( familyLabelData, filter );
+            RockContext.SaveChanges();
 
-            return ActionOk( true );
+            var returnUrl = this.GetParentPageUrl( new Dictionary<string, string>
+            {
+                [PageParameterKey.CheckInLabelId] = checkInLabel.IdKey
+            } );
+
+            return ActionOk( returnUrl );
         }
 
         private class CustomFieldFilterBuilder : FieldFilterExpressionBuilder

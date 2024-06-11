@@ -61,6 +61,10 @@
         }
     });
 
+    defineExpose({
+        savePreview
+    });
+
     /* Grid size in 1/n fractions of an inch. */
     const gridSnapFraction = 4;
 
@@ -282,6 +286,22 @@
 
             props.labelManager.selectField(field.guid);
         });
+    }
+
+    async function savePreview(): Promise<Blob | undefined> {
+        if (!stage) {
+            return undefined;
+        }
+
+        const preview = await stage.toBlob({
+            pixelRatio: 2
+        });
+
+        if (preview instanceof Blob) {
+            return preview;
+        }
+
+        return undefined;
     }
 
     /**

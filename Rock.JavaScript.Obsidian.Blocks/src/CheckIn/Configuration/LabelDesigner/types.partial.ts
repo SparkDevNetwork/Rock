@@ -2,6 +2,7 @@ import { Guid } from "@Obsidian/Types";
 import { LabelFieldType } from "@Obsidian/Enums/CheckIn/Labels/labelFieldType";
 import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
 import { DataSourceBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/LabelDesigner/dataSourceBag";
+import { DesignerLabelBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/LabelDesigner/designerLabelBag";
 
 export type Size = {
     width: number;
@@ -10,6 +11,10 @@ export type Size = {
 };
 
 export type BlockConfiguration = {
+    idKey?: string | null,
+
+    label?: DesignerLabelBag | null,
+
     dataSources?: DataSourceBag[] | null;
 
     filterSources?: FieldFilterSourceBag[] | null;

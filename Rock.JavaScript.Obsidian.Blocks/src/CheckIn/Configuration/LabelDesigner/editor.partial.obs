@@ -30,7 +30,8 @@
         </div>
 
         <div class="editor-content">
-            <Worksurface :labelManager="props.labelManager"
+            <Worksurface ref="worksurface"
+                         :labelManager="props.labelManager"
                          :showGrid="isGridVisible"
                          :snapToGrid="isGridLocked" />
 
@@ -114,6 +115,7 @@
 
     const isGridVisible = ref(false);
     const isGridLocked = ref(false);
+    const worksurface = ref<InstanceType<typeof Worksurface>>();
 
     const props = defineProps({
         labelManager: {
@@ -121,4 +123,16 @@
             required: true
         }
     });
+
+    defineExpose({
+        savePreview
+    });
+
+    function savePreview(): Promise<Blob | undefined> {
+        if (!worksurface.value) {
+            return Promise.resolve(undefined);
+        }
+
+        return worksurface.value.savePreview();
+    }
 </script>

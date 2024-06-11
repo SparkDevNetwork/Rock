@@ -11,12 +11,13 @@
             <div style="display: flex; flex-grow: 1; overflow: hidden">
                 <Menu :labelManager="labelManager" />
 
-                <Editor :labelManager="labelManager" />
+                <Editor ref="editor"
+                        :labelManager="labelManager" />
             </div>
 
             <div class="actions">
                 <RockButton btnType="primary"
-                @click="onSave">Save</RockButton>
+                            @click="onSave">Save</RockButton>
             </div>
         </div>
     </Panel>
@@ -63,14 +64,15 @@
     import { DesignerLabelBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/LabelDesigner/designerLabelBag";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { newGuid } from "@Obsidian/Utility/guid";
-    import { computed } from "vue";
+    import { computed, ref } from "vue";
     import { BlockConfiguration, Size } from "./LabelDesigner/types.partial";
     import { LabelUndoManager } from "./LabelDesigner/undoManager.partial";
+    import { alert } from "@Obsidian/Utility/dialogs";
 
     const config = useConfigurationValues<BlockConfiguration>();
     const invokeBlockAction = useInvokeBlockAction();
 
-    console.log("config", config);
+    const editor = ref<InstanceType<typeof Editor>>();
 
     const labelSize = computed<Size>({
         get() {
@@ -87,8 +89,46 @@
         }
     });
 
-    function onSave(): void {
-        console.log(labelManager.current.value);
+    /**
+     * Event handler for the panel's Save event. Send the data to the server
+     * to be saved and then redirect to target page.
+     */
+    async function onSave(): Promise<void> {
+        let previewData: string = "";
+
+        if (editor.value) {
+            const preview = await editor.value.savePreview();
+
+            if (preview) {
+                previewData = await new Promise<string>(resolve => {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(preview);
+                    reader.onloadend = () => {
+                        if (typeof reader.result !== "string") {
+                            return resolve("");
+                        }
+
+                        const startIndex = reader.result.indexOf(",") + 1;
+                        const b64 = reader.result.substring(startIndex);
+                        resolve(b64);
+                    };
+                    reader.onerror = () => resolve("");
+                });
+            }
+        }
+
+        const result = await invokeBlockAction<string>("Save", {
+            key: config.idKey,
+            label: labelManager.current.value,
+            previewData
+        });
+
+        if (result.isSuccess && result.data) {
+            window.location.href = result.data;
+            return;
+        }
+
+        await alert(result.errorMessage ?? "Unknown error while trying to save check-in label.");
     }
 
     const label2: DesignerLabelBag = {
@@ -288,5 +328,9 @@
     };
     label2.fields = [];
 
-    const labelManager = new LabelUndoManager(label2);
+    const labelManager = new LabelUndoManager(config.label ?? {
+        width: 4,
+        height: 2,
+        fields: []
+    });
 </script>
