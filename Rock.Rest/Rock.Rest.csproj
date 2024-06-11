@@ -156,6 +156,7 @@
     <Compile Include="Controllers\CodeGenerated\BenevolenceTypesController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\BenevolenceWorkflowsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\CampusTopicsController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\CheckInLabelsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\ConnectionStatusAutomationsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\ContentCollectionsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\ContentCollectionSourcesController.CodeGenerated.cs" />
