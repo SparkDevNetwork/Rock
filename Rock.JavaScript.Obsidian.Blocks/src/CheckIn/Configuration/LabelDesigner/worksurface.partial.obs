@@ -2,7 +2,8 @@
     <div class="worksurface-container">
         <div ref="fontLoaderElement" class="font-loader"></div>
         <div ref="containerElement"
-             class="worksurface">
+             class="worksurface"
+             tabindex="-1">
         </div>
 
         <div ref="menuElement" class="context-menu text-sm">
@@ -705,7 +706,7 @@
      *
      * @param field The field to be updated.
      */
-     function sendBackward(field: LabelFieldBag): void {
+    function sendBackward(field: LabelFieldBag): void {
         props.labelManager.mutate(label => {
             if (!label.fields) {
                 return;
@@ -725,7 +726,7 @@
      *
      * @param field The field to be updated.
      */
-     function sendToBack(field: LabelFieldBag): void {
+    function sendToBack(field: LabelFieldBag): void {
         props.labelManager.mutate(label => {
             if (!label.fields) {
                 return;
@@ -745,7 +746,7 @@
      *
      * @param field The field to be updated.
      */
-     function bringToFront(field: LabelFieldBag): void {
+    function bringToFront(field: LabelFieldBag): void {
         props.labelManager.mutate(label => {
             if (!label.fields) {
                 return;
@@ -871,6 +872,57 @@
     }
 
     /**
+     * Event handler for when a key is pressed down while the container has
+     * the focus.
+     *
+     * @param e The event that triggered this action.
+     */
+    function onContainerKeyDown(e: KeyboardEvent): void {
+        if (e.key === "Delete") {
+            if (props.labelManager.selectedField.value) {
+                deleteField(props.labelManager.selectedField.value);
+            }
+        }
+
+        const validKeys = ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"];
+
+        if (!stage || !validKeys.includes(e.key)) {
+            return;
+        }
+
+        const positionBoundFunc = usePositionBoundFunc(stage, p => p);
+
+        props.labelManager.mutateSelectedField(field => {
+            let pixelPos: Konva.Vector2d = {
+                x: getPixelForOffset(field.left),
+                y: getPixelForOffset(field.top)
+            };
+            const pixelSize: Konva.Vector2d = {
+                x: getPixelForOffset(field.width),
+                y: getPixelForOffset(field.height)
+            };
+
+            if (e.key === "ArrowLeft") {
+                pixelPos.x -= 1;
+            }
+            else if (e.key === "ArrowRight") {
+                pixelPos.x += 1;
+            }
+            else if (e.key === "ArrowUp") {
+                pixelPos.y -= 1;
+            }
+            else if (e.key === "ArrowDown") {
+                pixelPos.y += 1;
+            }
+
+            pixelPos = positionBoundFunc(pixelPos, pixelSize);
+
+            field.left = getOffsetForPixel(pixelPos.x);
+            field.top = getOffsetForPixel(pixelPos.y);
+        });
+    }
+
+    /**
      * Event handler for the end of a drag operation to move a node around.
      *
      * @param e The object that describes the event.
@@ -936,6 +988,8 @@
             return;
         }
 
+        containerElement.value.addEventListener("keydown", onContainerKeyDown);
+
         // Wait up to 2.5 seconds for fonts to load.
         await waitForFonts(2500);
 
@@ -979,6 +1033,7 @@
         transformHelper?.destroy();
         transformHelper = undefined;
 
+        containerElement.value?.removeEventListener("keydown", onContainerKeyDown);
         window.removeEventListener("click", onWindowClick);
     });
 
