@@ -31,8 +31,8 @@ export type GroupSchedulerFiltersBag = {
     /** Gets or sets the selected date range. */
     dateRange?: SlidingDateRangeBag | null;
 
-    /** Gets or sets the first "end of week" date, based on the selected date range. */
-    firstEndOfWeekDate?: string | null;
+    /** Gets or sets the end date, based on the selected date range. */
+    endDate?: string | null;
 
     /** Gets or sets the friendly date range, based on the selected date range. */
     friendlyDateRange?: string | null;
@@ -40,12 +40,15 @@ export type GroupSchedulerFiltersBag = {
     /** Gets or sets the selected groups. */
     groups?: ListItemBag[] | null;
 
-    /** Gets or sets the last "end of week" date, based on the selected date range. */
-    lastEndOfWeekDate?: string | null;
-
     /** Gets or sets the available and selected locations. */
     locations?: GroupSchedulerLocationsBag | null;
 
+    /** Gets or sets the number of days included in the date range. */
+    numberOfDays: number;
+
     /** Gets or sets the available and selected schedules. */
     schedules?: GroupSchedulerSchedulesBag | null;
+
+    /** Gets or set sets the start date, based on the selected date range. */
+    startDate?: string | null;
 };

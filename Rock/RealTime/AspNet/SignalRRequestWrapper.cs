@@ -46,6 +46,9 @@ namespace Rock.RealTime.AspNet
         /// <inheritdoc/>
         public IDictionary<string, string> Cookies { get; }
 
+        /// <inheritdoc/>
+        public string Method { get; }
+
         #endregion
 
         #region Constructors
@@ -68,6 +71,8 @@ namespace Rock.RealTime.AspNet
             // make much sense anyway since it would just be the /rock-rt endpoint.
             // Therefore, do not set a RequestUri.
 
+            Method = GetMethodAsUppercaseString( request );
+
             QueryString = new NameValueCollection( StringComparer.InvariantCultureIgnoreCase );
             foreach ( var qs in request.QueryString )
             {
@@ -84,6 +89,18 @@ namespace Rock.RealTime.AspNet
             foreach ( var cookie in request.Cookies )
             {
                 Cookies.AddOrReplace( cookie.Key, cookie.Value.Value );
+            }
+        }
+
+        private string GetMethodAsUppercaseString( IRequest request )
+        {
+            if ( request is Microsoft.AspNet.SignalR.Owin.ServerRequest owinRequest )
+            {
+                return owinRequest.GetHttpContext()?.Request?.HttpMethod?.ToUpper();
+            }
+            else
+            {
+                return null;
             }
         }
 

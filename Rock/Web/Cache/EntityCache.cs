@@ -343,7 +343,7 @@ namespace Rock.Web.Cache
             }
 
             var cachedItems = new List<T>( ids.Count );
-            var idsToLoad = new List<int>();
+            var idsToLoad = new List<int>( ids.Count );
 
             // Try to get items that already exist in cache.
             foreach ( var id in ids )

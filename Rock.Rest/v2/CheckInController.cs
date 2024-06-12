@@ -20,6 +20,8 @@ using System.Data.Entity;
 using System.Linq;
 using System.Net;
 
+using Microsoft.AspNetCore.Mvc;
+
 using Rock.CheckIn.v2;
 using Rock.Data;
 using Rock.Model;

@@ -49,6 +49,9 @@ namespace Rock.Rest
         /// <inheritdoc/>
         public IDictionary<string, string> Cookies { get; }
 
+        /// <inheritdoc/>
+        public string Method { get; }
+
         #endregion
 
         #region Constructors
@@ -72,6 +75,8 @@ namespace Rock.Rest
             }
 
             RequestUri = request.RequestUri;
+            
+            Method = GetMethodAsUppercaseString( request.Method );
 
             QueryString = new NameValueCollection( StringComparer.OrdinalIgnoreCase );
             foreach ( var kvp in request.GetQueryNameValuePairs() )
@@ -114,6 +119,46 @@ namespace Rock.Rest
             foreach ( var cookie in request.Headers.GetCookies().SelectMany( c => c.Cookies ) )
             {
                 Cookies.AddOrReplace( cookie.Name, cookie.Value );
+            }
+        }
+
+        #endregion
+
+        #region Methods
+
+        private string GetMethodAsUppercaseString( HttpMethod method )
+        {
+            if ( method == HttpMethod.Delete )
+            {
+                return "DELETE";
+            }
+            else if ( method == HttpMethod.Get )
+            {
+                return "GET";
+            }
+            else if ( method == HttpMethod.Head )
+            {
+                return "HEAD";
+            }
+            else if ( method == HttpMethod.Options )
+            {
+                return "OPTIONS";
+            }
+            else if ( method == HttpMethod.Post )
+            {
+                return "POST";
+            }
+            else if ( method == HttpMethod.Put )
+            {
+                return "PUT";
+            }
+            else if ( method == HttpMethod.Trace )
+            {
+                return "TRACE";
+            }
+            else
+            {
+                return null;
             }
         }
 

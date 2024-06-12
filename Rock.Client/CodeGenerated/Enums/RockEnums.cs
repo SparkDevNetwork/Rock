@@ -1422,6 +1422,17 @@ namespace Rock.Client.Enums.Cms
         ExternalWebPage = 0x2,
     }
 
+    /// <summary>
+    /// </summary>
+    [Flags]
+    public enum SiteTypeFlags
+    {
+        None = 0x0,
+        Web = 0x1,
+        Mobile = 0x2,
+        Tv = 0x4,
+    }
+
 }
 
 namespace Rock.Client.Enums.Core.Grid
@@ -1589,6 +1600,20 @@ namespace Rock.Client.Enums.Net
     {
         Header = 0x0,
         Footer = 0x1,
+    }
+
+}
+
+namespace Rock.Client.Enums.Configuration
+{
+    /// <summary>
+    /// </summary>
+    public enum DatabasePlatform
+    {
+        Unknown = 0x0,
+        SqlServer = 0x1,
+        AzureSql = 0x2,
+        Other = 0x3,
     }
 
 }

@@ -93,5 +93,67 @@ namespace Rock.Configuration
         {
             return app?.GetDatabaseConfiguration().IsDatabaseAvailable ?? false;
         }
+
+        /// <summary>
+        /// Resolves the rock URL to the absolute path it refers to on this site.
+        /// The name of the theme will be determined automatically, if it can't
+        /// be determined then "Rock" will be used.
+        /// </summary>
+        /// <remarks>
+        ///     <para>An input starting with "~~/" will return a theme URL like, "{SiteRoot}/Themes/{CurrentSiteTheme}/{input}" without the leading "~~".</para>
+        ///     <para>An input starting with "~/" will return the site root like, {SiteRoot}/{input}" without the leading "~".</para>
+        ///     <para>An input of "~~" will return a theme URL like "{SiteRoot}/Themes/{CurrentSiteTheme}" without a trailing slash.</para>
+        ///     <para>An input of "~" will return the site root "{SiteRoot}/" with a trailing slash. </para>
+        ///     <para>The input will be returned as supplied for all other cases.</para>
+        /// </remarks>
+        /// <param name="app">The RockApp instance.</param>
+        /// <param name="url">The input with prefix <c>"~~"</c> or <c>"~"</c>.</param>
+        /// <returns>The resolved URL.</returns>
+        public static string ResolveRockUrl( this RockApp app, string url )
+        {
+            return ResolveRockUrl( app, url, "Rock" );
+        }
+
+        /// <summary>
+        /// Resolves the rock URL to the absolute path it refers to on this site.
+        /// </summary>
+        /// <remarks>
+        ///     <para>An input starting with "~~/" will return a theme URL like, "{SiteRoot}/Themes/{CurrentSiteTheme}/{input}" without the leading "~~".</para>
+        ///     <para>An input starting with "~/" will return the site root like, {SiteRoot}/{input}" without the leading "~".</para>
+        ///     <para>An input of "~~" will return a theme URL like "{SiteRoot}/Themes/{CurrentSiteTheme}" without a trailing slash.</para>
+        ///     <para>An input of "~" will return the site root "{SiteRoot}/" with a trailing slash. </para>
+        ///     <para>The input will be returned as supplied for all other cases.</para>
+        /// </remarks>
+        /// <param name="app">The RockApp instance.</param>
+        /// <param name="url">The input with prefix <c>"~~"</c> or <c>"~"</c>.</param>
+        /// <param name="theme">The name of the theme when a "~~" is encountered.</param>
+        /// <returns>The resolved URL.</returns>
+        public static string ResolveRockUrl( this RockApp app, string url, string theme )
+        {
+            var appPath = app.HostingSettings.VirtualRootPath.RemoveTrailingForwardslash();
+
+            if ( url.IsNullOrWhiteSpace() )
+            {
+                return url;
+            }
+
+            if ( url == "~" )
+            {
+                // Special case, make this end with slash.
+                return $"{appPath}/";
+            }
+
+            if ( url.StartsWith( "~~" ) )
+            {
+                return $"{appPath}/Themes/{theme}{url.Substring( 2 )}";
+            }
+
+            if ( url.StartsWith( "~" ) )
+            {
+                return $"{appPath}{url.Substring( 1 )}";
+            }
+
+            return url;
+        }
     }
 }

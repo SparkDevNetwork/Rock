@@ -89,9 +89,9 @@
                             <RockButton :btnSize="BtnSize.ExtraSmall"
                                         :disabled="isSchedulingDisabled"
                                         class="ml-1"
-                                        @click="onSendNowClick">
-                                <i class="fa fa-envelope-o"></i> Send Now
-                                <Loading :isLoading="isSendingNow" :isSmall="true" class="d-inline-block" />
+                                        @click="onSendConfirmationsClick">
+                                <i class="fa fa-envelope-o"></i> Send Confirmations
+                                <Loading :isLoading="isSendingConfirmations" :isSmall="true" class="d-inline-block" />
                             </RockButton>
                         </div>
                     </div>
@@ -110,7 +110,7 @@
                                         aria-haspopup="true"
                                         aria-expanded="false"
                                         :disabled="isSchedulingDisabled">
-                                    <Loading :isLoading="isCloningSchedules || isAutoScheduling || isSendingNow" :isSmall="true">
+                                    <Loading :isLoading="isCloningSchedules || isAutoScheduling || isSendingConfirmations" :isSmall="true">
                                         <i class="fa fa-ellipsis-v"></i>
                                     </Loading>
                                 </button>
@@ -119,8 +119,8 @@
                                         <button type="button"
                                                 class="dropdown-item btn-link text-nowrap"
                                                 :disabled="isSchedulingDisabled"
-                                                @click="onSendNowClick">
-                                            <i class="fa fa-envelope-o"></i> Send Now
+                                                @click="onSendConfirmationsClick">
+                                            <i class="fa fa-envelope-o"></i> Send Confirmations
                                         </button>
                                     </li>
                                     <li>
@@ -214,13 +214,13 @@
 
             </ModalAlert>
 
-            <ModalAlert v-model="isSendNowModalVisible"
+            <ModalAlert v-model="isSendConfirmationsModalVisible"
                         :type="sendNowModalAlertType">
 
                 <div v-if="anySendErrors">
                     One or more errors occurred when sending confirmations:
                     <ul>
-                        <li v-for="error in sendNowResponse!.errors">
+                        <li v-for="error in sendConfirmationsResponse!.errors">
                             {{ error }}
                         </li>
                     </ul>
@@ -229,7 +229,7 @@
                 <div v-if="anySendWarnings">
                     One or more warnings occurred when sending confirmations:
                     <ul>
-                        <li v-for="warning in sendNowResponse!.warnings">
+                        <li v-for="warning in sendConfirmationsResponse!.warnings">
                             {{ warning }}
                         </li>
                     </ul>
@@ -238,6 +238,36 @@
                 <div v-if="sendNowOutcomeMessage" v-html="sendNowOutcomeMessage"></div>
 
             </ModalAlert>
+
+            <Modal v-model="isSendConfirmationsReviewModalVisible"
+                   title="Send Confirmations"
+                   saveText="Send"
+                   :isSaveButtonDisabled="!isDateRangeValid || isSendingConfirmations"
+                   @save="sendConfirmations">
+
+                <p>
+                    You are about to send confirmation requests based on the group, location and schedule configuration listed below for the specified date range. Please review the details carefully to ensure accuracy before proceeding.
+                </p>
+
+                <div class="mb-2">
+                    <RockLabel>
+                        {{ sendDateRangeTitle }}
+                    </RockLabel>
+                    <div>
+                        {{ sendDateRange }}
+                    </div>
+                </div>
+
+                <div v-for="group in groupLocationScheduleNames" class="mb-2">
+                    <RockLabel>
+                        {{ group.groupName }}
+                    </RockLabel>
+                    <div v-for="locationWithSchedules in group.locationWithSchedules">
+                        {{ locationWithSchedules }}
+                    </div>
+                </div>
+
+            </Modal>
         </Panel>
     </div>
 </template>
@@ -255,28 +285,32 @@
         UnassignedResourceCounts
     } from "./GroupScheduler/types.partial";
     import Loading from "@Obsidian/Controls/loading.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
     import ModalAlert from "@Obsidian/Controls/modalAlert.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { DragScroll as vDragScroll } from "@Obsidian/Directives/dragScroll";
     import { ModalAlertType } from "@Obsidian/Enums/Controls/modalAlertType";
+    import { Guid } from "@Obsidian/Types";
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import { getSecurityGrant, onConfigurationValuesChanged, provideSecurityGrant, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { newGuid } from "@Obsidian/Utility/guid";
+    import { DateTimeFormat, RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { pluralize } from "@Obsidian/Utility/stringUtils";
     import { GroupSchedulerAppliedFiltersBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerAppliedFiltersBag";
     import { GroupSchedulerCloneSchedulesResponseBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerCloneSchedulesResponseBag";
     import { GroupSchedulerCloneSettingsBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerCloneSettingsBag";
     import { GroupSchedulerFiltersBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerFiltersBag";
+    import { GroupSchedulerGroupLocationScheduleNamesBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerGroupLocationScheduleNamesBag";
     import { GroupSchedulerInitializationBox } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerInitializationBox";
     import { GroupSchedulerOccurrenceBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerOccurrenceBag";
-    import { GroupSchedulerSendNowResponseBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerSendNowResponseBag";
+    import { GroupSchedulerSendConfirmationsResponseBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerSendConfirmationsResponseBag";
     import { GroupSchedulerUnassignedResourceCountBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerUnassignedResourceCountBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { Guid } from "@Obsidian/Types";
 
     const config = useConfigurationValues<GroupSchedulerInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -301,6 +335,7 @@
 
     const filters = ref<GroupSchedulerFiltersBag | null | undefined>(config.appliedFilters?.filters);
     const scheduleOccurrences = ref<GroupSchedulerOccurrenceBag[] | null | undefined>(config.appliedFilters?.scheduleOccurrences);
+    const groupLocationScheduleNames = ref<GroupSchedulerGroupLocationScheduleNamesBag[]>(config.appliedFilters?.groupLocationScheduleNames ?? []);
     const unassignedResourceCounts = ref<GroupSchedulerUnassignedResourceCountBag[]>(config.appliedFilters?.unassignedResourceCounts ?? []);
     const navigationUrls = ref<Record<string, string> | null | undefined>(config.appliedFilters?.navigationUrls);
     const disallowGroupSelection = ref<boolean>(config.disallowGroupSelection);
@@ -314,9 +349,10 @@
 
     const isAutoScheduling = ref(false);
 
-    const isSendingNow = ref(false);
-    const sendNowResponse = ref<GroupSchedulerSendNowResponseBag | null>(null);
-    const isSendNowModalVisible = ref(false);
+    const isSendConfirmationsReviewModalVisible = ref(false);
+    const isSendingConfirmations = ref(false);
+    const sendConfirmationsResponse = ref<GroupSchedulerSendConfirmationsResponseBag | null>(null);
+    const isSendConfirmationsModalVisible = ref(false);
 
     const reloadAllOccurrences = ref(false);
     const reloadOccurrencesContainingResource = ref<number | null>(null);
@@ -371,7 +407,7 @@
 
         const filtersTextSegements: string[] = [
             currentFilters?.groups?.length ? currentFilters.groups.map(g => g.text).join(", ") : "",
-            currentFilters?.friendlyDateRange ? `Weeks: ${currentFilters?.friendlyDateRange}` : "",
+            currentFilters?.friendlyDateRange ? `${currentFilters?.friendlyDateRange}` : "",
             getSingleItemOrCount(currentFilters?.locations?.selectedLocations, "Location"),
             getSingleItemOrCount(currentFilters?.schedules?.selectedSchedules, "Schedule")
         ];
@@ -465,20 +501,56 @@
         return navigationUrls.value?.[NavigationUrlKey.RosterPage] ?? null;
     });
 
+    const dateRangeNumberOfDays = computed((): number => {
+        return filters.value?.numberOfDays ?? 0;
+    });
+
+    const isDateRangeValid = computed((): boolean => {
+        return dateRangeNumberOfDays.value >= 1;
+    });
+
+    const sendDateRangeTitle = computed((): string => {
+        if (!isDateRangeValid.value) {
+            return "Invalid Date Range";
+        }
+        else if (dateRangeNumberOfDays.value > 1) {
+            return "Date Range";
+        }
+        return "Date";
+    });
+
+    const sendDateRange = computed((): string => {
+        const startDate = RockDateTime
+            .parseISO(filters.value?.startDate ?? "")
+            ?.toLocaleString(DateTimeFormat.DateShort);
+
+        const endDate = RockDateTime
+            .parseISO(filters.value?.endDate ?? "")
+            ?.toLocaleString(DateTimeFormat.DateShort);
+
+        if (!isDateRangeValid.value || !startDate || !endDate) {
+            return 'Please Check the Block\'s "Dates" Filter';
+        }
+        else if (dateRangeNumberOfDays.value > 1) {
+            return `${startDate} - ${endDate} (${dateRangeNumberOfDays.value} days)`;
+        }
+        return `${startDate} (1 day)`;
+    });
+
     const sentCount = computed((): number => {
-        return sendNowResponse.value?.communicationsSentCount ?? 0;
+        return sendConfirmationsResponse.value?.communicationsSentCount ?? 0;
     });
 
     const anySendErrors = computed((): boolean => {
-        return !!sendNowResponse.value?.errors?.length;
+        return !!sendConfirmationsResponse.value?.errors?.length;
     });
 
     const anySendWarnings = computed((): boolean => {
-        return !!sendNowResponse.value?.warnings?.length;
+        return !!sendConfirmationsResponse.value?.warnings?.length;
     });
 
     const anyCommunicationsToSend = computed((): boolean => {
-        return !!sendNowResponse.value?.anyCommunicationsToSend;
+        return !!sendConfirmationsResponse.value?.anyCommunicationsToSend;
     });
 
     const sendNowModalAlertType = computed((): ModalAlertType => {
@@ -510,7 +582,7 @@
             || isSelectingCloneSettings.value
             || isCloningSchedules.value
             || isAutoScheduling.value
-            || isSendingNow.value;
+            || isSendingConfirmations.value;
     });
 
     const isSchedulingDisabled = computed((): boolean => {
@@ -823,6 +895,7 @@
 
         filters.value = result.data?.filters;
         scheduleOccurrences.value = result.data?.scheduleOccurrences;
+        groupLocationScheduleNames.value = result.data?.groupLocationScheduleNames ?? [];
         unassignedResourceCounts.value = result.data?.unassignedResourceCounts ?? [];
         navigationUrls.value = result.data?.navigationUrls;
 
@@ -830,27 +903,40 @@
     }
 
     /**
-     * Handles the click event of the "Send Now" button.
+     * Handles the click event of the "Send Confirmations" button.
      */
-    async function onSendNowClick(): Promise<void> {
-        if (isSendingNow.value) {
+    function onSendConfirmationsClick(): void {
+        if (isSendingConfirmations.value) {
             return;
         }
 
-        isSendingNow.value = true;
-        sendNowResponse.value = null;
+        isSendConfirmationsReviewModalVisible.value = true;
+    }
+
+    /**
+     * Sends confirmations based on the currently-applied filters.
+     */
+    async function sendConfirmations(): Promise<void> {
+        isSendConfirmationsReviewModalVisible.value = false;
+
+        if (isSendingConfirmations.value) {
+            return;
+        }
+
+        isSendingConfirmations.value = true;
+        sendConfirmationsResponse.value = null;
         blockActionErrorMessage.value = "";
 
-        const result = await invokeBlockAction<GroupSchedulerSendNowResponseBag>("SendNow", { bag: filters.value });
-        isSendingNow.value = false;
+        const result = await invokeBlockAction<GroupSchedulerSendConfirmationsResponseBag>("SendConfirmations", { bag: filters.value });
+        isSendingConfirmations.value = false;
 
         if (!result.isSuccess) {
             blockActionErrorMessage.value = result.errorMessage || "Unknown error while sending confirmations.";
             return;
         }
 
-        sendNowResponse.value = result.data;
-        isSendNowModalVisible.value = true;
+        sendConfirmationsResponse.value = result.data;
+        isSendConfirmationsModalVisible.value = true;
     }
 
     /**
@@ -864,6 +950,7 @@
 
         filters.value = appliedFilters?.filters;
         scheduleOccurrences.value = appliedFilters?.scheduleOccurrences;
+        groupLocationScheduleNames.value = appliedFilters?.groupLocationScheduleNames ?? [];
         unassignedResourceCounts.value = appliedFilters?.unassignedResourceCounts ?? [];
         navigationUrls.value = appliedFilters?.navigationUrls;
 

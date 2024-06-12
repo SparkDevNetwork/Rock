@@ -24,6 +24,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
+using NuGet;
+
 using Rock.Attribute;
 using Rock.BulkImport;
 using Rock.Chart;
@@ -1017,6 +1019,43 @@ namespace Rock.Model
 
             var sendConfirmationAttendancesQueryList = sendConfirmationAttendancesQuery.ToList();
 
+            // Remove Attendances to be excluded based on the Schedule's exclusions.
+            if ( !sendConfirmationAttendancesQueryList.IsEmpty() )
+            {
+                var allDistinctAttendanceOccurrence = sendConfirmationAttendancesQueryList
+                                    .Select( a => a.Occurrence )
+                                    .Distinct()
+                                    .ToList();
+                var startDateMin = allDistinctAttendanceOccurrence.Min( a => a.OccurrenceDate );
+                var endDateMax = allDistinctAttendanceOccurrence.Max( a => a.OccurrenceDate ).AddDays( 1 );
+                var filteredAttendanceOccurrence = allDistinctAttendanceOccurrence
+                    .GroupBy( o => o.Schedule )
+                    .SelectMany( kvp =>
+                    {
+                        // Remove Schedule Exclusions
+                        var schedule = kvp.Key;
+                        var startDates = schedule.GetScheduledStartTimes( startDateMin, endDateMax )
+                        .Select( dt => dt.Date )
+                        .ToHashSet();
+
+                        return kvp
+                            .Where( ao => startDates.Contains( ao.OccurrenceDate.Date ) );
+                    } )
+                    .GroupBy( o => o.Group.GroupType)
+                    .SelectMany( kvp =>
+                    {
+                        // Remove Group Type Exclusions
+                        var groupType = kvp.Key;
+                        var groupTypeExclusions = groupType.GroupScheduleExclusions;
+                        return kvp
+                            .Where( ao => !groupTypeExclusions.Any( e => e.StartDate <= ao.OccurrenceDate.Date && e.EndDate >= ao.OccurrenceDate ) );
+                    } ) 
+                    .ToHashSet();
+
+                sendConfirmationAttendancesQueryList = sendConfirmationAttendancesQueryList.Where( a => filteredAttendanceOccurrence.Contains( a.Occurrence ) )
+                    .ToList();
+            }
+
             var sendConfirmationIndividuals = sendConfirmationAttendancesQueryList
                 .GroupBy( a =>
                 {
@@ -1081,6 +1120,44 @@ namespace Rock.Model
                 .Where( a => a.Occurrence.Group.GroupType.ScheduleReminderSystemCommunicationId.HasValue );
 
             var sendReminderAttendancesQueryList = sendReminderAttendancesQuery.ToList();
+
+            // Remove Attendances to be excluded based on the Schedule's exclusions.
+            if ( !sendReminderAttendancesQueryList.IsEmpty() )
+            {
+                var allDistinctAttendanceOccurrence = sendReminderAttendancesQueryList
+                        .Select( a => a.Occurrence )
+                        .Distinct()
+                        .ToList();
+                var startDateMin = allDistinctAttendanceOccurrence.Min( a => a.OccurrenceDate );
+                var endDateMax = allDistinctAttendanceOccurrence.Max( a => a.OccurrenceDate ).AddDays( 1 );
+                var filteredAttendanceOccurrence = allDistinctAttendanceOccurrence
+                    .GroupBy( o => o.Schedule )
+                    .SelectMany( kvp =>
+                    {
+                        // Remove Schedule Exclusions
+                        var schedule = kvp.Key;
+                        var startDates = schedule.GetScheduledStartTimes( startDateMin, endDateMax )
+                        .Select( dt => dt.Date )
+                        .ToHashSet();
+
+                        return kvp
+                            .Where( ao => startDates.Contains( ao.OccurrenceDate.Date ) );
+                    } )
+                    .GroupBy( o => o.Group.GroupType )
+                    .SelectMany( kvp =>
+                    {
+                        // Remove Group Type Exclusions
+                        var groupType = kvp.Key;
+                        var groupTypeExclusions = groupType.GroupScheduleExclusions;
+                        return kvp
+                            .Where( ao => !groupTypeExclusions.Any( e => e.StartDate <= ao.OccurrenceDate.Date && e.EndDate >= ao.OccurrenceDate ) );
+                    } )
+                    .ToHashSet();
+
+                sendReminderAttendancesQueryList = sendReminderAttendancesQueryList.Where( a => filteredAttendanceOccurrence.Contains( a.Occurrence ) )
+                    .ToList();
+            }
+
             var sendReminderIndividuals = sendReminderAttendancesQueryList
                 .GroupBy( a =>
                 {

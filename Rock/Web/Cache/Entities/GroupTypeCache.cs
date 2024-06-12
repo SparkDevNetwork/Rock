@@ -396,7 +396,7 @@ namespace Rock.Web.Cache
             {
                 // skip if parent group type and current group type are the same (a situation that should not be possible) to prevent stack overflow
                 if ( groupType.Id == parentGroupType.Id ||
-                    // also skip if the parent group type and starting group type are the same as this is a circular reference and can cause a stack overflow
+                     // also skip if the parent group type and starting group type are the same as this is a circular reference and can cause a stack overflow
                      startingGroup.Id == parentGroupType.Id )
                 {
                     continue;
@@ -730,7 +730,7 @@ namespace Rock.Web.Cache
         /// The child group type identifiers.
         /// </value>
         [DataMember]
-        public List<int> ChildGroupTypeIds
+        private List<int> ChildGroupTypeIds
         {
             get
             {
@@ -748,7 +748,6 @@ namespace Rock.Web.Cache
                 return _childGroupTypeIds;
             }
         }
-
         private List<int> _childGroupTypeIds;
 
         /// <summary>
@@ -782,7 +781,7 @@ namespace Rock.Web.Cache
         /// <value>
         /// The parent group type identifiers.
         /// </value>
-        public List<int> ParentGroupTypeIds
+        private List<int> ParentGroupTypeIds
         {
             get
             {
@@ -800,7 +799,6 @@ namespace Rock.Web.Cache
                 return _parentGroupTypeIds;
             }
         }
-
         private List<int> _parentGroupTypeIds;
 
         /// <summary>

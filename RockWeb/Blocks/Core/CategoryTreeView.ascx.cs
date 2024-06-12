@@ -84,7 +84,7 @@ namespace RockWeb.Blocks.Core
         Key = AttributeKey.ExcludeCategories )]
 
     [LinkedPage( "Search Results Page",
-        Description = "The age to display search results on",
+        Description = "The page to display search results on",
         IsRequired = false,
         Key = AttributeKey.SearchResultsPage )]
 

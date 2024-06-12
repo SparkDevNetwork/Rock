@@ -25,7 +25,7 @@
                     width="5%" />
 
         <TextColumn name="timeToBuildMS"
-                    title="Time To Build MS"
+                    title="Time To Build (ms)"
                     field="timeToBuildMS"
                     :filter="textValueFilter"
                     visiblePriority="xs"

@@ -105,21 +105,23 @@ namespace Rock.Web.Cache
         {
             base.SetFromEntity( entity );
 
-            if ( !( entity is Schedule schedule ) )
+            Rock.Model.Schedule schedule = entity as Rock.Model.Schedule;
+            if ( schedule == null )
             {
                 return;
             }
 
-            Name = schedule.Name;
-            CategoryId = schedule.CategoryId;
-            IsActive = schedule.IsActive;
-            FriendlyScheduleText = schedule.ToFriendlyScheduleText();
-            CalendarContent = schedule.iCalendarContent;
-            StartTimeOfDay = schedule.StartTimeOfDay;
-            CheckInStartOffsetMinutes = schedule.CheckInStartOffsetMinutes;
-            CheckInEndOffsetMinutes = schedule.CheckInEndOffsetMinutes;
-            IsCheckInEnabled = schedule.IsCheckInEnabled;
+            this.Name = schedule.Name;
+            this.CategoryId = schedule.CategoryId;
+            this.IsActive = schedule.IsActive;
+            this.FriendlyScheduleText = schedule.ToFriendlyScheduleText();
+            this.CalendarContent = schedule.iCalendarContent;
+            this.StartTimeOfDay = schedule.StartTimeOfDay;
+            this.CheckInStartOffsetMinutes = schedule.CheckInStartOffsetMinutes;
+            this.CheckInEndOffsetMinutes = schedule.CheckInEndOffsetMinutes;
+            this.IsCheckInEnabled = schedule.IsCheckInEnabled;
         }
+
 
         /// <summary>
         /// Gets the calendar event. This ensures we only create it one time.
@@ -247,10 +249,21 @@ namespace Rock.Web.Cache
             return null;
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// returns <see cref="FriendlyScheduleText"/>
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
         public override string ToString()
         {
             return this.FriendlyScheduleText;
+        }
+
+        /// <inheritdoc cref="Rock.Model.Schedule.GetICalOccurrences(DateTime, DateTime?, DateTime?)" />
+        public IList<Ical.Net.DataTypes.Occurrence> GetICalOccurrences( DateTime beginDateTime, DateTime? endDateTime, DateTime? scheduleStartDateTimeOverride )
+        {
+            return InetCalendarHelper.GetOccurrences( CalendarContent, beginDateTime, endDateTime, scheduleStartDateTimeOverride );
         }
 
         #endregion Public Methods

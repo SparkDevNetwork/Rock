@@ -608,11 +608,9 @@ namespace Rock.Web.UI.Controls
             rockContext.SaveChanges();
             _modalDialog.Hide();
 
-            // Reload the page to make sure that the current status is reflected in the card styling.
-            var currentPageReference = this.RockBlock().CurrentPageReference;
-            Dictionary<string, string> currentPageParameters = this.RockBlock().PageParameters().ToDictionary( k => k.Key, k => k.Value.ToString() );
-            var pageRef = new PageReference( currentPageReference.PageId, currentPageReference.RouteId, currentPageParameters );
-            this.RockBlock().NavigateToPage( pageRef );
+            this.MeetsGroupRequirement = MeetsGroupRequirement.Meets;
+            this.GroupMemberRequirementId = groupMemberRequirement.Id;
+            this.GroupMemberRequirementDueDate = null;
         }
 
         /// <summary>

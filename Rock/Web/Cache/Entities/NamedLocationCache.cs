@@ -297,7 +297,7 @@ namespace Rock.Web.Cache
             this.PrinterDeviceId = location.PrinterDeviceId;
             this.GeoPoint = location.GeoPoint;
             this.GeoFence = location.GeoFence;
-            ChildLocationIds = location.ChildLocations.Select( l => l.Id ).ToList();
+            this.ChildLocationIds = location.ChildLocations.Select( l => l.Id ).ToList();
         }
 
         /// <summary>

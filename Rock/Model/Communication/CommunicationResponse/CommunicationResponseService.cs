@@ -216,15 +216,24 @@ namespace Rock.Model
                 } )
                 .Select( j => new
                 {
-                    Guid = j.CommunicationRecipient.Guid,
-                    PersonId = j.PersonAlias.PersonId,
-                    Person = j.PersonAlias.Person,
-                    SenderPerson = j.CommunicationRecipient.Communication.SenderPersonAlias.Person,
-                    CreatedDateTime = j.CommunicationRecipient.CreatedDateTime,
-                    j.CommunicationRecipient.Communication,
+                    j.CommunicationRecipient.Guid,
+                    j.PersonAlias.PersonId,
+                    PersonGuid = j.PersonAlias.Person.Guid,
+                    PersonRecordTypeValueId = j.PersonAlias.Person.RecordTypeValueId,
+                    PersonNickName = j.PersonAlias.Person.NickName,
+                    PersonLastName = j.PersonAlias.Person.LastName,
+                    PersonSuffixValueId = j.PersonAlias.Person.SuffixValueId,
+                    PersonPhotoId = j.PersonAlias.Person.PhotoId,
+                    PersonFirstPhoneNumber = j.PersonAlias.Person.PhoneNumbers.FirstOrDefault(),
+                    SenderPersonRecordTypeValueId = j.CommunicationRecipient.Communication.SenderPersonAlias.Person.RecordTypeValueId,
+                    SenderPersonNickName = j.CommunicationRecipient.Communication.SenderPersonAlias.Person.NickName,
+                    SenderPersonLastName = j.CommunicationRecipient.Communication.SenderPersonAlias.Person.LastName,
+                    SenderPersonSuffixValueId = j.CommunicationRecipient.Communication.SenderPersonAlias.Person.SuffixValueId,
+                    j.CommunicationRecipient.CreatedDateTime,
                     j.CommunicationRecipient.CommunicationId,
+                    j.CommunicationRecipient.Communication.SmsFromSystemPhoneNumberId,
                     CommunicationSMSMessage = j.CommunicationRecipient.Communication.SMSMessage,
-                    SentMessage = j.CommunicationRecipient.SentMessage,
+                    j.CommunicationRecipient.SentMessage,
                     RecipientPersonAliasId = j.CommunicationRecipient.PersonAliasId,
                     RecipientPersonGuid = j.CommunicationRecipient.PersonAlias.Person.Guid
                 } );
@@ -235,12 +244,22 @@ namespace Rock.Model
                     a.Select( s => new
                     {
                         s.Guid,
-                        s.SenderPerson,
-                        s.Person,
+                        s.SenderPersonRecordTypeValueId,
+                        s.SenderPersonNickName,
+                        s.SenderPersonLastName,
+                        s.SenderPersonSuffixValueId,
+                        s.PersonId,
+                        s.PersonGuid,
+                        s.PersonRecordTypeValueId,
+                        s.PersonNickName,
+                        s.PersonLastName,
+                        s.PersonSuffixValueId,
+                        s.PersonPhotoId,
+                        s.PersonFirstPhoneNumber,
                         s.CreatedDateTime,
                         s.CommunicationSMSMessage,
                         s.CommunicationId,
-                        s.Communication,
+                        s.SmsFromSystemPhoneNumberId,
                         s.SentMessage,
                         s.RecipientPersonAliasId,
                         s.RecipientPersonGuid
@@ -248,8 +267,24 @@ namespace Rock.Model
                 );
 
             var mostRecentCommunicationResponseList = mostRecentCommunicationResponseQuery
-                .Include( a => a.FromPersonAlias.Person )
-                .AsNoTracking()
+                .Select( r => new
+                {
+                    r.Id,
+                    r.Guid,
+                    r.MessageKey,
+                    r.CreatedDateTime,
+                    r.IsRead,
+                    r.Response,
+                    r.RelatedSmsFromSystemPhoneNumberId,
+                    r.FromPersonAliasId,
+                    FromPersonId = r.FromPersonAlias.PersonId,
+                    FromPersonGuid = r.FromPersonAlias.Person.Guid,
+                    FromPersonRecordTypeValueId = r.FromPersonAlias.Person.RecordTypeValueId,
+                    FromPersonNickName = r.FromPersonAlias.Person.NickName,
+                    FromPersonLastName = r.FromPersonAlias.Person.LastName,
+                    FromPersonSuffixValueId = r.FromPersonAlias.Person.SuffixValueId,
+                    FromPersonPhotoId = r.FromPersonAlias.Person.PhotoId
+                } )
                 .Take( maxCount )
                 .ToList();
 
@@ -261,17 +296,21 @@ namespace Rock.Model
                 var communicationRecipientResponse = new CommunicationRecipientResponse
                 {
                     CreatedDateTime = mostRecentResponse.CreatedDateTime,
-                    PersonId = mostRecentResponse.FromPersonAlias.PersonId,
-                    RecordTypeValueId = mostRecentResponse.FromPersonAlias.Person.RecordTypeValueId,
-                    FullName = mostRecentResponse.FromPersonAlias.Person.FullName,
-                    RecipientPhotoId = mostRecentResponse.FromPersonAlias.Person.PhotoId,
+                    PersonId = mostRecentResponse.FromPersonId,
+                    RecordTypeValueId = mostRecentResponse.FromPersonRecordTypeValueId,
+                    FullName = Person.FormatFullName(
+                        mostRecentResponse.FromPersonNickName,
+                        mostRecentResponse.FromPersonLastName,
+                        mostRecentResponse.FromPersonSuffixValueId,
+                        mostRecentResponse.FromPersonRecordTypeValueId ),
+                    RecipientPhotoId = mostRecentResponse.FromPersonPhotoId,
                     IsRead = mostRecentResponse.IsRead,
-                    ConversationKey = CommunicationService.GetSmsConversationKey( relatedSmsFromSystemPhoneNumber.Guid, mostRecentResponse.FromPersonAlias.Person.Guid ),
+                    ConversationKey = CommunicationService.GetSmsConversationKey( relatedSmsFromSystemPhoneNumber.Guid, mostRecentResponse.FromPersonGuid ),
                     MessageKey = $"R:{mostRecentResponse.Guid}",
                     ContactKey = mostRecentResponse.MessageKey,
                     IsOutbound = false,
                     RecipientPersonAliasId = mostRecentResponse.FromPersonAliasId,
-                    RecipientPersonGuid = mostRecentResponse.FromPersonAlias.Person.Guid,
+                    RecipientPersonGuid = mostRecentResponse.FromPersonGuid,
                     SMSMessage = mostRecentResponse.Response,
                     CommunicationResponseId = mostRecentResponse.Id
                 };
@@ -281,20 +320,30 @@ namespace Rock.Model
 
             var mostRecentCommunicationRecipientList = mostRecentCommunicationRecipientQuery.Take( maxCount ).ToList();
 
+            var recordTypeValueIdNamelessId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() ).Id;
+
             foreach ( var mostRecentCommunicationRecipient in mostRecentCommunicationRecipientList )
             {
-                var relatedSmsFromSystemPhoneNumber = SystemPhoneNumberCache.Get( mostRecentCommunicationRecipient.Communication.SmsFromSystemPhoneNumberId.Value );
+                var relatedSmsFromSystemPhoneNumber = SystemPhoneNumberCache.Get( mostRecentCommunicationRecipient.SmsFromSystemPhoneNumberId.Value );
                 var communicationRecipientResponse = new CommunicationRecipientResponse
                 {
                     CreatedDateTime = mostRecentCommunicationRecipient.CreatedDateTime,
-                    PersonId = mostRecentCommunicationRecipient.Person.Id,
-                    RecordTypeValueId = mostRecentCommunicationRecipient.Person.RecordTypeValueId,
-                    OutboundSenderFullName = mostRecentCommunicationRecipient.SenderPerson?.FullName,
-                    FullName = mostRecentCommunicationRecipient.Person.FullName,
-                    RecipientPhotoId = mostRecentCommunicationRecipient.Person.PhotoId,
+                    PersonId = mostRecentCommunicationRecipient.PersonId,
+                    RecordTypeValueId = mostRecentCommunicationRecipient.PersonRecordTypeValueId,
+                    OutboundSenderFullName = Person.FormatFullName(
+                        mostRecentCommunicationRecipient.SenderPersonNickName,
+                        mostRecentCommunicationRecipient.SenderPersonLastName,
+                        mostRecentCommunicationRecipient.SenderPersonSuffixValueId,
+                        mostRecentCommunicationRecipient.SenderPersonRecordTypeValueId ),
+                    FullName = Person.FormatFullName(
+                        mostRecentCommunicationRecipient.PersonNickName,
+                        mostRecentCommunicationRecipient.PersonLastName,
+                        mostRecentCommunicationRecipient.PersonSuffixValueId,
+                        mostRecentCommunicationRecipient.PersonRecordTypeValueId ),
+                    RecipientPhotoId = mostRecentCommunicationRecipient.PersonPhotoId,
                     IsOutbound = true,
                     IsRead = true,
-                    ConversationKey = CommunicationService.GetSmsConversationKey( relatedSmsFromSystemPhoneNumber.Guid, mostRecentCommunicationRecipient.Person.Guid ),
+                    ConversationKey = CommunicationService.GetSmsConversationKey( relatedSmsFromSystemPhoneNumber.Guid, mostRecentCommunicationRecipient.PersonGuid ),
                     MessageKey = $"C:{mostRecentCommunicationRecipient.Guid}",
                     RecipientPersonAliasId = mostRecentCommunicationRecipient.RecipientPersonAliasId,
                     RecipientPersonGuid = mostRecentCommunicationRecipient.RecipientPersonGuid,
@@ -302,10 +351,10 @@ namespace Rock.Model
                     CommunicationId = mostRecentCommunicationRecipient.CommunicationId
                 };
 
-                if ( mostRecentCommunicationRecipient?.Person.IsNameless() == true )
+                if ( mostRecentCommunicationRecipient?.PersonRecordTypeValueId == recordTypeValueIdNamelessId )
                 {
                     // if the person is nameless, we'll need to know their number since we don't know their name
-                    communicationRecipientResponse.ContactKey = mostRecentCommunicationRecipient.Person.PhoneNumbers.FirstOrDefault()?.Number;
+                    communicationRecipientResponse.ContactKey = mostRecentCommunicationRecipient.PersonFirstPhoneNumber?.Number;
                 }
                 else
                 {
@@ -394,8 +443,24 @@ namespace Rock.Model
                 .Where( r => r.RelatedMediumEntityTypeId == smsMediumEntityTypeId
                         && r.RelatedSmsFromSystemPhoneNumberId == relatedSmsFromSystemPhoneNumber.Id
                         && r.FromPersonAliasId.HasValue
-                        && personAliasIdQuery.Contains( r.FromPersonAliasId.Value )
-                         );
+                        && personAliasIdQuery.Contains( r.FromPersonAliasId.Value ) )
+                .Select( r => new
+                {
+                    r.Id,
+                    r.Guid,
+                    r.MessageKey,
+                    r.CreatedDateTime,
+                    r.IsRead,
+                    r.Response,
+                    r.FromPersonAliasId,
+                    r.FromPersonAlias.PersonId,
+                    FromPersonGuid = r.FromPersonAlias.Person.Guid,
+                    FromPersonRecordTypeValueId = r.FromPersonAlias.Person.RecordTypeValueId,
+                    FromPersonNickName = r.FromPersonAlias.Person.NickName,
+                    FromPersonLastName = r.FromPersonAlias.Person.LastName,
+                    FromPersonSuffixValueId = r.FromPersonAlias.Person.SuffixValueId,
+                    FromPersonPhotoId = r.FromPersonAlias.Person.PhotoId
+                } );
 
             var communicationResponseList = communicationResponseQuery.ToList();
 
@@ -404,16 +469,20 @@ namespace Rock.Model
                 var communicationRecipientResponse = new CommunicationRecipientResponse
                 {
                     CreatedDateTime = communicationResponse.CreatedDateTime,
-                    PersonId = communicationResponse.FromPersonAlias?.PersonId,
-                    FullName = communicationResponse.FromPersonAlias?.Person.FullName,
-                    RecipientPhotoId = communicationResponse.FromPersonAlias?.Person.PhotoId,
+                    PersonId = communicationResponse.FromPersonAliasId,
+                    FullName = Person.FormatFullName(
+                        communicationResponse.FromPersonNickName,
+                        communicationResponse.FromPersonLastName,
+                        communicationResponse.FromPersonSuffixValueId,
+                        communicationResponse.FromPersonRecordTypeValueId ),
+                    RecipientPhotoId = communicationResponse.FromPersonPhotoId,
                     IsRead = communicationResponse.IsRead,
-                    ConversationKey = CommunicationService.GetSmsConversationKey( relatedSmsFromSystemPhoneNumber.Guid, communicationResponse.FromPersonAlias.Person.Guid ),
+                    ConversationKey = CommunicationService.GetSmsConversationKey( relatedSmsFromSystemPhoneNumber.Guid, communicationResponse.FromPersonGuid ),
                     MessageKey = $"R:{communicationResponse.Guid}",
                     ContactKey = communicationResponse.MessageKey,
                     IsOutbound = false,
                     RecipientPersonAliasId = communicationResponse.FromPersonAliasId,
-                    RecipientPersonGuid = communicationResponse.FromPersonAlias.Person.Guid,
+                    RecipientPersonGuid = communicationResponse.FromPersonGuid,
                     SMSMessage = communicationResponse.Response,
                     MessageStatus = CommunicationRecipientStatus.Delivered, // We are just going to call these delivered because we have them. Setting this will tell the UI to not display the status.
                     CommunicationResponseId = communicationResponse.Id,
@@ -422,53 +491,70 @@ namespace Rock.Model
                 communicationRecipientResponseList.Add( communicationRecipientResponse );
             }
 
-            var communicationRecipientQuery = new CommunicationRecipientService( this.Context as RockContext )
+            var communicationRecipientList = new CommunicationRecipientService( this.Context as RockContext )
                 .Queryable()
                 .Where( r => r.MediumEntityTypeId == smsMediumEntityTypeId )
                 .Where( r => r.Communication.SmsFromSystemPhoneNumberId == relatedSmsFromSystemPhoneNumber.Id )
                 .Where( r => r.PersonAliasId.HasValue )
                 .Where( r => personAliasIdQuery.Contains( r.PersonAliasId.Value ) )
-                .Where( r => r.Status == CommunicationRecipientStatus.Delivered || r.Status == CommunicationRecipientStatus.Pending );
-
-            var communicationRecipientList = communicationRecipientQuery.Include( a => a.PersonAlias.Person.PhoneNumbers )
-                .Select( cr => new
+                .Where( r => r.Status == CommunicationRecipientStatus.Delivered || r.Status == CommunicationRecipientStatus.Pending )
+                .Select( r => new
                 {
-                    cr.Guid,
-                    cr.CreatedDateTime,
-                    SenderPerson = cr.Communication.SenderPersonAlias.Person,
-                    cr.Communication,
-                    cr.PersonAliasId,
-                    cr.PersonAlias.Person,
-                    PersonGuid = cr.PersonAlias.Person.Guid,
-                    cr.SentMessage,
-                    cr.Status
+                    r.Guid,
+                    r.CreatedDateTime,
+                    r.SentMessage,
+                    r.Status,
+                    r.CommunicationId,
+                    r.PersonAliasId,
+                    r.PersonAlias.PersonId,
+                    PersonGuid = r.PersonAlias.Person.Guid,
+                    PersonRecordTypeValueId = r.PersonAlias.Person.RecordTypeValueId,
+                    PersonNickName = r.PersonAlias.Person.NickName,
+                    PersonLastName = r.PersonAlias.Person.LastName,
+                    PersonSuffixValueId = r.PersonAlias.Person.SuffixValueId,
+                    PersonPhotoId = r.PersonAlias.Person.PhotoId,
+                    PersonFirstPhoneNumber = r.PersonAlias.Person.PhoneNumbers.FirstOrDefault(),
+                    SenderPersonRecordTypeValueId = r.Communication.SenderPersonAlias.Person.RecordTypeValueId,
+                    SenderPersonNickName = r.Communication.SenderPersonAlias.Person.NickName,
+                    SenderPersonLastName = r.Communication.SenderPersonAlias.Person.LastName,
+                    SenderPersonSuffixValueId = r.Communication.SenderPersonAlias.Person.SuffixValueId
                 } )
                 .ToList();
+
+            var recordTypeValueIdNamelessId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() ).Id;
 
             foreach ( var communicationRecipient in communicationRecipientList )
             {
                 var communicationRecipientResponse = new CommunicationRecipientResponse
                 {
                     CreatedDateTime = communicationRecipient.CreatedDateTime,
-                    OutboundSenderFullName = communicationRecipient.SenderPerson?.FullName,
-                    PersonId = communicationRecipient.Person?.Id,
-                    FullName = communicationRecipient.Person?.FullName,
-                    RecipientPhotoId = communicationRecipient.Person?.Photo?.Id,
+                    OutboundSenderFullName = Person.FormatFullName(
+                        communicationRecipient.SenderPersonNickName,
+                        communicationRecipient.SenderPersonLastName,
+                        communicationRecipient.SenderPersonSuffixValueId,
+                        communicationRecipient.SenderPersonRecordTypeValueId ),
+                    PersonId = communicationRecipient.PersonId,
+                    FullName = Person.FormatFullName(
+                        communicationRecipient.PersonNickName,
+                        communicationRecipient.PersonLastName,
+                        communicationRecipient.PersonSuffixValueId,
+                        communicationRecipient.PersonRecordTypeValueId ),
+                    RecipientPhotoId = communicationRecipient.PersonPhotoId,
                     IsRead = true,
                     IsOutbound = true,
-                    ConversationKey = CommunicationService.GetSmsConversationKey( relatedSmsFromSystemPhoneNumber.Guid, communicationRecipient.Person.Guid ),
+                    ConversationKey = CommunicationService.GetSmsConversationKey( relatedSmsFromSystemPhoneNumber.Guid, communicationRecipient.PersonGuid ),
                     MessageKey = $"C:{communicationRecipient.Guid}",
                     RecipientPersonAliasId = communicationRecipient.PersonAliasId,
                     RecipientPersonGuid = communicationRecipient.PersonGuid,
                     SMSMessage = communicationRecipient.SentMessage,
                     MessageStatus = communicationRecipient.Status,
-                    CommunicationId = communicationRecipient.Communication?.Id,
+                    CommunicationId = communicationRecipient.CommunicationId,
                 };
 
-                if ( communicationRecipient.Person?.IsNameless() == true )
+                if ( communicationRecipient.PersonRecordTypeValueId == recordTypeValueIdNamelessId )
                 {
                     // if the person is nameless, we'll need to know their number since we don't know their name
-                    communicationRecipientResponse.ContactKey = communicationRecipient.Person?.PhoneNumbers.FirstOrDefault()?.Number;
+                    communicationRecipientResponse.ContactKey = communicationRecipient.PersonFirstPhoneNumber?.Number;
                 }
                 else
                 {

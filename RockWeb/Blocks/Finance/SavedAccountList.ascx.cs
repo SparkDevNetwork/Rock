@@ -33,9 +33,9 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "List of a person's saved accounts that can be used to delete an account." )]
     [Rock.SystemGuid.BlockTypeGuid( "CE9F1E41-33E6-4FED-AA08-BD9DCA061498" )]
+    [ContextAware( typeof( Person ) )]
     public partial class SavedAccountList : RockBlock, ICustomGridColumns
     {
-
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -106,7 +106,10 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindGrid()
         {
-            if ( CurrentPerson != null )
+            var contextEntity = this.ContextEntity() as Person;
+            var personId = contextEntity?.Id ?? CurrentPerson?.Id;
+
+            if ( personId.HasValue )
             {
                 var rockContext = new RockContext();
                 gSavedAccounts.DataSource = new FinancialPersonSavedAccountService( rockContext )
@@ -114,7 +117,7 @@ namespace RockWeb.Blocks.Finance
                     .Where( a =>
                         a.FinancialPaymentDetail != null &&
                         a.PersonAlias != null &&
-                        a.PersonAlias.PersonId == CurrentPerson.Id )
+                        a.PersonAlias.PersonId == personId.Value )
                     .OrderBy( a => a.Name )
                     .ToList()
                     .Select( a => new

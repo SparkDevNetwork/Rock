@@ -148,7 +148,7 @@
     <Content Include="src\Finance\financialGatewayDetail.obs" />
     <Content Include="src\Finance\FinancialGatewayDetail\editPanel.partial.obs" />
     <Content Include="src\Finance\FinancialGatewayDetail\viewPanel.partial.obs" />
-    <Content Include="src\Fundraising\fundraisingDonationList.obs" />
+    <Content Include="src\Finance\fundraisingDonationList.obs" />
     <Content Include="src\Finance\savedAccountList.obs" />
     <Content Include="src\Finance\businessContactList.obs" />
     <Content Include="src\Group\Scheduling\groupScheduler.obs" />
@@ -219,6 +219,7 @@
     <Content Include="src\Event\InteractiveExperiences\InteractiveExperienceDetail\actionsPanel.partial.vue" />
     <Content Include="src\Event\InteractiveExperiences\InteractiveExperienceDetail\editPanel.partial.vue" />
     <Content Include="src\Event\InteractiveExperiences\InteractiveExperienceDetail\viewPanel.partial.vue" />
+    <Content Include="src\Communication\ncoaProcess.obs" />
     <Content Include="src\Communication\snippetDetail.obs" />
     <Content Include="src\Communication\SnippetDetail\editPanel.partial.obs" />
     <Content Include="src\Communication\SnippetDetail\viewPanel.partial.obs" />
@@ -320,6 +321,7 @@
     <Folder Include="src\Cms\SiteDetail\" />
     <Folder Include="src\Communication\" />
     <Folder Include="src\Communication\CommunicationList\" />
+    <Folder Include="src\Communication\NcoaProcess\" />
     <Folder Include="src\Communication\SnippetDetail\" />
     <Folder Include="src\Communication\SnippetTypeDetail\" />
     <Folder Include="src\Communication\SystemCommunicationList\" />
@@ -370,8 +372,7 @@
     <Folder Include="src\Finance\FinancialBatchDetail\" />
     <Folder Include="src\Finance\FinancialBatchList\" />
     <Folder Include="src\Finance\FinancialGatewayDetail\" />
-    <Folder Include="src\Fundraising\" />
-    <Folder Include="src\Fundraising\FundraisingDonationList\" />
+    <Folder Include="src\Finance\FundraisingDonationList\" />
     <Folder Include="src\Finance\BusinessContactList\" />
     <Folder Include="src\Finance\SavedAccountList\" />
     <Folder Include="src\Group\Scheduling\" />
@@ -485,6 +486,7 @@
     <TypeScriptCompile Include="src\Core\AssetStorageProviderDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Core\AssetStorageProviderDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\AssetStorageProviderDetail\viewPanel.partial.ts" />
+    <TypeScriptCompile Include="src\Communication\NcoaProcess\types.partial.ts" />
     <TypeScriptCompile Include="src\Communication\SnippetDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Communication\SnippetTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Communication\SystemPhoneNumberDetail\types.partial.ts" />
@@ -546,7 +548,7 @@
     <TypeScriptCompile Include="src\Finance\FinancialBatchList\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialGatewayDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialPledgeDetail\types.partial.ts" />
-    <TypeScriptCompile Include="src\Fundraising\FundraisingDonationList\types.partial.ts" />
+    <TypeScriptCompile Include="src\Finance\FundraisingDonationList\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\SavedAccountList\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\BusinessContactList\types.partial.ts" />
     <TypeScriptCompile Include="src\Group\Scheduling\GroupScheduler\types.partial.ts" />
