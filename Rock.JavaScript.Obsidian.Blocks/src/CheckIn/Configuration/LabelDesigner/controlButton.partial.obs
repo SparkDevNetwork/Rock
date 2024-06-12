@@ -20,6 +20,10 @@
     cursor: grab;
 }
 
+.icon-button:hover {
+    background-color: var(--theme-lightest);
+}
+
 .icon-button .icon {
     font-size: 28px;
 }
