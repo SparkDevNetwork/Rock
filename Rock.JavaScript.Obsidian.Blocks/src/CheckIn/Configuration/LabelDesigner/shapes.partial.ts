@@ -1,7 +1,7 @@
 import Konva from "@Obsidian/Libs/konva";
 import { BarcodeFieldConfigurationBag, EllipseFieldConfigurationBag, IconFieldConfigurationBag, ImageFieldConfigurationBag, LineFieldConfigurationBag, RectangleFieldConfigurationBag, StringRecord } from "./types.partial";
 import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
-import { IconImageMap, code128Icon, getPixelForOffset, qrcodeIcon } from "./utils.partial";
+import { IconImageMap, code128Icon, Surface, qrcodeIcon } from "./utils.partial";
 import { asBoolean } from "@Obsidian/Utility/booleanUtils";
 import { BarcodeFormat } from "@Obsidian/Enums/CheckIn/Labels/barcodeFormat";
 import { HorizontalTextAlignment } from "@Obsidian/Enums/CheckIn/Labels/horizontalTextAlignment";
@@ -363,33 +363,33 @@ export function createShapeForFieldType(fieldType: LabelFieldType): Konva.Group 
  *
  * @returns `true` if the shape was updated or `false` if it could not be updated.
  */
-export function updateShapeFromField(shape: Konva.Shape | Konva.Group, field: LabelFieldBag): boolean {
+export function updateShapeFromField(shape: Konva.Shape | Konva.Group, field: LabelFieldBag, surface: Surface): boolean {
     if (field.fieldType === LabelFieldType.Text && shape instanceof Konva.Text) {
-        updateTextShapeFromField(shape, field);
+        updateTextShapeFromField(shape, field, surface);
         return true;
     }
     else if (field.fieldType === LabelFieldType.Line && shape instanceof Konva.Line) {
-        updateLineShapeFromField(shape, field);
+        updateLineShapeFromField(shape, field, surface);
         return true;
     }
     else if (field.fieldType === LabelFieldType.Ellipse && shape instanceof Ellipse) {
-        updateEllipseShapeFromField(shape, field);
+        updateEllipseShapeFromField(shape, field, surface);
         return true;
     }
     else if (field.fieldType === LabelFieldType.Rectangle && shape instanceof Rectangle) {
-        updateRectShapeFromField(shape, field);
+        updateRectShapeFromField(shape, field, surface);
         return true;
     }
     else if (field.fieldType === LabelFieldType.Icon && shape instanceof Konva.Image) {
-        updateIconShapeFromField(shape, field);
+        updateIconShapeFromField(shape, field, surface);
         return true;
     }
     else if (field.fieldType === LabelFieldType.Image && shape instanceof Konva.Image) {
-        updateImageShapeFromField(shape, field);
+        updateImageShapeFromField(shape, field, surface);
         return true;
     }
     else if (field.fieldType === LabelFieldType.Barcode && shape instanceof Konva.Image) {
-        updateBarcodeShapeFromField(shape, field);
+        updateBarcodeShapeFromField(shape, field, surface);
         return true;
     }
 
@@ -402,23 +402,23 @@ export function updateShapeFromField(shape: Konva.Shape | Konva.Group, field: La
  * @param shape The shape to be updated.
  * @param field The field to use as the source of truth.
  */
-function updateTextShapeFromField(shape: Konva.Text, field: LabelFieldBag): void {
+function updateTextShapeFromField(shape: Konva.Text, field: LabelFieldBag, surface: Surface): void {
     const config = field.configurationValues ?? {} as TextFieldConfigurationBag;
 
     const fontSize = toNumberOrNull(config.fontSize) ?? 12;
     const alignment = toNumber(config.horizontalAlignment) as HorizontalTextAlignment;
 
     // Update the position of the shape.
-    shape.x(getPixelForOffset(field.left));
-    shape.y(getPixelForOffset(field.top));
-    shape.width(getPixelForOffset(field.width));
-    shape.height(getPixelForOffset(field.height));
+    shape.x(surface.getPixelForOffset(field.left));
+    shape.y(surface.getPixelForOffset(field.top));
+    shape.width(surface.getPixelForOffset(field.width));
+    shape.height(surface.getPixelForOffset(field.height));
 
     // Update configured values.
     shape.fontFamily(asBoolean(config.isCondensed) ? "Roboto Condensed" : "Roboto");
     shape.fontStyle(asBoolean(config.isBold) ? "bold" : "normal");
     shape.globalCompositeOperation(asBoolean(config.isColorInverted) ? "xor" : "source-over");
-    shape.fontSize(fontSize * window.devicePixelRatio);
+    shape.fontSize(fontSize * window.devicePixelRatio * surface.scale);
 
     if (field.fieldSubType === TextFieldSubType.Custom) {
         if (asBoolean(config.isDynamicText)) {
@@ -449,15 +449,15 @@ function updateTextShapeFromField(shape: Konva.Text, field: LabelFieldBag): void
  * @param shape The shape to be updated.
  * @param field The field to use as the source of truth.
  */
-function updateRectShapeFromField(shape: Rectangle, field: LabelFieldBag): void {
+function updateRectShapeFromField(shape: Rectangle, field: LabelFieldBag, surface: Surface): void {
     const config = field.configurationValues ?? {} as StringRecord<RectangleFieldConfigurationBag>;
     const roundingIndex = toNumber(config.cornerRadius);
 
     // Update the position of the shape.
-    shape.x(getPixelForOffset(field.left));
-    shape.y(getPixelForOffset(field.top));
-    shape.width(getPixelForOffset(field.width));
-    shape.height(getPixelForOffset(field.height));
+    shape.x(surface.getPixelForOffset(field.left));
+    shape.y(surface.getPixelForOffset(field.top));
+    shape.width(surface.getPixelForOffset(field.width));
+    shape.height(surface.getPixelForOffset(field.height));
 
     // Update configured values.
     if (asBoolean(config.isFilled)) {
@@ -490,7 +490,7 @@ function updateRectShapeFromField(shape: Rectangle, field: LabelFieldBag): void 
         });
     }
 
-    shape.innerShape.cornerRadius(roundingIndex / 8 * getPixelForOffset(Math.min(field.width, field.height)) / 2);
+    shape.innerShape.cornerRadius(roundingIndex / 8 * surface.getPixelForOffset(Math.min(field.width, field.height)) / 2);
 }
 
 /**
@@ -499,13 +499,13 @@ function updateRectShapeFromField(shape: Rectangle, field: LabelFieldBag): void 
  * @param shape The shape to be updated.
  * @param field The field to use as the source of truth.
  */
-function updateLineShapeFromField(shape: Konva.Line, field: LabelFieldBag): void {
+function updateLineShapeFromField(shape: Konva.Line, field: LabelFieldBag, surface: Surface): void {
     const config = field.configurationValues ?? {} as StringRecord<LineFieldConfigurationBag>;
 
     // Update the position of the shape.
-    shape.x(getPixelForOffset(field.left));
-    shape.y(getPixelForOffset(field.top));
-    shape.points([0, 0, getPixelForOffset(field.width), getPixelForOffset(field.height)]);
+    shape.x(surface.getPixelForOffset(field.left));
+    shape.y(surface.getPixelForOffset(field.top));
+    shape.points([0, 0, surface.getPixelForOffset(field.width), surface.getPixelForOffset(field.height)]);
 
     // Update configured values.
     shape.strokeWidth(Math.max(toNumber(config.thickness), 1));
@@ -519,14 +519,14 @@ function updateLineShapeFromField(shape: Konva.Line, field: LabelFieldBag): void
  * @param shape The shape to be updated.
  * @param field The field to use as the source of truth.
  */
-function updateEllipseShapeFromField(shape: Ellipse, field: LabelFieldBag): void {
+function updateEllipseShapeFromField(shape: Ellipse, field: LabelFieldBag, surface: Surface): void {
     const config = field.configurationValues ?? {} as StringRecord<EllipseFieldConfigurationBag>;
 
     // Update the position of the shape.
-    shape.x(getPixelForOffset(field.left));
-    shape.y(getPixelForOffset(field.top));
-    shape.width(getPixelForOffset(field.width));
-    shape.height(getPixelForOffset(field.height));
+    shape.x(surface.getPixelForOffset(field.left));
+    shape.y(surface.getPixelForOffset(field.top));
+    shape.width(surface.getPixelForOffset(field.width));
+    shape.height(surface.getPixelForOffset(field.height));
 
     // Update configured values.
     if (asBoolean(config.isFilled)) {
@@ -549,14 +549,14 @@ function updateEllipseShapeFromField(shape: Ellipse, field: LabelFieldBag): void
  * @param shape The shape to be updated.
  * @param field The field to use as the source of truth.
  */
-function updateIconShapeFromField(shape: Konva.Image, field: LabelFieldBag): void {
+function updateIconShapeFromField(shape: Konva.Image, field: LabelFieldBag, surface: Surface): void {
     const config = field.configurationValues ?? {} as StringRecord<IconFieldConfigurationBag>;
 
     // Update the position of the shape.
-    shape.x(getPixelForOffset(field.left));
-    shape.y(getPixelForOffset(field.top));
-    shape.width(getPixelForOffset(field.width));
-    shape.height(getPixelForOffset(field.height));
+    shape.x(surface.getPixelForOffset(field.left));
+    shape.y(surface.getPixelForOffset(field.top));
+    shape.width(surface.getPixelForOffset(field.width));
+    shape.height(surface.getPixelForOffset(field.height));
 
     const currentImage = shape.image() as HTMLImageElement;
     const src = IconImageMap.find(i => i.value === config.icon)?.category ?? "/Assets/Images/corrupt-image.jpg";
@@ -573,14 +573,14 @@ function updateIconShapeFromField(shape: Konva.Image, field: LabelFieldBag): voi
  * @param shape The shape to be updated.
  * @param field The field to use as the source of truth.
  */
-function updateImageShapeFromField(shape: Konva.Image, field: LabelFieldBag): void {
+function updateImageShapeFromField(shape: Konva.Image, field: LabelFieldBag, surface: Surface): void {
     const config = field.configurationValues ?? {} as StringRecord<ImageFieldConfigurationBag>;
 
     // Update the position of the shape.
-    shape.x(getPixelForOffset(field.left));
-    shape.y(getPixelForOffset(field.top));
-    shape.width(getPixelForOffset(field.width));
-    shape.height(getPixelForOffset(field.height));
+    shape.x(surface.getPixelForOffset(field.left));
+    shape.y(surface.getPixelForOffset(field.top));
+    shape.width(surface.getPixelForOffset(field.width));
+    shape.height(surface.getPixelForOffset(field.height));
 
     const currentImage = shape.image() as HTMLImageElement;
     const src = config.binaryFileGuid
@@ -599,14 +599,14 @@ function updateImageShapeFromField(shape: Konva.Image, field: LabelFieldBag): vo
  * @param shape The shape to be updated.
  * @param field The field to use as the source of truth.
  */
-function updateBarcodeShapeFromField(shape: Konva.Image, field: LabelFieldBag): void {
+function updateBarcodeShapeFromField(shape: Konva.Image, field: LabelFieldBag, surface: Surface): void {
     const config = field.configurationValues ?? {} as StringRecord<BarcodeFieldConfigurationBag>;
 
     // Update the position of the shape.
-    shape.x(getPixelForOffset(field.left));
-    shape.y(getPixelForOffset(field.top));
-    shape.width(getPixelForOffset(field.width));
-    shape.height(getPixelForOffset(field.height));
+    shape.x(surface.getPixelForOffset(field.left));
+    shape.y(surface.getPixelForOffset(field.top));
+    shape.width(surface.getPixelForOffset(field.width));
+    shape.height(surface.getPixelForOffset(field.height));
 
     const currentImage = shape.image() as HTMLImageElement;
     const src = config.format === BarcodeFormat.Code128.toString()

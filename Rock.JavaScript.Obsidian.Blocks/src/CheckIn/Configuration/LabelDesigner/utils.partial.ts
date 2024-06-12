@@ -17,27 +17,52 @@ import { getFieldType } from "@Obsidian/Utility/fieldTypes";
 
 export const pixelsPerInch = 72 * window.devicePixelRatio;
 
-/**
- * Gets the pixel position on the canvas.
- *
- * @param offset The offset position in inches.
- *
- * @returns The pixel position as a floating point number.
- */
-export function getPixelForOffset(offset: number): number {
-    return offset * pixelsPerInch;
-}
+export class Surface {
+    public scale: number = 1;
 
-/**
- * Gets the offset in inches of the pixel position.
- *
- * @param pixel The pixel position.
- *
- * @returns The offset in inches.
- */
-export function getOffsetForPixel(pixel: number): number {
-    return pixel / pixelsPerInch;
+    /**
+     * Gets the pixel position on the canvas.
+     *
+     * @param offset The offset position in inches.
+     *
+     * @returns The pixel position as a floating point number.
+     */
+    public getPixelForOffset(offset: number): number {
+        return offset * pixelsPerInch * this.scale;
+    }
+
+    /**
+     * Gets the offset in inches of the pixel position.
+     *
+     * @param pixel The pixel position.
+     *
+     * @returns The offset in inches.
+     */
+    public getOffsetForPixel(pixel: number): number {
+        return pixel / pixelsPerInch / this.scale;
+    }
 }
+// /**
+//  * Gets the pixel position on the canvas.
+//  *
+//  * @param offset The offset position in inches.
+//  *
+//  * @returns The pixel position as a floating point number.
+//  */
+// export function getPixelForOffset(offset: number): number {
+//     return offset * pixelsPerInch;
+// }
+
+// /**
+//  * Gets the offset in inches of the pixel position.
+//  *
+//  * @param pixel The pixel position.
+//  *
+//  * @returns The offset in inches.
+//  */
+// export function getOffsetForPixel(pixel: number): number {
+//     return pixel / pixelsPerInch;
+// }
 
 /**
  * Creates a function that will handle position bounding operations for the

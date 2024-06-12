@@ -1,15 +1,20 @@
 <template>
-    <div class="worksurface-container">
-        <div ref="fontLoaderElement" class="font-loader"></div>
+    <div ref="worksurfaceContainerElement"
+         class="worksurface-container">
+        <div ref="fontLoaderElement"
+             class="font-loader"></div>
         <div ref="containerElement"
              class="worksurface"
              tabindex="-1">
         </div>
 
-        <div ref="menuElement" class="context-menu text-sm">
-            <div ref="menuFieldActionElement" class="menu-group">
+        <div ref="menuElement"
+             class="context-menu text-sm">
+            <div ref="menuFieldActionElement"
+                 class="menu-group">
             </div>
-            <div ref="menuFieldSelectElement" class="menu-group">
+            <div ref="menuFieldSelectElement"
+                 class="menu-group">
                 <button class="header">Select Field</button>
             </div>
         </div>
@@ -24,6 +29,11 @@
 .worksurface-container {
     position: relative;
     margin: 12px;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .font-loader {
@@ -117,7 +127,7 @@
     import { TransformHelper } from "./transformHelper.partial";
     import { DragData } from "./types.partial";
     import { LabelUndoManager } from "./undoManager.partial";
-    import { createDefaultField, getOffsetForPixel, getPixelForOffset, pixelsPerInch, useNodeDragBoundFunc, usePositionBoundFunc } from "./utils.partial";
+    import { createDefaultField, Surface, pixelsPerInch, useNodeDragBoundFunc, usePositionBoundFunc } from "./utils.partial";
 
     const props = defineProps({
         labelManager: {
@@ -143,6 +153,7 @@
     /* Grid size in 1/n fractions of an inch. */
     const gridSnapFraction = 4;
 
+    const worksurfaceContainerElement = ref<HTMLDivElement | undefined>();
     const containerElement = ref<HTMLDivElement | undefined>();
     const fontLoaderElement = ref<HTMLDivElement | undefined>();
     const menuElement = ref<HTMLDivElement | undefined>();
@@ -154,7 +165,8 @@
     const nodeLayer = new Konva.Layer();
     let nodeDragBoundFunc: ((this: Konva.Node, pos: Konva.Vector2d) => Konva.Vector2d) | undefined;
     const gridLayer = new Konva.Layer();
-
+    const resizeObserver = window.ResizeObserver ? new ResizeObserver(onContainerResize) : undefined;
+    const surface = new Surface();
 
     /**
      * Draws the grid lines onto the grid layer. This will clear the layer
@@ -173,7 +185,7 @@
 
         for (let step = gridStepSize; step < props.labelManager.current.value.width; step += gridStepSize) {
             gridLayer.add(new Konva.Line({
-                x: getPixelForOffset(step),
+                x: surface.getPixelForOffset(step),
                 points: [0, 0, 0, height],
                 stroke: "rgba(128, 128, 128, 0.1)",
                 strokeWidth: 1
@@ -182,7 +194,7 @@
 
         for (let step = gridStepSize; step < props.labelManager.current.value.height; step += gridStepSize) {
             gridLayer.add(new Konva.Line({
-                y: getPixelForOffset(step),
+                y: surface.getPixelForOffset(step),
                 points: [0, 0, width, 0],
                 stroke: "rgba(128, 128, 128, 0.1)",
                 strokeWidth: 1
@@ -201,13 +213,13 @@
      * @returns The new pixel position after the snap.
      */
     function snapPixel(pixel: number): number {
-        let offset = getOffsetForPixel(pixel);
+        let offset = surface.getOffsetForPixel(pixel);
 
         if (props.showGrid && props.snapToGrid) {
             offset = 1.0 / gridSnapFraction * Math.round(gridSnapFraction * offset);
         }
 
-        return getPixelForOffset(offset);
+        return surface.getPixelForOffset(offset);
     }
 
     /**
@@ -247,7 +259,7 @@
             shape.setZIndex(zIndex);
             zIndex++;
 
-            updateShapeFromField(shape, field);
+            updateShapeFromField(shape, field, surface);
         }
 
         // Remove any nodes that no longer exist as fields.
@@ -355,8 +367,8 @@
 
             const field = createDefaultField(dragData?.type ?? 0, dragData?.subtype ?? 0);
 
-            field.left = getOffsetForPixel(pos.x) - (field.width / 2);
-            field.top = getOffsetForPixel(pos.y) - (field.height / 2);
+            field.left = surface.getOffsetForPixel(pos.x) - (field.width / 2);
+            field.top = surface.getOffsetForPixel(pos.y) - (field.height / 2);
 
             // Add the new field to the label.
             props.labelManager.mutate(label => {
@@ -762,6 +774,37 @@
     }
 
     /**
+     * Fits the canvas stage into the container by scaling it up or down while
+     * maintaining the aspect ratio.
+     */
+    function fitStageIntoContainer(): void {
+        if (!worksurfaceContainerElement.value || !stage) {
+            return;
+        }
+
+        const sceneWidth = props.labelManager.current.value.width * pixelsPerInch;
+        const sceneHeight = props.labelManager.current.value.height * pixelsPerInch;
+
+        // Minus 48 for padding.
+        const containerWidth = worksurfaceContainerElement.value.offsetWidth - 48;
+        const containerHeight = worksurfaceContainerElement.value.offsetHeight - 48;
+
+        const scaleWidth = containerWidth / sceneWidth;
+        const scaleHeight = containerHeight / sceneHeight;
+
+        let scale = Math.min(scaleWidth, scaleHeight);
+
+        // Round the scale down to increments of 0.25.
+        scale = Math.round(scale * 100);
+        scale -= scale % 25;
+        scale = scale / 100;
+
+        stage.width(sceneWidth * scale);
+        stage.height(sceneHeight * scale);
+        surface.scale = scale;
+    }
+
+    /**
      * Event handler for when a node on the stage is clicked or tapped.
      * Translates the event data into selection information.
      *
@@ -894,12 +937,12 @@
 
         props.labelManager.mutateSelectedField(field => {
             let pixelPos: Konva.Vector2d = {
-                x: getPixelForOffset(field.left),
-                y: getPixelForOffset(field.top)
+                x: surface.getPixelForOffset(field.left),
+                y: surface.getPixelForOffset(field.top)
             };
             const pixelSize: Konva.Vector2d = {
-                x: getPixelForOffset(field.width),
-                y: getPixelForOffset(field.height)
+                x: surface.getPixelForOffset(field.width),
+                y: surface.getPixelForOffset(field.height)
             };
 
             if (e.key === "ArrowLeft") {
@@ -917,8 +960,8 @@
 
             pixelPos = positionBoundFunc(pixelPos, pixelSize);
 
-            field.left = getOffsetForPixel(pixelPos.x);
-            field.top = getOffsetForPixel(pixelPos.y);
+            field.left = surface.getOffsetForPixel(pixelPos.x);
+            field.top = surface.getOffsetForPixel(pixelPos.y);
         });
     }
 
@@ -935,8 +978,8 @@
                 return;
             }
 
-            field.left = getOffsetForPixel(e.target.x());
-            field.top = getOffsetForPixel(e.target.y());
+            field.left = surface.getOffsetForPixel(e.target.x());
+            field.top = surface.getOffsetForPixel(e.target.y());
         });
     }
 
@@ -953,10 +996,10 @@
                 return;
             }
 
-            field.left = getOffsetForPixel(e.target.x());
-            field.top = getOffsetForPixel(e.target.y());
-            field.width = getOffsetForPixel(e.target.width());
-            field.height = getOffsetForPixel(e.target.height());
+            field.left = surface.getOffsetForPixel(e.target.x());
+            field.top = surface.getOffsetForPixel(e.target.y());
+            field.width = surface.getOffsetForPixel(e.target.width());
+            field.height = surface.getOffsetForPixel(e.target.height());
         });
     }
 
@@ -974,11 +1017,17 @@
                 return;
             }
 
-            field.left = getOffsetForPixel(line.x());
-            field.top = getOffsetForPixel(line.y());
-            field.width = getOffsetForPixel(line.points()[2]);
-            field.height = getOffsetForPixel(line.points()[3]);
+            field.left = surface.getOffsetForPixel(line.x());
+            field.top = surface.getOffsetForPixel(line.y());
+            field.width = surface.getOffsetForPixel(line.points()[2]);
+            field.height = surface.getOffsetForPixel(line.points()[3]);
         });
+    }
+
+    function onContainerResize(): void {
+        fitStageIntoContainer();
+        drawGridLines();
+        createOrUpdateNodes();
     }
 
     onMounted(async () => {
@@ -986,6 +1035,10 @@
 
         if (!containerElement.value) {
             return;
+        }
+
+        if (worksurfaceContainerElement.value && resizeObserver) {
+            resizeObserver.observe(worksurfaceContainerElement.value);
         }
 
         containerElement.value.addEventListener("keydown", onContainerKeyDown);
@@ -1019,6 +1072,8 @@
         stage.on("contextmenu", onContextMenu);
         transformHelper.transformer.on("transformend", onNodeTransformEnd);
 
+        fitStageIntoContainer();
+
         configureStageDrop(stage);
         createOrUpdateNodes();
 
@@ -1035,15 +1090,16 @@
 
         containerElement.value?.removeEventListener("keydown", onContainerKeyDown);
         window.removeEventListener("click", onWindowClick);
+
+        if (resizeObserver) {
+            resizeObserver.disconnect();
+        }
     });
 
     watch(props.labelManager.current, () => {
-        if (stage) {
-            stage.width(props.labelManager.current.value.width * pixelsPerInch);
-            stage.height(props.labelManager.current.value.height * pixelsPerInch);
-        }
-
+        fitStageIntoContainer();
         drawGridLines();
+        createOrUpdateNodes();
     });
 
     watch(() => props.showGrid, () => {
