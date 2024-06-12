@@ -47,6 +47,7 @@
             <div class="row">
                 <div class="col-sm-6">
                     <DropDownList v-model="fromNumberGuidOrEmptyString"
+                                  :disabled="disabled"
                                   :items="mediumOptions.smsFromNumbers ?? undefined"
                                   help="The number to originate message from (configured under Admin Tools > Communications > System Phone Numbers)."
                                   label="From Phone"
@@ -58,8 +59,8 @@
                     <ScheduleSend v-if="config.mode === Mode.Full"
                                   :modelValue="scheduleSendIsoString" @update:modelValue="$emit('update:scheduleSendIsoString', $event)"
                                   class="mr-sm-3"
-                                  :label="breakpointHelper.isSmOrLarger ? ' ' : ''"
-                                  :disabled="disabled" />
+                                  :disabled="disabled"
+                                  :label="breakpointHelper.isSmOrLarger ? ' ' : ''" />
 
                     <Switch :modelValue="isBulkCommunication" @update:modelValue="$emit('update:isBulkCommunication', $event)"
                             :disabled="disabled"
@@ -75,11 +76,13 @@
                                       additionalFields="GlobalAttribute,Rock.Model.Person"
                                       blankValue="Add Merge Field"
                                       class="margin-b-sm pull-right"
+                                      :disabled="disabled"
                                       placeholder="Add Merge Field"
                                       @update:modelValue="onMergeFieldPicked" />
 
                     <TextBox v-model="message"
                              :canExceedMaxLength="true"
+                             :disabled="disabled"
                              :help="config.isLavaEnabled ? '<span class=\'tip tip-lava\'></span>' : ''"
                              label="Message"
                              :maxLength="mediumOptions.characterLimit"
@@ -501,25 +504,18 @@
         try {
             disable();
 
-            // testResult.value = undefined;
+            testResult.value = undefined;
 
             const bag: CommunicationEntryTestRequestBag = {
                 isBulkCommunication: props.isBulkCommunication,
                 // TODO JMH This is hard-coded for both Email and SMS. It should be controlled on the server, not here.
                 status: CommunicationStatus.Transient,
-                // emailAttachmentBinaryFiles: attachments.value ?? [],
-                // fromAddress: fromAddress.value,
-                // fromName: fromName.value,
-                // futureSendDateTime: props.scheduleSendIsoString,
                 mediumEntityTypeGuid: EntityType.CommunicationMediumSms,
-                // message: message.value,
                 recipients: props.recipients,
-                // replyAddress: replyToAddress.value,
-                // subject: subject.value,
                 communicationGuid: communicationGuid.value,
                 smsAttachmentBinaryFiles: attachments.value ?? [],
                 smsFromSystemPhoneNumberGuid: toGuidOrNull(fromNumberGuidOrEmptyString.value),
-                smsMessage: message.value,
+                smsMessage: message.value
             };
 
             const result = await invokeBlockAction<CommunicationEntryTestResponseBag>("Test", { bag });

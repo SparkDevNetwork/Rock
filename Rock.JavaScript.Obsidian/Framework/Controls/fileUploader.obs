@@ -27,7 +27,7 @@
 
                     <div class="fileupload-dropzone">
                         <span>{{ uploadButtonText }}</span>
-                        <input ref="fileInputElement" type="file" style="display: none;" @change="onFileChange" @remove="onFileRemove" />
+                        <input ref="fileInputElement" type="file" style="display: none;" @change="onFileChange" @remove="onFileRemove" :disabled="disabled" />
                     </div>
                 </div>
             </div>
@@ -89,6 +89,11 @@
         uploadUrl: {
             type: String,
             required: false
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 
@@ -169,7 +174,7 @@
      * to be uploaded into Rock.
      */
     const onSelectFileClick = (): void => {
-        if (!isUploading.value) {
+        if (!isUploading.value && !props.disabled) {
             fileInputElement.value?.click();
         }
     };
@@ -178,8 +183,10 @@
      * Event handler for when the remove file button is clicked.
      */
     const onRemoveFileClick = (): void => {
-        fileGuid.value = null;
-        fileName.value = "";
+        if (!props.disabled) {
+            fileGuid.value = null;
+            fileName.value = "";
+        }
     };
 
     /**
