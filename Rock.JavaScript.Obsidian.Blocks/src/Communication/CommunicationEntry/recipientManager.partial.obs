@@ -16,8 +16,8 @@
                     :recipients="modelValue"
                     @update:recipients="$emit('update:modelValue', $event)"
                     :getEmailTooltipRef="getEmailTooltipRef"
-                    :isAddRecipientHidden="isAddRecipientHidden"
-                    :isBulk="isForBulkCommunication" />
+                    :isReadonly="isAddRecipientHidden"
+                    :isForBulkCommunication="isForBulkCommunication" />
 </template>
 
 <script setup lang="ts">

@@ -37,13 +37,13 @@
                 <div class="col-sm-12">
                     <RecipientPicker :modelValue="recipients"
                                      @update:modelValue="$emit('update:recipients', $event)"
-                                     :isAddRecipientHidden="config.mode !== Mode.Full"
                                      :isDisabled="disabled"
                                      @update:isDisabled="$emit('update:disabled', $event)"
                                      :isForBulkCommunication="isBulkCommunication"
+                                     :isReadonly="config.mode !== Mode.Full"
                                      label="Recipients"
-                                     :minimumRecipientCount="minimumRecipientCount"
-                                     mode="email" />
+                                     mediumType="email"
+                                     :minimumRecipientCount="minimumRecipientCount" />
                 </div>
             </div>
 
@@ -222,11 +222,11 @@
 
 <script setup lang="ts">
     import { PropType, computed, nextTick, onMounted, ref, watch } from "vue";
-    import ScheduleSend from "./Controls/scheduleSend.partial.obs";
     import Delay from "./delay.partial.obs";
     import PopupPicker from "./popupPicker.partial.obs";
     import RecipientPicker from "./recipientPicker.partial.obs";
-    import { getAlertType, scrollIntoView, scrollToTopOfWindow, useSelectedMediumType } from "./utils.partial";
+    import ScheduleSend from "./scheduleSend.partial.obs";
+    import { getAlertType, scrollToTopOfWindow, useSelectedMediumType } from "./utils.partial";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import FileUploader from "@Obsidian/Controls/fileUploader.obs";
@@ -404,8 +404,6 @@
 
     function raiseTested(testResponse: CommunicationEntryTestResponseBag): void {
         testResult.value = testResponse;
-        scrollIntoView(() => testResultElement.value);
-
         emit("tested", testResponse);
     }
 

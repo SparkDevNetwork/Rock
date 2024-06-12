@@ -10,7 +10,8 @@
                      maxTagCount="responsive"
                      :multiple="true">
         <template #suffixIcon>
-            <i class="fa fa-plus" :style="`pointer-events: ${disabled ? 'none' : 'all'};`" @click="onOpenPopupClicked"></i>
+            <i v-if="!isReadonly" class="fa fa-plus" :style="{ 'pointer-events': !disabled && !isAddButtonDisabled ? 'all' : 'none' }" @click="onOpenPopupClicked"></i>
+            <i v-else></i>
         </template>
 
         <template #tagRender="{ label, value, disabled, closable }">
@@ -21,7 +22,8 @@
                 <span class="item-content">
                     <slot name="itemContent" v-bind="{ label, value, disabled, closable }">{{ label }}</slot>
                 </span>
-                <RockButton btnSize="xs"
+                <RockButton v-if="!isReadonly"
+                            btnSize="xs"
                             btnType="link"
                             class="item-remove text-muted pr-0"
                             :disabled="disabled"
@@ -33,8 +35,8 @@
 
         <template #maxTagPlaceholder="{ omittedValues }">
             <div ref="maxTagPlaceholder">
-                <RockButton class="item label label-default rounded-pill"
-                            :disabled="disabled"
+                <RockButton :class="`item label label-default rounded-pill ${(disabled || isShowMoreDisabled ? 'cursor-not-allowed' : '')}`"
+                            :disabled="disabled || isShowMoreDisabled"
                             @click.stop="onShowMoreClicked"
                             @mousedown.stop>
                     <span class="item-content">{{ omittedValues.length }} more</span>
@@ -68,6 +70,7 @@
             required: true
         },
 
+        /** Disables the entire control. */
         disabled: {
             type: Boolean as PropType<boolean>,
             required: false,
@@ -84,6 +87,34 @@
             type: Function as PropType<(value: string) => Ref<string>>,
             required: false,
             default: (_: string) => ""
+        },
+
+        /**
+         * Is the "+" button disabled?
+         *
+         * Use `disabled` for the entire control.
+         */
+        isAddButtonDisabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * Removes all edit controls if `true`.
+         */
+        isReadonly: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * Is the "Show More" button disabled?
+         *
+         * Use `disabled` for the entire control.
+         */
+        isShowMoreDisabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
         },
 
         ...standardAsyncPickerProps

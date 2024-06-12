@@ -1,12 +1,11 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <Modal v-model="internalIsOpen"
-           cancelText="Cancel"
            :clickBackdropToClose="false"
-           saveText="Save"
+           :saveText="!isReadonly ? 'Save' : undefined"
            title="Recipient Manager"
-           @save="onSaveClicked">
-        <template v-if="!isAddRecipientHidden">
+           @save="!isReadonly ? onSaveClicked : undefined">
+        <template v-if="!isReadonly">
             <div class="d-flex flex-row justify-content-between align-items-center">
                 <PersonPicker @update:modelValue="onPersonPicked" label="Add Recipient" />
                 <div class="label label-info">Recipients: {{ pendingItems.length }}</div>
@@ -18,7 +17,8 @@
               :data="recipientsGridData"
               itemTerm="Recipient"
               :keyField="getStringKey<CommunicationEntryRecipientBag>('personAliasGuid')"
-              :light="true">
+              :light="true"
+              rowClass="recipient-modal-row">
 
             <Column :name="getRecipientKey('name')"
                     :field="getRecipientKey('name')"
@@ -44,14 +44,13 @@
                             'fa fa-circle',
                             (row as CommunicationEntryRecipientBag).isDeceased
                                 ? 'text-muted'
-                                : (isBulk
+                                : (isForBulkCommunication
                                     ? (row as CommunicationEntryRecipientBag).isBulkEmailAllowed
                                     : (row as CommunicationEntryRecipientBag).isEmailAllowed)
                                     ? 'text-success'
                                     : 'text-danger']"
-                           data-container="body"
-                           :data-original-title="getEmailTooltipRef((row as CommunicationEntryRecipientBag)).value"
-                           :ref="setItemRef"></i>&nbsp;{{ (row as CommunicationEntryRecipientBag).email }}</span>
+                           :data-original-title="getTooltipRef((row as CommunicationEntryRecipientBag), 'email').value"
+                           :ref="applyTooltip"></i>&nbsp;{{ (row as CommunicationEntryRecipientBag).email }}</span>
                 </template>
             </Column>
 
@@ -66,7 +65,9 @@
                                 ? 'text-muted'
                                 : (row as CommunicationEntryRecipientBag).isSmsAllowed
                                     ? 'text-success'
-                                    : 'text-danger']"></i>&nbsp;{{ (row as CommunicationEntryRecipientBag).smsNumber }}
+                                    : 'text-danger']"
+                           :data-original-title="getTooltipRef((row as CommunicationEntryRecipientBag), 'sms').value"
+                           :ref="applyTooltip"></i>&nbsp;{{ (row as CommunicationEntryRecipientBag).smsNumber }}
                     </span>
                 </template>
             </Column>
@@ -82,13 +83,17 @@
                                 ? 'text-muted'
                                 : (row as CommunicationEntryRecipientBag).isPushAllowed
                                     ? 'text-success'
-                                    : 'text-danger']"></i>
+                                    : 'text-danger']"
+                           :data-original-title="getTooltipRef((row as CommunicationEntryRecipientBag), 'push').value"
+                           :ref="applyTooltip"></i>
                     </span>
                 </template>
             </Column>
 
-            <ButtonColumn name="deselectItem"
+            <ButtonColumn v-if="!isReadonly"
+                          name="deselectItem"
                           iconClass="fa fa-times"
+                          itemClass="grid-columncommand deselect-button"
                           @click="onDeselectItemClicked" />
         </Grid>
     </Modal>
@@ -98,24 +103,32 @@
 .communication-medium-status {
     white-space: nowrap;
 }
+
+:deep(.recipient-modal-row .deselect-button) {
+    visibility: hidden;
+}
+
+:deep(.recipient-modal-row:hover .deselect-button) {
+    visibility: visible;
+}
 </style>
 
 <script setup lang="ts">
     import { PropType, computed, ref, Ref, watch } from "vue";
-    // import SimpleGrid from "../../Security/AccountEntry/simpleGrid.partial.obs";
+    import { MediumType } from "./types.partial";
+    import Grid, { Column, ButtonColumn, textValueFilter } from "@Obsidian/Controls/grid";
     import Modal from "@Obsidian/Controls/modal.obs";
     import PersonPicker from "@Obsidian/Controls/personPicker.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { Guid } from "@Obsidian/Types";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
-    import { CommunicationEntryRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryRecipientBag";
-    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { tooltip } from "@Obsidian/Utility/tooltip";
-    import Grid, { Column, ButtonColumn, textValueFilter } from "@Obsidian/Controls/grid";
-    import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
-    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { CommunicationEntryRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryRecipientBag";
     import { FieldDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/fieldDefinitionBag";
-    import { Guid } from "@Obsidian/Types";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -125,28 +138,25 @@
             required: true
         },
 
-        isAddRecipientHidden: {
+        isReadonly: {
             type: Boolean as PropType<boolean>,
-            required: false,
             default: false
         },
 
-        getEmailTooltipRef: {
-            type: Function as PropType<(value: CommunicationEntryRecipientBag | null) => Ref<string>>,
-            required: false,
+        getTooltipRef: {
+            type: Function as PropType<(value: CommunicationEntryRecipientBag | null, mode: MediumType) => Ref<string>>,
             default: (_: string) => ""
         },
 
-        isBulk: {
+        isForBulkCommunication: {
             type: Boolean as PropType<boolean>,
-            required: false,
             default: false
         },
 
         recipients: {
             type: Object as PropType<CommunicationEntryRecipientBag[]>,
             required: true
-        },
+        }
     });
 
     const emit = defineEmits<{
@@ -224,7 +234,12 @@
 
     //#region Functions
 
-    function setItemRef(el: unknown): void {
+    /**
+     * Applies a tooltip to an element. The element should have an `data-original-title` attribute containing the tooltip text.
+     *
+     * Typical use, `:ref="applyTooltip"`
+     */
+    function applyTooltip(el: unknown): void {
         const htmlElement = el as HTMLElement;
         if (htmlElement) {
             tooltip(htmlElement);

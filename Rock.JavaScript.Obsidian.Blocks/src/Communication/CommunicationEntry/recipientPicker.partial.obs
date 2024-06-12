@@ -1,8 +1,10 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <PopupPicker v-model="recipientListItems"
                  :disabled="isDisabled"
-                 :getLabelTypeRef="getLabelTypeRef"
-                 :getTooltipRef="personAliasGuid => getTooltipRef(findRecipient(personAliasGuid))"
+                 :getLabelTypeRef="personAliasGuid => getLabelTypeRef(findRecipient(personAliasGuid), mediumType)"
+                 :getTooltipRef="personAliasGuid => getTooltipRef(findRecipient(personAliasGuid), mediumType)"
+                 :isReadonly="isReadonly"
                  :label="label"
                  :rules="rules"
                  validationTitle="At least one recipient"
@@ -16,20 +18,28 @@
     <PersonPanelPicker v-if="isPersonPickerShown"
                        @cancel="onPersonSearchCanceled"
                        @select="onPersonSelected" />
+
+    <RecipientModal v-model="isRecipientModalShown"
+                    :recipients="modelValue"
+                    @update:recipients="$emit('update:modelValue', $event)"
+                    :getTooltipRef="getTooltipRef"
+                    :isForBulkCommunication="isForBulkCommunication"
+                    :isReadonly="isReadonly" />
 </template>
 
 <script setup lang="ts">
     import { PropType, Ref, computed, nextTick, ref } from "vue";
     import PopupPicker from "./popupPicker.partial.obs";
     import PersonPanelPicker from "./personPanelPicker.partial.obs";
-    import { CommunicationEntryGetRecipientsRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryGetRecipientsRequestBag";
-    import { CommunicationEntryRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryRecipientBag";
-    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { LabelType } from "./types.partial";
-    import { splitCase } from "@Obsidian/Utility/stringUtils";
+    import RecipientModal from "./recipientModal.partial.obs";
+    import { LabelType, MediumType } from "./types.partial";
     import { ValidationRule } from "@Obsidian/Types/validationRules";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { splitCase } from "@Obsidian/Utility/stringUtils";
+    import { CommunicationEntryGetRecipientsRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryGetRecipientsRequestBag";
+    import { CommunicationEntryRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryRecipientBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
         modelValue: {
@@ -42,7 +52,7 @@
             default: false
         },
 
-        isAddRecipientHidden: {
+        isReadonly: {
             type: Boolean as PropType<boolean>,
             default: false
         },
@@ -62,14 +72,10 @@
             default: 0
         },
 
-        mode: {
-            type: String as PropType<"email" | "sms">,
+        mediumType: {
+            type: String as PropType<MediumType>,
             required: true,
         },
-
-        getRecipientTooltipRef: {
-
-        }
     });
 
     const emit = defineEmits<{
@@ -84,6 +90,7 @@
     //#region Values
 
     const isPersonPickerShown = ref<boolean>(false);
+    const isRecipientModalShown = ref<boolean>(false);
 
     //#endregion
 
@@ -154,25 +161,27 @@
 
     //#region Event Handlers
 
-    function onOpenPopupClicked(): void {
+    async function onOpenPopupClicked(): Promise<void> {
         if (!props.isDisabled) {
             if (!isPersonPickerShown.value) {
                 isPersonPickerShown.value = true;
             }
             else {
                 isPersonPickerShown.value = false;
-                nextTick(() => isPersonPickerShown.value = true);
+                await nextTick();
+                isPersonPickerShown.value = true;
             }
         }
     }
 
-    function onShowMore(): void {
-        if (!isPersonPickerShown.value) {
-            isPersonPickerShown.value = true;
+    async function onShowMore(): Promise<void> {
+        if (!isRecipientModalShown.value) {
+            isRecipientModalShown.value = true;
         }
         else {
             isPersonPickerShown.value = false;
-            nextTick(() => isPersonPickerShown.value = true);
+            await nextTick();
+            isPersonPickerShown.value = true;
         }
     }
 
@@ -202,7 +211,7 @@
 
         // Hide the person picker after stuff happens.
         // TODO JMH Use a loading indicator instead so the user can't interact.
-        isPersonPickerShown.value = false;
+        //isPersonPickerShown.value = false;
     }
 
     //#endregion
@@ -210,12 +219,9 @@
     //#region Functions
 
     /** Gets the label type for a recipient. */
-    function getLabelTypeRef(personAliasGuid: string): Ref<LabelType> {
+    function getLabelTypeRef(recipient: CommunicationEntryRecipientBag | null, mediumType: MediumType): Ref<LabelType> {
         return computed<LabelType>(() => {
-            // Get the recipient.
-            const recipient = findRecipient(personAliasGuid);
-
-            if (props.mode === "email") {
+            if (mediumType === "email") {
                 if (!recipient
                     || (props.isForBulkCommunication && recipient.isBulkEmailAllowed)
                     || (!props.isForBulkCommunication && recipient.isEmailAllowed)) {
@@ -226,7 +232,7 @@
                     return "label-danger";
                 }
             }
-            else if (props.mode === "sms") {
+            else if (mediumType === "sms") {
                 if (!recipient || recipient.isSmsAllowed) {
                     // Default label when recipient is missing or email is allowed.
                     return "label-default";
@@ -243,9 +249,9 @@
     }
 
     /** Gets the reactive email tooltip. */
-    function getTooltipRef(recipient: CommunicationEntryRecipientBag | null): Ref<string> {
+    function getTooltipRef(recipient: CommunicationEntryRecipientBag | null, mediumType: MediumType): Ref<string> {
         return computed<string>(() => {
-            if (props.mode === "email") {
+            if (mediumType === "email") {
                 if (!recipient
                     || (props.isForBulkCommunication && recipient.isBulkEmailAllowed)
                     || (!props.isForBulkCommunication && recipient.isEmailAllowed)) {
@@ -264,7 +270,7 @@
                     return `${recipient.name ?? "This recipient"} has email preference set to "${splitCase(recipient.emailPreference ?? "")}".`;
                 }
             }
-            else if (props.mode === "sms") {
+            else if (mediumType === "sms") {
                 if (!recipient || recipient.isSmsAllowed) {
                     // No tooltip when recipient is missing.
                     return "";

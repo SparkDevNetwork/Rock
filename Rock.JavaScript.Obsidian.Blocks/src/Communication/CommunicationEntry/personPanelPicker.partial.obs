@@ -316,7 +316,7 @@
         };
 
         // Emit the new value and close the popup.
-        emit("update:modelValue", internalValue.value);
+        // emit("update:modelValue", internalValue.value);
         emit("select", internalValue.value);
     }
 
