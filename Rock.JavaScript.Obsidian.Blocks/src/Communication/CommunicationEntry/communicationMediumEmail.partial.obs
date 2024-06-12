@@ -8,12 +8,18 @@
         </ul>
     </NotificationBox>
 
-    <NotificationBox v-if="!mediumOptions"
-                     alertType="error">
-        <ul>
-            <li>Unable to load</li>
-        </ul>
-    </NotificationBox>
+
+    <template v-if="!mediumOptions">
+        <Delay :delayMs="250">
+            <LoadingIndicator v-if="isLoadingMediumOptions" />
+            <NotificationBox v-else
+                             alertType="error">
+                <ul>
+                    <li>Unable to load</li>
+                </ul>
+            </NotificationBox>
+        </Delay>
+    </template>
 
     <template v-else>
         <NotificationBox v-if="isInvalidTransportNotificationVisible"
@@ -216,12 +222,16 @@
 
 <script setup lang="ts">
     import { PropType, computed, nextTick, onMounted, ref, watch } from "vue";
+    import ScheduleSend from "./Controls/scheduleSend.partial.obs";
+    import Delay from "./delay.partial.obs";
     import PopupPicker from "./popupPicker.partial.obs";
     import RecipientPicker from "./recipientPicker.partial.obs";
+    import { getAlertType, scrollIntoView, scrollToTopOfWindow, useSelectedMediumType } from "./utils.partial";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import FileUploader from "@Obsidian/Controls/fileUploader.obs";
     import HtmlEditor from "@Obsidian/Controls/htmlEditor.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
@@ -229,8 +239,18 @@
     import Switch from "@Obsidian/Controls/switch.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import VerticalTransitionCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { MediumType } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntry/mediumType";
+    import { Mode } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntry/mode";
     import { CommunicationStatus } from "@Obsidian/Enums/Communication/communicationStatus";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { Guid } from "@Obsidian/Types";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
+    import { CommunicationEntryCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryCommunicationBag";
+    import { CommunicationEntryEmailMediumOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryEmailMediumOptionsBag";
+    import { CommunicationEntryGetMediumOptionsRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryGetMediumOptionsRequestBag";
+    import { CommunicationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryInitializationBox";
+    import { CommunicationEntryMediumOptionsBaseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryMediumOptionsBaseBag";
     import { CommunicationEntryRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryRecipientBag";
     import { CommunicationEntrySaveRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySaveRequestBag";
     import { CommunicationEntrySaveResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySaveResponseBag";
@@ -239,19 +259,6 @@
     import { CommunicationEntryTestRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryTestRequestBag";
     import { CommunicationEntryTestResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryTestResponseBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { CommunicationEntryCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryCommunicationBag";
-    import { CommunicationEntryEmailMediumOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryEmailMediumOptionsBag";
-    import { CommunicationEntryGetMediumOptionsRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryGetMediumOptionsRequestBag";
-    import { Guid } from "@Obsidian/Types";
-    import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import { getAlertType, scrollIntoView, scrollToTopOfWindow } from "./utils.partial";
-    import { CommunicationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryInitializationBox";
-    import { Mode } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntry/mode";
-    import { emptyGuid } from "@Obsidian/Utility/guid";
-    import { CommunicationEntryMediumOptionsBaseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryMediumOptionsBaseBag";
-    import { MediumType } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntry/mediumType";
-    import { useSelectedMediumType } from "./utils.partial";
-    import ScheduleSend from "./Controls/scheduleSend.partial.obs";
 
     const invokeBlockAction = useInvokeBlockAction();
     const props = defineProps({
@@ -325,6 +332,7 @@
     const testResult = ref<CommunicationEntryTestResponseBag | null | undefined>();
     const errorMessage = ref<string | null | undefined>();
     const isInvalidTransportNotificationDismissed = ref<boolean>(false);
+    const isLoadingMediumOptions = ref<boolean>(true);
 
     //#endregion
 
@@ -742,28 +750,35 @@
      * This is necessary when switching to a different medium (Email or SMS) after the block is loaded.
      */
     onMounted(async () => {
-        if (mediumOptions.value) {
-            return;
+        try {
+            isLoadingMediumOptions.value = true;
+
+            if (mediumOptions.value) {
+                return;
+            }
+
+            const bag: CommunicationEntryGetMediumOptionsRequestBag = {
+                mediumEntityTypeGuid: EntityType.CommunicationMediumEmail
+            };
+
+            const response = await invokeBlockAction<CommunicationEntryEmailMediumOptionsBag>("GetMediumOptions", { bag });
+
+            if (!response?.data || response.isError || !isEmailMediumOptions(response.data)) {
+                raiseError(response.errorMessage ?? "An error occurred while loading the communication. Please try again.");
+                return;
+            }
+
+            mediumOptions.value = response.data;
+
+            if (!fromAddress.value) {
+                fromAddress.value = mediumOptions.value.fromAddress ?? "";
+            }
+            if (!fromName.value) {
+                fromName.value = mediumOptions.value.fromName ?? "";
+            }
         }
-
-        const bag: CommunicationEntryGetMediumOptionsRequestBag = {
-            mediumEntityTypeGuid: EntityType.CommunicationMediumEmail
-        };
-
-        const response = await invokeBlockAction<CommunicationEntryEmailMediumOptionsBag>("GetMediumOptions", { bag });
-
-        if (!response?.data || response.isError || !isEmailMediumOptions(response.data)) {
-            raiseError(response.errorMessage ?? "An error occurred while loading the communication. Please try again.");
-            return;
-        }
-
-        mediumOptions.value = response.data;
-
-        if (!fromAddress.value) {
-            fromAddress.value = mediumOptions.value.fromAddress ?? "";
-        }
-        if (!fromName.value) {
-            fromName.value = mediumOptions.value.fromName ?? "";
+        finally {
+            isLoadingMediumOptions.value = false;
         }
     });
 </script>
