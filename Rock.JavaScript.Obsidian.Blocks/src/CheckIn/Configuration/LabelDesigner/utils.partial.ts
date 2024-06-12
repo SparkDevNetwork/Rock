@@ -17,8 +17,22 @@ import { getFieldType } from "@Obsidian/Utility/fieldTypes";
 
 export const pixelsPerInch = 72 * window.devicePixelRatio;
 
+/**
+ * Small helper class to handle various feature functions that need to be
+ * passed around. These are dynamic so we can't just hard code them.
+ */
 export class Surface {
+    /** The stage this surface is attached to. */
+    public stage: Konva.Stage | undefined;
+
+    /** The scaling factor that is applied to the surface. */
     public scale: number = 1;
+
+    /* Grid size in 1/n fractions of an inch. */
+    public gridSnapFraction: number = 4;
+
+    /** `true` if snapping to the grid is enabled. */
+    public snapToGrid: boolean = false;
 
     /**
      * Gets the pixel position on the canvas.
@@ -41,41 +55,41 @@ export class Surface {
     public getOffsetForPixel(pixel: number): number {
         return pixel / pixelsPerInch / this.scale;
     }
-}
-// /**
-//  * Gets the pixel position on the canvas.
-//  *
-//  * @param offset The offset position in inches.
-//  *
-//  * @returns The pixel position as a floating point number.
-//  */
-// export function getPixelForOffset(offset: number): number {
-//     return offset * pixelsPerInch;
-// }
 
-// /**
-//  * Gets the offset in inches of the pixel position.
-//  *
-//  * @param pixel The pixel position.
-//  *
-//  * @returns The offset in inches.
-//  */
-// export function getOffsetForPixel(pixel: number): number {
-//     return pixel / pixelsPerInch;
-// }
+    /**
+     * Snaps the pixel position to the nearest grid line if grid snapping is
+     * enabled.
+     *
+     * @param pixel The original pixel position in the canvas.
+     *
+     * @returns The new pixel position after the snap.
+     */
+    public snapPixel(pixel: number): number {
+        let offset = this.getOffsetForPixel(pixel);
 
-/**
- * Creates a function that will handle position bounding operations for the
- * stage. This ensures drag operations stay within the label and also handles
- * snapping.
- *
- * @param stage The stage the function will operate on.
- * @param snapPixel The function that will handle pixel snapping.
- *
- * @returns A function that can be used to keep a position and size within the stage.
- */
-export function usePositionBoundFunc(stage: Konva.Stage, snapPixel: (pixel: number) => number): (pos: Konva.Vector2d, size: Konva.Vector2d) => Konva.Vector2d {
-    function positionBoundFunc(pos: Konva.Vector2d, size: Konva.Vector2d): Konva.Vector2d {
+        if (this.snapToGrid) {
+            offset = 1.0 / this.gridSnapFraction * Math.round(this.gridSnapFraction * offset);
+        }
+
+        return this.getPixelForOffset(offset);
+    }
+
+    /**
+     * Gets a position that ensures the object stays inside the bounds of the
+     * stage. This ensures drag operations stay within the label and also handles
+     * snapping.
+     *
+     * @param pos The x,y position to be bounded.
+     * @param size The width and height of the object.
+     * @param disableSnap If `true` then snapping will not be performed.
+     *
+     * @returns A new position that is guaranteed to be inside the bounds.
+     */
+    public getBoundedPosition(pos: Konva.Vector2d, size: Konva.Vector2d, disableSnap?: boolean): Konva.Vector2d {
+        if (!this.stage) {
+            return pos;
+        }
+
         let newX = pos.x;
         let newY = pos.y;
         const width = size.x;
@@ -87,12 +101,12 @@ export function usePositionBoundFunc(stage: Konva.Stage, snapPixel: (pixel: numb
                 newX = 0;
             }
 
-            newX = snapPixel(newX);
+            newX = disableSnap ? newX : this.snapPixel(newX);
 
             // Clamp the x position so the shape doesn't extend past the right
             // edge of the label.
-            if (newX >= stage.width() - width) {
-                newX = stage.width() - width;
+            if (newX >= this.stage.width() - width) {
+                newX = this.stage.width() - width;
             }
         }
         else {
@@ -101,12 +115,12 @@ export function usePositionBoundFunc(stage: Konva.Stage, snapPixel: (pixel: numb
                 newX = Math.abs(width);
             }
 
-            newX = snapPixel(newX + width) - width;
+            newX = disableSnap ? newX : this.snapPixel(newX + width) - width;
 
             // Clamp the x position so the shape doesn't extend past the right
             // edge of the label.
-            if (newX >= stage.width()) {
-                newX = stage.width();
+            if (newX >= this.stage.width()) {
+                newX = this.stage.width();
             }
         }
 
@@ -116,12 +130,12 @@ export function usePositionBoundFunc(stage: Konva.Stage, snapPixel: (pixel: numb
                 newY = 0;
             }
 
-            newY = snapPixel(newY);
+            newY = disableSnap ? newY : this.snapPixel(newY);
 
             // Clamp the y position so the shape doesn't extend past the bottom
             // edge of the label.
-            if (newY >= stage.height() - height) {
-                newY = stage.height() - height;
+            if (newY >= this.stage.height() - height) {
+                newY = this.stage.height() - height;
             }
         }
         else {
@@ -130,12 +144,12 @@ export function usePositionBoundFunc(stage: Konva.Stage, snapPixel: (pixel: numb
                 newY = Math.abs(height);
             }
 
-            newY = snapPixel(newY + height) - height;
+            newY = disableSnap ? newY : this.snapPixel(newY + height) - height;
 
             // Clamp the y position so the shape doesn't extend past the bottom
             // edge of the label.
-            if (newY >= stage.height()) {
-                newY = stage.height();
+            if (newY >= this.stage.height()) {
+                newY = this.stage.height();
             }
         }
 
@@ -145,35 +159,27 @@ export function usePositionBoundFunc(stage: Konva.Stage, snapPixel: (pixel: numb
         };
     }
 
-    return positionBoundFunc;
-}
-
-/**
- * Creates a function that will handle node drag bounding operations for the
- * stage. This ensures drag operations stay within the label and also handles
- * snapping.
- *
- * @param stage The stage the function will operate on.
- * @param snapPixel The function that will handle pixel snapping.
- *
- * @returns A function that can be passed to the `dragBoundFunc` property.
- */
-export function useNodeDragBoundFunc(stage: Konva.Stage, snapPixel: (pixel: number) => number): (this: Konva.Node, pos: Konva.Vector2d) => Konva.Vector2d {
-    const positionBoundFunc = usePositionBoundFunc(stage, snapPixel);
-
-    function nodeDragBoundFunc(this: Konva.Node, pos: Konva.Vector2d): Konva.Vector2d {
-        let width = this.width();
-        let height = this.height();
+    /**
+     * Gets a position that ensures the object stays inside the bounds of the
+     * stage. This ensures drag operations stay within the label and also handles
+     * snapping.
+     *
+     * @param node The node that will be used for sizing information.
+     * @param snapPixel The function that will handle pixel snapping.
+     *
+     * @returns A function that can be passed to the `dragBoundFunc` property.
+     */
+    public getNodeBoundedPosition(node: Konva.Node, pos: Konva.Vector2d): Konva.Vector2d {
+        let width = node.width();
+        let height = node.height();
 
         if (this instanceof Konva.Line) {
             width = this.points()[2];
             height = this.points()[3];
         }
 
-        return positionBoundFunc(pos, { x: width, y: height });
+        return this.getBoundedPosition(pos, { x: width, y: height });
     }
-
-    return nodeDragBoundFunc;
 }
 
 /**

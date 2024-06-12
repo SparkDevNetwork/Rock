@@ -1,4 +1,5 @@
 import Konva from "@Obsidian/Libs/konva";
+import { Surface } from "./utils.partial";
 
 /**
  * Stashed values used by the TransformHelper.
@@ -19,7 +20,7 @@ export class TransformHelper {
     public readonly stage: Konva.Stage;
     public readonly transformer: Konva.Transformer;
 
-    private readonly snapPixel: (pixel: number) => number;
+    private readonly surface: Surface;
 
     private original?: TransformValues;
     private last?: TransformValues;
@@ -33,9 +34,9 @@ export class TransformHelper {
      * @param stage The stage the transformer is attached to.
      * @param snapPixel The function that will handle pixel snapping.
      */
-    constructor(stage: Konva.Stage, snapPixel: (pixel: number) => number) {
+    constructor(stage: Konva.Stage, surface: Surface) {
         this.stage = stage;
-        this.snapPixel = snapPixel;
+        this.surface = surface;
 
         this.transformer = new Konva.Transformer({
             nodes: [],
@@ -127,25 +128,25 @@ export class TransformHelper {
         // If this is a left side anchor then attempt to snap the x position,
         // otherwise if it is a right anchor then attempt to snap the width.
         if (leftAnchor) {
-            const snap = this.snapPixel(newX);
+            const snap = this.surface.snapPixel(newX);
 
             newWidth += newX - snap;
             newX = snap;
         }
         else if (rightAnchor) {
-            newWidth = this.snapPixel(newX + newWidth) - newX;
+            newWidth = this.surface.snapPixel(newX + newWidth) - newX;
         }
 
         // If this is a top side anchor then attempt to snap the y position,
         // otherwise if it is a bottom anchor then attempt to snap the height.
         if (topAnchor) {
-            const snap = this.snapPixel(newY);
+            const snap = this.surface.snapPixel(newY);
 
             newHeight += newY - snap;
             newY = snap;
         }
         else if (bottomAnchor) {
-            newHeight = this.snapPixel(newY + newHeight) - newY;
+            newHeight = this.surface.snapPixel(newY + newHeight) - newY;
         }
 
         // If this is a left anchor then clamp the x position to the left

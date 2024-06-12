@@ -122,7 +122,7 @@ export class LineTransformer extends Konva.Group {
     private readonly updateAnchorsCallback = (): void => this.updateAnchors();
     private readonly transformEndCallback: (line: Konva.Line) => void;
 
-    public constructor(positionBoundFunc: (pos: Konva.Vector2d, size: Konva.Vector2d) => Konva.Vector2d, transformEndCallback: (line: Konva.Line) => void) {
+    public constructor(surface: Surface, transformEndCallback: (line: Konva.Line) => void) {
         super();
 
         this.transformEndCallback = transformEndCallback;
@@ -134,7 +134,7 @@ export class LineTransformer extends Konva.Group {
             strokeWidth: 1,
             draggable: true,
             visible: false,
-            dragBoundFunc: pos => positionBoundFunc(pos, { x: 0, y: 0 })
+            dragBoundFunc: pos => surface.getBoundedPosition(pos, { x: 0, y: 0 })
         });
 
         this.anchor2 = new Konva.Circle({
@@ -144,7 +144,7 @@ export class LineTransformer extends Konva.Group {
             strokeWidth: 1,
             draggable: true,
             visible: false,
-            dragBoundFunc: pos => positionBoundFunc(pos, { x: 0, y: 0 })
+            dragBoundFunc: pos => surface.getBoundedPosition(pos, { x: 0, y: 0 })
         });
 
         this.anchor1.on("mouseenter", () => this.setCursor());

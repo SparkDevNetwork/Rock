@@ -127,7 +127,7 @@
     import { TransformHelper } from "./transformHelper.partial";
     import { DragData } from "./types.partial";
     import { LabelUndoManager } from "./undoManager.partial";
-    import { createDefaultField, Surface, pixelsPerInch, useNodeDragBoundFunc, usePositionBoundFunc } from "./utils.partial";
+    import { createDefaultField, Surface, pixelsPerInch } from "./utils.partial";
 
     const props = defineProps({
         labelManager: {
@@ -150,9 +150,6 @@
         savePreview
     });
 
-    /* Grid size in 1/n fractions of an inch. */
-    const gridSnapFraction = 4;
-
     const worksurfaceContainerElement = ref<HTMLDivElement | undefined>();
     const containerElement = ref<HTMLDivElement | undefined>();
     const fontLoaderElement = ref<HTMLDivElement | undefined>();
@@ -163,7 +160,6 @@
     let transformHelper: TransformHelper | undefined;
     let lineTransformer: LineTransformer | undefined;
     const nodeLayer = new Konva.Layer();
-    let nodeDragBoundFunc: ((this: Konva.Node, pos: Konva.Vector2d) => Konva.Vector2d) | undefined;
     const gridLayer = new Konva.Layer();
     const resizeObserver = window.ResizeObserver ? new ResizeObserver(onContainerResize) : undefined;
     const surface = new Surface();
@@ -181,7 +177,7 @@
 
         const width = stage.width();
         const height = stage.height();
-        const gridStepSize = 1.0 / gridSnapFraction;
+        const gridStepSize = 1.0 / surface.gridSnapFraction;
 
         for (let step = gridStepSize; step < props.labelManager.current.value.width; step += gridStepSize) {
             gridLayer.add(new Konva.Line({
@@ -204,29 +200,15 @@
         gridLayer.draw();
     }
 
-    /**
-     * Snaps the pixel position to the nearest grid line if grid snapping is
-     * enabled.
-     *
-     * @param pixel The original pixel position in the canvas.
-     *
-     * @returns The new pixel position after the snap.
-     */
-    function snapPixel(pixel: number): number {
-        let offset = surface.getOffsetForPixel(pixel);
-
-        if (props.showGrid && props.snapToGrid) {
-            offset = 1.0 / gridSnapFraction * Math.round(gridSnapFraction * offset);
-        }
-
-        return surface.getPixelForOffset(offset);
+    function dragBoundFunc(this: Konva.Node, pos: Konva.Vector2d): Konva.Vector2d {
+        return surface.getNodeBoundedPosition(this, pos);
     }
 
     /**
      * Creates or updates all nodes in Konva to match our current list of fields.
      */
     function createOrUpdateNodes(): void {
-        if (!nodeDragBoundFunc || !nodeLayer) {
+        if (!nodeLayer) {
             return;
         }
 
@@ -250,7 +232,7 @@
                 shape.setAttrs({
                     id: field.guid,
                     draggable: true,
-                    dragBoundFunc: nodeDragBoundFunc
+                    dragBoundFunc
                 });
 
                 nodeLayer.add(shape);
@@ -933,8 +915,6 @@
             return;
         }
 
-        const positionBoundFunc = usePositionBoundFunc(stage, p => p);
-
         props.labelManager.mutateSelectedField(field => {
             let pixelPos: Konva.Vector2d = {
                 x: surface.getPixelForOffset(field.left),
@@ -958,7 +938,7 @@
                 pixelPos.y += 1;
             }
 
-            pixelPos = positionBoundFunc(pixelPos, pixelSize);
+            pixelPos = surface.getBoundedPosition(pixelPos, pixelSize, true);
 
             field.left = surface.getOffsetForPixel(pixelPos.x);
             field.top = surface.getOffsetForPixel(pixelPos.y);
@@ -1051,9 +1031,7 @@
             width: props.labelManager.current.value.width * pixelsPerInch,
             height: props.labelManager.current.value.height * pixelsPerInch,
         });
-
-        nodeDragBoundFunc = useNodeDragBoundFunc(stage, snapPixel);
-        const positionBoundFunc = usePositionBoundFunc(stage, snapPixel);
+        surface.stage = stage;
 
         stage.add(nodeLayer);
         stage.add(gridLayer);
@@ -1061,8 +1039,8 @@
         const transformerLayer = new Konva.Layer();
         stage.add(transformerLayer);
 
-        transformHelper = new TransformHelper(stage, snapPixel);
-        lineTransformer = new LineTransformer(positionBoundFunc, onLineTransformEnd);
+        transformHelper = new TransformHelper(stage, surface);
+        lineTransformer = new LineTransformer(surface, onLineTransformEnd);
         transformerLayer.add(transformHelper.transformer);
         transformerLayer.add(lineTransformer);
 
