@@ -1,0 +1,999 @@
+/* VARIABLES */
+:root {
+  /* ========================= COLOR =========================*/
+  /* INTERFACE COLORS */
+  --color-interface-strongest: #181A1C;
+  --color-interface-stronger: #2B3136;
+  --color-interface-strong: #67717A;
+  --color-interface-medium: #9AA7B3;
+  --color-interface-soft: #E4E8EB;
+  --color-interface-softer: #F6F7F9;
+  --color-interface-softest: #FFFFFF;
+  /* APPLICATION COLORS */
+  --color-critical-soft: #FEDEC8;
+  --color-critical-strong: #EE7624;
+  --color-danger-soft: #FEE2E2;
+  --color-danger-strong: #B91C1C;
+  --color-info-soft: #E0F2FE;
+  --color-info-strong: #0369A1;
+  --color-success-soft: #D1FAE5;
+  --color-success-strong: #047857;
+  --color-warning-soft: #FEF3C7;
+  --color-warning-strong: #B45309;
+  /* SYSTEM COLORS */
+  --color-primary: #EE7725;
+  --color-primary-soft: color-mix(in srgb, var(--color-primary) 50%, var(--color-interface-softer));
+  --color-link: #006DCC;
+  --color-secondary: #83758F;
+  /* CATEGORICAL COLORS */
+  --color-categorical-1: #000BFF;
+  --color-categorical-2: #DE3D82;
+  --color-categorical-3: #949494;
+  --color-categorical-4: #14EBE2;
+  --color-categorical-5: #FF1C1C;
+  --color-categorical-6: #57FF4B;
+  --color-categorical-7: #7100FF;
+  --color-categorical-8: #FFDA00;
+  --color-categorical-9: #FF7500;
+  /* DIVERGING COLORS */
+  --color-diverging-1: #4A001E;
+  --color-diverging-2: #751232;
+  --color-diverging-3: #A52747;
+  --color-diverging-4: #C65154;
+  --color-diverging-5: #E47961;
+  --color-diverging-6: #F0A882;
+  --color-diverging-7: #FAD4AC;
+  --color-diverging-8: #FFFFE0;
+  --color-diverging-9: #BBE4D1;
+  --color-diverging-10: #76C7BE;
+  --color-diverging-11: #3EA8A6;
+  --color-diverging-12: #208288;
+  --color-diverging-13: #076769;
+  --color-diverging-14: #00494B;
+  --color-diverging-15: #002C2D;
+  /* SEQUENTIAL COLORS */
+  --color-sequential-1: #EAFFF1;
+  --color-sequential-2: #C9F1E4;
+  --color-sequential-3: #A7E3D7;
+  --color-sequential-4: #85D5CA;
+  --color-sequential-5: #6CC5C0;
+  --color-sequential-6: #58B4B9;
+  --color-sequential-7: #44A2B1;
+  --color-sequential-8: #3091AA;
+  --color-sequential-9: #2880A0;
+  --color-sequential-10: #246E96;
+  --color-sequential-11: #215D8B;
+  --color-sequential-12: #1D4C81;
+  --color-sequential-13: #1C3B77;
+  --color-sequential-14: #1B296D;
+  --color-sequential-15: #1A1662;
+  --color-sequential-16: #180055;
+  /* ========================= END COLOR ==========================*/
+  /* ========================= TYPOGRAPHY =========================*/
+  /* FONT SIZES */
+  --font-size-small: 14px;
+  --font-size-regular: 16px;
+  --font-size-h1: 44px;
+  --font-size-h2: 36px;
+  --font-size-h3: 28px;
+  --font-size-h4: 22px;
+  --font-size-h5: 18px;
+  --font-size-h6: 16px;
+  /* FONT WEIGHTS */
+  --font-weight-light: 300;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-black: 900;
+  /* LINE HEIGHTS */
+  --line-height-normal: 1.5;
+  --line-height-tight: 1.1;
+  --line-height-compact: 1.055;
+  /* FONT FAMILY */
+  --font-family-segoe: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  --font-family-sans: -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+  --font-family-serif: Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+  /* ========================= END TYPOGRAPHY =========================*/
+  /* ============================ SPACING =============================*/
+  /* SPACING */
+  --spacing-tiny: 4px;
+  --spacing-small: 8px;
+  --spacing-medium: 16px;
+  --spacing-large: 24px;
+  --spacing-xlarge: 48px;
+  --spacing-huge: 80px;
+  /* ========================== END SPACING ===========================*/
+  /* ========================== VISUAL APPEARANCES ===========================*/
+  --adminbar-bg: var(--color-interface-stronger);
+  /* ========================== END VISUAL APPEARANCES ===========================*/
+}
+
+/* UTILITIES */
+/* TYPOGRAPHY Utilities */
+.font-size-small {
+  font-size: var(--font-size-small);
+}
+
+.font-size-regular {
+  font-size: var(--font-size-regular);
+}
+
+.font-size-h1 {
+  font-size: var(--font-size-h1);
+}
+
+.font-size-h2 {
+  font-size: var(--font-size-h2);
+}
+
+.font-size-h3 {
+  font-size: var(--font-size-h3);
+}
+
+.font-size-h4 {
+  font-size: var(--font-size-h4);
+}
+
+.font-size-h5 {
+  font-size: var(--font-size-h5);
+}
+
+.font-size-h6 {
+  font-size: var(--font-size-h6);
+}
+
+.font-weight-light {
+  font-weight: var(--font-weight-light);
+}
+
+.font-weight-regular {
+  font-weight: var(--font-weight-regular);
+}
+
+.font-weight-medium {
+  font-weight: var(--font-weight-medium);
+}
+
+.font-weight-semibold {
+  font-weight: var(--font-weight-semibold);
+}
+
+.font-weight-bold {
+  font-weight: var(--font-weight-bold);
+}
+
+.font-weight-black {
+  font-weight: var(--font-weight-black);
+}
+
+.line-height-normal {
+  line-height: var(--line-height-normal);
+}
+
+.line-height-tight {
+  line-height: var(--line-height-tight);
+}
+
+.line-height-compact {
+  line-height: var(--line-height-compact);
+}
+
+.font-family-segoe {
+  font-family: var(--font-family-segoe);
+}
+
+.font-family-sans {
+  font-family: var(--font-family-sans);
+}
+
+.font-family-serif {
+  font-family: var(--font-family-serif);
+}
+
+/* COLOR UTILITIES */
+.color-interface-strongest {
+  color: var(--color-interface-strongest);
+}
+
+.color-interface-stronger {
+  color: var(--color-interface-stronger);
+}
+
+.color-interface-strong {
+  color: var(--color-interface-strong);
+}
+
+.color-interface-medium {
+  color: var(--color-interface-medium);
+}
+
+.color-interface-soft {
+  color: var(--color-interface-soft);
+}
+
+.color-interface-softer {
+  color: var(--color-interface-softer);
+}
+
+.color-interface-softest {
+  color: var(--color-interface-softest);
+}
+
+.color-critical-soft {
+  color: var(--color-critical-soft);
+}
+
+.color-critical-strong {
+  color: var(--color-critical-strong);
+}
+
+.color-danger-soft {
+  color: var(--color-danger-soft);
+}
+
+.color-danger-strong {
+  color: var(--color-danger-strong);
+}
+
+.color-info-soft {
+  color: var(--color-info-soft);
+}
+
+.color-info-strong {
+  color: var(--color-info-strong);
+}
+
+.color-success-soft {
+  color: var(--color-success-soft);
+}
+
+.color-success-strong {
+  color: var(--color-success-strong);
+}
+
+.color-warning-soft {
+  color: var(--color-warning-soft);
+}
+
+.color-warning-strong {
+  color: var(--color-warning-strong);
+}
+
+.color-link {
+  color: var(--color-link);
+}
+
+.color-primary {
+  color: var(--color-primary);
+}
+
+.color-secondary {
+  color: var(--color-secondary);
+}
+
+.color-categorical-1 {
+  color: var(--color-categorical-1);
+}
+
+.color-categorical-2 {
+  color: var(--color-categorical-2);
+}
+
+.color-categorical-3 {
+  color: var(--color-categorical-3);
+}
+
+.color-categorical-4 {
+  color: var(--color-categorical-4);
+}
+
+.color-categorical-5 {
+  color: var(--color-categorical-5);
+}
+
+.color-categorical-6 {
+  color: var(--color-categorical-6);
+}
+
+.color-categorical-7 {
+  color: var(--color-categorical-7);
+}
+
+.color-categorical-8 {
+  color: var(--color-categorical-8);
+}
+
+.color-categorical-9 {
+  color: var(--color-categorical-9);
+}
+
+.color-diverging-1 {
+  color: var(--color-diverging-1);
+}
+
+.color-diverging-2 {
+  color: var(--color-diverging-2);
+}
+
+.color-diverging-3 {
+  color: var(--color-diverging-3);
+}
+
+.color-diverging-4 {
+  color: var(--color-diverging-4);
+}
+
+.color-diverging-5 {
+  color: var(--color-diverging-5);
+}
+
+.color-diverging-6 {
+  color: var(--color-diverging-6);
+}
+
+.color-diverging-7 {
+  color: var(--color-diverging-7);
+}
+
+.color-diverging-8 {
+  color: var(--color-diverging-8);
+}
+
+.color-diverging-9 {
+  color: var(--color-diverging-9);
+}
+
+.color-diverging-10 {
+  color: var(--color-diverging-10);
+}
+
+.color-diverging-11 {
+  color: var(--color-diverging-11);
+}
+
+.color-diverging-12 {
+  color: var(--color-diverging-12);
+}
+
+.color-diverging-13 {
+  color: var(--color-diverging-13);
+}
+
+.color-diverging-14 {
+  color: var(--color-diverging-14);
+}
+
+.color-diverging-15 {
+  color: var(--color-diverging-15);
+}
+
+.color-sequential-1 {
+  color: var(--color-sequential-1);
+}
+
+.color-sequential-2 {
+  color: var(--color-sequential-2);
+}
+
+.color-sequential-3 {
+  color: var(--color-sequential-3);
+}
+
+.color-sequential-4 {
+  color: var(--color-sequential-4);
+}
+
+.color-sequential-5 {
+  color: var(--color-sequential-5);
+}
+
+.color-sequential-6 {
+  color: var(--color-sequential-6);
+}
+
+.color-sequential-7 {
+  color: var(--color-sequential-7);
+}
+
+.color-sequential-8 {
+  color: var(--color-sequential-8);
+}
+
+.color-sequential-9 {
+  color: var(--color-sequential-9);
+}
+
+.color-sequential-10 {
+  color: var(--color-sequential-10);
+}
+
+.color-sequential-11 {
+  color: var(--color-sequential-11);
+}
+
+.color-sequential-12 {
+  color: var(--color-sequential-12);
+}
+
+.color-sequential-13 {
+  color: var(--color-sequential-13);
+}
+
+.color-sequential-14 {
+  color: var(--color-sequential-14);
+}
+
+.color-sequential-15 {
+  color: var(--color-sequential-15);
+}
+
+.color-sequential-16 {
+  color: var(--color-sequential-16);
+}
+
+/* ============ MARGIN ============ */
+/* Margin Top */
+.mt-tiny {
+  margin-top: var(--spacing-tiny);
+}
+
+.mt-small {
+  margin-top: var(--spacing-small);
+}
+
+.mt-medium {
+  margin-top: var(--spacing-medium);
+}
+
+.mt-large {
+  margin-top: var(--spacing-large);
+}
+
+.mt-xlarge {
+  margin-top: var(--spacing-xlarge);
+}
+
+.mt-huge {
+  margin-top: var(--spacing-huge);
+}
+
+/* Margin Right */
+.mr-tiny {
+  margin-right: var(--spacing-tiny);
+}
+
+.mr-small {
+  margin-right: var(--spacing-small);
+}
+
+.mr-medium {
+  margin-right: var(--spacing-medium);
+}
+
+.mr-large {
+  margin-right: var(--spacing-large);
+}
+
+.mr-xlarge {
+  margin-right: var(--spacing-xlarge);
+}
+
+.mr-huge {
+  margin-right: var(--spacing-huge);
+}
+
+/* Margin Bottom */
+.mb-tiny {
+  margin-bottom: var(--spacing-tiny);
+}
+
+.mb-small {
+  margin-bottom: var(--spacing-small);
+}
+
+.mb-medium {
+  margin-bottom: var(--spacing-medium);
+}
+
+.mb-large {
+  margin-bottom: var(--spacing-large);
+}
+
+.mb-xlarge {
+  margin-bottom: var(--spacing-xlarge);
+}
+
+.mb-huge {
+  margin-bottom: var(--spacing-huge);
+}
+
+/* Margin Left */
+.ml-tiny {
+  margin-left: var(--spacing-tiny);
+}
+
+.ml-small {
+  margin-left: var(--spacing-small);
+}
+
+.ml-medium {
+  margin-left: var(--spacing-medium);
+}
+
+.ml-large {
+  margin-left: var(--spacing-large);
+}
+
+.ml-xlarge {
+  margin-left: var(--spacing-xlarge);
+}
+
+.ml-huge {
+  margin-left: var(--spacing-huge);
+}
+
+/* Margin Y (Top and Bottom) */
+.my-tiny {
+  margin-top: var(--spacing-tiny);
+  margin-bottom: var(--spacing-tiny);
+}
+
+.my-small {
+  margin-top: var(--spacing-small);
+  margin-bottom: var(--spacing-small);
+}
+
+.my-medium {
+  margin-top: var(--spacing-medium);
+  margin-bottom: var(--spacing-medium);
+}
+
+.my-large {
+  margin-top: var(--spacing-large);
+  margin-bottom: var(--spacing-large);
+}
+
+.my-xlarge {
+  margin-top: var(--spacing-xlarge);
+  margin-bottom: var(--spacing-xlarge);
+}
+
+.my-huge {
+  margin-top: var(--spacing-huge);
+  margin-bottom: var(--spacing-huge);
+}
+
+/* Margin X (Left and Right) */
+.mx-tiny {
+  margin-left: var(--spacing-tiny);
+  margin-right: var(--spacing-tiny);
+}
+
+.mx-small {
+  margin-left: var(--spacing-small);
+  margin-right: var(--spacing-small);
+}
+
+.mx-medium {
+  margin-left: var(--spacing-medium);
+  margin-right: var(--spacing-medium);
+}
+
+.mx-large {
+  margin-left: var(--spacing-large);
+  margin-right: var(--spacing-large);
+}
+
+.mx-xlarge {
+  margin-left: var(--spacing-xlarge);
+  margin-right: var(--spacing-xlarge);
+}
+
+.mx-huge {
+  margin-left: var(--spacing-huge);
+  margin-right: var(--spacing-huge);
+}
+
+/* ============ END MARGIN ============ */
+/* ============ PADDING ============ */
+/* Padding Top */
+.pt-tiny {
+  padding-top: var(--spacing-tiny);
+}
+
+.pt-small {
+  padding-top: var(--spacing-small);
+}
+
+.pt-medium {
+  padding-top: var(--spacing-medium);
+}
+
+.pt-large {
+  padding-top: var(--spacing-large);
+}
+
+.pt-xlarge {
+  padding-top: var(--spacing-xlarge);
+}
+
+.pt-huge {
+  padding-top: var(--spacing-huge);
+}
+
+/* Padding Right */
+.pr-tiny {
+  padding-right: var(--spacing-tiny);
+}
+
+.pr-small {
+  padding-right: var(--spacing-small);
+}
+
+.pr-medium {
+  padding-right: var(--spacing-medium);
+}
+
+.pr-large {
+  padding-right: var(--spacing-large);
+}
+
+.pr-xlarge {
+  padding-right: var(--spacing-xlarge);
+}
+
+.pr-huge {
+  padding-right: var(--spacing-huge);
+}
+
+/* Padding Bottom */
+.pb-tiny {
+  padding-bottom: var(--spacing-tiny);
+}
+
+.pb-small {
+  padding-bottom: var(--spacing-small);
+}
+
+.pb-medium {
+  padding-bottom: var(--spacing-medium);
+}
+
+.pb-large {
+  padding-bottom: var(--spacing-large);
+}
+
+.pb-xlarge {
+  padding-bottom: var(--spacing-xlarge);
+}
+
+.pb-huge {
+  padding-bottom: var(--spacing-huge);
+}
+
+/* Padding Left */
+.pl-tiny {
+  padding-left: var(--spacing-tiny);
+}
+
+.pl-small {
+  padding-left: var(--spacing-small);
+}
+
+.pl-medium {
+  padding-left: var(--spacing-medium);
+}
+
+.pl-large {
+  padding-left: var(--spacing-large);
+}
+
+.pl-xlarge {
+  padding-left: var(--spacing-xlarge);
+}
+
+.pl-huge {
+  padding-left: var(--spacing-huge);
+}
+
+/* Padding Y (Top and Bottom) */
+.py-tiny {
+  padding-top: var(--spacing-tiny);
+  padding-bottom: var(--spacing-tiny);
+}
+
+.py-small {
+  padding-top: var(--spacing-small);
+  padding-bottom: var(--spacing-small);
+}
+
+.py-medium {
+  padding-top: var(--spacing-medium);
+  padding-bottom: var(--spacing-medium);
+}
+
+.py-large {
+  padding-top: var(--spacing-large);
+  padding-bottom: var(--spacing-large);
+}
+
+.py-xlarge {
+  padding-top: var(--spacing-xlarge);
+  padding-bottom: var(--spacing-xlarge);
+}
+
+.py-huge {
+  padding-top: var(--spacing-huge);
+  padding-bottom: var(--spacing-huge);
+}
+
+/* Padding X (Left and Right) */
+.px-tiny {
+  padding-left: var(--spacing-tiny);
+  padding-right: var(--spacing-tiny);
+}
+
+.px-small {
+  padding-left: var(--spacing-small);
+  padding-right: var(--spacing-small);
+}
+
+.px-medium {
+  padding-left: var(--spacing-medium);
+  padding-right: var(--spacing-medium);
+}
+
+.px-large {
+  padding-left: var(--spacing-large);
+  padding-right: var(--spacing-large);
+}
+
+.px-xlarge {
+  padding-left: var(--spacing-xlarge);
+  padding-right: var(--spacing-xlarge);
+}
+
+.px-huge {
+  padding-left: var(--spacing-huge);
+  padding-right: var(--spacing-huge);
+}
+
+/* ============ END PADDING ============ */
+/* CORE */
+/*
+    Used to manage styles related to the CMS admin UI for on page editing
+
+    1. Zone Configuration
+    2. Module Configuration
+    3. Admin Footer
+    4. Responsive Rules
+*/
+.zone-instance.outline {
+  position: relative;
+  min-width: 50px;
+  min-height: 30px;
+}
+.zone-instance.outline::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  content: "";
+  border: 1px dotted #3e3e3c;
+  outline: 1px dotted #fff;
+}
+
+.block-configuration,
+.zone-configuration {
+  position: absolute;
+  top: 0;
+  z-index: 1049;
+  display: none;
+  width: 26px;
+  height: 26px;
+  overflow: hidden;
+  color: #fff;
+  cursor: pointer;
+  background: #0176d3;
+  border-radius: 0;
+}
+
+.block-instance.outline {
+  position: relative;
+  display: block;
+  min-height: 36px;
+  clear: both;
+}
+.block-instance.outline::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  pointer-events: none;
+  content: "";
+}
+.block-instance.outline:hover::after {
+  border: 1px solid #1b96ff;
+}
+
+.config-bar {
+  font-size: 16px;
+  line-height: 1.5;
+}
+.config-bar,
+.config-bar a {
+  color: #fff !important;
+}
+.config-bar a,
+.config-bar .delete {
+  display: block;
+  float: left;
+  width: 26px;
+  padding: 1px 0 !important;
+  margin: 0 !important;
+  text-align: center;
+  text-decoration: none;
+}
+
+.zone-configuration-bar,
+.block-configuration-bar {
+  position: absolute;
+  left: 24px;
+  margin-right: -999em;
+  margin-left: 6px;
+  overflow: hidden;
+}
+.zone-configuration-bar div,
+.block-configuration-bar div {
+  display: inline;
+}
+.zone-configuration-bar span,
+.block-configuration-bar span {
+  display: block;
+  float: left;
+  padding-right: 12px;
+  font-size: 10px;
+  line-height: 26px;
+}
+.zone-configuration-bar .disabled,
+.block-configuration-bar .disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.block-configuration-bar .btn {
+  margin-right: 12px;
+  color: #fff;
+  text-shadow: none;
+}
+
+#cms-admin-footer {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  z-index: 1049;
+  width: 100%;
+  height: 36px;
+  padding: 8px 12px 0;
+  margin-right: 0;
+  color: #fff;
+  background: var(--adminbar-bg);
+  border-color: var(--adminbar-bg); /*TODO this should be darken using css mix() when available*/
+  border-style: solid;
+  border-width: 1px 1px 0;
+  transition: 0.5s;
+}
+#cms-admin-footer a.btn {
+  font-size: 16px;
+}
+#cms-admin-footer > span {
+  display: none;
+  margin-top: 3px;
+  margin-bottom: 4px;
+  font-size: 12px;
+  text-align: center;
+}
+#cms-admin-footer > span.label {
+  margin-top: 1px;
+}
+#cms-admin-footer > span.cms-admin-footer-property {
+  padding: 0 6px;
+  background-color: var(--adminbar-bg); /*TODO lightening this by 10% when css mix() is available*/
+  border-radius: 2px;
+}
+#cms-admin-footer a {
+  color: #fff;
+}
+#cms-admin-footer a:hover {
+  text-decoration: none;
+}
+#cms-admin-footer .button-bar {
+  margin-top: -8px;
+  margin-left: 12px;
+  text-align: center;
+}
+
+#cms-admin-footer .button-bar a {
+  background-color: transparent;
+  background-image: none;
+  border: 0;
+}
+
+#cms-admin-footer .btn {
+  color: #fff;
+  text-shadow: none;
+  box-shadow: none;
+}
+
+@media (min-width: 768px) {
+  #cms-admin-footer {
+    opacity: 0;
+  }
+  #cms-admin-footer:hover {
+    opacity: 1;
+  }
+  #cms-admin-footer > span {
+    display: block;
+    float: left;
+    text-align: left;
+  }
+  #cms-admin-footer .button-bar {
+    float: right;
+  }
+}
+/*TODO polish */
+/* COMPONENTS */
+/* === Universal Font === */
+h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6, p, .p, .text-primary, .text-small {
+  font-family: var(--font-family-segoe);
+}
+
+/* === End Universal Font ===*/
+/* HEADING */
+h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-compact);
+}
+
+h1, .h1 {
+  font-size: var(--font-size-h1);
+}
+
+h2, .h2 {
+  font-size: var(--font-size-h2);
+}
+
+h3, .h3 {
+  font-size: var(--font-size-h3);
+}
+
+h4, .h4 {
+  font-size: var(--font-size-h4);
+}
+
+h5, .h5 {
+  font-size: var(--font-size-h5);
+}
+
+h6, .h6 {
+  font-size: var(--font-size-h6);
+}
+
+/* BODY TEXT */
+p, .p, .text-primary, .text-small {
+  line-height: var(--line-height-normal);
+  font-weight: var(--font-weight-regular);
+}
+
+p, .p, .text-primary {
+  font-size: var(--font-size-regular);
+}
+
+.text-small {
+  font-size: var(--font-size-small);
+}
+
+/*# sourceMappingURL=core.css.map */

@@ -1,0 +1,27 @@
+
+/* TYPOGRAPHY Utilities */
+.font-size-small   { font-size: var(--font-size-small); }
+.font-size-regular { font-size: var(--font-size-regular); }
+.font-size-h1      { font-size: var(--font-size-h1); }
+.font-size-h2      { font-size: var(--font-size-h2); }
+.font-size-h3      { font-size: var(--font-size-h3); }
+.font-size-h4      { font-size: var(--font-size-h4); }
+.font-size-h5      { font-size: var(--font-size-h5); }
+.font-size-h6      { font-size: var(--font-size-h6); }
+
+.font-weight-light   { font-weight: var(--font-weight-light); }
+.font-weight-regular { font-weight: var(--font-weight-regular); }
+.font-weight-medium  { font-weight: var(--font-weight-medium); }
+.font-weight-semibold{ font-weight: var(--font-weight-semibold); }
+.font-weight-bold    { font-weight: var(--font-weight-bold); }
+.font-weight-black   { font-weight: var(--font-weight-black); }
+
+.line-height-normal  { line-height: var(--line-height-normal); }
+.line-height-tight   { line-height: var(--line-height-tight); }
+.line-height-compact { line-height: var(--line-height-compact); }
+
+.font-family-segoe { font-family: var(--font-family-segoe); }
+.font-family-sans  { font-family: var(--font-family-sans); }
+.font-family-serif { font-family: var(--font-family-serif); }
+
+

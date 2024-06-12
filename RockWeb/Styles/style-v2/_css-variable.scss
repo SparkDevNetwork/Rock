@@ -23,10 +23,10 @@
     --color-warning-soft:    #FEF3C7;
     --color-warning-strong:  #B45309;
 
-    /* NAMING SYSTEM COLORS */
-    --color-link:      #006DCC;
-    --color-primary:   #EE7725;
-    --color-secondary: #83758F;
+    /* SYSTEM COLORS */
+    --color-primary:    #EE7725;
+    --color-link:       #006DCC;
+    --color-secondary:  #83758F;
 
     /* CATEGORICAL COLORS */
     --color-categorical-1: #000BFF;
@@ -81,14 +81,14 @@
     /* ========================= TYPOGRAPHY =========================*/
 
     /* FONT SIZES */
-    --font-size-body-reg:   16px;
-    --font-size-body-sm:    14px;
-    --font-size-h1:     44px;
-    --font-size-h2:     36px;
-    --font-size-h3:     28px;
-    --font-size-h4:     22px;
-    --font-size-h5:     18px;
-    --font-size-h6:     16px;
+    --font-size-small:      14px;
+    --font-size-regular:    16px;
+    --font-size-h1:         44px;
+    --font-size-h2:         36px;
+    --font-size-h3:         28px;
+    --font-size-h4:         22px;
+    --font-size-h5:         18px;
+    --font-size-h6:         16px;
 
     /* FONT WEIGHTS */
     --font-weight-light:    300;
@@ -99,13 +99,14 @@
     --font-weight-black:    900;
 
     /* LINE HEIGHTS */
-    --line-height-normal: 1.5;
-    --line-height-tight: 1.1;
+    --line-height-normal:  1.5;
+    --line-height-tight:   1.1;
     --line-height-compact: 1.055;
 
     /* FONT FAMILY */
-    --font-family-header:   "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-    --font-family-body:     "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    --font-family-segoe:    "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    --font-family-sans:     -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+    --font-family-serif:    Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
 
     /* ========================= END TYPOGRAPHY =========================*/
 
@@ -122,4 +123,12 @@
     --spacing-huge:      80px;
 
     /* ========================== END SPACING ===========================*/
+
+
+    /* ========================== VISUAL APPEARANCES ===========================*/
+    
+    --adminbar-bg: var(--color-interface-stronger);
+
+    /* ========================== END VISUAL APPEARANCES ===========================*/
+
 }
