@@ -95,8 +95,6 @@ export type CommunicationEntrySaveRequestBag = {
     /** Gets or sets the SMS attachment binary files. */
     smsAttachmentBinaryFiles?: ListItemBag[] | null;
 
-    smsFromDefinedValueId?: number | null;
-
     /** Gets or sets the SMS from system phone number unique identifier. */
     smsFromSystemPhoneNumberGuid?: Guid | null;
 

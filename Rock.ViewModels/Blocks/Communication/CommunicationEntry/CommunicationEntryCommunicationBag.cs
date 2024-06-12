@@ -185,9 +185,6 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntry
         /// </value>
         public Guid? SmsFromSystemPhoneNumberGuid { get; set; }
 
-        // TODO JMH Is this the same as SmsFromSystemPhoneNumberGuid?
-        public int? SMSFromDefinedValueId { get; set; }
-
         /// <summary>
         /// Gets or sets the SMS message.
         /// </summary>

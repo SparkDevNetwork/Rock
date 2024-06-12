@@ -2379,12 +2379,9 @@ namespace Rock.Blocks.Communication
                     _bag.SmsAttachmentBinaryFiles = AttachmentHelper.ToListItemBags( value );
                 }
             }
-            
-            public int? SMSFromDefinedValueId
-            {
-                get => _bag.SMSFromDefinedValueId;
-                set => _bag.SMSFromDefinedValueId = value;
-            }
+
+            /// <inheritdoc/>
+            public int? SMSFromDefinedValueId { get; set; }
 
             /// <inheritdoc/>
             public void SetEmailAttachments( IEnumerable<int> binaryFileIds )
