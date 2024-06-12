@@ -76,6 +76,9 @@
                 <component :is="fieldConfigurationComponent"
                            :key="labelManager.selectedField.value?.guid"
                            :labelManager="labelManager" />
+
+                <CheckBox label="Include On Preview"
+                          v-model="isIncludedOnPreview" />
             </Panel>
 
             <Panel title="Conditionals"
@@ -178,6 +181,7 @@
 </style>
 
 <script setup lang="ts">
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import ControlButton from "./controlButton.partial.obs";
     import FieldConfigDataSourceText from "./fieldConfigDataSourceText.partial.obs";
     import FieldConfigBarcode from "./fieldConfigBarcode.partial.obs";
@@ -197,7 +201,7 @@
     import { LabelFieldType } from "@Obsidian/Enums/CheckIn/Labels/labelFieldType";
     import { TextFieldSubType } from "@Obsidian/Enums/CheckIn/Labels/textFieldSubType";
     import { areEqual, newGuid } from "@Obsidian/Utility/guid";
-    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useConfigurationValues } from "@Obsidian/Utility/block";
     import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterGroupBag";
     import { FilterExpressionType } from "@Obsidian/Enums/Reporting/filterExpressionType";
     import { FieldFilterRuleBag } from "@Obsidian/ViewModels/Reporting/fieldFilterRuleBag";
@@ -216,6 +220,7 @@
     const isConditionalSettingsVisible = ref(false);
     const visibilityRule = ref<FieldFilterGroupBag | undefined | null>();
     const editVisibilityRule = ref<FieldFilterGroupBag>(createEmptyRuleset());
+    const isIncludedOnPreview = ref(false);
 
     const fieldConfigurationComponent = computed((): Component | undefined => {
         const field = props.labelManager?.current.value
@@ -362,5 +367,12 @@
 
     watch(props.labelManager.selectedField, () => {
         isComponentMenuSelected.value = !!props.labelManager.selectedField.value;
+        isIncludedOnPreview.value = props.labelManager.selectedField.value?.isIncludedOnPreview === true;
+    });
+
+    watch(isIncludedOnPreview, () => {
+        props.labelManager.mutateSelectedField(field => {
+            field.isIncludedOnPreview = isIncludedOnPreview.value;
+        });
     });
 </script>

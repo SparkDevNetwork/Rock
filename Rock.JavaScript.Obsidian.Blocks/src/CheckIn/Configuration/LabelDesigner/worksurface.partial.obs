@@ -372,12 +372,37 @@
             return undefined;
         }
 
-        const preview = await stage.toBlob({
-            pixelRatio: 2
-        });
+        lineTransformer?.visible(false);
+        transformHelper?.transformer.visible(false);
 
-        if (preview instanceof Blob) {
-            return preview;
+        for (const field of props.labelManager.current.value.fields ?? []) {
+            if (field.isIncludedOnPreview) {
+                continue;
+            }
+
+            findNodeForField(field)?.visible(false);
+        }
+
+        try {
+            const preview = await stage.toBlob({
+                pixelRatio: 2
+            });
+
+            if (preview instanceof Blob) {
+                return preview;
+            }
+        }
+        finally {
+            lineTransformer?.visible(true);
+            transformHelper?.transformer.visible(true);
+
+            for (const field of props.labelManager.current.value.fields ?? []) {
+                if (field.isIncludedOnPreview) {
+                    continue;
+                }
+
+                findNodeForField(field)?.visible(true);
+            }
         }
 
         return undefined;
