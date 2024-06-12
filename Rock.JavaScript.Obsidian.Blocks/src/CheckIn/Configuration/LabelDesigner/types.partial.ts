@@ -55,7 +55,9 @@ export type IconFieldConfigurationBag = {
 };
 
 export type ImageFieldConfigurationBag = {
-    binaryFileGuid?: Guid | null;
+    imageData?: string | null;
+
+    isInverted?: string | null;
 };
 
 export type BarcodeFieldConfigurationBag = {

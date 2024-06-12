@@ -1,7 +1,7 @@
 import Konva from "@Obsidian/Libs/konva";
 import { BarcodeFieldConfigurationBag, EllipseFieldConfigurationBag, IconFieldConfigurationBag, ImageFieldConfigurationBag, LineFieldConfigurationBag, RectangleFieldConfigurationBag, StringRecord } from "./types.partial";
 import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
-import { IconImageMap, code128Icon, Surface, qrcodeIcon } from "./utils.partial";
+import { IconImageMap, code128Icon, Surface, qrcodeIcon, convertImageDataToBlackAndWhite } from "./utils.partial";
 import { asBoolean } from "@Obsidian/Utility/booleanUtils";
 import { BarcodeFormat } from "@Obsidian/Enums/CheckIn/Labels/barcodeFormat";
 import { HorizontalTextAlignment } from "@Obsidian/Enums/CheckIn/Labels/horizontalTextAlignment";
@@ -583,13 +583,37 @@ function updateImageShapeFromField(shape: Konva.Image, field: LabelFieldBag, sur
     shape.height(surface.getPixelForOffset(field.height));
 
     const currentImage = shape.image() as HTMLImageElement;
-    const src = config.binaryFileGuid
-        ? `/GetImage.ashx?Guid=${config.binaryFileGuid}`
-        : "/Assets/Images/corrupt-image.jpg";
+    const noImageData = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIW2NoaGj4DwAFhAKAEgUrPQAAAABJRU5ErkJggg==";
+
+    if (!config.imageData) {
+        if (currentImage.src !== noImageData) {
+            currentImage.src = noImageData;
+        }
+
+        return;
+    }
+
+    const imageData = config.imageData;
+    const isInverted = asBoolean(config.isInverted);
+    const key = `${isInverted}:${imageData}`;
 
     // Update configured values.
-    if (currentImage.src !== src) {
-        currentImage.src = src;
+    if (currentImage.dataset["originalSource"] !== key) {
+        currentImage.dataset["originalSource"] = key;
+
+        convertImageDataToBlackAndWhite(imageData, isInverted).then(finalSrc => {
+            // Only update if it hasn't been changed by another pass yet.
+            if (currentImage.dataset["originalSource"] === key) {
+                if (finalSrc) {
+                    currentImage.src = `data:image/png;base64,${finalSrc}`;
+                }
+                else {
+                    currentImage.src = noImageData;
+                }
+            }
+        }).catch(err => {
+            console.error(err);
+        });
     }
 }
 

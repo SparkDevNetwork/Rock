@@ -1,16 +1,18 @@
 <template>
     <ImageUploader label="Custom Image"
-                   v-model="image"
-                   :showDeleteButton="false"
-                   :fileProcessor="processFile" />
+                   v-model="image" />
+
+    <CheckBox label="Invert Colors"
+              v-model="isInverted" />
 </template>
 
 <script setup lang="ts">
-    import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
-    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import ImageUploader from "./imageUploader.partial.obs";
     import { PropType, ref, watch } from "vue";
     import { StringRecord, ImageFieldConfigurationBag } from "./types.partial";
     import { LabelUndoManager } from "./undoManager.partial";
+    import { asBoolean, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
 
     const props = defineProps({
         labelManager: {
@@ -19,80 +21,8 @@
         }
     });
 
-    const image = ref<ListItemBag>();
-
-    /**
-     * Process a file before it is uploaded by converting it to black and white.
-     *
-     * @param file The file to be processed.
-     */
-    async function processFile(file: File): Promise<File> {
-        const image = document.createElement("img");
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
-
-        if (!ctx) {
-            throw new Error("Could not process image.");
-        }
-
-        // Load the image and wait for it to complete.
-        const imageLoaded = new Promise<void>(resolve => {
-            image.addEventListener("load", () => resolve());
-        });
-
-        image.src = URL.createObjectURL(file);
-        await imageLoaded;
-
-        // Configure the size of the canvas to match the image and then draw
-        // the image onto the full canvas.
-        canvas.width = image.naturalWidth;
-        canvas.height = image.naturalHeight;
-        ctx.drawImage(image, 0, 0);
-
-        // Get the raw RGBA canvas data.
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-
-        // Convert the image data to be black and transparent.
-        for (let i = 0; i < imageData.data.length; i += 4) {
-            let avgColor = (imageData.data[i] + imageData.data[i+1] + imageData.data[i+3]) / 3;
-
-            imageData.data[i] = imageData.data[i+1] = imageData.data[i+2] = 0;
-
-            // If the average color is not near white and also not
-            // semi-transparent then switch it to full black.
-            if (avgColor < 224 && imageData.data[i + 3] > 128) {
-                imageData.data[i + 3] = 255;
-            }
-            else {
-                imageData.data[i + 3] = 0;
-            }
-        }
-
-        // Replace the contents of the canvas with the modified image data.
-        ctx.putImageData(imageData, 0, 0, 0, 0, canvas.width, canvas.height);
-
-        // Convert the canvas to a PNG image blob.
-        const blob = await new Promise<Blob>((resolve, reject) => {
-            canvas.toBlob(b => {
-                if (b) {
-                    resolve(b);
-                }
-                else {
-                    reject(new Error("Unable to process image."));
-                }
-            }, "image/png");
-        });
-
-        // Replace the last extension of the filename with ".png".
-        const lastPeriod = file.name.lastIndexOf(".");
-        const filename = lastPeriod > 0
-            ? `${file.name.substring(0, lastPeriod)}.png`
-            : file.name;
-
-        return new File([blob], filename, {
-            type: "image/png"
-        });
-    }
+    const image = ref<string | undefined | null>();
+    const isInverted = ref(false);
 
     /**
      * Set the internal values to match those from the selected field.
@@ -101,24 +31,19 @@
         const configuration = (props.labelManager.selectedField.value
             ?.configurationValues ?? {}) as StringRecord<ImageFieldConfigurationBag>;
 
-        if (configuration.binaryFileGuid) {
-            image.value = {
-                value: configuration.binaryFileGuid
-            };
-        }
-        else {
-            image.value = undefined;
-        }
+        image.value = configuration.imageData;
+        isInverted.value = asBoolean(configuration.isInverted);
     }
 
     // Watch for changes in the UI that require an update to the label.
-    watch([image], () => {
+    watch([image, isInverted], () => {
         props.labelManager.mutateSelectedField(field => {
             field.configurationValues = field.configurationValues ?? {};
 
             const fieldConfig = field.configurationValues as StringRecord<ImageFieldConfigurationBag>;
 
-            fieldConfig.binaryFileGuid = image.value?.value ?? null;
+            fieldConfig.imageData = image.value;
+            fieldConfig.isInverted = asTrueFalseOrNull(isInverted.value);
         });
     });
 
