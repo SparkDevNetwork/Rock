@@ -9,7 +9,7 @@
             <div ref="menuFieldActionElement" class="menu-group">
             </div>
             <div ref="menuFieldSelectElement" class="menu-group">
-                <button class="disabled">Select Field</button>
+                <button class="header">Select Field</button>
             </div>
         </div>
     </div>
@@ -65,11 +65,18 @@
 }
 
 /* These need to be deep because we are dynamically adding them. */
+.context-menu :deep(hr) {
+    padding: 0;
+    margin: 0;
+    border-top: 1px solid var(--theme-light);
+}
+
+/* These need to be deep because we are dynamically adding them. */
 .context-menu :deep(button) {
     background-color: transparent;
     border: none;
     margin: 0;
-    padding: 6px 10px;
+    padding: 4px 12px;
     text-align: left;
 }
 
@@ -77,10 +84,19 @@
     background-color: var(--theme-lightest);
 }
 
-.context-menu :deep(button.disabled) {
+.context-menu :deep(button.disabled),
+.context-menu :deep(button.header) {
     background-color: transparent;
-    color: var(--theme-medium);
     cursor: default;
+    pointer-events: none;
+}
+
+.context-menu :deep(button.disabled) {
+    color: var(--theme-medium);
+}
+
+.context-menu :deep(button.header) {
+    font-weight: bold;
 }
 </style>
 
@@ -202,6 +218,7 @@
         }
 
         // Add or update any nodes for fields that we have.
+        let zIndex = 0;
         for (const field of props.labelManager.current.value.fields ?? []) {
             const node = nodeLayer.children.find(n => n.id() === field.guid);
             let shape = (node instanceof Konva.Shape || node instanceof Konva.Group) ? node : undefined;
@@ -225,6 +242,9 @@
 
                 nodeLayer.add(shape);
             }
+
+            shape.setZIndex(zIndex);
+            zIndex++;
 
             updateShapeFromField(shape, field);
         }
@@ -561,11 +581,35 @@
 
         const titleButton = document.createElement("button");
         titleButton.innerText = getFieldTitle(field);
-        titleButton.classList.add("disabled");
+        titleButton.classList.add("header");
         menuFieldActionElement.value.appendChild(titleButton);
 
-        menuFieldActionElement.value.appendChild(createContextMenuButton("Delete",
-            () => deleteField(field)));
+        menuFieldActionElement.value.appendChild(createContextMenuButton(
+            "Send Backward",
+            () => sendBackward(field)
+        ));
+
+        menuFieldActionElement.value.appendChild(createContextMenuButton(
+            "Bring Forward",
+            () => bringForward(field)
+        ));
+
+        menuFieldActionElement.value.appendChild(createContextMenuButton(
+            "Send to Back",
+            () => sendToBack(field)
+        ));
+
+        menuFieldActionElement.value.appendChild(createContextMenuButton(
+            "Bring to Front",
+            () => bringToFront(field)
+        ));
+
+        menuFieldActionElement.value.appendChild(document.createElement("hr"));
+
+        menuFieldActionElement.value.appendChild(createContextMenuButton(
+            "Delete",
+            () => deleteField(field)
+        ));
 
         menuFieldActionElement.value.style.display = "";
     }
@@ -637,6 +681,86 @@
     }
 
     /**
+     * Moves the field forward one z-index.
+     *
+     * @param field The field to be updated.
+     */
+    function bringForward(field: LabelFieldBag): void {
+        props.labelManager.mutate(label => {
+            if (!label.fields) {
+                return;
+            }
+
+            const index = label.fields.findIndex(f => f.guid === field.guid);
+
+            if (index < label.fields.length - 1) {
+                const removed = label.fields.splice(index, 1);
+                label.fields.splice(index + 1, 0, ...removed);
+            }
+        });
+    }
+
+    /**
+     * Moves the field backward one z-index.
+     *
+     * @param field The field to be updated.
+     */
+     function sendBackward(field: LabelFieldBag): void {
+        props.labelManager.mutate(label => {
+            if (!label.fields) {
+                return;
+            }
+
+            const index = label.fields.findIndex(f => f.guid === field.guid);
+
+            if (index > 0) {
+                const removed = label.fields.splice(index, 1);
+                label.fields.splice(index - 1, 0, ...removed);
+            }
+        });
+    }
+
+    /**
+     * Moves the field to z-index 0.
+     *
+     * @param field The field to be updated.
+     */
+     function sendToBack(field: LabelFieldBag): void {
+        props.labelManager.mutate(label => {
+            if (!label.fields) {
+                return;
+            }
+
+            const index = label.fields.findIndex(f => f.guid === field.guid);
+
+            if (index > 0) {
+                const removed = label.fields.splice(index, 1);
+                label.fields.splice(0, 0, ...removed);
+            }
+        });
+    }
+
+    /**
+     * Moves the field to the last z-index.
+     *
+     * @param field The field to be updated.
+     */
+     function bringToFront(field: LabelFieldBag): void {
+        props.labelManager.mutate(label => {
+            if (!label.fields) {
+                return;
+            }
+
+            const index = label.fields.findIndex(f => f.guid === field.guid);
+
+            if (index < label.fields.length - 1) {
+                const removed = label.fields.splice(index, 1);
+                label.fields.splice(label.fields.length, 0, ...removed);
+            }
+        });
+    }
+
+    /**
      * Event handler for when a node on the stage is clicked or tapped.
      * Translates the event data into selection information.
      *
@@ -682,6 +806,10 @@
 
         // They hit the stage or not ready yet, nothing to show.
         if (e.target === stage || !stage || !menuElement.value) {
+            if (menuElement.value) {
+                menuElement.value.style.display = "none";
+            }
+
             return;
         }
 
