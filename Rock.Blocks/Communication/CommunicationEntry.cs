@@ -522,6 +522,7 @@ namespace Rock.Blocks.Communication
 
                 return new CommunicationEntrySmsMediumOptionsBag
                 {
+                    BinaryFileTypeGuid = GetAttributeValue( AttributeKey.AttachmentBinaryFileType ).AsGuidOrNull() ?? Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT.AsGuid(),
                     CharacterLimit = smsMedium.GetAttributeValue( "CharacterLimit" ).AsIntegerOrNull() ?? 160,
                     HasActiveTransport = smsMedium.Transport?.IsActive ?? false,
                     MediumEntityTypeId = medium.EntityType.Id,
@@ -880,12 +881,37 @@ namespace Rock.Blocks.Communication
 
         private static bool IsTestRequestValid( CommunicationEntryTestRequestBag bag, out ValidationResult validationResult )
         {
-            return Validate.IsNotNull( bag, "Communication Information", out validationResult )
-                && Validate.IsNotNullOrWhiteSpace( bag.FromName, nameof( bag.FromName ).SplitCase(), out validationResult )
-                && Validate.IsNotNullOrWhiteSpace( bag.FromAddress, nameof( bag.FromAddress ).SplitCase(), out validationResult )
-                && Validate.IsNotEmpty( bag.MediumEntityTypeGuid, "Medium Type", out validationResult )
-                && ( !bag.FutureSendDateTime.HasValue || Validate.IsNowOrFutureDateTime( bag.FutureSendDateTime.Value, "Schedule Send", out validationResult ) )
-                && Validate.IsNotEmpty( bag.Recipients, nameof( bag.Recipients ), out validationResult );
+            // Validation for all medium types.
+            if ( !Validate.IsNotNull( bag, "Communication Information", out validationResult )
+                 || !Validate.IsNotEmpty( bag.MediumEntityTypeGuid, "Medium Type", out validationResult ) )
+            {
+                return false;
+            }
+
+            // Validation for specific medium types.
+            if ( bag.MediumEntityTypeGuid == SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() )
+            {
+                // Email
+                return Validate.IsNotNullOrWhiteSpace( bag.FromName, "From Name", out validationResult )
+                    && Validate.IsNotNullOrWhiteSpace( bag.FromAddress, "From Address", out validationResult )
+                    && ( !bag.FutureSendDateTime.HasValue || Validate.IsNowOrFutureDateTime( bag.FutureSendDateTime.Value, "Schedule Send", out validationResult ) )
+                    && Validate.IsNotEmpty( bag.Recipients, "Recipients", out validationResult );
+            }
+            else if ( bag.MediumEntityTypeGuid == SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() )
+            {
+                // SMS
+                return Validate.IsNotNull( bag.SmsFromSystemPhoneNumberGuid, "From Phone", out validationResult )
+                    && ( !bag.FutureSendDateTime.HasValue || Validate.IsNowOrFutureDateTime( bag.FutureSendDateTime.Value, "Schedule Send", out validationResult ) )
+                    && Validate.IsNotEmpty( bag.Recipients, "Recipients", out validationResult )
+                    && Validate.IsNotNullOrWhiteSpace( bag.SmsMessage, "Message", out validationResult );
+            }
+            else
+            {
+                // Unsupported medium type.
+                validationResult = new ValidationResult( "Medium Type is not supported." );
+                return false;
+            }
+
         }
 
         private static bool IsSendRequestValid( CommunicationEntrySendRequestBag bag, out ValidationResult validationResult )
@@ -1565,7 +1591,6 @@ namespace Rock.Blocks.Communication
                 IsBulkCommunication = communication.IsBulkCommunication,
                 MediumEntityTypeGuid = mediumGuid ?? Guid.Empty,
                 Recipients = communicationRecipientBags,
-                SMSAttachmentBinaryFileIds = communication.SMSAttachmentBinaryFileIds.ToList(),
                 Status = communication.Status,
             };
 
@@ -2125,9 +2150,13 @@ namespace Rock.Blocks.Communication
 
         private interface ICommunicationAttachments
         {
-            IEnumerable<AttachmentDto> Attachments { get; set; }
+            IEnumerable<AttachmentDto> EmailAttachments { get; set; }
 
-            void SetAttachments( IEnumerable<int> binaryFileIds );
+            void SetEmailAttachments( IEnumerable<int> binaryFileIds );
+
+            IEnumerable<AttachmentDto> SmsAttachments { get; set; }
+
+            void SetSmsAttachments( IEnumerable<int> binaryFileIds );
         }
 
         private static class CommunicationEntryHelper
@@ -2138,7 +2167,8 @@ namespace Rock.Blocks.Communication
 
                 if ( target is ICommunicationAttachments attachmentsTarget )
                 {
-                    attachmentsTarget.SetAttachments( source.EmailAttachmentBinaryFileIds );
+                    attachmentsTarget.SetEmailAttachments( source.EmailAttachmentBinaryFileIds );
+                    attachmentsTarget.SetSmsAttachments( source.SMSAttachmentBinaryFileIds );
                 }
             }
 
@@ -2273,6 +2303,13 @@ namespace Rock.Blocks.Communication
             public string PushSound { get => _bag.PushSound; set => _bag.PushSound = value; }
             public string PushData { get => _bag.PushData; set => _bag.PushData = value; }
             public int? PushImageBinaryFileId { get => _bag.PushImageBinaryFileId; set => _bag.PushImageBinaryFileId = value; }
+            public string PushOpenMessage { get => _bag.PushOpenMessage; set => _bag.PushOpenMessage = value; }
+            public string SMSMessage { get => _bag.SmsMessage; set => _bag.SmsMessage = value; }
+            public IEnumerable<int> EmailAttachmentBinaryFileIds { get => this.EmailAttachments?.Select( a => a.Id ); }
+            public DateTimeOffset? FutureSendDateTime { get => _bag.FutureSendDateTime; set => _bag.FutureSendDateTime = value; }
+            public IEnumerable<int> SMSAttachmentBinaryFileIds { get => this.SmsAttachments?.Select( a => a.Id ); }
+            public CommunicationStatus Status { get => _bag.Status; set => _bag.Status = value; }
+
             public PushOpenAction? PushOpenAction
             {
                 get
@@ -2288,11 +2325,34 @@ namespace Rock.Blocks.Communication
                         : ( PushOpenActionType? ) null;
                 }
             }
-            public string PushOpenMessage { get => _bag.PushOpenMessage; set => _bag.PushOpenMessage = value; }
-            public int? SmsFromSystemPhoneNumberId { get => _bag.SmsFromSystemPhoneNumberId; set => _bag.SmsFromSystemPhoneNumberId = value; }
-            public string SMSMessage { get => _bag.SMSMessage; set => _bag.SMSMessage = value; }
 
-            public IEnumerable<AttachmentDto> Attachments
+            public int? SmsFromSystemPhoneNumberId
+            {
+                get
+                {
+                    if ( _bag.SmsFromSystemPhoneNumberGuid.HasValue )
+                    {
+                        return SystemPhoneNumberCache.GetId( _bag.SmsFromSystemPhoneNumberGuid.Value );
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+                set
+                {
+                    if ( value.HasValue )
+                    {
+                        _bag.SmsFromSystemPhoneNumberGuid = SystemPhoneNumberCache.GetGuid( value.Value );
+                    }
+                    else
+                    {
+                        _bag.SmsFromSystemPhoneNumberGuid = null;
+                    }
+                }
+            }
+
+            public IEnumerable<AttachmentDto> EmailAttachments
             {
                 get
                 {
@@ -2305,16 +2365,47 @@ namespace Rock.Blocks.Communication
                     _bag.EmailAttachmentBinaryFiles = AttachmentHelper.ToListItemBags( value );
                 }
             }
-            public IEnumerable<int> EmailAttachmentBinaryFileIds { get => this.Attachments?.Select( a => a.Id ); }
-            public DateTimeOffset? FutureSendDateTime { get => _bag.FutureSendDateTime; set => _bag.FutureSendDateTime = value; }
-            public int? SMSFromDefinedValueId { get => _bag.SMSFromDefinedValueId; set => _bag.SMSFromDefinedValueId = value; }
-            public IEnumerable<int> SMSAttachmentBinaryFileIds { get => _bag.SMSAttachmentBinaryFileIds; set => _bag.SMSAttachmentBinaryFileIds = value?.ToList(); }
-            public CommunicationStatus Status { get => _bag.Status; set => _bag.Status = value; }
+
+            public IEnumerable<AttachmentDto> SmsAttachments
+            {
+                get
+                {
+                    // Convert the bag data to attachments.
+                    return AttachmentHelper.GetAttachments( _rockContext, _bag.SmsAttachmentBinaryFiles?.Select( b => b.Value.AsGuid() ).Where( g => !g.IsEmpty() ) );
+                }
+                set
+                {
+                    // Update the binary files in the bag from the attachments.
+                    _bag.SmsAttachmentBinaryFiles = AttachmentHelper.ToListItemBags( value );
+                }
+            }
+            
+            public int? SMSFromDefinedValueId
+            {
+                get => _bag.SMSFromDefinedValueId;
+                set => _bag.SMSFromDefinedValueId = value;
+            }
 
             /// <inheritdoc/>
-            public void SetAttachments( IEnumerable<int> binaryFileIds )
+            public void SetEmailAttachments( IEnumerable<int> binaryFileIds )
             {
-                this.Attachments = AttachmentHelper.GetAttachments( _rockContext, binaryFileIds );
+                if ( _bag.EmailAttachmentBinaryFiles == null )
+                {
+                    _bag.EmailAttachmentBinaryFiles = new List<ListItemBag>();
+                }
+
+                _bag.EmailAttachmentBinaryFiles.AddRange( AttachmentHelper.ToListItemBags( AttachmentHelper.GetAttachments( _rockContext, binaryFileIds ) ) );
+            }
+
+            /// <inheritdoc/>
+            public void SetSmsAttachments( IEnumerable<int> binaryFileIds )
+            {
+                if ( _bag.SmsAttachmentBinaryFiles == null )
+                {
+                    _bag.SmsAttachmentBinaryFiles = new List<ListItemBag>();
+                }
+
+                _bag.SmsAttachmentBinaryFiles.AddRange( AttachmentHelper.ToListItemBags( AttachmentHelper.GetAttachments( _rockContext, binaryFileIds ) ) );
             }
         }
 

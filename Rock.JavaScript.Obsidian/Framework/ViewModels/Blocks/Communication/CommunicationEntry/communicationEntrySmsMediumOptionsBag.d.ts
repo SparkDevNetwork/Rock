@@ -22,10 +22,14 @@
 //
 
 import { MediumType } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntry/mediumType";
+import { Guid } from "@Obsidian/Types";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** Bag containing the Email Medium options for the Communication Entry block. */
 export type CommunicationEntrySmsMediumOptionsBag = {
+    /** Gets or sets the binary file type unique identifier. */
+    binaryFileTypeGuid: Guid;
+
     /** Gets or sets the character limit for the message. */
     characterLimit: number;
 

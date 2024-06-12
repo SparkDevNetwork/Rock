@@ -49,5 +49,13 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntry
         /// Gets or sets the character limit for the message.
         /// </summary>
         public int CharacterLimit { get; set; } = 160;
+
+        /// <summary>
+        /// Gets or sets the binary file type unique identifier.
+        /// </summary>
+        /// <value>
+        /// The binary file type unique identifier.
+        /// </value>
+        public Guid BinaryFileTypeGuid { get; set; }
     }
 }

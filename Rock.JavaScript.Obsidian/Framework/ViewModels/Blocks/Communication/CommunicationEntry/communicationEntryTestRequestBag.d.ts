@@ -92,14 +92,13 @@ export type CommunicationEntryTestRequestBag = {
     /** Gets or sets the reply to email address. */
     replyAddress?: string | null;
 
-    /** Gets or sets the SMS attachment binary file ids. */
-    smsAttachmentBinaryFileIds?: number[] | null;
+    /** Gets or sets the SMS attachment binary files. */
+    smsAttachmentBinaryFiles?: ListItemBag[] | null;
 
-    /** Gets or sets the SMS from defined value identifier. */
     smsFromDefinedValueId?: number | null;
 
-    /** Gets or sets the SMS from system phone number identifier. */
-    smsFromSystemPhoneNumberId?: number | null;
+    /** Gets or sets the SMS from system phone number unique identifier. */
+    smsFromSystemPhoneNumberGuid?: Guid | null;
 
     /** Gets or sets the SMS message. */
     smsMessage?: string | null;

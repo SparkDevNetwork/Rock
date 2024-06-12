@@ -178,12 +178,15 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntry
         public string PushOpenMessage { get; set; }
 
         /// <summary>
-        /// Gets or sets the SMS from system phone number identifier.
+        /// Gets or sets the SMS from system phone number unique identifier.
         /// </summary>
         /// <value>
-        /// The SMS from system phone number identifier.
+        /// The SMS from system phone number unique identifier.
         /// </value>
-        public int? SmsFromSystemPhoneNumberId { get; set; }
+        public Guid? SmsFromSystemPhoneNumberGuid { get; set; }
+
+        // TODO JMH Is this the same as SmsFromSystemPhoneNumberGuid?
+        public int? SMSFromDefinedValueId { get; set; }
 
         /// <summary>
         /// Gets or sets the SMS message.
@@ -191,7 +194,7 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntry
         /// <value>
         /// The SMS message.
         /// </value>
-        public string SMSMessage { get; set; }
+        public string SmsMessage { get; set; }
 
         /// <summary>
         /// Gets or sets the email attachment binary files.
@@ -202,28 +205,20 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntry
         public List<ListItemBag> EmailAttachmentBinaryFiles { get; set; }
 
         /// <summary>
+        /// Gets or sets the SMS attachment binary files.
+        /// </summary>
+        /// <value>
+        /// The SMS attachment binary files.
+        /// </value>
+        public List<ListItemBag> SmsAttachmentBinaryFiles { get; set; }
+
+        /// <summary>
         /// Gets or sets the future send date time.
         /// </summary>
         /// <value>
         /// The future send date time.
         /// </value>
         public DateTimeOffset? FutureSendDateTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets the SMS from defined value identifier.
-        /// </summary>
-        /// <value>
-        /// The SMS from defined value identifier.
-        /// </value>
-        public int? SMSFromDefinedValueId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the SMS attachment binary file ids.
-        /// </summary>
-        /// <value>
-        /// The SMS attachment binary file ids.
-        /// </value>
-        public List<int> SMSAttachmentBinaryFileIds { get; set; }
 
         /// <summary>
         /// Gets or sets the status.
