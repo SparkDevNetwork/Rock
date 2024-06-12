@@ -250,6 +250,15 @@ export class LineTransformer extends Konva.Group {
 
         this.line = line;
     }
+
+    /**
+     * Gets the currently selected node in this transformer.
+     *
+     * @returns The currently selected node or `undefined`.
+     */
+    public getSelectedNode(): Konva.Line | undefined {
+        return this.line;
+    }
 }
 
 // #region Functions

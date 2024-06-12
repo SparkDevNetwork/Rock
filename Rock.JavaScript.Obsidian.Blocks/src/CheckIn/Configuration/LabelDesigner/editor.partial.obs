@@ -23,7 +23,8 @@
                     <i class="fa fa-filter"></i>
                 </RockButton>
 
-                <RockButton>
+                <RockButton :disabled="isDeleteFieldDisabled"
+                            @click="onDeleteFieldClick">
                     <i class="fa fa-trash"></i>
                 </RockButton>
             </div>
@@ -109,13 +110,9 @@
 <script setup lang="ts">
     import Switch from "@Obsidian/Controls/switch.obs";
     import Worksurface from "./worksurface.partial.obs";
-    import { PropType, ref } from "vue";
+    import { computed, PropType, ref } from "vue";
     import { LabelUndoManager } from "./undoManager.partial";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-
-    const isGridVisible = ref(false);
-    const isGridLocked = ref(false);
-    const worksurface = ref<InstanceType<typeof Worksurface>>();
 
     const props = defineProps({
         labelManager: {
@@ -128,11 +125,47 @@
         savePreview
     });
 
-    function savePreview(): Promise<Blob | undefined> {
+    const isGridVisible = ref(false);
+    const isGridLocked = ref(false);
+    const worksurface = ref<InstanceType<typeof Worksurface>>();
+
+    const isDeleteFieldDisabled = computed((): boolean => {
+        return !props.labelManager.selectedField.value;
+    });
+
+    /**
+     * Creates a preview image of the canvas that will then be saved into
+     * the database label. This provides a quick way to see what the label
+     * will look like without having to print or go into the designer.
+     */
+     function savePreview(): Promise<Blob | undefined> {
         if (!worksurface.value) {
             return Promise.resolve(undefined);
         }
 
         return worksurface.value.savePreview();
+    }
+
+    /**
+     * Event handler for when the delete field button is clicked in the header.
+     */
+    function onDeleteFieldClick(): void {
+        const selectedGuid = props.labelManager.selectedField.value?.guid;
+
+        if (!selectedGuid) {
+            return;
+        }
+
+        props.labelManager.mutate(label => {
+            if (!label.fields) {
+                return;
+            }
+
+            const index = label.fields.findIndex(f => f.guid === selectedGuid);
+
+            if (index >= 0) {
+                label.fields.splice(index, 1);
+            }
+        });
     }
 </script>

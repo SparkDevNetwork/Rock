@@ -4,6 +4,14 @@
         <div ref="containerElement"
              class="worksurface">
         </div>
+
+        <div ref="menuElement" class="context-menu text-sm">
+            <div ref="menuFieldActionElement" class="menu-group">
+            </div>
+            <div ref="menuFieldSelectElement" class="menu-group">
+                <button class="disabled">Select Field</button>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -31,11 +39,61 @@
     border-radius: 12px;
     overflow: hidden;
 }
+
+.context-menu {
+    display: none;
+    position: absolute;
+    background-color: var(--theme-white);
+    box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.context-menu .menu-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.context-menu .menu-group {
+    border-top: 1px solid var(--theme-light);
+}
+
+/* Remove the top border from the first menu group. */
+.context-menu .menu-group:first-child {
+    border-top: 0;
+}
+
+/* These need to be deep because we are dynamically adding them. */
+.context-menu :deep(button) {
+    background-color: transparent;
+    border: none;
+    margin: 0;
+    padding: 6px 10px;
+    text-align: left;
+}
+
+.context-menu :deep(button:hover) {
+    background-color: var(--theme-lightest);
+}
+
+.context-menu :deep(button.disabled) {
+    background-color: transparent;
+    color: var(--theme-medium);
+    cursor: default;
+}
 </style>
 
 <script setup lang="ts">
+    import { LabelFieldType, LabelFieldTypeDescription } from "@Obsidian/Enums/CheckIn/Labels/labelFieldType";
+    import { TextFieldSubType } from "@Obsidian/Enums/CheckIn/Labels/textFieldSubType";
     import Konva from "@Obsidian/Libs/konva";
+    import { Guid } from "@Obsidian/Types";
+    import { asBoolean } from "@Obsidian/Utility/booleanUtils";
     import { areEqual } from "@Obsidian/Utility/guid";
+    import { DesignedLabelBag } from "@Obsidian/ViewModels/CheckIn/Labels/designedLabelBag";
+    import { LabelFieldBag } from "@Obsidian/ViewModels/CheckIn/Labels/labelFieldBag";
+    import { TextFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/textFieldConfigurationBag";
     import { KonvaEventObject } from "konva/lib/Node";
     import { onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
     import { createShapeForFieldType, LineTransformer, updateShapeFromField } from "./shapes.partial";
@@ -70,6 +128,9 @@
 
     const containerElement = ref<HTMLDivElement | undefined>();
     const fontLoaderElement = ref<HTMLDivElement | undefined>();
+    const menuElement = ref<HTMLDivElement | undefined>();
+    const menuFieldActionElement = ref<HTMLDivElement | undefined>();
+    const menuFieldSelectElement = ref<HTMLDivElement | undefined>();
     let stage: Konva.Stage | undefined;
     let transformHelper: TransformHelper | undefined;
     let lineTransformer: LineTransformer | undefined;
@@ -179,15 +240,13 @@
         }
 
         // Update selection.
-        const nodes = nodeLayer.children.filter(n => areEqual(n.id(), props.labelManager.selectedField.value?.guid));
+        const node = nodeLayer.children.find(n => areEqual(n.id(), props.labelManager.selectedField.value?.guid));
 
-        if (nodes.length === 1 && nodes[0] instanceof Konva.Line) {
-            lineTransformer?.node(nodes[0]);
-            transformHelper?.transformer.nodes([]);
+        if (node) {
+            selectNode(node, undefined);
         }
         else {
-            transformHelper?.transformer.nodes(nodes);
-            lineTransformer?.node(undefined);
+            deselectAllNodes();
         }
     }
 
@@ -288,6 +347,11 @@
         });
     }
 
+    /**
+     * Creates a preview image of the canvas that will then be saved into
+     * the database label. This provides a quick way to see what the label
+     * will look like without having to print or go into the designer.
+     */
     async function savePreview(): Promise<Blob | undefined> {
         if (!stage) {
             return undefined;
@@ -305,13 +369,84 @@
     }
 
     /**
-     * Event handler for when a node on the stage is clicked or tapped.
-     * Translates the event data into selection information.
+     * Selects the node so it can be manipulated by the user. If the node is not
+     * a field node, then this will walk up the ancestor tree until it finds the
+     * field node.
      *
-     * @param e The object describing the event.
+     * @param node The node to be selected on the canvas.
+     * @param field If specified, then the field will also be selected in the label manager.
      */
-    function onStageNodeSelected(e: KonvaEventObject<MouseEvent> | KonvaEventObject<TouchEvent>): void {
-        let target: Konva.Node | null = e.target;
+    function selectNode(node: Konva.Node, field: LabelFieldBag | undefined): void {
+        // If we selected something without an id, it might be nested in
+        // a group. Walk up the tree until we find an id.
+        while (node && !node.id()) {
+            if (!node.parent) {
+                return;
+            }
+
+            node = node.parent;
+        }
+
+        if (node instanceof Konva.Line) {
+            lineTransformer?.node(node);
+            transformHelper?.transformer.nodes([]);
+        }
+        else {
+            transformHelper?.transformer.nodes([node]);
+            lineTransformer?.node(undefined);
+        }
+
+        if (field) {
+            props.labelManager.selectField(field.guid);
+        }
+    }
+
+    /**
+     * Deselects all nodes and also removes the selection in the label manager.
+     */
+    function deselectAllNodes(): void {
+        transformHelper?.transformer.nodes([]);
+        lineTransformer?.node(undefined);
+        props.labelManager.selectField(undefined);
+    }
+
+    /**
+     * Get the node objects that are currently selected. This checks all ways
+     * a node can be visually selected. If nothing is selected an empty array
+     * will be returned.
+     *
+     * @returns An array of node objects that are selected.
+     */
+    function getSelectedNodes(): Konva.Node[] {
+        const nodes: Konva.Node[] = [];
+
+        if (lineTransformer) {
+            const line = lineTransformer.getSelectedNode();
+
+            if (line) {
+                nodes.push(line);
+            }
+        }
+
+        if (transformHelper) {
+            const transformerNodes = transformHelper.transformer.nodes();
+
+            nodes.push(...transformerNodes);
+        }
+
+        return nodes;
+    }
+
+    /**
+     * Returns the field identifier (guid) for the node. If this node is a
+     * child node then its ancestors will be searched to find the field node.
+     *
+     * @param node The node whose field identifier is to be determined.
+     *
+     * @returns The field identifier or `undefined` if it could not be determined.
+     */
+    function getNodeFieldId(node: Konva.Node): Guid | undefined {
+        let target: Konva.Node | null = node;
 
         // If we selected something without an id, it might be nested in
         // a group. Walk up the tree until we find an id.
@@ -319,38 +454,292 @@
             target = target.parent;
         }
 
+        return target?.id();
+    }
+
+    /**
+     * Finds the field for the specified node.
+     *
+     * @param node The node whose field is to be determined.
+     * @param label The label to search, if not specified then the main label is used.
+     *
+     * @returns The label field or `undefined` if it could not be determined.
+     */
+    function findFieldForNode(node: Konva.Node, label?: DesignedLabelBag): LabelFieldBag | undefined {
+        label = label || props.labelManager.current.value;
+
+        if (!label.fields) {
+            return undefined;
+        }
+
+        const fieldId = getNodeFieldId(node);
+
+        return label.fields.find(f => f.guid === fieldId);
+    }
+
+    /**
+     * Finds all the fields for the array of nodes. If no fields could be
+     * found then an empty array is returned.
+     *
+     * @param nodes The nodes whose fields are to be determined.
+     *
+     * @returns An array of field bags.
+     */
+    function findFieldsForNodes(nodes: Konva.Node[]): LabelFieldBag[] {
+        if (!props.labelManager.current.value.fields) {
+            return [];
+        }
+
+        const fieldIds = nodes.map(n => getNodeFieldId(n));
+
+        return props.labelManager.current.value
+            .fields
+            .filter(f => fieldIds.includes(f.guid));
+    }
+
+    /**
+     * Finds the canvas node for the specified field.
+     *
+     * @param field The field whose node is to be found.
+     *
+     * @returns The node or `undefined` if it could not be found.
+     */
+    function findNodeForField(field: LabelFieldBag): Konva.Node | undefined {
+        return stage?.findOne((n: Konva.Node) => n.id() === field.guid);
+    }
+
+    /**
+     * Hides the field select menu in the context menu.
+     */
+    function hideFieldSelectMenu(): void {
+        if (menuFieldSelectElement.value) {
+            menuFieldSelectElement.value.style.display = "none";
+        }
+    }
+
+    /**
+     * Shows the field select menu for the specified set of nodes.
+     *
+     * @param fields The fields that will be displayed for choosing from.
+     */
+    function showFieldSelectMenu(fields: LabelFieldBag[]): void {
+        if (!menuFieldSelectElement.value) {
+            return;
+        }
+
+        // Remove all the old menu items.
+        while (menuFieldSelectElement.value.childNodes.length > 1) {
+            menuFieldSelectElement.value.removeChild(menuFieldSelectElement.value.childNodes[1]);
+        }
+
+        for (const field of fields) {
+            menuFieldSelectElement.value.appendChild(createContextMenuButton(
+                getFieldTitle(field),
+                () => {
+                    const node = findNodeForField(field);
+                    if (node) {
+                        selectNode(node, field);
+                    }
+                }
+            ));
+        }
+
+        menuFieldSelectElement.value.style.display = "";
+    }
+
+    /**
+     * Shows the action menu of the context menu for the specified field.
+     *
+     * @param field The field whose actions are to be displayed.
+     */
+    function showFieldActionMenu(field: LabelFieldBag): void {
+        if (!menuFieldActionElement.value) {
+            return;
+        }
+
+        menuFieldActionElement.value.innerHTML = "";
+
+        const titleButton = document.createElement("button");
+        titleButton.innerText = getFieldTitle(field);
+        titleButton.classList.add("disabled");
+        menuFieldActionElement.value.appendChild(titleButton);
+
+        menuFieldActionElement.value.appendChild(createContextMenuButton("Delete",
+            () => deleteField(field)));
+
+        menuFieldActionElement.value.style.display = "";
+    }
+
+    /**
+     * Creates a new button element configured for use on the context menu.
+     *
+     * @param title The title of the button.
+     * @param cb The function to call when it is clicked.
+     *
+     * @returns A new button element.
+     */
+    function createContextMenuButton(title: string, cb: () => void): HTMLButtonElement {
+        const button = document.createElement("button");
+
+        button.innerText = title;
+        button.addEventListener("click", e => {
+            e.preventDefault();
+            cb();
+        });
+
+        return button;
+    }
+
+    /**
+     * Gets the title of the field to display in the UI. This is meant to help
+     * identifier the specific field to the user when looking at a list of
+     * multiple fields.
+     *
+     * @param field The field whose title is to be retrieved.
+     *
+     * @returns A string that represents the field.
+     */
+    function getFieldTitle(field: LabelFieldBag): string {
+        if (field.fieldType === LabelFieldType.Text) {
+            const fieldConfig = field.configurationValues as TextFieldConfigurationBag;
+
+            if (field.fieldSubType === TextFieldSubType.Custom) {
+                return asBoolean(fieldConfig.isDynamicText)
+                    ? fieldConfig.placeholderText ?? ""
+                    : fieldConfig.staticText ?? "";
+            }
+            else {
+                return fieldConfig.placeholderText ?? "";
+            }
+        }
+        else {
+            return LabelFieldTypeDescription[field.fieldType];
+        }
+    }
+
+    /**
+     * Deletes a field from the label.
+     *
+     * @param field The field to be deleted.
+     */
+    function deleteField(field: LabelFieldBag): void {
+        props.labelManager.mutate(label => {
+            if (!label.fields) {
+                return;
+            }
+
+            const fieldIndex = label.fields.findIndex(f => f.guid === field.guid);
+
+            if (fieldIndex >= 0) {
+                label.fields.splice(fieldIndex, 1);
+            }
+        });
+    }
+
+    /**
+     * Event handler for when a node on the stage is clicked or tapped.
+     * Translates the event data into selection information.
+     *
+     * @param e The object describing the event.
+     */
+    function onStageNodeSelected(e: KonvaEventObject<MouseEvent> | KonvaEventObject<TouchEvent>): void {
+        // Do nothing on non-left click.
+        if (e.evt instanceof MouseEvent && e.evt.button !== 0) {
+            return;
+        }
+
         // If they clicked on the background, deselect everything.
-        if (!target || target === stage) {
-            transformHelper?.transformer.nodes([]);
-            lineTransformer?.node(undefined);
-            props.labelManager.selectField(undefined);
+        if (!e.target || e.target === stage) {
+            deselectAllNodes();
 
             return;
         }
 
-        const field = props.labelManager.current.value.fields?.find(f => f.guid === target?.id());
+        const field = findFieldForNode(e.target);
 
         if (!field) {
-            console.error(`Could not find field '${target.id()}'.`);
+            console.error(`Could not find field '${e.target.id()}'.`);
 
-            transformHelper?.transformer.nodes([]);
-            lineTransformer?.node(undefined);
-            props.labelManager.selectField(undefined);
+            deselectAllNodes();
 
             return;
         }
 
         // Select the node, only single selection supported.
-        if (target instanceof Konva.Line) {
-            lineTransformer?.node(target);
-            transformHelper?.transformer.nodes([]);
-        }
-        else {
-            transformHelper?.transformer.nodes([target]);
-            lineTransformer?.node(undefined);
+        selectNode(e.target, field);
+    }
+
+    /**
+     * Handles the context menu event for the stage. We use this to override
+     * the standard browser context menu with one that allows for custom actions
+     * to be performed in the editor.
+     *
+     * @param e The event that was triggered.
+     */
+    function onContextMenu(e: KonvaEventObject<MouseEvent>): void {
+        // Prevent the browser from showing the standard menu.
+        e.evt.preventDefault();
+
+        // They hit the stage or not ready yet, nothing to show.
+        if (e.target === stage || !stage || !menuElement.value) {
+            return;
         }
 
-        props.labelManager.selectField(field.guid);
+        const pointer = stage.getPointerPosition() ?? { x: 0, y: 0 };
+
+        menuElement.value.style.display = "initial";
+        menuElement.value.style.left = `${pointer.x + 4}px`;
+        menuElement.value.style.top = `${pointer.y + 4}px`;
+
+        const nodes = stage.getAllIntersections(stage.getPointerPosition());
+        const selectedNodes = getSelectedNodes();
+
+        // If a single node is already selected and is one of the nodes that was
+        // right-clicked on, then we want to show the action menu for the
+        // selected node, and then show the field select menu.
+        if (selectedNodes.length === 1) {
+            if (nodes.find(n => n._id === selectedNodes[0]._id)) {
+                const field = findFieldForNode(selectedNodes[0]);
+
+                if (field) {
+                    showFieldActionMenu(field);
+                }
+
+                if (nodes.length > 1) {
+                    showFieldSelectMenu(findFieldsForNodes(nodes));
+                }
+                else {
+                    hideFieldSelectMenu();
+                }
+
+                return;
+            }
+        }
+
+        // Auto-select the top-most node/field.
+        const field = findFieldForNode(nodes[nodes.length - 1]);
+
+        if (field) {
+            selectNode(nodes[nodes.length - 1], field);
+            showFieldActionMenu(field);
+        }
+
+        if (nodes.length == 1) {
+            hideFieldSelectMenu();
+        }
+        else {
+            showFieldSelectMenu(findFieldsForNodes(nodes));
+        }
+    }
+
+    /**
+     * Handler for when a click event is encountered anywhere in the window.
+     */
+    function onWindowClick(): void {
+        // Hide the context menu.
+        if (menuElement.value) {
+            menuElement.value.style.display = "none";
+        }
     }
 
     /**
@@ -360,7 +749,7 @@
      */
     function onNodeDragEnd(e: KonvaEventObject<DragEvent>): void {
         props.labelManager.mutate(label => {
-            const field = label.fields?.find(f => areEqual(f.guid, e.target.id()));
+            const field = findFieldForNode(e.target, label);
 
             if (!field) {
                 return;
@@ -378,7 +767,7 @@
      */
     function onNodeTransformEnd(e: KonvaEventObject<unknown>): void {
         props.labelManager.mutate(label => {
-            const field = label.fields?.find(f => areEqual(f.guid, e.target.id()));
+            const field = findFieldForNode(e.target, label);
 
             if (!field) {
                 return;
@@ -399,7 +788,7 @@
      */
     function onLineTransformEnd(line: Konva.Line): void {
         props.labelManager.mutate(label => {
-            const field = label.fields?.find(f => areEqual(f.guid, line.id()));
+            const field = findFieldForNode(line, label);
 
             if (!field) {
                 return;
@@ -413,6 +802,8 @@
     }
 
     onMounted(async () => {
+        window.addEventListener("click", onWindowClick);
+
         if (!containerElement.value) {
             return;
         }
@@ -443,6 +834,7 @@
         stage.on("click", onStageNodeSelected);
         stage.on("tap", onStageNodeSelected);
         stage.on("dragend", onNodeDragEnd);
+        stage.on("contextmenu", onContextMenu);
         transformHelper.transformer.on("transformend", onNodeTransformEnd);
 
         configureStageDrop(stage);
@@ -458,6 +850,8 @@
 
         transformHelper?.destroy();
         transformHelper = undefined;
+
+        window.removeEventListener("click", onWindowClick);
     });
 
     watch(props.labelManager.current, () => {
