@@ -1,3 +1,6 @@
+/* ==================== NORMALIZE ==================== */
+@import 'core/normalize';
+
 /* ===================== VARIABLES =================== */
 @import 'sass-variable';
 @import 'css-variable';
@@ -14,7 +17,9 @@
 @import 'components/typography';    // Fully Polish
 @import 'components/alerts';        // Fully Polish but if we decided to add more color variable, go in and change the color.
 @import 'components/buttons';       // TODO polish
+@import 'components/button-groups'; // Rely Heavily on _buttons_scss
 @import 'components/badges';        // TODO polish, there is some stuff that have !important on it?
 @import 'components/labels';        // When color-mix() use, go in the file there's comments at where it is need ot be use.
 @import 'components/wells';         // When color-mix() use, go in the file there's comments at where it is need ot be use.
 @import 'components/code';          // The naming is hard to understand
+@import 'components/dropdowns'      // TODO NOT WORKING, DO THIS WHEN YOU GET BACK

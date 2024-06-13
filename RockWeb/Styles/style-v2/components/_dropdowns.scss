@@ -1,0 +1,264 @@
+
+// DROPDOWN STYLE
+
+.caret {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  margin-left: 2px;
+  vertical-align: middle;
+  border-top: $caret-width-base   dashed;
+  border-top: $caret-width-base   solid; // IE8
+  border-right: $caret-width-base solid transparent;
+  border-left: $caret-width-base  solid transparent;
+  }
+  
+// ========================= BASE STYLE =========================
+.dropup,
+.dropdown {
+  position: relative;
+}
+
+// Prevent the focus on the dropdown toggle when closing dropdowns
+.dropdown-toggle:focus {
+  outline: 0;
+}
+
+// The dropdown menu (ul)
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: $zindex-dropdown;
+  display: none; // none by default, but block on "open" of the menu
+  float: left;
+  min-width: $dropdown-min-width;
+  padding: var(--spacing-tiny) 0;
+  margin: 2px 0 0; // override default ul
+  font-size: var(--font-size-small);
+  text-align: left; // Ensures proper alignment if parent has it changed (e.g., modal footer)
+  list-style: none;
+  background-color: var(--color-interface-softest);
+  background-clip: padding-box;
+  border: 1px solid var(--color-interface-soft);
+  border-radius: var(--rounded-small);
+  box-shadow: var(--dropdown-box-shadow);
+
+  // Aligns the dropdown menu to right
+  //
+  // Deprecated as of 3.1.0 in favor of `.dropdown-menu-[dir]`
+  &.pull-right {
+    right: 0;
+    left: auto;
+  }
+
+  // Dividers (basically an hr) within the dropdown
+  .divider {
+    height: 1px;
+    margin: var(--spacing-tiny) 0;
+    overflow: hidden;
+    background-color: var(--color-interface-soft);
+  }
+
+  // Links within the dropdown menu
+  > li > a {
+    display: block;
+    padding: var(--spacing-tiny) var(--spacing-large);
+    clear: both;
+    font-weight: 400;
+    line-height: var(--line-height-normal);
+    color: var(--color-interface-stronger);
+    white-space: nowrap; // prevent links from randomly breaking onto new lines
+
+    &:hover,
+    &:focus {
+      color: var(--color-interface-stronger);
+      text-decoration: none;
+      background-color: var(--color-interface-softer);
+    }
+  }
+
+  > li.indent > a {
+    padding-left: calc(var(--spacing-large) * 2);
+  }
+}
+
+// Active state
+.dropdown-menu > .active > a {
+  &,
+  &:hover,
+  &:focus {
+    color: var(--color-interface-softest);
+    text-decoration: none;
+    background-color: var(--color-primary);
+    outline: 0;
+  }
+}
+
+// Disabled state
+//
+// Gray out text and ensure the hover/focus state remains gray
+
+.dropdown-menu > .disabled > a {
+  &,
+  &:hover,
+  &:focus {
+    color: var(--color-interface-strong);
+  }
+
+  // Nuke hover/focus effects
+  &:hover,
+  &:focus {
+    text-decoration:  none;
+    cursor:           not-allowed;
+    background-color: transparent;
+    background-image: none; // Remove CSS gradient
+    filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
+  }
+}
+// ======================= END BASE STYLE =======================
+
+// ========================= OPEN STATE =========================
+.open {
+  // Show the menu
+  > .dropdown-menu {
+    display: block;
+  }
+
+  // Remove the outline when :focus is triggered
+  > a {
+    outline: 0;
+  }
+}
+// ======================= END OPEN STATE =======================
+
+// Menu positioning
+//
+// Add extra class to `.dropdown-menu` to flip the alignment of the dropdown
+// menu with the parent.
+.dropdown-menu-right {
+  right: 0;
+  left: auto; // Reset the default from `.dropdown-menu`
+}
+// With v3, we enabled auto-flipping if you have a dropdown within a right
+// aligned nav component. To enable the undoing of that, we provide an override
+// to restore the default dropdown menu alignment.
+//
+// This is only for left-aligning a dropdown menu within a `.navbar-right` or
+// `.pull-right` nav component.
+.dropdown-menu-left {
+  right: auto;
+  left: 0;
+}
+
+// Dropdown section headers
+.dropdown-header {
+  display: block;
+  padding:      var(--spacing-tiny) var(--spacing-large);
+  font-size:    var(--font-size-small);
+  line-height:  var(--line-height-normal);
+  color:        var(--color-interface-strong);
+  white-space: nowrap; // as with > li > a
+}
+
+// Backdrop to catch body clicks on mobile, etc.
+.dropdown-backdrop {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: ($zindex-dropdown - 10);
+}
+
+// Right aligned dropdowns
+.pull-right > .dropdown-menu {
+  right: 0;
+  left: auto;
+}
+
+// Allow for dropdowns to go bottom up (aka, dropup-menu)
+//
+// Just add .dropup after the standard .dropdown class and you're set, bro.
+// TODO: abstract this so that the navbar fixed styles are not placed here?
+
+.dropup,
+.navbar-fixed-bottom .dropdown {
+  // Reverse the caret
+  .caret {
+    content: "";
+    border-top: 0;
+    border-bottom: $caret-width-base dashed;
+    border-bottom: $caret-width-base solid "\9"; // IE8
+  }
+  // Different positioning for bottom up menu
+  .dropdown-menu {
+    top: auto;
+    bottom: 100%;
+    margin-bottom: 2px;
+  }
+}
+
+// ========================== OVERIDE  ==========================
+.dropdown-menu {
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,.1);
+  max-height: 85vh;
+  overflow-y: auto;
+
+  &.datepicker-dropdown {
+    max-height: none;
+    overflow-y: visible;
+    font-size:var(--font-size-small);
+  }
+
+  // Added to Support Right Aligned Dropdowns
+  .dropdown-right & {
+    right: 0;
+    left: auto;
+  }
+
+  .btn-link {
+    width: 100%;
+    padding:      var(--spacing-tiny) var(--spacing-large);
+    line-height:  var(--line-height-normal);
+    color:        var(--color-interface-strong);
+    text-align: left;
+    border: 0;
+
+    &:hover,
+    &:focus {
+      color: var(--color-interface-stronger);
+      text-decoration: none;
+      background-color: var(--color-interface-softer);
+    }
+  }
+
+  .dropdown-item-danger {
+    color: var(--color-danger-strong);
+    &:hover {
+      color: #fff;
+      background-color: var(--color-danger-strong);
+    }
+  }
+}
+// ======================= END OVERRIDE =======================
+
+// Component alignment
+//
+// Reiterate per navbar.less and the modified component alignment there.
+
+@media (min-width: $screen-sm) {
+  .navbar-right {
+    .dropdown-menu {
+      right: 0;
+      left: auto;
+    }
+    // Necessary for overrides of the default right aligned menu.
+    // Will remove come v4 in all likelihood.
+    .dropdown-menu-left {
+      right: auto;
+      left: 0;
+    }
+  }
+}
+

@@ -107,9 +107,11 @@
     --line-height-compact: 1.055;
 
     // FONT FAMILY 
-    --font-family-segoe:    "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-    --font-family-sans:     -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
-    --font-family-serif:    Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+    --font-family-title: var(--font-family-sans)
+    --font-family-body:  var(--font-family-sans)
+    --font-family-segoe:      "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    --font-family-sans:       -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+    --font-family-serif:       Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
     --font-family-monospace:   Menlo, Monaco, Consolas, "Courier New", monospace;
 
     // ========================= END TYPOGRAPHY =========================
@@ -135,6 +137,8 @@
     --adminbar-bg: var(--color-interface-stronger);
 
     --link-hover-decoration: underline;
+
+    --dropdown-box-shadow: 0 6px 12px rgba(0, 0, 0, .175);
 
     // BORDER RADIUS
     --rounded-tiny:     2px;
