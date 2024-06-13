@@ -1,10 +1,16 @@
 <template>
-    <Panel title="Label Designer"
+    <Panel :title="labelName"
            type="block"
            hasFullscreen
            class="label-designer">
         <template #headerActions>
-            <LabelDimensionsButton v-model="labelSize" />
+            <div style="display: flex; gap: 6px;">
+                <span class="label label-default">
+                    {{ checkInLabelType }}
+                </span>
+
+                <LabelDimensionsButton v-model="labelSize" />
+            </div>
         </template>
 
         <div class="panel-flex-fill-body">
@@ -65,6 +71,8 @@
     import { BlockConfiguration, Size } from "./LabelDesigner/types.partial";
     import { LabelUndoManager } from "./LabelDesigner/undoManager.partial";
     import { alert } from "@Obsidian/Utility/dialogs";
+    import { blobToBase64 } from "./LabelDesigner/utils.partial";
+    import { LabelTypeDescription } from "@Obsidian/Enums/CheckIn/Labels/labelType";
 
     const config = useConfigurationValues<BlockConfiguration>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -86,6 +94,14 @@
         }
     });
 
+    const checkInLabelType = computed((): string => {
+        return LabelTypeDescription[config.labelType] + " Label";
+    });
+
+    const labelName = computed((): string => {
+        return config.labelName ?? "Label Designer";
+    });
+
     /**
      * Event handler for the panel's Save event. Send the data to the server
      * to be saved and then redirect to target page.
@@ -97,20 +113,7 @@
             const preview = await editor.value.savePreview();
 
             if (preview) {
-                previewData = await new Promise<string>(resolve => {
-                    const reader = new FileReader();
-                    reader.readAsDataURL(preview);
-                    reader.onloadend = () => {
-                        if (typeof reader.result !== "string") {
-                            return resolve("");
-                        }
-
-                        const startIndex = reader.result.indexOf(",") + 1;
-                        const b64 = reader.result.substring(startIndex);
-                        resolve(b64);
-                    };
-                    reader.onerror = () => resolve("");
-                });
+                previewData = await blobToBase64(preview) ?? "";
             }
         }
 

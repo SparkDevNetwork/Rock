@@ -88,6 +88,8 @@ namespace Rock.Blocks.CheckIn.Configuration
             {
                 IdKey = label.IdKey,
                 Label = label.Content.FromJsonOrNull<DesignedLabelBag>(),
+                LabelName = label.Name,
+                LabelType = label.LabelType,
                 DataSources = dataSources,
                 FilterSources = filterSources,
             };

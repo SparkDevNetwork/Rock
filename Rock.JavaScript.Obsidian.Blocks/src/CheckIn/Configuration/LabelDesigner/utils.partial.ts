@@ -368,19 +368,19 @@ export function getFilterRuleDescription(rule: FieldFilterRuleBag, sources: Fiel
  * @returns A string that represents the data in base64 or `undefined` if it could not be converted.
  */
 export function blobToBase64(blob: Blob): Promise<string | undefined> {
-    return new Promise<string>(resolve => {
+    return new Promise<string | undefined>(resolve => {
         const reader = new FileReader();
         reader.readAsDataURL(blob);
         reader.onloadend = () => {
             if (typeof reader.result !== "string") {
-                return resolve("");
+                return resolve(undefined);
             }
 
             const startIndex = reader.result.indexOf(",") + 1;
             const b64 = reader.result.substring(startIndex);
             resolve(b64);
         };
-        reader.onerror = () => resolve("");
+        reader.onerror = () => resolve(undefined);
     });
 }
 
