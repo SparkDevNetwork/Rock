@@ -284,7 +284,12 @@
     import { computed, ref } from "vue";
     import { useInvokeBlockAction, useConfigurationValues, onConfigurationValuesChanged } from "@Obsidian/Utility/block";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { GivingConfigurationInitializationBag, ContributionStatementBag, TextToGiveSettingsBag, FinancialScheduledTransactionBag, FinancialPersonSavedAccountBag, FinancialPledgeBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/GivingConfiguration";
+    import { ContributionStatementBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/GivingConfiguration/contributionStatementBag";
+    import { FinancialPersonSavedAccountBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/GivingConfiguration/financialPersonSavedAccountBag";
+    import { FinancialPledgeBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/GivingConfiguration/financialPledgeBag";
+    import { FinancialScheduledTransactionBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/GivingConfiguration/financialScheduledTransactionBag";
+    import { GivingConfigurationInitializationBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/GivingConfiguration/givingConfigurationInitializationBag";
+    import { TextToGiveSettingsBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/GivingConfiguration/textToGiveSettingsBag";
     import AccountPicker from "@Obsidian/Controls/accountPicker.obs";
     import RockDropDownList from "@Obsidian/Controls/dropDownList.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
