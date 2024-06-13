@@ -121,7 +121,9 @@ namespace Rock.CheckIn.v2.Labels
             Family = family;
             AllAttendance = allAttendance;
 
-            CheckInTime = AllAttendance.Min( a => a.StartDateTime );
+            CheckInTime = AllAttendance.Count > 0
+                ? AllAttendance.Min( a => a.StartDateTime )
+                : RockDateTime.Now;
             CurrentTime = RockDateTime.Now;
 
             NickNames = AllAttendance.Select( a => a.Person )

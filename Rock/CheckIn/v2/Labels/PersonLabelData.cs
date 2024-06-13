@@ -174,7 +174,9 @@ namespace Rock.CheckIn.v2.Labels
 
             IsFirstTime = PersonAttendance.Any( a => a.IsFirstTime );
             AreaNames = PersonAttendance.Select( a => a.Area.Name ).ToList();
-            CheckInTime = PersonAttendance.Min( a => a.StartDateTime );
+            CheckInTime = PersonAttendance.Count > 0
+                ? PersonAttendance.Min( a => a.StartDateTime )
+                : RockDateTime.Now;
             CurrentTime = RockDateTime.Now;
             GroupNames = PersonAttendance.Select( a => a.Group.Name ).ToList();
             LocationNames = PersonAttendance.Select( a => a.Location.Name ).ToList();

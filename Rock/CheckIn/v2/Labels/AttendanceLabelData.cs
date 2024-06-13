@@ -147,7 +147,9 @@ namespace Rock.CheckIn.v2.Labels
                 .Where( a => a.Person.Id == attendance.Person.Id )
                 .ToList();
 
-            CheckInTime = PersonAttendance.Min( a => a.StartDateTime );
+            CheckInTime = PersonAttendance.Count > 0
+                ? PersonAttendance.Min( a => a.StartDateTime )
+                : RockDateTime.Now;
             CurrentTime = RockDateTime.Now;
 
             GroupRoleNames = PersonAttendance
