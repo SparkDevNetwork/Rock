@@ -118,9 +118,9 @@ namespace Rock.CheckIn.v2.Labels
         /// <returns>A read-only list containing the filter sources for the specified label type.</returns>
         public static IReadOnlyList<FieldFilterSourceBag> GetFilterSources( LabelType labelType )
         {
-            if ( labelType == LabelType.Person )
+            if ( labelType == LabelType.Family )
             {
-                return GetPersonLabelFilterSources();
+                return GetFamilyLabelFilterSources();
             }
             else if ( labelType == LabelType.Person )
             {
