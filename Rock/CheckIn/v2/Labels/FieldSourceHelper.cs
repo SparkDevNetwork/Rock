@@ -1272,5 +1272,87 @@ namespace Rock.CheckIn.v2.Labels
                 }
             };
         }
+
+        /// <summary>
+        /// Gets the entity field that will handle filtering value conversion
+        /// for the rule when it is being processed for the given label type.
+        /// </summary>
+        /// <param name="labelType">The type of label that identifies the type of data the rule will process.</param>
+        /// <param name="rule">The rule that the <see cref="EntityField"/> is being requested for.</param>
+        /// <returns>An instance of <see cref="EntityField"/> or <c>null</c> if the rule is not valid.</returns>
+        public static EntityField GetEntityFieldForRule( LabelType labelType, FieldFilterRuleBag rule )
+        {
+            if ( rule.SourceType == FieldFilterSourceType.Attribute && rule.AttributeGuid.HasValue )
+            {
+                var attribute = AttributeCache.Get( rule.AttributeGuid.Value );
+
+                if ( attribute == null )
+                {
+                    return null;
+                }
+
+                return EntityHelper.GetEntityFieldForAttribute( attribute );
+            }
+            else if ( rule.SourceType == FieldFilterSourceType.Property && rule.PropertyName.IsNotNullOrWhiteSpace() )
+            {
+                Type type = null;
+
+                if ( labelType == LabelType.Family )
+                {
+                    type = typeof( FamilyLabelData );
+                }
+                else if ( labelType == LabelType.Person )
+                {
+                    type = typeof( PersonLabelData );
+                }
+                else if ( labelType == LabelType.Attendance )
+                {
+                    type = typeof( AttendanceLabelData );
+                }
+                else if ( labelType == LabelType.Checkout )
+                {
+                    type = typeof( CheckoutLabelData );
+                }
+
+                // This could also check a whitelist of allowed paths to make sure
+                // they are not building filters to things they shouldn't, but since
+                // the UI to create these is administrative only we can skip that
+                // additional check for now.
+                if ( rule.Path.IsNotNullOrWhiteSpace() )
+                {
+                    var pathComponents = rule.Path.Split( '.' );
+
+                    for ( int i = 0; i < pathComponents.Length && type != null; i++ )
+                    {
+                        type = type.GetProperty( pathComponents[i] )?.PropertyType;
+                    }
+                }
+
+                var property = type?.GetProperty( rule.PropertyName );
+
+                if ( property == null )
+                {
+                    return null;
+                }
+
+                var entityField = EntityHelper.GetEntityFieldForProperty( property );
+
+                if ( entityField.FieldType == null )
+                {
+                    if ( typeof( ICollection<string> ).IsAssignableFrom( property.PropertyType ) )
+                    {
+                        entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.TEXT );
+                    }
+                    else if ( property.PropertyType == typeof( double ) || property.PropertyType == typeof( double? ) )
+                    {
+                        entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.DECIMAL );
+                    }
+                }
+
+                return entityField;
+            }
+
+            return null;
+        }
     }
 }

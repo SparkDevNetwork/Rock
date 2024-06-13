@@ -356,23 +356,31 @@
     }
 
     function onConditionalSettingsClick(): void {
-        editVisibilityRule.value = visibilityRule.value ?? createEmptyRuleset();
+        if (visibilityRule.value) {
+            editVisibilityRule.value = { ...visibilityRule.value };
+        }
+        else {
+            editVisibilityRule.value = createEmptyRuleset();
+        }
+
         isConditionalSettingsVisible.value = true;
     }
 
     function onConditionalSettingsSave(): void {
-        visibilityRule.value = editVisibilityRule.value;
+        visibilityRule.value = { ...editVisibilityRule.value };
         isConditionalSettingsVisible.value = false;
     }
 
     watch(props.labelManager.selectedField, () => {
         isComponentMenuSelected.value = !!props.labelManager.selectedField.value;
         isIncludedOnPreview.value = props.labelManager.selectedField.value?.isIncludedOnPreview === true;
+        visibilityRule.value = props.labelManager.selectedField.value?.conditionalVisibility;
     });
 
-    watch(isIncludedOnPreview, () => {
+    watch([isIncludedOnPreview, visibilityRule], () => {
         props.labelManager.mutateSelectedField(field => {
             field.isIncludedOnPreview = isIncludedOnPreview.value;
+            field.conditionalVisibility = visibilityRule.value;
         });
     });
 </script>
