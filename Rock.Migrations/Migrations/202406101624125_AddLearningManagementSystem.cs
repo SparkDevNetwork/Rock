@@ -27,9 +27,8 @@ namespace Rock.Migrations
         public override void Up()
         {
             SchemaUp();
-            AddSeedData();
-
             LmsEntityTypesPagesBlocksUp();
+            AddSeedData();
             AddOrUpdateSendLearningActivityNotificationsJob();
         }
 
@@ -551,7 +550,7 @@ namespace Rock.Migrations
 DECLARE @now DATETIMEOFFSET = SYSDATETIMEOFFSET();
 
 /* Grading Systems */
--- Create Learning Grading Systems using well-known Identity values.
+-- Create Learning Grading Systems using well-known Identity (and GUID) values.
 SET IDENTITY_INSERT [dbo].[LearningGradingSystem] ON;
 
 INSERT [dbo].[LearningGradingSystem] (
