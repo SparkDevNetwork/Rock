@@ -219,6 +219,8 @@
     <Compile Include="Modules\Core\Lava\Commands\WorkflowActivateTests.cs" />
     <Compile Include="Modules\Core\Lava\Engine\TypeConversionTests.cs" />
     <Compile Include="Modules\Core\Lava\Shortcodes\ScheduledContentTests.cs" />
+    <Compile Include="Modules\Core\Lava\Shortcodes\KpiShortcodeTests.cs" />
+    <Compile Include="Modules\Core\Lava\Shortcodes\GoogleMapShortcodeTests.cs" />
     <Compile Include="Modules\Core\MergeTemplateTests.cs" />
     <Compile Include="Modules\Core\Jobs\ProcessBiAnalyticsJobTests.cs" />
     <Compile Include="Modules\Core\Lava\Commands\CacheTests.cs" />
