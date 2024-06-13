@@ -291,23 +291,28 @@ WHERE NOT EXISTS (
     WHERE ex.[Guid] = p.GroupMemberGuid
 )
 
+
 /* Add LearningProgramCompletion Records for any programs that support it. */
 INSERT [LearningProgramCompletion] ( [LearningProgramId], [PersonAliasId], [StartDate], [StartDateKey], [CompletionStatus], [Guid] )
-SELECT DISTINCT
-    c.[LearningProgramId], 
-    pers.[PrimaryAliasId], 
-    [SemesterStartDate], 
+SELECT 
+    [LearningProgramId],
+    [PrimaryAliasId], 
+    EarliestSemesterStartDate, 
     CONCAT(
-        YEAR([SemesterStartDate]), 
-        MONTH([SemesterStartDate]), 
-        DAY([SemesterStartDate])
+        YEAR(EarliestSemesterStartDate), 
+        MONTH(EarliestSemesterStartDate), 
+        DAY(EarliestSemesterStartDate)
     ) [StartDateKey], 
     @pendingProgramCompletion, 
     NEWID()
-FROM #participants p
-JOIN Person pers on pers.[Id] = p.[PersonId]
-JOIN #classes c ON p.[ClassGuid] = c.[ClassGuid]
-WHERE c.[TracksCompletionStatus] = 1
+FROM (
+    SELECT DISTINCT c.[LearningProgramId], pers.PrimaryAliasId, MIN(SemesterStartDate) EarliestSemesterStartDate
+    FROM #participants p
+    JOIN Person pers on pers.[Id] = p.[PersonId]
+    JOIN #classes c ON p.[ClassGuid] = c.[ClassGuid]
+    WHERE c.[TracksCompletionStatus] = 1
+    GROUP BY c.[LearningProgramId], pers.PrimaryAliasId
+) distinctPrograms
 
 /* Add a Participant */
 INSERT [LearningParticipant] ( [LearningCompletionStatus], [LearningGradePercent], [LearningClassId], [LearningProgramCompletionId], [Id] )
@@ -407,10 +412,10 @@ GROUP BY p.[Name], s.Name, c.Name
 
 /*
     -- Script to clean-up based on pipe-delimited list of LearningProgramIds.
-        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    ~~~~~~~~~~  Delete All Learning Programs by default         ~~~~~~~
-    ~~~~~~~~~~  Verify the variable @pipeDelimitedProgramIds!   ~~~~~~~
-        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    --    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    --~~~~~~~~~~  Delete All Learning Programs by default         ~~~~~~~
+    --~~~~~~~~~~  Verify the variable @pipeDelimitedProgramIds!   ~~~~~~~
+    --    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     DECLARE @pipeDelimitedProgramIds NVARCHAR(200) = (SELECT string_agg(Id, '|') FROM LearningProgram);
     

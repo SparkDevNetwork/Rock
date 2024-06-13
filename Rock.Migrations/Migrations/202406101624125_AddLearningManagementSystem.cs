@@ -27,6 +27,8 @@ namespace Rock.Migrations
         public override void Up()
         {
             SchemaUp();
+            RockMigrationHelper.AddOrUpdateEntityType( "Rock.Model.LearningProgram", Rock.SystemGuid.EntityType.LEARNING_PROGRAM, true, false );
+            RockMigrationHelper.AddOrUpdateEntityType( "Rock.Model.LearningActivityCompletion", Rock.SystemGuid.EntityType.LEARNING_ACTIVITY_COMPLETION, true, false );
             LmsEntityTypesPagesBlocksUp();
             AddSeedData();
             AddOrUpdateSendLearningActivityNotificationsJob();
@@ -42,6 +44,7 @@ namespace Rock.Migrations
 
             SchemaDown();
             RemoveSeedData();
+            RockMigrationHelper.DeleteEntityType( Rock.SystemGuid.EntityType.LEARNING_ACTIVITY_COMPLETION );
         }
 
         /// <summary>
@@ -769,11 +772,11 @@ WHERE NOT EXISTS (
 DECLARE @storageEntityTypeId INT = (
 	SELECT TOP 1 [e].[Id]
 	FROM [dbo].[EntityType] [e]
-	WHERE [e].[Name] = 'Rock.Storage.Provider.FileSystem' -- Rock.Storage.Provider.Database?
+	WHERE [e].[Name] = Rock.Storage.Provider.Database'
 );
 
-INSERT [BinaryFileType] ( [IsSystem], [Name], [CacheToServerFileSystem], [Description], [IconCssClass], [StorageEntityTypeId], [CacheControlHeaderSettings], [Guid] )
-SELECT [IsSystem], [Name], [CacheToServerFileSystem], [Description], [IconCssClass], [StorageEntityTypeId], [CacheControlHeaderSettings], [Guid]
+INSERT [BinaryFileType] ( [IsSystem], [Name], [CacheToServerFileSystem], [Description], [IconCssClass], [StorageEntityTypeId], [CacheControlHeaderSettings], [Guid], [RequiresViewSecurity] )
+SELECT [IsSystem], [Name], [CacheToServerFileSystem], [Description], [IconCssClass], [StorageEntityTypeId], [CacheControlHeaderSettings], [Guid], [RequiresViewSecurity]
 FROM (
 	SELECT 
 		1 [IsSystem], 
@@ -787,7 +790,8 @@ FROM (
 			""MaxAge"": null,
 			""MaxSharedAge"": null
 		}' [CacheControlHeaderSettings], 
-		'4f55987b-5279-4d10-8c38-f320046b4bbb' [Guid]
+		'4f55987b-5279-4d10-8c38-f320046b4bbb' [Guid],
+        1 [RequiresViewSecurity]
 ) [seed]
 WHERE NOT EXISTS (
 	SELECT 1
