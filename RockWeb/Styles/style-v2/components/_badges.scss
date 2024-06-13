@@ -1,0 +1,125 @@
+
+
+//  BADGE STYLE
+
+
+// =============================
+// Table of Content           
+//  + Base Style              
+//  + Alternate Style        
+// =============================
+
+
+// ======================== BASE STYLE ========================
+.badge {
+  display:   inline-block;
+  min-width: 10px;
+  padding:   3px 7px;
+  font-size:    var(--font-size-small);
+  font-weight:  var(--font-weight-bold);
+  line-height:  var(--font-height-tight);
+  color:        var(--color-interface-softest);
+  text-align:     center;
+  white-space:    nowrap;
+  vertical-align: middle;
+  background-color: var(--color-interface-medium);
+  border-radius:    var(--rounded-medium);
+
+  // Empty badges collapse automatically (not available in IE8)
+  &:empty {
+    display: none;
+  }
+
+  // Quick fix for badges in buttons
+  .btn & {
+    position: relative;
+    top: -1px;
+  }
+
+  .btn-xs &,
+  .btn-group-xs > .btn & {
+    top: 0;
+    padding: 1px 5px;
+  }
+
+  // Hover state, but only for links
+  a {
+    &:hover,
+    &:focus {
+      color: var(--color-interface-softest);
+      text-decoration: none;
+      cursor:          pointer;
+    }
+  }
+
+  // Account for badges in navs
+  .list-group-item.active > &,
+  .nav-pills > .active > a > & {
+    color:            var(--color-link);
+    background-color: var(--color-interface-softest);
+  }
+
+  .list-group-item > & {
+    float: right;
+  }
+
+  .list-group-item > & + & {
+    margin-right: 5px;
+  }
+
+  .nav-pills > li > a > & {
+    margin-left: 3px;
+  }
+}
+// ======================== END BASE STYLE ========================
+
+
+// ======================== ALTERNATIVE BADGE ========================
+.badge-danger {
+  color:            var(--color-danger-strong) !important;
+  background-color: var(--color-danger-soft) !important;
+}
+
+.badge-warning {
+  color:            var(--color-warning-strong) !important;
+  background-color: var(--color-warning-soft) !important;
+}
+
+.badge-success {
+  color:            var(--color-success-strong)  !important;
+  background-color: var(--color-success-soft) !important;
+}
+
+.badge-info {
+  color:            var(--color-info-strong) !important;
+  background-color: var(--color-info-soft) !important;
+}
+
+.badge-critical {
+  color:            var(--color-critical-strong)  !important;
+  background-color: var(--color-critical-soft) !important;
+}
+// ======================== END ALTERNATIVE BADGE ========================
+
+.badge-legend .badge {
+  height: 20px;
+  margin-right: var(--spacing-tiny);
+  cursor: pointer;
+}
+
+
+//TODO don't know what this does
+// .badge {
+//   .fa-square::before,
+//   .fa-circle::before {
+//     display: block;
+//     width: 1em;
+//     height: 1em;
+//     content: " ";
+//     background: currentColor;
+//   }
+
+//   .fa-circle::before {
+//     border-radius: 50%;
+//   }
+// }

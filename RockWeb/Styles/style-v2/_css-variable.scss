@@ -1,8 +1,7 @@
 :root {
+    // ========================= COLOR =========================
 
-    /* ========================= COLOR =========================*/
-
-    /* INTERFACE COLORS */
+    // INTERFACE COLORS 
     --color-interface-strongest: #181A1C;
     --color-interface-stronger:  #2B3136;
     --color-interface-strong:    #67717A;
@@ -11,7 +10,7 @@
     --color-interface-softer:    #F6F7F9;
     --color-interface-softest:   #FFFFFF;
 
-    /* APPLICATION COLORS */
+    // APPLICATION COLORS 
     --color-critical-soft:   #FEDEC8;
     --color-critical-strong: #EE7624;
     --color-danger-soft:     #FEE2E2;
@@ -23,12 +22,13 @@
     --color-warning-soft:    #FEF3C7;
     --color-warning-strong:  #B45309;
 
-    /* SYSTEM COLORS */
-    --color-primary:    #EE7725;
-    --color-link:       #006DCC;
-    --color-secondary:  #83758F;
+    // SYSTEM COLORS 
+    --color-primary:        #EE7725;
+    --color-link:           #006DCC;
+    --color-link-hover:     #003766;
+    --color-secondary:      #83758F;
 
-    /* CATEGORICAL COLORS */
+    // CATEGORICAL COLORS 
     --color-categorical-1: #000BFF;
     --color-categorical-2: #DE3D82;
     --color-categorical-3: #949494;
@@ -39,7 +39,7 @@
     --color-categorical-8: #FFDA00;
     --color-categorical-9: #FF7500;
 
-    /* DIVERGING COLORS */
+    // DIVERGING COLORS 
      --color-diverging-1:  #4A001E;
      --color-diverging-2:  #751232;
      --color-diverging-3:  #A52747;
@@ -56,7 +56,7 @@
      --color-diverging-14: #00494B;
      --color-diverging-15: #002C2D;
 
-     /* SEQUENTIAL COLORS */
+     // SEQUENTIAL COLORS 
      --color-sequential-1:  #EAFFF1;
      --color-sequential-2:  #C9F1E4;
      --color-sequential-3:  #A7E3D7;
@@ -74,13 +74,16 @@
      --color-sequential-15: #1A1662;
      --color-sequential-16: #180055;
 
-    /* ========================= END COLOR ==========================*/
+     --color-code:    #c7254e;
+     --color-code-bg: #f9f2f4;
+
+    // ========================= END COLOR ==========================
 
 
 
-    /* ========================= TYPOGRAPHY =========================*/
+    // ========================= TYPOGRAPHY =========================
 
-    /* FONT SIZES */
+    // FONT SIZES 
     --font-size-small:      14px;
     --font-size-regular:    16px;
     --font-size-h1:         44px;
@@ -90,7 +93,7 @@
     --font-size-h5:         18px;
     --font-size-h6:         16px;
 
-    /* FONT WEIGHTS */
+    // FONT WEIGHTS 
     --font-weight-light:    300;
     --font-weight-regular:  400;
     --font-weight-medium:   500;
@@ -98,23 +101,24 @@
     --font-weight-bold:     700;
     --font-weight-black:    900;
 
-    /* LINE HEIGHTS */
+    // LINE HEIGHTS 
     --line-height-normal:  1.5;
     --line-height-tight:   1.1;
     --line-height-compact: 1.055;
 
-    /* FONT FAMILY */
+    // FONT FAMILY 
     --font-family-segoe:    "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     --font-family-sans:     -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
     --font-family-serif:    Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+    --font-family-monospace:   Menlo, Monaco, Consolas, "Courier New", monospace;
 
-    /* ========================= END TYPOGRAPHY =========================*/
+    // ========================= END TYPOGRAPHY =========================
 
 
 
-    /* ============================ SPACING =============================*/
+    // ============================ SPACING =============================
 
-    /* SPACING */
+    // SPACING 
     --spacing-tiny:       4px;
     --spacing-small:      8px;
     --spacing-medium:    16px;
@@ -122,13 +126,26 @@
     --spacing-xlarge:    48px;
     --spacing-huge:      80px;
 
-    /* ========================== END SPACING ===========================*/
+    // ========================== END SPACING ===========================
 
 
-    /* ========================== VISUAL APPEARANCES ===========================*/
+
+    // ========================== VISUAL APPEARANCES ===========================
     
     --adminbar-bg: var(--color-interface-stronger);
 
-    /* ========================== END VISUAL APPEARANCES ===========================*/
+    --link-hover-decoration: underline;
+
+    // BORDER RADIUS
+    --rounded-tiny:     2px;
+    --rounded-small:    6px;
+    --rounded-medium:   8px;
+    --rounded-large:   12px;
+    --rounded-xlarge:  16px;
+    --rounded-huge:    24px;
+
+
+
+    // ========================== END VISUAL APPEARANCES ===========================
 
 }

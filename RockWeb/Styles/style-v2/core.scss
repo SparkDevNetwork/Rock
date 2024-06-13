@@ -1,14 +1,20 @@
-/* VARIABLES */
+/* ===================== VARIABLES =================== */
 @import 'sass-variable';
 @import 'css-variable';
 
-/* UTILITIES */
-@import 'utilities/typography-utilities';
-@import 'utilities/color-utilities';
-@import 'utilities/spacing-utilities';
+/* ===================== UTILITIES =================== */
+@import 'utilities/spacing-utilities';      // FULLY COPY AND PAST FROM bootstrap _utilities.less.
+@import 'utilities/typography-utilities';   // Fully Polish
+@import 'utilities/color-utilities';        // Fully Polish, might add more class 
 
-/* CORE */
-@import 'core/page-admin'; /*TODO polish */
+/* ======================= CORE  ======================*/
+@import 'core/page-admin';          //TODO polish, parts of the bar is overflowing to the left 
 
-/* COMPONENTS */
-@import 'components/typography';
+/* ==================== COMPONENTS ==================== */
+@import 'components/typography';    // Fully Polish
+@import 'components/alerts';        // Fully Polish but if we decided to add more color variable, go in and change the color.
+@import 'components/buttons';       // TODO polish
+@import 'components/badges';        // TODO polish, there is some stuff that have !important on it?
+@import 'components/labels';        // When color-mix() use, go in the file there's comments at where it is need ot be use.
+@import 'components/wells';         // When color-mix() use, go in the file there's comments at where it is need ot be use.
+@import 'components/code';          // The naming is hard to understand

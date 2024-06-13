@@ -1,0 +1,124 @@
+// LABELS STYLE
+
+
+// =============================
+// Table of Content           
+//  + Base Style              
+//  + Alternate Style        
+// =============================
+
+
+// ===================== BASE STYLE =====================
+.label {
+  display:    inline;
+  padding:    .2em .6em .3em;
+  font-size:   75%;
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-compact);
+  color:       var(--color-interface-strongest);
+  text-align:     center;
+  white-space:    nowrap;
+  vertical-align: baseline;
+  border-radius:  .25em;
+
+  // Add hover effects, but only for links
+  a & {
+    &:hover,
+    &:focus {
+      color:var(--color-interface-softest);
+      text-decoration: none;
+      cursor: pointer;
+    }
+  }
+
+  // Empty labels collapse automatically (not available in IE8)
+  &:empty {
+    display: none;
+  }
+
+  // Quick fix for labels in buttons
+  .btn & {
+    position: relative;
+    top: -1px;
+  }
+
+  // Nested Labels (ex. labels with badges in them)
+  .label-value{
+    align-self: center;
+    padding: 2px 0;
+  }
+
+  .badge{
+    font-size: 12px;
+    padding: 2px 6px;
+  }
+
+}
+// ===================== END BASE STYLE =====================
+
+// ======================== ALTERNATIVE STYLE ========================
+.label-default{
+  background-color: var(--color-interface-soft);
+
+  &[href] {
+    &:hover,
+    &:focus {
+      background-color: var(--color-interface-medium); //when color-mix available darken the bg color by 10% instead of variable or hard code
+    }
+  }
+}
+
+.label-primary{
+  background-color: var(--color-primary);
+
+  &[href] {
+    &:hover,
+    &:focus {
+      background-color: var(--color-primary); //when color-mix available darken the bg color by 10% instead of variable or hard code
+
+    }
+  }
+}
+.label-info{
+  background-color: var(--color-info-soft);
+
+  &[href] {
+    &:hover,
+    &:focus {
+      background-color: var(--color-info-strong); //when color-mix available darken the bg color by 10% instead of variable or hard code
+    }
+  }
+}
+.label-success{
+  background-color: var(--color-success-soft);
+
+  &[href] {
+    &:hover,
+    &:focus {
+      background-color: var(--color-success-strong); //when color-mix available darken the bg color by 10% instead of variable or hard code
+    }
+  }
+}
+.label-warning{
+  background-color: var(--color-warning-soft);
+
+  &[href] {
+    &:hover,
+    &:focus {
+      background-color: var(--color-warning-strong); //when color-mix available darken the bg color by 10% instead of variable or hard code
+    }
+  }
+}
+.label-danger{
+  background-color: var(--color-danger-soft);
+
+  &[href] {
+    &:hover,
+    &:focus {
+      background-color: var(--color-danger-strong); //when color-mix available darken the bg color by 10% instead of variable or hard code
+    }
+  }
+}
+  // ======================== END ALTERNATIVE STYLE ========================
+
+

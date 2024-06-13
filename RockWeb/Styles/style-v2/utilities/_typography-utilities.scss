@@ -24,4 +24,8 @@
 .font-family-sans  { font-family: var(--font-family-sans); }
 .font-family-serif { font-family: var(--font-family-serif); }
 
+// add for the page admin html that use .text-success
+.text-success { color: var(--color-success-strong) !important;}
+.text-danger  { color: var(--color-danger-strong) !important;}
+.text-info    { color: var(--color-info-strong) !important;}
 

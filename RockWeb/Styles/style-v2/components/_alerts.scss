@@ -1,0 +1,171 @@
+
+//  ALERTS STYLE
+
+
+// =============================
+// Table of Content           
+//  + Base Style              
+//  + Alternate Style 
+//  + Dismissible Alerts        
+// =============================
+
+
+// ======================== BASE STYLE ========================
+.alert {
+  padding: var(--spacing-medium); 
+  margin-bottom: var(--spacing-large);
+  border: 1px solid transparent;
+  border-radius: var(--rounded-small); 
+
+  h4 {
+    margin:0;
+    color: inherit;
+  }
+
+  .alert-link {
+    font-weight: var(--font-weight-bold); 
+  }
+
+  > p,
+  > ul {
+    margin-bottom: 0;
+  }
+
+  > p + p {
+    margin-top: 5px;
+  }
+
+  .help{
+    border-bottom: 0;
+  }
+
+
+
+  // dismissible alert
+  .alert-dismissible {
+    // Expand the right padding and account for the close button's positioning.
+    padding-right: (var(--spacing-medium) + 20);
+
+    // Adjust close link position
+    .close {
+      position: relative;
+      top: -2px;
+      right: -21px;
+      color: inherit;
+    }
+  }
+}
+// ======================== END BASE STYLE ========================
+
+
+// ======================== ALTERNATIVE STYLE ========================
+.alert-default{
+  color: var(--color-interface-strong);
+  background-color: var(--color-interface-soft);
+  border-color: var(--color-interface-strong);
+  
+  hr {
+    border-top-color: var(--color-interface-strong);
+  }
+  .alert-link {
+    color: var(--color-interface-strong);
+  }
+}
+
+.alert-success{
+  color: var(--color-success-strong);
+  background-color: var(--color-success-soft);
+  border-color: var(--color-success-strong);
+
+  hr {
+    border-top-color: var(--color-success-strong);
+  }
+  .alert-link {
+    color: var(--color-success-strong);
+  }
+
+  a {
+    color: var(--color-success-strong);
+    border-bottom: var(--color-success-strong);
+  }
+}
+
+.alert-danger{
+  color: var(--color-danger-strong);
+  background-color: var(--color-danger-soft);
+  border-color: var(--color-danger-strong);
+
+  hr {
+    border-top-color: var(--color-danger-strong);
+  }
+  .alert-link {
+    color: var(--color-danger-strong);
+  }
+  a {
+    color: var(--color-danger-strong);
+    border-bottom:  var(--color-danger-strong);
+  }
+}
+
+.alert-info{
+  color: var(--color-info-strong);
+  background-color: var(--color-info-soft);
+  border-color: var(--color-info-strong);
+
+  hr {
+    border-top-color: var(--color-info-strong);
+  }
+  .alert-link {
+    color: var(--color-info-strong);
+  }
+  a { //check _rock-core.less if styling break because there is a different syntax
+    color: var(--color-info-strong);
+    border-bottom: var(--color-info-strong);
+  }
+}
+
+.alert-warning{
+  color: var(--color-warning-strong);
+  background-color: var(--color-warning-soft);
+  border-color: var(--color-warning-strong);
+  hr {
+    border-top-color: var(--color-warning-strong);
+  }
+  .alert-link {
+    color: var(--color-warning-strong);
+  }
+  a {
+    color: var(--color-warning-strong);
+    border-bottom: var(--color-warning-strong);
+  }
+}
+// ======================== END ALTERNATIVE STYLE ========================
+
+
+.alert-validation{
+  color: var(--color-danger-strong);
+  background-color: var(--color-warning-soft);
+  border-color: var(--color-warning-strong);
+  hr {
+    border-top-color: var(--color-warning-strong);
+  }
+  .alert-link {
+    color: var(--color-warning-strong);
+  }
+  ul,
+  span {
+    font-weight: var(--font-weight-regular);
+    color: var(--color-interface-strong);
+  }
+  ul {
+    padding: 5px 25px 0;
+    line-height: var(--line-height-normal);
+  }
+}
+
+//found in _rock-core.less doesn't know what it does 
+
+// .alert-warning .navigation-tip {
+//   color: @state-warning-bg;
+//   background-color: lighten(@state-warning-text, 10%);
+// }

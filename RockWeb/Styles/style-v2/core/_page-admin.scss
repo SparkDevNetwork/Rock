@@ -1,15 +1,17 @@
-/*
-    Used to manage styles related to the CMS admin UI for on page editing
-
-    1. Zone Configuration
-    2. Module Configuration
-    3. Admin Footer
-    4. Responsive Rules
-*/
 
 
-// 1. Zone Config
-// -------------------------
+// CMS ADMIN UI STYLE
+
+// =============================================================
+// Table of Content
+//  + Zone Configuration
+//  + Module Configuration
+//  + Admin Footer
+//  + Responsive Rules
+// =============================================================
+
+
+// =========== Zone Config ===========
 .zone-instance.outline {
   position: relative;
   min-width: 50px;
@@ -26,8 +28,8 @@
   }
 }
 
-// 2. Module Config
-// -------------------------
+
+// =========== Module Config ===========
 .block-configuration,
 .zone-configuration {
   position: absolute;
@@ -79,7 +81,7 @@
     float: left;
     width: 26px;
     padding: 1px 0 !important; // important to keep themes from changing this
-    margin: 0 !important; // important to keep themes from changing this
+    margin: 0 !important;      // important to keep themes from changing this
     text-align: center;
     text-decoration: none;
   }
@@ -118,8 +120,7 @@
 }
 
 
-// 3. Admin Footer
-// -------------------------
+// =========== Admin Footer ===========
 #cms-admin-footer {
   position: fixed;
   right: 0;
@@ -130,8 +131,8 @@
   padding: 8px 12px 0;
   margin-right: 0;
   color: #fff;
-  background: var(--adminbar-bg);
-  border-color: var(--adminbar-bg); /*TODO this should be darken using css mix() when available*/
+  background: var(--adminbar-bg);   //have to be a little lighter than the bg clr of span.cms-admin-footer-property
+  border-color: var(--adminbar-bg); // TODO this should be darken using css mix() when available
   border-style: solid;
   border-width: 1px 1px 0;
   transition: .5s;
@@ -187,8 +188,7 @@
 }
 
 
-// 4. Responsive Rules
-// -------------------------
+// =========== Responsive Rules ===========
 @media (min-width: $screen-sm) {
   #cms-admin-footer {
     opacity: 0;
@@ -207,4 +207,8 @@
       float: right;
     }
   }
+}
+
+.margin-l-md {
+  margin-left: var(--spacing-medium);
 }

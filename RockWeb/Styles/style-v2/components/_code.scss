@@ -1,0 +1,68 @@
+//CODE STYLE
+
+
+// ========================== BASE STYLE ==========================
+// Inline and block code styles
+code,
+kbd,
+pre,
+samp {
+  font-family: var(--font-family-monospace);
+}
+
+// Inline code
+code {
+  padding: 2px 4px;
+  font-size: 90%;
+  color: var(--code-color);
+  background-color: var(--color-code-bg);
+  border-radius: var(--rounded-small);
+}
+
+// User input typically entered via keyboard
+kbd {
+  padding: 2px 4px;
+  font-size: 90%;
+  color: var(--color-interface-softest);
+  background-color: var(--color-interface-strong);
+  border-radius: var(--rounded-tiny);
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, .25);
+
+  kbd {
+    padding: 0;
+    font-size: 100%;
+    font-weight: var(--font-weight-bold);
+    box-shadow: none;
+  }
+}
+
+// Blocks of code
+pre {
+  display: block;
+  padding: calc((20px - 1px) / 2px);
+  margin: 0 0 calc(20px / 2px);
+  font-size: calc(var(--font-size-regular) - 1); // 14px to 13px
+  line-height: var(--line-height-normal);
+  color: var(--color-interface-stronger);
+  word-break: break-all;
+  word-wrap: break-word;
+  background-color: var(--color-interface-soft);
+  border: 1px solid var(--color-interface-medium);
+  border-radius: var(--rounded-small);
+
+  // Account for some code outputs that place code tags in pre tags
+  code {
+    padding: 0;
+    font-size: inherit;
+    color: inherit;
+    white-space: pre-wrap;
+    background-color: transparent;
+    border-radius: 0;
+  }
+}
+
+// Enable scrollable blocks of code
+.pre-scrollable {
+  max-height: 340px;
+  overflow-y: scroll;
+}

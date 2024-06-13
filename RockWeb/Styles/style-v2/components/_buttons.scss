@@ -1,0 +1,459 @@
+
+// BUTTON STYLE
+
+
+// =============================
+// Table of Content           
+//  + Base Style              
+//  + Alternate Style    
+//  + Button Size     
+// =============================
+
+
+// ======================== BASE STYLE ========================
+.btn {
+  display: inline-block;
+  margin-bottom: 0; // For input.btn
+  font-weight: var(--font-weight-bold);
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  touch-action: manipulation;
+  cursor: pointer;
+  background-image: none; // Reset unusual Firefox-on-Android default style; see https://github.com/necolas/normalize.css/issues/214
+  border: 1px solid transparent;
+  padding:var(--spacing-small) var(--spacing-medium);
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-normal);
+  border-radius: var(--rounded-small);
+  transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none; // IE10+
+          user-select: none;
+  
+
+  &:hover,
+  &:focus,
+  &.focus {
+    color: var(--color-interface-medium);   
+    text-decoration: none;
+  }
+
+  &,
+  &:active,
+  &.active {
+    &:focus,
+    &.focus {
+      outline: 5px auto -webkit-focus-ring-color; // outline: 5px auto -webkit-focus-ring-color;
+      outline-offset: -2px; //-2px
+    }
+  }
+
+  &:active,
+  &.active {
+    background-image: none;
+    outline: 0;
+    // box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125); //remove because in rock there is no box-shadow when active
+  }
+
+  &.disabled,
+  &[disabled],
+  fieldset[disabled] & {
+    cursor: not-allowed;
+    opacity: .65;
+    box-shadow: none;
+  }
+
+  a {
+
+    &.disabled,
+    fieldset[disabled] & {
+      pointer-events: none; // Future-proof disabling of clicks on `<a>` elements
+    }
+  }
+  &:hover{
+    color: var(--color-interface-medium);
+    text-decoration: none;
+  }
+// ======================== END BASE BUTTON ========================
+
+
+// ======================== ALTERNATIVE BUTTON ========================
+  &.btn-default {
+    color: var(--color-interface-medium);
+    background-color: var(--color-interface-softest);
+    border-color: var(--color-interface-soft);
+   
+    &:focus,
+    &.focus {
+      color:var(--color-interface-soft);
+      background-color: var(--color-interface-softest);
+      border-color: var(--color-interface-soft);
+    }
+    &:hover {
+      color:var(--color-interface-soft);
+      background-color: var(--color-interface-softest);
+      border-color: var(--color-interface-soft);
+    }
+    &:active,
+    &.active,
+    .open > .dropdown-toggle {
+      color:var(--color-interface-soft);
+      background-color: var(--color-interface-softest);
+      background-image: none;
+      border-color: var(--color-interface-soft);
+   
+      &:hover,
+      &:focus,
+      &.focus {
+        color:var(--color-interface-soft);
+        background-color: var(--color-interface-softest);
+        border-color: var(--color-interface-soft);
+      }
+    }
+    &.disabled,
+    &[disabled],
+    fieldset[disabled] & {
+      &:hover,
+      &:focus,
+      &.focus {
+        background-color: var(--color-interface-softest);
+        border-color: var(--color-interface-soft);
+      }
+    }
+   
+    .badge {
+      color: var(--color-interface-softest);
+      background-color:var(--color-interface-soft);
+    }
+  }
+  
+  &.btn-primary{
+    color:var(--color-interface-softest);
+    background-color:var(--color-primary);
+    border-color: var(--color-primary);
+   
+    &:focus,
+    &.focus {
+      color: var(--color-interface-softest);
+      background-color: var(--color-primary);
+      border-color: var(--color-primary);
+    }
+    &:hover {
+      color:var(--color-primary);
+      background-color: var(--color-interface-softest);
+      border-color: var(--color-primary);
+
+    }
+    &:active,
+    &.active,
+    .open > .dropdown-toggle {    
+      color:var(--color-primary);
+      background-color: var(--color-interface-softest);
+      background-image: none;
+      border-color: var(--color-interface-softest);
+   
+      &:hover,
+      &:focus,
+      &.focus {
+        color:var(--color-primary);
+        background-color: var(--color-interface-softest);
+        border-color: var(--color-interface-softest);
+      }
+    }
+    &.disabled,
+    &[disabled],
+    fieldset[disabled] & {
+      &:hover,
+      &:focus,
+      &.focus {
+        background-color:var(--color-primary);
+        border-color: var(--color-primary);
+      }
+    }
+   
+    .badge {
+      color:var(--color-primary);
+      background-color:var(--color-primary);
+    }
+  }
+
+  &.btn-success{
+    color:var(--color-interface-softest);
+    background-color:var(--color-success-strong);
+    border-color: var(--color-success-strong);
+   
+    &:focus,
+    &.focus {
+      color:var(--color-interface-softest);
+      background-color: var(--color-success-strong);
+      border-color: var(--color-success-strong);
+    }
+    &:hover {
+      color:var(--color-success-strong);
+      background-color: var(--color-interface-softest);
+      border-color: var(--color-success-strong);
+    }
+    &:active,
+    &.active,
+    .open > .dropdown-toggle {
+      color:var(--color-interface-softest);
+      background-color: var(--color-interface-softest);
+      background-image: none;
+      border-color: var(--color-success-strong);
+   
+      &:hover,
+      &:focus,
+      &.focus {
+        color:var(--color-success-strong);              
+        background-color: var(--color-interface-softest);
+        border-color: var(--color-success-strong);
+      }
+    }
+    &.disabled,
+    &[disabled],
+    fieldset[disabled] & {
+      &:hover,
+      &:focus,
+      &.focus {
+        background-color:var(--color-success-strong);
+        border-color: var(--color-success-strong);
+      }
+    }
+   
+    .badge {
+      color:var(--color-success-strong);
+      background-color:var(--color-success-strong);
+    }
+  }
+
+  &.btn-info{
+    color:var(--color-interface-softest);
+    background-color:var(--color-info-strong);
+    border-color: var(--color-info-strong);
+   
+    &:focus,
+    &.focus {
+      color:var(--color-interface-softest);
+      background-color: var(--color-info-strong);
+      border-color: var(--color-info-strong);
+    }
+    &:hover {
+      color:var(--color-info-strong);
+      background-color: var(--color-interface-softest);
+      border-color: var(--color-info-strong);
+    }
+    &:active,
+    &.active,
+    .open > .dropdown-toggle {
+      color:var(--color-info-strong);
+      background-color: var(--color-interface-softest);
+      background-image: none;
+      border-color: var(--color-info-strong);
+   
+      &:hover,
+      &:focus,
+      &.focus {
+        color:var(--color-info-strong);
+        background-color: var(--color-interface-softest);
+        border-color: var(--color-info-strong);
+      }
+    }
+    &.disabled,
+    &[disabled],
+    fieldset[disabled] & {
+      &:hover,
+      &:focus,
+      &.focus {
+        background-color:var(--color-info-strong);
+        border-color: var(--color-info-strong);
+      }
+    }
+   
+    .badge {
+      color:var(--color-info-strong);
+      background-color:var(--color-info-strong);
+    }
+  }
+
+  &.btn-warning{
+    color:var(--color-interface-softest);
+    background-color:var(--color-warning-strong);
+    border-color: var(--color-warning-strong);
+   
+    &:focus,
+    &.focus {
+      color:var(--color-interface-softest);
+      background-color: var(--color-warning-strong);
+      border-color: var(--color-warning-strong);
+    }
+    &:hover {
+      color:var(--color-warning-strong);
+      background-color: var(--color-interface-softest);
+      border-color: var(--color-warning-strong);
+    }
+    &:active,
+    &.active,
+    .open > .dropdown-toggle {
+      color:var(--color-warning-strong);
+      background-color: var(--color-interface-softest);
+      background-image: none;
+      border-color: var(--color-warning-strong);
+   
+      &:hover,
+      &:focus,
+      &.focus {
+        color:var(--color-warning-strong);
+        background-color: var(--color-interface-softest);
+        border-color: var(--color-warning-strong);
+      }
+    }
+    &.disabled,
+    &[disabled],
+    fieldset[disabled] & {
+      &:hover,
+      &:focus,
+      &.focus {
+        background-color:var(--color-warning-strong);
+        border-color: var(--color-warning-strong);
+      }
+    }
+   
+    .badge {
+      color:var(--color-warning-strong);
+      background-color:var(--color-warning-strong);
+    }
+  }
+
+  &.btn-danger{
+    color:var(--color-interface-softest);
+    background-color:var(--color-danger-strong);
+    border-color: var(--color-danger-strong);
+   
+    &:focus,
+    &.focus {
+      color:var(--color-interface-softest);
+      background-color: var(--color-danger-strong);
+      border-color: var(--color-danger-strong);
+    }
+    &:hover {
+      color:var(--color-danger-strong);
+      background-color: var(--color-interface-softest);
+      border-color: var(--color-danger-strong);
+    }
+    &:active,
+    &.active,
+    .open > .dropdown-toggle {
+      color:var(--color-danger-strong);
+      background-color: var(--color-interface-softest);
+      background-image: none;
+      border-color: var(--color-danger-strong);
+   
+      &:hover,
+      &:focus,
+      &.focus {
+        color:var(--color-danger-strong);
+        background-color: var(--color-interface-softest);
+        border-color: var(--color-danger-strong);
+      }
+    }
+    &.disabled,
+    &[disabled],
+    fieldset[disabled] & {
+      &:hover,
+      &:focus,
+      &.focus {
+        background-color:var(--color-danger-strong);
+        border-color: var(--color-danger-strong);
+      }
+    }
+   
+    .badge {
+      color:var(--color-danger-strong);
+      background-color:var(--color-danger-strong);
+    }
+  }
+// ======================== END ALTERNAVTIVE BUTTON ========================
+ 
+}
+
+
+// ======================== BUTTON SIZE ========================
+.btn-lg{
+  padding: var(--spacing-small) var(--spacing-medium);
+  font-size: var(--font-size-h5);
+  line-height: var(--line-height-tight);
+  border-radius: var(--rounded-small);
+}
+
+.btn-sm{
+  padding: var(--spacing-tiny) var(--spacing-small);
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-normal);
+  border-radius: var(--rounded-small);
+}
+
+.btn-xs{
+  padding: 1px 5px;
+  font-size: 12px;
+  line-height: var(--line-height-normal);
+  border-radius: 3px;
+}
+// ======================== END BUTTON SIZE ========================
+
+
+// Make a button look and behave like a link
+.btn-link {
+  font-weight: 400;
+  color: var(--color-link);
+  border-radius: 0;
+
+  &,
+  &:active,
+  &.active,
+  &[disabled],
+  fieldset[disabled] & {
+    background-color: transparent;
+    box-shadow: none;
+  }
+  &,
+  &:hover,
+  &:focus,
+  &:active {
+    border-color: transparent;
+  }
+  &:hover,
+  &:focus {
+    color: var(--color-link-hover);
+    text-decoration: var(--link-hover-decoration);
+    background-color: transparent;
+  }
+  &[disabled],
+  fieldset[disabled] & {
+    &:hover,
+    &:focus {
+      color: var(--color-interface-soft);
+      text-decoration: none;
+    }
+  }
+}
+
+.btn-block {
+  display: block;
+  width: 100%;
+}
+
+// Vertically space out multiple block buttons
+.btn-block + .btn-block {
+  margin-top: 5px;
+}
+
+// Specificity overrides
+input[type="submit"],
+input[type="reset"],
+input[type="button"] {
+  &.btn-block {
+    width: 100%;
+  }
+}
