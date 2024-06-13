@@ -66,6 +66,7 @@
     <Compile Include="Cms\PageRouteList.cs" />
     <Compile Include="Communication\NcoaProcess.cs" />
     <Compile Include="Core\PersonSignalList.cs" />
+    <Compile Include="Crm\PersonDetail\GivingConfiguration.cs" />
     <Compile Include="Finance\FinancialPledgeList.cs" />
     <Compile Include="Security\RestKeyList.cs" />
     <Compile Include="Crm\PersonMergeRequestList.cs" />
