@@ -24,6 +24,16 @@
 /** The configuration options for a text field. */
 export type TextFieldConfigurationBag = {
     /**
+     * Contains a lookup table of string length and font sizes as key and
+     * value pairs. The key represents the string length and the value is
+     * the font size. The value from the largest key that is less than or
+     * equal to the length of the text is used. This is encoded as a set
+     * of "key=value" pairs joined by semi-colon. Such as
+     * 10=16;20=14;30=12.
+     */
+    adaptiveFontSize?: string | null;
+
+    /**
      * How to format the collection when multiple values are provided by
      * the data source. This should be a string containing the integer
      * value of the TextCollectionFormat enumeration.
@@ -106,13 +116,4 @@ export type TextFieldConfigurationBag = {
 
     /** The static text to use for a custom text field. */
     staticText?: string | null;
-
-    /**
-     * Contains a lookup table of string length and font sizes as key and
-     * value pairs. The key represents the string length and the value is
-     * the font size. The value from the largest key that is less than or
-     * equal to the length of the text is used. This is encoded as a JSON
-     * object serialized into this variable.
-     */
-    variableFontSize?: string | null;
 };

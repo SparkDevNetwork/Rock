@@ -18,6 +18,13 @@
             </div>
         </div>
 
+        <RockButton v-if="showAdaptiveFontSize"
+                    btnType="default"
+                    btnSize="sm"
+                    @click="onAdaptiveFontSizeClick">
+            <i class="fa fa-text-width"></i>
+        </RockButton>
+
         <slot name="iconButtons" />
     </div>
 
@@ -39,10 +46,22 @@
     <NumberBox label="Max Length"
                v-model="maxLength"
                :minimumValue="0" />
+
+    <Modal v-model="isAdaptiveFontSizeVisible" title="Adaptive Font Size" saveText="Save" @save="onAdaptiveFontSizeSave">
+        <div>
+            <KeyValueList v-model="editableAdaptiveFontSize"
+                          label="Font Sizes"
+                          help="If the string length is equal to or greater than the value of the key then the associated value will be used as the font size. The highest matching key will be used."
+                          keyPlaceholder="Length"
+                          valuePlaceholder="Font size" />
+        </div>
+    </Modal>
 </template>
 
 <script setup lang="ts">
+    import KeyValueList from "@Obsidian/Controls/keyValueList.obs";
     import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
@@ -54,6 +73,7 @@
     import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { PropType, ref, watch } from "vue";
     import { LabelUndoManager } from "./undoManager.partial";
+    import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
 
     const props = defineProps({
         labelManager: {
@@ -62,6 +82,11 @@
         },
 
         showPlaceholder: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        showAdaptiveFontSize: {
             type: Boolean as PropType<boolean>,
             default: false
         }
@@ -74,6 +99,10 @@
     const isColorInverted = ref(false);
     const isCondensed = ref(false);
     const maxLength = ref<number | null>(null);
+
+    const adaptiveFontSize = ref<KeyValueItem[]>([]);
+    const editableAdaptiveFontSize = ref<KeyValueItem[]>([]);
+    const isAdaptiveFontSizeVisible = ref(false);
 
     const alignmentItems: ListItemBag[] = [
         {
@@ -104,6 +133,7 @@
         isColorInverted.value = asBoolean(configuration.isColorInverted);
         isCondensed.value = asBoolean(configuration.isCondensed);
         maxLength.value = toNumberOrNull(configuration.maxLength);
+        adaptiveFontSize.value = decodeAdaptiveFontSize(configuration.adaptiveFontSize);
     }
 
     /**
@@ -120,6 +150,51 @@
     }
 
     /**
+     * Converts the configuration value into the an array of KeyValueItem pairs.
+     *
+     * @param configValue The raw configuration value to be converted.
+     */
+    function decodeAdaptiveFontSize(configValue: string | null | undefined): KeyValueItem[] {
+        if (!configValue) {
+            return [];
+        }
+
+        return configValue.split(";").map(value => {
+            const segments = value.split("=");
+
+            return {
+                key: segments[0],
+                value: segments.length >= 2 ? segments[1] : ""
+            };
+        });
+    }
+
+    /**
+     * Encodes the adaptive font size pairs into a string representation that
+     * can be saved in the configuration values.
+     *
+     * @param sizes The KeyValueItem pairs that need to be encoded.
+     */
+    function encodeAdaptiveFontSize(sizes: KeyValueItem[]): string {
+        if (sizes.length === 0) {
+            return "";
+        }
+
+        const pairs: string[] = [];
+
+        for (const size of sizes) {
+            const key = toNumberOrNull(size.key);
+            const value = toNumberOrNull(size.value);
+
+            if (key !== null && value !== null) {
+                pairs.push(`${key}=${value}`);
+            }
+        }
+
+        return pairs.join(";");
+    }
+
+    /**
      * Event handler for the text alignment buttons.
      *
      * @param value The value that was selected.
@@ -128,8 +203,24 @@
         alignment.value = value as string;
     }
 
+    /**
+     * Event handler for when the Adaptive Font Size button is clicked.
+     */
+    function onAdaptiveFontSizeClick(): void {
+        editableAdaptiveFontSize.value = [...adaptiveFontSize.value];
+        isAdaptiveFontSizeVisible.value = true;
+    }
+
+    /**
+     * Event handler for when the Adaptive Font Size Save button is clicked.
+     */
+    function onAdaptiveFontSizeSave(): void {
+        adaptiveFontSize.value = [...editableAdaptiveFontSize.value];
+        isAdaptiveFontSizeVisible.value = false;
+    }
+
     // Watch for changes in the UI that require an update to the label.
-    watch([placeholderText, fontSize, alignment, isBold, isColorInverted, isCondensed, maxLength], () => {
+    watch([placeholderText, fontSize, alignment, isBold, isColorInverted, isCondensed, maxLength, adaptiveFontSize], () => {
         props.labelManager.mutateSelectedField(field => {
             field.configurationValues = field.configurationValues ?? {};
 
@@ -142,6 +233,7 @@
             fieldConfig.isColorInverted = isColorInverted.value ? "true" : "false";
             fieldConfig.isCondensed = isCondensed.value ? "true" : "false";
             fieldConfig.maxLength = `${maxLength.value}`;
+            fieldConfig.adaptiveFontSize = encodeAdaptiveFontSize(adaptiveFontSize.value);
         });
     });
 

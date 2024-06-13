@@ -18,7 +18,8 @@
                   :items="formatterOptionItems" />
 
     <FieldConfigText :labelManager="labelManager"
-                     showPlaceholder />
+                     showPlaceholder
+                     showAdaptiveFontSize />
 
     <TextBox v-for="customField in customFields"
              :label="customField.label || undefined"

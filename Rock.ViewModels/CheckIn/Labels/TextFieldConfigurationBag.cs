@@ -77,10 +77,11 @@ namespace Rock.ViewModels.CheckIn.Labels
         /// Contains a lookup table of string length and font sizes as key and
         /// value pairs. The key represents the string length and the value is
         /// the font size. The value from the largest key that is less than or
-        /// equal to the length of the text is used. This is encoded as a JSON
-        /// object serialized into this variable.
+        /// equal to the length of the text is used. This is encoded as a set
+        /// of "key=value" pairs joined by semi-colon. Such as
+        /// <c>10=16;20=14;30=12</c>.
         /// </summary>
-        public string VariableFontSize { get; set; }
+        public string AdaptiveFontSize { get; set; }
 
         /// <summary>
         /// The horizontal alignment of the text in the field. The value should

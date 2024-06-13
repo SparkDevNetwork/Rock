@@ -20,16 +20,8 @@
     </div>
 
     <FieldConfigText :labelManager="labelManager"
-                     :showPlaceholder="isDynamicText">
-        <template #iconButtons>
-            <RockButton v-if="isDynamicText"
-                        btnType="default"
-                        btnSize="sm"
-                        @click="onAdaptiveFontSizeClick">
-                <i class="fa fa-text-width"></i>
-            </RockButton>
-        </template>
-    </FieldConfigText>
+                     :showPlaceholder="isDynamicText"
+                     :showAdaptiveFontSize="isDynamicText" />
 </template>
 
 <script setup lang="ts">
@@ -76,13 +68,6 @@
      */
     function onDynamicTextClick(): void {
         isDynamicText.value = true;
-    }
-
-    /**
-     * Event handler for when the Adaptive Font Size button is clicked.
-     */
-    function onAdaptiveFontSizeClick(): void {
-        // Intentaionll blank for now.
     }
 
     // Watch for changes in the UI that require an update to the label.

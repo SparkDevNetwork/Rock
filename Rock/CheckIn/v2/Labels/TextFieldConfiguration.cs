@@ -48,8 +48,8 @@ namespace Rock.CheckIn.v2.Labels
         /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.TextFieldConfigurationBag.FontSize"/>
         public double FontSize { get; set; }
 
-        /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.TextFieldConfigurationBag.VariableFontSize"/>
-        public Dictionary<int, double> VariableFontSize { get; set; }
+        /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.TextFieldConfigurationBag.AdaptiveFontSize"/>
+        public Dictionary<int, double> AdaptiveFontSize { get; set; }
 
         /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.TextFieldConfigurationBag.HorizontalAlignment"/>
         public HorizontalTextAlignment HorizontalAlignment { get; set; }
