@@ -50,7 +50,9 @@
                              v-model:disabled="isDisabled"
                              v-model:recipients="recipients"
                              v-model:isBulkCommunication="isBulkCommunication"
-                             v-model:scheduleSendIsoString="scheduleSendIsoString" />
+                             v-model:scheduleSendIsoString="scheduleSendIsoString"
+                             @saved="onSentOrSaved"
+                             @sent="onSentOrSaved" />
 
                         <PushNotification v-else-if="selectedMedium === 'push'"
                                           :isFullMode="config.mode === Mode.Full" />
@@ -101,7 +103,7 @@
     import Sms from "./CommunicationEntry/communicationMediumSms.partial.obs";
     import PushNotification from "./CommunicationEntry/communicationMediumPushNotification.partial.obs";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import { areEqual, newGuid } from "@Obsidian/Utility/guid";
+    import { areEqual } from "@Obsidian/Utility/guid";
     import { CommunicationEntryRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryRecipientBag";
     import { KeepPersonPickerOpen, provideSelectedMediumType } from "./CommunicationEntry/utils.partial";
     import { MediumType } from "./CommunicationEntry/types.partial";

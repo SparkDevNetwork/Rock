@@ -55,9 +55,8 @@
                                   :showBlankItem="false" />
                 </div>
 
-                <div class="col-xs-12 col-sm-6 d-sm-flex justify-content-sm-end">
-                    <ScheduleSend v-if="config.mode === Mode.Full"
-                                  :modelValue="scheduleSendIsoString" @update:modelValue="$emit('update:scheduleSendIsoString', $event)"
+                <div v-if="isFullMode" class="col-xs-12 col-sm-6 d-sm-flex justify-content-sm-end">
+                    <ScheduleSend :modelValue="scheduleSendIsoString" @update:modelValue="$emit('update:scheduleSendIsoString', $event)"
                                   class="mr-sm-3"
                                   :disabled="disabled"
                                   :label="breakpointHelper.isSmOrLarger ? ' ' : ''" />
@@ -92,7 +91,7 @@
                              textMode="multiline" />
                 </div>
 
-                <div class="col-xs-6">
+                <div class="col-xs-6" v-if="isFullMode">
                     <FileUploader :binaryFileTypeGuid="mediumOptions.binaryFileTypeGuid"
                                   :disabled="disabled"
                                   label="Attachment"
@@ -108,14 +107,14 @@
                             type="button"
                             @click="onClickSend">Send</RockButton>
 
-                <RockButton v-if="config.mode === Mode.Full"
+                <RockButton v-if="isFullMode"
                             id="btnTest"
                             class="btn btn-link"
                             :disabled="disabled"
                             type="button"
                             @click="onClickTest">Send Test</RockButton>
 
-                <RockButton v-if="config.mode === Mode.Full"
+                <RockButton v-if="isFullMode"
                             id="btnSave"
                             class="btn btn-link"
                             :disabled="disabled"
@@ -137,6 +136,7 @@
     import { PropType, computed, nextTick, onMounted, ref, watch } from "vue";
     import Delay from "./delay.partial.obs";
     import RecipientPicker from "./recipientPicker.partial.obs";
+    import Responsive from "./responsive.partial.obs";
     import ScheduleSend from "./scheduleSend.partial.obs";
     import { getAlertType, scrollToTopOfWindow, useSelectedMediumType, useBreakpointHelper } from "./utils.partial";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
@@ -165,6 +165,8 @@
     import { CommunicationEntryTestRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryTestRequestBag";
     import { CommunicationEntryTestResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryTestResponseBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { CommunicationEntrySaveResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySaveResponseBag";
+    import { CommunicationEntrySaveRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySaveRequestBag";
 
     const props = defineProps({
         disabled: {
@@ -219,7 +221,7 @@
     const fromNumberGuidOrEmptyString = ref<string>("");
     const mediumOptions = ref<CommunicationEntrySmsMediumOptionsBag | null>(isSmsMediumOptions(config.mediumOptions) ? config.mediumOptions : null);
     const errorMessage = ref<string | null | undefined>();
-    const message = ref<string>("");
+    const message = ref<string>(config.communication?.smsMessage ?? "");
     const mergeFieldValue = ref<ListItemBag | ListItemBag[] | null | undefined>();
     const isInvalidTransportNotificationDismissed = ref<boolean>(false);
     const submitFormTrigger = ref<boolean>(false);
@@ -237,6 +239,10 @@
 
     const isInvalidTransportNotificationVisible = computed<boolean>(() => {
         return mediumOptions.value?.hasActiveTransport === false && !isInvalidTransportNotificationDismissed.value;
+    });
+
+    const isFullMode = computed<boolean>(() => {
+        return config.mode === Mode.Full;
     });
 
     //#endregion
@@ -421,46 +427,6 @@
         }
     }
 
-    /**
-     * Saves the communication.
-     */
-    async function save(): Promise<void> {
-        try {
-            disable();
-
-            // TODO JMH Implement.
-            // const bag: CommunicationEntrySaveRequestBag = {
-            //     isBulkCommunication: props.isBulkCommunication,
-            //     bccAddresses: bccAddresses.value,
-            //     ccAddresses: ccAddresses.value,
-            //     status: CommunicationStatus.Transient,
-            //     communicationTemplateGuid: templateGuid.value,
-            //     emailAttachmentBinaryFiles: attachments.value ?? [],
-            //     fromAddress: fromAddress.value,
-            //     fromName: fromName.value,
-            //     futureSendDateTime: props.scheduleSendIsoString,
-            //     mediumEntityTypeGuid: EntityType.CommunicationMediumEmail,
-            //     message: message.value,
-            //     recipients: props.recipients,
-            //     replyAddress: replyToAddress.value,
-            //     subject: subject.value,
-            //     communicationGuid: communicationGuid.value
-            // };
-
-            // const result = await invokeBlockAction<CommunicationEntrySaveResponseBag>("Save", { bag });
-
-            // if (result.isError || !result.data) {
-            //     raiseError(result.errorMessage || "An error occurred while saving. Please try again.");
-            // }
-            // else {
-            //     raiseSaved(result.data);
-            // }
-        }
-        finally {
-            enable();
-        }
-    }
-
     /** Sends the communication. */
     async function send(): Promise<void> {
         try {
@@ -507,15 +473,15 @@
             testResult.value = undefined;
 
             const bag: CommunicationEntryTestRequestBag = {
+                communicationGuid: communicationGuid.value,
                 isBulkCommunication: props.isBulkCommunication,
-                // TODO JMH This is hard-coded for both Email and SMS. It should be controlled on the server, not here.
-                status: CommunicationStatus.Transient,
                 mediumEntityTypeGuid: EntityType.CommunicationMediumSms,
                 recipients: props.recipients,
-                communicationGuid: communicationGuid.value,
                 smsAttachmentBinaryFiles: attachments.value ?? [],
                 smsFromSystemPhoneNumberGuid: toGuidOrNull(fromNumberGuidOrEmptyString.value),
-                smsMessage: message.value
+                smsMessage: message.value,
+                // TODO JMH This is hard-coded for both Email and SMS. It should be controlled on the server, not here.
+                status: CommunicationStatus.Transient
             };
 
             const result = await invokeBlockAction<CommunicationEntryTestResponseBag>("Test", { bag });
@@ -525,6 +491,41 @@
             }
             else {
                 raiseTested(result.data);
+            }
+        }
+        finally {
+            enable();
+        }
+    }
+
+    /**
+     * Saves the communication.
+     */
+    async function save(): Promise<void> {
+        try {
+            disable();
+
+            const bag: CommunicationEntrySaveRequestBag = {
+                communicationGuid: communicationGuid.value,
+                futureSendDateTime: props.scheduleSendIsoString,
+                isBulkCommunication: props.isBulkCommunication,
+                mediumEntityTypeGuid: EntityType.CommunicationMediumSms,
+                recipients: props.recipients,
+                smsAttachmentBinaryFiles: attachments.value ?? [],
+                smsFromSystemPhoneNumberGuid: toGuidOrNull(fromNumberGuidOrEmptyString.value),
+                smsMessage: message.value,
+                // TODO JMH This appears to be hard-coded here. Instead, should we let the server control this?
+                // TODO JMH That would also prevent users from abusing the status.
+                status: CommunicationStatus.Transient,
+            };
+
+            const result = await invokeBlockAction<CommunicationEntrySaveResponseBag>("Save", { bag });
+
+            if (result.isError || !result.data) {
+                raiseError(result.errorMessage || "An error occurred while saving. Please try again.");
+            }
+            else {
+                raiseSaved(result.data);
             }
         }
         finally {

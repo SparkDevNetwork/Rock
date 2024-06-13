@@ -28,7 +28,7 @@
 </template>
 
 <script setup lang="ts">
-    import { ComputedRef, PropType, Ref, computed, inject, nextTick, ref } from "vue";
+    import { PropType, Ref, computed, nextTick, ref } from "vue";
     import PopupPicker from "./popupPicker.partial.obs";
     import PersonPanelPicker from "./personPanelPicker.partial.obs";
     import RecipientModal from "./recipientModal.partial.obs";
@@ -210,6 +210,8 @@
                 emit("update:modelValue", updatedRecipients);
             }
         }
+
+        // TODO JMH THIS WAS PLACED RANDOMLY TO NOTE: Simple mode should only prevent adding new people to a communication. Existing people may still be deleted.
 
         // Hide the person picker after stuff happens.
         // TODO JMH Use a loading indicator instead so the user can't interact.

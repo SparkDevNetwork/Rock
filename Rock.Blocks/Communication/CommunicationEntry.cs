@@ -911,7 +911,6 @@ namespace Rock.Blocks.Communication
                 validationResult = new ValidationResult( "Medium Type is not supported." );
                 return false;
             }
-
         }
 
         private static bool IsSendRequestValid( CommunicationEntrySendRequestBag bag, out ValidationResult validationResult )
@@ -926,11 +925,34 @@ namespace Rock.Blocks.Communication
 
         private static bool IsSaveRequestValid( CommunicationEntrySaveRequestBag bag, out ValidationResult validationResult )
         {
-            return Validate.IsNotNull( bag, "Communication Information", out validationResult )
-                && Validate.IsNotNullOrWhiteSpace( bag.FromName, nameof( bag.FromName ).SplitCase(), out validationResult )
-                && Validate.IsNotNullOrWhiteSpace( bag.FromAddress, nameof( bag.FromAddress ).SplitCase(), out validationResult )
-                && Validate.IsNotEmpty( bag.MediumEntityTypeGuid, "Medium Type", out validationResult )
-                && ( !bag.FutureSendDateTime.HasValue || Validate.IsNowOrFutureDateTime( bag.FutureSendDateTime.Value, "Schedule Send", out validationResult ) );
+            // Validation for all medium types.
+            if ( !Validate.IsNotNull( bag, "Communication Information", out validationResult )
+                 || !Validate.IsNotEmpty( bag.MediumEntityTypeGuid, "Medium Type", out validationResult ) )
+            {
+                return false;
+            }
+
+            // Validation for specific medium types.
+            if ( bag.MediumEntityTypeGuid == SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() )
+            {
+                // Email
+                return Validate.IsNotNullOrWhiteSpace( bag.FromName, nameof( bag.FromName ).SplitCase(), out validationResult )
+                    && Validate.IsNotNullOrWhiteSpace( bag.FromAddress, nameof( bag.FromAddress ).SplitCase(), out validationResult )
+                    && ( !bag.FutureSendDateTime.HasValue || Validate.IsNowOrFutureDateTime( bag.FutureSendDateTime.Value, "Schedule Send", out validationResult ) );
+            }
+            else if ( bag.MediumEntityTypeGuid == SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() )
+            {
+                // SMS
+                return Validate.IsNotNull( bag.SmsFromSystemPhoneNumberGuid, "From Phone", out validationResult )
+                    && ( !bag.FutureSendDateTime.HasValue || Validate.IsNowOrFutureDateTime( bag.FutureSendDateTime.Value, "Schedule Send", out validationResult ) )
+                    && Validate.IsNotNullOrWhiteSpace( bag.SmsMessage, "Message", out validationResult );
+            }
+            else
+            {
+                // Unsupported medium type.
+                validationResult = new ValidationResult( "Medium Type is not supported." );
+                return false;
+            }
         }
 
         /// <summary>

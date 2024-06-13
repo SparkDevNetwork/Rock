@@ -1,0 +1,36 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+ <!-- TODO JMH REmove this-->
+<template>
+    <slot v-if="(breakpointHelper.isXs && !$slots.xs)
+        || (breakpointHelper.isSm && !$slots.sm)
+        || (breakpointHelper.isMd && !$slots.sm && !$slots.md)
+        || (breakpointHelper.isLg && !$slots.sm && !$slots.md && !$slots.lg)
+        || (breakpointHelper.isXl && !$slots.sm && !$slots.md && !$slots.lg && !$slots.xl)"
+          name="default" />
+    <slot v-if="breakpointHelper.isXs
+        || (breakpointHelper.isSm && !$slots.sm)
+        || (breakpointHelper.isMd && !$slots.sm && !$slots.md)
+        || (breakpointHelper.isLg && !$slots.sm && !$slots.md && !$slots.lg)
+        || (breakpointHelper.isXl && !$slots.sm && !$slots.md && !$slots.lg && !$slots.xl)"
+          name="xs" />
+    <slot v-if="breakpointHelper.isSm
+        || (breakpointHelper.isMd && !$slots.md)
+        || (breakpointHelper.isLg && !$slots.md && !$slots.lg)
+        || (breakpointHelper.isXl && !$slots.md && !$slots.lg && !$slots.xl)"
+          name="sm" />
+    <slot v-if="breakpointHelper.isMd
+        || (breakpointHelper.isLg && !$slots.lg)
+        || (breakpointHelper.isXl && !$slots.lg && !$slots.xl)"
+          name="md" />
+    <slot v-if="breakpointHelper.isLg
+        || (breakpointHelper.isXl && !$slots.xl)"
+          name="lg" />
+    <slot v-if="breakpointHelper.isLgOrLarger"
+          name="xl" />
+</template>
+
+<script setup lang="ts">
+    import { useBreakpointHelper } from "./utils.partial";
+
+    const breakpointHelper = useBreakpointHelper();
+</script>
