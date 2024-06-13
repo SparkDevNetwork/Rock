@@ -1109,6 +1109,10 @@
         drawGridLines();
     });
 
+    watch(() => [props.showGrid, props.snapToGrid], () => {
+        surface.snapToGrid = props.showGrid && props.snapToGrid;
+    });
+
     watch(props.labelManager.current, () => {
         createOrUpdateNodes();
     });
