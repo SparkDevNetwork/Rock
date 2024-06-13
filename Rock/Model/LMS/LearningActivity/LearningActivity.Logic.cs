@@ -146,7 +146,7 @@ namespace Rock.Model
                     }
                     break;
                 case AvailableDateCalculationMethod.AlwaysAvailable:
-                    return DateTime.MinValue;
+                    return enrollmentDate ?? semesterStart ?? new DateTime(2024, 1, 1);
             }
 
             return null;

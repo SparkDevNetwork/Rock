@@ -137,8 +137,7 @@ namespace Rock.Blocks.Lms
                 .AddTextField( "campus", a => a.CampusId.HasValue ? CampusCache.Get( a.CampusId.Value )?.Name : null )
                 .AddDateTimeField( "startDate", a => a.StartDate )
                 .AddDateTimeField( "endDate", a => a.EndDate )
-                .AddField( "status", a => a.CompletionStatus )
-                .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) );
+                .AddField( "status", a => a.CompletionStatus );
 
             if ( RequestContext.GetContextEntity<LearningProgram>()?.ConfigurationMode == ConfigurationMode.AcademicCalendar )
             {
