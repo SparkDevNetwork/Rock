@@ -2059,9 +2059,17 @@ namespace Rock.Blocks.Communication
             // Copy the communication data in the request to the Communication object.
             CommunicationDetails.Copy( new CommunicationDetailsAdapter( bag, rockContext ), communication );
 
+            var communicationType = communication.CommunicationType;
+            var binaryFileAttachments =
+                communicationType == CommunicationType.Email
+                    ? bag.EmailAttachmentBinaryFiles
+                    : communicationType == CommunicationType.SMS
+                        ? bag.SmsAttachmentBinaryFiles
+                        : new List<ListItemBag>();
+
             // delete any attachments that are no longer included
             // TODO JMH Does the bag have Guids? If so, we need to map the Communication ids to Guids or vice-versa.
-            foreach ( var attachment in communication.Attachments.Where( a => !bag.EmailAttachmentBinaryFiles.Any( bagFile => bagFile.Value.AsGuid() == a.BinaryFile.Guid ) ).ToList() )
+            foreach ( var attachment in communication.Attachments.Where( a => !binaryFileAttachments.Any( bagFile => bagFile.Value.AsGuid() == a.BinaryFile.Guid ) ).ToList() )
             {
                 communication.Attachments.Remove( attachment );
                 communicationAttachmentService.Delete( attachment );
@@ -2069,9 +2077,9 @@ namespace Rock.Blocks.Communication
 
             // add any new attachments that were added
             // TODO JMH Does the bag have Guids? If so, we need to map the Communication ids to Guids or vice-versa.
-            if ( bag.EmailAttachmentBinaryFiles?.Any() == true )
+            if ( binaryFileAttachments?.Any() == true )
             {
-                var guids = bag.EmailAttachmentBinaryFiles.Select( bf => bf.Value.AsGuid() ).Where( g => !g.IsEmpty() ).ToList();
+                var guids = binaryFileAttachments.Select( bf => bf.Value.AsGuid() ).Where( g => !g.IsEmpty() ).ToList();
                 var attachmentIdMap = new BinaryFileService( rockContext )
                     .Queryable()
                     .Where( b => guids.Contains( b.Guid ) )
@@ -2085,7 +2093,7 @@ namespace Rock.Blocks.Communication
                 {
                     if ( !communication.Attachments.Any( x => x.BinaryFileId == attachmentBinaryFileId.Value ) )
                     {
-                        communication.AddAttachment( new CommunicationAttachment { BinaryFileId = attachmentBinaryFileId.Value }, CommunicationType.Email );
+                        communication.AddAttachment( new CommunicationAttachment { BinaryFileId = attachmentBinaryFileId.Value }, communicationType );
                     }
                 }
             }

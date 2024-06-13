@@ -4,7 +4,7 @@
                      v-bind="standardProps"
                      :disabled="disabled"
                      displayStyle="auto"
-                     :enhanceForLongLists="true"
+                     :enhanceForLongLists="false"
                      :items="internalValue"
                      :label="label"
                      maxTagCount="responsive"
@@ -57,12 +57,13 @@
 </style>
 
 <script setup lang="ts">
-    import { PropType, Ref, ref, watch } from "vue";
+    import { PropType, Ref, inject, ref, watch } from "vue";
     import BaseAsyncPicker from "@Obsidian/Controls/baseAsyncPicker.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { standardAsyncPickerProps, useStandardAsyncPickerProps, useVModelPassthrough } from "@Obsidian/Utility/component";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { KeepPersonPickerOpen } from "./utils.partial";
 
     const props = defineProps({
         modelValue: {

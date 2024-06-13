@@ -61,7 +61,7 @@ export function scrollToTopOfWindow(): void {
  * Injects a provided value.
  * Throws an exception if the value is undefined or not yet provided.
  */
-function use<T>(key: string | InjectionKey<T>): T {
+export function use<T>(key: string | InjectionKey<T>): T {
     const result = inject<T>(key);
 
     if (result === undefined) {
@@ -124,3 +124,6 @@ export function useBreakpoint(): ComputedRef<Breakpoint> {
 export function useBreakpointHelper(): ComputedRef<BreakpointHelper> {
     return use(breakpointHelperInjectionKey);
 }
+
+// TODO JMH Remove this debug option.
+export const KeepPersonPickerOpen: InjectionKey<ComputedRef<boolean>> = Symbol("keep-person-picker-open");

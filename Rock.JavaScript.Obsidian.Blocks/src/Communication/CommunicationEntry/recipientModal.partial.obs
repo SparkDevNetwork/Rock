@@ -4,7 +4,7 @@
            :clickBackdropToClose="false"
            :saveText="!isReadonly ? 'Save' : undefined"
            title="Recipient Manager"
-           @save="!isReadonly ? onSaveClicked : undefined">
+           @save="onSaveClicked">
         <template v-if="!isReadonly">
             <div class="d-flex flex-row justify-content-between align-items-center">
                 <PersonPicker @update:modelValue="onPersonPicked" label="Add Recipient" />
@@ -299,7 +299,10 @@
     }
 
     function onSaveClicked(): void {
-        emit("update:recipients", pendingItems.value);
+        if (!props.isReadonly) {
+            emit("update:recipients", pendingItems.value);
+        }
+
         internalIsOpen.value = false;
     }
 

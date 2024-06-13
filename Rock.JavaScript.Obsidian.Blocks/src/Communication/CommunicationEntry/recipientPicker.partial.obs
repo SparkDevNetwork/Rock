@@ -28,11 +28,12 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, Ref, computed, nextTick, ref } from "vue";
+    import { ComputedRef, PropType, Ref, computed, inject, nextTick, ref } from "vue";
     import PopupPicker from "./popupPicker.partial.obs";
     import PersonPanelPicker from "./personPanelPicker.partial.obs";
     import RecipientModal from "./recipientModal.partial.obs";
     import { LabelType, MediumType } from "./types.partial";
+    import { KeepPersonPickerOpen, use } from "./utils.partial";
     import { ValidationRule } from "@Obsidian/Types/validationRules";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
@@ -91,6 +92,7 @@
 
     const isPersonPickerShown = ref<boolean>(false);
     const isRecipientModalShown = ref<boolean>(false);
+    const keepOpen = use(KeepPersonPickerOpen);
 
     //#endregion
 
@@ -124,7 +126,7 @@
             const addedListItems = newValue.filter(newItem => !currentListItems.some(currentItem => currentItem.value === newItem.value));
 
             // If nothing changed, then exit.
-            if (removedListItems.length === 0 && addedListItems.length === 0) {
+            if (!removedListItems?.length && addedListItems.length === 0) {
                 return;
             }
 
@@ -211,7 +213,9 @@
 
         // Hide the person picker after stuff happens.
         // TODO JMH Use a loading indicator instead so the user can't interact.
-        //isPersonPickerShown.value = false;
+        if (!keepOpen.value) {
+            isPersonPickerShown.value = false;
+        }
     }
 
     //#endregion
