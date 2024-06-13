@@ -385,12 +385,6 @@ namespace Rock.Reporting
                 entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.DECIMAL.AsGuid() );
             }
 
-            // Double properties
-            else if ( property.PropertyType == typeof( double ) || property.PropertyType == typeof( double? ) )
-            {
-                entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.DECIMAL.AsGuid() );
-            }
-
             // Text Properties
             else if ( property.PropertyType == typeof( string ) )
             {
