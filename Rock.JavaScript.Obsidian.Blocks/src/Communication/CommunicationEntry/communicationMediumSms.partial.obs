@@ -140,19 +140,20 @@
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { Guid } from "@Obsidian/Types";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { CommunicationEntryGetMediumOptionsRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryGetMediumOptionsRequestBag";
     import { CommunicationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryInitializationBox";
     import { CommunicationEntryMediumOptionsBaseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryMediumOptionsBaseBag";
     import { CommunicationEntryRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryRecipientBag";
+    import { CommunicationEntrySaveRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySaveRequestBag";
+    import { CommunicationEntrySaveResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySaveResponseBag";
+    import { CommunicationEntrySendRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySendRequestBag";
     import { CommunicationEntrySendResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySendResponseBag";
     import { CommunicationEntrySmsMediumOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySmsMediumOptionsBag";
     import { CommunicationEntryTestRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryTestRequestBag";
     import { CommunicationEntryTestResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryTestResponseBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { CommunicationEntrySaveResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySaveResponseBag";
-    import { CommunicationEntrySaveRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySaveRequestBag";
-import { useVModelPassthrough } from "@Obsidian/Utility/component";
 
     const props = defineProps({
         disabled: {
@@ -394,32 +395,26 @@ import { useVModelPassthrough } from "@Obsidian/Utility/component";
             disable("Sending communication...");
 
             // TODO JMH Implement.
-            // const bag: CommunicationEntrySendRequestBag = {
-            //     isBulkCommunication: props.isBulkCommunication,
-            //     bccAddresses: bccAddresses.value,
-            //     ccAddresses: ccAddresses.value,
-            //     status: CommunicationStatus.Transient,
-            //     communicationTemplateGuid: templateGuid.value,
-            //     emailAttachmentBinaryFiles: attachments.value,
-            //     fromAddress: fromAddress.value,
-            //     fromName: fromName.value,
-            //     futureSendDateTime: props.scheduleSendIsoString,
-            //     mediumEntityTypeGuid: EntityType.CommunicationMediumEmail,
-            //     message: message.value,
-            //     recipients: props.recipients,
-            //     replyAddress: replyToAddress.value,
-            //     subject: subject.value,
-            //     communicationGuid: communicationGuid.value,
-            // };
+            const bag: CommunicationEntrySendRequestBag = {
+                communicationGuid: communicationGuid.value,
+                isBulkCommunication: internalIsBulkCommunication.value,
+                mediumEntityTypeGuid: EntityType.CommunicationMediumSms,
+                recipients: internalRecipients.value,
+                smsAttachmentBinaryFiles: attachments.value ?? [],
+                smsFromSystemPhoneNumberGuid: toGuidOrNull(fromNumberGuidOrEmptyString.value),
+                smsMessage: message.value,
+                // TODO JMH This is hard-coded for both Email and SMS. It should be controlled on the server, not here.
+                status: CommunicationStatus.Transient
+            };
 
-            // const result = await invokeBlockAction<CommunicationEntrySendResponseBag>("Send", { bag });
+            const result = await invokeBlockAction<CommunicationEntrySendResponseBag>("Send", { bag });
 
-            // if (result.isError || !result.data) {
-            //     raiseError(result.errorMessage || "An error occurred while sending. Please try again.");
-            // }
-            // else {
-            //     raiseSent(result.data);
-            // }
+            if (result.isError || !result.data) {
+                raiseError(result.errorMessage || "An error occurred while sending. Please try again.");
+            }
+            else {
+                raiseSent(result.data);
+            }
         }
         finally {
             enable();
@@ -435,9 +430,9 @@ import { useVModelPassthrough } from "@Obsidian/Utility/component";
 
             const bag: CommunicationEntryTestRequestBag = {
                 communicationGuid: communicationGuid.value,
-                isBulkCommunication: props.isBulkCommunication,
+                isBulkCommunication: internalIsBulkCommunication.value,
                 mediumEntityTypeGuid: EntityType.CommunicationMediumSms,
-                recipients: props.recipients,
+                recipients: internalRecipients.value,
                 smsAttachmentBinaryFiles: attachments.value ?? [],
                 smsFromSystemPhoneNumberGuid: toGuidOrNull(fromNumberGuidOrEmptyString.value),
                 smsMessage: message.value,
@@ -468,10 +463,10 @@ import { useVModelPassthrough } from "@Obsidian/Utility/component";
 
             const bag: CommunicationEntrySaveRequestBag = {
                 communicationGuid: communicationGuid.value,
-                futureSendDateTime: props.scheduleSendIsoString,
-                isBulkCommunication: props.isBulkCommunication,
+                futureSendDateTime: internalScheduleSendIsoString.value,
+                isBulkCommunication: internalIsBulkCommunication.value,
                 mediumEntityTypeGuid: EntityType.CommunicationMediumSms,
-                recipients: props.recipients,
+                recipients: internalRecipients.value,
                 smsAttachmentBinaryFiles: attachments.value ?? [],
                 smsFromSystemPhoneNumberGuid: toGuidOrNull(fromNumberGuidOrEmptyString.value),
                 smsMessage: message.value,
