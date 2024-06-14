@@ -92,16 +92,16 @@
 <script setup lang="ts">
     import { PropType, computed, onMounted, onUnmounted, ref, watch, watchEffect } from "vue";
     import RockFormField from "./rockFormField.obs";
-    import AssetManagerPlugin from "./HtmlEditor/assetManagerPlugin.partial.obs";
-    import EditSourceCodePlugin from "./HtmlEditor/editSourceCodePlugin.partial.obs";
-    import FileBrowserPlugin from "./HtmlEditor/fileBrowserPlugin.partial.obs";
-    import ImageBrowserPlugin from "./HtmlEditor/imageBrowserPlugin.partial.obs";
-    import MergeFieldPlugin from "./HtmlEditor/mergeFieldPlugin.partial.obs";
-    import ParagraphPlugin from "./HtmlEditor/paragraphPlugin.partial.obs";
-    import PasteAsPlainTextPlugin from "./HtmlEditor/pasteAsPlainTextPlugin.partial.obs";
+    import AssetManagerPlugin from "./TextEditor/assetManagerPlugin.partial.obs";
+    import EditSourceCodePlugin from "./TextEditor/editSourceCodePlugin.partial.obs";
+    import FileBrowserPlugin from "./TextEditor/fileBrowserPlugin.partial.obs";
+    import ImageBrowserPlugin from "./TextEditor/imageBrowserPlugin.partial.obs";
+    import MergeFieldPlugin from "./TextEditor/mergeFieldPlugin.partial.obs";
+    import ParagraphPlugin from "./TextEditor/paragraphPlugin.partial.obs";
+    import { scopeStyleSheets, unscopeStyleSheets } from "./TextEditor/utils.partial";
+    import PasteAsPlainTextPlugin from "./TextEditor/pasteAsPlainTextPlugin.partial.obs";
     import { tinymce, Editor, EditorEvent, Events } from "@Obsidian/Libs/tinymce";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
-    import { scopeStyleSheets, unscopeStyleSheets } from "./HtmlEditor/utils.partial";
 
     type ToolbarConfig = "light" | "full";
 

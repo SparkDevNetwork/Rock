@@ -1,0 +1,105 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import { getToolbarButton } from "./utils.partial";
+    import { Editor, Ui } from "@Obsidian/Libs/tinymce";
+    import { newGuid } from "@Obsidian/Utility/guid";
+
+    const props = defineProps({
+        tinyMceInstance: {
+            type: Object as PropType<Editor | undefined>,
+            required: true
+        },
+        toolbarElement: {
+            type: Object as PropType<HTMLElement | undefined>,
+            required: true
+        }
+    });
+
+    const id = `toolbarspacer-${newGuid()}` as const;
+
+    defineExpose({
+        id
+    });
+
+    //#region Values
+
+    const toolbarButtonElement = ref<HTMLElement | undefined>();
+
+    //#endregion
+
+    //#region Computed Values
+
+    //#endregion
+
+    //#region Functions
+
+    /** Initializes the plugin. */
+    function init(editor: Editor): void {
+        // Register toolbar buttons.
+        // This combines the functionality of the built-in `align` toolbar button
+        // and the `indent` toolbar button. It also updates the toolbar icon to
+        // reflect the alignment of the selected node.
+        editor.ui.registry.addButton(id, {
+            // Temporarily setting the tooltip to the plugin id to help find the button in `onSetup`.
+            tooltip: id,
+            onAction: (_api: Ui.Toolbar.ToolbarButtonInstanceApi): void => {
+                // Nothing to do.
+            },
+            onSetup: (_api: Ui.Toolbar.ToolbarButtonInstanceApi): (api: Ui.Toolbar.ToolbarButtonInstanceApi) => void => {
+                toolbarButtonElement.value = getToolbarButton(id, props.toolbarElement) ?? undefined;
+
+                const tb = toolbarButtonElement.value;
+
+                if (tb) {
+                    // Remove the temporary title used to find the element.
+                    tb.removeAttribute("title");
+
+                    // Remove the "button" styles from the label.
+                    tb.style.pointerEvents = "none";
+
+                    // Add styles to space the control out.
+                    tb.style.flexGrow = "1";
+                    const parent = tb.parentElement;
+                    while (parent) {
+                        if (parent.role === "toolbar") {
+                            parent.style.width = "100%";
+                            break;
+                        }
+                    }
+
+                    // Add custom CSS class(es) if specified.
+                    tb.classList.add("toolbarspacer", id);
+                }
+
+                // Return a dispose callback.
+                return disposeTooltipButton;
+            },
+        });
+    }
+
+    /** Disposes the tooltip button. */
+    function disposeTooltipButton(): void {
+        // Nothing to dispose.
+    }
+
+    //#endregion
+
+    //#region Event Handlers
+
+    //#endregion
+
+    //#region Watchers
+
+    // Register the plugin whenever the bound Editor changes.
+    watch(() => props.tinyMceInstance, () => {
+        // Dispose the previous tooltip button if set.
+        disposeTooltipButton();
+
+        if (props.tinyMceInstance) {
+            init(props.tinyMceInstance);
+        }
+    });
+
+    //#endregion
+</script>

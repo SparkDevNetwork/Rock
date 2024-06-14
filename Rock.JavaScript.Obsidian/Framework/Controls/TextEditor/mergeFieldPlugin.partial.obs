@@ -33,6 +33,18 @@
         toolbarElement: {
             type: Object as PropType<HTMLElement | undefined>,
             required: true
+        },
+        isIconHidden: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+        label: {
+            type: String as PropType<string | null | undefined>,
+            required: false
+        },
+        cssClass: {
+            type: String as PropType<string | null | undefined>,
+            required: false
         }
     });
 
@@ -81,18 +93,26 @@
     function init(editor: Editor): void {
         editor.ui.registry.addButton(id, {
             // https://www.tiny.cloud/docs/tinymce/latest/editor-icon-identifiers/
-            icon: "code-sample",
+            icon: !props.isIconHidden ? "code-sample" : undefined,
+            text: props.label || undefined,
             tooltip: tooltip,
-            onAction: (_api: Ui.Toolbar.ToolbarButtonInstanceApi): void => {
-                isShown.value = true;
-            },
             onSetup: (_api: Ui.Toolbar.ToolbarButtonInstanceApi): (api: Ui.Toolbar.ToolbarButtonInstanceApi) => void => {
                 toolbarButtonElement.value = getToolbarButton(tooltip, props.toolbarElement) ?? undefined;
 
                 showOrHideToolbarButton();
 
+                const tb = toolbarButtonElement.value;
+                if (tb) {
+                    if (props.cssClass) {
+                        tb.classList.add(...props.cssClass.split(" "));
+                    }
+                }
+
                 // Return a dispose callback.
                 return disposeTooltipButton;
+            },
+            onAction: (_api: Ui.Toolbar.ToolbarButtonInstanceApi): void => {
+                isShown.value = true;
             },
         });
     }

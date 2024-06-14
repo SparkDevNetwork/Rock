@@ -41,6 +41,10 @@ import "tinymce/plugins/table";
 // The help plugin requires that the en internationalization file be imported as well.
 import "tinymce/plugins/help/js/i18n/keynav/en.js";
 import "tinymce/plugins/help";
+// https://www.tiny.cloud/docs/tinymce/latest/emoticons/
+// The emoticons plugin requires that the emojis.js file be imported as well.
+import "tinymce/plugins/emoticons/js/emojis.js";
+import "tinymce/plugins/emoticons";
 
 // CSS (import any skins needed)
 // Use TinyMCE's default skin for the toolbar and editor container (does not style the editor content).
