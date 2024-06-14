@@ -4,7 +4,7 @@
                :title="config.title ?? 'New Communication'"
                titleIconCssClass="fa fa-comment-o"
                type="block">
-            <template v-if="statusLabel" #subheaderRight>
+            <template v-if="config.mode === Mode.Full && statusLabel" #subheaderRight>
                 <HighlightLabel :labelType="statusLabelCssClass">{{ statusLabel }}</HighlightLabel>
             </template>
 
@@ -16,7 +16,7 @@
                                type="tabs"
                                :tabs="mediums" />
 
-                    <div class="tabbed-content mt-4">
+                    <div :class="['tabbed-content', mediums.length <= 1 ? '' : 'mt-4']">
                         <KeepAlive v-if="selectedMediumEntityTypeGuidOrEmptyString && config.communication && config.mediumOptions">
                             <Email v-if="selectedMedium === 'email'"
                                    v-model:disabled="disabled"
