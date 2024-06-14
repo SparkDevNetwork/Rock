@@ -125,6 +125,7 @@ namespace Rock.Migrations
                         Summary = c.String(maxLength: 500),
                         Description = c.String(),
                         DetailsUrl = c.String(),
+                        PublishDateTime = c.DateTime(),
                         LearningClassId = c.Int(nullable: false),
                         CommunicationMode = c.Int(nullable: false),
                         CommunicationSent = c.Boolean(nullable: false),

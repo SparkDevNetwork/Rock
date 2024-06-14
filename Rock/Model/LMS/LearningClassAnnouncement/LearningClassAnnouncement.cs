@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -84,10 +85,16 @@ namespace Rock.Model
         public int LearningClassId { get; set; }
 
         /// <summary>
-        /// Gets or sets a value
+        /// The communication mode used for the announcement.
         /// </summary>
         [DataMember]
         public CommunicationMode CommunicationMode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the date the announcement should be published/visible.
+        /// </summary>
+        [DataMember]
+        public DateTime PublishDate { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the communication has been sent.
