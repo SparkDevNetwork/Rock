@@ -23,6 +23,7 @@
 
             <div class="actions">
                 <RockButton btnType="primary"
+                            autoDisable
                             @click="onSave">Save</RockButton>
             </div>
         </div>
