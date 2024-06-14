@@ -1,7 +1,6 @@
 import Konva from "@Obsidian/Libs/konva";
 import { BarcodeFieldConfigurationBag, EllipseFieldConfigurationBag, IconFieldConfigurationBag, IconItem, LineFieldConfigurationBag, RectangleFieldConfigurationBag, StringRecord } from "./types.partial";
 import { areEqual, newGuid } from "@Obsidian/Utility/guid";
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { LabelFieldType } from "@Obsidian/Enums/CheckIn/Labels/labelFieldType";
 import { LabelFieldBag } from "@Obsidian/ViewModels/CheckIn/Labels/labelFieldBag";
 import { TextFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/textFieldConfigurationBag";

@@ -161,5 +161,4 @@
     // #region Event Handlers
 
     // #endregion
-    console.log(props.modelValue?.previewImage?.length);
 </script>

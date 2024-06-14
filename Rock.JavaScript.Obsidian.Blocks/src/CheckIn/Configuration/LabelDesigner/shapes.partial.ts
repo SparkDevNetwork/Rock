@@ -605,7 +605,6 @@ function updateIconShapeFromField(shape: Konva.Text, field: LabelFieldBag, surfa
     if (icon) {
         shape.fontStyle(`${icon.weight}`);
         shape.text(icon.code ?? "\uF128");
-        console.log("x", shape.textArr);
     }
     else {
         shape.fontStyle("900");

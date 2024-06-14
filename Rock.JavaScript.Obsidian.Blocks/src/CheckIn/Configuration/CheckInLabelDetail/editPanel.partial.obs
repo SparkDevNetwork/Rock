@@ -93,7 +93,6 @@
         (e: "propertyChanged", value: string): void
     }>();
 
-    console.log(props.modelValue.bag);
     // #region Values
 
     const attributes = ref(props.modelValue.bag?.attributes ?? {});
