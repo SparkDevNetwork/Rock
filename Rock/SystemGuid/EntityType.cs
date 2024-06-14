@@ -344,7 +344,7 @@ namespace Rock.SystemGuid
         public const string LEARNING_CLASS_ANNOUNCEMENT = "D2CE59D3-55E1-4275-9EA1-38C18A05A32B";
 
         /// <summary>
-        /// The EntityType Guid for <see cref="Rock.Model.LearningClassContentTab"/>
+        /// The EntityType Guid for <see cref="Rock.Model.LearningClassContentPage"/>
         /// </summary>
         public const string LEARNING_CLASS_CONTENT_PAGE = "72A061C4-B7E6-4A91-A4F2-80551F772D46";
         /// <summary>
