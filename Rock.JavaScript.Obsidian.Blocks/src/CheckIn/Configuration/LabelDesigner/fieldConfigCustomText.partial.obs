@@ -13,7 +13,7 @@
              v-model="staticText" />
 
     <div v-if="isDynamicText" class="form-group">
-        <RockButton>
+        <RockButton @click="onEditLavaTemplateClick">
             <i class="fa fa-edit"></i>
             Edit Lava Template
         </RockButton>
@@ -22,10 +22,18 @@
     <FieldConfigText :labelManager="labelManager"
                      :showPlaceholder="isDynamicText"
                      :showAdaptiveFontSize="isDynamicText" />
+
+    <Modal v-model="isEditLavaTemplateVisible" title="Dynamic Text Template" saveText="Save" @save="onEditLavaTemplateSave">
+        <CodeEditor label="Lava Template"
+                    v-model="editDynamicText"
+                    mode="lava" />
+    </Modal>
 </template>
 
 <script setup lang="ts">
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import FieldConfigText from "./fieldConfigText.partial.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { asBoolean } from "@Obsidian/Utility/booleanUtils";
@@ -43,6 +51,9 @@
     const isDynamicText = ref(false);
     const staticText = ref("");
     const dynamicText = ref("");
+
+    const isEditLavaTemplateVisible = ref(false);
+    const editDynamicText = ref("");
 
     /**
      * Set the internal values to match those from the selected field.
@@ -68,6 +79,25 @@
      */
     function onDynamicTextClick(): void {
         isDynamicText.value = true;
+    }
+
+    /**
+     * Event handler for when the Edit Lava Template button is clicked. Open
+     * the modal with the code editor to allow the user to set the lava template
+     * that will be used to render this text field.
+     */
+    function onEditLavaTemplateClick(): void {
+        editDynamicText.value = dynamicText.value;
+        isEditLavaTemplateVisible.value = true;
+    }
+
+    /**
+     * Event handler for when the Save button is clicked in the lava template
+     * modal. Save the value from the editor into our local value.
+     */
+    function onEditLavaTemplateSave(): void {
+        dynamicText.value = editDynamicText.value;
+        isEditLavaTemplateVisible.value = false;
     }
 
     // Watch for changes in the UI that require an update to the label.
