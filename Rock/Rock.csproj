@@ -844,6 +844,7 @@
     <Compile Include="CheckIn\v2\Labels\PrinterCapabilities.cs" />
     <Compile Include="CheckIn\v2\Labels\PrintLabelRequest.cs" />
     <Compile Include="CheckIn\v2\Labels\RectangleFieldConfiguration.cs" />
+    <Compile Include="CheckIn\v2\Labels\Renderers\LabelRenderer.cs" />
     <Compile Include="CheckIn\v2\Labels\SingleValueFieldDataSource.cs" />
     <Compile Include="CheckIn\v2\Labels\TextFieldConfiguration.cs" />
     <Compile Include="CheckIn\v2\PreparedAttendanceRequest.cs" />

@@ -18,6 +18,7 @@
 using System.Collections.Generic;
 
 using Rock.Data;
+using Rock.ViewModels.CheckIn.Labels;
 
 namespace Rock.CheckIn.v2.Labels
 {
@@ -32,10 +33,10 @@ namespace Rock.CheckIn.v2.Labels
         /// </summary>
         public PrinterCapabilities Capabilities { get; set; }
 
-        // This should probably be whatever model/cache that holds the label.
-        // Because we would then need to pick either the "raw ZPL" renderer or
-        // the "label designer" renderer based on the configuraiton of the label.
-        //public ICheckInLabel Label { get; set; }
+        /// <summary>
+        /// The data that describes the designed label being printed.
+        /// </summary>
+        public DesignedLabelBag Label { get; set; }
 
         /// <summary>
         /// The data sources available to the renderer when generating the
