@@ -88,6 +88,12 @@ namespace Rock.Lava
         /// <returns></returns>
         public static Dictionary<string, object> GetCommonMergeFields( RockPage rockPage, Person currentPerson = null, CommonMergeFieldsOptions options = null )
         {
+            /*
+                6/10/2024 - DSH
+
+                If you make any changes here to add or remove common merge fields,
+                you need to make the same changes in RockRequestContext.
+            */
             var mergeFields = new Dictionary<string, object>();
 
             if ( rockPage == null && HttpContext.Current != null )
@@ -179,6 +185,12 @@ namespace Rock.Lava
             if ( options.GetCampuses )
             {
                 mergeFields.Add( "Campuses", CampusCache.All() );
+            }
+
+            // Add client information 
+            if ( rockPage != null )
+            {
+                mergeFields.Add( "Geolocation", rockPage.RequestContext?.ClientInformation?.Geolocation );
             }
 
             return mergeFields;

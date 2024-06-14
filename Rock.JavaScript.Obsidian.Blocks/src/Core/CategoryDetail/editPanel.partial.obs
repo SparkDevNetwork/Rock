@@ -38,16 +38,17 @@
     import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
-    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { CategoryBag } from "@Obsidian/ViewModels/Blocks/Core/CategoryDetail/categoryBag";
     import { CategoryDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/CategoryDetail/categoryDetailOptionsBag";
     import { toGuidOrNull } from "@Obsidian/Utility/guid";
     import { Guid } from "@Obsidian/Types";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<CategoryBag>,
+            type: Object as PropType<ValidPropertiesBox<CategoryBag>>,
             required: true
         },
 
@@ -58,23 +59,23 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: CategoryBag): void,
+        (e: "update:modelValue", value: ValidPropertiesBox<CategoryBag>): void,
         (e: "propertyChanged", value: string): void
     }>();
 
     // #region Values
 
-    const attributes = ref(props.modelValue.attributes ?? {});
-    const attributeValues = ref(props.modelValue.attributeValues ?? {});
-    const description = propertyRef(props.modelValue.description ?? "", "Description");
-    const name = propertyRef(props.modelValue.name ?? "", "Name");
-    const parentCategory = propertyRef(props.modelValue.parentCategory ?? null, "ParentCategoryId");
-    const iconCssClass = propertyRef(props.modelValue.iconCssClass ?? "", "IconCssClass");
-    const highlightColor = propertyRef(props.modelValue.highlightColor ?? "", "HighlightColor");
-    const entityTypeGuid = ref<Guid | undefined>(toGuidOrNull(props.modelValue.entityType?.value) ?? undefined);
-    const entityTypeQualifierColumn = ref(props.modelValue.entityTypeQualifierColumn ?? undefined);
-    const entityTypeQualifierValue = ref(props.modelValue.entityTypeQualifierValue ?? undefined);
-    const rootCategoryGuid = ref<Guid | undefined>(toGuidOrNull(props.modelValue.rootCategoryGuid) ?? undefined);
+    const attributes = ref(props.modelValue?.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.bag?.attributeValues ?? {});
+    const description = propertyRef(props.modelValue?.bag?.description ?? "", "Description");
+    const name = propertyRef(props.modelValue?.bag?.name ?? "", "Name");
+    const parentCategory = propertyRef(props.modelValue?.bag?.parentCategory ?? null, "ParentCategoryId");
+    const iconCssClass = propertyRef(props.modelValue?.bag?.iconCssClass ?? "", "IconCssClass");
+    const highlightColor = propertyRef(props.modelValue?.bag?.highlightColor ?? "", "HighlightColor");
+    const entityTypeGuid = ref<Guid | undefined>(toGuidOrNull(props.modelValue?.bag?.entityType?.value) ?? undefined);
+    const entityTypeQualifierColumn = ref(props.modelValue?.bag?.entityTypeQualifierColumn ?? undefined);
+    const entityTypeQualifierValue = ref(props.modelValue?.bag?.entityTypeQualifierValue ?? undefined);
+    const rootCategoryGuid = ref<Guid | undefined>(toGuidOrNull(props.modelValue?.bag?.rootCategoryGuid) ?? undefined);
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
     const propRefs = [description, name, parentCategory, iconCssClass, highlightColor];
@@ -95,27 +96,27 @@
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
-        updateRefValue(attributes, props.modelValue.attributes ?? {});
-        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
-        updateRefValue(description, props.modelValue.description ?? "");
-        updateRefValue(name, props.modelValue.name ?? "");
-        updateRefValue(parentCategory, props.modelValue.parentCategory ?? null);
-        updateRefValue(iconCssClass, props.modelValue.iconCssClass ?? "");
-        updateRefValue(highlightColor, props.modelValue.highlightColor ?? "");
+        updateRefValue(attributes, props.modelValue?.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue?.bag?.attributeValues ?? {});
+        updateRefValue(description, props.modelValue?.bag?.description ?? "");
+        updateRefValue(name, props.modelValue?.bag?.name ?? "");
+        updateRefValue(parentCategory, props.modelValue?.bag?.parentCategory ?? null);
+        updateRefValue(iconCssClass, props.modelValue?.bag?.iconCssClass ?? "");
+        updateRefValue(highlightColor, props.modelValue?.bag?.highlightColor ?? "");
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
     watch([attributeValues, ...propRefs], () => {
-        const newValue: CategoryBag = {
-            ...props.modelValue,
-            attributeValues: attributeValues.value,
-            description: description.value,
-            name: name.value,
-            parentCategory: parentCategory.value,
-            iconCssClass: iconCssClass.value,
-            highlightColor: highlightColor.value
+        const newValue: ValidPropertiesBox<CategoryBag> = {
+            bag: { ...props.modelValue.bag } as CategoryBag
         };
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "parentCategory", parentCategory.value);
+        setPropertiesBoxValue(newValue, "iconCssClass", iconCssClass.value);
+        setPropertiesBoxValue(newValue, "highlightColor", highlightColor.value);
 
         emit("update:modelValue", newValue);
     });

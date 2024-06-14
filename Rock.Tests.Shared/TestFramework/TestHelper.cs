@@ -140,6 +140,64 @@ namespace Rock.Tests.Shared
         /// <param name="connectionString">The connection string to use for configuring the RockApp.</param>
         public static void ConfigureRockApp( string connectionString )
         {
+            var app = CreateRockApp( connectionString, null );
+
+            RockApp.Current = app;
+        }
+
+        /// <summary>
+        /// Creates a new scoped RockApp instance with no database configuration.
+        /// When the instance is no longer required the scope should be disposed.
+        /// </summary>
+        /// <returns>An instance of <see cref="RockAppScope"/>.</returns>
+        public static RockAppScope CreateScopedRockApp()
+        {
+            return CreateScopedRockApp( null, null );
+        }
+
+        /// <summary>
+        /// Creates a new scoped RockApp instance with no database configuration.
+        /// When the instance is no longer required the scope should be disposed.
+        /// </summary>
+        /// <param name="configureApp">A function to call to perform additional configuration of the services.</param>
+        /// <returns>An instance of <see cref="RockAppScope"/>.</returns>
+        public static RockAppScope CreateScopedRockApp( Action<ServiceCollection> configureApp )
+        {
+            return CreateScopedRockApp( null, configureApp );
+        }
+
+        /// <summary>
+        /// Creates a new scoped RockApp instance with database configuration.
+        /// When the instance is no longer required the scope should be disposed.
+        /// </summary>
+        /// <param name="connectionString">The connection string to use when connecting to the database.</param>
+        /// <returns>An instance of <see cref="RockAppScope"/>.</returns>
+        public static RockAppScope CreateScopedRockApp( string connectionString )
+        {
+            return CreateScopedRockApp( connectionString, null );
+        }
+
+        /// <summary>
+        /// Creates a new scoped RockApp instance with database configuration.
+        /// When the instance is no longer required the scope should be disposed.
+        /// </summary>
+        /// <param name="connectionString">The connection string to use when connecting to the database.</param>
+        /// <param name="configureApp">A function to call to perform additional configuration of the services.</param>
+        /// <returns>An instance of <see cref="RockAppScope"/>.</returns>
+        public static RockAppScope CreateScopedRockApp( string connectionString, Action<ServiceCollection> configureApp )
+        {
+            var app = CreateRockApp( connectionString, configureApp );
+
+            return new RockAppScope( app );
+        }
+
+        /// <summary>
+        /// Creates a new RockApp object with the provided connection string.
+        /// </summary>
+        /// <param name="connectionString">The connection string to be used for the RockApp object.</param>
+        /// <param name="configureApp">A function to call to perform additional configuration of the services.</param>
+        private static RockApp CreateRockApp( string connectionString, Action<ServiceCollection> configureApp )
+        {
             var sc = new ServiceCollection();
 
             sc.AddSingleton<IConnectionStringProvider>( new TestConnectionStringProvider( connectionString ) );
@@ -147,9 +205,16 @@ namespace Rock.Tests.Shared
             sc.AddSingleton<IDatabaseConfiguration, DatabaseConfiguration>();
             sc.AddSingleton<IHostingSettings, HostingSettings>();
 
-            RockApp.Current = new RockApp( sc.BuildServiceProvider() );
+            configureApp?.Invoke( sc );
 
-            ( RockApp.Current.GetDatabaseConfiguration() as DatabaseConfiguration ).IsDatabaseAvailable = connectionString.IsNotNullOrWhiteSpace();
+            var app = new RockApp( sc.BuildServiceProvider() );
+
+            if ( app.GetDatabaseConfiguration() is DatabaseConfiguration databaseConfig )
+            {
+                databaseConfig.IsDatabaseAvailable = connectionString.IsNotNullOrWhiteSpace();
+            }
+
+            return app;
         }
 
         /// <summary>
@@ -212,6 +277,43 @@ namespace Rock.Tests.Shared
             public override void Save()
             {
                 throw new NotImplementedException();
+            }
+        }
+
+        /// <summary>
+        /// A wrapper around a RockApp that scopes itself so a using statement
+        /// will shutdown the RockApp instance and restore the previous
+        /// configuration.
+        /// </summary>
+        public class RockAppScope : IDisposable
+        {
+            public RockApp App { get; }
+
+            private readonly RockApp _previousApp;
+
+            /// <summary>
+            /// Initializes a new instance of the RockAppScope class.
+            /// </summary>
+            /// <param name="serviceProvider">The service provider to be used within the scope.</param>
+            public RockAppScope( RockApp app )
+            {
+                App = app;
+                _previousApp = RockApp.Current;
+
+                RockApp.Current = app;
+            }
+
+            /// <inheritdoc/>
+            public void Dispose()
+            {
+                if ( ReferenceEquals( RockApp.Current, App ) )
+                {
+                    RockApp.Current = _previousApp;
+                }
+                else
+                {
+                    throw new InvalidOperationException( "RockApp.Current is not expected value while disposing RockAppScope." );
+                }
             }
         }
 

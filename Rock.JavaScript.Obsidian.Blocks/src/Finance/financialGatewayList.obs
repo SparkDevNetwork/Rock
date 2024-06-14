@@ -21,19 +21,34 @@
                     title="Name"
                     field="name"
                     :filter="textValueFilter"
-                    visiblePriority="xs" />
+                    visiblePriority="xs"
+                    width="30%" />
 
-        <TextColumn name="entityType"
-                    title="Gateway Type"
-                    field="entityType"
-                    :filter="textValueFilter"
-                    visiblePriority="md" />
+        <Column name="entityType"
+                title="Gateway Type"
+                field="entityType"
+                :filter="textValueFilter"
+                :filterValue="getEntityTypeRowFilterValue"
+                :quickFilterValue="getEntityTypeRowFilterValue"
+                visiblePriority="md"
+                width="30%">
+            <template #format="{ row }">
+                <div class="text-lg">
+                    <div v-html="getGateway(row.entityType)"></div>
+                </div>
+            </template>
+
+            <template #skeleton>
+                <div class="skeleton skeleton-text skeleton-rounded" />
+            </template>
+        </Column>
 
         <BooleanColumn name="isActive"
                        title="Active"
                        field="isActive"
                        :filter="booleanValueFilter"
-                       visiblePriority="xs" />
+                       visiblePriority="xs"
+                       width="120" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
@@ -42,7 +57,7 @@
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { BooleanColumn, TextColumn, textValueFilter, DeleteColumn, booleanValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { BooleanColumn, TextColumn, textValueFilter, DeleteColumn, Column, booleanValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { FinancialGatewayListOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialGatewayList/financialGatewayListOptionsBag";
@@ -78,6 +93,23 @@
         else {
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
         }
+    }
+
+    /**
+    * Gets the filter value text to use for the entity type column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getEntityTypeRowFilterValue(row: Record<string, unknown>): string {
+        return row["entityType"] as string ?? "";
+    }
+
+    /**
+     * Gets the entity type name, returns a danger label if the entity type name was not found.
+     * @param entityType
+     */
+    function getGateway(entityType: string): string {
+        return entityType == "not found" ? "<span class='label label-danger'>not found</span>" : entityType;
     }
 
     // #endregion

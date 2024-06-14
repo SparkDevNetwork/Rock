@@ -17,6 +17,7 @@
 using System;
 
 using Rock.Attribute;
+using Rock.Utility;
 
 namespace Rock.Net.Geolocation
 {
@@ -32,7 +33,7 @@ namespace Rock.Net.Geolocation
     ///     </para>
     /// </remarks>
     [RockInternal( "1.17.0" )]
-    public class IpGeolocation
+    public class IpGeolocation : RockDynamic
     {
         /// <summary>
         /// Gets or sets the IP address as a result of the geolocation lookup.
