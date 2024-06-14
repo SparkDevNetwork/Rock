@@ -1,8 +1,9 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <RockFormField v-model="internalValue"
-                   :formGroupClasses="`html-editor ${formGroupClasses}`"
-                   name="html-editor">
+                   :disableLabel="true"
+                   :formGroupClasses="`sms-text-editor ${formGroupClasses}`"
+                   name="sms-text-editor">
         <template #default="{ uniqueId, field }">
             <div class="control-wrapper">
                 <div class="note-editor-container">
@@ -87,7 +88,7 @@
     type ToolbarConfig = "light" | "full";
 
     const props = defineProps({
-        /** The HTML value. */
+        /** The SMS text value. */
         modelValue: {
             type: String as PropType<string>,
             required: true
@@ -185,15 +186,15 @@
 
     // #region Functions
 
-    /** Returns the ID assigned to the editor HTML element. */
+    /** Returns the ID assigned to the editor SMS text element. */
     function assignEditorId(uniquePart: string): string {
-        editorId.value = `html-editor-container-${uniquePart}`;
+        editorId.value = `sms-text-editor-container-${uniquePart}`;
         return editorId.value;
     }
 
-    /** Returns the ID assigned to the editor toolbar HTML element. */
+    /** Returns the ID assigned to the editor toolbar SMS text element. */
     function assignToolbarId(uniquePart: string): string {
-        toolbarId.value = `html-editor-toolbar-container-${uniquePart}`;
+        toolbarId.value = `sms-text-editor-toolbar-container-${uniquePart}`;
         return toolbarId.value;
     }
 
