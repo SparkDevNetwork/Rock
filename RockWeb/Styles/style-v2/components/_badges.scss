@@ -23,7 +23,7 @@
   white-space:    nowrap;
   vertical-align: middle;
   background-color: var(--color-interface-medium);
-  border-radius:    var(--rounded-medium);
+  border-radius:    var(--rounded-large);
 
   // Empty badges collapse automatically (not available in IE8)
   &:empty {

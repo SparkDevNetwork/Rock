@@ -309,7 +309,7 @@ th {
   --spacing-huge: 80px;
   --adminbar-bg: var(--color-interface-stronger);
   --link-hover-decoration: underline;
-  --dropdown-box-shadow: 0 6px 12px rgba(0, 0, 0, .175);
+  --dropdown-box-shadow: 0 4px 8px 0 rgba(0,0,0,.1);
   --rounded-tiny: 2px;
   --rounded-small: 6px;
   --rounded-medium: 8px;
@@ -2548,24 +2548,24 @@ p, .p, .text-primary {
   text-decoration: none;
 }
 .btn.btn-default {
-  color: var(--color-interface-medium);
+  color: var(--color-interface-stronger);
   background-color: var(--color-interface-softest);
-  border-color: var(--color-interface-soft);
+  border-color: var(--color-interface-medium);
 }
 .btn.btn-default:focus, .btn.btn-default.focus {
-  color: var(--color-interface-soft);
-  background-color: var(--color-interface-softest);
-  border-color: var(--color-interface-soft);
+  color: var(--color-interface-stronger);
+  background-color: var(--color-interface-soft);
+  border-color: var(--color-interface-medium);
 }
 .btn.btn-default:hover {
-  color: var(--color-interface-soft);
-  background-color: var(--color-interface-softest);
-  border-color: var(--color-interface-soft);
+  color: var(--color-interface-stronger);
+  background-color: var(--color-interface-soft);
+  border-color: var(--color-interface-medium);
 }
 .btn.btn-default:active, .btn.btn-default.active,
 .btn.btn-default .open > .dropdown-toggle {
-  color: var(--color-interface-soft);
-  background-color: var(--color-interface-softest);
+  color: var(--color-interface-stronger);
+  background-color: var(--color-interface-medium);
   background-image: none;
   border-color: var(--color-interface-soft);
 }
@@ -2573,8 +2573,8 @@ p, .p, .text-primary {
 .btn.btn-default .open > .dropdown-toggle:hover,
 .btn.btn-default .open > .dropdown-toggle:focus,
 .btn.btn-default .open > .dropdown-toggle.focus {
-  color: var(--color-interface-soft);
-  background-color: var(--color-interface-softest);
+  color: var(--color-interface-stronger);
+  background-color: var(--color-interface-medium);
   border-color: var(--color-interface-soft);
 }
 .btn.btn-default.disabled:hover, .btn.btn-default.disabled:focus, .btn.btn-default.disabled.focus, .btn.btn-default[disabled]:hover, .btn.btn-default[disabled]:focus, .btn.btn-default[disabled].focus, fieldset[disabled] .btn.btn-default:hover, fieldset[disabled] .btn.btn-default:focus, fieldset[disabled] .btn.btn-default.focus {
@@ -2794,7 +2794,7 @@ p, .p, .text-primary {
   padding: 1px 5px;
   font-size: 12px;
   line-height: var(--line-height-normal);
-  border-radius: 3px;
+  border-radius: 5px;
 }
 
 .btn-link {
@@ -3071,7 +3071,7 @@ input[type=button].btn-block {
   white-space: nowrap;
   vertical-align: middle;
   background-color: var(--color-interface-medium);
-  border-radius: var(--rounded-medium);
+  border-radius: var(--rounded-large);
 }
 .badge:empty {
   display: none;
@@ -3169,6 +3169,7 @@ a .label:hover, a .label:focus {
 
 .label-default {
   background-color: var(--color-interface-soft);
+  color: var(--color-interface-stronger);
 }
 .label-default[href]:hover, .label-default[href]:focus {
   background-color: var(--color-interface-medium);
@@ -3176,6 +3177,7 @@ a .label:hover, a .label:focus {
 
 .label-primary {
   background-color: var(--color-primary);
+  color: var(--color-primary-strongest);
 }
 .label-primary[href]:hover, .label-primary[href]:focus {
   background-color: var(--color-primary);
@@ -3183,6 +3185,7 @@ a .label:hover, a .label:focus {
 
 .label-info {
   background-color: var(--color-info-soft);
+  color: var(--color-info-strong);
 }
 .label-info[href]:hover, .label-info[href]:focus {
   background-color: var(--color-info-strong);
@@ -3190,6 +3193,7 @@ a .label:hover, a .label:focus {
 
 .label-success {
   background-color: var(--color-success-soft);
+  color: var(--color-success-strong);
 }
 .label-success[href]:hover, .label-success[href]:focus {
   background-color: var(--color-success-strong);
@@ -3197,6 +3201,7 @@ a .label:hover, a .label:focus {
 
 .label-warning {
   background-color: var(--color-warning-soft);
+  color: var(--color-warning-strong);
 }
 .label-warning[href]:hover, .label-warning[href]:focus {
   background-color: var(--color-warning-strong);
@@ -3204,6 +3209,7 @@ a .label:hover, a .label:focus {
 
 .label-danger {
   background-color: var(--color-danger-soft);
+  color: var(--color-danger-strong);
 }
 .label-danger[href]:hover, .label-danger[href]:focus {
   background-color: var(--color-danger-strong);
@@ -3307,10 +3313,6 @@ pre code {
   position: relative;
 }
 
-.dropdown-toggle:focus {
-  outline: 0;
-}
-
 .dropdown-menu {
   position: absolute;
   top: 100%;
@@ -3321,24 +3323,16 @@ pre code {
   min-width: 160px;
   padding: var(--spacing-tiny) 0;
   margin: 2px 0 0;
-  font-size: var(--font-size-small);
+  font-size: var(--font-size-medium);
   text-align: left;
   list-style: none;
   background-color: var(--color-interface-softest);
   background-clip: padding-box;
   border: 1px solid var(--color-interface-soft);
   border-radius: var(--rounded-small);
-  box-shadow: var(--dropdown-box-shadow);
-}
-.dropdown-menu.pull-right {
-  right: 0;
-  left: auto;
-}
-.dropdown-menu .divider {
-  height: 1px;
-  margin: var(--spacing-tiny) 0;
-  overflow: hidden;
-  background-color: var(--color-interface-soft);
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1);
+  max-height: 85vh;
+  overflow-y: auto;
 }
 .dropdown-menu > li > a {
   display: block;
@@ -3348,6 +3342,7 @@ pre code {
   line-height: var(--line-height-normal);
   color: var(--color-interface-stronger);
   white-space: nowrap;
+  text-decoration: none;
 }
 .dropdown-menu > li > a:hover, .dropdown-menu > li > a:focus {
   color: var(--color-interface-stronger);
@@ -3357,11 +3352,44 @@ pre code {
 .dropdown-menu > li.indent > a {
   padding-left: calc(var(--spacing-large) * 2);
 }
+.dropdown-menu.datepicker-dropdown {
+  max-height: none;
+  overflow-y: visible;
+  font-size: var(--font-size-small);
+}
+.dropdown-menu .btn-link {
+  width: 100%;
+  padding: var(--spacing-tiny) var(--spacing-large);
+  line-height: var(--line-height-normal);
+  color: var(--color-interface-strong);
+  text-align: left;
+  border: 0;
+}
+.dropdown-menu .btn-link:hover, .dropdown-menu .btn-link:focus {
+  color: var(--color-interface-stronger);
+  text-decoration: none;
+  background-color: var(--color-interface-softer);
+}
+.dropdown-menu .dropdown-item-danger {
+  color: var(--color-danger-strong);
+}
+.dropdown-menu .dropdown-item-danger:hover {
+  color: #fff;
+  background-color: var(--color-danger-strong);
+}
 
 .dropdown-menu > .active > a, .dropdown-menu > .active > a:hover, .dropdown-menu > .active > a:focus {
   color: var(--color-interface-softest);
   text-decoration: none;
   background-color: var(--color-primary);
+  outline: 0;
+}
+.dropdown-right .dropdown-menu > .active > a {
+  right: 0;
+  left: auto;
+}
+
+.dropdown-toggle:focus {
   outline: 0;
 }
 
@@ -3381,6 +3409,13 @@ pre code {
 }
 .open > a {
   outline: 0;
+}
+
+.divider {
+  height: 1px;
+  margin: var(--spacing-tiny) 0;
+  overflow: hidden;
+  background-color: var(--color-interface-soft);
 }
 
 .dropdown-menu-right {
@@ -3428,41 +3463,6 @@ pre code {
   top: auto;
   bottom: 100%;
   margin-bottom: 2px;
-}
-
-.dropdown-menu {
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1);
-  max-height: 85vh;
-  overflow-y: auto;
-}
-.dropdown-menu.datepicker-dropdown {
-  max-height: none;
-  overflow-y: visible;
-  font-size: var(--font-size-small);
-}
-.dropdown-right .dropdown-menu {
-  right: 0;
-  left: auto;
-}
-.dropdown-menu .btn-link {
-  width: 100%;
-  padding: var(--spacing-tiny) var(--spacing-large);
-  line-height: var(--line-height-normal);
-  color: var(--color-interface-strong);
-  text-align: left;
-  border: 0;
-}
-.dropdown-menu .btn-link:hover, .dropdown-menu .btn-link:focus {
-  color: var(--color-interface-stronger);
-  text-decoration: none;
-  background-color: var(--color-interface-softer);
-}
-.dropdown-menu .dropdown-item-danger {
-  color: var(--color-danger-strong);
-}
-.dropdown-menu .dropdown-item-danger:hover {
-  color: #fff;
-  background-color: var(--color-danger-strong);
 }
 
 @media (min-width: 768px) {

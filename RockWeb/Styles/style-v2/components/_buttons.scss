@@ -81,34 +81,34 @@
 
 // ======================== ALTERNATIVE BUTTON ========================
   &.btn-default {
-    color: var(--color-interface-medium);
+    color: var(--color-interface-stronger);
     background-color: var(--color-interface-softest);
-    border-color: var(--color-interface-soft);
+    border-color: var(--color-interface-medium);
    
     &:focus,
     &.focus {
-      color:var(--color-interface-soft);
-      background-color: var(--color-interface-softest);
-      border-color: var(--color-interface-soft);
+      color:var(--color-interface-stronger);
+      background-color: var(--color-interface-soft);
+      border-color: var(--color-interface-medium);
     }
     &:hover {
-      color:var(--color-interface-soft);
-      background-color: var(--color-interface-softest);
-      border-color: var(--color-interface-soft);
+      color: var(--color-interface-stronger);
+      background-color: var(--color-interface-soft);
+      border-color: var(--color-interface-medium);
     }
     &:active,
     &.active,
     .open > .dropdown-toggle {
-      color:var(--color-interface-soft);
-      background-color: var(--color-interface-softest);
+      color:var(--color-interface-stronger);
+      background-color: var(--color-interface-medium);
       background-image: none;
       border-color: var(--color-interface-soft);
    
       &:hover,
       &:focus,
       &.focus {
-        color:var(--color-interface-soft);
-        background-color: var(--color-interface-softest);
+        color:var(--color-interface-stronger);
+        background-color: var(--color-interface-medium);
         border-color: var(--color-interface-soft);
       }
     }
@@ -374,9 +374,9 @@
       background-color:var(--color-danger-strong);
     }
   }
+}
 // ======================== END ALTERNAVTIVE BUTTON ========================
  
-}
 
 
 // ======================== BUTTON SIZE ========================
@@ -398,7 +398,7 @@
   padding: 1px 5px;
   font-size: 12px;
   line-height: var(--line-height-normal);
-  border-radius: 3px;
+  border-radius: 5px;
 }
 // ======================== END BUTTON SIZE ========================
 

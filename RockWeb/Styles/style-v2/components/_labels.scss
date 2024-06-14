@@ -59,6 +59,7 @@
 // ======================== ALTERNATIVE STYLE ========================
 .label-default{
   background-color: var(--color-interface-soft);
+  color: var(--color-interface-stronger);
 
   &[href] {
     &:hover,
@@ -70,6 +71,7 @@
 
 .label-primary{
   background-color: var(--color-primary);
+  color: var(--color-primary-strongest);
 
   &[href] {
     &:hover,
@@ -81,6 +83,7 @@
 }
 .label-info{
   background-color: var(--color-info-soft);
+  color: var(--color-info-strong);
 
   &[href] {
     &:hover,
@@ -91,6 +94,7 @@
 }
 .label-success{
   background-color: var(--color-success-soft);
+  color: var(--color-success-strong);
 
   &[href] {
     &:hover,
@@ -101,6 +105,7 @@
 }
 .label-warning{
   background-color: var(--color-warning-soft);
+  color: var(--color-warning-strong);
 
   &[href] {
     &:hover,
@@ -111,6 +116,7 @@
 }
 .label-danger{
   background-color: var(--color-danger-soft);
+  color: var(--color-danger-strong);
 
   &[href] {
     &:hover,
