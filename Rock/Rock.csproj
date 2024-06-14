@@ -816,7 +816,9 @@
     <Compile Include="CheckIn\v2\Filters\LocationClosedOpportunityFilter.cs" />
     <Compile Include="CheckIn\v2\Labels\AttendanceLabel.cs" />
     <Compile Include="CheckIn\v2\Labels\AttendanceLabelData.cs" />
+    <Compile Include="CheckIn\v2\Labels\BarcodeFieldConfiguration.cs" />
     <Compile Include="CheckIn\v2\Labels\CheckoutLabelData.cs" />
+    <Compile Include="CheckIn\v2\Labels\EllipseFieldConfiguration.cs" />
     <Compile Include="CheckIn\v2\Labels\FamilyLabelData.cs" />
     <Compile Include="CheckIn\v2\Labels\Formatters\CallbackDataFormatter.cs" />
     <Compile Include="CheckIn\v2\Labels\DataFormatter.cs" />
@@ -830,13 +832,17 @@
     <Compile Include="CheckIn\v2\Labels\Formatters\GradeDataFormatter.cs" />
     <Compile Include="CheckIn\v2\Labels\Formatters\SecurityCodeAndNameDataFormatter.cs" />
     <Compile Include="CheckIn\v2\Labels\Formatters\WeekdayDateDataFormatter.cs" />
+    <Compile Include="CheckIn\v2\Labels\IconFieldConfiguration.cs" />
     <Compile Include="CheckIn\v2\Labels\ILabelDataHasPerson.cs" />
+    <Compile Include="CheckIn\v2\Labels\ImageFieldConfiguration.cs" />
     <Compile Include="CheckIn\v2\Labels\LabelField.cs" />
+    <Compile Include="CheckIn\v2\Labels\LineFieldConfiguration.cs" />
     <Compile Include="CheckIn\v2\Labels\MultiValueFieldDataSource.cs" />
     <Compile Include="CheckIn\v2\Labels\Formatters\PersonAgeDataFormatter.cs" />
     <Compile Include="CheckIn\v2\Labels\PersonLabelData.cs" />
     <Compile Include="CheckIn\v2\Labels\PrinterCapabilities.cs" />
     <Compile Include="CheckIn\v2\Labels\PrintLabelRequest.cs" />
+    <Compile Include="CheckIn\v2\Labels\RectangleFieldConfiguration.cs" />
     <Compile Include="CheckIn\v2\Labels\SingleValueFieldDataSource.cs" />
     <Compile Include="CheckIn\v2\Labels\TextFieldConfiguration.cs" />
     <Compile Include="CheckIn\v2\PreparedAttendanceRequest.cs" />

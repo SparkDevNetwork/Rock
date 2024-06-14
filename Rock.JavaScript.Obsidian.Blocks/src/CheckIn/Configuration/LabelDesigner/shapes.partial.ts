@@ -1,5 +1,4 @@
 import Konva from "@Obsidian/Libs/konva";
-import { BarcodeFieldConfigurationBag, EllipseFieldConfigurationBag, IconFieldConfigurationBag, ImageFieldConfigurationBag, LineFieldConfigurationBag, RectangleFieldConfigurationBag, StringRecord } from "./types.partial";
 import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { IconImageMap, Surface, convertImageDataToBlackAndWhite } from "./utils.partial";
 import { asBoolean } from "@Obsidian/Utility/booleanUtils";
@@ -7,7 +6,13 @@ import { BarcodeFormat } from "@Obsidian/Enums/CheckIn/Labels/barcodeFormat";
 import { HorizontalTextAlignment } from "@Obsidian/Enums/CheckIn/Labels/horizontalTextAlignment";
 import { LabelFieldType } from "@Obsidian/Enums/CheckIn/Labels/labelFieldType";
 import { TextFieldSubType } from "@Obsidian/Enums/CheckIn/Labels/textFieldSubType";
+import { BarcodeFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/barcodeFieldConfigurationBag";
+import { EllipseFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/ellipseFieldConfigurationBag";
+import { IconFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/iconFieldConfigurationBag";
+import { ImageFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/imageFieldConfigurationBag";
 import { LabelFieldBag } from "@Obsidian/ViewModels/CheckIn/Labels/labelFieldBag";
+import { LineFieldConfigurationBag} from "@Obsidian/ViewModels/CheckIn/Labels/lineFieldConfigurationBag";
+import { RectangleFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/rectangleFieldConfigurationBag";
 import { TextFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/textFieldConfigurationBag";
 
 // #region Classes
@@ -444,7 +449,7 @@ export function updateShapeFromField(shape: Konva.Shape | Konva.Group, field: La
  * @param field The field to use as the source of truth.
  */
 function updateTextShapeFromField(shape: Konva.Text, field: LabelFieldBag, surface: Surface): void {
-    const config = field.configurationValues ?? {} as TextFieldConfigurationBag;
+    const config = (field.configurationValues ?? {}) as TextFieldConfigurationBag;
 
     const fontSize = toNumberOrNull(config.fontSize) ?? 12;
     const alignment = toNumber(config.horizontalAlignment) as HorizontalTextAlignment;
@@ -491,7 +496,7 @@ function updateTextShapeFromField(shape: Konva.Text, field: LabelFieldBag, surfa
  * @param field The field to use as the source of truth.
  */
 function updateRectShapeFromField(shape: Rectangle, field: LabelFieldBag, surface: Surface): void {
-    const config = field.configurationValues ?? {} as StringRecord<RectangleFieldConfigurationBag>;
+    const config = (field.configurationValues ?? {}) as RectangleFieldConfigurationBag;
     const roundingIndex = toNumber(config.cornerRadius);
 
     // Update the position of the shape.
@@ -541,7 +546,7 @@ function updateRectShapeFromField(shape: Rectangle, field: LabelFieldBag, surfac
  * @param field The field to use as the source of truth.
  */
 function updateLineShapeFromField(shape: Konva.Line, field: LabelFieldBag, surface: Surface): void {
-    const config = field.configurationValues ?? {} as StringRecord<LineFieldConfigurationBag>;
+    const config = (field.configurationValues ?? {}) as LineFieldConfigurationBag;
 
     // Update the position of the shape.
     shape.x(surface.getPixelForOffset(field.left));
@@ -561,7 +566,7 @@ function updateLineShapeFromField(shape: Konva.Line, field: LabelFieldBag, surfa
  * @param field The field to use as the source of truth.
  */
 function updateEllipseShapeFromField(shape: Ellipse, field: LabelFieldBag, surface: Surface): void {
-    const config = field.configurationValues ?? {} as StringRecord<EllipseFieldConfigurationBag>;
+    const config = (field.configurationValues ?? {}) as EllipseFieldConfigurationBag;
 
     // Update the position of the shape.
     shape.x(surface.getPixelForOffset(field.left));
@@ -591,7 +596,7 @@ function updateEllipseShapeFromField(shape: Ellipse, field: LabelFieldBag, surfa
  * @param field The field to use as the source of truth.
  */
 function updateIconShapeFromField(shape: Konva.Text, field: LabelFieldBag, surface: Surface): void {
-    const config = field.configurationValues ?? {} as StringRecord<IconFieldConfigurationBag>;
+    const config = (field.configurationValues ?? {}) as IconFieldConfigurationBag;
 
     // Update the position of the shape.
     shape.x(surface.getPixelForOffset(field.left));
@@ -619,7 +624,7 @@ function updateIconShapeFromField(shape: Konva.Text, field: LabelFieldBag, surfa
  * @param field The field to use as the source of truth.
  */
 function updateImageShapeFromField(shape: Konva.Image, field: LabelFieldBag, surface: Surface): void {
-    const config = field.configurationValues ?? {} as StringRecord<ImageFieldConfigurationBag>;
+    const config = (field.configurationValues ?? {}) as ImageFieldConfigurationBag;
 
     // Update the position of the shape.
     shape.x(surface.getPixelForOffset(field.left));
@@ -683,7 +688,7 @@ function updateAttendeePhotoShapeFromField(shape: Konva.Text, field: LabelFieldB
  * @param field The field to use as the source of truth.
  */
 function updateBarcodeShapeFromField(shape: Konva.Text, field: LabelFieldBag, surface: Surface): void {
-    const config = field.configurationValues ?? {} as StringRecord<BarcodeFieldConfigurationBag>;
+    const config = (field.configurationValues ?? {}) as BarcodeFieldConfigurationBag;
 
     // Update the position of the shape.
     shape.x(surface.getPixelForOffset(field.left));

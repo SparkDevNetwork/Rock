@@ -1,8 +1,13 @@
 import Konva from "@Obsidian/Libs/konva";
-import { BarcodeFieldConfigurationBag, EllipseFieldConfigurationBag, IconFieldConfigurationBag, IconItem, LineFieldConfigurationBag, RectangleFieldConfigurationBag, StringRecord } from "./types.partial";
+import { IconItem } from "./types.partial";
 import { areEqual, newGuid } from "@Obsidian/Utility/guid";
 import { LabelFieldType } from "@Obsidian/Enums/CheckIn/Labels/labelFieldType";
+import { BarcodeFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/barcodeFieldConfigurationBag";
+import { EllipseFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/ellipseFieldConfigurationBag";
+import { IconFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/iconFieldConfigurationBag";
 import { LabelFieldBag } from "@Obsidian/ViewModels/CheckIn/Labels/labelFieldBag";
+import { LineFieldConfigurationBag} from "@Obsidian/ViewModels/CheckIn/Labels/lineFieldConfigurationBag";
+import { RectangleFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/rectangleFieldConfigurationBag";
 import { TextFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/textFieldConfigurationBag";
 import { HorizontalTextAlignment } from "@Obsidian/Enums/CheckIn/Labels/horizontalTextAlignment";
 import { BarcodeFormat } from "@Obsidian/Enums/CheckIn/Labels/barcodeFormat";
@@ -219,7 +224,7 @@ export function createDefaultField(fieldType: LabelFieldType, subtype: number): 
         field.height = 14 / 72;
     }
     else if (fieldType === LabelFieldType.Rectangle) {
-        const config = field.configurationValues as StringRecord<RectangleFieldConfigurationBag>;
+        const config = field.configurationValues as RectangleFieldConfigurationBag;
 
         config.isBlack = "true";
         config.isFilled = "true";
@@ -227,21 +232,21 @@ export function createDefaultField(fieldType: LabelFieldType, subtype: number): 
         config.cornerRadius = "0";
     }
     else if (fieldType === LabelFieldType.Line) {
-        const config = field.configurationValues as StringRecord<LineFieldConfigurationBag>;
+        const config = field.configurationValues as LineFieldConfigurationBag;
 
         field.height = 0;
         config.isBlack = "true";
         config.thickness = "1";
     }
     else if (fieldType === LabelFieldType.Ellipse) {
-        const config = field.configurationValues as StringRecord<EllipseFieldConfigurationBag>;
+        const config = field.configurationValues as EllipseFieldConfigurationBag;
 
         config.isBlack = "true";
         config.isFilled = "true";
         config.borderThickness = "0";
     }
     else if (fieldType === LabelFieldType.Icon) {
-        const config = field.configurationValues as StringRecord<IconFieldConfigurationBag>;
+        const config = field.configurationValues as IconFieldConfigurationBag;
 
         field.width = 0.25;
         field.height = 0.25;
@@ -251,7 +256,7 @@ export function createDefaultField(fieldType: LabelFieldType, subtype: number): 
         // Intentionally blank.
     }
     else if (fieldType === LabelFieldType.Barcode) {
-        const config = field.configurationValues as StringRecord<BarcodeFieldConfigurationBag>;
+        const config = field.configurationValues as BarcodeFieldConfigurationBag;
 
         config.format = BarcodeFormat.QRCode.toString();
         config.isDynamic = "false";
@@ -446,4 +451,3 @@ export async function convertImageDataToBlackAndWhite(original: string, invertCo
 
     return blobToBase64(blob);
 }
-

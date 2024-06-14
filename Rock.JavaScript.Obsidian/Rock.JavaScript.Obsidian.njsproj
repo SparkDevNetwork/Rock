@@ -795,6 +795,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\Configuration\CheckInLabelDetail\checkInLabelDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\Configuration\CheckInLabelList\checkInLabelListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\Configuration\LabelDesigner\dataSourceBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\CheckIn\Labels\barcodeFieldConfigurationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\Labels\designedLabelBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\AdaptiveMessageAdaptationDetail\adaptiveMessageAdaptationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\AdaptiveMessageAdaptationDetail\adaptiveMessageAdaptationDetailOptionsBag.d.ts" />
@@ -1228,7 +1229,12 @@
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\kioskStatusBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\Labels\customFieldInputBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\Labels\dataFormatterOptionBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\CheckIn\Labels\ellipseFieldConfigurationBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\CheckIn\Labels\iconFieldConfigurationBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\CheckIn\Labels\imageFieldConfigurationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\Labels\labelFieldBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\CheckIn\Labels\lineFieldConfigurationBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\CheckIn\Labels\rectangleFieldConfigurationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\Labels\textFieldConfigurationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\locationOpportunityBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\opportunityCollectionBag.d.ts" />

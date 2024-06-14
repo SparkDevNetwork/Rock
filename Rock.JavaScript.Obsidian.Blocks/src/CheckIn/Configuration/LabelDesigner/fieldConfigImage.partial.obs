@@ -10,7 +10,7 @@
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import ImageUploader from "./imageUploader.partial.obs";
     import { PropType, ref, watch } from "vue";
-    import { StringRecord, ImageFieldConfigurationBag } from "./types.partial";
+    import { ImageFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/imageFieldConfigurationBag";
     import { LabelUndoManager } from "./undoManager.partial";
     import { asBoolean, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
 
@@ -29,7 +29,7 @@
      */
     function setInternalValues(): void {
         const configuration = (props.labelManager.selectedField.value
-            ?.configurationValues ?? {}) as StringRecord<ImageFieldConfigurationBag>;
+            ?.configurationValues ?? {}) as ImageFieldConfigurationBag;
 
         image.value = configuration.imageData;
         isInverted.value = asBoolean(configuration.isInverted);
@@ -40,7 +40,7 @@
         props.labelManager.mutateSelectedField(field => {
             field.configurationValues = field.configurationValues ?? {};
 
-            const fieldConfig = field.configurationValues as StringRecord<ImageFieldConfigurationBag>;
+            const fieldConfig = field.configurationValues as ImageFieldConfigurationBag;
 
             fieldConfig.imageData = image.value;
             fieldConfig.isInverted = asTrueFalseOrNull(isInverted.value);

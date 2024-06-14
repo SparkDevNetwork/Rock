@@ -59,7 +59,7 @@
     import { BarcodeFormat } from "@Obsidian/Enums/CheckIn/Labels/barcodeFormat";
     import { asBoolean, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
     import { PropType, ref, watch } from "vue";
-    import { BarcodeFieldConfigurationBag } from "./types.partial";
+    import { BarcodeFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/barcodeFieldConfigurationBag";
     import { LabelUndoManager } from "./undoManager.partial";
 
     const props = defineProps({

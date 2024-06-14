@@ -23,7 +23,7 @@
     import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { PropType, ref, watch } from "vue";
-    import { EllipseFieldConfigurationBag, StringRecord } from "./types.partial";
+    import { EllipseFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/ellipseFieldConfigurationBag";
     import { LabelUndoManager } from "./undoManager.partial";
 
     const props = defineProps({
@@ -64,7 +64,7 @@
      */
     function setInternalValues(): void {
         const configuration = (props.labelManager.selectedField.value
-            ?.configurationValues ?? {}) as StringRecord<EllipseFieldConfigurationBag>;
+            ?.configurationValues ?? {}) as EllipseFieldConfigurationBag;
 
         color.value = asBoolean(configuration.isBlack) ? "black" : "white";
         type.value = asBoolean(configuration.isFilled) ? "filled" : "outline";
@@ -76,7 +76,7 @@
         props.labelManager.mutateSelectedField(field => {
             field.configurationValues = field.configurationValues ?? {};
 
-            const fieldConfig = field.configurationValues as StringRecord<EllipseFieldConfigurationBag>;
+            const fieldConfig = field.configurationValues as EllipseFieldConfigurationBag;
 
             fieldConfig.isBlack = color.value === "black" ? "true" : "false";
             fieldConfig.isFilled = type.value === "filled" ? "true" : "false";

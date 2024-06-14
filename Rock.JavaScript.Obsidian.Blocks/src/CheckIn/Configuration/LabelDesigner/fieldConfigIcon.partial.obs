@@ -7,7 +7,7 @@
 <script setup lang="ts">
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { PropType, ref, watch } from "vue";
-    import { StringRecord, IconFieldConfigurationBag } from "./types.partial";
+    import { IconFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/iconFieldConfigurationBag";
     import { LabelUndoManager } from "./undoManager.partial";
     import { IconImageMap } from "./utils.partial";
 
@@ -27,7 +27,7 @@
      */
     function setInternalValues(): void {
         const configuration = (props.labelManager.selectedField.value
-            ?.configurationValues ?? {}) as StringRecord<IconFieldConfigurationBag>;
+            ?.configurationValues ?? {}) as IconFieldConfigurationBag;
 
         icon.value = configuration.icon ?? "";
     }
@@ -37,7 +37,7 @@
         props.labelManager.mutateSelectedField(field => {
             field.configurationValues = field.configurationValues ?? {};
 
-            const fieldConfig = field.configurationValues as StringRecord<IconFieldConfigurationBag>;
+            const fieldConfig = field.configurationValues as IconFieldConfigurationBag;
 
             fieldConfig.icon = icon.value;
         });

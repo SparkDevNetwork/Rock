@@ -46,52 +46,6 @@ export type DragData = {
     subtype: number;
 };
 
-export type RectangleFieldConfigurationBag = {
-    isBlack: boolean;
-
-    isFilled: boolean;
-
-    borderThickness: number;
-
-    cornerRadius: number;
-};
-
-export type LineFieldConfigurationBag = {
-    isBlack: boolean;
-
-    thickness: number;
-};
-
-export type EllipseFieldConfigurationBag = {
-    isBlack: boolean;
-
-    isFilled: boolean;
-
-    borderThickness: number;
-};
-
-export type IconFieldConfigurationBag = {
-    icon: string;
-};
-
-export type ImageFieldConfigurationBag = {
-    imageData?: string | null;
-
-    isInverted?: string | null;
-};
-
-export type BarcodeFieldConfigurationBag = {
-    format?: string | null;
-
-    isDynamic?: string | null;
-
-    /**
-     * The dynamic text template to use for a custom text field. The text
-     * is used as a lava template to generate the final text to render.
-     */
-    dynamicTextTemplate?: string | null;
-};
-
 export type IconItem = {
     value?: string | null;
 
@@ -101,9 +55,3 @@ export type IconItem = {
 
     code?: string | null;
 };
-
-/** Convert a type so that all properties are optional strings or nulls. */
-export type StringRecord<T> = {
-    [K in keyof T]?: string | null
-};
-

@@ -27,16 +27,13 @@ export type TextFieldConfigurationBag = {
      * Contains a lookup table of string length and font sizes as key and
      * value pairs. The key represents the string length and the value is
      * the font size. The value from the largest key that is less than or
-     * equal to the length of the text is used. This is encoded as a set
-     * of "key=value" pairs joined by semi-colon. Such as
-     * 10=16;20=14;30=12.
+     * equal to the length of the text is used.
      */
     adaptiveFontSize?: string | null;
 
     /**
      * How to format the collection when multiple values are provided by
-     * the data source. This should be a string containing the integer
-     * value of the TextCollectionFormat enumeration.
+     * the data source.
      */
     collectionFormat?: string | null;
 
@@ -48,8 +45,7 @@ export type TextFieldConfigurationBag = {
 
     /**
      * The default font size to use when rendering text. This is in
-     * points per inch with 72 meaning 1 inch in height. This is a string
-     * value representing a floating point number.
+     * points per inch with 72 meaning 1 inch in height.
      */
     fontSize?: string | null;
 
@@ -59,52 +55,43 @@ export type TextFieldConfigurationBag = {
      */
     formatterOptionKey?: string | null;
 
-    /**
-     * The horizontal alignment of the text in the field. The value should
-     * be a string containing the integer value of the
-     * HorizontalTextAlignment enumeration.
-     */
+    /** The horizontal alignment of the text in the field. */
     horizontalAlignment?: string | null;
 
-    /**
-     * Determines if the text is drawn bolder than normal text. This should
-     * be the string "False" or "True".
-     */
+    /** Determines if the text is drawn bolder than normal text. */
     isBold?: string | null;
 
     /**
      * Determines if the color is inverted when drawing. On Zebra printers
      * will result in an already black background turning white and an
      * already white background turning black. Other printers may simply
-     * switch to white mode. This should be the string "False" or "True".
+     * switch to white mode.
      */
     isColorInverted?: string | null;
 
     /**
      * Determines if the text is drawn in a more condensed font than
-     * normal text. This should be the string "False" or "True".
+     * normal text.
      */
     isCondensed?: string | null;
 
     /**
      * Determines if the custom text field is using the dynamic text
-     * template or the static text template. This should be the string
-     * "False" or "True".
+     * template or the static text template.
      */
     isDynamicText?: string | null;
 
     /**
      * The maximum length of the text in the field. Any text of greater
      * length will be truncated without any ellipsis. For collections
-     * of strings this maximum applies to each individual string. The value
-     * is a string representation of an integer.
+     * of strings this maximum applies to each individual string.
      */
     maxLength?: string | null;
 
     /**
      * The placeholder text to use when the text field uses either dynamic
-     * Lava or a data source. This is displayed in the designer as well
-     * as when generating the preview.
+     * Lava or a data source. This is displayed in the designer as well as
+     * when generating the preview.
      */
     placeholderText?: string | null;
 

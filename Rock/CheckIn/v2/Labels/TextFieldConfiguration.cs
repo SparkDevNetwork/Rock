@@ -24,46 +24,46 @@ namespace Rock.CheckIn.v2.Labels
     /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.TextFieldConfigurationBag"/>
     internal class TextFieldConfiguration
     {
-        /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.TextFieldConfigurationBag.SourceKey"/>
+        /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.TextFieldConfigurationBag.SourceKey" path="/summary"/>
         public string SourceKey { get; set; }
 
-        /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.TextFieldConfigurationBag.FormatterOptionKey"/>
+        /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.TextFieldConfigurationBag.FormatterOptionKey" path="/summary"/>
         public string FormatterOptionKey { get; set; }
 
-        /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.TextFieldConfigurationBag.CollectionFormat"/>
+        /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.TextFieldConfigurationBag.CollectionFormat" path="/summary"/>
         public TextCollectionFormat CollectionFormat { get; set; }
 
-        /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.TextFieldConfigurationBag.PlaceholderText"/>
+        /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.TextFieldConfigurationBag.PlaceholderText" path="/summary"/>
         public string PlaceholderText { get; set; }
 
-        /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.TextFieldConfigurationBag.IsDynamicText"/>
+        /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.TextFieldConfigurationBag.IsDynamicText" path="/summary"/>
         public bool IsDynamicText { get; set; }
 
-        /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.TextFieldConfigurationBag.StaticText"/>
+        /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.TextFieldConfigurationBag.StaticText" path="/summary"/>
         public string StaticText { get; set; }
 
-        /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.TextFieldConfigurationBag.DynamicTextTemplate"/>
+        /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.TextFieldConfigurationBag.DynamicTextTemplate" path="/summary"/>
         public string DynamicTextTemplate { get; set; }
 
-        /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.TextFieldConfigurationBag.FontSize"/>
+        /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.TextFieldConfigurationBag.FontSize" path="/summary"/>
         public double FontSize { get; set; }
 
-        /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.TextFieldConfigurationBag.AdaptiveFontSize"/>
+        /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.TextFieldConfigurationBag.AdaptiveFontSize" path="/summary"/>
         public Dictionary<int, double> AdaptiveFontSize { get; set; }
 
-        /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.TextFieldConfigurationBag.HorizontalAlignment"/>
+        /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.TextFieldConfigurationBag.HorizontalAlignment" path="/summary"/>
         public HorizontalTextAlignment HorizontalAlignment { get; set; }
 
-        /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.TextFieldConfigurationBag.IsBold"/>
+        /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.TextFieldConfigurationBag.IsBold" path="/summary"/>
         public bool IsBold { get; set; }
 
-        /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.TextFieldConfigurationBag.IsColorInverted"/>
+        /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.TextFieldConfigurationBag.IsColorInverted" path="/summary"/>
         public bool IsColorInverted { get; set; }
 
-        /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.TextFieldConfigurationBag.IsCondensed"/>
+        /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.TextFieldConfigurationBag.IsCondensed" path="/summary"/>
         public bool IsCondensed { get; set; }
 
-        /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.TextFieldConfigurationBag.MaxLength"/>
+        /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.TextFieldConfigurationBag.MaxLength" path="/summary"/>
         public int MaxLength { get; set; }
     }
 }
