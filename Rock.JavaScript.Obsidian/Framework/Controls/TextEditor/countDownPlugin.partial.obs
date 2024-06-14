@@ -1,0 +1,60 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <em class="pull-right badge" :class="countDownClass">
+        {{ countDownCharsRemaining }}
+    </em>
+</template>
+
+<script setup lang="ts">
+    import { PropType, computed } from "vue";
+
+    const props = defineProps({
+        modelValue: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        countDownMaxChars: {
+            type: Number as PropType<number>,
+            required: true
+        }
+    });
+
+    //#region Values
+
+    //#endregion
+
+    //#region Computed Values
+
+    const countDownCharsRemaining = computed<number>(() => {
+        // The countdown characters remaining can become negative.
+        // If max length is required, then add a max length rule.
+        return props.countDownMaxChars - props.modelValue.length;
+    });
+
+    const countDownClass = computed((): string => {
+        if (countDownCharsRemaining.value >= 10) {
+            return "badge-default";
+        }
+
+        if (countDownCharsRemaining.value >= 0) {
+            return "badge-warning";
+        }
+
+        return "badge-danger";
+    });
+
+    //#endregion
+
+    //#region Functions
+
+    //#endregion
+
+    //#region Event Handlers
+
+    //#endregion
+
+    //#region Watchers
+
+    //#endregion
+</script>

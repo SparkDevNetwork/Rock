@@ -51,6 +51,11 @@
                               :isIconHidden="true"
                               label="Personalize" />
         </template>
+
+        <template v-if="isCountDownShown" #post>
+            <CountDownPlugin :modelValue="internalValue"
+                             :countDownMaxChars="countDownMaxChars" />
+        </template>
     </RockFormField>
 </template>
 
@@ -79,9 +84,10 @@
 <script setup lang="ts">
     import { PropType, computed, onMounted, onUnmounted, ref, watch, watchEffect } from "vue";
     import RockFormField from "./rockFormField.obs";
+    import CountDownPlugin from "./TextEditor/countDownPlugin.partial.obs";
+    import MergeFieldPlugin from "./TextEditor/mergeFieldPlugin.partial.obs";
     import ToolbarLabelPlugin from "./TextEditor/toolbarLabelPlugin.partial.obs";
     import ToolbarSpacerPlugin from "./TextEditor/toolbarSpacerPlugin.partial.obs";
-    import MergeFieldPlugin from "./TextEditor/mergeFieldPlugin.partial.obs";
     import { tinymce, Editor, EditorEvent, Events } from "@Obsidian/Libs/tinymce";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
 
@@ -150,6 +156,16 @@
         toolbarLabel: {
             type: String as PropType<string | null | undefined>,
             required: false
+        },
+
+        isCountDownShown: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        countDownMaxChars: {
+            type: Number as PropType<number>,
+            default: 0
         }
     });
 
