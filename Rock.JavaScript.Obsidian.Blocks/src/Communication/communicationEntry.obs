@@ -4,30 +4,13 @@
                :title="config.title ?? 'New Communication'"
                titleIconCssClass="fa fa-comment-o"
                type="block">
-            <!-- TODO JMH Remove this drawer-->
-            <template v-if="true" #drawer>
-                <RockLabel>
-                    DEGUB OPTIONS
-                </RockLabel>
-                <div class="row">
-                    <div class="col-xs-12">
-                        <RockButton @click="onGenerateRecipients">Generate Recipients</RockButton>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-xs-12">
-                        <RockButton @click="() => console.log(JSON.stringify(recipients, null, 2))">Log Recipients</RockButton>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-xs-12">
-                        <Switch v-model="allowMultipleRecipientSelection" text="Keep Person Picker Open After Selection" />
-                    </div>
-                </div>
-            </template>
-
             <template v-if="statusLabel" #subheaderRight>
                 <HighlightLabel :labelType="statusLabelCssClass">{{ statusLabel }}</HighlightLabel>
+            </template>
+
+            <!-- TODO JMH Remove this drawer-->
+            <template v-if="true" #drawer>
+                <JmhTestPartial :attachments="config.communication?.emailAttachmentBinaryFiles" v-model:recipients="recipients"></JmhTestPartial>
             </template>
 
             <template #default>
@@ -89,10 +72,7 @@
     import PanelNavigationBar from "./CommunicationEntry/panelNavigationBar.partial.obs";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
-    import Switch from "@Obsidian/Controls/switch.obs";
     import { CommunicationStatus, CommunicationStatusDescription } from "@Obsidian/Enums/Communication/communicationStatus";
     import { Mode } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntry/mode";
     import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
@@ -107,6 +87,7 @@
     import { CommunicationEntryRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryRecipientBag";
     import { KeepPersonPickerOpen, provideSelectedMediumType } from "./CommunicationEntry/utils.partial";
     import { MediumType } from "./CommunicationEntry/types.partial";
+    import JmhTestPartial from "./CommunicationEntry/jmhTest.partial.obs";
 
     const config = useConfigurationValues<CommunicationEntryInitializationBox>();
     const reloadBlock = useReloadBlock();
@@ -185,125 +166,6 @@
 
     //#region Event Handlers
 
-    // TODO JMH Remove this.
-    function onGenerateRecipients(): void {
-        const r: CommunicationEntryRecipientBag[] = [
-            {
-                "personAliasGuid": "38a91a9e-50df-43b3-898a-8f192238d388",
-                "name": "Ted Decker",
-                "isDeceased": false,
-                "smsNumber": "6235553322",
-                "isSmsAllowed": false,
-                "isPushAllowed": false,
-                "email": "ted@rocksolidchurchdemo.com",
-                "photoUrl": "/GetAvatar.ashx?PhotoId=102&AgeClassification=Adult&Gender=Male&RecordTypeId=1&Text=TD&Size=24",
-                "isEmailAllowed": true,
-                "isBulkEmailAllowed": true,
-                "isEmailActive": true,
-                "emailPreference": "EmailAllowed"
-            },
-            {
-                "personAliasGuid": "c56214d3-3bf5-45fd-ba54-afb4ebdfd466",
-                "name": "Cindy Decker",
-                "isDeceased": false,
-                "smsNumber": "6235553323",
-                "isSmsAllowed": true,
-                "isPushAllowed": false,
-                "email": "cindy@fakeinbox.com",
-                "photoUrl": "/GetAvatar.ashx?PhotoId=103&AgeClassification=Adult&Gender=Female&RecordTypeId=1&Text=CD&Size=24",
-                "isEmailAllowed": true,
-                "isBulkEmailAllowed": false,
-                "isEmailActive": true,
-                "emailPreference": "NoMassEmails"
-            },
-            {
-                "personAliasGuid": "60a926ec-18a6-4961-b948-1ba9657b593b",
-                "name": "Ben Jones",
-                "isDeceased": false,
-                "smsNumber": null,
-                "isSmsAllowed": false,
-                "isPushAllowed": false,
-                "email": "ben.jones@fakeinbox.com",
-                "photoUrl": "/GetAvatar.ashx?PhotoId=106&AgeClassification=Adult&Gender=Male&RecordTypeId=1&Text=BJ&Size=24",
-                "isEmailAllowed": true,
-                "isBulkEmailAllowed": true,
-                "isEmailActive": true,
-                "emailPreference": "EmailAllowed"
-            },
-            {
-                "personAliasGuid": "fc6e1155-d094-449f-b6ff-9570a6405d81",
-                "name": "Sarah Simmons",
-                "isDeceased": false,
-                "smsNumber": "6238881213",
-                "isSmsAllowed": false,
-                "isPushAllowed": false,
-                "email": "sarah.simmons@fakeinbox.com",
-                "photoUrl": "/GetAvatar.ashx?PhotoId=109&AgeClassification=Adult&Gender=Female&RecordTypeId=1&Text=SS&Size=24",
-                "isEmailAllowed": true,
-                "isBulkEmailAllowed": true,
-                "isEmailActive": true,
-                "emailPreference": "EmailAllowed"
-            },
-            {
-                "personAliasGuid": "011324fa-8335-4835-8650-179c5a6aca7f",
-                "name": "Jim Simmons",
-                "isDeceased": false,
-                "smsNumber": "6238881212",
-                "isSmsAllowed": false,
-                "isPushAllowed": false,
-                "email": "jim.simmons@fakeinbox.com",
-                "photoUrl": "/GetAvatar.ashx?PhotoId=108&AgeClassification=Adult&Gender=Male&RecordTypeId=1&Text=JS&Size=24",
-                "isEmailAllowed": true,
-                "isBulkEmailAllowed": true,
-                "isEmailActive": true,
-                "emailPreference": "EmailAllowed"
-            },
-            {
-                "personAliasGuid": "2e8a891d-e807-41c8-902d-2986e0594e1a",
-                "name": "Bob Greggs",
-                "isDeceased": false,
-                "smsNumber": null,
-                "isSmsAllowed": false,
-                "isPushAllowed": false,
-                "email": "rgreggs@fakeinbox.com",
-                "photoUrl": "/GetAvatar.ashx?PhotoId=125&AgeClassification=Adult&Gender=Male&RecordTypeId=1&Text=BG&Size=24",
-                "isEmailAllowed": true,
-                "isBulkEmailAllowed": true,
-                "isEmailActive": true,
-                "emailPreference": "EmailAllowed"
-            },
-            {
-                "personAliasGuid": "5144d5c5-d42f-47d1-b1b1-cae6e3999d8e",
-                "name": "Lorraine Greggs",
-                "isDeceased": false,
-                "smsNumber": null,
-                "isSmsAllowed": false,
-                "isPushAllowed": false,
-                "email": "lgreggs@fakeinbox.com",
-                "photoUrl": "/GetAvatar.ashx?PhotoId=126&AgeClassification=Adult&Gender=Female&RecordTypeId=1&Text=LG&Size=24",
-                "isEmailAllowed": true,
-                "isBulkEmailAllowed": true,
-                "isEmailActive": true,
-                "emailPreference": "EmailAllowed"
-            },
-            {
-                "personAliasGuid": "f66530a3-59c5-40a1-82da-9ac5915f4728",
-                "name": "Jordan Greggs",
-                "isDeceased": false,
-                "smsNumber": null,
-                "isSmsAllowed": false,
-                "isPushAllowed": false,
-                "email": null,
-                "photoUrl": "/GetAvatar.ashx?PhotoId=&AgeClassification=Child&Gender=Female&RecordTypeId=1&Text=JG&Size=24",
-                "isEmailAllowed": false,
-                "isBulkEmailAllowed": false,
-                "isEmailActive": true,
-                "emailPreference": "EmailAllowed"
-            }
-        ];
-        recipients.value = r;
-    }
-
     /** Event handler for the communication being sent. */
     function onSentOrSaved(value: CommunicationEntrySendResponseBag): void {
         const url = new URL(window.location.href);
@@ -329,7 +191,7 @@
 
     provideSelectedMediumType(selectedMedium);
     // TODO JMH Remove this debug option.
-    provide(KeepPersonPickerOpen, computed(() => allowMultipleRecipientSelection.value));
+    provide(KeepPersonPickerOpen, allowMultipleRecipientSelection);
 
     onConfigurationValuesChanged(reloadBlock);
 

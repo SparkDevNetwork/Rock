@@ -35,8 +35,8 @@
         <template #maxTagPlaceholder="{ omittedValues }">
             <div ref="maxTagPlaceholder">
                 <RockButton class="item label label-default rounded-pill"
-                            @click.stop="onShowMoreClicked"
-                            @mousedown.stop>
+                            @click="onShowMoreClicked"
+                            @mousedown="onShowMoreMouseDown">
                     <span class="item-content">{{ omittedValues.length }} more</span>
                 </RockButton>
             </div>
@@ -95,6 +95,17 @@
          * Is the add option hidden?
          */
         isAddHidden: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * Should the drop-down be shown when the "show more" button is clicked?
+         *
+         * When this is `true` and the "show more" button is clicked,
+         * the "showMore" event will be still be emitted.
+         */
+        isDropDownOpenedOnShowMore: {
             type: Boolean as PropType<boolean>,
             default: false
         },
@@ -176,8 +187,17 @@
         }
     }
 
-    function onShowMoreClicked(): void {
+    function onShowMoreClicked(event: MouseEvent): void {
+        if (!props.isDropDownOpenedOnShowMore) {
+            event.stopPropagation();
+        }
         emit("showMore");
+    }
+
+    function onShowMoreMouseDown(event: MouseEvent): void {
+        if (!props.isDropDownOpenedOnShowMore) {
+            event.stopPropagation();
+        }
     }
 
     //#endregion

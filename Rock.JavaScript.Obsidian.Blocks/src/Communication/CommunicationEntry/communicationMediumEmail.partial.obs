@@ -150,26 +150,12 @@
             <VerticalTransitionCollapse>
                 <div v-if="areAttachmentsShown" class="row">
                     <div class="col-sm-12">
-                        <PopupPicker v-model="attachments"
-                                     :disabled="disabled"
-                                     :items="attachments"
-                                     label="Attachments"
-                                     @openPopup="onAddAttachmentClicked">
-                        </PopupPicker>
-                        <NotificationBox v-if="attachmentErrorMessage" alertType="warning">
-                            <strong><i class="fa fa-exclamation-triangle"></i> Warning </strong>
-                            <span>{{ attachmentErrorMessage }}</span>
-                        </NotificationBox>
+                        <AttachmentPicker v-model="attachments"
+                                          :binaryFileTypeGuid="mediumOptions.binaryFileTypeGuid"
+                                          :disabled="disabled" />
                     </div>
                 </div>
             </VerticalTransitionCollapse>
-
-            <div ref="fileInputWrapper" class="d-none">
-                <FileUploader :disabled="disabled"
-                              :binaryFileTypeGuid="mediumOptions.binaryFileTypeGuid"
-                              @error="onAttachmentError"
-                              @update:modelValue="onAttachmentAdded" />
-            </div>
 
             <HtmlEditor v-model="message"
                         :disabled="disabled"
@@ -219,13 +205,12 @@
 <script setup lang="ts">
     import { PropType, computed, nextTick, onMounted, ref, watch } from "vue";
     import Delay from "./delay.partial.obs";
-    import PopupPicker from "./popupPicker.partial.obs";
+    import AttachmentPicker from "./attachmentPicker.partial.obs";
     import RecipientPicker from "./recipientPicker.partial.obs";
     import ScheduleSend from "./scheduleSend.partial.obs";
     import { getAlertType, scrollToTopOfWindow, useSelectedMediumType } from "./utils.partial";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
-    import FileUploader from "@Obsidian/Controls/fileUploader.obs";
     import HtmlEditor from "@Obsidian/Controls/htmlEditor.obs";
     import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -321,9 +306,7 @@
     // Show CC and BCC fields if the loaded communication has either value.
     const isCcShown = ref<boolean>(!!(ccAddresses.value || bccAddresses.value));
     const subject = ref<string>(config.communication?.subject ?? "");
-    const attachmentErrorMessage = ref<string | null | undefined>();
     const areAttachmentsShown = ref<boolean>(false);
-    const fileInputWrapper = ref<HTMLInputElement | undefined>();
     const message = ref<string>(config.communication?.message ?? "");
     const communicationGuid = ref<Guid>(config.communication?.communicationGuid ?? emptyGuid);
     const mediumOptions = ref<CommunicationEntryEmailMediumOptionsBag | null>(isEmailMediumOptions(config.mediumOptions) ? config.mediumOptions : null);
@@ -431,30 +414,6 @@
 
     function onDismissInvalidTransportNotification(): void {
         isInvalidTransportNotificationDismissed.value = true;
-    }
-
-    function onAddAttachmentClicked(): void {
-        attachmentErrorMessage.value = null;
-        if (fileInputWrapper.value) {
-            const group = fileInputWrapper.value.querySelector(".fileupload-group") as HTMLElement;
-            if (group) {
-                group.click();
-            }
-        }
-    }
-
-    function onAttachmentError(error: string): void {
-        attachmentErrorMessage.value = error;
-    }
-
-    function onAttachmentAdded(file: ListItemBag | undefined): void {
-        if (file) {
-            const allAttachments = [...attachments.value];
-
-            allAttachments.push(file);
-
-            attachments.value = allAttachments;
-        }
     }
 
     async function setRecipientsRequired(): Promise<void> {

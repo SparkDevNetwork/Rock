@@ -126,4 +126,4 @@ export function useBreakpointHelper(): ComputedRef<BreakpointHelper> {
 }
 
 // TODO JMH Remove this debug option.
-export const KeepPersonPickerOpen: InjectionKey<ComputedRef<boolean>> = Symbol("keep-person-picker-open");
+export const KeepPersonPickerOpen: InjectionKey<Ref<boolean>> = Symbol("keep-person-picker-open");
