@@ -89,6 +89,7 @@
     margin: 0;
     padding: 4px 12px;
     text-align: left;
+    white-space: nowrap;
 }
 
 .context-menu :deep(button:hover) {
@@ -833,7 +834,7 @@
         e.evt.preventDefault();
 
         // They hit the stage or not ready yet, nothing to show.
-        if (e.target === stage || !stage || !menuElement.value) {
+        if (e.target === stage || !stage || !menuElement.value || !containerElement.value) {
             if (menuElement.value) {
                 menuElement.value.style.display = "none";
             }
@@ -841,11 +842,15 @@
             return;
         }
 
+        const fullContainerWidth = worksurfaceContainerElement.value?.offsetWidth ?? 10000;
+        const fullContainerHeight = worksurfaceContainerElement.value?.offsetHeight ?? 10000;
+        const offsetX = containerElement.value.offsetLeft;
+        const offsetY = containerElement.value.offsetTop;
         const pointer = stage.getPointerPosition() ?? { x: 0, y: 0 };
 
         menuElement.value.style.display = "initial";
-        menuElement.value.style.left = `${pointer.x + 4}px`;
-        menuElement.value.style.top = `${pointer.y + 4}px`;
+        menuElement.value.style.left = `${offsetX + pointer.x + 4}px`;
+        menuElement.value.style.top = `${offsetY + pointer.y + 4}px`;
 
         const nodes = stage.getAllIntersections(stage.getPointerPosition());
         const selectedNodes = getSelectedNodes();
@@ -885,6 +890,16 @@
         }
         else {
             showFieldSelectMenu(findFieldsForNodes(nodes));
+        }
+
+        // If it is too wide, flip it to the left of the mouse.
+        if (menuElement.value.offsetLeft + menuElement.value.offsetWidth > fullContainerWidth) {
+            menuElement.value.style.left = `${offsetX + pointer.x - menuElement.value.offsetWidth}px`;
+        }
+
+        // If it is too tall, flip it above the mouse.
+        if (menuElement.value.offsetTop + menuElement.value.offsetHeight > fullContainerHeight) {
+            menuElement.value.style.top = `${offsetY + pointer.y - menuElement.value.offsetHeight}px`;
         }
     }
 
