@@ -84,6 +84,12 @@ export type BarcodeFieldConfigurationBag = {
     format?: string | null;
 
     isDynamic?: string | null;
+
+    /**
+     * The dynamic text template to use for a custom text field. The text
+     * is used as a lava template to generate the final text to render.
+     */
+    dynamicTextTemplate?: string | null;
 };
 
 /** Convert a type so that all properties are optional strings or nulls. */
