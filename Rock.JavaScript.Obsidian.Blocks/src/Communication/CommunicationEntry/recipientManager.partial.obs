@@ -1,6 +1,6 @@
 <template>
     <PopupPicker v-model="recipientListItems"
-                 :disabled="isDisabled"
+                 :disabled="disabled"
                  :getLabelTypeRef="getLabelTypeRef"
                  :getTooltipRef="personAliasGuid => getEmailTooltipRef(findRecipient(personAliasGuid))"
                  label="Recipients"
@@ -38,7 +38,7 @@
             required: true
         },
 
-        isDisabled: {
+        disabled: {
             type: Boolean as PropType<boolean>,
             default: false
         },

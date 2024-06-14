@@ -5,7 +5,7 @@
                titleIconCssClass="fa fa-comment-o"
                type="block">
             <!-- TODO JMH Remove this drawer-->
-            <template #drawer>
+            <template v-if="true" #drawer>
                 <RockLabel>
                     DEGUB OPTIONS
                 </RockLabel>
@@ -33,13 +33,13 @@
             <template #default>
                 <div v-if="!areResultsShown">
                     <PanelNavigationBar v-model="selectedMediumEntityTypeGuidOrEmptyString"
-                                        :disabled="isDisabled"
+                                        :disabled="disabled"
                                         :isFirstSelectedByDefault="true"
                                         :items="mediums" />
 
                     <KeepAlive v-if="selectedMediumEntityTypeGuidOrEmptyString && config.communication && config.mediumOptions">
                         <Email v-if="selectedMedium === 'email'"
-                               v-model:disabled="isDisabled"
+                               v-model:disabled="disabled"
                                v-model:recipients="recipients"
                                v-model:isBulkCommunication="isBulkCommunication"
                                v-model:scheduleSendIsoString="scheduleSendIsoString"
@@ -47,7 +47,7 @@
                                @sent="onSentOrSaved" />
 
                         <Sms v-else-if="selectedMedium === 'sms'"
-                             v-model:disabled="isDisabled"
+                             v-model:disabled="disabled"
                              v-model:recipients="recipients"
                              v-model:isBulkCommunication="isBulkCommunication"
                              v-model:scheduleSendIsoString="scheduleSendIsoString"
@@ -122,7 +122,7 @@
     const selectedMediumEntityTypeGuidOrEmptyString = ref<string>("");
     const resultMessage = ref<string | null | undefined>("");
     const viewCommunicationUrl = ref<string>("#");
-    const isDisabled = ref<boolean>(false);
+    const disabled = ref<boolean>(false);
     const recipients = ref<CommunicationEntryRecipientBag[]>(config.communication?.recipients ?? []);
     const isBulkCommunication = ref<boolean>(config.communication?.isBulkCommunication ?? false);
     const scheduleSendIsoString = ref<string>(config.communication?.futureSendDateTime ?? "");

@@ -2,12 +2,13 @@
 <template>
     <Modal v-model="internalIsOpen"
            :clickBackdropToClose="false"
-           :saveText="!isReadonly ? 'Save' : undefined"
+           :isSaveButtonDisabled="disabled"
+           saveText="Save"
            title="Recipient Manager"
            @save="onSaveClicked">
-        <template v-if="!isReadonly">
+        <template v-if="!isAddHidden">
             <div class="d-flex flex-row justify-content-between align-items-center">
-                <PersonPicker @update:modelValue="onPersonPicked" label="Add Recipient" />
+                <PersonPicker :disabled="disabled" @update:modelValue="onPersonPicked" label="Add Recipient" />
                 <div class="label label-info">Recipients: {{ pendingItems.length }}</div>
             </div>
             <hr>
@@ -90,11 +91,10 @@
                 </template>
             </Column>
 
-            <ButtonColumn v-if="!isReadonly"
-                          name="deselectItem"
+            <ButtonColumn name="removeRecipient"
                           iconClass="fa fa-times"
-                          itemClass="grid-columncommand deselect-button"
-                          @click="onDeselectItemClicked" />
+                          itemClass="grid-columncommand remove-button"
+                          @click="onRemoveRecipientClicked" />
         </Grid>
     </Modal>
 </template>
@@ -104,11 +104,11 @@
     white-space: nowrap;
 }
 
-:deep(.recipient-modal-row .deselect-button) {
+:deep(.recipient-modal-row .remove-button) {
     visibility: hidden;
 }
 
-:deep(.recipient-modal-row:hover .deselect-button) {
+:deep(.recipient-modal-row:hover .remove-button) {
     visibility: visible;
 }
 </style>
@@ -138,7 +138,7 @@
             required: true
         },
 
-        isReadonly: {
+        disabled: {
             type: Boolean as PropType<boolean>,
             default: false
         },
@@ -146,6 +146,11 @@
         getTooltipRef: {
             type: Function as PropType<(value: CommunicationEntryRecipientBag | null, mode: MediumType) => Ref<string>>,
             default: (_: string) => ""
+        },
+
+        isAddHidden: {
+            type: Boolean as PropType<boolean>,
+            default: false
         },
 
         isForBulkCommunication: {
@@ -263,7 +268,7 @@
 
     //#region Event Handlers
 
-    function onDeselectItemClicked(personAliasGuid: Guid): void {
+    function onRemoveRecipientClicked(personAliasGuid: Guid): void {
         if (!personAliasGuid) {
             return;
         }
@@ -299,10 +304,7 @@
     }
 
     function onSaveClicked(): void {
-        if (!props.isReadonly) {
-            emit("update:recipients", pendingItems.value);
-        }
-
+        emit("update:recipients", pendingItems.value);
         internalIsOpen.value = false;
     }
 

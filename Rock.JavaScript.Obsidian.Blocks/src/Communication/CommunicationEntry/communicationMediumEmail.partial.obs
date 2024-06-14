@@ -37,10 +37,9 @@
                 <div class="col-sm-12">
                     <RecipientPicker :modelValue="recipients"
                                      @update:modelValue="$emit('update:recipients', $event)"
-                                     :isDisabled="disabled"
-                                     @update:isDisabled="$emit('update:disabled', $event)"
+                                     :disabled="disabled" @update:disabled="$emit('update:disabled', $event)"
+                                     :isAddHidden="config.mode !== Mode.Full"
                                      :isForBulkCommunication="isBulkCommunication"
-                                     :isReadonly="config.mode !== Mode.Full"
                                      label="Recipients"
                                      mediumType="email"
                                      :minimumRecipientCount="minimumRecipientCount" />

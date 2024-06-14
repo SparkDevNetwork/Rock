@@ -10,7 +10,7 @@
                      maxTagCount="responsive"
                      :multiple="true">
         <template #suffixIcon>
-            <i v-if="!isReadonly" class="fa fa-plus" :style="{ 'pointer-events': !disabled && !isAddButtonDisabled ? 'all' : 'none' }" @click="onOpenPopupClicked"></i>
+            <i v-if="!isAddHidden" class="fa fa-plus" :style="{ 'pointer-events': !disabled ? 'all' : 'none' }" @click="onOpenPopupClicked"></i>
             <i v-else></i>
         </template>
 
@@ -22,8 +22,7 @@
                 <span class="item-content">
                     <slot name="itemContent" v-bind="{ label, value, disabled, closable }">{{ label }}</slot>
                 </span>
-                <RockButton v-if="!isReadonly"
-                            btnSize="xs"
+                <RockButton btnSize="xs"
                             btnType="link"
                             class="item-remove text-muted pr-0"
                             :disabled="disabled"
@@ -35,8 +34,7 @@
 
         <template #maxTagPlaceholder="{ omittedValues }">
             <div ref="maxTagPlaceholder">
-                <RockButton :class="`item label label-default rounded-pill ${(disabled || isShowMoreDisabled ? 'cursor-not-allowed' : '')}`"
-                            :disabled="disabled || isShowMoreDisabled"
+                <RockButton class="item label label-default rounded-pill"
                             @click.stop="onShowMoreClicked"
                             @mousedown.stop>
                     <span class="item-content">{{ omittedValues.length }} more</span>
@@ -57,13 +55,12 @@
 </style>
 
 <script setup lang="ts">
-    import { PropType, Ref, inject, ref, watch } from "vue";
+    import { PropType, Ref, ref, watch } from "vue";
     import BaseAsyncPicker from "@Obsidian/Controls/baseAsyncPicker.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { standardAsyncPickerProps, useStandardAsyncPickerProps, useVModelPassthrough } from "@Obsidian/Utility/component";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { tooltip } from "@Obsidian/Utility/tooltip";
-    import { KeepPersonPickerOpen } from "./utils.partial";
 
     const props = defineProps({
         modelValue: {
@@ -71,7 +68,11 @@
             required: true
         },
 
-        /** Disables the entire control. */
+        /**
+         * Disables the entire control.
+         *
+         * The "show more" option is still enabled.
+         */
         disabled: {
             type: Boolean as PropType<boolean>,
             required: false,
@@ -91,29 +92,9 @@
         },
 
         /**
-         * Is the "+" button disabled?
-         *
-         * Use `disabled` for the entire control.
+         * Is the add option hidden?
          */
-        isAddButtonDisabled: {
-            type: Boolean as PropType<boolean>,
-            default: false
-        },
-
-        /**
-         * Removes all edit controls if `true`.
-         */
-        isReadonly: {
-            type: Boolean as PropType<boolean>,
-            default: false
-        },
-
-        /**
-         * Is the "Show More" button disabled?
-         *
-         * Use `disabled` for the entire control.
-         */
-        isShowMoreDisabled: {
+        isAddHidden: {
             type: Boolean as PropType<boolean>,
             default: false
         },

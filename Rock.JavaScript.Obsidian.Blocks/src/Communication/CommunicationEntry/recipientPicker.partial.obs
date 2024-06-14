@@ -1,14 +1,14 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <PopupPicker v-model="recipientListItems"
-                 :disabled="isDisabled"
+                 :disabled="disabled"
                  :getLabelTypeRef="personAliasGuid => getLabelTypeRef(findRecipient(personAliasGuid), mediumType)"
                  :getTooltipRef="personAliasGuid => getTooltipRef(findRecipient(personAliasGuid), mediumType)"
-                 :isReadonly="isReadonly"
+                 :isAddHidden="isAddHidden"
                  :label="label"
                  :rules="rules"
                  validationTitle="At least one recipient"
-                 @openPopup="onOpenPopupClicked"
+                 @openPopup="onOpenPopup"
                  @showMore="onShowMore">
         <template #itemImage="{ label, value: personAliasGuid, closable, disabled }">
             <img :src="findRecipient(personAliasGuid)?.photoUrl ?? undefined" style="border-radius: 24px; width: 24px; height: 24px" />
@@ -22,9 +22,10 @@
     <RecipientModal v-model="isRecipientModalShown"
                     :recipients="modelValue"
                     @update:recipients="$emit('update:modelValue', $event)"
+                    :disabled="disabled"
                     :getTooltipRef="getTooltipRef"
                     :isForBulkCommunication="isForBulkCommunication"
-                    :isReadonly="isReadonly" />
+                    :isAddHidden="isAddHidden" />
 </template>
 
 <script setup lang="ts">
@@ -48,12 +49,12 @@
             required: true
         },
 
-        isDisabled: {
+        disabled: {
             type: Boolean as PropType<boolean>,
             default: false
         },
 
-        isReadonly: {
+        isAddHidden: {
             type: Boolean as PropType<boolean>,
             default: false
         },
@@ -68,20 +69,18 @@
             required: false
         },
 
-        minimumRecipientCount: {
-            type: Number as PropType<number>,
-            default: 0
-        },
-
         mediumType: {
             type: String as PropType<MediumType>,
             required: true,
         },
+
+        minimumRecipientCount: {
+            type: Number as PropType<number>,
+            default: 0
+        }
     });
 
     const emit = defineEmits<{
-        /** Emits an event indicating the disabled state should be updated. */
-        (e: "update:isDisabled", value: boolean): void,
         /** Emits an event indicating the disabled state should be updated. */
         (e: "update:modelValue", value: CommunicationEntryRecipientBag[]): void,
     }>();
@@ -163,16 +162,14 @@
 
     //#region Event Handlers
 
-    async function onOpenPopupClicked(): Promise<void> {
-        if (!props.isDisabled) {
-            if (!isPersonPickerShown.value) {
-                isPersonPickerShown.value = true;
-            }
-            else {
-                isPersonPickerShown.value = false;
-                await nextTick();
-                isPersonPickerShown.value = true;
-            }
+    async function onOpenPopup(): Promise<void> {
+        if (!isPersonPickerShown.value) {
+            isPersonPickerShown.value = true;
+        }
+        else {
+            isPersonPickerShown.value = false;
+            await nextTick();
+            isPersonPickerShown.value = true;
         }
     }
 
