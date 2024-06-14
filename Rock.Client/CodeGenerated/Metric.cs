@@ -68,6 +68,9 @@ namespace Rock.Client
         public DateTime? LastRunDateTime { get; set; }
 
         /// <summary />
+        public int? MeasurementClassificationValueId { get; set; }
+
+        /// <summary />
         public int? MetricChampionPersonAliasId { get; set; }
 
         /// <summary>
@@ -149,6 +152,7 @@ namespace Rock.Client
             this.IsCumulative = source.IsCumulative;
             this.IsSystem = source.IsSystem;
             this.LastRunDateTime = source.LastRunDateTime;
+            this.MeasurementClassificationValueId = source.MeasurementClassificationValueId;
             this.MetricChampionPersonAliasId = source.MetricChampionPersonAliasId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.NumericDataType = source.NumericDataType;
@@ -176,6 +180,9 @@ namespace Rock.Client
     /// </summary>
     public partial class Metric : MetricEntity
     {
+        /// <summary />
+        public DefinedValue MeasurementClassificationValue { get; set; }
+
         /// <summary />
         public ICollection<MetricCategory> MetricCategories { get; set; }
 

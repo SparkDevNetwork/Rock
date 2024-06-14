@@ -1121,6 +1121,83 @@ namespace Rock.Client.Enums.Crm
 
 }
 
+namespace Rock.Client.Enums.Lms
+{
+    /// <summary>
+    /// </summary>
+    public enum AssignTo
+    {
+        Student = 0x0,
+        Facilitator = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum AvailableDateCalculationMethod
+    {
+        Specific = 0x0,
+        ClassStartOffset = 0x1,
+        EnrollmentOffset = 0x2,
+        AlwaysAvailable = 0x3,
+        AfterPreviousCompleted = 0x4,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum CommunicationMode
+    {
+        None = 0x0,
+        Email = 0x1,
+        SMS = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum CompletionStatus
+    {
+        Pending = 0x0,
+        Completed = 0x1,
+        Expired = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum ConfigurationMode
+    {
+        AcademicCalendar = 0x0,
+        OnDemandLearning = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum DueDateCalculationMethod
+    {
+        Specific = 0x0,
+        ClassStartOffset = 0x1,
+        EnrollmentOffset = 0x2,
+        NoDate = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum LearningCompletionStatus
+    {
+        Incomplete = 0x0,
+        Fail = 0x1,
+        Pass = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum RequirementType
+    {
+        Prerequisite = 0x0,
+        Corequisite = 0x1,
+        Equivalent = 0x2,
+    }
+
+}
+
 namespace Rock.Client.Enums.Event
 {
     /// <summary>

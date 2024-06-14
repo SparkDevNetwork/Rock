@@ -132,6 +132,10 @@
     <Compile Include="Migrations\202406091439540_AddMeasurementClassificationValueToMetric.Designer.cs">
       <DependentUpon>202406091439540_AddMeasurementClassificationValueToMetric.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202406141710127_LMSModels.cs" />
+    <Compile Include="Migrations\202406141710127_LMSModels.Designer.cs">
+      <DependentUpon>202406141710127_LMSModels.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.5\202404071458052_AddTheme.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.5\202404071458052_AddTheme.designer.cs">
       <DependentUpon>202404071458052_AddTheme.cs</DependentUpon>
@@ -2140,6 +2144,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202406091439540_AddMeasurementClassificationValueToMetric.resx">
       <DependentUpon>202406091439540_AddMeasurementClassificationValueToMetric.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202406141710127_LMSModels.resx">
+      <DependentUpon>202406141710127_LMSModels.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.5\202404071458052_AddTheme.resx">
       <DependentUpon>202404071458052_AddTheme.cs</DependentUpon>

@@ -44,6 +44,11 @@ namespace Rock.SystemGuid
         public const string GROUPTYPE_KNOWN_RELATIONSHIPS = "E0C5A0E2-B7B3-4EF4-820D-BBF7F9A374EF";
 
         /// <summary>
+        /// Learning Management System (LMS) Class group type guid
+        /// </summary>
+        public const string GROUPTYPE_LMS_CLASS = "4BBC41E2-0A37-4289-B7A7-756B9FE8F775";
+
+        /// <summary>
         /// Peer network group type guid
         /// </summary>
         public const string GROUPTYPE_PEER_NETWORK = "8C0E5852-F08F-4327-9AA5-87800A6AB53E";
