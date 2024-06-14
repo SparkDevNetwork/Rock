@@ -8,48 +8,46 @@
                 <HighlightLabel :labelType="statusLabelCssClass">{{ statusLabel }}</HighlightLabel>
             </template>
 
-            <!-- TODO JMH Remove this drawer-->
-            <template v-if="true" #drawer>
-                <JmhTestPartial :attachments="config.communication?.emailAttachmentBinaryFiles" v-model:recipients="recipients"></JmhTestPartial>
-            </template>
-
             <template #default>
                 <div v-if="!areResultsShown">
-                    <PanelNavigationBar v-model="selectedMediumEntityTypeGuidOrEmptyString"
-                                        :disabled="disabled"
-                                        :isFirstSelectedByDefault="true"
-                                        :items="mediums" />
+                    <TabbedBar v-if="mediums.length > 1"
+                               v-model="selectedMediumEntityTypeGuidOrEmptyString"
+                               :disabled="disabled"
+                               type="tabs"
+                               :tabs="mediums" />
 
-                    <KeepAlive v-if="selectedMediumEntityTypeGuidOrEmptyString && config.communication && config.mediumOptions">
-                        <Email v-if="selectedMedium === 'email'"
-                               v-model:disabled="disabled"
-                               v-model:recipients="recipients"
-                               v-model:isBulkCommunication="isBulkCommunication"
-                               v-model:scheduleSendIsoString="scheduleSendIsoString"
-                               @saved="onSentOrSaved"
-                               @sent="onSentOrSaved" />
+                    <div class="tabbed-content mt-4">
+                        <KeepAlive v-if="selectedMediumEntityTypeGuidOrEmptyString && config.communication && config.mediumOptions">
+                            <Email v-if="selectedMedium === 'email'"
+                                   v-model:disabled="disabled"
+                                   v-model:recipients="recipients"
+                                   v-model:isBulkCommunication="isBulkCommunication"
+                                   v-model:scheduleSendIsoString="scheduleSendIsoString"
+                                   @saved="onSentOrSaved"
+                                   @sent="onSentOrSaved" />
 
-                        <Sms v-else-if="selectedMedium === 'sms'"
-                             v-model:disabled="disabled"
-                             v-model:recipients="recipients"
-                             v-model:isBulkCommunication="isBulkCommunication"
-                             v-model:scheduleSendIsoString="scheduleSendIsoString"
-                             @saved="onSentOrSaved"
-                             @sent="onSentOrSaved" />
+                            <Sms v-else-if="selectedMedium === 'sms'"
+                                 v-model:disabled="disabled"
+                                 v-model:recipients="recipients"
+                                 v-model:isBulkCommunication="isBulkCommunication"
+                                 v-model:scheduleSendIsoString="scheduleSendIsoString"
+                                 @saved="onSentOrSaved"
+                                 @sent="onSentOrSaved" />
 
-                        <PushNotification v-else-if="selectedMedium === 'push'"
-                                          :isFullMode="config.mode === Mode.Full" />
+                            <PushNotification v-else-if="selectedMedium === 'push'"
+                                              :isFullMode="config.mode === Mode.Full" />
 
-                        <div v-else>
-                            Unknown communication medium (Guid: {{ selectedMediumEntityTypeGuidOrEmptyString }}).
-                            Options are
-                            <ul>
-                                <li>{{ EntityType.CommunicationMediumEmail }}</li>
-                                <li>{{ EntityType.CommunicationMediumSms }}</li>
-                                <li>{{ EntityType.CommunicationMediumPushNotification }}</li>
-                            </ul>
-                        </div>
-                    </KeepAlive>
+                            <div v-else>
+                                Unknown communication medium (Guid: {{ selectedMediumEntityTypeGuidOrEmptyString }}).
+                                Options are
+                                <ul>
+                                    <li>{{ EntityType.CommunicationMediumEmail }}</li>
+                                    <li>{{ EntityType.CommunicationMediumSms }}</li>
+                                    <li>{{ EntityType.CommunicationMediumPushNotification }}</li>
+                                </ul>
+                            </div>
+                        </KeepAlive>
+                    </div>
                 </div>
 
                 <div v-else
@@ -69,25 +67,24 @@
 <script setup lang="ts">
     import { computed, provide, ref } from "vue";
     import BreakpointObserver from "./CommunicationEntry/breakpointObserver.partial.obs";
-    import PanelNavigationBar from "./CommunicationEntry/panelNavigationBar.partial.obs";
+    import Email from "./CommunicationEntry/communicationMediumEmail.partial.obs";
+    import PushNotification from "./CommunicationEntry/communicationMediumPushNotification.partial.obs";
+    import Sms from "./CommunicationEntry/communicationMediumSms.partial.obs";
+    import { MediumType } from "./CommunicationEntry/types.partial";
+    import { KeepPersonPickerOpen, provideSelectedMediumType } from "./CommunicationEntry/utils.partial";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
+    import TabbedBar from "@Obsidian/Controls/tabbedBar.obs";
     import { CommunicationStatus, CommunicationStatusDescription } from "@Obsidian/Enums/Communication/communicationStatus";
     import { Mode } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntry/mode";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
+    import { areEqual } from "@Obsidian/Utility/guid";
     import { CommunicationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryInitializationBox";
+    import { CommunicationEntryRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryRecipientBag";
     import { CommunicationEntrySendResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySendResponseBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import Email from "./CommunicationEntry/communicationMediumEmail.partial.obs";
-    import Sms from "./CommunicationEntry/communicationMediumSms.partial.obs";
-    import PushNotification from "./CommunicationEntry/communicationMediumPushNotification.partial.obs";
-    import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import { areEqual } from "@Obsidian/Utility/guid";
-    import { CommunicationEntryRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryRecipientBag";
-    import { KeepPersonPickerOpen, provideSelectedMediumType } from "./CommunicationEntry/utils.partial";
-    import { MediumType } from "./CommunicationEntry/types.partial";
-    import JmhTestPartial from "./CommunicationEntry/jmhTest.partial.obs";
 
     const config = useConfigurationValues<CommunicationEntryInitializationBox>();
     const reloadBlock = useReloadBlock();
@@ -100,7 +97,7 @@
     const status = ref<CommunicationStatus>(config.communication?.status ?? CommunicationStatus.Draft);
     const sentResultsDiv = ref<HTMLElement | undefined>();
     const mediums = computed<ListItemBag[]>(() => config.mediums ?? []);
-    const selectedMediumEntityTypeGuidOrEmptyString = ref<string>("");
+    const selectedMediumEntityTypeGuidOrEmptyString = ref<string>(mediums.value[0]?.value ?? "");
     const resultMessage = ref<string | null | undefined>("");
     const viewCommunicationUrl = ref<string>("#");
     const disabled = ref<boolean>(false);

@@ -394,7 +394,6 @@
         try {
             disable("Sending communication...");
 
-            // TODO JMH Implement.
             const bag: CommunicationEntrySendRequestBag = {
                 communicationGuid: communicationGuid.value,
                 isBulkCommunication: internalIsBulkCommunication.value,
