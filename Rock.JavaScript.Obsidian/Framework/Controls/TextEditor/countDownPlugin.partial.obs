@@ -1,12 +1,14 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <em class="pull-right badge" :class="countDownClass">
+    <Badge class="pull-right" :badgeType="badgeType">
         {{ countDownCharsRemaining }}
-    </em>
+    </Badge>
 </template>
 
 <script setup lang="ts">
     import { PropType, computed } from "vue";
+    import Badge from "@Obsidian/Controls/badge.obs";
+    import { BadgeType } from "@Obsidian/Enums/Controls/badgeType";
 
     const props = defineProps({
         modelValue: {
@@ -32,16 +34,16 @@
         return props.countDownMaxChars - props.modelValue.length;
     });
 
-    const countDownClass = computed((): string => {
+    const badgeType = computed<BadgeType | undefined>(() => {
         if (countDownCharsRemaining.value >= 10) {
-            return "badge-default";
+            return;
         }
 
         if (countDownCharsRemaining.value >= 0) {
-            return "badge-warning";
+            return BadgeType.Warning;
         }
 
-        return "badge-danger";
+        return BadgeType.Danger;
     });
 
     //#endregion
