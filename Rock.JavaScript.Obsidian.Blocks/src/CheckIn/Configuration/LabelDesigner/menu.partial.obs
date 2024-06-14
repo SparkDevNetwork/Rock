@@ -62,7 +62,7 @@
 
             <ControlButton icon="fa fa-id-badge"
                            title="Attendee Photo"
-                           :type="0" />
+                           :type="LabelFieldType.AttendeePhoto" />
 
             <ControlButton icon="fa fa-qrcode"
                            title="Barcode"

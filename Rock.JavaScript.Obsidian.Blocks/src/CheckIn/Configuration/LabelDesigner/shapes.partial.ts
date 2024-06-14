@@ -330,7 +330,7 @@ export function createShapeForFieldType(fieldType: LabelFieldType): Konva.Group 
     else if (fieldType === LabelFieldType.Ellipse) {
         return new Ellipse();
     }
-    else if (fieldType === LabelFieldType.Icon || fieldType === LabelFieldType.Image || fieldType === LabelFieldType.Barcode) {
+    else if (fieldType === LabelFieldType.Icon || fieldType === LabelFieldType.Image) {
         const img = new window.Image(1, 1);
 
         const image = new Konva.Image({
@@ -348,6 +348,41 @@ export function createShapeForFieldType(fieldType: LabelFieldType): Konva.Group 
         });
 
         return image;
+    }
+    else if (fieldType === LabelFieldType.AttendeePhoto) {
+        const shape = new Konva.Text();
+
+        shape.align("center");
+        shape.verticalAlign("middle");
+        shape.fontFamily("FontAwesome");
+        shape.fontSize(12);
+        shape.fontStyle("400");
+        shape.text("\uF2C1");
+
+        shape.on("widthChange heightChange", () => {
+            // Certain pixel sizes cause an overflow which hides the icon, so
+            // make it a tiny bit smaller to prevent that.
+            shape.fontSize(Math.min(shape.width() * 0.95, shape.height() * 0.95));
+        });
+
+        return shape;
+    }
+    else if (fieldType === LabelFieldType.Barcode) {
+        const shape = new Konva.Text();
+
+        shape.align("center");
+        shape.verticalAlign("middle");
+        shape.fontFamily("FontAwesome");
+        shape.fontSize(12);
+        shape.fontStyle("900");
+
+        shape.on("widthChange heightChange", () => {
+            // Certain pixel sizes cause an overflow which hides the icon, so
+            // make it a tiny bit smaller to prevent that.
+            shape.fontSize(Math.min(shape.width() * 0.95, shape.height() * 0.95));
+        });
+
+        return shape;
     }
 
     return undefined;
@@ -388,7 +423,11 @@ export function updateShapeFromField(shape: Konva.Shape | Konva.Group, field: La
         updateImageShapeFromField(shape, field, surface);
         return true;
     }
-    else if (field.fieldType === LabelFieldType.Barcode && shape instanceof Konva.Image) {
+    else if (field.fieldType === LabelFieldType.AttendeePhoto && shape instanceof Konva.Text) {
+        updateAttendeePhotoShapeFromField(shape, field, surface);
+        return true;
+    }
+    else if (field.fieldType === LabelFieldType.Barcode && shape instanceof Konva.Text) {
         updateBarcodeShapeFromField(shape, field, surface);
         return true;
     }
@@ -618,12 +657,26 @@ function updateImageShapeFromField(shape: Konva.Image, field: LabelFieldBag, sur
 }
 
 /**
+ * Updates the attendee photo shape with data from the field.
+ *
+ * @param shape The shape to be updated.
+ * @param field The field to use as the source of truth.
+ */
+function updateAttendeePhotoShapeFromField(shape: Konva.Text, field: LabelFieldBag, surface: Surface): void {
+    // Update the position of the shape.
+    shape.x(surface.getPixelForOffset(field.left));
+    shape.y(surface.getPixelForOffset(field.top));
+    shape.width(surface.getPixelForOffset(field.width));
+    shape.height(surface.getPixelForOffset(field.height));
+}
+
+/**
  * Updates the barcode shape with data from the field.
  *
  * @param shape The shape to be updated.
  * @param field The field to use as the source of truth.
  */
-function updateBarcodeShapeFromField(shape: Konva.Image, field: LabelFieldBag, surface: Surface): void {
+function updateBarcodeShapeFromField(shape: Konva.Text, field: LabelFieldBag, surface: Surface): void {
     const config = field.configurationValues ?? {} as StringRecord<BarcodeFieldConfigurationBag>;
 
     // Update the position of the shape.
@@ -632,14 +685,11 @@ function updateBarcodeShapeFromField(shape: Konva.Image, field: LabelFieldBag, s
     shape.width(surface.getPixelForOffset(field.width));
     shape.height(surface.getPixelForOffset(field.height));
 
-    const currentImage = shape.image() as HTMLImageElement;
-    const src = config.format === BarcodeFormat.Code128.toString()
-        ? code128Icon
-        : qrcodeIcon;
-
-    // Update configured values.
-    if (currentImage.src !== src) {
-        currentImage.src = src;
+    if (config.format === BarcodeFormat.Code128.toString()) {
+        shape.text("\uF02A");
+    }
+    else {
+        shape.text("\uF029");
     }
 }
 
