@@ -17,8 +17,9 @@
     import { getToolbarButton } from "./utils.partial";
     import MergeFieldPicker from "@Obsidian/Controls/mergeFieldPicker.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
-    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { Editor, Ui } from "@Obsidian/Libs/tinymce";
+    import { formatValue } from "@Obsidian/Utility/mergeField";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
         mergeFields: {
@@ -101,13 +102,15 @@
     //#region Event Handlers
 
     /** Event handler for a merge field being picked. */
-    function onMergeFieldPicked(): void {
+    async function onMergeFieldPicked(): Promise<void> {
         if (props.tinyMceInstance) {
             const mergeField = mergeFieldValue.value;
 
             if (mergeField?.value) {
+                const formattedValue = await formatValue(mergeField.value);
+
                 // Insert the merge field value into the editor at the current position.
-                props.tinyMceInstance.insertContent(`{{ ${mergeField.value} }}`);
+                props.tinyMceInstance.insertContent(formattedValue);
             }
         }
 

@@ -123,11 +123,6 @@ namespace Rock
         /// Changes made to the database are not saved until you call <see cref="DbContext.SaveChanges()"/>.
         /// </para>
         /// <para>
-        /// To follow consistent naming conventions, the <typeparamref name="TSettings"/> <see cref="System.Type"/> name
-        /// must have a suffix of "Settings" (i.e. "SiteSettings", "TriumphAnalyticsSettings"). If this pattern isn't followed,
-        /// <see cref="IHasAdditionalSettings.AdditionalSettingsJson"/> will not be modified.
-        /// </para>
-        /// <para>
         /// If the provided <paramref name="categorySettings"/> object serialization fails, <see cref="IHasAdditionalSettings.AdditionalSettingsJson"/>
         /// will not be modified.
         /// </para>
@@ -156,11 +151,6 @@ namespace Rock
         /// Changes made to the database are not saved until you call <see cref="DbContext.SaveChanges()"/>.
         /// </para>
         /// <para>
-        /// To follow consistent naming conventions, the <paramref name="categoryKey"/> must have a suffix of
-        /// "Settings" (i.e. "SiteSettings", "TriumphAnalyticsSettings"). If this pattern isn't followed,
-        /// <see cref="IHasAdditionalSettings.AdditionalSettingsJson"/> will not be modified.
-        /// </para>
-        /// <para>
         /// If the provided <paramref name="categorySettings"/> object serialization fails, <see cref="IHasAdditionalSettings.AdditionalSettingsJson"/>
         /// will not be modified.
         /// </para>
@@ -179,7 +169,7 @@ namespace Rock
         [RockInternal( "1.16.4" )]
         public static void SetAdditionalSettings( this IHasAdditionalSettings settings, string categoryKey, object categorySettings )
         {
-            if ( categoryKey.IsNullOrWhiteSpace() || !categoryKey.EndsWith( "Settings" ) || categorySettings == null )
+            if ( categoryKey.IsNullOrWhiteSpace() || categorySettings == null )
             {
                 return;
             }

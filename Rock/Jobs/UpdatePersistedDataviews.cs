@@ -213,7 +213,7 @@ namespace Rock.Jobs
 
             if ( exceptions.Any() )
             {
-                var exceptionList = new AggregateException( "One or more exceptions occurred in RockCleanup.", exceptions );
+                var exceptionList = new AggregateException( "One or more exceptions occurred in Update Persisted Dataviews.", exceptions );
                 throw new RockJobWarningException( "Update Persisted Dataviews completed with warnings", exceptionList );
             }
         }

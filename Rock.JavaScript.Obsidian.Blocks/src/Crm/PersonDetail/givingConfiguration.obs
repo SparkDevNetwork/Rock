@@ -1,0 +1,546 @@
+<template>
+    <div>
+        <Panel :visible="config?.isVisible" title="Giving Configuration">
+            <template #default>
+                <!-- Add One-time Gift Button -->
+                <div class="panel-body">
+                    <button class="btn btn-default btn-sm btn-block mb-3" @click.prevent="addTransaction">
+                        Add One-time Gift
+                    </button>
+                </div>
+
+                <hr class="separator" />
+
+                <!-- Text-To-Give Settings -->
+                <div class="panel-body mb-2">
+                    <div class="row">
+                        <div class="col-sm-10">
+                            <h5 class="my-0">Text-To-Give Settings</h5>
+                        </div>
+                        <div class="col-sm-2">
+                            <button class="btn btn-default btn-square btn-xs pull-right" @click.prevent="toggleEditTextToGive">
+                                <i class="fa fa-pencil"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div v-if="!isEditingTextToGive">
+                        <div class="row">
+                            <div class="col-md-6 col-sm-12">
+                                <strong class="d-block text-sm">Default Account</strong>
+                                <span class="d-block text-sm text-muted margin-b-sm">{{ defaultAccount }}</span>
+                            </div>
+                            <div class="col-md-6 col-sm-12">
+                                <strong class="d-block text-sm">Saved Account</strong>
+                                <span class="d-block text-sm text-muted">{{ savedAccount }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div v-else>
+                        <RockForm @submit="saveTextToGive">
+                            <div class="row margin-t-sm">
+                                <div class="col-md-5 col-sm-12">
+                                    <AccountPicker v-model="selectedFinancialAccount" label="Default Account" />
+                                </div>
+                                <div class="col-md-7 col-sm-12">
+                                    <RockDropDownList v-model="selectedSavedAccount" label="Saved Account" :items="savedAccountOptions" placeholder="Select Saved Account" />
+                                </div>
+                            </div>
+                            <div>
+                                <button class="btn btn-sm btn-primary" type="submit">Save</button>
+                                <button class="btn btn-sm btn-link" type="button" @click.prevent="cancelTextToGive">Cancel</button>
+                            </div>
+                        </RockForm>
+                    </div>
+                </div>
+
+                <hr class="separator" />
+
+                <!-- Scheduled Transactions -->
+                <div class="panel-body mb-2">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <h5 class="my-0">Scheduled Transactions</h5>
+                        <button class="text-sm showinactive" @click.prevent="toggleShowInactive">
+                            {{ showInactiveText }}
+                        </button>
+                    </div>
+                    <table class="table table-inline">
+                        <tbody>
+                            <tr v-for="transaction in scheduledTransactions" :key="transaction.id" class="rollover-container-nested">
+                                <td class="pl-0 py-4">
+                                    <strong class="d-block text-sm">{{ transaction.accountSummary?.join(', ') }}</strong>
+                                    <span class="d-block text-sm text-muted">{{ transaction.frequencyText }} {{ transaction.nextPaymentDate ? `| Next Gift ${formatDate(transaction.nextPaymentDate)}` : '' }}</span>
+                                    <span class="d-block text-sm text-muted">
+                                        <span v-if="transaction?.financialPaymentDetail?.currencyType">{{ transaction.financialPaymentDetail?.creditCardType }} - {{ transaction.financialPaymentDetail?.accountNumberMasked?.substr(-4) }} | Exp: {{ transaction.financialPaymentDetail?.expirationDate }}</span>
+                                        <span v-else>{{ transaction?.financialPaymentDetail?.currencyType }}</span>
+                                    </span>
+                                    <span class="d-block text-sm text-muted">
+                                        <span v-if="transaction.savedAccountName">{{ transaction.savedAccountName }}</span>
+                                    </span>
+                                </td>
+                                <td class="text-right pr-0 py-4">
+                                    <span class="d-block">
+                                        <span class="text-xs text-warning text-nowrap" v-if="!transaction.isActive">
+                                            Inactive
+                                        </span>
+                                    </span>
+                                    <span class="scheduled-total font-weight-semibold text-sm d-block">
+                                        {{ toCurrencyOrNull(transaction.totalAmount) }}
+                                    </span>
+                                    <div class="rollover-item d-flex mt-3">
+                                        <button class="btn btn-sm btn-link text-muted py-0 px-1" @click.prevent="editScheduledTransaction(transaction)">
+                                            <i class="fa fa-pencil"></i>
+                                        </button>
+                                        <button v-if="transaction.isActive && transaction.financialPaymentDetail?.creditCardType" class="btn btn-sm btn-link text-muted py-0 px-1 ml-1 js-inactivate-scheduled-transaction" @click.prevent="inactivateScheduledTransaction(transaction)">
+                                            <i class="fa fa-times"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <button class="btn btn-default btn-square btn-xs mt-3 pull-right" type="button" @click.prevent="addScheduledTransaction">
+                                <i class="fa fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="separator" />
+
+                <!-- Saved Accounts -->
+                <div class="panel-body mb-3">
+                    <h5 class="my-0">
+                        Saved Accounts
+                    </h5>
+                    <table class="table table-inline table-hide-last-border">
+                        <tbody>
+                            <tr v-for="account in savedAccounts" :key="'account' + account.id" class="rollover-container-nested">
+                                <td class="pl-0 py-4">
+                                    <strong class="d-block text-sm">
+                                        {{ account.name }}
+                                    </strong>
+                                    <span class="d-block text-sm text-muted">
+                                        <span v-if="account.financialPaymentDetail?.currencyType">
+                                            {{ account.financialPaymentDetail.creditCardType }} - {{ account.financialPaymentDetail.accountNumberMasked?.substr(-4) }} | Exp: {{ account.financialPaymentDetail.expirationDate }}
+                                        </span>
+                                        <span v-else>
+                                            {{ account.financialPaymentDetail?.currencyType }}
+                                        </span>
+                                    </span>
+                                </td>
+                                <td class="text-right pr-0 py-4">
+                                    <div v-if="account.lastErrorCode" class="text-danger">
+                                        {{ `Error: ${account.lastErrorCode} on ${account.lastErrorCodeDateTime}` }}
+                                    </div>
+                                    <div v-else-if="accountIsInUse(account.id.toString())" class="text-success text-xs">
+                                        In Use
+                                    </div>
+                                    <div v-else-if="account.isDefault" class="text-muted text-xs">
+                                        Default
+                                    </div>
+                                    <div v-else class="text-muted text-xs">
+                                        Not In Use
+                                    </div>
+                                    <div class="rollover-item">
+                                        <button v-if="!account.isDefault && !accountIsInUse(account.id.toString())" class="btn btn-sm btn-link text-muted py-0 px-1 js-delete-saved-account" @click.prevent="deleteSavedAccount(account)">
+                                            <i class="fa fa-times"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <hr class="separator" />
+
+                <!-- Pledges -->
+                <div class="panel-body mb-3">
+                    <h5 class="my-0">
+                        Pledges
+                    </h5>
+                    <table class="table table-inline">
+                        <tbody>
+                            <tr v-for="pledge in pledges" :key="pledge.guid" class="rollover-container-nested">
+                                <td class="pl-0 py-4">
+                                    <span class="d-block text-sm">
+                                        <strong v-if="!pledge.startDate && !pledge.endDate">
+                                            No Dates Provided
+                                        </strong>
+                                        <strong v-else-if="pledge.startDate && pledge.endDate">
+                                            {{ formatDate(pledge.startDate) }} {{ calculateDuration(pledge.startDate, pledge.endDate) }}
+                                        </strong>
+                                    </span>
+                                    <span class="d-block text-sm text-muted">
+                                        {{ pledge.account?.publicName }}{{ pledge.pledgeFrequencyValueId ? ` | ${pledge.pledgeFrequencyValue}` : '' }}
+                                    </span>
+                                </td>
+                                <td class="text-right pr-0 py-4">
+                                    <span class="scheduled-total font-weight-semibold text-sm d-block">
+                                        {{ toCurrencyOrNull(pledge.totalAmount) }}
+                                    </span>
+                                    <div class="rollover-item d-flex justify-content-end">
+                                        <button class="btn btn-sm btn-link text-muted py-0 px-1" @click.prevent="editPledge(pledge)">
+                                            <i class="fa fa-pencil"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-link text-muted py-0 px-1 ml-1 js-delete-pledge" @click.prevent="deletePledge(pledge)">
+                                            <i class="fa fa-times"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <button class="btn btn-default btn-square btn-xs mt-3 pull-right" @click.prevent="addPledge">
+                                <i class="fa fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="separator" />
+
+                <!-- Contribution Statements -->
+                <div class="panel-body  border-panel">
+                    <h5 class="mt-0 mb-3">
+                        Contribution Statements
+                    </h5>
+                    <div>
+                        <button v-for="statement in contributionStatements" :key="statement.year" class="btn btn-sm btn-default m-1" @click.prevent="viewContributionStatement(statement)">
+                            {{ statement.isCurrentYear ? `${statement.year} YTD` : statement.year }}
+                        </button>
+                    </div>
+                </div>
+            </template>
+        </Panel>
+    </div>
+</template>
+
+<style scoped>
+.panel-heading {
+    background-color: #f5f5f5;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.panel-title {
+    font-size: 1.25em;
+    margin: 0;
+}
+
+.rollover-container-nested {
+    transition: background-color 0.3s;
+}
+
+.rollover-container-nested:hover {
+    background-color: #ffffff;
+}
+
+.btn-link {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.btn-link:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+.seperator {
+    margin-top: 2px;
+    margin-bottom: 24px;
+    border: 0;
+    border-top: 1px solid #dfe0e1;
+    width: 100%;
+}
+
+.showinactive {
+    background-color: white;
+    border: none;
+    color: #006dcc;
+}
+
+.panel-body {
+    padding: 2px;
+}
+
+.separator {
+    margin-top: 2px;
+    margin-bottom: 24px;
+    border: 0;
+    border-top: 1px solid #eee;
+    width: calc(100% + 40px);
+    margin-left: -20px;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import { useInvokeBlockAction, useConfigurationValues, onConfigurationValuesChanged } from "@Obsidian/Utility/block";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ContributionStatementBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/GivingConfiguration/contributionStatementBag";
+    import { FinancialPersonSavedAccountBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/GivingConfiguration/financialPersonSavedAccountBag";
+    import { FinancialPledgeBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/GivingConfiguration/financialPledgeBag";
+    import { FinancialScheduledTransactionBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/GivingConfiguration/financialScheduledTransactionBag";
+    import { GivingConfigurationInitializationBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/GivingConfiguration/givingConfigurationInitializationBag";
+    import { TextToGiveSettingsBag } from "@Obsidian/ViewModels/Blocks/Crm/PersonDetail/GivingConfiguration/textToGiveSettingsBag";
+    import AccountPicker from "@Obsidian/Controls/accountPicker.obs";
+    import RockDropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { NavigationUrlKey, PageParameterKey } from "./types.partial";
+    import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
+    import { confirm, confirmDelete } from "@Obsidian/Utility/dialogs";
+
+    // #region Values
+
+    const config = useConfigurationValues<GivingConfigurationInitializationBag>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const isEditingTextToGive = ref(false);
+    const selectedFinancialAccount = ref<ListItemBag>({});
+    const selectedSavedAccount = ref<string>("");
+    const scheduledTransactions = ref(config?.scheduledTransactions || []);
+    const savedAccounts = ref(config?.savedAccounts || []);
+    const pledges = ref(config?.pledges || []);
+    const contributionStatements = ref(config?.contributionStatements || []);
+    const showInactive = ref(false);
+    const defaultAccount = ref(config?.defaultFinancialAccount?.publicName || "None");
+    const savedAccount = ref(config?.defaultSavedAccountName);
+
+    // #endregion
+
+    // #region Computed Values
+    const showInactiveText = computed(() => showInactive.value ? "Hide Inactive" : "Show Inactive");
+
+    const savedAccountOptions = computed(() => savedAccounts.value.map(account => {
+        const expirationDate = account.financialPaymentDetail?.expirationDate ? ` (${account.financialPaymentDetail.expirationDate})` : "";
+        return {
+            text: `${account.name}${expirationDate}`,
+            value: account.id.toString()
+        };
+    }));
+
+    // #endregion
+
+    // #region Functions
+
+    async function toggleEditTextToGive(): Promise<void> {
+        // Set the initial values when entering edit mode:
+        if (!isEditingTextToGive.value) {
+            selectedFinancialAccount.value = config?.defaultFinancialAccount ? { value: config.defaultFinancialAccount.id.toString(), text: config.defaultFinancialAccount.publicName } : {};
+            selectedSavedAccount.value = config?.defaultSavedAccount?.id.toString() || "";
+        }
+
+        isEditingTextToGive.value = !isEditingTextToGive.value;
+    }
+
+    async function saveTextToGive(): Promise<void> {
+        const settings: TextToGiveSettingsBag = {
+            selectedFinancialAccountId: selectedFinancialAccount.value?.value,
+            selectedSavedAccountId: selectedSavedAccount.value
+        };
+
+        const result = await invokeBlockAction("SaveTextToGiveSettings", { settings });
+
+        if (result.isSuccess) {
+            isEditingTextToGive.value = false;
+            await loadTextToGiveDetails();
+        }
+    }
+
+    async function loadTextToGiveDetails(): Promise<void> {
+        const result = await invokeBlockAction("GetTextToGiveDetails");
+
+        if (result.isSuccess) {
+            const data = result.data as { defaultAccountName: string; savedAccountName: string; defaultFinancialAccountGuid: string; savedAccountId: string };
+            defaultAccount.value = data.defaultAccountName;
+            savedAccount.value = data.savedAccountName;
+            // Set values for dropdowns
+            selectedFinancialAccount.value = data.defaultFinancialAccountGuid ? { value: data.defaultFinancialAccountGuid, text: data.defaultAccountName } : {};
+            selectedSavedAccount.value = data.savedAccountId ? data.savedAccountId : "";
+
+        }
+    }
+
+    async function cancelTextToGive(): Promise<void> {
+        isEditingTextToGive.value = false;
+        await loadTextToGiveDetails();
+    }
+
+    async function loadScheduledTransactions(): Promise<void> {
+        const result = await invokeBlockAction<FinancialScheduledTransactionBag[]>("GetScheduledTransactions", { includeInactive: showInactive.value });
+
+        if (result.isSuccess) {
+            scheduledTransactions.value = result.data || [];
+        }
+    }
+
+    async function inactivateScheduledTransaction(transaction: FinancialScheduledTransactionBag): Promise<void> {
+        if (!await confirm("Are you sure you want to inactivate this scheduled transaction?")) {
+            return;
+        }
+
+        const result = await invokeBlockAction("InactivateScheduledTransaction", { scheduledTransactionGuid: transaction.guid });
+
+        if (result.isSuccess) {
+            loadScheduledTransactions();
+        }
+    }
+
+    async function loadPledges(): Promise<void> {
+        const result = await invokeBlockAction<FinancialPledgeBag[]>("GetPledges");
+
+        if (result.isSuccess) {
+            pledges.value = (result.data || []).map(pledge => {
+                pledge.startDate = pledge.startDate === "0001-01-01T00:00:00-07:00" ? null : pledge.startDate;
+                pledge.endDate = pledge.endDate === "9999-12-31T00:00:00-07:00" ? null : pledge.endDate;
+                return pledge;
+            });
+        }
+    }
+
+    async function deletePledge(pledge: FinancialPledgeBag): Promise<void> {
+        const result = await invokeBlockAction("DeletePledge", { pledgeGuid: pledge.guid });
+
+        if (result.isSuccess) {
+            loadPledges();
+        }
+    }
+
+    async function loadContributionStatements(): Promise<void> {
+        const result = await invokeBlockAction<ContributionStatementBag[]>("GetContributionStatements");
+
+        if (result.isSuccess) {
+            contributionStatements.value = result.data || [];
+        }
+    }
+
+    async function deleteSavedAccount(account: FinancialPersonSavedAccountBag): Promise<void> {
+        if (!await confirmDelete("saved account")) {
+            return;
+        }
+
+        const result = await invokeBlockAction("DeleteSavedAccount", { savedAccountGuid: account.guid });
+
+        if (result.isSuccess) {
+            savedAccounts.value = savedAccounts.value.filter(sa => sa.id !== account.id);
+        }
+    }
+
+    function formatDate(dateString): string {
+        const date = new Date(dateString);
+        const day = date.getDate();
+        const month = date.getMonth() + 1;
+        const year = date.getFullYear();
+        return `${month}/${day}/${year}`;
+    }
+
+    function accountIsInUse(accountId: string | null | undefined): boolean {
+        return scheduledTransactions.value.some(transaction => transaction.id === parseInt(accountId || ""));
+    }
+
+    function toggleShowInactive(): void {
+        showInactive.value = !showInactive.value;
+        loadScheduledTransactions();
+    }
+
+    function viewContributionStatement(statement): void {
+        const baseUrl = config.navigationUrls?.[NavigationUrlKey.ContributionStatementDetailPage];
+        const separator = baseUrl?.includes("?") ? "&" : "?";
+        const contributionStatementPageUrl = `${baseUrl}${separator}${PageParameterKey.StatementYear}=${statement.year}`;
+
+        if (contributionStatementPageUrl) {
+            window.location.href = contributionStatementPageUrl;
+        }
+    }
+
+    function addTransaction(): void {
+        const addTransactionPageUrl = config.navigationUrls?.[NavigationUrlKey.AddTransactionPage];
+
+        if (addTransactionPageUrl) {
+            window.location.href = addTransactionPageUrl;
+        }
+    }
+
+    function addScheduledTransaction(): void {
+        const addTransactionPageUrl = config.navigationUrls?.[NavigationUrlKey.AddTransactionPage];
+
+        if (addTransactionPageUrl) {
+            window.location.href = addTransactionPageUrl;
+        }
+    }
+
+    function editScheduledTransaction(transaction: FinancialScheduledTransactionBag): void {
+        const editScheduledTransactionPageUrl = `${config?.navigationUrls?.[NavigationUrlKey.ScheduledTransactionDetailPage]}${transaction.guid}` ?? "";
+
+        if (editScheduledTransactionPageUrl) {
+            window.location.href = editScheduledTransactionPageUrl;
+        }
+    }
+
+    function addPledge(): void {
+        const addPledgePageUrl = config.navigationUrls?.[NavigationUrlKey.PledgeDetailPage];
+
+        if (addPledgePageUrl) {
+            window.location.href = addPledgePageUrl;
+        }
+    }
+
+    function editPledge(pledge: FinancialPledgeBag): void {
+        const baseUrl = config.navigationUrls?.[NavigationUrlKey.PledgeDetailPage];
+        if (baseUrl) {
+            const queryParams = new URLSearchParams();
+            queryParams.append(PageParameterKey.PledgeId, pledge.id.toString());
+            if (config?.personActionIdentifierPledge) {
+                queryParams.append(PageParameterKey.PersonActionIdentifier, config.personActionIdentifierPledge);
+            }
+            queryParams.append(PageParameterKey.AutoEdit, "true");
+            queryParams.append(PageParameterKey.ReturnUrl, window.location.href);
+            const editPledgePageUrl = `${baseUrl}?${queryParams.toString()}`;
+            window.location.href = editPledgePageUrl;
+        }
+    }
+
+    function calculateDuration(startDate, endDate): string {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        const differenceInTime = end.getTime() - start.getTime();
+        const differenceInDays = differenceInTime / (1000 * 3600 * 24);
+
+        if (differenceInDays < 7) {
+            return `${differenceInDays} days`;
+        }
+        else {
+            const differenceInWeeks = Math.round(differenceInDays / 7);
+            return `${differenceInWeeks} weeks`;
+        }
+    }
+
+    onConfigurationValuesChanged(async () => {
+        await loadTextToGiveDetails();
+        await loadScheduledTransactions();
+        await loadPledges();
+        await loadContributionStatements();
+    });
+
+    async function onInit(): Promise<void> {
+        await loadTextToGiveDetails();
+        await loadScheduledTransactions();
+        await loadPledges();
+        await loadContributionStatements();
+    }
+
+    onInit();
+
+        // #endregion
+
+</script>
+
+

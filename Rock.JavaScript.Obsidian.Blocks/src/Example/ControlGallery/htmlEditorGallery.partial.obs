@@ -37,6 +37,7 @@
     const editorHeight = ref(600);
     const mergeFields = ref([
         "GlobalAttribute",
+        "Rock.Model.Person",
         "Rock.Model.Person|Custom Person Label",
         "MergeField1",
         "MergeFieldWithCustomLabel|Custom Label"
