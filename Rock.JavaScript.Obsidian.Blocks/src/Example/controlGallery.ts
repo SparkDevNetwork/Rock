@@ -28,7 +28,7 @@
  * - geoPickerMap
  * - grid
  * - gridColumn
- * - gridProfileLInkColumn
+ * - gridProfileLinkColumn
  * - gridRow
  * - gridSelectColumn
  * - myWellGatewayControl

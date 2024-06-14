@@ -29,7 +29,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// LearningGradingSystems REST API
     /// </summary>
-    [RestControllerGuid( "CF7A5C9F-C35C-4E47-9B29-8E0D360641ED" )]
+    [RestControllerGuid( "1FEB9AAA-0823-4B5B-A5C6-BBAF1D15485A" )]
     public partial class LearningGradingSystemsController : Rock.Rest.ApiController<Rock.Model.LearningGradingSystem>
     {
         /// <summary>

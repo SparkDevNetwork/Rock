@@ -1,0 +1,89 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <SectionHeader :title="name" />
+        <div class="row">
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="leftSideValues" />
+            </div>
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="rightSideValues" />
+            </div>
+        </div>
+
+        <SectionHeader title="Additional Attributes" />
+        <AttributeValuesContainer :showCategoryLabel="false" :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
+
+        <div class="row">
+            <div>
+                <StructuredContentEditor :disabled="true"
+                                         v-model="description" />
+            </div>
+        </div>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
+    import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
+    import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+    import { LearningProgramBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningProgramDetail/learningProgramBag";
+    import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<LearningProgramBag | null>,
+            required: false
+        },
+    });
+
+    // #region Values
+
+    const attributes = ref(props.modelValue?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.attributeValues ?? {});
+    const description = ref(props.modelValue?.description ?? "");
+    const name = ref(props.modelValue?.name ?? "");
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** The values to display at half-width on the left side of the block. */
+    const leftSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        valueBuilder.addHtmlValue("", `<h3 class="title">Public Name</h3>${props.modelValue?.publicName ?? ""}`);
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const rightSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        valueBuilder.addHtmlValue("", `<h3 class="title">Completion Workflow Type</h3>${props.modelValue?.completionWorkflowType?.text ?? ""}`);
+
+        return valueBuilder.build();
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+</script>

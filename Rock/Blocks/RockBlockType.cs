@@ -97,7 +97,7 @@ namespace Rock.Blocks
         /// <value>
         /// The block cache.
         /// </value>
-        public BlockCache BlockCache { get; set ; }
+        public BlockCache BlockCache { get; set; }
 
         /// <summary>
         /// Gets or sets the page cache.
@@ -383,6 +383,25 @@ namespace Rock.Blocks
         public string PageParameter( string name )
         {
             return RequestContext?.GetPageParameter( name );
+        }
+
+        /// <summary>
+        /// Returns a page parameter's value as an integer if possible; zero if not possible or not allowed.
+        /// </summary>
+        /// <param name="name">The name of the parameter.</param>
+        /// <returns>0 if unable to parse a valid value; otherwise the parsed value as an integer</returns>
+        public int PageParameterAsId( string name )
+        {
+            var allowIdParameters = !PageCache.Layout.Site.DisablePredictableIds;
+
+            var entityParameterValue = RequestContext?.GetPageParameter( name );
+
+            // Parse out the Id if the parameter is an IdKey or take the Id
+            // If the site allows predictable Ids in parameters.
+            return
+                entityParameterValue.IsDigitsOnly() && allowIdParameters ?
+                entityParameterValue.ToIntSafe() :
+                IdHasher.Instance.GetId( entityParameterValue ).ToIntSafe();
         }
 
         /// <summary>
@@ -819,7 +838,7 @@ Obsidian.onReady(() => {{
         /// </summary>
         /// <param name="message">The message.</param>
         /// <returns>A BlockActionResult instance.</returns>
-        protected virtual BlockActionResult ActionInternalServerError( string message = null)
+        protected virtual BlockActionResult ActionInternalServerError( string message = null )
         {
             return new BlockActionResult( System.Net.HttpStatusCode.InternalServerError )
             {

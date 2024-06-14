@@ -104,6 +104,14 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum AssignTo
+    {
+        Facilitator = 0x1,
+        Student = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum AttendanceGraphBy
     {
         Total = 0x0,
@@ -146,6 +154,17 @@ namespace Rock.Client.Enums
     {
         Internal = 0x0,
         External = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum AvailableDateCalculationMethod
+    {
+        Specific = 0x1,
+        ClassStartOffset = 0x2,
+        EnrollmentOffset = 0x3,
+        AfterPreviousCompleted = 0x4,
+        AlwaysAvailable = 0x5,
     }
 
     /// <summary>
@@ -264,6 +283,23 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
+    public enum CompletionStatus
+    {
+        Pending = 0x1,
+        Completed = 0x2,
+        Expired = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum ConfigurationMode
+    {
+        AcademicCalendar = 0x1,
+        OnDemandLearning = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum ConnectionRequestViewModelSortProperty
     {
         Requestor = 0x0,
@@ -342,6 +378,16 @@ namespace Rock.Client.Enums
         WhenAllowed = 0x0,
         Always = 0x1,
         Never = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum DueDateCalculationMethod
+    {
+        Specific = 0x1,
+        ClassStartOffset = 0x2,
+        EnrollmentOffset = 0x3,
+        NoDate = 0x4,
     }
 
     /// <summary>
@@ -565,6 +611,15 @@ namespace Rock.Client.Enums
         IPad = 0x0,
         WindowsApp = 0x1,
         Browser = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum LearningCompletionStatus
+    {
+        Incomplete = 0x1,
+        Fail = 0x2,
+        Pass = 0x3,
     }
 
     /// <summary>
@@ -834,6 +889,15 @@ namespace Rock.Client.Enums
         Sql = 0x0,
         Dataview = 0x1,
         Manual = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum RequirementType
+    {
+        Prerequisite = 0x1,
+        Corequisite = 0x2,
+        Equivalent = 0x3,
     }
 
     /// <summary>

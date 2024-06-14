@@ -489,7 +489,7 @@ export function getSecurityGrant(token: string | null | undefined): SecurityGran
 /**
  * Provides the security grant to child components to use in their API calls.
  *
- * @param grant The grant ot provide to child components.
+ * @param grant The grant to provide to child components.
  */
 export function provideSecurityGrant(grant: SecurityGrant): void {
     provide(securityGrantSymbol, grant);

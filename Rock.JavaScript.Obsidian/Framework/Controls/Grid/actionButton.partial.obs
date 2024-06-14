@@ -81,7 +81,6 @@
      * action and wait for it to complete.
      */
     const onActionClick = async (): Promise<void> => {
-        console.log("Action button clicked");
         if (!props.action.handler || props.action.disabled || isExecuting.value) {
             return;
         }

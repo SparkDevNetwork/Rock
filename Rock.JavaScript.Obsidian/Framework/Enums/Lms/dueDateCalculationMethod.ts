@@ -21,31 +21,31 @@
 // </copyright>
 //
 
-/** Determines the completion status of a LearningProgramCompletion. */
+/** Determines the method for calculating the due date. */
 export const DueDateCalculationMethod = {
     /** A specific date. */
-    Specific: 1,
+    Specific: 0,
 
     /** An offset of the class start date. */
-    ClassStartOffset: 2,
+    ClassStartOffset: 1,
 
     /** An offset of the class enrollment date. */
-    EnrollmentOffset: 3,
+    EnrollmentOffset: 2,
 
     /** No calculation. */
-    NoDate: 4
+    NoDate: 3
 } as const;
 
-/** Determines the completion status of a LearningProgramCompletion. */
+/** Determines the method for calculating the due date. */
 export const DueDateCalculationMethodDescription: Record<number, string> = {
-    1: "Specific",
+    0: "Specific",
 
-    2: "Class Start Offset",
+    1: "Class Start Offset",
 
-    3: "Enrollment Offset",
+    2: "Enrollment Offset",
 
-    4: "No Date"
+    3: "No Date"
 };
 
-/** Determines the completion status of a LearningProgramCompletion. */
+/** Determines the method for calculating the due date. */
 export type DueDateCalculationMethod = typeof DueDateCalculationMethod[keyof typeof DueDateCalculationMethod];
