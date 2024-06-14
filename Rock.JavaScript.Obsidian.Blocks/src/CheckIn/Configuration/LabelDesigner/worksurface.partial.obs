@@ -204,6 +204,16 @@
         gridLayer.draw();
     }
 
+    /**
+     * Restricts drag operations on a node to ensure that it stays on the label
+     * surface. This must be its own function because the node gets passed not
+     * as a parameter but as the `this` context.
+     *
+     * @param this The node object that is being dragged.
+     * @param pos The requested position for the node.
+     *
+     * @returns The final position for the node.
+     */
     function dragBoundFunc(this: Konva.Node, pos: Konva.Vector2d): Konva.Vector2d {
         return surface.getNodeBoundedPosition(this, pos);
     }
@@ -1025,6 +1035,10 @@
         });
     }
 
+    /**
+     * Called when the container is resized. This alerts us that we can resize
+     * the Konva surface and scale it to fit the available space.
+     */
     function onContainerResize(): void {
         fitStageIntoContainer();
         drawGridLines();
@@ -1095,21 +1109,23 @@
         }
     });
 
+    // If anything about the label changes then we need to redraw everything.
+    // This accounts for if something about the label size changes or any
+    // fields get modified.
     watch(props.labelManager.current, () => {
         fitStageIntoContainer();
         drawGridLines();
         createOrUpdateNodes();
     });
 
+    // If they have requested to show or hide the grid then we need to update
+    // the layer that contains the grid lines.
     watch(() => props.showGrid, () => {
         drawGridLines();
     });
 
+    // If they want to snap to grid then configure the surface for snapping.
     watch(() => [props.showGrid, props.snapToGrid], () => {
         surface.snapToGrid = props.showGrid && props.snapToGrid;
-    });
-
-    watch(props.labelManager.current, () => {
-        createOrUpdateNodes();
     });
 </script>

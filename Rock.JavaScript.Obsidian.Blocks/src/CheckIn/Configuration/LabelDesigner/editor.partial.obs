@@ -122,12 +122,11 @@
     import Worksurface from "./worksurface.partial.obs";
     import { computed, PropType, ref } from "vue";
     import { LabelUndoManager } from "./undoManager.partial";
+    import { createEmptyRuleset } from "./utils.partial";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { useConfigurationValues } from "@Obsidian/Utility/block";
     import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterGroupBag";
-    import { FilterExpressionType } from "@Obsidian/Core/Reporting/filterExpressionType";
-    import { newGuid } from "@Obsidian/Utility/guid";
-import { LabelDesignerOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/LabelDesigner/labelDesignerOptionsBag";
+    import { LabelDesignerOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/LabelDesigner/labelDesignerOptionsBag";
 
     const props = defineProps({
         labelManager: {
@@ -166,13 +165,10 @@ import { LabelDesignerOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Con
         return worksurface.value.savePreview();
     }
 
-    function createEmptyRuleset(): FieldFilterGroupBag {
-        return {
-            expressionType: FilterExpressionType.GroupAll,
-            guid: newGuid()
-        };
-    }
-
+    /**
+     * Event handler for the click to open the conditional settings modal and
+     * start editing the field fules.
+     */
     function onConditionalSettingsClick(): void {
         if (props.labelManager.current.value.conditionalVisibility) {
             editVisibilityRule.value = {
@@ -186,6 +182,9 @@ import { LabelDesignerOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Con
         isConditionalSettingsVisible.value = true;
     }
 
+    /**
+     * Event handler for saving the conditional rules and closing the modal.
+     */
     function onConditionalSettingsSave(): void {
         props.labelManager.mutate(label => {
             label.conditionalVisibility = editVisibilityRule.value;

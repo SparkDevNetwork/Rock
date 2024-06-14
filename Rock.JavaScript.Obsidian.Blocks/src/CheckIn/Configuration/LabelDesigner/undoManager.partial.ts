@@ -93,7 +93,7 @@ export class UndoSnapshotManager<T> {
 
 /**
  * Provides object-state undo management. This happens by way of snapshots after
- * modifications are requested via the apply function.
+ * modifications are requested via the {@link mutate} function.
  */
 export class ObjectUndoManager<TObject> {
     /** The object managing the snapshots. */
@@ -111,7 +111,7 @@ export class ObjectUndoManager<TObject> {
 
     /**
      * The current value being tracked. Any changes made directly to this
-     * object may be lost. To make changes call the apply function.
+     * object may be lost. To make changes call the {@link mutate} function.
      */
     public readonly current: IReadOnlyRef<TObject>;
 
@@ -189,12 +189,12 @@ export class ObjectUndoManager<TObject> {
      * Called by the super object when the current value property has changed.
      */
     protected currentValueChanged(): void {
-        /* Intentionally blank so that child classes can override. */
+        // Intentionally blank so that child classes can override.
     }
 }
 
 /**
- * Undo manager for the {@link LabelBag} object type. This provides some
+ * Undo manager for the {@link LabelDetail} object type. This provides some
  * additional functionality to make it easier to modify labels.
  */
 export class LabelUndoManager extends ObjectUndoManager<LabelDetail> {

@@ -811,6 +811,7 @@
     <Compile Include="CheckIn\v2\AreaConfigurationData.cs" />
     <Compile Include="CheckIn\v2\AreaOpportunity.cs" />
     <Compile Include="CheckIn\v2\AttendanceSessionRequest.cs" />
+    <Compile Include="CheckIn\v2\CheckInFieldFilterBuilder.cs" />
     <Compile Include="CheckIn\v2\DefaultSaveProvider.cs" />
     <Compile Include="CheckIn\v2\Filters\BirthMonthOpportunityFilter.cs" />
     <Compile Include="CheckIn\v2\Filters\LocationClosedOpportunityFilter.cs" />

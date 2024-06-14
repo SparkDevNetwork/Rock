@@ -3,9 +3,8 @@ import { areEqual, newGuid } from "@Obsidian/Utility/guid";
 import { LabelFieldType } from "@Obsidian/Enums/CheckIn/Labels/labelFieldType";
 import { BarcodeFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/barcodeFieldConfigurationBag";
 import { EllipseFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/ellipseFieldConfigurationBag";
-import { IconFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/iconFieldConfigurationBag";
 import { LabelFieldBag } from "@Obsidian/ViewModels/CheckIn/Labels/labelFieldBag";
-import { LineFieldConfigurationBag} from "@Obsidian/ViewModels/CheckIn/Labels/lineFieldConfigurationBag";
+import { LineFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/lineFieldConfigurationBag";
 import { RectangleFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/rectangleFieldConfigurationBag";
 import { TextFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/textFieldConfigurationBag";
 import { HorizontalTextAlignment } from "@Obsidian/Enums/CheckIn/Labels/horizontalTextAlignment";
@@ -245,11 +244,8 @@ export function createDefaultField(fieldType: LabelFieldType, subtype: number): 
         config.borderThickness = "0";
     }
     else if (fieldType === LabelFieldType.Icon) {
-        const config = field.configurationValues as IconFieldConfigurationBag;
-
         field.width = 0.25;
         field.height = 0.25;
-        config.icon = "birthday_cake";
     }
     else if (fieldType === LabelFieldType.Image) {
         // Intentionally blank.
@@ -434,4 +430,16 @@ export async function convertImageDataToBlackAndWhite(original: string, invertCo
     });
 
     return blobToBase64(blob);
+}
+
+/**
+ * Creates an empty {@link FieldFilterGroupBag} that is empty.
+ *
+ * @returns An empty field filter ruleset.
+ */
+export function createEmptyRuleset(): FieldFilterGroupBag {
+    return {
+        expressionType: FilterExpressionType.GroupAll,
+        guid: newGuid()
+    };
 }

@@ -29,7 +29,7 @@
     import { computed, PropType, ref, watch } from "vue";
     import RockFormField from "@Obsidian/Controls/rockFormField.obs";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
-import { blobToBase64 } from "./utils.partial";
+    import { blobToBase64 } from "./utils.partial";
 
     const props = defineProps({
         modelValue: {
@@ -41,6 +41,18 @@ import { blobToBase64 } from "./utils.partial";
     const emit = defineEmits<{
         (e: "update:modelValue", value: string | undefined): void;
     }>();
+
+    // Description: This component behaves like a standard ImageUplaoder except
+    // that no data is sent to the server. The "upload" all stays in-memory.
+    // The consuming component then stores the data some other way. In our case,
+    // it stuffs it into the field configuration.
+
+    // NOTE: This could have been implemented on the stock ImageUploader
+    // with some kind of handler pattern where we provide an object that deals
+    // with the "upload", but the existing ImageUploader uses a guid as the
+    // underlying value which doesn't work for us. In the future this might
+    // become a standard core control if we have need of something like this in
+    // the future.
 
     const internalValue = useVModelPassthrough(props, "modelValue", emit);
 

@@ -193,17 +193,16 @@
     import FieldConfigRectangle from "./fieldConfigRectangle.partial.obs";
     import { Component, computed, PropType, ref, watch } from "vue";
     import { LabelUndoManager } from "./undoManager.partial";
-    import { getFilterGroupTitle, getFilterRuleDescription } from "./utils.partial";
+    import { createEmptyRuleset, getFilterGroupTitle, getFilterRuleDescription } from "./utils.partial";
     import Modal from "@Obsidian/Controls/modal.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import FieldFilterEditor from "@Obsidian/Controls/fieldFilterEditor.obs";
     import { LabelFieldType } from "@Obsidian/Enums/CheckIn/Labels/labelFieldType";
     import { TextFieldSubType } from "@Obsidian/Enums/CheckIn/Labels/textFieldSubType";
-    import { areEqual, newGuid } from "@Obsidian/Utility/guid";
+    import { areEqual } from "@Obsidian/Utility/guid";
     import { useConfigurationValues } from "@Obsidian/Utility/block";
     import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterGroupBag";
-    import { FilterExpressionType } from "@Obsidian/Enums/Reporting/filterExpressionType";
     import { FieldFilterRuleBag } from "@Obsidian/ViewModels/Reporting/fieldFilterRuleBag";
     import { LabelDesignerOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/LabelDesigner/labelDesignerOptionsBag";
 
@@ -222,6 +221,11 @@
     const editVisibilityRule = ref<FieldFilterGroupBag>(createEmptyRuleset());
     const isIncludedOnPreview = ref(false);
 
+    /**
+     * Determines which field configuration component we are currently
+     * displaying. This will be `undefined` if no field is selected or we
+     * somehow have an unknown field type.
+     */
     const fieldConfigurationComponent = computed((): Component | undefined => {
         const field = props.labelManager.current.value.labelData.fields
             .find(f => areEqual(f.guid, props.labelManager.selectedField.value?.guid));
@@ -267,6 +271,10 @@
         }
     });
 
+    /**
+     * A friendly text string that describes the field component currently
+     * being edited.
+     */
     const selectedComponentType = computed((): string | undefined => {
         const field = props.labelManager.current.value.labelData.fields
             .find(f => areEqual(f.guid, props.labelManager.selectedField.value?.guid));
@@ -332,13 +340,6 @@
         return visibilityRule.value?.rules ?? [];
     });
 
-    function createEmptyRuleset(): FieldFilterGroupBag {
-        return {
-            expressionType: FilterExpressionType.GroupAll,
-            guid: newGuid()
-        };
-    }
-
     /**
      * Gets the description of a single filter rule, including the source name.
      *
@@ -350,14 +351,24 @@
         return getFilterRuleDescription(rule, blockConfig.filterSources ?? []);
     }
 
+    /**
+     * Event handler for the Controls button - switch to the control list.
+     */
     function onControlsClick(): void {
         isComponentMenuSelected.value = false;
     }
 
+    /**
+     * Event handler for the component button - switch tot he component editor.
+     */
     function onComponentClick(): void {
         isComponentMenuSelected.value = true;
     }
 
+    /**
+     * Event handler for a request to open the conditional field filter rule
+     * editor modal. This allows editing the rules for this field.
+     */
     function onConditionalSettingsClick(): void {
         if (visibilityRule.value) {
             editVisibilityRule.value = { ...visibilityRule.value };
@@ -369,17 +380,23 @@
         isConditionalSettingsVisible.value = true;
     }
 
+    /**
+     * Event handler for the Save button on the conditional settings modal.
+     * Save the rules and close the modal.
+     */
     function onConditionalSettingsSave(): void {
         visibilityRule.value = { ...editVisibilityRule.value };
         isConditionalSettingsVisible.value = false;
     }
 
+    // Watch for changes on the selected field and update the UI.
     watch(props.labelManager.selectedField, () => {
         isComponentMenuSelected.value = !!props.labelManager.selectedField.value;
         isIncludedOnPreview.value = props.labelManager.selectedField.value?.isIncludedOnPreview === true;
         visibilityRule.value = props.labelManager.selectedField.value?.conditionalVisibility;
     });
 
+    // Watch for changes in the UI and update the selected field.
     watch([isIncludedOnPreview, visibilityRule], () => {
         props.labelManager.mutateSelectedField(field => {
             field.isIncludedOnPreview = isIncludedOnPreview.value;

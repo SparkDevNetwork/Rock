@@ -32,6 +32,12 @@ using Rock.Web.Cache;
 
 namespace Rock.CheckIn.v2.Labels
 {
+    /// <summary>
+    /// Provides all the methods for accessing the field source data. This
+    /// includes the data sources, the filter sources, and the
+    /// <see cref="EntityField"/> objects used to support converting the rule
+    /// bags between public and private format.
+    /// </summary>
     internal static class FieldSourceHelper
     {
         /// <summary>

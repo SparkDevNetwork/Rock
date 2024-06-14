@@ -100,6 +100,12 @@
         return field.customFields.filter(f => !!f.key && !!f.label);
     });
 
+    /**
+     * Gets the field items from the block configuration that are valid for
+     * the currently selected field.
+     *
+     * @returns The list of valid field data source items.
+     */
     function getFieldItems(): ListItemBag[] {
         return blockConfig.dataSources
             ?.filter(s => s.textSubType === props.labelManager.selectedField.value?.fieldSubType)
@@ -125,6 +131,12 @@
         customFieldData.value = props.labelManager.selectedField.value?.customData ?? {};
     }
 
+    /**
+     * Event handler for when a custom data value has been changed in the UI.
+     *
+     * @param key The custom data key that was changed.
+     * @param value The new custom data value.
+     */
     function onCustomFieldDataChanged(key: string, value: string): void {
         props.labelManager.mutateSelectedField(field => {
             field.customData = field.customData ?? {};

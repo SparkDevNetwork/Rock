@@ -55,11 +55,15 @@ namespace Rock.Blocks.CheckIn.Configuration
     [Rock.SystemGuid.BlockTypeGuid( "8c4ad18f-9f81-4145-8ad0-ab90e451d0d6" )]
     public class LabelDesigner : RockBlockType
     {
+        /// <summary>
+        /// The list of page parameters we expect.
+        /// </summary>
         private static class PageParameterKey
         {
             public const string CheckInLabelId = "CheckInLabelId";
         }
 
+        /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
             var label = new CheckInLabelService( RockContext ).Get( PageParameter( PageParameterKey.CheckInLabelId ), !RequestContext.Page.Layout.Site.DisablePredictableIds );
@@ -95,6 +99,12 @@ namespace Rock.Blocks.CheckIn.Configuration
             };
         }
 
+        /// <summary>
+        /// Converts a field data source into an object that will be understood
+        /// by the Obsidian client.
+        /// </summary>
+        /// <param name="dataSource">The data source to be converted.</param>
+        /// <returns>A new instance of <see cref="DataSourceBag"/>.</returns>
         private DataSourceBag ToDataSourceBag( FieldDataSource dataSource )
         {
             return new DataSourceBag
@@ -134,6 +144,13 @@ namespace Rock.Blocks.CheckIn.Configuration
             };
         }
 
+        /// <summary>
+        /// Gets the <see cref="LabelDetailBag"/> that can be understood by
+        /// the Obsidian code. This also handles converting the private rule
+        /// data into public data.
+        /// </summary>
+        /// <param name="checkInLabel">The check-in label that needs to be edited.</param>
+        /// <returns>A new instance of <see cref="LabelDetailBag"/>.</returns>
         private LabelDetailBag GetLabelDetailBag( CheckInLabel checkInLabel )
         {
             var designedLabel = checkInLabel.Content.FromJsonOrNull<DesignedLabelBag>();
@@ -156,6 +173,14 @@ namespace Rock.Blocks.CheckIn.Configuration
             };
         }
 
+        /// <summary>
+        /// Saves a <see cref="CheckInLabel"/> from changes made in the
+        /// designer interface.
+        /// </summary>
+        /// <param name="key">The identifier of the label to be saved.</param>
+        /// <param name="label">The details about the label.</param>
+        /// <param name="previewData">The base64 encoded preview image data in PNG format.</param>
+        /// <returns>The result of the operation.</returns>
         [BlockAction]
         public BlockActionResult Save( string key, LabelDetailBag label, string previewData )
         {
@@ -216,70 +241,6 @@ namespace Rock.Blocks.CheckIn.Configuration
             } );
 
             return ActionOk( returnUrl );
-        }
-
-        private class CustomFieldFilterBuilder : FieldFilterExpressionBuilder
-        {
-            /// <summary>
-            /// The MethodInfo that describes the Enumerable.Any method taking
-            /// a <see cref="string"/> as a generic type.
-            /// </summary>
-            private static readonly Lazy<MethodInfo> _anyStringMethod = new Lazy<MethodInfo>( () => typeof( Enumerable )
-                .GetMethods()
-                .Where( m => m.Name == nameof( Enumerable.Any )
-                    && m.GetParameters().Length == 2
-                    && m.GetParameters()[1].ParameterType.IsGenericType
-                    && m.GetParameters()[1].ParameterType.GetGenericTypeDefinition() == typeof( Func<,> ) )
-                .FirstOrDefault()
-                .MakeGenericMethod( typeof( string ) ) );
-
-            /// <inheritdoc/>
-            protected override Expression GetRulePropertyExpression( Expression instanceExpression, FieldFilterRuleBag rule, RockContext rockContext )
-            {
-                // If the instance is an entity, then we don't need to do
-                // anything special. We should never be called with a RockContext
-                // but bail out just in case.
-                if ( typeof( Data.IEntity ).IsAssignableFrom( instanceExpression.Type ) || rockContext != null )
-                {
-                    return base.GetRulePropertyExpression( instanceExpression, rule, rockContext );
-                }
-
-                var property = instanceExpression.Type.GetProperty( rule.PropertyName );
-
-                // If property was not found, return an expression that
-                // never matches.
-                if ( property == null )
-                {
-                    return Expression.Constant( false );
-                }
-
-                if ( typeof( ICollection<string> ).IsAssignableFrom( property.PropertyType ) )
-                {
-                    // If the property is a collection of strings, then we want
-                    // to run the normal text expression on all strings in the
-                    // collection and return true if any of them match. We also
-                    // need to convert everything to lower case so so that the
-                    // comparisons happen case-insensitive.
-                    var filterValues = new List<string>
-                    {
-                        rule.ComparisonType.ConvertToString( false ),
-                        rule.Value?.ToLower()
-                    };
-
-                    var propertyExpression = Expression.Property( instanceExpression, property );
-
-                    // Create an expression for prop.Any( (s) => s.ToLower() == value ) and then pass
-                    // that value to the property filter expression.
-                    var innerParameterExpression = Expression.Parameter( typeof( string ), "s" );
-                    var lowerStringExpression = Expression.Call( innerParameterExpression, nameof( string.ToLower ), Type.EmptyTypes );
-                    var propertyFilterExpression = ExpressionHelper.PropertyFilterExpression( filterValues, lowerStringExpression );
-                    var propertyFilterFunc = Expression.Lambda<Func<string, bool>>( propertyFilterExpression, innerParameterExpression );
-
-                    return Expression.Call( _anyStringMethod.Value, propertyExpression, propertyFilterFunc );
-                }
-
-                return base.GetRulePropertyExpression( instanceExpression, rule, rockContext );
-            }
         }
     }
 }
