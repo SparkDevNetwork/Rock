@@ -12,14 +12,14 @@
 
 // ======================== BASE STYLE ========================
 .alert {
-  padding: var(--spacing-medium); 
-  margin-bottom: var(--spacing-large);
-  border: 1px solid transparent;
-  border-radius: var(--rounded-small); 
+  padding:        var(--spacing-medium); 
+  margin-bottom:  var(--spacing-large);
+  border:         1px solid transparent;
+  border-radius:  var(--rounded-small); 
 
   h4 {
-    margin:0;
-    color: inherit;
+    margin: 0;
+    color:  inherit;
   }
 
   .alert-link {
@@ -28,15 +28,15 @@
 
   > p,
   > ul {
-    margin-bottom: 0;
+    margin-bottom:  0;
   }
 
   > p + p {
-    margin-top: 5px;
+    margin-top:     5px;
   }
 
   .help{
-    border-bottom: 0;
+    border-bottom:  0;
   }
 
 
@@ -48,10 +48,10 @@
 
     // Adjust close link position
     .close {
-      position: relative;
-      top: -2px;
-      right: -21px;
-      color: inherit;
+      position:   relative;
+      top:        -2px;
+      right:      -21px;
+      color:      inherit;
     }
   }
 }
@@ -60,40 +60,40 @@
 
 // ======================== ALTERNATIVE STYLE ========================
 .alert-default{
-  color: var(--color-interface-strong);
-  background-color: var(--color-interface-soft);
-  border-color: var(--color-interface-strong);
+  color:              var(--color-interface-strong);
+  background-color:   var(--color-interface-soft);
+  border-color:       var(--color-interface-strong);
   
   hr {
     border-top-color: var(--color-interface-strong);
   }
   .alert-link {
-    color: var(--color-interface-strong);
+    color:  var(--color-interface-strong);
   }
 }
 
 .alert-success{
-  color: var(--color-success-strong);
-  background-color: var(--color-success-soft);
-  border-color: var(--color-success-strong);
+  color:              var(--color-success-strong);
+  background-color:   var(--color-success-soft);
+  border-color:       var(--color-success-strong);
 
   hr {
     border-top-color: var(--color-success-strong);
   }
   .alert-link {
-    color: var(--color-success-strong);
+    color:  var(--color-success-strong);
   }
 
   a {
-    color: var(--color-success-strong);
-    border-bottom: var(--color-success-strong);
+    color:          var(--color-success-strong);
+    border-bottom:  var(--color-success-strong);
   }
 }
 
 .alert-danger{
-  color: var(--color-danger-strong);
+  color:            var(--color-danger-strong);
   background-color: var(--color-danger-soft);
-  border-color: var(--color-danger-strong);
+  border-color:     var(--color-danger-strong);
 
   hr {
     border-top-color: var(--color-danger-strong);
@@ -102,15 +102,15 @@
     color: var(--color-danger-strong);
   }
   a {
-    color: var(--color-danger-strong);
+    color:          var(--color-danger-strong);
     border-bottom:  var(--color-danger-strong);
   }
 }
 
 .alert-info{
-  color: var(--color-info-strong);
+  color:            var(--color-info-strong);
   background-color: var(--color-info-soft);
-  border-color: var(--color-info-strong);
+  border-color:     var(--color-info-strong);
 
   hr {
     border-top-color: var(--color-info-strong);
@@ -119,15 +119,15 @@
     color: var(--color-info-strong);
   }
   a { //check _rock-core.less if styling break because there is a different syntax
-    color: var(--color-info-strong);
-    border-bottom: var(--color-info-strong);
+    color:          var(--color-info-strong);
+    border-bottom:  var(--color-info-strong);
   }
 }
 
 .alert-warning{
-  color: var(--color-warning-strong);
+  color:            var(--color-warning-strong);
   background-color: var(--color-warning-soft);
-  border-color: var(--color-warning-strong);
+  border-color:     var(--color-warning-strong);
   hr {
     border-top-color: var(--color-warning-strong);
   }
@@ -135,17 +135,17 @@
     color: var(--color-warning-strong);
   }
   a {
-    color: var(--color-warning-strong);
-    border-bottom: var(--color-warning-strong);
+    color:          var(--color-warning-strong);
+    border-bottom:  var(--color-warning-strong);
   }
 }
 // ======================== END ALTERNATIVE STYLE ========================
 
 
 .alert-validation{
-  color: var(--color-danger-strong);
+  color:            var(--color-danger-strong);
   background-color: var(--color-warning-soft);
-  border-color: var(--color-warning-strong);
+  border-color:     var(--color-warning-strong);
   hr {
     border-top-color: var(--color-warning-strong);
   }
@@ -154,12 +154,12 @@
   }
   ul,
   span {
-    font-weight: var(--font-weight-regular);
-    color: var(--color-interface-strong);
+    font-weight:  var(--font-weight-regular);
+    color:        var(--color-interface-strong);
   }
   ul {
-    padding: 5px 25px 0;
-    line-height: var(--line-height-normal);
+    padding:      5px 25px 0;
+    line-height:  var(--line-height-normal);
   }
 }
 

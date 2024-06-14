@@ -14,15 +14,15 @@
 
 // =========================== CARET STYLE ===========================
 .caret {
-  display: inline-block;
-  width:  0;
-  height: 0;
-  margin-left: 2px;
+  display:        inline-block;
+  width:          0;
+  height:         0;
+  margin-left:    2px;
   vertical-align: middle;
-  border-top: $caret-width-base   dashed;
-  border-top: $caret-width-base   solid; // IE8
-  border-right: $caret-width-base solid transparent;
-  border-left: $caret-width-base  solid transparent;
+  border-top:     $caret-width-base   dashed;
+  border-top:     $caret-width-base   solid; // IE8
+  border-right:   $caret-width-base solid transparent;
+  border-left:    $caret-width-base  solid transparent;
 }
 // ========================= END CARET STYLE =========================
 
@@ -33,36 +33,36 @@
   position: relative;
 }
 .dropdown-menu {
-  position: absolute;
-  top:  100%;
-  left:   0;
-  z-index: $zindex-dropdown;
-  display:  none; // none by default, but block on "open" of the menu
-  float:    left;
-  min-width:  $dropdown-min-width;
-  padding:    var(--spacing-tiny) 0;
-  margin:     2px 0 0;
-  font-size:  var(--font-size-medium);
-  text-align: left;
-  list-style: none;
+  position:         absolute;
+  top:              100%;
+  left:             0;
+  z-index:          $zindex-dropdown;
+  display:          none; // none by default, but block on "open" of the menu
+  float:            left;
+  min-width:        $dropdown-min-width;
+  padding:          var(--spacing-tiny) 0;
+  margin:           2px 0 0;
+  font-size:        var(--font-size-medium);
+  text-align:       left;
+  list-style:       none;
   background-color: var(--color-interface-softest);
   background-clip:  padding-box;
-  border:        1px solid var(--color-interface-soft);
-  border-radius: var(--rounded-small);
-  box-shadow:    0 4px 8px 0 rgba(0,0,0,.1);
-  max-height:    85vh;
-  overflow-y:    auto;
+  border:           1px solid var(--color-interface-soft);
+  border-radius:    var(--rounded-small);
+  box-shadow:       0 4px 8px 0 rgba(0,0,0,.1);
+  max-height:       85vh;
+  overflow-y:       auto;
 
   // Links items in dropdown menu
   > li > a {
-    display:  block;
-    padding:  var(--spacing-tiny) var(--spacing-large);
-    clear:    both;
-    font-weight:  400;
-    line-height:  var(--line-height-normal);
-    color:        var(--color-interface-stronger);
-    white-space:     nowrap;
-    text-decoration: none;
+    display:          block;
+    padding:          var(--spacing-tiny) var(--spacing-large);
+    clear:            both;
+    font-weight:      var(--font-weight-regular);
+    line-height:      var(--line-height-normal);
+    color:            var(--color-interface-stronger);
+    white-space:      nowrap;
+    text-decoration:  none;
 
     &:hover,
     &:focus {
@@ -77,18 +77,18 @@
   }
   
   &.datepicker-dropdown {
-    max-height: none;
-    overflow-y: visible;
-    font-size:  var(--font-size-small);
+    max-height:   none;
+    overflow-y:   visible;
+    font-size:    var(--font-size-small);
   }
 
   .btn-link {
-    width: 100%;
+    width:        100%;
     padding:      var(--spacing-tiny) var(--spacing-large);
     line-height:  var(--line-height-normal);
     color:        var(--color-interface-strong);
-    text-align: left;
-    border: 0;
+    text-align:   left;
+    border:       0;
 
     &:hover,
     &:focus {
@@ -101,7 +101,7 @@
   .dropdown-item-danger {
     color:  var(--color-danger-strong);
     &:hover {
-      color: #fff;
+      color:          #fff;
       background-color: var(--color-danger-strong);
     }
   }
@@ -115,14 +115,14 @@
   &,
   &:hover,
   &:focus {
-    color:            var(--color-interface-softest);
-    text-decoration:  none;
-    background-color: var(--color-primary);
-    outline: 0;
+    color:              var(--color-interface-softest);
+    text-decoration:    none;
+    background-color:   var(--color-primary);
+    outline:            0;
   }
   .dropdown-right & {
-    right: 0;
-    left:  auto;
+    right:  0;
+    left:   auto;
   }
 }
 
@@ -142,11 +142,11 @@
   // Nuke hover/focus effects
   &:hover,
   &:focus {
-    text-decoration:  none;
-    cursor:           not-allowed;
-    background-color: transparent;
-    background-image: none; // Remove CSS gradient
-    filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
+    text-decoration:    none;
+    cursor:             not-allowed;
+    background-color:   transparent;
+    background-image:   none; // Remove CSS gradient
+    filter:             progid:DXImageTransform.Microsoft.gradient(enabled=false);
   }
 }
 
@@ -166,10 +166,10 @@
 
 // ========================= DIVIDER =========================
 .divider {
-  height:     1px;
-  margin:     var(--spacing-tiny) 0;
-  overflow:   hidden;
-  background-color:   var(--color-interface-soft);
+  height:           1px;
+  margin:           var(--spacing-tiny) 0;
+  overflow:         hidden;
+  background-color: var(--color-interface-soft);
 }
 // ======================= END DIVERDER =======================
 
@@ -199,10 +199,10 @@
 // Backdrop to catch body clicks on mobile, etc.
 .dropdown-backdrop {
   position: fixed;
-  top:    0;
-  right:  0;
-  bottom: 0;
-  left:   0;
+  top:      0;
+  right:    0;
+  bottom:   0;
+  left:     0;
   z-index: ($zindex-dropdown - 10);
 }
 
@@ -222,14 +222,14 @@
   // Reverse the caret
   .caret {
     content: "";
-    border-top: 0;
-    border-bottom: $caret-width-base dashed;
-    border-bottom: $caret-width-base solid "\9"; // IE8
+    border-top:     0;
+    border-bottom:  $caret-width-base dashed;
+    border-bottom:  $caret-width-base solid "\9"; // IE8
   }
   // Different positioning for bottom up menu
   .dropdown-menu {
-    top:    auto;
-    bottom: 100%;
+    top:            auto;
+    bottom:         100%;
     margin-bottom:  2px;
   }
 }

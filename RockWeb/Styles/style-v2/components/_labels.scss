@@ -10,12 +10,12 @@
 
 // ===================== BASE STYLE =====================
 .label {
-  display:    inline;
-  padding:    .2em .6em .3em;
-  font-size:   75%;
-  font-weight: var(--font-weight-semibold);
-  line-height: var(--line-height-compact);
-  color:       var(--color-interface-strongest);
+  display:        inline;
+  padding:        .2em .6em .3em;
+  font-size:      75%;
+  font-weight:    var(--font-weight-semibold);
+  line-height:    var(--line-height-compact);
+  color:          var(--color-interface-strongest);
   text-align:     center;
   white-space:    nowrap;
   vertical-align: baseline;
@@ -25,9 +25,9 @@
   a & {
     &:hover,
     &:focus {
-      color:var(--color-interface-softest);
-      text-decoration: none;
-      cursor: pointer;
+      color:            var(--color-interface-softest);
+      text-decoration:  none;
+      cursor:           pointer;
     }
   }
 
@@ -39,18 +39,18 @@
   // Quick fix for labels in buttons
   .btn & {
     position: relative;
-    top: -1px;
+    top:      -1px;
   }
 
   // Nested Labels (ex. labels with badges in them)
   .label-value{
     align-self: center;
-    padding: 2px 0;
+    padding:    2px 0;
   }
 
   .badge{
-    font-size: 12px;
-    padding: 2px 6px;
+    font-size:  12px;
+    padding:    2px 6px;
   }
 
 }
@@ -58,8 +58,8 @@
 
 // ======================== ALTERNATIVE STYLE ========================
 .label-default{
-  background-color: var(--color-interface-soft);
-  color: var(--color-interface-stronger);
+  background-color:   var(--color-interface-soft);
+  color:              var(--color-interface-stronger);
 
   &[href] {
     &:hover,
@@ -70,8 +70,8 @@
 }
 
 .label-primary{
-  background-color: var(--color-primary);
-  color: var(--color-primary-strongest);
+  background-color:   var(--color-primary);
+  color:              var(--color-primary-strongest);
 
   &[href] {
     &:hover,
@@ -82,8 +82,8 @@
   }
 }
 .label-info{
-  background-color: var(--color-info-soft);
-  color: var(--color-info-strong);
+  background-color:   var(--color-info-soft);
+  color:              var(--color-info-strong);
 
   &[href] {
     &:hover,
@@ -94,7 +94,7 @@
 }
 .label-success{
   background-color: var(--color-success-soft);
-  color: var(--color-success-strong);
+  color:            var(--color-success-strong);
 
   &[href] {
     &:hover,
@@ -104,8 +104,8 @@
   }
 }
 .label-warning{
-  background-color: var(--color-warning-soft);
-  color: var(--color-warning-strong);
+  background-color:   var(--color-warning-soft);
+  color:              var(--color-warning-strong);
 
   &[href] {
     &:hover,
@@ -115,8 +115,8 @@
   }
 }
 .label-danger{
-  background-color: var(--color-danger-soft);
-  color: var(--color-danger-strong);
+  background-color:   var(--color-danger-soft);
+  color:              var(--color-danger-strong);
 
   &[href] {
     &:hover,

@@ -13,18 +13,18 @@
 
 // =========== Zone Config ===========
 .zone-instance.outline {
-  position: relative;
-  min-width: 50px;
-  min-height: 30px;
+  position:     relative;
+  min-width:    50px;
+  min-height:   30px;
   &::after {
     position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    content: "";
-    border: 1px dotted #3e3e3c;
-    outline: 1px dotted #fff;
+    top:      0;
+    right:    0;
+    bottom:   0;
+    left:     0;
+    content:  "";
+    border:   1px dotted #3e3e3c;
+    outline:  1px dotted #fff;
   }
 }
 
@@ -32,31 +32,31 @@
 // =========== Module Config ===========
 .block-configuration,
 .zone-configuration {
-  position: absolute;
-  top: 0;
-  z-index: $zindex-modal - 1;
-  display: none;
-  width: 26px;
-  height: 26px;
-  overflow: hidden;
-  color: #fff;
-  cursor: pointer;
-  background: #0176d3;
-  border-radius: 0;
+  position:       absolute;
+  top:            0;
+  z-index:        $zindex-modal - 1;
+  display:        none;
+  width:          26px;
+  height:         26px;
+  overflow:       hidden;
+  cursor:         pointer;
+  color:        #fff;
+  background:   #0176d3;
+  border-radius:  0;
 }
 
 .block-instance.outline {
-  position: relative;
-  display: block;
+  position:   relative;
+  display:    block;
   min-height: 36px;
-  clear: both;
+  clear:      both;
 
   &::after {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
+    position:       absolute;
+    top:            0;
+    right:          0;
+    bottom:         0;
+    left:           0;
     pointer-events: none;
     content: "";
   }
@@ -67,8 +67,8 @@
 }
 
 .config-bar {
-  font-size: 16px;
-  line-height: 1.5;
+  font-size:    16px;
+  line-height:  1.5;
 
   &,
   a {
@@ -77,76 +77,76 @@
 
   a,
   .delete {
-    display: block;
-    float: left;
-    width: 26px;
-    padding: 1px 0 !important; // important to keep themes from changing this
-    margin: 0 !important;      // important to keep themes from changing this
-    text-align: center;
-    text-decoration: none;
+    display:          block;
+    float:            left;
+    width:            26px;
+    padding:          1px 0 !important; // important to keep themes from changing this
+    margin:           0 !important;      // important to keep themes from changing this
+    text-align:       center;
+    text-decoration:  none;
   }
 }
 
 .zone-configuration-bar,
 .block-configuration-bar {
-  position: absolute;
-  left: 24px;
+  position:     absolute;
+  left:         24px;
   margin-right: -999em;
-  margin-left: 6px;
-  overflow: hidden;
+  margin-left:  6px;
+  overflow:     hidden;
 
   div {
     display: inline;
   }
 
   span {
-    display: block;
-    float: left;
-    padding-right: 12px;
-    font-size: 10px;
-    line-height: 26px;
+    display:        block;
+    float:          left;
+    padding-right:  12px;
+    font-size:      10px;
+    line-height:    26px;
   }
 
   .disabled {
-    cursor: default;
-    opacity: .5;
+    cursor:   default;
+    opacity:  .5;
   }
 }
 
 .block-configuration-bar .btn {
   margin-right: 12px;
-  color: #fff;
-  text-shadow: none;
+  color:      #fff;
+  text-shadow:  none;
 }
 
 
 // =========== Admin Footer ===========
 #cms-admin-footer {
-  position: fixed;
-  right: 0;
-  bottom: 0;
-  z-index: $zindex-modal - 1;
-  width: 100%;
-  height: 36px;
-  padding: 8px 12px 0;
+  position:     fixed;
+  right:        0;
+  bottom:       0;
+  z-index:      $zindex-modal - 1;
+  width:        100%;
+  height:       36px;
+  padding:      8px 12px 0;
   margin-right: 0;
-  color: #fff;
-  background: var(--adminbar-bg);   //have to be a little lighter than the bg clr of span.cms-admin-footer-property
+  color:      #fff;
+  background:   var(--adminbar-bg);   //have to be a little lighter than the bg clr of span.cms-admin-footer-property
   border-color: var(--adminbar-bg); // TODO this should be darken using css mix() when available
   border-style: solid;
   border-width: 1px 1px 0;
-  transition: .5s;
+  transition:   .5s;
 
   a.btn {
     font-size: 16px;
   }
 
   > span {
-    display: none;
-    margin-top: 3px;
-    margin-bottom: 4px;
-    font-size: 12px;
-    text-align: center;
+    display:        none;
+    margin-top:     3px;
+    margin-bottom:  4px;
+    font-size:      12px;
+    text-align:     center;
   }
 
   > span.label {
@@ -154,9 +154,9 @@
   }
 
   > span.cms-admin-footer-property {
-    padding: 0 6px;
+    padding:          0 6px;
     background-color: var(--adminbar-bg); /*TODO lightening this by 10% when css mix() is available*/
-    border-radius: 2px;
+    border-radius:    2px;
   }
 
   a {
@@ -168,9 +168,9 @@
   }
 
   .button-bar {
-    margin-top: -8px;
-    margin-left: 12px;
-    text-align: center;
+    margin-top:   -8px;
+    margin-left:  12px;
+    text-align:   center;
   }
 }
 
@@ -178,13 +178,13 @@
 #cms-admin-footer .button-bar a {
   background-color: transparent;
   background-image: none;
-  border: 0;
+  border:           0;
 }
 
 #cms-admin-footer .btn {
-  color: #fff;
-  text-shadow: none;
-  box-shadow: none;
+  color:      #fff;
+  text-shadow:  none;
+  box-shadow:   none;
 }
 
 

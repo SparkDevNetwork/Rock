@@ -2163,8 +2163,8 @@ th {
   width: 26px;
   height: 26px;
   overflow: hidden;
-  color: #fff;
   cursor: pointer;
+  color: #fff;
   background: #0176d3;
   border-radius: 0;
 }
@@ -2566,8 +2566,8 @@ p, .p, .text-primary {
 .btn.btn-default .open > .dropdown-toggle {
   color: var(--color-interface-stronger);
   background-color: var(--color-interface-medium);
-  background-image: none;
   border-color: var(--color-interface-soft);
+  background-image: none;
 }
 .btn.btn-default:active:hover, .btn.btn-default:active:focus, .btn.btn-default:active.focus, .btn.btn-default.active:hover, .btn.btn-default.active:focus, .btn.btn-default.active.focus,
 .btn.btn-default .open > .dropdown-toggle:hover,
@@ -2604,8 +2604,8 @@ p, .p, .text-primary {
 .btn.btn-primary .open > .dropdown-toggle {
   color: var(--color-primary);
   background-color: var(--color-interface-softest);
-  background-image: none;
   border-color: var(--color-interface-softest);
+  background-image: none;
 }
 .btn.btn-primary:active:hover, .btn.btn-primary:active:focus, .btn.btn-primary:active.focus, .btn.btn-primary.active:hover, .btn.btn-primary.active:focus, .btn.btn-primary.active.focus,
 .btn.btn-primary .open > .dropdown-toggle:hover,
@@ -2642,8 +2642,8 @@ p, .p, .text-primary {
 .btn.btn-success .open > .dropdown-toggle {
   color: var(--color-interface-softest);
   background-color: var(--color-interface-softest);
-  background-image: none;
   border-color: var(--color-success-strong);
+  background-image: none;
 }
 .btn.btn-success:active:hover, .btn.btn-success:active:focus, .btn.btn-success:active.focus, .btn.btn-success.active:hover, .btn.btn-success.active:focus, .btn.btn-success.active.focus,
 .btn.btn-success .open > .dropdown-toggle:hover,
@@ -2680,8 +2680,8 @@ p, .p, .text-primary {
 .btn.btn-info .open > .dropdown-toggle {
   color: var(--color-info-strong);
   background-color: var(--color-interface-softest);
-  background-image: none;
   border-color: var(--color-info-strong);
+  background-image: none;
 }
 .btn.btn-info:active:hover, .btn.btn-info:active:focus, .btn.btn-info:active.focus, .btn.btn-info.active:hover, .btn.btn-info.active:focus, .btn.btn-info.active.focus,
 .btn.btn-info .open > .dropdown-toggle:hover,
@@ -2718,8 +2718,8 @@ p, .p, .text-primary {
 .btn.btn-warning .open > .dropdown-toggle {
   color: var(--color-warning-strong);
   background-color: var(--color-interface-softest);
-  background-image: none;
   border-color: var(--color-warning-strong);
+  background-image: none;
 }
 .btn.btn-warning:active:hover, .btn.btn-warning:active:focus, .btn.btn-warning:active.focus, .btn.btn-warning.active:hover, .btn.btn-warning.active:focus, .btn.btn-warning.active.focus,
 .btn.btn-warning .open > .dropdown-toggle:hover,
@@ -3338,7 +3338,7 @@ pre code {
   display: block;
   padding: var(--spacing-tiny) var(--spacing-large);
   clear: both;
-  font-weight: 400;
+  font-weight: var(--font-weight-regular);
   line-height: var(--line-height-normal);
   color: var(--color-interface-stronger);
   white-space: nowrap;

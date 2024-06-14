@@ -12,18 +12,18 @@
 
 // ======================== BASE STYLE ========================
 .badge {
-  display:   inline-block;
-  min-width: 10px;
-  padding:   3px 7px;
-  font-size:    var(--font-size-small);
-  font-weight:  var(--font-weight-bold);
-  line-height:  var(--font-height-tight);
-  color:        var(--color-interface-softest);
-  text-align:     center;
-  white-space:    nowrap;
-  vertical-align: middle;
-  background-color: var(--color-interface-medium);
-  border-radius:    var(--rounded-large);
+  display:            inline-block;
+  min-width:          10px;
+  padding:            3px 7px;
+  font-size:          var(--font-size-small);
+  font-weight:        var(--font-weight-bold);
+  line-height:        var(--font-height-tight);
+  color:              var(--color-interface-softest);
+  text-align:         center;
+  white-space:        nowrap;
+  vertical-align:     middle;
+  background-color:   var(--color-interface-medium);
+  border-radius:      var(--rounded-large);
 
   // Empty badges collapse automatically (not available in IE8)
   &:empty {
@@ -38,17 +38,17 @@
 
   .btn-xs &,
   .btn-group-xs > .btn & {
-    top: 0;
-    padding: 1px 5px;
+    top:      0;
+    padding:  1px 5px;
   }
 
   // Hover state, but only for links
   a {
     &:hover,
     &:focus {
-      color: var(--color-interface-softest);
-      text-decoration: none;
-      cursor:          pointer;
+      color:            var(--color-interface-softest);
+      text-decoration:  none;
+      cursor:           pointer;
     }
   }
 
@@ -102,9 +102,9 @@
 // ======================== END ALTERNATIVE BADGE ========================
 
 .badge-legend .badge {
-  height: 20px;
+  height:       20px;
   margin-right: var(--spacing-tiny);
-  cursor: pointer;
+  cursor:       pointer;
 }
 
 
