@@ -1,7 +1,7 @@
 import Konva from "@Obsidian/Libs/konva";
 import { BarcodeFieldConfigurationBag, EllipseFieldConfigurationBag, IconFieldConfigurationBag, ImageFieldConfigurationBag, LineFieldConfigurationBag, RectangleFieldConfigurationBag, StringRecord } from "./types.partial";
 import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
-import { IconImageMap, code128Icon, Surface, qrcodeIcon, convertImageDataToBlackAndWhite } from "./utils.partial";
+import { IconImageMap, Surface, convertImageDataToBlackAndWhite } from "./utils.partial";
 import { asBoolean } from "@Obsidian/Utility/booleanUtils";
 import { BarcodeFormat } from "@Obsidian/Enums/CheckIn/Labels/barcodeFormat";
 import { HorizontalTextAlignment } from "@Obsidian/Enums/CheckIn/Labels/horizontalTextAlignment";
@@ -311,6 +311,29 @@ function applyCenterCrop(shape: Konva.Image, cover?: boolean): void {
 }
 
 /**
+ * Creates a new shape that will display a font awesome icon.
+ *
+ * @returns A new Konva Text shape.
+ */
+function createFontAwesomeShape(): Konva.Text {
+    const shape = new Konva.Text();
+
+    shape.align("center");
+    shape.verticalAlign("middle");
+    shape.fontFamily("FontAwesome");
+    shape.fontSize(12);
+    shape.fontStyle("900");
+
+    shape.on("widthChange heightChange textChange", () => {
+        // Some fonts are wider than they are tall (such as star). So this is
+        // a quick hack to make them fit.
+        shape.fontSize(Math.min(shape.width() * 0.85, shape.height()));
+    });
+
+    return shape;
+}
+
+/**
  * Creates a new shape for the specified field type.
  *
  * @param fieldType The field type that specifies what kind of shape to create.
@@ -330,7 +353,10 @@ export function createShapeForFieldType(fieldType: LabelFieldType): Konva.Group 
     else if (fieldType === LabelFieldType.Ellipse) {
         return new Ellipse();
     }
-    else if (fieldType === LabelFieldType.Icon || fieldType === LabelFieldType.Image) {
+    else if (fieldType === LabelFieldType.Icon) {
+        return createFontAwesomeShape();
+    }
+    else if (fieldType === LabelFieldType.Image) {
         const img = new window.Image(1, 1);
 
         const image = new Konva.Image({
@@ -350,39 +376,15 @@ export function createShapeForFieldType(fieldType: LabelFieldType): Konva.Group 
         return image;
     }
     else if (fieldType === LabelFieldType.AttendeePhoto) {
-        const shape = new Konva.Text();
+        const shape = createFontAwesomeShape();
 
-        shape.align("center");
-        shape.verticalAlign("middle");
-        shape.fontFamily("FontAwesome");
-        shape.fontSize(12);
         shape.fontStyle("400");
         shape.text("\uF2C1");
-
-        shape.on("widthChange heightChange", () => {
-            // Certain pixel sizes cause an overflow which hides the icon, so
-            // make it a tiny bit smaller to prevent that.
-            shape.fontSize(Math.min(shape.width() * 0.95, shape.height() * 0.95));
-        });
 
         return shape;
     }
     else if (fieldType === LabelFieldType.Barcode) {
-        const shape = new Konva.Text();
-
-        shape.align("center");
-        shape.verticalAlign("middle");
-        shape.fontFamily("FontAwesome");
-        shape.fontSize(12);
-        shape.fontStyle("900");
-
-        shape.on("widthChange heightChange", () => {
-            // Certain pixel sizes cause an overflow which hides the icon, so
-            // make it a tiny bit smaller to prevent that.
-            shape.fontSize(Math.min(shape.width() * 0.95, shape.height() * 0.95));
-        });
-
-        return shape;
+        return createFontAwesomeShape();
     }
 
     return undefined;
@@ -415,7 +417,7 @@ export function updateShapeFromField(shape: Konva.Shape | Konva.Group, field: La
         updateRectShapeFromField(shape, field, surface);
         return true;
     }
-    else if (field.fieldType === LabelFieldType.Icon && shape instanceof Konva.Image) {
+    else if (field.fieldType === LabelFieldType.Icon && shape instanceof Konva.Text) {
         updateIconShapeFromField(shape, field, surface);
         return true;
     }
@@ -588,7 +590,7 @@ function updateEllipseShapeFromField(shape: Ellipse, field: LabelFieldBag, surfa
  * @param shape The shape to be updated.
  * @param field The field to use as the source of truth.
  */
-function updateIconShapeFromField(shape: Konva.Image, field: LabelFieldBag, surface: Surface): void {
+function updateIconShapeFromField(shape: Konva.Text, field: LabelFieldBag, surface: Surface): void {
     const config = field.configurationValues ?? {} as StringRecord<IconFieldConfigurationBag>;
 
     // Update the position of the shape.
@@ -597,12 +599,17 @@ function updateIconShapeFromField(shape: Konva.Image, field: LabelFieldBag, surf
     shape.width(surface.getPixelForOffset(field.width));
     shape.height(surface.getPixelForOffset(field.height));
 
-    const currentImage = shape.image() as HTMLImageElement;
-    const src = IconImageMap.find(i => i.value === config.icon)?.category ?? "/Assets/Images/corrupt-image.jpg";
+    const icon = IconImageMap.find(i => i.value === config.icon);
 
     // Update configured values.
-    if (currentImage.src !== src) {
-        currentImage.src = src;
+    if (icon) {
+        shape.fontStyle(`${icon.weight}`);
+        shape.text(icon.code ?? "\uF128");
+        console.log("x", shape.textArr);
+    }
+    else {
+        shape.fontStyle("900");
+        shape.text("\uF128");
     }
 }
 
@@ -685,6 +692,7 @@ function updateBarcodeShapeFromField(shape: Konva.Text, field: LabelFieldBag, su
     shape.width(surface.getPixelForOffset(field.width));
     shape.height(surface.getPixelForOffset(field.height));
 
+    // Update configured values.
     if (config.format === BarcodeFormat.Code128.toString()) {
         shape.text("\uF02A");
     }
