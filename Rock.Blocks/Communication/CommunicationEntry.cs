@@ -1677,6 +1677,9 @@ namespace Rock.Blocks.Communication
                 }
             }
 
+            // Override the sender information in the initialization box (not the communication).
+            box.Communication.FromAddress = sender.Email;
+            box.Communication.FromName = sender.FullName;
             //box.IsCommunicationSender = communication.SenderPersonAliasId.HasValue && communication.SenderPersonAliasId == GetCurrentPerson()?.PrimaryAliasId;
         }
 
