@@ -20,7 +20,7 @@ using System.Linq;
 
 using Rock.ViewModels.CheckIn.Labels;
 
-namespace Rock.CheckIn.v2.Labels
+namespace Rock.CheckIn.v2.Labels.Formatters
 {
     /// <summary>
     /// Formats a set of raw values from the label data into a set of strings

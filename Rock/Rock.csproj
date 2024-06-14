@@ -822,7 +822,7 @@
     <Compile Include="CheckIn\v2\Labels\EllipseFieldConfiguration.cs" />
     <Compile Include="CheckIn\v2\Labels\FamilyLabelData.cs" />
     <Compile Include="CheckIn\v2\Labels\Formatters\CallbackDataFormatter.cs" />
-    <Compile Include="CheckIn\v2\Labels\DataFormatter.cs" />
+    <Compile Include="CheckIn\v2\Labels\Formatters\DataFormatter.cs" />
     <Compile Include="CheckIn\v2\Labels\DateAttributeFieldDataSource.cs" />
     <Compile Include="CheckIn\v2\Labels\Formatters\CheckInDetailDataFormatter.cs" />
     <Compile Include="CheckIn\v2\Labels\Formatters\DateDataFormatter.cs" />

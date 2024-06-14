@@ -17,6 +17,7 @@
 
 using System.Collections.Generic;
 
+using Rock.CheckIn.v2.Labels.Formatters;
 using Rock.Enums.CheckIn.Labels;
 
 namespace Rock.CheckIn.v2.Labels
