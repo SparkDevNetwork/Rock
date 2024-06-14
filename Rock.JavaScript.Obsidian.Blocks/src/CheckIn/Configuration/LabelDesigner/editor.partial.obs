@@ -124,10 +124,10 @@
     import { LabelUndoManager } from "./undoManager.partial";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { useConfigurationValues } from "@Obsidian/Utility/block";
-    import { BlockConfiguration } from "./types.partial";
     import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterGroupBag";
     import { FilterExpressionType } from "@Obsidian/Core/Reporting/filterExpressionType";
     import { newGuid } from "@Obsidian/Utility/guid";
+import { LabelDesignerOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/LabelDesigner/labelDesignerOptionsBag";
 
     const props = defineProps({
         labelManager: {
@@ -140,7 +140,7 @@
         savePreview
     });
 
-    const blockConfig = useConfigurationValues<BlockConfiguration>();
+    const blockConfig = useConfigurationValues<LabelDesignerOptionsBag>();
 
     const isGridVisible = ref(false);
     const isGridLocked = ref(false);

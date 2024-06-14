@@ -1,5 +1,4 @@
 import Konva from "@Obsidian/Libs/konva";
-import { IconItem } from "./types.partial";
 import { areEqual, newGuid } from "@Obsidian/Utility/guid";
 import { LabelFieldType } from "@Obsidian/Enums/CheckIn/Labels/labelFieldType";
 import { BarcodeFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/barcodeFieldConfigurationBag";
@@ -266,21 +265,6 @@ export function createDefaultField(fieldType: LabelFieldType, subtype: number): 
 }
 
 // #endregion
-
-export const IconImageMap: IconItem[] = [
-    {
-        text: "Birthday Cake",
-        value: "birthday_cake",
-        weight: 900,
-        code: "\uF1Fd"
-    },
-    {
-        text: "Star",
-        value: "star",
-        weight: 900,
-        code: "\uF005"
-    }
-];
 
 /**
  * Get the friendly formatted title of a filter group. This returns an HTML

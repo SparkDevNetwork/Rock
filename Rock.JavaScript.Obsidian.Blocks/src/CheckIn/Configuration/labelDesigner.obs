@@ -69,13 +69,14 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { computed, ref } from "vue";
-    import { BlockConfiguration, LabelDetail, Size } from "./LabelDesigner/types.partial";
+    import { LabelDetail, Size } from "./LabelDesigner/types.partial";
     import { LabelUndoManager } from "./LabelDesigner/undoManager.partial";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { blobToBase64 } from "./LabelDesigner/utils.partial";
     import { LabelTypeDescription } from "@Obsidian/Enums/CheckIn/Labels/labelType";
+    import { LabelDesignerOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/LabelDesigner/labelDesignerOptionsBag";
 
-    const config = useConfigurationValues<BlockConfiguration>();
+    const config = useConfigurationValues<LabelDesignerOptionsBag>();
     const invokeBlockAction = useInvokeBlockAction();
 
     const editor = ref<InstanceType<typeof Editor>>();

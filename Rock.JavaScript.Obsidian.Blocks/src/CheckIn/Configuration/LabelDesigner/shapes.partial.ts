@@ -1,11 +1,12 @@
 import Konva from "@Obsidian/Libs/konva";
 import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
-import { IconImageMap, Surface, convertImageDataToBlackAndWhite } from "./utils.partial";
+import { Surface, convertImageDataToBlackAndWhite } from "./utils.partial";
 import { asBoolean } from "@Obsidian/Utility/booleanUtils";
 import { BarcodeFormat } from "@Obsidian/Enums/CheckIn/Labels/barcodeFormat";
 import { HorizontalTextAlignment } from "@Obsidian/Enums/CheckIn/Labels/horizontalTextAlignment";
 import { LabelFieldType } from "@Obsidian/Enums/CheckIn/Labels/labelFieldType";
 import { TextFieldSubType } from "@Obsidian/Enums/CheckIn/Labels/textFieldSubType";
+import { IconItemBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/LabelDesigner/iconItemBag";
 import { BarcodeFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/barcodeFieldConfigurationBag";
 import { EllipseFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/ellipseFieldConfigurationBag";
 import { IconFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/iconFieldConfigurationBag";
@@ -402,10 +403,12 @@ export function createShapeForFieldType(fieldType: LabelFieldType): Konva.Group 
  *
  * @param shape The shape object to be updated.
  * @param field The field to use as the source of truth.
+ * @param surface The information about the design surface.
+ * @param icons The list of icons available in this block.
  *
  * @returns `true` if the shape was updated or `false` if it could not be updated.
  */
-export function updateShapeFromField(shape: Konva.Shape | Konva.Group, field: LabelFieldBag, surface: Surface): boolean {
+export function updateShapeFromField(shape: Konva.Shape | Konva.Group, field: LabelFieldBag, surface: Surface, icons: IconItemBag[]): boolean {
     if (field.fieldType === LabelFieldType.Text && shape instanceof Konva.Text) {
         updateTextShapeFromField(shape, field, surface);
         return true;
@@ -423,7 +426,7 @@ export function updateShapeFromField(shape: Konva.Shape | Konva.Group, field: La
         return true;
     }
     else if (field.fieldType === LabelFieldType.Icon && shape instanceof Konva.Text) {
-        updateIconShapeFromField(shape, field, surface);
+        updateIconShapeFromField(shape, field, surface, icons);
         return true;
     }
     else if (field.fieldType === LabelFieldType.Image && shape instanceof Konva.Image) {
@@ -595,7 +598,7 @@ function updateEllipseShapeFromField(shape: Ellipse, field: LabelFieldBag, surfa
  * @param shape The shape to be updated.
  * @param field The field to use as the source of truth.
  */
-function updateIconShapeFromField(shape: Konva.Text, field: LabelFieldBag, surface: Surface): void {
+function updateIconShapeFromField(shape: Konva.Text, field: LabelFieldBag, surface: Surface, icons: IconItemBag[]): void {
     const config = (field.configurationValues ?? {}) as IconFieldConfigurationBag;
 
     // Update the position of the shape.
@@ -604,7 +607,7 @@ function updateIconShapeFromField(shape: Konva.Text, field: LabelFieldBag, surfa
     shape.width(surface.getPixelForOffset(field.width));
     shape.height(surface.getPixelForOffset(field.height));
 
-    const icon = IconImageMap.find(i => i.value === config.icon);
+    const icon = icons.find(i => i.value === config.icon);
 
     // Update configured values.
     if (icon) {

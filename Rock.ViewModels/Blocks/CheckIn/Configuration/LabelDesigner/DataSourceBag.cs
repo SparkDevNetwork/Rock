@@ -17,7 +17,6 @@
 using System.Collections.Generic;
 
 using Rock.Enums.CheckIn.Labels;
-using Rock.Model;
 using Rock.ViewModels.CheckIn.Labels;
 
 namespace Rock.ViewModels.Blocks.CheckIn.Configuration.LabelDesigner

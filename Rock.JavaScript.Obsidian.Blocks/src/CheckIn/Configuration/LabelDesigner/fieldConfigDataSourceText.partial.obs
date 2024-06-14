@@ -41,9 +41,9 @@
     import { useConfigurationValues } from "@Obsidian/Utility/block";
     import { CustomFieldInputBag } from "@Obsidian/ViewModels/CheckIn/Labels/customFieldInputBag";
     import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
-    import { BlockConfiguration } from "./types.partial";
+    import { LabelDesignerOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/LabelDesigner/labelDesignerOptionsBag";
 
-    const blockConfig = useConfigurationValues<BlockConfiguration>();
+    const blockConfig = useConfigurationValues<LabelDesignerOptionsBag>();
 
     const props = defineProps({
         labelManager: {

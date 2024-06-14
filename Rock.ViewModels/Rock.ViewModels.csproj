@@ -53,6 +53,9 @@
     <Compile Include="Blocks\CheckIn\CheckInKiosk\WebKioskBag.cs" />
     <Compile Include="Blocks\CheckIn\Configuration\CheckInSimulator\CheckInSimulatorOptionsBag.cs" />
     <Compile Include="Blocks\CheckIn\Configuration\LabelDesigner\DataSourceBag.cs" />
+    <Compile Include="Blocks\CheckIn\Configuration\LabelDesigner\IconItemBag.cs" />
+    <Compile Include="Blocks\CheckIn\Configuration\LabelDesigner\LabelDesignerOptionsBag.cs" />
+    <Compile Include="Blocks\CheckIn\Configuration\LabelDesigner\LabelDetailBag.cs" />
     <Compile Include="Blocks\Cms\AdaptiveMessageAdaptationDetail\AdaptiveMessageAdaptationBag.cs" />
     <Compile Include="Blocks\Cms\AdaptiveMessageAdaptationDetail\AdaptiveMessageAdaptationDetailOptionsBag.cs" />
     <Compile Include="Blocks\Cms\AdaptiveMessageDetail\AdaptiveMessageBag.cs" />

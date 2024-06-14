@@ -117,8 +117,10 @@
     import { TextFieldSubType } from "@Obsidian/Enums/CheckIn/Labels/textFieldSubType";
     import Konva from "@Obsidian/Libs/konva";
     import { Guid } from "@Obsidian/Types";
+    import { useConfigurationValues } from "@Obsidian/Utility/block";
     import { asBoolean } from "@Obsidian/Utility/booleanUtils";
     import { areEqual } from "@Obsidian/Utility/guid";
+    import { LabelDesignerOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/LabelDesigner/labelDesignerOptionsBag";
     import { LabelFieldBag } from "@Obsidian/ViewModels/CheckIn/Labels/labelFieldBag";
     import { TextFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/textFieldConfigurationBag";
     import { KonvaEventObject } from "konva/lib/Node";
@@ -149,6 +151,8 @@
     defineExpose({
         savePreview
     });
+
+    const blockConfig = useConfigurationValues<LabelDesignerOptionsBag>();
 
     const worksurfaceContainerElement = ref<HTMLDivElement | undefined>();
     const containerElement = ref<HTMLDivElement | undefined>();
@@ -241,7 +245,7 @@
             shape.setZIndex(zIndex);
             zIndex++;
 
-            updateShapeFromField(shape, field, surface);
+            updateShapeFromField(shape, field, surface, blockConfig.icons ?? []);
         }
 
         // Remove any nodes that no longer exist as fields.

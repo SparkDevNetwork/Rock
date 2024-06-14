@@ -9,7 +9,8 @@
     import { PropType, ref, watch } from "vue";
     import { IconFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/iconFieldConfigurationBag";
     import { LabelUndoManager } from "./undoManager.partial";
-    import { IconImageMap } from "./utils.partial";
+    import { LabelDesignerOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/LabelDesigner/labelDesignerOptionsBag";
+    import { useConfigurationValues } from "@Obsidian/Utility/block";
 
     const props = defineProps({
         labelManager: {
@@ -18,9 +19,10 @@
         }
     });
 
+    const blockConfig = useConfigurationValues<LabelDesignerOptionsBag>();
     const icon = ref<string>("");
 
-    const iconItems = IconImageMap;
+    const iconItems = blockConfig.icons ?? [];
 
     /**
      * Set the internal values to match those from the selected field.

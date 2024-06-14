@@ -26,7 +26,6 @@ using Rock.Attribute;
 using Rock.CheckIn.v2.Labels;
 using Rock.Data;
 using Rock.Enums.CheckIn.Labels;
-using Rock.Enums.Reporting;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Security;
@@ -84,7 +83,7 @@ namespace Rock.Blocks.CheckIn.Configuration
                 .ThenBy( s => s.Property?.Title ?? s.Attribute?.Name )
                 .ToList();
 
-            return new
+            return new LabelDesignerOptionsBag
             {
                 IdKey = label.IdKey,
                 Label = GetLabelDetailBag( label ),
@@ -92,6 +91,7 @@ namespace Rock.Blocks.CheckIn.Configuration
                 LabelType = label.LabelType,
                 DataSources = dataSources,
                 FilterSources = filterSources,
+                Icons = GetIconList()
             };
         }
 
@@ -106,6 +106,31 @@ namespace Rock.Blocks.CheckIn.Configuration
                 Category = dataSource.Category,
                 CustomFields = dataSource.Formatter?.CustomFields,
                 FormatterOptions = dataSource.Formatter?.Options ?? new List<DataFormatterOptionBag>()
+            };
+        }
+
+        /// <summary>
+        /// Gets the list of icons that are supported.
+        /// </summary>
+        /// <returns>A list of <see cref="IconItemBag"/> objects.</returns>
+        private List<IconItemBag> GetIconList()
+        {
+            return new List<IconItemBag>
+            {
+                new IconItemBag
+                {
+                    Value = "birthday_cake",
+                    Text = "Birthday Cake",
+                    Weight = 900,
+                    Code = "\uF1FD"
+                },
+                new IconItemBag
+                {
+                    Value = "star",
+                    Text = "Star",
+                    Weight = 900,
+                    Code = "\uF005"
+                }
             };
         }
 
@@ -256,12 +281,5 @@ namespace Rock.Blocks.CheckIn.Configuration
                 return base.GetRulePropertyExpression( instanceExpression, rule, rockContext );
             }
         }
-    }
-
-    public class LabelDetailBag
-    {
-        public DesignedLabelBag LabelData { get; set; }
-
-        public FieldFilterGroupBag ConditionalVisibility { get; set; }
     }
 }
