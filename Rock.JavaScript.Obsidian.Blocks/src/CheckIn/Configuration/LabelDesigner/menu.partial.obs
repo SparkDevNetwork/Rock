@@ -101,7 +101,7 @@
             <Modal v-model="isConditionalSettingsVisible" title="Conditional Settings" saveText="Save" @save="onConditionalSettingsSave">
                 <div style="min-height: 290px;">
                     <FieldFilterEditor v-model="editVisibilityRule"
-                                       title="Title"
+                                       title="Field"
                                        :sources="blockConfig.filterSources ?? []"
                                        enhanceForLongSourceLists
                                        groupSources />
@@ -223,8 +223,8 @@
     const isIncludedOnPreview = ref(false);
 
     const fieldConfigurationComponent = computed((): Component | undefined => {
-        const field = props.labelManager?.current.value
-            .fields?.find(f => areEqual(f.guid, props.labelManager.selectedField.value?.guid));
+        const field = props.labelManager.current.value.labelData.fields
+            .find(f => areEqual(f.guid, props.labelManager.selectedField.value?.guid));
 
         if (!field) {
             return undefined;
@@ -268,8 +268,8 @@
     });
 
     const selectedComponentType = computed((): string | undefined => {
-        const field = props.labelManager?.current.value
-            .fields?.find(f => areEqual(f.guid, props.labelManager.selectedField.value?.guid));
+        const field = props.labelManager.current.value.labelData.fields
+            .find(f => areEqual(f.guid, props.labelManager.selectedField.value?.guid));
 
         if (!field) {
             return undefined;

@@ -68,7 +68,7 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { computed, ref } from "vue";
-    import { BlockConfiguration, Size } from "./LabelDesigner/types.partial";
+    import { BlockConfiguration, LabelDetail, Size } from "./LabelDesigner/types.partial";
     import { LabelUndoManager } from "./LabelDesigner/undoManager.partial";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { blobToBase64 } from "./LabelDesigner/utils.partial";
@@ -82,14 +82,14 @@
     const labelSize = computed<Size>({
         get() {
             return {
-                width: labelManager.current.value.width,
-                height: labelManager.current.value.height
+                width: labelManager.current.value.labelData.width,
+                height: labelManager.current.value.labelData.height
             };
         },
         set(value) {
             labelManager.mutate(label => {
-                label.width = value.width;
-                label.height = value.height;
+                label.labelData.width = value.width;
+                label.labelData.height = value.height;
             });
         }
     });
@@ -101,6 +101,30 @@
     const labelName = computed((): string => {
         return config.labelName ?? "Label Designer";
     });
+
+    /**
+     * Gets the initial label data from the block configuration. This also
+     * does minor conversion to ensure that all the required fields are set.
+     */
+    function getInitialLabelDetail(): LabelDetail {
+        const label: LabelDetail = <LabelDetail>{
+            ...config.label
+        };
+
+        if (!label.labelData) {
+            label.labelData = {
+                width: 4,
+                height: 2,
+                fields: []
+            };
+        }
+
+        if (!label.labelData.fields) {
+            label.labelData.fields = [];
+        }
+
+        return label;
+    }
 
     /**
      * Event handler for the panel's Save event. Send the data to the server
@@ -131,9 +155,5 @@
         await alert(result.errorMessage ?? "Unknown error while trying to save check-in label.");
     }
 
-    const labelManager = new LabelUndoManager(config.label ?? {
-        width: 4,
-        height: 2,
-        fields: []
-    });
+    const labelManager = new LabelUndoManager(getInitialLabelDetail());
 </script>

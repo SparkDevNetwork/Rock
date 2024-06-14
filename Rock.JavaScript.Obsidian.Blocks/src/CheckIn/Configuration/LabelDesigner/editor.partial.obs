@@ -19,7 +19,7 @@
             </div>
 
             <div class="right-actions">
-                <RockButton>
+                <RockButton @click="onConditionalSettingsClick">
                     <i class="fa fa-filter"></i>
                 </RockButton>
 
@@ -45,6 +45,16 @@
             </div>
         </div>
     </div>
+
+    <Modal v-model="isConditionalSettingsVisible" title="Conditional Settings" saveText="Save" @save="onConditionalSettingsSave">
+        <div style="min-height: 290px;">
+            <FieldFilterEditor v-model="editVisibilityRule"
+                               title="Label"
+                               :sources="blockConfig.filterSources ?? []"
+                               enhanceForLongSourceLists
+                               groupSources />
+        </div>
+    </Modal>
 </template>
 
 <style scoped>
@@ -108,11 +118,18 @@
 </style>
 
 <script setup lang="ts">
+    import FieldFilterEditor from "@Obsidian/Controls/fieldFilterEditor.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
     import Switch from "@Obsidian/Controls/switch.obs";
     import Worksurface from "./worksurface.partial.obs";
     import { computed, PropType, ref } from "vue";
     import { LabelUndoManager } from "./undoManager.partial";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { BlockConfiguration } from "./types.partial";
+    import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterGroupBag";
+    import { FilterExpressionType } from "@Obsidian/Core/Reporting/filterExpressionType";
+    import { newGuid } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         labelManager: {
@@ -125,9 +142,14 @@
         savePreview
     });
 
+    const blockConfig = useConfigurationValues<BlockConfiguration>();
+
     const isGridVisible = ref(false);
     const isGridLocked = ref(false);
     const worksurface = ref<InstanceType<typeof Worksurface>>();
+
+    const editVisibilityRule = ref<FieldFilterGroupBag>(createEmptyRuleset());
+    const isConditionalSettingsVisible = ref(false);
 
     const isDeleteFieldDisabled = computed((): boolean => {
         return !props.labelManager.selectedField.value;
@@ -138,12 +160,40 @@
      * the database label. This provides a quick way to see what the label
      * will look like without having to print or go into the designer.
      */
-     function savePreview(): Promise<Blob | undefined> {
+    function savePreview(): Promise<Blob | undefined> {
         if (!worksurface.value) {
             return Promise.resolve(undefined);
         }
 
         return worksurface.value.savePreview();
+    }
+
+    function createEmptyRuleset(): FieldFilterGroupBag {
+        return {
+            expressionType: FilterExpressionType.GroupAll,
+            guid: newGuid()
+        };
+    }
+
+    function onConditionalSettingsClick(): void {
+        if (props.labelManager.current.value.conditionalVisibility) {
+            editVisibilityRule.value = {
+                ...props.labelManager.current.value.conditionalVisibility
+            };
+        }
+        else {
+            editVisibilityRule.value = createEmptyRuleset();
+        }
+
+        isConditionalSettingsVisible.value = true;
+    }
+
+    function onConditionalSettingsSave(): void {
+        props.labelManager.mutate(label => {
+            label.conditionalVisibility = editVisibilityRule.value;
+        });
+
+        isConditionalSettingsVisible.value = false;
     }
 
     /**
@@ -157,14 +207,10 @@
         }
 
         props.labelManager.mutate(label => {
-            if (!label.fields) {
-                return;
-            }
-
-            const index = label.fields.findIndex(f => f.guid === selectedGuid);
+            const index = label.labelData.fields.findIndex(f => f.guid === selectedGuid);
 
             if (index >= 0) {
-                label.fields.splice(index, 1);
+                label.labelData.fields.splice(index, 1);
             }
         });
     }

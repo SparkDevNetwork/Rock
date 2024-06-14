@@ -118,14 +118,13 @@
     import { Guid } from "@Obsidian/Types";
     import { asBoolean } from "@Obsidian/Utility/booleanUtils";
     import { areEqual } from "@Obsidian/Utility/guid";
-    import { DesignedLabelBag } from "@Obsidian/ViewModels/CheckIn/Labels/designedLabelBag";
     import { LabelFieldBag } from "@Obsidian/ViewModels/CheckIn/Labels/labelFieldBag";
     import { TextFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/textFieldConfigurationBag";
     import { KonvaEventObject } from "konva/lib/Node";
     import { onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
     import { createShapeForFieldType, LineTransformer, updateShapeFromField } from "./shapes.partial";
     import { TransformHelper } from "./transformHelper.partial";
-    import { DragData } from "./types.partial";
+    import { DesignedLabel, DragData } from "./types.partial";
     import { LabelUndoManager } from "./undoManager.partial";
     import { createDefaultField, Surface, pixelsPerInch } from "./utils.partial";
 
@@ -179,7 +178,7 @@
         const height = stage.height();
         const gridStepSize = 1.0 / surface.gridSnapFraction;
 
-        for (let step = gridStepSize; step < props.labelManager.current.value.width; step += gridStepSize) {
+        for (let step = gridStepSize; step < props.labelManager.current.value.labelData.width; step += gridStepSize) {
             gridLayer.add(new Konva.Line({
                 x: surface.getPixelForOffset(step),
                 points: [0, 0, 0, height],
@@ -188,7 +187,7 @@
             }));
         }
 
-        for (let step = gridStepSize; step < props.labelManager.current.value.height; step += gridStepSize) {
+        for (let step = gridStepSize; step < props.labelManager.current.value.labelData.height; step += gridStepSize) {
             gridLayer.add(new Konva.Line({
                 y: surface.getPixelForOffset(step),
                 points: [0, 0, width, 0],
@@ -214,7 +213,7 @@
 
         // Add or update any nodes for fields that we have.
         let zIndex = 0;
-        for (const field of props.labelManager.current.value.fields ?? []) {
+        for (const field of props.labelManager.current.value.labelData.fields) {
             const node = nodeLayer.children.find(n => n.id() === field.guid);
             let shape = (node instanceof Konva.Shape || node instanceof Konva.Group) ? node : undefined;
 
@@ -245,7 +244,7 @@
         }
 
         // Remove any nodes that no longer exist as fields.
-        const fieldGuids = props.labelManager.current.value.fields?.map(f => f.guid) ?? [];
+        const fieldGuids = props.labelManager.current.value.labelData.fields.map(f => f.guid);
         for (let childIndex = 0; childIndex < nodeLayer.children.length; childIndex++) {
             const child = nodeLayer.children[childIndex];
 
@@ -354,8 +353,7 @@
 
             // Add the new field to the label.
             props.labelManager.mutate(label => {
-                label.fields ??= [];
-                label.fields.push(field);
+                label.labelData.fields.push(field);
             });
 
             props.labelManager.selectField(field.guid);
@@ -375,7 +373,7 @@
         lineTransformer?.visible(false);
         transformHelper?.transformer.visible(false);
 
-        for (const field of props.labelManager.current.value.fields ?? []) {
+        for (const field of props.labelManager.current.value.labelData.fields) {
             if (field.isIncludedOnPreview) {
                 continue;
             }
@@ -396,7 +394,7 @@
             lineTransformer?.visible(true);
             transformHelper?.transformer.visible(true);
 
-            for (const field of props.labelManager.current.value.fields ?? []) {
+            for (const field of props.labelManager.current.value.labelData.fields) {
                 if (field.isIncludedOnPreview) {
                     continue;
                 }
@@ -505,8 +503,8 @@
      *
      * @returns The label field or `undefined` if it could not be determined.
      */
-    function findFieldForNode(node: Konva.Node, label?: DesignedLabelBag): LabelFieldBag | undefined {
-        label = label || props.labelManager.current.value;
+    function findFieldForNode(node: Konva.Node, label?: DesignedLabel): LabelFieldBag | undefined {
+        label = label || props.labelManager.current.value.labelData;
 
         if (!label.fields) {
             return undefined;
@@ -526,14 +524,13 @@
      * @returns An array of field bags.
      */
     function findFieldsForNodes(nodes: Konva.Node[]): LabelFieldBag[] {
-        if (!props.labelManager.current.value.fields) {
+        if (!props.labelManager.current.value.labelData.fields) {
             return [];
         }
 
         const fieldIds = nodes.map(n => getNodeFieldId(n));
 
-        return props.labelManager.current.value
-            .fields
+        return props.labelManager.current.value.labelData.fields
             .filter(f => fieldIds.includes(f.guid));
     }
 
@@ -688,14 +685,10 @@
      */
     function deleteField(field: LabelFieldBag): void {
         props.labelManager.mutate(label => {
-            if (!label.fields) {
-                return;
-            }
-
-            const fieldIndex = label.fields.findIndex(f => f.guid === field.guid);
+            const fieldIndex = label.labelData.fields.findIndex(f => f.guid === field.guid);
 
             if (fieldIndex >= 0) {
-                label.fields.splice(fieldIndex, 1);
+                label.labelData.fields.splice(fieldIndex, 1);
             }
         });
     }
@@ -707,15 +700,11 @@
      */
     function bringForward(field: LabelFieldBag): void {
         props.labelManager.mutate(label => {
-            if (!label.fields) {
-                return;
-            }
+            const index = label.labelData.fields.findIndex(f => f.guid === field.guid);
 
-            const index = label.fields.findIndex(f => f.guid === field.guid);
-
-            if (index < label.fields.length - 1) {
-                const removed = label.fields.splice(index, 1);
-                label.fields.splice(index + 1, 0, ...removed);
+            if (index < label.labelData.fields.length - 1) {
+                const removed = label.labelData.fields.splice(index, 1);
+                label.labelData.fields.splice(index + 1, 0, ...removed);
             }
         });
     }
@@ -727,15 +716,11 @@
      */
     function sendBackward(field: LabelFieldBag): void {
         props.labelManager.mutate(label => {
-            if (!label.fields) {
-                return;
-            }
-
-            const index = label.fields.findIndex(f => f.guid === field.guid);
+            const index = label.labelData.fields.findIndex(f => f.guid === field.guid);
 
             if (index > 0) {
-                const removed = label.fields.splice(index, 1);
-                label.fields.splice(index - 1, 0, ...removed);
+                const removed = label.labelData.fields.splice(index, 1);
+                label.labelData.fields.splice(index - 1, 0, ...removed);
             }
         });
     }
@@ -747,15 +732,11 @@
      */
     function sendToBack(field: LabelFieldBag): void {
         props.labelManager.mutate(label => {
-            if (!label.fields) {
-                return;
-            }
-
-            const index = label.fields.findIndex(f => f.guid === field.guid);
+            const index = label.labelData.fields.findIndex(f => f.guid === field.guid);
 
             if (index > 0) {
-                const removed = label.fields.splice(index, 1);
-                label.fields.splice(0, 0, ...removed);
+                const removed = label.labelData.fields.splice(index, 1);
+                label.labelData.fields.splice(0, 0, ...removed);
             }
         });
     }
@@ -767,15 +748,11 @@
      */
     function bringToFront(field: LabelFieldBag): void {
         props.labelManager.mutate(label => {
-            if (!label.fields) {
-                return;
-            }
+            const index = label.labelData.fields.findIndex(f => f.guid === field.guid);
 
-            const index = label.fields.findIndex(f => f.guid === field.guid);
-
-            if (index < label.fields.length - 1) {
-                const removed = label.fields.splice(index, 1);
-                label.fields.splice(label.fields.length, 0, ...removed);
+            if (index < label.labelData.fields.length - 1) {
+                const removed = label.labelData.fields.splice(index, 1);
+                label.labelData.fields.splice(label.labelData.fields.length, 0, ...removed);
             }
         });
     }
@@ -789,8 +766,8 @@
             return;
         }
 
-        const sceneWidth = props.labelManager.current.value.width * pixelsPerInch;
-        const sceneHeight = props.labelManager.current.value.height * pixelsPerInch;
+        const sceneWidth = props.labelManager.current.value.labelData.width * pixelsPerInch;
+        const sceneHeight = props.labelManager.current.value.labelData.height * pixelsPerInch;
 
         // Minus 48 for padding.
         const containerWidth = worksurfaceContainerElement.value.offsetWidth - 48;
@@ -977,7 +954,7 @@
      */
     function onNodeDragEnd(e: KonvaEventObject<DragEvent>): void {
         props.labelManager.mutate(label => {
-            const field = findFieldForNode(e.target, label);
+            const field = findFieldForNode(e.target, label.labelData);
 
             if (!field) {
                 return;
@@ -995,7 +972,7 @@
      */
     function onNodeTransformEnd(e: KonvaEventObject<unknown>): void {
         props.labelManager.mutate(label => {
-            const field = findFieldForNode(e.target, label);
+            const field = findFieldForNode(e.target, label.labelData);
 
             if (!field) {
                 return;
@@ -1016,7 +993,7 @@
      */
     function onLineTransformEnd(line: Konva.Line): void {
         props.labelManager.mutate(label => {
-            const field = findFieldForNode(line, label);
+            const field = findFieldForNode(line, label.labelData);
 
             if (!field) {
                 return;
@@ -1053,8 +1030,8 @@
 
         stage = new Konva.Stage({
             container: containerElement.value,
-            width: props.labelManager.current.value.width * pixelsPerInch,
-            height: props.labelManager.current.value.height * pixelsPerInch,
+            width: props.labelManager.current.value.labelData.width * pixelsPerInch,
+            height: props.labelManager.current.value.labelData.height * pixelsPerInch,
         });
         surface.stage = stage;
 

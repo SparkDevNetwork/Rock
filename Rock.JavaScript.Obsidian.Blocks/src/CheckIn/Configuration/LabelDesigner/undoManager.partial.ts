@@ -1,8 +1,8 @@
 import { Ref, ref } from "vue";
-import { DesignedLabelBag } from "@Obsidian/ViewModels/CheckIn/Labels/designedLabelBag";
 import { Guid } from "@Obsidian/Types";
 import { areEqual } from "@Obsidian/Utility/guid";
 import { LabelFieldBag } from "@Obsidian/ViewModels/CheckIn/Labels/labelFieldBag";
+import { LabelDetail } from "./types.partial";
 
 /**
  * Simple interface to force a reference to be read-only so it can't be
@@ -197,7 +197,7 @@ export class ObjectUndoManager<TObject> {
  * Undo manager for the {@link LabelBag} object type. This provides some
  * additional functionality to make it easier to modify labels.
  */
-export class LabelUndoManager extends ObjectUndoManager<DesignedLabelBag> {
+export class LabelUndoManager extends ObjectUndoManager<LabelDetail> {
     /** The currently selected field identifier. */
     private selectedFieldGuid?: Guid;
 
@@ -205,11 +205,11 @@ export class LabelUndoManager extends ObjectUndoManager<DesignedLabelBag> {
     public readonly selectedField: IReadOnlyRef<LabelFieldBag | undefined>;
 
     /**
-     * Creates a new undo manager for {@link LabelBag}.
+     * Creates a new undo manager for {@link LabelDetail}.
      *
      * @param label The initial label content.
      */
-    public constructor(label: DesignedLabelBag) {
+    public constructor(label: LabelDetail) {
         super(label);
 
         this.selectedField = ref<LabelFieldBag>();
@@ -222,8 +222,11 @@ export class LabelUndoManager extends ObjectUndoManager<DesignedLabelBag> {
      */
     public selectField(fieldGuid?: Guid | undefined): void {
         this.selectedFieldGuid = fieldGuid;
-        (this.selectedField as Ref<LabelFieldBag | undefined>).value = this.current.value.fields
-            ?.find(f => areEqual(f.guid, this.selectedFieldGuid));
+
+        const field = this.current.value.labelData.fields
+            .find(f => areEqual(f.guid, this.selectedFieldGuid));
+
+            (this.selectedField as Ref<LabelFieldBag | undefined>).value = field;
     }
 
     /**
@@ -234,7 +237,8 @@ export class LabelUndoManager extends ObjectUndoManager<DesignedLabelBag> {
      */
     public mutateSelectedField(fn: (value: LabelFieldBag) => void): void {
         this.mutate(label => {
-            const field = label.fields?.find(f => areEqual(f.guid, this.selectedFieldGuid));
+            const field = label.labelData.fields
+                .find(f => areEqual(f.guid, this.selectedFieldGuid));
 
             if (field) {
                 fn(field);
@@ -245,7 +249,9 @@ export class LabelUndoManager extends ObjectUndoManager<DesignedLabelBag> {
     protected override currentValueChanged(): void {
         super.currentValueChanged();
 
-        (this.selectedField as Ref<LabelFieldBag | undefined>).value = this.current.value.fields
-            ?.find(f => areEqual(f.guid, this.selectedFieldGuid));
+        const field = this.current.value.labelData.fields
+            .find(f => areEqual(f.guid, this.selectedFieldGuid));
+
+        (this.selectedField as Ref<LabelFieldBag | undefined>).value = field;
     }
 }

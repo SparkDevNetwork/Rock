@@ -84,22 +84,10 @@ namespace Rock.Blocks.CheckIn.Configuration
                 .ThenBy( s => s.Property?.Title ?? s.Attribute?.Name )
                 .ToList();
 
-            var designedLabel = label.Content.FromJsonOrNull<DesignedLabelBag>();
-
-            if ( designedLabel?.Fields != null )
-            {
-                var converter = new FieldFilterPublicConverter( r => FieldSourceHelper.GetEntityFieldForRule( label.LabelType, r ) );
-
-                foreach ( var field in designedLabel.Fields )
-                {
-                    field.ConditionalVisibility = converter.ToPublicBag( field.ConditionalVisibility );
-                }
-            }
-
             return new
             {
                 IdKey = label.IdKey,
-                Label = designedLabel,
+                Label = GetLabelDetailBag( label ),
                 LabelName = label.Name,
                 LabelType = label.LabelType,
                 DataSources = dataSources,
@@ -121,8 +109,30 @@ namespace Rock.Blocks.CheckIn.Configuration
             };
         }
 
+        private LabelDetailBag GetLabelDetailBag( CheckInLabel checkInLabel )
+        {
+            var designedLabel = checkInLabel.Content.FromJsonOrNull<DesignedLabelBag>();
+
+            // Ensure we have the required properties set.
+            designedLabel = designedLabel ?? new DesignedLabelBag();
+            designedLabel.Fields = designedLabel.Fields ?? new List<LabelFieldBag>();
+
+            var converter = new FieldFilterPublicConverter( r => FieldSourceHelper.GetEntityFieldForRule( checkInLabel.LabelType, r ) );
+
+            foreach ( var field in designedLabel.Fields )
+            {
+                field.ConditionalVisibility = converter.ToPublicBag( field.ConditionalVisibility );
+            }
+
+            return new LabelDetailBag
+            {
+                LabelData = designedLabel,
+                ConditionalVisibility = converter.ToPublicBag( checkInLabel.GetConditionalPrintCriteria() )
+            };
+        }
+
         [BlockAction]
-        public BlockActionResult Save( string key, DesignedLabelBag label, string previewData )
+        public BlockActionResult Save( string key, LabelDetailBag label, string previewData )
         {
             var entityService = new CheckInLabelService( RockContext );
             var checkInLabel = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
@@ -137,17 +147,32 @@ namespace Rock.Blocks.CheckIn.Configuration
                 return ActionBadRequest( $"Not authorized to edit ${CheckInLabel.FriendlyTypeName}." );
             }
 
-            if ( label.Fields != null )
+            if ( label == null || label.LabelData == null )
             {
-                var converter = new FieldFilterPublicConverter( r => FieldSourceHelper.GetEntityFieldForRule( checkInLabel.LabelType, r ) );
+                return ActionBadRequest( "Invalid data provided." );
+            }
 
-                foreach ( var field in label.Fields )
+            // Note: We don't do the ValidProperties<> boxing around the label
+            // because it would get very complicated to deal with all the child
+            // properties that are nested multiple layers deep. This is a special
+            // purpose block that is tied closely to the Obsidian implementation
+            // so other code should not just use the block actions and assume
+            // they will work.
+
+            var converter = new FieldFilterPublicConverter( r => FieldSourceHelper.GetEntityFieldForRule( checkInLabel.LabelType, r ) );
+
+            if ( label.LabelData.Fields != null )
+            {
+                foreach ( var field in label.LabelData.Fields )
                 {
                     field.ConditionalVisibility = converter.ToPrivateBag( field.ConditionalVisibility );
                 }
             }
 
-            checkInLabel.Content = label.ToJson();
+            // This should become a merge just in case something weird happens in Obsidian.
+            checkInLabel.Content = label.LabelData.ToJson();
+
+            checkInLabel.SetConditionalPrintCriteria( converter.ToPrivateBag( label.ConditionalVisibility ?? new FieldFilterGroupBag() ) );
 
             if ( previewData.IsNotNullOrWhiteSpace() )
             {
@@ -231,5 +256,12 @@ namespace Rock.Blocks.CheckIn.Configuration
                 return base.GetRulePropertyExpression( instanceExpression, rule, rockContext );
             }
         }
+    }
+
+    public class LabelDetailBag
+    {
+        public DesignedLabelBag LabelData { get; set; }
+
+        public FieldFilterGroupBag ConditionalVisibility { get; set; }
     }
 }
