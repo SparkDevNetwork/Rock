@@ -304,6 +304,9 @@
         else if (field.fieldType === LabelFieldType.Image) {
             return "Image";
         }
+        else if (field.fieldType === LabelFieldType.AttendeePhoto) {
+            return "Attendee Photo";
+        }
         else if (field.fieldType === LabelFieldType.Barcode) {
             return "Barcode";
         }

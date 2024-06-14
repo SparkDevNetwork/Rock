@@ -2,20 +2,18 @@
     <div class="editor">
         <div class="menu-bar">
             <div class="left-actions">
-                <RockButton :disabled="!labelManager.canUndo.value" @click="() => labelManager.undo()">
+                <RockButton :disabled="!labelManager.canUndo.value"
+                            @click="() => labelManager.undo()">
                     <i class="fa fa-undo"></i>
                 </RockButton>
 
-                <RockButton :disabled="!labelManager.canRedo.value" @click="() => labelManager.redo()">
+                <RockButton :disabled="!labelManager.canRedo.value"
+                            @click="() => labelManager.redo()">
                     <i class="fa fa-redo"></i>
                 </RockButton>
             </div>
 
             <div class="center-actions">
-                <RockButton>
-                    <i class="fa fa-layer-group"></i>
-                    Position
-                </RockButton>
             </div>
 
             <div class="right-actions">
