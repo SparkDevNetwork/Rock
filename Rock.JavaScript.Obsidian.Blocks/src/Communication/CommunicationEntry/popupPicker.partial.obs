@@ -1,11 +1,11 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <BaseAsyncPicker v-model="internalValue"
+    <BaseAsyncPicker v-model="internalListItemBags"
                      v-bind="standardProps"
                      :disabled="disabled"
                      displayStyle="auto"
                      :enhanceForLongLists="false"
-                     :items="internalValue"
+                     :items="internalListItemBags"
                      :label="label"
                      maxTagCount="responsive"
                      :multiple="true">
@@ -112,7 +112,7 @@
 
     //#region Values
 
-    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+    const internalListItemBags = useVModelPassthrough(props, "modelValue", emit);
     const maxTagPlaceholder = ref<HTMLElement | undefined>();
 
     //#endregion
@@ -165,28 +165,18 @@
     }
 
     function onDeselectItemClicked(value: string): void {
-        if (props.disabled) {
-            // Skip if the component is disabled.
-            return;
-        }
-
-        const item = props.modelValue.find(i => i.value === value);
+        const item = internalListItemBags.value.find(i => i.value === value);
         if (item) {
-            const newValue = [...props.modelValue];
+            const newValue = [...internalListItemBags.value];
             const index = newValue.indexOf(item);
             if (index !== -1) {
                 newValue.splice(index, 1);
-                internalValue.value = newValue;
+                internalListItemBags.value = newValue;
             }
         }
     }
 
     function onShowMoreClicked(): void {
-        if (props.disabled) {
-            // Skip if the component is disabled.
-            return;
-        }
-
         emit("showMore");
     }
 
@@ -194,7 +184,7 @@
 
     //#region Watchers
 
-    watch(maxTagPlaceholder, (newValue: HTMLElement | undefined, oldValue: HTMLElement | undefined) => {
+    watch(maxTagPlaceholder, (newValue: HTMLElement | undefined) => {
         if (newValue) {
             // To get special styling, the placeholder needs to be moved to a different ancestor element.
             const ancestor = findAncestor(newValue, ".ant-select-selection-overflow-item-rest");

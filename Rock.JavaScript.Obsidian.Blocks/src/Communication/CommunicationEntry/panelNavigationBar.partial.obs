@@ -22,7 +22,7 @@
     import { PropType, onMounted } from "vue";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
-
+// TODO JMH Remove this and use TabbedBar in its place.
     const props = defineProps({
         modelValue: {
             type: String as PropType<string | null | undefined>

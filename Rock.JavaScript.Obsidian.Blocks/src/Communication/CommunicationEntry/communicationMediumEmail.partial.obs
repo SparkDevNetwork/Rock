@@ -35,9 +35,8 @@
                   @submit="onFormSubmitted">
             <div class="row">
                 <div class="col-sm-12">
-                    <RecipientPicker :modelValue="recipients"
-                                     @update:modelValue="$emit('update:recipients', $event)"
-                                     :disabled="disabled" @update:disabled="$emit('update:disabled', $event)"
+                    <RecipientPicker v-model="internalRecipients"
+                                     v-model:disabled="internalDisabled"
                                      :isAddHidden="config.mode !== Mode.Full"
                                      :isForBulkCommunication="isBulkCommunication"
                                      label="Recipients"
@@ -56,8 +55,7 @@
                 </div>
                 <div v-if="!isBulkEmailThresholdExceeded && config.mode === Mode.Full" class="col-sm-6 align-self-center">
                     <div class="float-right">
-                        <Switch :modelValue="isBulkCommunication"
-                                @update:modelValue="$emit('update:isBulkCommunication', $event)"
+                        <Switch v-model="internalIsBulkCommunication"
                                 :disabled="disabled"
                                 text="Bulk Communication" />
                     </div>
@@ -136,8 +134,7 @@
                 </div>
                 <div class="col-sm-4 align-self-center">
                     <ScheduleSend v-if="config.mode === Mode.Full"
-                                  :modelValue="scheduleSendIsoString"
-                                  @update:modelValue="$emit('update:scheduleSendIsoString', $event)"
+                                  v-model="internalScheduleSendIsoString"
                                   :disabled="disabled" />
                 </div>
                 <div v-if="mediumOptions.isAttachmentUploaderShown"
@@ -168,10 +165,10 @@
             </VerticalTransitionCollapse>
 
             <div ref="fileInputWrapper" class="d-none">
-                <FileUploader @update:modelValue="onAttachmentAdded"
+                <FileUploader :disabled="disabled"
+                              :binaryFileTypeGuid="mediumOptions.binaryFileTypeGuid"
                               @error="onAttachmentError"
-                              :disabled="disabled"
-                              :binaryFileTypeGuid="mediumOptions.binaryFileTypeGuid" />
+                              @update:modelValue="onAttachmentAdded" />
             </div>
 
             <HtmlEditor v-model="message"
@@ -244,6 +241,7 @@
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { Guid } from "@Obsidian/Types";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { emptyGuid } from "@Obsidian/Utility/guid";
     import { CommunicationEntryCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryCommunicationBag";
     import { CommunicationEntryEmailMediumOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryEmailMediumOptionsBag";
@@ -307,6 +305,11 @@
 
     //#region Values
 
+    const internalRecipients = useVModelPassthrough(props, "recipients", emit);
+    const internalDisabled = useVModelPassthrough(props, "disabled", emit);
+    const internalIsBulkCommunication = useVModelPassthrough(props, "isBulkCommunication", emit);
+    const internalScheduleSendIsoString = useVModelPassthrough(props, "scheduleSendIsoString", emit);
+    const disabledMessage = ref<string | null | undefined>();
     const testResultElement = ref<HTMLElement | undefined>();
     const attachments = ref<ListItemBag[]>(config.communication?.emailAttachmentBinaryFiles ?? []);
     const templateGuid = ref<string>(config.communication?.communicationTemplateGuid ?? "");
@@ -552,15 +555,17 @@
     /**
      * Disables the component.
      */
-    function disable(): void {
-        emit("update:disabled", true);
+    function disable(message: string): void {
+        disabledMessage.value = message;
+        internalDisabled.value = true;
     }
 
     /**
      * Enables the component.
      */
     function enable(): void {
-        emit("update:disabled", false);
+        disabledMessage.value = null;
+        internalDisabled.value = false;
     }
 
     /**
@@ -568,7 +573,7 @@
      */
     async function save(): Promise<void> {
         try {
-            disable();
+            disable("Saving communication...");
 
             const bag: CommunicationEntrySaveRequestBag = {
                 isBulkCommunication: props.isBulkCommunication,
@@ -608,7 +613,7 @@
      */
     async function send(): Promise<void> {
         try {
-            disable();
+            disable("Sending communication...");
 
             const bag: CommunicationEntrySendRequestBag = {
                 isBulkCommunication: props.isBulkCommunication,
@@ -648,7 +653,7 @@
      */
     async function test(): Promise<void> {
         try {
-            disable();
+            disable("Sending test communication...");
 
             testResult.value = undefined;
 
@@ -726,7 +731,7 @@
      */
     watch(isBulkEmailThresholdExceeded, isBulkForced => {
         if (isBulkForced && !props.isBulkCommunication) {
-            emit("update:isBulkCommunication", true);
+            internalIsBulkCommunication.value = true;
         }
     });
 

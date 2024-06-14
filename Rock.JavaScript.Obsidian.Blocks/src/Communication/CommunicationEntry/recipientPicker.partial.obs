@@ -20,9 +20,9 @@
                        @select="onPersonSelected" />
 
     <RecipientModal v-model="isRecipientModalShown"
-                    :recipients="modelValue"
-                    @update:recipients="$emit('update:modelValue', $event)"
+                    v-model:recipients="internalRecipients"
                     :disabled="disabled"
+                    :disabledMessage="recipientManagerDisabledMessage"
                     :getTooltipRef="getTooltipRef"
                     :isForBulkCommunication="isForBulkCommunication"
                     :isAddHidden="isAddHidden" />
@@ -42,38 +42,67 @@
     import { CommunicationEntryGetRecipientsRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryGetRecipientsRequestBag";
     import { CommunicationEntryRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryRecipientBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
 
     const props = defineProps({
+        /**
+         * The picked recipients.
+         */
         modelValue: {
             type: Array as PropType<CommunicationEntryRecipientBag[]>,
             required: true
         },
 
+        /**
+         * Is this component disabled?
+         */
         disabled: {
             type: Boolean as PropType<boolean>,
             default: false
         },
 
+        /**
+         * The message that is displayed in the recipient manager when it is disabled.
+         */
+        recipientManagerDisabledMessage: {
+            type: String as PropType<string | null | undefined>,
+            required: false
+        },
+
+        /**
+         * Is the add option hidden?
+         */
         isAddHidden: {
             type: Boolean as PropType<boolean>,
             default: false
         },
 
+        /** Is this for a bulk communication? */
         isForBulkCommunication: {
             type: Boolean as PropType<boolean>,
             default: false
         },
 
+        /**
+         * The form control label.
+         */
         label: {
             type: String as PropType<string | undefined>,
             required: false
         },
 
+        /**
+         * The medium type for this recipient picker.
+         */
         mediumType: {
             type: String as PropType<MediumType>,
             required: true,
         },
 
+        /**
+         * The minimum recipient count.
+         *
+         * Set to `0` for no minimum. */
         minimumRecipientCount: {
             type: Number as PropType<number>,
             default: 0
@@ -89,6 +118,7 @@
 
     //#region Values
 
+    const internalRecipients = useVModelPassthrough(props, "modelValue", emit);
     const isPersonPickerShown = ref<boolean>(false);
     const isRecipientModalShown = ref<boolean>(false);
     const keepOpen = use(KeepPersonPickerOpen);
@@ -115,10 +145,10 @@
 
     const recipientListItems = computed<ListItemBag[]>({
         get() {
-            return convertRecipientsToListItems(props.modelValue);
+            return convertRecipientsToListItems(internalRecipients.value);
         },
         set(newValue: ListItemBag[]) {
-            const currentListItems = convertRecipientsToListItems(props.modelValue);
+            const currentListItems = convertRecipientsToListItems(internalRecipients.value);
 
             // Whenever items are removed from the list, we should remove them from the source items as well.
             const removedListItems = currentListItems.filter(currentItem => !newValue.some(newItem => newItem.value === currentItem.value));
@@ -130,7 +160,7 @@
             }
 
             // Copy the current array.
-            let newRecipients: CommunicationEntryRecipientBag[] = [...props.modelValue];
+            let newRecipients: CommunicationEntryRecipientBag[] = [...internalRecipients.value];
 
             if (removedListItems.length) {
                 // Remove old items.
@@ -145,15 +175,15 @@
 
                 invokeBlockAction<CommunicationEntryRecipientBag[]>("GetRecipients", { bag }).then(result => {
                     if (!result.isSuccess || !result.data) {
-                        emit("update:modelValue", newRecipients);
+                        internalRecipients.value = newRecipients;
                     }
                     else {
-                        emit("update:modelValue", [...newRecipients, ...result.data]);
+                        internalRecipients.value = [...newRecipients, ...result.data];
                     }
                 });
             }
             else {
-                emit("update:modelValue", newRecipients);
+                internalRecipients.value = newRecipients;
             }
         }
     });
@@ -199,12 +229,12 @@
             console.log("Error");
         }
         else {
-            const updatedRecipients = [...props.modelValue];
+            const updatedRecipients = [...internalRecipients.value];
             const index = updatedRecipients.findIndex(i => i.personAliasGuid === result.data?.personAliasGuid);
             if (index === -1) {
-                // Only update the modelValue if the collection changed.
+                // Only update the recipients if the collection changed.
                 updatedRecipients.push(result.data);
-                emit("update:modelValue", updatedRecipients);
+                internalRecipients.value = updatedRecipients;
             }
         }
 
@@ -299,7 +329,7 @@
 
     /** Gets the recipient for a person. */
     function findRecipient(personAliasGuid: string): CommunicationEntryRecipientBag | null {
-        return props.modelValue.find(item => item.personAliasGuid === personAliasGuid) ?? null;
+        return internalRecipients.value.find(item => item.personAliasGuid === personAliasGuid) ?? null;
     }
 
     //#endregion

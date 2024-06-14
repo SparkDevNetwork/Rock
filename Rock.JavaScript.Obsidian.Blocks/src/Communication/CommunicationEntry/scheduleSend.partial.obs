@@ -24,15 +24,21 @@
     import DateTimePicker from "@Obsidian/Controls/dateTimePicker.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import Switch from "@Obsidian/Controls/switch.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
     const props = defineProps({
-        /** The schedule send datetime value in ISO 8601 format. */
+        /**
+         * The schedule send datetime value in ISO 8601 format.
+         */
         modelValue: {
             type: String as PropType<string>,
             required: true
         },
 
+        /**
+         * Is this component disabled?
+         */
         disabled: {
             type: Boolean as PropType<boolean>,
             default: false
@@ -45,8 +51,9 @@
 
     //#region Values
 
+    const internalScheduleSendIsoString = useVModelPassthrough(props, "modelValue", emit);
     const isScheduleSendModalOpen = ref<boolean>(false);
-    const tempScheduleSendIsoString = ref<string>(props.modelValue);
+    const tempScheduleSendIsoString = ref<string>(internalScheduleSendIsoString.value);
     const componentKey = ref<number>(0);
 
     //#endregion
@@ -54,13 +61,13 @@
     //#region Computed Values
 
     const scheduleSendText = computed<string>(() => {
-        const dateTimeString = RockDateTime.parseISO(props.modelValue)?.toASPString("M/d/yyyy hh:mm tt");
+        const dateTimeString = RockDateTime.parseISO(internalScheduleSendIsoString.value)?.toASPString("M/d/yyyy hh:mm tt");
 
         return isScheduled.value && dateTimeString ? `Scheduled: ${dateTimeString}` : "Schedule Send";
     });
 
     const isScheduled = computed<boolean>(() => {
-        return !!RockDateTime.parseISO(props.modelValue);
+        return !!RockDateTime.parseISO(internalScheduleSendIsoString.value);
     });
 
     //#endregion
@@ -80,7 +87,7 @@
         }
         else {
             // Clear the scheduled send value and close the modal if it's open.
-            emit("update:modelValue", "");
+            internalScheduleSendIsoString.value = "";
 
             if (isScheduleSendModalOpen.value) {
                 isScheduleSendModalOpen.value = false;
@@ -94,12 +101,12 @@
         if (!dateTime) {
             // The date time was invalid.
             // Set the switch to false and reset the send schedule values.
-            emit("update:modelValue", "");
+            internalScheduleSendIsoString.value = "";
             tempScheduleSendIsoString.value = "";
         }
         else {
             // Save the temporary value.
-            emit("update:modelValue", tempScheduleSendIsoString.value);
+            internalScheduleSendIsoString.value = tempScheduleSendIsoString.value;
         }
 
         // Close the modal.
@@ -109,7 +116,7 @@
     function onScheduleSendModalClose(): void {
         // The modal was closed without saving the send schedule.
         // Set the switch to false and reset the send schedule values.
-        emit("update:modelValue", "");
+        internalScheduleSendIsoString.value = "";
         tempScheduleSendIsoString.value = "";
 
         // Force rerender in case the model value didn't actually change.

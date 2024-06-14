@@ -6,14 +6,22 @@
            saveText="Save"
            title="Recipient Manager"
            @save="onSaveClicked">
+        <NotificationBox v-if="disabled && disabledMessage" alertType="warning">
+            {{ disabledMessage }}
+        </NotificationBox>
+
         <template v-if="!isAddHidden">
             <div class="d-flex flex-row justify-content-between align-items-center">
-                <PersonPicker :disabled="disabled" @update:modelValue="onPersonPicked" label="Add Recipient" />
+                <PersonPicker :disabled="disabled"
+                              label="Add Recipient"
+                              @update:modelValue="onPersonPicked" />
                 <div class="label label-info">Recipients: {{ pendingItems.length }}</div>
             </div>
             <hr>
         </template>
+
         <TextBox v-model="recipientTextFilter" label="Filter" placeholder="Filter by name, email or phone number" />
+
         <Grid :definition="recipientsGridDefinition"
               :data="recipientsGridData"
               itemTerm="Recipient"
@@ -118,6 +126,7 @@
     import { MediumType } from "./types.partial";
     import Grid, { Column, ButtonColumn, textValueFilter } from "@Obsidian/Controls/grid";
     import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import PersonPicker from "@Obsidian/Controls/personPicker.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { Guid } from "@Obsidian/Types";
@@ -141,6 +150,12 @@
         disabled: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        /** A message to be displayed when `disabled` is `true`. */
+        disabledMessage: {
+            type: String as PropType<string | null | undefined>,
+            required: false
         },
 
         getTooltipRef: {
@@ -169,22 +184,7 @@
         (e: "update:recipients", newValue: CommunicationEntryRecipientBag[]): void
     }>();
 
-    const internalIsOpen = useVModelPassthrough(props, "modelValue", emit);
     const isRegex: RegExp = /\/(.+)\/(.*)/; // Matches regex strings in the form /<regex>/<flags>
-
-    function getStringKey<T>(key: Extract<keyof T, string>): string {
-        return key;
-    }
-
-    function getRecipientKey(key: Extract<keyof CommunicationEntryRecipientBag, string>): string {
-        return getStringKey<CommunicationEntryRecipientBag>(key);
-    }
-
-    function createFieldDefinition(name: string): FieldDefinitionBag {
-        return {
-            name
-        };
-    }
 
     const recipientsGridDefinition: GridDefinitionBag = {
         enableLaunchWorkflow: false,
@@ -197,18 +197,20 @@
         ],
     };
 
-    const recipientsGridData = computed<GridDataBag>(() => ({
-        rows: filteredRecipients.value,
-    }));
-
     //#region Values
 
-    const pendingItems = ref<CommunicationEntryRecipientBag[]>([...props.recipients]);
+    const internalIsOpen = useVModelPassthrough(props, "modelValue", emit);
+    const internalRecipients = useVModelPassthrough(props, "recipients", emit);
+    const pendingItems = ref<CommunicationEntryRecipientBag[]>([...internalRecipients.value]);
     const recipientTextFilter = ref<string>("");
 
     //#endregion
 
     //#region Computed Values
+
+    const recipientsGridData = computed<GridDataBag>(() => ({
+        rows: filteredRecipients.value,
+    }));
 
     const filteredRecipients = computed<CommunicationEntryRecipientBag[]>(() => {
         const textFilter = recipientTextFilter.value;
@@ -238,6 +240,20 @@
     //#endregion
 
     //#region Functions
+
+    function getStringKey<T>(key: Extract<keyof T, string>): string {
+        return key;
+    }
+
+    function getRecipientKey(key: Extract<keyof CommunicationEntryRecipientBag, string>): string {
+        return getStringKey<CommunicationEntryRecipientBag>(key);
+    }
+
+    function createFieldDefinition(name: string): FieldDefinitionBag {
+        return {
+            name
+        };
+    }
 
     /**
      * Applies a tooltip to an element. The element should have an `data-original-title` attribute containing the tooltip text.
@@ -304,7 +320,7 @@
     }
 
     function onSaveClicked(): void {
-        emit("update:recipients", pendingItems.value);
+        internalRecipients.value = pendingItems.value;
         internalIsOpen.value = false;
     }
 
@@ -312,7 +328,7 @@
 
     //#region Watchers
 
-    watch(() => props.modelValue, (newValue: boolean, oldValue: boolean) => {
+    watch(internalIsOpen, (newValue: boolean, oldValue: boolean) => {
         // If opening the modal, reset the pending items.
         if (newValue && !oldValue) {
             pendingItems.value = [...props.recipients];
