@@ -4,6 +4,7 @@
                :title="config.title ?? 'New Communication'"
                titleIconCssClass="fa fa-comment-o"
                type="block">
+               
             <template v-if="config.mode === Mode.Full && statusLabel" #subheaderRight>
                 <HighlightLabel :labelType="statusLabelCssClass">{{ statusLabel }}</HighlightLabel>
             </template>
