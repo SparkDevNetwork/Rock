@@ -122,7 +122,6 @@ namespace Rock.Migrations
                     {
                         Id = c.Int(nullable: false, identity: true),
                         Title = c.String(nullable: false, maxLength: 250),
-                        Summary = c.String(maxLength: 500),
                         Description = c.String(),
                         DetailsUrl = c.String(),
                         PublishDateTime = c.DateTime(),
