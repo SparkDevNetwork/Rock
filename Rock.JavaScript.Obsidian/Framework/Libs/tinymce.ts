@@ -49,9 +49,9 @@ import "tinymce/plugins/emoticons";
 // CSS (import any skins needed)
 // Use TinyMCE's default skin for the toolbar and editor container (does not style the editor content).
 import "tinymce/skins/ui/oxide/skin.min.css";
-import tinymce, { Editor, EditorEvent, Events, Ui, EventDispatcher } from "tinymce";
+import tinymce, { Editor, EditorEvent, Events, Ui, EventDispatcher, RawEditorOptions } from "tinymce";
 // Use Rock styles the content within the editor.
 //import "tinymce/skins/content/default/content.css"; // Default styles for the editable content area.
 //import "tinymce/skins/ui/oxide/content.min.css"; // Styles for the editable content area.
 
-export { tinymce, Editor, EditorEvent, EventDispatcher, Events, Ui };
+export { tinymce, Editor, EditorEvent, EventDispatcher, Events, RawEditorOptions, Ui };

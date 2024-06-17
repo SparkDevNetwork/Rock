@@ -17,9 +17,7 @@
                                                   :editorHeight="editorHeight + yOffset"
                                                   :mergeFields="mergeFields"
                                                   ref="editSourceCodePlugin"
-                                                  :startInCodeEditorMode="startInCodeEditorMode"
-                                                  :tinyMceInstance="tinyMceInstance"
-                                                  :toolbarElement="toolbarElement">
+                                                  :startInCodeEditorMode="startInCodeEditorMode">
                                 <template v-slot="{ isEditorShown }">
                                     <div v-show="!updateIsEditorShown(isEditorShown)"
                                          class="note-editable"
@@ -40,36 +38,23 @@
                 </div>
             </div>
 
-            <ParagraphPlugin ref="paragraphPlugin"
-                             :tinyMceInstance="tinyMceInstance"
-                             :toolbarElement="toolbarElement" />
+            <ParagraphPlugin ref="paragraphPlugin" />
 
-            <PasteAsPlainTextPlugin ref="pasteAsPlainTextPlugin"
-                                    :tinyMceInstance="tinyMceInstance"
-                                    :toolbarElement="toolbarElement" />
+            <PasteAsPlainTextPlugin ref="pasteAsPlainTextPlugin" />
 
             <MergeFieldPlugin :mergeFields="mergeFields"
-                              ref="mergeFieldPlugin"
-                              :tinyMceInstance="tinyMceInstance"
-                              :toolbarElement="toolbarElement" />
+                              ref="mergeFieldPlugin" />
 
             <ImageBrowserPlugin v-if="false"
-                                ref="imageBrowserPlugin"
-                                :tinyMceInstance="tinyMceInstance"
-                                :toolbarElement="toolbarElement" />
+                                ref="imageBrowserPlugin" />
 
             <FileBrowserPlugin v-if="false"
-                               ref="fileBrowserPlugin"
-                               :tinyMceInstance="tinyMceInstance"
-                               :toolbarElement="toolbarElement" />
+                               ref="fileBrowserPlugin" />
 
             <AssetManagerPlugin v-if="false"
-                                ref="assetManagerPlugin"
-                                :tinyMceInstance="tinyMceInstance"
-                                :toolbarElement="toolbarElement" />
+                                ref="assetManagerPlugin" />
 
-            <StylesheetsPlugin :tinyMceInstance="tinyMceInstance"
-                               htmlCssReplacementSelector=".note-editor"
+            <StylesheetsPlugin htmlCssReplacementSelector=".note-editor"
                                bodyCssReplacementSelector=".note-editing-area" />
         </template>
     </RockFormField>
@@ -104,6 +89,7 @@
     import ParagraphPlugin from "./TextEditor/paragraphPlugin.partial.obs";
     import PasteAsPlainTextPlugin from "./TextEditor/pasteAsPlainTextPlugin.partial.obs";
     import StylesheetsPlugin from "./TextEditor/stylesheetsPlugin.partial.obs";
+    import { provideTinyMceInstance, provideTinyMceToolbarElement } from "./TextEditor/utils.partial";
     import { tinymce, Editor, EditorEvent, Events } from "@Obsidian/Libs/tinymce";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
 
@@ -174,14 +160,19 @@
     // #region Values
 
     const internalValue = useVModelPassthrough(props, "modelValue", emit);
-    const editorId = ref<string>();
-    const editorElement = ref<HTMLElement>();
-    const toolbarId = ref<string>();
-    const toolbarElement = ref<HTMLElement>();
-    const tinyMceInstance = ref<Editor>();
+    const editorId = ref<string | undefined>();
+    const editorElement = ref<HTMLElement | undefined>();
+    const toolbarId = ref<string | undefined>();
+    const tinyMceInstance = ref<Editor | undefined>();
+    const toolbarElement = ref<HTMLElement | undefined>();
+
+    // Provide the TinyMCE instance and toolbar element to plugins.
+    provideTinyMceInstance(computed(() => tinyMceInstance.value));
+    provideTinyMceToolbarElement(computed(() => toolbarElement.value));
+
     // Keep track of the TinyMCE value to compare with the modelValue.
-    const tinyMceValue = ref<string>();
-    const resizerElement = ref<HTMLElement>();
+    const tinyMceValue = ref<string | undefined>();
+    const resizerElement = ref<HTMLElement | undefined>();
     const yOffset = ref<number>(0);
     const isEditorShown = ref<boolean>(false);
 
@@ -289,6 +280,7 @@
     }
 
     // Initialize the editor.
+    // This gets called after the plugins have been mounted.
     onMounted(() => {
         if (editorId.value && toolbarId.value) {
             // Define the toolbar buttons depending on the toolbar config (light or full).

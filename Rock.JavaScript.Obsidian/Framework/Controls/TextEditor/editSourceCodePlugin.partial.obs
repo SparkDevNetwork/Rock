@@ -13,7 +13,7 @@
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
-    import { getToolbarButton, setEditorEnabled } from "./utils.partial";
+    import { getToolbarButton, setEditorEnabled, useTinyMceInstance, useTinyMceToolbarElement } from "./utils.partial";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
     import { Editor, Ui } from "@Obsidian/Libs/tinymce";
@@ -44,15 +44,7 @@
         startInCodeEditorMode: {
             type: Boolean as PropType<boolean>,
             default: false
-        },
-        tinyMceInstance: {
-            type: Object as PropType<Editor | undefined>,
-            required: true
-        },
-        toolbarElement: {
-            type: Object as PropType<HTMLElement | undefined>,
-            required: true
-        },
+        }
     });
 
     const id = "rockeditsourcecode" as const;
@@ -66,6 +58,9 @@
         (e: "update:isShown", value: boolean): void,
         (e: "update:modelValue", value: string): void,
     }>();
+
+    const tinyMceInstance = useTinyMceInstance();
+    const toolbarElement = useTinyMceToolbarElement();
 
     //#region Values
 
@@ -124,7 +119,7 @@
             },
             onSetup: (api: Ui.Toolbar.ToolbarToggleButtonInstanceApi): (api: Ui.Toolbar.ToolbarToggleButtonInstanceApi) => void => {
                 toolbarButtonApi.value = api;
-                toolbarButtonElement.value = getToolbarButton(tooltip, props.toolbarElement) ?? undefined;
+                toolbarButtonElement.value = getToolbarButton(tooltip, toolbarElement.value) ?? undefined;
 
                 toolbarButtonIconElement.value = toolbarButtonElement.value?.querySelector("svg") ?? undefined;
                 if (toolbarButtonIconElement.value) {
@@ -155,12 +150,12 @@
     //#region Watchers
 
     // Register the plugin whenever the bound Editor changes.
-    watch(() => props.tinyMceInstance, () => {
+    watch(tinyMceInstance, () => {
         // Dispose the previous tooltip button if set.
         disposeTooltipButton();
 
-        if (props.tinyMceInstance) {
-            init(props.tinyMceInstance);
+        if (tinyMceInstance.value) {
+            init(tinyMceInstance.value);
         }
     });
 
@@ -184,14 +179,14 @@
 
     // Disable the editor toolbar when the source code is being edited.
     watch(internalIsShown, () => {
-        if (props.tinyMceInstance) {
+        if (tinyMceInstance.value) {
             // Clear the TinyMCE selection before enabling/disabling, otherwise
             // some of the disabled toolbar buttons can still be clicked.
-            props.tinyMceInstance.selection?.collapse();
+            tinyMceInstance.value.selection?.collapse();
 
             if (internalIsShown.value) {
                 // Disable the toolbar but keep the edit source code toolbar button enabled.
-                setEditorEnabled(props.tinyMceInstance, false);
+                setEditorEnabled(tinyMceInstance.value, false);
 
                 // Enable the toolbar button as long as the plugin isn't disabled.
                 if (!props.disabled) {
@@ -200,7 +195,7 @@
             }
             else {
                 // Disable the toolbar but keep the edit source code toolbar button enabled.
-                setEditorEnabled(props.tinyMceInstance, true);
+                setEditorEnabled(tinyMceInstance.value, true);
             }
 
             // Always update the button UI based on whether the editor is shown.

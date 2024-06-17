@@ -16,6 +16,7 @@
 //
 
 import { Editor } from "@Obsidian/Libs/tinymce";
+import { ComputedRef, InjectionKey, inject, provide } from "vue";
 
 /** Gets a button element from the toolbar. This should only be called after the editor is initialized. */
 export function getToolbarButton(tooltip: string, parent?: HTMLElement | undefined): HTMLElement | null | undefined {
@@ -35,4 +36,38 @@ export function setEditorEnabled(editor: Editor, isEnabled: boolean): void {
     if (editorBody) {
         editorBody.setAttribute("contenteditable", `${isEnabled}`);
     }
+}
+
+/**
+ * Injects a provided value.
+ * Throws an exception if the value is undefined or not yet provided.
+ */
+function use<T>(key: string | InjectionKey<T>): T {
+    const result = inject<T>(key);
+
+    if (result === undefined) {
+        throw `Attempted to access ${key} before a value was provided.`;
+    }
+
+    return result;
+}
+
+const tinyMceInstanceInjectionKey: InjectionKey<ComputedRef<Editor | undefined>> = Symbol("tiny-mce-instance");
+
+export function provideTinyMceInstance(value: ComputedRef<Editor | undefined>): void {
+    provide(tinyMceInstanceInjectionKey, value);
+}
+
+export function useTinyMceInstance(): ComputedRef<Editor | undefined> {
+    return use(tinyMceInstanceInjectionKey);
+}
+
+const tinyMceToolbarElementInjectionKey: InjectionKey<ComputedRef<HTMLElement | undefined>> = Symbol("tiny-mce-toolbar-element");
+
+export function provideTinyMceToolbarElement(value: ComputedRef<HTMLElement | undefined>): void {
+    provide(tinyMceToolbarElementInjectionKey, value);
+}
+
+export function useTinyMceToolbarElement(): ComputedRef<HTMLElement | undefined> {
+    return use(tinyMceToolbarElementInjectionKey);
 }

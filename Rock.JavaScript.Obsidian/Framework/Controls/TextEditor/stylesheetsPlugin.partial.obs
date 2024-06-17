@@ -1,15 +1,11 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
+    import { useTinyMceInstance } from "./utils.partial";
     import { Editor, EditorEvent, EventDispatcher, Events } from "@Obsidian/Libs/tinymce";
     import { newGuid } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
-        tinyMceInstance: {
-            type: Object as PropType<Editor | undefined>,
-            required: true
-        },
-
         /**
          * This CSS selector will replace instances of `html` in &lt;style&gt; tags at runtime so styles don't bleed outside the editor.
          *
@@ -37,6 +33,8 @@
         id
     });
 
+    const tinyMceInstance = useTinyMceInstance();
+
     //#region Values
 
     const beforeSetContentEventDispatcher = ref<EventDispatcher<Events.EditorEventMap> | undefined>();
@@ -50,7 +48,9 @@
 
     //#region Functions
 
-    /** Initializes the plugin. */
+    /**
+     * Initializes the plugin.
+     */
     function init(editor: Editor): void {
         // Since the editor is inline (not in an iframe), <style> elements
         // added to the code editor can leak CSS styles to the rest of the page.
@@ -274,12 +274,12 @@
     //#region Watchers
 
     // Register the plugin whenever the bound Editor changes.
-    watch(() => props.tinyMceInstance, () => {
+    watch(tinyMceInstance, () => {
         // Dispose any dependencies.
         dispose();
 
-        if (props.tinyMceInstance) {
-            init(props.tinyMceInstance);
+        if (tinyMceInstance.value) {
+            init(tinyMceInstance.value);
         }
     });
 
