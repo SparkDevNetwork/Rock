@@ -133,6 +133,7 @@
     }>();
 
     // #region Values
+    const defaultConfigurationMode = ConfigurationMode.OnDemandLearning;
 
     const programDetailTabs: Array<string> = ["Overview", "Description"];
 
@@ -206,7 +207,7 @@
         updateRefValue(name, props.modelValue.name ?? "");
         updateRefValue(publicName, props.modelValue.name ?? "");
         updateRefValue(summary, props.modelValue.summary ?? "");
-        updateRefValue(configurationMode, props.modelValue.configurationMode?.toString() ?? "1");
+        updateRefValue(configurationMode, props.modelValue.configurationMode?.toString() ?? defaultConfigurationMode);
         updateRefValue(systemCommunicationValue, props.modelValue.systemCommunication?.value ?? "");
         updateRefValue(category, props.modelValue.category ?? null);
         updateRefValue(highlightColor, props.modelValue.highlightColor ?? "");

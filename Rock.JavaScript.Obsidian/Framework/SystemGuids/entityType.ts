@@ -395,6 +395,10 @@ export const EntityType = {
     LearningActivityCompletion: "14D1295A-CE9E-4FCB-A63C-6DF04DB5E9B1",
     /** The EntityType Guid for Rock.Model.LearningClass */
     LearningClass: "EB41E4E1-64B1-4AA1-8F66-F0DFD81557D9",
+    /** The EntityType Guid for Rock.Model.LearningClassAnnouncement */
+    LearningClassAnnouncement: "D2CE59D3-55E1-4275-9EA1-38C18A05A32B",
+    /** The EntityType Guid for Rock.Model.LearningClassContentPage */
+    LearningClassContentPage: "72A061C4-B7E6-4A91-A4F2-80551F772D46",
     /** The EntityType Guid for Rock.Model.LearningCourse */
     LearningCourse: "21870376-4A6E-4402-ACE3-42AA4441FC2E",
     /** The EntityType Guid for Rock.Model.LearningCourseRequirement */

@@ -152,7 +152,7 @@ namespace Rock.Model
             target.ScheduleConfirmationLogic = source.ScheduleConfirmationLogic;
             target.ScheduleId = source.ScheduleId;
             target.SchedulingMustMeetRequirements = source.SchedulingMustMeetRequirements;
-            target.StartDate = source.StartDate;
+            target.StartDateTime = source.StartDateTime;
             target.StatusValueId = source.StatusValueId;
             target.Title = source.Title;
             target.CreatedDateTime = source.CreatedDateTime;

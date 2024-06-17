@@ -126,7 +126,7 @@ DECLARE @groupLocationPicker INT = 2;
 INSERT [GroupType] ( [IsSystem], [Name], [GroupTerm], [GroupMemberTerm], [AllowMultipleLocations], [ShowInGroupList], [ShowInNavigation], [TakesAttendance], [AttendanceRule], [AttendancePrintTo], [Order], [LocationSelectionMode], [Guid] )
 SELECT [IsSystem], [Name], [GroupTerm], [GroupMemberTerm], [AllowMultipleLocations], [ShowInGroupList], [ShowInNavigation], [TakesAttendance], [AttendanceRule], [AttendancePrintTo], [Order], [LocationSelectionMode], [Guid]
 FROM (
-	SELECT 1 [IsSystem], 'LMS Class' [Name], 'Class' [GroupTerm], 'Participant' [GroupMemberTerm], 1 [AllowMultipleLocations], 1 [ShowInGroupList], 1 [ShowInNavigation], 1 [TakesAttendance], @mustBelongToCheckIn [AttendanceRule], @attendancePrintToDefault [AttendancePrintTo], 1 [Order], @groupLocationPicker [LocationSelectionMode], @lmsGroupTypeGuid [Guid]
+	SELECT 1 [IsSystem], 'LMS Class' [Name], 'Class' [GroupTerm], 'Participant' [GroupMemberTerm], 1 [AllowMultipleLocations], 1 [ShowInGroupList], 0 [ShowInNavigation], 1 [TakesAttendance], @mustBelongToCheckIn [AttendanceRule], @attendancePrintToDefault [AttendancePrintTo], 1 [Order], @groupLocationPicker [LocationSelectionMode], @lmsGroupTypeGuid [Guid]
 ) seed
 WHERE NOT EXISTS (
 	SELECT 1

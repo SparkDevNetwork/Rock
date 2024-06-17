@@ -21,19 +21,26 @@
 // </copyright>
 //
 
-export type PublicLearningCourseListBlockBox = {
-    /** Gets or sets the HTML to be rendered for the courses list content. */
-    coursesHtml?: string | null;
+import { CommunicationMode } from "@Obsidian/Enums/Lms/communicationMode";
 
-    /**
-     * Gets or sets the error message. A non-empty value indicates that
-     * an error is preventing the block from being displayed.
-     */
-    errorMessage?: string | null;
+/** The item details for the Learning Class Announcement Detail block. */
+export type LearningClassAnnouncementBag = {
 
-    /** Gets or sets the navigation urls. */
-    navigationUrls?: Record<string, string> | null;
+    /** Gets or sets the communication mode for the announcement. */
+    communicationMode?: CommunicationMode;
 
-    /** Gets or sets the security grant token. */
-    securityGrantToken?: string | null;
+    /** Gets or sets whether the announcement has been sent. */
+    communicationSent: boolean;
+
+    /** Gets or sets the main content of the announcement. */
+    description?: string | null;
+
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
+    /** Gets or sets the date and time the announcement will be published. */
+    publishDateTime: Date | null;
+
+    /** Gets or sets the title of the announcement. */
+    title?: string | null;
 };

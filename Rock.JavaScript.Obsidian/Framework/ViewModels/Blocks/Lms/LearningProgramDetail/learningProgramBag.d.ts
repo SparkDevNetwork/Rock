@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
@@ -55,17 +56,17 @@ export type LearningProgramBag = {
     /** Gets or sets the Rock.Model.Category identifier. */
     categoryId?: number | null;
 
+    /** Gets or sets the number of students who have completed this Program. */
+    completions: number;
+
     /** Gets or sets the related completion WorkflowType for the program. */
     completionWorkflowType?: ListItemBag | null;
 
     /** Gets or sets the Id of the Rock.Model.WorkflowType that is triggered when the program is completed by a student. */
     completionWorkflowTypeId?: number | null;
 
-    /** Gets or sets the number of students who have completed this Program. */
-    completions: number;
-
     /** Gets or sets the configuration mode of the LearningProgram. */
-    configurationMode: number;
+    configurationMode: ConfigurationMode;
 
     /** Gets or sets the Description of the LearningProgram. */
     description?: string | null;

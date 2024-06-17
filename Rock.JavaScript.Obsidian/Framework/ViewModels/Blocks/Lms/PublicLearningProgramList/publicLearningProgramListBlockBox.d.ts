@@ -22,6 +22,18 @@
 //
 
 export type PublicLearningProgramListBlockBox = {
+    /**
+     * Gets or sets the error message. A non-empty value indicates that
+     * an error is preventing the block from being displayed.
+     */
+    errorMessage?: string | null;
+
+    /** Gets or sets the navigation urls. */
+    navigationUrls?: Record<string, string> | null;
+
     /** Gets or sets the HTML to be rendered for the programs list content. */
-    programsHtml: string;
+    programsHtml?: string | null;
+
+    /** Gets or sets the security grant token. */
+    securityGrantToken?: string | null;
 };

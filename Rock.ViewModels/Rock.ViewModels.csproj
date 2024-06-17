@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -91,6 +91,10 @@
     <Compile Include="Blocks\Lms\LearningActivityComponent\LearningActivityComponentBag.cs" />
     <Compile Include="Blocks\Lms\LearningActivityDetail\LearningActivityBag.cs" />
     <Compile Include="Blocks\Lms\LearningActivityDetail\LearningActivityDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Lms\LearningClassContentPageDetail\LearningClassContentPageBag.cs" />
+    <Compile Include="Blocks\Lms\LearningClassContentPageDetail\LearningClassContentPageDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Lms\LearningClassAnnouncementDetail\LearningClassAnnouncementBag.cs" />
+    <Compile Include="Blocks\Lms\LearningClassAnnouncementDetail\LearningClassAnnouncementDetailOptionsBag.cs" />
     <Compile Include="Blocks\Lms\LearningClassDetail\LearningClassBag.cs" />
     <Compile Include="Blocks\Lms\LearningClassDetail\LearningClassDetailOptionsBag.cs" />
     <Compile Include="Blocks\Lms\LearningGradingSystemDetail\LearningGradingSystemBag.cs" />

@@ -21,24 +21,30 @@
 // </copyright>
 //
 
-import { RequirementType } from "../../../../Enums/Lms/requirementType";
+import { RequirementType } from "@Obsidian/Enums/Lms/requirementType";
+import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 export type LearningCourseRequirementBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
 
-    /** Gets or sets the identifier key of the learning course requirement. */
-    learningCourseRequirementIdKey?: string | null;
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
 
-    /** Gets or sets the identifier key of the course with the requirement. */
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
+    /** Gets or sets the id key of the course with requirements. */
     learningCourseIdKey?: string | null;
 
-    /** Gets or sets the identifier key of the required course. */
+    /** Gets or sets the course code of the course that's required. */
+    requiredLearningCourseCode?: string | null;
+
+    /** Gets or sets the id key of the course that's required. */
     requiredLearningCourseIdKey?: string | null;
 
-    /** Gets or sets the name of the required course. */
+    /** Gets or sets the name of the course that's required. */
     requiredLearningCourseName?: string | null;
-
-    /** Gets or sets the code of the required course. */
-    requiredLearningCourseCode?: string | null;
 
     /** Gets or sets the requirement type. */
     requirementType: RequirementType;

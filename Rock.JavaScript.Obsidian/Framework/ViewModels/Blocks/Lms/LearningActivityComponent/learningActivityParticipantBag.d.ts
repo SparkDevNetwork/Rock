@@ -22,13 +22,20 @@
 //
 
 import { Guid } from "@Obsidian/Types";
+import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
-/** The information pertaining to a learning activity participant. */
+/** The item details for the Learning Activity Detail block. */
 export type LearningActivityParticipantBag = {
-    /** Gets or sets the Guid of the related participant (GroupMember.Guid). */
-    guid?: Guid | null;
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
 
-    /** Gets or sets the id key of the related participant. */
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
+    /** Gets or sets the Guid of the related participant (GroupMember.Guid). */
+    guid: Guid;
+
+    /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
 
     /** Indicates whether or not the participant is a facilitator of the activity. */

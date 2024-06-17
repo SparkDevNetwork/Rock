@@ -21,6 +21,6 @@
 // </copyright>
 //
 
-/** The additional configuration options for the Learning Activity Completion List block. */
+/** The additional configuration options for the Learning Activity Completion Detail block. */
 export type LearningActivityCompletionDetailOptionsBag = {
 };

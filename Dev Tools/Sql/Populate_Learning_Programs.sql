@@ -408,7 +408,8 @@ LEFT JOIN LearningClass cl on cl.LearningCourseId = c.Id
 LEFT JOIN LearningActivity a ON a.LearningClassId = cl.Id
 LEFT JOIN LearningParticipant lp on lp.LearningClassId = cl.Id
 LEFT JOIN GroupMember gm ON gm.Id = lp.Id
-GROUP BY p.[Name], s.Name, c.Name
+GROUP BY p.[Name], s.Name, c.Name, c.[Order]
+ORDER BY p.Name, c.[Order]
 
 /*
     -- Script to clean-up based on pipe-delimited list of LearningProgramIds.

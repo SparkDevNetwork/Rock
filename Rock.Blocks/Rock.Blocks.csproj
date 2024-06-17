@@ -108,6 +108,8 @@
     <Compile Include="Lms\LearningActivityCompletionDetail.cs" />
     <Compile Include="Lms\LearningActivityCompletionList.cs" />
     <Compile Include="Lms\LearningActivityDetail.cs" />
+    <Compile Include="Lms\LearningClassContentPageDetail.cs" />
+    <Compile Include="Lms\LearningClassAnnouncementDetail.cs" />
     <Compile Include="Lms\LearningClassDetail.cs" />
     <Compile Include="Lms\LearningGradingSystemDetail.cs" />
     <Compile Include="Lms\LearningGradingSystemList.cs" />

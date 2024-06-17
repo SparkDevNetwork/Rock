@@ -21,16 +21,21 @@
 // </copyright>
 //
 
-/** The information pertaining to a Learning Actiivty Component. */
-export type LearningActivityComponentBag = {
-    /** Gets or sets the id key of the activity component. */
-    idKey?: string | null;
+import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
-    /** Gets or sets the name of the activity component. */
-    name?: string | null;
+/** The item details for the Learning Activity Detail block. */
+export type LearningActivityComponentBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
 
     /** Gets or sets the url to the activity component. */
     componentUrl?: string | null;
+
+    /** Gets or sets the guid of the activity component. */
+    guid?: string | null;
 
     /** Gets or sets the highlight color of the activity component. */
     highlightColor?: string | null;
@@ -38,6 +43,9 @@ export type LearningActivityComponentBag = {
     /** Gets or sets the icon CSS class of the activity component. */
     iconCssClass?: string | null;
 
-    /** Gets or sets the guid of the activity component. */
-    guid?: string | null;
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
+
+    /** Gets or sets the name of the activity component. */
+    name?: string | null;
 };

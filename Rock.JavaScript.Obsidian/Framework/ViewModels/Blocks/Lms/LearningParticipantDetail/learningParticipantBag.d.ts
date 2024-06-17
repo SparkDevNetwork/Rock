@@ -53,7 +53,7 @@ export type LearningParticipantBag = {
     isFacilitator: boolean;
 
     /** Gets or sets the (group type) role of the participant. */
-    participantRole?: ListItemBag | null | undefined;
+    participantRole?: ListItemBag | null;
 
     /** Gets or sets the Rock.Model.Person representing the GroupMember. */
     personAlias?: ListItemBag | null;

@@ -21,7 +21,9 @@
 // </copyright>
 //
 
+import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
+
 export type LearningCourseDetailOptionsBag = {
     /** Gets or sets the configuration mode of the course's learning program. */
-    configurationMode?: number | null;
+    configurationMode: ConfigurationMode;
 };

@@ -21,19 +21,18 @@
 // </copyright>
 //
 
-export type PublicLearningCourseListBlockBox = {
-    /** Gets or sets the HTML to be rendered for the courses list content. */
-    coursesHtml?: string | null;
+/** The item details for the Learning Class Announcement Detail block. */
+export type LearningClassContentPageBag = {
 
-    /**
-     * Gets or sets the error message. A non-empty value indicates that
-     * an error is preventing the block from being displayed.
-     */
-    errorMessage?: string | null;
+    /** Gets or sets the main content of the page. */
+    content?: string | null;
 
-    /** Gets or sets the navigation urls. */
-    navigationUrls?: Record<string, string> | null;
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
 
-    /** Gets or sets the security grant token. */
-    securityGrantToken?: string | null;
+    /** Gets or sets the date and time the page will be available. */
+    startDateTime: Date | null;
+
+    /** Gets or sets the title of the page. */
+    title?: string | null;
 };

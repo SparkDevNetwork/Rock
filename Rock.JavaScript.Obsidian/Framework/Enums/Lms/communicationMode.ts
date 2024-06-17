@@ -21,19 +21,26 @@
 // </copyright>
 //
 
-export type PublicLearningCourseListBlockBox = {
-    /** Gets or sets the HTML to be rendered for the courses list content. */
-    coursesHtml?: string | null;
+/** Determines the method of communicating an announcement. */
+export const CommunicationMode = {
+    /** The announcement isn't sent via any communication mode. */
+    None: 0,
 
-    /**
-     * Gets or sets the error message. A non-empty value indicates that
-     * an error is preventing the block from being displayed.
-     */
-    errorMessage?: string | null;
+    /** The announcement is sent by Email. */
+    Email: 1,
 
-    /** Gets or sets the navigation urls. */
-    navigationUrls?: Record<string, string> | null;
+    /** The announcement is sent by SMS. */
+    SMS: 2
+} as const;
 
-    /** Gets or sets the security grant token. */
-    securityGrantToken?: string | null;
+/** Determines the method of communicating an announcement. */
+export const CommunicationModeDescription: Record<number, string> = {
+    0: "None",
+
+    1: "Email",
+
+    2: "SMS"
 };
+
+/** Determines the method of communicating an announcement. */
+export type CommunicationMode = typeof CommunicationMode[keyof typeof CommunicationMode];

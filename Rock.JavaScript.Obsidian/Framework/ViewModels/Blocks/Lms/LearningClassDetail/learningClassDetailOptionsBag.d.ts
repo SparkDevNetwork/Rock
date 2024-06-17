@@ -21,8 +21,8 @@
 // </copyright>
 //
 
-import { ListItemBag } from "../../../../ViewModels/Utility/listItemBag";
-import { ConfigurationMode } from "../../../../Enums/Lms/configurationMode";
+import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** The additional configuration options for the Learning Class Detail block. */
 export type LearningClassDetailOptionsBag = {
@@ -34,7 +34,4 @@ export type LearningClassDetailOptionsBag = {
 
     /** Gets or sets the available semesters for this course. */
     semesters?: ListItemBag[] | null;
-
-    /** Gets or sets whether this class takes attendance. */
-    takesAttendance: boolean;
 };

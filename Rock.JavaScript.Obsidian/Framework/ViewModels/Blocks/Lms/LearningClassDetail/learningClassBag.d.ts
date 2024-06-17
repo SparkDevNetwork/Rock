@@ -21,9 +21,9 @@
 // </copyright>
 //
 
+import { LearningClassFacilitatorBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassDetail/learningClassFacilitatorBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
-import { LearningClassFacilitatorBag } from "./learningClassFacilitatorBag";
 
 /** The item details for the Learning Class Detail block. */
 export type LearningClassBag = {
@@ -46,7 +46,7 @@ export type LearningClassBag = {
     description?: string | null;
 
     /** Gets or sets the list of facilitators for this learning class. */
-    facilitators: LearningClassFacilitatorBag[] | null;
+    facilitators?: LearningClassFacilitatorBag[] | null;
 
     /** Gets or sets the related Rock.Model.LearningGradingSystem. */
     gradingSystem?: ListItemBag | null;
@@ -60,7 +60,7 @@ export type LearningClassBag = {
     /** Gets or sets a value indicating whether the group should be shown in group finders */
     isPublic: boolean;
 
-    /** Gets or Sets the location that is associated with the class. */
+    /** Gets or Sets the Location that is associated with the Class. */
     location?: ListItemBag | null;
 
     /** Gets or sets the Name of the Group. This property is required. */

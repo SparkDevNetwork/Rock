@@ -167,7 +167,7 @@
     });
 
     const options = computed((): LearningCourseDetailOptionsBag => {
-        return config.options ?? { };
+        return config.options ?? { configurationMode: ConfigurationMode.OnDemandLearning };
     });
 
     // #endregion

@@ -24,10 +24,10 @@
 import { AssignTo } from "@Obsidian/Enums/Lms/assignTo";
 import { AvailableDateCalculationMethod } from "@Obsidian/Enums/Lms/availableDateCalculationMethod";
 import { DueDateCalculationMethod } from "@Obsidian/Enums/Lms/dueDateCalculationMethod";
+import { LearningActivityComponentBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityComponent/learningActivityComponentBag";
+import { LearningActivityParticipantBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityComponent/learningActivityParticipantBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
-import { LearningActivityParticipantBag } from "../LearningActivityComponent/learningActivityParticipantBag";
-import { LearningActivityComponentBag } from "../LearningActivityComponent/learningActivityComponentBag";
 
 /** The item details for the Learning Activity Detail block. */
 export type LearningActivityBag = {
@@ -83,7 +83,7 @@ export type LearningActivityBag = {
     description?: string | null;
 
     /** Gets or sets the description of the activity as html. */
-    descriptionAsHtml?: string | null
+    descriptionAsHtml?: string | null;
 
     /** Gets or sets the calculated due date for the activity. */
     dueDateCalculated?: string | null;
@@ -128,5 +128,5 @@ export type LearningActivityBag = {
     sendNotificationCommunication: boolean;
 
     /** Gets or sets the task binary file for the activity. */
-    taskBinaryFile: ListItemBag | null;
+    taskBinaryFile?: ListItemBag | null;
 };

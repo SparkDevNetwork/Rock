@@ -116,6 +116,5 @@ namespace Rock.ViewModels.Blocks.Lms.LearningClassDetail
         /// Gets or sets the facilitator list item.
         /// </summary>
         public ListItemBag Facilitator { get; set; }
-
     }
 }

@@ -56,15 +56,15 @@ namespace Rock.Blocks.Lms
         Description = "The page that to be used for taking attendance for the class.",
         Key = AttributeKey.AttendancePage, IsRequired = false, Order = 2 )]
 
-    [LinkedPage( "Student Detail Page",
-        Description = "The page that will be navigated to when clicking a student row.",
-        Key = AttributeKey.StudentDetailPage,
-        Order = 3 )]
-
-    [LinkedPage( "Facilitator Detail Page",
-        Description = "The page that will be navigated to when clicking a student row.",
-        Key = AttributeKey.FacilitatorDetailPage,
+    [LinkedPage( "Content Page Detail Page",
+        Description = "The page that will be navigated to when clicking a content page row.",
+        Key = AttributeKey.ContentPageDetailPage,
         Order = 4 )]
+
+    [LinkedPage( "Announcement Detail Page",
+        Description = "The page that will be navigated to when clicking a content page row.",
+        Key = AttributeKey.AnnouncementDetailPage,
+        Order = 5 )]
 
     #endregion
 
@@ -77,26 +77,32 @@ namespace Rock.Blocks.Lms
         private static class AttributeKey
         {
             public const string ActivityDetailPage = "ActivityDetailPage";
+            public const string AnnouncementDetailPage = "AnnouncementDetailPage";
             public const string AttendancePage = "AttendancePage";
-            public const string FacilitatorDetailPage = "FacilitatorDetailPage";
+            public const string ContentPageDetailPage = "ContentPageDetailPage";
+            public const string ParticipantDetailPage = "ParticipantDetailPage";
             public const string ParentPage = "ParentPage";
-            public const string StudentDetailPage = "StudentDetailPage";
         }
 
         private static class PageParameterKey
         {
+            public const string LearningActivityId = "LearningActivityId";
             public const string LearningClassId = "LearningClassId";
+            public const string LearningClassContentPageId = "LearningClassContentPageId";
+            public const string LearningClassAnnouncementId = "LearningClassAnnouncementId";
             public const string LearningCourseId = "LearningCourseId";
+            public const string LearningParticipantId = "LearningParticipantId";
             public const string LearningProgramId = "LearningProgramId";
         }
 
         private static class NavigationUrlKey
         {
             public const string ActivityDetailPage = "ActivityDetailPage";
+            public const string AnnouncementDetailPage = "AnnouncementDetailPage";
             public const string AttendancePage = "AttendancePage";
-            public const string FacilitatorDetailPage = "FacilitatorDetailPage";
+            public const string ContentPageDetailPage = "ContentPageDetailPage";
+            public const string ParticipantDetailPage = "ParticipantDetailPage";
             public const string ParentPage = "ParentPage";
-            public const string StudentDetailPage = "StudentDetailPage";
         }
 
         #endregion Keys
@@ -406,7 +412,6 @@ namespace Rock.Blocks.Lms
             };
         }
 
-
         /// <summary>
         /// Gets the box navigation URLs required for the page to operate.
         /// </summary>
@@ -414,16 +419,19 @@ namespace Rock.Blocks.Lms
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
             var currentPageParams = GetCurrentPageParams();
-            var activityDetailParams = GetCurrentPageParams( "LearningActivityId" );
-            var participantDetailParams = GetCurrentPageParams( "LearningParticipantId" );
+            var activityParams = GetCurrentPageParams( PageParameterKey.LearningActivityId );
+            var participantParams = GetCurrentPageParams( PageParameterKey.LearningParticipantId );
+            var contentPageParams = GetCurrentPageParams( PageParameterKey.LearningClassContentPageId );
+            var announcementParams = GetCurrentPageParams( PageParameterKey.LearningClassAnnouncementId );
 
             return new Dictionary<string, string>
             {
+                [NavigationUrlKey.AnnouncementDetailPage] = this.GetLinkedPageUrl( AttributeKey.AnnouncementDetailPage, announcementParams ),
+                [NavigationUrlKey.ActivityDetailPage] = this.GetLinkedPageUrl( AttributeKey.ActivityDetailPage, activityParams ),
                 [NavigationUrlKey.AttendancePage] = this.GetLinkedPageUrl( AttributeKey.AttendancePage, currentPageParams ),
-                [NavigationUrlKey.ActivityDetailPage] = this.GetLinkedPageUrl( AttributeKey.ActivityDetailPage, activityDetailParams ),
-                [NavigationUrlKey.FacilitatorDetailPage] = this.GetLinkedPageUrl( AttributeKey.FacilitatorDetailPage, participantDetailParams ),
+                [NavigationUrlKey.ContentPageDetailPage] = this.GetLinkedPageUrl( AttributeKey.ContentPageDetailPage, contentPageParams ),
+                [NavigationUrlKey.ParticipantDetailPage] = this.GetLinkedPageUrl( AttributeKey.ParticipantDetailPage, participantParams ),
                 [NavigationUrlKey.ParentPage] = this.GetParentPageUrl( currentPageParams ),
-                [NavigationUrlKey.StudentDetailPage] = this.GetLinkedPageUrl( AttributeKey.StudentDetailPage, participantDetailParams )
             };
         }
 
@@ -644,7 +652,222 @@ namespace Rock.Blocks.Lms
 	
             Reason: Unable to embed child blocks in an Obsidian block.
         */
-        #region Block Actions for Learning Activities, Students and Facilitators grids
+        #region Secondary List/Grid Block Actions
+
+        /// <summary>
+        /// Deletes the specified activity.
+        /// </summary>
+        /// <param name="key">The identifier of the entity to be deleted.</param>
+        /// <returns>An empty result that indicates if the operation succeeded.</returns>
+        [BlockAction]
+        public BlockActionResult DeleteActivity( string key )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var entityService = new LearningActivityService( rockContext );
+                var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+
+                if ( entity == null )
+                {
+                    return ActionBadRequest( $"{LearningActivity.FriendlyTypeName} not found." );
+                }
+
+                if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                {
+                    return ActionBadRequest( $"Not authorized to delete ${LearningActivity.FriendlyTypeName}." );
+                }
+
+                if ( !entityService.CanDelete( entity, out var errorMessage ) )
+                {
+                    return ActionBadRequest( errorMessage );
+                }
+
+                entityService.Delete( entity );
+                rockContext.SaveChanges();
+
+                return ActionOk();
+            }
+        }
+
+        /// <summary>
+        /// Deletes the specified activity.
+        /// </summary>
+        /// <param name="key">The identifier of the entity to be deleted.</param>
+        /// <returns>An empty result that indicates if the operation succeeded.</returns>
+        [BlockAction]
+        public BlockActionResult DeleteAnnouncement( string key )
+        {
+            var entityService = new LearningClassAnnouncementService( RockContext );
+            var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( entity == null )
+            {
+                return ActionBadRequest( $"{LearningClassAnnouncement.FriendlyTypeName} not found." );
+            }
+
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to delete ${LearningClassAnnouncement.FriendlyTypeName}." );
+            }
+
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
+
+            return ActionOk();
+        }
+
+        /// <summary>
+        /// Deletes the specified activity.
+        /// </summary>
+        /// <param name="key">The identifier of the entity to be deleted.</param>
+        /// <returns>An empty result that indicates if the operation succeeded.</returns>
+        [BlockAction]
+        public BlockActionResult DeleteContentPage( string key )
+        {
+            var entityService = new LearningClassContentPageService( RockContext );
+            var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( entity == null )
+            {
+                return ActionBadRequest( $"{LearningClassContentPage.FriendlyTypeName} not found." );
+            }
+
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to delete ${LearningClassContentPage.FriendlyTypeName}." );
+            }
+
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
+
+            return ActionOk();
+        }
+
+        /// <summary>
+        /// Deletes the specified participant.
+        /// </summary>
+        /// <param name="key">The identifier of the entity to be deleted.</param>
+        /// <returns>An empty result that indicates if the operation succeeded.</returns>
+        [BlockAction]
+        public BlockActionResult DeleteParticipant( string key )
+        {
+            var entityService = new LearningParticipantService( RockContext );
+            var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( entity == null )
+            {
+                return ActionBadRequest( $"{LearningParticipant.FriendlyTypeName} not found." );
+            }
+
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to delete ${LearningParticipant.FriendlyTypeName}." );
+            }
+
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
+
+            return ActionOk();
+        }
+
+        /// <summary>
+        /// Gets a list of announcements for the current course/class.
+        /// </summary>
+        /// <returns>A list of class announcements</returns>
+        [BlockAction]
+        public BlockActionResult GetAnnouncements()
+        {
+            var entity = GetInitialEntity();
+
+            if ( entity == null )
+            {
+                return ActionBadRequest( $"The {LearningClass.FriendlyTypeName} was not found." );
+            }
+
+            var announcements = new LearningClassAnnouncementService( RockContext )
+                .Queryable()
+                .Where( a => a.LearningClassId == entity.Id )
+                .ToList();
+
+            // Return all announcements for the course's default class.
+            var gridBuilder = new GridBuilder<LearningClassAnnouncement>()
+                .AddTextField( "idKey", a => a.IdKey )
+                .AddTextField( "title", a => a.Title )
+                .AddField( "publishDateTime", a => a.PublishDateTime )
+                .AddField( "communicationMode", a => a.CommunicationMode )
+                .AddField( "communicationSent", a => a.CommunicationSent );
+
+            return ActionOk( gridBuilder.Build( announcements ) );
+        }
+
+        /// <summary>
+        /// Gets a list of content pages for the current course/class.
+        /// </summary>
+        /// <returns>A list of class content pages</returns>
+        [BlockAction]
+        public BlockActionResult GetContentPages()
+        {
+            var entity = GetInitialEntity();
+
+            if ( entity == null )
+            {
+                return ActionBadRequest( $"The {LearningCourse.FriendlyTypeName} was not found." );
+            }
+
+            var contentPages = new LearningClassContentPageService( RockContext )
+                .Queryable()
+                .Where( c => c.LearningClassId == entity.Id )
+                .ToList();
+
+            // Return all announcements for the course's default class.
+            var gridBuilder = new GridBuilder<LearningClassContentPage>()
+                .AddTextField( "idKey", a => a.IdKey )
+                .AddTextField( "title", a => a.Title )
+                .AddField( "startDate", a => a.StartDateTime );
+
+            return ActionOk( gridBuilder.Build( contentPages ) );
+        }
+
+        /// <summary>
+        /// Gets a list of activities for the current course.
+        /// </summary>
+        /// <returns>A list of Courses</returns>
+        [BlockAction]
+        public BlockActionResult GetFacilitators()
+        {
+            var entity = GetInitialEntity();
+
+            if ( entity == null )
+            {
+                return ActionBadRequest( $"The {LearningClass.FriendlyTypeName} was not found." );
+            }
+
+            var facilitators = new LearningParticipantService( RockContext )
+                .GetFacilitators( entity.Id )
+                .ToList();
+
+            // Return all facilitators for the course's default class.
+            var gridBuilder = new GridBuilder<LearningParticipant>()
+                .AddTextField( "idKey", a => a.IdKey )
+                .AddPersonField( "name", a => a.Person );
+
+            return ActionOk( gridBuilder.Build( facilitators ) );
+        }
 
         /// <summary>
         /// Gets a list of activities for the current course.
@@ -682,66 +905,6 @@ namespace Rock.Blocks.Lms
 
             var orderedItems = GetOrderedLearningPlan( RockContext ).AsNoTracking();
             return ActionOk( gridBuilder.Build( orderedItems ) );
-        }
-
-        /// <summary>
-        /// Changes the ordered position of a single activity.
-        /// </summary>
-        /// <param name="key">The identifier of the item that will be moved.</param>
-        /// <param name="beforeKey">The identifier of the item it will be placed before.</param>
-        /// <returns>An empty result that indicates if the operation succeeded.</returns>
-        [BlockAction]
-        public BlockActionResult ReorderActivity( string key, string beforeKey )
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                // Get the queryable and make sure it is ordered correctly.
-                var items = GetOrderedLearningPlan( rockContext ).ToList();
-
-                if ( !items.ReorderEntity( key, beforeKey ) )
-                {
-                    return ActionBadRequest( "Invalid reorder attempt." );
-                }
-
-                rockContext.SaveChanges();
-
-                return ActionOk();
-            }
-        }
-
-        /// <summary>
-        /// Deletes the specified activity.
-        /// </summary>
-        /// <param name="key">The identifier of the entity to be deleted.</param>
-        /// <returns>An empty result that indicates if the operation succeeded.</returns>
-        [BlockAction]
-        public BlockActionResult DeleteActivity( string key )
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                var entityService = new LearningActivityService( rockContext );
-                var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
-
-                if ( entity == null )
-                {
-                    return ActionBadRequest( $"{LearningActivity.FriendlyTypeName} not found." );
-                }
-
-                if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-                {
-                    return ActionBadRequest( $"Not authorized to delete ${LearningActivity.FriendlyTypeName}." );
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                return ActionOk();
-            }
         }
 
         /// <summary>
@@ -807,61 +970,28 @@ namespace Rock.Blocks.Lms
         }
 
         /// <summary>
-        /// Gets a list of activities for the current course.
+        /// Changes the ordered position of a single activity.
         /// </summary>
-        /// <returns>A list of Courses</returns>
-        [BlockAction]
-        public BlockActionResult GetFacilitators()
-        {
-            var entity = GetInitialEntity();
-
-            if ( entity == null )
-            {
-                return ActionBadRequest( $"The {LearningClass.FriendlyTypeName} was not found." );
-            }
-
-            var facilitators = new LearningParticipantService( RockContext )
-                .GetFacilitators( entity.Id )
-                .ToList();
-
-            // Return all facilitators for the course's default class.
-            var gridBuilder = new GridBuilder<LearningParticipant>()
-                .AddTextField( "idKey", a => a.IdKey )
-                .AddPersonField( "name", a => a.Person );
-
-            return ActionOk( gridBuilder.Build( facilitators ) );
-        }
-
-        /// <summary>
-        /// Deletes the specified participant.
-        /// </summary>
-        /// <param name="key">The identifier of the entity to be deleted.</param>
+        /// <param name="key">The identifier of the item that will be moved.</param>
+        /// <param name="beforeKey">The identifier of the item it will be placed before.</param>
         /// <returns>An empty result that indicates if the operation succeeded.</returns>
         [BlockAction]
-        public BlockActionResult DeleteParticipant( string key )
+        public BlockActionResult ReorderActivity( string key, string beforeKey )
         {
-            var entityService = new LearningParticipantService( RockContext );
-            var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
-
-            if ( entity == null )
+            using ( var rockContext = new RockContext() )
             {
-                return ActionBadRequest( $"{LearningParticipant.FriendlyTypeName} not found." );
+                // Get the queryable and make sure it is ordered correctly.
+                var items = GetOrderedLearningPlan( rockContext ).ToList();
+
+                if ( !items.ReorderEntity( key, beforeKey ) )
+                {
+                    return ActionBadRequest( "Invalid reorder attempt." );
+                }
+
+                rockContext.SaveChanges();
+
+                return ActionOk();
             }
-
-            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-            {
-                return ActionBadRequest( $"Not authorized to delete ${LearningParticipant.FriendlyTypeName}." );
-            }
-
-            if ( !entityService.CanDelete( entity, out var errorMessage ) )
-            {
-                return ActionBadRequest( errorMessage );
-            }
-
-            entityService.Delete( entity );
-            RockContext.SaveChanges();
-
-            return ActionOk();
         }
 
         #endregion

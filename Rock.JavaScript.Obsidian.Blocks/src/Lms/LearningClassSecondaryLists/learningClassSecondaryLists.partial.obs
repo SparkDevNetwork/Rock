@@ -14,15 +14,31 @@
             <div v-else-if="item === 'Students'">
                 <StudentGrid :isAddEnabled="isEditable"
                              :isDeleteEnabled="isEditable"
-                             @addClick="onStudentClick('0')"
-                             @rowClick="onStudentClick"
+                             @addClick="onAddParticipantClick"
+                             @rowClick="onParticipantClick"
                              @deleteClick="onDeleteParticipantClick" />
             </div>
             <div v-else-if="item === 'Facilitators'">
                 <FacilitatorGrid :isAddEnabled="isEditable"
                                  :isDeleteEnabled="isEditable"
-                                 @addClick="onAddFacilitatorClick"
+                                 @addClick="onAddParticipantClick"
+                                 @rowClick="onParticipantClick"
                                  @deleteClick="onDeleteParticipantClick" />
+            </div>
+            <div v-else-if="item === 'Content'">
+                <ContentPageGrid :isAddEnabled="isEditable"
+                                 :isDeleteEnabled="isEditable"
+                                 @addClick="onAddContentPageClick"
+                                 @rowClick="onContentPageClick"
+                                 @deleteClick="onDeleteContentPageClick" />
+            </div>
+
+            <div v-else-if="item === 'Announcements'">
+                <AnnouncementGrid :isAddEnabled="isEditable"
+                                 :isDeleteEnabled="isEditable"
+                                 @addClick="onAddAnnouncementClick"
+                                 @rowClick="onAnnouncementClick"
+                                 @deleteClick="onDeleteAnnouncementClick" />
             </div>
         </template>
     </TabbedContent>
@@ -33,6 +49,8 @@
     import LearningPlanGrid from "./learningPlanGrid.partial.obs";
     import StudentGrid from "./studentGrid.partial.obs";
     import FacilitatorGrid from "./facilitatorGrid.partial.obs";
+    import AnnouncementGrid from "./announcementGrid.partial.obs";
+    import ContentPageGrid from "./contentPageGrid.partial.obs";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./types.partial";
@@ -60,7 +78,7 @@
     const isEditable = ref(props.isEditable ?? false);
     const navigationUrls = ref(props.navigationUrls ?? {});
 
-    const tabs: Array<string> = ["Learning Plan", "Students", "Facilitators"];
+    const tabs: Array<string> = ["Learning Plan", "Students", "Facilitators", "Content", "Announcements"];
 
     // #endregion
 
@@ -70,52 +88,8 @@
 
     // #region Functions
 
-    // #endregion
-
-    // #region Event Handlers
-
-    /**
-     * Called when the Add activity button has been clicked by the individual.
-     */
-    function onActivityRowClick(key: string | null): void {
-        if (navigationUrls.value[NavigationUrlKey.ActivityDetailPage]) {
-            const idKey = !key ? "0" : key;
-            window.location.href = navigationUrls.value[NavigationUrlKey.ActivityDetailPage].replace("((Key))", idKey);
-        }
-    }
-
-    /**
-     * Called when the Add activity button has been clicked by the individual.
-     */
-    function onAddActivityClick(): void {
-        onActivityRowClick("0?autoEdit=true&returnUrl=" + window.location);
-    }
-
-    /**
-     * Called when a student row or the Add student button has been clicked by the individual.
-     */
-    function onStudentClick(key: string | null): void {
-        if (navigationUrls.value[NavigationUrlKey.StudentDetailPage]) {
-            const idKey = !key ? "0" : key;
-            window.location.href = navigationUrls.value[NavigationUrlKey.StudentDetailPage].replace("((Key))", idKey);
-        }
-    }
-
-    /**
-     * Called when the Add facilitator button has been clicked by the individual.
-     */
-    function onAddFacilitatorClick(): void {
-        if (navigationUrls.value[NavigationUrlKey.FacilitatorDetailPage]) {
-            window.location.href = navigationUrls.value[NavigationUrlKey.FacilitatorDetailPage].replace("((Key))", "0");
-        }
-    }
-
-    /**
-     * Called when an activity row's delete button has been clicked by the individual. This
-     * happens only if they have confirmed the delete action.
-     */
-    async function onDeleteActivityClick(key: string, gridData: GridDataBag | undefined): Promise<void> {
-        const result = await invokeBlockAction<string>("DeleteActivity", {
+    async function invokeDeleteBlockAction(key: string, gridData: GridDataBag | undefined, blockActionName: string, entityName: string): Promise<void> {
+        const result = await invokeBlockAction<string>(blockActionName, {
             key
         });
 
@@ -129,8 +103,99 @@
             }
         }
         else {
-            alert(result.errorMessage ?? "Unknown error while trying to delete learning class.");
+            alert(result.errorMessage ?? `Unknown error while trying to delete ${entityName}.`);
         }
+    }
+
+    function navigateToPage(navigationUrlKey: string, key: string | null): void {
+        if (navigationUrls.value[navigationUrlKey]) {
+            const idKey = !key ? "0" : key;
+            window.location.href = navigationUrls.value[navigationUrlKey].replace("((Key))", idKey);
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when the Add activity button has been clicked by the individual.
+     */
+    function onActivityRowClick(key: string | null): void {
+        navigateToPage(NavigationUrlKey.ActivityDetailPage, key);
+    }
+
+    /**
+     * Called when the Add activity button has been clicked by the individual.
+     */
+    function onAddActivityClick(): void {
+        navigateToPage(NavigationUrlKey.ActivityDetailPage, "0?autoEdit=true&returnUrl=" + window.location);
+    }
+
+    /**
+     * Called when the Add announcement button has been clicked by the individual.
+     */
+     function onAddAnnouncementClick(): void {
+        navigateToPage(NavigationUrlKey.AnnouncementDetailPage, "0?autoEdit=true&returnUrl=" + window.location);
+    }
+
+    /**
+     * Called when the Add content page button has been clicked by the individual.
+     */
+     function onAddContentPageClick(): void {
+        navigateToPage(NavigationUrlKey.ContentPageDetailPage, "0?autoEdit=true&returnUrl=" + window.location);
+    }
+
+    /**
+     * Called when the Add student or facilitator button has been clicked by the individual.
+     */
+     function onAddParticipantClick(): void {
+        navigateToPage(NavigationUrlKey.ParticipantDetailPage, "0?autoEdit=true&returnUrl=" + window.location);
+    }
+
+    /**
+     * Called when an announcement row has been clicked by the individual.
+     */
+     function onAnnouncementClick(key: string | null): void {
+        navigateToPage(NavigationUrlKey.AnnouncementDetailPage, key);
+    }
+
+    /**
+     * Called when a content page row has been clicked by the individual.
+     */
+     function onContentPageClick(key: string | null): void {
+        navigateToPage(NavigationUrlKey.ContentPageDetailPage, key);
+    }
+
+    /**
+     * Called when a student or facilitator row has been clicked by the individual.
+     */
+    function onParticipantClick(key: string | null): void {
+        navigateToPage(NavigationUrlKey.ParticipantDetailPage, key);
+    }
+
+    /**
+     * Called when an activity row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+    async function onDeleteActivityClick(key: string, gridData: GridDataBag | undefined): Promise<void> {
+        invokeDeleteBlockAction(key, gridData, "DeleteActivity", "activity");
+    }
+
+    /**
+     * Called when an activity row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+     async function onDeleteAnnouncementClick(key: string, gridData: GridDataBag | undefined): Promise<void> {
+        invokeDeleteBlockAction(key, gridData, "DeleteAnnouncement", "announcement");
+    }
+
+    /**
+     * Called when an activity row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+     async function onDeleteContentPageClick(key: string, gridData: GridDataBag | undefined): Promise<void> {
+        invokeDeleteBlockAction(key, gridData, "DeleteContentPage", "content page");
     }
 
     /**

@@ -21,16 +21,14 @@
 // </copyright>
 //
 
-import { ListItemBag } from "../../../Utility/listItemBag";
-import { LearningActivityComponentBag } from "../LearningActivityComponent/learningActivityComponentBag";
+import { LearningActivityComponentBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityComponent/learningActivityComponentBag";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** The additional configuration options for the Learning Activity Detail block. */
 export type LearningActivityDetailOptionsBag = {
-
     /** Gets or sets the available activity types as list items. */
     activityTypeListItems?: ListItemBag[] | null;
 
     /** Gets or sets the list of available activity types. */
     activityTypes?: LearningActivityComponentBag[] | null;
-
 };

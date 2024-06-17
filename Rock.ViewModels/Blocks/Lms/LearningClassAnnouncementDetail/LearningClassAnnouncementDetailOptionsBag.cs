@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,10 +15,13 @@
 // </copyright>
 //
 
-export const enum NavigationUrlKey {
-    ActivityDetailPage = "ActivityDetailPage",
-    AnnouncementDetailPage = "AnnouncementDetailPage",
-    AttendancePage = "AttendancePage",
-    ContentPageDetailPage = "ContentPageDetailPage",
-    ParticipantDetailPage = "ParticipantDetailPage"
+namespace Rock.ViewModels.Blocks.Lms.LearningClassAnnouncementDetail
+{
+    /// <summary>
+    /// The additional configuration options for the Learning Class Announcement Detail block.
+    /// </summary>
+    public class LearningClassAnnouncementDetailOptionsBag
+    {
+
+    }
 }

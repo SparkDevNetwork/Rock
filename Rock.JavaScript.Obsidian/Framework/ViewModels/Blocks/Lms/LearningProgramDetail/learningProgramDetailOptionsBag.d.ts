@@ -20,6 +20,7 @@
 // limitations under the License.
 // </copyright>
 //
+
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export type LearningProgramDetailOptionsBag = {

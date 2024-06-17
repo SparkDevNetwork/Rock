@@ -21,9 +21,29 @@
 // </copyright>
 //
 
-export type PublicLearningCourseListBlockBox = {
-    /** Gets or sets the HTML to be rendered for the courses list content. */
-    coursesHtml?: string | null;
+import { Guid } from "@Obsidian/Types";
+import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
+import { LearningClassFacilitatorBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassDetail/learningClassFacilitatorBag";
+import { LearningParticipantBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningParticipantDetail/learningParticipantBag";
+
+export type PublicLearningClassWorkspaceBox = {
+    /** Gets or sets the list of activities for this learning class. */
+    activities?: LearningActivityCompletionBag[] | null;
+
+    /** Gets or sets the id for the class. */
+    classIdKey?: string | null;
+
+    /** Gets or sets the id for the course. */
+    courseIdKey?: string | null;
+
+    /** Gets or sets the Guid of the image for the course. */
+    courseImageGuid?: Guid | null;
+
+    /** Gets or sets the name of the course. */
+    courseName?: string | null;
+
+    /** Gets or sets the summary of the course. */
+    courseSummary?: string | null;
 
     /**
      * Gets or sets the error message. A non-empty value indicates that
@@ -31,8 +51,14 @@ export type PublicLearningCourseListBlockBox = {
      */
     errorMessage?: string | null;
 
+    /** Gets or sets the list of facilitators for the learning class. */
+    facilitators?: LearningClassFacilitatorBag[] | null;
+
     /** Gets or sets the navigation urls. */
     navigationUrls?: Record<string, string> | null;
+
+    /** Gets or sets the participant accessing the course for the learning class. */
+    participantBag?: LearningParticipantBag | null;
 
     /** Gets or sets the security grant token. */
     securityGrantToken?: string | null;

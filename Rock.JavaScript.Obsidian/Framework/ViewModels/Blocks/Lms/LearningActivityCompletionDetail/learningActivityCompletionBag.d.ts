@@ -21,37 +21,48 @@
 // </copyright>
 //
 
-import { ListItemBag } from "../../../Utility/listItemBag";
-import { LearningActivityParticipantBag } from "../LearningActivityComponent/learningActivityParticipantBag";
-import { LearningActivityBag } from "../LearningActivityDetail/learningActivityBag";
+import { LearningActivityParticipantBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityComponent/learningActivityParticipantBag";
+import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
-/** The additional configuration options for the Learning Activity Completion List block. */
+/** The item details for the Learning Activity Completion Detail block. */
 export type LearningActivityCompletionBag = {
-    /**  */
-    idKey?: string | null;
-
     /** Gets or sets the Learning Activity Bag for this completion instance. */
     activityBag?: LearningActivityBag | null;
 
     /** Gets or sets the completion json for the activity component. */
     activityComponentCompletionJson?: string | null;
 
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the available date for the activity instance. */
-    availableDateTime?: string | null;
+    availableDate?: string | null;
 
     /** Gets or sets the binary file of the completion for use by the activity component. */
     binaryFile?: ListItemBag | null;
 
-    /** Gets or sets the date the student
-     *  completed the related Rock.Model.LearningActivity.
-    */
-    completedDateTime?: string | null;
+    /**
+     * Gets or sets the date the student
+     * completed the related Rock.Model.LearningActivity.
+     */
+    completedDate?: string | null;
 
     /** Gets or sets the due date for the activity instance. */
-    dueDate: string | null;
+    dueDate?: string | null;
 
     /** Gets or sets the facilitator's comment. */
     facilitatorComment?: string | null;
+
+    /** Gets or sets the text for the achieved grade. */
+    gradeText?: string | null;
+
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
 
     /** Indicates whether or not the activity is currently available. */
     isAvailable: boolean;
@@ -75,13 +86,13 @@ export type LearningActivityCompletionBag = {
     isStudentCompleted: boolean;
 
     /** Gets or sets the number of points the student earned by completing the activity. */
-    pointsEarned?: number | null;
-
-    /** Gets or sets the student's comment. */
-    studentComment?: string | null;
+    pointsEarned: number;
 
     /** Gets or sets the student the activity is for. */
     student?: LearningActivityParticipantBag | null;
+
+    /** Gets or sets the student's comment. */
+    studentComment?: string | null;
 
     /** Indicates whether or not the related Rock.Model.LearningActivity was completed by this student before the DueDate. */
     wasCompletedOnTime: boolean;
