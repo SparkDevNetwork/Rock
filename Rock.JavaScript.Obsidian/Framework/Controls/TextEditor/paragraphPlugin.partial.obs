@@ -1,6 +1,4 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
-<template></template>
-
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
     import { getToolbarButton } from "./utils.partial";

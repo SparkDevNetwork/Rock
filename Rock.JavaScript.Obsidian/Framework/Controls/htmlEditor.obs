@@ -12,25 +12,21 @@
                              ref="toolbarElement"></div>
 
                         <div class="note-editing-area">
-                            <div class="note-editing-area-html">
-                                <div class="note-editing-area-body">
-                                    <EditSourceCodePlugin v-model="internalValue"
-                                                          :disabled="disabled"
-                                                          :editorHeight="editorHeight + yOffset"
-                                                          :mergeFields="mergeFields"
-                                                          ref="editSourceCodePlugin"
-                                                          :startInCodeEditorMode="startInCodeEditorMode"
-                                                          :tinyMceInstance="tinyMceInstance"
-                                                          :toolbarElement="toolbarElement">
-                                        <template v-slot="{ isEditorShown }">
-                                            <div v-show="!updateIsEditorShown(isEditorShown)"
-                                                 class="note-editable"
-                                                 :id="assignEditorId(uniqueId)"
-                                                 ref="editorElement"></div>
-                                        </template>
-                                    </EditSourceCodePlugin>
-                                </div>
-                            </div>
+                            <EditSourceCodePlugin v-model="internalValue"
+                                                  :disabled="disabled"
+                                                  :editorHeight="editorHeight + yOffset"
+                                                  :mergeFields="mergeFields"
+                                                  ref="editSourceCodePlugin"
+                                                  :startInCodeEditorMode="startInCodeEditorMode"
+                                                  :tinyMceInstance="tinyMceInstance"
+                                                  :toolbarElement="toolbarElement">
+                                <template v-slot="{ isEditorShown }">
+                                    <div v-show="!updateIsEditorShown(isEditorShown)"
+                                         class="note-editable"
+                                         :id="assignEditorId(uniqueId)"
+                                         ref="editorElement"></div>
+                                </template>
+                            </EditSourceCodePlugin>
                         </div>
 
                         <div class="note-statusbar" ref="resizerElement" role="status">
@@ -71,6 +67,10 @@
                                 ref="assetManagerPlugin"
                                 :tinyMceInstance="tinyMceInstance"
                                 :toolbarElement="toolbarElement" />
+
+            <StylesheetsPlugin :tinyMceInstance="tinyMceInstance"
+                               htmlCssReplacementSelector=".note-editor"
+                               bodyCssReplacementSelector=".note-editing-area" />
         </template>
     </RockFormField>
 </template>
@@ -102,8 +102,8 @@
     import ImageBrowserPlugin from "./TextEditor/imageBrowserPlugin.partial.obs";
     import MergeFieldPlugin from "./TextEditor/mergeFieldPlugin.partial.obs";
     import ParagraphPlugin from "./TextEditor/paragraphPlugin.partial.obs";
-    import { scopeStyleSheets, unscopeStyleSheets } from "./TextEditor/utils.partial";
     import PasteAsPlainTextPlugin from "./TextEditor/pasteAsPlainTextPlugin.partial.obs";
+    import StylesheetsPlugin from "./TextEditor/stylesheetsPlugin.partial.obs";
     import { tinymce, Editor, EditorEvent, Events } from "@Obsidian/Libs/tinymce";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
 
@@ -520,20 +520,6 @@
                             tinyMceValue.value = newValue;
                             internalValue.value = newValue;
                         }
-                    });
-
-                    // Since the editor is inline (not in an iframe), <style> elements
-                    // added to the code editor can leak CSS styles to the rest of the page.
-                    // To prevent this, scope the style sheets before setting the editor content,
-                    // and unscope when retrieving the content.
-                    // The "scoped" behavior is very similar to the SFC `scoped` directive; i.e. `<style scoped>`
-                    // in that this will add run-time specificity to the style rule selectors so the styles
-                    // are only isolated to this HTML Editor control instance.
-                    editor.on("BeforeSetContent", (e: EditorEvent<Events.BeforeSetContentEvent>) => {
-                        e.content = scopeStyleSheets(e.content, `#${editorId.value}`);
-                    });
-                    editor.on("GetContent", (e: EditorEvent<Events.GetContentEvent>) => {
-                        e.content = unscopeStyleSheets(e.content, `#${editorId.value}`);
                     });
                 }
             });
