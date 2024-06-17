@@ -71,7 +71,7 @@ namespace Rock.Model
         /// A <see cref="System.DateTime"/> representing the date the semester begins.
         /// </value>
         [DataMember]
-        public DateTime? StartDate { get; set; }
+        public DateTime? StartDateTime { get; set; }
 
         #endregion
 

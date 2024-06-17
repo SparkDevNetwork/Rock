@@ -390,7 +390,7 @@ namespace Rock.Migrations
                         LearningClassId = c.Int(nullable: false),
                         Title = c.String(nullable: false, maxLength: 250),
                         Content = c.String(),
-                        StartDate = c.DateTime(),
+                        StartDateTime = c.DateTime(),
                     })
                 .PrimaryKey(t => t.Id)
                 .ForeignKey("dbo.Group", t => t.Id)
