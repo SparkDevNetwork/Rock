@@ -17,6 +17,7 @@
 
 import { Editor } from "@Obsidian/Libs/tinymce";
 import { ComputedRef, InjectionKey, inject, provide } from "vue";
+import { TinyMcePluginHelper } from "./types.partial";
 
 /** Gets a button element from the toolbar. This should only be called after the editor is initialized. */
 export function getToolbarButton(tooltip: string, parent?: HTMLElement | undefined): HTMLElement | null | undefined {
@@ -52,22 +53,20 @@ function use<T>(key: string | InjectionKey<T>): T {
     return result;
 }
 
-const tinyMceInstanceInjectionKey: InjectionKey<ComputedRef<Editor | undefined>> = Symbol("tiny-mce-instance");
-
-export function provideTinyMceInstance(value: ComputedRef<Editor | undefined>): void {
-    provide(tinyMceInstanceInjectionKey, value);
-}
-
 export function useTinyMceInstance(): ComputedRef<Editor | undefined> {
-    return use(tinyMceInstanceInjectionKey);
-}
-
-const tinyMceToolbarElementInjectionKey: InjectionKey<ComputedRef<HTMLElement | undefined>> = Symbol("tiny-mce-toolbar-element");
-
-export function provideTinyMceToolbarElement(value: ComputedRef<HTMLElement | undefined>): void {
-    provide(tinyMceToolbarElementInjectionKey, value);
+    return useTinyMcePluginHelper().tinyMceInstance;
 }
 
 export function useTinyMceToolbarElement(): ComputedRef<HTMLElement | undefined> {
-    return use(tinyMceToolbarElementInjectionKey);
+    return useTinyMcePluginHelper().toolbarElement;
+}
+
+const tinyMcePluginHelperInjectionKey: InjectionKey<TinyMcePluginHelper> = Symbol("tiny-mce-plugin-helper");
+
+export function provideTinyMcePluginHelper(value: TinyMcePluginHelper): void {
+    provide(tinyMcePluginHelperInjectionKey, value);
+}
+
+export function useTinyMcePluginHelper(): TinyMcePluginHelper {
+    return use(tinyMcePluginHelperInjectionKey);
 }

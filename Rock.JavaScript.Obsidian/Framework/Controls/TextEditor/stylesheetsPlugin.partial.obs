@@ -1,8 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
-    import { useTinyMceInstance } from "./utils.partial";
-    import { Editor, EditorEvent, EventDispatcher, Events } from "@Obsidian/Libs/tinymce";
+    import { useTinyMceInstance, useTinyMcePluginHelper } from "./utils.partial";
+    import { Editor, EditorEvent, EventDispatcher, Events, RawEditorOptions } from "@Obsidian/Libs/tinymce";
     import { newGuid } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
@@ -34,6 +34,18 @@
     });
 
     const tinyMceInstance = useTinyMceInstance();
+    const pluginHelper = useTinyMcePluginHelper();
+
+    pluginHelper.onConfigureEditorOptions((currentOptions: RawEditorOptions) => {
+        if (!currentOptions.valid_children) {
+            currentOptions.valid_children = "+div[style]";
+        }
+        else if (!currentOptions.valid_children.includes("+div[style]")) {
+            currentOptions.valid_children += ", +div[style]";
+        }
+
+        return currentOptions;
+    });
 
     //#region Values
 
