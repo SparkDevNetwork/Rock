@@ -1543,6 +1543,7 @@ namespace Rock.Client.SystemGuid
         public const string PRAYER_EVENTS = "3D49FB99-94D1-4F63-B1A2-30D4FEDE11E9";
         public const string ROCK_RMS = "C9CEF6C4-E1EA-4E1F-B8D7-0172236A3F09";
         public const string SHORT_LINKS = "AEFF9B52-AE61-8EBB-4F43-37C152342076";
+        public const string SMS_PIPELINE = "282694BE-3062-4857-AC4E-83269F075351";
         public const string WIFI_PRESENCE = "23888303-4847-4C80-93E2-4C5EB8029D18";
         public const string WORKFLOW_LAUNCHES = "DAA17190-7119-4901-B105-26C6B5E4CDB4";
     }

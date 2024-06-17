@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Lava;
@@ -104,6 +105,84 @@ Text (lower) = {{ text }}, Text (upper) = {{ TEXT }}
 ";
 
             TestHelper.AssertTemplateOutput( "--><--", input, new LavaTestRenderOptions { IgnoreWhiteSpace = false } );
+        }
+
+        [TestMethod]
+        public void Keywords_ElseIfKeyword_IsParsedAsElsIf()
+        {
+            var input = @"
+{% assign speed = 50 %}
+{% if speed > 70 -%}
+Fast
+{% elseif speed > 30 -%}
+Moderate
+{% else -%}
+Slow
+{% endif -%}
+";
+            var expectedOutput = @"Moderate";
+
+            TestHelper.AssertTemplateOutput( expectedOutput, input );
+        }
+
+        [DataTestMethod]
+        [DataRow( "true | AsBoolean", true )]
+        [DataRow( "'true'", true )]
+        [DataRow( "''", true )]
+        public void Operators_IfWithNoOperatorAndAnyDefinedValue_ReturnsTrue( string value, bool expectedResult )
+        {
+            var input = @"
+{% assign value = $value %}
+{% if value %}true{% else %}false{% endif %}
+";
+            input = input.Replace( "$value", value );
+            TestHelper.AssertTemplateOutput( expectedResult.ToString().ToLower(), input );
+        }
+
+        [TestMethod]
+        public void Operators_IfWithNoOperatorAndUndefinedVariable_ReturnsFalse()
+        {
+            var input = @"
+{% if noVariable %}true{% else %}false{% endif %}
+";
+
+            TestHelper.AssertTemplateOutput( "false", input );
+        }
+
+        [TestMethod]
+        public void Operators_IfWithNoOperatorAndNullVariable_ReturnsFalse()
+        {
+            var input = @"
+{% if value %}true{% else %}false{% endif %}
+";
+
+            var options = new LavaTestRenderOptions();
+            options.MergeFields = new Dictionary<string, object> { { "value", null } };
+            TestHelper.AssertTemplateOutput( "false", input, options  );
+        }
+
+        /// <summary>
+        /// The double-ampersand (&&) boolean comparison syntax for "and" is not recognized Liquid syntax.
+        /// It is also not part of the documented Lava syntax, but it is supported by the DotLiquid framework and has been found in some existing core templates.
+        /// This test is designed to document the expected behavior.
+        /// </summary>
+        [TestMethod]
+
+        [Ignore("Supported in DotLiquid, but not in Fluid. This syntax is not officially supported in Liquid or Lava.")]
+        public void Operators_ConditionalExpressionUsingDoubleAmpersand_EmitsErrorMessage()
+        {
+            var input = @"
+{% assign speed = 50 %}
+{% if speed > 40 && speed < 60 -%}
+Illegal Boolean Operator!
+{% endif -%}
+";
+
+            // This test does not apply to the DotLiquid framework.
+            if ( LavaIntegrationTestHelper.FluidEngineIsEnabled )
+            {
+                TestHelper.AssertTemplateIsInvalid( typeof( FluidEngine ), input );
+            }
         }
 
         /// <summary>
