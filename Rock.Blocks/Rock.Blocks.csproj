@@ -199,6 +199,7 @@
     <Compile Include="WorkFlow\FormBuilder\FormTemplateDetail.cs" />
     <Compile Include="WorkFlow\FormBuilder\Utility.cs" />
     <Compile Include="WorkFlow\WorkflowTriggerDetail.cs" />
+    <Compile Include="WorkFlow\WorkflowList.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
