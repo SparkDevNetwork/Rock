@@ -16,9 +16,7 @@
 //
 namespace Rock.Migrations
 {
-    using System;
-    using System.Data.Entity.Migrations;
-    
+
     /// <summary>
     ///
     /// </summary>
@@ -125,10 +123,37 @@ namespace Rock.Migrations
                         Summary = c.String(maxLength: 500),
                         Description = c.String(),
                         DetailsUrl = c.String(),
-                        PublishDateTime = c.DateTime(),
                         LearningClassId = c.Int(nullable: false),
                         CommunicationMode = c.Int(nullable: false),
+                        PublishDateTime = c.DateTime(nullable: false),
                         CommunicationSent = c.Boolean(nullable: false),
+                        CreatedDateTime = c.DateTime(),
+                        ModifiedDateTime = c.DateTime(),
+                        CreatedByPersonAliasId = c.Int(),
+                        ModifiedByPersonAliasId = c.Int(),
+                        Guid = c.Guid(nullable: false),
+                        ForeignId = c.Int(),
+                        ForeignGuid = c.Guid(),
+                        ForeignKey = c.String(maxLength: 100),
+                    })
+                .PrimaryKey(t => t.Id)
+                .ForeignKey("dbo.PersonAlias", t => t.CreatedByPersonAliasId)
+                .ForeignKey("dbo.LearningClass", t => t.LearningClassId)
+                .ForeignKey("dbo.PersonAlias", t => t.ModifiedByPersonAliasId)
+                .Index(t => t.LearningClassId)
+                .Index(t => t.CreatedByPersonAliasId)
+                .Index(t => t.ModifiedByPersonAliasId)
+                .Index(t => t.Guid, unique: true);
+            
+            CreateTable(
+                "dbo.LearningClassContentPage",
+                c => new
+                    {
+                        Id = c.Int(nullable: false, identity: true),
+                        LearningClassId = c.Int(nullable: false),
+                        Title = c.String(nullable: false, maxLength: 250),
+                        Content = c.String(),
+                        StartDateTime = c.DateTime(),
                         CreatedDateTime = c.DateTime(),
                         ModifiedDateTime = c.DateTime(),
                         CreatedByPersonAliasId = c.Int(),
@@ -383,22 +408,6 @@ namespace Rock.Migrations
                 .Index(t => t.Guid, unique: true);
             
             CreateTable(
-                "dbo.LearningClassContentPage",
-                c => new
-                    {
-                        Id = c.Int(nullable: false),
-                        LearningClassId = c.Int(nullable: false),
-                        Title = c.String(nullable: false, maxLength: 250),
-                        Content = c.String(),
-                        StartDateTime = c.DateTime(),
-                    })
-                .PrimaryKey(t => t.Id)
-                .ForeignKey("dbo.Group", t => t.Id)
-                .ForeignKey("dbo.LearningClass", t => t.LearningClassId)
-                .Index(t => t.Id)
-                .Index(t => t.LearningClassId);
-            
-            CreateTable(
                 "dbo.LearningParticipant",
                 c => new
                     {
@@ -415,9 +424,7 @@ namespace Rock.Migrations
                 .ForeignKey("dbo.LearningGradingSystemScale", t => t.LearningGradingSystemScaleId)
                 .ForeignKey("dbo.LearningProgramCompletion", t => t.LearningProgramCompletionId)
                 .ForeignKey("dbo.LearningClass", t => t.LearningClassId)
-                // Index on Id was added by EF, but is unnecessary since there's a clustered index on the same.
-                // and we'd need all other columns when getting the record anyway (otherwise we'd get the GroupMember).
-                //.Index(t => t.Id)
+                .Index(t => t.Id)
                 .Index(t => t.LearningGradingSystemScaleId)
                 .Index(t => t.LearningProgramCompletionId)
                 .Index(t => t.LearningClassId);
@@ -436,12 +443,11 @@ namespace Rock.Migrations
                 .ForeignKey("dbo.LearningCourse", t => t.LearningCourseId, cascadeDelete: true)
                 .ForeignKey("dbo.LearningSemester", t => t.LearningSemesterId)
                 .ForeignKey("dbo.LearningGradingSystem", t => t.LearningGradingSystemId)
-                // Index on Id was added by EF, but is unnecessary since there's a clustered index on the same
-                // and we'd need all other columns when getting the record anyway (otherwise we'd get the Group).
-                //.Index(t => t.Id)
+                .Index(t => t.Id)
                 .Index(t => t.LearningCourseId)
                 .Index(t => t.LearningSemesterId)
                 .Index(t => t.LearningGradingSystemId);
+            
         }
         
         /// <summary>
@@ -457,8 +463,6 @@ namespace Rock.Migrations
             DropForeignKey("dbo.LearningParticipant", "LearningProgramCompletionId", "dbo.LearningProgramCompletion");
             DropForeignKey("dbo.LearningParticipant", "LearningGradingSystemScaleId", "dbo.LearningGradingSystemScale");
             DropForeignKey("dbo.LearningParticipant", "Id", "dbo.GroupMember");
-            DropForeignKey("dbo.LearningClassContentPage", "LearningClassId", "dbo.LearningClass");
-            DropForeignKey("dbo.LearningClassContentPage", "Id", "dbo.Group");
             DropForeignKey("dbo.LearningActivityCompletion", "StudentId", "dbo.LearningParticipant");
             DropForeignKey("dbo.LearningActivityCompletion", "NotificationCommunicationId", "dbo.SystemCommunication");
             DropForeignKey("dbo.LearningActivityCompletion", "ModifiedByPersonAliasId", "dbo.PersonAlias");
@@ -494,6 +498,9 @@ namespace Rock.Migrations
             DropForeignKey("dbo.LearningCourse", "CreatedByPersonAliasId", "dbo.PersonAlias");
             DropForeignKey("dbo.LearningCourse", "CompletionWorkflowTypeId", "dbo.WorkflowType");
             DropForeignKey("dbo.LearningCourse", "CategoryId", "dbo.Category");
+            DropForeignKey("dbo.LearningClassContentPage", "ModifiedByPersonAliasId", "dbo.PersonAlias");
+            DropForeignKey("dbo.LearningClassContentPage", "LearningClassId", "dbo.LearningClass");
+            DropForeignKey("dbo.LearningClassContentPage", "CreatedByPersonAliasId", "dbo.PersonAlias");
             DropForeignKey("dbo.LearningClassAnnouncement", "ModifiedByPersonAliasId", "dbo.PersonAlias");
             DropForeignKey("dbo.LearningClassAnnouncement", "LearningClassId", "dbo.LearningClass");
             DropForeignKey("dbo.LearningClassAnnouncement", "CreatedByPersonAliasId", "dbo.PersonAlias");
@@ -504,15 +511,11 @@ namespace Rock.Migrations
             DropIndex("dbo.LearningClass", new[] { "LearningGradingSystemId" });
             DropIndex("dbo.LearningClass", new[] { "LearningSemesterId" });
             DropIndex("dbo.LearningClass", new[] { "LearningCourseId" });
-            // Index on Id was added by EF, but is unnecessary since there's a clustered index on the same.
-            //DropIndex("dbo.LearningClass", new[] { "Id" });
-            DropIndex( "dbo.LearningParticipant", new[] { "LearningClassId" });
+            DropIndex("dbo.LearningClass", new[] { "Id" });
+            DropIndex("dbo.LearningParticipant", new[] { "LearningClassId" });
             DropIndex("dbo.LearningParticipant", new[] { "LearningProgramCompletionId" });
             DropIndex("dbo.LearningParticipant", new[] { "LearningGradingSystemScaleId" });
-            // Index on Id was added by EF, but is unnecessary since there's a clustered index on the same.
-            //DropIndex("dbo.LearningParticipant", new[] { "Id" });
-            DropIndex( "dbo.LearningClassContentPage", new[] { "LearningClassId" });
-            DropIndex("dbo.LearningClassContentPage", new[] { "Id" });
+            DropIndex("dbo.LearningParticipant", new[] { "Id" });
             DropIndex("dbo.LearningGradingSystemScale", new[] { "Guid" });
             DropIndex("dbo.LearningGradingSystemScale", new[] { "ModifiedByPersonAliasId" });
             DropIndex("dbo.LearningGradingSystemScale", new[] { "CreatedByPersonAliasId" });
@@ -549,6 +552,10 @@ namespace Rock.Migrations
             DropIndex("dbo.LearningCourse", new[] { "CategoryId" });
             DropIndex("dbo.LearningCourse", new[] { "LearningProgramId" });
             DropIndex("dbo.LearningCourse", new[] { "ImageBinaryFileId" });
+            DropIndex("dbo.LearningClassContentPage", new[] { "Guid" });
+            DropIndex("dbo.LearningClassContentPage", new[] { "ModifiedByPersonAliasId" });
+            DropIndex("dbo.LearningClassContentPage", new[] { "CreatedByPersonAliasId" });
+            DropIndex("dbo.LearningClassContentPage", new[] { "LearningClassId" });
             DropIndex("dbo.LearningClassAnnouncement", new[] { "Guid" });
             DropIndex("dbo.LearningClassAnnouncement", new[] { "ModifiedByPersonAliasId" });
             DropIndex("dbo.LearningClassAnnouncement", new[] { "CreatedByPersonAliasId" });
@@ -567,7 +574,6 @@ namespace Rock.Migrations
             DropIndex("dbo.LearningActivityCompletion", new[] { "LearningActivityId" });
             DropTable("dbo.LearningClass");
             DropTable("dbo.LearningParticipant");
-            DropTable("dbo.LearningClassContentPage");
             DropTable("dbo.LearningGradingSystemScale");
             DropTable("dbo.LearningGradingSystem");
             DropTable("dbo.LearningSemester");
@@ -575,6 +581,7 @@ namespace Rock.Migrations
             DropTable("dbo.LearningProgram");
             DropTable("dbo.LearningCourseRequirement");
             DropTable("dbo.LearningCourse");
+            DropTable("dbo.LearningClassContentPage");
             DropTable("dbo.LearningClassAnnouncement");
             DropTable("dbo.LearningActivity");
             DropTable("dbo.LearningActivityCompletion");

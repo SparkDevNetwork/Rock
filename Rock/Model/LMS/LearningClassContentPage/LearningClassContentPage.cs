@@ -31,7 +31,7 @@ namespace Rock.Model
     [Table( "LearningClassContentPage" )]
     [DataContract]
     [Rock.SystemGuid.EntityTypeGuid( SystemGuid.EntityType.LEARNING_CLASS_CONTENT_PAGE )]
-    public partial class LearningClassContentPage : Group
+    public partial class LearningClassContentPage : Model<LearningClassContentPage>
     {
         #region Entity Properties
 
