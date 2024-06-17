@@ -39,11 +39,61 @@ export function setEditorEnabled(editor: Editor, isEnabled: boolean): void {
 
 /** Extracts <style> elements from an HTML string. */
 function getStyleSheetStrings(html: string): string[] {
-    return html.match(/<style.*>((?!<\/style>).)*<\/style>/sg) ??  [];
+    return html.match(/<style.*>((?!<\/style>).)*<\/style>/sg) ?? [];
 }
 
 /** Scopes CSS style rules by adding a prefix to each rule selector. */
-function scopeCSSStyleRule(cssRule: CSSStyleRule, cssRuleSelectorPrefix: string): string {
+function scopeCSSStyleRule(cssRule: CSSStyleRule, editorElementSelector: string): string {
+    function replaceSelector(selector: string, searchSelector: string, replacementSelector: string): { selector: string; replaced: boolean; } {
+        const startsWithSearchSelector = `${searchSelector} `;
+        const endsWithSearchSelector = ` ${searchSelector}`;
+        const containsSearchSelector = ` ${searchSelector} `;
+
+        if (selector === searchSelector) {
+            return {
+                selector: replacementSelector,
+                replaced: true,
+            };
+        }
+        else if (selector.startsWith(startsWithSearchSelector)) {
+            // body > p
+            // =>
+            // .note-editing-area-body > p`;
+            return {
+                selector: `${replacementSelector} ${selector.substring(startsWithSearchSelector.length)}`,
+                replaced: true
+            };
+        }
+        else if (selector.endsWith(endsWithSearchSelector)) {
+            // html body
+            // =>
+            // html .note-editing-area-body`;
+            return {
+                selector: `${selector.substring(0, selector.length - endsWithSearchSelector.length)} ${replacementSelector}`,
+                replaced: true
+            };
+        }
+        else {
+            const index = selector.indexOf(containsSearchSelector);
+
+            if (index !== -1) {
+                // html body p (search for "body")
+                // =>
+                // html .note-editing-area-body p
+                return {
+                    selector: `${selector.substring(0, index)} ${replacementSelector} ${selector.substring(index + containsSearchSelector.length)}`,
+                    replaced: true
+                };
+            }
+            else {
+                return {
+                    selector,
+                    replaced: false
+                };
+            }
+        }
+    }
+
     cssRule.selectorText = cssRule.selectorText
         // Split multiple CSS rule selectors; e.g., `*, body, p`
         .split(",")
@@ -53,8 +103,26 @@ function scopeCSSStyleRule(cssRule: CSSStyleRule, cssRuleSelectorPrefix: string)
         .filter(selector => !!selector)
         // Add prefixes to selectors that don't already have them.
         .map(selector => {
-            if (!selector.includes(cssRuleSelectorPrefix)) {
-                return `${cssRuleSelectorPrefix} ${selector}`;
+            if (!selector.includes(editorElementSelector)) {
+                const htmlReplacement = replaceSelector(selector, "html", ".note-editing-area-html");
+                const bodyReplacement = replaceSelector(htmlReplacement.selector, "body", ".note-editing-area-body");
+                selector = bodyReplacement.selector;
+
+                if (bodyReplacement.replaced) {
+                    // If a `body {}` top-level style exists,
+                    // then we need to temporarily add a new CSS Rule selector
+                    // so those styles will be shown in the editor.
+                    return selector.replace(".note-editing-area-body", `.note-editing-area-body ${editorElementSelector}`);
+                }
+                else if (htmlReplacement.replaced) {
+                    // If an `html {}` top-level style exists,
+                    // then we need to temporarily add a new CSS Rule selector
+                    // so those styles will be shown in the editor.
+                    return selector.replace(".note-editing-area-html", `.note-editing-area-html ${editorElementSelector}`);
+                }
+                else {
+                    return `${editorElementSelector} ${selector}`;
+                }
             }
             else {
                 return selector;
@@ -79,16 +147,16 @@ function scopeCSSStyleRule(cssRule: CSSStyleRule, cssRuleSelectorPrefix: string)
  *   color: red;
  * }
  */
-function scopeCSSRules(cssRules: CSSRuleList, cssRuleSelectorPrefix: string): string[] {
+function scopeCSSRules(cssRules: CSSRuleList, editorElementSelector: string): string[] {
     const rulesCssText: string[] = [];
 
     for (let i = 0; i < cssRules.length; i++) {
         const rule = cssRules[i];
         if (rule instanceof CSSStyleRule) {
-            scopeCSSStyleRule(rule, cssRuleSelectorPrefix);
+            scopeCSSStyleRule(rule, editorElementSelector);
         }
         else if (rule instanceof CSSMediaRule) {
-            scopeCSSRules(rule.cssRules, cssRuleSelectorPrefix);
+            scopeCSSRules(rule.cssRules, editorElementSelector);
         }
         else {
             // This isn't a CSS rule so no prefix necessary?
@@ -105,7 +173,7 @@ function scopeCSSRules(cssRules: CSSRuleList, cssRuleSelectorPrefix: string): st
 /**
  * Adds a prefix to every CSS rule selector in the provided HTML <style> elements.
  */
-export function scopeStyleSheets(html: string, scopeIdentifier: string): string {
+export function scopeStyleSheets(html: string, editorElementSelector: string): string {
     if (!html) {
         return html;
     }
@@ -117,12 +185,12 @@ export function scopeStyleSheets(html: string, scopeIdentifier: string): string 
         const openingTag = styleSheetString.match(/^<style.*>/)?.[0] ?? "<style>";
         cssStyleSheet.innerHTML = styleSheetString.replace(openingTag, "").replace("</style>", "").replace(/\n\s+/g, "\n");
         document.body.appendChild(cssStyleSheet);
-        const {sheet} = cssStyleSheet;
+        const { sheet } = cssStyleSheet;
         document.body.removeChild(cssStyleSheet);
 
         // Add the prefix to each CSS rule selector.
         if (sheet) {
-            const rulesCssText = scopeCSSRules(sheet.cssRules, scopeIdentifier);
+            const rulesCssText = scopeCSSRules(sheet.cssRules, editorElementSelector);
 
             // Replace the <style> tag with the new stylesheet.
             html = html.replace(styleSheetString, `${openingTag}\n${rulesCssText.join("\n")}\n</style>`);
@@ -133,7 +201,7 @@ export function scopeStyleSheets(html: string, scopeIdentifier: string): string 
 }
 
 /** Returns the HTML with scoped style sheets removed. */
-export function unscopeStyleSheets(html: string, cssRuleSelectorPrefix: string): string {
+export function unscopeStyleSheets(html: string, editorElementSelector: string): string {
     if (!html) {
         return html;
     }
@@ -141,7 +209,14 @@ export function unscopeStyleSheets(html: string, cssRuleSelectorPrefix: string):
     const styleSheetStrings = getStyleSheetStrings(html);
 
     styleSheetStrings.forEach((styleSheetString: string) => {
-        const styleSheetStringWithoutPrefixes = styleSheetString.replace(new RegExp(`${cssRuleSelectorPrefix}[\t ]+`, "g"), "").replace(new RegExp(cssRuleSelectorPrefix, "g"), "");
+        const styleSheetStringWithoutPrefixes = styleSheetString
+            // Strip out top-level style selectors.
+            .replace(".note-editing-area-html", "html")
+            .replace(".note-editing-area-body", "body")
+            // Strip out scoped selectors.
+            .replace(new RegExp(`${editorElementSelector}[\t ]+`, "g"), "")
+            .replace(editorElementSelector, "");
+
         html = html.replace(styleSheetString, styleSheetStringWithoutPrefixes);
     });
 

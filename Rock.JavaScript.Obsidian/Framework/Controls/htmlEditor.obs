@@ -12,21 +12,25 @@
                              ref="toolbarElement"></div>
 
                         <div class="note-editing-area">
-                            <EditSourceCodePlugin v-model="internalValue"
-                                                  :disabled="disabled"
-                                                  :editorHeight="editorHeight + yOffset"
-                                                  :mergeFields="mergeFields"
-                                                  ref="editSourceCodePlugin"
-                                                  :startInCodeEditorMode="startInCodeEditorMode"
-                                                  :tinyMceInstance="tinyMceInstance"
-                                                  :toolbarElement="toolbarElement">
-                                <template v-slot="{ isEditorShown }">
-                                    <div v-show="!updateIsEditorShown(isEditorShown)"
-                                         class="note-editable"
-                                         :id="assignEditorId(uniqueId)"
-                                         ref="editorElement"></div>
-                                </template>
-                            </EditSourceCodePlugin>
+                            <div class="note-editing-area-html">
+                                <div class="note-editing-area-body">
+                                    <EditSourceCodePlugin v-model="internalValue"
+                                                          :disabled="disabled"
+                                                          :editorHeight="editorHeight + yOffset"
+                                                          :mergeFields="mergeFields"
+                                                          ref="editSourceCodePlugin"
+                                                          :startInCodeEditorMode="startInCodeEditorMode"
+                                                          :tinyMceInstance="tinyMceInstance"
+                                                          :toolbarElement="toolbarElement">
+                                        <template v-slot="{ isEditorShown }">
+                                            <div v-show="!updateIsEditorShown(isEditorShown)"
+                                                 class="note-editable"
+                                                 :id="assignEditorId(uniqueId)"
+                                                 ref="editorElement"></div>
+                                        </template>
+                                    </EditSourceCodePlugin>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="note-statusbar" ref="resizerElement" role="status">
