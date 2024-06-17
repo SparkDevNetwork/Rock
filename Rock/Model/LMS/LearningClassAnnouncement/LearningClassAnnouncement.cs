@@ -48,6 +48,16 @@ namespace Rock.Model
         public string Title { get; set; }
 
         /// <summary>
+        /// Gets or sets the summary text of the announcement.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the Summary text of the announcement.
+        /// </value>
+        [MaxLength( 500 )]
+        [DataMember]
+        public string Summary { get; set; }
+
+        /// <summary>
         /// Gets or sets the description for the announcement.
         /// </summary>
         /// <value>
