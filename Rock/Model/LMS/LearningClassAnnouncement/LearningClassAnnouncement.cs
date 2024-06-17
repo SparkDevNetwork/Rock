@@ -94,7 +94,7 @@ namespace Rock.Model
         /// Gets or sets the date the announcement should be published/visible.
         /// </summary>
         [DataMember]
-        public DateTime PublishDate { get; set; }
+        public DateTime PublishDateTime { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the communication has been sent.
