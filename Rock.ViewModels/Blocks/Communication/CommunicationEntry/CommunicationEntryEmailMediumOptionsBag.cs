@@ -100,5 +100,13 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntry
         /// The bulk email threshold.
         /// </value>
         public int? BulkEmailThreshold { get; set; }
+
+        /// <summary>
+        /// Gets or sets the additional merge fields that can be used in merge field pickers.
+        /// </summary>
+        /// <value>
+        /// The additional merge fields.
+        /// </value>
+        public List<string> AdditionalMergeFields { get; set; }
     }
 }

@@ -18,7 +18,6 @@
 using System.Collections.Generic;
 
 using Rock.Enums.Blocks.Communication.CommunicationEntry;
-using Rock.ViewModels.Blocks.Group.Scheduling.GroupScheduleToolbox;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Communication.CommunicationEntry
@@ -26,8 +25,7 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntry
     /// <summary>
     /// Box containing initialization information for the Communication Entry block.
     /// </summary>
-    /// <seealso cref="Rock.ViewModels.Blocks.Group.Scheduling.GroupScheduleToolbox.InitializationBox" />
-    public class CommunicationEntryInitializationBox : InitializationBox
+    public class CommunicationEntryInitializationBox : BlockBox
     {
         /// <summary>
         /// Gets or sets the mediums for the tab control.
@@ -61,15 +59,6 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntry
         /// The title.
         /// </value>
         public string Title { get; set; }
-
-        // TODO JMH What are these for?
-        /// <summary>
-        /// Gets or sets the additional merge fields.
-        /// </summary>
-        /// <value>
-        /// The additional merge fields.
-        /// </value>
-        public List<string> AdditionalMergeFields { get; set; }
 
         /// <summary>
         /// Gets or sets the communication details being created/edited.

@@ -337,21 +337,31 @@
             // Lava is disabled.
             return undefined;
         }
-        else if (config.mode === Mode.Full) {
-            // Full mode.
-            return [
-                "GlobalAttribute",
-                "Rock.Model.Person",
-                "Communication.Subject|Subject",
-                "Communication.FromName|From Name",
-                "Communication.FromEmail|From Address",
-                "Communication.ReplyToEmail|Reply To",
-                "UnsubscribeOption"
-            ];
-        }
         else {
-            // Simple mode.
-            return ["Rock.Model.Person"];
+            const mergeFields: string[] = [];
+
+            if (config.mode === Mode.Full) {
+                // Full mode.
+                mergeFields.push(
+                    "GlobalAttribute",
+                    "Rock.Model.Person",
+                    "Communication.Subject|Subject",
+                    "Communication.FromName|From Name",
+                    "Communication.FromEmail|From Address",
+                    "Communication.ReplyToEmail|Reply To",
+                    "UnsubscribeOption"
+                );
+            }
+            else {
+                // Simple mode.
+                mergeFields.push("Rock.Model.Person");
+            }
+
+            if (mediumOptions.value?.additionalMergeFields) {
+                mergeFields.push(...mediumOptions.value.additionalMergeFields);
+            }
+
+            return mergeFields;
         }
     });
 

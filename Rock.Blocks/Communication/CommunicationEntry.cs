@@ -34,7 +34,6 @@ using Rock.ViewModels.Utility;
 using Rock.ViewModels.Blocks.Communication.CommunicationEntry;
 using Rock.Net;
 using System.ComponentModel.DataAnnotations;
-using System.Reflection.Emit;
 
 namespace Rock.Blocks.Communication
 {
@@ -255,6 +254,16 @@ namespace Rock.Blocks.Communication
         /// </summary>
         private int? PersonOrPersonIdPageParameter => PageParameter( PageParameterKey.Person ).AsIntegerOrNull() ?? PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull();
 
+        /// <summary>
+        /// Gets the Mediums that should be available to user to send through (If none are selected, all active mediums will be available).
+        /// </summary>
+        private List<Guid> DisplayedMediumGuids => GetAttributeValue( AttributeKey.Mediums ).SplitDelimitedValues().AsGuidList();
+
+        /// <summary>
+        /// Gets the CommunicationId page parameter.
+        /// </summary>
+        public int? CommunicationIdPageParameter => PageParameter( PageParameterKey.CommunicationId ).AsIntegerOrNull();
+
         //protected int? CommunicationId
         //{
         //    get { return ViewState["CommunicationId"] as int?; }
@@ -307,24 +316,6 @@ namespace Rock.Blocks.Communication
         //    set { ViewState["CommunicationData"] = value; }
         //}
 
-        ///// <summary>
-        ///// Gets or sets any additional merge fields.
-        ///// </summary>
-        //public List<string> AdditionalMergeFields
-        //{
-        //    get
-        //    {
-        //        var mergeFields = ViewState["AdditionalMergeFields"] as List<string>;
-        //        if ( mergeFields == null )
-        //        {
-        //            mergeFields = new List<string>();
-        //            ViewState["AdditionalMergeFields"] = mergeFields;
-        //        }
-        //        return mergeFields;
-        //    }
-
-        //    set { ViewState["AdditionalMergeFields"] = value; }
-        //}
 
         //public bool ApproverEditing
         //{
@@ -342,102 +333,105 @@ namespace Rock.Blocks.Communication
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         public override object GetObsidianBlockInitialization()
         {
-            var currentPerson = GetCurrentPerson();
-            var box = new CommunicationEntryInitializationBox
-            {
-                IsLavaEnabled = this.IsLavaEnabled,
-                MaximumRecipientsBeforeApprovalRequired = this.MaximumRecipients,
-                Mode = this.Mode,
-            };
-
-            // "Simple" mode will prevent users from searching/adding new people to communication.
-
-            var displayedMediumGuids = GetAttributeValue( AttributeKey.Mediums ).SplitDelimitedValues().AsGuidList();
-            var mediums = new List<(string ComponentName, MediumComponent Medium)>();
-            foreach ( var item in MediumContainer.Instance.Components.Values )
-            {
-                var mediumComponent = item.Value;
-                if ( ( !displayedMediumGuids.Any() || displayedMediumGuids.Contains( mediumComponent.EntityType.Guid ) )
-                     && mediumComponent.IsActive
-                     && mediumComponent.IsAuthorized( Authorization.VIEW, currentPerson ) )
-                {
-                    mediums.Add( (item.Metadata.ComponentName, mediumComponent) );
-                }
-            }
-
             using ( var rockContext = new RockContext() )
             {
-                if ( mediums.Any() )
-                {
-                    box.Mediums = mediums
-                        .Select( medium => new ListItemBag
-                        {
-                            Text = medium.ComponentName,
-                            Value = medium.Medium.EntityType.Guid.ToString()
-                        } )
-                        .ToList();
-                }
+                var currentPerson = GetCurrentPerson();
+                var communication = LoadCommunication( rockContext );
 
-                // Check page parameter for existing communication.
-                Model.Communication communication = null;
-                var communicationId = PageParameter( PageParameterKey.CommunicationId ).AsIntegerOrNull();
-                if ( communicationId.HasValue )
+                var box = new CommunicationEntryInitializationBox
                 {
-                    communication = new CommunicationService( rockContext ).Get( communicationId.Value );
-                }
-
-                if ( communication == null )
-                {
-                    // If this is a new communication, create a communication object temporarily so we can do the auth and edit logic.
-                    communication = new Rock.Model.Communication
-                    {
-                        CreatedByPersonAlias = currentPerson.PrimaryAlias,
-                        CreatedByPersonAliasId = currentPerson.PrimaryAliasId,
-                        SenderPersonAlias = currentPerson.PrimaryAlias,
-                        SenderPersonAliasId = currentPerson.PrimaryAliasId,
-                        Status = CommunicationStatus.Transient,
-                    };
-                }
-                else
-                {
-                    // Load the communication attachments.
-                    communication.GetAttachments( communication.CommunicationType );
-                }
-
-                // TODO JMH Does this mean an approved item is being edited
-                // or that editing is approved?
-                // Editing is only authorized if the current person has block security to "Approve"
-                // and if currently editing a communication (indicated via page parameter).
-                box.Authorization = GetAuthorizationBag( communication );
-
-                // If communication was just created only for authorization,
-                // set it to null so that showing of details works correctly.
-                if ( communication.Id == 0 )
-                {
-                    communication = null;
-                }
+                    Authorization = GetAuthorization( currentPerson, communication ),
+                    IsLavaEnabled = this.IsLavaEnabled,
+                    MaximumRecipientsBeforeApprovalRequired = this.MaximumRecipients,
+                    Mediums = GetMediums( rockContext, currentPerson ),
+                    Mode = this.Mode,
+                    Title = GetTitle( communication )
+                };
 
                 if ( box.Authorization.CanEditCommunication )
                 {
-                    // Communication is either new or ok to edit.
+                    // Communication is either new or can be editted.
                     SetCommunicationData( box, communication, currentPerson, rockContext );
 
                     box.IsHidden = false;
                 }
                 else
                 {
-                    // Not an editable communication, so hide this block.
+                    // Not a new or editable communication, so hide this block.
                     // If there is a CommunicationDetail block on this page, it'll be shown instead
                     box.IsHidden = true;
                 }
-            }
 
-            return box;
+                return box;
+            }
         }
 
-        private CommunicationEntryAuthorizationBag GetAuthorizationBag( Rock.Model.Communication communication )
+        /// <summary>
+        /// Loads the communication based on the CommunicationId page parameter.
+        /// </summary>
+        /// <param name="rockContext">The Rock context.</param>
+        /// <returns>The loaded <see cref="Model.Communication"/> object or <see langword="null"/> if the communication doesn't exist or a new one is being created.</returns>
+        private Model.Communication LoadCommunication( RockContext rockContext )
         {
-            var currentPerson = GetCurrentPerson();
+            // Check page parameter for existing communication.
+            Model.Communication communication = null;
+            var communicationId = this.CommunicationIdPageParameter;
+            if ( communicationId.HasValue )
+            {
+                communication = new CommunicationService( rockContext ).Get( communicationId.Value );
+                communication?.GetAttachments( communication.CommunicationType );
+            }
+
+            return communication;
+        }
+
+        /// <summary>
+        /// The Mediums that should be available to user to send through (If none are selected, all active mediums will be available).
+        /// </summary>
+        private List<ListItemBag> GetMediums( RockContext rockContext, Person currentPerson )
+        {
+            var displayedMediumGuids = this.DisplayedMediumGuids;
+            var mediums = new List<(string ComponentName, MediumComponent Medium)>();
+            foreach ( var item in MediumContainer.Instance.Components.Values )
+            {
+                var mediumComponent = item.Value;
+                if ( ( !displayedMediumGuids.Any() || displayedMediumGuids.Contains( mediumComponent.EntityType.Guid ) )
+                        && mediumComponent.IsActive
+                        && mediumComponent.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                {
+                    mediums.Add( (item.Metadata.ComponentName, mediumComponent) );
+                }
+            }
+
+            return mediums
+                .Select( medium => new ListItemBag
+                {
+                    Text = medium.ComponentName,
+                    Value = medium.Medium.EntityType.Guid.ToString()
+                } )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Gets the authorization for the current person and communication.
+        /// </summary>
+        /// <param name="currentPerson">The logged in person.</param>
+        /// <param name="communication">The communication to authorize. <see langword="null"/> is allowed here and represents a brand new communication.</param>
+        /// <returns></returns>
+        private CommunicationEntryAuthorizationBag GetAuthorization( Person currentPerson, Model.Communication communication )
+        {
+            if ( communication == null )
+            {
+                // If this is a new communication, create a communication object temporarily so we can do the auth and edit logic.
+                communication = new Rock.Model.Communication
+                {
+                    CreatedByPersonAlias = currentPerson.PrimaryAlias,
+                    CreatedByPersonAliasId = currentPerson.PrimaryAliasId,
+                    SenderPersonAlias = currentPerson.PrimaryAlias,
+                    SenderPersonAliasId = currentPerson.PrimaryAliasId,
+                    Status = CommunicationStatus.Transient,
+                };
+            }
 
             var isBlockApproveActionAuthorized = BlockCache.IsAuthorized( Authorization.APPROVE, currentPerson );
             var isBlockEditActionAuthorized = BlockCache.IsAuthorized( Authorization.EDIT, currentPerson );
@@ -497,8 +491,10 @@ namespace Rock.Blocks.Communication
             {
                 using ( var rockContext = new RockContext() )
                 {
+                    var communication = LoadCommunication( rockContext );
                     return new CommunicationEntryEmailMediumOptionsBag
                     {
+                        AdditionalMergeFields = communication?.AdditionalMergeFields,
                         BinaryFileTypeGuid = GetAttributeValue( AttributeKey.AttachmentBinaryFileType ).AsGuidOrNull() ?? Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT.AsGuid(),
                         BulkEmailThreshold = emailMedium.GetBulkEmailThreshold(),
                         DocumentFolderRoot = GetAttributeValue( AttributeKey.DocumentRootFolder ),
@@ -1134,7 +1130,8 @@ namespace Rock.Blocks.Communication
                     mediumBehavior.OnCommunicationSave( rockContext, bag );
                 }
 
-                var authorization = GetAuthorizationBag( communication );
+                var currentPerson = GetCurrentPerson();
+                var authorization = GetAuthorization( currentPerson, communication );
                 if ( authorization.CanApproveCommunication )
                 {
                     rockContext.SaveChanges();
@@ -1163,7 +1160,7 @@ namespace Rock.Blocks.Communication
                     // Approval is not required or the current person can approve.
                     communication.Status = CommunicationStatus.Approved;
                     communication.ReviewedDateTime = RockDateTime.Now;
-                    communication.ReviewerPersonAliasId = GetCurrentPerson().PrimaryAliasId;
+                    communication.ReviewerPersonAliasId = currentPerson.PrimaryAliasId;
 
                     if ( communication.FutureSendDateTime.HasValue
                             && communication.FutureSendDateTime > RockDateTime.Now )
@@ -1524,6 +1521,18 @@ namespace Rock.Blocks.Communication
             return ConvertAll().ToList();
         }
 
+        private string GetTitle( Model.Communication communication )
+        {
+            if ( communication == null || communication.Id == 0 )
+            {
+                return "New Communication".FormatAsHtmlTitle();
+            }
+            else
+            {
+                return ( communication.Name ?? communication.Subject ?? "New Communication" ).FormatAsHtmlTitle();
+            }
+        }
+
         /// <summary>
         /// Shows the detail.
         /// </summary>
@@ -1543,7 +1552,6 @@ namespace Rock.Blocks.Communication
                     Status = CommunicationStatus.Transient,
                 };
 
-                box.Title = "New Communication".FormatAsHtmlTitle();
                 if ( this.IsPersonPageParameterEnabled )
                 {
                     // If either 'Person' or 'PersonId' is specified then add that person to the communication.
@@ -1570,8 +1578,6 @@ namespace Rock.Blocks.Communication
             }
             else
             {
-                box.AdditionalMergeFields = communication.AdditionalMergeFields.ToList();
-                box.Title = ( communication.Name ?? communication.Subject ?? "New Communication" ).FormatAsHtmlTitle();
                 communicationRecipientBags = GetRecipientBags( rockContext, RecipientQueryOptions.Filter.ByCommunication( communication.Id ) );
             }
 

@@ -27,6 +27,9 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** Bag containing the Email Medium options for the Communication Entry block. */
 export type CommunicationEntryEmailMediumOptionsBag = {
+    /** Gets or sets the additional merge fields that can be used in merge field pickers. */
+    additionalMergeFields?: string[] | null;
+
     /** Gets or sets the binary file type unique identifier. */
     binaryFileTypeGuid: Guid;
 
