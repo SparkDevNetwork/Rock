@@ -10,7 +10,7 @@ body:
     id: summary
     attributes:
       label: Description
-      description: Please write a clear and concise description and include full window non-partial screenshots.
+      description: Please write a clear and concise description *and* **include screenshots**.
       placeholder: Tell us what you see!
       value: "Tell us what you see!"
     validations:
@@ -53,7 +53,7 @@ body:
       options:
         - label: Perform a search on the [Github Issues](https://github.com/issues?q=is%3Aissue+user%3ASparkDevNetwork+-repo%3ARock) to see if your bug or enhancement is already reported.
           required: true
-        - label: Try to reproduce the problem on a fresh install or on the [demo site](https://rock.rocksolidchurchdemo.com/).
+        - label: Reproduced the problem on a fresh install or on the [demo site](https://rock.rocksolidchurchdemo.com/).
           required: true
   - type: input
     id: version
