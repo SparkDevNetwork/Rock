@@ -9,6 +9,7 @@
 @import 'utilities/spacing-utilities';      // FULLY COPY AND PAST FROM bootstrap _utilities.less.
 @import 'utilities/typography-utilities';   // Fully Polish
 @import 'utilities/color-utilities';        // Fully Polish, might add more class 
+@import 'utilities/flexbox-utilities';
 
 /* ======================= CORE  ======================*/
 @import 'core/page-admin';          //TODO polish, parts of the bar is overflowing to the left 
@@ -22,4 +23,9 @@
 @import 'components/labels';        // When color-mix() use, go in the file there's comments at where it is need ot be use.
 @import 'components/wells';         // When color-mix() use, go in the file there's comments at where it is need ot be use.
 @import 'components/code';          // The naming is hard to understand
-@import 'components/dropdowns'      // Still need some work 
+@import 'components/dropdowns';     // Still need some work 
+@import 'components/close';         //Fully Polish
+@import 'components/list-group';    // When color-mix() use, go in the file there's comments at where it is need ot be use.
+
+/* ==================== LEGACY ==================== */ 
+@import 'legacy/glyphicons'

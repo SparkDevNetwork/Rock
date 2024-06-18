@@ -6,4 +6,15 @@ $zindex-dropdown: 1000;
 $dropdown-min-width: 160px;
 
 // Screen Sizes
-$screen-sm: 768px;
+$screen-small: 768px;
+$screen-medium: 992px;
+$screen-large: 1200px;
+
+// Grid Container Sizes
+$container-small: 720px;
+$container-medium: 960px;
+$container-large: 1140px;
+
+// Grid
+$grid-gutter-width: 30px;
+$grid-columns: 12;

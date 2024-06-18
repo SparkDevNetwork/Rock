@@ -1,0 +1,32 @@
+// Load Master Styles
+// -------------------------
+@import "../../../Styles/style-v2/core.css";
+@import "../../../Styles/FontAwesome/fontawesome-style-v2.css";
+/*@import "../../../Styles/Bootstrap/variables.less";
+@import "../../../Styles/_rock-core.less";
+@import "../../../Styles/_store.less";
+@import "../../../Styles/_rock-variables.less";
+@import "_variables.less";
+@import "_variable-overrides.less";
+@import "_print.less";*/
+
+/*
+    Rock Theme Styles
+
+    1. HTML Overrides
+    2. Bootstrap Overrides
+    3. Theme Styling
+    4. Responsive Overrides
+
+*/
+
+// 1. HTML Overrides
+// -------------------------
+
+html {
+  -webkit-font-smoothing: antialiased;
+}
+
+main {
+  display: block;
+}
