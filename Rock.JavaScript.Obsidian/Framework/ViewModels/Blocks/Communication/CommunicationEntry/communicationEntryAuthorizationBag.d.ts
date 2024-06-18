@@ -23,12 +23,6 @@
 
 /** Bag containing the authorization information for the Communication Entry block. */
 export type CommunicationEntryAuthorizationBag = {
-    /** Gets or sets a value indicating whether the logged in person can approve the communication. */
-    canApproveCommunication: boolean;
-
-    /** Gets or sets a value indicating whether the logged in person can edit the communication. */
-    canEditCommunication: boolean;
-
     /** Gets or sets a value indicating whether the approve action is authorized on the block for the logged in person. */
     isBlockApproveActionAuthorized: boolean;
 

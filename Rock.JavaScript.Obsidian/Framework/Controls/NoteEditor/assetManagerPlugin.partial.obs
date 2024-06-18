@@ -1,36 +1,34 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <Modal v-model="isShown"
-           title="Select File"
+           title="Select Asset"
            cancelText="Cancel"
            saveText="OK"
            :onSave="onOkClicked">
-        TODO: Add File Browser
+        TODO: Add Asset Manager
     </Modal>
 </template>
 
 <script setup lang="ts">
     import { ref, watch } from "vue";
-    import { getToolbarButton, useTinyMceInstance, useTinyMceToolbarElement } from "./utils.partial";
+    import { getToolbarButton, usePluginHelper } from "./utils.partial";
     import Modal from "@Obsidian/Controls/modal.obs";
     import { Editor, Ui } from "@Obsidian/Libs/tinymce";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-    const id = "rockfilebrowser" as const;
-    const tooltip = "File Browser" as const;
+    const id = "rockassetmanager" as const;
+    const tooltip = "Asset Manager" as const;
 
     defineExpose({
         id
     });
 
-    const tinyMceInstance = useTinyMceInstance();
-    const toolbarElement = useTinyMceToolbarElement();
-
     //#region Values
 
+    const { editorInstance, toolbarElement } = usePluginHelper();
     const toolbarButtonElement = ref<HTMLElement | undefined>();
     const isShown = ref<boolean>(false);
-    const file = ref<ListItemBag | undefined>();
+    const asset = ref<ListItemBag | undefined>();
 
     //#endregion
 
@@ -51,7 +49,7 @@
         // Open the modal when the toolbar button is clicked.
         editor.ui.registry.addToggleButton(id, {
             // https://www.tiny.cloud/docs/tinymce/latest/editor-icon-identifiers/
-            icon: "new-document",
+            icon: "browse",
             tooltip: tooltip,
             onAction: (_api: Ui.Toolbar.ToolbarButtonInstanceApi): void => {
                 isShown.value = true;
@@ -65,22 +63,36 @@
         });
     }
 
+    /** Determines whether the file has an image file extension. */
+    function isImage(fileName: string): boolean {
+        return !!fileName?.match(/.(jpg|jpeg|png|gif|svg)$/i);
+    }
+
     //#endregion
 
     //#region Event Handlers
 
     /** Event handler for the OK button being clicked. */
     function onOkClicked(): void {
-        const editor = tinyMceInstance.value;
+        const editor = editorInstance.value;
 
-        if (editor && file.value?.value) {
-            // TODO: Add the file to the editor assuming file.value is the file path.
-            // https://www.tiny.cloud/docs/tinymce/latest/editor-command-identifiers/#link:~:text=the%20current%20selection.-,CreateLink,-Inserts%20a%20link
-            editor.execCommand("CreateLink", false, file.value.value);
+        if (editor && asset.value?.value) {
+            // TODO: Add the file to the editor; possibly with the following format
+            // assuming file.value is the file path and the file.text is the file name.
+            if (isImage(asset.value.value)) {
+                // TODO: Add the image to the editor assuming file.value is the image path.
+                // https://www.tiny.cloud/docs/tinymce/latest/editor-command-identifiers/#link:~:text=cursor%20or%20selection.-,InsertImage,-Adds%20an%20image
+                editor.execCommand("InsertImage", false, asset.value.value);
+            }
+            else {
+                // TODO: Add the file to the editor assuming file.value is the file path.
+                // https://www.tiny.cloud/docs/tinymce/latest/editor-command-identifiers/#link:~:text=the%20current%20selection.-,CreateLink,-Inserts%20a%20link
+                editor.execCommand("CreateLink", false, asset.value.value);
+            }
         }
 
-        // Clear the selected file and close the modal.
-        file.value = undefined;
+        // Clear the asset value and close the modal.
+        asset.value = undefined;
         isShown.value = false;
     }
 
@@ -89,12 +101,12 @@
     //#region Watchers
 
     // Register the plugin whenever the bound Editor changes.
-    watch(tinyMceInstance, () => {
+    watch(editorInstance, () => {
         // Dispose the previous tooltip button if set.
         disposeTooltipButton();
 
-        if (tinyMceInstance.value) {
-            init(tinyMceInstance.value);
+        if (editorInstance.value) {
+            init(editorInstance.value);
         }
     });
 

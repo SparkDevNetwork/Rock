@@ -15,9 +15,9 @@
 // </copyright>
 //
 
-import { Editor } from "@Obsidian/Libs/tinymce";
-import { ComputedRef, InjectionKey, inject, provide } from "vue";
-import { TinyMcePluginHelper } from "./types.partial";
+import { Editor, RawEditorOptions } from "@Obsidian/Libs/tinymce";
+import { InjectionKey, inject, provide } from "vue";
+import { PluginHelper, PluginManager, PluginsFeatureArgs } from "./types.partial";
 
 /** Gets a button element from the toolbar. This should only be called after the editor is initialized. */
 export function getToolbarButton(tooltip: string, parent?: HTMLElement | undefined): HTMLElement | null | undefined {
@@ -53,20 +53,38 @@ function use<T>(key: string | InjectionKey<T>): T {
     return result;
 }
 
-export function useTinyMceInstance(): ComputedRef<Editor | undefined> {
-    return useTinyMcePluginHelper().tinyMceInstance;
+const pluginHelperInjectionKey: InjectionKey<PluginHelper> = Symbol("plugin-helper");
+
+/**
+ * Provides support for the plugins feature.
+ */
+export function providePluginsFeature(value: PluginsFeatureArgs): PluginManager {
+    const pluginConfigureEditorOptionsCallbacks: ((currentOptions: RawEditorOptions) => RawEditorOptions)[] = [];
+
+    // Provide the plugin helper that can be injected into child plugin components.
+    provide(pluginHelperInjectionKey, {
+        onConfigureEditorOptions(callback: (currentOptions: RawEditorOptions) => RawEditorOptions): void {
+            pluginConfigureEditorOptionsCallbacks.push(callback);
+        },
+        editorInstance: value.editorInstance,
+        toolbarElement: value.toolbarElement
+    });
+
+    return {
+        configureEditorOptions(editorOptions: RawEditorOptions): RawEditorOptions {
+            // Execute plugin callbacks that can further configure the editor options.
+            for (let i = 0; i < pluginConfigureEditorOptionsCallbacks.length; i++) {
+                editorOptions = pluginConfigureEditorOptionsCallbacks[i](editorOptions);
+            }
+
+            return editorOptions;
+        }
+    };
 }
 
-export function useTinyMceToolbarElement(): ComputedRef<HTMLElement | undefined> {
-    return useTinyMcePluginHelper().toolbarElement;
-}
-
-const tinyMcePluginHelperInjectionKey: InjectionKey<TinyMcePluginHelper> = Symbol("tiny-mce-plugin-helper");
-
-export function provideTinyMcePluginHelper(value: TinyMcePluginHelper): void {
-    provide(tinyMcePluginHelperInjectionKey, value);
-}
-
-export function useTinyMcePluginHelper(): TinyMcePluginHelper {
-    return use(tinyMcePluginHelperInjectionKey);
+/**
+ * Injects helper methods and properties for plugins.
+ */
+export function usePluginHelper(): PluginHelper {
+    return use(pluginHelperInjectionKey);
 }

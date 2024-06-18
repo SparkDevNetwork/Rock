@@ -96,5 +96,13 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntry
         /// <see cref="Mode.Simple" /> will prevent users from searching/adding new people to the communication.
         /// </value>
         public Mode Mode { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the block is in edit mode.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the block is in edit mode; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsEditMode { get; set; }
     }
 }

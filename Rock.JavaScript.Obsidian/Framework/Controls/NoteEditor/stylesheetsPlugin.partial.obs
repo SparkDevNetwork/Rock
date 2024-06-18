@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
-    import { useTinyMceInstance, useTinyMcePluginHelper } from "./utils.partial";
+    import { usePluginHelper } from "./utils.partial";
     import { Editor, EditorEvent, EventDispatcher, Events, RawEditorOptions } from "@Obsidian/Libs/tinymce";
     import { newGuid } from "@Obsidian/Utility/guid";
 
@@ -33,10 +33,9 @@
         id
     });
 
-    const tinyMceInstance = useTinyMceInstance();
-    const pluginHelper = useTinyMcePluginHelper();
+    const { editorInstance, onConfigureEditorOptions } = usePluginHelper();
 
-    pluginHelper.onConfigureEditorOptions((currentOptions: RawEditorOptions) => {
+    onConfigureEditorOptions((currentOptions: RawEditorOptions) => {
         if (!currentOptions.valid_children) {
             currentOptions.valid_children = "+div[style]";
         }
@@ -286,12 +285,12 @@
     //#region Watchers
 
     // Register the plugin whenever the bound Editor changes.
-    watch(tinyMceInstance, () => {
+    watch(editorInstance, () => {
         // Dispose any dependencies.
         dispose();
-
-        if (tinyMceInstance.value) {
-            init(tinyMceInstance.value);
+        
+        if (editorInstance.value) {
+            init(editorInstance.value);
         }
     });
 

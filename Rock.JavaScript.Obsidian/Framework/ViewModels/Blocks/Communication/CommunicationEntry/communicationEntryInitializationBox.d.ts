@@ -41,6 +41,9 @@ export type CommunicationEntryInitializationBox = {
      */
     errorMessage?: string | null;
 
+    /** Gets or sets a value indicating whether the block is in edit mode. */
+    isEditMode: boolean;
+
     /**
      * Gets or sets a value indicating whether the entire Communication Entry block is hidden.
      * There should be another block on the page that will display the Communication details in view mode when this is true.

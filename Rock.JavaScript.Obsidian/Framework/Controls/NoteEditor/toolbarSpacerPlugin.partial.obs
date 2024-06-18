@@ -1,20 +1,9 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
-    import { getToolbarButton } from "./utils.partial";
+    import { ref, watch } from "vue";
+    import { getToolbarButton, usePluginHelper } from "./utils.partial";
     import { Editor, Ui } from "@Obsidian/Libs/tinymce";
     import { newGuid } from "@Obsidian/Utility/guid";
-
-    const props = defineProps({
-        tinyMceInstance: {
-            type: Object as PropType<Editor | undefined>,
-            required: true
-        },
-        toolbarElement: {
-            type: Object as PropType<HTMLElement | undefined>,
-            required: true
-        }
-    });
 
     const id = `toolbarspacer-${newGuid()}` as const;
 
@@ -24,6 +13,7 @@
 
     //#region Values
 
+    const { editorInstance, toolbarElement } = usePluginHelper();
     const toolbarButtonElement = ref<HTMLElement | undefined>();
 
     //#endregion
@@ -47,7 +37,7 @@
                 // Nothing to do.
             },
             onSetup: (_api: Ui.Toolbar.ToolbarButtonInstanceApi): (api: Ui.Toolbar.ToolbarButtonInstanceApi) => void => {
-                toolbarButtonElement.value = getToolbarButton(id, props.toolbarElement) ?? undefined;
+                toolbarButtonElement.value = getToolbarButton(id, toolbarElement.value) ?? undefined;
 
                 const tb = toolbarButtonElement.value;
 
@@ -92,12 +82,12 @@
     //#region Watchers
 
     // Register the plugin whenever the bound Editor changes.
-    watch(() => props.tinyMceInstance, () => {
+    watch(editorInstance, () => {
         // Dispose the previous tooltip button if set.
         disposeTooltipButton();
 
-        if (props.tinyMceInstance) {
-            init(props.tinyMceInstance);
+        if (editorInstance.value) {
+            init(editorInstance.value);
         }
     });
 

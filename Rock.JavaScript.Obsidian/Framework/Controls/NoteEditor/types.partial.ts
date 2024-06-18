@@ -18,8 +18,17 @@
 import { Editor, RawEditorOptions } from "@Obsidian/Libs/tinymce";
 import { ComputedRef } from "vue";
 
-export type TinyMcePluginHelper = {
-    onConfigureEditorOptions(callback: (currentOptions: RawEditorOptions) => RawEditorOptions): void;
-    tinyMceInstance: ComputedRef<Editor | undefined>;
+export type PluginsFeatureArgs = {
+    editorInstance: ComputedRef<Editor | undefined>;
     toolbarElement: ComputedRef<HTMLElement | undefined>;
+};
+
+export type PluginHelper = {
+    onConfigureEditorOptions(callback: (currentOptions: RawEditorOptions) => RawEditorOptions): void;
+    editorInstance: ComputedRef<Editor | undefined>;
+    toolbarElement: ComputedRef<HTMLElement | undefined>;
+};
+
+export type PluginManager = {
+    configureEditorOptions(currentOptions: RawEditorOptions): RawEditorOptions;
 };

@@ -174,7 +174,7 @@
                             class="btn btn-primary"
                             :disabled="disabled"
                             type="button"
-                            @click="() => onClickSend()">Send</RockButton>
+                            @click="() => onClickSend()">{{ sendButtonText }}</RockButton>
 
                 <RockButton v-if="config.mode === Mode.Full"
                             id="btnTest"
@@ -388,6 +388,28 @@
         }
         else {
             return "Show Attachments";
+        }
+    });
+
+    const sendButtonText = computed<string>(() => {
+        if (config.isEditMode && config.authorization?.isBlockApproveActionAuthorized) {
+            // TODO JMH Rename the property.
+            // The block is in edit mode and the logged in person is authorized to approve.
+            return "Save";
+        }
+        else if (props.recipients.length > config.maximumRecipientsBeforeApprovalRequired) {
+            if (config.authorization?.isBlockApproveActionAuthorized) {
+                // The communication requires approval and the logged in person can approve it.
+                return "Send Communication";
+            }
+            else {
+                // The communication requires approval and the logged in person cannot approve it.
+                return "Submit Communication";
+            }
+        }
+        else {
+            // The communication does not require approval.
+            return "Send Communication";
         }
     });
 

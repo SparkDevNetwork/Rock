@@ -71,13 +71,13 @@
 
             <div class="row">
                 <div class="col-xs-6">
-                    <SmsTextEditor v-model="message"
-                                   :disabled="disabled"
-                                   :editorHeight="200"
-                                   :isCountDownShown="mediumOptions.characterLimit > 0"
-                                   :countDownMaxChars="mediumOptions.characterLimit"
-                                   :mergeFields="['GlobalAttribute', 'Rock.Model.Person']"
-                                   toolbarLabel="Message" />
+                    <SmsMessageEditor v-model="message"
+                                      :disabled="disabled"
+                                      :editorHeight="200"
+                                      :isCountDownShown="mediumOptions.characterLimit > 0"
+                                      :countDownMaxChars="mediumOptions.characterLimit"
+                                      :mergeFields="['GlobalAttribute', 'Rock.Model.Person']"
+                                      toolbarLabel="Message" />
 
                 </div>
 
@@ -134,7 +134,7 @@
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
-    import SmsTextEditor from "@Obsidian/Controls/smsTextEditor.obs";
+    import SmsMessageEditor from "@Obsidian/Controls/smsMessageEditor.obs";
     import Switch from "@Obsidian/Controls/switch.obs";
     import { MediumType } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntry/mediumType";
     import { Mode } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntry/mode";

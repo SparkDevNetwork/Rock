@@ -347,21 +347,22 @@ namespace Rock.Blocks.Communication
             {
                 var currentPerson = GetCurrentPerson();
                 var communication = LoadCommunication( rockContext );
+                var authorization = GetAuthorization( currentPerson, communication );
 
-                var box = new CommunicationEntryInitializationBox
-                {
-                    Authorization = GetAuthorization( currentPerson, communication ),
-                    IsLavaEnabled = this.IsLavaEnabled,
-                    MaximumRecipientsBeforeApprovalRequired = this.MaximumRecipients,
-                    Mediums = GetMediums( rockContext, currentPerson ),
-                    Mode = this.Mode,
-                    Title = GetTitle( communication )
-                };
+                var box = new CommunicationEntryInitializationBox();
 
-                if ( box.Authorization.CanEditCommunication )
+                if ( authorization.CanEditCommunication )
                 {
                     // Communication is either new or can be editted.
+
+                    box.Authorization = authorization;
                     box.IsHidden = false;
+                    box.IsEditMode = this.EditPageParameter;
+                    box.IsLavaEnabled = this.IsLavaEnabled;
+                    box.MaximumRecipientsBeforeApprovalRequired = this.MaximumRecipients;
+                    box.Mediums = GetMediums( rockContext, currentPerson );
+                    box.Mode = this.Mode;
+                    box.Title = GetTitle( communication );
 
                     var communicationData = GetCommunicationData( rockContext, communication, currentPerson, box.Mediums.Select( m => m.Value.AsGuid() ) );
                     box.Communication = communicationData.Communication;
@@ -371,6 +372,7 @@ namespace Rock.Blocks.Communication
                 {
                     // The communication is not new nor editable, so hide this block.
                     // If there is a CommunicationDetail block on this page, it'll be shown instead.
+
                     box.IsHidden = true;
                 }
 
@@ -460,7 +462,7 @@ namespace Rock.Blocks.Communication
 
                 if ( communication == null )
                 {
-                    // TODO JMH This is not parity. Is there something else we should do in this case?
+                    // This should not happen, but adding just in case.
                     return ActionBadRequest( "An error occurred while saving. Please try again." );
                 }
                 else
@@ -515,7 +517,6 @@ namespace Rock.Blocks.Communication
                         RedirectToViewMode = true,
                     };
 
-                    // TODO JMH Auto-scroll to results in Obsidian code.
                     return ActionOk( responseBag );
                 }
             }
@@ -665,7 +666,7 @@ namespace Rock.Blocks.Communication
 
                 var currentPerson = GetCurrentPerson();
                 var authorization = GetAuthorization( currentPerson, communication );
-                if ( authorization.CanApproveCommunication )
+                if ( communication.Status == Rock.Model.CommunicationStatus.PendingApproval && authorization.CanApproveCommunication )
                 {
                     rockContext.SaveChanges();
 
@@ -820,7 +821,7 @@ namespace Rock.Blocks.Communication
             var isBlockEditActionAuthorized = BlockCache.IsAuthorized( Authorization.EDIT, currentPerson );
             var isCommunicationEditActionAuthorized = communication.IsAuthorized( Authorization.EDIT, currentPerson );
             var isCommunicationCreator = communication.CreatedByPersonAlias != null && communication.CreatedByPersonAlias.PersonId == currentPerson.Id;
-            var canApproveCommunication = communication.Status == Rock.Model.CommunicationStatus.PendingApproval && isBlockApproveActionAuthorized && EditPageParameter;
+            var canApproveCommunication = isBlockApproveActionAuthorized && EditPageParameter;
             var isEditableStatus =
                 communication.Status == CommunicationStatus.Transient
                 || communication.Status == CommunicationStatus.Draft

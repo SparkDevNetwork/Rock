@@ -43,22 +43,28 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntry
         /// <value>
         ///   <c>true</c> if the edit action is authorized on the communication; otherwise, <c>false</c>.
         /// </value>
-        public bool IsCommunicationEditActionAuthorized { get; internal set; }
+        public bool IsCommunicationEditActionAuthorized { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the logged in person can approve the communication.
         /// </summary>
+        /// <remarks>
+        /// This is an internal property used by Communication Entry block.
+        /// </remarks>
         /// <value>
         ///   <c>true</c> if the logged in person can approve the communication; otherwise, <c>false</c>.
         /// </value>
-        public bool CanApproveCommunication { get; set; }
+        internal bool CanApproveCommunication { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the logged in person can edit the communication.
         /// </summary>
+        /// <remarks>
+        /// This is an internal property used by Communication Entry block.
+        /// </remarks>
         /// <value>
         ///   <c>true</c> if the logged in person can edit the communication; otherwise, <c>false</c>.
         /// </value>
-        public bool CanEditCommunication { get; internal set; }
+        internal bool CanEditCommunication { get; set; }
     }
 }

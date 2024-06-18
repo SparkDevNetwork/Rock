@@ -2,8 +2,8 @@
 <template>
     <RockFormField v-model="internalValue"
                    :disableLabel="true"
-                   :formGroupClasses="`sms-text-editor ${formGroupClasses}`"
-                   name="sms-text-editor">
+                   :formGroupClasses="`sms-message-editor ${formGroupClasses}`"
+                   name="sms-message-editor">
         <template #default="{ uniqueId, field }">
             <div class="control-wrapper">
                 <div class="note-editor-container">
@@ -32,21 +32,15 @@
 
             <ToolbarLabelPlugin v-if="toolbarLabel"
                                 ref="toolbarLabelPlugin"
-                                :tinyMceInstance="tinyMceInstance"
-                                :toolbarElement="toolbarElement"
-                                label="Message"
+                                :label="toolbarLabel"
                                 fontWeight="600"
                                 cssClass="label label-default" />
 
             <ToolbarSpacerPlugin v-if="toolbarLabel"
-                                 ref="toolbarSpacerPlugin"
-                                 :tinyMceInstance="tinyMceInstance"
-                                 :toolbarElement="toolbarElement" />
+                                 ref="toolbarSpacerPlugin" />
 
             <MergeFieldPlugin :mergeFields="mergeFields"
                               ref="mergeFieldPlugin"
-                              :tinyMceInstance="tinyMceInstance"
-                              :toolbarElement="toolbarElement"
                               cssClass="btn btn-link"
                               :isIconHidden="true"
                               label="Personalize" />
@@ -81,14 +75,16 @@
 }
 </style>
 
+<!-- This is a test!!! -->
 <script setup lang="ts">
     import { PropType, computed, onMounted, onUnmounted, ref, watch, watchEffect } from "vue";
     import RockFormField from "./rockFormField.obs";
-    import CountDownPlugin from "./TextEditor/countDownPlugin.partial.obs";
-    import MergeFieldPlugin from "./TextEditor/mergeFieldPlugin.partial.obs";
-    import ToolbarLabelPlugin from "./TextEditor/toolbarLabelPlugin.partial.obs";
-    import ToolbarSpacerPlugin from "./TextEditor/toolbarSpacerPlugin.partial.obs";
-    import { tinymce, Editor, EditorEvent, Events } from "@Obsidian/Libs/tinymce";
+    import CountDownPlugin from "./NoteEditor/countDownPlugin.partial.obs";
+    import MergeFieldPlugin from "./NoteEditor/mergeFieldPlugin.partial.obs";
+    import ToolbarLabelPlugin from "./NoteEditor/toolbarLabelPlugin.partial.obs";
+    import ToolbarSpacerPlugin from "./NoteEditor/toolbarSpacerPlugin.partial.obs";
+    import { providePluginsFeature } from "./NoteEditor/utils.partial";
+    import { tinymce, Editor, EditorEvent, Events, RawEditorOptions } from "@Obsidian/Libs/tinymce";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
 
     type ToolbarConfig = "light" | "full";
@@ -191,6 +187,10 @@
     const mergeFieldPlugin = ref<InstanceType<typeof MergeFieldPlugin> | undefined>();
     const toolbarLabelPlugin = ref<InstanceType<typeof ToolbarLabelPlugin> | undefined>();
     const toolbarSpacerPlugin = ref<InstanceType<typeof ToolbarSpacerPlugin> | undefined>();
+    const pluginManager = providePluginsFeature({
+        editorInstance: computed(() => tinyMceInstance.value),
+        toolbarElement: computed(() => toolbarElement.value)
+    });
 
     // #endregion
 
@@ -283,7 +283,7 @@
     // Initialize the editor.
     onMounted(() => {
         if (editorId.value && toolbarId.value) {
-            tinymce.init({
+            const editorOptions: RawEditorOptions = {
                 // Add the editor directly to the target element (instead of in an iframe)
                 // by configuring an inline editor with a fixed toolbar.
                 // An inline editor is preferred so the editor will inherit the Rock styles
@@ -375,7 +375,9 @@
                         }
                     });
                 }
-            });
+            };
+
+            tinymce.init(pluginManager.configureEditorOptions(editorOptions));
         }
 
         // Add vertical resizing.

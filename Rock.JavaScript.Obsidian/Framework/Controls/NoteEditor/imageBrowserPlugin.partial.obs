@@ -11,7 +11,7 @@
 
 <script setup lang="ts">
     import { ref, watch } from "vue";
-    import { getToolbarButton, useTinyMceInstance, useTinyMceToolbarElement } from "./utils.partial";
+    import { getToolbarButton, usePluginHelper } from "./utils.partial";
     import Modal from "@Obsidian/Controls/modal.obs";
     import { Editor, Ui } from "@Obsidian/Libs/tinymce";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -23,11 +23,9 @@
         id
     });
 
-    const tinyMceInstance = useTinyMceInstance();
-    const toolbarElement = useTinyMceToolbarElement();
-
     //#region Values
 
+    const { editorInstance, toolbarElement } = usePluginHelper();
     const toolbarButtonElement = ref<HTMLElement | undefined>();
     const isShown = ref<boolean>(false);
     const image = ref<ListItemBag | undefined>();
@@ -71,7 +69,7 @@
 
     /** Event handler for the OK button being clicked. */
     function onOkClicked(): void {
-        const editor = tinyMceInstance.value;
+        const editor = editorInstance.value;
 
         if (editor && image.value?.value) {
             // TODO: Add the image to the editor assuming image.value is the image path.
@@ -89,12 +87,12 @@
     //#region Watchers
 
     // Register the plugin whenever the bound Editor changes.
-    watch(tinyMceInstance, () => {
+    watch(editorInstance, () => {
         // Dispose the previous tooltip button if set.
         disposeTooltipButton();
 
-        if (tinyMceInstance.value) {
-            init(tinyMceInstance.value);
+        if (editorInstance.value) {
+            init(editorInstance.value);
         }
     });
 

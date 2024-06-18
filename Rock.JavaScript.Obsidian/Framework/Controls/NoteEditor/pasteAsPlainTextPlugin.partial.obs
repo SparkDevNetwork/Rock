@@ -14,7 +14,7 @@
 
 <script setup lang="ts">
     import { ref, watch } from "vue";
-    import { getToolbarButton, useTinyMceInstance, useTinyMceToolbarElement } from "./utils.partial";
+    import { getToolbarButton, usePluginHelper } from "./utils.partial";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import { Editor, Ui } from "@Obsidian/Libs/tinymce";
@@ -26,11 +26,9 @@
         id
     });
 
-    const tinyMceInstance = useTinyMceInstance();
-    const toolbarElement = useTinyMceToolbarElement();
-
     //#region Values
 
+    const { editorInstance, toolbarElement } = usePluginHelper();
     const toolbarButtonElement = ref<HTMLElement | undefined>();
     const isShown = ref<boolean>(false);
     const pasteAsPlainTextValue = ref<string>("");
@@ -73,13 +71,13 @@
 
     /** Event handler for the plain text being inserted. */
     function onPlainTextInserted(): void {
-        if (tinyMceInstance.value) {
+        if (editorInstance.value) {
             // Create a temporary div element that will be used to get the text content of the pasted value.
             const temporaryDiv = document.createElement("div");
             temporaryDiv.innerHTML = pasteAsPlainTextValue.value;
 
             // Paste the content into the editor at the current position.
-            tinyMceInstance.value.insertContent(temporaryDiv.textContent ?? "");
+            editorInstance.value.insertContent(temporaryDiv.textContent ?? "");
         }
 
         // Clear the pasted value and close the modal.
@@ -92,12 +90,12 @@
     //#region Watchers
 
     // Register the plugin whenever the bound Editor changes.
-    watch(tinyMceInstance, () => {
+    watch(editorInstance, () => {
         // Dispose the previous tooltip button if set.
         disposeTooltipButton();
 
-        if (tinyMceInstance.value) {
-            init(tinyMceInstance.value);
+        if (editorInstance.value) {
+            init(editorInstance.value);
         }
     });
 

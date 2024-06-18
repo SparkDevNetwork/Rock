@@ -13,7 +13,7 @@
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
-    import { getToolbarButton, setEditorEnabled, useTinyMceInstance, useTinyMceToolbarElement } from "./utils.partial";
+    import { getToolbarButton, setEditorEnabled, usePluginHelper } from "./utils.partial";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
     import { Editor, Ui } from "@Obsidian/Libs/tinymce";
@@ -59,11 +59,9 @@
         (e: "update:modelValue", value: string): void,
     }>();
 
-    const tinyMceInstance = useTinyMceInstance();
-    const toolbarElement = useTinyMceToolbarElement();
-
     //#region Values
 
+    const { editorInstance, toolbarElement } = usePluginHelper();
     const internalIsShown = useVModelPassthrough(props, "isShown", emit);
     const internalValue = useVModelPassthrough(props, "modelValue", emit);
     const toolbarButtonApi = ref<Ui.Toolbar.ToolbarToggleButtonInstanceApi | undefined>();
@@ -150,12 +148,12 @@
     //#region Watchers
 
     // Register the plugin whenever the bound Editor changes.
-    watch(tinyMceInstance, () => {
+    watch(editorInstance, () => {
         // Dispose the previous tooltip button if set.
         disposeTooltipButton();
 
-        if (tinyMceInstance.value) {
-            init(tinyMceInstance.value);
+        if (editorInstance.value) {
+            init(editorInstance.value);
         }
     });
 
@@ -179,14 +177,14 @@
 
     // Disable the editor toolbar when the source code is being edited.
     watch(internalIsShown, () => {
-        if (tinyMceInstance.value) {
+        if (editorInstance.value) {
             // Clear the TinyMCE selection before enabling/disabling, otherwise
             // some of the disabled toolbar buttons can still be clicked.
-            tinyMceInstance.value.selection?.collapse();
+            editorInstance.value.selection?.collapse();
 
             if (internalIsShown.value) {
                 // Disable the toolbar but keep the edit source code toolbar button enabled.
-                setEditorEnabled(tinyMceInstance.value, false);
+                setEditorEnabled(editorInstance.value, false);
 
                 // Enable the toolbar button as long as the plugin isn't disabled.
                 if (!props.disabled) {
@@ -195,7 +193,7 @@
             }
             else {
                 // Disable the toolbar but keep the edit source code toolbar button enabled.
-                setEditorEnabled(tinyMceInstance.value, true);
+                setEditorEnabled(editorInstance.value, true);
             }
 
             // Always update the button UI based on whether the editor is shown.

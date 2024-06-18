@@ -14,7 +14,7 @@
 
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
-    import { getToolbarButton, useTinyMceInstance, useTinyMceToolbarElement } from "./utils.partial";
+    import { getToolbarButton, usePluginHelper } from "./utils.partial";
     import MergeFieldPicker from "@Obsidian/Controls/mergeFieldPicker.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import { Editor, Ui } from "@Obsidian/Libs/tinymce";
@@ -47,11 +47,9 @@
         id
     });
 
-    const tinyMceInstance = useTinyMceInstance();
-    const toolbarElement = useTinyMceToolbarElement();
-
     //#region Values
 
+    const { editorInstance, toolbarElement } = usePluginHelper();
     const toolbarButtonElement = ref<HTMLElement | undefined>();
     const mergeFieldValue = ref<ListItemBag | undefined>();
     const isShown = ref<boolean>(false);
@@ -118,14 +116,14 @@
 
     /** Event handler for a merge field being picked. */
     async function onMergeFieldPicked(): Promise<void> {
-        if (tinyMceInstance.value) {
+        if (editorInstance.value) {
             const mergeField = mergeFieldValue.value;
 
             if (mergeField?.value) {
                 const formattedValue = await formatValue(mergeField.value);
 
                 // Insert the merge field value into the editor at the current position.
-                tinyMceInstance.value.insertContent(formattedValue);
+                editorInstance.value.insertContent(formattedValue);
             }
         }
 
@@ -144,12 +142,12 @@
     });
 
     // Register the plugin whenever the bound Editor changes.
-    watch(tinyMceInstance, () => {
+    watch(editorInstance, () => {
         // Dispose the previous tooltip button if set.
         disposeTooltipButton();
 
-        if (tinyMceInstance.value) {
-            init(tinyMceInstance.value);
+        if (editorInstance.value) {
+            init(editorInstance.value);
         }
     });
 
