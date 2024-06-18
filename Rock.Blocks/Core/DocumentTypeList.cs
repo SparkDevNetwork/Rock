@@ -25,17 +25,17 @@ using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
-using Rock.ViewModels.Blocks.Crm.DocumentTypeList;
+using Rock.ViewModels.Blocks.Core.DocumentTypeList;
 using Rock.Web.Cache;
 
-namespace Rock.Blocks.Crm
+namespace Rock.Blocks.Core
 {
     /// <summary>
     /// Displays a list of document types.
     /// </summary>
 
     [DisplayName( "Document Type List" )]
-    [Category( "CRM" )]
+    [Category( "Core" )]
     [Description( "Displays a list of document types." )]
     [IconCssClass( "fa fa-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]

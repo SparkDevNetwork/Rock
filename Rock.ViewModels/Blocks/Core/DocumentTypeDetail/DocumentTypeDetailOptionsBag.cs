@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-namespace Rock.ViewModels.Blocks.Crm.DocumentTypeDetail
+namespace Rock.ViewModels.Blocks.Core.DocumentTypeDetail
 {
     /// <summary>
     /// 

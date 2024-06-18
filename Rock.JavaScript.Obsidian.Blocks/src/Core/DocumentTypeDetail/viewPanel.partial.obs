@@ -24,8 +24,8 @@
     import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
     import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
     import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
-    import { DocumentTypeBag } from "@Obsidian/ViewModels/Blocks/Crm/DocumentTypeDetail/documentTypeBag";
-    import { DocumentTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/DocumentTypeDetail/documentTypeDetailOptionsBag";
+    import { DocumentTypeBag } from "@Obsidian/ViewModels/Blocks/Core/DocumentTypeDetail/documentTypeBag";
+    import { DocumentTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/DocumentTypeDetail/documentTypeDetailOptionsBag";
 
     const props = defineProps({
         modelValue: {

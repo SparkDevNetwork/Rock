@@ -104,8 +104,8 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
-    import { DocumentTypeBag } from "@Obsidian/ViewModels/Blocks/Crm/DocumentTypeDetail/documentTypeBag";
-    import { DocumentTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/DocumentTypeDetail/documentTypeDetailOptionsBag";
+    import { DocumentTypeBag } from "@Obsidian/ViewModels/Blocks/Core/DocumentTypeDetail/documentTypeBag";
+    import { DocumentTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/DocumentTypeDetail/documentTypeDetailOptionsBag";
 
     const props = defineProps({
         modelValue: {

@@ -44,8 +44,8 @@
     import { debounce } from "@Obsidian/Utility/util";
     import { NavigationUrlKey } from "./DocumentTypeDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
-    import { DocumentTypeBag } from "@Obsidian/ViewModels/Blocks/Crm/DocumentTypeDetail/documentTypeBag";
-    import { DocumentTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/DocumentTypeDetail/documentTypeDetailOptionsBag";
+    import { DocumentTypeBag } from "@Obsidian/ViewModels/Blocks/Core/DocumentTypeDetail/documentTypeBag";
+    import { DocumentTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/DocumentTypeDetail/documentTypeDetailOptionsBag";
 
     const config = useConfigurationValues<DetailBlockBox<DocumentTypeBag, DocumentTypeDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();

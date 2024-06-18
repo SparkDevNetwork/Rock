@@ -25,10 +25,10 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Blocks;
-using Rock.ViewModels.Blocks.Crm.DocumentTypeDetail;
+using Rock.ViewModels.Blocks.Core.DocumentTypeDetail;
 using Rock.Web.Cache;
 
-namespace Rock.Blocks.Crm
+namespace Rock.Blocks.Core
 {
     /// <summary>
     /// Displays the details of a particular document type.
@@ -36,7 +36,7 @@ namespace Rock.Blocks.Crm
     /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
 
     [DisplayName( "Document Type Detail" )]
-    [Category( "CRM" )]
+    [Category( "Core" )]
     [Description( "Displays the details of a particular document type." )]
     [IconCssClass( "fa fa-question" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]

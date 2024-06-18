@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -78,7 +78,7 @@
     <Compile Include="Blocks\Core\PersonSuggestionList\PersonSuggestionListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageSearch\PageSearchPageBag.cs" />
     <Compile Include="Blocks\Cms\PageSearch\PageSearchBag.cs" />
-    <Compile Include="Blocks\Crm\DocumentTypeList\DocumentTypeListOptionsBag.cs" />
+    <Compile Include="Blocks\Core\DocumentTypeList\DocumentTypeListOptionsBag.cs" />
     <Compile Include="Blocks\Crm\PhotoUpload\PersonPhotoBag.cs" />
     <Compile Include="Blocks\Crm\PhotoUpload\PhotoUploadInitializationBox.cs" />
     <Compile Include="Blocks\Event\RegistrationInstanceActiveList\RegistrationInstanceListOptionsBag.cs" />
@@ -503,8 +503,8 @@
     <Compile Include="Blocks\Crm\AssessmentTypeDetail\AssessmentTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Crm\BadgeDetail\BadgeBag.cs" />
     <Compile Include="Blocks\Crm\BadgeDetail\BadgeDetailOptionsBag.cs" />
-    <Compile Include="Blocks\Crm\DocumentTypeDetail\DocumentTypeBag.cs" />
-    <Compile Include="Blocks\Crm\DocumentTypeDetail\DocumentTypeDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Core\DocumentTypeDetail\DocumentTypeBag.cs" />
+    <Compile Include="Blocks\Core\DocumentTypeDetail\DocumentTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Crm\PersonDetail\Badges\BadgesConfigurationBox.cs" />
     <Compile Include="Blocks\Bus\QueueDetail\QueueBag.cs" />
     <Compile Include="Blocks\Bus\QueueDetail\QueueDetailOptionsBag.cs" />

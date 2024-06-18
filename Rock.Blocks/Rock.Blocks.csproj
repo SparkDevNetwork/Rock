@@ -101,7 +101,7 @@
     <Compile Include="Cms\MediaFolderList.cs" />
     <Compile Include="Core\PersonSuggestionList.cs" />
     <Compile Include="Cms\PageSearch.cs" />
-    <Compile Include="Crm\DocumentTypeList.cs" />
+    <Compile Include="Core\DocumentTypeList.cs" />
     <Compile Include="Crm\PhotoUpload.cs" />
     <Compile Include="Event\RegistrationInstanceActiveList.cs" />
     <Compile Include="Core\ScheduledJobHistoryList.cs" />
@@ -266,7 +266,7 @@
     <Compile Include="Core\CampusDetail.cs" />
     <Compile Include="Core\CategoryDetail.cs" />
     <Compile Include="Core\LocationDetail.cs" />
-    <Compile Include="Crm\DocumentTypeDetail.cs" />
+    <Compile Include="Core\DocumentTypeDetail.cs" />
     <Compile Include="Core\NoteTypeDetail.cs" />
     <Compile Include="Core\ServiceJobDetail.cs" />
     <Compile Include="Core\SignatureDocumentTemplateDetail.cs" />

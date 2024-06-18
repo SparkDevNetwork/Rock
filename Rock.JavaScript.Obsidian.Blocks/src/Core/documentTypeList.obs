@@ -55,7 +55,7 @@
     import Grid, { Column, DeleteColumn, ReorderColumn, SecurityColumn, TextColumn, textValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
-    import { DocumentTypeListOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/DocumentTypeList/documentTypeListOptionsBag";
+    import { DocumentTypeListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/DocumentTypeList/documentTypeListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./DocumentTypeList/types.partial";
     import { reactive, ref } from "vue";

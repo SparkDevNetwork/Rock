@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-namespace Rock.ViewModels.Blocks.Crm.DocumentTypeList
+namespace Rock.ViewModels.Blocks.Core.DocumentTypeList
 {
     /// <summary>
     /// The additional configuration options for the Document Type List block.
