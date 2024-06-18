@@ -15,10 +15,12 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
+
 namespace Rock.CheckIn.v2.Labels
 {
     /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.EllipseFieldConfigurationBag"/>
-    internal class EllipseFieldConfiguration
+    internal class EllipseFieldConfiguration : IFieldConfiguration
     {
         /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.EllipseFieldConfigurationBag.IsBlack" path="/summary"/>
         public bool IsBlack { get; set; }
@@ -28,5 +30,13 @@ namespace Rock.CheckIn.v2.Labels
 
         /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.EllipseFieldConfigurationBag.BorderThickness" path="/summary"/>
         public int BorderThickness { get; set; }
+
+        /// <inheritdoc/>
+        public void Initialize( Dictionary<string, string> values )
+        {
+            IsBlack = values.GetValueOrNull( "isBlack" ).AsBoolean();
+            IsFilled = values.GetValueOrNull( "isFilled" ).AsBoolean();
+            BorderThickness = values.GetValueOrNull( "borderThickness" ).AsIntegerOrNull() ?? 1;
+        }
     }
 }

@@ -834,6 +834,7 @@
     <Compile Include="CheckIn\v2\Labels\Formatters\SecurityCodeAndNameDataFormatter.cs" />
     <Compile Include="CheckIn\v2\Labels\Formatters\WeekdayDateDataFormatter.cs" />
     <Compile Include="CheckIn\v2\Labels\IconFieldConfiguration.cs" />
+    <Compile Include="CheckIn\v2\Labels\IFieldConfiguration.cs" />
     <Compile Include="CheckIn\v2\Labels\ILabelDataHasPerson.cs" />
     <Compile Include="CheckIn\v2\Labels\ImageFieldConfiguration.cs" />
     <Compile Include="CheckIn\v2\Labels\LabelField.cs" />

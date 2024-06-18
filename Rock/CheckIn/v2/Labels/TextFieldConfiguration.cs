@@ -22,7 +22,7 @@ using Rock.Enums.CheckIn.Labels;
 namespace Rock.CheckIn.v2.Labels
 {
     /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.TextFieldConfigurationBag"/>
-    internal class TextFieldConfiguration
+    internal class TextFieldConfiguration : IFieldConfiguration
     {
         /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.TextFieldConfigurationBag.SourceKey" path="/summary"/>
         public string SourceKey { get; set; }
@@ -65,5 +65,24 @@ namespace Rock.CheckIn.v2.Labels
 
         /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.TextFieldConfigurationBag.MaxLength" path="/summary"/>
         public int MaxLength { get; set; }
+
+        /// <inheritdoc/>
+        public void Initialize( Dictionary<string, string> values )
+        {
+            SourceKey = values.GetValueOrNull( "sourceKey" );
+            FormatterOptionKey = values.GetValueOrNull( "formatterOptionKey" );
+            CollectionFormat = values.GetValueOrNull( "collecitonFormat" ).ConvertToEnumOrNull<TextCollectionFormat>() ?? TextCollectionFormat.FirstItemOnly;
+            PlaceholderText = values.GetValueOrNull( "placeholderText" );
+            IsDynamicText = values.GetValueOrNull( "isDynamicText" ).AsBoolean();
+            StaticText = values.GetValueOrNull( "staticText" );
+            DynamicTextTemplate = values.GetValueOrNull( "dynamicTextTemplate" );
+            FontSize = ( double ) ( values.GetValueOrNull( "fontSize" ).AsDecimalOrNull() ?? 12 );
+            // TODO: AdaptiveFontSize
+            HorizontalAlignment = values.GetValueOrNull( "horizontalAlignment" ).ConvertToEnumOrNull<HorizontalTextAlignment>() ?? HorizontalTextAlignment.Left;
+            IsBold = values.GetValueOrNull( "isBold" ).AsBoolean();
+            IsColorInverted = values.GetValueOrNull( "isColorInverted" ).AsBoolean();
+            IsCondensed = values.GetValueOrNull( "isCondensed" ).AsBoolean();
+            MaxLength = values.GetValueOrNull( "maxLength" ).AsInteger();
+        }
     }
 }

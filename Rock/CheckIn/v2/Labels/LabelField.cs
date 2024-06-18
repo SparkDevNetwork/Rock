@@ -60,55 +60,14 @@ namespace Rock.CheckIn.v2.Labels
         /// </summary>
         /// <typeparam name="TConfiguration">The type of configuration object to get.</typeparam>
         /// <returns>The configuration of type <typeparamref name="TConfiguration"/>.</returns>
-        public TConfiguration GetConfiguration<TConfiguration>()
-            where TConfiguration : class, new()
+        public virtual TConfiguration GetConfiguration<TConfiguration>()
+            where TConfiguration : IFieldConfiguration, new()
         {
             return ( TConfiguration ) _configurationCache.GetOrAdd( typeof( TConfiguration ), _ =>
             {
                 var bag = new TConfiguration();
-                var properties = bag.GetType().GetProperties();
 
-                foreach ( var pair in Field.ConfigurationValues )
-                {
-                    var property = properties.FirstOrDefault( p => p.Name.Equals( pair.Key, StringComparison.OrdinalIgnoreCase ) );
-
-                    if ( property == null )
-                    {
-                        continue;
-                    }
-
-                    object convertedValue;
-
-                    if ( property.PropertyType.IsEnum )
-                    {
-                        convertedValue = Enum.Parse( property.PropertyType, pair.Value );
-                    }
-                    else if ( property.PropertyType == typeof( Guid ) || property.PropertyType == typeof( Guid? ) )
-                    {
-                        if ( Guid.TryParse( pair.Value, out var guidValue ) )
-                        {
-                            convertedValue = guidValue;
-                        }
-                        else if ( property.PropertyType == typeof( Guid ) )
-                        {
-                            convertedValue = Guid.Empty;
-                        }
-                        else
-                        {
-                            convertedValue = null;
-                        }
-                    }
-                    else if ( typeof( IDictionary ).IsAssignableFrom( property.PropertyType ) )
-                    {
-                        convertedValue = DeserializeObject( pair.Value, property.PropertyType );
-                    }
-                    else
-                    {
-                        convertedValue = Convert.ChangeType( pair.Value, property.PropertyType );
-                    }
-
-                    property.SetValue( bag, convertedValue );
-                }
+                bag.Initialize( Field.ConfigurationValues );
 
                 return bag;
             } );
@@ -136,18 +95,25 @@ namespace Rock.CheckIn.v2.Labels
         /// </summary>
         /// <param name="printRequest">The print request containing the data for formatting.</param>
         /// <returns>A list of formatted string values.</returns>
-        public List<string> GetFormattedValues( PrintLabelRequest printRequest )
+        public virtual List<string> GetFormattedValues( PrintLabelRequest printRequest )
         {
             if ( Field.FieldType != LabelFieldType.Text )
             {
                 return new List<string>( new[] { string.Empty } );
             }
 
-            var config = GetConfiguration<TextFieldConfigurationBag>();
+            var config = GetConfiguration<TextFieldConfiguration>();
 
-            if ( !string.IsNullOrWhiteSpace( config.DynamicTextTemplate ) )
+            if ( Field.FieldSubType == 0 )
             {
-                return new List<string>( new[] { config.DynamicTextTemplate } );
+                if ( config.IsDynamicText )
+                {
+                    return new List<string>( new[] { config.DynamicTextTemplate ?? string.Empty } );
+                }
+                else
+                {
+                    return new List<string>( new[] { config.StaticText ?? string.Empty } );
+                }
             }
 
             var source = printRequest.DataSources[config.SourceKey];

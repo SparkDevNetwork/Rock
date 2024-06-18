@@ -27,7 +27,10 @@ namespace Rock.Enums.CheckIn.Labels
         Text = 0,
 
         /// <summary>
-        /// A field that displays a line between two points.
+        /// A field that displays a line between two points. The left and top
+        /// position of the field designate the first point. The relative offset
+        /// of the field's width and height designate the second point. Meaning
+        /// width and height can be negative.
         /// </summary>
         Line = 1,
 

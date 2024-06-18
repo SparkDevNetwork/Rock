@@ -15,10 +15,12 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
+
 namespace Rock.CheckIn.v2.Labels
 {
     /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.RectangleFieldConfigurationBag"/>
-    internal class RectangleFieldConfiguration
+    internal class RectangleFieldConfiguration : IFieldConfiguration
     {
         /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.RectangleFieldConfigurationBag.IsBlack" path="/summary"/>
         public bool IsBlack { get; set; }
@@ -31,5 +33,14 @@ namespace Rock.CheckIn.v2.Labels
 
         /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.RectangleFieldConfigurationBag.CornerRadius" path="/summary"/>
         public int CornerRadius { get; set; }
+
+        /// <inheritdoc/>
+        public void Initialize( Dictionary<string, string> values )
+        {
+            IsBlack = values.GetValueOrNull( "isBlack" ).AsBoolean();
+            IsFilled = values.GetValueOrNull( "isFilled" ).AsBoolean();
+            BorderThickness = values.GetValueOrNull( "borderThickness" ).AsIntegerOrNull() ?? 1;
+            CornerRadius = values.GetValueOrNull( "cornerRadius" ).AsInteger();
+        }
     }
 }

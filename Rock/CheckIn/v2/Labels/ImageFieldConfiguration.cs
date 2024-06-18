@@ -15,15 +15,40 @@
 // </copyright>
 //
 
+using System;
+using System.Collections.Generic;
+
 namespace Rock.CheckIn.v2.Labels
 {
     /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.ImageFieldConfigurationBag"/>
-    internal class ImageFieldConfiguration
+    internal class ImageFieldConfiguration : IFieldConfiguration
     {
         /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.ImageFieldConfigurationBag.ImageData" path="/summary"/>
-        public string ImageData { get; set; }
+        public byte[] ImageData { get; set; }
 
         /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.ImageFieldConfigurationBag.IsInverted" path="/summary"/>
         public bool IsInverted { get; set; }
+
+        /// <inheritdoc/>
+        public void Initialize( Dictionary<string, string> values )
+        {
+            if ( values.GetValueOrNull( "imageData" ).IsNotNullOrWhiteSpace() )
+            {
+                try
+                {
+                    ImageData = Convert.FromBase64String( values.GetValueOrNull( "imageData" ) );
+                }
+                catch
+                {
+                    ImageData = new byte[0];
+                }
+            }
+            else
+            {
+                ImageData = new byte[0];
+            }
+
+            IsInverted = values.GetValueOrNull( "isInverted" ).AsBoolean();
+        }
     }
 }

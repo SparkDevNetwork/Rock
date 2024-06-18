@@ -15,15 +15,24 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
+
 namespace Rock.CheckIn.v2.Labels
 {
     /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.LineFieldConfigurationBag"/>
-    internal class LineFieldConfiguration
+    internal class LineFieldConfiguration : IFieldConfiguration
     {
         /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.LineFieldConfigurationBag.IsBlack" path="/summary"/>
         public bool IsBlack { get; set; }
 
         /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.LineFieldConfigurationBag.Thickness" path="/summary"/>
         public int Thickness { get; set; }
+
+        /// <inheritdoc/>
+        public void Initialize( Dictionary<string, string> values )
+        {
+            IsBlack = values.GetValueOrNull( "isBlack" ).AsBoolean();
+            Thickness = values.GetValueOrNull( "thickness" ).AsIntegerOrNull() ?? 1;
+        }
     }
 }
