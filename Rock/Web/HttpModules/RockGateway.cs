@@ -211,8 +211,8 @@ namespace Rock.Web.HttpModules
                 {
                     activity.AddTag( "client.city", geolocation.City );
                     activity.AddTag( "client.region_code", geolocation.RegionCode );
+                    activity.AddTag( "client.region_name", geolocation.RegionName );
                     activity.AddTag( "client.country_code", geolocation.CountryCode );
-                    activity.AddTag( "client.postal_code", geolocation.PostalCode );
                 }
 
                 activity.Dispose();
@@ -231,7 +231,7 @@ namespace Rock.Web.HttpModules
         /// <summary>
         /// The request log format template.
         /// </summary>
-        private const string RequestLogFormat = "{DateTime} {ServerIp} {Method} {Path} {Query} {ServerPort} {Username} {ClientIp} {UserAgent} {Referer} {Status} {Substatus} {Duration} {ClientCity} {ClientRegionCode} {ClientCountryCode} {ClientPostalCode}";
+        private const string RequestLogFormat = "{DateTime} {ServerIp} {Method} {Path} {Query} {ServerPort} {Username} {ClientIp} {UserAgent} {Referer} {Status} {Substatus} {Duration} {ClientCity} {ClientRegionName} {ClientCountryCode}";
 
         /// <summary>
         /// The logger that will be used for logs.
@@ -307,9 +307,8 @@ namespace Rock.Web.HttpModules
                 request.Substatus,
                 request.Duration,
                 geolocation?.City,
-                geolocation?.RegionCode,
-                geolocation?.CountryCode,
-                geolocation?.PostalCode );
+                geolocation?.RegionName,
+                geolocation?.CountryCode );
         }
 
         private class RequestDetail
