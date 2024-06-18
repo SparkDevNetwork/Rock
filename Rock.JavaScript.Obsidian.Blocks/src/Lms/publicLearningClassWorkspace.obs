@@ -338,7 +338,6 @@ span.icon-stack-container i.icon {
             }
         }
 
-
         return forActivity.isDueSoon ?
             `<span class="badge badge-warning">Due Soon</span>` :
             `<span class="badge badge-default">Available</span>`;

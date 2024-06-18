@@ -31,7 +31,7 @@
     import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
     import EditPanel from "./LearningClassContentPageDetail/editPanel.partial.obs";
     import { onConfigurationValuesChanged, useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
-    import { NavigationUrlKey } from "./LearningClassDetail/types.partial";
+    import { NavigationUrlKey } from "./LearningClassContentPageDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { LearningClassContentPageBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassContentPageDetail/learningClassContentPageBag";
     import { LearningClassContentPageDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassContentPageDetail/learningClassContentPageDetailOptionsBag";
@@ -48,7 +48,7 @@
 
     const learningClassContentPageViewBag = ref(config.entity);
     const learningClassContentPageEditBag = ref<ValidPropertiesBox<LearningClassContentPageBag>>({
-        bag: {} as LearningClassContentPageBag
+        bag: config.entity as LearningClassContentPageBag
     });
 
     const baseBlock = useEntityDetailBlock({
@@ -66,7 +66,7 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return panelMode === DetailPanelMode.Add ? "Add Class Content Page" : "Edit Class Content Page";
+        return panelMode.value === DetailPanelMode.Add ? "Add Class Content Page" : "Edit Class Content Page";
     });
 
     /**
@@ -95,15 +95,11 @@
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
     async function onCancelEdit(): Promise<boolean | string> {
-        if (!learningClassContentPageEditBag.value.bag?.idKey) {
-            if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
-                return config.navigationUrls[NavigationUrlKey.ParentPage];
-            }
-
-            return false;
+        if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+            return config.navigationUrls[NavigationUrlKey.ParentPage];
         }
 
-        return true;
+        return false;
     }
 
     /**

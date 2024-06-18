@@ -18,8 +18,9 @@
                     visiblePriority="xs" />
 
         <DateColumn
-                name="startDate"
+                name="startDateTime"
                 title="Start Date"
+                field="startDateTime"
                 :filter="dateValueFilter"
                 filterValue="startDate"
                 quickFilterValue="startDate"

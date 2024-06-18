@@ -39,7 +39,7 @@ export type LearningClassAnnouncementBag = {
     idKey?: string | null;
 
     /** Gets or sets the date and time the announcement will be published. */
-    publishDateTime: Date | null;
+    publishDateTime: string | null;
 
     /** Gets or sets the title of the announcement. */
     title?: string | null;

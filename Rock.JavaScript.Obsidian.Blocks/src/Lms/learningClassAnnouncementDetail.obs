@@ -48,7 +48,7 @@
 
     const learningClassAnnouncementViewBag = ref(config.entity);
     const learningClassAnnouncementEditBag = ref<ValidPropertiesBox<LearningClassAnnouncementBag>>({
-        bag: {} as LearningClassAnnouncementBag
+        bag: config.entity as LearningClassAnnouncementBag
     });
 
     const baseBlock = useEntityDetailBlock({
@@ -66,7 +66,7 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return panelMode === DetailPanelMode.Add ? "Add Class Announcement" : "Edit Class Announcement";
+        return panelMode.value === DetailPanelMode.Add ? "Add Class Announcement" : "Edit Class Announcement";
     });
 
     /**
@@ -95,15 +95,11 @@
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
     async function onCancelEdit(): Promise<boolean | string> {
-        if (!learningClassAnnouncementEditBag.value.bag?.idKey) {
-            if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
-                return config.navigationUrls[NavigationUrlKey.ParentPage];
-            }
-
-            return false;
+        if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+            return config.navigationUrls[NavigationUrlKey.ParentPage];
         }
 
-        return true;
+        return false;
     }
 
     /**

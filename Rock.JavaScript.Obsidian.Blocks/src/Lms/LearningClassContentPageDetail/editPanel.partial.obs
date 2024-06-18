@@ -83,8 +83,8 @@
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
         updateRefValue(title, props.modelValue.bag?.title ?? "");
-        updateRefValue(startDateTime, props.modelValue.bag?.publishDateTime);
-        updateRefValue(content, props.modelValue.bag?.description ?? "");
+        updateRefValue(startDateTime, props.modelValue.bag?.startDateTime);
+        updateRefValue(content, props.modelValue.bag?.content ?? "");
     });
 
     // Determines which values we want to track changes on (defined in the
@@ -95,7 +95,7 @@
         };
 
         setPropertiesBoxValue(newValue, "title", title.value);
-        setPropertiesBoxValue(newValue, "publishDateTime", startDateTime.value);
+        setPropertiesBoxValue(newValue, "startDateTime", startDateTime.value ?? "");
         setPropertiesBoxValue(newValue, "content", content.value);
 
         emit("update:modelValue", newValue);

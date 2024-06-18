@@ -18,7 +18,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
@@ -174,6 +173,7 @@ namespace Rock.Blocks.Lms
                 CommunicationSent = entity.CommunicationSent,
                 Description = entity.Description,
                 IdKey = entity.IdKey,
+                PublishDateTime = entity.PublishDateTime,
                 Title = entity.Title
             };
         }
@@ -254,23 +254,25 @@ namespace Rock.Blocks.Lms
                 .FirstOrDefault( a => a.Id == entityId );
         }
 
+        private Dictionary<string, string> GetCurrentPageParams()
+        {
+            return new Dictionary<string, string>
+            {
+                [PageParameterKey.LearningProgramId] = PageParameter( PageParameterKey.LearningProgramId ),
+                [PageParameterKey.LearningCourseId] = PageParameter( PageParameterKey.LearningCourseId ),
+                [PageParameterKey.LearningClassId] = PageParameter( PageParameterKey.LearningClassId ),
+            };
+        }
+
         /// <summary>
         /// Gets the box navigation URLs required for the page to operate.
         /// </summary>
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
-            var currentPageParams = new Dictionary<string, string>
-            {
-                [PageParameterKey.AutoEdit] = "true",
-                [PageParameterKey.LearningProgramId] = PageParameter( PageParameterKey.LearningProgramId ),
-                [PageParameterKey.LearningCourseId] = PageParameter( PageParameterKey.LearningCourseId ),
-                [PageParameterKey.LearningClassId] = PageParameter( PageParameterKey.LearningClassId ),
-            };
-
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl( currentPageParams ),
+                [NavigationUrlKey.ParentPage] = this.PageParameter( PageParameterKey.ReturnUrl ) ?? this.GetParentPageUrl( GetCurrentPageParams() ),
             };
         }
 
@@ -378,81 +380,8 @@ namespace Rock.Blocks.Lms
                 RockContext.SaveChanges();
             } );
 
-            if ( isNew )
-            {
-                return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
-                {
-                    [PageParameterKey.LearningClassId] = entity.IdKey
-                } ) );
-            }
-
-            // Ensure navigation properties will work now.
-            entity = entityService.Get( entity.Id );
-
-            var bag = GetEntityBagForEdit( entity );
-
-            return ActionOk( new ValidPropertiesBox<LearningClassAnnouncementBag>
-            {
-                Bag = bag,
-                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
-            } );
-        }
-
-        /// <summary>
-        /// Deletes the specified entity.
-        /// </summary>
-        /// <param name="key">The identifier of the entity to be deleted.</param>
-        /// <returns>A string that contains the URL to be redirected to on success.</returns>
-        [BlockAction]
-        public BlockActionResult Delete( string key )
-        {
-            var entityService = new LearningClassAnnouncementService( RockContext );
-
-            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
-            {
-                return actionError;
-            }
-
-            if ( !entityService.CanDelete( entity, out var errorMessage ) )
-            {
-                return ActionBadRequest( errorMessage );
-            }
-
-            entityService.Delete( entity );
-            RockContext.SaveChanges();
-
-            return ActionOk( this.GetParentPageUrl() );
-        }
-
-        #endregion
-
-        #region Private methods
-
-        public IQueryable<LearningActivity> GetOrderedLearningPlan( RockContext rockContext )
-        {
-            var classId = PageParameterAsId( PageParameterKey.LearningClassId );
-
-            if ( classId > 0 )
-            {
-                return new LearningActivityService( rockContext )
-                    .GetClassLearningPlan( classId )
-                    .AsNoTracking();
-            }
-
-            // Get the page parameter value (either IdKey or Id).
-            var courseId = PageParameterAsId( PageParameterKey.LearningCourseId );
-
-            if ( courseId > 0 )
-            {
-                // Get the default class (prevents duplicates from showing in the activity list).
-                var defaultClassId = new LearningClassService( rockContext ).GetCourseDefaultClass( courseId, c => c.Id );
-
-                return new LearningActivityService( rockContext )
-                    .GetClassLearningPlan( defaultClassId )
-                    .AsNoTracking();
-            }
-
-            return new List<LearningActivity>().AsQueryable();
+            var returnToUrl = this.PageParameter( PageParameterKey.ReturnUrl ) ?? this.GetParentPageUrl( GetCurrentPageParams() );
+            return ActionContent( System.Net.HttpStatusCode.Created, returnToUrl );
         }
 
         #endregion

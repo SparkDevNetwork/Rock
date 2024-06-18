@@ -21,7 +21,7 @@
 // </copyright>
 //
 
-/** The additional configuration options for the Learning Class Detail block. */
-export type LearningClassAnnouncementDetailOptionsBag = {
+/** The additional configuration options for the Learning Class Content Page Detail block. */
+export type LearningClassContentPageDetailOptionsBag = {
 
 };

@@ -21,7 +21,7 @@
 // </copyright>
 //
 
-/** The item details for the Learning Class Announcement Detail block. */
+/** The item details for the Learning Class Content Page Detail block. */
 export type LearningClassContentPageBag = {
 
     /** Gets or sets the main content of the page. */
@@ -31,7 +31,7 @@ export type LearningClassContentPageBag = {
     idKey?: string | null;
 
     /** Gets or sets the date and time the page will be available. */
-    startDateTime: Date | null;
+    startDateTime: string | null;
 
     /** Gets or sets the title of the page. */
     title?: string | null;

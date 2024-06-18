@@ -73,7 +73,7 @@
     const title = propertyRef(props.modelValue.bag?.title ?? "", "Title");
     const publishDateTime = propertyRef(props.modelValue.bag?.publishDateTime, "PublishDateTime");
     const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
-    const communicationMode = propertyRef(props.modelValue.bag?.communicationMode.value ?? "", "CommunicationMode");
+    const communicationMode = propertyRef(props.modelValue.bag?.communicationMode?.toString() ?? "", "CommunicationMode");
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -114,7 +114,7 @@
         };
 
         setPropertiesBoxValue(newValue, "title", title.value);
-        setPropertiesBoxValue(newValue, "publishDateTime", publishDateTime.value);
+        setPropertiesBoxValue(newValue, "publishDateTime", publishDateTime.value ?? "");
         setPropertiesBoxValue(newValue, "description", description.value);
         setPropertiesBoxValue(newValue, "communicationMode", parseInt(communicationMode.value) as CommunicationMode);
 
