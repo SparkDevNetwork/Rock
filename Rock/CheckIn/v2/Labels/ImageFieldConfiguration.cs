@@ -29,6 +29,18 @@ namespace Rock.CheckIn.v2.Labels
         /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.ImageFieldConfigurationBag.IsInverted" path="/summary"/>
         public bool IsInverted { get; set; }
 
+        /// <summary>
+        /// The brightness adjustment to perform on the image. A value of 1
+        /// means no adjustment is made.
+        /// </summary>
+        public float Brightness { get; set; } = 1;
+
+        /// <summary>
+        /// The contrast adjustment to perform on the image. A value of 1 means
+        /// no adjustment is made.
+        /// </summary>
+        public float Contrast { get; set; } = 1;
+
         /// <inheritdoc/>
         public void Initialize( Dictionary<string, string> values )
         {
