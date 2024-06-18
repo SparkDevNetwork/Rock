@@ -16,6 +16,8 @@
 //
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+using Rock.Lava;
 using Rock.Tests.Shared.Lava;
 
 namespace Rock.Tests.Integration.Modules.Core.Lava.Shortcodes
@@ -206,7 +208,7 @@ google.maps.event.addDomListener(window, ""resize"", function() {
             var testTemplate = TestHelper.BuildRenderTestTemplate( testCases,
                 "Google Map Shortcode Tests rev20240605.1" );
 
-            TestHelper.AssertTemplateIsValid( testTemplate );
+            TestHelper.AssertTemplateIsValid( testTemplate, ( LavaRenderParameters ) null );
         }
 
         private LavaTemplateRenderTestCase GetTestCaseForMapWithNoMarkers()

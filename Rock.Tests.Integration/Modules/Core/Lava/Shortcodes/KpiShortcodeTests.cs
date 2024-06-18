@@ -16,6 +16,8 @@
 //
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+using Rock.Lava;
 using Rock.Tests.Shared.Lava;
 
 namespace Rock.Tests.Integration.Modules.Core.Lava.Shortcodes
@@ -65,7 +67,7 @@ namespace Rock.Tests.Integration.Modules.Core.Lava.Shortcodes
             var testTemplate = TestHelper.BuildRenderTestTemplate( testCases,
                 "KPI Shortcode Tests rev20240613.1" );
 
-            TestHelper.AssertTemplateIsValid( testTemplate );
+            TestHelper.AssertTemplateIsValid( testTemplate, ( LavaRenderParameters ) null );
         }
 
         private LavaTemplateRenderTestCase GetTestCaseForShortcodeParameters1()
