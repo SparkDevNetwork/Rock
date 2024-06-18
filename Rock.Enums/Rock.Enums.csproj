@@ -67,6 +67,7 @@
     <Compile Include="CheckIn\KioskCheckInMode.cs" />
     <Compile Include="CheckIn\FamilySearchMode.cs" />
     <Compile Include="CheckIn\Labels\BarcodeFormat.cs" />
+    <Compile Include="CheckIn\Labels\DitherMode.cs" />
     <Compile Include="CheckIn\Labels\HorizontalTextAlignment.cs" />
     <Compile Include="CheckIn\Labels\LabelFieldType.cs" />
     <Compile Include="CheckIn\Labels\LabelFormat.cs" />

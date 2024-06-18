@@ -16,7 +16,6 @@
 //
 
 using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -71,23 +70,6 @@ namespace Rock.CheckIn.v2.Labels
 
                 return bag;
             } );
-        }
-
-        /// <summary>
-        /// Use the standard <see cref="JsonExtensions.FromJsonOrNull{T}(string)"/>
-        /// method to deserialize a value. This method can be removed if we ever add
-        /// a version of the method that takes a <see cref="Type"/> as a parameter
-        /// instead of ass a generic.
-        /// </summary>
-        /// <param name="value">The value ot be deserialized into an object.</param>
-        /// <param name="type">The type of the object to deserialize.</param>
-        /// <returns>An instance of <paramref name="type"/> or <c>null</c>.</returns>
-        private object DeserializeObject( string value, Type type )
-        {
-            var fromJsonOrNull = typeof( Rock.JsonExtensions ).GetMethod( "FromJsonOrNull", new Type[] { typeof( string ) } );
-            var genericFromJsonOrNull = fromJsonOrNull.MakeGenericMethod( type );
-
-            return genericFromJsonOrNull.Invoke( null, new object[] { value } );
         }
 
         /// <summary>
