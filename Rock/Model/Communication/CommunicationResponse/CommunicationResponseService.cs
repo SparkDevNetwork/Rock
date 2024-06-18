@@ -159,28 +159,43 @@ namespace Rock.Model
         {
             var smsMediumEntityTypeId = EntityTypeCache.GetId( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS ).Value;
 
+            // Get all SMS responses that were sent:
+            //  1. TO this system SMS phone number;
+            //  2. on or after the start date time;
+            //  3. FROM a known person.
             IQueryable<CommunicationResponse> communicationResponseQuery = this.Queryable()
-                .Where( r => r.RelatedMediumEntityTypeId == smsMediumEntityTypeId && r.RelatedSmsFromSystemPhoneNumberId == relatedSmsFromSystemPhoneNumberId && r.CreatedDateTime >= startDateTime && r.FromPersonAliasId.HasValue );
-
-            IQueryable<CommunicationRecipient> communicationRecipientQuery = new CommunicationRecipientService( this.Context as RockContext ).Queryable()
                 .Where( r =>
-                r.MediumEntityTypeId == smsMediumEntityTypeId
-                    && r.Communication.SmsFromSystemPhoneNumberId == relatedSmsFromSystemPhoneNumberId
+                    r.RelatedMediumEntityTypeId == smsMediumEntityTypeId
+                    && r.RelatedSmsFromSystemPhoneNumberId == relatedSmsFromSystemPhoneNumberId
                     && r.CreatedDateTime >= startDateTime
-                    && r.Status == CommunicationRecipientStatus.Delivered );
+                    && r.FromPersonAliasId.HasValue );
 
             if ( filter == CommunicationMessageFilter.ShowUnreadReplies )
             {
+                // Filter down to only unread responses.
                 communicationResponseQuery = communicationResponseQuery.Where( r => r.IsRead == false );
             }
+
+            // Get all SMS recipients who received an SMS message:
+            //  1. FROM this system SMS phone number;
+            //  2. on or after the start date time;
+            //  3. that was known to be delivered.
+            IQueryable<CommunicationRecipient> communicationRecipientQuery = new CommunicationRecipientService( this.Context as RockContext ).Queryable()
+                .Where( r =>
+                    r.MediumEntityTypeId == smsMediumEntityTypeId
+                    && r.Communication.SmsFromSystemPhoneNumberId == relatedSmsFromSystemPhoneNumberId
+                    && r.CreatedDateTime >= startDateTime
+                    && r.PersonAliasId.HasValue
+                    && r.Status == CommunicationRecipientStatus.Delivered );
 
             switch ( filter )
             {
                 case CommunicationMessageFilter.ShowUnreadReplies:
                 case CommunicationMessageFilter.ShowAllReplies:
+                    // Filter down to only recipients who have replied to outgoing messages.
                     communicationRecipientQuery = communicationRecipientQuery.Join( communicationResponseQuery,
                         communicationRecipient => communicationRecipient.PersonAliasId,
-                        communicationResponse => communicationResponse.ToPersonAliasId,
+                        communicationResponse => communicationResponse.FromPersonAliasId,
                         ( communicationRecipient, communicationResponse ) => communicationRecipient );
                     break;
             }
@@ -190,6 +205,9 @@ namespace Rock.Model
 
         private List<CommunicationRecipientResponse> GetCommunicationResponseRecipients( int maxCount, int? personId, IQueryable<CommunicationResponse> communicationResponseQuery, IQueryable<CommunicationRecipient> communicationRecipientQuery )
         {
+            // Get person aliases:
+            //  1. If person ID WASN'T provided, get ALL person aliases.
+            //  2. If person ID WAS provided, only get that person's aliases.
             var personAliasQuery = personId == null
                 ? new PersonAliasService( this.Context as RockContext ).Queryable()
                 : new PersonAliasService( this.Context as RockContext ).Queryable().Where( p => p.PersonId == personId );
