@@ -41,21 +41,25 @@
         <BooleanColumn name="hasEndDate"
                        title="Spans Time"
                        field="hasEndDate"
+                       :filter="booleanValueFilter"
                        visiblePriority="md" />
 
         <BooleanColumn name="allowMultiple"
                        title="Allow Multiple"
                        field="allowMultiple"
+                       :filter="booleanValueFilter"
                        visiblePriority="md" />
 
         <NumberColumn name="startedCount"
                       title="Started"
                       field="startedCount"
+                      :filter="numberValueFilter"
                       visiblePriority="md" />
 
         <NumberColumn name="completedCount"
                       title="Completed"
                       field="completedCount"
+                      :filter="numberValueFilter"
                       visiblePriority="md" />
 
         <ButtonColumn v-if="config.options?.isBulkEntryColumnVisible"
@@ -76,7 +80,7 @@
 <script setup lang="ts">
 import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
 import { EntityType } from "@Obsidian/SystemGuids/entityType";
-import Grid, { BooleanColumn, TextColumn, textValueFilter, DeleteColumn, ReorderColumn, SecurityColumn, NumberColumn, Column, ButtonColumn } from "@Obsidian/Controls/grid";
+import Grid, { BooleanColumn, TextColumn, textValueFilter, DeleteColumn, ReorderColumn, SecurityColumn, NumberColumn, Column, ButtonColumn, booleanValueFilter, numberValueFilter } from "@Obsidian/Controls/grid";
 import { alert } from "@Obsidian/Utility/dialogs";
 import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
 import NotificationBox from "@Obsidian/Controls/notificationBox.obs";

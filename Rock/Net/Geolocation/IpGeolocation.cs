@@ -51,17 +51,17 @@ namespace Rock.Net.Geolocation
         public DateTime? LookupDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the city.
+        /// Gets or sets the city. (e.g. Phoenix)
         /// </summary>
         public string City { get; set; }
 
         /// <summary>
-        /// Gets or sets the region name.
+        /// Gets or sets the region name. (e.g. Arizona)
         /// </summary>
         public string RegionName { get; set; }
 
         /// <summary>
-        /// Gets or sets the region code.
+        /// Gets or sets the region code. (e.g. AZ)
         /// </summary>
         public string RegionCode { get; set; }
 
@@ -71,7 +71,7 @@ namespace Rock.Net.Geolocation
         public int? RegionValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the country code.
+        /// Gets or sets the country code. (e.g. US)
         /// </summary>
         public string CountryCode { get; set; }
 
@@ -81,7 +81,7 @@ namespace Rock.Net.Geolocation
         public int? CountryValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the postal code.
+        /// Gets or sets the postal code. (e.g. 85034)
         /// </summary>
         public string PostalCode { get; set; }
 

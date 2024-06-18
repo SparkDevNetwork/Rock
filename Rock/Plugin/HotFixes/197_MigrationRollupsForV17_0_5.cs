@@ -46,7 +46,7 @@ DECLARE @ChopCommunicationRecipientListBlockServiceJobId int = (SELECT [Id] FROM
 IF NOT EXISTS ( SELECT * FROM [AttributeValue] WHERE [AttributeId] = @AttributeId AND [EntityId] = @ChopCommunicationRecipientListBlockServiceJobId ) AND @ChopCommunicationRecipientListBlockServiceJobId IS NOT NULL
 BEGIN
 INSERT INTO [AttributeValue] ([IsSystem], [AttributeId], [EntityId], [Value], [Guid])
-VALUES (1, @AttributeId, @ChopCommunicationRecipientListBlockServiceJobId, N'EBEA5996-5695-4A42-A21C-29E11E711BE8^ContextEntityType,DetailPage,core.CustomGridColumnsConfig,core.CustomActionsConfigs,core.EnableDefaultWorkflowLauncher', NEWID());
+VALUES (1, @AttributeId, @ChopCommunicationRecipientListBlockServiceJobId, N'EBEA5996-5695-4A42-A21C-29E11E711BE8^ContextEntityType,DetailPage,core.CustomGridColumnsConfig,core.CustomActionsConfigs,core.EnableDefaultWorkflowLauncher,core.CustomGridEnableStickyHeaders', NEWID());
 END" );
         }
 
