@@ -1751,7 +1751,7 @@ namespace Rock.Blocks.Group.Scheduling
                 .AsNoTracking()
                 .Where( gl => gl.GroupId == groupId )
                 .SelectMany( gl => gl.Schedules )
-                .Where( s => s.IsPublic == true )
+                .Where( s => s.IsActive && s.IsPublic == true )
                 .Distinct()
                 .ToList();
 
