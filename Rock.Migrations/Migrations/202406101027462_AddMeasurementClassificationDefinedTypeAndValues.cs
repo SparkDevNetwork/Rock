@@ -357,10 +357,18 @@ GROUP BY ALL p.PrimaryCampusId
                 "Giving",
                 WeeklyMetricsCategory,
                 @"
+-- =====================================================================================================
+-- Description: This metric represents weekly giving to the tithe and should be partitioned by Campus.
+-- =====================================================================================================
+-- You can edit this to match the financial accounts that are considered part of the 'tithe', but please
+-- do not change the remainder of this script:
+ 
+DECLARE @Accounts VARCHAR(100) = '1';   -- Comma separated accounts to extract giving information from, their child accounts will be included.
+ 
+-------------------------------------------------------------------------------------------------------
 DECLARE @STARTDATE int = FORMAT( DATEADD(DAY, -7, GETDATE()), 'yyyyMMdd' )
 DECLARE @ENDDATE int = FORMAT( GETDATE(), 'yyyyMMdd' )
 DECLARE @PersonRecordTypeId INT = ( SELECT [Id] FROM [dbo].[DefinedValue] WHERE [Guid] = '36CF10D6-C695-413D-8E7C-4546EFEF385E' )
-DECLARE @Accounts VARCHAR(100) = '1,2'; -- Comma separated accounts to extract giving information from, their child accounts will be included
 DECLARE @AccountsWithChildren TABLE (Id INT);
 -- Recursively get accounts and their children.
 WITH AccountHierarchy AS (
