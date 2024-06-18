@@ -551,10 +551,10 @@ The answer is {{ x }}.
         }
 
         /// <summary>
-        /// Verify that the default {% liquid %} tag is correctly aliased to the {% lava %} tag.
+        /// Verify that the {% lava %} tag is correctly aliased to the default {% liquid %} tag.
         /// </summary>
         [TestMethod]
-        public void LiquidTag_UsingLavaTagAlias_IsProcessedAsLiquidTag()
+        public void LavaTag_AsAliasForLiquidTag_IsProcessedAsLiquidTag()
         {
             var template = @"
 {% lava 

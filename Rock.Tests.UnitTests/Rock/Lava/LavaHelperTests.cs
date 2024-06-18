@@ -293,5 +293,24 @@ Line 3<br>
 
             Assert.That.AreEqual( true, isTemplate );
         }
+
+        [TestMethod]
+        public void IsLavaTemplate_SingleLavaTag_ReturnsTrue()
+        {
+            // The Lava/Liquid tag can span multiple lines, so we need to ensure that the open/close tokens are correctly detected.
+            var template = @"
+{% lava 
+   echo ""Hello World"" %}
+";
+
+            Assert.That.AreEqual( true, LavaHelper.IsLavaTemplate( template ) );
+        }
+
+        [TestMethod]
+        public void IsLavaTemplate_UnmatchedTag_ReturnsFalse()
+        {
+            Assert.That.AreEqual( false, LavaHelper.IsLavaTemplate( "{% This is not a Lava template." ) );
+            Assert.That.AreEqual( false, LavaHelper.IsLavaTemplate( "... nor is this %}" ) );
+        }
     }
 }
