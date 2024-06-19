@@ -1677,6 +1677,238 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Labels.Renderers
 
         #endregion
 
+        #region WriteIconField
+
+        [TestMethod]
+        public void WriteIconField_WithImageData_IncludesGraphicField()
+        {
+            var dpi = 300;
+            var imageData = Enumerable.Range( 0, 19 ).Select( i => ( byte ) i ).ToArray();
+            var expectedPattern = new Regex( @"\^GFA,19,19," );
+
+            var request = new PrintLabelRequest
+            {
+                Label = new DesignedLabelBag(),
+                Capabilities = new PrinterCapabilities
+                {
+                    Dpi = dpi
+                }
+            };
+
+            var renderer = new Mock<ZplLabelRenderer>( MockBehavior.Loose )
+            {
+                CallBase = true
+            };
+
+            renderer.Setup( f => f.GetIcon( It.IsAny<int>(), It.IsAny<int>(), It.IsAny<LabelIcon>() ) )
+                .Returns( new ZplImageCache( imageData, 0, 0 ) );
+
+            var field = new Mock<LabelField>( MockBehavior.Strict, new LabelFieldBag
+            {
+                FieldType = LabelFieldType.Icon
+            } );
+
+            field.Setup( f => f.GetConfiguration<IconFieldConfiguration>() )
+                .Returns( new IconFieldConfiguration
+                {
+                    Icon = new LabelIcon( "undefined", "undefined", "", false )
+                } );
+
+            var zpl = GetTextFromStream( stream =>
+            {
+                renderer.Object.BeginLabel( stream, request );
+                stream.SetLength( 0 );
+
+                renderer.Object.WriteField( field.Object );
+                renderer.Object.Dispose();
+            } );
+
+            Assert.That.Matches( zpl, expectedPattern );
+        }
+
+        [TestMethod]
+        public void WriteIconField_WithImageData_EncodesDataAsHex()
+        {
+            var dpi = 300;
+            var imageData = Enumerable.Range( 8, 4 ).Select( i => ( byte ) i ).ToArray();
+            var expectedPattern = new Regex( @"\^GFA,[0-9],[0-9],[0-9],08090A0B" );
+
+            var request = new PrintLabelRequest
+            {
+                Label = new DesignedLabelBag(),
+                Capabilities = new PrinterCapabilities
+                {
+                    Dpi = dpi
+                }
+            };
+
+            var renderer = new Mock<ZplLabelRenderer>( MockBehavior.Loose )
+            {
+                CallBase = true
+            };
+
+            renderer.Setup( f => f.GetIcon( It.IsAny<int>(), It.IsAny<int>(), It.IsAny<LabelIcon>() ) )
+                .Returns( new ZplImageCache( imageData, 0, 0 ) );
+
+            var field = new Mock<LabelField>( MockBehavior.Strict, new LabelFieldBag
+            {
+                FieldType = LabelFieldType.Icon
+            } );
+
+            field.Setup( f => f.GetConfiguration<IconFieldConfiguration>() )
+                .Returns( new IconFieldConfiguration
+                {
+                    Icon = new LabelIcon( "undefined", "undefined", "", false )
+                } );
+
+            var zpl = GetTextFromStream( stream =>
+            {
+                renderer.Object.BeginLabel( stream, request );
+                stream.SetLength( 0 );
+
+                renderer.Object.WriteField( field.Object );
+                renderer.Object.Dispose();
+            } );
+
+            Assert.That.Matches( zpl, expectedPattern );
+        }
+
+        [TestMethod]
+        public void WriteIconField_WithInvertedColor_IncludesFieldReverseCommand()
+        {
+            var dpi = 300;
+            var imageData = Enumerable.Range( 0, 4 ).Select( i => ( byte ) i ).ToArray();
+            var expectedPattern = new Regex( @"\^FR" );
+
+            var request = new PrintLabelRequest
+            {
+                Label = new DesignedLabelBag(),
+                Capabilities = new PrinterCapabilities
+                {
+                    Dpi = dpi
+                }
+            };
+
+            var renderer = new Mock<ZplLabelRenderer>( MockBehavior.Loose )
+            {
+                CallBase = true
+            };
+
+            renderer.Setup( f => f.GetIcon( It.IsAny<int>(), It.IsAny<int>(), It.IsAny<LabelIcon>() ) )
+                .Returns( new ZplImageCache( imageData, 0, 0 ) );
+
+            var field = new Mock<LabelField>( MockBehavior.Strict, new LabelFieldBag
+            {
+                FieldType = LabelFieldType.Icon
+            } );
+
+            field.Setup( f => f.GetConfiguration<IconFieldConfiguration>() )
+                .Returns( new IconFieldConfiguration
+                {
+                    Icon = new LabelIcon( "undefined", "undefined", "", false ),
+                    IsColorInverted = true
+                } );
+
+            var zpl = GetTextFromStream( stream =>
+            {
+                renderer.Object.BeginLabel( stream, request );
+                stream.SetLength( 0 );
+
+                renderer.Object.WriteField( field.Object );
+                renderer.Object.Dispose();
+            } );
+
+            Assert.That.Matches( zpl, expectedPattern );
+        }
+
+        [TestMethod]
+        public void WriteIconField_WithFailedConversion_DoesNotEmitField()
+        {
+            var dpi = 300;
+            var imageData = Enumerable.Range( 0, 4 ).Select( i => ( byte ) i ).ToArray();
+
+            var request = new PrintLabelRequest
+            {
+                Label = new DesignedLabelBag(),
+                Capabilities = new PrinterCapabilities
+                {
+                    Dpi = dpi
+                }
+            };
+
+            var renderer = new Mock<ZplLabelRenderer>( MockBehavior.Loose )
+            {
+                CallBase = true
+            };
+
+            renderer.Setup( f => f.GetIcon( It.IsAny<int>(), It.IsAny<int>(), It.IsAny<LabelIcon>() ) )
+                .Throws<InvalidOperationException>();
+
+            var field = new Mock<LabelField>( MockBehavior.Strict, new LabelFieldBag
+            {
+                FieldType = LabelFieldType.Icon
+            } );
+
+            field.Setup( f => f.GetConfiguration<IconFieldConfiguration>() )
+                .Returns( new IconFieldConfiguration
+                {
+                    Icon = new LabelIcon( "undefined", "undefined", "", false )
+                } );
+
+            var zpl = GetTextFromStream( stream =>
+            {
+                renderer.Object.BeginLabel( stream, request );
+                stream.SetLength( 0 );
+
+                renderer.Object.WriteField( field.Object );
+                renderer.Object.Dispose();
+            } );
+
+            Assert.That.IsEmpty( zpl );
+        }
+
+        [TestMethod]
+        public void WriteIconField_WithInvalidIcon_DoesNotEmitField()
+        {
+            var dpi = 300;
+            var imageData = Enumerable.Range( 0, 4 ).Select( i => ( byte ) i ).ToArray();
+
+            var request = new PrintLabelRequest
+            {
+                Label = new DesignedLabelBag(),
+                Capabilities = new PrinterCapabilities
+                {
+                    Dpi = dpi
+                }
+            };
+
+            var renderer = new ZplLabelRenderer();
+
+            var field = new Mock<LabelField>( MockBehavior.Strict, new LabelFieldBag
+            {
+                FieldType = LabelFieldType.Icon
+            } );
+
+            field.Setup( f => f.GetConfiguration<IconFieldConfiguration>() )
+                .Returns( new IconFieldConfiguration
+                {
+                    Icon = null
+                } );
+
+            var zpl = GetTextFromStream( stream =>
+            {
+                renderer.BeginLabel( stream, request );
+                stream.SetLength( 0 );
+
+                renderer.WriteField( field.Object );
+                renderer.Dispose();
+            } );
+
+            Assert.That.IsEmpty( zpl );
+        }
+
+        #endregion
+
         #region Helper Methods
 
         /// <summary>

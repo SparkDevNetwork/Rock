@@ -25,4 +25,12 @@
 export type IconFieldConfigurationBag = {
     /** The identifier of the icon that will be displayed. */
     icon?: string | null;
+
+    /**
+     * Determines if the color is inverted when drawing. On Zebra printers
+     * will result in an already black background turning white and an
+     * already white background turning black. Other printers may simply
+     * switch to white mode.
+     */
+    isColorInverted?: string | null;
 };

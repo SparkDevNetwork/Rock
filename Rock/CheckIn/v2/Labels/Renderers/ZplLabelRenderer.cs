@@ -73,7 +73,7 @@ namespace Rock.CheckIn.v2.Labels.Renderers
             }
             else if ( field.Field.FieldType == LabelFieldType.Icon )
             {
-                throw new NotImplementedException();
+                WriteIconField( writer, field );
             }
             else if ( field.Field.FieldType == LabelFieldType.Image )
             {
@@ -268,6 +268,51 @@ namespace Rock.CheckIn.v2.Labels.Renderers
         }
 
         /// <summary>
+        /// Writes an icon field to the stream.
+        /// </summary>
+        /// <param name="writer">The stream to write the field to.</param>
+        /// <param name="field">The field to write.</param>
+        protected internal void WriteIconField( StreamWriter writer, LabelField field )
+        {
+            var config = field.GetConfiguration<IconFieldConfiguration>();
+
+            if ( config.Icon == null )
+            {
+                return;
+            }
+
+            var width = ToDots( field.Field.Width );
+            var height = ToDots( field.Field.Height );
+
+            ZplImageCache image;
+
+            try
+            {
+                image = GetIcon( width, height, config.Icon );
+            }
+            catch
+            {
+                return;
+            }
+
+            WriteFieldOrigin( writer, field );
+
+            if ( config.IsColorInverted )
+            {
+                writer.Write( "^FR" );
+            }
+
+            writer.Write( $"^GFA,{image.ImageData.Length},{image.ImageData.Length},{( width + 7 ) / 8}," );
+
+            foreach ( var b in image.ImageData )
+            {
+                writer.Write( $"{b:X2}" );
+            }
+
+            writer.WriteLine( "^FS" );
+        }
+
+        /// <summary>
         /// Writes an image field to the stream.
         /// </summary>
         /// <param name="writer">The stream to write the field to.</param>
@@ -281,7 +326,6 @@ namespace Rock.CheckIn.v2.Labels.Renderers
             var options = new ZplImageOptions
             {
                 Brightness = config.Brightness,
-                Contrast = config.Contrast,
                 Dithering = DitherMode.None,
                 Height = ToDots( field.Field.Height ),
                 Width = width
@@ -379,6 +423,19 @@ namespace Rock.CheckIn.v2.Labels.Renderers
             {
                 return ZplImageHelper.CreateImage( stream, options );
             }
+        }
+
+        /// <summary>
+        /// Gets the image for the icon.
+        /// </summary>
+        /// <param name="width">The width of the icon image.</param>
+        /// <param name="height">The height of the icon image.</param>
+        /// <param name="icon">The icon to use when creating the image.</param>
+        /// <returns>An instance of <see cref="ZplImageCache"/>.</returns>
+        [ExcludeFromCodeCoverage]
+        protected internal virtual ZplImageCache GetIcon( int width, int height, LabelIcon icon )
+        {
+            return ZplImageHelper.CreateIcon( width, height, icon );
         }
     }
 }

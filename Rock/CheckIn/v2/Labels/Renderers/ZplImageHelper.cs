@@ -18,12 +18,15 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 
+using Rock.Configuration;
 using Rock.Enums.CheckIn.Labels;
-using Rock.Model;
 
+using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Advanced;
+using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 
@@ -35,15 +38,24 @@ namespace Rock.CheckIn.v2.Labels.Renderers
     /// </summary>
     internal static class ZplImageHelper
     {
+        #region Fields
+
         /// <summary>
-        /// Gets a stream that contains the data to use for the person's photo.
+        /// The standard icon font collection, only loaded when needed.
         /// </summary>
-        /// <param name="person">The person whose photo is to be retrieved.</param>
-        /// <returns>A <see cref="Stream"/> that contains the data or <c>null</c> if it could not be determined.</returns>
-        public static Stream GetPersonPhotoStream( Person person )
-        {
-            return person.Photo?.ContentStream;
-        }
+        private static Lazy<FontCollection> _iconFontCollection = new Lazy<FontCollection>( CreateIconFontCollection );
+
+        /// <summary>
+        /// The regular font for Font Awesome.
+        /// </summary>
+        private static FontFamily? _fontAwesomeRegular = null;
+
+        /// <summary>
+        /// The bold font for Font Awesome.
+        /// </summary>
+        private static FontFamily? _fontAwesomeBold = null;
+
+        #endregion
 
         /// <summary>
         /// 
@@ -54,11 +66,6 @@ namespace Rock.CheckIn.v2.Labels.Renderers
         public static ZplImageCache CreateImage( Stream imageStream, ZplImageOptions options )
         {
             var newImage = Image.Load<RgbaVector>( imageStream );
-
-            // Convert any transparent pixels to white. This is required because
-            // the Grayscale() filter below will balk on transparency and cause
-            // the component colors to become NaN.
-            ConvertTransparencyToWhite( newImage );
 
             newImage.Mutate( img =>
             {
@@ -72,21 +79,9 @@ namespace Rock.CheckIn.v2.Labels.Renderers
                     img.Brightness( options.Brightness );
                 }
 
-                if ( options.Contrast != 1 )
-                {
-                    img.Contrast( options.Contrast );
-                }
-
                 img.Grayscale( GrayscaleMode.Bt601 );
 
-                if ( options.Dithering == DitherMode.Fast )
-                {
-                    img.Dither( KnownDitherings.Bayer8x8, new Color[] { Color.Black, Color.White } );
-                }
-                else if ( options.Dithering == DitherMode.Quality )
-                {
-                    img.Dither( KnownDitherings.Atkinson, new Color[] { Color.Black, Color.White } );
-                }
+                Dither( img, options.Dithering );
             } );
 
             using ( var outputStream = SaveToGrf( newImage ) )
@@ -96,28 +91,20 @@ namespace Rock.CheckIn.v2.Labels.Renderers
         }
 
         /// <summary>
-        /// Converts any transparent pixels to be purely white. The GRF format
-        /// has two states per pixel: "Ignore" and "Fill". So it has no concept
-        /// of white, black or transparent. Just fill or not.
+        /// Apply dithering to the image being processed.
         /// </summary>
-        /// <param name="image">The image to be updated.</param>
-        private static void ConvertTransparencyToWhite( Image<RgbaVector> image )
+        /// <param name="image">The image to dither.</param>
+        /// <param name="dithering">The dithering mode.</param>
+        [ExcludeFromCodeCoverage]
+        private static void Dither( IImageProcessingContext image, DitherMode dithering )
         {
-            for ( int rowIndex = 0; rowIndex < image.Height; rowIndex++ )
+            if ( dithering == DitherMode.Fast )
             {
-                var row = image.DangerousGetPixelRowMemory( rowIndex );
-                var span = row.Span;
-
-                for ( int colIndex = 0; colIndex < image.Width; colIndex += 1 )
-                {
-                    if ( span[colIndex].A == 0 || float.IsNaN( span[colIndex].A ) )
-                    {
-                        span[colIndex].R = 1;
-                        span[colIndex].G = 1;
-                        span[colIndex].B = 1;
-                        span[colIndex].A = 1;
-                    }
-                }
+                image.Dither( KnownDitherings.Bayer8x8, new Color[] { Color.Black, Color.White } );
+            }
+            else if ( dithering == DitherMode.Quality )
+            {
+                image.Dither( KnownDitherings.Atkinson, new Color[] { Color.Black, Color.White } );
             }
         }
 
@@ -178,7 +165,7 @@ namespace Rock.CheckIn.v2.Labels.Renderers
         /// <param name="image">The image to be resized.</param>
         /// <param name="width">The new image width.</param>
         /// <param name="height">The new image height.</param>
-        public static void ResizeAndCrop( IImageProcessingContext image, int width, int height )
+        private static void ResizeAndCrop( IImageProcessingContext image, int width, int height )
         {
             var size = image.GetCurrentSize();
             var widthRatio = width / ( double ) size.Width;
@@ -200,133 +187,95 @@ namespace Rock.CheckIn.v2.Labels.Renderers
             }
         }
 
-        //public static Stream ZebraTest( Stream initialPhotoStream, int pixelSize, float brightness, float contrast )
-        //{
-        //    Bitmap initialBitmap = new Bitmap( initialPhotoStream );
+        /// <summary>
+        /// Creates a new icon font collection. This is called once automatically
+        /// when the first icon is generated. Otherwise it is used by unit tests
+        /// to ensure correct operation.
+        /// </summary>
+        /// <returns>The font collection.</returns>
+        internal static FontCollection CreateIconFontCollection()
+        {
+            var fontCollection = new FontCollection();
 
-        //    // Adjust the image if any of the parameters not default
-        //    if ( brightness != 1.0 || contrast != 1.0 )
-        //    {
-        //        initialBitmap = ImageAdjust( initialBitmap, ( float ) brightness, ( float ) contrast );
-        //    }
+            var webRoot = RockApp.Current.HostingSettings.WebRootPath;
+            var fontPath = Path.Combine( webRoot, "Assets", "Fonts", "FontAwesome" );
 
-        //    // Calculate rectangle to crop image into
-        //    int height = initialBitmap.Height;
-        //    int width = initialBitmap.Width;
-        //    var cropSection = new System.Drawing.Rectangle( 0, 0, height, width );
-        //    if ( height < width )
-        //    {
-        //        cropSection = new System.Drawing.Rectangle( ( width - height ) / 2, 0, ( width + height ) / 2, height ); // (width + height)/2 is a simplified version of the (width - height)/2 + height function
-        //    }
-        //    else if ( height > width )
-        //    {
-        //        cropSection = new System.Drawing.Rectangle( 0, ( height - width ) / 2, width, ( height + width ) / 2 );
-        //    }
+            _fontAwesomeRegular = TryAddToFontCollection( fontCollection, Path.Combine( fontPath, "fa-regular-400.ttf" ) );
+            _fontAwesomeBold = TryAddToFontCollection( fontCollection, Path.Combine( fontPath, "fa-solid-900.ttf" ) );
 
-        //    // Crop and resize image
-        //    Bitmap resizedBitmap = new Bitmap( pixelSize, pixelSize );
-        //    using ( Graphics g = Graphics.FromImage( resizedBitmap ) )
-        //    {
-        //        g.DrawImage( initialBitmap, new System.Drawing.Rectangle( 0, 0, resizedBitmap.Width, resizedBitmap.Height ), cropSection, GraphicsUnit.Pixel );
-        //    }
+            return fontCollection;
+        }
 
-        //    // Grayscale Image
-        //    var masks = new byte[] { 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01 };
-        //    var outputBitmap = new Bitmap( resizedBitmap.Width, resizedBitmap.Height, PixelFormat.Format1bppIndexed );
-        //    var data = new sbyte[resizedBitmap.Width, resizedBitmap.Height];
-        //    var inputData = resizedBitmap.LockBits( new System.Drawing.Rectangle( 0, 0, resizedBitmap.Width, resizedBitmap.Height ), ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb );
-        //    try
-        //    {
-        //        var scanLine = inputData.Scan0;
-        //        var line = new byte[inputData.Stride];
-        //        for ( var y = 0; y < inputData.Height; y++, scanLine += inputData.Stride )
-        //        {
-        //            Marshal.Copy( scanLine, line, 0, line.Length );
-        //            for ( var x = 0; x < resizedBitmap.Width; x++ )
-        //            {
-        //                // Change to greyscale
-        //                data[x, y] = ( sbyte ) ( 64 * ( ( ( line[x * 3 + 2] * 0.299 + line[x * 3 + 1] * 0.587 + line[x * 3 + 0] * 0.114 ) / 255 ) - 0.4 ) );
-        //            }
-        //        }
-        //    }
-        //    finally
-        //    {
-        //        resizedBitmap.UnlockBits( inputData );
-        //    }
+        /// <summary>
+        /// Tries to add the font at the path to the collection. If it fails
+        /// then null is returned rather than an exception being thrown.
+        /// </summary>
+        /// <param name="fontCollection">The font collection to add the font to.</param>
+        /// <param name="path">The absolute path to the font file.</param>
+        /// <returns>The <see cref="FontFamily"/> or <c>null</c> if it could not be loaded.</returns>
+        private static FontFamily? TryAddToFontCollection( FontCollection fontCollection, string path )
+        {
+            try
+            {
+                return fontCollection.Add( path );
+            }
+            catch ( Exception ex )
+            {
+                System.Diagnostics.Debug.WriteLine( ex.Message );
+                return null;
+            }
+        }
 
-        //    //Dither Image
-        //    var outputData = outputBitmap.LockBits( new System.Drawing.Rectangle( 0, 0, outputBitmap.Width, outputBitmap.Height ), ImageLockMode.WriteOnly, PixelFormat.Format1bppIndexed );
-        //    try
-        //    {
-        //        var scanLine = outputData.Scan0;
-        //        for ( var y = 0; y < outputData.Height; y++, scanLine += outputData.Stride )
-        //        {
-        //            var line = new byte[outputData.Stride];
-        //            for ( var x = 0; x < resizedBitmap.Width; x++ )
-        //            {
-        //                var j = data[x, y] > 0;
-        //                if ( j )
-        //                    line[x / 8] |= masks[x % 8];
-        //                var error = ( sbyte ) ( data[x, y] - ( j ? 32 : -32 ) );
-        //                if ( x < resizedBitmap.Width - 1 )
-        //                    data[x + 1, y] += ( sbyte ) ( 7 * error / 16 );
-        //                if ( y < resizedBitmap.Height - 1 )
-        //                {
-        //                    if ( x > 0 )
-        //                        data[x - 1, y + 1] += ( sbyte ) ( 3 * error / 16 );
-        //                    data[x, y + 1] += ( sbyte ) ( 5 * error / 16 );
-        //                    if ( x < resizedBitmap.Width - 1 )
-        //                        data[x + 1, y + 1] += ( sbyte ) ( 1 * error / 16 );
-        //                }
-        //            }
+        /// <summary>
+        /// Used by unit testing to clear the font cache between tests.
+        /// </summary>
+        [ExcludeFromCodeCoverage]
+        internal static void ClearIconFontCache()
+        {
+            _iconFontCollection = new Lazy<FontCollection>( CreateIconFontCollection );
+        }
 
-        //            Marshal.Copy( line, 0, scanLine, outputData.Stride );
-        //        }
-        //    }
-        //    finally
-        //    {
-        //        outputBitmap.UnlockBits( outputData );
-        //    }
+        /// <summary>
+        /// Creates a new image at the specified width and height and fill it
+        /// with the icon content.
+        /// </summary>
+        /// <param name="width">The width of the image.</param>
+        /// <param name="height">The height of the image.</param>
+        /// <param name="icon">The icon to draw.</param>
+        /// <returns>A new image cache object that contains the image data.</returns>
+        public static ZplImageCache CreateIcon( int width, int height, LabelIcon icon )
+        {
+            var image = new Image<RgbaVector>( width, height, new RgbaVector( 1, 1, 1, 1 ) );
 
-        //    // Convert from x to .png
-        //    MemoryStream convertedStream = new MemoryStream();
-        //    outputBitmap.Save( convertedStream, System.Drawing.Imaging.ImageFormat.Png );
-        //    convertedStream.Seek( 0, SeekOrigin.Begin );
+            // Ensure the fonts are loaded.
+            _ = _iconFontCollection.Value;
 
-        //    return convertedStream;
-        //}
+            var fontFamily = icon.IsBold ? _fontAwesomeBold : _fontAwesomeRegular;
 
-        ///// <summary>
-        ///// Adjust the brightness, contrast or gamma of the given image.
-        ///// </summary>
-        ///// <param name="originalImage">The original image.</param>
-        ///// <param name="brightness">The brightness multiplier (-1.99 to 1.99 fully white).</param>
-        ///// <param name="contrast">The contrast multiplier (2.0 would be twice the contrast).</param>
-        ///// <param name="gamma">The gamma multiplier (1.0 would no change in gamma).</param>
-        ///// <returns>A new adjusted image.</returns>
-        //private static Bitmap ImageAdjust( Bitmap originalImage, float brightness = 1.0f, float contrast = 1.0f, float gamma = 1.0f )
-        //{
-        //    Bitmap adjustedImage = originalImage;
+            if ( fontFamily != null )
+            {
+                // Some icons are wider than they are tall. So adjust the width
+                // down a bit to compensate.
+                var fontSize = Math.Min( width * 0.85, height );
+                var font = fontFamily.Value.CreateFont( ( float ) fontSize, icon.IsBold ? FontStyle.Bold : FontStyle.Regular );
 
-        //    float adjustedBrightness = brightness - 1.0f;
-        //    // Matrix used to effect the image
-        //    float[][] ptsArray = {
-        //        new float[] { contrast, 0, 0, 0, 0 }, // scale red
-        //        new float[] { 0, contrast, 0, 0, 0 }, // scale green
-        //        new float[] { 0, 0, contrast, 0, 0 }, // scale blue
-        //        new float[] { 0, 0, 0, 1.0f, 0 },     // no change to alpha
-        //        new float[] { adjustedBrightness, adjustedBrightness, adjustedBrightness, 0, 1 }
-        //    };
+                // Measure the icon size so we can center it.
+                var textOptions = new TextOptions( font );
+                var textSize = TextMeasurer.Measure( icon.Code, textOptions );
 
-        //    var imageAttributes = new ImageAttributes();
-        //    imageAttributes.ClearColorMatrix();
-        //    imageAttributes.SetColorMatrix( new System.Drawing.Imaging.ColorMatrix( ptsArray ), ColorMatrixFlag.Default, ColorAdjustType.Bitmap );
-        //    imageAttributes.SetGamma( gamma, ColorAdjustType.Bitmap );
-        //    Graphics g = Graphics.FromImage( adjustedImage );
-        //    g.DrawImage( originalImage, new System.Drawing.Rectangle( 0, 0, adjustedImage.Width, adjustedImage.Height ),
-        //        0, 0, originalImage.Width, originalImage.Height, GraphicsUnit.Pixel, imageAttributes );
+                // Draw the icon centerd in the image.
+                image.Mutate( img =>
+                {
+                    textOptions = new TextOptions( font )
+                    {
+                        Origin = new System.Numerics.Vector2( ( width - textSize.Width ) / 2, ( height - textSize.Height ) / 2 )
+                    };
 
-        //    return adjustedImage;
-        //}
+                    img.DrawText( textOptions, icon.Code, Color.Black );
+                } );
+            }
+
+            return new ZplImageCache( SaveToGrf( image ).ToArray(), width, height );
+        }
     }
 }

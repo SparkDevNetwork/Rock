@@ -26,5 +26,16 @@ namespace Rock.ViewModels.CheckIn.Labels
         /// The identifier of the icon that will be displayed.
         /// </summary>
         public string Icon { get; set; }
+
+        /// <summary>
+        /// Determines if the color is inverted when drawing. On Zebra printers
+        /// will result in an already black background turning white and an
+        /// already white background turning black. Other printers may simply
+        /// switch to white mode.
+        /// </summary>
+        /// <value>
+        /// This should be the string "False" or "True".
+        /// </value>
+        public string IsColorInverted { get; set; }
     }
 }

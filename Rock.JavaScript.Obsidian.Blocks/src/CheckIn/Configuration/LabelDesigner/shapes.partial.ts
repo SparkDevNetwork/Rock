@@ -1,6 +1,6 @@
 import Konva from "@Obsidian/Libs/konva";
 import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
-import { Surface, convertImageDataToBlackAndWhite } from "./utils.partial";
+import { Surface } from "./utils.partial";
 import { asBoolean } from "@Obsidian/Utility/booleanUtils";
 import { BarcodeFormat } from "@Obsidian/Enums/CheckIn/Labels/barcodeFormat";
 import { HorizontalTextAlignment } from "@Obsidian/Enums/CheckIn/Labels/horizontalTextAlignment";
@@ -12,9 +12,10 @@ import { EllipseFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Label
 import { IconFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/iconFieldConfigurationBag";
 import { ImageFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/imageFieldConfigurationBag";
 import { LabelFieldBag } from "@Obsidian/ViewModels/CheckIn/Labels/labelFieldBag";
-import { LineFieldConfigurationBag} from "@Obsidian/ViewModels/CheckIn/Labels/lineFieldConfigurationBag";
+import { LineFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/lineFieldConfigurationBag";
 import { RectangleFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/rectangleFieldConfigurationBag";
 import { TextFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/textFieldConfigurationBag";
+import { convertImageDataToBlackAndWhite } from "./imageProcessing.partial";
 
 // #region Classes
 
@@ -618,6 +619,8 @@ function updateIconShapeFromField(shape: Konva.Text, field: LabelFieldBag, surfa
         shape.fontStyle("900");
         shape.text("\uF128");
     }
+
+    shape.globalCompositeOperation(asBoolean(config.isColorInverted) ? "xor" : "source-over");
 }
 
 /**
@@ -648,13 +651,14 @@ function updateImageShapeFromField(shape: Konva.Image, field: LabelFieldBag, sur
 
     const imageData = config.imageData;
     const isInverted = asBoolean(config.isInverted);
-    const key = `${isInverted}:${imageData}`;
+    const brightness = toNumberOrNull(config.brightness) ?? 1;
+    const key = `${isInverted}:${brightness}:${imageData}`;
 
     // Update configured values.
     if (currentImage.dataset["originalSource"] !== key) {
         currentImage.dataset["originalSource"] = key;
 
-        convertImageDataToBlackAndWhite(imageData, isInverted).then(finalSrc => {
+        convertImageDataToBlackAndWhite(imageData, brightness, isInverted).then(finalSrc => {
             // Only update if it hasn't been changed by another pass yet.
             if (currentImage.dataset["originalSource"] === key) {
                 if (finalSrc) {

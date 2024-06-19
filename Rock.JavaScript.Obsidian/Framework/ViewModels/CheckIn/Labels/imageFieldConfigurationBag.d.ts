@@ -23,6 +23,12 @@
 
 /** The configuration options for an image field. */
 export type ImageFieldConfigurationBag = {
+    /**
+     * The brightness adjustment to perform on the image. A value of 1
+     * means no adjustment is made.
+     */
+    brightness?: string | null;
+
     /** The PNG image data encoded in base 64. */
     imageData?: string | null;
 

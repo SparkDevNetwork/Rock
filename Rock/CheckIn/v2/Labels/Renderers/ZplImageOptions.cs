@@ -40,11 +40,6 @@ namespace Rock.CheckIn.v2.Labels.Renderers
         public float Brightness { get; set; } = 1;
 
         /// <summary>
-        /// The contrast adjustment to apply to the image.
-        /// </summary>
-        public float Contrast { get; set; } = 1;
-
-        /// <summary>
         /// The type of dithering to perform on the image.
         /// </summary>
         public DitherMode Dithering { get; set; }
@@ -55,7 +50,7 @@ namespace Rock.CheckIn.v2.Labels.Renderers
         /// <returns>A string that represents the cache key.</returns>
         public string ToCacheKey()
         {
-            return $"{Width}:{Height}:{Brightness}:{Contrast}:{( int ) Dithering}";
+            return $"{Width}:{Height}:{Brightness}:{( int ) Dithering}";
         }
     }
 }

@@ -36,5 +36,14 @@ namespace Rock.ViewModels.CheckIn.Labels
         /// This should be the string "False" or "True".
         /// </value>
         public string IsInverted { get; set; }
+
+        /// <summary>
+        /// The brightness adjustment to perform on the image. A value of 1
+        /// means no adjustment is made.
+        /// </summary>
+        /// <value>
+        /// This should be a string representing a floating point value.
+        /// </value>
+        public string Brightness { get; set; }
     }
 }

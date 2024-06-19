@@ -15,12 +15,28 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
+using System.Linq;
+
 namespace Rock.CheckIn.v2.Labels
 {
     /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.IconFieldConfigurationBag"/>
-    internal class IconFieldConfiguration
+    internal class IconFieldConfiguration : IFieldConfiguration
     {
-        /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.IconFieldConfigurationBag.Icon" path="/summary"/>
-        public string Icon { get; set; }
+        /// <summary>
+        /// The icon to display in the field. May be <c>null</c> if the icon
+        /// was not valid.
+        /// </summary>
+        public LabelIcon Icon { get; set; }
+
+        /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.IconFieldConfigurationBag.IsColorInverted" path="/summary"/>
+        public bool IsColorInverted { get; set; }
+
+        /// <inheritdoc/>
+        public void Initialize( Dictionary<string, string> values )
+        {
+            Icon = LabelIcon.StandardIcons.FirstOrDefault( a => a.Value == values.GetValueOrNull( "icon" ) );
+            IsColorInverted = values.GetValueOrNull( "isColorInverted" ).AsBoolean();
+        }
     }
 }
