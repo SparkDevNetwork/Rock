@@ -41,3 +41,14 @@ export type DragData = {
     /** The sub-type of the field being dragged. */
     subtype: number;
 };
+
+/**
+ * The result from the preview request to the block action.
+ */
+export type PreviewResultBag = {
+    /** The ZPL content of the preview. */
+    content?: string | null;
+
+    /** The duration in milliseconds it took to generate. */
+    duration: number;
+};

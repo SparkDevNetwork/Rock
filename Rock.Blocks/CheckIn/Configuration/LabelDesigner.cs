@@ -18,12 +18,14 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
 using Rock.Attribute;
 using Rock.CheckIn.v2.Labels;
+using Rock.CheckIn.v2.Labels.Renderers;
 using Rock.Data;
 using Rock.Enums.CheckIn.Labels;
 using Rock.Model;
@@ -233,6 +235,84 @@ namespace Rock.Blocks.CheckIn.Configuration
             } );
 
             return ActionOk( returnUrl );
+        }
+
+        /// <summary>
+        /// Generate the ZPL that can be used as a preview of how this label
+        /// will look.
+        /// </summary>
+        /// <param name="key">The key that identifies the label to preview.</param>
+        /// <param name="label">The label details as configured in the UI.</param>
+        /// <returns>The result of the operation.</returns>
+        [BlockAction]
+        public BlockActionResult Preview( string key, LabelDetailBag label )
+        {
+            var entityService = new CheckInLabelService( RockContext );
+            var checkInLabel = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( checkInLabel == null )
+            {
+                return ActionBadRequest( $"{CheckInLabel.FriendlyTypeName} not found." );
+            }
+
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to edit ${CheckInLabel.FriendlyTypeName}." );
+            }
+
+            if ( label == null || label.LabelData == null )
+            {
+                return ActionBadRequest( "Invalid data provided." );
+            }
+
+            // Note: We don't do the ValidProperties<> boxing around the label
+            // because it would get very complicated to deal with all the child
+            // properties that are nested multiple layers deep. This is a special
+            // purpose block that is tied closely to the Obsidian implementation
+            // so other code should not just use the block actions and assume
+            // they will work.
+
+            var converter = new FieldFilterPublicConverter( r => FieldSourceHelper.GetEntityFieldForRule( checkInLabel.LabelType, r ) );
+
+            if ( label.LabelData.Fields != null )
+            {
+                foreach ( var field in label.LabelData.Fields )
+                {
+                    field.ConditionalVisibility = converter.ToPrivateBag( field.ConditionalVisibility );
+                }
+            }
+
+            using ( var memoryStream = new MemoryStream() )
+            {
+                var sw = System.Diagnostics.Stopwatch.StartNew();
+                var request = new PrintLabelRequest
+                {
+                    Capabilities = new PrinterCapabilities(),
+                    Label = label.LabelData
+                };
+
+                var renderer = new ZplLabelRenderer();
+
+                renderer.BeginLabel( memoryStream, request );
+
+                foreach ( var field in request.Label.Fields )
+                {
+                    var labelField = new LabelField( field );
+
+                    renderer.WriteField( labelField );
+                }
+
+                renderer.EndLabel();
+
+                var zpl = System.Text.Encoding.UTF8.GetString( memoryStream.ToArray() );
+                sw.Stop();
+
+                return ActionOk( new
+                {
+                    Content = zpl,
+                    Duration = sw.ElapsedMilliseconds
+                } );
+            }
         }
     }
 }

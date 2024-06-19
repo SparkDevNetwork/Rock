@@ -25,9 +25,22 @@
                 <RockButton btnType="primary"
                             autoDisable
                             @click="onSave">Save</RockButton>
+
+                <RockButton btnType="link"
+                            autoDisable
+                            @click="onPreview">Preview</RockButton>
             </div>
         </div>
     </Panel>
+
+    <Modal v-model="isPreviewOpen"
+           title="Preview"
+           cancelText="Close">
+        <div>Preview generated in {{ previewDuration }}ms.</div>
+
+        <img class="preview-image"
+             :src="previewSource" />
+    </Modal>
 </template>
 
 <style scoped>
@@ -59,17 +72,26 @@
     border: 1px solid black;
     background-color: white;
 }
+
+.preview-image {
+    border-radius: 12px;
+    border: 1px solid var(--theme-light);
+    box-shadow: 2px 2px 6px rgba(0, 0, 0, .1);
+    display: block;
+    margin: auto;
+}
 </style>
 
 <script setup lang="ts">
     import Editor from "./LabelDesigner/editor.partial.obs";
     import LabelDimensionsButton from "./LabelDesigner/labelDimensionsButton.partial.obs";
     import Menu from "./LabelDesigner/menu.partial.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { computed, ref } from "vue";
-    import { LabelDetail, Size } from "./LabelDesigner/types.partial";
+    import { LabelDetail, PreviewResultBag, Size } from "./LabelDesigner/types.partial";
     import { LabelUndoManager } from "./LabelDesigner/undoManager.partial";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { blobToBase64 } from "./LabelDesigner/utils.partial";
@@ -80,6 +102,9 @@
     const invokeBlockAction = useInvokeBlockAction();
 
     const editor = ref<InstanceType<typeof Editor>>();
+    const isPreviewOpen = ref(false);
+    const previewSource = ref<string | undefined>();
+    const previewDuration = ref(0);
 
     const labelSize = computed<Size>({
         get() {
@@ -155,6 +180,43 @@
         }
 
         await alert(result.errorMessage ?? "Unknown error while trying to save check-in label.");
+    }
+
+    /**
+     * Event handler for the preview button being clicked. Render the ZPL from
+     * the server and then call Labelary to render a preview image.
+     */
+    async function onPreview(): Promise<void> {
+        const result = await invokeBlockAction<PreviewResultBag>("Preview", {
+            key: config.idKey,
+            label: labelManager.current.value
+        });
+
+        if (!result.isSuccess || !result.data?.content) {
+            return await alert(result.errorMessage ?? "Unknown error while trying to preview check-in label.");
+        }
+
+        const labelSize = `${labelManager.current.value.labelData.width}x${labelManager.current.value.labelData.height}`;
+        // Can't use our normal http post function because it does something
+        // weird to the response data that corrupts the binary data.
+        const labelaryResult = await fetch(`https://api.labelary.com/v1/printers/8dpmm/labels/${labelSize}/0`, {
+            method: "POST",
+            body: result.data.content,
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            }
+        });
+
+        if (!labelaryResult.ok) {
+            return await alert("Unknown error while trying to render preview image.");
+        }
+
+        const blob = await labelaryResult.blob();
+        const image64 = await blobToBase64(blob);
+
+        previewSource.value = `data:image/png;base64,${image64}`;
+        previewDuration.value = result.data.duration;
+        isPreviewOpen.value = true;
     }
 
     const labelManager = new LabelUndoManager(getInitialLabelDetail());
