@@ -452,7 +452,7 @@ DECLARE @EndDate DATETIME = GETDATE()
 DECLARE @EraStartDateAttributeId INT = (SELECT Id FROM dbo.[Attribute] WHERE [Guid] = '4711D67E-7526-9582-4A8E-1CD7BBE1B3A2')
 DECLARE @IsEraAttributeId INT = (SELECT Id FROM dbo.[Attribute] WHERE [Guid] = 'CE5739C5-2156-E2AB-48E5-1337C38B935E')
 
-SELECT COUNT(*) as eraWins, p.[PrimaryCampusId]
+SELECT COUNT(*) as eraLosses, p.[PrimaryCampusId]
 FROM dbo.[Person] p
 JOIN dbo.[AttributeValue] av ON p.Id = av.[EntityId]
 WHERE av.[AttributeId] = @EraStartDateAttributeId AND av.[ValueAsDateTime] BETWEEN @StartDate AND @EndDate
