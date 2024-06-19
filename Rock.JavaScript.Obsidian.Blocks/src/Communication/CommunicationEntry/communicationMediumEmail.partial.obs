@@ -76,9 +76,7 @@
                 <div class="col-sm-6">
                     <EmailBox v-if="config.mode === Mode.Full"
                               v-model="fromAddress"
-                              :allowLava="config.isLavaEnabled"
                               :disabled="disabled"
-                              :help="config.isLavaEnabled ? '<span class=\'tip tip-lava\'></span>' : ''"
                               label="From Address"
                               rules="required" />
                     <StaticFormControl v-else
@@ -91,11 +89,9 @@
                 <div class="col-sm-6">
                     <EmailBox v-if="config.mode === Mode.Full"
                               v-model="replyToAddress"
-                              :allowLava="config.isLavaEnabled"
                               :disabled="disabled"
-                              :help="config.isLavaEnabled ? '<span class=\'tip tip-lava\'></span>' : ''"
                               label="Reply To Address" />
-                    <StaticFormControl v-else
+                    <StaticFormControl v-else-if="replyToAddress"
                                        :modelValue="replyToAddress"
                                        label="Reply To Address" />
                 </div>

@@ -1335,7 +1335,7 @@ namespace Rock.Blocks.Communication
             var newRecipientPersonAliasGuids = new HashSet<Guid>( bag.Recipients.Select( a => a.PersonAliasGuid ) );
 
             Rock.Model.Communication communication = null;
-            // TODO JMH Do we try and load the communication using the bag.CommunicationGuid?
+
             var currentRecipients = CreateLazy(
                 () =>
                 {
@@ -1348,9 +1348,10 @@ namespace Rock.Blocks.Communication
                         .ToList();
                 } );
 
-            if ( !bag.CommunicationGuid.IsEmpty() )
+            var communicationId = this.CommunicationIdPageParameter;
+            if ( communicationId.HasValue && communicationId.Value != 0 )
             {
-                communication = communicationService.Get( bag.CommunicationGuid );
+                communication = communicationService.Get( communicationId.Value );
             }
 
             if ( communication == null )
@@ -1424,23 +1425,27 @@ namespace Rock.Blocks.Communication
                     : communicationType == CommunicationType.SMS
                         ? bag.SmsAttachmentBinaryFiles
                         : new List<ListItemBag>();
+            var binaryFileAttachmentGuids = binaryFileAttachments?
+                .Select( b => b.Value.AsGuid() )
+                .Where( g => !g.IsEmpty() )
+                .ToList() ?? new List<Guid>();
 
-            // delete any attachments that are no longer included
-            // TODO JMH Does the bag have Guids? If so, we need to map the Communication ids to Guids or vice-versa.
-            foreach ( var attachment in communication.Attachments.Where( a => !binaryFileAttachments.Any( bagFile => bagFile.Value.AsGuid() == a.BinaryFile.Guid ) ).ToList() )
+            // Delete any attachments that are no longer included.
+            var attachmentsToRemove = communication.Attachments
+                .Where( a => !binaryFileAttachmentGuids.Contains( a.BinaryFile.Guid ) )
+                .ToList();
+            foreach ( var attachment in attachmentsToRemove )
             {
                 communication.Attachments.Remove( attachment );
                 communicationAttachmentService.Delete( attachment );
             }
 
-            // add any new attachments that were added
-            // TODO JMH Does the bag have Guids? If so, we need to map the Communication ids to Guids or vice-versa.
-            if ( binaryFileAttachments?.Any() == true )
+            // Add any new attachments.
+            if ( binaryFileAttachmentGuids.Any() )
             {
-                var guids = binaryFileAttachments.Select( bf => bf.Value.AsGuid() ).Where( g => !g.IsEmpty() ).ToList();
                 var attachmentIdMap = new BinaryFileService( rockContext )
                     .Queryable()
-                    .Where( b => guids.Contains( b.Guid ) )
+                    .Where( b => binaryFileAttachmentGuids.Contains( b.Guid ) )
                     .Select( b => new
                     {
                         b.Id,
@@ -1678,20 +1683,21 @@ namespace Rock.Blocks.Communication
                     attachmentsTarget.SetEmailAttachments( source.EmailAttachmentBinaryFileIds );
                     attachmentsTarget.SetSmsAttachments( source.SMSAttachmentBinaryFileIds );
                 }
-            }
+            } 
 
-            // TODO JMH Is this needed?? Do we only need a method that converts a CommunicationTemplate to a CommunicationEntryCommunicationBag?
             public static void CopyTemplate( CommunicationTemplate source, ICommunicationDetails target, RockRequestContext requestContext )
             {
-                // Save what was entered for FromEmail and FromName in case the template blanks it out.
+                // Save what was entered for fields in case the template blanks them out.
                 var originalFromEmail = target.FromEmail;
                 var originalFromName = target.FromName;
+                var originalReplyToEmail = target.ReplyToEmail;
 
                 Copy( source, target );
 
                 // Resolve lava-enabled fields from the template.
                 target.FromName = source.FromName.ResolveMergeFields( requestContext.GetCommonMergeFields() );
                 target.FromEmail = source.FromEmail.ResolveMergeFields( requestContext.GetCommonMergeFields() );
+                target.ReplyToEmail = source.ReplyToEmail.ResolveMergeFields( requestContext.GetCommonMergeFields() );
 
                 // If FromName was cleared by the template,
                 // then use the original value (similar logic to CommunicationEntryWizard).
@@ -1705,6 +1711,13 @@ namespace Rock.Blocks.Communication
                 if ( target.FromEmail.IsNullOrWhiteSpace() )
                 {
                     target.FromEmail = originalFromEmail;
+                }
+
+                // If ReplyToEmail was cleared by the template,
+                // then use the original value.
+                if ( target.ReplyToEmail.IsNullOrWhiteSpace() )
+                {
+                    target.ReplyToEmail = originalReplyToEmail;
                 }
             }
         }
