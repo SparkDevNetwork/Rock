@@ -22,7 +22,7 @@ using System.Collections.Generic;
 namespace Rock.ViewModels.Blocks.WebFarm.WebFarmSettings
 {
     /// <summary>
-    /// 
+    /// Contains details on the web farm settings.
     /// </summary>
     /// <seealso cref="Rock.ViewModels.Utility.EntityBagBase" />
     public class WebFarmSettingsBag : EntityBagBase
@@ -63,10 +63,10 @@ namespace Rock.ViewModels.Blocks.WebFarm.WebFarmSettings
         /// </value>
         public int MaxPollingWaitSeconds { get; set; }
         /// <summary>
-        /// Gets or sets the minimun polling difference.
+        /// Gets or sets the minimum polling difference.
         /// </summary>
         /// <value>
-        /// The minimun polling difference.
+        /// The minimum polling difference.
         /// </value>
         public int MinimumPollingDifference { get; set; }
 
@@ -85,5 +85,21 @@ namespace Rock.ViewModels.Blocks.WebFarm.WebFarmSettings
         ///   <c>true</c> if this instance is in memory transport; otherwise, <c>false</c>.
         /// </value>
         public bool IsInMemoryTransport { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the web farm has a valid key.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the web farm has a valid key; otherwise, <c>false</c>.
+        /// </value>
+        public bool HasValidKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the web farm is running.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the web farm instance is running; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsRunning { get; set; }
     }
 }
