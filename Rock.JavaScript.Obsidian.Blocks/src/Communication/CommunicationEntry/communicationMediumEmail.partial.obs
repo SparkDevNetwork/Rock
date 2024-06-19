@@ -179,12 +179,19 @@
                             type="button"
                             @click="() => onClickTest()">Send Test</RockButton>
 
-                <RockButton v-if="config.mode === Mode.Full"
+                <RockButton v-if="!(config.isEditMode && config.authorization?.isBlockApproveActionAuthorized && config.communication?.status === CommunicationStatus.PendingApproval) && config.mode === Mode.Full"
                             id="btnSave"
                             class="btn btn-link"
                             :disabled="disabled"
                             type="button"
                             @click="() => onClickSave()">Save as Draft</RockButton>
+
+                <RockButton v-if="config.isEditMode && config.authorization?.isBlockApproveActionAuthorized && config.communication?.status === CommunicationStatus.PendingApproval"
+                            id="btnCancel"
+                            class="btn btn-link"
+                            :disabled="disabled"
+                            type="button"
+                            @click="() => onClickCancel()">Cancel</RockButton>
             </div>
         </RockForm>
 
@@ -242,6 +249,7 @@
     import { CommunicationEntryTestRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryTestRequestBag";
     import { CommunicationEntryTestResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryTestResponseBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { removeCurrentUrlQueryParams } from "@Obsidian/Utility/url";
 
     const invokeBlockAction = useInvokeBlockAction();
     const props = defineProps({
@@ -481,6 +489,18 @@
     }
 
     /**
+     * Cancels.
+     */
+    async function onClickCancel(): Promise<void> {
+        if (config.isEditMode && config.authorization?.isBlockApproveActionAuthorized) {
+            // Redirect back to the same page without the edit param.
+            const url = new URL(window.location.href);
+            removeQueryParams(url, "edit");
+            window.location.href = url.href;
+        }
+    }
+
+    /**
      * Sends the communication.
      */
     async function onClickSend(): Promise<void> {
@@ -498,6 +518,15 @@
         await setRecipientsRequired();
         actionToExecuteOnSubmit.value = test;
         await submitForm();
+    }
+
+    function removeQueryParams(url: URL, ...queryParamKeys: string[]): void {
+        const queryParams = url.searchParams;
+
+        for (let i = 0; i < queryParamKeys.length; i++) {
+            const queryParamKey = queryParamKeys[i];
+            queryParams.delete(queryParamKey);
+        }
     }
 
     /**
