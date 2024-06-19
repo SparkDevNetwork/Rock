@@ -450,7 +450,7 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
 
                         if ( exists )
                         {
-                            nbEditModeMessage.Text = "The selected measurement classification does not allow multiple values.";
+                            nbEditModeMessage.Text = "This classification is already used by another metric and it does not allow multiple values.";
                             nbEditModeMessage.NotificationBoxType = NotificationBoxType.Warning;
                             nbEditModeMessage.Visible = true;
                             return;

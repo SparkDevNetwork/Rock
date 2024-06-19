@@ -33,7 +33,6 @@ using System.Text;
 using System.Runtime.Serialization;
 using Rock.Utility;
 using Rock.Lava;
-using OfficeOpenXml.FormulaParsing.Excel.Functions.Text;
 
 namespace RockWeb.Blocks.Utility
 {

@@ -104,12 +104,12 @@ END:VCALENDAR" );
             Sql( $@"
 DECLARE @ScheduleId int = ( 
     SELECT [Id] 
-    FROM Schedule 
+    FROM dbo.[Schedule] 
     WHERE Guid = '{guid}'),
 
 @MetricsCategoryId int = ( 
     SELECT [Id] 
-    FROM Category 
+    FROM dbo.[Category] 
     WHERE Guid = '5A794741-5444-43F0-90D7-48E47276D426'
 )
 IF @ScheduleId IS NULL
@@ -156,43 +156,43 @@ END" );
             // Add Prayer Requests Defined Value.
             RockMigrationHelper.UpdateDefinedValue( SystemGuid.DefinedType.MEASUREMENT_CLASSIFICATION,
                 "Prayer Requests",
-                "This metric measures the number of active prayer requests for the given week. This metric should be partitioned by campus.",
+                "This metric measures the number of active prayer requests for the given week. This metric should be partitioned by Campus.",
                 PrayerRequestsValue );
 
             // Add Prayers Defined Value.
             RockMigrationHelper.UpdateDefinedValue( SystemGuid.DefinedType.MEASUREMENT_CLASSIFICATION,
                 "Prayers",
-                "This metrics measures the number of prayers for the given week. This metric should be partitioned by campus.",
+                "This metrics measures the number of prayers for the given week. This metric should be partitioned by Campus.",
                 PrayersValue );
 
             // Add Active Families Defined Value.
             RockMigrationHelper.UpdateDefinedValue( SystemGuid.DefinedType.MEASUREMENT_CLASSIFICATION,
                 "Active Families",
-                "This metric represents the number of active families in the given week. This metric should be partitioned by campus.",
+                "This metric represents the number of active families in the given week. This metric should be partitioned by Campus.",
                 ActiveFamiliesValue );
 
             // Add Baptisms Defined Value.
             RockMigrationHelper.UpdateDefinedValue( SystemGuid.DefinedType.MEASUREMENT_CLASSIFICATION,
                 "Baptisms",
-                "The metric that represents the number of baptisms in a given month. This metric should be partitioned by campus.",
+                "The metric that represents the number of baptisms in a given month. This metric should be partitioned by Campus.",
                 BaptismsValue );
 
             // Add Giving Defined Value.
             RockMigrationHelper.UpdateDefinedValue( SystemGuid.DefinedType.MEASUREMENT_CLASSIFICATION,
                 "Giving",
-                "This metric represents weekly giving to the tithe. It's up to each organization to define the financial accounts that make up this metric. This metric should be partitioned by campus of the financial account.",
+                "This metric represents weekly giving to the tithe. It's up to each organization to define the financial accounts that make up this metric. This metric should be partitioned by Campus of the financial account.",
                 GivingValue );
 
             // Add eRA Weekly Wins Defined Value.
             RockMigrationHelper.UpdateDefinedValue( SystemGuid.DefinedType.MEASUREMENT_CLASSIFICATION,
                 "eRA Weekly Wins",
-                "The metric that tracks eRA wins by week. This metric should be partitioned by campus.",
+                "The metric that tracks eRA wins by week. This metric should be partitioned by Campus.",
                 eRAWeeklyWinsValue );
 
             // Add eRA Weekly Losses Defined Value.
             RockMigrationHelper.UpdateDefinedValue( SystemGuid.DefinedType.MEASUREMENT_CLASSIFICATION,
                 "eRA Weekly Losses",
-                "The metric that tracks eRA losses by week. This metric should be partitioned by campus.",
+                "The metric that tracks eRA losses by week. This metric should be partitioned by Campus.",
                 eRAWeeklyLossesValue );
         }
 
@@ -202,12 +202,12 @@ END" );
             Sql( $@"
 UPDATE [dbo].[Metric]
 SET [SourceSql] = 'DECLARE @FamilyGroupTypeId int = (SELECT TOP 1 [Id] FROM [GroupType] WHERE [Guid] = ''790e3215-3b10-442b-af69-616c0dcb998e'')
-SELECT COUNT( DISTINCT(g.[Id])) as ActiveFamilies, p.PrimaryCampusId
+SELECT COUNT( DISTINCT(g.[Id])) as ActiveFamilies, p.[PrimaryCampusId]
 FROM [Person] p
     INNER JOIN [GroupMember] gm ON gm.[PersonId] = p.[Id]
     INNER JOIN [Group] g ON g.[Id] = gm.[GroupId] AND g.[GroupTypeId] = @FamilyGroupTypeId
 WHERE ([RecordTypeValueId] = 1) AND ([RecordStatusValueId] = 3)
-GROUP BY p.PrimaryCampusId',
+GROUP BY p.[PrimaryCampusId]',
 [ScheduleId] = (SELECT [Id] FROM Schedule WHERE Guid = '{WeeklyScheduleGuid}'),
 [MeasurementClassificationValueId] = (SELECT [Id] FROM dbo.[DefinedValue] WHERE [Guid] = '{ActiveFamiliesValue}')
 WHERE [Guid] = '{ActiveFamiliesMetric}'
@@ -243,7 +243,7 @@ DECLARE @ENDDATE DATETIME = GETDATE()
 
 SELECT COUNT(1) as AttendanceCount, a.[CampusId], oa.[ScheduleId]
 FROM [Attendance] a
-INNER JOIN [AttendanceOccurrence] oa ON oa.Id = a.OccurrenceId
+INNER JOIN [AttendanceOccurrence] oa ON oa.Id = a.[OccurrenceId]
 INNER JOIN [Group] g ON g.Id = oa.[GroupId]
 INNER JOIN [GroupType] gt ON gt.[Id] = g.[GroupTypeId]
 WHERE
@@ -266,16 +266,16 @@ DECLARE @STARTDATE DATETIME = DATEADD(DAY, -7, GETDATE())
 DECLARE @ENDDATE DATETIME = GETDATE()
 DECLARE @ServiceAreaDefinedValueId INT = (SELECT Id FROM dbo.[DefinedValue] WHERE [Guid] = '36A554CE-7815-41B9-A435-93F3D52A2828')
 
-SELECT COUNT(1) as AttendanceCount, a.[CampusId], oa.ScheduleId
+SELECT COUNT(1) as AttendanceCount, a.[CampusId], oa.[ScheduleId]
 FROM [Attendance] a
-INNER JOIN [AttendanceOccurrence] oa ON oa.Id = a.OccurrenceId
+INNER JOIN [AttendanceOccurrence] oa ON oa.Id = a.[OccurrenceId]
 INNER JOIN [Group] g ON g.Id = oa.[GroupId]
 INNER JOIN [GroupType] gt ON gt.[Id] = g.[GroupTypeId]
 WHERE
    gt.[GroupTypePurposeValueId] = @ServiceAreaDefinedValueId
    AND a.[DidAttend] = 1 
    AND a.[StartDateTime] BETWEEN @STARTDATE AND @ENDDATE
-GROUP BY ALL a.[CampusId], oa.ScheduleId
+GROUP BY ALL a.[CampusId], oa.[ScheduleId]
 ",
                 new List<PartitionDetails>() { new PartitionDetails( "Campus", Rock.SystemGuid.EntityType.CAMPUS ), new PartitionDetails( "Schedule", SystemGuid.EntityType.SCHEDULE ) },
                 WeeklyScheduleGuid,
@@ -295,7 +295,7 @@ FROM dbo.[PrayerRequest] pr
 INNER JOIN [PersonAlias] pa ON pa.[Id] = pr.[RequestedByPersonAliasId]
 INNER JOIN dbo.[Person] p ON p.[Id] = pa.[PersonId]
 WHERE
-   pr.IsActive = 1
+   pr.[IsActive] = 1
    AND pr.[CreatedDateTime] BETWEEN @STARTDATE AND @ENDDATE
 GROUP BY ALL p.[PrimaryCampusId]
 ",
@@ -312,8 +312,8 @@ GROUP BY ALL p.[PrimaryCampusId]
 DECLARE @STARTDATE DATETIME = DATEADD(DAY, -7, GETDATE())
 DECLARE @ENDDATE DATETIME = GETDATE() 
 
-SELECT  COUNT(*) as Prayers, p.PrimaryCampusId
-FROM [Interaction] i 
+SELECT  COUNT(*) as Prayers, p.[PrimaryCampusId]
+FROM dbo.[Interaction] i 
 INNER JOIN [InteractionComponent] ic ON ic.[Id] = i.[InteractionComponentId]
 INNER JOIN [InteractionChannel] ichan ON ichan.[Id] = ic.[InteractionChannelId]
 INNER JOIN [PrayerRequest] pr ON pr.[Id] = ic.[EntityId]
@@ -322,8 +322,8 @@ INNER JOIN [Person] p ON p.[Id] = pa.[PersonId]
 WHERE 
    ichan.[Guid] = '3D49FB99-94D1-4F63-B1A2-30D4FEDE11E9'
    AND i.[Operation] = 'Prayed'
-   AND i.InteractionDateTime BETWEEN @STARTDATE AND @ENDDATE
-GROUP BY ALL p.PrimaryCampusId
+   AND i.[InteractionDateTime] BETWEEN @STARTDATE AND @ENDDATE
+GROUP BY ALL p.[PrimaryCampusId]
 ",
                 new List<PartitionDetails>() { new PartitionDetails( "Campus", Rock.SystemGuid.EntityType.CAMPUS ) },
                 WeeklyScheduleGuid,
@@ -340,12 +340,12 @@ DECLARE @ENDDATE DATETIME = DATEADD(DAY, -1, DATEADD(mm, 1, @STARTDATE));
 DECLARE @BaptismDateAttributeId INT = (SELECT Id FROM dbo.[Attribute] WHERE [Guid] = 'D42763FA-28E9-4A55-A25A-48998D7D7FEF')
 
 SELECT COUNT(*) as Baptisms, p.PrimaryCampusId FROM Person p
-JOIN AttributeValue av
-ON p.Id = av.EntityId
-WHERE av.AttributeId = @BaptismDateAttributeId
-AND av.ValueAsDateTime >= @STARTDATE
-AND av.ValueAsDateTime < @ENDDATE
-GROUP BY ALL p.PrimaryCampusId
+JOIN dbo.[AttributeValue] av
+ON p.[Id] = av.[EntityId]
+WHERE av.[AttributeId] = @BaptismDateAttributeId
+AND av.[ValueAsDateTime] >= @STARTDATE
+AND av.[ValueAsDateTime] < @ENDDATE
+GROUP BY ALL p.[PrimaryCampusId]
 ",
                 new List<PartitionDetails>() { new PartitionDetails( "Campus", Rock.SystemGuid.EntityType.CAMPUS ) },
                 MonthlyScheduleGuid,
@@ -377,8 +377,8 @@ WITH AccountHierarchy AS (
     WHERE [Id] IN (SELECT CAST(value AS INT) FROM STRING_SPLIT(@Accounts, ','))
     UNION ALL
     SELECT e.[Id]
-    FROM FinancialAccount e
-    INNER JOIN AccountHierarchy ah ON e.ParentAccountId = ah.Id
+    FROM dbo.[FinancialAccount] e
+    INNER JOIN AccountHierarchy ah ON e.[ParentAccountId] = ah.[Id]
 )
 INSERT INTO @AccountsWithChildren SELECT * FROM AccountHierarchy;
 
@@ -407,51 +407,63 @@ SELECT
     , [AccountCampusId] AS [CampusId]
 	, [AccountName]
 FROM CTE
-GROUP BY [AccountCampusId], [AccountName], GivingAmount;
+GROUP BY [AccountCampusId], [AccountName], [GivingAmount];
 ",
                 new List<PartitionDetails>() { new PartitionDetails( "Campus", Rock.SystemGuid.EntityType.CAMPUS ) },
                 WeeklyScheduleGuid,
                 "This metric represents weekly giving to the tithe per campus of the financial account.",
                 GivingValue );
 
-            // TODO: Maybe ensure isEra also
             // Add Weekly eRA Wins Metric
             AddMetric( eRAWeeklyWinsMetric,
                 "Weekly eRA Wins",
                 WeeklyMetricsCategory,
                 @"
-DECLARE @STARTDATE DATETIME = DATEADD(DAY, -7, GETDATE())
-DECLARE @ENDDATE DATETIME = GETDATE()
+DECLARE @StartDate DATETIME = DATEADD(DAY, -7, GETDATE())
+DECLARE @EndDate DATETIME = GETDATE()
+DECLARE @EraStartDateAttributeId INT = (SELECT Id FROM dbo.[Attribute] WHERE [Guid] = 'A106610C-A7A1-469E-4097-9DE6400FDFC2')
+DECLARE @IsEraAttributeId INT = (SELECT Id FROM dbo.[Attribute] WHERE [Guid] = 'CE5739C5-2156-E2AB-48E5-1337C38B935E')
 
-SELECT COUNT(*) as eraWins, p.PrimaryCampusId
+SELECT COUNT(*) as eraWins, p.[PrimaryCampusId]
 FROM dbo.[Person] p
-INNER JOIN dbo.[AttributeValue] av
-ON p.Id = av.EntityId
-WHERE av.AttributeId = (SELECT Id FROM dbo.[Attribute] WHERE [Guid] = 'A106610C-A7A1-469E-4097-9DE6400FDFC2')
-AND av.ValueAsDateTime BETWEEN @STARTDATE AND @ENDDATE
-GROUP BY ALL p.PrimaryCampusId
+JOIN dbo.[AttributeValue] av ON p.Id = av.[EntityId]
+WHERE av.[AttributeId] = @EraStartDateAttributeId AND av.[ValueAsDateTime] BETWEEN @StartDate AND @EndDate
+AND EXISTS (
+    SELECT 1
+    FROM dbo.[AttributeValue] av2
+    WHERE av2.[EntityId] = p.Id
+    AND av2.[AttributeId] = @IsEraAttributeId
+    AND av2.ValueAsBoolean = 1
+)
+GROUP BY ALL p.[PrimaryCampusId];
 ",
                 new List<PartitionDetails>() { new PartitionDetails( "Campus", Rock.SystemGuid.EntityType.CAMPUS ) },
                 WeeklyScheduleGuid,
                 "This metric tracks the number of individuals who attained eRA status within the current week per campus.",
                 eRAWeeklyWinsValue );
 
-            // TODO: Maybe ensure isEra also
             // Add Weekly eRA Losses Metric
             AddMetric( eRAWeeklyLossesMetric,
                 "Weekly eRA Losses",
                 WeeklyMetricsCategory,
                 @"
-DECLARE @STARTDATE DATETIME = DATEADD(DAY, -7, GETDATE())
-DECLARE @ENDDATE DATETIME = GETDATE()
+DECLARE @StartDate DATETIME = DATEADD(DAY, -7, GETDATE())
+DECLARE @EndDate DATETIME = GETDATE()
+DECLARE @EraStartDateAttributeId INT = (SELECT Id FROM dbo.[Attribute] WHERE [Guid] = '4711D67E-7526-9582-4A8E-1CD7BBE1B3A2')
+DECLARE @IsEraAttributeId INT = (SELECT Id FROM dbo.[Attribute] WHERE [Guid] = 'CE5739C5-2156-E2AB-48E5-1337C38B935E')
 
-SELECT COUNT(*) as eraLosses, p.PrimaryCampusId
+SELECT COUNT(*) as eraWins, p.[PrimaryCampusId]
 FROM dbo.[Person] p
-INNER JOIN dbo.[AttributeValue] av
-ON p.Id = av.EntityId
-WHERE av.AttributeId = (SELECT Id FROM dbo.[Attribute] WHERE [Guid] = '4711D67E-7526-9582-4A8E-1CD7BBE1B3A2')
-AND av.ValueAsDateTime BETWEEN @STARTDATE AND @ENDDATE
-GROUP BY ALL p.PrimaryCampusId
+JOIN dbo.[AttributeValue] av ON p.Id = av.[EntityId]
+WHERE av.[AttributeId] = @EraStartDateAttributeId AND av.[ValueAsDateTime] BETWEEN @StartDate AND @EndDate
+AND EXISTS (
+    SELECT 1
+    FROM dbo.[AttributeValue] av2
+    WHERE av2.[EntityId] = p.Id
+    AND av2.[AttributeId] = @IsEraAttributeId
+    AND av2.ValueAsBoolean = 0
+)
+GROUP BY ALL p.[PrimaryCampusId];
 ",
                 new List<PartitionDetails>() { new PartitionDetails( "Campus", Rock.SystemGuid.EntityType.CAMPUS ) },
                 WeeklyScheduleGuid,
@@ -471,7 +483,7 @@ GROUP BY ALL p.PrimaryCampusId
 IF (@MetricId IS NULL AND @SourceValueTypeId IS NOT NULL AND @MetricCategoryId IS NOT NULL)
 BEGIN
     DECLARE @Now [datetime] = GETDATE();
-    INSERT INTO [Metric]
+    INSERT INTO dbo.[Metric]
     (
         [IsSystem]
         , [Title]
@@ -504,7 +516,7 @@ BEGIN
         , @MeasurementClassificationId
     );
     SET @MetricId = SCOPE_IDENTITY();
-    INSERT INTO [MetricCategory]
+    INSERT INTO dbo.[MetricCategory]
     (
         [MetricId]
         , [CategoryId]
@@ -522,7 +534,7 @@ BEGIN
 
             if ( partitions == null || partitions.Count == 0 )
             {
-                sqlBuilder.Append( @"INSERT INTO [MetricPartition]
+                sqlBuilder.Append( @"INSERT INTO dbo.[MetricPartition]
     (
         [MetricId]
         , [IsRequired]
@@ -541,7 +553,7 @@ BEGIN
             {
                 foreach ( var partitionDetail in partitions )
                 {
-                    var createMetricPartitionSql = $@"INSERT INTO [MetricPartition]
+                    var createMetricPartitionSql = $@"INSERT INTO dbo.[MetricPartition]
     (
         [MetricId]
         , [Label]
@@ -556,7 +568,7 @@ BEGIN
     (
         @MetricId
         , '{partitionDetail.Label}'
-        , (SELECT Id FROM [EntityType] WHERE GUID = '{partitionDetail.EntityTypeGuid}')
+        , (SELECT Id FROM dbo.[EntityType] WHERE [GUID] = '{partitionDetail.EntityTypeGuid}')
         , 1
         , {partitions.IndexOf( partitionDetail )}
         , @Now
@@ -578,7 +590,7 @@ BEGIN
         public override void Down()
         {
             DeleteMetrics();
-            //DeleteMetricSchedules();
+            DeleteMetricSchedules();
             DeleteDefinedValues();
             DeleteDefinedTypeAndAttribute();
         }
@@ -619,7 +631,9 @@ SELECT COUNT( DISTINCT(g.[Id]))
 FROM [Person] p
     INNER JOIN [GroupMember] gm ON gm.[PersonId] = p.[Id]
     INNER JOIN [Group] g ON g.[Id] = gm.[GroupId] AND g.[GroupTypeId] = @FamilyGroupTypeId
-WHERE ([RecordTypeValueId] = 1) AND ([RecordStatusValueId] = 3)'
+WHERE ([RecordTypeValueId] = 1) AND ([RecordStatusValueId] = 3)',
+[ScheduleId] = (SELECT Id FROM Schedule WHERE [Guid] = '717d75f1-644f-45a4-b25e-64652a270ad9'),
+[MeasurementClassificationValueId] = NULL
 WHERE [Guid] = '491061B7-1834-44DA-8EA1-BB73B2D52AD3'
 " );
 
