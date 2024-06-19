@@ -22,17 +22,9 @@
 
         <TextBox v-model="recipientTextFilter" label="Filter" placeholder="Filter by name, email or phone number" />
 
-        <Grid :definition="recipientsGridDefinition"
-              :data="recipientsGridData"
-              itemTerm="Recipient"
-              :keyField="getStringKey<CommunicationEntryRecipientBag>('personAliasGuid')"
-              :light="true"
-              rowClass="recipient-modal-row">
+        <Grid :definition="recipientsGridDefinition" :data="recipientsGridData" itemTerm="Recipient" :keyField="getStringKey<CommunicationEntryRecipientBag>('personAliasGuid')" :light="true" rowClass="recipient-modal-row">
 
-            <Column :name="getRecipientKey('name')"
-                    :field="getRecipientKey('name')"
-                    title="Name"
-                    :filter="textValueFilter">
+            <Column :name="getRecipientKey('name')" :field="getRecipientKey('name')" title="Name" :filter="textValueFilter">
                 <template #format="{ row }">
                     <div v-if="!(row as CommunicationEntryRecipientBag).isDeceased">
                         {{ (row as CommunicationEntryRecipientBag).name }}
@@ -44,9 +36,7 @@
                 </template>
             </Column>
 
-            <Column :name="getRecipientKey('isEmailAllowed')"
-                    :field="getRecipientKey('isEmailAllowed')"
-                    title="Email">
+            <Column :name="getRecipientKey('isEmailAllowed')" :field="getRecipientKey('isEmailAllowed')" title="Email">
                 <template #format="{ row }">
                     <span class="communication-medium-status">
                         <i :class="[
@@ -59,13 +49,11 @@
                                     ? 'text-success'
                                     : 'text-danger']"
                            :data-original-title="getTooltipRef((row as CommunicationEntryRecipientBag), 'email').value"
-                           :ref="applyTooltip"></i>&nbsp;{{ (row as CommunicationEntryRecipientBag).email }}</span>
+                           :ref="applyTooltip"></i><template v-if="breakpointHelper.isSmOrLarger">&nbsp;{{ (row as CommunicationEntryRecipientBag).email }}</template></span>
                 </template>
             </Column>
 
-            <Column :name="getRecipientKey('isSmsAllowed')"
-                    :field="getRecipientKey('isSmsAllowed')"
-                    title="SMS">
+            <Column :name="getRecipientKey('isSmsAllowed')" :field="getRecipientKey('isSmsAllowed')" title="SMS">
                 <template #format="{ row }">
                     <span class="communication-medium-status">
                         <i :class="[
@@ -76,14 +64,11 @@
                                     ? 'text-success'
                                     : 'text-danger']"
                            :data-original-title="getTooltipRef((row as CommunicationEntryRecipientBag), 'sms').value"
-                           :ref="applyTooltip"></i>&nbsp;{{ (row as CommunicationEntryRecipientBag).smsNumber }}
-                    </span>
+                           :ref="applyTooltip"></i><template v-if="breakpointHelper.isSmOrLarger">&nbsp;{{ (row as CommunicationEntryRecipientBag).smsNumber }}</template></span>
                 </template>
             </Column>
 
-            <Column :name="getRecipientKey('isPushAllowed')"
-                    :field="getRecipientKey('isPushAllowed')"
-                    title="Push">
+            <Column :name="getRecipientKey('isPushAllowed')" :field="getRecipientKey('isPushAllowed')" title="Push">
                 <template #format="{ row }">
                     <span class="communication-medium-status">
                         <i :class="[
@@ -99,10 +84,7 @@
                 </template>
             </Column>
 
-            <ButtonColumn name="removeRecipient"
-                          iconClass="fa fa-times"
-                          itemClass="grid-columncommand remove-button"
-                          @click="onRemoveRecipientClicked" />
+            <ButtonColumn name="removeRecipient" iconClass="fa fa-times" itemClass="grid-columncommand remove-button" @click="onRemoveRecipientClicked" />
         </Grid>
     </Modal>
 </template>
@@ -124,6 +106,7 @@
 <script setup lang="ts">
     import { PropType, computed, ref, Ref, watch } from "vue";
     import { MediumType } from "./types.partial";
+    import { useBreakpointHelper } from "./utils.partial";
     import Grid, { Column, ButtonColumn, textValueFilter } from "@Obsidian/Controls/grid";
     import Modal from "@Obsidian/Controls/modal.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -196,6 +179,8 @@
             createFieldDefinition(getStringKey<CommunicationEntryRecipientBag>("isPushAllowed")),
         ],
     };
+
+    const breakpointHelper = useBreakpointHelper();
 
     //#region Values
 
