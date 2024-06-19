@@ -650,15 +650,14 @@ function updateImageShapeFromField(shape: Konva.Image, field: LabelFieldBag, sur
     }
 
     const imageData = config.imageData;
-    const isInverted = asBoolean(config.isInverted);
     const brightness = toNumberOrNull(config.brightness) ?? 1;
-    const key = `${isInverted}:${brightness}:${imageData}`;
+    const key = `${brightness}:${imageData}`;
 
     // Update configured values.
     if (currentImage.dataset["originalSource"] !== key) {
         currentImage.dataset["originalSource"] = key;
 
-        convertImageDataToBlackAndWhite(imageData, brightness, isInverted).then(finalSrc => {
+        convertImageDataToBlackAndWhite(imageData, brightness).then(finalSrc => {
             // Only update if it hasn't been changed by another pass yet.
             if (currentImage.dataset["originalSource"] === key) {
                 if (finalSrc) {
@@ -672,6 +671,8 @@ function updateImageShapeFromField(shape: Konva.Image, field: LabelFieldBag, sur
             console.error(err);
         });
     }
+
+    shape.globalCompositeOperation(asBoolean(config.isInverted) ? "xor" : "source-over");
 }
 
 /**

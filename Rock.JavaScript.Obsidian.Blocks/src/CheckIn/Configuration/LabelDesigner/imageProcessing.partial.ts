@@ -6,11 +6,10 @@ import { blobToBase64 } from "./utils.partial";
  *
  * @param original The base-64 encoded string that contains the original image data.
  * @param brightness The brightness amount to apply.
- * @param invertColor Invert the white and black colors of the image.
  *
  * @returns A new string that is a base-64 representation of the new image.
  */
-export async function convertImageDataToBlackAndWhite(original: string, brightness: number, invertColor: boolean): Promise<string | undefined> {
+export async function convertImageDataToBlackAndWhite(original: string, brightness: number): Promise<string | undefined> {
     const image = document.createElement("img");
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
@@ -46,7 +45,7 @@ export async function convertImageDataToBlackAndWhite(original: string, brightne
     // Convert the image data to be black and transparent.
     for (let i = 0; i < imageData.data.length; i += 4) {
         if (imageData.data[i] < 128 && imageData.data[i + 3] >= 128) {
-            imageData.data[i] = imageData.data[i + 1] = imageData.data[i + 2] = invertColor ? 255 : 0;
+            imageData.data[i] = imageData.data[i + 1] = imageData.data[i + 2] = 0;
             imageData.data[i + 3] = 255;
         }
         else {
