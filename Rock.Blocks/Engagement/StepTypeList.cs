@@ -93,9 +93,6 @@ namespace Rock.Blocks.Engagement
 
         private static class PreferenceKey
         {
-            public const string FilterName = "filter-name";
-            public const string FilterSpansTime = "filter-spans-time";
-            public const string FilterAllowsMultiple = "filter-allows-multiple";
             public const string FilterActiveStatus = "filter-active-status";
         }
 
@@ -104,40 +101,10 @@ namespace Rock.Blocks.Engagement
         #region Fields
 
         private StepProgram _stepProgram;
-        private RockContext _rockContext;
 
         #endregion
 
         #region Properties
-
-        /// <summary>
-        /// Gets the name of the Step types to include in the results.
-        /// </summary>
-        /// <value>
-        /// The name of the steps to include in the results.
-        /// </value>
-        protected string FilterName => GetBlockPersonPreferences()
-            .GetValue( MakeKeyUniqueToStepProgram( PreferenceKey.FilterName ) );
-
-        /// <summary>
-        /// If true only Step Types with an end date will be included in the results.
-        /// </summary>
-        /// <value>
-        /// The Has EndDate filter.
-        /// </value>
-        protected bool? FilterSpansTime => GetBlockPersonPreferences()
-            .GetValue( MakeKeyUniqueToStepProgram( PreferenceKey.FilterSpansTime ) )
-            .AsBooleanOrNull();
-
-        /// <summary>
-        /// If true only Step Types which allows multiple step records per person will be included in the results.
-        /// </summary>
-        /// <value>
-        /// The allows multiple filter.
-        /// </value>
-        protected bool? FilterAllowsMultiple => GetBlockPersonPreferences()
-            .GetValue( MakeKeyUniqueToStepProgram( PreferenceKey.FilterAllowsMultiple ) )
-            .AsBooleanOrNull();
 
         /// <summary>
         /// Gets the IsActive status filter.
@@ -212,7 +179,7 @@ namespace Rock.Blocks.Engagement
             var stepProgram = GetStepProgram();
             if ( stepProgram != null )
             {
-                queryParams[PageParameterKey.StepProgramId] = stepProgram.IdKey.ToString();
+                queryParams[PageParameterKey.StepProgramId] = stepProgram.IdKey;
             }
 
             return new Dictionary<string, string>
@@ -225,30 +192,11 @@ namespace Rock.Blocks.Engagement
         /// <inheritdoc/>
         protected override IQueryable<StepType> GetListQueryable( RockContext rockContext )
         {
-            var queryable = new StepTypeService( rockContext )
-                .Queryable();
+            var queryable = new StepTypeService( rockContext ).Queryable();
             var stepProgramId = GetStepProgram()?.Id ?? 0;
 
             // Filter by: Step Program
             queryable = queryable.Where( x => x.StepProgramId == stepProgramId );
-
-            // Filter by: Name
-            if ( !string.IsNullOrWhiteSpace( FilterName ) )
-            {
-                queryable = queryable.Where( a => a.Name.Contains( FilterName ) );
-            }
-
-            // Filter by: Allow Multiple
-            if ( FilterAllowsMultiple.HasValue )
-            {
-                queryable = queryable.Where( a => a.AllowMultiple == FilterAllowsMultiple.Value );
-            }
-
-            // Filter by: Has Duration
-            if ( FilterSpansTime.HasValue )
-            {
-                queryable = queryable.Where( a => a.HasEndDate == FilterSpansTime.Value );
-            }
 
             // Filter by: Active
             switch ( FilterActiveStatus.ToUpperInvariant() )
@@ -272,7 +220,7 @@ namespace Rock.Blocks.Engagement
         protected override GridBuilder<StepType> GetGridBuilder()
         {
             // Retrieve the Step Type data models and create corresponding view models to display in the grid.
-            var stepService = new StepService( GetRockContext() );
+            var stepService = new StepService( RockContext );
 
             var startedStepsQry = stepService.Queryable();
             var completedStepsQry = stepService.Queryable().Where( x => x.StepStatus != null && x.StepStatus.IsCompleteStatus );
@@ -294,7 +242,7 @@ namespace Rock.Blocks.Engagement
                 .AddField( "allowMultiple", a => a.AllowMultiple )
                 .AddField( "startedCount", a => startedStepsQry.Count( s => s.StepTypeId == a.Id ) )
                 .AddField( "completedCount", a => completedStepsQry.Count( s => s.StepTypeId == a.Id ) )
-                .AddField( "isSecurityDisabled", a => !BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) );
+                .AddField( "isSecurityDisabled", _ => !BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) );
         }
 
         /// <summary>
@@ -316,9 +264,7 @@ namespace Rock.Blocks.Engagement
                     programId = PageParameter( PageParameterKey.StepProgramId ).AsInteger();
                 }
 
-                var rockContext = GetRockContext();
-
-                var stepProgramService = new StepProgramService( rockContext );
+                var stepProgramService = new StepProgramService( RockContext );
 
                 if ( programGuid != Guid.Empty )
                 {
@@ -331,15 +277,6 @@ namespace Rock.Blocks.Engagement
             }
 
             return _stepProgram;
-        }
-
-        /// <summary>
-        /// Gets a rock context, creates a new instance if a cached instance is not available.
-        /// </summary>
-        /// <returns></returns>
-        public RockContext GetRockContext()
-        {
-            return _rockContext ?? ( _rockContext = new RockContext() );
         }
 
         /// <summary>

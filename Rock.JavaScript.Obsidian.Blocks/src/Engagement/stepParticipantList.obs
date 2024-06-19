@@ -21,8 +21,11 @@
 
         <Column name="person"
                 title="Name"
+                field="person"
                 :filter="pickExistingValueFilter"
-                visiblePriority="xs">
+                :filterValue="getNameFilterValue"
+                visiblePriority="xs"
+                width="35%">
             <template #format="{ row }">
                 <div class="photo-icon photo-round photo-round-xs pull-left margin-r-sm"
                      ref="popOverEl"
@@ -45,24 +48,29 @@
                     title="Date Started"
                     field="dateStarted"
                     :filter="dateValueFilter"
+                    itemClass="grid-item-pull-left"
+                    width="170"
                     visiblePriority="md" />
 
         <DateColumn name="dateCompleted"
                     title="Date Completed"
                     field="dateCompleted"
                     :filter="dateValueFilter"
+                    itemClass="grid-item-pull-left"
+                    width="170"
                     visiblePriority="xs" />
 
         <TextColumn v-if="config.options?.isCampusColumnVisible"
                     name="campus"
                     title="Campus"
                     field="campus"
-                    :filter="textValueFilter"
+                    :filter="pickExistingValueFilter"
                     visiblePriority="md" />
 
         <Column name="stepStatus"
                 title="Status"
-                :filter="textValueFilter"
+                field="stepStatus"
+                :filter="pickExistingValueFilter"
                 :filterValue="getStepStatusFilterValue"
                 visiblePriority="xs">
 
@@ -91,6 +99,13 @@
                        v-model:visible="isGridSettingsVisible"
                        :stepStatusItems="config.options?.stepStatusItems ?? []" />
 </template>
+
+<style>
+.grid-item-pull-left {
+    flex-direction: column;
+    align-items: end;
+}
+</style>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
@@ -181,6 +196,15 @@
     */
     function getStepStatusFilterValue(row: Record<string, unknown>): string {
         return row["stepStatus"] as string;
+    }
+
+    /**
+    * Gets the filter value text to use for the name column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getNameFilterValue(row: Record<string, unknown>): string {
+        return row["fullName"] as string;
     }
 
     /**

@@ -101,9 +101,6 @@ let gridData: GridDataBag | undefined;
 
 const isGridSettingsVisible = ref(false);
 const gridSettings = ref<GridSettingsOptions>({
-    name: preferences.getValue(makeKeyUniqueToStepProgram(PreferenceKey.FilterName)),
-    spansTime: preferences.getValue(makeKeyUniqueToStepProgram(PreferenceKey.FilterSpansTime)),
-    allowsMultiple: preferences.getValue(makeKeyUniqueToStepProgram(PreferenceKey.FilterAllowsMultiple)),
     activeStatus: preferences.getValue(makeKeyUniqueToStepProgram(PreferenceKey.FilterActiveStatus)),
 });
 
@@ -132,10 +129,7 @@ async function loadGridData(): Promise<GridDataBag> {
 
 /** `true` if the grid settings is performing any filtering. */
 const hasSettingsFilters = computed((): boolean => {
-    return !!gridSettings.value.name
-        || !!gridSettings.value.spansTime
-        || !!gridSettings.value.allowsMultiple
-        || !!gridSettings.value.activeStatus;
+    return !!gridSettings.value.activeStatus;
 });
 
 /**
@@ -236,9 +230,6 @@ function onClickGridSetting(): void {
 // #endregion
 
 watch(gridSettings, async () => {
-    preferences.setValue(makeKeyUniqueToStepProgram(PreferenceKey.FilterName), gridSettings.value.name ?? "");
-    preferences.setValue(makeKeyUniqueToStepProgram(PreferenceKey.FilterSpansTime), gridSettings.value.spansTime ?? "");
-    preferences.setValue(makeKeyUniqueToStepProgram(PreferenceKey.FilterAllowsMultiple), gridSettings.value.allowsMultiple ?? "");
     preferences.setValue(makeKeyUniqueToStepProgram(PreferenceKey.FilterActiveStatus), gridSettings.value.activeStatus ?? "");
 
     await preferences.save();
