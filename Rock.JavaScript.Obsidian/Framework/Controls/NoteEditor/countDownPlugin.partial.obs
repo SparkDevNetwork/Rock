@@ -6,6 +6,28 @@
 </template>
 
 <script setup lang="ts">
+    /**
+     * CountDownPlugin - Adds a count-down badge component wherever this plugin is placed.
+     * The badge displays the character count remaining that can be entered.
+     *
+     * Note: This plugin does NOT validate or limit the number of characters that can be entered.
+     * Note: This plugin can display negative values.
+     *
+     * @example
+     * <!--
+     *      someEditorHost.obs - This example shows just enough code to wire up the plugin.
+     *      FYI, the Vue - Official extension complains if template and script tags are used in comments,
+     *      so using (template) and (script) for now.
+     * -->
+     * (template)
+     *   <CountDownPlugin :modelValue="internalValue"
+     *                    :countDownMaxChars="countDownMaxChars" />
+     * (/template)
+     *
+     * (script setup lang="ts")
+     *   import CountDownPlugin from "./NoteEditor/countDownPlugin.partial.obs";
+     * (/script)
+     */
     import { PropType, computed } from "vue";
     import Badge from "@Obsidian/Controls/badge.obs";
     import { BadgeType } from "@Obsidian/Enums/Controls/badgeType";

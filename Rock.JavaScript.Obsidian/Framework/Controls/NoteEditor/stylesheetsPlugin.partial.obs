@@ -1,5 +1,40 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <script setup lang="ts">
+    /**
+     * StylesheetsPlugin - Adds stylesheets (<style> tag) support to a note editor.
+     *
+     * <style> tags added to the note editor are internally scoped by this plugin so
+     * they do not bleed out to other parts of the page. To accomplish this, the
+     * plugin requires two input properties that tell it which elements to treat as
+     * the "html" and "body" CSS selectors within the <style> tags.
+     *
+     * Note: This plugin does not add a toolbar button.
+     *
+     * @example
+     * <!--
+     *      someEditorHost.obs - This example shows just enough code to wire up the plugin.
+     *      FYI, the Vue - Official extension complains if template and script tags are used in comments,
+     *      so using (template) and (script) for now.
+     * -->
+     * (template)
+     *   <div id="uniqueWrapperId">
+     *     <div id="uniqueEditorId">
+     *       <StylesheetsPlugin htmlCssReplacementSelector="uniqueWrapperId"
+     *                          bodyCssReplacementSelector="uniqueEditorId" />
+     *     </div>
+     *   </div>
+     * (/template)
+     *
+     * (script setup lang="ts")
+     *   import StylesheetsPlugin from "./NoteEditor/stylesheetsPlugin.partial.obs";
+     *
+     *   // The host must provide the plugins feature.
+     *   const pluginManager = providePluginsFeature({
+     *       editorInstance: computed(() => tinyMceInstance.value),
+     *       toolbarElement: computed(() => toolbarElement.value)
+     *   });
+     * (/script)
+     */
     import { PropType, ref, watch } from "vue";
     import { usePluginHelper } from "./utils.partial";
     import { Editor, EditorEvent, EventDispatcher, Events, RawEditorOptions } from "@Obsidian/Libs/tinymce";
@@ -288,7 +323,7 @@
     watch(editorInstance, () => {
         // Dispose any dependencies.
         dispose();
-        
+
         if (editorInstance.value) {
             init(editorInstance.value);
         }

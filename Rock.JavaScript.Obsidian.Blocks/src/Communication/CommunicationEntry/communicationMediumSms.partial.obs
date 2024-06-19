@@ -77,7 +77,8 @@
                                       :isCountDownShown="mediumOptions.characterLimit > 0"
                                       :countDownMaxChars="mediumOptions.characterLimit"
                                       :mergeFields="['GlobalAttribute', 'Rock.Model.Person']"
-                                      toolbarLabel="Message" />
+                                      toolbarLabel="Message"
+                                      rules="required" />
 
                 </div>
 

@@ -12,6 +12,59 @@
 </template>
 
 <script setup lang="ts">
+    /**
+     * EditSourceCodePlugin - Adds a toolbar button for editing the source code of the editor.
+     *
+     * @example
+     * <!--
+     *      someEditorHost.obs - This example shows just enough code to wire up the plugin.
+     *      FYI, the Vue - Official extension complains if template and script tags are used in comments,
+     *      so using (template) and (script) for now.
+     * -->
+     * (template)
+    *    <EditSourceCodePlugin v-model="internalValue"
+    *                          :disabled="disabled"
+    *                          :editorHeight="editorHeight"
+    *                          :mergeFields="mergeFields"
+    *                          ref="editSourceCodePlugin"
+    *                          :startInCodeEditorMode="startInCodeEditorMode">
+    *      <template #default="{ isEditorShown }">
+    *        <div v-show="!isEditorShown" id="uniqueEditorId"></div>
+    *      </template>
+    *    </EditSourceCodePlugin>
+     * (/template)
+     *
+     * (script setup lang="ts")
+     *   import EditSourceCodePlugin from "./NoteEditor/editSourceCodePlugin.partial.obs";
+     *   ...
+     *
+     *   const editSourceCodePlugin = ref<InstanceType<typeof EditSourceCodePlugin> | undefined>();
+     *   ...
+     *
+     *   // The host must provide the plugins feature.
+     *   const pluginManager = providePluginsFeature({
+     *       editorInstance: computed(() => tinyMceInstance.value),
+     *       toolbarElement: computed(() => toolbarElement.value)
+     *   });
+     *   ...
+     *
+     *   // Initialize the editor.
+     *   onMounted(() => {
+     *     ...
+     *
+     *     tinymce.init({
+     *       // The edit source code button can be placed anywhere in this configuration string.
+     *       // Here, the toolbar will display
+     *       // the edit source code button, followed by a separator character,
+     *       // then the undo and redo buttons.
+     *       // Reference: https://www.tiny.cloud/docs/tinymce/6/toolbar-configuration-options/#example-grouped-toolbar
+     *       toolbar: `${editSourceCodePlugin.value?.id} | undo redo`
+     *     });
+     *
+     *     ...
+     *   });
+     * (/script)
+     */
     import { PropType, ref, watch } from "vue";
     import { getToolbarButton, setEditorEnabled, usePluginHelper } from "./utils.partial";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";

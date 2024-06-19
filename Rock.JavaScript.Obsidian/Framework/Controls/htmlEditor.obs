@@ -18,7 +18,7 @@
                                                   :mergeFields="mergeFields"
                                                   ref="editSourceCodePlugin"
                                                   :startInCodeEditorMode="startInCodeEditorMode">
-                                <template v-slot="{ isEditorShown }">
+                                <template #default="{ isEditorShown }">
                                     <div v-show="!updateIsEditorShown(isEditorShown)"
                                          class="note-editable"
                                          :id="assignEditorId(uniqueId)"

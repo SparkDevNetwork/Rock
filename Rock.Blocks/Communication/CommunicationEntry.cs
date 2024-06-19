@@ -476,37 +476,6 @@ namespace Rock.Blocks.Communication
                     communication.Status = CommunicationStatus.Draft;
                     rockContext.SaveChanges();
 
-                    // TODO JMH Implement the status and label in the Obsidian code.
-                    //var status = communication != null ? communication.Status : CommunicationStatus.Draft;
-                    //switch ( status )
-                    //{
-                    //    case CommunicationStatus.Transient:
-                    //    case CommunicationStatus.Draft:
-                    //        {
-                    //            hlStatus.Text = "Draft";
-                    //            hlStatus.LabelType = LabelType.Default;
-                    //            break;
-                    //        }
-                    //    case CommunicationStatus.PendingApproval:
-                    //        {
-                    //            hlStatus.Text = "Pending Approval";
-                    //            hlStatus.LabelType = LabelType.Warning;
-                    //            break;
-                    //        }
-                    //    case CommunicationStatus.Approved:
-                    //        {
-                    //            hlStatus.Text = "Approved";
-                    //            hlStatus.LabelType = LabelType.Success;
-                    //            break;
-                    //        }
-                    //    case CommunicationStatus.Denied:
-                    //        {
-                    //            hlStatus.Text = "Denied";
-                    //            hlStatus.LabelType = LabelType.Danger;
-                    //            break;
-                    //        }
-                    //}
-
                     var responseBag = new CommunicationEntrySendResponseBag
                     {
                         CommunicationGuid = communication.Guid,
@@ -670,7 +639,6 @@ namespace Rock.Blocks.Communication
                 {
                     rockContext.SaveChanges();
 
-                    // TODO JMH Remove the "Edit" page param on the client and reload the page.
                     return ActionOk( new CommunicationEntrySendResponseBag
                     {
                         RedirectToViewMode = true,
@@ -737,10 +705,8 @@ namespace Rock.Blocks.Communication
                     CommunicationStatus = communication.Status,
                     Message = responseMessage,
                     RedirectToViewMode = false,
-                    // TODO JMH The "View Communication" link should use the communication ID in its URL.
                     CommunicationId = communication.Id,
                     CommunicationGuid = communication.Guid,
-                    // TODO JMH only show the Link if there is a CommunicationDetail block type on this page.
                     HasDetailBlockOnCurrentPage = this.PageCache.Blocks.Any( a => a.BlockType.Guid == Rock.SystemGuid.BlockType.COMMUNICATION_DETAIL.AsGuid() ),
                 } );
             }

@@ -4,7 +4,7 @@
                :title="config.title ?? 'New Communication'"
                titleIconCssClass="fa fa-comment-o"
                type="block">
-               
+
             <template v-if="config.mode === Mode.Full && statusLabel" #subheaderRight>
                 <HighlightLabel :labelType="statusLabelCssClass">{{ statusLabel }}</HighlightLabel>
             </template>
@@ -58,7 +58,7 @@
 
                     <NotificationBox alertType="success">{{ resultMessage }}</NotificationBox>
                     <br />
-                    <a :href="viewCommunicationUrl">View Communication</a>
+                    <a v-if="isViewCommunicationShown" :href="viewCommunicationUrl">View Communication</a>
                 </div>
             </template>
         </Panel>
@@ -100,6 +100,7 @@
     const mediums = computed<ListItemBag[]>(() => config.mediums ?? []);
     const selectedMediumEntityTypeGuidOrEmptyString = ref<string>(mediums.value[0]?.value ?? "");
     const resultMessage = ref<string | null | undefined>("");
+    const isViewCommunicationShown = ref<boolean>(false);
     const viewCommunicationUrl = ref<string>("#");
     const disabled = ref<boolean>(false);
     const recipients = ref<CommunicationEntryRecipientBag[]>(config.communication?.recipients ?? []);
@@ -175,6 +176,9 @@
         status.value = value.communicationStatus ?? CommunicationStatus.Draft;
         resultMessage.value = value.message;
         areResultsShown.value = true;
+
+        // Only show the link to view the communcation if the current page has a detail block.
+        isViewCommunicationShown.value = value.hasDetailBlockOnCurrentPage;
     }
 
     //#endregion

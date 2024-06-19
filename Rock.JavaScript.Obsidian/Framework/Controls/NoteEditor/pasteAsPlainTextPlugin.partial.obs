@@ -13,6 +13,52 @@
 </template>
 
 <script setup lang="ts">
+    /**
+     * PasteAsPlainTextPlugin - Adds a toolbar button for pasting content as plain text.
+     *
+     * @example
+     * <!--
+     *      someEditorHost.obs - This example shows just enough code to wire up the plugin.
+     *      FYI, the Vue - Official extension complains if template and script tags are used in comments,
+     *      so using (template) and (script) for now.
+     * -->
+     * (template)
+     *   <div id="uniqueEditorId">
+     *     <PasteAsPlainTextPlugin ref="pasteAsPlainTextPlugin" />
+     *   </div>
+     * (/template)
+     *
+     * (script setup lang="ts")
+     *   import PasteAsPlainTextPlugin from "./NoteEditor/pasteAsPlainTextPlugin.partial.obs";
+     *   ...
+     *
+     *   const pasteAsPlainTextPlugin = ref<InstanceType<typeof PasteAsPlainTextPlugin> | undefined>();
+     *   ...
+     *
+     *   // The host must provide the plugins feature.
+     *   const pluginManager = providePluginsFeature({
+     *       editorInstance: computed(() => tinyMceInstance.value),
+     *       toolbarElement: computed(() => toolbarElement.value)
+     *   });
+     *   ...
+     *
+     *   // Initialize the editor.
+     *   onMounted(() => {
+     *     ...
+     *
+     *     tinymce.init({
+     *       // The paste as plain text button can be placed anywhere in this configuration string.
+     *       // Here, the toolbar will display
+     *       // the paste as plain text button, followed by a separator character,
+     *       // then the undo and redo buttons.
+     *       // Reference: https://www.tiny.cloud/docs/tinymce/6/toolbar-configuration-options/#example-grouped-toolbar
+     *       toolbar: `${pasteAsPlainTextPlugin.value?.id} | undo redo`
+     *     });
+     *
+     *     ...
+     *   });
+     * (/script)
+     */
     import { ref, watch } from "vue";
     import { getToolbarButton, usePluginHelper } from "./utils.partial";
     import TextBox from "@Obsidian/Controls/textBox.obs";
