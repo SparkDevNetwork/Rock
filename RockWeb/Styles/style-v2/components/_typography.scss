@@ -11,7 +11,7 @@ p, .p, .text-primary, .text-small {
 /* HEADING */
 h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     font-weight: var(--font-weight-semibold);
-    line-height: var(--line-height-compact);
+    line-height: var(--line-height-compact) !important;
 }
 
 h1, .h1 {
@@ -53,4 +53,13 @@ p, .p, .text-primary {
     font-size:   var(--font-size-small);
 }
 
+h1.condensed,
+h2.condensed,
+h3.condensed,
+h4.condensed,
+h5.condensed,
+h6.condensed {
+  margin-top: 0;
+  margin-bottom: 0;
+}
 

@@ -1,0 +1,917 @@
+//TABLE STYLE 
+
+
+// =============================
+// Table of Content           
+//  + 
+// =============================
+
+
+// ===================== BASE STYLE =====================
+table {
+  background-color: transparent;
+  margin-bottom: 0;
+
+  // Table cell sizing
+  col[class*="col-"] {
+    position: static; // Prevent border hiding in Firefox and IE9-11 (see https://github.com/twbs/bootstrap/issues/11623)
+    display: table-column;
+    float: none;
+  }
+
+  td,
+  th {
+    &[class*="col-"] {
+      position: static; // Prevent border hiding in Firefox and IE9-11 (see https://github.com/twbs/bootstrap/issues/11623)
+      display: table-cell;
+      float: none;
+    }
+  }
+}
+
+caption {
+  padding-top: var(--spacing-small);
+  padding-bottom: var(--spacing-small);
+  color: var(--color-interface-soft);
+  text-align: left;
+}
+
+th {
+  text-align: left;
+}
+
+// Baseline styles
+.table {
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: var(--spacing-large);
+
+  // Cells
+  > thead,
+  > tbody,
+  > tfoot {
+    > tr {
+      > th,
+      > td {
+        padding: var(--spacing-small);
+        line-height: var(--line-height-normal);
+        vertical-align: top;
+        border-top: 1px solid var(--color-interface-soft);
+      }
+    }
+  }
+
+  thead {
+    th.required::after{
+      margin-left: 4px;
+      font-family: 'FontAwesome';
+      font-size: 6px;
+      font-weight: 900;
+      color: #eca9a7;
+      vertical-align: super;
+      content: "\f111";
+    }
+  }
+
+  tbody > tr > td {
+    color: var(--color-interface-strong);
+  }
+
+  > thead > tr > th {
+    vertical-align: bottom;
+    border-bottom: 2px solid var(--color-interface-soft);
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-interface-stronger);
+    background-color: var(--color-interface-softer);
+    border-color: var(--color-interface-soft);
+
+    > a:not(.btn) {
+      display: inline;
+      color: var(--color-interface-stronger);
+      &::after {
+        display: inline-block;
+        padding-left: 5px;
+        margin-right: -14px;
+        font-family: 'FontAwesome';
+        font-weight: var(--font-weight-bold);
+        color: var(--color-interface-strong);
+        text-decoration: none;
+        content: '/f0dc';
+        opacity: 0;
+      }
+    }
+
+    &:hover a:not(.btn)::after {
+      opacity: 1;
+    }
+  
+    // sorting
+    &.descending a:not(.btn)::after {
+      color: var(--color-interface-stronger);
+      content: '\f0dd';
+      opacity: 1;
+    }
+  
+    &.ascending a:not(.btn)::after {
+      color: var(--color-interface-stronger);
+      content: '/f0de';
+      opacity: 1;
+    }
+  }
+
+  // Remove top border from thead by default
+  > caption + thead,
+  > colgroup + thead,
+  > thead:first-child {
+    > tr:first-child {
+      > th,
+      > td {
+        border-top: 0;
+      }
+    }
+  }
+
+  // Account for multiple tbody instances
+  > tbody + tbody {
+    border-top: 2px solid var(--color-interface-soft);
+  }
+
+  &.table-hover >tbody > tr:hover >td{
+    color: var(--color-interface-stronger);
+    background-color: rgba(85, 150, 230, .1);
+  }
+
+  &.table-light > thead > tr > th {
+    color: var(--color-interface-stronger);;
+    background-color: transparent;
+    border-color: var(--color-interface-strong); //Lighten the ui stronger by 40% when aviable;
+  }
+
+  // Nesting
+  .table {
+    background-color: var(--color-interface-softest);
+  }
+
+  & .color-field {
+    width: 4px;
+    padding: 0;
+  
+    & + th {
+      border-left-width: 0;
+    }
+  }
+
+}
+
+td.grid-select-cell {
+  cursor: pointer;
+}
+
+td.wrap-contents {
+  -webkit-hyphens: auto;
+  -moz-hyphens: auto;
+
+  -ms-hyphens: auto;
+  hyphens: auto;
+  // keep cells from scrolling off screen
+  -ms-word-break: break-all;
+  word-break: break-all;
+}
+
+// Add Border to last row
+.table-inline:not(.table-hide-last-border) > tbody > tr:last-child > td {
+  border-bottom: 1px solid var(--color-interface-soft);
+}
+
+// No Border on First row
+.table-inline > tbody > tr:first-child > td {
+  border-top: 0;
+}
+
+// Condensed table w/ half padding
+.table-condensed {
+  > thead,
+  > tbody,
+  > tfoot {
+    > tr {
+      > th,
+      > td {
+        padding: var(--spacing-tiny);
+      }
+    }
+  }
+}
+
+// Bordered version
+.table-bordered {
+  border: 1px solid var(--color-interface-soft);
+  > thead,
+  > tbody,
+  > tfoot {
+    > tr {
+      > th,
+      > td {
+        border: 1px solid var(--color-interface-soft);
+      }
+    }
+  }
+  > thead > tr {
+    > th,
+    > td {
+      border-bottom-width: 2px;
+    }
+  }
+}
+
+// Zebra-striping
+.table-striped {
+  > tbody > tr:nth-of-type(odd) {
+    color:            var(--color-interface-stronger);
+    background-color: var(--color-interface-medium); // TODO darken the ui soft by 3%
+  }
+  > tbody > tr:nth-of-type(even) {
+    color:            var(--color-interface-medium);
+    background-color: var(--color-interface-stronger);
+  }
+}
+
+// Hover effect
+.table-hover {
+  > tbody > tr:hover {
+    background-color: var(--color-interface-soft);
+  }
+}
+
+// Core Table
+.table-wrapper {
+  .btn-toolbar {
+    display:  none;
+  }
+}
+
+.table-light {
+
+  thead th {
+    font-weight:        var(--font-weight-bold);
+    color:              var(--color-interface-stronger);;
+    background-color:   inherit;
+  }
+
+  tfoot td {
+    background-color: inherit;
+
+    .grid-actions a {
+      border-color:   transparent;
+      border-style:   none;
+      border-width:   0;
+      border-radius:  0;
+      box-shadow:     none;
+    }
+  }
+
+  .grid-columncommand {
+    width:      42px;
+    min-width:  42px;
+  }
+}
+
+.table-padded {
+  td,
+  th {
+    padding:  12px !important;
+  }
+}
+
+.hide-row-border {
+  tbody > tr:first-child > td,
+  tbody > tr:first-child > th {
+    border-width: 0;
+  }
+}
+
+.table-empty {
+  opacity: .7;
+}
+
+// ===================== END BASE STYLE =====================
+
+
+// ======================= ALTERNATIVE STYLE =======================
+// Table backgrounds
+.table > thead > tr,
+.table > tbody > tr,
+.table > tfoot > tr {
+  > td.active,
+  > th.active,
+  &.active > td,
+  &.active > th {
+    background-color: var(--color-interface-softer);
+  }
+}
+
+.table-hover > tbody > tr {
+  > td.active:hover,
+  > th.active:hover,
+  &.active:hover > td,
+  &:hover > .active,
+  &.active:hover > th {
+    background-color: var(--color-interface-softer); // TODO darken by 5% 
+  }
+}
+
+//success
+.table > thead > tr,
+.table > tbody > tr,
+.table > tfoot > tr {
+  > td.success,
+  > th.success,
+  &.success > td,
+  &.success > th {
+    background-color: var(--color-success-soft);
+  }
+}
+
+.table-hover > tbody > tr {
+  > td.success:hover,
+  > th.success:hover,
+  &.success:hover > td,
+  &:hover > .success,
+  &.success:hover > th {
+    background-color: var(--color-success-soft); //TODO Darken by 5%
+  }
+}
+
+// info
+.table > thead > tr,
+.table > tbody > tr,
+.table > tfoot > tr {
+  > td.info,
+  > th.info,
+  &.info > td,
+  &.info > th {
+    background-color: var(--color-info-soft);
+  }
+}
+
+.table-hover > tbody > tr {
+  > td.info:hover,
+  > th.info:hover,
+  &.info:hover > td,
+  &:hover > .info,
+  &.info:hover > th {
+    background-color: var(--color-info-soft); //TODO Darken by 5%
+  }
+}
+
+// warning
+.table > thead > tr,
+.table > tbody > tr,
+.table > tfoot > tr {
+  > td.warning,
+  > th.warning,
+  &.warning > td,
+  &.warning > th {
+    background-color: var(--color-warning-soft);
+  }
+}
+
+.table-hover > tbody > tr {
+  > td.warning:hover,
+  > th.warning:hover,
+  &.warning:hover > td,
+  &:hover > .warning,
+  &.warning:hover > th {
+    background-color: var(--color-warning-soft); //TODO Darken by 5%
+  }
+}
+
+// danger
+.table > thead > tr,
+.table > tbody > tr,
+.table > tfoot > tr {
+  > td.danger,
+  > th.danger,
+  &.danger > td,
+  &.danger > th {
+    background-color: var(--color-danger-soft);
+  }
+}
+
+.table-hover > tbody > tr {
+  > td.danger:hover,
+  > th.danger:hover,
+  &.danger:hover > td,
+  &:hover > .danger,
+  &.danger:hover > th {
+    background-color: var(--color-danger-soft); //TODO Darken by 5%
+  }
+}
+// ===================== END ALTERNATIVE STYLE =====================
+
+
+// ======================= RESPONSIVE TABLES =======================
+.table-responsive {
+  min-height: .01%; // Workaround for IE9 bug (see https://github.com/twbs/bootstrap/issues/14837)
+  overflow-x: auto;
+
+  @media screen and (max-width: $screen-small) {
+    width: 100%;
+    margin-bottom: calc(var(--spacing-large) * .75);
+    overflow-y: hidden;
+    -ms-overflow-style: -ms-autohiding-scrollbar;
+    border: 1px solid var(--color-interface-soft);
+
+    // Tighten up spacing
+    > .table {
+      margin-bottom: 0;
+
+      // Ensure the content doesn't wrap
+      > thead,
+      > tbody,
+      > tfoot {
+        > tr {
+          > th,
+          > td {
+            white-space: nowrap;
+          }
+        }
+      }
+    }
+
+    // Special overrides for the bordered tables
+    > .table-bordered {
+      border: 0;
+
+      // Nuke the appropriate borders so that the parent can handle them
+      > thead,
+      > tbody,
+      > tfoot {
+        > tr {
+          > th:first-child,
+          > td:first-child {
+            border-left: 0;
+          }
+          > th:last-child,
+          > td:last-child {
+            border-right: 0;
+          }
+        }
+      }
+
+      // Only nuke the last row's bottom-border in `tbody` and `tfoot` since
+      // chances are there will be only one `tr` in a `thead` and that would
+      // remove the border altogether.
+      > tbody,
+      > tfoot {
+        > tr:last-child {
+          > th,
+          > td {
+            border-bottom: 0;
+          }
+        }
+      }
+
+    }
+  }
+}
+// ===================== END RESPONSIVE TABLES =====================
+
+
+// ===================== TABLE GRID =====================
+.grid {
+  margin-bottom: 15px;
+
+  .grid-table {
+    border: 1px solid var(--color-interface-softer);
+  }
+
+  .grid-table.table-light {
+    border: 0;
+  }
+}
+
+.grid.grid-panel {
+  th:first-child,
+  td:first-child {
+    border-left: 0;
+  }
+
+  th:last-child,
+  td:last-child {
+    border-right: 0;
+  }
+  .grid-table {
+    border: 0 !important;
+  }
+
+  tfoot > tr:last-child {
+    td:first-child {
+      border-bottom-left-radius: var(--rounded-small);
+    }
+
+    td:last-child {
+      border-bottom-right-radius: var(--rounded-small);
+    }
+  }
+}
+
+// rwd responsive table override
+.grid-panel .table-responsive[data-pattern="priority-columns"],
+.table-responsive.table-no-border {
+  border: 0;
+}
+
+.table-responsive[data-pattern="priority-columns"] {
+  position: static; // the default for this is relative, but this causes the scrollbar to always show until you resize the window, then it goes away
+}
+
+
+// Filter
+.grid-filter {
+  padding: 0;
+  color: var(--color-interface-stronger);
+  background-color: var(--color-interface-softer);
+  // border-bottom: 1px solid var(--color-interface-softer);
+  //border-radius: var(--rounded-small);
+
+  header {
+    position: absolute;
+    display: inline;
+    cursor: pointer;
+    border-radius: var(--rounded-small) var(--rounded-small) 0 0;
+
+    h3 {
+      display: inline;
+      margin: 0 2px 0 6px;
+      font-size: var(--font-size-small);
+      font-weight: var(--font-weight-light);
+      line-height: 16px;
+    }
+
+    fieldset {
+      margin-bottom: 0;
+    }
+  }
+
+  .btn-filter-toggle {
+    position: absolute;
+    z-index: 9; // Stack behind Calendars
+    margin: var(--spacing-small);
+    color: var(--color-interface-medium);
+    text-decoration: none;
+    background: var(--color-interface-softest);
+
+    &.is-open {
+      background: var(--color-interface-softer);
+    }
+  }
+
+  h4 {
+    margin: 0;
+    font-size: var(--font-size-h5);
+    font-weight: 400;
+  }
+
+  .grid-filter-entry,
+  .grid-filter-overview fieldset {
+    padding: var(--spacing-medium);
+    padding-top: 37px;
+    border-bottom: 1px solid var(--color-interface-softer); //TODO darken softer by 10%
+  }
+
+  // adjust the background color of pickers in the filters
+  .picker .picker-label {
+    color: var(--color-interface-stronger);
+  }
+}
+
+
+.grid-filter-entry legend + .control-group {
+  margin-top: 0;
+}
+
+// pagination
+.grid-paging {
+  padding: 5px 0;
+
+  .grid-pager {
+    float: right;
+    margin-top: 0;
+    margin-bottom: 0;
+
+    li {
+      > a {
+        min-width: 23px;
+        padding: 5px 12px;
+        margin: 0 8px 0 0;
+        color: var(--color-interface-stronger);
+        text-align: center;
+        background-color: transparent;
+        border-color: transparent;
+      }
+
+      &.disabled > a {
+        cursor: default;
+      }
+
+      &.active > a {
+        color: var(--color-interface-strong);
+        background-color: var(--color-interface-softer);
+        border-color: var(--color-interface-strong);
+      }
+    }
+  }
+
+  .grid-pagesize {
+    float: left;
+    margin: 0 calc(var(--spacing-medium) / 2) 0 0;
+  }
+
+  .pagination-text {
+    float: left;
+    font-size: var(--font-size-small);
+  }
+
+  .grid-itemcount {
+    float: left;
+    margin-top: 7px;
+    margin-left: 10px;
+    font-size: var(--font-size-small);
+  }
+}
+
+// columns
+td.grid-col-actions {
+  text-align: right;
+}
+
+// actions
+.grid-actions {
+  text-align: right;
+  background-color: var(--color-interface-softest);
+
+  .btn {
+    margin-left: 8px;
+  }
+
+  .btn-grid-action {
+    color: var(--color-interface-medium);
+    background-color: transparent;
+    border-color: transparent;
+  }
+
+  .btn-grid-custom-action {
+    margin-bottom: 8px;
+  }
+}
+
+// If the grid has a filter, make sure there's space for the filter toggle
+.grid-filter + .table-responsive .grid-actions:empty {
+  height: 28px;
+}
+
+
+.panel-section .table-light,
+.well .table-light {
+  > tfoot > tr > td {
+    background-color: var(--color-interface-soft);
+  }
+}
+
+// Column Types
+.grid-select-field {
+
+  .checkbox,
+  .radio {
+    padding-left: 0 !important;
+    margin: 0 !important;
+
+    label {
+      position: relative;
+      display: block;
+      width: var(--spacing-large);
+      padding: 0;
+      margin: 0 auto;
+    }
+
+    input {
+      float: none;
+      height: 100%;
+      margin: 0;
+      vertical-align: middle;
+    }
+  }
+}
+
+.grid-table {
+  > thead > tr > th,
+  > tbody > tr > td {
+    // get buttons and text columns to look good together
+    padding: 12px;
+
+    &.grid-columncommand {
+      min-width: 34px;
+    }
+
+    &.grid-columnreorder {
+      width: 48px;
+      min-width: 48px;
+      padding-top: var(--spacing-medium);
+
+      a {
+        color:var(--color-interface-strong); // TODO lighten the ui stronger by 20% when color-mix() is available
+      }
+    }
+  }
+
+  > tbody > tr > td.grid-columncommand {
+    padding: 6px;
+  }
+}
+
+.table{
+
+  .grid-icon img {
+    width: 100%;
+    max-width: 120px;
+  }
+
+  > thead > tr.grid-header-bold {
+    th {
+      color:            var(--color-interface-stronger);;
+      vertical-align:   top !important;
+      background-color: var(--color-interface-softest);;
+      border-color:     var(--color-interface-softest); // TODO lighten ui softest by 5%
+    }
+  }
+
+  > tbody > tr.grid-row-bold {
+    td {
+      color: var(--color-interface-stronger);;
+      vertical-align: top !important;
+      background-color: var(--color-interface-softest);;
+    }
+
+    &:hover td {
+      color: var(--color-interface-stronger) !important;
+      background-color: var(--color-interface-softest); //TODO lightne ui softest by 10%
+    }
+  }
+
+
+
+  > tbody > tr > td.grid-field,
+  > thead > tr > th.grid-select-field,
+  > tbody > tr > td.grid-select-field {
+    padding: 0 12px;
+    vertical-align: middle;
+  }
+
+  > tbody > tr.grid-section-header {
+    > td,
+    &:hover > td {
+      font-size: var(--font-size-h5);
+      font-weight: var(--font-weight-bold);
+      color: var(--color-interface-stronger);
+      background-color: var(--color-interface-softest);
+    }
+  }
+
+}
+
+.grid-select-cell {
+  .photo-icon {
+    display: inline-block;
+    width: var(--spacing-large);
+    height: var(--spacing-large);
+    vertical-align: top;
+  }
+
+  .grid-img {
+    width: 200px;
+  }
+}
+// ===================== END TABLE GRID =====================
+
+
+tr.row-highlight {
+  td {
+    color: var(--color-interface-stronger) !important;
+    background-color: var(--color-interface-soft) !important;
+  }
+}
+
+// inactive row
+.table > tbody > tr.is-inactive {
+  > td {
+    color: var(--color-interface-medium); //TODO lightent ui medium by 30%
+  }
+}
+
+.table > tbody > tr.is-inactive-person {
+  > td {
+    color: var(--color-interface-medium); // TODO lightne ui medium by 30%
+  }
+}
+
+.table > tbody > tr.is-deceased {
+  > td {
+    color: var(--color-danger-strong);
+  }
+}
+
+// Responsive Columns
+// unlike Bootstrap's original .table-responsive, this is applied for all widths. (i.e. NOT only applied <768px)
+.table-responsive {
+  //position: relative;  // commented out to get pop-ups from being trimmed JME 10/8/2015
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  -ms-overflow-style: -ms-autohiding-scrollbar;
+
+  // If .table-responsive is inside of a grid assume that the block will style correctly
+  .grid & {
+    margin-bottom: 0;
+    border: 0;
+  }
+
+  // classes to show and hide columns based on their priority
+  th[data-priority],
+  td[data-priority] {
+    display: none;
+  }
+
+  th[data-priority="1"],
+  td[data-priority="1"] {
+    display: table-cell;
+  }
+
+  @media screen and (min-width: 480px) {
+    th[data-priority="2"],
+    td[data-priority="2"] {
+      display: table-cell;
+    }
+  }
+
+  @media screen and (min-width: 640px) {
+    th[data-priority="3"],
+    td[data-priority="3"] {
+      display: table-cell;
+    }
+  }
+
+  @media screen and (min-width: 800px) {
+    th[data-priority="4"],
+    td[data-priority="4"] {
+      display: table-cell;
+    }
+  }
+
+  @media screen and (min-width: 960px) {
+    th[data-priority="5"],
+    td[data-priority="5"] {
+      display: table-cell;
+    }
+  }
+
+  @media screen and (min-width: 1120px) {
+    th[data-priority="6"],
+    td[data-priority="6"] {
+      display: table-cell;
+    }
+  }
+}
+
+
+// ======================= PRINT STYLES (OBSIDIAN) =======================
+@media print {
+
+  /* Hide grid actions */
+  .grid-actions,
+  .btn-grid-action {
+    display: none;
+  }
+
+  .grid-header-separator,
+  .grid-header-fill {
+      display: none;
+  }
+
+  /* Unhide all of the columns */
+  .grid-obsidian .d-none {
+    display: block !important;
+  }
+
+  /* Hide the checkbox column */
+  .grid-select-field {
+    display: none;
+  }
+
+  /* Hide all command columns */
+  .grid-columncommand {
+    display: none;
+  }
+}
+// ===================== END PRINT STYLES (OBSIDIAN) =====================

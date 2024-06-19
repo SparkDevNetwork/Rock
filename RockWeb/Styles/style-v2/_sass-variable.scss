@@ -1,20 +1,27 @@
-$zindex-modal: 1050;
+$zindex-modal:  1050;
+$modal-small:   300px;
+$modal-medium:  600px;
+$modal-large:   900px;
+$zindex-modal-background:   1040;
+$modal-backdrop-opacity:    0.5;
+$modal-title-padding:       15px;
+$modal-shadow:              0 12px 24px 0 rgba(0,0,0,.1);
 
 // Dropdown
-$caret-width-base: 4px;
-$zindex-dropdown: 1000;
-$dropdown-min-width: 160px;
+$caret-width-base:      4px;
+$zindex-dropdown:       1000;
+$dropdown-min-width:    160px;
 
 // Screen Sizes
-$screen-small: 768px;
+$screen-small:  768px;
 $screen-medium: 992px;
-$screen-large: 1200px;
+$screen-large:  1200px;
 
 // Grid Container Sizes
-$container-small: 720px;
-$container-medium: 960px;
-$container-large: 1140px;
+$container-small:   720px;
+$container-medium:  960px;
+$container-large:   1140px;
 
 // Grid
 $grid-gutter-width: 30px;
-$grid-columns: 12;
+$grid-columns:      12;

@@ -54,6 +54,14 @@
       color:      inherit;
     }
   }
+
+  &.alert-grid {
+    margin-top:   -var(--spacing-medium);
+    margin-right: -var(--spacing-medium);
+    margin-bottom: var(--spacing-medium);
+    margin-left:  -var(--spacing-medium);
+    border-radius: 0;
+  }
 }
 // ======================== END BASE STYLE ========================
 

@@ -156,7 +156,6 @@
     display: block;
   }
 
-  // Remove the outline when :focus is triggered
   > a {
     outline: 0;
   }
@@ -177,7 +176,7 @@
 // ========================= Menu positioning =========================
 .dropdown-menu-right {
   right: 0;
-  left: auto; // Reset the default from `.dropdown-menu`
+  left: auto;
 }
 .dropdown-menu-left {
   right: auto;
@@ -193,7 +192,7 @@
   font-size:    var(--font-size-small);
   line-height:  var(--line-height-normal);
   color:        var(--color-interface-strong);
-  white-space:  nowrap; // as with > li > a
+  white-space:  nowrap; 
 }
 
 // Backdrop to catch body clicks on mobile, etc.
@@ -211,11 +210,6 @@
   right:  0;
   left:   auto;
 }
-
-// Allow for dropdowns to go bottom up (aka, dropup-menu)
-//
-// Just add .dropup after the standard .dropdown class and you're set, bro.
-// TODO: abstract this so that the navbar fixed styles are not placed here?
 
 .dropup,
 .navbar-fixed-bottom .dropdown {
@@ -240,12 +234,10 @@
       right:  0;
       left:   auto;
     }
-    // Necessary for overrides of the default right aligned menu.
-    // Will remove come v4 in all likelihood.
+
     .dropdown-menu-left {
       right:  auto;
       left:   0;
     }
   }
 }
-
