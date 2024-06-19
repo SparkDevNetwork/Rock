@@ -838,6 +838,7 @@
     <Compile Include="CheckIn\v2\Labels\ILabelDataHasPerson.cs" />
     <Compile Include="CheckIn\v2\Labels\ImageFieldConfiguration.cs" />
     <Compile Include="CheckIn\v2\Labels\LabelField.cs" />
+    <Compile Include="CheckIn\v2\Labels\LabelIcon.cs" />
     <Compile Include="CheckIn\v2\Labels\LineFieldConfiguration.cs" />
     <Compile Include="CheckIn\v2\Labels\MultiValueFieldDataSource.cs" />
     <Compile Include="CheckIn\v2\Labels\Formatters\PersonAgeDataFormatter.cs" />

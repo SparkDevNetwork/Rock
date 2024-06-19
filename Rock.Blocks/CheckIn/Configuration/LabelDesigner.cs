@@ -125,23 +125,15 @@ namespace Rock.Blocks.CheckIn.Configuration
         /// <returns>A list of <see cref="IconItemBag"/> objects.</returns>
         private List<IconItemBag> GetIconList()
         {
-            return new List<IconItemBag>
-            {
-                new IconItemBag
+            return LabelIcon.StandardIcons
+                .Select( a => new IconItemBag
                 {
-                    Value = "birthday_cake",
-                    Text = "Birthday Cake",
-                    Weight = 900,
-                    Code = "\uF1FD"
-                },
-                new IconItemBag
-                {
-                    Value = "star",
-                    Text = "Star",
-                    Weight = 900,
-                    Code = "\uF005"
-                }
-            };
+                    Value = a.Value,
+                    Text = a.Name,
+                    Weight = a.IsBold ? 900 : 400,
+                    Code = a.Code
+                } )
+                .ToList();
         }
 
         /// <summary>
