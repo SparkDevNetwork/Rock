@@ -400,14 +400,14 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 {
                     GroupLocation currentGroupLocation;
                     var newLocation = new LocationService( rockContext ).Get( acAddress.Street1, acAddress.Street2, acAddress.City, acAddress.State, acAddress.PostalCode, acAddress.Country );
+                    if ( workLocation != null && ( cbSaveFormerAddressAsPreviousAddress.Checked && newLocation.Id != workLocation.Location.Id ) )
+                    {
+                        var previousLocationTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS ).Id;
+                        workLocation.GroupLocationTypeValueId = previousLocationTypeId;
+                    }
+
                     if ( workLocation == null || ( cbSaveFormerAddressAsPreviousAddress.Checked && newLocation.Id != workLocation.Location.Id ) )
                     {
-                        if ( workLocation != null )
-                        {
-                            var previousLocationTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS ).Id;
-                            workLocation.GroupLocationTypeValueId = previousLocationTypeId;
-                        }
-
                         currentGroupLocation = new GroupLocation();
                         groupLocationService.Add( currentGroupLocation );
                         currentGroupLocation.GroupId = adultFamilyMember.Group.Id;
