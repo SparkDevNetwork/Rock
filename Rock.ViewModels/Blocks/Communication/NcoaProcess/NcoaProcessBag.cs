@@ -20,6 +20,9 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Communication.NcoaProcess
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class NcoaProcessBag
     {
         /// <summary>

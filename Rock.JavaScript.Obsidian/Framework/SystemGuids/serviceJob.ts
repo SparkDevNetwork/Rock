@@ -115,6 +115,8 @@ export const ServiceJob = {
     DataMigrations161SwapFinancialBatchList: "7750ECFD-26E3-49DE-8E90-1B1A6DCCC3FE",
     /** The post update data migration job to chop the Email Preference Entry block. */
     DataMigrations162ChopEmailPreferenceEntry: "AE07C80A-80A4-48FD-908C-56DDB1CAA322",
+    /** The Job to run Post v16.6 Add CommunicationRecipient Index. */
+    DataMigrations166AddCommunicationRecipientIndex: "48070B65-FC20-401F-B25F-8F4D13BA5F36",
     /** The Job to run Post v16.6 Data Migrations to an index to the CreatedDateTime column on the Interaction table. */
     DataMigrations166AddInteractionCreatedDateTimeIndex: "2B2E2C6F-0184-4797-9D39-E8FC700D9887",
     /**

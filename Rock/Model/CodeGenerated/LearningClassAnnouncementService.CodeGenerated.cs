@@ -118,6 +118,7 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.LearningClassId = source.LearningClassId;
+            target.PublishDateTime = source.PublishDateTime;
             target.Summary = source.Summary;
             target.Title = source.Title;
             target.CreatedDateTime = source.CreatedDateTime;

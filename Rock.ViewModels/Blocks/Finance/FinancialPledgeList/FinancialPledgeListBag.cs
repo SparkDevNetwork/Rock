@@ -17,10 +17,11 @@
 
 using System;
 
-using Rock.ViewModels.Utility;
-
 namespace Rock.ViewModels.Blocks.Finance.FinancialPledgeList
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class FinancialPledgeListBag
     {
         /// <summary>
