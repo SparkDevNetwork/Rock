@@ -18,6 +18,7 @@
 import { AlertType } from "@Obsidian/Enums/Controls/alertType";
 import { ComputedRef, InjectionKey, Ref, inject, nextTick, provide } from "vue";
 import { Breakpoint, BreakpointHelper, MediumType } from "./types.partial";
+import { isPromise } from "@Obsidian/Utility/promiseUtils";
 
 /** Converts a string to an alert type. */
 export function getAlertType(type: string | null | undefined): AlertType {
@@ -129,7 +130,13 @@ export function useBreakpointHelper(): ComputedRef<BreakpointHelper> {
 export const KeepPersonPickerOpen: InjectionKey<Ref<boolean>> = Symbol("keep-person-picker-open");
 
 
-export function getArrayDiff<Key, Value>(oldValues: Value[], keySelector: ((item: Value) => Key | undefined), newKeys: Key[]): { readonly removedKeys: Key[]; readonly addedKeys: Key[]; readonly values: Value[]; removeValues(keys: Key[]): void; addValues(values: Value[]): void; } {
+export function getArrayDiff<Key, Value>(oldValues: Iterable<Value>, keySelector: ((item: Value) => Key | undefined), newKeys: Iterable<Key>): {
+    readonly removedKeys: Set<Key>;
+    readonly addedKeys: Set<Key>;
+    readonly values: Map<Key, Value>;
+    removeValues(keys: Iterable<Key>): void;
+    addValues(values: Iterable<Value>): void;
+} {
     // Copy the old values to a dictionary for faster processing.
     const oldValueDictionary = new Map<Key, Value>();
     for (const oldValue of oldValues) {
@@ -143,39 +150,37 @@ export function getArrayDiff<Key, Value>(oldValues: Value[], keySelector: ((item
     const newValueDictionary = new Map<Key, Value>(oldValueDictionary);
 
     // Figure out which values were added/removed.
-    const keysToAdd: Key[] = [];
-    const valueToRemoveDictionary = new Map<Key, Value>(oldValueDictionary);
+    const keysToAdd = new Set<Key>();
+    const valueToRemoveDictionary = new Set<Key>(oldValueDictionary.keys());
     for (const newKey of newKeys) {
         if (!newValueDictionary.has(newKey)) {
-            keysToAdd.push(newKey);
+            keysToAdd.add(newKey);
         }
         else {
-            // oldValuesToRemove starts as a copy of the current values.
-            // For each value that should be kept, it gets removed from oldValuesToRemove.
-            // After processing all *new* values, oldValuesToRemove should be left
+            // valueToRemoveDictionary starts as a copy of the current values.
+            // For each value that should be kept, it gets removed from valueToRemoveDictionary.
+            // After processing all *new* values, valueToRemoveDictionary should be left
             // with only the values that should be removed.
             valueToRemoveDictionary.delete(newKey);
         }
     }
 
     return {
-        get removedKeys(): Key[] {
-            return Array.from(valueToRemoveDictionary.keys());
+        get removedKeys(): Set<Key> {
+            return valueToRemoveDictionary;
         },
-        get addedKeys(): Key[] {
+        get addedKeys(): Set<Key> {
             return keysToAdd;
         },
-        get values(): Value[] {
-            return Array.from(newValueDictionary.values());
+        get values(): Map<Key, Value> {
+            return newValueDictionary;
         },
-        removeValues(keys: Key[]): void {
-            if (valueToRemoveDictionary.size) {
-                for (const key of keys) {
-                    newValueDictionary.delete(key);
-                }
+        removeValues(keys: Iterable<Key>): void {
+            for (const key of keys) {
+                newValueDictionary.delete(key);
             }
         },
-        addValues(values: Value[]): void {
+        addValues(values: Iterable<Value>): void {
             for (const value of values) {
                 const key = keySelector(value);
                 if (key) {
@@ -186,20 +191,56 @@ export function getArrayDiff<Key, Value>(oldValues: Value[], keySelector: ((item
     };
 }
 
-export function updateArray<Key, Value>(oldValues: Value[], keySelector: ((item: Value) => Key | undefined), newKeys: Key[], getNewValues: ((keys: Key[]) => Promise<Value[]>)): Promise<Value[]> {
+export async function updateArray<Key, Value>(oldValues: Iterable<Value>, keySelector: ((item: Value) => Key | undefined), newKeys: Iterable<Key>, getNewValues: ((keys: Iterable<Key>) => Promise<Value[]>)): Promise<Map<Key, Value>> {
     const arrayDiff = getArrayDiff(oldValues, keySelector, newKeys);
-    arrayDiff.removeValues(arrayDiff.removedKeys);
+    arrayDiff.removeValues(arrayDiff.removedKeys.values());
     const keysToAdd = arrayDiff.addedKeys;
 
     // Add values.
-    if (keysToAdd.length) {
-        return getNewValues(keysToAdd)
-            .then(valuesToAdd => {
-                arrayDiff.addValues(valuesToAdd);
-                return arrayDiff.values;
-            });
+    if (keysToAdd.size) {
+        const valuesToAdd = await getNewValues(keysToAdd.keys());
+        arrayDiff.addValues(valuesToAdd.values());
+        return arrayDiff.values;
     }
     else {
         return Promise.resolve(arrayDiff.values);
     }
+}
+let tabs = 0;
+const logLaps = true;
+const log = true;
+export function startStopwatch<T>(message: string, funkyFunc: (sw: { stop(): void; lap(msg: string): void; }) => T): T {
+    log && console.log(`${"\t".repeat(tabs)}[${message}]`);
+    tabs++;
+    const tabsString = "\t".repeat(tabs);
+    const startedMs = Date.now();
+    let lapMs = startedMs;
+    let stopped = false;
+    const sw = {
+        stop(): void {
+            if (!stopped) {
+                stopped = true;
+                tabs--;
+                log && console.log(`${tabsString}[${message}] (${(Date.now() - startedMs) / 1000} seconds)`);
+            }
+        },
+        lap(msg: string): void {
+            const prevLapMs = lapMs;
+            lapMs = Date.now();
+            log && logLaps && console.log(`${tabsString}[${message}] [${msg}] (${(lapMs - prevLapMs) / 1000} seconds)`);
+        }
+    };
+
+    const result = funkyFunc(sw);
+
+    if (isPromise(result)) {
+        result.then(() => {
+            sw.stop();
+        });
+    }
+    else {
+        sw.stop();
+    }
+
+    return result;
 }

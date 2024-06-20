@@ -18,16 +18,16 @@
 
     <PersonPanelPicker v-if="isPersonPickerShown" @cancel="onPersonSearchCanceled" @select="onPersonSelected" />
 
-    <RecipientModal v-model="isRecipientModalShown" v-model:recipients="internalRecipients" :disabled="disabled" :disabledMessage="recipientManagerDisabledMessage" :getTooltipRef="getTooltipRef" :isForBulkCommunication="isForBulkCommunication" :isAddHidden="isAddHidden" />
+    <RecipientModal v-model="isRecipientModalShown" :recipients="modelValue" @update:recipients="$emit('update:modelValue', $event)" :disabled="disabled" :disabledMessage="recipientManagerDisabledMessage" :getTooltipRef="getTooltipRef" :isForBulkCommunication="isForBulkCommunication" :isAddHidden="isAddHidden" />
 </template>
 
 <script setup lang="ts">
-    import { PropType, Ref, computed, nextTick, ref } from "vue";
+    import { PropType, Ref, computed, nextTick, ref, watch } from "vue";
     import PopupPicker from "./popupPicker.partial.obs";
     import PersonPanelPicker from "./personPanelPicker.partial.obs";
     import RecipientModal from "./recipientModal.partial.obs";
     import { LabelType, MediumType } from "./types.partial";
-    import { KeepPersonPickerOpen, updateArray, use } from "./utils.partial";
+    import { KeepPersonPickerOpen, startStopwatch, updateArray, use } from "./utils.partial";
     import { ValidationRule } from "@Obsidian/Types/validationRules";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
@@ -35,7 +35,6 @@
     import { CommunicationEntryGetRecipientsRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryGetRecipientsRequestBag";
     import { CommunicationEntryRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryRecipientBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { Guid } from "@Obsidian/Types";
 
     const props = defineProps({
@@ -111,10 +110,11 @@
     const invokeBlockAction = useInvokeBlockAction();
 
     //#region Values
-    const internalRecipients = useVModelPassthrough(props, "modelValue", emit);
+
     const isPersonPickerShown = ref<boolean>(false);
     const isRecipientModalShown = ref<boolean>(false);
     const keepOpen = use(KeepPersonPickerOpen);
+    const recipientListItems = ref<ListItemBag[]>(convertRecipientsToListItems(props.modelValue));
 
     //#endregion
 
@@ -136,39 +136,6 @@
         }
     });
 
-    const recipientListItems = computed<ListItemBag[]>({
-        get() {
-            return convertRecipientsToListItems(internalRecipients.value);
-        },
-        set(newRecipientListItemBags: ListItemBag[]) {
-            const newRecipientGuids: Guid[] = [];
-            for (const newRecipientListItemBag of newRecipientListItemBags) {
-                if (newRecipientListItemBag.value) {
-                    newRecipientGuids.push(newRecipientListItemBag.value);
-                }
-            }
-
-            updateArray(
-                internalRecipients.value,
-                r => r.personAliasGuid,
-                newRecipientGuids,
-                async (recipientGuidsToAdd: Guid[]) => {
-                    const bag: CommunicationEntryGetRecipientsRequestBag = {
-                        personAliasGuids: recipientGuidsToAdd
-                    };
-
-                    const result = await invokeBlockAction<CommunicationEntryRecipientBag[]>(
-                        "GetRecipients",
-                        {
-                            bag
-                        });
-
-                    return result?.data ?? [];
-                }).then(newValues => {
-                    internalRecipients.value = newValues;
-                });
-        }
-    });
 
     //#endregion
 
@@ -211,12 +178,18 @@
             console.log("Error");
         }
         else {
-            const updatedRecipients = [...internalRecipients.value];
-            const index = updatedRecipients.findIndex(i => i.personAliasGuid === result.data?.personAliasGuid);
-            if (index === -1) {
-                // Only update the recipients if the collection changed.
+            const updatedRecipients: CommunicationEntryRecipientBag[] = [];
+            let alreadyAdded = false;
+            for (const recipient of props.modelValue) {
+                if (!alreadyAdded && recipient.personAliasGuid === result.data.personAliasGuid) {
+                    alreadyAdded = true;
+                }
+                updatedRecipients.push(recipient);
+            }
+
+            if (!alreadyAdded) {
                 updatedRecipients.push(result.data);
-                internalRecipients.value = updatedRecipients;
+                emit("update:modelValue", updatedRecipients);
             }
         }
 
@@ -311,8 +284,66 @@
 
     /** Gets the recipient for a person. */
     function findRecipient(personAliasGuid: string): CommunicationEntryRecipientBag | null {
-        return internalRecipients.value.find(item => item.personAliasGuid === personAliasGuid) ?? null;
+        return props.modelValue.find(item => item.personAliasGuid === personAliasGuid) ?? null;
     }
+
+    //#endregion
+
+    function getListItemBagGuidSet(listItemBags: ListItemBag[]): Set<Guid> {
+        return new Set<Guid>(listItemBags.map(l => l.value!));
+    }
+
+    //#region Watchers
+
+    // Update the ListItemBag array when the props modelValue changes.
+    watch(() => props.modelValue, () => {
+        startStopwatch("watch props.modelValue", sw => {
+            const set1 = getListItemBagGuidSet(recipientListItems.value);
+            const set2 = new Set<Guid>(props.modelValue.map(r => r.personAliasGuid));
+            const areSetsEqual = set1.size === set2.size && [...set1].every((x) => set2.has(x));
+            sw.lap("initialize");
+
+            if (!areSetsEqual) {
+                recipientListItems.value = convertRecipientsToListItems(props.modelValue);
+                sw.lap("recipientListItems converted");
+            }
+        });
+    });
+
+    // Update the recipients collection when the ListItemBag array changes.
+    watch(recipientListItems, async (newRecipientListItemBags) => {
+        await startStopwatch("watch recipientListItems", async sw => {
+            const set1 = getListItemBagGuidSet(newRecipientListItemBags);
+            const set2 = new Set<Guid>(props.modelValue.map(r => r.personAliasGuid));
+            const areSetsEqual = set1.size === set2.size && [...set1].every((x) => set2.has(x));
+            sw.lap("initialize");
+
+            if (!areSetsEqual) {
+                const newValues = await updateArray(
+                    props.modelValue,
+                    r => r.personAliasGuid,
+                    set1,
+                    async (recipientGuidsToAdd: Iterable<Guid>) => {
+                        const bag: CommunicationEntryGetRecipientsRequestBag = {
+                            personAliasGuids: Array.from(recipientGuidsToAdd)
+                        };
+
+                        const result = await invokeBlockAction<CommunicationEntryRecipientBag[]>(
+                            "GetRecipients",
+                            {
+                                bag
+                            });
+                        sw.lap("block action invoked");
+
+                        return result?.data ?? [];
+                    });
+                sw.lap("new array assigned");
+
+                sw.stop();
+                emit("update:modelValue", Array.from(newValues.values()));
+            }
+        });
+    });
 
     //#endregion
 

@@ -38,7 +38,7 @@
                 <RockButton class="item label label-default rounded-pill"
                             @click="onShowMoreClicked"
                             @mousedown="onShowMoreMouseDown">
-                    <span class="item-content">{{ internalListItemBags.length - (sampleSize - omittedValues.length) }} more</span>
+                    <span class="item-content">{{ props.modelValue.length - (sampleSize - omittedValues.length) }} more</span>
                 </RockButton>
             </div>
         </template>
@@ -59,10 +59,10 @@
     import { PropType, Ref, computed, ref, watch } from "vue";
     import BaseAsyncPicker from "@Obsidian/Controls/baseAsyncPicker.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import { standardAsyncPickerProps, useStandardAsyncPickerProps, useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { standardAsyncPickerProps, useStandardAsyncPickerProps } from "@Obsidian/Utility/component";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { tooltip } from "@Obsidian/Utility/tooltip";
-    import { getArrayDiff } from "./utils.partial";
+    import { getArrayDiff, startStopwatch } from "./utils.partial";
     import { Guid } from "@Obsidian/Types";
 
     const props = defineProps({
@@ -139,7 +139,7 @@
 
     //#region Values
 
-    const internalListItemBags = useVModelPassthrough(props, "modelValue", emit);
+    //const internalListItemBags = useVModelPassthrough(props, "modelValue", emit);
     const maxTagPlaceholder = ref<HTMLElement | undefined>();
 
     //#endregion
@@ -151,7 +151,7 @@
      * This is a sample of the data.
      */
     const internalSample = computed<ListItemBag[]>(() => {
-        const population = internalListItemBags.value;
+        const population = props.modelValue;
         if (population.length <= props.sampleSize) {
             return population;
         }
@@ -206,7 +206,7 @@
     }
 
     function onDeselectItemClicked(value: string): void {
-        const currentListItemBags = internalListItemBags.value;
+        const currentListItemBags = props.modelValue;
         const newValue: ListItemBag[] = [];
 
         for (const listItemBag of currentListItemBags) {
@@ -217,50 +217,56 @@
 
         if (newValue.length < currentListItemBags.length) {
             // Only update if an item was deselected.
-            internalListItemBags.value = newValue;
+            emit("update:modelValue", newValue);
         }
     }
 
-    function onUpdateInternalSample(newValue: ListItemBag | ListItemBag[] | null): void {
+    function onUpdateInternalSample(newSample: ListItemBag | ListItemBag[] | null): void {
         const newValueDictionary = new Map<Guid, ListItemBag>();
 
-        if (newValue === null) {
+        if (newSample === null) {
             // If newValue is null then all sample values were deselected.
         }
-        else if (Array.isArray(newValue)) {
-            for (const value of newValue) {
+        else if (Array.isArray(newSample)) {
+            for (const value of newSample) {
                 if (value.value) {
                     newValueDictionary.set(value.value, value);
                 }
             }
         }
         else {
-            if (newValue.value) {
-                newValueDictionary.set(newValue.value, newValue);
+            if (newSample.value) {
+                newValueDictionary.set(newSample.value, newSample);
             }
         }
 
-        const arrayDiff = getArrayDiff(internalSample.value, s => s.value ?? undefined, Array.from(newValueDictionary.keys()));
+        const set1 = new Set<Guid>(internalSample.value.map(s => s.value!));
+        const set2 = new Set<Guid>(newValueDictionary.keys());
+        const areSetsEqual = set1.size === set2.size && [...set1].every((x) => set2.has(x));
 
-        const internalPopulation = new Map<Guid, ListItemBag>();
-        for (const listItemBag of internalListItemBags.value) {
-            if (listItemBag.value) {
-                internalPopulation.set(listItemBag.value, listItemBag);
+        if (!areSetsEqual) {
+            const arrayDiff = getArrayDiff(internalSample.value.values(), s => s.value ?? undefined, newValueDictionary.keys());
+
+            const internalPopulation = new Map<Guid, ListItemBag>();
+            for (const listItemBag of props.modelValue) {
+                if (listItemBag.value) {
+                    internalPopulation.set(listItemBag.value, listItemBag);
+                }
             }
-        }
 
-        for (const removedKey of arrayDiff.removedKeys) {
-            internalPopulation.delete(removedKey);
-        }
-
-        for (const addedKey of arrayDiff.addedKeys) {
-            const value = newValueDictionary.get(addedKey);
-            if (value) {
-                internalPopulation.set(addedKey, value);
+            for (const removedKey of arrayDiff.removedKeys) {
+                internalPopulation.delete(removedKey);
             }
-        }
 
-        internalListItemBags.value = Array.from(internalPopulation.values());
+            for (const addedKey of arrayDiff.addedKeys) {
+                const value = newValueDictionary.get(addedKey);
+                if (value) {
+                    internalPopulation.set(addedKey, value);
+                }
+            }
+
+            emit("update:modelValue", Array.from(internalPopulation.values()));
+        }
     }
 
     function onShowMoreClicked(event: MouseEvent): void {
