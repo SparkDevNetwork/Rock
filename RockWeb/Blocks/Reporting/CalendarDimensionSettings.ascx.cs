@@ -123,6 +123,18 @@ namespace RockWeb.Blocks.Reporting
         protected void btnGenerate_Click( object sender, EventArgs e )
         {
             var startDate = dpStartDate.SelectedDate.Value;
+            var minimumStartDate = RockDateTime.Now.AddYears( -120 ).Date;
+            if ( startDate > minimumStartDate )
+            {
+                nbGenerateWarning.Text = "The Start Date must be at least 120 years from today. The data in that table us used for various calculations including determining a person's age.";
+                nbGenerateWarning.Visible = true;
+                return;
+            }
+            else
+            {
+                nbGenerateWarning.Visible = false;
+            }
+
             Rock.Web.SystemSettings.SetValue( Rock.SystemKey.SystemSetting.ANALYTICS_CALENDAR_DIMENSION_START_DATE, startDate.ToString( "o" ) );
 
             var endDate = dpEndDate.SelectedDate.Value;
