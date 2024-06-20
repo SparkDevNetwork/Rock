@@ -829,6 +829,10 @@ export default defineComponent({
     :hasFullscreen="isFullScreenVisible"
     :headerSecondaryActions="internalHeaderSecondaryActions">
 
+    <template v-if="$slots.sidebar" #sidebar>
+        <slot name="sidebar" />
+    </template>
+
     <template #headerActions>
         <span v-for="action in headerActions" :class="getClassForIconAction(action)" :title="action.title" @click="onActionClick(action, $event)">
             <i :class="getActionIconCssClass(action)"></i>

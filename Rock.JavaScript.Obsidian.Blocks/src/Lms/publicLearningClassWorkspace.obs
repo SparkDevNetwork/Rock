@@ -1,0 +1,448 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="workspace-page-container">
+        <div v-html="headerHtml"></div>
+
+        <div class="workspace-notification">
+            <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+
+            <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+        </div>
+
+        <div class="workspace-block-container">
+            <div class="workspace-header-bar" v-if="isAcademicCalendarMode">
+                <TabbedBar v-model="selectedTab"
+                   class="schedule-toolbox-group-tabs"
+                   :tabs="tabs" />
+            </div>
+            <div class="workspace-block-content">
+                <div class="workspace-navigation-pane">
+                    <div class="activity-navigation-item-container"
+                         @click="selectActivity(activity)"
+                         :class="activityContainerClasses(activity)"
+                         v-for="(activity, index) in config.activities" :key="activity.idKey ?? ''">
+                        <div>
+                            <span class="icon-stack-container fa-stack fa-2x">
+                                <i :class="activityIconStackClasses(activity)"></i>
+                                <i class="icon fa-stack-1x" :class="activity.activityBag?.activityComponent?.iconCssClass"></i>
+                            </span>
+                        </div>
+                        <div class="activity-item-details">
+                            <div class="activity-item-name">
+                                {{ activity?.activityBag?.name }}
+                            </div>
+                            <div class="activity-item-icons">
+                                <i v-if="activity.facilitatorComment" class="fa fa-comment"></i>
+                            </div>
+                            <div class="activity-item-time">
+                                <span>{{ getActivityTimeText(activity) }}</span>
+                            </div>
+                            <div class="activity-item-status text-right">
+                                <span v-html="getActivityStatusBadge(activity)"></span>
+                            </div>
+                        </div>
+
+                        <div class="activity-stepper visible-xs-block visible-sm-block">
+                            <button :disabled="hasAvailableBefore(index)"><i class="fa fa-chevron-up" @click.prevent="selectPrevious(index)"></i></button>
+                            <button :disabled="hasAvailableAfter(index)"><i class="fa fa-chevron-down" @click.prevent="selectNext(index)"></i></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="workspace-main-content">
+                    <div class="h1">
+                        {{ viewingCompletionBag.activityBag?.name ?? "" }}
+                    </div>
+                    <div class="text-muted">
+                        {{ getActivityTimeText(viewingCompletionBag) }}
+                    </div>
+                    <activityTypeComponent
+                                           v-model:activityBag="viewingCompletionBag.activityBag"
+                                           v-model:completionBag="viewingCompletionBag"
+                                           :screenToShow="screenToShow"
+                                           @completed="onCompleted" />
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+<style scoped>
+.workspace-page-container > .workspace-notification {
+    margin-top: 3.5em;
+}
+
+.workspace-block-container {
+    display: flex;
+    flex-direction: column;
+    background-color: #fff;
+    padding-top: 1em;
+    padding-bottom: 1em;
+    padding-left: 3em;
+    padding-right: 3em;
+
+    .workspace-header-bar {
+        flex-grow: 1;
+    }
+
+    .workspace-block-content {
+        @media (min-width: 992px) {
+            display: flex;
+            flex-basis: 30%;
+
+            .workspace-navigation-pane {
+                margin-top: 1.5em;
+            }
+        }
+    }
+}
+
+.workspace-page-header {
+    margin-bottom: 20px;
+    align-items: center;
+    border-radius: 12px;
+    height: 280px;
+
+    .workspace-header-text-block {
+        display: flex;
+        flex-direction: column;
+        text-align: center;
+        background-color: white;
+        border-radius: 12px;
+
+        /* For smaller devices don't apply margins and use the full width. */
+        @media (min-width: 992px) {
+            width: 80%;
+            margin-left: 10%;
+            margin-right: 10%;
+        }
+
+        .sub-text {
+            padding-left: 20%;
+            padding-right: 20%;
+            padding-bottom: 12px;
+        }
+    }
+
+    .workspace-header-text-block:not(.no-course-image) {
+        position: relative;
+        top: 220px;
+        background-size: cover;
+    }
+}
+
+.workspace-navigation-pane {
+    background-color: #f6f9fa;
+    border-radius: 12px;
+    min-width: 300px;
+
+    .activity-navigation-item-container {
+        padding: .5em;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-top: 1px solid #ebf4f7;
+        border-bottom: 1px solid #ebf4f7;
+        min-height: 100px;
+
+        * {
+            margin-right: .5em;
+        }
+
+        .activity-item-name {
+            font-weight: bold;
+        }
+
+        .activity-item-details {
+            display: grid;
+            grid-template-columns: 2;
+            grid-template-rows: 2;
+            gap: 8px;
+
+            .activity-item-name {
+                grid-row: 1;
+                grid-column: 1;
+            }
+
+            .activity-item-icons {
+                grid-row: 1;
+                grid-column: 2;
+            }
+
+            .activity-item-time {
+                grid-row: 2;
+                grid-column: 1;
+            }
+
+            .activity-item-status {
+                grid-row: 2;
+                grid-column: 2;
+            }
+        }
+    }
+
+    .activity-navigation-item-container.is-selected {
+        background-color: #fff;
+
+    }
+
+    .activity-navigation-item-container.not-available {
+        opacity: .5
+    }
+}
+
+.workspace-main-content {
+    width: 100%;
+    min-height: 80vh;
+    padding-left: 3em;
+}
+
+/* Activity Icon */
+span.icon-stack-container i.icon {
+    color: white;
+}
+
+/* For smaller devices use a stepper control instead of the left-hand navigation pane. */
+.activity-stepper {
+    display: flex;
+    flex-direction: column;
+    justify-self: flex-end;
+    justify-content: space-between;
+
+    > button {
+        background-color: white;
+        border: none;
+
+        > * {
+            color: var(--color-primary);
+        }
+    }
+}
+
+/* Only show the currently selected activity for smaller devices. The stepper will be visible for changing selections. */
+@media (max-width: 993px) {
+    .workspace-navigation-pane > .activity-navigation-item-container:not(.is-selected) {
+        display: none;
+    }
+}
+</style>
+
+<script setup lang="ts">
+    import { Component, computed, defineAsyncComponent, onMounted, ref, toValue } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import TabbedBar from "@Obsidian/Controls/tabbedBar.obs";
+    import { useConfigurationValues, useInvokeBlockAction, useReloadBlock, onConfigurationValuesChanged } from "@Obsidian/Utility/block";
+    import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
+    import { PublicLearningClassWorkspaceBox } from "@Obsidian/ViewModels/Blocks/Lms/PublicLearningClassWorkspace/publicLearningClassWorkspaceBox";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { ComponentScreen } from "@Obsidian/Controls/Internal/LearningActivity/learningActivity";
+    import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
+
+    const config = useConfigurationValues<PublicLearningClassWorkspaceBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const blockError = ref("");
+    const errorMessage = ref("");
+
+    const headerHtml = config.headerHtml ?? "";
+    const screenToShow = ref(ComponentScreen.Completion);
+
+    const params = new URLSearchParams(window.location.search);
+    const selectedActivityIdKey = params.get("activity") ?? "";
+
+    const activities = ref<LearningActivityCompletionBag[]>(config.activities ?? []);
+
+    const viewingCompletionBag = ref((
+        selectedActivityIdKey.length > 0 ?
+            config.activities?.find(a => a.idKey === selectedActivityIdKey) :
+            config.activities?.find(a => a.isAvailable)
+    ) ?? {} as LearningActivityCompletionBag);
+
+    const isAcademicCalendarMode = ref(config.programConfigurationMode === ConfigurationMode.AcademicCalendar);
+
+    const tabs = ["Class Overview", "Activities / Assignments"];
+    const selectedTab = "Class Overview";
+
+    // #endregion
+
+    // #region Computed Values
+
+    const componentUrl = computed(() => viewingCompletionBag.value?.activityBag?.activityComponent?.componentUrl ?? "");
+
+    const activityTypeComponent = ref<Component | null>(null);
+
+    // #endregion
+
+    // #region Functions
+
+    /** The CSS classes to apply to the activity container. */
+    function activityContainerClasses(activity: LearningActivityCompletionBag): string[] {
+        const classes = activity.isAvailable ? ["available"] : ["not-available"];
+
+        if (activity.idKey === viewingCompletionBag.value?.idKey) {
+            classes.push("is-selected");
+        }
+
+        if (activity.isStudentCompleted) {
+            classes.push("is-completed");
+        }
+
+        return classes;
+    }
+
+    /** the classes to apply to the activity icon stack. */
+    function activityIconStackClasses(activity: LearningActivityCompletionBag): string[] {
+        const completionStatusClass = activity.isStudentCompleted ? "text-success" : "text-muted";
+        return ["fa", "fa-circle", "fa-stack-2x", completionStatusClass];
+    }
+
+    /** The badge HTML to use for the activity status. */
+    function getActivityStatusBadge(forActivity: LearningActivityCompletionBag): string {
+        if (forActivity.isStudentCompleted) {
+            const pointsPossible = forActivity.activityBag?.points ?? 0;
+            if (forActivity.isFacilitatorCompleted && pointsPossible > 0) {
+                const badgeText = forActivity.isGradePassing === true ?
+                    "Passed" :
+                    "Failed";
+
+                return `<span class="badge badge-success">${badgeText}</span>`;
+            }
+            else {
+                return `<span class="badge badge-success">Complete</span>`;
+            }
+        }
+        else {
+            if (forActivity.isPastDue) {
+                return `<span class="badge badge-danger">Past Due</span>`;
+            }
+        }
+
+        return forActivity.isDueSoon ?
+            `<span class="badge badge-warning">Due Soon</span>` :
+            `<span class="badge badge-default">Available</span>`;
+    }
+
+    /** Gets the text for the activity's relevant time (e.g. completed when, due when etc.). */
+    function getActivityTimeText(activity: LearningActivityCompletionBag): string {
+        if (activity.isStudentCompleted) {
+            return `Completed: ${getElapsedTime(activity.completedDate?.toString() ?? "")}`;
+        }
+        else if (activity.isDueSoon || activity.isPastDue) {
+            return `Due: ${getElapsedTime(activity.dueDate?.toString() ?? "")}`;
+        }
+        else if (!activity.isAvailable) {
+            return activity.availableDate == null ?
+                "Prerequisite Step Not Met" :
+                `Available: In ${getElapsedTime(activity.availableDate?.toString() ?? "")}`;
+        }
+
+        return "";
+    }
+
+    /** The time elapsed since the specified date in a human-readable format. */
+    function getElapsedTime(date: string): string {
+        return RockDateTime.parseISO(date)?.localDateTime.toElapsedString() ?? "";
+    }
+
+    function hasAvailableAfter(currentIndex: number): boolean {
+        return activities.value.find((a, i) => i > currentIndex && a.isAvailable) != null;
+    }
+
+    function hasAvailableBefore(currentIndex: number): boolean {
+        return activities.value.find((a, i) => i < currentIndex && a.isAvailable) != null;
+    }
+
+    /** Selects the specified activity and updates the component being viewed. */
+    function selectActivity(activity: LearningActivityCompletionBag): void {
+        const currentIdKey = toValue(viewingCompletionBag)?.idKey;
+        const newSelectedIndex = activities.value.findIndex(a => a.idKey == activity.idKey);
+        const currentSelectedIndex = activities.value.findIndex(a => a.idKey == currentIdKey);
+
+        // Don't allow selecting the unavailable activities or the currently selected activity.
+        if (activity.isAvailable === false || activities.value[newSelectedIndex].idKey === currentIdKey) {
+            return;
+        }
+
+        // Update the current selection before moving to the new selection.
+        // This ensures that any work completed by the student isn't lost when clicking to another task.
+        if (currentSelectedIndex >= 0 && viewingCompletionBag.value) {
+            activities.value[currentSelectedIndex] = viewingCompletionBag.value;
+        }
+
+        const queryParams = new URLSearchParams(window.location.search);
+        queryParams.set("activity", activity.idKey?.toString() ?? "");
+        history.pushState(null, "", "?" + queryParams.toString());
+        viewingCompletionBag.value = activity;
+
+        // Update the activity component.
+        activityTypeComponent.value = defineAsyncComponent(() => import(componentUrl.value));
+    }
+
+    function selectNext(currentIndex: number): void {
+        const next = activities.value.find((a, i) => i > currentIndex && a.isAvailable);
+
+        if (next != null) {
+            selectActivity(next);
+        }
+    }
+
+    function selectPrevious(currentIndex: number): void {
+        const previous = activities.value.find((a, i) => i < currentIndex && a.isAvailable);
+
+        if (previous != null) {
+            selectActivity(previous);
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when activity component's complete emit is fired.
+     *
+     * @param wasSuccessful True if the complete button was clicked; false otherwise.
+     *
+     * @returns `true` if the operation succeeded; otherwise `false`.
+     */
+    async function onCompleted(wasSuccessful: boolean): Promise<boolean> {
+        if (wasSuccessful) {
+            var result = await invokeBlockAction<LearningActivityCompletionBag>("CompleteActivity", {
+                activityCompletionBag: viewingCompletionBag.value
+            });
+
+            if (result.statusCode === 200 && result.data != null) {
+                viewingCompletionBag.value = result.data;
+
+                const index = config.activities?.findIndex(a => a.activityBag?.idKey === viewingCompletionBag.value.activityBag?.idKey) ?? -1;
+
+                if (config.activities !== undefined && index >= 0) {
+                    config.activities[index] = viewingCompletionBag.value;
+                }
+
+                // Reload the activity component.
+                activityTypeComponent.value = defineAsyncComponent(() => import(componentUrl.value));
+                return true;
+            }
+            else if ((result.errorMessage ?? "").length > 0) {
+                blockError.value = result.errorMessage ?? "";
+            }
+        }
+
+        return false;
+    }
+
+    // #endregion
+
+    // Handle any initial error conditions or the need to go into edit mode.
+    if (config.errorMessage) {
+        blockError.value = config.errorMessage;
+    }
+
+    onMounted(() => {
+        if (componentUrl.value.length > 0) {
+            activityTypeComponent.value = defineAsyncComponent(() => import(componentUrl.value));
+        }
+    });
+</script>

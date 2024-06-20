@@ -1,0 +1,201 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div :class="containerClasses">
+        <div v-if="screenToShow === ComponentScreen.Configuration">
+            <div class="assessment-item-short-answer-configuration-container">
+                <div class="configuration-field-question">
+                    <TextBox v-model="question"
+                             label="Question"
+                             rules="required" />
+                </div>
+                <div class="configuration-field-help-text">
+                    <TextBox v-model="helpText"
+                             textMode="multiline"
+                             label="Help Text" />
+
+                </div>
+                <div class="configuration-field-question-weight">
+                    <NumberBox v-model="questionWeight"
+                               label="Question Weight"
+                               rules="required"
+                               :help="configurationWeightHelpText" />
+
+                </div>
+                <div class="configuration-field-answer-box-rows">
+                    <NumberBox v-model="answerBoxRows"
+                               label="Answer Box Rows"
+                               help="Determines the height of the answer box that is shown for this answer." />
+
+                </div>
+                <div class="configuration-field-max-character-count">
+                    <NumberBox v-model="maxCharacterCount"
+                               label="Max Character Count"
+                               help="Optionally limits the number of characters that can be provided in the answer." />
+                </div>
+            </div>
+        </div>
+
+        <div v-if="screenToShow === ComponentScreen.Completion">
+            <TextBox v-model="response"
+                     :help="helpText"
+                     :label="question"
+                     textMode="multiline"
+                     :rows="answerBoxRows"
+                     :maxLength="maxCharacterCount"
+                     :showCountDown="true"
+                     rules="required"
+                     inputClasses="form-control" />
+        </div>
+
+        <div v-if="screenToShow === ComponentScreen.Scoring">
+            <div class="scoring-screen-question-header question-header">
+                <span class="question-section">{{ question }}</span>
+                <NumberBox v-model="pointsEarned"
+                           label="Score"
+                           :min="0"
+                           :max="pointsPossible"
+                           :rules="'lte:' + pointsPossible"
+                           inputGroupClasses="input-width-md">
+                    <template #inputGroupAppend>
+                        <span class="input-group-addon">out of {{ pointsPossible }}</span>
+                    </template>
+                </NumberBox>
+            </div>
+            <div class="answer-section text-muted">
+                {{ response }}
+            </div>
+
+        </div>
+
+        <div v-if="screenToShow === ComponentScreen.Summary">
+            <div class="summary-screen-question-header question-header">
+                <span class="short-answer-item-question question-section summary-screen">{{ question }}</span>
+                <span class="badge badge-default points-label">{{ pointsEarned }}/{{ pointsPossible }}</span>
+            </div>
+            <div class="short-answer-item-response summary-screen">
+                {{ response }}
+            </div>
+        </div>
+    </div>
+</template>
+
+<style>
+.question-header {
+    display: flex;
+    justify-content: space-between;
+}
+
+.summary-screen-question-header {
+    margin-bottom: 16px;
+}
+
+.assessment-item-short-answer-configuration-container {
+    display: grid;
+    column-gap: 8px;
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.configuration-field-question {
+    grid-column: 1 / 3;
+    grid-row: 1;
+}
+
+.configuration-field-help-text {
+    grid-column: 1 / 3;
+    grid-row: 2;
+}
+
+.configuration-field-question-weight {
+    grid-column: 1 / 2;
+    grid-row: 3;
+}
+
+.configuration-field-answer-box-rows {
+    grid-column: 1 / 2;
+    grid-row: 4;
+}
+
+.configuration-field-max-character-count {
+    grid-column: 2 / 3;
+    grid-row: 4;
+}
+
+.question-section {
+    font-weight: bold;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType, computed, ref, toRef, toValue, watch } from "vue";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import { ComponentScreen } from "./learningActivity";
+    import { AssessmentItem, ShortAnswerItem } from "./assessmentLearningActivity.partial";
+
+    const props = defineProps({
+        /** The assessment item's configuration. */
+        modelValue: {
+            type: Object as PropType<ShortAnswerItem | AssessmentItem>,
+            required: true
+        },
+
+        totalActivityPoints: {
+            type: Number as PropType<number>,
+            default: 0
+        },
+
+        screenToShow: {
+            type: Object as PropType<ComponentScreen>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (event: "update:modelValue", value: ShortAnswerItem): void
+    }>();
+
+    const internalModelValue = toRef(() => props.modelValue as ShortAnswerItem);
+
+    const screenToShow = ref(props.screenToShow);
+    const question = ref(internalModelValue.value.question ?? "");
+    const helpText = ref(internalModelValue.value.helpText ?? "");
+    const questionWeight = ref(internalModelValue.value.questionWeight);
+    const answerBoxRows = ref(internalModelValue.value.answerBoxRows);
+    const maxCharacterCount = ref(internalModelValue.value.maxCharacterCount);
+    const response = ref(internalModelValue.value.response ?? "");
+    const pointsEarned = ref(internalModelValue.value.pointsEarned ?? 0);
+    const pointsPossible = computed(() => props.totalActivityPoints * questionWeight.value / 100);
+
+    const configurationWeightHelpText = `
+        Enter the percentage weight for this question.
+        This value will determine how much this one question will contribute to the overall score of the test.
+        For example, if you set this to 40% then 40% of the student's total test score will be based on their response to this one question.
+        Ensure that the combined weights of all sections add up to 100%.`;
+
+    watch([question, helpText, questionWeight, answerBoxRows, maxCharacterCount, response, pointsEarned], () => {
+        const newModelValue = {
+            answerBoxRows: toValue(answerBoxRows),
+            helpText: toValue(helpText),
+            maxCharacterCount: toValue(maxCharacterCount),
+            pointsEarned: toValue(pointsEarned),
+            question: toValue(question),
+            questionWeight: toValue(questionWeight),
+            response: response.value,
+            typeName: internalModelValue.value.typeName,
+            uniqueId: internalModelValue.value.uniqueId
+        } as ShortAnswerItem;
+
+        emit("update:modelValue", newModelValue);
+    });
+
+    /** CSS classes for the panel. */
+    const containerClasses = computed((): string[] => {
+        const screenName = toValue(screenToShow);
+        return [
+            "lms-assessment-item-container",
+            `lms-assessment-item-${screenName.toLowerCase()}-container`,
+            `lms-assessment-item-short-answer-container`
+        ];
+    });
+
+</script>

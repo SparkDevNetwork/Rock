@@ -1,0 +1,333 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+
+            </div>
+
+            <div class="col-md-12">
+                <StructuredContentEditor v-model="description"
+                                         label="Description" />
+
+            </div>
+
+            <div class="col-md-6">
+                <RadioButtonList v-model="assignTo"
+                                 label="Completed By"
+                                 horizontal
+                                 rules="required"
+                                 help="Determines if the activity will be completed by the student or the facilitator."
+                                 :items="assignTos" />
+            </div>
+
+            <div class="col-md-6">
+                <CheckBox v-model="isStudentCommentingEnabled"
+                          label="Enable Student Commenting"
+                          help="Allow students to comment on this assignment." />
+            </div>
+            <div class="col-md-6">
+                <DropDownList
+                              v-model="availableDateCalculationMethod"
+                              :grouped="false"
+                              :items="availableDateCalculationMethods"
+                              rules="required"
+                              label="Available Date Calcuation Method"
+                              help="Determines how the date the assignment is available is determined."
+                              :multiple="false"
+                              :showBlankItem="false" />
+            </div>
+            <div class="col-md-6">
+                <template v-if="availableDateCalculationMethod == AvailableDateCalculationMethod.Specific.toString()">
+                    <DatePicker v-model="availableDateDefault"
+                                rules="required"
+                                label="Available Date" />
+                </template>
+
+                <template v-if="[
+                    AvailableDateCalculationMethod.ClassStartOffset.toString(),
+                    AvailableDateCalculationMethod.EnrollmentOffset.toString()
+                ].includes(availableDateCalculationMethod)">
+
+                    <NumberBox v-model="availableDateOffset"
+                               label="Available Date Offset"
+                               rules="required"
+                               help="The number of days from the calculation reference to add before the assignment is available."
+                               inputGroupClasses="input-width-md">
+                        <template #inputGroupAppend>
+                            <span class="input-group-addon">days</span>
+                        </template>
+                    </NumberBox>
+                </template>
+            </div>
+            <div class="col-md-6">
+                <DropDownList
+                              v-model="dueDateCalculationMethod"
+                              :grouped="false"
+                              :items="dueDateCalculationMethods"
+                              rules="required"
+                              label="Due Date Calcuation Method"
+                              help="Determines how the date the assignment is due is determined."
+                              :multiple="false"
+                              :showBlankItem="false" />
+            </div>
+
+            <div class="col-md-6">
+                <template v-if="dueDateCalculationMethod == DueDateCalculationMethod.Specific.toString()">
+                    <DatePicker v-model="dueDateDefault" rules="required"
+                                label="Due Date" />
+                </template>
+
+                <template v-if="[
+                    DueDateCalculationMethod.ClassStartOffset.toString(),
+                    DueDateCalculationMethod.EnrollmentOffset.toString()
+                ].includes(dueDateCalculationMethod)">
+
+                    <NumberBox v-model="dueDateOffset"
+                               label="Due Date Offset"
+                               rules="required"
+                               help="The number of days from the calculation reference to add before the assignment is due."
+                               inputGroupClasses="input-width-md">
+                        <template #inputGroupAppend>
+                            <span class="input-group-addon">days</span>
+                        </template>
+                    </NumberBox>
+                </template>
+            </div>
+            <div class="col-md-6">
+                <CheckBox v-model="sendNotificationCommunication"
+                          label="Send Notification Communication"
+                          help="Determines if a notification should be sent when this activity is available." />
+            </div>
+            <div class="col-md-6">
+                <WorkflowTypePicker
+                                    v-model="completionWorkflowType"
+                                    label="Completion Workflow Type"
+                                    help="The workflow to launch when an individual completes the activity." />
+            </div>
+            <div class="col-md-6">
+                <!-- <FileUploader v-model="taskBinaryFile"
+                              label="Task File"
+                              :binaryFileTypeGuid="lmsFileTypeGuid"
+                              uploadButtonText="Upload"
+                              :showDeleteButton="true" /> -->
+            </div>
+            <div class="col-md-6">
+                <NumberBox v-model="points"
+                           label="Points"
+                           help="This is the total number of points available for this activity. Some activities will allow you to distribute these points across a weighted percentage of the activity's sub-items."
+                           inputGroupClasses="input-width-md">
+                </NumberBox>
+            </div>
+            <div class="col-md-6">
+
+                <DropDownList
+                              v-model="activityComponentValue"
+                              :grouped="false"
+                              :items="activityComponentListItems"
+                              rules="required"
+                              label="Activity Type"
+                              :multiple="false"
+                              :showBlankItem="false" />
+            </div>
+        </div>
+
+        <!-- Pass the configuration and completion json values to the component. -->
+        <activityTypeComponent
+                               v-model:activityBag="activityBag"
+                               :screenToShow="ComponentScreen.Configuration" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { Component, PropType, computed, defineAsyncComponent, ref, watch } from "vue";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
+    import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
+    import FileUploader from "@Obsidian/Controls/fileUploader.obs";
+    import { ComponentScreen } from "@Obsidian/Controls/Internal/LearningActivity/learningActivity";
+    import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
+    import { LearningActivityDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { LearningActivityComponentBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityComponent/learningActivityComponentBag";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { AssignTo, AssignToDescription } from "@Obsidian/Enums/Lms/assignTo";
+    import { AvailableDateCalculationMethodDescription, AvailableDateCalculationMethod } from "@Obsidian/Enums/Lms/availableDateCalculationMethod";
+    import { DueDateCalculationMethodDescription, DueDateCalculationMethod } from "@Obsidian/Enums/Lms/dueDateCalculationMethod";
+
+    const lmsFileTypeGuid = BinaryFiletype.LearningManagementSystem;
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<LearningActivityBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<LearningActivityDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<LearningActivityBag>): void
+    }>();
+
+    // #region Values
+
+    // Keep track of the configuration if the user switches activity type components.
+    const typeConfigMap = new Map<string, string>();
+
+    const availableDateCalculationMethods = ref<ListItemBag[]>(enumToListItemBag(AvailableDateCalculationMethodDescription ?? []));
+    const dueDateCalculationMethods = ref<ListItemBag[]>(enumToListItemBag(DueDateCalculationMethodDescription ?? []));
+    const assignTos = ref<ListItemBag[]>(enumToListItemBag(AssignToDescription ?? []));
+    const activityComponentListItems = ref<ListItemBag[]>(props.options?.activityTypeListItems ?? []);
+    const activityComponents = ref<LearningActivityComponentBag[]>(props.options.activityTypes ?? []);
+    const activityBag = ref(props.modelValue.bag ?? {} as LearningActivityBag);
+
+    const taskBinaryFile = propertyRef(activityBag.value?.taskBinaryFile ?? null, "TaskBinaryFile");
+
+    const attributes = ref(activityBag.value?.attributes ?? {});
+    const attributeValues = ref(activityBag.value?.attributeValues ?? {});
+    const name = propertyRef(activityBag.value?.name ?? "", "Name");
+    const description = propertyRef(activityBag.value?.description ?? "", "Description");
+    const assignTo = propertyRef(activityBag.value?.assignTo?.toString() ?? "0", "AssignTo");
+    const isStudentCommentingEnabled = propertyRef(activityBag.value?.isStudentCommentingEnabled ?? false, "EnableStudentCommenting");
+    const availableDateCalculationMethod = propertyRef(activityBag.value?.availableDateCalculationMethod.toString() ?? "", "AvailableDateCalculationMethod");
+    const availableDateDefault = propertyRef(activityBag.value?.availableDateDefault, "AvailableDateDefault");
+    const availableDateOffset = propertyRef(activityBag.value?.availableDateOffset, "AvailableDateOffset");
+    const dueDateCalculationMethod = propertyRef(activityBag.value?.dueDateCalculationMethod.toString() ?? "", "DueDateCalculationMethod");
+    const dueDateDefault = propertyRef(activityBag.value?.dueDateDefault, "DueDateDefault");
+    const dueDateOffset = propertyRef(activityBag.value?.dueDateOffset, "DueDateOffset");
+    const sendNotificationCommunication = propertyRef(activityBag.value?.sendNotificationCommunication ?? false, "SendNotificationCommunication");
+    const completionWorkflowType = propertyRef(activityBag.value?.completionWorkflowType ?? {}, "CompletionWorkflowType");
+    const activityComponentSettingsJson = propertyRef(activityBag.value?.activityComponentSettingsJson ?? "", "ActivityComponentSettingsJson");
+    const activityComponent = propertyRef(activityBag.value?.activityComponent ?? {} as LearningActivityComponentBag, "ActivityComponent");
+
+    const points = propertyRef(activityBag.value?.points ?? 0, "Points");
+
+    const activityComponentValue = ref(activityBag.value?.activityComponent?.guid ?? "");
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [
+        name
+        , description
+        , assignTo
+        , isStudentCommentingEnabled
+        , availableDateCalculationMethod
+        , availableDateDefault
+        , availableDateOffset
+        , dueDateCalculationMethod
+        , dueDateDefault
+        , dueDateOffset
+        , sendNotificationCommunication
+        , completionWorkflowType
+        , activityComponent
+        , activityComponentSettingsJson
+        , points
+    ];
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    const activityTypeComponent = computed((): Component | null => {
+        activityComponent.value = activityComponents.value.find(c => c.guid === activityComponentValue.value) ?? {};
+
+        const componentUrl = activityComponent.value?.componentUrl ?? "";
+        if (componentUrl.length > 0) {
+            return defineAsyncComponent(() => import(componentUrl));
+        }
+        return null;
+    });
+
+    // Make sure the configuration json is in sync with the selected activity type.
+    // This will prevent users from losing their configuration when switching activity types.
+    // We also need an empty configuration in order to instantiate the defaults in useLearningComponent.
+    watch(activityComponentValue, (newValue, oldValue) => {
+        const configLength = activityBag.value?.activityComponentSettingsJson?.length ?? 0;
+        if (oldValue != null && oldValue.length > 0 && configLength > 0) {
+            // Set the old configuraton and map it to the activity type.
+            typeConfigMap.set(oldValue, activityComponentSettingsJson.value);
+        }
+
+        // Look for a configuration for the new activity type if there was a previous one.
+        // Otherwise clear it out so the default constructor can be used to
+        // properly generate the refs in the dynamic component.
+        activityBag.value.activityComponentSettingsJson = typeConfigMap.has(newValue) ? typeConfigMap.get(newValue) : "";
+    });
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.bag?.attributes ?? {});
+
+        updateRefValue(attributeValues, props.modelValue.bag?.attributeValues ?? {});
+        updateRefValue(name, props.modelValue.bag?.name ?? "");
+        updateRefValue(description, props.modelValue.bag?.description ?? "");
+        updateRefValue(assignTo, props.modelValue.bag?.assignTo.toString() ?? "");
+        updateRefValue(isStudentCommentingEnabled, props.modelValue.bag?.isStudentCommentingEnabled ?? false);
+        updateRefValue(availableDateCalculationMethod, props.modelValue.bag?.availableDateCalculationMethod.toString() ?? "");
+        updateRefValue(availableDateDefault, props.modelValue.bag?.availableDateDefault);
+        updateRefValue(availableDateOffset, props.modelValue.bag?.availableDateOffset);
+        updateRefValue(dueDateCalculationMethod, props.modelValue.bag?.dueDateCalculationMethod.toString() ?? "");
+        updateRefValue(dueDateDefault, props.modelValue.bag?.dueDateDefault);
+        updateRefValue(dueDateOffset, props.modelValue.bag?.dueDateOffset);
+        updateRefValue(sendNotificationCommunication, props.modelValue.bag?.sendNotificationCommunication ?? false);
+        updateRefValue(completionWorkflowType, props.modelValue.bag?.completionWorkflowType ?? {});
+        updateRefValue(activityComponent, props.modelValue.bag?.activityComponent ?? {});
+        updateRefValue(activityComponentSettingsJson, props.modelValue.bag?.activityComponentSettingsJson ?? "{}");
+        updateRefValue(points, props.modelValue.bag?.points ?? 0);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, ...propRefs], () => {
+        activityBag.value = { ...props.modelValue.bag } as LearningActivityBag;
+
+        const newValue: ValidPropertiesBox<LearningActivityBag> = {
+            bag: activityBag.value
+        };
+
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "assignTo", parseInt(assignTo.value) as AssignTo);
+        setPropertiesBoxValue(newValue, "isStudentCommentingEnabled", isStudentCommentingEnabled.value);
+        setPropertiesBoxValue(newValue, "availableDateCalculationMethod", parseInt(availableDateCalculationMethod.value) as AvailableDateCalculationMethod);
+        setPropertiesBoxValue(newValue, "availableDateDefault", availableDateDefault.value);
+        setPropertiesBoxValue(newValue, "availableDateOffset", availableDateOffset.value);
+        setPropertiesBoxValue(newValue, "dueDateCalculationMethod", parseInt(dueDateCalculationMethod.value) as DueDateCalculationMethod);
+        setPropertiesBoxValue(newValue, "dueDateDefault", dueDateDefault.value);
+        setPropertiesBoxValue(newValue, "dueDateOffset", dueDateOffset.value);
+        setPropertiesBoxValue(newValue, "sendNotificationCommunication", sendNotificationCommunication.value);
+        setPropertiesBoxValue(newValue, "completionWorkflowType", completionWorkflowType.value);
+        setPropertiesBoxValue(newValue, "activityComponent", activityComponent.value);
+        setPropertiesBoxValue(newValue, "activityComponentSettingsJson", activityComponentSettingsJson.value);
+        setPropertiesBoxValue(newValue, "points", points.value);
+
+        emit("update:modelValue", newValue);
+    });
+
+    watch(activityBag, () => {
+        activityComponentSettingsJson.value = activityBag.value.activityComponentSettingsJson ?? "";
+    });
+</script>

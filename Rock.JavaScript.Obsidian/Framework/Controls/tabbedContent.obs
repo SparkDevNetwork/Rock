@@ -1,11 +1,11 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div>
-        <TabbedBar  v-model="selectedTab" :tabs="tabs" />
+        <TabbedBar v-model="selectedTab" :tabs="tabs" />
 
         <div class="tab-content mt-4">
             <div v-for="(item, i) in tabs" :key="i" :class="classes[i]">
-                <slot name="tabpane" :item="item" />
+                <slot v-if="!isLazyLoad || tabHasBeenViewed[i]" name="tabpane" :item="item" />
             </div>
         </div>
     </div>
@@ -16,18 +16,42 @@
     import { PropType, ref, watch } from "vue";
 
     const props = defineProps({
+        /** Whether to load tabs lazily or not. Defaults to false. */
+        lazyLoad: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** The currently selected tab. */
+        selectedTab: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /** The array of tab texts. */
         tabs: {
             type: Array as PropType<string[]>,
             required: true
-        }
+        },
+
     });
 
-    const selectedTab = ref(props.tabs.length > 0 ? props.tabs[0] : "");
+    const isLazyLoad = ref(props.lazyLoad ?? false);
     const classes = ref<string[]>([]);
+    const tabHasBeenViewed = ref<boolean[]>([]);
+
+    const emit = defineEmits<{
+        (e: "update:selectedTab", value: string): void
+    }>();
+
+    const selectedTab = ref(props.selectedTab ?? "");
+
     let timeout: number;
 
     watch(() => props.tabs, () => {
-        selectedTab.value = props.tabs.length > 0 ? props.tabs[0] : "";
+        const tabsLength = props.tabs.length;
+        const indexOfSelectedTab = props.tabs.findIndex(t => t.toLowerCase() === selectedTab.value?.toLowerCase()) ?? 0;
+        selectedTab.value = tabsLength > 0 ? props.tabs[indexOfSelectedTab] : "";
 
         classes.value = props.tabs.map(item => {
             let list = "tab-pane fade";
@@ -38,14 +62,19 @@
 
             return list;
         });
+
+        const falseValuesArray = tabsLength > 1 ? new Array(tabsLength - 1).fill(false) : [];
+        tabHasBeenViewed.value = [true].concat(falseValuesArray);
     }, { immediate: true });
 
     watch(selectedTab, (current, previous) => {
         const previousIndex = props.tabs.indexOf(previous);
         const currentIndex = props.tabs.indexOf(current);
+        tabHasBeenViewed.value[currentIndex] = true;
+
+        emit("update:selectedTab", selectedTab.value);
 
         classes.value[previousIndex] = "tab-pane fade active";
-
         clearTimeout(timeout);
         timeout = window.setTimeout(() => {
             classes.value[previousIndex] = "tab-pane fade";

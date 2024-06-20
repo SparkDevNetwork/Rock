@@ -1,0 +1,188 @@
+﻿using System;
+using System.ComponentModel;
+using System.ComponentModel.Composition;
+using System.Linq;
+
+using Newtonsoft.Json.Linq;
+
+using Rock.Model;
+
+namespace Rock.Lms
+{
+    /// <summary>
+    /// The Assessment activity is an activity that requires a partcipant to complete multiple items.
+    /// </summary>
+    [Description( "A Learning Activity that requires a partcipant to complete multiple items." )]
+    [Export( typeof( LearningActivityComponent ) )]
+    [ExportMetadata( "ComponentName", "Assessment" )]
+
+    [Rock.SystemGuid.EntityTypeGuid( "a585c101-02e8-4953-bf77-c783c7cfdfdc" )]
+    public class AssessmentComponent : LearningActivityComponent
+    {
+        /// <summary>
+        /// Gets the Highlight color for the component.
+        /// </summary>
+        public override string HighlightColor => "#a9551d";
+
+        /// <summary>
+        /// Gets the icon CSS class for the component.
+        /// </summary>
+        public override string IconCssClass => "fa fa-list";
+
+        /// <summary>
+        /// Gets the name of the component.
+        /// </summary>
+        public override string Name => "Assessment";
+
+        /// <summary>
+        /// Initializes a new instance of the Assessment component.
+        /// </summary>
+        public AssessmentComponent() : base( @"/Obsidian/Controls/Internal/LearningActivity/assessmentLearningActivity.obs" ) { }
+
+        /// <summary>
+        /// Removes the isCorrect flag from any multiple choice assessment items.
+        /// </summary>
+        /// <param name="rawConfigurationJsonString"></param>
+        /// <returns>The json string stripped of any information that might identify correct answers.</returns>
+        public override string StudentScrubbedConfiguration( string rawConfigurationJsonString )
+        {
+            try
+            {
+                const string multipleChoiceItemTypeName = "Multiple Choice";
+                var correctAnswerPath = $"$.items[?(@.typeName == '{multipleChoiceItemTypeName}')].correctAnswer";
+                var jObject = JObject.Parse( rawConfigurationJsonString );
+                var correctAnswers = jObject.SelectTokens( correctAnswerPath );
+
+                foreach ( var correctAnswer in correctAnswers )
+                {
+                    correctAnswer.Parent.Remove();
+                }
+
+                return jObject.ToJson();
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex );
+            }
+
+            // If there was an error don't return anything (to prevent leaking answers).
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Calculates the student grade based on the configured multiple choice responses and weights.
+        /// Includes the calculations for the facilitator graded Short Answer items as well (if completed).
+        /// </summary>
+        /// <param name="configurationJson">The JSON string of the components configuration.</param>
+        /// <param name="completionJson">The JSON string of the components completion.</param>
+        /// <param name="pointsPossible">The total number of points possible for this activity.</param>
+        /// <returns>The actual earned points for this activity.</returns>
+        public override int CalculatePointsEarned( string configurationJson, string completionJson, int pointsPossible )
+        {
+            var multipleChoiceSectionPoints = GetMultipleChoiceSectionPoints(configurationJson, completionJson, pointsPossible );
+            var shortAnswerSectionPoints = GetShortAnswerSectionPoints(configurationJson, completionJson, pointsPossible);
+
+            return multipleChoiceSectionPoints + shortAnswerSectionPoints;
+        }
+
+        /// <summary>
+        /// Parses the configuration and completion Jsons and calculates the points earned for the multiple choice section of the assessment.
+        /// </summary>
+        /// <param name="configurationJson">The JSON string of the components configuration.</param>
+        /// <param name="completionJson">The JSON string of the components completion.</param>
+        /// <param name="pointsPossible">The total number of points possible for this activity.</param>
+        /// <returns>The actual earned points for the multiple choice section of the assessment.</returns>
+        private int GetMultipleChoiceSectionPoints( string configurationJson, string completionJson, int pointsPossible )
+        {
+            try
+            {
+                var correctMultipleChoiceItems = 0;
+                const string multipleChoiceItemTypeName = "Multiple Choice";
+                var itemsPath = $"$.items[?(@.typeName == '{multipleChoiceItemTypeName}')]";
+
+                var config = JObject.Parse( configurationJson );
+                var completion = JObject.Parse( completionJson );
+
+                var configuredItems = config.SelectTokens( itemsPath );
+                var multipleChoiceWeight = config.SelectToken( "multipleChoiceWeight" )?.ToObject<decimal>() ?? 0;
+
+                foreach ( var question in configuredItems )
+                {
+                    var questionId = question.SelectToken( "uniqueId" )?.ToObject<string>() ?? string.Empty;
+
+                    if ( questionId == string.Empty )
+                    {
+                        continue;
+                    }
+
+                    var correctAnswer = question["correctAnswer"]?.ToStringSafe();
+                    var response = completion.SelectToken( $"$.completedItems[?(@.uniqueId  == '{questionId}')].response" )?.ToObject<string>() ?? string.Empty;
+
+                    if ( correctAnswer.Equals( response, StringComparison.OrdinalIgnoreCase ) )
+                    {
+                        correctMultipleChoiceItems++;
+                    }
+                }
+
+                decimal multipleChoiceItemCount = configuredItems.Count();
+                var sectionWeight = multipleChoiceWeight / 100;
+                var availablePoints = pointsPossible * sectionWeight;
+                var percentCorrect = correctMultipleChoiceItems / multipleChoiceItemCount;
+                var pointsEarned = availablePoints * percentCorrect;
+                return (int)pointsEarned;
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex );
+            }
+
+            return 0;
+        }
+
+        /// <summary>
+        /// Parses the configuration and completion Jsons and calculates the points earned for the short answer section of the assessment.
+        /// </summary>
+        /// <param name="configurationJson">The JSON string of the components configuration.</param>
+        /// <param name="completionJson">The JSON string of the components completion.</param>
+        /// <param name="pointsPossible">The total number of points possible for this activity.</param>
+        /// <returns>The actual earned points for the short answer section of the assessment.</returns>
+        private int GetShortAnswerSectionPoints( string configurationJson, string completionJson, int pointsPossible )
+        {
+            var pointsEarned = 0;
+            try
+            {
+                const string shortAnswerItemTypeName = "Short Answer";
+                var itemsPath = $"$.items[?(@.typeName == '{shortAnswerItemTypeName}')]";
+
+                var config = JObject.Parse( configurationJson );
+                var completion = JObject.Parse( completionJson );
+
+                var configuredItems = config.SelectTokens( itemsPath ); ;
+                
+                foreach ( var question in configuredItems )
+                {
+                    var questionId = question.SelectToken( "uniqueId" )?.ToObject<string>() ?? string.Empty;
+                    
+                    if ( questionId == string.Empty )
+                    {
+                        continue;
+                    }
+
+                    var faciltatorScore = completion.SelectToken( $"$.completedItems[?(@.uniqueId  == '{questionId}')].pointsEarned" )?.ToObject<int>();
+
+                    if (faciltatorScore.HasValue )
+                    {
+                        pointsEarned += faciltatorScore.Value;
+                    }
+                }
+
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex );
+            }
+
+            return pointsEarned;
+        }
+    }
+}

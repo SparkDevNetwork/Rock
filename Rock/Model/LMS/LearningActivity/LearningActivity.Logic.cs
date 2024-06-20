@@ -41,13 +41,13 @@ namespace Rock.Model
                     case AvailableDateCalculationMethod.ClassStartOffset:
                         if ( !LearningClass.LearningSemester.StartDate.HasValue )
                         {
-                            return $"+{AvailableDateOffset ?? 0} {"day".PluralizeIf( AvailableDateOffset != 1 )} after class start.";
+                            return $"{DateOffsetText( AvailableDateOffset )} class start.";
                         }
                         break;
                     case AvailableDateCalculationMethod.EnrollmentOffset:
                         if ( LearningClass.CreatedDateTime.HasValue )
                         {
-                            return $"+{AvailableDateOffset ?? 0} {"day".PluralizeIf( AvailableDateOffset != 1 )} after class enrollment.";
+                            return $"{DateOffsetText( AvailableDateOffset )} class enrollment.";
                         }
                         break;
                     case AvailableDateCalculationMethod.AfterPreviousCompleted:
@@ -78,13 +78,13 @@ namespace Rock.Model
                     case DueDateCalculationMethod.ClassStartOffset:
                         if ( LearningClass.LearningSemester.StartDate.HasValue )
                         {
-                            return $"+{DueDateOffset ?? 0} {"day".PluralizeIf( DueDateOffset != 1 )} after class start.";
+                            return $"{DateOffsetText( DueDateOffset )} class start.";
                         }
                         break;
                     case DueDateCalculationMethod.EnrollmentOffset:
                         if ( LearningClass.CreatedDateTime.HasValue )
                         {
-                            return $"+{DueDateOffset ?? 0} {"day".PluralizeIf( DueDateOffset != 1 )} after class enrollment.";
+                            return $"{DateOffsetText( DueDateOffset )} class enrollment.";
                         }
                         break;
                     case DueDateCalculationMethod.NoDate:
@@ -228,6 +228,39 @@ namespace Rock.Model
                 return DueDateCalculated.HasValue && DueDateCalculated.Value.IsPast();
             }
         }
+
+        #region Private methods
+
+        /// <summary>
+        /// Gets the starting string for a textual representation of a calculated date (due or available).
+        /// </summary>
+        /// <param name="dateOffset">The Available or Due Date offset to use in the text.</param>
+        /// <returns>The human readable string to use for the specified offset.</returns>
+        private string DateOffsetText( int? dateOffset )
+        {
+            var unsignedOffset = Math.Abs( dateOffset ?? 0 );
+
+            if ( unsignedOffset == 0 )
+            {
+                return "At "; // e.g. 'At Class Start' or 'At class enrollment'.
+            }
+
+            // If the sign of the offset is negative use 'before' otherwise 'after'. Zero is already accounted for.
+            var beforeOrAfter = dateOffset < 0 ? "before" : "after";
+            if ( unsignedOffset == 1 )
+            {
+                return $"1 day {beforeOrAfter} ";
+            }
+
+            if ( unsignedOffset > 1 )
+            {
+                return $"{unsignedOffset} days {beforeOrAfter} ";
+            }
+
+            return string.Empty;
+        }
+
+        #endregion
     }
 
     /// <summary>
