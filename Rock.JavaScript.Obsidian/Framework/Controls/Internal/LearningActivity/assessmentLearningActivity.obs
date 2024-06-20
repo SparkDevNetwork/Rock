@@ -16,8 +16,12 @@
                                :decimalCount="0"
                                :min="0"
                                label="Multiple Choice Weight"
-                               help="Set the point value for each multiple choice question."
+                               :rules="'sumsto:100,' + allWeights"
+                               :help="multipleChoiceWeightHelpText"
                                inputGroupClasses="input-width-md">
+                        <template #inputGroupAppend>
+                            <span class="input-group-addon">%</span>
+                        </template>
                     </NumberBox>
                 </div>
 
@@ -54,7 +58,7 @@
                         <div class="assessment-item assessment-item-configuration-section">
                             <AssessmentItemMultipleChoice v-if="item.typeName === 'Multiple Choice'" v-model="items[index]" :screenToShow="screenToShow" rules="required" />
                             <AssessmentItemSection v-if="item.typeName === 'Section'" v-model="items[index]" :screenToShow="screenToShow" />
-                            <AssessmentItemShortAnswer v-if="item.typeName === 'Short Answer'" v-model="items[index]" :screenToShow="screenToShow" rules="required" />
+                            <AssessmentItemShortAnswer v-if="item.typeName === 'Short Answer'" v-model="items[index]" :screenToShow="screenToShow" rules="required" :totalActivityPoints="activityBag.points" />
                         </div>
                     </div>
                 </div>
@@ -70,7 +74,7 @@
         <div v-if="screenToShow === ComponentScreen.Scoring">
             <div class="assessment-items-container" v-for="(item, index) of completedItems">
                 <div class="well well-sm assessment-item-container" v-if="item.typeName === 'Short Answer'">
-                    <AssessmentItemShortAnswer v-model="completedItems[index]" :screenToShow="screenToShow" />
+                    <AssessmentItemShortAnswer v-model="completedItems[index]" :screenToShow="screenToShow" :totalActivityPoints="activityBag.points" />
                 </div>
             </div>
         </div>
@@ -113,7 +117,7 @@
                     </template>
 
                     <template v-if="item.typeName === 'Short Answer'">
-                        <AssessmentItemShortAnswer v-model="completedItems[index]" :screenToShow="screenToShow" />
+                        <AssessmentItemShortAnswer v-model="completedItems[index]" :screenToShow="screenToShow" :totalActivityPoints="activityBag.points" />
                     </template>
                 </div>
             </div>
@@ -266,6 +270,13 @@ div.summary-sub-title {
     const props = defineProps({ ...learningActivityProps });
     const emit = defineEmits({ ...learningActivityEmits });
 
+    const multipleChoiceWeightHelpText = `
+        Enter the percentage weight for the multiple choice section of the test.
+        This value will determine how much the multiple choice questions will contribute to the overall score of the test.
+        For example, if you set this to 40% then 40% of the student's total test score will be based on their performance in the multiple choice section.
+        Ensure that the combined weights of all sections add up to 100%.
+    `;
+
     // #region Values
 
     // Get the bags directly from the props when needed (to support the useLearningComponent computedRefs).
@@ -350,10 +361,14 @@ div.summary-sub-title {
      * (Takes the configuration values and adds the student response).
      */
     function getItemsForStudentCompletion(): AssessmentItem[] {
-        return toValue((toValue(items.value) ?? []).map(i => {
-            i.response = toValue(completedItems.value?.find(c => c.uniqueId === i.uniqueId)?.response ?? "");
-            return i;
-        }));
+        return toValue((toValue(items.value) ?? [])
+            .map(i => {
+                const completedItem = toValue(completedItems.value?.find(c => c.uniqueId === i.uniqueId));
+                i.response = completedItem?.response ?? "";
+                i.pointsEarned = completedItem?.pointsEarned ?? 0;
+
+                return i;
+            }));
     }
 
     // #endregion
@@ -379,23 +394,42 @@ div.summary-sub-title {
     const correctMultipleChoiceItems = computed(() => multipleChoiceItems.value.filter(i => i.response === i.correctAnswer));
     const incorrectMultipleChoiceItems = computed(() => multipleChoiceItems.value.filter(i => i.response !== i.correctAnswer));
 
-    const totalQuestions = computed(() => multipleChoiceItems.value.length);
-    const correctResponses = computed(() => correctMultipleChoiceItems.value.length);
-    const hasMultipleChoiceQuestions = computed(() => totalQuestions.value > 0);
+    const multipleChoiceItemCount = computed(() => multipleChoiceItems.value.length);
+    const correctMultipleChoiceItemCount = computed(() => correctMultipleChoiceItems.value.length);
+    const hasMultipleChoiceQuestions = computed(() => multipleChoiceItemCount.value > 0);
     const hasShortAnswerQuestions = computed(() => shortAnswerItems.value.length > 0);
     const hasIncorrectResponses = computed(() => incorrectMultipleChoiceItems.value.length > 0);
-    const gradePercent = computed(() => {
-        if (correctResponses.value === 0 || totalQuestions.value === 0) {
+    const gradePercent = computed(() => totalPointsEarned.value / activityBag.value.points);
+
+    /**
+     * The calculated points earned.
+     * Automatically graded multiple choice items are added to the currently scored short answer items (if any).
+     * */
+    const totalPointsEarned = computed(() => {
+        const availableMultipleChoicePoints = activityBag.value.points * (multipleChoiceWeight.value / 100);
+        const earnedMultipleChoicePoints = multipleChoiceGradePercent.value * availableMultipleChoicePoints;
+
+        // each short answer score * weight * points possible
+        // Points possible is the total activity points possible * the individual question weight.
+        const shortAnswerPoints = shortAnswerItems.value
+            .map(i => i.pointsEarned)
+            .reduce((prev, cur) => cur + prev, 0);
+
+        return Math.round(earnedMultipleChoicePoints + shortAnswerPoints);
+    });
+
+    const multipleChoiceGradePercent = computed(() => {
+        if (correctMultipleChoiceItemCount.value === 0 || multipleChoiceItemCount.value === 0) {
             // Either correct responses or total questions are 0 so we know there's no calculation.
             return 0;
         }
         else if (multipleChoiceWeight.value === 0) {
             // If the multiple choice weight is 0 consider all questions correct.
-            return 100;
+            return 1;
         }
         else {
             // Calculate the percent correct.
-            return totalQuestions.value / correctResponses.value * 100;
+            return correctMultipleChoiceItemCount.value / multipleChoiceItemCount.value;
         }
     });
 
@@ -411,11 +445,17 @@ div.summary-sub-title {
     const resultSummarySubHeader = computed(() =>
         toValue(completionBag)?.isFacilitatorCompleted === true ?
             `Score: ${gradePercent.value}%` :
-            `Multiple Choice Score: ${correctResponses.value} of ${totalQuestions.value} correct.`
+            `Multiple Choice Score: ${correctMultipleChoiceItemCount.value} of ${multipleChoiceItemCount.value} correct.`
+    );
+
+    const allWeights = computed(() =>
+        items.value.filter(i => i.typeName === AssessmentItemType.ShortAnswer)
+        .map(i => (i as ShortAnswerItem).questionWeight)
+        .concat(multipleChoiceWeight.value)
     );
 
     const multipleChoiceSummaryText = computed(() => {
-        const questionsCorrectSentence = `You answered ${correctResponses.value} out of ${totalQuestions.value} multiple choice questions correctly.`;
+        const questionsCorrectSentence = `You answered ${correctMultipleChoiceItemCount.value} out of ${multipleChoiceItemCount.value} multiple choice questions correctly.`;
         const missedQuestionSentence = hasIncorrectResponses.value === true ?
             "Below are the questions you missed, along with the correct answers." :
             "";
@@ -466,6 +506,7 @@ div.summary-sub-title {
         header,
         items,
         multipleChoiceWeight,
+        shortAnswerItems,
         showMissedQuestionsOnResults,
         showResultsOnCompletion
     ], () => {
@@ -475,14 +516,20 @@ div.summary-sub-title {
     }, { deep: true });
 
     /** Watch for modified component completion. */
-    watch(completedItems, () => {
+    watch([completedItems, studentComment, totalPointsEarned], () => {
         const updatedCompletionBag = {
             ...toValue(completionBag)
         } as LearningActivityCompletionBag;
 
         updatedCompletionBag.activityComponentCompletionJson = JSON.stringify({
-            completedItems: toValue(completedItems.value)
+            completedItems: toValue(completedItems.value),
         }) ?? "{}";
+
+        updatedCompletionBag.studentComment = studentComment.value;
+
+        if (screenToShow.value === ComponentScreen.Scoring) {
+            updatedCompletionBag.pointsEarned = totalPointsEarned.value;
+        }
 
         emit("update:completionBag", updatedCompletionBag);
     }, { deep: true });

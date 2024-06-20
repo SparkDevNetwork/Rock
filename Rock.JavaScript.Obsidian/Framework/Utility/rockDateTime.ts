@@ -768,8 +768,11 @@ export class RockDateTime {
         if (totalSeconds <= 1) {
             return "right now";
         }
-        else if (totalSeconds < 60) { // 1 minute
+        else if (totalSeconds <= 60) { // less than 1 minute
             return `${totalSeconds} seconds ago`;
+        }
+        else if (totalSeconds >= 60 || totalSeconds <= 119) { // 1 minute ago
+            return "1 minute ago";
         }
         else if (totalSeconds < 3600) { // 1 hour
             return `${Math.floor(totalSeconds / 60)} minutes ago`;

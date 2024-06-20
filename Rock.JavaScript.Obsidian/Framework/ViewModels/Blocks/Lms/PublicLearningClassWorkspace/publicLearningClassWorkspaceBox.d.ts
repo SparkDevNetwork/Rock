@@ -22,44 +22,46 @@
 //
 
 import { Guid } from "@Obsidian/Types";
-import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
-import { LearningClassFacilitatorBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassDetail/learningClassFacilitatorBag";
-import { LearningParticipantBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningParticipantDetail/learningParticipantBag";
+import { LearningActivityCompletionBag } from "../LearningActivityCompletionDetail/learningActivityCompletionBag";
+import { LearningClassFacilitatorBag } from "../LearningClassDetail/learningClassFacilitatorBag";
+import { LearningParticipantBag } from "../LearningParticipantDetail/learningParticipantBag";
+import { BlockBox } from "@Obsidian/ViewModels/Blocks/blockBox";
+import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
 
 export type PublicLearningClassWorkspaceBox = {
     /** Gets or sets the list of activities for this learning class. */
-    activities?: LearningActivityCompletionBag[] | null;
+    activities?: Array<LearningActivityCompletionBag>;
 
     /** Gets or sets the id for the class. */
-    classIdKey?: string | null;
+    classIdKey?: string;
 
     /** Gets or sets the id for the course. */
-    courseIdKey?: string | null;
+    courseIdKey?: string;
 
     /** Gets or sets the Guid of the image for the course. */
-    courseImageGuid?: Guid | null;
+    courseImageGuid?: Guid;
 
     /** Gets or sets the name of the course. */
-    courseName?: string | null;
+    courseName?: string;
 
     /** Gets or sets the summary of the course. */
-    courseSummary?: string | null;
-
-    /**
-     * Gets or sets the error message. A non-empty value indicates that
-     * an error is preventing the block from being displayed.
-     */
-    errorMessage?: string | null;
+    courseSummary?: string;
 
     /** Gets or sets the list of facilitators for the learning class. */
-    facilitators?: LearningClassFacilitatorBag[] | null;
+    facilitators?: Array<LearningClassFacilitatorBag>;
 
-    /** Gets or sets the navigation urls. */
-    navigationUrls?: Record<string, string> | null;
+    /** Gets or sets the HTML to be rendered for the class workspace header content. */
+    headerHtml?: string | null;
 
     /** Gets or sets the participant accessing the course for the learning class. */
-    participantBag?: LearningParticipantBag | null;
+    numberOfNotificationsToShow: number;
 
-    /** Gets or sets the security grant token. */
-    securityGrantToken?: string | null;
-};
+    /** Gets or sets the participant accessing the course for the learning class. */
+    participantBag?: LearningParticipantBag;
+
+    /** Gets or sets the Learning Program's configuration mode. */
+    programConfigurationMode: ConfigurationMode;
+
+    /** Whether to show grades on the class overview page. */
+    showGrades: boolean;
+} & BlockBox;

@@ -32,6 +32,7 @@
                                   rules="required"
                                   :binaryFileTypeGuid="BinaryFiletype.LearningManagementSystem"
                                   uploadButtonText="Upload"
+                                  :disabled="isFacilitatorCompleted || dueDateHasPassed"
                                   :showDeleteButton="true" />
                 </div>
                 <div class="footer-section">
@@ -120,7 +121,7 @@
 </style>
 
 <script setup lang="ts">
-    import { toRef, toValue, watch, } from "vue";
+    import { ref, toRef, toValue, watch, } from "vue";
     import { debounce } from "@Obsidian/Utility/util";
     import Panel from "@Obsidian/Controls/panel.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -136,6 +137,7 @@
     import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
     import { learningActivityEmits, learningActivityProps, ComponentScreen, useLearningComponent } from "./learningActivity";
     import { FileUploadActivityCompletion, FileUploadActivityConfiguration, FileUploadActivityDefaults } from "./fileUploadLearningActivity.partial";
+import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
     // Get the required props and emits for learning activity components.
     const props = defineProps({ ...learningActivityProps });
@@ -164,6 +166,14 @@
         screenToShow,
         new FileUploadActivityDefaults()
     );
+
+    const dueDate =
+        (completionBag.value.dueDate ?? "").length === 0 ?
+        null :
+        RockDateTime.parseHTTP(completionBag.value.dueDate ?? "");
+
+    const dueDateHasPassed = ref(dueDate != null && dueDate < RockDateTime.now());
+    const isFacilitatorCompleted = ref(completionBag.value.isFacilitatorCompleted);
 
     /** Watch for modified component settings. */
     const debouncedActivityBagEmits = debounce(() => {

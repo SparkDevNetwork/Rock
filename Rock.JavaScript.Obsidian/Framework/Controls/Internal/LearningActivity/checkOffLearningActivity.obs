@@ -7,7 +7,6 @@
             </div>
             <div class="is-required-section">
                 <CheckBox v-model="isConfirmationRequired" label="Confirmation Required" />
-
             </div>
 
             <div class="footer-content-section">

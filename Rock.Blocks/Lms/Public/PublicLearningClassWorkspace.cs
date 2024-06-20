@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
@@ -32,6 +33,7 @@ using Rock.ViewModels.Blocks.Lms.LearningActivityDetail;
 using Rock.ViewModels.Blocks.Lms.LearningClassDetail;
 using Rock.ViewModels.Blocks.Lms.PublicLearningClassWorkspace;
 using Rock.ViewModels.Utility;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Blocks.Lms
 {
@@ -51,6 +53,33 @@ namespace Rock.Blocks.Lms
         Key = AttributeKey.FacilitatorPortalPage,
         Order = 1 )]
 
+    [CodeEditorField( "Header Template",
+        Key = AttributeKey.HeaderTemplate,
+        Description = "The lava template showing the program list. Merge fields include: Course, Activities, Facilitators and other Common Merge Fields. <span class='tip tip-lava'></span>",
+        EditorMode = CodeEditorMode.Lava,
+        EditorTheme = CodeEditorTheme.Rock,
+        EditorHeight = 400,
+        IsRequired = true,
+        DefaultValue = AttributeDefault.HeaderTemplate,
+        Order = 2 )]
+
+    [IntegerField( "The Number of Notifications to Show",
+        Key = AttributeKey.NumberOfNotificationsToShow,
+        Description = "The number of notifications to show on the class overview page",
+        IsRequired = true,
+        DefaultIntegerValue = 3,
+        Order = 3 )]
+
+    [CustomDropdownListField(
+        "Show Grades",
+        Key = AttributeKey.ShowGrades,
+        Description = "Select 'Show' to show grades on the class overview page; 'Hide' to not show any grades.",
+        ListSource = "Show,Hide",
+        IsRequired = true,
+        DefaultValue = "Show",
+        Order = 4 )]
+
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "1bf70976-85ac-43d3-b98a-0b87a2ffd9b6" )]
@@ -59,9 +88,72 @@ namespace Rock.Blocks.Lms
     {
         #region Keys
 
+        private static class AttributeDefault
+        {
+            public const string HeaderTemplate = @"
+{% assign imageFileNameLength = Course.ImageFileGuid | Size %}
+
+//- Styles
+{% stylesheet %}
+    .header-container {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 12px;
+    }
+    
+    .page-header-section {
+        {% if imageFileNameLength > 0 %}
+            height: 280px;
+            background-image: url('/GetImage.ashx?guid={{Course.ImageFileGuid}}'); 
+            background-size: cover;
+        {% endif %}
+        align-items: center; 
+        border-radius: 12px; 
+    }
+    
+    .header-block {
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        left: 10%;
+        {% if imageFileNameLength > 0 %}
+            bottom: -85%;
+            -webkit-transform: translateY(-30%);
+            transform: translateY(-30%);
+        {% endif %}
+        background-color: white; 
+        border-radius: 12px; 
+        width: 80%; 
+    }
+    
+    .page-sub-header {
+        padding-left: 10%; 
+        padding-right: 10%; 
+        padding-bottom: 12px;
+        margin-bottom: 12px;
+    }
+{% endstylesheet %}
+<div class=""header-container"">
+	<div class=""page-header-section mb-5"">
+		<div class=""header-block text-center"">
+			<h2>
+				{{ Course.PublicName }}
+			</h2>
+			<div class=""page-sub-header"">
+				{{ Course.Summary }}
+			</div>
+		</div>
+	</div>
+</div>
+";
+    }
+
         private static class AttributeKey
         {
             public const string FacilitatorPortalPage = "FacilitatorPortalPage";
+            public const string HeaderTemplate = "HeaderTemplate";
+            public const string NumberOfNotificationsToShow = "NumberOfNotificationsToShow";
+            public const string ShowGrades = "ShowGrades";
         }
 
         private static class PageParameterKey
@@ -88,25 +180,30 @@ namespace Rock.Blocks.Lms
             var courseId = IdHasher.Instance.GetId( courseIdKey );
             var classId = IdHasher.Instance.GetId( classIdKey ).ToIntSafe();
 
-            // Initialize the box with the course properties.
-            var box = new LearningCourseService( RockContext ).Queryable()
+            var course = new LearningCourseService( RockContext ).Queryable()
                 .AsNoTracking()
                 .Include( c => c.ImageBinaryFile )
-                .Where( c => c.Id == courseId )
-                .Select( c => new PublicLearningClassWorkspaceBox
-                {
-                    ClassIdKey = classIdKey,
-                    CourseIdKey = courseIdKey,
-                    CourseImageGuid = c.ImageBinaryFile.Guid,
-                    CourseName = c.PublicName,
-                    CourseSummary = c.Summary
-                } ).FirstOrDefault() ?? new PublicLearningClassWorkspaceBox();
+                .Include( c => c.LearningProgram )
+                .FirstOrDefault( c => c.Id == courseId );
 
+            // Initialize the box with the course properties.
+            var box =
+                course == null ?
+                new PublicLearningClassWorkspaceBox() :
+                new PublicLearningClassWorkspaceBox
+            {
+                ClassIdKey = classIdKey,
+                CourseIdKey = courseIdKey,
+                CourseImageGuid = course.ImageBinaryFile?.Guid,
+                CourseName = course.PublicName,
+                CourseSummary = course.Summary,
+                ProgamConfigurationMode = course.LearningProgram.ConfigurationMode
+            };
 
             if ( box.CourseName.IsNullOrWhiteSpace() )
             {
                 box.ErrorMessage = $"The {LearningCourse.FriendlyTypeName} was not found.";
-                return box;
+                return new PublicLearningClassWorkspaceBox();
             }
 
             if ( classId == 0 )
@@ -136,6 +233,14 @@ namespace Rock.Blocks.Lms
                 } )
                 .ToList();
 
+            var mergeFields = this.RequestContext.GetCommonMergeFields();
+            mergeFields.Add( "Course", course );
+            mergeFields.Add( "Activities",  box.Activities);
+            mergeFields.Add( "Facilitators", box.Facilitators );
+
+            var template = GetAttributeValue( AttributeKey.HeaderTemplate ) ?? string.Empty;
+            box.HeaderHtml = template.ResolveMergeFields( mergeFields );
+
             return box;
         }
 
@@ -159,7 +264,10 @@ namespace Rock.Blocks.Lms
 
             var activityCompletionService = new LearningActivityCompletionService( rockContext );
 
-            var activities = activityCompletionService.GetClassActivities( currentPerson.Id, classId ).ToList().OrderBy( a => a.LearningActivity.Order );
+            var activities = activityCompletionService.GetClassActivities( currentPerson.Id, classId )
+                .Where(a => a.LearningActivity.AssignTo == Enums.Lms.AssignTo.Student)
+                .ToList()
+                .OrderBy( a => a.LearningActivity.Order );
 
             // Get the necessary properties for all the binary files at once.
             var binaryFileIds = activities.Where( a => a.BinaryFileId.HasValue && a.BinaryFileId > 0 ).Select( a => a.BinaryFileId.Value ).ToList();
@@ -178,8 +286,11 @@ namespace Rock.Blocks.Lms
                 var activityComponent = components.FirstOrDefault( c => c.Value.Value.EntityType.Id == activity.LearningActivity.ActivityComponentId ).Value.Value;
 
                 // Ensure the configuration is scrubbed of any information the component deems not permissible for the student to view (e.g. correct answers).
-                var studentScrubbedConfiguration = activityComponent.StudentScrubbedConfiguration( activity.LearningActivity.ActivityComponentSettingsJson );
-
+                var configurationToSend =
+                    activity.IsStudentCompleted ?
+                    activity.LearningActivity.ActivityComponentSettingsJson :
+                    activityComponent.StudentScrubbedConfiguration( activity.LearningActivity.ActivityComponentSettingsJson );
+                
                 var activityComponentBag = new LearningActivityComponentBag
                 {
                     Name = activityComponent?.Name,
@@ -204,7 +315,7 @@ namespace Rock.Blocks.Lms
                 var activityBag = new LearningActivityBag
                 {
                     ActivityComponent = activityComponentBag,
-                    ActivityComponentSettingsJson = studentScrubbedConfiguration,
+                    ActivityComponentSettingsJson = configurationToSend,
                     AssignTo = activity.LearningActivity.AssignTo,
                     CurrentPerson = currentPersonBag,
                     Description = activity.LearningActivity.Description,
@@ -262,7 +373,6 @@ namespace Rock.Blocks.Lms
 
         #region Block Actions
 
-
         [BlockAction]
         public BlockActionResult CompleteActivity( LearningActivityCompletionBag activityCompletionBag )
         {
@@ -282,9 +392,23 @@ namespace Rock.Blocks.Lms
                     return ActionBadRequest( $"No {LearningActivityCompletion.FriendlyTypeName} was found." );
                 }
 
-                activity.ActivityComponentCompletionJson = activityCompletionBag.ActivityComponentCompletionJson;
                 activity.BinaryFileId = activityCompletionBag.BinaryFile.GetEntityId<BinaryFile>( rockContext );
                 activity.IsStudentCompleted = true;
+                activity.StudentComment = activityCompletionBag.StudentComment;
+
+                // Only allow student updating completion and points if this hasn't yet been completed by the facilitator.
+                if (!activity.IsFacilitatorCompleted)
+                {
+                    var components = LearningActivityContainer.Instance.Components;
+                    var activityComponent = components.FirstOrDefault( c => c.Value.Value.EntityType.Id == activity.LearningActivity.ActivityComponentId ).Value.Value;
+
+                    activity.ActivityComponentCompletionJson = activityCompletionBag.ActivityComponentCompletionJson;
+                    activity.PointsEarned = activityComponent.CalculatePointsEarned(
+                        activity.LearningActivity.ActivityComponentSettingsJson,
+                        activityCompletionBag.ActivityComponentCompletionJson,
+                        activity.LearningActivity.Points
+                    );
+                }
 
                 var currentPerson = GetCurrentPerson();
                 activity.CompletedByPersonAliasId = currentPerson.PrimaryAliasId;
@@ -308,7 +432,6 @@ namespace Rock.Blocks.Lms
                 return ActionOk( activityCompletionBag );
             }
         }
-
 
         #endregion
     }

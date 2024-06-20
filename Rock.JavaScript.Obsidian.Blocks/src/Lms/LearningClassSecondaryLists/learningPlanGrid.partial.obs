@@ -105,8 +105,8 @@
 
     const invokeBlockAction = useInvokeBlockAction();
 
-    const assignToIcons: Array<string> = ["fa fa-user-graduate", "fa fa-user-graduate", "fa fa-chalkboard-teacher"];
-    const assignToColors: Array<string> = ["#2f699f", "#2f699f", "#a9551d"];
+    const assignToIcons: Array<string> = ["fa fa-user-graduate", "fa fa-chalkboard-teacher"];
+    const assignToColors: Array<string> = ["#2f699f", "#a9551d"];
 
     const emit = defineEmits<{
         (e: "deleteClick", idKey: string, gridData: GridDataBag | undefined): void;

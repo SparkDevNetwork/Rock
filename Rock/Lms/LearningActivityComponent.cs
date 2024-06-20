@@ -56,6 +56,14 @@ namespace Rock.Lms
         public virtual string StudentScrubbedConfiguration( string rawConfigurationJsonString ) => rawConfigurationJsonString;
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <remarks>
+        /// </remarks>
+        /// <returns></returns>
+        public virtual int CalculatePointsEarned( string rawConfigurationJsonString, string rawCompletionJsonString, int pointsPossible ) => pointsPossible;
+
+        /// <summary>
         /// Gets the attribute value defaults.
         /// </summary>
         /// <value>

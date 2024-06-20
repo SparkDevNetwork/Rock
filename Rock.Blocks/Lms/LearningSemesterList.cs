@@ -175,6 +175,41 @@ namespace Rock.Blocks.Lms
 
         #region Block Actions
 
+        /// <summary>
+        /// Deletes the specified entity.
+        /// </summary>
+        /// <param name="key">The identifier of the entity to be deleted.</param>
+        /// <returns>An empty result that indicates if the operation succeeded.</returns>
+        [BlockAction]
+        public BlockActionResult Delete( string key )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var entityService = new LearningSemesterService( rockContext );
+                var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+
+                if ( entity == null )
+                {
+                    return ActionBadRequest( $"{LearningSemester.FriendlyTypeName} not found." );
+                }
+
+                if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                {
+                    return ActionBadRequest( $"Not authorized to delete ${LearningSemester.FriendlyTypeName}." );
+                }
+
+                if ( !entityService.CanDelete( entity, out var errorMessage ) )
+                {
+                    return ActionBadRequest( errorMessage );
+                }
+
+                entityService.Delete( entity );
+                rockContext.SaveChanges();
+
+                return ActionOk();
+            }
+        }
+
         #endregion
     }
 }

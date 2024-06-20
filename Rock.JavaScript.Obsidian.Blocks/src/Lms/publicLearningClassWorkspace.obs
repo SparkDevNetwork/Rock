@@ -1,16 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="workspace-page-container">
-        <div class="workspace-page-header" :style="backgroundImageStyle">
-            <div class="workspace-header-text-block" :class="headerTextBlockClasses">
-                <div class="h2">
-                    {{ courseName }}
-                </div>
-                <div class="sub-text hidden-xs hidden-sm">
-                    {{ courseSummary }}
-                </div>
-            </div>
-        </div>
+        <div v-html="headerHtml"></div>
 
         <div class="workspace-notification">
             <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
@@ -19,8 +10,10 @@
         </div>
 
         <div class="workspace-block-container">
-            <div class="workspace-header-bar">
-
+            <div class="workspace-header-bar" v-if="isAcademicCalendarMode">
+                <TabbedBar v-model="selectedTab"
+                   class="schedule-toolbox-group-tabs"
+                   :tabs="tabs" />
             </div>
             <div class="workspace-block-content">
                 <div class="workspace-navigation-pane">
@@ -235,12 +228,13 @@ span.icon-stack-container i.icon {
 <script setup lang="ts">
     import { Component, computed, defineAsyncComponent, onMounted, ref, toValue } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import TabbedBar from "@Obsidian/Controls/tabbedBar.obs";
     import { useConfigurationValues, useInvokeBlockAction, useReloadBlock, onConfigurationValuesChanged } from "@Obsidian/Utility/block";
     import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
     import { PublicLearningClassWorkspaceBox } from "@Obsidian/ViewModels/Blocks/Lms/PublicLearningClassWorkspace/publicLearningClassWorkspaceBox";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-    import { isValidGuid } from "@Obsidian/Utility/guid";
     import { ComponentScreen } from "@Obsidian/Controls/Internal/LearningActivity/learningActivity";
+    import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
 
     const config = useConfigurationValues<PublicLearningClassWorkspaceBox>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -251,13 +245,11 @@ span.icon-stack-container i.icon {
     const blockError = ref("");
     const errorMessage = ref("");
 
+    const headerHtml = config.headerHtml ?? "";
     const screenToShow = ref(ComponentScreen.Completion);
-    const courseName = ref<string>(config.courseName ?? "");
-    const courseSummary = ref<string>(config.courseSummary ?? "");
-    const courseImageGuid = ref<string>(config.courseImageGuid ?? "");
 
     const params = new URLSearchParams(window.location.search);
-    const selectedActivityIdKey = params.get("selection") ?? "";
+    const selectedActivityIdKey = params.get("activity") ?? "";
 
     const activities = ref<LearningActivityCompletionBag[]>(config.activities ?? []);
 
@@ -267,6 +259,11 @@ span.icon-stack-container i.icon {
             config.activities?.find(a => a.isAvailable)
     ) ?? {} as LearningActivityCompletionBag);
 
+    const isAcademicCalendarMode = ref(config.programConfigurationMode === ConfigurationMode.AcademicCalendar);
+
+    const tabs = ["Class Overview", "Activities / Assignments"];
+    const selectedTab = "Class Overview";
+
     // #endregion
 
     // #region Computed Values
@@ -274,23 +271,6 @@ span.icon-stack-container i.icon {
     const componentUrl = computed(() => viewingCompletionBag.value?.activityBag?.activityComponent?.componentUrl ?? "");
 
     const activityTypeComponent = ref<Component | null>(null);
-
-    /** Whether the course has a valid image guid. */
-    const hasCourseImage = computed(() => courseImageGuid.value.length > 0 && isValidGuid(toValue(courseImageGuid) ?? ""));
-
-    /** The classes to apply to the header text block. */
-    const headerTextBlockClasses = computed(() =>
-        hasCourseImage.value === true ?
-            "has-course-image" :
-            "no-course-image"
-    );
-
-    /** The style to use for the background image. */
-    const backgroundImageStyle = computed(() =>
-        hasCourseImage.value === true ?
-            `background-image: url('/GetImage.ashx?guid=${toValue(courseImageGuid)}');` :
-            undefined
-    );
 
     // #endregion
 
@@ -321,7 +301,7 @@ span.icon-stack-container i.icon {
     function getActivityStatusBadge(forActivity: LearningActivityCompletionBag): string {
         if (forActivity.isStudentCompleted) {
             const pointsPossible = forActivity.activityBag?.points ?? 0;
-            if (pointsPossible > 0) {
+            if (forActivity.isFacilitatorCompleted && pointsPossible > 0) {
                 const badgeText = forActivity.isGradePassing === true ?
                     "Passed" :
                     "Failed";
@@ -362,7 +342,7 @@ span.icon-stack-container i.icon {
 
     /** The time elapsed since the specified date in a human-readable format. */
     function getElapsedTime(date: string): string {
-        return RockDateTime.parseISO(date)?.localDateTime.humanizeElapsed() ?? "";
+        return RockDateTime.parseISO(date)?.localDateTime.toElapsedString() ?? "";
     }
 
     function hasAvailableAfter(currentIndex: number): boolean {
@@ -391,7 +371,7 @@ span.icon-stack-container i.icon {
         }
 
         const queryParams = new URLSearchParams(window.location.search);
-        queryParams.set("selection", activity.idKey?.toString() ?? "");
+        queryParams.set("activity", activity.idKey?.toString() ?? "");
         history.pushState(null, "", "?" + queryParams.toString());
         viewingCompletionBag.value = activity;
 
@@ -434,6 +414,15 @@ span.icon-stack-container i.icon {
 
             if (result.statusCode === 200 && result.data != null) {
                 viewingCompletionBag.value = result.data;
+
+                const index = config.activities?.findIndex(a => a.activityBag?.idKey === viewingCompletionBag.value.activityBag?.idKey) ?? -1;
+
+                if (config.activities !== undefined && index >= 0) {
+                    config.activities[index] = viewingCompletionBag.value;
+                }
+
+                // Reload the activity component.
+                activityTypeComponent.value = defineAsyncComponent(() => import(componentUrl.value));
                 return true;
             }
             else if ((result.errorMessage ?? "").length > 0) {

@@ -17,6 +17,7 @@
 
 import { Guid } from "@Obsidian/Types";
 import { LearningComponentBaseDefaults } from "./learningActivity";
+import { newGuid } from "@Obsidian/Utility/guid";
 
 /** Determines how the component should be rendered. */
 export enum AssessmentItemType {
@@ -59,12 +60,13 @@ export abstract class AssessmentItem {
  * This class handles initialization of AssessmentItem type properties.
  */
 export class AssessmentItemBase extends AssessmentItem {
-    constructor(typeName: string) {
+    constructor(typeName: string, order = 0) {
         super();
-        this.order = 0;
+        this.order = order;
         this.pointsEarned = 0;
         this.response = "";
         this.typeName = typeName;
+        this.uniqueId = newGuid();
     }
 }
 
@@ -75,10 +77,9 @@ export class MultipleChoiceItem extends AssessmentItemBase {
     question!: string;
 
     constructor(order = 0) {
-        super(AssessmentItemType.MultipleChoice);
+        super(AssessmentItemType.MultipleChoice, order);
         this.answers = ["", "", ""];
         this.helpText = "";
-        this.order = order;
         this.question = "";
     }
 }
@@ -87,8 +88,8 @@ export class SectionItem extends AssessmentItemBase {
     summary?: string;
     title!: string;
 
-    constructor() {
-        super(AssessmentItemType.Section);
+    constructor(order = 0) {
+        super(AssessmentItemType.Section, order);
         this.title = "";
     }
 }
@@ -97,12 +98,14 @@ export class ShortAnswerItem extends AssessmentItemBase {
     answerBoxRows!: number;
     helpText?: string;
     maxCharacterCount?: number;
+    pointsPossible?: number;
     question!: string;
     questionWeight!: number;
 
-    constructor() {
-        super(AssessmentItemType.ShortAnswer);
+    constructor(order = 0) {
+        super(AssessmentItemType.ShortAnswer, order);
         this.answerBoxRows = 4;
+        this.pointsPossible = 0;
         this.question = "";
         this.questionWeight = 0;
     }
@@ -111,7 +114,7 @@ export class ShortAnswerItem extends AssessmentItemBase {
 export type AssessmentActivityConfiguration = {
     assessmentTerm: string;
     header: string;
-    items: Array<AssessmentItem | MultipleChoiceItem | SectionItem | ShortAnswerItem>;
+    items: Array<AssessmentItem | MultipleChoiceItem | ShortAnswerItem | SectionItem>;
     multipleChoiceWeight: number;
     showMissedQuestionsOnResults: boolean;
     showResultsOnCompletion: boolean;
@@ -131,7 +134,7 @@ export class AssessmentActivityDefaults
             items: [],
             multipleChoiceWeight: 1,
             showMissedQuestionsOnResults: false,
-            showResultsOnCompletion: false
+            showResultsOnCompletion: false,
         };
         this.defaultCompletion = {
             completedItems: []

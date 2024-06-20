@@ -10,6 +10,7 @@
           liveUpdates
           :selectItem="onSelectItem"
           :onAddItem="isAddEnabled ? onAddItemClicked : undefined">
+        <SelectColumn />
 
         <PersonColumn name="name"
                       title="Name"
@@ -24,7 +25,7 @@
 <script setup lang="ts">
     import { PropType, reactive, ref } from "vue";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { PersonColumn, textValueFilter, DeleteColumn } from "@Obsidian/Controls/grid";
+    import Grid, { PersonColumn, textValueFilter, DeleteColumn, SelectColumn } from "@Obsidian/Controls/grid";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
 

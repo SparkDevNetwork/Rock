@@ -148,11 +148,11 @@
     const blockLabels = computed((): PanelAction[] | undefined => {
         const labels: PanelAction[] = [];
 
-        if (panelMode.value !== DetailPanelMode.View) {
+        if (panelMode.value === DetailPanelMode.Add) {
             return undefined;
         }
 
-        if (learningProgramViewBag.value?.configurationMode) {
+        if (learningProgramViewBag.value != null) {
             labels.push({
                 title: ConfigurationModeDescription[learningProgramViewBag.value.configurationMode],
                 type: "default"

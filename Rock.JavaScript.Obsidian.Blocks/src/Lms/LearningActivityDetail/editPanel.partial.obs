@@ -109,15 +109,16 @@
                                     help="The workflow to launch when an individual completes the activity." />
             </div>
             <div class="col-md-6">
-                <FileUploader v-model="taskBinaryFile"
+                <!-- <FileUploader v-model="taskBinaryFile"
                               label="Task File"
                               :binaryFileTypeGuid="lmsFileTypeGuid"
                               uploadButtonText="Upload"
-                              :showDeleteButton="true" />
+                              :showDeleteButton="true" /> -->
             </div>
             <div class="col-md-6">
                 <NumberBox v-model="points"
                            label="Points"
+                           help="This is the total number of points available for this activity. Some activities will allow you to distribute these points across a weighted percentage of the activity's sub-items."
                            inputGroupClasses="input-width-md">
                 </NumberBox>
             </div>
@@ -138,14 +139,11 @@
         <activityTypeComponent
                                v-model:activityBag="activityBag"
                                :screenToShow="ComponentScreen.Configuration" />
-
-        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
     </fieldset>
 </template>
 
 <script setup lang="ts">
     import { Component, PropType, computed, defineAsyncComponent, ref, watch } from "vue";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
@@ -156,7 +154,7 @@
     import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
     import FileUploader from "@Obsidian/Controls/fileUploader.obs";
     import { ComponentScreen } from "@Obsidian/Controls/Internal/LearningActivity/learningActivity";
-    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
     import { LearningActivityDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityDetailOptionsBag";
@@ -184,8 +182,7 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: ValidPropertiesBox<LearningActivityBag>): void,
-        (e: "propertyChanged", value: string): void
+        (e: "update:modelValue", value: ValidPropertiesBox<LearningActivityBag>): void
     }>();
 
     // #region Values
@@ -333,8 +330,4 @@
     watch(activityBag, () => {
         activityComponentSettingsJson.value = activityBag.value.activityComponentSettingsJson ?? "";
     });
-
-    // Watch for any changes to props that represent properties and then
-    // automatically emit which property changed.
-    watchPropertyChanges(propRefs, emit);
 </script>

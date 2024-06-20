@@ -389,3 +389,25 @@ defineRule("nohtml", (value: unknown) => {
 
     return !containsHtmlTag(String(value)) || "contains invalid characters. Please make sure that your entries do not contain any angle brackets like < or >.";
 });
+
+defineRule("sumsto", (_: unknown, params?: unknown[]) => {
+    // The first parameter is the value to sum to and the remaining parameters should be added to the value.
+    if (!Array.isArray(params) || params.length === 0) {
+        return true;
+    }
+
+    const sumsTo = convertToNumber(params[0]);
+
+    // Skipping the first value (which tells us how much to sum to)
+    // Sum the remaining values.
+    const sum = params
+    .filter((_, i) => i > 0)
+    .reduce((prev, cur) => convertToNumber(prev) + convertToNumber(cur));
+
+    // Sum matches Sum To, should pass.
+    if (sum === sumsTo) {
+        return true;
+    }
+
+    return `must add up to "${sumsTo}"`;
+});

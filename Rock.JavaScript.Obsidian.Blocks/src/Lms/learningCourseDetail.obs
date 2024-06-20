@@ -131,7 +131,7 @@
     const blockLabels = computed((): PanelAction[] | undefined => {
         const labels: PanelAction[] = [];
 
-        if (learningCourseViewBag.value?.isActive === true) {
+        if (learningCourseEditBag.value?.isActive === true) {
             labels.push({
                 iconCssClass: "fa fa-lightbulb",
                 title: "Active",
@@ -146,7 +146,7 @@
             });
         }
 
-        if (learningCourseViewBag.value?.isPublic === true) {
+        if (learningCourseEditBag.value?.isPublic === true) {
             labels.push({
                 title: "Public",
                 type: "success"

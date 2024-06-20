@@ -173,7 +173,7 @@ namespace Rock.Blocks.Lms
                 CommunicationSent = entity.CommunicationSent,
                 Description = entity.Description,
                 IdKey = entity.IdKey,
-                PublishDateTime = entity.PublishDateTime,
+                PublishDateTime = entity.PublishDateTime == DateTime.MinValue ? null : (DateTime?)entity.PublishDateTime,
                 Title = entity.Title
             };
         }

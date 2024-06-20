@@ -167,7 +167,6 @@ WHERE NOT EXISTS (
 
 /* System Communication */
 DECLARE @categoryId INT = (SELECT TOP 1 [Id] FROM [dbo].[Category] WHERE [Guid] = @categoryGuid);
-DECLARE @programCommunicationGuid UNIQUEIDENTIFIER = '18f6d27b-2546-4b0d-b135-dd5a4311ad81';
 DECLARE @activityCommunicationGuid UNIQUEIDENTIFIER = 'd40a9c32-f179-4e5e-9b0d-ce208c5d1870';
 
 DECLARE @activityNotificatonCommunicationSubject NVARCHAR(200) = 'New {%if ActivityCount == 1 %}Activity{% else %}Activities{%endif%} Available'
@@ -262,8 +261,7 @@ DECLARE @activityNotificatonCommunicationBody NVARCHAR(MAX) = '
 INSERT [SystemCommunication] ( [IsSystem], [IsActive], [Title], [Subject], [Body], [Guid], [CategoryId] )
 SELECT [IsSystem], [IsActive], [Title], [Subject], [Body], [Guid], [CategoryId]
 FROM (
-	SELECT 1 [IsSystem], 1 [IsActive], 'Learning Program Enrollment' [Title], 'Thank you for Enrolling' [Subject], 'Thank you for enrolling in the program.' [Body], @programCommunicationGuid [Guid],  @categoryId [CategoryId]
-	UNION SELECT 1 [IsSystem], 1 [IsActive], 'Learning Activity Available' [Title], @activityNotificatonCommunicationSubject [Subject], @activityNotificatonCommunicationBody [Body], @activityCommunicationGuid [Guid],  @categoryId [CategoryId]
+	SELECT 1 [IsSystem], 1 [IsActive], 'Learning Activity Available' [Title], @activityNotificatonCommunicationSubject [Subject], @activityNotificatonCommunicationBody [Body], @activityCommunicationGuid [Guid],  @categoryId [CategoryId]
 ) [seed]
 WHERE NOT EXISTS (
 	SELECT 1
@@ -309,14 +307,13 @@ WHERE NOT EXISTS (
         /// </summary>
         private void RemoveSeedData()
         {
-            var programCommunicationGuid = "18f6d27b-2546-4b0d-b135-dd5a4311ad81";
             var activityCommunicationGuid = "d40a9c32-f179-4e5e-9b0d-ce208c5d1870";
             var lmsBinaryFileTypeGuid = "4f55987b-5279-4d10-8c38-f320046b4bbb";
             var activityCompletionCategoryGuid = "6d0d5e3a-944c-4de9-a436-8b9bf37b4879";
             var lmsGroupTypeGuid = "4BBC41E2-0A37-4289-B7A7-756B9FE8F775";
 
             Sql( $"DELETE [BinaryFileType] WHERE [Guid] = '{lmsBinaryFileTypeGuid}';" );
-            Sql( $"DELETE [SystemCommunication] WHERE [Guid] = '{programCommunicationGuid}' OR [Guid] = '{activityCommunicationGuid}'" );
+            Sql( $"DELETE [SystemCommunication] WHERE [Guid] = '{activityCommunicationGuid}'" );
             Sql( $"DELETE [Category] WHERE [Guid] = '{activityCompletionCategoryGuid}'" );
             Sql( $"DELETE gm FROM [GroupMember] gm JOIN [GroupType] gt ON gm.[GroupTypeId] = gt.[Id] WHERE gt.[Guid] = '{lmsGroupTypeGuid}'" );
             Sql( $"DELETE gtr FROM [GroupTypeRole] gtr JOIN [GroupType] gt ON gtr.[GroupTypeId] = gt.[Id] WHERE gt.[Guid] = '{lmsGroupTypeGuid}'" );
@@ -442,9 +439,9 @@ WHERE NOT EXISTS (
             RockMigrationHelper.AddPage( true, "23D5076E-C062-4987-9985-B3A4792BF3CE", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Activity", "", "D72DCBC4-C57F-4028-B503-1954925EDC7D", "" );
 
             // Add Page 
-            //  Internal Name: Student
+            //  Internal Name: Participant
             //  Site: Rock RMS
-            RockMigrationHelper.AddPage( true, "23D5076E-C062-4987-9985-B3A4792BF3CE", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Student", "", "72C75C91-18F8-48D0-B0CF-1FBD82EB50FC", "" );
+            RockMigrationHelper.AddPage( true, "23D5076E-C062-4987-9985-B3A4792BF3CE", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Participant", "", "72C75C91-18F8-48D0-B0CF-1FBD82EB50FC", "" );
 
             // Add Page 
             //  Internal Name: Semester
@@ -452,19 +449,19 @@ WHERE NOT EXISTS (
             RockMigrationHelper.AddPage( true, "F7073393-D3A7-4C2E-8001-A73F9E169D60", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Semester", "", "36FFA805-B283-443E-990D-87040339D16F", "" );
 
             // Add Page 
-            //  Internal Name: Controls
-            //  Site: Rock RMS
-            RockMigrationHelper.AddPage( true, "164C7A7F-8C55-4E20-B582-D84D83174F2C", "C2467799-BB45-4251-8EE6-F0BF27201535", "Controls", "", "446F14BD-38CB-4DF3-BCFB-52DB2C28D65A", "" );
-
-            // Add Page 
-            //  Internal Name: Facilitator
-            //  Site: Rock RMS
-            RockMigrationHelper.AddPage( true, "23D5076E-C062-4987-9985-B3A4792BF3CE", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Facilitator", "", "BEE6DDCE-D5A3-474F-8F37-A949BE79D9D8", "" );
-
-            // Add Page 
             //  Internal Name: Completion
             //  Site: Rock RMS
             RockMigrationHelper.AddPage( true, "D72DCBC4-C57F-4028-B503-1954925EDC7D", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Completion", "", "E0F2E4F1-ED10-49F6-B053-AC6807994204", "" );
+
+            // Add Page 
+            //  Internal Name: Content Page
+            //  Site: Rock RMS
+            RockMigrationHelper.AddPage( true, "23D5076E-C062-4987-9985-B3A4792BF3CE", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Content Page", "", "E6A89360-B7B4-48A8-B799-39A27EAB6F36", "" );
+
+            // Add Page 
+            //  Internal Name: Announcement
+            //  Site: Rock RMS
+            RockMigrationHelper.AddPage( true, "23D5076E-C062-4987-9985-B3A4792BF3CE", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Announcement", "", "7C8134A4-524A-4C3D-BA4C-875FEE672850", "" );
 
             // Add Page Route
             //   Page:Learning
@@ -522,9 +519,9 @@ WHERE NOT EXISTS (
             RockMigrationHelper.AddOrUpdatePageRoute( "D72DCBC4-C57F-4028-B503-1954925EDC7D", "learning/{LearningProgramId}/courses/{LearningCourseId}/classes/{LearningClassId}/activities/{LearningActivityId}", "E2581432-C9D8-4324-97E2-BCFE6BBD0F57" );
 
             // Add Page Route
-            //   Page:Student
-            //   Route:learning/{LearningProgramId}/courses/{LearningCourseId}/classes/{LearningClassId}/students/{LearningParticipantId}
-            RockMigrationHelper.AddOrUpdatePageRoute( "72C75C91-18F8-48D0-B0CF-1FBD82EB50FC", "learning/{LearningProgramId}/courses/{LearningCourseId}/classes/{LearningClassId}/students/{LearningParticipantId}", "827AF9A8-BF1A-4008-B4C3-3D07076ACB84" );
+            //   Page:Participant
+            //   Route:learning/{LearningProgramId}/courses/{LearningCourseId}/classes/{LearningClassId}/participants/{LearningParticipantId}
+            RockMigrationHelper.AddOrUpdatePageRoute( "72C75C91-18F8-48D0-B0CF-1FBD82EB50FC", "learning/{LearningProgramId}/courses/{LearningCourseId}/classes/{LearningClassId}/participants/{LearningParticipantId}", "827AF9A8-BF1A-4008-B4C3-3D07076ACB84" );
 
             // Add Page Route
             //   Page:Semester
@@ -532,14 +529,19 @@ WHERE NOT EXISTS (
             RockMigrationHelper.AddOrUpdatePageRoute( "36FFA805-B283-443E-990D-87040339D16F", "learning/{LearningProgramId}/semester/{LearningSemesterId}", "D796B863-964F-4A10-A880-9D398376851A" );
 
             // Add Page Route
-            //   Page:Facilitator
-            //   Route:learning/{LearningProgramId}/courses/{LearningCourseId}/classes/{LearningClassId}/facilitators/{LearningParticipantId}
-            RockMigrationHelper.AddOrUpdatePageRoute( "BEE6DDCE-D5A3-474F-8F37-A949BE79D9D8", "learning/{LearningProgramId}/courses/{LearningCourseId}/classes/{LearningClassId}/facilitators/{LearningParticipantId}", "4A012403-D3B2-415C-A53E-46F36715489F" );
-
-            // Add Page Route
             //   Page:Completion
             //   Route:learning/{LearningProgramId}/courses/{LearningCourseId}/classes/{LearningClassId}/activities/{LearningActivityId}/completions/{LearningActivityCompletionId}
             RockMigrationHelper.AddOrUpdatePageRoute( "E0F2E4F1-ED10-49F6-B053-AC6807994204", "learning/{LearningProgramId}/courses/{LearningCourseId}/classes/{LearningClassId}/activities/{LearningActivityId}/completions/{LearningActivityCompletionId}", "8C40AE8D-60C6-49DE-B7DE-BE46D8A64AA6" );
+
+            // Add Page Route
+            //   Page:Content Page
+            //   Route:learning/{LearningProgramId}/courses/{LearningCourseId}/classes/{LearningClassId}/content-pages/{LearningClassContentPageId}
+            RockMigrationHelper.AddOrUpdatePageRoute( "E6A89360-B7B4-48A8-B799-39A27EAB6F36", "learning/{LearningProgramId}/courses/{LearningCourseId}/classes/{LearningClassId}/content-pages/{LearningClassContentPageId}", "4F35DC5D-FBB5-4B10-91B4-BC1C6A7009E8" );
+
+            // Add Page Route
+            //   Page:Announcement
+            //   Route:learning/{LearningProgramId}/courses/{LearningCourseId}/classes/{LearningClassId}/announcement/{LearningClassAnnouncementId}
+            RockMigrationHelper.AddOrUpdatePageRoute( "7C8134A4-524A-4C3D-BA4C-875FEE672850", "learning/{LearningProgramId}/courses/{LearningCourseId}/classes/{LearningClassId}/announcement/{LearningClassAnnouncementId}", "864A8615-AC20-4B3A-9D5F-087E92859AD1" );
 
             // Add/Update Obsidian Block Entity Type
             //   EntityType:Rock.Blocks.Lms.LearningClassList
@@ -624,6 +626,14 @@ WHERE NOT EXISTS (
             // Add/Update Obsidian Block Entity Type
             //   EntityType:Rock.Blocks.Lms.PublicLearningClassWorkspace
             RockMigrationHelper.UpdateEntityType( "Rock.Blocks.Lms.PublicLearningClassWorkspace", "Public Learning Class Workspace", "Rock.Blocks.Lms.PublicLearningClassWorkspace, Rock.Blocks, Version=1.17.0.21, Culture=neutral, PublicKeyToken=null", false, false, "1BF70976-85AC-43D3-B98A-0B87A2FFD9B6" );
+
+            // Add/Update Obsidian Block Entity Type
+            //   EntityType:Rock.Blocks.Lms.LearningClassAnnouncementDetail
+            RockMigrationHelper.UpdateEntityType( "Rock.Blocks.Lms.LearningClassAnnouncementDetail", "Learning Class Announcement Detail", "Rock.Blocks.Lms.LearningClassAnnouncementDetail, Rock.Blocks, Version=1.17.0.21, Culture=neutral, PublicKeyToken=null", false, false, "08429949-4774-41F7-8840-2D8DEFFF14AB" );
+
+            // Add/Update Obsidian Block Entity Type
+            //   EntityType:Rock.Blocks.Lms.LearningClassContentPageDetail
+            RockMigrationHelper.UpdateEntityType( "Rock.Blocks.Lms.LearningClassContentPageDetail", "Learning Class Content Page Detail", "Rock.Blocks.Lms.LearningClassContentPageDetail, Rock.Blocks, Version=1.17.0.21, Culture=neutral, PublicKeyToken=null", false, false, "0220D970-1865-4B79-9E07-3CE9452E2B82" );
 
             // Add/Update Obsidian Block Type
             //   Name:Learning Activity Completion Detail
@@ -757,6 +767,18 @@ WHERE NOT EXISTS (
             //   EntityType:Rock.Blocks.Lms.PublicLearningProgramList
             RockMigrationHelper.AddOrUpdateEntityBlockType( "Public Learning Program List", "Displays a list of public learning programs.", "Rock.Blocks.Lms.PublicLearningProgramList", "LMS", "DA1460D8-E895-4B23-8A8E-10EBBED3990F" );
 
+            // Add/Update Obsidian Block Type
+            //   Name:Learning Class Announcement Detail
+            //   Category:LMS
+            //   EntityType:Rock.Blocks.Lms.LearningClassAnnouncementDetail
+            RockMigrationHelper.AddOrUpdateEntityBlockType( "Learning Class Announcement Detail", "Displays the details of a particular learning class announcement.", "Rock.Blocks.Lms.LearningClassAnnouncementDetail", "LMS", "53C12A53-773E-4398-8627-DD44C1421675" );
+
+            // Add/Update Obsidian Block Type
+            //   Name:Learning Class Content Page Detail
+            //   Category:LMS
+            //   EntityType:Rock.Blocks.Lms.LearningClassContentPageDetail
+            RockMigrationHelper.AddOrUpdateEntityBlockType( "Learning Class Content Page Detail", "Displays the details of a particular learning class content page.", "Rock.Blocks.Lms.LearningClassContentPageDetail", "LMS", "92E0DB96-0FFF-41F2-982D-F750AB23EF5B" );
+
             // Add Block 
             //  Block Name: Learning Program List
             //  Page Name: Learning
@@ -864,7 +886,7 @@ WHERE NOT EXISTS (
 
             // Add Block 
             //  Block Name: Participant
-            //  Page Name: Student
+            //  Page Name: Participant
             //  Layout: -
             //  Site: Rock RMS
             RockMigrationHelper.AddBlock( true, "72C75C91-18F8-48D0-B0CF-1FBD82EB50FC".AsGuid(), null, "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "F1179439-31A1-4897-AB2E-B991D60455AA".AsGuid(), "Participant", "Main", @"", @"", 0, "8C05CAC8-AB57-46F2-8E0C-21293BE8F464" );
@@ -877,18 +899,25 @@ WHERE NOT EXISTS (
             RockMigrationHelper.AddBlock( true, "36FFA805-B283-443E-990D-87040339D16F".AsGuid(), null, "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "97B2E57F-3A03-490D-834F-CD3640C7FF1E".AsGuid(), "Semester", "Main", @"", @"", 0, "2DF1C8E3-B65E-47F0-8B82-86AA5A3DA21A" );
 
             // Add Block 
-            //  Block Name: Participant
-            //  Page Name: Facilitator
-            //  Layout: -
-            //  Site: Rock RMS
-            RockMigrationHelper.AddBlock( true, "BEE6DDCE-D5A3-474F-8F37-A949BE79D9D8".AsGuid(), null, "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "F1179439-31A1-4897-AB2E-B991D60455AA".AsGuid(), "Participant", "Main", @"", @"", 0, "27A3CE24-AC73-4242-92AE-39D29E2EF520" );
-
-            // Add Block 
             //  Block Name: Activity Completion Detail
             //  Page Name: Completion
             //  Layout: -
             //  Site: Rock RMS
             RockMigrationHelper.AddBlock( true, "E0F2E4F1-ED10-49F6-B053-AC6807994204".AsGuid(), null, "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "4569F28D-1EFB-4B95-A506-0D9043C24775".AsGuid(), "Activity Completion Detail", "Main", @"", @"", 0, "43D3D01A-101E-494E-AF4D-BBEE9595DE0A" );
+
+            // Add Block 
+            //  Block Name: Class Content Page
+            //  Page Name: Class Content Page
+            //  Layout: -
+            //  Site: Rock RMS
+            RockMigrationHelper.AddBlock( true, "E6A89360-B7B4-48A8-B799-39A27EAB6F36".AsGuid(), null, "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "92E0DB96-0FFF-41F2-982D-F750AB23EF5B".AsGuid(), "Class Content Page", "Main", @"", @"", 0, "9788FDD8-A587-48CA-BE0B-D5A937CCEE70" );
+
+            // Add Block 
+            //  Block Name: Class Announcement Detail
+            //  Page Name: Announcement
+            //  Layout: -
+            //  Site: Rock RMS
+            RockMigrationHelper.AddBlock( true, "7C8134A4-524A-4C3D-BA4C-875FEE672850".AsGuid(), null, "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "53C12A53-773E-4398-8627-DD44C1421675".AsGuid(), "Class Announcement Detail", "Main", @"", @"", 0, "3EAEE2BB-E223-4C47-9C9D-230A412D6D2A" );
 
             // update block order for pages with new blocks if the page,zone has multiple blocks
 
@@ -982,14 +1011,8 @@ WHERE NOT EXISTS (
             // Attribute for BlockType
             //   BlockType: Learning Course Detail
             //   Category: LMS
-            //   Attribute: Student Detail Page
-            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "94C4CB0B-5617-4F46-B902-6E6DD4A447B8", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Student Detail Page", "StudentDetailPage", "Student Detail Page", @"The page that will be navigated to when clicking a student row.", 2, @"", "5F4ADFD7-1CA0-4A3F-8ADA-1B0744119CB0" );
-
-            // Attribute for BlockType
-            //   BlockType: Learning Course Detail
-            //   Category: LMS
-            //   Attribute: Facilitator Detail Page
-            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "94C4CB0B-5617-4F46-B902-6E6DD4A447B8", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Facilitator Detail Page", "FacilitatorDetailPage", "Facilitator Detail Page", @"The page that will be navigated to when clicking a student row.", 3, @"", "1AB5993D-17A4-434A-A403-6B6B9C62A07E" );
+            //   Attribute: Participant Detail Page
+            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "94C4CB0B-5617-4F46-B902-6E6DD4A447B8", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Participant Detail Page", "ParticipantDetailPage", "Participant Detail Page", @"The page that will be navigated to when clicking a student or facilitator row.", 2, @"", "5F4ADFD7-1CA0-4A3F-8ADA-1B0744119CB0" );
 
             // Attribute for BlockType
             //   BlockType: Learning Course List
@@ -1061,7 +1084,7 @@ WHERE NOT EXISTS (
             //   BlockType: Learning Program Detail
             //   Category: LMS
             //   Attribute: Show KPIs
-            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "796C87E7-678F-4A38-8C04-A401A4F7AC21", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show KPIs", "ShowKPIs", "Show KPIs", @"Determines if the KPIs are visible.", 0, @"True", "6AE52A7E-EFA3-4685-B331-A2D3058438D3" );
+            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "796C87E7-678F-4A38-8C04-A401A4F7AC21", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show KPIs", "ShowKPIs", "Show KPIs", @"Determines if the KPIs are visible.", 0, @"Yes", "6AE52A7E-EFA3-4685-B331-A2D3058438D3" );
 
             // Attribute for BlockType
             //   BlockType: Learning Program List
@@ -1168,14 +1191,38 @@ WHERE NOT EXISTS (
             // Attribute for BlockType
             //   BlockType: Learning Class Detail
             //   Category: LMS
-            //   Attribute: Student Detail Page
-            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "D5369F8D-11AA-482B-AE08-2B3C519D8D87", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Student Detail Page", "StudentDetailPage", "Student Detail Page", @"The page that will be navigated to when clicking a student row.", 3, @"", "C247F6BF-C7D1-428E-B42F-65D1F8610CED" );
+            //   Attribute: Participant Detail Page
+            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "D5369F8D-11AA-482B-AE08-2B3C519D8D87", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Participant Detail Page", "ParticipantDetailPage", "Participant Detail Page", @"The page that to be used for taking attendance for the class.", 3, @"", "1B237D13-A86A-42CC-8E91-96CBCCAC6866" );
 
             // Attribute for BlockType
             //   BlockType: Learning Class Detail
             //   Category: LMS
-            //   Attribute: Facilitator Detail Page
-            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "D5369F8D-11AA-482B-AE08-2B3C519D8D87", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Facilitator Detail Page", "FacilitatorDetailPage", "Facilitator Detail Page", @"The page that will be navigated to when clicking a student row.", 4, @"", "F15A94E5-1871-4974-8D20-0734D840A3CD" );
+            //   Attribute: Content Page Detail Page
+            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "D5369F8D-11AA-482B-AE08-2B3C519D8D87", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Content Page Detail Page", "ContentPageDetailPage", "Content Page Detail Page", @"The page that will be navigated to when clicking a content page row.", 4, @"", "AAF9675D-BAF0-4F25-8C63-4F864F4369C0" );
+
+            // Attribute for BlockType
+            //   BlockType: Learning Class Detail
+            //   Category: LMS
+            //   Attribute: Announcement Detail Page
+            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "D5369F8D-11AA-482B-AE08-2B3C519D8D87", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Announcement Detail Page", "AnnouncementDetailPage", "Announcement Detail Page", @"The page that will be navigated to when clicking a content page row.", 5, @"", "B570F05B-95DE-4F22-95FF-DDDCCE943E29" );
+
+            // Attribute for BlockType
+            //   BlockType: Learning Course Detail
+            //   Category: LMS
+            //   Attribute: Participant Detail Page
+            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "94C4CB0B-5617-4F46-B902-6E6DD4A447B8", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Participant Detail Page", "ParticipantDetailPage", "Participant Detail Page", @"The page that will be navigated to when clicking a student or facilitator row.", 2, @"", "75CF60D8-19F7-45DB-BB6C-CEF859F2327D" );
+
+            // Attribute for BlockType
+            //   BlockType: Learning Course Detail
+            //   Category: LMS
+            //   Attribute: Content Page Detail Page
+            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "94C4CB0B-5617-4F46-B902-6E6DD4A447B8", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Content Page Detail Page", "ContentPageDetailPage", "Content Page Detail Page", @"The page that will be navigated to when clicking a content page row.", 3, @"", "8FFDFA67-E20E-4BEC-91D3-7DDF7975291C" );
+
+            // Attribute for BlockType
+            //   BlockType: Learning Course Detail
+            //   Category: LMS
+            //   Attribute: Announcement Detail Page
+            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "94C4CB0B-5617-4F46-B902-6E6DD4A447B8", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Announcement Detail Page", "AnnouncementDetailPage", "Announcement Detail Page", @"The page that will be navigated to when clicking a content page row.", 4, @"", "45F3C2D4-8C84-4CE2-BAB3-ACF93DC8E940" );
 
             // Attribute for BlockType
             //   BlockType: Public Learning Program List
@@ -1187,7 +1234,7 @@ WHERE NOT EXISTS (
             //   BlockType: Public Learning Program List
             //   Category: LMS
             //   Attribute: Program List Template
-            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "DA1460D8-E895-4B23-8A8E-10EBBED3990F", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "Program List Template", "ProgramListTemplate", "Program List Template", @"The lava template showing the program list.", 1, @"
+            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "DA1460D8-E895-4B23-8A8E-10EBBED3990F", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "Program List Template", "ProgramListTemplate", "Program List Template", @"The lava template showing the program list. Merge fields include: Programs, CurrentPerson and other Common Merge Fields. <span class='tip tip-lava'></span>", 1, @"
 //- Styles
 {% stylesheet %}
     .page-container {
@@ -1306,7 +1353,7 @@ WHERE NOT EXISTS (
             //   BlockType: Public Learning Course List
             //   Category: LMS
             //   Attribute: Course List Template
-            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "5D6BA94F-342A-4EC1-B024-FC5046FFE14D", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "Course List Template", "CourseListTemplate", "Course List Template", @"The lava template showing the courses list.", 1, @"
+            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "5D6BA94F-342A-4EC1-B024-FC5046FFE14D", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "Course List Template", "CourseListTemplate", "Course List Template", @"The lava template showing the courses list. Merge fields include: Program, Courses, CurrentPerson and other Common Merge Fields. <span class='tip tip-lava'></span>", 1, @"
 //- Variables
 {% assign imageFileNameLength = Program.ImageBinaryFile.Guid | Size %}
 
@@ -1448,7 +1495,7 @@ WHERE NOT EXISTS (
             //   BlockType: Public Learning Course Detail
             //   Category: LMS
             //   Attribute: Course Detail Template
-            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "B0DCE130-0C91-4AA0-8161-57E8FA523392", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "Course Detail Template", "CourseListTemplate", "Course Detail Template", @"The lava template showing the course detail.", 1, @"
+            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "B0DCE130-0C91-4AA0-8161-57E8FA523392", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "Course Detail Template", "CourseListTemplate", "Course Detail Template", @"The lava template showing the course detail. Merge fields include: Course, CurrentPerson and other Common Merge Fields. <span class='tip tip-lava'></span>", 1, @"
 //- Variable Assignments
 {% assign requirementTypes = Course.CourseRequirements | Distinct:'RequirementType' %}
 {% assign prerequisitesText = Course.CourseRequirements | Where:'RequirementType','Prerequisite' | Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:',',' and' | Default:'None' %}
@@ -1619,6 +1666,79 @@ WHERE NOT EXISTS (
             //   Attribute: Facilitator Portal Page
             RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "55F2E89B-DE57-4E24-AC6C-576956FB97C5", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Facilitator Portal Page", "FacilitatorPortalPage", "Facilitator Portal Page", @"The page that will be navigated to when clicking facilitator portal link.", 1, @"", "72DFE773-DA2F-45A8-976A-6C19FD0AFE28" );
 
+            // Attribute for BlockType
+            //   BlockType: Public Learning Class Workspace
+            //   Category: LMS
+            //   Attribute: Header Template
+            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "55F2E89B-DE57-4E24-AC6C-576956FB97C5", "1D0D3794-C210-48A8-8C68-3FBEC08A6BA5", "Header Template", "HeaderTemplate", "Header Template", @"The lava template showing the program list. Merge fields include: Course, Activities, Facilitators and other Common Merge Fields. <span class='tip tip-lava'></span>", 2, @"
+{% assign imageFileNameLength = Course.ImageFileGuid | Size %}
+
+//- Styles
+{% stylesheet %}
+    .header-container {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 12px;
+    }
+    
+    .page-header-section {
+        {% if imageFileNameLength > 0 %}
+            height: 280px;
+            background-image: url('/GetImage.ashx?guid={{Course.ImageFileGuid}}'); 
+            background-size: cover;
+        {% endif %}
+        align-items: center; 
+        border-radius: 12px; 
+    }
+    
+    .header-block {
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        left: 10%;
+        {% if imageFileNameLength > 0 %}
+            bottom: -85%;
+            -webkit-transform: translateY(-30%);
+            transform: translateY(-30%);
+        {% endif %}
+        background-color: white; 
+        border-radius: 12px; 
+        width: 80%; 
+    }
+    
+    .page-sub-header {
+        padding-left: 10%; 
+        padding-right: 10%; 
+        padding-bottom: 12px;
+        margin-bottom: 12px;
+    }
+{% endstylesheet %}
+<div class=""header-container"">
+	<div class=""page-header-section mb-5"">
+		<div class=""header-block text-center"">
+			<h2>
+				{{ Course.PublicName }}
+			</h2>
+			<div class=""page-sub-header"">
+				{{ Course.Summary }}
+			</div>
+		</div>
+	</div>
+</div>
+", "F7F1BE33-AF44-4F73-9C55-0F8FF97E1B69" );
+
+            // Attribute for BlockType
+            //   BlockType: Public Learning Class Workspace
+            //   Category: LMS
+            //   Attribute: The Number of Notifications to Show
+            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "55F2E89B-DE57-4E24-AC6C-576956FB97C5", "A75DFC58-7A1B-4799-BF31-451B2BBE38FF", "The Number of Notifications to Show", "NumberOfNotificationsToShow", "The Number of Notifications to Show", @"The number of notifications to show on the class overview page", 3, @"3", "3B8378C9-80DD-4A50-9197-CA9E1EC88507" );
+
+            // Attribute for BlockType
+            //   BlockType: Public Learning Class Workspace
+            //   Category: LMS
+            //   Attribute: Show Grades
+            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "55F2E89B-DE57-4E24-AC6C-576956FB97C5", "7525C4CB-EE6B-41D4-9B64-A08048D5A5C0", "Show Grades", "ShowGrades", "Show Grades", @"Select 'Show' to show grades on the class overview page; 'Hide' to not show any grades.", 4, @"Show", "6FE66C3C-E37B-440D-942C-88C008E844F5" );
+
             // Add Block Attribute Value
             //   Block: Learning Program List
             //   BlockType: Learning Program List
@@ -1774,20 +1894,10 @@ WHERE NOT EXISTS (
             //   BlockType: Learning Course Detail
             //   Category: LMS
             //   Block Location: Page=Course, Site=Rock RMS
-            //   Attribute: Student Detail Page
+            //   Attribute: Participant Detail Page
             /*   Attribute Value: 72c75c91-18f8-48d0-b0cf-1fbd82eb50fc,827af9a8-bf1a-4008-b4c3-3d07076acb84 */
             //   Skip If Already Exists: true
             RockMigrationHelper.AddBlockAttributeValue( true, "D85084D3-E298-4307-9AA2-C1570C4A3FA4", "5F4ADFD7-1CA0-4A3F-8ADA-1B0744119CB0", @"72c75c91-18f8-48d0-b0cf-1fbd82eb50fc,827af9a8-bf1a-4008-b4c3-3d07076acb84" );
-
-            // Add Block Attribute Value
-            //   Block: Learning Course Detail
-            //   BlockType: Learning Course Detail
-            //   Category: LMS
-            //   Block Location: Page=Course, Site=Rock RMS
-            //   Attribute: Facilitator Detail Page
-            /*   Attribute Value: 72c75c91-18f8-48d0-b0cf-1fbd82eb50fc,827af9a8-bf1a-4008-b4c3-3d07076acb84 */
-            //   Skip If Already Exists: true
-            RockMigrationHelper.AddBlockAttributeValue( true, "D85084D3-E298-4307-9AA2-C1570C4A3FA4", "1AB5993D-17A4-434A-A403-6B6B9C62A07E", @"72c75c91-18f8-48d0-b0cf-1fbd82eb50fc,827af9a8-bf1a-4008-b4c3-3d07076acb84" );
 
             // Add Block Attribute Value
             //   Block: Grading Scales
@@ -1964,7 +2074,7 @@ WHERE NOT EXISTS (
             //   BlockType: Learning Class Detail
             //   Category: LMS
             //   Block Location: Page=Class, Site=Rock RMS
-            //   Attribute: Student Detail Page
+            //   Attribute: Participant Detail Page
             /*   Attribute Value: 72c75c91-18f8-48d0-b0cf-1fbd82eb50fc */
             //   Skip If Already Exists: true
             RockMigrationHelper.AddBlockAttributeValue( true, "C67D2164-33E5-46C0-94EF-DF387EF8477D", "C247F6BF-C7D1-428E-B42F-65D1F8610CED", @"72c75c91-18f8-48d0-b0cf-1fbd82eb50fc" );
@@ -1974,10 +2084,20 @@ WHERE NOT EXISTS (
             //   BlockType: Learning Class Detail
             //   Category: LMS
             //   Block Location: Page=Class, Site=Rock RMS
-            //   Attribute: Facilitator Detail Page
-            /*   Attribute Value: bee6ddce-d5a3-474f-8f37-a949be79d9d8 */
+            //   Attribute: Content Page Detail Page
+            /*   Attribute Value: e6a89360-b7b4-48a8-b799-39a27eab6f36 */
             //   Skip If Already Exists: true
-            RockMigrationHelper.AddBlockAttributeValue( true, "C67D2164-33E5-46C0-94EF-DF387EF8477D", "F15A94E5-1871-4974-8D20-0734D840A3CD", @"bee6ddce-d5a3-474f-8f37-a949be79d9d8" );
+            RockMigrationHelper.AddBlockAttributeValue( true, "C67D2164-33E5-46C0-94EF-DF387EF8477D", "AAF9675D-BAF0-4F25-8C63-4F864F4369C0", @"e6a89360-b7b4-48a8-b799-39a27eab6f36" );
+
+            // Add Block Attribute Value
+            //   Block: Class
+            //   BlockType: Learning Class Detail
+            //   Category: LMS
+            //   Block Location: Page=Class, Site=Rock RMS
+            //   Attribute: Announcement Detail Page
+            /*   Attribute Value: 7c8134a4-524a-4c3d-ba4c-875fee672850 */
+            //   Skip If Already Exists: true
+            RockMigrationHelper.AddBlockAttributeValue( true, "C67D2164-33E5-46C0-94EF-DF387EF8477D", "B570F05B-95DE-4F22-95FF-DDDCCE943E29", @"7c8134a4-524a-4c3d-ba4c-875fee672850" );
 
             // Add Block Attribute Value
             //   Block: Current Classes
@@ -2048,21 +2168,30 @@ WHERE NOT EXISTS (
             /*   Attribute Value: No */
             //   Skip If Already Exists: true
             RockMigrationHelper.AddBlockAttributeValue( true, "53A87507-D270-4340-A93F-AD3AB023E0B1", "BECBD2AE-5D1E-4065-8CAA-FE7972CC5742", @"No" );
-
-            // Add/Update PageContext for Page:Program, Entity: Rock.Model.LearningProgram, Parameter: LearningProgramId
-            RockMigrationHelper.UpdatePageContext( "7888CAF4-AF5D-44BA-AB9E-80138361F69D", "Rock.Model.LearningProgram", "LearningProgramId", "C5BC79FB-CBB7-491D-82E9-53225CBF3821" );
         }
 
         /// <summary>
         /// Results of CodeGen_PagesBlocksAttributesMigration.sql for LMS (Down).
         /// </summary>
         private void LmsEntityTypesPagesBlocksDown()
-        {
+        { 
             // Attribute for BlockType
             //   BlockType: Public Learning Class Workspace
             //   Category: LMS
-            //   Attribute: Facilitator Portal Page
-            RockMigrationHelper.DeleteAttribute( "72DFE773-DA2F-45A8-976A-6C19FD0AFE28" );
+            //   Attribute: Show Grades
+            RockMigrationHelper.DeleteAttribute("6FE66C3C-E37B-440D-942C-88C008E844F5");
+
+            // Attribute for BlockType
+            //   BlockType: Public Learning Class Workspace
+            //   Category: LMS
+            //   Attribute: The Number of Notifications to Show
+            RockMigrationHelper.DeleteAttribute("3B8378C9-80DD-4A50-9197-CA9E1EC88507");
+
+            // Attribute for BlockType
+            //   BlockType: Public Learning Class Workspace
+            //   Category: LMS
+            //   Attribute: Header Template
+            RockMigrationHelper.DeleteAttribute("F7F1BE33-AF44-4F73-9C55-0F8FF97E1B69");
 
             // Attribute for BlockType
             //   BlockType: Public Learning Course Detail
@@ -2121,13 +2250,7 @@ WHERE NOT EXISTS (
             // Attribute for BlockType
             //   BlockType: Learning Class Detail
             //   Category: LMS
-            //   Attribute: Facilitator Detail Page
-            RockMigrationHelper.DeleteAttribute( "F15A94E5-1871-4974-8D20-0734D840A3CD" );
-
-            // Attribute for BlockType
-            //   BlockType: Learning Class Detail
-            //   Category: LMS
-            //   Attribute: Student Detail Page
+            //   Attribute: Participant Detail Page
             RockMigrationHelper.DeleteAttribute( "C247F6BF-C7D1-428E-B42F-65D1F8610CED" );
 
             // Attribute for BlockType
@@ -2141,6 +2264,18 @@ WHERE NOT EXISTS (
             //   Category: LMS
             //   Attribute: Attendance Page
             RockMigrationHelper.DeleteAttribute( "B417E2A7-BBA1-453F-9933-3BE439CD2063" );
+
+            // Attribute for BlockType
+            //   BlockType: Learning Class Detail
+            //   Category: LMS
+            //   Attribute: Announcement Detail Page
+            RockMigrationHelper.DeleteAttribute( "B570F05B-95DE-4F22-95FF-DDDCCE943E29" );
+
+            // Attribute for BlockType
+            //   BlockType: Learning Class Detail
+            //   Category: LMS
+            //   Attribute: Content Page Detail Page
+            RockMigrationHelper.DeleteAttribute( "AAF9675D-BAF0-4F25-8C63-4F864F4369C0" );
 
             // Attribute for BlockType
             //   BlockType: Learning Activity Completion List
@@ -2301,14 +2436,20 @@ WHERE NOT EXISTS (
             // Attribute for BlockType
             //   BlockType: Learning Course Detail
             //   Category: LMS
-            //   Attribute: Facilitator Detail Page
-            RockMigrationHelper.DeleteAttribute( "1AB5993D-17A4-434A-A403-6B6B9C62A07E" );
+            //   Attribute: Announcement Detail Page
+            RockMigrationHelper.DeleteAttribute( "45F3C2D4-8C84-4CE2-BAB3-ACF93DC8E940" );
 
             // Attribute for BlockType
             //   BlockType: Learning Course Detail
             //   Category: LMS
-            //   Attribute: Student Detail Page
-            RockMigrationHelper.DeleteAttribute( "5F4ADFD7-1CA0-4A3F-8ADA-1B0744119CB0" );
+            //   Attribute: Content Page Detail Page
+            RockMigrationHelper.DeleteAttribute( "8FFDFA67-E20E-4BEC-91D3-7DDF7975291C" );
+
+            // Attribute for BlockType
+            //   BlockType: Learning Course Detail
+            //   Category: LMS
+            //   Attribute: Participant Detail Page
+            RockMigrationHelper.DeleteAttribute( "75CF60D8-19F7-45DB-BB6C-CEF859F2327D" );
 
             // Attribute for BlockType
             //   BlockType: Learning Course Detail
@@ -2381,11 +2522,6 @@ WHERE NOT EXISTS (
             RockMigrationHelper.DeleteBlock( "43D3D01A-101E-494E-AF4D-BBEE9595DE0A" );
 
             // Remove Block
-            //  Name: Participant, from Page: Facilitator, Site: Rock RMS
-            //  from Page: Facilitator, Site: Rock RMS
-            RockMigrationHelper.DeleteBlock( "27A3CE24-AC73-4242-92AE-39D29E2EF520" );
-
-            // Remove Block
             //  Name: Class, from Page: Class, Site: Rock RMS
             //  from Page: Class, Site: Rock RMS
             RockMigrationHelper.DeleteBlock( "C67D2164-33E5-46C0-94EF-DF387EF8477D" );
@@ -2411,8 +2547,8 @@ WHERE NOT EXISTS (
             RockMigrationHelper.DeleteBlock( "2DF1C8E3-B65E-47F0-8B82-86AA5A3DA21A" );
 
             // Remove Block
-            //  Name: Participant, from Page: Student, Site: Rock RMS
-            //  from Page: Student, Site: Rock RMS
+            //  Name: Participant, from Page: Participant, Site: Rock RMS
+            //  from Page: Participant, Site: Rock RMS
             RockMigrationHelper.DeleteBlock( "8C05CAC8-AB57-46F2-8E0C-21293BE8F464" );
 
             // Remove Block
@@ -2464,6 +2600,16 @@ WHERE NOT EXISTS (
             //  Name: Learning Program List, from Page: Learning, Site: Rock RMS
             //  from Page: Learning, Site: Rock RMS
             RockMigrationHelper.DeleteBlock( "B7D8BC2F-CEDD-4E22-8D46-69A759DCB59C" );
+
+            // Remove Block
+            //  Name: Class Announcement Detail, from Page: Announcement, Site: Rock RMS
+            //  from Page: Announcement, Site: Rock RMS
+            RockMigrationHelper.DeleteBlock( "3EAEE2BB-E223-4C47-9C9D-230A412D6D2A" );
+
+            // Remove Block
+            //  Name: Content Page, from Page: Content Page, Site: Rock RMS
+            //  from Page: Content Page, Site: Rock RMS
+            RockMigrationHelper.DeleteBlock( "9788FDD8-A587-48CA-BE0B-D5A937CCEE70" );
 
             // Delete BlockType 
             //   Name: Public Learning Class Workspace
@@ -2619,17 +2765,25 @@ WHERE NOT EXISTS (
             //   EntityType: Learning Activity List
             RockMigrationHelper.DeleteBlockType( "5CEB6EC7-69F5-43B6-A74F-144A57F9B465" );
 
+            // Delete BlockType 
+            //   Name: Learning Class Content Page Detail
+            //   Category: LMS
+            //   Path: -
+            //   EntityType: Learning Class Content Page Detail
+            RockMigrationHelper.DeleteBlockType( "92E0DB96-0FFF-41F2-982D-F750AB23EF5B" );
+
+            // Delete BlockType 
+            //   Name: Learning Class Announcement Detail
+            //   Category: LMS
+            //   Path: -
+            //   EntityType: Learning Class Announcement Detail
+            RockMigrationHelper.DeleteBlockType( "53C12A53-773E-4398-8627-DD44C1421675" );
+
             // Delete Page 
             //  Internal Name: Completion
             //  Site: Rock RMS
             //  Layout: Full Width
             RockMigrationHelper.DeletePage( "E0F2E4F1-ED10-49F6-B053-AC6807994204" );
-
-            // Delete Page 
-            //  Internal Name: Facilitator
-            //  Site: Rock RMS
-            //  Layout: Full Width
-            RockMigrationHelper.DeletePage( "BEE6DDCE-D5A3-474F-8F37-A949BE79D9D8" );
 
             // Delete Page 
             //  Internal Name: Semester
@@ -2638,7 +2792,7 @@ WHERE NOT EXISTS (
             RockMigrationHelper.DeletePage( "36FFA805-B283-443E-990D-87040339D16F" );
 
             // Delete Page 
-            //  Internal Name: Student
+            //  Internal Name: Participant
             //  Site: Rock RMS
             //  Layout: Full Width
             RockMigrationHelper.DeletePage( "72C75C91-18F8-48D0-B0CF-1FBD82EB50FC" );
@@ -2720,9 +2874,6 @@ WHERE NOT EXISTS (
             //  Site: External Website
             //  Layout: Full Width
             RockMigrationHelper.DeletePage( "DF471E9C-EEFC-4493-B6C0-C8D94BC248EB" );
-
-            // Delete PageContext for Page:Program, Entity: Rock.Model.LearningProgram, Parameter: LearningProgramId
-            RockMigrationHelper.DeletePageContext( "C5BC79FB-CBB7-491D-82E9-53225CBF3821" );
         }
     }
 }

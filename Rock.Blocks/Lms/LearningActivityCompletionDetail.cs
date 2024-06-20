@@ -296,6 +296,9 @@ namespace Rock.Blocks.Lms
             box.IfValidProperty( nameof( box.Bag.ActivityComponentCompletionJson ),
                 () => entity.ActivityComponentCompletionJson = box.Bag.ActivityComponentCompletionJson );
 
+            box.IfValidProperty( nameof( box.Bag.DueDate ),
+                () => entity.DueDate = box.Bag.DueDate );
+
             box.IfValidProperty( nameof( box.Bag.FacilitatorComment ),
                 () => entity.FacilitatorComment = box.Bag.FacilitatorComment );
 

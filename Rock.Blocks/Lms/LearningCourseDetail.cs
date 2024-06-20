@@ -53,21 +53,25 @@ namespace Rock.Blocks.Lms
     [LinkedPage( "Activity Detail Page",
         Description = "The page that will be navigated to when clicking an activity row.",
         Key = AttributeKey.ActivityDetailPage,
+        IsRequired = false,
         Order = 1 )]
 
     [LinkedPage( "Participant Detail Page",
         Description = "The page that will be navigated to when clicking a student row.",
         Key = AttributeKey.ParticipantDetailPage,
+        IsRequired = false,
         Order = 2 )]
 
     [LinkedPage( "Content Page Detail Page",
         Description = "The page that will be navigated to when clicking a content page row.",
         Key = AttributeKey.ContentPageDetailPage,
+        IsRequired = false,
         Order = 3 )]
 
     [LinkedPage( "Announcement Detail Page",
         Description = "The page that will be navigated to when clicking a content page row.",
         Key = AttributeKey.AnnouncementDetailPage,
+        IsRequired = false,
         Order = 4 )]
 
     #endregion

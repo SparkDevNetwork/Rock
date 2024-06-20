@@ -18,7 +18,7 @@
                     <NumberBox v-model="questionWeight"
                                label="Question Weight"
                                rules="required"
-                               help="The point value for this question." />
+                               :help="configurationWeightHelpText" />
 
                 </div>
                 <div class="configuration-field-answer-box-rows">
@@ -53,11 +53,11 @@
                 <NumberBox v-model="pointsEarned"
                            label="Score"
                            :min="0"
-                           :max="questionWeight"
-                           :rules="'lte:' + questionWeight"
+                           :max="pointsPossible"
+                           :rules="'lte:' + pointsPossible"
                            inputGroupClasses="input-width-md">
                     <template #inputGroupAppend>
-                        <span class="input-group-addon">out of {{ questionWeight }}</span>
+                        <span class="input-group-addon">out of {{ pointsPossible }}</span>
                     </template>
                 </NumberBox>
             </div>
@@ -70,7 +70,7 @@
         <div v-if="screenToShow === ComponentScreen.Summary">
             <div class="summary-screen-question-header question-header">
                 <span class="short-answer-item-question question-section summary-screen">{{ question }}</span>
-                <span class="badge badge-default points-label">{{ pointsEarned }}/{{ questionWeight }}</span>
+                <span class="badge badge-default points-label">{{ pointsEarned }}/{{ pointsPossible }}</span>
             </div>
             <div class="short-answer-item-response summary-screen">
                 {{ response }}
@@ -139,6 +139,11 @@
             required: true
         },
 
+        totalActivityPoints: {
+            type: Number as PropType<number>,
+            default: 0
+        },
+
         screenToShow: {
             type: Object as PropType<ComponentScreen>,
             required: true
@@ -159,6 +164,13 @@
     const maxCharacterCount = ref(internalModelValue.value.maxCharacterCount);
     const response = ref(internalModelValue.value.response ?? "");
     const pointsEarned = ref(internalModelValue.value.pointsEarned ?? 0);
+    const pointsPossible = computed(() => props.totalActivityPoints * questionWeight.value / 100);
+
+    const configurationWeightHelpText = `
+        Enter the percentage weight for this question.
+        This value will determine how much this one question will contribute to the overall score of the test.
+        For example, if you set this to 40% then 40% of the student's total test score will be based on their response to this one question.
+        Ensure that the combined weights of all sections add up to 100%.`;
 
     watch([question, helpText, questionWeight, answerBoxRows, maxCharacterCount, response, pointsEarned], () => {
         const newModelValue = {
@@ -168,7 +180,9 @@
             pointsEarned: toValue(pointsEarned),
             question: toValue(question),
             questionWeight: toValue(questionWeight),
+            response: response.value,
             typeName: internalModelValue.value.typeName,
+            uniqueId: internalModelValue.value.uniqueId
         } as ShortAnswerItem;
 
         emit("update:modelValue", newModelValue);

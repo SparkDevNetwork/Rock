@@ -12,20 +12,12 @@
                     </template>
                 </NumberBox>
             </div>
-            <div class="col-md-3">
-                <DatePicker v-model="availableDateTime"
-                            label="Available Date" />
-            </div>
 
-            <div class="col-md-3">
+            <div class="col-md-3 col-md-offset-6">
                 <DatePicker v-model="dueDate"
                             label="Due Date" />
             </div>
 
-            <div class="col-md-3">
-                <DatePicker v-model="completedDateTime"
-                            label="Completed Date" />
-            </div>
         </div>
         <div class="student-comments-section" v-if="isStudentCommentingEnabled">
             {{ studentComment }}
@@ -85,8 +77,6 @@
     const activityBag = ref(props.modelValue.bag?.activityBag ?? {} as LearningActivityBag);
     const completionBag = ref(props.modelValue.bag ?? {} as LearningActivityCompletionBag);
 
-    const availableDateTime = ref(completionBag.value.availableDateTime);
-    const completedDateTime = ref(completionBag.value.completedDateTime);
     const dueDate = ref(completionBag.value.dueDate);
     const isStudentCommentingEnabled = ref(completionBag.value.isStudentCommentingEnabled ?? false);
     const studentComment = ref(completionBag.value.studentComment ?? "");
@@ -95,15 +85,14 @@
     const isPastDue = ref(completionBag.value.isPastDue ?? false);
     const isFacilitatorCompleted = propertyRef(completionBag.value.isFacilitatorCompleted ?? false, "IsFacilitatorCompleted");
     const facilitatorComment = propertyRef(completionBag.value.facilitatorComment ?? "", "FacilitatorComments");
-    const pointsEarned = propertyRef(completionBag.value.pointsEarned, "PointedEarned");
+    const pointsEarned = propertyRef(completionBag.value.pointsEarned, "PointsEarned");
     const completionJson = propertyRef(completionBag.value.activityComponentCompletionJson, "ActivityComponentCompletionJson");
-
-
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
     const propRefs = [
         completionJson
+        , dueDate
         , isFacilitatorCompleted
         , facilitatorComment
         , pointsEarned
@@ -139,6 +128,7 @@
         updateRefValue(isFacilitatorCompleted, props.modelValue.bag?.isFacilitatorCompleted ?? false);
         updateRefValue(facilitatorComment, props.modelValue.bag?.facilitatorComment ?? "");
         updateRefValue(pointsEarned, props.modelValue.bag?.pointsEarned ?? 0);
+        updateRefValue(dueDate, props.modelValue.bag?.dueDate);
     });
 
     // Determines which values we want to track changes on (defined in the
@@ -152,6 +142,7 @@
         setPropertiesBoxValue(newValue, "isFacilitatorCompleted", isFacilitatorCompleted.value);
         setPropertiesBoxValue(newValue, "facilitatorComment", facilitatorComment.value);
         setPropertiesBoxValue(newValue, "pointsEarned", pointsEarned.value);
+        setPropertiesBoxValue(newValue, "dueDate", dueDate.value);
 
         emit("update:modelValue", newValue);
     });
@@ -159,6 +150,11 @@
     watch(completionBag, () => {
         if (!deepEqual(completionBag.value.activityComponentCompletionJson, completionJson.value, true)) {
             completionJson.value = completionBag.value.activityComponentCompletionJson;
+
+            // Allow the component to update the points earned for the activity completion.
+            if (completionBag.value.pointsEarned !== pointsEarned.value) {
+                pointsEarned.value = completionBag.value.pointsEarned;
+            }
         }
     });
 

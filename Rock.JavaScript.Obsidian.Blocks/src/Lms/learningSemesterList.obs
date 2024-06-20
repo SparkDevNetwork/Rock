@@ -44,13 +44,15 @@
                       field="classCount"
                       :filter="numberValueFilter"
                       visiblePriority="xs" />
+
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" :rowDisabled="onDeleteRowDisabled" />
     </Grid>
 </template>
 
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { numberValueFilter, NumberColumn, dateValueFilter, TextColumn, DateColumn, textValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { numberValueFilter, NumberColumn, dateValueFilter, TextColumn, DateColumn, textValueFilter, DeleteColumn } from "@Obsidian/Controls/grid";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { LearningSemesterListOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningSemesterList/learningSemesterListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
@@ -107,6 +109,39 @@
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
             window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
         }
+    }
+
+    /**
+     * Called when a semester row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+     async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+        }
+        else {
+            alert(result.errorMessage ?? "Unknown error while trying to delete the semester.");
+        }
+    }
+
+    /**
+    * Called when the delete button for a row wants to know if it should be
+    * disabled.
+    *
+    * @param row The row associated with the delete button.
+    */
+    function onDeleteRowDisabled(row: Record<string, unknown>): boolean {
+        return (row.classCount as number) > 0;
     }
 
     // #endregion

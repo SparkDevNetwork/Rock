@@ -48,7 +48,7 @@ namespace Rock.Blocks.Lms
 
     [CodeEditorField( "Course List Template",
         Key = AttributeKey.CourseListTemplate,
-        Description = "The lava template showing the courses list.",
+        Description = "The lava template showing the courses list. Merge fields include: Program, Courses, CurrentPerson and other Common Merge Fields. <span class='tip tip-lava'></span>",
         EditorMode = CodeEditorMode.Lava,
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,

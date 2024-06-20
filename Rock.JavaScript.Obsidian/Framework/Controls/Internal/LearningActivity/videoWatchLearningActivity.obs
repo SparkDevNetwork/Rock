@@ -55,9 +55,9 @@
                 <StructuredContentEditor :disabled="true" label="" v-model="footerContent" />
             </div>
             <div class="footer-buttons">
-                <RockButton :btnType="BtnType.Primary" :disabled="!hasPassedThreshold"
+                <RockButton :btnType="BtnType.Primary" :disabled="!hasPassedThreshold || isStudentCompleted"
                             @click="emits('completed', true)">
-                    Complete
+                    {{isStudentCompleted ? 'Completed' : 'Complete'}}
                 </RockButton>
             </div>
         </fieldset>
@@ -109,6 +109,7 @@
 
     const hasPassedThreshold = computed(() => watchedPercentage.value >= completionThreshold.value);
     const notificationAlertType = computed(() => hasPassedThreshold ? "success" : "warning");
+    const isStudentCompleted = ref(completionBag.value.isStudentCompleted);
 
     // The threshold control should show as a number between 0 and 100;
     // while the saved value will be normalized as a decimal < 1.
