@@ -89,7 +89,7 @@ namespace Rock.CheckIn.v2.Labels.Renderers
             }
             else if ( field.Field.FieldType == LabelFieldType.AttendeePhoto )
             {
-                throw new NotImplementedException();
+                WriteAttendeePhotoField( writer, field );
             }
             else if ( field.Field.FieldType == LabelFieldType.Barcode )
             {
@@ -406,6 +406,48 @@ namespace Rock.CheckIn.v2.Labels.Renderers
         }
 
         /// <summary>
+        /// Writes an attendee photo field to the stream.
+        /// </summary>
+        /// <param name="writer">The stream to write the field to.</param>
+        /// <param name="field">The field to write.</param>
+        protected void WriteAttendeePhotoField( StreamWriter writer, LabelField field )
+        {
+            var config = field.GetConfiguration<AttendeePhotoFieldConfiguration>();
+            var width = ToDots( field.Field.Width );
+
+            var options = new ZplImageOptions
+            {
+                Dithering = config.IsHighQuality ? DitherMode.Quality : DitherMode.Fast,
+                Height = ToDots( field.Field.Height ),
+                Width = width
+            };
+
+            ZplImageCache image;
+
+            try
+            {
+                image = GetPersonPhoto( options );
+            }
+            catch
+            {
+                return;
+            }
+
+            WriteFieldOrigin( writer, field );
+
+            if ( config.IsColorInverted )
+            {
+                writer.Write( "^FR" );
+            }
+
+            writer.Write( $"^GFA,{image.ImageData.Length},{image.ImageData.Length},{( width + 7 ) / 8}," );
+
+            writer.Write( ByteArrayToHexViaLookup32( image.ImageData ) );
+
+            writer.WriteLine( "^FS" );
+        }
+
+        /// <summary>
         /// Writes a barcode field to the stream.
         /// </summary>
         /// <param name="writer">The stream to write the field to.</param>
@@ -545,6 +587,30 @@ namespace Rock.CheckIn.v2.Labels.Renderers
         protected internal virtual ZplImageCache GetIcon( int width, int height, LabelIcon icon )
         {
             return ZplImageHelper.CreateIcon( width, height, icon );
+        }
+
+        /// <summary>
+        /// Gets the ZPL image for the photo of the person represented by
+        /// this print request.
+        /// </summary>
+        /// <param name="options">The image formatting options.</param>
+        /// <returns>The image object or <c>null</c> if no image was available.</returns>
+        [ExcludeFromCodeCoverage]
+        protected internal virtual ZplImageCache GetPersonPhoto( ZplImageOptions options )
+        {
+            if ( !( PrintRequest.LabelData is ILabelDataHasPerson personData ) )
+            {
+                return null;
+            }
+
+            var stream = personData.Person.Photo?.ContentStream;
+
+            if ( stream == null )
+            {
+                return null;
+            }
+
+            return ZplImageHelper.CreateImage( stream, options );
         }
 
         /// <summary>

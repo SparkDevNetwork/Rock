@@ -476,6 +476,7 @@
     <Compile Include="CheckIn\CheckInItemBag.cs" />
     <Compile Include="CheckIn\KioskBag.cs" />
     <Compile Include="CheckIn\KioskStatusBag.cs" />
+    <Compile Include="CheckIn\Labels\AttendeePhotoFieldConfigurationBag.cs" />
     <Compile Include="CheckIn\Labels\BarcodeFieldConfigurationBag.cs" />
     <Compile Include="CheckIn\Labels\DataFormatterOptionBag.cs" />
     <Compile Include="CheckIn\Labels\DesignedLabelBag.cs" />

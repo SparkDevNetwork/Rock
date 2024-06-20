@@ -798,6 +798,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\Configuration\LabelDesigner\iconItemBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\Configuration\LabelDesigner\labelDesignerOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\Configuration\LabelDesigner\labelDetailBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\CheckIn\Labels\attendeePhotoFieldConfigurationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\Labels\barcodeFieldConfigurationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\Labels\designedLabelBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\AdaptiveMessageAdaptationDetail\adaptiveMessageAdaptationBag.d.ts" />

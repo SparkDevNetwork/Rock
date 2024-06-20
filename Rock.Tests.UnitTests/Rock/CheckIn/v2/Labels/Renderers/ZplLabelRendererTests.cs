@@ -1955,6 +1955,282 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Labels.Renderers
 
         #endregion
 
+        #region WriteAttendeePhotoField
+
+        [TestMethod]
+        public void WriteAttendeePhotoField_WithPhotoData_SetsCorrectLength()
+        {
+            var dpi = 300;
+            var imageData = Enumerable.Range( 0, 19 ).Select( i => ( byte ) i ).ToArray();
+            var expectedPattern = new Regex( @"\^GFA,19,19," );
+
+            var request = new PrintLabelRequest
+            {
+                Label = new DesignedLabelBag(),
+                Capabilities = new PrinterCapabilities
+                {
+                    Dpi = dpi
+                }
+            };
+
+            var renderer = new Mock<ZplLabelRenderer>( MockBehavior.Loose )
+            {
+                CallBase = true
+            };
+
+            renderer.Setup( f => f.GetPersonPhoto( It.IsAny<ZplImageOptions>() ) )
+                .Returns( new ZplImageCache( imageData, 0, 0 ) );
+
+            var field = new Mock<LabelField>( MockBehavior.Strict, new LabelFieldBag
+            {
+                FieldType = LabelFieldType.AttendeePhoto
+            } );
+
+            field.Setup( f => f.GetConfiguration<AttendeePhotoFieldConfiguration>() )
+                .Returns( new AttendeePhotoFieldConfiguration() );
+
+            var zpl = GetTextFromStream( stream =>
+            {
+                renderer.Object.BeginLabel( stream, request );
+                stream.SetLength( 0 );
+
+                renderer.Object.WriteField( field.Object );
+                renderer.Object.Dispose();
+            } );
+
+            Assert.That.Matches( zpl, expectedPattern );
+        }
+
+        [TestMethod]
+        public void WriteAttendeePhotoField_WithPhotoData_EncodesDataAsHex()
+        {
+            var dpi = 300;
+            var imageData = Enumerable.Range( 8, 4 ).Select( i => ( byte ) i ).ToArray();
+            var expectedPattern = new Regex( @"\^GFA,[0-9],[0-9],[0-9],08090A0B" );
+
+            var request = new PrintLabelRequest
+            {
+                Label = new DesignedLabelBag(),
+                Capabilities = new PrinterCapabilities
+                {
+                    Dpi = dpi
+                }
+            };
+
+            var renderer = new Mock<ZplLabelRenderer>( MockBehavior.Loose )
+            {
+                CallBase = true
+            };
+
+            renderer.Setup( f => f.GetPersonPhoto( It.IsAny<ZplImageOptions>() ) )
+                .Returns( new ZplImageCache( imageData, 0, 0 ) );
+
+            var field = new Mock<LabelField>( MockBehavior.Strict, new LabelFieldBag
+            {
+                FieldType = LabelFieldType.AttendeePhoto
+            } );
+
+            field.Setup( f => f.GetConfiguration<AttendeePhotoFieldConfiguration>() )
+                .Returns( new AttendeePhotoFieldConfiguration() );
+
+            var zpl = GetTextFromStream( stream =>
+            {
+                renderer.Object.BeginLabel( stream, request );
+                stream.SetLength( 0 );
+
+                renderer.Object.WriteField( field.Object );
+                renderer.Object.Dispose();
+            } );
+
+            Assert.That.Matches( zpl, expectedPattern );
+        }
+
+        [TestMethod]
+        public void WriteAttendeePhotoField_WithInvertedColor_IncludesFieldReverseCommand()
+        {
+            var dpi = 300;
+            var imageData = Enumerable.Range( 0, 4 ).Select( i => ( byte ) i ).ToArray();
+            var expectedPattern = new Regex( @"\^FR" );
+
+            var request = new PrintLabelRequest
+            {
+                Label = new DesignedLabelBag(),
+                Capabilities = new PrinterCapabilities
+                {
+                    Dpi = dpi
+                }
+            };
+
+            var renderer = new Mock<ZplLabelRenderer>( MockBehavior.Loose )
+            {
+                CallBase = true
+            };
+
+            renderer.Setup( f => f.GetPersonPhoto( It.IsAny<ZplImageOptions>() ) )
+                .Returns( new ZplImageCache( imageData, 0, 0 ) );
+
+            var field = new Mock<LabelField>( MockBehavior.Strict, new LabelFieldBag
+            {
+                FieldType = LabelFieldType.AttendeePhoto
+            } );
+
+            field.Setup( f => f.GetConfiguration<AttendeePhotoFieldConfiguration>() )
+                .Returns( new AttendeePhotoFieldConfiguration
+                {
+                    IsColorInverted = true
+                } );
+
+            var zpl = GetTextFromStream( stream =>
+            {
+                renderer.Object.BeginLabel( stream, request );
+                stream.SetLength( 0 );
+
+                renderer.Object.WriteField( field.Object );
+                renderer.Object.Dispose();
+            } );
+
+            Assert.That.Matches( zpl, expectedPattern );
+        }
+
+        [TestMethod]
+        public void WriteAttendeePhotoField_WithFailedConversion_DoesNotEmitField()
+        {
+            var dpi = 300;
+            var imageData = Enumerable.Range( 0, 4 ).Select( i => ( byte ) i ).ToArray();
+
+            var request = new PrintLabelRequest
+            {
+                Label = new DesignedLabelBag(),
+                Capabilities = new PrinterCapabilities
+                {
+                    Dpi = dpi
+                }
+            };
+
+            var renderer = new Mock<ZplLabelRenderer>( MockBehavior.Loose )
+            {
+                CallBase = true
+            };
+
+            renderer.Setup( f => f.GetPersonPhoto( It.IsAny<ZplImageOptions>() ) )
+                .Throws<InvalidOperationException>();
+
+            var field = new Mock<LabelField>( MockBehavior.Strict, new LabelFieldBag
+            {
+                FieldType = LabelFieldType.AttendeePhoto
+            } );
+
+            field.Setup( f => f.GetConfiguration<AttendeePhotoFieldConfiguration>() )
+                .Returns( new AttendeePhotoFieldConfiguration() );
+
+            var zpl = GetTextFromStream( stream =>
+            {
+                renderer.Object.BeginLabel( stream, request );
+                stream.SetLength( 0 );
+
+                renderer.Object.WriteField( field.Object );
+                renderer.Object.Dispose();
+            } );
+
+            Assert.That.IsEmpty( zpl );
+        }
+
+        [TestMethod]
+        public void WriteAttendeePhotoField_WithoutHighQuality_SetsDitheringToFast()
+        {
+            var expectedDithering = DitherMode.Fast;
+            var actualDithering = DitherMode.None;
+
+            var request = new PrintLabelRequest
+            {
+                Label = new DesignedLabelBag(),
+                Capabilities = new PrinterCapabilities()
+            };
+
+            var renderer = new Mock<ZplLabelRenderer>( MockBehavior.Loose )
+            {
+                CallBase = true
+            };
+
+            renderer.Setup( f => f.GetPersonPhoto( It.IsAny<ZplImageOptions>() ) )
+                .Returns<ZplImageOptions>( o =>
+                {
+                    actualDithering = o.Dithering;
+
+                    return new ZplImageCache( new byte[0], 0, 0 );
+                } );
+
+            var field = new Mock<LabelField>( MockBehavior.Strict, new LabelFieldBag
+            {
+                FieldType = LabelFieldType.AttendeePhoto
+            } );
+
+            field.Setup( f => f.GetConfiguration<AttendeePhotoFieldConfiguration>() )
+                .Returns( new AttendeePhotoFieldConfiguration
+                {
+                    IsHighQuality = false
+                } );
+
+            var zpl = GetTextFromStream( stream =>
+            {
+                renderer.Object.BeginLabel( stream, request );
+
+                renderer.Object.WriteField( field.Object );
+                renderer.Object.Dispose();
+            } );
+
+            Assert.That.AreEqual( expectedDithering, actualDithering );
+        }
+
+        [TestMethod]
+        public void WriteAttendeePhotoField_WithHighQuality_SetsDitheringToQuality()
+        {
+            var expectedDithering = DitherMode.Quality;
+            var actualDithering = DitherMode.None;
+
+            var request = new PrintLabelRequest
+            {
+                Label = new DesignedLabelBag(),
+                Capabilities = new PrinterCapabilities()
+            };
+
+            var renderer = new Mock<ZplLabelRenderer>( MockBehavior.Loose )
+            {
+                CallBase = true
+            };
+
+            renderer.Setup( f => f.GetPersonPhoto( It.IsAny<ZplImageOptions>() ) )
+                .Returns<ZplImageOptions>( o =>
+                {
+                    actualDithering = o.Dithering;
+
+                    return new ZplImageCache( new byte[0], 0, 0 );
+                } );
+
+            var field = new Mock<LabelField>( MockBehavior.Strict, new LabelFieldBag
+            {
+                FieldType = LabelFieldType.AttendeePhoto
+            } );
+
+            field.Setup( f => f.GetConfiguration<AttendeePhotoFieldConfiguration>() )
+                .Returns( new AttendeePhotoFieldConfiguration
+                {
+                    IsHighQuality = true
+                } );
+
+            var zpl = GetTextFromStream( stream =>
+            {
+                renderer.Object.BeginLabel( stream, request );
+
+                renderer.Object.WriteField( field.Object );
+                renderer.Object.Dispose();
+            } );
+
+            Assert.That.AreEqual( expectedDithering, actualDithering );
+        }
+
+        #endregion
+
         #region WriteBarcodeField
 
         [TestMethod]

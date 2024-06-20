@@ -7,6 +7,7 @@ import { HorizontalTextAlignment } from "@Obsidian/Enums/CheckIn/Labels/horizont
 import { LabelFieldType } from "@Obsidian/Enums/CheckIn/Labels/labelFieldType";
 import { TextFieldSubType } from "@Obsidian/Enums/CheckIn/Labels/textFieldSubType";
 import { IconItemBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/LabelDesigner/iconItemBag";
+import { AttendeePhotoFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/attendeePhotoFieldConfigurationBag";
 import { BarcodeFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/barcodeFieldConfigurationBag";
 import { EllipseFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/ellipseFieldConfigurationBag";
 import { IconFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/iconFieldConfigurationBag";
@@ -682,11 +683,16 @@ function updateImageShapeFromField(shape: Konva.Image, field: LabelFieldBag, sur
  * @param field The field to use as the source of truth.
  */
 function updateAttendeePhotoShapeFromField(shape: Konva.Text, field: LabelFieldBag, surface: Surface): void {
+    const config = (field.configurationValues ?? {}) as AttendeePhotoFieldConfigurationBag;
+
     // Update the position of the shape.
     shape.x(surface.getPixelForOffset(field.left));
     shape.y(surface.getPixelForOffset(field.top));
     shape.width(surface.getPixelForOffset(field.width));
     shape.height(surface.getPixelForOffset(field.height));
+
+    // Update configured values.
+    shape.globalCompositeOperation(asBoolean(config.isColorInverted) ? "xor" : "source-over");
 }
 
 /**

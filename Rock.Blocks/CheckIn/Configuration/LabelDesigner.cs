@@ -288,7 +288,11 @@ namespace Rock.Blocks.CheckIn.Configuration
                 var request = new PrintLabelRequest
                 {
                     Capabilities = new PrinterCapabilities(),
-                    Label = label.LabelData
+                    Label = label.LabelData,
+                    LabelData = new PersonLabelData( RequestContext.CurrentPerson,
+                        RequestContext.CurrentPerson.PrimaryFamily,
+                        new List<AttendanceLabel>(),
+                        RockContext )
                 };
 
                 var renderer = new ZplLabelRenderer();

@@ -183,6 +183,7 @@
 <script setup lang="ts">
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import ControlButton from "./controlButton.partial.obs";
+    import FieldConfigAttendeePhoto from "./fieldConfigAttendeePhoto.partial.obs";
     import FieldConfigDataSourceText from "./fieldConfigDataSourceText.partial.obs";
     import FieldConfigBarcode from "./fieldConfigBarcode.partial.obs";
     import FieldConfigCustomText from "./fieldConfigCustomText.partial.obs";
@@ -262,6 +263,9 @@
         }
         else if (field.fieldType === LabelFieldType.Image) {
             return FieldConfigImage;
+        }
+        else if (field.fieldType === LabelFieldType.AttendeePhoto) {
+            return FieldConfigAttendeePhoto;
         }
         else if (field.fieldType === LabelFieldType.Barcode) {
             return FieldConfigBarcode;

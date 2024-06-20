@@ -1,0 +1,63 @@
+<template>
+    <div class="form-group">
+        <RockLabel>Options</RockLabel>
+
+        <div class="control-wrapper">
+            <InlineCheckBox label="Invert Colors"
+                            v-model="isColorInverted" />
+
+            <InlineCheckBox label="High Quality"
+                            help="Uses a high quality dithering algorithm to provide better results at the cost of taking longer to render."
+                            v-model="isHighQuality" />
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import { PropType, ref, watch } from "vue";
+    import { AttendeePhotoFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/attendeePhotoFieldConfigurationBag";
+    import { LabelUndoManager } from "./undoManager.partial";
+    import { asBoolean, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
+
+    const props = defineProps({
+        labelManager: {
+            type: Object as PropType<LabelUndoManager>,
+            required: true
+        }
+    });
+
+    const image = ref<string | undefined | null>();
+    const isColorInverted = ref(false);
+    const isHighQuality = ref(false);
+
+    /**
+     * Set the internal values to match those from the selected field.
+     */
+    function setInternalValues(): void {
+        const configuration = (props.labelManager.selectedField.value
+            ?.configurationValues ?? {}) as AttendeePhotoFieldConfigurationBag;
+
+        isColorInverted.value = asBoolean(configuration.isColorInverted);
+        isHighQuality.value = asBoolean(configuration.isHighQuality);
+    }
+
+    // Watch for changes in the UI that require an update to the label.
+    watch([image, isColorInverted, isHighQuality], () => {
+        props.labelManager.mutateSelectedField(field => {
+            field.configurationValues = field.configurationValues ?? {};
+
+            const fieldConfig = field.configurationValues as AttendeePhotoFieldConfigurationBag;
+
+            fieldConfig.isColorInverted = asTrueFalseOrNull(isColorInverted.value);
+            fieldConfig.isHighQuality = asTrueFalseOrNull(isHighQuality.value);
+        });
+    });
+
+    // Watch for changes on the label that need to be reflected in the UI.
+    watch(props.labelManager.selectedField, () => {
+        setInternalValues();
+    });
+
+    setInternalValues();
+</script>
