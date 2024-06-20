@@ -652,12 +652,29 @@ namespace RockWeb.Blocks.Connection
 
         private void LbUpdateConnections_Click( object sender, EventArgs e )
         {
-            var selectedItems = new List<int>();
-            gRequests.SelectedKeys.ToList().ForEach( k => selectedItems.Add( k.ToString().AsInteger() ) );
+            var selectedItems = new List<int>();          
+
+            if ( gRequests.SelectedKeys.Count == 0 )
+            {
+                foreach ( var dataKeyObject in gRequests.DataKeys )
+                {
+                    var dataKey = dataKeyObject as DataKey;
+                    var selectedItem = dataKey?.Value?.ToString()?.AsIntegerOrNull();
+
+                    if ( selectedItem.HasValue )
+                    {
+                        selectedItems.Add( selectedItem.Value );
+                    }
+                }
+            }
+            else
+            {
+                gRequests.SelectedKeys.ToList().ForEach( k => selectedItems.Add( k.ToString().AsInteger() ) );
+            }
 
             if ( selectedItems.Count == 0 )
             {
-                gRequests.ShowModalAlertMessage( "No requests selected", ModalAlertType.Information );
+                gRequests.ShowModalAlertMessage( "Grid has no Connection Requests", ModalAlertType.Warning );
             }
             else
             {
