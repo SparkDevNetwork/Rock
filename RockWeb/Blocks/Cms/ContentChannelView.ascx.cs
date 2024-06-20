@@ -1798,7 +1798,7 @@ $(document).ready(function() {
             public int Count { get; set; }
         }
 
-        private class ArchiveSummaryModel : DotLiquid.Drop
+        private class ArchiveSummaryModel : LavaDataObject
         {
             public int Month { get; set; }
             public string MonthName { get; set; }
