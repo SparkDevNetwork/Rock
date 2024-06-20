@@ -21,21 +21,26 @@
 // </copyright>
 //
 
-/** Determines the configuration mode of a LearningProgram. */
-export const ConfigurationMode = {
-    /** Academic calendar mode. */
-    AcademicCalendar: 0,
+/** Determines the method of communicating an announcement. */
+export const CommunicationMode = {
+    /** The announcement isn't sent via any communication mode. */
+    None: 0,
 
-    /** On-demand learning mode. */
-    OnDemandLearning: 1
+    /** The announcement is sent by Email. */
+    Email: 1,
+
+    /** The announcement is sent by SMS. */
+    SMS: 2
 } as const;
 
-/** Determines the configuration mode of a LearningProgram. */
-export const ConfigurationModeDescription: Record<number, string> = {
-    0: "Academic Calendar",
+/** Determines the method of communicating an announcement. */
+export const CommunicationModeDescription: Record<number, string> = {
+    0: "None",
 
-    1: "On Demand Learning"
+    1: "Email",
+
+    2: "SMS"
 };
 
-/** Determines the configuration mode of a LearningProgram. */
-export type ConfigurationMode = typeof ConfigurationMode[keyof typeof ConfigurationMode];
+/** Determines the method of communicating an announcement. */
+export type CommunicationMode = typeof CommunicationMode[keyof typeof CommunicationMode];

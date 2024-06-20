@@ -95,6 +95,10 @@ namespace Rock.Model
             target.ForeignKey = null;
             target.ForeignId = null;
             target.ForeignGuid = null;
+            target.CreatedByPersonAliasId = null;
+            target.CreatedDateTime = RockDateTime.Now;
+            target.ModifiedByPersonAliasId = null;
+            target.ModifiedDateTime = RockDateTime.Now;
 
             return target;
         }
@@ -107,53 +111,11 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this LearningClassContentPage target, LearningClassContentPage source )
         {
             target.Id = source.Id;
-            target.AllowGuests = source.AllowGuests;
-            target.ArchivedByPersonAliasId = source.ArchivedByPersonAliasId;
-            target.ArchivedDateTime = source.ArchivedDateTime;
-            target.AttendanceRecordRequiredForCheckIn = source.AttendanceRecordRequiredForCheckIn;
-            target.CampusId = source.CampusId;
-            target.ConfirmationAdditionalDetails = source.ConfirmationAdditionalDetails;
             target.Content = source.Content;
-            target.Description = source.Description;
-            target.DisableScheduleToolboxAccess = source.DisableScheduleToolboxAccess;
-            target.DisableScheduling = source.DisableScheduling;
-            target.ElevatedSecurityLevel = source.ElevatedSecurityLevel;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.GroupCapacity = source.GroupCapacity;
-            target.GroupSalutation = source.GroupSalutation;
-            target.GroupSalutationFull = source.GroupSalutationFull;
-            target.GroupTypeId = source.GroupTypeId;
-            target.InactiveDateTime = source.InactiveDateTime;
-            target.InactiveReasonNote = source.InactiveReasonNote;
-            target.InactiveReasonValueId = source.InactiveReasonValueId;
-            target.IsActive = source.IsActive;
-            target.IsArchived = source.IsArchived;
-            target.IsPublic = source.IsPublic;
-            target.IsSecurityRole = source.IsSecurityRole;
-            target.IsSystem = source.IsSystem;
-            target.LeaderToLeaderRelationshipMultiplierOverride = source.LeaderToLeaderRelationshipMultiplierOverride;
-            target.LeaderToNonLeaderRelationshipMultiplierOverride = source.LeaderToNonLeaderRelationshipMultiplierOverride;
             target.LearningClassId = source.LearningClassId;
-            target.Name = source.Name;
-            target.NonLeaderToLeaderRelationshipMultiplierOverride = source.NonLeaderToLeaderRelationshipMultiplierOverride;
-            target.NonLeaderToNonLeaderRelationshipMultiplierOverride = source.NonLeaderToNonLeaderRelationshipMultiplierOverride;
-            target.Order = source.Order;
-            target.ParentGroupId = source.ParentGroupId;
-            target.RelationshipGrowthEnabledOverride = source.RelationshipGrowthEnabledOverride;
-            target.RelationshipStrengthOverride = source.RelationshipStrengthOverride;
-            target.ReminderAdditionalDetails = source.ReminderAdditionalDetails;
-            target.ReminderOffsetDays = source.ReminderOffsetDays;
-            target.ReminderSystemCommunicationId = source.ReminderSystemCommunicationId;
-            target.RequiredSignatureDocumentTemplateId = source.RequiredSignatureDocumentTemplateId;
-            target.RSVPReminderOffsetDays = source.RSVPReminderOffsetDays;
-            target.RSVPReminderSystemCommunicationId = source.RSVPReminderSystemCommunicationId;
-            target.ScheduleCancellationPersonAliasId = source.ScheduleCancellationPersonAliasId;
-            target.ScheduleConfirmationLogic = source.ScheduleConfirmationLogic;
-            target.ScheduleId = source.ScheduleId;
-            target.SchedulingMustMeetRequirements = source.SchedulingMustMeetRequirements;
-            target.StartDate = source.StartDate;
-            target.StatusValueId = source.StatusValueId;
+            target.StartDateTime = source.StartDateTime;
             target.Title = source.Title;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

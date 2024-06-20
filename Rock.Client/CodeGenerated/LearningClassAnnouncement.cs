@@ -61,6 +61,9 @@ namespace Rock.Client
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
+        public DateTime PublishDateTime { get; set; }
+
+        /// <summary />
         public string Summary { get; set; }
 
         /// <summary />
@@ -107,6 +110,7 @@ namespace Rock.Client
             this.ForeignKey = source.ForeignKey;
             this.LearningClassId = source.LearningClassId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
+            this.PublishDateTime = source.PublishDateTime;
             this.Summary = source.Summary;
             this.Title = source.Title;
             this.CreatedDateTime = source.CreatedDateTime;

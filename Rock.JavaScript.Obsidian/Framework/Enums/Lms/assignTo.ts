@@ -21,21 +21,21 @@
 // </copyright>
 //
 
-/** Determines the completion status of a LearningProgramCompletion. */
+/** Determines the party responsible for completing an activity. */
 export const AssignTo = {
-    /** The responsible party is the facilitator. */
-    Facilitator: 1,
-
     /** The responsible party is the student. */
-    Student: 2
+    Student: 0,
+
+    /** The responsible party is the facilitator. */
+    Facilitator: 1
 } as const;
 
-/** Determines the completion status of a LearningProgramCompletion. */
+/** Determines the party responsible for completing an activity. */
 export const AssignToDescription: Record<number, string> = {
-    1: "Facilitator",
+    0: "Student",
 
-    2: "Student"
+    1: "Facilitator"
 };
 
-/** Determines the completion status of a LearningProgramCompletion. */
+/** Determines the party responsible for completing an activity. */
 export type AssignTo = typeof AssignTo[keyof typeof AssignTo];

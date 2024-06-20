@@ -2056,6 +2056,18 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<LearningClassContentPage>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, LearningClassContentPage.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<LearningClassContentPage>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, LearningClassContentPage.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<LearningCourse>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, LearningCourse.FriendlyTypeName );
@@ -2433,10 +2445,6 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, PageShortLink.FriendlyTypeName );
                 return false;
             }
-
-            // ignoring PeerNetwork,SourcePersonAliasId
-
-            // ignoring PeerNetwork,TargetPersonAliasId
 
             if ( new Service<Person>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
             {
