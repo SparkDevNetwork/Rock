@@ -22,7 +22,7 @@ namespace Rock.Tests.Shared.TestFramework
     /// configures a few required things to help ensure that tests work in
     /// isolation.
     /// </summary>
-    public abstract class CheckInMockDatabase
+    public abstract class MockDatabaseTestsBase
     {
         /// <summary>
         /// Initializes all required database mocks before running the tests.

@@ -20,7 +20,7 @@ using Rock.ViewModels.CheckIn.Labels;
 namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Labels.Renderers
 {
     [TestClass]
-    public class ZplLabelRendererTests
+    public class ZplLabelRendererTests : MockDatabaseTestsBase
     {
         #region BeginLabel
 
