@@ -76,7 +76,64 @@ namespace Rock
         [RockInternal( "1.16.4" )]
         public static TSettings GetAdditionalSettings<TSettings>( this IHasReadOnlyAdditionalSettings settings ) where TSettings : class, new()
         {
-            return settings.GetAdditionalSettings<TSettings>( typeof( TSettings ).Name ) ?? new TSettings();
+            return settings.GetAdditionalSettingsOrNull<TSettings>( typeof( TSettings ).Name ) ?? new TSettings();
+        }
+
+        /// <summary>
+        /// Gets the deserialized settings object matching the provided <typeparamref name="TSettings"/> <see cref="System.Type"/> from
+        /// <see cref="IHasReadOnlyAdditionalSettings.AdditionalSettingsJson"/>.
+        /// <para>
+        /// This will never return <c>null</c>. If <see cref="IHasReadOnlyAdditionalSettings.AdditionalSettingsJson"/> doesn't already
+        /// have a settings object of this type, a new instance will be created and returned.
+        /// </para>
+        /// </summary>
+        /// <typeparam name="TSettings">
+        /// The <see cref="System.Type"/> of category settings object into which the underlying JSON string should be deserialized.
+        /// </typeparam>
+        /// <param name="settings">The <see cref="IHasReadOnlyAdditionalSettings"/> instance containing the desired, categorized settings.</param>
+        /// <returns>The deserialized settings object or <see langword="null"/> if one didn't already exist.</returns>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "1.16.4" )]
+        public static TSettings GetAdditionalSettingsOrNull<TSettings>( this IHasReadOnlyAdditionalSettings settings ) where TSettings : class, new()
+        {
+            return settings.GetAdditionalSettingsOrNull<TSettings>( typeof( TSettings ).Name );
+        }
+
+        /// <summary>
+        /// <para>
+        /// Gets the deserialized settings object matching the provided <paramref name="categoryKey"/> from
+        /// <see cref="IHasReadOnlyAdditionalSettings.AdditionalSettingsJson"/>.
+        /// </para>
+        /// <para>
+        /// This will never return <c>null</c>. If <see cref="IHasReadOnlyAdditionalSettings.AdditionalSettingsJson"/> doesn't already
+        /// have a settings object of this type, a new instance will be created and returned.
+        /// </para>
+        /// </summary>
+        /// <typeparam name="TSettings">
+        /// The <see cref="System.Type"/> of category settings object into which the underlying JSON string should be deserialized.
+        /// </typeparam>
+        /// <param name="settings">The <see cref="IHasReadOnlyAdditionalSettings"/> instance containing the desired, categorized settings.</param>
+        /// <param name="categoryKey">The category key of the settings object to be returned.</param>
+        /// <returns>The deserialized settings object or <see langword="null"/> if not found or deserialization fails.</returns>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "1.16.4" )]
+        public static TSettings GetAdditionalSettings<TSettings>( this IHasReadOnlyAdditionalSettings settings, string categoryKey ) where TSettings : class, new()
+        {
+            return settings.GetAdditionalSettingsOrNull<TSettings>( categoryKey ) ?? new TSettings();
         }
 
         /// <summary>
@@ -99,7 +156,7 @@ namespace Rock
         ///     </para>
         /// </remarks>
         [RockInternal( "1.16.4" )]
-        public static TSettings GetAdditionalSettings<TSettings>( this IHasReadOnlyAdditionalSettings settings, string categoryKey ) where TSettings : class, new()
+        public static TSettings GetAdditionalSettingsOrNull<TSettings>( this IHasReadOnlyAdditionalSettings settings, string categoryKey ) where TSettings : class, new()
         {
             if ( categoryKey.IsNullOrWhiteSpace() )
             {
@@ -125,6 +182,9 @@ namespace Rock
         /// <para>
         /// If the provided <paramref name="categorySettings"/> object serialization fails, <see cref="IHasAdditionalSettings.AdditionalSettingsJson"/>
         /// will not be modified.
+        /// </para>
+        /// <para>
+        /// If <paramref name="settings"/> is <see langword="null"/> then the setting will be removed.
         /// </para>
         /// </summary>
         /// <typeparam name="TSettings">The <see cref="System.Type"/> of category settings object.</typeparam>
@@ -154,6 +214,9 @@ namespace Rock
         /// If the provided <paramref name="categorySettings"/> object serialization fails, <see cref="IHasAdditionalSettings.AdditionalSettingsJson"/>
         /// will not be modified.
         /// </para>
+        /// <para>
+        /// If <paramref name="settings"/> is <see langword="null"/> then the setting will be removed.
+        /// </para>
         /// </summary>
         /// <param name="settings">The <see cref="IHasAdditionalSettings"/> instance into which the settings should be set.</param>
         /// <param name="categoryKey">The category key of the settings to be set within the <see cref="IHasAdditionalSettings"/> instance.</param>
@@ -169,8 +232,14 @@ namespace Rock
         [RockInternal( "1.16.4" )]
         public static void SetAdditionalSettings( this IHasAdditionalSettings settings, string categoryKey, object categorySettings )
         {
-            if ( categoryKey.IsNullOrWhiteSpace() || categorySettings == null )
+            if ( categoryKey.IsNullOrWhiteSpace() )
             {
+                return;
+            }
+
+            if ( categorySettings == null )
+            {
+                settings.RemoveAdditionalSettings( categoryKey );
                 return;
             }
 
