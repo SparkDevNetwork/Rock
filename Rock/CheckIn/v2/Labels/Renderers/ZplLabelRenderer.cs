@@ -16,14 +16,16 @@
 //
 
 using System;
-using System.Collections.Generic;
+using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
+
+using QRCoder;
 
 using Rock.Enums.CheckIn.Labels;
-using Rock.ViewModels.CheckIn.Labels;
+using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.CheckIn.v2.Labels.Renderers
 {
@@ -32,6 +34,12 @@ namespace Rock.CheckIn.v2.Labels.Renderers
     /// </summary>
     internal class ZplLabelRenderer : TextLabelRenderer
     {
+        /// <summary>
+        /// Holds a lookup table to quickly convert byte arrays to hex strings
+        /// for writing to the ZPL content.
+        /// </summary>
+        private static readonly uint[] _hexLookupTable = CreateLookup32();
+
         /// <summary>
         /// The DPI of the printer. If not known we default to 203.
         /// </summary>
@@ -85,7 +93,7 @@ namespace Rock.CheckIn.v2.Labels.Renderers
             }
             else if ( field.Field.FieldType == LabelFieldType.Barcode )
             {
-                throw new NotImplementedException();
+                WriteBarcodeField( writer, field );
             }
         }
 
@@ -100,7 +108,7 @@ namespace Rock.CheckIn.v2.Labels.Renderers
         /// </summary>
         /// <param name="writer">The stream to write the field to.</param>
         /// <param name="field">The field to write.</param>
-        protected internal void WriteTextField( StreamWriter writer, LabelField field )
+        protected void WriteTextField( StreamWriter writer, LabelField field )
         {
             var config = field.GetConfiguration<TextFieldConfiguration>();
             var values = field.GetFormattedValues( PrintRequest );
@@ -143,7 +151,7 @@ namespace Rock.CheckIn.v2.Labels.Renderers
         /// </summary>
         /// <param name="writer">The stream to write the field to.</param>
         /// <param name="field">The field to write.</param>
-        protected internal void WriteLineField( StreamWriter writer, LabelField field )
+        protected void WriteLineField( StreamWriter writer, LabelField field )
         {
             var config = field.GetConfiguration<LineFieldConfiguration>();
 
@@ -213,7 +221,7 @@ namespace Rock.CheckIn.v2.Labels.Renderers
         /// </summary>
         /// <param name="writer">The stream to write the field to.</param>
         /// <param name="field">The field to write.</param>
-        protected internal void WriteRectangleField( StreamWriter writer, LabelField field )
+        protected void WriteRectangleField( StreamWriter writer, LabelField field )
         {
             var config = field.GetConfiguration<RectangleFieldConfiguration>();
 
@@ -245,7 +253,7 @@ namespace Rock.CheckIn.v2.Labels.Renderers
         /// </summary>
         /// <param name="writer">The stream to write the field to.</param>
         /// <param name="field">The field to write.</param>
-        protected internal void WriteEllipseField( StreamWriter writer, LabelField field )
+        protected void WriteEllipseField( StreamWriter writer, LabelField field )
         {
             var config = field.GetConfiguration<EllipseFieldConfiguration>();
 
@@ -272,7 +280,7 @@ namespace Rock.CheckIn.v2.Labels.Renderers
         /// </summary>
         /// <param name="writer">The stream to write the field to.</param>
         /// <param name="field">The field to write.</param>
-        protected internal void WriteIconField( StreamWriter writer, LabelField field )
+        protected void WriteIconField( StreamWriter writer, LabelField field )
         {
             var config = field.GetConfiguration<IconFieldConfiguration>();
 
@@ -304,10 +312,7 @@ namespace Rock.CheckIn.v2.Labels.Renderers
 
             writer.Write( $"^GFA,{image.ImageData.Length},{image.ImageData.Length},{( width + 7 ) / 8}," );
 
-            foreach ( var b in image.ImageData )
-            {
-                writer.Write( $"{b:X2}" );
-            }
+            writer.Write( ByteArrayToHexViaLookup32( image.ImageData ) );
 
             writer.WriteLine( "^FS" );
         }
@@ -317,7 +322,7 @@ namespace Rock.CheckIn.v2.Labels.Renderers
         /// </summary>
         /// <param name="writer">The stream to write the field to.</param>
         /// <param name="field">The field to write.</param>
-        protected internal void WriteImageField( StreamWriter writer, LabelField field )
+        protected void WriteImageField( StreamWriter writer, LabelField field )
         {
             var config = field.GetConfiguration<ImageFieldConfiguration>();
 
@@ -351,12 +356,72 @@ namespace Rock.CheckIn.v2.Labels.Renderers
 
             writer.Write( $"^GFA,{image.ImageData.Length},{image.ImageData.Length},{( width + 7 ) / 8}," );
 
-            foreach ( var b in image.ImageData )
-            {
-                writer.Write( $"{b:X2}" );
-            }
+            writer.Write( ByteArrayToHexViaLookup32( image.ImageData ) );
 
             writer.WriteLine( "^FS" );
+        }
+
+        /// <summary>
+        /// Writes a barcode field to the stream.
+        /// </summary>
+        /// <param name="writer">The stream to write the field to.</param>
+        /// <param name="field">The field to write.</param>
+        protected void WriteBarcodeField( StreamWriter writer, LabelField field )
+        {
+            var config = field.GetConfiguration<BarcodeFieldConfiguration>();
+            string content = null;
+
+            if ( config.IsDynamic )
+            {
+                content = config.DynamicTextTemplate;
+            }
+            else if ( PrintRequest.LabelData is ILabelDataHasPerson personData )
+            {
+                var searchTypeValueId = GetSearchTypeAlternateIdValueId();
+
+                content = personData.Person.GetPersonSearchKeys( PrintRequest.RockContext )
+                    .Where( psk => psk.SearchTypeValueId == searchTypeValueId )
+                    .FirstOrDefault()
+                    ?.SearchValue;
+            }
+
+            if ( content.IsNullOrWhiteSpace() )
+            {
+                return;
+            }
+
+            if ( config.Format == BarcodeFormat.Code128 )
+            {
+                WriteFieldOrigin( writer, field );
+
+                writer.WriteLine( $"^BY3^BCN,{ToDots( field.Field.Height )},N^FD{content}^FS" );
+            }
+            else
+            {
+                WriteFieldOrigin( writer, field );
+
+                using ( var generator = new QRCodeGenerator() )
+                {
+                    var qr = generator.CreateQrCode( content, QRCodeGenerator.ECCLevel.Q );
+
+                    // Calculate the size of the QR code. This needs to fit
+                    // inside the smaller of the width or height (since it will
+                    // be a square).
+                    var dotsMax = ToDots( Math.Min( field.Field.Width, field.Field.Height ) );
+                    var dotsPerModule = dotsMax / qr.ModuleMatrix.Count;
+                    var size = qr.ModuleMatrix.Count * dotsPerModule;
+
+                    var grf = GetQrCodeAsGrf( qr, dotsPerModule, size );
+
+                    // Add 7 and divide by 8 to make sure we are rounded up to
+                    // a dot width in multiples of 8 to match the GRF format.
+                    writer.Write( $"^GFA,{grf.Length},{grf.Length},{( size + 7 ) / 8}," );
+
+                    writer.Write( ByteArrayToHexViaLookup32( grf ) );
+                }
+
+                writer.WriteLine( "^FS" );
+            }
         }
 
         /// <summary>
@@ -436,6 +501,122 @@ namespace Rock.CheckIn.v2.Labels.Renderers
         protected internal virtual ZplImageCache GetIcon( int width, int height, LabelIcon icon )
         {
             return ZplImageHelper.CreateIcon( width, height, icon );
+        }
+
+        /// <summary>
+        /// Fills a single row of the QR Code into GRF formatted data that can
+        /// be sent to the printer.
+        /// </summary>
+        /// <param name="row">The row data in the GRF array.</param>
+        /// <param name="bitArray">The QR code bit array for the row.</param>
+        /// <param name="dotsPerModule">The number of dots per module (bit) in the QR code.</param>
+        private static void FillQrCodeRow( Span<byte> row, BitArray bitArray, int dotsPerModule )
+        {
+            var rowIndex = 0;
+            var shift = 7;
+            byte bits = 0;
+
+            for ( int i = 0; i < bitArray.Length; i++ )
+            {
+                for ( var x = 0; x < dotsPerModule; x++ )
+                {
+                    if ( bitArray[i] )
+                    {
+                        bits = ( byte ) ( bits | ( 1 << shift ) );
+                    }
+
+                    if ( shift > 0 )
+                    {
+                        shift--;
+                    }
+                    else
+                    {
+                        row[rowIndex++] = bits;
+                        bits = 0;
+                        shift = 7;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets a byte array that represents the QR code in GRF format ready
+        /// to be sent to the printer.
+        /// </summary>
+        /// <param name="data">The QR Code data.</param>
+        /// <param name="dotsPerModule">The number of dots per module (cell) in the QR code.</param>
+        /// <param name="size">The size in dots of the rendered QR Code data, this represents both the width and height.</param>
+        /// <returns>An array of bytes that contain the GRF data.</returns>
+        private static byte[] GetQrCodeAsGrf( QRCodeData data, int dotsPerModule, int size )
+        {
+            var rowWidth = ( size + 7 ) / 8;
+            var grf = new byte[rowWidth * size];
+            var grfIndex = 0;
+
+            for ( int r = 0; r < data.ModuleMatrix.Count; r++ )
+            {
+                FillQrCodeRow( new Span<byte>( grf, grfIndex, rowWidth ), data.ModuleMatrix[r], dotsPerModule );
+
+                for ( int rowCopy = 1; rowCopy < dotsPerModule; rowCopy++ )
+                {
+                    Array.Copy( grf, grfIndex, grf, grfIndex + ( rowCopy * rowWidth ), rowWidth );
+                }
+
+                grfIndex += dotsPerModule * rowWidth;
+            }
+
+            return grf;
+        }
+
+        /// <summary>
+        /// Creates a lookup table for fast byte to Hex conversion.
+        /// </summary>
+        /// <returns>An array of lookup values.</returns>
+        private static uint[] CreateLookup32()
+        {
+            var result = new uint[256];
+
+            for ( int i = 0; i < 256; i++ )
+            {
+                string s = i.ToString( "X2" );
+                result[i] = s[0] + ( ( uint ) s[1] << 16 );
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Converts an array of bytes into a hex string extremely fast. This
+        /// uses a lookup table and pre-allocates the character array to maximize
+        /// speed and reduce allocations.
+        /// </summary>
+        /// <param name="bytes">The array of bytes to convert to hex.</param>
+        /// <returns>A string that represents <paramref name="bytes"/> as a hexadecimal string.</returns>
+        private static string ByteArrayToHexViaLookup32( byte[] bytes )
+        {
+            var lookup32 = _hexLookupTable;
+            var result = new char[bytes.Length * 2];
+
+            for ( int i = 0; i < bytes.Length; i++ )
+            {
+                var val = lookup32[bytes[i]];
+
+                result[2 * i] = ( char ) val;
+                result[2 * i + 1] = ( char ) ( val >> 16 );
+            }
+
+            return new string( result );
+        }
+
+        /// <summary>
+        /// Gets the Alternate Id search key defined value identifier so we can
+        /// perform lookups on the identifier to use for barcodes.
+        /// </summary>
+        /// <returns>The defined value identifier.</returns>
+        [ExcludeFromCodeCoverage]
+        protected internal virtual int GetSearchTypeAlternateIdValueId()
+        {
+            return DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid(), PrintRequest.RockContext ).Id;
         }
     }
 }

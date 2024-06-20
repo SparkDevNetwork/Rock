@@ -15,12 +15,14 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
+
 using Rock.Enums.CheckIn.Labels;
 
 namespace Rock.CheckIn.v2.Labels
 {
     /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.BarcodeFieldConfigurationBag"/>
-    internal class BarcodeFieldConfiguration
+    internal class BarcodeFieldConfiguration : IFieldConfiguration
     {
         /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.BarcodeFieldConfigurationBag.Format" path="/summary"/>
         public BarcodeFormat Format { get; set; }
@@ -30,5 +32,13 @@ namespace Rock.CheckIn.v2.Labels
 
         /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.BarcodeFieldConfigurationBag.DynamicTextTemplate" path="/summary"/>
         public string DynamicTextTemplate { get; set; }
+
+        /// <inheritdoc/>
+        public void Initialize( Dictionary<string, string> values )
+        {
+            Format = values.GetValueOrNull( "format" ).ConvertToEnumOrNull<BarcodeFormat>() ?? BarcodeFormat.QRCode;
+            IsDynamic = values.GetValueOrNull( "isDynamic" ).AsBoolean();
+            DynamicTextTemplate = values.GetValueOrNull( "dynamicTextTemplate" ) ?? string.Empty;
+        }
     }
 }

@@ -12,7 +12,9 @@ using Moq;
 using Rock.CheckIn.v2.Labels;
 using Rock.CheckIn.v2.Labels.Renderers;
 using Rock.Enums.CheckIn.Labels;
+using Rock.Model;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 using Rock.ViewModels.CheckIn.Labels;
 
 namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Labels.Renderers
@@ -1617,7 +1619,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Labels.Renderers
             field.Setup( f => f.GetConfiguration<ImageFieldConfiguration>() )
                 .Returns( new ImageFieldConfiguration
                 {
-                     IsInverted = true
+                    IsInverted = true
                 } );
 
             var zpl = GetTextFromStream( stream =>
@@ -1905,6 +1907,379 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Labels.Renderers
             } );
 
             Assert.That.IsEmpty( zpl );
+        }
+
+        #endregion
+
+        #region WriteBarcodeField
+
+        [TestMethod]
+        public void WriteBarcodeField_WithEmptyCustomText_DoesNotEmitField()
+        {
+            var request = new PrintLabelRequest
+            {
+                Label = new DesignedLabelBag(),
+                Capabilities = new PrinterCapabilities()
+            };
+
+            var renderer = new ZplLabelRenderer();
+
+            var field = new Mock<LabelField>( MockBehavior.Strict, new LabelFieldBag
+            {
+                FieldType = LabelFieldType.Barcode
+            } );
+
+            field.Setup( f => f.GetConfiguration<BarcodeFieldConfiguration>() )
+                .Returns( new BarcodeFieldConfiguration
+                {
+                    IsDynamic = true,
+                    DynamicTextTemplate = string.Empty
+                } );
+
+            var zpl = GetTextFromStream( stream =>
+            {
+                renderer.BeginLabel( stream, request );
+                stream.SetLength( 0 );
+
+                renderer.WriteField( field.Object );
+                renderer.Dispose();
+            } );
+
+            Assert.That.IsEmpty( zpl );
+        }
+
+        [TestMethod]
+        public void WriteBarcodeField_WithCode128_SetsModuleWidthTo3()
+        {
+            var expectedPattern = new Regex( @"\^BY3" );
+
+            var request = new PrintLabelRequest
+            {
+                Label = new DesignedLabelBag(),
+                Capabilities = new PrinterCapabilities()
+            };
+
+            var renderer = new ZplLabelRenderer();
+
+            var field = new Mock<LabelField>( MockBehavior.Strict, new LabelFieldBag
+            {
+                FieldType = LabelFieldType.Barcode
+            } );
+
+            field.Setup( f => f.GetConfiguration<BarcodeFieldConfiguration>() )
+                .Returns( new BarcodeFieldConfiguration
+                {
+                    Format = BarcodeFormat.Code128,
+                    IsDynamic = true,
+                    DynamicTextTemplate = "1234"
+                } );
+
+            var zpl = GetTextFromStream( stream =>
+            {
+                renderer.BeginLabel( stream, request );
+                stream.SetLength( 0 );
+
+                renderer.WriteField( field.Object );
+                renderer.Dispose();
+            } );
+
+            Assert.That.Matches( zpl, expectedPattern );
+        }
+
+        [TestMethod]
+        public void WriteBarcodeField_WithCode128AndDynamicContent_IncludesTextValue()
+        {
+            var expectedPattern = new Regex( @"\^FD1234\^FS" );
+
+            var request = new PrintLabelRequest
+            {
+                Label = new DesignedLabelBag(),
+                Capabilities = new PrinterCapabilities()
+            };
+
+            var renderer = new ZplLabelRenderer();
+
+            var field = new Mock<LabelField>( MockBehavior.Strict, new LabelFieldBag
+            {
+                FieldType = LabelFieldType.Barcode
+            } );
+
+            field.Setup( f => f.GetConfiguration<BarcodeFieldConfiguration>() )
+                .Returns( new BarcodeFieldConfiguration
+                {
+                    Format = BarcodeFormat.Code128,
+                    IsDynamic = true,
+                    DynamicTextTemplate = "1234"
+                } );
+
+            var zpl = GetTextFromStream( stream =>
+            {
+                renderer.BeginLabel( stream, request );
+                stream.SetLength( 0 );
+
+                renderer.WriteField( field.Object );
+                renderer.Dispose();
+            } );
+
+            Assert.That.Matches( zpl, expectedPattern );
+        }
+
+        [TestMethod]
+        public void WriteBarcodeField_WithAlternateId_IncludesValue()
+        {
+            var expectedPattern = new Regex( @"\^FD1234\^FS" );
+
+            var rockContext = MockDatabaseHelper.GetRockContextMock();
+            var sampleSearchKey = new PersonSearchKey
+            {
+                PersonAlias = new PersonAlias
+                {
+                    PersonId = 2
+                },
+                SearchTypeValueId = 1,
+                SearchValue = "1234"
+            };
+            var person = new Person
+            {
+                Id = 2
+            };
+
+            rockContext.SetupDbSet( sampleSearchKey );
+
+            var request = new PrintLabelRequest
+            {
+                Label = new DesignedLabelBag(),
+                Capabilities = new PrinterCapabilities(),
+                LabelData = new PersonLabelData( person, null, new List<AttendanceLabel>(), rockContext.Object ),
+                RockContext = rockContext.Object
+            };
+
+            var renderer = new Mock<ZplLabelRenderer>( MockBehavior.Loose )
+            {
+                CallBase = true
+            };
+
+            renderer.Setup( a => a.GetSearchTypeAlternateIdValueId() ).Returns( 1 );
+
+            var field = new Mock<LabelField>( MockBehavior.Strict, new LabelFieldBag
+            {
+                FieldType = LabelFieldType.Barcode
+            } );
+
+            field.Setup( f => f.GetConfiguration<BarcodeFieldConfiguration>() )
+                .Returns( new BarcodeFieldConfiguration
+                {
+                    Format = BarcodeFormat.Code128,
+                    IsDynamic = false
+                } );
+
+            var zpl = GetTextFromStream( stream =>
+            {
+                renderer.Object.BeginLabel( stream, request );
+                stream.SetLength( 0 );
+
+                renderer.Object.WriteField( field.Object );
+                renderer.Object.Dispose();
+            } );
+
+            Assert.That.Matches( zpl, expectedPattern );
+        }
+
+        [TestMethod]
+        public void WriteBarcodeField_WithAlternateIdAndNullSearchValue_DoesNotEmitField()
+        {
+            var rockContext = MockDatabaseHelper.GetRockContextMock();
+            var sampleSearchKey = new PersonSearchKey
+            {
+                PersonAlias = new PersonAlias
+                {
+                    PersonId = 2
+                },
+                SearchTypeValueId = 1,
+                SearchValue = null
+            };
+            var person = new Person
+            {
+                Id = 2
+            };
+
+            rockContext.SetupDbSet( sampleSearchKey );
+
+            var request = new PrintLabelRequest
+            {
+                Label = new DesignedLabelBag(),
+                Capabilities = new PrinterCapabilities(),
+                LabelData = new PersonLabelData( person, null, new List<AttendanceLabel>(), rockContext.Object ),
+                RockContext = rockContext.Object
+            };
+
+            var renderer = new Mock<ZplLabelRenderer>( MockBehavior.Loose )
+            {
+                CallBase = true
+            };
+
+            renderer.Setup( a => a.GetSearchTypeAlternateIdValueId() ).Returns( 1 );
+
+            var field = new Mock<LabelField>( MockBehavior.Strict, new LabelFieldBag
+            {
+                FieldType = LabelFieldType.Barcode
+            } );
+
+            field.Setup( f => f.GetConfiguration<BarcodeFieldConfiguration>() )
+                .Returns( new BarcodeFieldConfiguration
+                {
+                    Format = BarcodeFormat.Code128,
+                    IsDynamic = false
+                } );
+
+            var zpl = GetTextFromStream( stream =>
+            {
+                renderer.Object.BeginLabel( stream, request );
+                stream.SetLength( 0 );
+
+                renderer.Object.WriteField( field.Object );
+                renderer.Object.Dispose();
+            } );
+
+            Assert.That.IsEmpty( zpl );
+        }
+
+        [TestMethod]
+        public void WriteBarcodeField_WithMissingAlternateId_DoesNotEmitField()
+        {
+            var rockContext = MockDatabaseHelper.GetRockContextMock();
+            var person = new Person
+            {
+                Id = 2
+            };
+
+            rockContext.SetupDbSet<PersonSearchKey>();
+
+            var request = new PrintLabelRequest
+            {
+                Label = new DesignedLabelBag(),
+                Capabilities = new PrinterCapabilities(),
+                LabelData = new PersonLabelData( person, null, new List<AttendanceLabel>(), rockContext.Object ),
+                RockContext = rockContext.Object
+            };
+
+            var renderer = new Mock<ZplLabelRenderer>( MockBehavior.Loose )
+            {
+                CallBase = true
+            };
+
+            renderer.Setup( a => a.GetSearchTypeAlternateIdValueId() ).Returns( 1 );
+
+            var field = new Mock<LabelField>( MockBehavior.Strict, new LabelFieldBag
+            {
+                FieldType = LabelFieldType.Barcode
+            } );
+
+            field.Setup( f => f.GetConfiguration<BarcodeFieldConfiguration>() )
+                .Returns( new BarcodeFieldConfiguration
+                {
+                    Format = BarcodeFormat.Code128,
+                    IsDynamic = false
+                } );
+
+            var zpl = GetTextFromStream( stream =>
+            {
+                renderer.Object.BeginLabel( stream, request );
+                stream.SetLength( 0 );
+
+                renderer.Object.WriteField( field.Object );
+                renderer.Object.Dispose();
+            } );
+
+            Assert.That.IsEmpty( zpl );
+        }
+
+        [TestMethod]
+        public void WriteBarcodeField_WithQRCodeAndDynamicContent_EmitsCodeData()
+        {
+            var expectedPattern = new Regex( @"\^GFA,[0-9]+,[0-9]+,4,000000000000000000000000000000000FEEBF000828A0000BADAE000BA8AE000BA92E000823A0000FEABF00000F000006B72F00080C500006E772000E95DC0007E4F300000E23000FED08000824A2000BAAAA000BA355000BAD76000829DC000FE5760000000000000000000000000000000000\^FS" );
+
+            var request = new PrintLabelRequest
+            {
+                Label = new DesignedLabelBag(),
+                Capabilities = new PrinterCapabilities
+                {
+                    Dpi = 300
+                }
+            };
+
+            var renderer = new ZplLabelRenderer();
+
+            // Use a size of 0.2x0.2 so there is enough room for 2 dots per module.
+            var field = new Mock<LabelField>( MockBehavior.Strict, new LabelFieldBag
+            {
+                FieldType = LabelFieldType.Barcode,
+                Width = 0.1,
+                Height = 0.1
+            } );
+
+            field.Setup( f => f.GetConfiguration<BarcodeFieldConfiguration>() )
+                .Returns( new BarcodeFieldConfiguration
+                {
+                    Format = BarcodeFormat.QRCode,
+                    IsDynamic = true,
+                    DynamicTextTemplate = "1234"
+                } );
+
+            var zpl = GetTextFromStream( stream =>
+            {
+                renderer.BeginLabel( stream, request );
+                stream.SetLength( 0 );
+
+                renderer.WriteField( field.Object );
+                renderer.Dispose();
+            } );
+
+            Assert.That.Matches( zpl, expectedPattern );
+        }
+
+        [TestMethod]
+        public void WriteBarcodeField_WithQRCodeAndLargerBox_Emits2DotsPerModule()
+        {
+            var expectedPattern = new Regex( @"\^GFA,[0-9]+,[0-9]+,8," );
+
+            var request = new PrintLabelRequest
+            {
+                Label = new DesignedLabelBag(),
+                Capabilities = new PrinterCapabilities
+                {
+                    Dpi = 300
+                }
+            };
+
+            var renderer = new ZplLabelRenderer();
+
+            // Use a size of 0.2x0.2 so there is enough room for 2 dots per module.
+            var field = new Mock<LabelField>( MockBehavior.Strict, new LabelFieldBag
+            {
+                FieldType = LabelFieldType.Barcode,
+                Width = 0.2,
+                Height = 0.2
+            } );
+
+            field.Setup( f => f.GetConfiguration<BarcodeFieldConfiguration>() )
+                .Returns( new BarcodeFieldConfiguration
+                {
+                    Format = BarcodeFormat.QRCode,
+                    IsDynamic = true,
+                    DynamicTextTemplate = "1234"
+                } );
+
+            var zpl = GetTextFromStream( stream =>
+            {
+                renderer.BeginLabel( stream, request );
+                stream.SetLength( 0 );
+
+                renderer.WriteField( field.Object );
+                renderer.Dispose();
+            } );
+
+            Assert.That.Matches( zpl, expectedPattern );
         }
 
         #endregion
