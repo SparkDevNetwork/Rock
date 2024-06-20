@@ -18,6 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
+using Rock.Model;
+
 namespace Rock.Plugin.HotFixes
 {
     /// <summary>
@@ -854,6 +856,10 @@ WHERE [Guid] = '{GIVING_HOUSEHOLDS_BY_CAMPUS_METRIC_GUID}'
             LmsEntityTypesPagesBlocksUp();
             AddSeedData();
             AddOrUpdateSendLearningActivityNotificationsJob();
+
+            // Hide the Learning Navigation from the menu by default.
+            Sql( $"UPDATE [Page] SET [DisplayInNavWhen] = {( int ) DisplayInNavWhen.Never} WHERE [Guid] = '84DBEC51-EE0B-41C2-94B3-F361C4B98879';" );
+
         }
 
         /// <summary>
