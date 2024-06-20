@@ -37,5 +37,5 @@ export type ImageFieldConfigurationBag = {
      * will be used to determine if the black and white colors should be
      * inverted.
      */
-    isInverted?: string | null;
+    isColorInverted?: string | null;
 };

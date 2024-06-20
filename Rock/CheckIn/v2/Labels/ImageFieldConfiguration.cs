@@ -26,8 +26,8 @@ namespace Rock.CheckIn.v2.Labels
         /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.ImageFieldConfigurationBag.ImageData" path="/summary"/>
         public byte[] ImageData { get; set; }
 
-        /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.ImageFieldConfigurationBag.IsInverted" path="/summary"/>
-        public bool IsInverted { get; set; }
+        /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.ImageFieldConfigurationBag.IsColorInverted" path="/summary"/>
+        public bool IsColorInverted { get; set; }
 
         /// <inheritdoc cref="Rock.ViewModels.CheckIn.Labels.ImageFieldConfigurationBag.Brightness" path="/summary"/>
         public float Brightness { get; set; } = 1;
@@ -51,7 +51,7 @@ namespace Rock.CheckIn.v2.Labels
                 ImageData = new byte[0];
             }
 
-            IsInverted = values.GetValueOrNull( "isInverted" ).AsBoolean();
+            IsColorInverted = values.GetValueOrNull( "isColorInverted" ).AsBoolean();
             Brightness = ( float ) ( values.GetValueOrNull( "brightness" ).AsDoubleOrNull() ?? 1 );
         }
     }

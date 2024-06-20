@@ -393,7 +393,7 @@ namespace Rock.CheckIn.v2.Labels.Renderers
 
             WriteFieldOrigin( writer, field );
 
-            if ( config.IsInverted )
+            if ( config.IsColorInverted )
             {
                 writer.Write( "^FR" );
             }

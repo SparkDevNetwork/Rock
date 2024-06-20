@@ -1663,7 +1663,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Labels.Renderers
             field.Setup( f => f.GetConfiguration<ImageFieldConfiguration>() )
                 .Returns( new ImageFieldConfiguration
                 {
-                    IsInverted = true
+                    IsColorInverted = true
                 } );
 
             var zpl = GetTextFromStream( stream =>

@@ -10,7 +10,7 @@
                  showValueBar />
 
     <CheckBox label="Invert Colors"
-              v-model="isInverted" />
+              v-model="isColorInverted" />
 </template>
 
 <script setup lang="ts">
@@ -31,7 +31,7 @@
     });
 
     const image = ref<string | undefined | null>();
-    const isInverted = ref(false);
+    const isColorInverted = ref(false);
     const brightness = ref(1);
 
     /**
@@ -42,19 +42,19 @@
             ?.configurationValues ?? {}) as ImageFieldConfigurationBag;
 
         image.value = configuration.imageData;
-        isInverted.value = asBoolean(configuration.isInverted);
+        isColorInverted.value = asBoolean(configuration.isColorInverted);
         brightness.value = toNumberOrNull(configuration.brightness) ?? 1;
     }
 
     // Watch for changes in the UI that require an update to the label.
-    watch([image, isInverted, brightness], () => {
+    watch([image, isColorInverted, brightness], () => {
         props.labelManager.mutateSelectedField(field => {
             field.configurationValues = field.configurationValues ?? {};
 
             const fieldConfig = field.configurationValues as ImageFieldConfigurationBag;
 
             fieldConfig.imageData = image.value;
-            fieldConfig.isInverted = asTrueFalseOrNull(isInverted.value);
+            fieldConfig.isColorInverted = asTrueFalseOrNull(isColorInverted.value);
             fieldConfig.brightness = `${brightness.value}`;
         });
     });

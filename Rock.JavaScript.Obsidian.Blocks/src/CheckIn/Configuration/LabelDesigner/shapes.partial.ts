@@ -673,7 +673,7 @@ function updateImageShapeFromField(shape: Konva.Image, field: LabelFieldBag, sur
         });
     }
 
-    shape.globalCompositeOperation(asBoolean(config.isInverted) ? "xor" : "source-over");
+    shape.globalCompositeOperation(asBoolean(config.isColorInverted) ? "xor" : "source-over");
 }
 
 /**

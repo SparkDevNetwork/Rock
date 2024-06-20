@@ -35,7 +35,7 @@ namespace Rock.ViewModels.CheckIn.Labels
         /// <value>
         /// This should be the string "False" or "True".
         /// </value>
-        public string IsInverted { get; set; }
+        public string IsColorInverted { get; set; }
 
         /// <summary>
         /// The brightness adjustment to perform on the image. A value of 1
