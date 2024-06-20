@@ -19,6 +19,9 @@ using Rock.Enums.Lms;
 
 namespace Rock.ViewModels.Blocks.Lms.LearningCourseDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class LearningCourseDetailOptionsBag
     {
         /// <summary>

@@ -21,6 +21,9 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Lms.LearningProgramDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class LearningProgramDetailOptionsBag
     {
         /// <summary>

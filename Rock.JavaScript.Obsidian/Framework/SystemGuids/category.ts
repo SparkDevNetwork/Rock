@@ -73,6 +73,8 @@ export const Category = {
     Insights: "CEC746EE-76D6-477F-B7CF-374542F92041",
     /** Lava Shortcode Category Guid */
     LavaShortcodeAi: "125FB37E-5540-48A6-4A74-A49D1C1324F8",
+    /** The metric Category Guid */
+    Metric: "67DA5B5A-E5CF-4F1A-B76A-D8460BAF5F8C",
     /** Hosting Metrics Metric Category Guid */
     MetricHostingMetrics: "370FBBD8-7766-4B3F-81A9-F13EE819A832",
     /** The category for the Check-in Manager Roster Alert Icons */

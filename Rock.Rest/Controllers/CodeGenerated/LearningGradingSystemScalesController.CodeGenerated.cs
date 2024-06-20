@@ -29,7 +29,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// LearningGradingSystemScales REST API
     /// </summary>
-    [RestControllerGuid( "8C25CF2C-AAA0-4EAD-ACED-4CEC0F0B858D" )]
+    [RestControllerGuid( "732DDA48-ADED-48A0-8098-D8370CE7FC98" )]
     public partial class LearningGradingSystemScalesController : Rock.Rest.ApiController<Rock.Model.LearningGradingSystemScale>
     {
         /// <summary>

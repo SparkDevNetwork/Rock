@@ -17,6 +17,9 @@
 
 namespace Rock.ViewModels.Blocks.Lms.LearningProgramList
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class LearningProgramListOptionsBag
     {
     }

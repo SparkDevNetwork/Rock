@@ -17,6 +17,9 @@
 
 namespace Rock.ViewModels.Blocks.Lms.LearningSemesterList
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class LearningSemesterListOptionsBag
     {
         /// <summary>

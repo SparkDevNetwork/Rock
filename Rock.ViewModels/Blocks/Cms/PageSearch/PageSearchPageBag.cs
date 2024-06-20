@@ -20,23 +20,49 @@ using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Cms.PageSearch
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class PageSearchPageBag
     {
+        /// <summary>
+        /// 
+        /// </summary>
         public int Id { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public string Title { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public int? ParentPageId { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public string Description { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public string Icon { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public bool PageDisplayDescription { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public List<PageSearchPageBag> Children { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public string Url { get; set; }
-
     }
 }

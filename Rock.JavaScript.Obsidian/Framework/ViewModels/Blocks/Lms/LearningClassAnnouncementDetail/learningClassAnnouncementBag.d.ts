@@ -22,12 +22,18 @@
 //
 
 import { CommunicationMode } from "@Obsidian/Enums/Lms/communicationMode";
+import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 /** The item details for the Learning Class Announcement Detail block. */
 export type LearningClassAnnouncementBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
 
     /** Gets or sets the communication mode for the announcement. */
-    communicationMode?: CommunicationMode;
+    communicationMode: CommunicationMode;
 
     /** Gets or sets whether the announcement has been sent. */
     communicationSent: boolean;
@@ -39,7 +45,7 @@ export type LearningClassAnnouncementBag = {
     idKey?: string | null;
 
     /** Gets or sets the date and time the announcement will be published. */
-    publishDateTime: string | null;
+    publishDateTime?: string | null;
 
     /** Gets or sets the title of the announcement. */
     title?: string | null;

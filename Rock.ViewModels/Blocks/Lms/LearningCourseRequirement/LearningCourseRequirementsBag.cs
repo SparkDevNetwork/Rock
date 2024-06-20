@@ -20,6 +20,9 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Lms.LearningCourseRequirement
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class LearningCourseRequirementBag : EntityBagBase
     {
         /// <summary>

@@ -21,8 +21,15 @@
 // </copyright>
 //
 
-/** The item details for the Learning Class Content Page Detail block. */
+import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+
+/** The item details for the Learning Class Announcement Detail block. */
 export type LearningClassContentPageBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
 
     /** Gets or sets the main content of the page. */
     content?: string | null;
@@ -31,7 +38,7 @@ export type LearningClassContentPageBag = {
     idKey?: string | null;
 
     /** Gets or sets the date and time the page will be available. */
-    startDateTime: string | null;
+    startDateTime?: string | null;
 
     /** Gets or sets the title of the page. */
     title?: string | null;
