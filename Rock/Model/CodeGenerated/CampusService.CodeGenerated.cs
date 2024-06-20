@@ -118,6 +118,12 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<LearningProgramCompletion>( Context ).Queryable().Any( a => a.CampusId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Campus.FriendlyTypeName, LearningProgramCompletion.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<Person>( Context ).Queryable().Any( a => a.PrimaryCampusId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Campus.FriendlyTypeName, Person.FriendlyTypeName );

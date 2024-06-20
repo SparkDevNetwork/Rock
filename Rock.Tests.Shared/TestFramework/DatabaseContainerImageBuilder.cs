@@ -36,14 +36,36 @@ namespace Rock.Tests.Shared.TestFramework
         {
             using ( var dockerClient = new DockerClientConfiguration().CreateClient() )
             {
-                var container = new MsSqlBuilder()
-                    .Build();
+                var upgrade = false;
+
+                var images = await dockerClient.Images.ListImagesAsync( new ImagesListParameters
+                {
+                    All = true
+                } );
+
+                var latestImage = images.SelectMany( img => img.RepoTags )
+                    .Where( t => t.StartsWith( $"{RepositoryName}:" ) )
+                    .OrderByDescending( t => t )
+                    .FirstOrDefault();
+
+                var containerBuilder = new MsSqlBuilder();
+
+                // Check if we are within 10 migrations of the last image. If
+                // so we will re-use that image as a starting point to save
+                // time.
+                if ( latestImage != null && long.Parse( latestImage.Substring( 26 ) ) >= long.Parse( GetRecentMigration( 10 ).Truncate( 15, false ) ) )
+                {
+                    containerBuilder = containerBuilder.WithImage( latestImage );
+                    upgrade = true;
+                }
+
+                var container = containerBuilder.Build();
 
                 await container.StartAsync();
 
                 try
                 {
-                    await BuildContainerAsync( container );
+                    await BuildContainerAsync( container, upgrade );
                 }
                 catch ( Exception ex )
                 {
@@ -73,8 +95,9 @@ namespace Rock.Tests.Shared.TestFramework
         /// Builds the container so it contains the required information.
         /// </summary>
         /// <param name="container">The container to be built.</param>
+        /// <param name="upgrade"><c>true</c> if this container is being upgraded from a previous install.</param>
         /// <returns>A task that indicates when the operation has completed.</returns>
-        private static async Task BuildContainerAsync( MsSqlContainer container )
+        private static async Task BuildContainerAsync( MsSqlContainer container, bool upgrade )
         {
             var connectionString = container.GetConnectionString();
             var sampleDataUrl = ConfigurationManager.AppSettings["SampleDataUrl"];
@@ -83,7 +106,10 @@ namespace Rock.Tests.Shared.TestFramework
             {
                 await connection.OpenAsync();
 
-                await CreateDatabaseAsync( connection, "Rock" );
+                if ( !upgrade )
+                {
+                    await CreateDatabaseAsync( connection, "Rock" );
+                }
 
                 var csb = new SqlConnectionStringBuilder( connectionString )
                 {
@@ -96,7 +122,7 @@ namespace Rock.Tests.Shared.TestFramework
                 MigrateDatabase( csb.ConnectionString );
 
                 // Install the sample data if it is configured.
-                if ( sampleDataUrl.IsNotNullOrWhiteSpace() )
+                if ( !upgrade && sampleDataUrl.IsNotNullOrWhiteSpace() )
                 {
                     AddSampleData( sampleDataUrl );
                 }
@@ -167,6 +193,23 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
                 .Select( a => ( System.Data.Entity.Migrations.Infrastructure.IMigrationMetadata ) Activator.CreateInstance( a ) )
                 .Select( a => a.Id )
                 .OrderByDescending( a => a )
+                .First();
+        }
+
+        /// <summary>
+        /// Gets a recent migration specified by the number migrations back.
+        /// </summary>
+        /// <param name="numberBack">The number of migrations back to look.</param>
+        private static string GetRecentMigration( int numberBack )
+        {
+            return typeof( Rock.Migrations.RockMigration )
+                .Assembly
+                .GetExportedTypes()
+                .Where( a => typeof( System.Data.Entity.Migrations.Infrastructure.IMigrationMetadata ).IsAssignableFrom( a ) )
+                .Select( a => ( System.Data.Entity.Migrations.Infrastructure.IMigrationMetadata ) Activator.CreateInstance( a ) )
+                .Select( a => a.Id )
+                .OrderByDescending( a => a )
+                .Skip( numberBack )
                 .First();
         }
 

@@ -32,7 +32,7 @@
         <TextColumn name="campus"
                     title="Campus"
                     field="campus"
-                    :filter="textValueFilter"
+                    :filter="pickExistingValueFilter"
                     visiblePriority="md" />
 
         <TextColumn name="schedule"

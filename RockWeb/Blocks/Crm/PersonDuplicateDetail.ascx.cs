@@ -258,6 +258,11 @@ namespace RockWeb.Blocks.Crm
             {
                 PersonId = s.DuplicatePersonAlias.Person.Id, // PersonId has to be the key field in the grid for the Merge button to work
                 PersonDuplicateId = s.Id,
+                FirstName = s.DuplicatePersonAlias.Person.FirstName,
+                LastName = s.DuplicatePersonAlias.Person.LastName,
+                Email = s.DuplicatePersonAlias.Person.Email,
+                Gender = s.DuplicatePersonAlias.Person.Gender,
+                Age = s.DuplicatePersonAlias.Person.Age,
                 DuplicatePerson = s.DuplicatePersonAlias.Person,
                 s.ConfidenceScore,
                 IsComparePerson = true,
@@ -284,6 +289,11 @@ namespace RockWeb.Blocks.Crm
                     {
                         PersonId = person.Id, // PersonId has to be the key field in the grid for the Merge button to work
                         PersonDuplicateId = 0,
+                        FirstName = person.FirstName,
+                        LastName = person.LastName,
+                        Email = person.Email,
+                        Gender = person.Gender,
+                        Age = person.Age,
                         DuplicatePerson = person,
                         ConfidenceScore = ( double? ) null,
                         IsComparePerson = false,

@@ -247,6 +247,10 @@ namespace Rock.Jobs
 
             RunCleanupTask( "family salutation", () => GroupSalutationCleanup() );
 
+            RunCleanupTask( "group archive or inactive date", () => GroupArchiveOrInactiveDateCleanup() );
+
+            RunCleanupTask( "group member archive or inactive date", () => GroupMemberArchiveOrInactiveDateCleanup() );
+
             RunCleanupTask( "anonymous giver login", () => RemoveAnonymousGiverUserLogins() );
 
             RunCleanupTask( "anonymous visitor login", () => RemoveAnonymousVisitorUserLogins() );
@@ -606,6 +610,110 @@ namespace Rock.Jobs
                         recordsUpdated++;
                     }
                 }
+            }
+
+            return recordsUpdated;
+        }
+
+        /// <summary>
+        /// Updates <see cref="Group.ArchivedDateTime" /> OR <see cref="Group.InactiveDateTime" />
+        /// </summary>
+        /// <returns></returns>
+        private int GroupArchiveOrInactiveDateCleanup()
+        {
+            int recordsUpdated = 0;
+            var rockContext = CreateRockContext();
+
+            // just in case when groups has missing InactiveDateTime
+            var inactiveGroups = new GroupService( rockContext )
+                .Queryable()
+                .Where( a => !a.IsActive && !a.InactiveDateTime.HasValue );
+
+            if ( inactiveGroups.Any() )
+            {
+                recordsUpdated += rockContext.BulkUpdate( inactiveGroups, g => new Group { InactiveDateTime = RockDateTime.Now } );
+            }
+
+            // just in case when groups has missing archive date time
+            var archivedGroups = new GroupService( rockContext )
+                .Queryable()
+                .Where( a => a.IsArchived && !a.ArchivedDateTime.HasValue );
+
+            if ( archivedGroups.Any() )
+            {
+                recordsUpdated += rockContext.BulkUpdate( archivedGroups, g => new Group { ArchivedDateTime = RockDateTime.Now } );
+            }
+
+            // Clear InactiveDateTime If the Group record is Not Inactive
+            var activeGroups = new GroupService( rockContext )
+                .Queryable()
+                .Where( a => a.IsActive && a.InactiveDateTime.HasValue );
+
+            if ( archivedGroups.Any() )
+            {
+                recordsUpdated += rockContext.BulkUpdate( activeGroups, g => new Group { InactiveDateTime = null } );
+            }
+
+            // Remove ArchiveDateTime if the Group record is not Archived
+            var inarchivedGroups = new GroupService( rockContext )
+                .Queryable()
+                .Where( a => !a.IsArchived && a.ArchivedDateTime.HasValue );
+
+            if ( archivedGroups.Any() )
+            {
+                recordsUpdated += rockContext.BulkUpdate( archivedGroups, g => new Group { ArchivedDateTime = null } );
+            }
+
+            return recordsUpdated;
+        }
+
+        /// <summary>
+        /// Updates <see cref="GroupMember.ArchivedDateTime" /> OR <see cref="GroupMember.InactiveDateTime" />
+        /// </summary>
+        /// <returns></returns>
+        private int GroupMemberArchiveOrInactiveDateCleanup()
+        {
+            int recordsUpdated = 0;
+            var rockContext = CreateRockContext();
+
+            // just in case when group members has missing InactiveDateTime
+            var inactiveGroupMembers = new GroupMemberService( rockContext )
+                .Queryable()
+                .Where( a => a.GroupMemberStatus == GroupMemberStatus.Inactive && !a.InactiveDateTime.HasValue );
+
+            if ( inactiveGroupMembers.Any() )
+            {
+                recordsUpdated += rockContext.BulkUpdate( inactiveGroupMembers, g => new GroupMember { InactiveDateTime = RockDateTime.Now } );
+            }
+
+            // just in case when group members has missing archive date time
+            var archivedGroupMembers = new GroupMemberService( rockContext )
+                .Queryable()
+                .Where( a => a.IsArchived && !a.ArchivedDateTime.HasValue );
+
+            if ( archivedGroupMembers.Any() )
+            {
+                recordsUpdated += rockContext.BulkUpdate( archivedGroupMembers, g => new GroupMember { ArchivedDateTime = RockDateTime.Now } );
+            }
+
+            // Clear InactiveDateTime If the Group members record is Not Inactive
+            var activeGroupMembers = new GroupMemberService( rockContext )
+                .Queryable()
+                .Where( a => a.GroupMemberStatus != GroupMemberStatus.Inactive && a.InactiveDateTime.HasValue );
+
+            if ( activeGroupMembers.Any() )
+            {
+                recordsUpdated += rockContext.BulkUpdate( activeGroupMembers, g => new GroupMember { InactiveDateTime = null } );
+            }
+
+            // Remove ArchiveDateTime if the Group members record is not Archived
+            var inarchivedGroupMembers = new GroupMemberService( rockContext )
+                .Queryable()
+                .Where( a => !a.IsArchived && a.ArchivedDateTime.HasValue );
+
+            if ( inarchivedGroupMembers.Any() )
+            {
+                recordsUpdated += rockContext.BulkUpdate( inarchivedGroupMembers, g => new GroupMember { ArchivedDateTime = null } );
             }
 
             return recordsUpdated;

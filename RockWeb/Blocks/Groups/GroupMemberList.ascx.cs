@@ -2170,6 +2170,12 @@ namespace RockWeb.Blocks.Groups
             _nameWithHtmlField = gGroupMemberRequirements.ColumnsOfType<RockLiteralField>().Where( a => a.ID == "lRequirementNameWithHtml" ).FirstOrDefault();
             _requirementStatesField = gGroupMemberRequirements.ColumnsOfType<RockLiteralField>().Where( a => a.ID == "lRequirementStates" ).FirstOrDefault();
 
+            _exportHomePhoneField = gGroupMemberRequirements.ColumnsOfType<RockLiteralField>().Where( a => a.ID == "lRequirementExportHomePhone" ).FirstOrDefault();
+            _exportCellPhoneField = gGroupMemberRequirements.ColumnsOfType<RockLiteralField>().Where( a => a.ID == "lRequirementExportCellPhone" ).FirstOrDefault();
+            _exportHomeAddressField = gGroupMemberRequirements.ColumnsOfType<RockLiteralField>().Where( a => a.ID == "lRequirementExportHomeAddress" ).FirstOrDefault();
+            _exportLatitudeField = gGroupMemberRequirements.ColumnsOfType<RockLiteralField>().Where( a => a.ID == "lRequirementExportLatitude" ).FirstOrDefault();
+            _exportLongitude = gGroupMemberRequirements.ColumnsOfType<RockLiteralField>().Where( a => a.ID == "lRequirementExportLongitude" ).FirstOrDefault();
+
             _groupTypeRoleIdsWithGroupSync = new HashSet<int>( _group.GroupSyncs.Select( a => a.GroupTypeRoleId ).ToList() );
 
             if ( _group != null &&

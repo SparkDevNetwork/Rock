@@ -46,6 +46,7 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import RockFormField from "./rockFormField.obs";
     import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { isPromise } from "@Obsidian/Utility/promiseUtils";
 
     const props = defineProps({
         modelValue: {
@@ -96,6 +97,16 @@
         uploadUrl: {
             type: String,
             default: "/ImageUploader.ashx"
+        },
+
+        /**
+         * A processor that will allow modification of the image file before
+         * it is uploaded to the server. A new file should be created and
+         * returned with any changed filename, mime type or data.
+         */
+        fileProcessor: {
+            type: Function as PropType<(file: File) => (File | Promise<File>)>,
+            required: false
         }
     });
 
@@ -162,6 +173,17 @@
         uploadErrorMessage.value = "";
 
         try {
+            if (props.fileProcessor) {
+                const newFile = props.fileProcessor(file);
+
+                if (isPromise(newFile)) {
+                    file = await newFile;
+                }
+                else {
+                    file = newFile;
+                }
+            }
+
             // Perform the actual file upload using the helper function.
             const result = await uploadBinaryFile(file, props.binaryFileTypeGuid || BinaryFiletype.Default, {
                 baseUrl: props.uploadUrl,

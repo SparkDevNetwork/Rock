@@ -1,0 +1,101 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Facilitator"
+          :entityTypeGuid="EntityType.LearningParticipant"
+          :expectedRowCount="3"
+          tooltipField="name"
+          stickyHeader
+          liveUpdates
+          :selectItem="onSelectItem"
+          :onAddItem="isAddEnabled ? onAddItemClicked : undefined">
+        <SelectColumn />
+
+        <PersonColumn name="name"
+                      title="Name"
+                      field="name"
+                      :filter="textValueFilter"
+                      visiblePriority="xs" />
+
+        <DeleteColumn v-if="isDeleteEnabled" @click="(r) => $emit('deleteClick', r, gridData)" />
+    </Grid>
+</template>
+
+<script setup lang="ts">
+    import { PropType, reactive, ref } from "vue";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { PersonColumn, textValueFilter, DeleteColumn, SelectColumn } from "@Obsidian/Controls/grid";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const emit = defineEmits<{
+        (e: "rowClick", idKey: string, gridData: GridDataBag | undefined): void;
+        (e: "deleteClick", idKey: string, gridData: GridDataBag | undefined): void;
+        (e: "addClick"): void;
+    }>();
+
+    const props = defineProps({
+        isAddEnabled: {
+            type: Object as PropType<boolean>,
+            required: true,
+            default: false
+        },
+        isDeleteEnabled: {
+            type: Object as PropType<boolean>,
+            required: true,
+            default: false
+        }
+    });
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const isAddEnabled = ref(props.isAddEnabled);
+    const isDeleteEnabled = ref(props.isDeleteEnabled);
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        emit("rowClick", key, gridData);
+    }
+
+    function onAddItemClicked(): void {
+        emit("addClick");
+    }
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetFacilitators");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load students grid data.");
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>

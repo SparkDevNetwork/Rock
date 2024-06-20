@@ -17,6 +17,9 @@
 
 namespace Rock.ViewModels.Blocks.Finance.FinancialPledgeList
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class FinancialPledgeListOptionsBag
     {
         /// <summary>

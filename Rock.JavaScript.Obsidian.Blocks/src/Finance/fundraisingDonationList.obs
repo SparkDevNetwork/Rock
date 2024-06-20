@@ -1,0 +1,145 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid v-if="config.options?.isBlockVisible"
+          :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Fundraising Donations"
+          :entityTypeGuid="EntityType.FinancialTransactionDetail"
+          stickyHeader
+          liveUpdates
+          :showLaunchWorkflow="false"
+          :showCommunicate="!config.options?.actionsToHide?.includes(ActionKey.Communicate)"
+          :showPersonMerge="!config.options?.actionsToHide?.includes(ActionKey.MergePerson)"
+          :showBulkUpdate="!config.options?.actionsToHide?.includes(ActionKey.BulkUpdate)"
+          :showExport="!config.options?.actionsToHide?.includes(ActionKey.ExcelExport)"
+          :showMergeTemplate="!config.options?.actionsToHide?.includes(ActionKey.MergeTemplate)">
+        <SelectColumn v-if="isSelectColumnVisible" />
+
+        <Column name="donor"
+                title="Donor"
+                width="10%"
+                visiblePriority="xs">
+            <template #format="{ row }">
+                <div v-html="row.donor">
+
+                </div>
+            </template>
+        </Column>
+
+        <Column v-if="!config.options?.columnsToHide?.includes(ColumnKey.DonorAddress)"
+                name="donorAddress"
+                title="Donor Address"
+                width="18%"
+                visiblePriority="md">
+            <template #format="{ row }">
+                <div v-html="row.donorAddress">
+
+                </div>
+            </template>
+        </Column>
+
+        <TextColumn v-if="!config.options?.columnsToHide?.includes(ColumnKey.DonorEmail)"
+                    name="donorEmail"
+                    title="Donor Email"
+                    field="donorEmail"
+                    width="18%"
+                    :filter="textValueFilter"
+                    visiblePriority="md" />
+
+        <Column v-if="!config.options?.columnsToHide?.includes(ColumnKey.Participant) && !config.options?.isContextEntityGroupMember"
+                name="participant"
+                title="Participant"
+                width="18%"
+                visiblePriority="xs">
+            <template #format="{ row }">
+                <div v-html="row.participant" />
+            </template>
+        </Column>
+
+        <DateColumn name="date"
+                    title="Date"
+                    field="date"
+                    width="120"
+                    itemClass="grid-item-pull-left"
+                    :filter="dateValueFilter"
+                    visiblePriority="md" />
+
+        <CurrencyColumn v-if="!config.options?.columnsToHide?.includes(ColumnKey.Amount)"
+                        name="amount"
+                        title="Amount"
+                        field="amount"
+                        :filter="numberValueFilter"
+                        width="3%"
+                        visiblePriority="xs">
+            <template #format="{ row }">
+                <div class="flex-grow-1 text-right">
+                    {{ toCurrencyOrNull(row.amount, config.options?.currencyInfo) }}
+                </div>
+            </template>
+        </CurrencyColumn>
+    </Grid>
+</template>
+
+<style>
+.grid-item-pull-left {
+    flex-direction: column;
+    align-items: end;
+}
+</style>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { numberValueFilter, textValueFilter, dateValueFilter, SelectColumn, TextColumn, DateColumn, Column, CurrencyColumn } from "@Obsidian/Controls/grid";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { FundraisingDonationListOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FundraisingDonationList/fundraisingDonationListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { ActionKey, ColumnKey } from "./FundraisingDonationList/types.partial";
+    import { computed, reactive, ref } from "vue";
+    import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
+
+    const config = useConfigurationValues<ListBlockBox<FundraisingDonationListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    // #endregion
+
+    //# region Computed Values
+
+    const isSelectColumnVisible = computed((): boolean => {
+        return !config.options?.actionsToHide?.includes(ActionKey.Communicate)
+            || !config.options?.actionsToHide?.includes(ActionKey.MergePerson)
+            || !config.options?.actionsToHide?.includes(ActionKey.BulkUpdate)
+            || !config.options?.actionsToHide?.includes(ActionKey.ExcelExport)
+            || !config.options?.actionsToHide?.includes(ActionKey.MergeTemplate);
+    });
+
+    //# endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+
+</script>

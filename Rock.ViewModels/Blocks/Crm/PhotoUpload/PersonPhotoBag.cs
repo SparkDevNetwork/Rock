@@ -19,6 +19,9 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Crm.PhotoUpload
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class PersonPhotoBag
     {
         /// <summary>

@@ -238,6 +238,11 @@ namespace Rock.SystemGuid
         /// The Job to run Post v16.6 Data Migrations to an index to the CreatedDateTime column on the Interaction table.
         /// </summary>
         public const string DATA_MIGRATIONS_166_ADD_INTERACTION_CREATED_DATE_TIME_INDEX = "2B2E2C6F-0184-4797-9D39-E8FC700D9887";
+        
+        /// <summary>
+        /// The Job to run Post v16.6 Add CommunicationRecipient Index.
+        /// </summary>
+        public const string DATA_MIGRATIONS_166_ADD_COMMUNICATION_RECIPIENT_INDEX = "48070B65-FC20-401F-B25F-8F4D13BA5F36";
 
         /// <summary>
         /// The Job to get NCOA
@@ -377,5 +382,10 @@ namespace Rock.SystemGuid
         /// The post update data migration job to remove the legacy Communication Recipient List Webforms block.
         /// </summary>
         public const string DATA_MIGRATIONS_170_REMOVE_DISC_BLOCK = "795AE7B0-8B61-4577-B50A-350907CA0C65";
+
+        /// <summary>
+        /// The job for sending available learning activity notifications. <see cref="Rock.Jobs.SendLearningActivityNotifications"/>.
+        /// </summary>
+        public const string SEND_LEARNING_ACTIVITY_NOTIFICATIONS = "0075859b-8dc3-4e95-9075-89198886fcb4";
     }
 }

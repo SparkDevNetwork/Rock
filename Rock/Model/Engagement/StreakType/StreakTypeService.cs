@@ -1684,7 +1684,8 @@ namespace Rock.Model
                     OccurrenceId = s.OccurrenceId,
                     OccurrenceGroupId = s.Occurrence.GroupId.Value,
                     OccurrenceGroupTypeId = s.Occurrence.Group.GroupTypeId,
-                    OccurrenceOccurrenceDate = s.Occurrence.OccurrenceDate
+                    OccurrenceOccurrenceDate = s.Occurrence.OccurrenceDate,
+                    CheckInStatus = s.CheckInStatus
                 } ).FirstOrDefault();
 
             if ( attendanceInfo == null )
@@ -1692,9 +1693,9 @@ namespace Rock.Model
                 return;
             }
 
-            if ( attendanceInfo.DidAttend != true )
+            if ( attendanceInfo.DidAttend != true || attendanceInfo.CheckInStatus == Enums.Event.CheckInStatus.Pending )
             {
-                // If DidAttend is false, then don't do anything for the streak type. We should not unset the bit for the day/week because
+                // If DidAttend is false or the check-in status is pending, then don't do anything for the streak type. We should not unset the bit for the day/week because
                 // we don't know if they had some other engagement besides this and cannot assume it should be unset.
                 return;
             }
@@ -2437,6 +2438,7 @@ namespace Rock.Model
             }
 
             var groupService = new GroupService( rockContext );
+            var groupTypeService = new GroupTypeService( rockContext );
 
             var query = groupService.Queryable()
                 .AsNoTracking()
@@ -2446,17 +2448,20 @@ namespace Rock.Model
             {
                 case StreakStructureType.CheckInConfig:
                 case StreakStructureType.GroupType:
+                    var groupTypeIds = groupTypeService.GetCheckinAreaDescendants( structureEntityId ).ConvertAll( x => x.Id );
+                    groupTypeIds.Add( structureEntityId );
                     return query.Where( g =>
-                        g.GroupTypeId == structureEntityId ||
-                        g.GroupType.ParentGroupTypes.Any( pgt => pgt.Id == structureEntityId ) );
+                        groupTypeIds.Contains( g.GroupTypeId ) );
                 case StreakStructureType.Group:
                     return query.Where( g =>
                         g.Id == structureEntityId ||
                         g.ParentGroupId == structureEntityId );
                 case StreakStructureType.GroupTypePurpose:
+                    var groupTypes = groupTypeService.GetCheckinAreaDescendants( structureEntityId );
+                    groupTypes.Add( GroupTypeCache.Get( structureEntityId ) );
+                    var groupTypePurposeValueIds = groupTypes.ConvertAll( x => x.GroupTypePurposeValueId );
                     return query.Where( g =>
-                        g.GroupType.GroupTypePurposeValueId == structureEntityId ||
-                        g.GroupType.ParentGroupTypes.Any( pgt => pgt.GroupTypePurposeValueId == structureEntityId ) );
+                        groupTypePurposeValueIds.Contains( g.GroupType.GroupTypePurposeValueId ) );
                 default:
                     throw new NotImplementedException( string.Format( "Getting groups for the Structure Type '{0}' is not implemented", structureType ) );
             }

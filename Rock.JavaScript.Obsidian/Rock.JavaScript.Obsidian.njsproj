@@ -355,6 +355,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Crm\FamilyPreRegistration\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\PersonDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\PersonDetail\Badges\" />
+    <Folder Include="Framework\ViewModels\Blocks\Crm\PersonDetail\GivingConfiguration\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\PersonMergeRequestList\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\PhotoOptOut\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\" />
@@ -396,6 +397,8 @@
     <Folder Include="Framework\ViewModels\Blocks\Fundraising\" />
     <Folder Include="Framework\ViewModels\Blocks\Fundraising\FundraisingDonationList\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\SavedAccountList\" />
+    <Folder Include="Framework\ViewModels\Blocks\Fundraising\" />
+    <Folder Include="Framework\ViewModels\Blocks\Fundraising\FundraisingDonationList\" />
     <Folder Include="Framework\ViewModels\Blocks\Groups\" />
     <Folder Include="Framework\ViewModels\Blocks\Groups\GroupRegistration\" />
     <Folder Include="Framework\ViewModels\Blocks\Group\" />
@@ -896,6 +899,16 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\FamilyPreRegistration\familyPreRegistrationSaveResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\FamilyPreRegistration\familyPreRegistrationScheduleDateBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\PersonDetail\Badges\badgesConfigurationBox.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\PersonDetail\GivingConfiguration\accountSummaryBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\PersonDetail\GivingConfiguration\contributionStatementBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\PersonDetail\GivingConfiguration\financialAccountBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\PersonDetail\GivingConfiguration\financialPaymentDetailBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\PersonDetail\GivingConfiguration\financialPersonSavedAccountBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\PersonDetail\GivingConfiguration\financialPledgeBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\PersonDetail\GivingConfiguration\financialScheduledTransactionBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\PersonDetail\GivingConfiguration\financialScheduledTransactionDetailBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\PersonDetail\GivingConfiguration\givingConfigurationInitializationBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\PersonDetail\GivingConfiguration\textToGiveSettingsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\PersonMergeRequestList\personMergeRequestListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\PhotoOptOut\photoOptOutBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\PhotoUpload\photoUploadInitializationBox.d.ts" />
@@ -994,6 +1007,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialPledgeList\financialPledgeListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Fundraising\FundraisingDonationList\fundraisingDonationListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\SavedAccountList\savedAccountListOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Fundraising\FundraisingDonationList\fundraisingDonationListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Groups\GroupRegistration\groupRegistrationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Groups\GroupRegistration\groupRegistrationBlockBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Group\GroupAttendanceDetail\groupAttendanceDetailAddPersonRequestBag.d.ts" />

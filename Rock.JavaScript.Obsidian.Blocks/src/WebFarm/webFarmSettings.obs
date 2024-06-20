@@ -63,7 +63,7 @@
     // inform the server which incoming values have valid data in them.
     const validProperties = [
         "attributeValues",
-        "isActive",
+        "isEnabled",
         "webFarmKey",
         "lowerPollingLimit",
         "upperPollingLimit",
@@ -90,19 +90,23 @@
     const blockLabels = computed((): PanelAction[] | undefined => {
         const labels: PanelAction[] = [];
 
-        if (!webFarmSettingsViewBag.value?.isEnabled && webFarmSettingsViewBag.value?.hasValidKey && webFarmSettingsViewBag.value?.isRunning) {
+        const isEnabled = webFarmSettingsViewBag.value?.isEnabled;
+        const hasValidKey = webFarmSettingsViewBag.value?.hasValidKey;
+        const isRunning = webFarmSettingsViewBag.value?.isRunning;
+
+        if (!isEnabled && hasValidKey && isRunning) {
             labels.push({
                 title: "Ready (Re-enable)",
                 type: "warning"
             });
         }
-        else if (webFarmSettingsViewBag.value?.isEnabled && webFarmSettingsViewBag.value?.hasValidKey && !webFarmSettingsViewBag.value?.isRunning) {
+        else if (isEnabled && hasValidKey && !isRunning) {
             labels.push({
                 title: "Ready (Restart Rock)",
                 type: "warning"
             });
         }
-        else if (webFarmSettingsViewBag.value?.isEnabled && webFarmSettingsViewBag.value?.hasValidKey) {
+        else if (isEnabled && hasValidKey) {
             labels.push({
                 title: "Active",
                 type: "success"

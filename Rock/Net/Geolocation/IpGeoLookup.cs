@@ -71,17 +71,17 @@ namespace Rock.Net.Geolocation
         /// <summary>
         /// Whether the database file exists on disk.
         /// </summary>
-        public static bool DatabaseFileExists => File.Exists( _databasePath );
+        private bool DatabaseFileExists => File.Exists( _databasePath );
 
         /// <summary>
         /// The region defined type cache.
         /// </summary>
-        public DefinedTypeCache RegionDefinedTypeCache => DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.LOCATION_ADDRESS_STATE );
+        private DefinedTypeCache RegionDefinedTypeCache => DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.LOCATION_ADDRESS_STATE );
 
         /// <summary>
         /// The country defined type cache.
         /// </summary>
-        public DefinedTypeCache CountryDefinedTypeCache => DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES );
+        private DefinedTypeCache CountryDefinedTypeCache => DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES );
 
         #endregion Properties
 
@@ -137,7 +137,7 @@ namespace Rock.Net.Geolocation
                         ?.FirstOrDefault( h => h.Name == "ETag" )
                         ?.Value?.ToString();
 
-                    if ( eTagHeaderValue.IsNotNullOrWhiteSpace() )
+                    if ( this.DatabaseFileExists && eTagHeaderValue.IsNotNullOrWhiteSpace() )
                     {
                         // Check the latest ETag header value against the previous in-memory
                         // value to see if we already have the latest database.
@@ -290,7 +290,7 @@ namespace Rock.Net.Geolocation
         {
             try
             {
-                if ( !DatabaseFileExists )
+                if ( !this.DatabaseFileExists )
                 {
                     return;
                 }

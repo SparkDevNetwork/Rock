@@ -256,17 +256,18 @@
     import AttributeEditor from "@Obsidian/Controls/attributeEditor.obs";
     import Grid, { DeleteColumn, EditColumn, TextColumn, BooleanColumn } from "@Obsidian/Controls/grid";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { SiteBag } from "@Obsidian/ViewModels/Blocks/Cms/SiteDetail/siteBag";
     import { SiteDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/SiteDetail/siteDetailOptionsBag";
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<SiteBag>,
+            type: Object as PropType<ValidPropertiesBox<SiteBag>>,
             required: true
         },
 
@@ -277,65 +278,65 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: SiteBag): void;
+        (e: "update:modelValue", value: ValidPropertiesBox<SiteBag>): void;
         (e: "propertyChanged", value: string): void;
     }>();
 
     // #region Values
 
-    const attributes = ref(props.modelValue.attributes ?? {});
-    const attributeValues = ref(props.modelValue.attributeValues ?? {});
-    const description = propertyRef(props.modelValue.description ?? "", "Description");
-    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
-    const name = propertyRef(props.modelValue.name ?? "", "Name");
-    const theme = propertyRef(props.modelValue.theme ?? "", "Theme");
-    const siteDomains = ref(props.modelValue.siteDomains ?? "");
-    const errorPage = propertyRef(props.modelValue.errorPage ?? "", "ErrorPage");
-    const googleAnalyticsCode = propertyRef(props.modelValue.googleAnalyticsCode ?? "", "GoogleAnalyticsCode");
-    const requiresEncryption = propertyRef(props.modelValue.requiresEncryption, "RequiresEncryption");
-    const enabledForShortening = propertyRef(props.modelValue.enabledForShortening, "EnabledForShortening");
-    const enableVisitorTracking = propertyRef(props.modelValue.enableVisitorTracking, "EnableVisitorTracking");
-    const enablePersonalization = propertyRef(props.modelValue.enablePersonalization, "enablePersonalization");
-    const favIconBinaryFile = propertyRef(props.modelValue.favIconBinaryFile ?? null, "FavIconBinaryFile");
-    const siteLogoBinaryFile = propertyRef(props.modelValue.siteLogoBinaryFile ?? null, "SiteLogoBinaryFile");
-    const enableMobileRedirect = propertyRef(props.modelValue.enableMobileRedirect, "EnableMobileRedirect");
-    const enablePageViews = propertyRef(props.modelValue.enablePageViews, "EnablePageViews");
-    const retentionDuration = ref(props.modelValue.retentionDuration);
-    const allowedFrameDomains = propertyRef(props.modelValue.allowedFrameDomains ?? "", "AllowedFrameDomains");
-    const allowIndexing = propertyRef(props.modelValue.allowIndexing, "AllowIndexing");
-    const indexStartingLocation = propertyRef(props.modelValue.indexStartingLocation ?? "", "IndexStartingLocation");
-    const enableExclusiveRoutes = propertyRef(props.modelValue.enableExclusiveRoutes, "EnableExclusiveRoutes");
-    const enablePageViewGeoTracking = propertyRef(props.modelValue.enablePageViewGeoTracking, "EnablePageViewGeoTracking");
-    const disablePredictableIds = propertyRef(props.modelValue.disablePredictableIds, "DisablePredictableIds");
-    const pageHeaderContent = propertyRef(props.modelValue.pageHeaderContent ?? "", "PageHeaderContent");
-    const idkey = ref(props.modelValue.idKey);
+    const attributes = ref(props.modelValue?.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.bag?.attributeValues ?? {});
+    const description = propertyRef(props.modelValue?.bag?.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue?.bag?.isActive ?? false, "IsActive");
+    const name = propertyRef(props.modelValue?.bag?.name ?? "", "Name");
+    const theme = propertyRef(props.modelValue?.bag?.theme ?? "", "Theme");
+    const siteDomains = ref(props.modelValue?.bag?.siteDomains ?? "");
+    const errorPage = propertyRef(props.modelValue?.bag?.errorPage ?? "", "ErrorPage");
+    const googleAnalyticsCode = propertyRef(props.modelValue?.bag?.googleAnalyticsCode ?? "", "GoogleAnalyticsCode");
+    const requiresEncryption = propertyRef(props.modelValue?.bag?.requiresEncryption ?? false, "RequiresEncryption");
+    const enabledForShortening = propertyRef(props.modelValue?.bag?.enabledForShortening ?? false, "EnabledForShortening");
+    const enableVisitorTracking = propertyRef(props.modelValue?.bag?.enableVisitorTracking ?? false, "EnableVisitorTracking");
+    const enablePersonalization = propertyRef(props.modelValue?.bag?.enablePersonalization ?? false, "enablePersonalization");
+    const favIconBinaryFile = propertyRef(props.modelValue?.bag?.favIconBinaryFile ?? null, "FavIconBinaryFile");
+    const siteLogoBinaryFile = propertyRef(props.modelValue?.bag?.siteLogoBinaryFile ?? null, "SiteLogoBinaryFile");
+    const enableMobileRedirect = propertyRef(props.modelValue?.bag?.enableMobileRedirect ?? false, "EnableMobileRedirect");
+    const enablePageViews = propertyRef(props.modelValue?.bag?.enablePageViews ?? false, "EnablePageViews");
+    const retentionDuration = ref(props.modelValue?.bag?.retentionDuration);
+    const allowedFrameDomains = propertyRef(props.modelValue?.bag?.allowedFrameDomains ?? "", "AllowedFrameDomains");
+    const allowIndexing = propertyRef(props.modelValue?.bag?.allowIndexing ?? false, "AllowIndexing");
+    const indexStartingLocation = propertyRef(props.modelValue?.bag?.indexStartingLocation ?? "", "IndexStartingLocation");
+    const enableExclusiveRoutes = propertyRef(props.modelValue?.bag?.enableExclusiveRoutes ?? false, "EnableExclusiveRoutes");
+    const enablePageViewGeoTracking = propertyRef(props.modelValue?.bag?.enablePageViewGeoTracking ?? false, "EnablePageViewGeoTracking");
+    const disablePredictableIds = propertyRef(props.modelValue?.bag?.disablePredictableIds ?? false, "DisablePredictableIds");
+    const pageHeaderContent = propertyRef(props.modelValue?.bag?.pageHeaderContent ?? "", "PageHeaderContent");
+    const siteAttributes = ref(props.modelValue?.bag?.siteAttributes ?? []);
+    const binaryFileTypeGuid = ref(toGuidOrNull(props.modelValue?.bag?.binaryFileTypeGuid) ?? BinaryFiletype.Default);
+    const idkey = ref(props.modelValue?.bag?.idKey);
+    const isSystem = props.modelValue?.bag?.isSystem;
     const themes = ref(props.options.themes ?? []);
     const isModalOpen = ref<boolean>(false);
     const reservedKeyNames = ref(props.options.reservedKeyNames ?? []);
     const siteAttribute = ref<PublicEditableAttributeBag | null>(null);
-    const siteAttributes = ref(props.modelValue.siteAttributes ?? []);
-    const binaryFileTypeGuid = ref(toGuidOrNull(props.modelValue.binaryFileTypeGuid) ?? BinaryFiletype.Default);
     const submitEditAttribute = ref<boolean>(false);
     const attributeErrors = ref<string[]>([]);
-    const isSystem = props.modelValue.isSystem;
 
     const defaultPage = ref({
-        page: props.modelValue.defaultPage ?? null
+        page: props.modelValue?.bag?.defaultPage ?? null
     });
     const loginPage = ref({
-        page: props.modelValue.loginPage ?? null
+        page: props.modelValue?.bag?.loginPage ?? null
     });
     const changePasswordPage = ref({
-        page: props.modelValue.changePasswordPage ?? null
+        page: props.modelValue?.bag?.changePasswordPage ?? null
     });
     const communicationPage = ref({
-        page: props.modelValue.communicationPage ?? null
+        page: props.modelValue?.bag?.communicationPage ?? null
     });
     const registrationPage = ref({
-        page: props.modelValue.registrationPage ?? null
+        page: props.modelValue?.bag?.registrationPage ?? null
     });
     const pageNotFoundPage = ref({
-        page: props.modelValue.pageNotFoundPage ?? null
+        page: props.modelValue?.bag?.pageNotFoundPage ?? null
     });
 
     // The properties that are being edited. This should only contain
@@ -355,6 +356,7 @@
     // #region Functions
 
     function convertToRowItem(attribute: PublicEditableAttributeBag): Record<string, unknown> {
+        console.log(attribute);
         return {
             key: attribute.key,
             name: attribute.name,
@@ -454,88 +456,93 @@
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
-        updateRefValue(attributes, props.modelValue.attributes ?? {});
-        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
-        updateRefValue(description, props.modelValue.description ?? "");
-        updateRefValue(isActive, props.modelValue.isActive ?? false);
-        updateRefValue(name, props.modelValue.name ?? "");
-        updateRefValue(theme, props.modelValue.theme ?? "");
-        updateRefValue(siteDomains, props.modelValue.siteDomains ?? "");
-        updateRefValue(errorPage, props.modelValue.errorPage ?? "");
-        updateRefValue(googleAnalyticsCode, props.modelValue.googleAnalyticsCode ?? "");
-        updateRefValue(requiresEncryption, props.modelValue.requiresEncryption);
-        updateRefValue(enabledForShortening, props.modelValue.enabledForShortening);
-        updateRefValue(enableVisitorTracking, props.modelValue.enableVisitorTracking);
-        updateRefValue(enablePersonalization, props.modelValue.enablePersonalization);
-        updateRefValue(favIconBinaryFile, props.modelValue.favIconBinaryFile ?? null);
-        updateRefValue(siteLogoBinaryFile, props.modelValue.siteLogoBinaryFile ?? null);
-        updateRefValue(enableMobileRedirect, props.modelValue.enableMobileRedirect);
-        updateRefValue(enablePageViews, props.modelValue.enablePageViews);
-        updateRefValue(retentionDuration, props.modelValue.retentionDuration);
-        updateRefValue(allowedFrameDomains, props.modelValue.allowedFrameDomains ?? "");
-        updateRefValue(allowIndexing, props.modelValue.allowIndexing);
-        updateRefValue(indexStartingLocation, props.modelValue.indexStartingLocation ?? "");
-        updateRefValue(enableExclusiveRoutes, props.modelValue.enableExclusiveRoutes);
-        updateRefValue(enablePageViewGeoTracking, props.modelValue.enablePageViewGeoTracking);
-        updateRefValue(disablePredictableIds, props.modelValue.disablePredictableIds);
-        updateRefValue(pageHeaderContent, props.modelValue.pageHeaderContent ?? "");
+        updateRefValue(attributes, props.modelValue?.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue?.bag?.attributeValues ?? {});
+        updateRefValue(description, props.modelValue?.bag?.description ?? "");
+        updateRefValue(isActive, props.modelValue?.bag?.isActive ?? false);
+        updateRefValue(name, props.modelValue?.bag?.name ?? "");
+        updateRefValue(theme, props.modelValue?.bag?.theme ?? "");
+        updateRefValue(siteDomains, props.modelValue?.bag?.siteDomains ?? "");
+        updateRefValue(errorPage, props.modelValue?.bag?.errorPage ?? "");
+        updateRefValue(googleAnalyticsCode, props.modelValue?.bag?.googleAnalyticsCode ?? "");
+        updateRefValue(requiresEncryption, props.modelValue?.bag?.requiresEncryption ?? false);
+        updateRefValue(enabledForShortening, props.modelValue?.bag?.enabledForShortening ?? false);
+        updateRefValue(enableVisitorTracking, props.modelValue?.bag?.enableVisitorTracking ?? false);
+        updateRefValue(enablePersonalization, props.modelValue?.bag?.enablePersonalization ?? false);
+        updateRefValue(favIconBinaryFile, props.modelValue?.bag?.favIconBinaryFile ?? null);
+        updateRefValue(siteLogoBinaryFile, props.modelValue?.bag?.siteLogoBinaryFile ?? null);
+        updateRefValue(enableMobileRedirect, props.modelValue?.bag?.enableMobileRedirect ?? false);
+        updateRefValue(enablePageViews, props.modelValue?.bag?.enablePageViews ?? false);
+        updateRefValue(retentionDuration, props.modelValue?.bag?.retentionDuration);
+        updateRefValue(allowedFrameDomains, props.modelValue?.bag?.allowedFrameDomains ?? "");
+        updateRefValue(allowIndexing, props.modelValue?.bag?.allowIndexing ?? false);
+        updateRefValue(indexStartingLocation, props.modelValue?.bag?.indexStartingLocation ?? "");
+        updateRefValue(enableExclusiveRoutes, props.modelValue?.bag?.enableExclusiveRoutes ?? false);
+        updateRefValue(enablePageViewGeoTracking, props.modelValue?.bag?.enablePageViewGeoTracking ?? false);
+        updateRefValue(disablePredictableIds, props.modelValue?.bag?.disablePredictableIds ?? false);
+        updateRefValue(pageHeaderContent, props.modelValue?.bag?.pageHeaderContent ?? "");
+        updateRefValue(siteAttributes, props.modelValue?.bag?.siteAttributes ?? []);
+        updateRefValue(binaryFileTypeGuid, props.modelValue?.bag?.binaryFileTypeGuid ?? BinaryFiletype.Default);
 
         updateRefValue(defaultPage, {
-            page: props.modelValue.defaultPage ?? null
+            page: props.modelValue?.bag?.defaultPage ?? null
         });
         updateRefValue(loginPage, {
-            page: props.modelValue.loginPage ?? null
+            page: props.modelValue?.bag?.loginPage ?? null
         });
         updateRefValue(changePasswordPage, {
-            page: props.modelValue.changePasswordPage ?? null
+            page: props.modelValue?.bag?.changePasswordPage ?? null
         });
         updateRefValue(communicationPage, {
-            page: props.modelValue.communicationPage ?? null
+            page: props.modelValue?.bag?.communicationPage ?? null
         });
         updateRefValue(registrationPage, {
-            page: props.modelValue.registrationPage ?? null
+            page: props.modelValue?.bag?.registrationPage ?? null
         });
         updateRefValue(pageNotFoundPage, {
-            page: props.modelValue.pageNotFoundPage ?? null
+            page: props.modelValue?.bag?.pageNotFoundPage ?? null
         });
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
     watch([attributeValues, siteDomains, defaultPage, loginPage, changePasswordPage, communicationPage, registrationPage, pageNotFoundPage, ...propRefs], () => {
-        const newValue: SiteBag = {
-            ...props.modelValue,
-            attributeValues: attributeValues.value,
-            description: description.value,
-            isActive: isActive.value,
-            name: name.value,
-            theme: theme.value,
-            defaultPage: defaultPage.value?.page,
-            loginPage: loginPage.value?.page,
-            changePasswordPage: changePasswordPage.value?.page,
-            communicationPage: communicationPage.value?.page,
-            registrationPage: registrationPage.value?.page,
-            pageNotFoundPage: pageNotFoundPage.value?.page,
-            siteDomains: siteDomains.value,
-            errorPage: errorPage.value,
-            googleAnalyticsCode: googleAnalyticsCode.value,
-            requiresEncryption: requiresEncryption.value,
-            enabledForShortening: enabledForShortening.value,
-            enableVisitorTracking: enableVisitorTracking.value,
-            enablePersonalization: enablePersonalization.value,
-            favIconBinaryFile: favIconBinaryFile.value,
-            siteLogoBinaryFile: siteLogoBinaryFile.value,
-            enableMobileRedirect: enableMobileRedirect.value,
-            enablePageViews: enablePageViews.value,
-            retentionDuration: retentionDuration.value,
-            allowedFrameDomains: allowedFrameDomains.value,
-            allowIndexing: allowIndexing.value,
-            indexStartingLocation: indexStartingLocation.value,
-            enableExclusiveRoutes: enableExclusiveRoutes.value,
-            enablePageViewGeoTracking: enablePageViewGeoTracking.value,
-            disablePredictableIds: disablePredictableIds.value,
-            pageHeaderContent: pageHeaderContent.value,
+        const newValue: ValidPropertiesBox<SiteBag> = {
+            bag: { ...props.modelValue } as SiteBag
         };
+
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value),
+        setPropertiesBoxValue(newValue, "description", description.value),
+        setPropertiesBoxValue(newValue, "isActive", isActive.value),
+        setPropertiesBoxValue(newValue, "name", name.value),
+        setPropertiesBoxValue(newValue, "theme", theme.value),
+        setPropertiesBoxValue(newValue, "defaultPage", defaultPage.value?.page),
+        setPropertiesBoxValue(newValue, "loginPage", loginPage.value?.page),
+        setPropertiesBoxValue(newValue, "changePasswordPage", changePasswordPage.value?.page),
+        setPropertiesBoxValue(newValue, "communicationPage", communicationPage.value?.page),
+        setPropertiesBoxValue(newValue, "registrationPage", registrationPage.value?.page),
+        setPropertiesBoxValue(newValue, "pageNotFoundPage", pageNotFoundPage.value?.page),
+        setPropertiesBoxValue(newValue, "siteDomains", siteDomains.value),
+        setPropertiesBoxValue(newValue, "errorPage", errorPage.value),
+        setPropertiesBoxValue(newValue, "googleAnalyticsCode", googleAnalyticsCode.value),
+        setPropertiesBoxValue(newValue, "requiresEncryption", requiresEncryption.value),
+        setPropertiesBoxValue(newValue, "enabledForShortening", enabledForShortening.value),
+        setPropertiesBoxValue(newValue, "enableVisitorTracking", enableVisitorTracking.value),
+        setPropertiesBoxValue(newValue, "enablePersonalization", enablePersonalization.value),
+        setPropertiesBoxValue(newValue, "favIconBinaryFile", favIconBinaryFile.value),
+        setPropertiesBoxValue(newValue, "siteLogoBinaryFile", siteLogoBinaryFile.value),
+        setPropertiesBoxValue(newValue, "enableMobileRedirect", enableMobileRedirect.value),
+        setPropertiesBoxValue(newValue, "enablePageViews", enablePageViews.value),
+        setPropertiesBoxValue(newValue, "retentionDuration", retentionDuration.value),
+        setPropertiesBoxValue(newValue, "allowedFrameDomains", allowedFrameDomains.value),
+        setPropertiesBoxValue(newValue, "allowIndexing", allowIndexing.value),
+        setPropertiesBoxValue(newValue, "indexStartingLocation", indexStartingLocation.value),
+        setPropertiesBoxValue(newValue, "enableExclusiveRoutes", enableExclusiveRoutes.value),
+        setPropertiesBoxValue(newValue, "enablePageViewGeoTracking", enablePageViewGeoTracking.value),
+        setPropertiesBoxValue(newValue, "disablePredictableIds", disablePredictableIds.value),
+        setPropertiesBoxValue(newValue, "pageHeaderContent", pageHeaderContent.value),
+        setPropertiesBoxValue(newValue, "siteAttributes", siteAttributes.value),
+        setPropertiesBoxValue(newValue, "binaryFileTypeGuid", binaryFileTypeGuid.value),
 
         emit("update:modelValue", newValue);
     });

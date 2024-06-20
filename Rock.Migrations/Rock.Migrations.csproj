@@ -128,6 +128,30 @@
     <Compile Include="Migrations\202406061828335_CodeGenerated_20240606.Designer.cs">
       <DependentUpon>202406061828335_CodeGenerated_20240606.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202406091439540_AddMeasurementClassificationValueToMetric.cs" />
+    <Compile Include="Migrations\202406091439540_AddMeasurementClassificationValueToMetric.Designer.cs">
+      <DependentUpon>202406091439540_AddMeasurementClassificationValueToMetric.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202406170654068_AddSmsPipelineInteractionLogging.cs" />
+    <Compile Include="Migrations\202406170654068_AddSmsPipelineInteractionLogging.Designer.cs">
+      <DependentUpon>202406170654068_AddSmsPipelineInteractionLogging.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202406190900171_UpdatePeerNetworkModel.cs" />
+    <Compile Include="Migrations\202406190900171_UpdatePeerNetworkModel.Designer.cs">
+      <DependentUpon>202406190900171_UpdatePeerNetworkModel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202406201602320_LMSModels.cs" />
+    <Compile Include="Migrations\202406201602320_LMSModels.Designer.cs">
+      <DependentUpon>202406201602320_LMSModels.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202406201817226_Rollup_20240620.cs" />
+    <Compile Include="Migrations\202406201817226_Rollup_20240620.Designer.cs">
+      <DependentUpon>202406201817226_Rollup_20240620.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202406201833063_CodeGenerated_20240620.cs" />
+    <Compile Include="Migrations\202406201833063_CodeGenerated_20240620.Designer.cs">
+      <DependentUpon>202406201833063_CodeGenerated_20240620.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.5\202404071458052_AddTheme.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.5\202404071458052_AddTheme.designer.cs">
       <DependentUpon>202404071458052_AddTheme.cs</DependentUpon>
@@ -2133,6 +2157,24 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202406061828335_CodeGenerated_20240606.resx">
       <DependentUpon>202406061828335_CodeGenerated_20240606.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202406091439540_AddMeasurementClassificationValueToMetric.resx">
+      <DependentUpon>202406091439540_AddMeasurementClassificationValueToMetric.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202406170654068_AddSmsPipelineInteractionLogging.resx">
+      <DependentUpon>202406170654068_AddSmsPipelineInteractionLogging.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202406190900171_UpdatePeerNetworkModel.resx">
+      <DependentUpon>202406190900171_UpdatePeerNetworkModel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202406201602320_LMSModels.resx">
+      <DependentUpon>202406201602320_LMSModels.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202406201817226_Rollup_20240620.resx">
+      <DependentUpon>202406201817226_Rollup_20240620.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202406201833063_CodeGenerated_20240620.resx">
+      <DependentUpon>202406201833063_CodeGenerated_20240620.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.5\202404071458052_AddTheme.resx">
       <DependentUpon>202404071458052_AddTheme.cs</DependentUpon>

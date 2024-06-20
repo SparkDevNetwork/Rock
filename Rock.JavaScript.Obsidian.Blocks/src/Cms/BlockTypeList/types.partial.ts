@@ -47,7 +47,9 @@ export const enum PreferenceKey {
 
     FilterCategory = "filter-category",
 
-    FilterSystemTypes = "filter-system-types"
+    FilterSystemTypes = "filter-system-types",
+
+    FilterObsidianBlocks = "filter-obsidian-blocks"
 }
 
 export type GridSettingsOptions = {
@@ -58,4 +60,6 @@ export type GridSettingsOptions = {
     category?: string | null;
 
     excludeSystemTypes: boolean;
+
+    showOnlyObsidian: boolean;
 };

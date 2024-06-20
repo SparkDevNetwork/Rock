@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-import { computed, defineComponent, onMounted, onUnmounted, PropType, ref, watch } from "vue";
+import { computed, defineComponent, PropType, ref, watch } from "vue";
 import Panel from "@Obsidian/Controls/panel.obs";
 import Modal from "@Obsidian/Controls/modal.obs";
 import { Guid } from "@Obsidian/Types";
@@ -828,6 +828,10 @@ export default defineComponent({
     :titleIconCssClass="panelTitleIconCssClass"
     :hasFullscreen="isFullScreenVisible"
     :headerSecondaryActions="internalHeaderSecondaryActions">
+
+    <template v-if="$slots.sidebar" #sidebar>
+        <slot name="sidebar" />
+    </template>
 
     <template #headerActions>
         <span v-for="action in headerActions" :class="getClassForIconAction(action)" :title="action.title" @click="onActionClick(action, $event)">

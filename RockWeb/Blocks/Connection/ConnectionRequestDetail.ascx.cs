@@ -21,7 +21,9 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Newtonsoft.Json;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -212,7 +214,7 @@ namespace RockWeb.Blocks.Connection
         #region Fields
 
         private const string CAMPUS_SETTING = "default-campus";
-        
+
         #endregion
 
         #region Properties
@@ -323,7 +325,13 @@ namespace RockWeb.Blocks.Connection
             nbRequirementsErrors.Visible = false;
             nbNoParameterMessage.Visible = false;
 
-            if ( PageParameter( PageParameterKey.ConnectionRequestId ).AsInteger() == 0 && PageParameter( PageParameterKey.ConnectionOpportunityId ).AsIntegerOrNull() == null )
+            var connectionRequestId = PageParameter( PageParameterKey.ConnectionRequestId ).AsInteger();
+            if ( connectionRequestId == 0 )
+            {
+                connectionRequestId = Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterKey.ConnectionRequestId ) ).ToIntSafe();
+            }
+
+            if ( connectionRequestId == 0 && PageParameter( PageParameterKey.ConnectionOpportunityId ).AsIntegerOrNull() == null )
             {
                 nbNoParameterMessage.Visible = true;
                 pnlContents.Visible = false;
@@ -334,7 +342,7 @@ namespace RockWeb.Blocks.Connection
 
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( PageParameterKey.ConnectionRequestId ).AsInteger(), PageParameter( PageParameterKey.ConnectionOpportunityId ).AsIntegerOrNull() );
+                ShowDetail( connectionRequestId, PageParameter( PageParameterKey.ConnectionOpportunityId ).AsIntegerOrNull() );
             }
             else if ( IsEditAllowed.HasValue && IsEditAllowed.Value )
             {
@@ -485,7 +493,12 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            ShowDetail( PageParameter( PageParameterKey.ConnectionRequestId ).AsInteger(), PageParameter( PageParameterKey.ConnectionOpportunityId ).AsIntegerOrNull() );
+            var connectionRequestId = PageParameter( PageParameterKey.ConnectionRequestId ).AsInteger();
+            if ( connectionRequestId == 0 )
+            {
+                connectionRequestId = Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterKey.ConnectionRequestId ) ).ToIntSafe();
+            }
+            ShowDetail( connectionRequestId, PageParameter( PageParameterKey.ConnectionOpportunityId ).AsIntegerOrNull() );
         }
 
         /// <summary>
@@ -1722,9 +1735,18 @@ namespace RockWeb.Blocks.Connection
         /// <returns></returns>
         private int? GetConnectionRequestId()
         {
-            return
-                hfConnectionRequestId.Value.ToStringSafe().AsIntegerOrNull() ??
-                PageParameter( PageParameterKey.ConnectionRequestId ).AsIntegerOrNull();
+            var connectionRequestId = hfConnectionRequestId.Value.ToStringSafe().AsIntegerOrNull();
+            if ( connectionRequestId != null )
+            {
+                return connectionRequestId;
+            }
+
+            connectionRequestId = PageParameter( PageParameterKey.ConnectionRequestId ).AsInteger();
+            if ( connectionRequestId == 0 )
+            {
+                connectionRequestId = Rock.Utility.IdHasher.Instance.GetId( PageParameter( PageParameterKey.ConnectionRequestId ) ).ToIntSafe();
+            }
+            return connectionRequestId;
         }
 
         /// <summary>
@@ -3221,7 +3243,7 @@ namespace RockWeb.Blocks.Connection
                         }
                         else
                         {
-                            mdWorkflowLaunched.Show( $"A '{ workflowType.Name }' workflow was started.",
+                            mdWorkflowLaunched.Show( $"A '{workflowType.Name}' workflow was started.",
                                 ModalAlertType.Information );
                         }
                     }

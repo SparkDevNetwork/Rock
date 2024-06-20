@@ -176,6 +176,8 @@ namespace Rock.Tests.Utility.ExtensionMethods
 
             public IDictionary<string, string> Cookies => throw new NotImplementedException();
 
+            public string Method => throw new NotImplementedException();
+
             public Request( string uri )
             {
                 RequestUri = new Uri( uri );

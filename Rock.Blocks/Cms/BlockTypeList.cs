@@ -74,6 +74,8 @@ namespace Rock.Blocks.Cms
             public const string FilterCategory = "filter-category";
 
             public const string FilterSystemTypes = "filter-system-types";
+
+            public const string FilterObsidianBlocks = "filter-obsidian-blocks";
         }
 
         #endregion Keys
@@ -91,6 +93,9 @@ namespace Rock.Blocks.Cms
 
         protected string FilterSystemTypes => GetBlockPersonPreferences()
             .GetValue( PreferenceKey.FilterSystemTypes );
+
+        protected string FilterObsidianBlocks => GetBlockPersonPreferences()
+            .GetValue( PreferenceKey.FilterObsidianBlocks );
 
         #endregion
 
@@ -170,6 +175,20 @@ namespace Rock.Blocks.Cms
                 if ( systemTypeFilter )
                 {
                     query = query.Where( bt => !bt.IsSystem );
+                }
+            }
+
+            if ( !string.IsNullOrEmpty( FilterObsidianBlocks ) )
+            {
+                bool obsidianBlocksFilter = bool.Parse( FilterObsidianBlocks );
+                if ( obsidianBlocksFilter )
+                {
+                    var obsidianBlockIds = BlockTypeService.BlockTypesToDisplay( SiteType.Web )
+                        .Where( bt => string.IsNullOrEmpty( bt.Path ) )
+                        .Select( bt => bt.Id )
+                        .ToHashSet();
+                    query = query
+                        .Where( bt => obsidianBlockIds.Contains( bt.Id ) );
                 }
             }
 

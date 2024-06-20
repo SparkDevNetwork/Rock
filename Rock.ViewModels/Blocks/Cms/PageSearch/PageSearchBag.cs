@@ -25,6 +25,9 @@ namespace Rock.ViewModels.Blocks.Cms.PageSearch
     /// </summary>
     public class PageSearchBag
     {
+        /// <summary>
+        /// 
+        /// </summary>
         public List<PageSearchPageBag> Pages { get; set; }
     }
 }

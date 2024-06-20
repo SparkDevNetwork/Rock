@@ -8,24 +8,6 @@
 
         <div class="row">
             <div class="col-md-4">
-                <TextBox v-model="name" label="Name" />
-            </div>
-
-            <div class="col-md-4">
-                <DropDownList v-model="spansTime"
-                              label="Spans Time"
-                              :items="yesOrNoOptions"
-                              showBlankItem />
-            </div>
-
-            <div class="col-md-4">
-                <DropDownList v-model="allowsMultiple"
-                              label="Allow Multiple"
-                              :items="yesOrNoOptions"
-                              showBlankItem />
-            </div>
-
-            <div class="col-md-4">
                 <DropDownList v-model="activeStatus"
                               label="Active Status"
                               :items="activeStatusOptions"
@@ -36,7 +18,6 @@
 </template>
 
 <script setup lang="ts">
-    import TextBox from "@Obsidian/Controls/textBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
@@ -63,22 +44,8 @@
         (e: "update:visible", value: boolean): void;
     }>();
 
-    const name = ref(props.modelValue.name ?? "");
-    const spansTime = ref(props.modelValue.spansTime ?? "");
-    const allowsMultiple = ref(props.modelValue.allowsMultiple ?? "");
     const activeStatus = ref(props.modelValue.activeStatus ?? "");
     const isVisible = useVModelPassthrough(props, "visible", emit);
-
-    const yesOrNoOptions = [
-        {
-            text: "Yes",
-            value: "Yes"
-        },
-        {
-            text: "No",
-            value: "No"
-        }
-    ] as ListItemBag[];
 
     const activeStatusOptions = [
         {
@@ -93,9 +60,6 @@
 
     function onSave(): void {
         const value: GridSettingsOptions = {
-            name: name.value,
-            spansTime: spansTime.value,
-            allowsMultiple: allowsMultiple.value,
             activeStatus: activeStatus.value
         };
 
@@ -107,9 +71,6 @@
     }
 
     watch(() => props.modelValue, () => {
-        name.value = props.modelValue.name ?? "";
-        spansTime.value = props.modelValue.spansTime ?? "";
-        allowsMultiple.value = props.modelValue.allowsMultiple ?? "";
         activeStatus.value = props.modelValue.activeStatus ?? "";
     });
 </script>

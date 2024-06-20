@@ -17,59 +17,63 @@
                     <template v-if="isTextarea">
                         <slot name="inputGroupPrepend" :isInputGroupSupported="true" />
                         <textarea :value="internalValue"
-                              :rows="rows"
-                              cols="20"
-                              :maxlength="maxLength"
-                              :id="uniqueId"
-                              class="form-control"
-                              v-bind="field"
-                              @input="onInput"
-                              @change="onChange"></textarea>
+                                  :rows="rows"
+                                  cols="20"
+                                  :maxlength="maxLength"
+                                  :id="uniqueId"
+                                  class="form-control"
+                                  v-bind="field"
+                                  @input="onInput"
+                                  @change="onChange"></textarea>
                         <slot name="inputGroupAppend" :isInputGroupSupported="true" />
                     </template>
                     <template v-else-if="isClearable">
                         <template v-if="$slots.inputGroupPrepend || $slots.inputGroupAppend">
                             <slot name="inputGroupPrepend" :isInputGroupSupported="true" />
                             <input :value="internalValue"
-                               :id="uniqueId"
-                               :type="type"
-                               class="form-control"
-                               :class="formControlClass"
-                               style="display: table-cell;"
-                               v-bind="field"
-                               :maxlength="maxLength"
-                               :placeholder="placeholder"
-                               @input="onInput"
-                               @change="onChange" />
-                            <i class="fa fa-times text-muted clear-icon clear-position-with-slots" @click="onClear"></i>
-                            <slot name="inputGroupAppend" :isInputGroupSupported="true" />
-                        </template>
-                        <template v-else>
-                            <div class="input-container">
-                                <input :value="internalValue"
                                    :id="uniqueId"
                                    :type="type"
+                                   class="form-control"
                                    :class="formControlClass"
+                                   style="display: table-cell;"
                                    v-bind="field"
                                    :maxlength="maxLength"
                                    :placeholder="placeholder"
                                    @input="onInput"
                                    @change="onChange" />
-                                <i class="fa fa-times text-muted clear-icon" @click="onClear"></i>
+                            <i v-if="internalValue"
+                               class="fa fa-times text-muted clear-icon clear-position-with-slots"
+                               @click="onClear"></i>
+                            <slot name="inputGroupAppend" :isInputGroupSupported="true" />
+                        </template>
+                        <template v-else>
+                            <div class="input-container">
+                                <input :value="internalValue"
+                                       :id="uniqueId"
+                                       :type="type"
+                                       :class="formControlClass"
+                                       v-bind="field"
+                                       :maxlength="maxLength"
+                                       :placeholder="placeholder"
+                                       @input="onInput"
+                                       @change="onChange" />
+                                <i v-if="internalValue"
+                                   class="fa fa-times text-muted clear-icon"
+                                   @click="onClear"></i>
                             </div>
                         </template>
                     </template>
                     <template v-else>
                         <slot name="inputGroupPrepend" :isInputGroupSupported="true" />
                         <input :value="internalValue"
-                           :id="uniqueId"
-                           :type="type"
-                           :class="formControlClass"
-                           v-bind="field"
-                           :maxlength="maxLength"
-                           :placeholder="placeholder"
-                           @input="onInput"
-                           @change="onChange" />
+                               :id="uniqueId"
+                               :type="type"
+                               :class="formControlClass"
+                               v-bind="field"
+                               :maxlength="maxLength"
+                               :placeholder="placeholder"
+                               @input="onInput"
+                               @change="onChange" />
                         <slot name="inputGroupAppend" :isInputGroupSupported="true" />
                     </template>
                 </div>
@@ -249,7 +253,6 @@
 </script>
 
 <style scoped>
-
 .input-container {
     display: flex;
     align-items: center;
@@ -267,5 +270,4 @@
     transform: translateY(-50%);
     z-index: 3;
 }
-
 </style>
