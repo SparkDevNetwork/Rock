@@ -295,6 +295,7 @@
     <Content Include="src\Utility\smsTestTransport.obs" />
     <Content Include="src\Utility\SmsTestTransport\attachment.partial.obs" />
     <Content Include="src\WorkFlow\workflowTriggerDetail.obs" />
+    <Content Include="src\WorkFlow\workflowList.obs" />
     <Content Include="tsconfig.json" />
   </ItemGroup>
   <ItemGroup>

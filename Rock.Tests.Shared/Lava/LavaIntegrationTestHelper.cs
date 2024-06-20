@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -195,7 +196,7 @@ namespace Rock.Tests.Shared.Lava
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
         public static T GetEngineInstance<T>()
-            where T: class, ILavaEngine
+            where T : class, ILavaEngine
         {
             var engine = GetEngineInstance( typeof( T ) ) as T;
             return engine;
@@ -684,35 +685,43 @@ namespace Rock.Tests.Shared.Lava
         public void ExecuteForEngines( List<Type> engines, Action<ILavaEngine> testMethod )
         {
             // Add a handler to catch unobserved exceptions.
-            TaskScheduler.UnobservedTaskException += new EventHandler<UnobservedTaskExceptionEventArgs>( TaskScheduler_UnobservedTaskException );
+            var exceptionHandler = new EventHandler<UnobservedTaskExceptionEventArgs>( TaskScheduler_UnobservedTaskException );
+            TaskScheduler.UnobservedTaskException += exceptionHandler;
 
-            var exceptions = new List<Exception>();
-            var failedEngines = new List<string>();
-            foreach ( var engineType in engines )
+            try
             {
-                var engine = GetEngineInstance( engineType );
-                LavaService.SetCurrentEngine( engine );
-
-                Debug.Print( $"\n**\n** Lava Render Test: {engine.EngineName}\n**\n" );
-
-                try
+                var exceptions = new List<Exception>();
+                var failedEngines = new List<string>();
+                foreach ( var engineType in engines )
                 {
-                    testMethod( engine );
+                    var engine = GetEngineInstance( engineType );
+                    LavaService.SetCurrentEngine( engine );
+
+                    Debug.Print( $"\n**\n** Lava Render Test: {engine.EngineName}\n**\n" );
+
+                    try
+                    {
+                        testMethod( engine );
+                    }
+                    catch ( Exception ex )
+                    {
+                        failedEngines.Add( engine.EngineName );
+
+                        // Write the error to debug output.
+                        Debug.Print( $"\n** ERROR: {engine.EngineName}\n** {ex.ToString()}" );
+
+                        exceptions.Add( ex );
+                    }
                 }
-                catch ( Exception ex )
+
+                if ( exceptions.Any() )
                 {
-                    failedEngines.Add( engine.EngineName );
-
-                    // Write the error to debug output.
-                    Debug.Print( $"\n** ERROR: {engine.EngineName}\n** {ex.ToString()}" );
-
-                    exceptions.Add( ex );
+                    throw new AggregateException( $"Test failed for {failedEngines.AsDelimited( "/" )}.", exceptions );
                 }
             }
-
-            if ( exceptions.Any() )
+            finally
             {
-                throw new AggregateException( $"Test failed for {failedEngines.AsDelimited( "/" )}.", exceptions );
+                TaskScheduler.UnobservedTaskException -= exceptionHandler;
             }
         }
 
@@ -875,25 +884,29 @@ namespace Rock.Tests.Shared.Lava
             {
                 options = options ?? new LavaTestRenderOptions();
 
-                var outputString = GetTemplateOutput( engine, inputTemplate, options );
+                var outputText = GetTemplateOutput( engine, inputTemplate, options );
 
-                Assert.IsNotNull( outputString, "Template failed to render." );
+                Assert.IsNotNull( outputText, "Template failed to render." );
 
-                DebugWriteRenderResult( engine, inputTemplate, outputString );
+                DebugWriteRenderResult( engine, inputTemplate, outputText );
 
                 // Apply formatting options to the output.
+                var outputCompareText = outputText;
                 if ( options.IgnoreWhiteSpace )
                 {
-                    outputString = Regex.Replace( outputString, @"\s*", string.Empty );
+                    outputCompareText = Regex.Replace( outputCompareText, @"\s*", string.Empty );
                 }
 
                 if ( options.IgnoreCase )
                 {
-                    outputString = outputString.ToLower();
+                    outputCompareText = outputCompareText.ToLower();
                 }
+
+                var errorMessages = new List<string>();
 
                 foreach ( var matchRequirement in matchRequirements )
                 {
+                    // Determine the correct match type. Multiple matches for "equal" are interpreted as "contains".
                     var matchType = matchRequirement.MatchType;
                     if ( matchRequirements.Count() > 1
                          && matchType == LavaTestOutputMatchTypeSpecifier.Equal )
@@ -901,62 +914,81 @@ namespace Rock.Tests.Shared.Lava
                         matchType = LavaTestOutputMatchTypeSpecifier.Contains;
                     }
 
-                    var expectedOutput = matchRequirement.MatchValue ?? string.Empty;
+                    var expectedOutputText = matchRequirement.MatchValue ?? string.Empty;
 
                     // If ignoring whitespace, strip it from the comparison string.
+                    var expectedOutputCompareText = expectedOutputText;
                     if ( options.IgnoreWhiteSpace )
                     {
-                        expectedOutput = Regex.Replace( expectedOutput, @"\s*", string.Empty );
+                        expectedOutputCompareText = Regex.Replace( expectedOutputCompareText, @"\s*", string.Empty );
                     }
 
                     var matchWild = options.Wildcards != null && options.Wildcards.Any();
                     var matchRegex = options.OutputMatchType == LavaTestOutputMatchTypeSpecifier.RegEx;
 
-                    if ( matchWild || options.OutputMatchType == LavaTestOutputMatchTypeSpecifier.RegEx )
+                    if ( matchWild || matchRegex )
                     {
                         // Replace wildcards with a non-Regex symbol.
                         foreach ( var wildcard in options.Wildcards )
                         {
-                            expectedOutput = expectedOutput.Replace( wildcard, "<<<wildCard>>>" );
+                            expectedOutputCompareText = expectedOutputCompareText.Replace( wildcard, "<<<wildCard>>>" );
                         }
 
                         if ( matchWild )
                         {
                             // If this is a wildcard match, escape all other Regex characters.
-                            expectedOutput = Regex.Escape( expectedOutput );
+                            expectedOutputCompareText = Regex.Escape( expectedOutputCompareText );
                         }
 
                         // Require a match of 1 or more characters for a wildcard.
-                        expectedOutput = expectedOutput.Replace( "<<<wildCard>>>", "(.+)" );
+                        expectedOutputCompareText = expectedOutputCompareText.Replace( "<<<wildCard>>>", "(.+)" );
 
                         if ( matchWild && !options.IgnoreWhiteSpace )
                         {
                             // If this is a wildcard match and whitespace is ignored, add RegEx anchors for the start and end of the template.
-                            expectedOutput = "^" + expectedOutput + "$";
+                            expectedOutputCompareText = "^" + expectedOutputCompareText + "$";
                         }
 
-                        var regex = new Regex( expectedOutput );
+                        var regex = new Regex( expectedOutputCompareText );
+                        var regexMatch = regex.Match( outputCompareText );
+                        if ( !regexMatch.Success )
+                        {
+                            var msg = "No match found for regular expression. [Regex=" + expectedOutputCompareText + "]";
 
-                        StringAssert.Matches( outputString, regex );
+                            // Add the first difference from the unaltered inputs for diagnostic purposes.
+                            string message;
+                            var isValid = GetSimpleTextMatchResult( expectedOutputText, outputText, options.IgnoreWhiteSpace, options.IgnoreCase, out message );
+
+                            throw new Exception( "No match found for regular expression. See the inner exception for the first detected plain text match failure. [Regex=" + expectedOutputCompareText + "]", new Exception( message ) );
+                        }
                     }
                     else
                     {
-                        if ( options.IgnoreCase )
-                        {
-                            expectedOutput = expectedOutput.ToLower();
-                        }
-
                         if ( matchType == LavaTestOutputMatchTypeSpecifier.Equal )
                         {
-                            Assert.That.Equal( expectedOutput, outputString );
+                            string message;
+                            var isValid = GetSimpleTextMatchResult( expectedOutputCompareText, outputCompareText, options.IgnoreWhiteSpace, options.IgnoreCase, out message );
+
+                            if ( !isValid )
+                            {
+                                Assert.That.Fail( message );
+                            }
                         }
-                        else if ( matchType == LavaTestOutputMatchTypeSpecifier.Contains )
+                        else
                         {
-                            Assert.That.Contains( outputString, expectedOutput );
-                        }
-                        else if ( matchType == LavaTestOutputMatchTypeSpecifier.DoesNotContain )
-                        {
-                            Assert.That.DoesNotContain( outputString, expectedOutput );
+                            if ( options.IgnoreCase )
+                            {
+                                expectedOutputCompareText = expectedOutputCompareText.ToLower();
+                            }
+
+                            if ( matchType == LavaTestOutputMatchTypeSpecifier.Contains )
+                            {
+                                Assert.That.Contains( outputCompareText, expectedOutputCompareText );
+                            }
+                            else if ( matchType == LavaTestOutputMatchTypeSpecifier.DoesNotContain )
+                            {
+                                Assert.That.DoesNotContain( outputCompareText, expectedOutputCompareText );
+                            }
                         }
                     }
                 }
@@ -966,6 +998,129 @@ namespace Rock.Tests.Shared.Lava
                 // Specify the engine identifier in the top-level exception.
                 throw new Exception( $"[{engine.EngineName}] Template render failed.", ex );
             }
+        }
+
+        private bool GetSimpleTextMatchResult( string expected, string actual, bool ignoreWhitespace, bool ignoreCase, out string message )
+        {
+            message = string.Empty;
+
+            expected = expected.ToString();
+            actual = actual.ToString();
+
+            if ( string.IsNullOrEmpty( expected ) && !string.IsNullOrEmpty( actual ) )
+            {
+                message = GetTextMatchFailureMessage( "(empty)", actual, 1, 1 );
+                return false;
+            }
+
+            if ( string.IsNullOrEmpty( actual ) && !string.IsNullOrEmpty( expected ) )
+            {
+                message = GetTextMatchFailureMessage( expected, "(empty)", 1, 1 );
+                return false;
+            }
+
+            // Perform a simple comparison.
+            var compareType = ignoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+            if ( expected.Equals( actual, compareType ) )
+            {
+                return true;
+            }
+
+            // Perform a character-by-character comparison.
+            var indexExpected = 0;
+            var indexActual = 0;
+            while ( true )
+            {
+                var expectedChar = GetNextCharacter( expected, ref indexExpected, ignoreWhitespace );
+                var actualChar = GetNextCharacter( actual, ref indexActual, ignoreWhitespace );
+
+                if ( expectedChar == null && actualChar == null )
+                {
+                    // We have reached the end of at least one string.
+                    if ( !ignoreWhitespace && indexExpected != indexActual )
+                    {
+                        message = GetTextMatchFailureMessage( expected, actual, indexExpected, indexActual );
+                        return false;
+                    }
+
+                    break;
+                }
+                if ( expectedChar == actualChar )
+                {
+                    continue;
+                }
+                if ( ignoreCase && char.ToUpperInvariant( expectedChar.GetValueOrDefault() ) == char.ToUpperInvariant( actualChar.GetValueOrDefault() ) )
+                {
+                    continue;
+                }
+
+                message = GetTextMatchFailureMessage( expected, actual, indexExpected, indexActual );
+                return false;
+            }
+
+            return true;
+        }
+
+        private char? GetNextCharacter( string input, ref int cursorIndex, bool skipWhiteSpace = false )
+        {
+            cursorIndex++;
+            if ( cursorIndex < input.Length )
+            {
+                if ( skipWhiteSpace )
+                {
+                    if ( char.IsWhiteSpace( input[cursorIndex] ) )
+                    {
+                        return GetNextCharacter( input, ref cursorIndex, skipWhiteSpace );
+                    }
+                }
+                return input[cursorIndex];
+            }
+
+            return null;
+        }
+
+        private string GetTextMatchFailureMessage( string expected, string actual, int indexExpected, int indexActual )
+        {
+            const int showCharacterBufferMax = 50;
+
+            var matchedText = actual.Substring( 0, indexActual );
+            var line = matchedText.Where( c => c == '\n' )
+                .Count() + 1;
+            var column = indexActual - matchedText.LastIndexOf( '\n' ) + 1;
+
+            var expectedText = expected.Substring( indexExpected, showCharacterBufferMax + 1 )
+                .Truncate( showCharacterBufferMax );
+            var actualText = actual.Substring( indexActual, showCharacterBufferMax + 1 )
+                .Truncate( showCharacterBufferMax );
+
+            return $"Match failed (Line={line}, Column={column}, Offset={indexExpected}, Expected={expectedText}, Actual={actualText}).\n-->Expected: {expectedText}\n---->Actual: {actualText}";
+        }
+
+        /// <summary>
+        /// Verify that the specified template is valid and renders some content.
+        /// </summary>
+        /// <param name="inputTemplate"></param>
+        /// <returns></returns>
+        public void AssertTemplateIsValid( string inputTemplate, LavaRenderParameters options = null )
+        {
+            ExecuteForActiveEngines( ( engine ) =>
+            {
+                AssertTemplateIsValid( engine, inputTemplate, options );
+            } );
+        }
+
+        /// <summary>
+        /// Verify that the specified template is valid and renders some content.
+        /// </summary>
+        /// <param name="inputTemplate"></param>
+        /// <returns></returns>
+        public void AssertTemplateIsValid( ILavaEngine engine, string inputTemplate, LavaRenderParameters options )
+        {
+            inputTemplate = inputTemplate ?? string.Empty;
+
+            var result = engine.RenderTemplate( inputTemplate.Trim(), options );
+            Assert.That.IsNull( result.Error, "The template failed to render." );
+            Assert.That.IsFalse( result.Text.IsNullOrWhiteSpace(), "The template produced no output." );
         }
 
         /// <summary>
@@ -1223,13 +1378,104 @@ namespace Rock.Tests.Shared.Lava
 
         #endregion
 
+        public void AssertRenderTestIsValid( LavaTemplateRenderTestCase testCase )
+        {
+            var options = new LavaTestRenderOptions
+            {
+                IgnoreWhiteSpace = true,
+                Wildcards = new List<string> { "<guid>" }
+            };
+
+            var inputTemplate = GetTestCaseInputTemplate( testCase );
+
+            if ( testCase.MatchRequirements.Any() )
+            {
+                AssertTemplateOutput( testCase.MatchRequirements, inputTemplate, options );
+            }
+            else
+            {
+                var expectedOutput = GetTestCaseExpectedOutput( testCase );
+                AssertTemplateOutput( expectedOutput, inputTemplate, options );
+            }
+        }
+
+        /// <summary>
+        /// Build a Lava template that contains the specified test cases.
+        /// The template can be copied to a Rock application instance for testing purposes.
+        /// </summary>
+        /// <param name="testCases"></param>
+        /// <param name="heading"></param>
+        /// <returns></returns>
+        public string BuildRenderTestTemplate( List<LavaTemplateRenderTestCase> testCases, string heading )
+        {
+            var templateBuilder = new StringBuilder();
+
+            templateBuilder.AppendLine( $"<h1>{heading}</h1>" );
+
+            var testCasesByCategory = testCases.GroupBy( c => c.Category ).ToList();
+
+            foreach ( var testCaseCategory in testCasesByCategory )
+            {
+                templateBuilder.AppendLine( $"<h2>{testCaseCategory.Key}</h2>" );
+                foreach ( var testCase in testCaseCategory )
+                {
+                    templateBuilder.AppendLine( GetTestCaseInputTemplate( testCase ) );
+                }
+            }
+
+            return templateBuilder.ToString();
+        }
+
+        private string GetTestCaseInputTemplate( LavaTemplateRenderTestCase testCase )
+        {
+            var templateBuilder = new StringBuilder();
+
+            templateBuilder.AppendLine( $"<h3>{testCase.Name}</h3>" );
+            templateBuilder.AppendLine( $"<p>{testCase.Description}</p>" );
+            templateBuilder.AppendLine( $"<hr>" );
+            templateBuilder.AppendLine( testCase.InputTemplate );
+
+            return templateBuilder.ToString();
+        }
+
+        private string GetTestCaseExpectedOutput( LavaTemplateRenderTestCase testCase )
+        {
+            var templateBuilder = new StringBuilder();
+            templateBuilder.AppendLine( $"<h3>{testCase.Name}</h3>" );
+            templateBuilder.AppendLine( $"<p>{testCase.Description}</p>" );
+            templateBuilder.AppendLine( $"<hr>" );
+            templateBuilder.AppendLine( testCase.ExpectedOutput );
+
+            return templateBuilder.ToString();
+        }
     }
 
+    /// <summary>
+    /// Specifies a test for validating content in the output of a Lava template.
+    /// </summary>
     public class LavaTestOutputMatchRequirement
     {
+        #region Factory Methods
+
+        public static LavaTestOutputMatchRequirement NewContainsText( string text )
+        {
+            var requirement = new LavaTestOutputMatchRequirement
+            {
+                MatchType = LavaTestOutputMatchTypeSpecifier.Contains,
+                MatchValue = text
+            };
+            return requirement;
+        }
+
+        #endregion
+
+        #region Constructors
+
         public LavaTestOutputMatchRequirement()
         {
         }
+
+        #endregion
 
         public LavaTestOutputMatchRequirement( string value, LavaTestOutputMatchTypeSpecifier match )
         {
@@ -1239,5 +1485,19 @@ namespace Rock.Tests.Shared.Lava
 
         public string MatchValue { get; set; }
         public LavaTestOutputMatchTypeSpecifier MatchType { get; set; }
+    }
+
+    /// <summary>
+    /// A test case for a Lava Template.
+    /// </summary>
+    public class LavaTemplateRenderTestCase
+    {
+        public string Category;
+        public string Name;
+        public string Description;
+        public string InputTemplate;
+        public string ExpectedOutput;
+
+        public List<LavaTestOutputMatchRequirement> MatchRequirements = new List<LavaTestOutputMatchRequirement>();
     }
 }

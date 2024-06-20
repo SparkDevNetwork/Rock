@@ -15,12 +15,13 @@
 // </copyright>
 //
 
-using System;
-using System.Collections.Generic;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Communication.NcoaProcess
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class NcoaProcessSavedSettingsBag
     {
         /// <summary>

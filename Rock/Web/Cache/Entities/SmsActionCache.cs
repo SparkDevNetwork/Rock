@@ -53,6 +53,15 @@ namespace Rock.Web.Cache
         public bool IsActive { get; private set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether an interaction should be recorded after this action is processed.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if an interaction should be logged; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsInteractionLoggedAfterProcessing { get; set; }
+
+        /// <summary>
         /// Gets or sets the order of this action in the system.
         /// </summary>
         /// <value>
@@ -134,6 +143,7 @@ namespace Rock.Web.Cache
 
             Name = smsAction.Name;
             IsActive = smsAction.IsActive;
+            IsInteractionLoggedAfterProcessing = smsAction.IsInteractionLoggedAfterProcessing;
             Order = smsAction.Order;
             SmsActionComponentEntityTypeId = smsAction.SmsActionComponentEntityTypeId;
             ContinueAfterProcessing = smsAction.ContinueAfterProcessing;

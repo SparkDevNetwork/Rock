@@ -38,6 +38,8 @@ export const InteractionChannel = {
     RockRms: "C9CEF6C4-E1EA-4E1F-B8D7-0172236A3F09",
     /** Interaction Channel GUID for short links */
     ShortLinks: "AEFF9B52-AE61-8EBB-4F43-37C152342076",
+    /** Interaction Channel GUID for an SMS Pipeline. */
+    SmsPipeline: "282694BE-3062-4857-AC4E-83269F075351",
     /** Interaction Channel GUID for wifi presence */
     WifiPresence: "23888303-4847-4C80-93E2-4C5EB8029D18",
     /** Interaction Channel GUID Views and Completions for Workflow Entry Forms. */

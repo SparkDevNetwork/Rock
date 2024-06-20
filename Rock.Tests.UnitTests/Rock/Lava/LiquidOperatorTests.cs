@@ -215,9 +215,6 @@ namespace Rock.Tests.UnitTests.Lava
             TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
         }
 
-        /// <summary>
-        /// Verify the "Greater than" comparison operator.
-        /// </summary>
         [DataTestMethod]
         [DataRow( "'aba' <= 'aba'", true )]
         [DataRow( "'' <= ' '", true )]
@@ -225,6 +222,19 @@ namespace Rock.Tests.UnitTests.Lava
         [DataRow( "'abd' <= 'abc'", false )]
 
         public void FluidLessThanOrEqual_StringOperands_PerformsTextComparison( string expression, bool expectedResult )
+        {
+            var template = "{% if " + expression + " %}True{% else %}False{% endif %}";
+
+            TestHelper.AssertTemplateOutput( expectedResult.ToString(), template, ignoreWhitespace: true );
+        }
+
+        [DataTestMethod]
+        [DataRow( "null <= null", false )]
+        [DataRow( "1 <= null", false )]
+        [DataRow( "'' <= null", false )]
+        [DataRow( "true <= null", false )]
+        [DataRow( "false <= null", false )]
+        public void FluidLessThanOrEqual_NullOperands_PerformsExpectedComparison( string expression, bool expectedResult )
         {
             var template = "{% if " + expression + " %}True{% else %}False{% endif %}";
 
@@ -429,6 +439,19 @@ namespace Rock.Tests.UnitTests.Lava
         [DataRow( "'abc' >= 'abd'", false )]
 
         public void FluidGreaterThanOrEqual_StringOperands_PerformsTextComparison( string expression, bool expectedResult )
+        {
+            var template = "{% if " + expression + " %}True{% else %}False{% endif %}";
+
+            TestHelper.AssertTemplateOutput( expectedResult.ToString(), template, ignoreWhitespace: true );
+        }
+
+        [DataTestMethod]
+        [DataRow( "null >= null", false )]
+        [DataRow( "1 >= null", false )]
+        [DataRow( "'' >= null", false )]
+        [DataRow( "true >= null", false )]
+        [DataRow( "false >= null", false )]
+        public void FluidGreaterThanOrEqual_NullOperands_PerformsExpectedComparison( string expression, bool expectedResult )
         {
             var template = "{% if " + expression + " %}True{% else %}False{% endif %}";
 

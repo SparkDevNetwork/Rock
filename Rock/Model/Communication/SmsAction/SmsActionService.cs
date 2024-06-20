@@ -20,6 +20,7 @@ using System.Linq;
 using System.Web;
 using Rock.Communication.SmsActions;
 using Rock.Data;
+using Rock.Transactions;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -141,6 +142,15 @@ namespace Rock.Model
                     {
                         LogIfError( errorMessage );
                     }
+
+                    //
+                    // Log an interaction if this action completed successfully.
+                    //
+                    if ( smsAction.IsInteractionLoggedAfterProcessing && errorMessage.IsNullOrWhiteSpace() )
+                    {
+                        WriteInteraction( smsAction, message, smsPipeline );
+                        outcome.IsInteractionLogged = true;
+                    }
                 }
                 catch ( Exception exception )
                 {
@@ -158,6 +168,61 @@ namespace Rock.Model
             }
 
             return outcomes;
+        }
+
+        /// <summary>
+        /// Adds an Interaction for the specified SmsAction.
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="message"></param>
+        /// <param name="pipeline"></param>
+        private static void WriteInteraction( SmsActionCache action, SmsMessage message, SmsPipeline pipeline )
+        {
+            if ( action == null || message == null || pipeline == null )
+            {
+                return;
+            }
+
+            // Get the Interaction Channel for SMS Pipelines.
+            var interactionChannelId = InteractionChannelCache.GetId( SystemGuid.InteractionChannel.SMS_PIPELINE.AsGuid() );
+            if ( interactionChannelId == null )
+            {
+                ExceptionLogService.LogException( $"Interaction Write for SMS Action failed. The SMS Pipeline Channel is not configured.\n[ChannelGuid={Rock.SystemGuid.InteractionChannel.SMS_PIPELINE}, Pipeline={pipeline.Name}, Action={action.Name}]" );
+                return;
+            }
+
+            // Create the interaction data.
+            var now = RockDateTime.Now;
+
+            var interactionData = new SmsInteractionData
+            {
+                ToPhone = message.ToNumber,
+                FromPhone = message.FromNumber,
+                MessageBody = message.Message,
+                ReceivedDateTime = now,
+                FromPerson = message.FromPerson?.FullName
+            };
+
+            // Create a transaction to add the Interaction.
+            var summary = $"{pipeline.Name} ({pipeline.Id}) - {action.Name}";
+
+            var info = new InteractionTransactionInfo
+            {
+                InteractionDateTime = now,
+                InteractionChannelId = interactionChannelId.GetValueOrDefault(),
+
+                ComponentEntityId = pipeline.Id,
+                ComponentName = pipeline.Name,
+
+                InteractionSummary = summary,
+                InteractionOperation = action.Name,
+                InteractionData = interactionData.ToJson(),
+
+                PersonAliasId = message.FromPerson?.PrimaryAliasId
+            };
+
+            var interactionTransaction = new InteractionTransaction( info );
+            interactionTransaction.Enqueue();
         }
 
         /// <summary>
@@ -224,5 +289,18 @@ namespace Rock.Model
             var exception = new Exception( string.Format( "An error occurred in the SmsAction pipeline: {0}", errorMessage ) );
             ExceptionLogService.LogException( exception, context );
         }
+
+        #region Support classes
+
+        private class SmsInteractionData
+        {
+            public string ToPhone;
+            public string FromPhone;
+            public string MessageBody;
+            public DateTime ReceivedDateTime;
+            public string FromPerson;
+        }
+
+        #endregion
     }
 }

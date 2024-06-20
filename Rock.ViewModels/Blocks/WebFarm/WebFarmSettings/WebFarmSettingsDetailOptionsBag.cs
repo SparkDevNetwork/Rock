@@ -18,9 +18,10 @@
 namespace Rock.ViewModels.Blocks.WebFarm.WebFarmSettings
 {
     /// <summary>
-    /// 
+    /// Additional configuration settings for the Web Farm Settings block.
     /// </summary>
     public class WebFarmSettingsDetailOptionsBag
     {
+    
     }
 }

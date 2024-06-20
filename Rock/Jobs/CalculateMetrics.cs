@@ -95,12 +95,38 @@ namespace Rock.Jobs
                 var metricResult = metricService.CalculateMetric( metricId, commandTimeout, false );
                 metricValuesCalculated += metricResult.MetricValuesCalculated;
                 metricsCalculated++;
+                if ( metricResult.MetricException != null )
+                {
+                    metricExceptions.Add( metricResult.MetricException );
+                }
             }
 
-            this.Result = string.Format( "Calculated a total of {0} metric values for {1} metrics", metricValuesCalculated, metricsCalculated );
+            var results = new System.Text.StringBuilder();
+            results.AppendFormat( "Calculated a total of {0} metric values for {1} metrics", metricValuesCalculated, metricsCalculated ).AppendLine();
+
             if ( metricExceptions.Any() )
             {
-                throw new AggregateException( "One or more metric calculations failed ", metricExceptions );
+                results.Append( $"Skipped: {metricExceptions.Count} metrics due to encountered errors:" );
+                results.Append( "<ul>" );
+                metricExceptions.ForEach( e => results.Append( $"<li>{e.Message}</li>" ) );
+                results.Append( "</ul>" );
+            }
+
+            this.Result = results.ToString();
+
+            if ( metricExceptions.Any() )
+            {
+                var exceptionList = new AggregateException( "One or more metric calculations failed ", metricExceptions );
+
+                // Throw aggregate exception if every metric failed, otherwise show message displaying successful and failed calculations. 
+                if ( metricIdList.Count == metricExceptions.Count )
+                {
+                    throw exceptionList;
+                }
+                else
+                {
+                    throw new RockJobWarningException( "Calculate Metrics completed with warnings", exceptionList );
+                }
             }
         }
 

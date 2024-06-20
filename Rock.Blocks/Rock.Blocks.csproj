@@ -71,6 +71,7 @@
     <Compile Include="Core\PersonSignalList.cs" />
     <Compile Include="CheckIn\Configuration\CheckInLabelDetail.cs" />
     <Compile Include="CheckIn\Configuration\CheckInLabelList.cs" />
+    <Compile Include="Crm\PersonDetail\GivingConfiguration.cs" />
     <Compile Include="Finance\FinancialPledgeList.cs" />
     <Compile Include="Security\RestKeyList.cs" />
     <Compile Include="Crm\PersonMergeRequestList.cs" />
@@ -203,6 +204,7 @@
     <Compile Include="WorkFlow\FormBuilder\FormTemplateDetail.cs" />
     <Compile Include="WorkFlow\FormBuilder\Utility.cs" />
     <Compile Include="WorkFlow\WorkflowTriggerDetail.cs" />
+    <Compile Include="WorkFlow\WorkflowList.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">

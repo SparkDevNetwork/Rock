@@ -3014,6 +3014,7 @@ namespace Rock.Model
             }
 
             var groupService = new GroupService( rockContext );
+            var groupTypeService = new GroupTypeService( rockContext );
 
             var query = groupService.Queryable()
                 .AsNoTracking()
@@ -3023,17 +3024,20 @@ namespace Rock.Model
             {
                 case StreakStructureType.CheckInConfig:
                 case StreakStructureType.GroupType:
+                    var groupTypeIds = groupTypeService.GetCheckinAreaDescendants( structureEntityId ).ConvertAll( x => x.Id );
+                    groupTypeIds.Add( structureEntityId );
                     return query.Where( g =>
-                        g.GroupTypeId == structureEntityId ||
-                        g.GroupType.ParentGroupTypes.Any( pgt => pgt.Id == structureEntityId ) );
+                        groupTypeIds.Contains( g.GroupTypeId ) );
                 case StreakStructureType.Group:
                     return query.Where( g =>
                         g.Id == structureEntityId ||
                         g.ParentGroupId == structureEntityId );
                 case StreakStructureType.GroupTypePurpose:
+                    var groupTypes = groupTypeService.GetCheckinAreaDescendants( structureEntityId );
+                    groupTypes.Add( GroupTypeCache.Get( structureEntityId ) );
+                    var groupTypePurposeValueIds = groupTypes.ConvertAll( x => x.GroupTypePurposeValueId );
                     return query.Where( g =>
-                        g.GroupType.GroupTypePurposeValueId == structureEntityId ||
-                        g.GroupType.ParentGroupTypes.Any( pgt => pgt.GroupTypePurposeValueId == structureEntityId ) );
+                        groupTypePurposeValueIds.Contains( g.GroupType.GroupTypePurposeValueId ) );
                 default:
                     throw new NotImplementedException( string.Format( "Getting groups for the Structure Type '{0}' is not implemented", structureType ) );
             }

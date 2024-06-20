@@ -53,7 +53,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [IgnoreCanDelete]
-        public int SourcePersonAliasId { get; set; }
+        public int SourcePersonId { get; set; }
 
         /// <summary>
         /// Gets or sets the target person alias identifier.
@@ -63,7 +63,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [IgnoreCanDelete]
-        public int TargetPersonAliasId { get; set; }
+        public int TargetPersonId { get; set; }
 
         /// <summary>
         /// Gets or sets the relationship type value identifier.
@@ -151,6 +151,16 @@ namespace Rock.Model
         [DataMember]
         public DateTime LastUpdateDateTime { get; set; }
 
+        /// <summary>
+        /// Gets or sets the caption.
+        /// </summary>
+        /// <value>
+        /// The caption.
+        /// </value>
+        [DataMember]
+        [MaxLength( 200 )]
+        public string Caption { get; set; }
+
         #endregion
 
         #region Navigation Properties
@@ -162,7 +172,7 @@ namespace Rock.Model
         /// The source person alias.
         /// </value>
         [DataMember]
-        public virtual PersonAlias SourcePersonAlias { get; set; }
+        public virtual Person SourcePerson { get; set; }
 
         /// <summary>
         /// Gets or sets the target person alias.
@@ -171,7 +181,7 @@ namespace Rock.Model
         /// The target person alias.
         /// </value>
         [DataMember]
-        public virtual PersonAlias TargetPersonAlias { get; set; }
+        public virtual Person TargetPerson { get; set; }
 
         /// <summary>
         /// Gets or sets the relationship type value.
@@ -196,8 +206,8 @@ namespace Rock.Model
         public PeerNetworkConfiguration()
         {
             this.HasKey( p => p.Id );
-            this.HasRequired( a => a.SourcePersonAlias ).WithMany().HasForeignKey( p => p.SourcePersonAliasId ).WillCascadeOnDelete( false );
-            this.HasRequired( a => a.TargetPersonAlias ).WithMany().HasForeignKey( p => p.TargetPersonAliasId ).WillCascadeOnDelete( false );
+            this.HasRequired( a => a.SourcePerson ).WithMany().HasForeignKey( p => p.SourcePersonId ).WillCascadeOnDelete( false );
+            this.HasRequired( a => a.TargetPerson ).WithMany().HasForeignKey( p => p.TargetPersonId ).WillCascadeOnDelete( false );
             this.HasRequired( a => a.RelationshipTypeValue ).WithMany().HasForeignKey( a => a.RelationshipTypeValueId ).WillCascadeOnDelete( false );
         }
     }

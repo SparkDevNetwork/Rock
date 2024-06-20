@@ -76,6 +76,17 @@ namespace Rock.Tests.Shared
             StringAssert.Contains( value, substring );
         }
 
+        public static void Contains( this Assert assert, System.String value, System.String substring, bool ignoreWhiteSpace )
+        {
+            if ( ignoreWhiteSpace )
+            {
+                value = value.RemoveWhiteSpace();
+                substring = substring.RemoveWhiteSpace();
+            }
+
+            StringAssert.Contains( value, substring );
+        }
+
         public static void DoesNotContain( this Assert assert, System.String value, System.String substring )
         {
             if ( value == null && substring == null )

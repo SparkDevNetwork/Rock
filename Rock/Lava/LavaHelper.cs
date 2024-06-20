@@ -791,7 +791,7 @@ namespace Rock.Lava
         ///  http://stackoverflow.com/a/16538131/1755417
         ///  http://stackoverflow.com/a/25776530/1755417
         /// </summary>
-        private static Regex _hasLavaTags = new Regex( @"(?<=\{).+(?<=\})", RegexOptions.Compiled );
+        private static Regex _hasLavaTags = new Regex( @"(?<=\{)[\S\s]+(?<=\})", RegexOptions.Compiled );
 
         /// <summary>
         /// Determines whether a string potentially contains Lava tags.

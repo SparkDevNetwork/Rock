@@ -191,7 +191,7 @@ describe("RecurrenceRule", () => {
         rrule.frequency = "MONTHLY";
         rrule.byDay.push({ day: DayOfWeek.Monday, value: 1 });
 
-        expect(rrule.build()).toBe("FREQ=MONTHLY;BYDAY=MO");
+        expect(rrule.build()).toBe("FREQ=MONTHLY;BYDAY=1MO");
 
         const eventStartDateTime = RockDateTime.fromParts(2022, 4, 1, 14, 0, 0);
         const startDateTime = RockDateTime.fromParts(2022, 4, 10);
@@ -204,6 +204,33 @@ describe("RecurrenceRule", () => {
         expect(dates[1].toASPString("r")).toEqual(RockDateTime.fromParts(2022, 6, 6, 14, 0, 0).toASPString("r"));
         expect(dates[2].toASPString("r")).toEqual(RockDateTime.fromParts(2022, 7, 4, 14, 0, 0).toASPString("r"));
         expect(dates[3].toASPString("r")).toEqual(RockDateTime.fromParts(2022, 8, 1, 14, 0, 0).toASPString("r"));
+    });
+
+    it("Builds monthly schedule on the first and third monday of every month", () => {
+        const rrule = new RecurrenceRule();
+
+        rrule.frequency = "MONTHLY";
+        rrule.byDay.push({ day: DayOfWeek.Monday, value: 1 });
+        rrule.byDay.push({ day: DayOfWeek.Monday, value: 3 });
+
+        expect(rrule.build()).toBe("FREQ=MONTHLY;BYDAY=1MO,3MO");
+
+        const eventStartDateTime = RockDateTime.fromParts(2022, 4, 1, 14, 0, 0);
+        const startDateTime = RockDateTime.fromParts(2022, 4, 10);
+        const endDateTime = RockDateTime.fromParts(2022, 8, 30);
+
+        const dates = rrule.getDates(eventStartDateTime, startDateTime, endDateTime);
+
+        expect(dates.length).toBe(9);
+        expect(dates[0].toASPString("r")).toEqual(RockDateTime.fromParts(2022, 4, 18, 14, 0, 0).toASPString("r"));
+        expect(dates[1].toASPString("r")).toEqual(RockDateTime.fromParts(2022, 5, 2, 14, 0, 0).toASPString("r"));
+        expect(dates[2].toASPString("r")).toEqual(RockDateTime.fromParts(2022, 5, 16, 14, 0, 0).toASPString("r"));
+        expect(dates[3].toASPString("r")).toEqual(RockDateTime.fromParts(2022, 6, 6, 14, 0, 0).toASPString("r"));
+        expect(dates[4].toASPString("r")).toEqual(RockDateTime.fromParts(2022, 6, 20, 14, 0, 0).toASPString("r"));
+        expect(dates[5].toASPString("r")).toEqual(RockDateTime.fromParts(2022, 7, 4, 14, 0, 0).toASPString("r"));
+        expect(dates[6].toASPString("r")).toEqual(RockDateTime.fromParts(2022, 7, 18, 14, 0, 0).toASPString("r"));
+        expect(dates[7].toASPString("r")).toEqual(RockDateTime.fromParts(2022, 8, 1, 14, 0, 0).toASPString("r"));
+        expect(dates[8].toASPString("r")).toEqual(RockDateTime.fromParts(2022, 8, 15, 14, 0, 0).toASPString("r"));
     });
 
     it("Builds monthly schedule on the last monday of every month", () => {

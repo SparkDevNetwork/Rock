@@ -169,7 +169,7 @@
         }
 
         if (props.modelValue.maxPollingWaitSeconds) {
-            valueBuilder.addTextValue("Max Polling Limit", `${props.modelValue.maxPollingWaitSeconds} seconds`);
+            valueBuilder.addTextValue("Max Polling Wait", `${props.modelValue.maxPollingWaitSeconds} seconds`);
         }
 
         return valueBuilder.build();

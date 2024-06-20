@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -53,6 +53,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool IsActive { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether an interaction should be recorded after this action is processed.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if an interaction should be logged; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsInteractionLoggedAfterProcessing { get; set; }
 
         /// <summary>
         /// Gets or sets the order of this action in the system.

@@ -21,5 +21,6 @@
 // </copyright>
 //
 
+/** Additional configuration settings for the Web Farm Settings block. */
 export type WebFarmSettingsDetailOptionsBag = {
 };

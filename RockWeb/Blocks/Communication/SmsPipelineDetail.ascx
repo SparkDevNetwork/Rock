@@ -171,8 +171,11 @@
                                     </div>
                                     <div class="row form-row" id="divAdvanced" runat="server">
 
-                                        <div class="col-md-6">
+                                        <div class="col-md-12">
                                             <Rock:DatePicker ID="dpExpireDate" runat="server" Label="Expire Date" Help="The Rock clean-up job will remove this SMS action after this date. The exact time and day will depend on your clean-up job schedule settings." />
+                                        </div>
+                                        <div class="col-md-12">
+                                            <Rock:RockCheckBox ID="cbLogInteraction" runat="server" Label="Log Interaction When Action Runs" Help="If enabled, when the action runs, an interaction will be written that includes the data from the incoming message (Pipeline Name and Id, the Action's Name, ToPhone, FromPhone, MessageBody, ReceivedDateTime, FromPerson)" />
                                         </div>
 
                                     </div>
