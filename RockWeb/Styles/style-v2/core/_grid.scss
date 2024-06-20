@@ -1,6 +1,6 @@
 // Grid Style
 
-// =============================
+// =============================================================
 // Table of Content           
 //  + Container
 //  + Row
@@ -8,7 +8,7 @@
 //  + Order
 //  + Offset
 //  + Media query for Col, Order, and Offset
-// =============================
+// =============================================================
 
 
 @-ms-viewport {
@@ -145,65 +145,65 @@ box-sizing: inherit;
 
 .col-4,
 .col-xs-4 {
-  -ms-flex: 0 0 33.333333%;
-  flex: 0 0 33.333333%;
-  max-width: 33.333333%;
+  -ms-flex:   0 0 33.333333%;
+  flex:       0 0 33.333333%;
+  max-width:  33.333333%;
 }
 
 .col-5,
 .col-xs-5 {
-  -ms-flex: 0 0 41.666667%;
-  flex: 0 0 41.666667%;
-  max-width: 41.666667%;
+  -ms-flex:   0 0 41.666667%;
+  flex:       0 0 41.666667%;
+  max-width:  41.666667%;
 }
 
 .col-6,
 .col-xs-6 {
-  -ms-flex: 0 0 50%;
-  flex: 0 0 50%;
-  max-width: 50%;
+  -ms-flex:   0 0 50%;
+  flex:       0 0 50%;
+  max-width:  50%;
 }
 
 .col-7,
 .col-xs-7 {
-  -ms-flex: 0 0 58.333333%;
-  flex: 0 0 58.333333%;
-  max-width: 58.333333%;
+  -ms-flex:   0 0 58.333333%;
+  flex:       0 0 58.333333%;
+  max-width:  58.333333%;
 }
 
 .col-8,
 .col-xs-8 {
-  -ms-flex: 0 0 66.666667%;
-  flex: 0 0 66.666667%;
-  max-width: 66.666667%;
+  -ms-flex:   0 0 66.666667%;
+  flex:       0 0 66.666667%;
+  max-width:  66.666667%;
 }
 
 .col-9,
 .col-xs-9 {
-  -ms-flex: 0 0 75%;
-  flex: 0 0 75%;
-  max-width: 75%;
+  -ms-flex:   0 0 75%;
+  flex:       0 0 75%;
+  max-width:  75%;
 }
 
 .col-10,
 .col-xs-10 {
-  -ms-flex: 0 0 83.333333%;
-  flex: 0 0 83.333333%;
-  max-width: 83.333333%;
+  -ms-flex:   0 0 83.333333%;
+  flex:       0 0 83.333333%;
+  max-width:  83.333333%;
 }
 
 .col-11,
 .col-xs-11 {
-  -ms-flex: 0 0 91.666667%;
-  flex: 0 0 91.666667%;
-  max-width: 91.666667%;
+  -ms-flex:   0 0 91.666667%;
+  flex:       0 0 91.666667%;
+  max-width:  91.666667%;
 }
 
 .col-12,
 .col-xs-12 {
-  -ms-flex: 0 0 100%;
-  flex: 0 0 100%;
-  max-width: 100%;
+  -ms-flex:   0 0 100%;
+  flex:       0 0 100%;
+  max-width:  100%;
 }
 // ======================== END COLUMNS ========================
 

@@ -1,10 +1,10 @@
 //TABLE STYLE 
 
 
-// =============================
+// =============================================================
 // Table of Content           
 //  + 
-// =============================
+// =============================================================
 
 
 // ===================== BASE STYLE =====================
@@ -37,14 +37,14 @@ caption {
 }
 
 th {
-  text-align: left;
+  // text-align: left; //TODO commented out for the tr to be center 
 }
 
 // Baseline styles
 .table {
-  width: 100%;
-  max-width: 100%;
-  margin-bottom: var(--spacing-large);
+  width:          100%;
+  max-width:      100%;
+  margin-bottom:  var(--spacing-large);
 
   // Cells
   > thead,
@@ -63,13 +63,13 @@ th {
 
   thead {
     th.required::after{
-      margin-left: 4px;
-      font-family: 'FontAwesome';
-      font-size: 6px;
-      font-weight: 900;
-      color: #eca9a7;
+      margin-left:  4px;
+      font-family:  'FontAwesome';
+      font-size:    6px;
+      font-weight:  900;
+      color:      #eca9a7;
       vertical-align: super;
-      content: "\f111";
+      content:        "\f111";
     }
   }
 
@@ -78,27 +78,27 @@ th {
   }
 
   > thead > tr > th {
-    vertical-align: bottom;
-    border-bottom: 2px solid var(--color-interface-soft);
-    font-size: var(--font-size-small);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-interface-stronger);
-    background-color: var(--color-interface-softer);
-    border-color: var(--color-interface-soft);
+    vertical-align:     bottom;
+    border-bottom:      2px solid var(--color-interface-soft);
+    font-size:          var(--font-size-small);
+    font-weight:        var(--font-weight-semibold);
+    color:              var(--color-interface-stronger);
+    background-color:   var(--color-interface-softer);
+    border-color:       var(--color-interface-soft);
 
     > a:not(.btn) {
-      display: inline;
-      color: var(--color-interface-stronger);
+      display:  inline;
+      color:    var(--color-interface-stronger);
       &::after {
-        display: inline-block;
+        display:      inline-block;
         padding-left: 5px;
         margin-right: -14px;
-        font-family: 'FontAwesome';
-        font-weight: var(--font-weight-bold);
-        color: var(--color-interface-strong);
+        font-family:  'FontAwesome';
+        font-weight:  var(--font-weight-bold);
+        color:        var(--color-interface-strong);
         text-decoration: none;
-        content: '/f0dc';
-        opacity: 0;
+        content:      '/f0dc';
+        opacity:      0;
       }
     }
 
@@ -108,15 +108,15 @@ th {
   
     // sorting
     &.descending a:not(.btn)::after {
-      color: var(--color-interface-stronger);
-      content: '\f0dd';
-      opacity: 1;
+      color:    var(--color-interface-stronger);
+      content:  '\f0dd';
+      opacity:  1;
     }
   
     &.ascending a:not(.btn)::after {
-      color: var(--color-interface-stronger);
-      content: '/f0de';
-      opacity: 1;
+      color:    var(--color-interface-stronger);
+      content:  '/f0de';
+      opacity:  1;
     }
   }
 
@@ -138,14 +138,14 @@ th {
   }
 
   &.table-hover >tbody > tr:hover >td{
-    color: var(--color-interface-stronger);
+    color:              var(--color-interface-stronger);
     background-color: rgba(85, 150, 230, .1);
   }
 
   &.table-light > thead > tr > th {
-    color: var(--color-interface-stronger);;
+    color:            var(--color-interface-stronger);;
     background-color: transparent;
-    border-color: var(--color-interface-strong); //Lighten the ui stronger by 40% when aviable;
+    border-color:     var(--color-interface-strong); //Lighten the ui stronger by 40% when aviable;
   }
 
   // Nesting
@@ -164,19 +164,27 @@ th {
 
 }
 
+.btn-tabled {
+  a {
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
 td.grid-select-cell {
   cursor: pointer;
 }
 
 td.wrap-contents {
-  -webkit-hyphens: auto;
-  -moz-hyphens: auto;
+  -webkit-hyphens:  auto;
+  -moz-hyphens:     auto;
 
-  -ms-hyphens: auto;
-  hyphens: auto;
+  -ms-hyphens:      auto;
+  hyphens:          auto;
   // keep cells from scrolling off screen
-  -ms-word-break: break-all;
-  word-break: break-all;
+  -ms-word-break:   break-all;
+  word-break:       break-all;
 }
 
 // Add Border to last row
@@ -228,11 +236,11 @@ td.wrap-contents {
 .table-striped {
   > tbody > tr:nth-of-type(odd) {
     color:            var(--color-interface-stronger);
-    background-color: var(--color-interface-medium); // TODO darken the ui soft by 3%
+    background-color: var(--color-interface-softest); // TODO darken the ui soft by 3%
   }
   > tbody > tr:nth-of-type(even) {
-    color:            var(--color-interface-medium);
-    background-color: var(--color-interface-stronger);
+    color:            var(--color-interface-softest);
+    background-color: var(--color-interface-softer);
   }
 }
 
@@ -416,11 +424,11 @@ td.wrap-contents {
   overflow-x: auto;
 
   @media screen and (max-width: $screen-small) {
-    width: 100%;
-    margin-bottom: calc(var(--spacing-large) * .75);
-    overflow-y: hidden;
+    width:              100%;
+    margin-bottom:      calc(var(--spacing-large) * .75);
+    overflow-y:         hidden;
     -ms-overflow-style: -ms-autohiding-scrollbar;
-    border: 1px solid var(--color-interface-soft);
+    border:             1px solid var(--color-interface-soft);
 
     // Tighten up spacing
     > .table {
@@ -507,11 +515,53 @@ td.wrap-contents {
 
   tfoot > tr:last-child {
     td:first-child {
-      border-bottom-left-radius: var(--rounded-small);
+      border-bottom-left-radius:  var(--rounded-small);
     }
 
     td:last-child {
-      border-bottom-right-radius: var(--rounded-small);
+      border-bottom-right-radius:   var(--rounded-small);
+    }
+  }
+}
+
+.grid-columncommand {
+  .btn {
+    width: 34px;
+    padding: var(--spacing-small) 0;
+  }
+
+  .btn-default,
+  .btn-security,
+  .btn-danger {
+    background-color: transparent;
+    border-color: transparent;
+    box-shadow: none;
+  }
+
+  .btn-default,
+  .btn-security {
+    &:focus,
+    &:hover,
+    &:active {
+      background-color: var(--color-danger-softer); //TODO darken ui softest it by 10%
+    }
+  }
+
+  .btn-danger {
+    background: transparent;
+    &:active,
+    &:hover {
+      color: var(--color-danger-strong);
+      background: var(--color-danger-soft); //TODO fade by 10%
+      border-color: transparent;
+    }
+
+    &:focus,
+    &:active &:active:hover,
+    &:active:focus {
+      color:        var(--color-danger-strong);
+      background:   var(--color-danger-soft);
+      border-color: var(--color-danger-strnog);
     }
   }
 }
@@ -529,24 +579,24 @@ td.wrap-contents {
 
 // Filter
 .grid-filter {
-  padding: 0;
-  color: var(--color-interface-stronger);
-  background-color: var(--color-interface-softer);
+  padding:            0;
+  color:              var(--color-interface-stronger);
+  background-color:   var(--color-interface-softer);
   // border-bottom: 1px solid var(--color-interface-softer);
   //border-radius: var(--rounded-small);
 
   header {
-    position: absolute;
-    display: inline;
-    cursor: pointer;
-    border-radius: var(--rounded-small) var(--rounded-small) 0 0;
+    position:       absolute;
+    display:        inline;
+    cursor:         pointer;
+    border-radius:  var(--rounded-small) var(--rounded-small) 0 0;
 
     h3 {
-      display: inline;
-      margin: 0 2px 0 6px;
-      font-size: var(--font-size-small);
-      font-weight: var(--font-weight-light);
-      line-height: 16px;
+      display:      inline;
+      margin:       0 2px 0 6px;
+      font-size:    var(--font-size-small);
+      font-weight:  var(--font-weight-light);
+      line-height:  16px;
     }
 
     fieldset {
@@ -555,10 +605,10 @@ td.wrap-contents {
   }
 
   .btn-filter-toggle {
-    position: absolute;
-    z-index: 9; // Stack behind Calendars
-    margin: var(--spacing-small);
-    color: var(--color-interface-medium);
+    position:   absolute;
+    z-index:    9; // Stack behind Calendars
+    margin:     var(--spacing-small);
+    color:      var(--color-interface-medium);
     text-decoration: none;
     background: var(--color-interface-softest);
 
@@ -568,16 +618,16 @@ td.wrap-contents {
   }
 
   h4 {
-    margin: 0;
-    font-size: var(--font-size-h5);
-    font-weight: 400;
+    margin:       0;
+    font-size:    var(--font-size-h5);
+    font-weight:  400;
   }
 
   .grid-filter-entry,
   .grid-filter-overview fieldset {
-    padding: var(--spacing-medium);
-    padding-top: 37px;
-    border-bottom: 1px solid var(--color-interface-softer); //TODO darken softer by 10%
+    padding:        var(--spacing-medium);
+    padding-top:    37px;
+    border-bottom:  1px solid var(--color-interface-softer); //TODO darken softer by 10%
   }
 
   // adjust the background color of pickers in the filters
@@ -596,16 +646,16 @@ td.wrap-contents {
   padding: 5px 0;
 
   .grid-pager {
-    float: right;
-    margin-top: 0;
-    margin-bottom: 0;
+    float:          right;
+    margin-top:     0;
+    margin-bottom:  0;
 
     li {
       > a {
-        min-width: 23px;
-        padding: 5px 12px;
-        margin: 0 8px 0 0;
-        color: var(--color-interface-stronger);
+        min-width:  23px;
+        padding:    5px 12px;
+        margin:     0 8px 0 0;
+        color:      var(--color-interface-stronger);
         text-align: center;
         background-color: transparent;
         border-color: transparent;
@@ -616,28 +666,28 @@ td.wrap-contents {
       }
 
       &.active > a {
-        color: var(--color-interface-strong);
-        background-color: var(--color-interface-softer);
-        border-color: var(--color-interface-strong);
+        color:              var(--color-interface-strong);
+        background-color:   var(--color-interface-softer);
+        border-color:       var(--color-interface-strong);
       }
     }
   }
 
   .grid-pagesize {
-    float: left;
-    margin: 0 calc(var(--spacing-medium) / 2) 0 0;
+    float:    left;
+    margin:   0 calc(var(--spacing-medium) / 2) 0 0;
   }
 
   .pagination-text {
-    float: left;
-    font-size: var(--font-size-small);
+    float:      left;
+    font-size:  var(--font-size-small);
   }
 
   .grid-itemcount {
-    float: left;
-    margin-top: 7px;
-    margin-left: 10px;
-    font-size: var(--font-size-small);
+    float:        left;
+    margin-top:   7px;
+    margin-left:  10px;
+    font-size:    var(--font-size-small);
   }
 }
 
@@ -648,22 +698,41 @@ td.grid-col-actions {
 
 // actions
 .grid-actions {
+  padding:    5px 7px;
+  margin:     0 0 0 2px;
+  font-size:  var(--font-size-regular);
+  border:     0;
+  box-shadow: none;
+  transition: color 250ms;
   text-align: right;
   background-color: var(--color-interface-softest);
 
   .btn {
     margin-left: 8px;
   }
+  
+  &:hover {
+    color: var(--color-interface-strong);
+  }
+
+  .btn-add:hover {
+    color: var(--color-success-soft);
+  }
 
   .btn-grid-action {
-    color: var(--color-interface-medium);
+    color:            var(--color-interface-medium);
     background-color: transparent;
-    border-color: transparent;
+    border-color:     transparent;
   }
 
   .btn-grid-custom-action {
     margin-bottom: 8px;
   }
+}
+
+td.grid-actions {
+  padding: 0 !important;
+  font-size: 1em;
 }
 
 // If the grid has a filter, make sure there's space for the filter toggle
@@ -685,18 +754,18 @@ td.grid-col-actions {
   .checkbox,
   .radio {
     padding-left: 0 !important;
-    margin: 0 !important;
+    margin:       0 !important;
 
     label {
       position: relative;
-      display: block;
-      width: var(--spacing-large);
-      padding: 0;
-      margin: 0 auto;
+      display:  block;
+      width:    var(--spacing-large);
+      padding:  0;
+      margin:   0 auto;
     }
 
     input {
-      float: none;
+      float:  none;
       height: 100%;
       margin: 0;
       vertical-align: middle;
@@ -715,12 +784,12 @@ td.grid-col-actions {
     }
 
     &.grid-columnreorder {
-      width: 48px;
-      min-width: 48px;
-      padding-top: var(--spacing-medium);
+      width:        48px;
+      min-width:    48px;
+      padding-top:  var(--spacing-medium);
 
       a {
-        color:var(--color-interface-strong); // TODO lighten the ui stronger by 20% when color-mix() is available
+        color:  var(--color-interface-strong); // TODO lighten the ui stronger by 20% when color-mix() is available
       }
     }
   }
@@ -771,9 +840,9 @@ td.grid-col-actions {
   > tbody > tr.grid-section-header {
     > td,
     &:hover > td {
-      font-size: var(--font-size-h5);
-      font-weight: var(--font-weight-bold);
-      color: var(--color-interface-stronger);
+      font-size:        var(--font-size-h5);
+      font-weight:      var(--font-weight-bold);
+      color:            var(--color-interface-stronger);
       background-color: var(--color-interface-softest);
     }
   }
@@ -782,9 +851,9 @@ td.grid-col-actions {
 
 .grid-select-cell {
   .photo-icon {
-    display: inline-block;
-    width: var(--spacing-large);
-    height: var(--spacing-large);
+    display:  inline-block;
+    width:    var(--spacing-large);
+    height:   var(--spacing-large);
     vertical-align: top;
   }
 
@@ -797,7 +866,7 @@ td.grid-col-actions {
 
 tr.row-highlight {
   td {
-    color: var(--color-interface-stronger) !important;
+    color:            var(--color-interface-stronger) !important;
     background-color: var(--color-interface-soft) !important;
   }
 }
@@ -825,16 +894,16 @@ tr.row-highlight {
 // unlike Bootstrap's original .table-responsive, this is applied for all widths. (i.e. NOT only applied <768px)
 .table-responsive {
   //position: relative;  // commented out to get pop-ups from being trimmed JME 10/8/2015
-  width: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
+  width:        100%;
+  overflow-x:   auto;
+  overflow-y:   hidden;
   -webkit-overflow-scrolling: touch;
   -ms-overflow-style: -ms-autohiding-scrollbar;
 
   // If .table-responsive is inside of a grid assume that the block will style correctly
   .grid & {
-    margin-bottom: 0;
-    border: 0;
+    margin-bottom:  0;
+    border:         0;
   }
 
   // classes to show and hide columns based on their priority

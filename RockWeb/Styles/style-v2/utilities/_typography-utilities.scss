@@ -29,3 +29,137 @@
 .text-danger  { color: var(--color-danger-strong) !important;}
 .text-info    { color: var(--color-info-strong) !important;}
 
+.text-center    { text-align: center !important;}
+.text-right     { text-align: right !important;}
+.text-left      { text-align: left !important;}
+
+.text-monospace { font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
+.text-justify   { text-align: justify !important;}
+.text-nowrap    { white-space: nowrap !important;}
+
+.text-truncate { 
+    overflow:       hidden;
+    text-overflow:  ellipsis;
+    white-space:    nowrap;
+}
+
+.text-hide {
+    font: 0/0 a;
+    color: transparent;
+    text-shadow: none;
+    background-color: transparent;
+    border: 0;
+}
+
+/* === Universal Font === */
+h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6{
+    font-family: var(--font-family-title);
+}
+p, .p, .text-primary, .text-small {
+    font-family: var(--font-family-body)
+}
+/* === End Universal Font ===*/
+
+
+/* HEADING */
+h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-compact) !important;
+}
+
+h1, .h1 {
+    font-size: var(--font-size-h1);
+}
+
+h2, .h2 {
+    font-size: var(--font-size-h2);
+}
+
+h3, .h3 {
+    font-size: var(--font-size-h3);
+}
+
+h4, .h4 {
+    font-size: var(--font-size-h4);
+}
+
+h5, .h5 {
+    font-size: var(--font-size-h5);
+}
+
+h6, .h6 {
+    font-size: var(--font-size-h6);
+}
+
+
+/* BODY TEXT */
+p, .p, .text-primary, .text-small {
+    line-height: var(--line-height-normal);
+    font-weight: var(--font-weight-regular);
+}
+
+p, .p, .text-primary {
+    font-size:   var(--font-size-regular);
+}
+
+.text-small {
+    font-size:   var(--font-size-small);
+}
+
+h1.condensed,
+h2.condensed,
+h3.condensed,
+h4.condensed,
+h5.condensed,
+h6.condensed {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+@media (min-width: 576px) {
+    .text-sm-left {
+        text-align: left !important;
+    }
+    .text-sm-right {
+        text-align: right !important;
+    }
+    .text-sm-center {
+        text-align: center !important;
+    }
+}
+
+@media (min-width: $screen-small) {
+    .text-md-left {
+        text-align: left !important;
+    }
+    .text-md-right {
+        text-align: right !important;
+    }
+    .text-md-center {
+        text-align: center !important;
+    }
+}
+
+@media (min-width: $screen-medium) {
+    .text-lg-left {
+        text-align: left !important;
+    }
+    .text-lg-right {
+        text-align: right !important;
+    }
+    .text-lg-center {
+        text-align: center !important;
+    }
+}
+
+@media (min-width: $screen-large) {
+    .text-xl-left {
+        text-align: left !important;
+    }
+    .text-xl-right {
+        text-align: right !important;
+    }
+    .text-xl-center {
+        text-align: center !important;
+    }
+}

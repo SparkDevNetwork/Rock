@@ -1,9 +1,9 @@
 // DISPLAY UTILITIES
 
-// =============================
+// =============================================================
 // Table of Content           
 //  + DISPLAY
-// =============================
+// =============================================================
 
 
 // ========================== DISPLAY ==========================
@@ -43,6 +43,26 @@
 .d-inline-flex {
     display: -ms-inline-flexbox !important;
     display: inline-flex !important;
+}
+
+.invisible {
+    visibility: hidden;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.affix {
+    position: fixed;
+}
+
+.hide {
+    display: none !important;
+}
+
+.show {
+    display: block !important;
 }
 
 @media (min-width: $screen-small) {

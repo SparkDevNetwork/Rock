@@ -1,13 +1,17 @@
-//
-// MODAL STYLES
-// --------------------------------------------------
+// MODAL STYLE
 
 
-// Imports
-// -------------------------
+// =============================================================
+// Table of Content           
+//  + Base style
+//  + Modal Scoll
+//  + Animation
+//  + Rock Modal
+//  + Media Query
+// =============================================================
 
-// import as less files so they are concatenated properly
 
+// ======================= BASE STYLE =====================
 body.modal-open,
 .modal-open .navbar-fixed-top,
 .modal-open .navbar-fixed-bottom {
@@ -15,20 +19,69 @@ body.modal-open,
 }
 
 .modal {
-  left:             50%;
-  bottom:           auto;
-  right:            auto;
-  padding:          0;
-  width:            500px;
-  margin-left:      -250px;
-  background:       var(--color-interface-softest);
-  border-radius:    var(--rounded-small);
-  box-shadow:       0 3px 9px rgba(0, 0, 0, 0.5);
+  position:       fixed;
+  top:            0;
+  right:          0;
+  bottom:         0;
+  left:           0;
+  z-index:        $zindex-modal;
+  display:        none;
+  overflow:       hidden;
+  outline:        0;
+  padding:        0;
+  width:          500px;
+  margin-left:    -250px;
+  background:     var(--color-interface-softest);
+  border-radius:  var(--rounded-small);
+  box-shadow:     0 3px 9px rgba(0, 0, 0, 0.5);
+  background-clip:              padding-box;
+  -webkit-overflow-scrolling:   touch;
+
+  &.fade .modal-dialog {
+    translate: 0, -25%;
+    -webkit-transition: -webkit-transform 0.3s ease-out;
+          -moz-transition: -moz-transform 0.3s ease-out;
+                    transition: transform 0.3s ease-out;
+  }
+  &.in .modal-dialog { translate: 0, 0; }
+
+  .modal-open & {
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+}
+
+
+// TODO if the modal position is off try this:
+// .modal {
+// 	outline:    none;
+// 	position:   absolute;
+// 	margin-top: 0;
+// 	top:        50%;
+// 	overflow:   visible; 
+// }
+
+.modal-dialog {
+  position: relative;
+  width:    auto;
+  margin:   10px;
+}
+
+.modal-content {
+  position:         relative;
+  background-color: var(--color-interface-softest);
   background-clip:  padding-box;
+  border:           1px solid var(--color-interface-strong); //old browsers fallback (ie8 etc)
+  border:           1px solid rgba(0,0,0,2);
+  border-radius:    var(--rounded-small);
+  box-shadow:       0 3px 9px rgba(0, 0, 0, .5);
+  outline:          0;
 }
 
 .modal.container {
-  max-width: none;
+  max-width:    none;
+  width:        940px;
+  margin-left:  -470px;
 }
 
 .modal-open {
@@ -36,56 +89,40 @@ body.modal-open,
   -webkit-overflow-scrolling:   auto;
 }
 
-
-/* add a scroll bar to stop page from jerking around */
-.modal-open.page-overflow .page-container,
-.modal-open.page-overflow .page-container .navbar-fixed-top,
-.modal-open.page-overflow .page-container .navbar-fixed-bottom,
-.modal-open.page-overflow .modal-scrollable {
-  overflow-y:                 scroll;
-  -webkit-overflow-scrolling: touch;
-}
-
-@media (max-width: 979px) {
-	.modal-open.page-overflow .page-container .navbar-fixed-top,
-	.modal-open.page-overflow .page-container .navbar-fixed-bottom  {
-		overflow-y: visible;
-	}
-}
-
-
-.modal-scrollable {
-	position: fixed;
-	top:      0;
-	bottom:   0;
-	left:     0;
-	right:    0;
-	overflow: auto;
-}
-
-.modal {
-	outline:    none;
-	position:   absolute;
-	margin-top: 0;
-	top:        50%;
-	overflow:   visible; /* allow content to popup out (i.e tooltips) */
-}
-
-.modal.fade {
-	top: -100%;
-	-webkit-transition: opacity 0.3s linear, top 0.3s ease-out, bottom 0.3s ease-out, margin-top 0.3s ease-out;
-	   -moz-transition: opacity 0.3s linear, top 0.3s ease-out, bottom 0.3s ease-out, margin-top 0.3s ease-out;
-	     -o-transition: opacity 0.3s linear, top 0.3s ease-out, bottom 0.3s ease-out, margin-top 0.3s ease-out;
-	        transition: opacity 0.3s linear, top 0.3s ease-out, bottom 0.3s ease-out, margin-top 0.3s ease-out;
-}
-
-.modal.fade.in {
-	top: 50%;
-}
-
 .modal-body {
 	max-height: none;
-	overflow: visible;
+	overflow:   visible;
+}
+
+.modal-footer {
+  padding:    var(--spacing-large);
+  text-align: right; 
+  border-top: 1px solid var(--color-interface-softer);
+
+  &:before,
+  &:after {
+    display: table; 
+    content: " "; 
+  }
+  &:after {
+    clear: both;
+  }
+
+  // Properly space out buttons
+  .btn + .btn {
+    margin-bottom:  0;
+    margin-left:    5px;
+  }
+
+  // but override that for button groups
+  .btn-group .btn + .btn {
+    margin-left: -1px;
+  }
+
+  // and override it for block buttons as well
+  .btn-block + .btn-block {
+    margin-left: 0;
+  }
 }
 
 .modal.modal-absolute {
@@ -102,6 +139,77 @@ body.modal-open,
 	background: #fff;
 	border-radius: 6px;
 }
+// ===================== END BASE STYLE =====================
+
+
+//======================= MODAL SCROLL  =====================
+/* add a scroll bar to stop page from jerking around */
+.modal-open.page-overflow .page-container,
+.modal-open.page-overflow .page-container .navbar-fixed-top,
+.modal-open.page-overflow .page-container .navbar-fixed-bottom,
+.modal-open.page-overflow .modal-scrollable {
+  overflow-y:                   scroll;
+  -webkit-overflow-scrolling:   touch;
+}
+
+@media (max-width: 979px) {
+	.modal-open.page-overflow .page-container .navbar-fixed-top,
+	.modal-open.page-overflow .page-container .navbar-fixed-bottom  {
+		overflow-y: visible;
+	}
+}
+
+.modal-scrollbar-measure {
+  position: absolute;
+  top:      -9999px;
+  width:    50px;
+  height:   50px;
+  overflow: scroll;
+}
+
+.modal-scrollable {
+	position: fixed;
+	top:      0;
+	bottom:   0;
+	left:     0;
+	right:    0;
+	overflow: auto;
+}
+// ===================== END MODAL SCROLL =====================
+
+
+// ======================= ANIMATION =====================
+.modal.fade {
+	top: -100%;
+	-webkit-transition: opacity 0.3s linear, top 0.3s ease-out, bottom 0.3s ease-out, margin-top 0.3s ease-out;
+	   -moz-transition: opacity 0.3s linear, top 0.3s ease-out, bottom 0.3s ease-out, margin-top 0.3s ease-out;
+	     -o-transition: opacity 0.3s linear, top 0.3s ease-out, bottom 0.3s ease-out, margin-top 0.3s ease-out;
+	        transition: opacity 0.3s linear, top 0.3s ease-out, bottom 0.3s ease-out, margin-top 0.3s ease-out;
+}
+
+.modal.fade.in {
+	top: 50%;
+}
+
+.modal-backdrop {
+  position: fixed;
+  top:      0;
+  right:    0;
+  bottom:   0;
+  left:     0;
+  z-index:  1040;
+  background-color: var(--color-interface-medium);
+  // Fade for backdrop
+  &.fade { opacity:0; }
+  &.in { opacity: $modal-backdrop-opacity; }
+}
+
+.modal-backdrop,
+.modal-backdrop.fade.in {
+  background: var(--color-interface-strong);
+  filter:     alpha(opacity=70);
+  opacity:    $modal-backdrop-opacity;
+}
 
 .modal-backdrop.modal-absolute{
 	position: absolute;
@@ -115,13 +223,7 @@ body.modal-open,
 	background: #fff;
 }
 
-.modal.container {
-  width:        940px;
-  margin-left: -470px;
-}
-
 /* Modal Overflow */
-
 .modal-overflow.modal {
 	top: 1%;
 }
@@ -135,67 +237,15 @@ body.modal-open,
 }
 
 .modal-overflow .modal-body {
-	/*overflow: auto;*/
 	-webkit-overflow-scrolling: touch;
-}
-
-/* Responsive */
-
-@media (min-width: 1200px) {
-	.modal.container {
-		width:        1170px;
-		margin-left:  -585px;
-	}
-}
-
-@media (max-width: 979px) {
-	.modal,
-	.modal.container,
-	.modal.modal-overflow 	{
-		top:      1%;
-		right:    1%;
-		left:     1%;
-		bottom:   auto;
-		width:    auto !important;
-		height:   auto !important;
-		margin:   0 !important;
-		padding:  0 !important;
-	}
-
-	.modal.fade.in,
-	.modal.container.fade.in,
-	.modal.modal-overflow.fade.in {
-		top:      1%;
-		bottom: auto;
-	}
-
-	.modal-body,
-	.modal-overflow .modal-body {
-		position:   static;
-		margin:     0;
-		height:     auto !important;
-		max-height: none !important;
-		overflow:   visible !important;
-	}
-
-	.modal-footer,
-	.modal-overflow .modal-footer {
-		position: static;
-	}
 }
 
 .loading-spinner {
 	position: absolute;
-	top: 50%;
-	left: 50%;
-	margin: -12px 0 0 -12px;
+	top:      50%;
+	left:     50%;
+	margin:   -12px 0 0 -12px;
 }
-
-/*
-Animate.css - http://daneden.me/animate
-Licensed under the ☺ license (http://licence.visualidiot.com/)
-
-Copyright (c) 2012 Dan Eden*/
 
 .animated {
 	-webkit-animation-duration: 1s;
@@ -238,16 +288,16 @@ Copyright (c) 2012 Dan Eden*/
 	      -o-animation-name: shake;
 	        animation-name: shake;
 }
+// ===================== END ANIMATION =====================
 
 
+// ======================= ROCK MODAL =======================
 // Rock modal (page properties, etc.)
-// -------------------------
-
 body.rock-modal {
   background: transparent;
 
   .modal-content {
-    border: 0 !important;
+    border:     0 !important;
     box-shadow: none;
     //background: transparent;
   }
@@ -264,11 +314,13 @@ body.rock-modal {
     padding:          var(--spacing-small) var(--spacing-large);
     color:            var(--color-interface-softest);
     background-color: var(--color-primary);
+    padding:          var(--spacing-medium);
+    border-bottom:    1px solid var(--color-interface-softer);
 
     &:before,
     &:after {
-      display: table; // 2
-      content: " "; // 1
+      display: table;
+      content: " "; 
     }
 
     &:after {
@@ -285,6 +337,7 @@ body.rock-modal {
     }
 
     .close {
+      margin-top: -2px;
       padding:          6px;
       text-decoration:  none;
       color:            var(--color-interface-strongest);
@@ -308,8 +361,14 @@ body.rock-modal {
     }
   }
 
+  .modal-title {
+    margin:       0;
+    line-height:  var(--line-height-normal);
+  }
+
   .modal-body {
-    padding:          var(--spacing-large);
+    position:         relative;
+    padding:          var(--spacing-medium);
     color:            var(--color-interface-stronger);
     text-align:       left;
     background-color: var(--color-interface-softest);
@@ -337,7 +396,6 @@ body.rock-modal {
 }
 
 .rock-modal {
-
   .modal-footer .btn {
     float:        right;
     margin-left:  5px;
@@ -355,9 +413,8 @@ body.rock-modal {
 }
 
 @supports (-webkit-overflow-scrolling: touch) {
-  // CSS specific to iOS devices
   .modal.modal-overflow {
-    top: 1%;
+    top:    1%;
     height: calc(100% - 1px) !important;
   }
 }
@@ -368,28 +425,69 @@ body.rock-modal {
   height:   100%;
   border:     0;
 }
+// ===================== END ROCK MODAL =====================
 
 
-// All modals
-// -------------------------
+// ======================= MEDIA QUERY =======================
+@media (min-width: $screen-small) {
+  // Automatically set modal's width for larger viewports
+  .modal-dialog {
+    width:  600px;
+    margin: 30px auto;
+  }
+  .modal-content {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, .5);
+  }
 
-// This next section is needed because we're using bootstrap-modal plugin to allow for responsive sized modals. Since they
-// hard code the opacity in their CSS we override it here.
-.modal-backdrop,
-.modal-backdrop.fade.in {
-  background: var(--color-interface-strong);
-  filter:     alpha(opacity=70);
-  opacity:    $modal-backdrop-opacity;
+  // Modal sizes
+  .modal-sm { width: 300px; }
 }
 
-// Fixes some appearance issues from switching standard BS modal to
-// responsive bootstrap-modal.
-
-.modal-dialog {
-  width: auto;
-  margin: 0;
+@media (min-width: $screen-medium) {
+  .modal-lg { width: 900px; }
 }
 
-.modal-content {
-  border: none;
+@media (min-width: $screen-large) {
+	.modal.container {
+		width:        1170px;
+		margin-left:  -585px;
+	}
 }
+
+// TODO should change to $screen-medium
+@media (max-width: 979px) {
+	.modal,
+	.modal.container,
+	.modal.modal-overflow 	{
+		top:      1%;
+		right:    1%;
+		left:     1%;
+		bottom:   auto;
+		width:    auto !important;
+		height:   auto !important;
+		margin:   0 !important;
+		padding:  0 !important;
+	}
+
+	.modal.fade.in,
+	.modal.container.fade.in,
+	.modal.modal-overflow.fade.in {
+		top:      1%;
+		bottom: auto;
+	}
+
+	.modal-body,
+	.modal-overflow .modal-body {
+		position:   static;
+		margin:     0;
+		height:     auto !important;
+		max-height: none !important;
+		overflow:   visible !important;
+	}
+
+	.modal-footer,
+	.modal-overflow .modal-footer {
+		position: static;
+	}
+}
+// ===================== END MEDIA QUERY =====================

@@ -25,9 +25,9 @@
 @import 'components/labels';        // When color-mix() use, go in the file there's comments at where it is need ot be use.
 @import 'components/wells';         // When color-mix() use, go in the file there's comments at where it is need ot be use.
 @import 'components/code';          // The naming is hard to understand
-@import 'components/dropdowns';     // Still need some work 
+@import 'components/dropdowns';     // Fully Polish
 @import 'components/close';         // Fully Polish
 @import 'components/list-group';    // When color-mix() use, go in the file there's comments at where it is need ot be use.
-
-/* ==================== LEGACY ==================== */ 
-@import 'legacy/glyphicons'
+@import 'components/modals';        // ** work in progress ** 
+@import 'components/tables';        // ** work in progress **
+@import 'components/pagination';    // Fully Polish

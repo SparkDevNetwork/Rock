@@ -1,6 +1,5 @@
-
-
 // CMS ADMIN UI STYLE
+
 
 // =============================================================
 // Table of Content
@@ -10,22 +9,22 @@
 //  + Responsive Rules
 // =============================================================
 
-//TODO right now color is hard coded
 
+//TODO right now color is hard coded
 // ========================== ZONE CONFIG  ==========================
 .zone-instance.outline {
   position:     relative;
   min-width:    50px;
   min-height:   30px;
   &::after {
-    position: absolute;
-    top:      0;
-    right:    0;
-    bottom:   0;
-    left:     0;
-    content:  "";
-    border:   1px dotted #3e3e3c;
-    outline:  1px dotted #fff;
+    position:   absolute;
+    top:        0;
+    right:      0;
+    bottom:     0;
+    left:       0;
+    content:    "";
+    border:     1px dotted #3e3e3c;
+    outline:    1px dotted #fff;
   }
 }
 //======================== END ZONE CONFIG ========================
