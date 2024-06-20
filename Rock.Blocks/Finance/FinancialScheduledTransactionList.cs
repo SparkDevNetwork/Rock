@@ -444,6 +444,7 @@ namespace Rock.Blocks.Finance
             return new GridBuilder<FinancialScheduledTransactionData>()
                 .WithBlock( this )
                 .AddTextField( "idKey", a => a.FinancialScheduledTransaction.IdKey )
+                .AddTextField( "id", a => a.FinancialScheduledTransaction.Id.ToString() )
                 .AddPersonField( "authorized", a => a.FinancialScheduledTransaction.AuthorizedPersonAlias?.Person )
                 .AddTextField( "transactionFrequency", a => a.FinancialScheduledTransaction.TransactionFrequencyValue?.Value )
                 .AddTextField( "transactionType", a => a.FinancialScheduledTransaction.TransactionTypeValue?.Value )
