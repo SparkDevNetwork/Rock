@@ -36,6 +36,7 @@
     import { CommunicationEntryRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryRecipientBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { Guid } from "@Obsidian/Types";
 
     const props = defineProps({
         /**
@@ -110,7 +111,6 @@
     const invokeBlockAction = useInvokeBlockAction();
 
     //#region Values
-
     const internalRecipients = useVModelPassthrough(props, "modelValue", emit);
     const isPersonPickerShown = ref<boolean>(false);
     const isRecipientModalShown = ref<boolean>(false);
@@ -119,6 +119,18 @@
     //#endregion
 
     //#region Computed Values
+
+    const currentRecipientDictionary = computed<Map<Guid, CommunicationEntryRecipientBag>>(() => {
+        const dictionary: Map<Guid, CommunicationEntryRecipientBag> = new Map<Guid, CommunicationEntryRecipientBag>();
+        internalRecipients.value.forEach((recipient) => {
+            dictionary.set(recipient.personAliasGuid, recipient);
+        });
+        return dictionary;
+    });
+
+    const recipientPersonAliasGuids = computed<string[]>(() => {
+        return Array.from(currentRecipientDictionary.value.keys());
+    });
 
     const rules = computed<ValidationRule[]>(() => {
         if (props.minimumRecipientCount === 0) {
@@ -136,47 +148,84 @@
         }
     });
 
+    function listItemBagsToDictionary(listItemBags: ListItemBag[]): { dictionary: Map<string, ListItemBag>, keys: string[] } {
+        const dictionary = new Map<string, ListItemBag>();
+        const keys: string[] = [];
+
+        for (const listItemBag of listItemBags) {
+            if (listItemBag.value) {
+                dictionary.set(listItemBag.value, listItemBag);
+                keys.push(listItemBag.value);
+            }
+        }
+
+        return { dictionary, keys };
+    }
+
     const recipientListItems = computed<ListItemBag[]>({
         get() {
             return convertRecipientsToListItems(internalRecipients.value);
         },
-        set(newValue: ListItemBag[]) {
-            const currentListItems = convertRecipientsToListItems(internalRecipients.value);
+        set(newRecipientListItemBags: ListItemBag[]) {
+            // Copy the current recipients. Recipients will be added/removed accordingly.
+            const newRecipientDictionary = new Map(currentRecipientDictionary.value);
 
-            // Whenever items are removed from the list, we should remove them from the source items as well.
-            const removedListItems = currentListItems.filter(currentItem => !newValue.some(newItem => newItem.value === currentItem.value));
-            const addedListItems = newValue.filter(newItem => !currentListItems.some(currentItem => currentItem.value === newItem.value));
-
-            // If nothing changed, then exit.
-            if (!removedListItems?.length && addedListItems.length === 0) {
-                return;
+            // Get the recipient guids of the new value.
+            const newRecipientGuids: Guid[] = [];
+            for (const newRecipientListItemBag of newRecipientListItemBags) {
+                if (newRecipientListItemBag.value) {
+                    newRecipientGuids.push(newRecipientListItemBag.value);
+                }
             }
 
-            // Copy the current array.
-            let newRecipients: CommunicationEntryRecipientBag[] = [...internalRecipients.value];
-
-            if (removedListItems.length) {
-                // Remove old items.
-                newRecipients = newRecipients.filter(currentItem => !removedListItems.some(removedItem => removedItem.value === currentItem.personAliasGuid));
+            // Figure out which recipients were added/removed.
+            const recipientGuidsToAdd: Guid[] = [];
+            const recipientsToRemove = new Map(currentRecipientDictionary.value);
+            for (const newRecipientGuid of newRecipientGuids) {
+                if (!newRecipientDictionary.has(newRecipientGuid)) {
+                    // The copy of current recipients does not have this new recipient yet,
+                    // so mark it as needing to be added.
+                    recipientGuidsToAdd.push(newRecipientGuid);
+                }
+                else {
+                    // recipientsToRemove begins with a copy of the current recipients.
+                    // For each recipient that we should keep, we remove it from recipientsToRemove.
+                    // After processing all *new* recipients, recipientsToRemove should only be left
+                    // with recipients that should be removed.
+                    recipientsToRemove.delete(newRecipientGuid);
+                }
             }
 
-            if (addedListItems.length) {
-                // Add new items.
+            // Remove recipients.
+            if (recipientsToRemove.size) {
+                for (const key of recipientsToRemove.keys()) {
+                    newRecipientDictionary.delete(key);
+                }
+            }
+
+            // Add recipients.
+            if (recipientGuidsToAdd.length) {
                 const bag: CommunicationEntryGetRecipientsRequestBag = {
-                    personAliasGuids: addedListItems.filter(value => !!value.value).map(value => value.value!)
+                    personAliasGuids: recipientGuidsToAdd
                 };
 
-                invokeBlockAction<CommunicationEntryRecipientBag[]>("GetRecipients", { bag }).then(result => {
-                    if (!result.isSuccess || !result.data) {
-                        internalRecipients.value = newRecipients;
-                    }
-                    else {
-                        internalRecipients.value = [...newRecipients, ...result.data];
-                    }
-                });
+                invokeBlockAction<CommunicationEntryRecipientBag[]>(
+                    "GetRecipients",
+                    {
+                        bag
+                    })
+                    .then(result => {
+                        if (result?.isSuccess && result.data) {
+                            for (const recipientToAdd of result.data) {
+                                newRecipientDictionary.set(recipientToAdd.personAliasGuid, recipientToAdd);
+                            }
+                        }
+
+                        internalRecipients.value = Array.from(newRecipientDictionary.values());
+                    });
             }
             else {
-                internalRecipients.value = newRecipients;
+                internalRecipients.value = Array.from(newRecipientDictionary.values());
             }
         }
     });

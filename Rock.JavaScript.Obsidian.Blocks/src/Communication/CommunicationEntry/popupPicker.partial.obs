@@ -209,9 +209,7 @@
             const index = newValue.indexOf(item);
             if (index !== -1) {
                 newValue.splice(index, 1);
-                nextTick(() => {
-                    internalListItemBags.value = newValue;
-                });
+                internalListItemBags.value = newValue;
             }
         }
     }
