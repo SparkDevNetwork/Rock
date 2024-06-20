@@ -20,6 +20,7 @@ using Rock.Bus.Transport;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.UnitTests.Rock.CheckIn.v2

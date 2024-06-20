@@ -12,6 +12,7 @@ using Rock.Enums.CheckIn;
 using Rock.Enums.Controls;
 using Rock.Model;
 using Rock.SystemKey;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.UnitTests.Rock.CheckIn.v2

@@ -8,6 +8,7 @@ using Rock.CheckIn.v2;
 using Rock.CheckIn.v2.Filters;
 using Rock.Data;
 using Rock.Model;
+using Rock.Tests.Shared.TestFramework;
 using Rock.ViewModels.CheckIn;
 
 namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters

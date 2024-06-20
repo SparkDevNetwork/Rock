@@ -9,6 +9,7 @@ using Rock.CheckIn.v2;
 using Rock.CheckIn.v2.Filters;
 using Rock.Data;
 using Rock.Model;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Utility;
 using Rock.ViewModels.CheckIn;
 using Rock.Web.Cache;

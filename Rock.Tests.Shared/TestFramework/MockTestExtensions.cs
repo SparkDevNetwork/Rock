@@ -14,7 +14,7 @@ namespace Rock.Tests.Shared.TestFramework
     /// Various extension methods to make check-in unit tests easier to write
     /// and read.
     /// </summary>
-    internal static class MockTestExtensions
+    public static class MockTestExtensions
     {
         /// <summary>
         /// Sets up a mock DbSet for the model type <typeparamref name="TEntity"/> that
