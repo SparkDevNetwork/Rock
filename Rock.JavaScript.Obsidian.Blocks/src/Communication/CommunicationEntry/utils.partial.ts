@@ -127,3 +127,60 @@ export function useBreakpointHelper(): ComputedRef<BreakpointHelper> {
 
 // TODO JMH Remove this debug option.
 export const KeepPersonPickerOpen: InjectionKey<Ref<boolean>> = Symbol("keep-person-picker-open");
+
+export function updateArrayValues<Key, Value>(oldValues: Value[], keySelector: ((item: Value) => Key | undefined), newKeys: Key[], getNewValues: ((keys: Key[]) => Promise<Value[]>)): Promise<Value[]> {
+    // Copy the old values to a dictionary for faster processing.
+    const oldValueDictionary = new Map<Key, Value>();
+    for (const oldValue of oldValues) {
+        const key = keySelector(oldValue);
+        if (key) {
+            oldValueDictionary.set(key, oldValue);
+        }
+    }
+
+    // Copy the old values. Values will be added/removed accordingly.
+    const newValueDictionary = new Map<Key, Value>(oldValueDictionary);
+
+    // Figure out which values were added/removed.
+    const keysToAdd: Key[] = [];
+    const valueToRemoveDictionary = new Map<Key, Value>(oldValueDictionary);
+    for (const newKey of newKeys) {
+        if (!newValueDictionary.has(newKey)) {
+            keysToAdd.push(newKey);
+        }
+        else {
+            // oldValuesToRemove starts as a copy of the current values.
+            // For each value that should be kept, it gets removed from oldValuesToRemove.
+            // After processing all *new* values, oldValuesToRemove should be left
+            // with only the values that should be removed.
+            valueToRemoveDictionary.delete(newKey);
+        }
+    }
+
+    // Remove values.
+    if (valueToRemoveDictionary.size) {
+        for (const key of valueToRemoveDictionary.keys()) {
+            newValueDictionary.delete(key);
+        }
+    }
+
+    // Add values.
+    if (keysToAdd.length) {
+        return getNewValues(keysToAdd)
+            .then(valuesToAdd => {
+                if (valuesToAdd.length) {
+                    for (const valueToAdd of valuesToAdd) {
+                        const key = keySelector(valueToAdd);
+                        if (key) {
+                            newValueDictionary.set(key, valueToAdd);
+                        }
+                    }
+                }
+
+                return Array.from(newValueDictionary.values());
+            });
+    }
+    else {
+        return Promise.resolve(Array.from(newValueDictionary.values()));
+    }
+}
