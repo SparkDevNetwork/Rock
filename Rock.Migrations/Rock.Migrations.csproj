@@ -140,6 +140,10 @@
     <Compile Include="Migrations\202406190900171_UpdatePeerNetworkModel.Designer.cs">
       <DependentUpon>202406190900171_UpdatePeerNetworkModel.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202406201602320_LMSModels.cs" />
+    <Compile Include="Migrations\202406201602320_LMSModels.Designer.cs">
+      <DependentUpon>202406201602320_LMSModels.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.5\202404071458052_AddTheme.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.5\202404071458052_AddTheme.designer.cs">
       <DependentUpon>202404071458052_AddTheme.cs</DependentUpon>
@@ -2154,6 +2158,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202406190900171_UpdatePeerNetworkModel.resx">
       <DependentUpon>202406190900171_UpdatePeerNetworkModel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202406201602320_LMSModels.resx">
+      <DependentUpon>202406201602320_LMSModels.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.5\202404071458052_AddTheme.resx">
       <DependentUpon>202404071458052_AddTheme.cs</DependentUpon>

@@ -33,7 +33,7 @@ namespace Rock.Data
     /// Generic POCO service class
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class Service<T> : IService where T : Rock.Data.Entity<T>, new()
+    public class Service<T> : IService where T : class, Rock.Data.IEntity, new()
     {
 
         #region Fields
@@ -154,8 +154,8 @@ namespace Rock.Data
                 ? Context.ChangeTracker
                     .Entries()
                     .Where( a => statesToExclude.Contains( a.State ) )
-                    .Where( a => a.Entity as Entity<T> != null )
-                    .Select( a => ( ( Entity<T> ) a.Entity ).Id )
+                    .Where( a => a.Entity as IEntity != null )
+                    .Select( a => ( ( IEntity ) a.Entity ).Id )
                     .ToList()
                 : new List<int>();
 
