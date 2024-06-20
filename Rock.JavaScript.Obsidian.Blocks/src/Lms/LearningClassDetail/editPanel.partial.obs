@@ -1,0 +1,179 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+
+            </div>
+
+            <div class="col-md-3">
+                <CheckBox v-model="isActive"
+                          label="Active" />
+            </div>
+
+            <div class="col-md-3">
+                <CheckBox v-model="isPublic"
+                          label="Public" />
+            </div>
+            <div class="col-md-12">
+                <TextBox v-model="description"
+                         label="Summary"
+                         textMode="multiline" />
+            </div>
+        </div>
+        <div class="row" v-if="isAcademicCalendarMode">
+            <div class="col-md-6">
+                <DropDownList
+                              label="Semester"
+                              v-model="semester"
+                              :grouped="false"
+                              :items="semesters"
+                              :multiple="false"
+                              :showBlankItem="true" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <SchedulePicker v-model="schedule" label="Schedule" />
+            </div>
+            <div class="col-md-6">
+                <LocationPicker v-model="location"
+                                :allowedPickerModes="pickerMode"
+                                label="Location" />
+            </div>
+            <div class="col-md-6">
+                <DropDownList
+                              label="Grading System"
+                              v-model="gradingSystem"
+                              :grouped="false"
+                              :items="gradingSystems"
+                              :multiple="false"
+                              :disabled="isEditingExisting"
+                              rules="required"
+                              :showBlankItem="false" />
+            </div>
+            <div class="col-md-6">
+                <CampusPicker v-model="campus" label="Campus" forceVisible showBlankItem />
+            </div>
+        </div>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, watch } from "vue";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import LocationPicker from "@Obsidian/Controls/locationPicker.obs";
+    import { LocationPickerMode, LocationPickerModeFlag } from "@Obsidian/Enums/Controls/locationPickerMode";
+    import SchedulePicker from "@Obsidian/Controls/schedulePicker.obs";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
+    import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { LearningClassBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassDetail/learningClassBag";
+    import { LearningClassDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassDetail/learningClassDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<LearningClassBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<LearningClassDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<LearningClassBag>): void
+    }>();
+
+    // #region Values
+
+    const pickerMode = (LocationPickerMode.Named + LocationPickerMode.Address) as LocationPickerModeFlag;
+
+    const isAcademicCalendarMode = props.options.programConfigurationMode === ConfigurationMode.AcademicCalendar;
+
+    const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
+    const isActive = propertyRef(props.modelValue.bag?.isActive ?? false, "IsActive");
+    const isPublic = propertyRef(props.modelValue.bag?.isPublic ?? false, "IsPublic");
+    const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
+    const semester = propertyRef(props.modelValue.bag?.semester?.value ?? "", "Semester");
+    const schedule = propertyRef(props.modelValue.bag?.schedule, "Schedule");
+    const location = propertyRef<ListItemBag | undefined>(props.modelValue.bag?.location ?? undefined, "Location");
+    const campus = propertyRef(props.modelValue.bag?.campus, "Campus");
+    const gradingSystem = propertyRef(props.modelValue.bag?.gradingSystem?.value ?? "", "GradingSystem");
+
+    const semesters = props.options.semesters ?? [];
+    const gradingSystems = props.options.gradingSystems ?? [];
+    const isEditingExisting = (props.modelValue.bag?.idKey ?? "").length > 0;
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [
+        name
+        , isActive
+        , isPublic
+        , description
+        , semester
+        , schedule
+        , location
+        , campus
+        , gradingSystem
+    ];
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(name, props.modelValue.bag?.name ?? "");
+        updateRefValue(isActive, props.modelValue.bag?.isActive ?? false);
+        updateRefValue(isPublic, props.modelValue.bag?.isPublic ?? false);
+        updateRefValue(description, props.modelValue.bag?.description ?? "");
+        updateRefValue(semester, props.modelValue.bag?.semester?.value ?? "");
+        updateRefValue(schedule, props.modelValue.bag?.schedule ?? {});
+        updateRefValue(location, props.modelValue.bag?.location ?? undefined);
+        updateRefValue(campus, props.modelValue.bag?.campus ?? {});
+        updateRefValue(gradingSystem, props.modelValue.bag?.gradingSystem?.value ?? "");
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([...propRefs], () => {
+        const newValue: ValidPropertiesBox<LearningClassBag> = {
+            bag: { ...props.modelValue.bag } as LearningClassBag
+        };
+
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "isActive", isActive.value);
+        setPropertiesBoxValue(newValue, "isPublic", isPublic.value);
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "semester", { value: semester.value });
+        setPropertiesBoxValue(newValue, "schedule", schedule.value);
+        setPropertiesBoxValue(newValue, "location", location.value);
+        setPropertiesBoxValue(newValue, "campus", campus.value);
+        setPropertiesBoxValue(newValue, "gradingSystem", { value: gradingSystem.value });
+
+        emit("update:modelValue", newValue);
+    });
+</script>

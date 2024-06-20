@@ -1,0 +1,251 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <TabbedContent :tabs="programDetailTabs">
+        <template #tabpane="{ item }">
+            <div v-if="item === 'Overview'">
+                <fieldset>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <TextBox
+                                     v-model="name"
+                                     label="Name"
+                                     rules="required" />
+
+                            <TextBox
+                                     v-model="summary"
+                                     label="Summary"
+                                     help="Short summary of the program to be used on public sites and lists."
+                                     textMode="multiline" />
+
+                            <RadioButtonList
+                                             v-model="configurationMode"
+                                             label="Configuration Mode"
+                                             horizontal
+                                             :items="configurationModes" />
+
+                            <CategoryPicker
+                                            v-model="category"
+                                            label="Category"
+                                            :entityTypeGuid="EntityType.LearningProgram"
+                                            :multiple="false" />
+
+                            <CheckBox
+                                      v-model="isCompletionStatusTracked"
+                                      help="Determines if program start and end dates will be automatically tracked for students as they start/complete classes."
+                                      label="Track Program Status" />
+
+                            <DropDownList
+                                          v-model="systemCommunicationValue"
+                                          label="Default Communication Template"
+                                          help="The template to use when sending emails for communications about this program and it's courses."
+                                          rules="required"
+                                          :items="systemCommunications" />
+
+                            <WorkflowTypePicker
+                                                v-model="completionWorkflowType"
+                                                label="Completion Workflow Type"
+                                                help="The workflow to launch when an individual completes the requirements for a program." />
+                        </div>
+
+                        <div class="col-md-6">
+                            <CheckBox
+                                      v-model="isActive"
+                                      label="Active" />
+
+                            <CheckBox
+                                      v-model="isPublic"
+                                      label="Public" />
+
+                            <ColorPicker
+                                         v-model="highlightColor"
+                                         label="Color"
+                                         help="The color to use to differentiate from other learning programs." />
+
+                            <TextBox
+                                     v-model="iconCssClass"
+                                     label="Icon CSS Class" />
+
+                            <ImageUploader v-model="imageBinaryFile"
+                                           label="Image"
+                                           :binaryFileTypeGuid="imageFileTypeGuid" />
+
+                            <NumberBox
+                                       v-model="absencesWarningCount"
+                                       label="Absences Warning Count"
+                                       help="The number of absences before a student can have before they are in a warning state." />
+
+                            <NumberBox
+                                       v-model="absencesCriticalCount"
+                                       label="Absences Critical Count"
+                                       help="The number of absences before a student can have before they are in a critical state." />
+                        </div>
+                    </div>
+
+                    <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+                </fieldset>
+            </div>
+            <div v-else-if="item === 'Description'">
+                <StructuredContentEditor
+                                         v-model="description" />
+            </div>
+        </template>
+    </TabbedContent>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { LearningProgramBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningProgramDetail/learningProgramBag";
+    import { LearningProgramDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningProgramDetail/learningProgramDetailOptionsBag";
+    import TabbedContent from "@Obsidian/Controls/tabbedContent.obs";
+    import { ConfigurationMode, ConfigurationModeDescription } from "@Obsidian/Enums/Lms/configurationMode";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
+    import ImageUploader from "@Obsidian/Controls/imageuploader.obs";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<LearningProgramBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<LearningProgramDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: LearningProgramBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+    const defaultConfigurationMode = ConfigurationMode.OnDemandLearning;
+
+    const programDetailTabs: Array<string> = ["Overview", "Description"];
+
+    const imageFileTypeGuid = BinaryFiletype.Default;
+    const configurationModes = enumToListItemBag(ConfigurationModeDescription);
+
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const systemCommunications = ref(props.options.systemCommunications ?? []);
+
+    const systemCommunicationValue = propertyRef(props.modelValue.systemCommunication?.value ?? "", "SystemCommunication");
+    const completionWorkflowType = propertyRef(props.modelValue.completionWorkflowType ?? {}, "CompletionWorkflowType");
+    const description = propertyRef(props.modelValue.description ?? "", "Description");
+    const summary = propertyRef(props.modelValue.summary ?? "", "Summary");
+    const configurationMode = propertyRef(props.modelValue.configurationMode.toString(), "ConfigurationMode");
+    const highlightColor = propertyRef(props.modelValue.highlightColor ?? "", "HighlightColor");
+    const iconCssClass = propertyRef(props.modelValue.iconCssClass ?? "", "IconCssClass");
+    const isCompletionStatusTracked = propertyRef(props.modelValue.isCompletionStatusTracked ?? false, "TrackProgramStatus");
+    const absencesWarningCount = propertyRef(props.modelValue.absencesWarningCount, "AbsencesWarningCount");
+    const absencesCriticalCount = propertyRef(props.modelValue.absencesCriticalCount, "AbsencesCriticalCount");
+    const category = propertyRef(props.modelValue.category ?? null, "Category");
+    const imageBinaryFile = propertyRef(props.modelValue.imageBinaryFile ?? null, "ImageBinaryFile");
+    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
+    const isPublic = propertyRef(props.modelValue.isPublic ?? false, "IsPublic");
+    const name = propertyRef(props.modelValue.name ?? "", "Name");
+    const publicName = propertyRef(props.modelValue.publicName ?? name.value, "PublicName");
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [
+        description,
+        summary,
+        configurationMode,
+        highlightColor,
+        iconCssClass,
+        isCompletionStatusTracked,
+        systemCommunicationValue,
+        completionWorkflowType,
+        absencesWarningCount,
+        absencesCriticalCount,
+        category,
+        imageBinaryFile,
+        isActive,
+        isPublic,
+        name,
+        publicName
+    ];
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(description, props.modelValue.description ?? "");
+        updateRefValue(isActive, props.modelValue.isActive ?? false);
+        updateRefValue(isPublic, props.modelValue.isPublic ?? false);
+        updateRefValue(isCompletionStatusTracked, props.modelValue.isCompletionStatusTracked ?? false);
+        updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(publicName, props.modelValue.name ?? "");
+        updateRefValue(summary, props.modelValue.summary ?? "");
+        updateRefValue(configurationMode, props.modelValue.configurationMode?.toString() ?? defaultConfigurationMode);
+        updateRefValue(systemCommunicationValue, props.modelValue.systemCommunication?.value ?? "");
+        updateRefValue(category, props.modelValue.category ?? null);
+        updateRefValue(highlightColor, props.modelValue.highlightColor ?? "");
+        updateRefValue(iconCssClass, props.modelValue.iconCssClass ?? "");
+        updateRefValue(imageBinaryFile, props.modelValue.imageBinaryFile ?? null);
+        updateRefValue(absencesWarningCount, props.modelValue.absencesWarningCount ?? null);
+        updateRefValue(absencesCriticalCount, props.modelValue.absencesCriticalCount ?? null);
+        updateRefValue(completionWorkflowType, props.modelValue.completionWorkflowType ?? {});
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, ...propRefs], () => {
+        const newValue: LearningProgramBag = {
+            ...props.modelValue,
+            attributeValues: attributeValues.value,
+            description: description.value,
+            name: name.value,
+            publicName: name.value,
+            summary: summary.value,
+            configurationMode: parseInt(configurationMode.value) as ConfigurationMode,
+            category: category.value,
+            isCompletionStatusTracked: isCompletionStatusTracked.value,
+            systemCommunication: { value: systemCommunicationValue.value },
+            completionWorkflowType: completionWorkflowType.value,
+            isActive: isActive.value,
+            isPublic: isPublic.value,
+            highlightColor: highlightColor.value,
+            iconCssClass: iconCssClass.value,
+            imageBinaryFile: imageBinaryFile.value,
+            absencesWarningCount: absencesWarningCount.value,
+            absencesCriticalCount: absencesCriticalCount.value
+        };
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

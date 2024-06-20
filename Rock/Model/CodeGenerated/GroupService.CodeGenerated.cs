@@ -130,6 +130,8 @@ namespace Rock.Model
                 return false;
             }
 
+            // ignoring LearningClass,Id
+
             if ( new Service<Person>( Context ).Queryable().Any( a => a.GivingGroupId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, Person.FriendlyTypeName );

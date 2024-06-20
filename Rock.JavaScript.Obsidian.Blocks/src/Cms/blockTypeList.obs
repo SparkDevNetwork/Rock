@@ -137,6 +137,7 @@
         path: preferences.getValue(PreferenceKey.FilterPath),
         category: preferences.getValue(PreferenceKey.FilterCategory),
         excludeSystemTypes: preferences.getValue(PreferenceKey.FilterSystemTypes) === "true",
+        showOnlyObsidian: preferences.getValue(PreferenceKey.FilterObsidianBlocks) === "true",
     });
 
     // #endregion
@@ -161,7 +162,8 @@
         return !!gridSettings.value.name
             || !!gridSettings.value.path
             || !!gridSettings.value.category
-            || gridSettings.value.excludeSystemTypes;
+            || gridSettings.value.excludeSystemTypes
+            || gridSettings.value.showOnlyObsidian;
     });
 
     // #endregion
@@ -177,12 +179,14 @@
         const pathValue = gridSettings.value.path ?? "";
         const categoryValue = gridSettings.value.category ?? "";
         const excludeSystemTypesValue = gridSettings.value.excludeSystemTypes ? "true" : "false";
+        const showOnlyObsidian = gridSettings.value.showOnlyObsidian ? "true" : "false";
 
         // Set the preferences with the appropriate values
         preferences.setValue(PreferenceKey.FilterName, nameValue);
         preferences.setValue(PreferenceKey.FilterPath, pathValue);
         preferences.setValue(PreferenceKey.FilterCategory, categoryValue);
         preferences.setValue(PreferenceKey.FilterSystemTypes, excludeSystemTypesValue);
+        preferences.setValue(PreferenceKey.FilterObsidianBlocks, showOnlyObsidian);
 
         // Save the preferences
         await preferences.save();
@@ -217,7 +221,8 @@
             name: gridSettings.value.name,
             path: gridSettings.value.path,
             category: gridSettings.value.category,
-            systemTypes: gridSettings.value.excludeSystemTypes
+            systemTypes: gridSettings.value.excludeSystemTypes,
+            showOnlyObsidian: gridSettings.value.showOnlyObsidian
         });
 
         if (result.isSuccess && result.data) {

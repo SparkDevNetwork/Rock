@@ -27,6 +27,12 @@
                           label="Exclude 'System' Types?"
                           text="Yes" />
             </div>
+
+            <div class="col-md-4">
+                <CheckBox v-model="showOnlyObsidian"
+                          label="Show Obsidian only?"
+                          text="Yes" />
+            </div>
         </div>
     </Modal>
 </template>
@@ -304,6 +310,7 @@
     const path = ref(props.modelValue.path ?? "");
     const category = ref(props.modelValue.category ?? "");
     const excludeSystemTypes = ref(props.modelValue.excludeSystemTypes ?? false);
+    const showOnlyObsidian = ref(props.modelValue.showOnlyObsidian ?? false);
     const isVisible = useVModelPassthrough(props, "visible", emit);
 
     function onSave(): void {
@@ -311,7 +318,8 @@
             name: name.value,
             path: path.value,
             category: category.value,
-            excludeSystemTypes: excludeSystemTypes.value
+            excludeSystemTypes: excludeSystemTypes.value,
+            showOnlyObsidian: showOnlyObsidian.value
         };
 
         if (!deepEqual(value, props.modelValue, true)) {
@@ -326,6 +334,7 @@
         path.value = props.modelValue.path ?? "";
         category.value = props.modelValue.category ?? "";
         excludeSystemTypes.value = props.modelValue.excludeSystemTypes ?? false;
+        showOnlyObsidian.value = props.modelValue.showOnlyObsidian ?? false;
     });
 
     watch(isVisible, () => {

@@ -1,0 +1,167 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-3">
+                <NumberBox v-model="pointsEarned"
+                           label="Points Earned"
+                           :rules="'required|lte:' + pointsPossible"
+                           inputGroupClasses="input-width-md">
+                    <template #inputGroupAppend>
+                        <span class="input-group-addon">out of {{ pointsPossible }}</span>
+                    </template>
+                </NumberBox>
+            </div>
+
+            <div class="col-md-3 col-md-offset-6">
+                <DatePicker v-model="dueDate"
+                            label="Due Date" />
+            </div>
+
+        </div>
+        <div class="student-comments-section" v-if="isStudentCommentingEnabled">
+            {{ studentComment }}
+        </div>
+
+        <div class="facilitator-comments-section">
+            <TextBox v-model="facilitatorComment"
+                     label="Facilitator Comment"
+                     textMode="multiline" />
+        </div>
+
+        <div class="activity-component-section">
+            <!-- Pass the configuration and completion json values to the component. -->
+            <activityTypeComponent
+                                   v-model:activityBag="activityBag"
+                                   v-model:completionBag="completionBag"
+                                   :screenToShow="screenToShow" />
+        </div>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { Component, PropType, computed, ref, watch } from "vue";
+    import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
+    import { defineAsyncComponent, propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import { ComponentScreen } from "@Obsidian/Controls/Internal/LearningActivity/learningActivity";
+    import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
+    import { LearningActivityCompletionDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
+    import { deepEqual } from "@Obsidian/Utility/util";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<LearningActivityCompletionBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<LearningActivityCompletionDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<LearningActivityCompletionBag>): void
+    }>();
+
+    // #region Values
+
+    // The dynamically imported activity component for the learning activity.
+    let activityTypeComponent: Component | null;
+
+    const activityBag = ref(props.modelValue.bag?.activityBag ?? {} as LearningActivityBag);
+    const completionBag = ref(props.modelValue.bag ?? {} as LearningActivityCompletionBag);
+
+    const dueDate = ref(completionBag.value.dueDate);
+    const isStudentCommentingEnabled = ref(completionBag.value.isStudentCommentingEnabled ?? false);
+    const studentComment = ref(completionBag.value.studentComment ?? "");
+    const pointsPossible = ref(activityBag.value?.points);
+    const isStudentCompleted = ref(completionBag.value.isStudentCompleted ?? false);
+    const isPastDue = ref(completionBag.value.isPastDue ?? false);
+    const isFacilitatorCompleted = propertyRef(completionBag.value.isFacilitatorCompleted ?? false, "IsFacilitatorCompleted");
+    const facilitatorComment = propertyRef(completionBag.value.facilitatorComment ?? "", "FacilitatorComments");
+    const pointsEarned = propertyRef(completionBag.value.pointsEarned, "PointsEarned");
+    const completionJson = propertyRef(completionBag.value.activityComponentCompletionJson, "ActivityComponentCompletionJson");
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [
+        completionJson
+        , dueDate
+        , isFacilitatorCompleted
+        , facilitatorComment
+        , pointsEarned
+    ];
+
+    // #endregion
+
+    // #region Computed Values
+
+    const requiresScoring = computed(() =>
+        isStudentCompleted.value === true && isFacilitatorCompleted.value === false
+    );
+
+    const screenToShow = computed(() => {
+        return [isPastDue.value, requiresScoring.value].includes(true) ?
+            ComponentScreen.Scoring :
+            ComponentScreen.Summary;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(completionJson, props.modelValue.bag?.activityComponentCompletionJson ?? "");
+        updateRefValue(isFacilitatorCompleted, props.modelValue.bag?.isFacilitatorCompleted ?? false);
+        updateRefValue(facilitatorComment, props.modelValue.bag?.facilitatorComment ?? "");
+        updateRefValue(pointsEarned, props.modelValue.bag?.pointsEarned ?? 0);
+        updateRefValue(dueDate, props.modelValue.bag?.dueDate);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([...propRefs], () => {
+        const newValue: ValidPropertiesBox<LearningActivityCompletionBag> = {
+            bag: { ...props.modelValue.bag } as LearningActivityCompletionBag
+        };
+
+        setPropertiesBoxValue(newValue, "activityComponentCompletionJson", completionJson.value);
+        setPropertiesBoxValue(newValue, "isFacilitatorCompleted", isFacilitatorCompleted.value);
+        setPropertiesBoxValue(newValue, "facilitatorComment", facilitatorComment.value);
+        setPropertiesBoxValue(newValue, "pointsEarned", pointsEarned.value);
+        setPropertiesBoxValue(newValue, "dueDate", dueDate.value);
+
+        emit("update:modelValue", newValue);
+    });
+
+    watch(completionBag, () => {
+        if (!deepEqual(completionBag.value.activityComponentCompletionJson, completionJson.value, true)) {
+            completionJson.value = completionBag.value.activityComponentCompletionJson;
+
+            // Allow the component to update the points earned for the activity completion.
+            if (completionBag.value.pointsEarned !== pointsEarned.value) {
+                pointsEarned.value = completionBag.value.pointsEarned;
+            }
+        }
+    });
+
+    const componentUrl = activityBag.value.activityComponent?.componentUrl ?? "";
+
+    if (componentUrl.length > 0) {
+        activityTypeComponent = defineAsyncComponent(() => import(componentUrl));
+    }
+
+</script>

@@ -17,6 +17,9 @@
 
 namespace Rock.ViewModels.Blocks.Workflow.WorkflowList
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class WorkflowListOptionsBag
     {
         /// <summary>

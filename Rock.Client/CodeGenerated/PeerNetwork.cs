@@ -35,6 +35,9 @@ namespace Rock.Client
         public long Id { get; set; }
 
         /// <summary />
+        public string Caption { get; set; }
+
+        /// <summary />
         public int? ClassificationEntityId { get; set; }
 
         /// <summary />
@@ -62,10 +65,10 @@ namespace Rock.Client
         public int RelationshipTypeValueId { get; set; }
 
         /// <summary />
-        public int SourcePersonAliasId { get; set; }
+        public int SourcePersonId { get; set; }
 
         /// <summary />
-        public int TargetPersonAliasId { get; set; }
+        public int TargetPersonId { get; set; }
 
         /// <summary>
         /// Copies the base properties from a source PeerNetwork object
@@ -74,6 +77,7 @@ namespace Rock.Client
         public void CopyPropertiesFrom( PeerNetwork source )
         {
             this.Id = source.Id;
+            this.Caption = source.Caption;
             this.ClassificationEntityId = source.ClassificationEntityId;
             this.LastUpdateDateTime = source.LastUpdateDateTime;
             this.RelatedEntityId = source.RelatedEntityId;
@@ -83,8 +87,8 @@ namespace Rock.Client
             this.RelationshipStartDate = source.RelationshipStartDate;
             this.RelationshipTrend = source.RelationshipTrend;
             this.RelationshipTypeValueId = source.RelationshipTypeValueId;
-            this.SourcePersonAliasId = source.SourcePersonAliasId;
-            this.TargetPersonAliasId = source.TargetPersonAliasId;
+            this.SourcePersonId = source.SourcePersonId;
+            this.TargetPersonId = source.TargetPersonId;
 
         }
     }
@@ -98,10 +102,10 @@ namespace Rock.Client
         public DefinedValue RelationshipTypeValue { get; set; }
 
         /// <summary />
-        public PersonAlias SourcePersonAlias { get; set; }
+        public Person SourcePerson { get; set; }
 
         /// <summary />
-        public PersonAlias TargetPersonAlias { get; set; }
+        public Person TargetPerson { get; set; }
 
     }
 }

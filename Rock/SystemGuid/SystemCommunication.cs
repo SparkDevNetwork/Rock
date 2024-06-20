@@ -250,5 +250,14 @@ namespace Rock.SystemGuid
         public const string SIGNUP_GROUP_REGISTRATION_CONFIRMATION = "B546C11D-6C92-400F-BA56-AAA22D7BAC01";
 
         #endregion
+
+        #region Learning Management System (LMS)
+
+        /// <summary>
+        /// Gets the template guid for the Learning Activity Notifications system communication.
+        /// </summary>
+        public const string LEARNING_ACTIVITY_NOTIFICATIONS = "d40a9c32-f179-4e5e-9b0d-ce208c5d1870";
+
+        #endregion
     }
 }

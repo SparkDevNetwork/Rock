@@ -1,0 +1,110 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Content Page"
+          :entityTypeGuid="EntityType.LearningClassContentPage"
+          :expectedRowCount="10"
+          tooltipField="title"
+          stickyHeader
+          liveUpdates
+          :onSelectItem="onRowClicked"
+          :onAddItem="isAddEnabled ? onAddItemClicked : undefined">
+
+        <TextColumn name="title"
+                    title="Page Name"
+                    field="title"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <DateColumn
+                name="startDateTime"
+                title="Start Date"
+                field="startDateTime"
+                :filter="dateValueFilter"
+                filterValue="startDate"
+                quickFilterValue="startDate"
+                visiblePriority="xs" />
+
+        <DeleteColumn v-if="isDeleteEnabled" @click="(r) => $emit('deleteClick', r, gridData)" />
+    </Grid>
+</template>
+
+<script setup lang="ts">
+    import { PropType, reactive, ref } from "vue";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { DateColumn, TextColumn, textValueFilter, dateValueFilter, DeleteColumn } from "@Obsidian/Controls/grid";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const emit = defineEmits<{
+        (e: "rowClick", idKey: string, gridData: GridDataBag | undefined): void;
+        (e: "deleteClick", idKey: string, gridData: GridDataBag | undefined): void;
+        (e: "addClick"): void;
+    }>();
+
+    const props = defineProps({
+        isAddEnabled: {
+            type: Object as PropType<boolean>,
+            required: true,
+            default: false
+        },
+
+        isDeleteEnabled: {
+            type: Object as PropType<boolean>,
+            required: true,
+            default: false
+        }
+    });
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const isAddEnabled = ref(props.isAddEnabled);
+    const isDeleteEnabled = ref(props.isDeleteEnabled);
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onRowClicked(key: string): void {
+        emit("rowClick", key, gridData);
+    }
+
+    function onAddItemClicked(): void {
+        emit("addClick");
+    }
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetContentPages");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load content pages grid data.");
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>

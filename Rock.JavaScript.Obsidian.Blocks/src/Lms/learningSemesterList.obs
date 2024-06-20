@@ -1,0 +1,150 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Semester"
+          :entityTypeGuid="EntityType.LearningSemester"
+          :expectedRowCount="config.expectedRowCount ?? undefined"
+          tooltipField="name"
+          stickyHeader
+          liveUpdates
+          :hasFullscreen="false"
+          :showMergeTemplate="false"
+          :showLaunchWorkflow="false"
+          @selectItem="onSelectItem"
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined">
+
+        <TextColumn name="name"
+                    title="Name"
+                    field="name"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <DateColumn name="startDate"
+                    title="Start Date"
+                    field="startDate"
+                    :filter="dateValueFilter"
+                    visiblePriority="xs" />
+
+        <DateColumn name="endDate"
+                    title="End Date"
+                    field="endDate"
+                    :filter="dateValueFilter"
+                    visiblePriority="xs" />
+
+        <DateColumn name="closeDate"
+                    title="Close Date"
+                    field="closeDate"
+                    :filter="dateValueFilter"
+                    visiblePriority="xs" />
+
+        <NumberColumn name="classCount"
+                      title="Class Count"
+                      field="classCount"
+                      :filter="numberValueFilter"
+                      visiblePriority="xs" />
+
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" :rowDisabled="onDeleteRowDisabled" />
+    </Grid>
+</template>
+
+<script setup lang="ts">
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { numberValueFilter, NumberColumn, dateValueFilter, TextColumn, DateColumn, textValueFilter, DeleteColumn } from "@Obsidian/Controls/grid";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { LearningSemesterListOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningSemesterList/learningSemesterListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { reactive, ref } from "vue";
+    import { NavigationUrlKey } from "./LearningSemesterList/types.partial";
+
+    const config = useConfigurationValues<ListBlockBox<LearningSemesterListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+        }
+    }
+
+    /**
+     * Called when the Add button has been clicked by the indivual.
+     */
+    function onAddItem(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
+        }
+    }
+
+    /**
+     * Called when a semester row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+     async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+        }
+        else {
+            alert(result.errorMessage ?? "Unknown error while trying to delete the semester.");
+        }
+    }
+
+    /**
+    * Called when the delete button for a row wants to know if it should be
+    * disabled.
+    *
+    * @param row The row associated with the delete button.
+    */
+    function onDeleteRowDisabled(row: Record<string, unknown>): boolean {
+        return (row.classCount as number) > 0;
+    }
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>

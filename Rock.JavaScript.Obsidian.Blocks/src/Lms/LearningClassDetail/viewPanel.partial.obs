@@ -1,0 +1,119 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+
+        <ValueDetailList :modelValue="topValues" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="leftSideValues" />
+            </div>
+
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="rightSideValues" />
+            </div>
+        </div>
+
+</fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
+    import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
+    import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+    import { LearningClassBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassDetail/learningClassBag";
+    import { LearningClassDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassDetail/learningClassDetailOptionsBag";
+    import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
+
+    const props = defineProps({
+    modelValue: {
+    type: Object as PropType<LearningClassBag | null>,
+            required: false
+        },
+
+        options: {
+            type: Object as PropType<LearningClassDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** The values to display full-width at the top of the block. */
+    const topValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (props.modelValue.description) {
+            valueBuilder.addTextValue("", props.modelValue.description);
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const leftSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        valueBuilder.addHtmlValue("", `<h4>Course</h4>${props.modelValue.courseName}` ?? "");
+
+        if (props.options.programConfigurationMode === ConfigurationMode.AcademicCalendar) {
+            valueBuilder.addHtmlValue("", `<h4>Semester</h4>${props.modelValue.semester?.text ?? ""}`);
+        }
+
+        const facilitatorsText = props.modelValue.facilitators?.map(f => {
+            return `<li><a href="">${f.facilitatorName}</a><span class="ml-1 text-muted">${f.facilitatorRole}</span></li>`;
+        }).join("") ?? "";
+
+        if (facilitatorsText.length > 0) {
+            valueBuilder.addHtmlValue("", `<ul>${facilitatorsText}</ul>`);
+        }
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the right side of the block. */
+    const rightSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        valueBuilder.addHtmlValue("", `<h4>Course Code</h4>${props.modelValue.courseCode ?? ""}`);
+
+        const schedule = props.modelValue.schedule?.text ?? "";
+        let fieldText = props.modelValue.location?.text  ?? "";
+        if (schedule.length > 0) {
+            fieldText += (fieldText.length > 0 ? " - " : "") + schedule;
+        }
+
+        valueBuilder.addHtmlValue("",  `<h4>Location / Schedule</h4>${fieldText ?? "N/A"}`);
+
+        valueBuilder.addHtmlValue("", `<h4>Grading System</h4>${props.modelValue.gradingSystem?.text ?? ""}`);
+
+        return valueBuilder.build();
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+</script>

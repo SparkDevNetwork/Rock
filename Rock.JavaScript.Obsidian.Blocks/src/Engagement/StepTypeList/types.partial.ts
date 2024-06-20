@@ -21,15 +21,9 @@ export const enum NavigationUrlKey {
 }
 
 export type GridSettingsOptions = {
-    name?: string | null;
-    spansTime?: string | null;
-    allowsMultiple?: string | null;
     activeStatus?: string | null;
 };
 
 export const enum PreferenceKey {
-    FilterName = "filter-name",
-    FilterSpansTime = "filter-spans-time",
-    FilterAllowsMultiple = "filter-allows-multiple",
     FilterActiveStatus = "filter-active-status"
 }

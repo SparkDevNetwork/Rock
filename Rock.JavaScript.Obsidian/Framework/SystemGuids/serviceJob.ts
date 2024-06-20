@@ -115,6 +115,8 @@ export const ServiceJob = {
     DataMigrations161SwapFinancialBatchList: "7750ECFD-26E3-49DE-8E90-1B1A6DCCC3FE",
     /** The post update data migration job to chop the Email Preference Entry block. */
     DataMigrations162ChopEmailPreferenceEntry: "AE07C80A-80A4-48FD-908C-56DDB1CAA322",
+    /** The Job to run Post v16.6 Add CommunicationRecipient Index. */
+    DataMigrations166AddCommunicationRecipientIndex: "48070B65-FC20-401F-B25F-8F4D13BA5F36",
     /** The Job to run Post v16.6 Data Migrations to an index to the CreatedDateTime column on the Interaction table. */
     DataMigrations166AddInteractionCreatedDateTimeIndex: "2B2E2C6F-0184-4797-9D39-E8FC700D9887",
     /**
@@ -160,6 +162,8 @@ export const ServiceJob = {
     RockCleanup: "1A8238B1-038A-4295-9FDE-C6D93002A5D7",
     /** The Job to send an email digest with an attendance summary of all child groups to regional group leaders */
     SendGroupAttendanceDigest: "9F9E9C3B-FC58-4939-A272-4FA86D44CE7B",
+    /** The job for sending available learning activity notifications. Rock.Jobs.SendLearningActivityNotifications. */
+    SendLearningActivityNotifications: "0075859b-8dc3-4e95-9075-89198886fcb4",
     /** The steps automation job - add steps based on people in a dataview */
     StepsAutomation: "97858941-0447-49D6-9E35-B03665FEE965",
     /** The media synchronize job. */

@@ -54,7 +54,7 @@ export type CategoryBag = {
     idKey?: string | null;
 
     /** Gets or sets if the delete option should be shown on the remote device. */
-    isDeletable?: boolean | null;
+    isDeletable: boolean;
 
     /** Gets or sets a flag indicating if this Category is part of the Rock core system/framework. */
     isSystem: boolean;

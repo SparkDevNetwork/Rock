@@ -30,7 +30,7 @@ namespace Rock.Blocks
     /// will display an entity with the option to edit and save changes.
     /// </summary>
     public abstract class RockEntityDetailBlockType<TEntity, TEntityBag> : RockDetailBlockType
-        where TEntity : Rock.Data.Entity<TEntity>, new()
+        where TEntity : class, Rock.Data.IEntity, new()
         where TEntityBag : class
     {
         /// <summary>

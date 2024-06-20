@@ -14,7 +14,7 @@
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           @selectItem="onSelectItem">
         <SelectColumn />
-
+        <TextColumn name="id" title="Id" field="id" :hideOnScreen="true" />
         <PersonColumn name="authorized"
                       title="Contributor"
                       field="authorized"

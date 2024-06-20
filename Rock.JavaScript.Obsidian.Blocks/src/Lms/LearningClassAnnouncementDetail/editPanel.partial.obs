@@ -1,0 +1,123 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="title"
+                         label="Title"
+                         placeholder="Welcome to Introduction to the New Testament!"
+                         rules="required" />
+            </div>
+
+            <div class="col-md-3">
+                <DatePicker v-model="publishDateTime"
+                            rules="required"
+                            label="Publish Date"
+                            helpText="The date when the announcement will be displayed and sent." />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <RadioButtonList v-model="communicationMode"
+                    horizontal
+                    rules="required"
+                    label="Communication Mode"
+                    help="Determines what medium to use for communicating the announcement."
+                    :items="communicationModeItems"
+     />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <StructuredContentEditor v-model="description" label="Announcement Text" />
+            </div>
+        </div>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, watch } from "vue";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
+    import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { LearningClassAnnouncementBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassAnnouncementDetail/learningClassAnnouncementBag";
+    import { LearningClassAnnouncementDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassAnnouncementDetail/learningClassAnnouncementDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { CommunicationMode, CommunicationModeDescription } from "@Obsidian/Enums/Lms/communicationMode";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<LearningClassAnnouncementBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<LearningClassAnnouncementDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<LearningClassAnnouncementBag>): void
+    }>();
+
+    // #region Values
+
+    const communicationModeItems = enumToListItemBag(CommunicationModeDescription);
+
+    const title = propertyRef(props.modelValue.bag?.title ?? "", "Title");
+    const publishDateTime = propertyRef(props.modelValue.bag?.publishDateTime, "PublishDateTime");
+    const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
+    const communicationMode = propertyRef(props.modelValue.bag?.communicationMode?.toString() ?? "", "CommunicationMode");
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [
+        title
+        , publishDateTime
+        , description
+        , communicationMode
+    ];
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(title, props.modelValue.bag?.title ?? "");
+        updateRefValue(publishDateTime, props.modelValue.bag?.publishDateTime);
+        updateRefValue(description, props.modelValue.bag?.description ?? "");
+        updateRefValue(communicationMode, props.modelValue.bag?.communicationMode?.toString() ?? "");
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([...propRefs], () => {
+        const newValue: ValidPropertiesBox<LearningClassAnnouncementBag> = {
+            bag: { ...props.modelValue.bag } as LearningClassAnnouncementBag
+        };
+
+        setPropertiesBoxValue(newValue, "title", title.value);
+        setPropertiesBoxValue(newValue, "publishDateTime", publishDateTime.value ?? "");
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "communicationMode", parseInt(communicationMode.value) as CommunicationMode);
+
+        emit("update:modelValue", newValue);
+    });
+</script>
