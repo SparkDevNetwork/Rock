@@ -128,7 +128,8 @@ export function useBreakpointHelper(): ComputedRef<BreakpointHelper> {
 // TODO JMH Remove this debug option.
 export const KeepPersonPickerOpen: InjectionKey<Ref<boolean>> = Symbol("keep-person-picker-open");
 
-export function updateArrayValues<Key, Value>(oldValues: Value[], keySelector: ((item: Value) => Key | undefined), newKeys: Key[], getNewValues: ((keys: Key[]) => Promise<Value[]>)): Promise<Value[]> {
+
+export function getArrayDiff<Key, Value>(oldValues: Value[], keySelector: ((item: Value) => Key | undefined), newKeys: Key[]): { readonly removedKeys: Key[]; readonly addedKeys: Key[]; readonly values: Value[]; removeValues(keys: Key[]): void; addValues(values: Value[]): void; } {
     // Copy the old values to a dictionary for faster processing.
     const oldValueDictionary = new Map<Key, Value>();
     for (const oldValue of oldValues) {
@@ -157,30 +158,48 @@ export function updateArrayValues<Key, Value>(oldValues: Value[], keySelector: (
         }
     }
 
-    // Remove values.
-    if (valueToRemoveDictionary.size) {
-        for (const key of valueToRemoveDictionary.keys()) {
-            newValueDictionary.delete(key);
+    return {
+        get removedKeys(): Key[] {
+            return Array.from(valueToRemoveDictionary.keys());
+        },
+        get addedKeys(): Key[] {
+            return keysToAdd;
+        },
+        get values(): Value[] {
+            return Array.from(newValueDictionary.values());
+        },
+        removeValues(keys: Key[]): void {
+            if (valueToRemoveDictionary.size) {
+                for (const key of keys) {
+                    newValueDictionary.delete(key);
+                }
+            }
+        },
+        addValues(values: Value[]): void {
+            for (const value of values) {
+                const key = keySelector(value);
+                if (key) {
+                    newValueDictionary.set(key, value);
+                }
+            }
         }
-    }
+    };
+}
+
+export function updateArray<Key, Value>(oldValues: Value[], keySelector: ((item: Value) => Key | undefined), newKeys: Key[], getNewValues: ((keys: Key[]) => Promise<Value[]>)): Promise<Value[]> {
+    const arrayDiff = getArrayDiff(oldValues, keySelector, newKeys);
+    arrayDiff.removeValues(arrayDiff.removedKeys);
+    const keysToAdd = arrayDiff.addedKeys;
 
     // Add values.
     if (keysToAdd.length) {
         return getNewValues(keysToAdd)
             .then(valuesToAdd => {
-                if (valuesToAdd.length) {
-                    for (const valueToAdd of valuesToAdd) {
-                        const key = keySelector(valueToAdd);
-                        if (key) {
-                            newValueDictionary.set(key, valueToAdd);
-                        }
-                    }
-                }
-
-                return Array.from(newValueDictionary.values());
+                arrayDiff.addValues(valuesToAdd);
+                return arrayDiff.values;
             });
     }
     else {
-        return Promise.resolve(Array.from(newValueDictionary.values()));
+        return Promise.resolve(arrayDiff.values);
     }
 }

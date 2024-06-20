@@ -1,6 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <BaseAsyncPicker v-model="internalSample"
+    <BaseAsyncPicker :modelValue="internalSample"
+                     @update:modelValue="onUpdateInternalSample"
                      v-bind="standardProps"
                      :disabled="disabled"
                      displayStyle="auto"
@@ -55,12 +56,14 @@
 </style>
 
 <script setup lang="ts">
-    import { PropType, Ref, computed, nextTick, ref, watch } from "vue";
+    import { PropType, Ref, computed, ref, watch } from "vue";
     import BaseAsyncPicker from "@Obsidian/Controls/baseAsyncPicker.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { standardAsyncPickerProps, useStandardAsyncPickerProps, useVModelPassthrough } from "@Obsidian/Utility/component";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { getArrayDiff } from "./utils.partial";
+    import { Guid } from "@Obsidian/Types";
 
     const props = defineProps({
         modelValue: {
@@ -203,15 +206,61 @@
     }
 
     function onDeselectItemClicked(value: string): void {
-        const item = internalListItemBags.value.find(i => i.value === value);
-        if (item) {
-            const newValue = [...internalListItemBags.value];
-            const index = newValue.indexOf(item);
-            if (index !== -1) {
-                newValue.splice(index, 1);
-                internalListItemBags.value = newValue;
+        const currentListItemBags = internalListItemBags.value;
+        const newValue: ListItemBag[] = [];
+
+        for (const listItemBag of currentListItemBags) {
+            if (listItemBag.value !== value) {
+                newValue.push(listItemBag);
             }
         }
+
+        if (newValue.length < currentListItemBags.length) {
+            // Only update if an item was deselected.
+            internalListItemBags.value = newValue;
+        }
+    }
+
+    function onUpdateInternalSample(newValue: ListItemBag | ListItemBag[] | null): void {
+        const newValueDictionary = new Map<Guid, ListItemBag>();
+
+        if (newValue === null) {
+            // If newValue is null then all sample values were deselected.
+        }
+        else if (Array.isArray(newValue)) {
+            for (const value of newValue) {
+                if (value.value) {
+                    newValueDictionary.set(value.value, value);
+                }
+            }
+        }
+        else {
+            if (newValue.value) {
+                newValueDictionary.set(newValue.value, newValue);
+            }
+        }
+
+        const arrayDiff = getArrayDiff(internalSample.value, s => s.value ?? undefined, Array.from(newValueDictionary.keys()));
+
+        const internalPopulation = new Map<Guid, ListItemBag>();
+        for (const listItemBag of internalListItemBags.value) {
+            if (listItemBag.value) {
+                internalPopulation.set(listItemBag.value, listItemBag);
+            }
+        }
+
+        for (const removedKey of arrayDiff.removedKeys) {
+            internalPopulation.delete(removedKey);
+        }
+
+        for (const addedKey of arrayDiff.addedKeys) {
+            const value = newValueDictionary.get(addedKey);
+            if (value) {
+                internalPopulation.set(addedKey, value);
+            }
+        }
+
+        internalListItemBags.value = Array.from(internalPopulation.values());
     }
 
     function onShowMoreClicked(event: MouseEvent): void {

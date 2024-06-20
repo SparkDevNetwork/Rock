@@ -27,7 +27,7 @@
     import PersonPanelPicker from "./personPanelPicker.partial.obs";
     import RecipientModal from "./recipientModal.partial.obs";
     import { LabelType, MediumType } from "./types.partial";
-    import { KeepPersonPickerOpen, updateArrayValues, use } from "./utils.partial";
+    import { KeepPersonPickerOpen, updateArray, use } from "./utils.partial";
     import { ValidationRule } from "@Obsidian/Types/validationRules";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
@@ -120,18 +120,6 @@
 
     //#region Computed Values
 
-    /**
-     * This dictionary of "person alias guid"-to-"recipient" pairs.
-     * This is used for fast lookups when dealing with a large number of recipients.
-     */
-    const currentRecipientDictionary = computed<Map<Guid, CommunicationEntryRecipientBag>>(() => {
-        const dictionary: Map<Guid, CommunicationEntryRecipientBag> = new Map<Guid, CommunicationEntryRecipientBag>();
-        internalRecipients.value.forEach((recipient) => {
-            dictionary.set(recipient.personAliasGuid, recipient);
-        });
-        return dictionary;
-    });
-
     const rules = computed<ValidationRule[]>(() => {
         if (props.minimumRecipientCount === 0) {
             return [];
@@ -160,7 +148,7 @@
                 }
             }
 
-            updateArrayValues(
+            updateArray(
                 internalRecipients.value,
                 r => r.personAliasGuid,
                 newRecipientGuids,
