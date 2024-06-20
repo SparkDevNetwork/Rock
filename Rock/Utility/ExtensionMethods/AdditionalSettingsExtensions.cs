@@ -82,11 +82,6 @@ namespace Rock
         /// <summary>
         /// Gets the deserialized settings object matching the provided <typeparamref name="TSettings"/> <see cref="System.Type"/> from
         /// <see cref="IHasReadOnlyAdditionalSettings.AdditionalSettingsJson"/>.
-        /// <para>
-        /// This will never return <c>null</c>. If <see cref="IHasReadOnlyAdditionalSettings.AdditionalSettingsJson"/> doesn't already
-        /// have a settings object of this type, a new instance will be created and returned.
-        /// </para>
-        /// </summary>
         /// <typeparam name="TSettings">
         /// The <see cref="System.Type"/> of category settings object into which the underlying JSON string should be deserialized.
         /// </typeparam>
@@ -121,7 +116,7 @@ namespace Rock
         /// </typeparam>
         /// <param name="settings">The <see cref="IHasReadOnlyAdditionalSettings"/> instance containing the desired, categorized settings.</param>
         /// <param name="categoryKey">The category key of the settings object to be returned.</param>
-        /// <returns>The deserialized settings object or <see langword="null"/> if not found or deserialization fails.</returns>
+        /// <returns>The deserialized settings object or a new instance if one didn't already exist.</returns>
         /// <remarks>
         ///     <para>
         ///         <strong>This is an internal API</strong> that supports the Rock
