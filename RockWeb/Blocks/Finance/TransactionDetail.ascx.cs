@@ -2111,7 +2111,17 @@ namespace RockWeb.Blocks.Finance
                 tbAccountFeeCoverageAmount.Value = null;
                 tbAccountSummary.Text = string.Empty;
 
-                tbAccountFeeAmount.Visible = TransactionDetailsState.Any( a => a.FeeAmount.HasValue );
+                /*
+                    6/20/2024 - JPH
+
+                    In earlier versions of Rock, processing fees could be manually added/edited to allow
+                    for proper reconciliation across disparate systems & gateways. We're reverting back
+                    to that behavior, so the account fee textbox will no longer be hidden.
+
+                    Reason: Maintain feature parity with Rock v12 and earlier.
+                    https://github.com/SparkDevNetwork/Rock/issues/5889
+                 */
+
                 tbAccountFeeCoverageAmount.Visible = TransactionDetailsState.Any( a => a.FeeCoverageAmount.HasValue );
                 tbAccountForeignCurrencyAmount.Visible = ShowForeignCurrencyFields;
 
@@ -2349,7 +2359,17 @@ namespace RockWeb.Blocks.Finance
         private static void SetAccountFeeAmountTextboxText( CurrencyBox tbAccountFeeAmount, FinancialTransactionDetail transactionDetail )
         {
             tbAccountFeeAmount.Value = transactionDetail.FeeAmount;
-            tbAccountFeeAmount.Visible = transactionDetail.FeeAmount.HasValue;
+
+            /*
+                6/20/2024 - JPH
+
+                In earlier versions of Rock, processing fees could be manually added/edited to allow
+                for proper reconciliation across disparate systems & gateways. We're reverting back
+                to that behavior, so the account fee textbox will no longer be hidden.
+
+                Reason: Maintain feature parity with Rock v12 and earlier.
+                https://github.com/SparkDevNetwork/Rock/issues/5889
+            */
         }
 
         /// <summary>
@@ -2417,8 +2437,17 @@ namespace RockWeb.Blocks.Finance
         /// <param name="transactionDetail">The transaction detail.</param>
         private void ApplyFeeValueToField( CurrencyBox field, FinancialTransactionDetail transactionDetail )
         {
-            var hasFeeInfo = TransactionDetailsState.Any( d => d.FeeAmount.HasValue );
-            field.Visible = hasFeeInfo;
+            /*
+                6/20/2024 - JPH
+
+                In earlier versions of Rock, processing fees could be manually added/edited to allow
+                for proper reconciliation across disparate systems & gateways. We're reverting back
+                to that behavior, so the account fee textbox will no longer be hidden.
+
+                Reason: Maintain feature parity with Rock v12 and earlier.
+                https://github.com/SparkDevNetwork/Rock/issues/5889
+            */
+
             field.Value = transactionDetail.FeeAmount;
         }
 
