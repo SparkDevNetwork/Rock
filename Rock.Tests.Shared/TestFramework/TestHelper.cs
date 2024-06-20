@@ -18,8 +18,11 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
+using System.IO;
 
 using Microsoft.Extensions.DependencyInjection;
+
+using Moq;
 
 using Rock.Configuration;
 
@@ -43,6 +46,30 @@ namespace Rock.Tests.Shared
         {
             var timestamp = DateTime.Now.ToString( "HH:mm:ss.fff" );
             Trace.WriteLine( $"[{timestamp}] {message}" );
+        }
+
+        /// <summary>
+        /// Gets the path to the RockWeb folder. This is determined automatically
+        /// by searching for the solution file.
+        /// </summary>
+        /// <returns>The path to the RockWeb folder or <c>null</c> if it could not be determined.</returns>
+        public static string GetRockWebPath()
+        {
+            var directory = new DirectoryInfo( Directory.GetCurrentDirectory() );
+
+            while ( directory != null )
+            {
+                var solutionFile = Path.Combine( directory.FullName, "Rock.sln" );
+
+                if ( File.Exists( solutionFile ) )
+                {
+                    return Path.Combine( directory.FullName, "RockWeb" ) + Path.DirectorySeparatorChar;
+                }
+
+                directory = directory.Parent;
+            }
+
+            return null;
         }
 
         #region Stopwatch
@@ -200,10 +227,18 @@ namespace Rock.Tests.Shared
         {
             var sc = new ServiceCollection();
 
+            var hostingMock = new Mock<IHostingSettings>( MockBehavior.Loose );
+
+            hostingMock.Setup( a => a.ApplicationStartDateTime )
+                .Returns( DateTime.Now );
+            hostingMock.Setup( a => a.VirtualRootPath ).Returns( "/" );
+            hostingMock.Setup( a => a.WebRootPath )
+                .Returns( GetRockWebPath() ?? Directory.GetCurrentDirectory() );
+
             sc.AddSingleton<IConnectionStringProvider>( new TestConnectionStringProvider( connectionString ) );
             sc.AddSingleton<IInitializationSettings, TestInitializationSettings>();
             sc.AddSingleton<IDatabaseConfiguration, DatabaseConfiguration>();
-            sc.AddSingleton<IHostingSettings, HostingSettings>();
+            sc.AddSingleton( hostingMock.Object );
 
             configureApp?.Invoke( sc );
 

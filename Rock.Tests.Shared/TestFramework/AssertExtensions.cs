@@ -105,6 +105,11 @@ namespace Rock.Tests.Shared
             Assert.IsFalse( value.Contains( substring ), $"The result \"{ value }\" contains the unexpected value \"{ substring }\"." );
         }
 
+        public static void Matches( this Assert assert, System.String value, System.Text.RegularExpressions.Regex pattern )
+        {
+            StringAssert.Matches( value, pattern );
+        }
+
         public static void AreEqual( this Assert assert, System.Single expected, System.Single actual, System.Single delta )
         {
             Assert.AreEqual( expected, actual, delta );
