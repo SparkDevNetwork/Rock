@@ -10,22 +10,15 @@
                  validationTitle="At least one recipient"
                  @openPopup="onOpenPopup"
                  @showMore="onShowMore">
+        <!-- TODO JMH Lazy load the images -->
         <template #itemImage="{ label, value: personAliasGuid, closable, disabled }">
             <img :src="findRecipient(personAliasGuid)?.photoUrl ?? undefined" style="border-radius: 24px; width: 24px; height: 24px" />
         </template>
     </PopupPicker>
 
-    <PersonPanelPicker v-if="isPersonPickerShown"
-                       @cancel="onPersonSearchCanceled"
-                       @select="onPersonSelected" />
+    <PersonPanelPicker v-if="isPersonPickerShown" @cancel="onPersonSearchCanceled" @select="onPersonSelected" />
 
-    <RecipientModal v-model="isRecipientModalShown"
-                    v-model:recipients="internalRecipients"
-                    :disabled="disabled"
-                    :disabledMessage="recipientManagerDisabledMessage"
-                    :getTooltipRef="getTooltipRef"
-                    :isForBulkCommunication="isForBulkCommunication"
-                    :isAddHidden="isAddHidden" />
+    <RecipientModal v-model="isRecipientModalShown" v-model:recipients="internalRecipients" :disabled="disabled" :disabledMessage="recipientManagerDisabledMessage" :getTooltipRef="getTooltipRef" :isForBulkCommunication="isForBulkCommunication" :isAddHidden="isAddHidden" />
 </template>
 
 <script setup lang="ts">

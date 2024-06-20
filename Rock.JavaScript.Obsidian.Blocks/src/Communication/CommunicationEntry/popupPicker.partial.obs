@@ -1,11 +1,11 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <BaseAsyncPicker v-model="internalListItemBags"
+    <BaseAsyncPicker v-model="internalSample"
                      v-bind="standardProps"
                      :disabled="disabled"
                      displayStyle="auto"
                      :enhanceForLongLists="false"
-                     :items="internalListItemBags"
+                     :items="internalSample"
                      :label="label"
                      maxTagCount="responsive"
                      :multiple="true">
@@ -37,7 +37,7 @@
                 <RockButton class="item label label-default rounded-pill"
                             @click="onShowMoreClicked"
                             @mousedown="onShowMoreMouseDown">
-                    <span class="item-content">{{ omittedValues.length }} more</span>
+                    <span class="item-content">{{ internalListItemBags.length - (sampleSize - omittedValues.length) }} more</span>
                 </RockButton>
             </div>
         </template>
@@ -55,7 +55,7 @@
 </style>
 
 <script setup lang="ts">
-    import { PropType, Ref, ref, watch } from "vue";
+    import { PropType, Ref, computed, nextTick, ref, watch } from "vue";
     import BaseAsyncPicker from "@Obsidian/Controls/baseAsyncPicker.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { standardAsyncPickerProps, useStandardAsyncPickerProps, useVModelPassthrough } from "@Obsidian/Utility/component";
@@ -110,6 +110,19 @@
             default: false
         },
 
+        /**
+         * This option allows fine-tuning the performance of the picker.
+         *
+         * The popup picker calculates the number of items that can be displayed and how many to hide.
+         * It calculates the width of all items and then figures out how many will fit into the available width.
+         * Since this component does not know how wide each item will be,
+         * the parent component should pass a reasonable estimate of items that can be displayed at one time.
+         */
+        sampleSize: {
+            type: Number as PropType<number>,
+            default: 25
+        },
+
         ...standardAsyncPickerProps
     });
 
@@ -129,6 +142,20 @@
     //#endregion
 
     //#region Computed Values
+
+    /**
+     * The underlying antdesign component has a hard time with large datasets.
+     * This is a sample of the data.
+     */
+    const internalSample = computed<ListItemBag[]>(() => {
+        const population = internalListItemBags.value;
+        if (population.length <= props.sampleSize) {
+            return population;
+        }
+        else {
+            return population.slice(0, props.sampleSize);
+        }
+    });
 
     //#endregion
 
@@ -182,7 +209,9 @@
             const index = newValue.indexOf(item);
             if (index !== -1) {
                 newValue.splice(index, 1);
-                internalListItemBags.value = newValue;
+                nextTick(() => {
+                    internalListItemBags.value = newValue;
+                });
             }
         }
     }
