@@ -359,6 +359,50 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Labels.Renderers
             Assert.That.Matches( zpl, expectedPattern );
         }
 
+        [TestMethod]
+        public void WriteTextField_WithTwoColumn_IncludesAllValues()
+        {
+            var expectedFirstValue = "FirstValue";
+            var expectedSecondValue = "SecondValue";
+            var expectedThirdValue = "ThirdValue";
+            var expectedFourthValue = "FourthValue";
+
+            var renderer = new ZplLabelRenderer();
+            var request = new PrintLabelRequest
+            {
+                Label = new DesignedLabelBag(),
+                Capabilities = new PrinterCapabilities()
+            };
+
+            var field = new Mock<LabelField>( MockBehavior.Strict, new LabelFieldBag
+            {
+                Width = 4,
+                Height = 1
+            } );
+
+            field.Setup( f => f.GetConfiguration<TextFieldConfiguration>() )
+                .Returns( new TextFieldConfiguration
+                {
+                    CollectionFormat = TextCollectionFormat.TwoColumn
+                } );
+            field.Setup( f => f.GetFormattedValues( request ) )
+                .Returns( () => new List<string> { expectedFirstValue, expectedSecondValue, expectedThirdValue, expectedFourthValue } );
+
+            var zpl = GetTextFromStream( stream =>
+            {
+                renderer.BeginLabel( stream, request );
+                stream.SetLength( 0 );
+
+                renderer.WriteField( field.Object );
+                renderer.Dispose();
+            } );
+
+            Assert.That.Contains( zpl, expectedFirstValue );
+            Assert.That.Contains( zpl, expectedSecondValue );
+            Assert.That.Contains( zpl, expectedThirdValue );
+            Assert.That.Contains( zpl, expectedFourthValue );
+        }
+
         #endregion
 
         #region WriteLineField

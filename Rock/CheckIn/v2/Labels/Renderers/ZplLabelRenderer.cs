@@ -113,37 +113,81 @@ namespace Rock.CheckIn.v2.Labels.Renderers
             var config = field.GetConfiguration<TextFieldConfiguration>();
             var values = field.GetFormattedValues( PrintRequest );
 
-            string textValue;
+            if ( config.CollectionFormat == TextCollectionFormat.TwoColumn )
+            {
+                var col1Value = string.Join( "\\&", values.Where( ( _, idx ) => idx % 1 == 0 ) );
+                var col2Value = string.Join( "\\&", values.Where( ( _, idx ) => idx % 1 == 1 ) );
 
-            if ( config.CollectionFormat == TextCollectionFormat.FirstItemOnly )
-            {
-                textValue = values[0];
-            }
-            else if ( config.CollectionFormat == TextCollectionFormat.CommaDelimited )
-            {
-                textValue = string.Join( ", ", values );
-            }
-            else if ( config.CollectionFormat == TextCollectionFormat.OnePerLine )
-            {
-                textValue = string.Join( "\\&", values );
+                // Calculate column width with 1/4 inch gutter between.
+                var gutter = 0.25;
+                var colWidth = ( field.Field.Width - gutter ) / 2;
+
+                WriteTextFieldColumn( writer,
+                    config,
+                    field.Field.Left,
+                    field.Field.Top,
+                    colWidth,
+                    field.Field.Height,
+                    col1Value );
+
+                WriteTextFieldColumn( writer,
+                    config,
+                    field.Field.Left + colWidth + gutter,
+                    field.Field.Top,
+                    colWidth,
+                    field.Field.Height,
+                    col2Value );
             }
             else
             {
-                return;
+                string textValue;
+
+                if ( config.CollectionFormat == TextCollectionFormat.CommaDelimited )
+                {
+                    textValue = string.Join( ", ", values );
+                }
+                else if ( config.CollectionFormat == TextCollectionFormat.OnePerLine )
+                {
+                    textValue = string.Join( "\\&", values );
+                }
+                else
+                {
+                    textValue = values[0];
+                }
+
+                WriteTextFieldColumn( writer,
+                    config,
+                    field.Field.Left,
+                    field.Field.Top,
+                    field.Field.Width,
+                    field.Field.Height,
+                    textValue );
             }
+        }
 
-            var fontSize = GetFontDotSize( config.FontSize );
-
-            WriteFieldOrigin( writer, field );
+        /// <summary>
+        /// Writes a single column of text to the writer.
+        /// </summary>
+        /// <param name="writer">The writer that we will send ZPL code to.</param>
+        /// <param name="config">The field configuration.</param>
+        /// <param name="left">The left postion in inches.</param>
+        /// <param name="top">The top position in inches.</param>
+        /// <param name="width">The width in inches.</param>
+        /// <param name="height">The height in inches.</param>
+        /// <param name="textValue">The text content to display.</param>
+        private void WriteTextFieldColumn( StreamWriter writer, TextFieldConfiguration config, double left, double top, double width, double height, string textValue )
+        {
+            WriteFieldOrigin( writer, left, top );
 
             if ( config.IsColorInverted )
             {
                 writer.Write( "^FR" );
             }
 
-            var lineCount = Math.Max( 1, ( int ) Math.Round( ToDots( field.Field.Height ) / ( double ) fontSize ) );
+            var fontSize = GetFontDotSize( config.FontSize );
+            var lineCount = Math.Max( 1, ( int ) Math.Round( ToDots( height ) / ( double ) fontSize ) );
 
-            writer.WriteLine( $"^FB{ToDots( field.Field.Width )},{lineCount}^A0,{fontSize},{fontSize}^FD{textValue}^FS" );
+            writer.WriteLine( $"^FB{ToDots( width )},{lineCount}^A0,{fontSize},{fontSize}^FD{textValue}^FS" );
         }
 
         /// <summary>
