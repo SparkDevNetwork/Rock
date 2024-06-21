@@ -16,6 +16,7 @@
 //
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -142,6 +143,28 @@ namespace Rock.CheckIn.v2.Labels
             }
 
             return new List<FieldFilterSourceBag>();
+        }
+
+        /// <summary>
+        /// Gets the data source dictionary for the label type. This will be
+        /// cached for short periods of time to improve performance.
+        /// </summary>
+        /// <param name="labelType">The type of label for which to retrieve data sources.</param>
+        /// <returns>A dictionary of data sources whose key is the data source key.</returns>
+        public static IReadOnlyDictionary<string, FieldDataSource> GetCachedDataSources( LabelType labelType )
+        {
+            return RockCache.GetOrAddExisting( $"{typeof( FieldSourceHelper )}:DataSources:{labelType}", () =>
+            {
+                var dataSources = GetDataSources( labelType );
+                var sourceDictionary = new Dictionary<string, FieldDataSource>( dataSources.Count );
+
+                foreach ( var dataSource in dataSources )
+                {
+                    sourceDictionary.TryAdd( dataSource.Key, dataSource );
+                }
+
+                return sourceDictionary;
+            } ) as Dictionary<string, FieldDataSource>;
         }
 
         #region Person Label

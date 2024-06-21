@@ -32,7 +32,4 @@ namespace Rock.CheckIn.v2.Labels
         /// </summary>
         public bool IsCutterSupported { get; set; }
     }
-
-    // TODO: how to translate a DataSource into a representation used by the
-    // designer block.
 }
