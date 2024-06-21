@@ -92,89 +92,29 @@ namespace Rock.CheckIn.v2
                 return result;
             }
 
-            var attendanceService = new AttendanceService( Session.RockContext );
-            var personService = new PersonService( Session.RockContext );
-            var personGuids = requests.Select( r => r.PersonGuid ).Distinct().ToList();
-            var attributeEntitiesToSave = new List<IHasAttributes>();
-
             // Get the current date and time based on the kiosk's campus time zone.
             var kioskCampusId = kiosk.GetCampusId();
             var now = kioskCampusId.HasValue
-                ? CampusCache.Get( kioskCampusId.Value )?.CurrentDateTime ?? RockDateTime.Now
+                ? CampusCache.Get( kioskCampusId.Value, Session.RockContext )?.CurrentDateTime ?? RockDateTime.Now
                 : RockDateTime.Now;
 
-            // Get the family identifier.
-            int? familyId = null;
-
-            if ( sessionRequest.FamilyGuid.HasValue )
-            {
-                familyId = new GroupService( Session.RockContext ).GetId( sessionRequest.FamilyGuid.Value );
-            }
-
-            // Get the session or start creating a new one.
-            var attendanceCheckInSession = GetOrAddSession( sessionRequest.Guid, kiosk?.Id, clientIpAddress );
-
-            // Create all the attendance codes.
-            var codeLookup = CreateAttendanceCodes( personGuids );
-
-            // Load all the people related to the check-in.
-            var personLookup = personService.Queryable()
-                .Where( p => personGuids.Contains( p.Guid ) )
-                .ToList()
-                .ToDictionary( p => p.Guid, p => p );
-
-            // Load all the attributes in one go.
-            personLookup.Values.LoadAttributes( Session.RockContext );
-
-            // Get the person performing the check-in if we can.
-            var checkedInByPersonAliasId = GetCheckedInByPersonAliasId( sessionRequest );
-
             // Format the requests into something more easily passed around.
-            var preparedRequests = requests
-                .Select( r => new PreparedAttendanceRequest
-                {
-                    Session = attendanceCheckInSession,
-                    AttendanceCode = codeLookup[r.PersonGuid],
-                    Person = personLookup[r.PersonGuid],
-                    AbilityLevel = r.Selection.AbilityLevel != null
-                        ? DefinedValueCache.Get( r.Selection.AbilityLevel.Guid, Session.RockContext )
-                        : null,
-                    Area = r.Selection.Area != null
-                        ? GroupTypeCache.Get( r.Selection.Area.Guid, Session.RockContext )
-                        : null,
-                    Group = r.Selection.Group != null
-                        ? GroupCache.Get( r.Selection.Group.Guid, Session.RockContext )
-                        : null,
-                    Location = r.Selection.Location != null
-                        ? NamedLocationCache.Get( r.Selection.Location.Guid, Session.RockContext )
-                        : null,
-                    Schedule = r.Selection.Schedule != null
-                        ? NamedScheduleCache.Get( r.Selection.Schedule.Guid, Session.RockContext )
-                        : null,
-                    IsPending = sessionRequest.IsPending,
-                    FamilyGuid = sessionRequest.FamilyGuid,
-                    FamilyId = familyId,
-                    Kiosk = kiosk,
-                    ClientIpAddress = clientIpAddress,
-                    CheckedInByPersonAliasId = checkedInByPersonAliasId,
-                    StartDateTime = now,
-                    Note = r.Note
-                } );
+            var preparedRequests = GetPreparedRequests( sessionRequest, requests, kiosk, clientIpAddress, now );
 
             // See if there are any invalid requests that we should bail out for.
-            var invalidRequests = preparedRequests
+            var hasInvalidRequests = preparedRequests
                 .Where( r => r.AttendanceCode == null
                     || r.Person == null
                     || r.Area == null
                     || r.Group == null
                     || r.Location == null
                     || r.Schedule == null )
-                .ToList();
+                .Any();
 
             // At this point, we don't even have enough data to display who
             // couldn't be checked in so just bail out. Really this means they
             // sent us bad data.
-            if ( invalidRequests.Any() )
+            if ( hasInvalidRequests )
             {
                 result.Messages.Add( "One or more people were invalid so no check-in was performed." );
 
@@ -185,6 +125,7 @@ namespace Rock.CheckIn.v2
             var validLocationIds = preparedRequests.Select( r => r.Location.Id ).Distinct().ToList();
             var currentAttendances = CheckInDirector.GetCurrentAttendance( now, validLocationIds, Session.RockContext );
             var newOrUpdatedAttendances = new List<RecentAttendance>();
+            var attributeEntitiesToSave = new List<IHasAttributes>();
 
             foreach ( var request in preparedRequests )
             {
@@ -774,6 +715,82 @@ namespace Rock.CheckIn.v2
                 default:
                     return null;
             }
+        }
+
+        /// <summary>
+        /// Converts all the attendance request bags into our custom prepared
+        /// attendance request object that has all the data we need to process
+        /// the attendance records.
+        /// </summary>
+        /// <param name="sessionRequest">The data that describes the check-in session.</param>
+        /// <param name="requests">The attendance request details.</param>
+        /// <param name="kiosk">The kiosk that is performing this check-in or <c>null</c>.</param>
+        /// <param name="clientIpAddress">The remote IP address of the device performing this check-in or <c>null</c>.</param>
+        /// <param name="now">The timestamp to use for all attendance records.</param>
+        /// <returns>A list of <see cref="PreparedAttendanceRequest"/> that represent the attendance records to create.</returns>
+        protected List<PreparedAttendanceRequest> GetPreparedRequests( AttendanceSessionRequest sessionRequest, IReadOnlyCollection<AttendanceRequestBag> requests, DeviceCache kiosk, string clientIpAddress, DateTime now )
+        {
+            var attendanceService = new AttendanceService( Session.RockContext );
+            var personService = new PersonService( Session.RockContext );
+            var personGuids = requests.Select( r => r.PersonGuid ).Distinct().ToList();
+
+            // Get the family identifier.
+            int? familyId = null;
+
+            if ( sessionRequest.FamilyGuid.HasValue )
+            {
+                familyId = new GroupService( Session.RockContext ).GetId( sessionRequest.FamilyGuid.Value );
+            }
+
+            // Get the session or start creating a new one.
+            var attendanceCheckInSession = GetOrAddSession( sessionRequest.Guid, kiosk?.Id, clientIpAddress );
+
+            // Create all the attendance codes.
+            var codeLookup = CreateAttendanceCodes( personGuids );
+
+            // Load all the people related to the check-in.
+            var personLookup = personService.Queryable()
+                .Where( p => personGuids.Contains( p.Guid ) )
+                .ToList()
+                .ToDictionary( p => p.Guid, p => p );
+
+            // Load all the attributes in one go.
+            personLookup.Values.LoadAttributes( Session.RockContext );
+
+            // Get the person performing the check-in if we can.
+            var checkedInByPersonAliasId = GetCheckedInByPersonAliasId( sessionRequest );
+
+            return requests
+                .Select( r => new PreparedAttendanceRequest
+                {
+                    Session = attendanceCheckInSession,
+                    AttendanceCode = codeLookup[r.PersonGuid],
+                    Person = personLookup[r.PersonGuid],
+                    AbilityLevel = r.Selection.AbilityLevel != null
+                        ? DefinedValueCache.Get( r.Selection.AbilityLevel.Guid, Session.RockContext )
+                        : null,
+                    Area = r.Selection.Area != null
+                        ? GroupTypeCache.Get( r.Selection.Area.Guid, Session.RockContext )
+                        : null,
+                    Group = r.Selection.Group != null
+                        ? GroupCache.Get( r.Selection.Group.Guid, Session.RockContext )
+                        : null,
+                    Location = r.Selection.Location != null
+                        ? NamedLocationCache.Get( r.Selection.Location.Guid, Session.RockContext )
+                        : null,
+                    Schedule = r.Selection.Schedule != null
+                        ? NamedScheduleCache.Get( r.Selection.Schedule.Guid, Session.RockContext )
+                        : null,
+                    IsPending = sessionRequest.IsPending,
+                    FamilyGuid = sessionRequest.FamilyGuid,
+                    FamilyId = familyId,
+                    Kiosk = kiosk,
+                    ClientIpAddress = clientIpAddress,
+                    CheckedInByPersonAliasId = checkedInByPersonAliasId,
+                    StartDateTime = now,
+                    Note = r.Note
+                } )
+                .ToList();
         }
 
         #endregion
