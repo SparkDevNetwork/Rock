@@ -3,7 +3,9 @@
 
 // =============================================================
 // Table of Content           
-//  + 
+//  + Base Style
+//  + Alternative Style
+//  + ...
 // =============================================================
 
 
@@ -36,9 +38,9 @@ caption {
   text-align: left;
 }
 
-th {
-  // text-align: left; //TODO commented out for the tr to be center 
-}
+// th {
+//   // text-align: left; //TODO commented out for the tr to be center 
+// }
 
 // Baseline styles
 .table {
@@ -220,7 +222,7 @@ td.wrap-contents {
     > tr {
       > th,
       > td {
-        border: 1px solid var(--color-interface-soft);
+        border: 0;
       }
     }
   }
@@ -774,11 +776,76 @@ td.grid-actions {
 }
 
 .grid-table {
+  font-size: var(--font-size-regular);
+  td,
+  th {
+    &.grid-select-field {
+      width: 20px * 3;
+    }
+  }
+  > tbody > tr > td,
+  > tbody > tr > th,
+  > thead > tr > td,
+  > thead > tr > th {
+    padding: var(--spacing-medium) 16px var(--spacing-medium) 12px;
+    border-width: 0;
+    border-top-width: 1px;
+  }
+  > thead > tr > td,
+  > thead > tr > th {
+    padding: var(--spacing-medium) 0 var(--spacing-medium) 12px;
+    vertical-align: middle;
+
+    // Remove padding offset on right
+    &[align="right"] {
+      padding-right: 17px;
+    }
+
+    // Remove padding offset on center
+    &[align="center"] {
+      padding: var(--spacing-medium) 6px;
+    }
+  }
+  > thead > tr.grid-header-bold > th {
+    padding: var(--spacing-medium) 17px var(--spacing-medium) 12px;
+  }
+
+  > tbody > tr > td {
+    &.grid-columnreorder {
+      padding-top: 18px;
+    }
+    &.grid-row-header {
+      font-weight: 700;
+      border-right: 1px solid var(--color-interface-softer);
+    }
+
+    &.grid-columncommand {
+      width: 34px;
+      min-width: 34px;
+      vertical-align: middle;
+    }
+
+    &.grid-bool-field {
+      vertical-align: middle;
+    }
+  }
+
+  > tfoot {
+    > tr:first-child > td,
+    & {
+      border-top: 1px solid var(--color-interface-softer);
+    }
+
+    > tr > td,
+    > tr > th {
+      color: var(--color-interface-stronger);
+      background: var(--color-interface-softest);
+      border-top: 1px solid var(--color-interface-softest);
+    }
+  }
+
   > thead > tr > th,
   > tbody > tr > td {
-    // get buttons and text columns to look good together
-    padding: 12px;
-
     &.grid-columncommand {
       min-width: 34px;
     }

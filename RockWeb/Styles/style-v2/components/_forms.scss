@@ -1,0 +1,689 @@
+//FORM STYLES
+
+
+// =============================================================
+// Table of Content           
+//  + Normalization
+//  + Form contorl
+//  + Form group, help block, form-inline
+//  + Check box, radio
+//  + Form control sizing
+//  + Feedback states
+//  + Horizontal Form
+// =============================================================
+
+
+// ======================= NORMALIZATION =====================
+fieldset {
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+
+legend {
+  display: block;
+  width: 100%;
+  padding: 0;
+  margin-bottom: var(--spacing-large);
+  font-size: calc(var(--font-size-small) * 1.5);
+  line-height: inherit;
+  color: var(--color-interface-strong);
+  border: 0;
+  border-bottom: 1px solid var(--color-interface-soft);
+}
+
+label {
+  display: inline-block;
+  max-width: 100%; // Force IE8 to wrap long content (see https://github.com/twbs/bootstrap/issues/13141)
+  margin-bottom: var(--spacing-tiny);
+  font-weight: var(--font-weight-bold);
+}
+
+
+// Normalize form controls
+
+
+input[type="search"] {
+  // Override content-box in Normalize (* isn't specific enough)
+  box-sizing: border-box;
+  appearance: none;
+}
+
+// Position radios and checkboxes better
+input[type="radio"],
+input[type="checkbox"] {
+  margin: 4px 0 0;
+  margin-top: 1px \9; // IE8-9
+  line-height: normal;
+
+  &[disabled],
+  &.disabled,
+  fieldset[disabled] & {
+    cursor: not-allowed;
+  }
+}
+
+input[type="file"] {
+  display: block;
+}
+
+// Make range inputs behave like textual form controls
+input[type="range"] {
+  display: block;
+  width: 100%;
+}
+
+// Make multiple select elements height not fixed
+select[multiple],
+select[size] {
+  height: auto;
+}
+
+// Focus for file, radio, and checkbox
+input[type="file"]:focus,
+input[type="radio"]:focus,
+input[type="checkbox"]:focus {
+  outline: 5px auto -webkit-focus-ring-color;
+  outline-offset: -2px;
+}
+
+// Adjust output element
+output {
+  display: block;
+  padding-top: (var(--spacing-small) + 1);
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-normal);
+  color: var(--color-interface-stronger);
+}
+// ===================== END NORMALIZATION =====================
+
+
+// ======================= FORM CONTROL =====================
+.form-control {
+  display: block;
+  width: 100%;
+  height: var(--spacing-xlarge); // Make inputs at least the height of their button counterpart (base line-height + padding + border)
+  padding: var(--spacing-small) var(--spacing-medium);
+  font-size: var(--font-size-regular);
+  line-height: var(--line-height-normal);
+  color: var(--color-interface-stronger);
+  background-color: var(--color-interface-softest);
+  background-image: none; // Reset unusual Firefox-on-Android default style; see https://github.com/necolas/normalize.css/issues/214
+  border: 1px solid var(--color-interface-soft);
+  border-radius: var(--rounded-small); // Note: This has no effect on <select>s in some browsers, due to the limited stylability of <select>s in CSS.
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075);
+  transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+
+  // Customize the `:focus` state to imitate native WebKit styles.
+  &:focus {
+    border-color: rgba(238, 119, 37, 0.6);
+    outline: 0;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(238, 119, 37, 0.6);
+  }
+
+  // Placeholder
+  &::-moz-placeholder {
+    color: var(--color-interface-strong);
+    opacity: 1; 
+  }
+  &:-ms-input-placeholder { color: var(--color-interface-strong); } 
+  &::-webkit-input-placeholder  { color: var(--color-interface-strong); }
+
+  // Unstyle the caret on `<select>`s in IE10+.
+  &::-ms-expand {
+    background-color: transparent;
+    border: 0;
+  }
+
+  // Disabled and read-only inputs
+  &[disabled],
+  &[readonly],
+  fieldset[disabled] & {
+    background-color: var(--color-interface-softer);
+    opacity: 1; // iOS fix for unreadable disabled content; see https://github.com/twbs/bootstrap/issues/11655
+  }
+
+  &[disabled],
+  fieldset[disabled] & {
+    cursor: not-allowed;
+  }
+
+  // Reset height for `textarea`s
+  textarea & {
+    height: auto;
+  }
+}
+
+.form-control-static {
+  min-height: (var(--spacing-large) + var(--font-size-small));
+  // Size it appropriately next to real form controls
+  padding-top: (var(--spacing-small) + 1);
+  padding-bottom: (var(--spacing-small) + 1);
+  // Remove default margin from `p`
+  margin-bottom: 0;
+
+  &.input-lg,
+  &.input-sm {
+    padding-right: 0;
+    padding-left: 0;
+  }
+}
+
+// Feedback icon (requires .glyphicon classes)
+.form-control-feedback {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 2; // Ensure icon is above input groups
+  display: block;
+  width: 46px;
+  height: 46px;
+  line-height: 46px;
+  text-align: center;
+  pointer-events: none;
+}
+// ===================== END FORM CONTROL =====================
+
+
+// Select
+select.form-control {
+  padding: var(--spacing-small) var(--spacing-xlarge) var(--spacing-small) var(--spacing-medium);
+  background-image: var(--color-interface-stronger);
+  background-repeat: no-repeat;
+  background-position: right var(--spacing-medium) center;
+  background-size: var(--spacing-medium) 12px;
+  border-radius: var(--rounded-small);
+  appearance: none;
+
+  &[multiple],
+  &[size]:not([size="1"]) {
+    padding-right: var(--spacing-medium);
+    background-image: none;
+  }
+
+  // Remove outline from select box in FF
+  &:-moz-focusring {
+    color: transparent;
+    text-shadow: 0 0 0 var(--color-interface-strong);
+  }
+
+  &:focus::-ms-value {
+    color: var(--color-interface-stronger);
+    background-color: var(--color-interface-softest);
+  }
+}
+
+// Special styles for iOS temporal inputs
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  input[type="date"],
+  input[type="time"],
+  input[type="datetime-local"],
+  input[type="month"] {
+    &.form-control {
+      line-height:46px;
+    }
+
+    &.input-sm,
+    .input-group-sm & {
+      line-height: 34px;
+    }
+
+    &.input-lg,
+    .input-group-lg & {
+      line-height: 38px;
+    }
+  }
+}
+
+
+// ======================= FORM GROUP, HELP BLOCK, FORM-INLINE =======================
+.form-group {
+  margin-bottom: var(--spacing-medium);
+}
+
+.help-block {
+  display: block; // account for any element using help-block
+  margin-top: 5px;
+  margin-bottom: 10px;
+  color: var(--color-interface-stronger); // lighten the text some for contrast`
+}
+
+.form-inline {
+
+  // Kick in the inline
+  @media (min-width: $screen-small) {
+    // Inline-block all the things for "inline"
+    .form-group {
+      display: inline-block;
+      margin-bottom: 0;
+      vertical-align: middle;
+    }
+
+    // In navbar-form, allow folks to *not* use `.form-group`
+    .form-control {
+      display: inline-block;
+      width: auto; // Prevent labels from stacking above inputs in `.form-group`
+      vertical-align: middle;
+    }
+
+    // Make static controls behave like regular ones
+    .form-control-static {
+      display: inline-block;
+    }
+
+    .input-group {
+      display: inline-table;
+      vertical-align: middle;
+
+      .input-group-addon,
+      .input-group-btn,
+      .form-control {
+        width: auto;
+      }
+    }
+
+    // Input groups need that 100% width though
+    .input-group > .form-control {
+      width: 100%;
+    }
+
+    .control-label {
+      margin-bottom: 0;
+      vertical-align: middle;
+    }
+
+    // Remove default margin on radios/checkboxes that were used for stacking, and
+    // then undo the floating of radios and checkboxes to match.
+    .radio,
+    .checkbox {
+      display: inline-block;
+      margin-top: 0;
+      margin-bottom: 0;
+      vertical-align: middle;
+
+      label {
+        padding-left: 0;
+      }
+    }
+    .radio input[type="radio"],
+    .checkbox input[type="checkbox"] {
+      position: relative;
+      margin-left: 0;
+    }
+
+    // Re-override the feedback icon.
+    .has-feedback .form-control-feedback {
+      top: 0;
+    }
+  }
+}
+
+// ===================== END FORM GROUP, HELP BLOCK, FORM-INLINE =====================
+
+// ======================= CHECKBOXESAND RADIOS =======================
+.radio,
+.checkbox {
+  position: relative;
+  display: block;
+  margin-top: 10px;
+  margin-bottom: 10px;
+
+  // These are used on elements with <label> descendants
+  &.disabled,
+  fieldset[disabled] & {
+    label {
+      cursor: not-allowed;
+    }
+  }
+
+  label {
+    min-height: var(--spacing-large); // Ensure the input doesn't jump when there is no text
+    padding-left: 20px;
+    margin-bottom: 0;
+    font-weight: 400;
+    cursor: pointer;
+  }
+}
+.radio input[type="radio"],
+.radio-inline input[type="radio"],
+.checkbox input[type="checkbox"],
+.checkbox-inline input[type="checkbox"] {
+  position: absolute;
+  margin-top: 4px \9;
+  margin-left: -20px;
+}
+
+.radio + .radio,
+.checkbox + .checkbox {
+  margin-top: -5px; // Move up sibling radios or checkboxes for tighter spacing
+}
+
+.radio-inline,
+.checkbox-inline {
+  position: relative;
+  display: inline-block;
+  padding-left: 20px;
+  margin-bottom: 0;
+  font-weight: 400;
+  vertical-align: middle;
+  cursor: pointer;
+
+  // These are used directly on <label>s
+  &.disabled,
+  fieldset[disabled] & {
+    cursor: not-allowed;
+  }
+}
+
+.radio-inline + .radio-inline,
+.checkbox-inline + .checkbox-inline {
+  margin-top: 0;
+  margin-left: 10px; // space out consecutive inline controls
+}
+// ===================== CHECKBOXES AND RADIOS =====================
+
+
+// ======================= FORM CONTROL SIZING ======================
+.input-sm {
+  height: 34px;
+  padding: var(--spacing-small) var(--spacing-medium);
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-normal);
+  border-radius: var(--rounded-small);
+
+  select & {
+    height: 34px;
+    padding: var(--spacing-small) 36px var(--spacing-small) var(--spacing-medium); // Modified to BS5
+  }
+
+  textarea &,
+  select[multiple] & {
+    height: auto;
+  }
+}
+
+.input-lg {
+  // .input-size(38px-large; var(--spacing-small)-lg; var(--spacing-medium)-lg; var(--font-size-medium); var(--line-height-normal)-lg; var(--rounded-small)-large);
+  height: 38px;
+  padding: var(--spacing-small) var(--spacing-medium);
+  font-size: var(--font-size-medium);
+  line-height: var(--line-height-normal);
+  border-radius: var(--rounded-normal);
+
+  selec t & {
+    height: 38px;
+    padding: var(--spacing-small) var(--spacing-medium) var(--spacing-small) var(--spacing-medium); // Modified to BS5
+  }
+
+  textarea &,
+  select[multiple] & {
+    height: auto;
+  }
+}
+
+.input-lg + .form-control-feedback,
+.input-group-lg + .form-control-feedback,
+.form-group-lg .form-control + .form-control-feedback {
+  width:var(--line-height-normal)-large;
+  height:var(--line-height-normal)-large;
+  line-height:var(--line-height-normal)-large;
+}
+.input-sm + .form-control-feedback,
+.input-group-sm + .form-control-feedback,
+.form-group-sm .form-control + .form-control-feedback {
+  width: 34px;
+  height: 34px;
+  line-height: 34px;
+}
+
+.form-group-sm {
+  .form-control {
+    height: 34px;
+    padding: var(--spacing-small)-sm var(--spacing-medium)-sm;
+    font-size:var(--font-size-small);
+    line-height: var(--line-height-normal)-sm;
+    border-radius: var(--rounded-small)-small;
+  }
+  select.form-control {
+    height: 34px;
+    line-height: var(--line-height-normal)-sm;
+  }
+  textarea.form-control,
+  select[multiple].form-control {
+    height: auto;
+  }
+  .form-control-static {
+    height: var(--line-height-normal)-sm;
+    min-height: (var(--spacing-large) + var(--font-size-small));
+    padding: (var(--spacing-small) + 1) var(--spacing-medium);
+    font-size: var(--font-size-small);
+    line-height: var(--line-height-normal)-sm;
+  }
+}
+.form-group-lg {
+  .form-control {
+    height:var(--line-height-normal)-large;
+    padding: var(--spacing-small)-lg var(--spacing-medium)-lg;
+    font-size: var(--font-size-medium);
+    line-height: var(--line-height-normal)-lg;
+    border-radius: var(--rounded-small)-large;
+  }
+  select.form-control {
+    height:var(--line-height-normal)-large;
+    line-height:var(--line-height-normal)-large;
+  }
+  textarea.form-control,
+  select[multiple].form-control {
+    height: auto;
+  }
+  .form-control-static {
+    height:var(--line-height-normal)-large;
+    min-height: (var(--spacing-large) + var(--font-size-medium));
+    padding: (var(--spacing-small)-lg + 1) var(--spacing-medium)-lg;
+    font-size: var(--font-size-medium);
+    line-height: var(--line-height-normal)-lg;
+  }
+}
+// ===================== END FORM CONTROL SIZING =====================
+
+// ======================= feedback states =====================
+.has-feedback {
+  // Enable absolute positioning
+  position: relative;
+
+  // Ensure icons don't overlap text
+  .form-control {
+    padding-right: (46px * 1.25);
+  }
+}
+
+.has-success {
+  .help-block,
+  .control-label,
+  .radio,
+  .checkbox,
+  .radio-inline,
+  .checkbox-inline,
+  &.radio label,
+  &.checkbox label,
+  &.radio-inline label,
+  &.checkbox-inline label  {
+    color: var(--color-success-strong);
+  }
+  // Set the border and box shadow on specific inputs to match
+  .form-control {
+    border-color: var(--color-success-strong);
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075); // Redeclare so transitions work
+    &:focus {
+      border-color: var(--color-success-strong); //TODO Darken it by 10%
+      box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 6px var(--color-success-strong);
+    }
+  }
+  // Set validation states also for addons
+  .input-group-addon {
+    color: var(--color-success-strong);
+    background-color: var(--color-success-soft);
+    border-color: var(--color-success-strong);
+  }
+  // Optional feedback icon
+  .form-control-feedback {
+    color: var(--color-success-strong);
+  }
+}
+
+.has-warning {
+  .help-block,
+  .control-label,
+  .radio,
+  .checkbox,
+  .radio-inline,
+  .checkbox-inline,
+  &.radio label,
+  &.checkbox label,
+  &.radio-inline label,
+  &.checkbox-inline label  {
+    color: var(--color-warning-strong);
+  }
+  // Set the border and box shadow on specific inputs to match
+  .form-control {
+    border-color: var(--color-warning-strong);
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075); // Redeclare so transitions work
+    &:focus {
+      border-color: var(--color-warning-strong); //TODO darken it by 10%
+      box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 6px var(--color-warning-medium);
+    }
+  }
+  // Set validation states also for addons
+  .input-group-addon {
+    color: var(--color-warning-strong);
+    background-color: var(--color-warning-soft);
+    border-color: var(--color-warning-strong);
+  }
+  // Optional feedback icon
+  .form-control-feedback {
+    color: var(--color-warning-strong);
+  }
+}
+
+.has-error {
+  .help-block,
+  .control-label,
+  .radio,
+  .checkbox,
+  .radio-inline,
+  .checkbox-inline,
+  &.radio label,
+  &.checkbox label,
+  &.radio-inline label,
+  &.checkbox-inline label  {
+    color: var(--color-danger-strong);
+  }
+  // Set the border and box shadow on specific inputs to match
+  .form-control {
+    border-color: var(--color-danger-strong);
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075); // Redeclare so transitions work
+    &:focus {
+      border-color: var(--color-danger-strong); //TODO darken it by 10%
+      box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 6px var(--color-danger-medium);
+    }
+  }
+  // Set validation states also for addons
+  .input-group-addon {
+    color: var(--color-danger-strong);
+    background-color: var(--color-danger-soft);
+    border-color: var(--color-danger-strong);
+  }
+  // Optional feedback icon
+  .form-control-feedback {
+    color: var(--color-danger-strong);
+  }
+}
+
+.has-feedback label {
+
+  & ~ .form-control-feedback {
+    top: (var(--spacing-large) + 5); // Height of the `label` and its margin
+  }
+  &.sr-only ~ .form-control-feedback {
+    top: 0;
+  }
+}
+// ===================== END FEEDBACK STATES =====================
+
+
+// ======================= HORIZONTAL FORMS =======================
+.form-horizontal {
+
+  // Consistent vertical alignment of radios and checkboxes
+  //
+  // Labels also get some reset styles, but that is scoped to a media query below.
+  .radio,
+  .checkbox,
+  .radio-inline,
+  .checkbox-inline {
+    padding-top: calc(var(--spacing-small) + 1); // Default padding plus a border
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+  // Account for padding we're adding to ensure the alignment and of help text
+  // and other content below items
+  .radio,
+  .checkbox {
+    min-height: (var(--spacing-large) + (var(--spacing-small) + 1));
+  }
+
+  // Make form groups behave like rows
+  .form-group {
+    margin-right: calc($grid-gutter-width / -2);
+    margin-left: calc($grid-gutter-width/ -2);
+    &:before,
+    &:after {
+      display: table;
+      content: " ";
+    }
+    &:after {
+      clear: both;
+    }
+  }
+
+  // Reset spacing and right align labels, but scope to media queries so that
+  // labels on narrow viewports stack the same as a default form example.
+  @media (min-width: $screen-small) {
+    .control-label {
+      padding-top: (var(--spacing-small) + 1); // Default padding plus a border
+      margin-bottom: 0;
+      text-align: right;
+    }
+  }
+
+  // Validation states
+  //
+  // Reposition the icon because it's now within a grid column and columns have
+  // `position: relative;` on them. Also accounts for the grid gutter padding.
+  .has-feedback .form-control-feedback {
+    right: calc($grid-gutter-width / 2);
+  }
+
+  // Form group sizes
+  //
+  // Quick utility class for applying `.input-lg` and `.input-sm` styles to the
+  // inputs and labels within a `.form-group`.
+  .form-group-lg {
+    @media (min-width: $screen-small) {
+      .control-label {
+        padding-top: (var(--spacing-small)-lg + 1);
+        font-size: var(--font-size-medium);
+      }
+    }
+  }
+  .form-group-sm {
+    @media (min-width: $screen-small) {
+      .control-label {
+        padding-top: (var(--spacing-small) + 1);
+        font-size:var(--font-size-small);
+      }
+    }
+  }
+}
+// ===================== END HORIZONTAL FORMS =====================
