@@ -37,6 +37,7 @@
     import TabbedContent from "@Obsidian/Controls/tabbedContent.obs";
     import { RequirementTypeDescription } from "@Obsidian/Enums/Lms/requirementType";
     import { pluralize } from "@Obsidian/Utility/stringUtils";
+import { asYesNoOrNull } from "@Obsidian/Utility/booleanUtils";
 
     const props = defineProps({
         modelValue: {
@@ -88,7 +89,7 @@
         valueBuilder.addHtmlValue("", `<h4>Public Name</h4>${props.modelValue.publicName ?? emptyValue}`);
         valueBuilder.addHtmlValue("", `<h4>Credits</h4>${props.modelValue.credits ?? 0}`);
         valueBuilder.addHtmlValue("", `<h4>Enable Announcements</h4>${props.modelValue.enableAnnouncements === true ? "Yes" : "No"}`);
-        valueBuilder.addHtmlValue("", `<h4>Completion Workflow</h4>${props.modelValue.completionWorkflowType?.text ?? emptyValue}`);
+        valueBuilder.addHtmlValue("", `<h4>Completion Workflow Type</h4>${props.modelValue.completionWorkflowType?.text ?? emptyValue}`);
 
         return valueBuilder.build();
     });
@@ -103,6 +104,8 @@
         const emptyValue = "<br />";
 
         valueBuilder.addHtmlValue("", `<h4>Course Code</h4>${props.modelValue.courseCode ?? emptyValue}`);
+
+        valueBuilder.addHtmlValue("", `<h4>Allow Historical Access</h4>${asYesNoOrNull(props.modelValue.allowHistoricalAccess) ?? "No"}`);
 
         // Create a function for constructing the html that will represent a single requirement.
         const requirementHtml = (r: LearningCourseRequirementBag): string => {

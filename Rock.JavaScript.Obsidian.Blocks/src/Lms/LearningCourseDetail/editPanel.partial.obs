@@ -61,7 +61,6 @@
                             <TextBox
                                      v-model="summary"
                                      label="Summary"
-                                     help="Short summary of the course to be used on public sites and lists."
                                      textMode="multiline" />
 
                             <div class="course-requirements-container">

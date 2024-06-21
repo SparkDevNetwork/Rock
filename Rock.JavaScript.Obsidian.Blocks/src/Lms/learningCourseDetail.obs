@@ -12,14 +12,13 @@
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
                  entityTypeName="Course"
-                 :isAuditHidden="false"
+                 :isAuditHidden="true"
                  :isBadgesVisible="true"
-                 :isDeleteVisible="isEditable"
+                 :isDeleteVisible="false"
                  :isEditVisible="isEditable"
                  :isSecurityHidden="false"
                  :isFullScreenVisible="false"
                  @cancelEdit="onCancelEdit"
-                 @delete="onDelete"
                  @edit="onEdit"
                  @save="onSave">
         <template #sidebar v-if="panelMode === DetailPanelMode.View">
@@ -131,7 +130,13 @@
     const blockLabels = computed((): PanelAction[] | undefined => {
         const labels: PanelAction[] = [];
 
-        if (learningCourseEditBag.value?.isActive === true) {
+        const bag = panelMode.value === DetailPanelMode.View ? learningCourseViewBag.value : learningCourseEditBag.value;
+
+        if (bag == null || bag == undefined) {
+            return labels;
+        }
+
+        if (bag.isActive === true) {
             labels.push({
                 iconCssClass: "fa fa-lightbulb",
                 title: "Active",
@@ -146,7 +151,7 @@
             });
         }
 
-        if (learningCourseEditBag.value?.isPublic === true) {
+        if (bag.isPublic === true) {
             labels.push({
                 title: "Public",
                 type: "success"
