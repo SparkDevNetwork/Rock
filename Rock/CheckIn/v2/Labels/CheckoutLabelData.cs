@@ -87,7 +87,7 @@ namespace Rock.CheckIn.v2.Labels
         public CheckoutLabelData( AttendanceLabel attendance, Group family, RockContext rockContext )
         {
             Attendance = attendance;
-            Family = family;
+            Family = family ?? attendance.Person.PrimaryFamily;
 
             CheckInTime = Attendance.StartDateTime;
             CurrentTime = RockDateTime.Now;

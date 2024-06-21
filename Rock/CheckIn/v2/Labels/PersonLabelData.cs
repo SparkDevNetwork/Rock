@@ -165,7 +165,7 @@ namespace Rock.CheckIn.v2.Labels
         public PersonLabelData( Person person, Group family, List<AttendanceLabel> allAttendance, RockContext rockContext )
         {
             Person = person;
-            Family = family;
+            Family = family ?? person.PrimaryFamily;
             AllAttendance = allAttendance;
 
             PersonAttendance = allAttendance

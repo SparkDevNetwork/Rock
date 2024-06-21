@@ -140,7 +140,7 @@ namespace Rock.CheckIn.v2.Labels
         public AttendanceLabelData( AttendanceLabel attendance, Group family, List<AttendanceLabel> allAttendance, RockContext rockContext )
         {
             Attendance = attendance;
-            Family = family;
+            Family = family ?? attendance.Person.PrimaryFamily;
             AllAttendance = allAttendance;
 
             PersonAttendance = allAttendance
