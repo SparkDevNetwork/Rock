@@ -22,8 +22,7 @@
 
         <TextBox v-model="recipientTextFilter" label="Filter" placeholder="Filter by name, email or phone number" />
 
-        <Grid :definition="recipientsGridDefinition" :data="recipientsGridData" itemTerm="Recipient" :keyField="getStringKey<CommunicationEntryRecipientBag>('personAliasGuid')" :light="true" rowClass="recipient-modal-row">
-
+        <Grid :definition="recipientsGridDefinition" :data="recipientsGridData" itemTerm="Recipient" :keyField="getStringKey<CommunicationEntryRecipientBag>('personAliasGuid')" rowClass="recipient-modal-row" :light="true" :disablePaging="true">
             <Column :name="getRecipientKey('name')" :field="getRecipientKey('name')" title="Name" :filter="textValueFilter">
                 <template #format="{ row }">
                     <div v-if="!(row as CommunicationEntryRecipientBag).isDeceased">
@@ -193,9 +192,11 @@
 
     //#region Computed Values
 
-    const recipientsGridData = computed<GridDataBag>(() => ({
-        rows: filteredRecipients.value,
-    }));
+    const recipientsGridData = computed<GridDataBag>(() => {
+        return {
+            rows: filteredRecipients.value,
+        };
+    });
 
     const filteredRecipients = computed<CommunicationEntryRecipientBag[]>(() => {
         const textFilter = recipientTextFilter.value;

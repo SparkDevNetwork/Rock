@@ -242,15 +242,18 @@
      */
     function onRangeChanged(r: Range): void {
         range.value = r;
+        console.log("range changed", r);
     }
 
     /**
      * Called whenever the element we are monitoring has scrolled.
      */
     function onScroll(): void {
+        console.log("scrolled");
         const offset = getScrollOffset();
         const clientSize = getClientHeight();
         const scrollSize = getScrollHeight();
+        console.log("scrolled", offset, clientSize, scrollSize);
 
         // If the scroll is outside the scrollable area, it is probably an
         // overscroll like iOS bounce back effect. Ignore it.
@@ -287,8 +290,10 @@
         virtualScroller?.dataSourceChanged(props.rows.map(r => props.grid.getRowKey(r)).filter(r => r !== undefined) as string[]);
     });
 
+    const scrollableElement = ref<Document | HTMLElement | undefined>();
+
     onBeforeUnmount(() => {
-        document.removeEventListener("scroll", onScroll);
+        scrollableElement.value?.removeEventListener("scroll", onScroll);
 
         if (virtualScroller) {
             virtualScroller.destroy();
@@ -296,13 +301,30 @@
         }
     });
 
+    function setScrollableElement(element: HTMLElement): void {
+        let parentElement: HTMLElement | null | undefined = element.parentElement;
+        while (parentElement) {
+            if (parentElement.classList.contains("modal-scrollable")) {
+                scrollableElement.value = parentElement;
+                return;
+            }
+            else {
+                parentElement = parentElement.parentElement;
+            }
+        }
+        scrollableElement.value = document;
+    }
+
     onMounted(() => {
         virtualScroller = createVirtualScroller();
+        if (element.value) {
+            setScrollableElement(element.value);
+        }
 
         if (getScrollOffset() > 0) {
             onScroll();
         }
 
-        document.addEventListener("scroll", onScroll, { passive: false });
+        scrollableElement.value?.addEventListener("scroll", onScroll, { passive: false });
     });
 </script>
