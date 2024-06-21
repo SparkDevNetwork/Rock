@@ -437,7 +437,10 @@ namespace Rock.UI {
             if (this.isYouTubeEmbed(this.options.mediaUrl) || this.isVimeoEmbed(this.options.mediaUrl) || this.isHls(this.options.mediaUrl)) {
                 var control = plyrOptions.controls as string[];
                 let index = control.findIndex(d => d === "download"); //find index in your array
-                control.splice(index, 1);
+                if (index !== -1) {
+                    control.splice(index, 1);
+                }
+                
                 plyrOptions.controls = control;
             }
 
