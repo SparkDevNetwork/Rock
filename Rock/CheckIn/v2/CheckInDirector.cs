@@ -49,6 +49,11 @@ namespace Rock.CheckIn.v2
         /// <value>The conversion provider.</value>
         public virtual DefaultConversionProvider ConversionProvider { get; }
 
+        /// <summary>
+        /// The instance that will provide label rendering with this instance.
+        /// </summary>
+        public virtual DefaultLabelProvider LabelProvider { get; }
+
         #endregion
 
         #region Constructors
@@ -67,6 +72,7 @@ namespace Rock.CheckIn.v2
 
             RockContext = rockContext;
             ConversionProvider = new DefaultConversionProvider( RockContext );
+            LabelProvider = new DefaultLabelProvider( RockContext );
         }
 
         #endregion
