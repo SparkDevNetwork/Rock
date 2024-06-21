@@ -69,12 +69,6 @@ namespace Rock.CheckIn.v2
         public IReadOnlyList<Attendee> Attendees { get; private set; }
 
         /// <summary>
-        /// Gets the conversion provider to be used with this instance.
-        /// </summary>
-        /// <value>The conversion provider.</value>
-        public virtual DefaultConversionProvider ConversionProvider { get; }
-
-        /// <summary>
         /// Gets the opportunity filter provider to be used with this instance.
         /// </summary>
         /// <value>The opportunity filter provider.</value>
@@ -124,7 +118,6 @@ namespace Rock.CheckIn.v2
             Director = director;
             TemplateConfiguration = templateConfiguration;
 
-            ConversionProvider = new DefaultConversionProvider( this );
             OpportunityFilterProvider = new DefaultOpportunityFilterProvider( this );
             SelectionProvider = new DefaultSelectionProvider( this );
             SearchProvider = new DefaultSearchProvider( this );
@@ -263,9 +256,9 @@ namespace Rock.CheckIn.v2
         {
             using ( var activity = ObservabilityHelper.StartActivity( "Get Person Bags" ) )
             {
-                activity?.AddTag( "rock.checkin.conversion_provider", ConversionProvider.GetType().FullName );
+                activity?.AddTag( "rock.checkin.conversion_provider", Director.ConversionProvider.GetType().FullName );
 
-                return ConversionProvider.GetFamilyMemberBags( familyGuid, groupMembers );
+                return Director.ConversionProvider.GetFamilyMemberBags( familyGuid, groupMembers );
             }
         }
 
@@ -310,12 +303,12 @@ namespace Rock.CheckIn.v2
         {
             using ( var activity = ObservabilityHelper.StartActivity( $"Get Attendee Items" ) )
             {
-                activity?.AddTag( "rock.checkin.conversion_provider", ConversionProvider.GetType().FullName );
+                activity?.AddTag( "rock.checkin.conversion_provider", Director.ConversionProvider.GetType().FullName );
 
                 var preSelectCutoff = RockDateTime.Today.AddDays( Math.Min( -1, 0 - TemplateConfiguration.AutoSelectDaysBack ) );
                 var recentAttendance = CheckInDirector.GetRecentAttendance( preSelectCutoff, people.Select( fm => fm.Guid ), RockContext );
 
-                var attendees = ConversionProvider.GetAttendeeItems( people, baseOpportunities, recentAttendance );
+                var attendees = Director.ConversionProvider.GetAttendeeItems( people, baseOpportunities, recentAttendance );
 
                 Attendees = attendees;
             }
@@ -375,7 +368,7 @@ namespace Rock.CheckIn.v2
         {
             using ( var activity = ObservabilityHelper.StartActivity( "Get Current Attendance Bags" ) )
             {
-                activity?.AddTag( "rock.checkin.conversion_provider", ConversionProvider.GetType().FullName );
+                activity?.AddTag( "rock.checkin.conversion_provider", Director.ConversionProvider.GetType().FullName );
 
                 var checkedInAttendances = new List<AttendanceBag>();
                 var today = RockDateTime.Today;
@@ -411,7 +404,7 @@ namespace Rock.CheckIn.v2
                             continue;
                         }
 
-                        var attendanceBag = ConversionProvider.GetAttendanceBag( attendance, attendee );
+                        var attendanceBag = Director.ConversionProvider.GetAttendanceBag( attendance, attendee );
 
                         checkedInAttendances.Add( attendanceBag );
                     }
@@ -430,10 +423,10 @@ namespace Rock.CheckIn.v2
         {
             using ( var activity = ObservabilityHelper.StartActivity( "Get Attendee Bags" ) )
             {
-                activity?.AddTag( "rock.checkin.conversion_provider", ConversionProvider.GetType().FullName );
+                activity?.AddTag( "rock.checkin.conversion_provider", Director.ConversionProvider.GetType().FullName );
 
                 return Attendees
-                    .Select( a => ConversionProvider.GetAttendeeBag( a ) )
+                    .Select( a => Director.ConversionProvider.GetAttendeeBag( a ) )
                     .ToList();
             }
         }
@@ -467,9 +460,9 @@ namespace Rock.CheckIn.v2
         {
             using ( var activity = ObservabilityHelper.StartActivity( "Get Opportunity Collection Bag" ) )
             {
-                activity?.AddTag( "rock.checkin.conversion_provider", ConversionProvider.GetType().FullName );
+                activity?.AddTag( "rock.checkin.conversion_provider", Director.ConversionProvider.GetType().FullName );
 
-                return ConversionProvider.GetOpportunityCollectionBag( opportunityCollection );
+                return Director.ConversionProvider.GetOpportunityCollectionBag( opportunityCollection );
             }
         }
 

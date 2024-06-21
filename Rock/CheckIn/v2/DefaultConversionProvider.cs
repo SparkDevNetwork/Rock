@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.CheckIn;
 using Rock.Web.Cache;
@@ -33,16 +34,9 @@ namespace Rock.CheckIn.v2
         #region Properties
 
         /// <summary>
-        /// Gets or sets the check-in template configuration in effect during filtering.
+        /// Gets or sets the context to use when accessing the database.
         /// </summary>
-        /// <value>The check-in template configuration.</value>
-        protected TemplateConfigurationData TemplateConfiguration => Session.TemplateConfiguration;
-
-        /// <summary>
-        /// Gets or sets the check-in session.
-        /// </summary>
-        /// <value>The check-in session.</value>
-        protected CheckInSession Session { get; }
+        protected RockContext RockContext { get; set; }
 
         #endregion
 
@@ -51,11 +45,11 @@ namespace Rock.CheckIn.v2
         /// <summary>
         /// Initializes a new instance of the <see cref="DefaultConversionProvider"/> class.
         /// </summary>
-        /// <param name="session">The check-in session.</param>
-        /// <exception cref="System.ArgumentNullException"><paramref name="session"/> is <c>null</c>.</exception>
-        public DefaultConversionProvider( CheckInSession session )
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <exception cref="System.ArgumentNullException"><paramref name="rockContext"/> is <see langword="null"/>.</exception>
+        public DefaultConversionProvider( RockContext rockContext )
         {
-            Session = session ?? throw new ArgumentNullException( nameof( session ) );
+            RockContext = rockContext ?? throw new ArgumentNullException( nameof( rockContext ) );
         }
 
         #endregion
@@ -104,7 +98,7 @@ namespace Rock.CheckIn.v2
                     .OrderByDescending( gm => gm.GroupGuid == familyGuid )
                     .ThenBy( gm => gm.RoleOrder );
 
-            members.Select( fm => fm.Person ).LoadAttributes( Session.RockContext );
+            members.Select( fm => fm.Person ).LoadAttributes( RockContext );
 
             foreach ( var member in members )
             {
@@ -137,7 +131,7 @@ namespace Rock.CheckIn.v2
 
             if ( abilityLevelGuid.HasValue )
             {
-                var definedValue = DefinedValueCache.Get( abilityLevelGuid.Value, Session.RockContext );
+                var definedValue = DefinedValueCache.Get( abilityLevelGuid.Value, RockContext );
 
                 if ( definedValue != null )
                 {
@@ -237,10 +231,10 @@ namespace Rock.CheckIn.v2
                 Status = attendance.Status
             };
 
-            var area = GroupTypeCache.Get( attendance.GroupTypeGuid, Session.RockContext );
-            var group = GroupCache.Get( attendance.GroupGuid, Session.RockContext );
-            var location = NamedLocationCache.Get( attendance.LocationGuid, Session.RockContext );
-            var schedule = NamedScheduleCache.Get( attendance.ScheduleGuid, Session.RockContext );
+            var area = GroupTypeCache.Get( attendance.GroupTypeGuid, RockContext );
+            var group = GroupCache.Get( attendance.GroupGuid, RockContext );
+            var location = NamedLocationCache.Get( attendance.LocationGuid, RockContext );
+            var schedule = NamedScheduleCache.Get( attendance.ScheduleGuid, RockContext );
 
             if ( area != null )
             {
@@ -409,7 +403,7 @@ namespace Rock.CheckIn.v2
         /// <returns>A new instance of <see cref="AchievementBag"/>.</returns>
         public virtual AchievementBag GetAchievementBag( AchievementAttempt achievementAttempt )
         {
-            var achievementType = AchievementTypeCache.Get( achievementAttempt.AchievementTypeId, Session.RockContext );
+            var achievementType = AchievementTypeCache.Get( achievementAttempt.AchievementTypeId, RockContext );
 
             return new AchievementBag
             {

@@ -43,6 +43,12 @@ namespace Rock.CheckIn.v2
         /// <value>The database context.</value>
         public RockContext RockContext { get; }
 
+        /// <summary>
+        /// Gets the conversion provider to be used with this instance.
+        /// </summary>
+        /// <value>The conversion provider.</value>
+        public virtual DefaultConversionProvider ConversionProvider { get; }
+
         #endregion
 
         #region Constructors
@@ -60,6 +66,7 @@ namespace Rock.CheckIn.v2
             }
 
             RockContext = rockContext;
+            ConversionProvider = new DefaultConversionProvider( RockContext );
         }
 
         #endregion

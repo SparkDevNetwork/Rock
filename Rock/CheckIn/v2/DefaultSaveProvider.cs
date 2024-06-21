@@ -325,7 +325,7 @@ namespace Rock.CheckIn.v2
 
                 var recordedAttendanceBag = new RecordedAttendanceBag
                 {
-                    Attendance = Session.ConversionProvider.GetAttendanceBag( attendance, person )
+                    Attendance = Session.Director.ConversionProvider.GetAttendanceBag( attendance, person )
                 };
 
                 // These being null mean this was a pending attendance save.
@@ -339,7 +339,7 @@ namespace Rock.CheckIn.v2
                 {
                     var achievements = allAchievementAttempts
                         .Where( a => a.AchieverPersonAlias.PersonId == person.Id )
-                        .Select( a => Session.ConversionProvider.GetAchievementBag( a.AchievementAttempt ) )
+                        .Select( a => Session.Director.ConversionProvider.GetAchievementBag( a.AchievementAttempt ) )
                         .ToList();
 
                     var completedAchievements = achievements.Where( a => a.IsSuccess ).ToList();

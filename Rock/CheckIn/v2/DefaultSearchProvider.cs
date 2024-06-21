@@ -222,7 +222,7 @@ namespace Rock.CheckIn.v2
                             .ThenBy( member => member.Person.NickName )
                             .Select( member => new FamilyMemberBag
                             {
-                                Person = Session.ConversionProvider.GetPersonBag( member.Person ),
+                                Person = Session.Director.ConversionProvider.GetPersonBag( member.Person ),
                                 FamilyGuid = member.GroupGuid,
                                 RoleOrder = member.RoleOrder
                             } )
