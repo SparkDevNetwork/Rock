@@ -33,7 +33,7 @@
     <LearningClassSecondaryLists v-if="panelMode === DetailPanelMode.View"
                                  :isEditable="isEditable"
                                  :navigationUrls="config.navigationUrls"
-                                 :takesAttendance="options.takesAttendance"
+                                 :showAbsences="takesAttendance"
                                  v-model="learningClassViewBag" />
 </template>
 
@@ -74,6 +74,8 @@
         blockConfig: config,
         entity: learningClassEditBag
     });
+
+    const takesAttendance = ref(learningClassViewBag.value?.takesAttendance);
 
     // #endregion
 
@@ -175,7 +177,7 @@
     });
 
     const options = computed((): LearningClassDetailOptionsBag => {
-        return config.options ?? { takesAttendance: false };
+        return config.options ?? { };
     });
 
     // #endregion

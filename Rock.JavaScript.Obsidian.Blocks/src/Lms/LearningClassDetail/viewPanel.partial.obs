@@ -79,7 +79,7 @@
         }).join("") ?? "";
 
         if (facilitatorsText.length > 0) {
-            valueBuilder.addHtmlValue("", `<ul>${facilitatorsText}</ul>`);
+            valueBuilder.addHtmlValue("", `<h4>Facilitators</h4><ul>${facilitatorsText}</ul>`);
         }
         return valueBuilder.build();
     });
