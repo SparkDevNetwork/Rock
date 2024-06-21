@@ -28,7 +28,7 @@
 
                 <RockButton btnType="link"
                             autoDisable
-                            @click="onPreview">Preview</RockButton>
+                            @click="onPreviewClick">Preview</RockButton>
             </div>
         </div>
     </Panel>
@@ -36,7 +36,19 @@
     <Modal v-model="isPreviewOpen"
            title="Preview"
            cancelText="Close">
-        <div>Preview generated in {{ previewDuration }}ms.</div>
+        <TextBox label="Attendance Id"
+                 v-model="previewAttendanceId"
+                 help="To generate a preview of what this label looks like with an actual attendance record you can enter an identifier here." />
+
+        <RockButton btnType="default"
+                    autoDisable
+                    @click="onPreviewRefreshClick">
+            Refresh
+        </RockButton>
+
+        <div class="text-right mb-2">
+            <span class="label label-info">{{ previewDuration }}ms</span>
+        </div>
 
         <img class="preview-image"
              :src="previewSource" />
@@ -89,6 +101,7 @@
     import Modal from "@Obsidian/Controls/modal.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { computed, ref } from "vue";
     import { LabelDetail, PreviewResultBag, Size } from "./LabelDesigner/types.partial";
@@ -105,6 +118,7 @@
     const isPreviewOpen = ref(false);
     const previewSource = ref<string | undefined>();
     const previewDuration = ref(0);
+    const previewAttendanceId = ref("");
 
     const labelSize = computed<Size>({
         get() {
@@ -154,6 +168,48 @@
     }
 
     /**
+     * Updates the preview data from selections made in the preview modal.
+     */
+    async function updatePreview(): Promise<boolean> {
+        const result = await invokeBlockAction<PreviewResultBag>("Preview", {
+            key: config.idKey,
+            attendanceId: previewAttendanceId.value,
+            label: labelManager.current.value
+        });
+
+        if (!result.isSuccess || !result.data?.content) {
+            await alert(result.errorMessage ?? "Unknown error while trying to preview check-in label.");
+
+            return false;
+        }
+
+        const labelSize = `${labelManager.current.value.labelData.width}x${labelManager.current.value.labelData.height}`;
+        // Can't use our normal http post function because it does something
+        // weird to the response data that corrupts the binary data.
+        const labelaryResult = await fetch(`https://api.labelary.com/v1/printers/8dpmm/labels/${labelSize}/0`, {
+            method: "POST",
+            body: result.data.content,
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            }
+        });
+
+        if (!labelaryResult.ok) {
+            await alert("Unknown error while trying to render preview image.");
+
+            return false;
+        }
+
+        const blob = await labelaryResult.blob();
+        const image64 = await blobToBase64(blob);
+
+        previewSource.value = `data:image/png;base64,${image64}`;
+        previewDuration.value = result.data.duration;
+
+        return true;
+    }
+
+    /**
      * Event handler for the panel's Save event. Send the data to the server
      * to be saved and then redirect to target page.
      */
@@ -186,37 +242,22 @@
      * Event handler for the preview button being clicked. Render the ZPL from
      * the server and then call Labelary to render a preview image.
      */
-    async function onPreview(): Promise<void> {
-        const result = await invokeBlockAction<PreviewResultBag>("Preview", {
-            key: config.idKey,
-            label: labelManager.current.value
-        });
-
-        if (!result.isSuccess || !result.data?.content) {
-            return await alert(result.errorMessage ?? "Unknown error while trying to preview check-in label.");
+    async function onPreviewClick(): Promise<void> {
+        if (await updatePreview()) {
+            isPreviewOpen.value = true;
         }
-
-        const labelSize = `${labelManager.current.value.labelData.width}x${labelManager.current.value.labelData.height}`;
-        // Can't use our normal http post function because it does something
-        // weird to the response data that corrupts the binary data.
-        const labelaryResult = await fetch(`https://api.labelary.com/v1/printers/8dpmm/labels/${labelSize}/0`, {
-            method: "POST",
-            body: result.data.content,
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded"
-            }
-        });
-
-        if (!labelaryResult.ok) {
-            return await alert("Unknown error while trying to render preview image.");
+        else {
+            // Just in case this is the problem.
+            previewAttendanceId.value = "";
         }
+    }
 
-        const blob = await labelaryResult.blob();
-        const image64 = await blobToBase64(blob);
-
-        previewSource.value = `data:image/png;base64,${image64}`;
-        previewDuration.value = result.data.duration;
-        isPreviewOpen.value = true;
+    /**
+     * Event handler for the refresh button being clicked. Update the rendered
+     * preview.
+     */
+    async function onPreviewRefreshClick(): Promise<void> {
+        await updatePreview();
     }
 
     const labelManager = new LabelUndoManager(getInitialLabelDetail());

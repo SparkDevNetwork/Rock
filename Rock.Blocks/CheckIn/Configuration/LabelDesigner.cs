@@ -20,10 +20,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
 
 using Rock.Attribute;
+using Rock.CheckIn.v2;
 using Rock.CheckIn.v2.Labels;
 using Rock.CheckIn.v2.Labels.Renderers;
 using Rock.Data;
@@ -31,7 +30,6 @@ using Rock.Enums.CheckIn.Labels;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Security;
-using Rock.Utility;
 using Rock.ViewModels.Blocks.CheckIn.Configuration.LabelDesigner;
 using Rock.ViewModels.CheckIn.Labels;
 using Rock.ViewModels.Reporting;
@@ -243,9 +241,10 @@ namespace Rock.Blocks.CheckIn.Configuration
         /// </summary>
         /// <param name="key">The key that identifies the label to preview.</param>
         /// <param name="label">The label details as configured in the UI.</param>
+        /// <param name="attendanceId">The attendance identifer to use when rendering the preview. If not specified then a generic preview is generated.</param>
         /// <returns>The result of the operation.</returns>
         [BlockAction]
-        public BlockActionResult Preview( string key, LabelDetailBag label )
+        public BlockActionResult Preview( string key, LabelDetailBag label, string attendanceId )
         {
             var entityService = new CheckInLabelService( RockContext );
             var checkInLabel = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
@@ -282,34 +281,69 @@ namespace Rock.Blocks.CheckIn.Configuration
                 }
             }
 
-            using ( var memoryStream = new MemoryStream() )
+            if ( attendanceId.IsNullOrWhiteSpace() )
             {
-                var sw = System.Diagnostics.Stopwatch.StartNew();
-                var request = new PrintLabelRequest
+                using ( var memoryStream = new MemoryStream() )
                 {
-                    Capabilities = new PrinterCapabilities(),
-                    Label = label.LabelData,
-                    LabelData = new PersonLabelData( RequestContext.CurrentPerson,
-                        RequestContext.CurrentPerson.PrimaryFamily,
-                        new List<AttendanceLabel>(),
-                        RockContext )
-                };
+                    var sw = System.Diagnostics.Stopwatch.StartNew();
+                    var request = new PrintLabelRequest
+                    {
+                        Capabilities = new PrinterCapabilities(),
+                        DataSources = FieldSourceHelper.GetCachedDataSources( checkInLabel.LabelType ),
+                        Label = label.LabelData,
+                        LabelData = new PersonLabelData( RequestContext.CurrentPerson,
+                            RequestContext.CurrentPerson.PrimaryFamily,
+                            new List<AttendanceLabel>(),
+                            RockContext )
+                    };
 
-                var renderer = new ZplLabelRenderer();
+                    var renderer = new ZplLabelRenderer();
 
-                renderer.BeginLabel( memoryStream, request );
+                    renderer.BeginLabel( memoryStream, request );
 
-                foreach ( var field in request.Label.Fields )
+                    foreach ( var field in request.Label.Fields )
+                    {
+                        var labelField = new LabelField( field );
+
+                        renderer.WriteField( labelField );
+                    }
+
+                    renderer.EndLabel();
+
+                    var zpl = System.Text.Encoding.UTF8.GetString( memoryStream.ToArray() );
+                    sw.Stop();
+
+                    return ActionOk( new
+                    {
+                        Content = zpl,
+                        Duration = sw.ElapsedMilliseconds
+                    } );
+                }
+            }
+            else
+            {
+                // This should become a merge just in case something weird happens in Obsidian.
+                checkInLabel.Content = label.LabelData.ToJson();
+
+                var attendance = new AttendanceService( RockContext ).Get( attendanceId.AsInteger() );
+
+                if ( attendance == null )
                 {
-                    var labelField = new LabelField( field );
-
-                    renderer.WriteField( labelField );
+                    return ActionBadRequest( "Attendance record was not found." );
                 }
 
-                renderer.EndLabel();
+                var attendanceLabel = new AttendanceLabel( attendance, RockContext );
+                var director = new CheckInDirector( RockContext );
 
-                var zpl = System.Text.Encoding.UTF8.GetString( memoryStream.ToArray() );
+                var sw = System.Diagnostics.Stopwatch.StartNew();
+                var data = director.LabelProvider.RenderLabel( checkInLabel,
+                    attendanceLabel,
+                    new List<AttendanceLabel> { attendanceLabel },
+                    attendance.SearchResultGroup,
+                    null );
                 sw.Stop();
+
+                var zpl = System.Text.Encoding.UTF8.GetString( data.Data );
 
                 return ActionOk( new
                 {

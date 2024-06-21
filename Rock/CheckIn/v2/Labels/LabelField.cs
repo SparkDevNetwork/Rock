@@ -101,6 +101,13 @@ namespace Rock.CheckIn.v2.Labels
             var source = printRequest.DataSources[config.SourceKey];
             var values = source.GetValues( this, printRequest );
 
+            // Deal with any bad field sources. This may due to test prints or
+            // in some cases getting external data that is an empty array.
+            if ( values == null || values.Count == 0 )
+            {
+                return new List<string> { string.Empty };
+            }
+
             if ( source.Formatter != null )
             {
                 return source.Formatter.GetFormattedValues( values, config.FormatterOptionKey, this, printRequest );
