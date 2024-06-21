@@ -48,7 +48,7 @@
                       @click="onRowClick" />
         </div>
 
-        <div class="grid-body" v-else-if="!keyField || (light && !disablePaging)">
+        <div class="grid-body" v-else-if="!keyField || light">
             <DataRows
                       :columns="visibleColumnDefinitions"
                       :rows="visibleRows"
