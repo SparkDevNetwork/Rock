@@ -58,7 +58,7 @@
 
                             <ColorPicker
                                          v-model="highlightColor"
-                                         label="Color"
+                                         label="Highlight Color"
                                          help="The color to use to differentiate from other learning programs." />
 
                             <TextBox

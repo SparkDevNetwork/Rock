@@ -39,7 +39,7 @@
         </Column>
         <Column name="category"
                 title="Category"
-                :filter="textValueFilter"
+                :filter="pickExistingValueFilter"
                 width="15%"
                 visiblePriority="lg">
             <template #format="{ row }">
@@ -90,7 +90,7 @@
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { textValueFilter, BooleanColumn, Column, DeleteColumn, SecurityColumn, booleanValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { textValueFilter, BooleanColumn, Column, DeleteColumn, SecurityColumn, booleanValueFilter, pickExistingValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { LearningProgramListOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningProgramList/learningProgramListOptionsBag";

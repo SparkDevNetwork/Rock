@@ -14,7 +14,7 @@
                  v-model:mode="panelMode"
                  :alwaysShowLabels="true"
                  :isFullScreenVisible="false"
-                 :isAuditHidden="false"
+                 :isAuditHidden="true"
                  :name="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
