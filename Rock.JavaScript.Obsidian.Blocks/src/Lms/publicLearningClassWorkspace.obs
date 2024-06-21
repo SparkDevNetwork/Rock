@@ -417,7 +417,7 @@ span.icon-stack-container i.icon {
 
                 const index = config.activities?.findIndex(a => a.activityBag?.idKey === viewingCompletionBag.value.activityBag?.idKey) ?? -1;
 
-                if (config.activities !== undefined && index >= 0) {
+                if (config.activities && index >= 0) {
                     config.activities[index] = viewingCompletionBag.value;
                 }
 

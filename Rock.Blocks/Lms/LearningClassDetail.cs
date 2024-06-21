@@ -31,6 +31,7 @@ using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Lms.LearningClassDetail;
 using Rock.ViewModels.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Lms
@@ -81,7 +82,7 @@ namespace Rock.Blocks.Lms
 
     [Rock.SystemGuid.EntityTypeGuid( "08b8da88-be2e-4237-883d-b9a2db5f6260" )]
     [Rock.SystemGuid.BlockTypeGuid( "d5369f8d-11aa-482b-ae08-2b3c519d8d87" )]
-    public class LearningClassDetail : RockEntityDetailBlockType<LearningClass, LearningClassBag>
+    public class LearningClassDetail : RockEntityDetailBlockType<LearningClass, LearningClassBag>, IBreadCrumbBlock
     {
         #region Keys
 
@@ -141,7 +142,7 @@ namespace Rock.Blocks.Lms
         /// <returns>The options that provide additional details to the block.</returns>
         private LearningClassDetailOptionsBag GetBoxOptions( bool isEditable )
         {
-            var programId = PageParameterAsId( PageParameterKey.LearningProgramId );
+            var programId = RequestContext.PageParameterAsId( PageParameterKey.LearningProgramId );
             var options = new LearningClassDetailOptionsBag();
 
             if ( programId > 0 )
@@ -265,6 +266,7 @@ namespace Rock.Blocks.Lms
                 .ToList()
                 .Select( f => new LearningClassFacilitatorBag
                 {
+                    IdKey = f.IdKey,
                     FacilitatorName = f.Name,
                     FacilitatorRole = f.RoleName,
                     Facilitator = new ListItemBag
@@ -378,7 +380,7 @@ namespace Rock.Blocks.Lms
         {
             // Parse out the Id if the parameter is an IdKey or take the Id
             // If the site allows predictable Ids in parameters.
-            var entityId = PageParameterAsId( PageParameterKey.LearningClassId );
+            var entityId = RequestContext.PageParameterAsId( PageParameterKey.LearningClassId );
 
             // If a zero identifier is specified then create a new entity.
             if ( entityId == 0 )
@@ -464,7 +466,7 @@ namespace Rock.Blocks.Lms
                 // Create a new entity.
                 entity = new LearningClass();
 
-                entity.LearningCourseId = PageParameterAsId( PageParameterKey.LearningCourseId );
+                entity.LearningCourseId = RequestContext.PageParameterAsId( PageParameterKey.LearningCourseId );
 
                 entityService.Add( entity );
             }
@@ -482,6 +484,27 @@ namespace Rock.Blocks.Lms
             }
 
             return true;
+        }
+
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var entityKey = pageReference.GetPageParameter( PageParameterKey.LearningClassId ) ?? "";
+
+                var entityName = entityKey.Length > 0 ? new Service<LearningClass>( rockContext ).GetSelect( entityKey, p => p.Name ) : "New Class";
+                var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, pageReference.Parameters );
+                var breadCrumb = new BreadCrumbLink( entityName ?? "New Class", breadCrumbPageRef );
+
+                return new BreadCrumbResult
+                {
+                    BreadCrumbs = new List<IBreadCrumb>
+                    {
+                        breadCrumb
+                    }
+                };
+            }
         }
 
         #endregion
@@ -1009,9 +1032,9 @@ namespace Rock.Blocks.Lms
 
         #region Private methods
 
-        public IQueryable<LearningActivity> GetOrderedLearningPlan( RockContext rockContext )
+        private IQueryable<LearningActivity> GetOrderedLearningPlan( RockContext rockContext )
         {
-            var classId = PageParameterAsId( PageParameterKey.LearningClassId );
+            var classId = RequestContext.PageParameterAsId( PageParameterKey.LearningClassId );
 
             if ( classId > 0 )
             {
@@ -1021,7 +1044,7 @@ namespace Rock.Blocks.Lms
             }
 
             // Get the page parameter value (either IdKey or Id).
-            var courseId = PageParameterAsId( PageParameterKey.LearningCourseId );
+            var courseId = RequestContext.PageParameterAsId( PageParameterKey.LearningCourseId );
 
             if ( courseId > 0 )
             {

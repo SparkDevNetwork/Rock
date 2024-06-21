@@ -2,9 +2,10 @@
 <template>
     <Grid :data="gridDataSource"
           keyField="idKey"
-          itemTerm="Learning Activity"
+          title="Learning Plan"
           :entityTypeGuid="EntityType.LearningActivity"
           :expectedRowCount="5"
+          :isCountMessageVisible="false"
           tooltipField="name"
           stickyHeader
           liveUpdates
@@ -78,9 +79,6 @@
         <Column
                 name="badges"
                 title=""
-                :filter="textValueFilter"
-                filterValue="badges"
-                quickFilterValue="badges"
                 visiblePriority="md">
             <template #format="{ row }">
                 <span v-if="row.isAttentionNeeded" class="fa-stack mr-3">
@@ -172,17 +170,12 @@
         }
 
         const percentComplete = Math.round(completedCount / count * 100);
-
-        switch (true) {
-            case percentComplete > 90:
-                return `<span class="label label-success">${percentComplete}%</span>`;
-            case percentComplete > 80:
-                return `<span class="label label-warning">${percentComplete}%</span>`;
-            case percentComplete <= 80:
-                return `<span class="label label-danger">${percentComplete}%</span>`;
-            default:
-                return "<span class=\"label label-default\">0%</span>";
+        if (completedCount === 0) {
+            return "";
         }
+
+        const labelType = percentComplete === 100 ? "succes" : "warning";
+        return `<span class="label label-${labelType}">${percentComplete}%</span>`;
     }
 
     /**

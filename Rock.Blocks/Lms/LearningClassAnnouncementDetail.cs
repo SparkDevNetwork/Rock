@@ -28,6 +28,7 @@ using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Lms.LearningClassAnnouncementDetail;
 using Rock.ViewModels.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Lms
@@ -48,7 +49,7 @@ namespace Rock.Blocks.Lms
 
     [Rock.SystemGuid.EntityTypeGuid( "08429949-4774-41F7-8840-2D8DEFFF14AB" )]
     [Rock.SystemGuid.BlockTypeGuid( "53C12A53-773E-4398-8627-DD44C1421675" )]
-    public class LearningClassAnnouncementDetail : RockEntityDetailBlockType<LearningClassAnnouncement, LearningClassAnnouncementBag>
+    public class LearningClassAnnouncementDetail : RockEntityDetailBlockType<LearningClassAnnouncement, LearningClassAnnouncementBag>, IBreadCrumbBlock
     {
         #region Keys
 
@@ -173,7 +174,7 @@ namespace Rock.Blocks.Lms
                 CommunicationSent = entity.CommunicationSent,
                 Description = entity.Description,
                 IdKey = entity.IdKey,
-                PublishDateTime = entity.PublishDateTime == DateTime.MinValue ? null : (DateTime?)entity.PublishDateTime,
+                PublishDateTime = entity.PublishDateTime == DateTime.MinValue ? null : ( DateTime? ) entity.PublishDateTime,
                 Title = entity.Title
             };
         }
@@ -235,7 +236,7 @@ namespace Rock.Blocks.Lms
         {
             // Parse out the Id if the parameter is an IdKey or take the Id
             // If the site allows predictable Ids in parameters.
-            var entityId = PageParameterAsId( PageParameterKey.LearningClassAnnouncementId );
+            var entityId = RequestContext.PageParameterAsId( PageParameterKey.LearningClassAnnouncementId );
 
             // If a zero identifier is specified then create a new entity.
             if ( entityId == 0 )
@@ -294,7 +295,7 @@ namespace Rock.Blocks.Lms
                 // Create a new entity.
                 entity = new LearningClassAnnouncement();
 
-                entity.LearningClassId = PageParameterAsId( PageParameterKey.LearningClassId );
+                entity.LearningClassId = RequestContext.PageParameterAsId( PageParameterKey.LearningClassId );
 
                 entityService.Add( entity );
             }
@@ -312,6 +313,27 @@ namespace Rock.Blocks.Lms
             }
 
             return true;
+        }
+
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var entityKey = pageReference.GetPageParameter( PageParameterKey.LearningClassAnnouncementId ) ?? "";
+
+                var entityName = entityKey.Length > 0 ? new Service<LearningClassAnnouncement>( rockContext ).GetSelect( entityKey, p => p.Title ) : "New Announcement";
+                var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, pageReference.Parameters );
+                var breadCrumb = new BreadCrumbLink( entityName ?? "New Announcement", breadCrumbPageRef );
+
+                return new BreadCrumbResult
+                {
+                    BreadCrumbs = new List<IBreadCrumb>
+                    {
+                        breadCrumb
+                    }
+                };
+            }
         }
 
         #endregion
@@ -372,7 +394,7 @@ namespace Rock.Blocks.Lms
 
             if ( isNew )
             {
-                entity.LearningClassId = PageParameterAsId( PageParameterKey.LearningClassId );
+                entity.LearningClassId = RequestContext.PageParameterAsId( PageParameterKey.LearningClassId );
             }
 
             RockContext.WrapTransaction( () =>

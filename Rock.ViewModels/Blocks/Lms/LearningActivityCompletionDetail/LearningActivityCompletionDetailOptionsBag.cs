@@ -15,6 +15,10 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
+
+using Rock.ViewModels.Blocks.Lms.LearningGradingSystemScaleDetail;
+
 namespace Rock.ViewModels.Blocks.Lms.LearningActivityCompletionDetail
 {
     /// <summary>
@@ -22,5 +26,9 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityCompletionDetail
     /// </summary>
     public class LearningActivityCompletionDetailOptionsBag
     {
+        /// <summary>
+        /// Gets or sets the grading scales for the Learning Class.
+        /// </summary>
+        public List<LearningGradingSystemScaleBag> GradingScales { get; set; }
     }
 }

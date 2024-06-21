@@ -57,7 +57,7 @@
         }
 
         if (props.modelValue.description) {
-            valueBuilder.addHtmlValue("", props.modelValue.descriptionAsHtml);
+            valueBuilder.addHtmlValue("", props.modelValue?.descriptionAsHtml ?? "");
         }
 
         return valueBuilder.build();
@@ -72,8 +72,10 @@
         }
 
         const averageGradePercentText = props.modelValue?.averageGradePercent?.toFixed(1).toString() ?? "0";
-        const averageScoreText = `${props.modelValue.averageGrade ?? ""} (${averageGradePercentText}%)`;
-        valueBuilder.addTextValue("Average Score", averageScoreText);
+        const labelType = props.modelValue.averageGradeIsPassing ? "success" : "warning";
+        const averageScoreText = `<span class="label label-${labelType}">${props.modelValue.averageGrade ?? ""} (${averageGradePercentText}%)</span>`;
+
+        valueBuilder.addHtmlValue("Average Score", averageScoreText);
         valueBuilder.addTextValue("Available", props.modelValue?.availableDateDescription ?? "");
 
         const checkmarkIconOrEmpty = props.modelValue.isStudentCommentingEnabled ? "<i class='fa fa-check'></i>" : "";

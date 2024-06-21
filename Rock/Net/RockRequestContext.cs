@@ -705,6 +705,25 @@ namespace Rock.Net
         }
 
         /// <summary>
+        /// Returns a page parameter's value as an integer if possible; zero if not possible or not allowed.
+        /// </summary>
+        /// <param name="name">The name of the parameter.</param>
+        /// <returns>0 if unable to parse a valid value; otherwise the parsed value as an integer</returns>
+        public int PageParameterAsId( string name )
+        {
+            var allowIdParameters = !_pageCache?.Layout?.Site?.DisablePredictableIds ?? false;
+
+            var entityParameterValue = GetPageParameter( name );
+
+            // Parse out the Id if the parameter is an IdKey or take the Id
+            // if the site allows predictable Ids.
+            return
+                entityParameterValue.IsDigitsOnly() && allowIdParameters ?
+                entityParameterValue.ToIntSafe() :
+                IdHasher.Instance.GetId( entityParameterValue ).ToIntSafe();
+        }
+
+        /// <summary>
         /// Gets the page parameters.
         /// </summary>
         /// <returns></returns>

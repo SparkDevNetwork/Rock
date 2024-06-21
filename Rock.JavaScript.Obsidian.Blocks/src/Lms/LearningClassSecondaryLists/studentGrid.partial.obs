@@ -2,10 +2,10 @@
 <template>
     <Grid :data="gridDataSource"
           keyField="idKey"
-          itemTerm="Student"
+          title="Students"
           :entityTypeGuid="EntityType.LearningParticipant"
           :expectedRowCount="10"
-          tooltipField="name"
+          :isCountMessageVisible="false"
           stickyHeader
           liveUpdates
           :onSelectItem="onRowClicked"

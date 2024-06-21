@@ -77,6 +77,10 @@
                     <AssessmentItemShortAnswer v-model="completedItems[index]" :screenToShow="screenToShow" :totalActivityPoints="activityBag.points" />
                 </div>
             </div>
+
+            <div class="footer-content-section mt-3">
+                <RockButton :btnType="BtnType.Primary" @click="emit('completed', true)">Complete</RockButton>
+            </div>
         </div>
 
         <div v-if="screenToShow === ComponentScreen.Summary">
@@ -86,7 +90,7 @@
                 <div class="assessment-item" v-for="(item, index) in completedItems">
                     <div class="well well-sm assessment-item-container" v-if="typeNamesWithSummaryScreen.includes(item.typeName)">
                         <AssessmentItemMultipleChoice v-if="item.typeName === 'Multiple Choice'" v-model="completedItems[index]" :screenToShow="screenToShow" />
-                        <AssessmentItemShortAnswer v-if="item.typeName === 'Short Answer'" v-model="completedItems[index]" :screenToShow="screenToShow" />
+                        <AssessmentItemShortAnswer v-if="item.typeName === 'Short Answer'" v-model="completedItems[index]" :screenToShow="screenToShow" :totalActivityPoints="activityBag.points" />
                     </div>
                 </div>
             </div>

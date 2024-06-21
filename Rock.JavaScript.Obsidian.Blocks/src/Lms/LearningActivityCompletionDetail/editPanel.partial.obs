@@ -7,9 +7,6 @@
                            label="Points Earned"
                            :rules="'required|lte:' + pointsPossible"
                            inputGroupClasses="input-width-md">
-                    <template #inputGroupAppend>
-                        <span class="input-group-addon">out of {{ pointsPossible }}</span>
-                    </template>
                 </NumberBox>
             </div>
 
@@ -34,7 +31,8 @@
             <activityTypeComponent
                                    v-model:activityBag="activityBag"
                                    v-model:completionBag="completionBag"
-                                   :screenToShow="screenToShow" />
+                                   :screenToShow="screenToShow"
+                                   @completed="onFacilitatorCompleted" />
         </div>
     </fieldset>
 </template>
@@ -119,6 +117,12 @@
     // #endregion
 
     // #region Event Handlers
+
+    function onFacilitatorCompleted(successful: boolean): void {
+        if (successful) {
+            isFacilitatorCompleted.value = true;
+        }
+    }
 
     // #endregion
 

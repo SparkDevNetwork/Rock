@@ -120,7 +120,7 @@
 
     function updateUrlWithSelectedTab(): void {
         const queryParams = new URLSearchParams(window.location.search);
-        queryParams.set("selection", selectedTab.value ?? "");
+        queryParams.set("tab", selectedTab.value ?? "");
         history.pushState(null, "", "?" + queryParams.toString());
     }
 

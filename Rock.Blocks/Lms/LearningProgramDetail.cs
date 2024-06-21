@@ -29,6 +29,7 @@ using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Lms.LearningProgramDetail;
 using Rock.ViewModels.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Lms
@@ -84,7 +85,7 @@ namespace Rock.Blocks.Lms
 
     [Rock.SystemGuid.EntityTypeGuid( "41351a30-3b4f-44da-b413-49d7c997fbb5" )]
     [Rock.SystemGuid.BlockTypeGuid( "796c87e7-678f-4a38-8c04-a401a4f7ac21" )]
-    public class LearningProgramDetail : RockDetailBlockType
+    public class LearningProgramDetail : RockDetailBlockType, IBreadCrumbBlock
     {
         #region Keys
 
@@ -507,7 +508,7 @@ namespace Rock.Blocks.Lms
         /// <returns><c>true</c> if the entity was loaded and passed security checks.</returns>
         private bool TryGetEntityForEditAction( string idKey, RockContext rockContext, out LearningProgram entity, out BlockActionResult error )
         {
-            var entityService = new LearningProgramService( rockContext );
+            var entityService = new LearningProgramService( RockContext );
             error = null;
 
             // Determine if we are editing an existing entity or creating a new one.
@@ -537,6 +538,27 @@ namespace Rock.Blocks.Lms
             }
 
             return true;
+        }
+
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var entityKey = pageReference.GetPageParameter( PageParameterKey.LearningProgramId ) ?? "";
+
+                var entityName = entityKey.Length > 0 ? new LearningProgramService( rockContext ).GetSelect( entityKey, p => p.Name ) : "New Program";
+                var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, pageReference.Parameters );
+                var breadCrumb = new BreadCrumbLink( entityName ?? "New Program", breadCrumbPageRef );
+
+                return new BreadCrumbResult
+                {
+                    BreadCrumbs = new List<IBreadCrumb>
+                {
+                    breadCrumb
+                }
+                };
+            }
         }
 
         #endregion

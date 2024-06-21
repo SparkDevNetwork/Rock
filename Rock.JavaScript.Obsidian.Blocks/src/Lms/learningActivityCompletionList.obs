@@ -3,8 +3,9 @@
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
-          itemTerm="Activity"
+          title="Learning Plan Completion Status"
           :entityTypeGuid="EntityType.LearningActivityCompletion"
+          :isCountMessageVisible="false"
           stickyHeader
           liveUpdates
           @selectItem="onSelectItem">
@@ -58,7 +59,6 @@
                 width="15%"
                 :filter="textValueFilter"
                 :filterValue="getRowStatusesFilterValue"
-                :quickFilterValue="getRowStatusesFilterValue"
                 visiblePriority="xs">
             <template #format="{ row }">
                 <div v-html="getRowStatusLabels(row)"></div>
@@ -71,7 +71,6 @@
                 width="10%"
                 :filter="textValueFilter"
                 :filterValue="getRowCommentsFilterValue"
-                :quickFilterValue="getRowCommentsFilterValue"
                 visiblePriority="xs">
             <template #format="{ row }">
                 <div v-html="getRowCommentLabels(row)"></div>

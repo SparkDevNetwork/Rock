@@ -100,7 +100,7 @@ namespace Rock.ViewModels.Blocks.Lms.LearningClassDetail
     /// <summary>
     /// The facilitator details for the Learning Class Detail block.
     /// </summary>
-    public class LearningClassFacilitatorBag
+    public class LearningClassFacilitatorBag: EntityBagBase
     {
         /// <summary>
         /// Gets or sets the facilitator name.

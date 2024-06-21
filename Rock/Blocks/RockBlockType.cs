@@ -386,25 +386,6 @@ namespace Rock.Blocks
         }
 
         /// <summary>
-        /// Returns a page parameter's value as an integer if possible; zero if not possible or not allowed.
-        /// </summary>
-        /// <param name="name">The name of the parameter.</param>
-        /// <returns>0 if unable to parse a valid value; otherwise the parsed value as an integer</returns>
-        public int PageParameterAsId( string name )
-        {
-            var allowIdParameters = !PageCache.Layout.Site.DisablePredictableIds;
-
-            var entityParameterValue = RequestContext?.GetPageParameter( name );
-
-            // Parse out the Id if the parameter is an IdKey or take the Id
-            // If the site allows predictable Ids in parameters.
-            return
-                entityParameterValue.IsDigitsOnly() && allowIdParameters ?
-                entityParameterValue.ToIntSafe() :
-                IdHasher.Instance.GetId( entityParameterValue ).ToIntSafe();
-        }
-
-        /// <summary>
         /// Gets the JavaScript file URL to use for this block in Obsidian mode.
         /// </summary>
         /// <returns>A string that represents the path.</returns>

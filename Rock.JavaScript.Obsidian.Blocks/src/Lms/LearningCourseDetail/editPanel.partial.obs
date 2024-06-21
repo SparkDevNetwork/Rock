@@ -14,21 +14,24 @@
                                      label="Public Name" />
 
                             <TextBox v-model="courseCode"
+                                     class="input-width-md"
                                      label="Course Code"
                                      rules="required" />
 
                             <NumberBox v-model="credits"
+                                       class="input-width-sm"
                                        label="Credits"
                                        rules="required" />
 
                             <NumberBox v-model="maxStudents"
+                                       class="input-width-sm"
                                        label="Maximum Students"
                                        help="The maximum number of students a class can have." />
 
                             <WorkflowTypePicker
-                                                v-model="completionWorkflowType"
-                                                label="Completion Workflow Type"
-                                                help="The workflow to launch when an individual completes the course." />
+                                       v-model="completionWorkflowType"
+                                       label="Completion Workflow Type"
+                                       help="The workflow to launch when an individual completes the course." />
 
                             <CheckBox
                                       v-model="allowHistoricalAccess"
@@ -262,6 +265,7 @@
 
             if (courseListItemsResult.isSuccess && courseListItemsResult.data) {
                 courseOptions.value = courseListItemsResult.data;
+                courseOptions.value.unshift({value: null, text: ""});
                 showAddCourseRequirementModal.value = true;
             }
         }

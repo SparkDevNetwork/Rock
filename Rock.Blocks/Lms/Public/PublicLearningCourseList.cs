@@ -218,7 +218,7 @@ namespace Rock.Blocks.Lms
         /// <param name="rockContext">The rock context.</param>
         private void SetBoxInitialEntityState( PublicLearningCourseListBlockBox box )
         {
-            var programId = PageParameterAsId( PageParameterKey.LearningProgramId );
+            var programId = RequestContext.PageParameterAsId( PageParameterKey.LearningProgramId );
             var rockContext = new RockContext();
             var program = new LearningProgramService( rockContext )
                 .Queryable()

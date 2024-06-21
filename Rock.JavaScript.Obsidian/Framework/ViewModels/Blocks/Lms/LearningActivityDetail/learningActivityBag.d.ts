@@ -67,6 +67,9 @@ export type LearningActivityBag = {
     /** Gets or sets the average grade for those who've completed the activity. */
     averageGrade?: string | null;
 
+    /** Gets or sets whether the average grade for the class is a passing grade. */
+    averageGradeIsPassing: boolean;
+
     /** Gets or sets the average grade percent for those who've completed the activity. */
     averageGradePercent: number;
 

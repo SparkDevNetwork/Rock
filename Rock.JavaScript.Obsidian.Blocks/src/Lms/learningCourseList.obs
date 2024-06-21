@@ -26,11 +26,13 @@
                 :filter="textValueFilter"
                 visiblePriority="xs">
             <template #format="{ row }" >
-                <i :style="'color: ' + row.categoryColor" :class="' align-self-center col-sm-2 fa-2x fw ' + (row.categoryIconCssClass ?? '')"></i>
-                    <div class="col-sm-10">
+                <div class="d-flex flex-fill align-items-center">
+                    <i :style="'color: ' + row.categoryColor" :class="'mr-2 flex-shrink-0 fa-2x fw ' + (row.categoryIconCssClass ?? '')"></i>
+                    <div class="flex-grow-1">
                         <span class="text-semibold">{{ row.course }}</span>
                         <div class="text-muted text-sm">{{ row.summary }}</div>
                     </div>
+                </div>
             </template>
         </Column>
 

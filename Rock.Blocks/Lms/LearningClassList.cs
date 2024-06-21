@@ -159,14 +159,13 @@ namespace Rock.Blocks.Lms
             var options = new LearningClassListOptionsBag();
 
             var courseKey = PageParameter( PageParameterKey.LearningCourseId ) ?? string.Empty;
-
-            var course = courseKey.Length > 0 ? new LearningCourseService( RockContext ).GetInclude( courseKey, c => c.LearningProgram ) : null;
             var isNewCourse = courseKey == "0";
-
+            var course = !isNewCourse && courseKey.Length > 0 ? new LearningCourseService( RockContext ).GetInclude( courseKey, c => c.LearningProgram ) : null;
+            
             var programKey = PageParameter( PageParameterKey.LearningProgramId ) ?? string.Empty;
-            var program = programKey.Length > 0 ? new LearningProgramService( RockContext ).Get( programKey ) : course?.LearningProgram;
             var isNewProgram = programKey == "0";
-
+            var program = !isNewProgram && programKey.Length > 0 ? new LearningProgramService( RockContext ).Get( programKey ) : course?.LearningProgram;
+            
             // Only add the course column if the results aren't filtered to a course already.
             options.ShowCourseColumn = course == null;
             options.HasValidCourse = course != null;
@@ -223,13 +222,13 @@ namespace Rock.Blocks.Lms
                 .Include( c => c.LearningSemester )
                 .Include( c => c.LearningParticipants );
 
-            var programId = PageParameterAsId( PageParameterKey.LearningProgramId );
+            var programId = RequestContext.PageParameterAsId( PageParameterKey.LearningProgramId );
             if ( programId > 0 )
             {
                 baseQuery = baseQuery.Where( c => c.LearningCourse.LearningProgramId == programId );
             }
 
-            var courseId = PageParameterAsId( PageParameterKey.LearningCourseId );
+            var courseId = RequestContext.PageParameterAsId( PageParameterKey.LearningCourseId );
             if ( courseId > 0 )
             {
                 baseQuery = baseQuery.Where( c => c.LearningCourseId == courseId );

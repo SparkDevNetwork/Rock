@@ -136,7 +136,7 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         protected override IQueryable<LearningSemester> GetListQueryable( RockContext rockContext )
         {
-            var entityId = PageParameterAsId( PageParameterKey.LearningProgramId );
+            var entityId = RequestContext.PageParameterAsId( PageParameterKey.LearningProgramId );
 
             // If the PageParameter has a value then use that
             // otherwise try to get the Id for filtering from the ContextEntity.

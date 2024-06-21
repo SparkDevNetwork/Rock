@@ -105,6 +105,10 @@
     const blockLabels = computed((): PanelAction[] | undefined => {
         const labels: PanelAction[] = [];
 
+        if (panelMode.value === DetailPanelMode.Add) {
+            return labels;
+        }
+
         labels.push({
             iconCssClass: "fa fa-users",
             title: `Students: ${learningClassViewBag.value?.studentCount ?? 0}`,

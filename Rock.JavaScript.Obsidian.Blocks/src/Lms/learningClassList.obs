@@ -1,11 +1,12 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
-<template v-if="showBlock">
-    <Grid
+<template>
+    <Grid v-if="showBlock"
           :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
-          itemTerm="Class"
+          title="Current Classes"
           :entityTypeGuid="EntityType.LearningClass"
+          :isCountMessageVisible="false"
           stickyHeader
           :expectedRowCount="config.expectedRowCount ?? undefined"
           liveUpdates
@@ -18,6 +19,7 @@
                     name="course"
                     title="Course"
                     field="course"
+                    :filter="textValueFilter"
                     width="25%"
                     visiblePriority="sm">
         </TextColumn>
@@ -27,6 +29,7 @@
                     name="code"
                     title="Code"
                     field="code"
+                    :filter="textValueFilter"
                     width="10%"
                     visiblePriority="xs">
         </TextColumn>
@@ -36,6 +39,7 @@
                     name="semester"
                     title="Semester"
                     field="semester"
+                    :filter="textValueFilter"
                     width="10%"
                     visiblePriority="sm">
         </TextColumn>
@@ -44,6 +48,7 @@
                     name="facilitators"
                     title="Facilitators"
                     field="facilitators"
+                    :filter="textValueFilter"
                     width="20%"
                     visiblePriority="md">
         </TextColumn>
@@ -53,6 +58,7 @@
                     name="location"
                     title="Location"
                     field="location"
+                    :filter="textValueFilter"
                     width="10%"
                     visiblePriority="sm">
         </TextColumn>
@@ -62,15 +68,15 @@
                     name="schedule"
                     title="Schedule"
                     field="schedule"
+                    :filter="textValueFilter"
                     width="10%"
                     visiblePriority="sm">
         </TextColumn>
 
         <Column name="category"
                 title="Category"
-                :filter="textValueFilter"
-                filterValue="category"
-                quickFilterValue="category"
+                field="category"
+                :filter="pickExistingValueFilter"
                 width="15%"
                 visiblePriority="lg">
             <template #format="{ row }">
@@ -84,8 +90,6 @@
                 title="Students"
                 field="students"
                 :filter="numberValueFilter"
-                filterValue="students"
-                quickFilterValue="students"
                 width="10%"
                 visiblePriority="lg">
         </Column>
@@ -99,7 +103,7 @@
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { numberValueFilter, textValueFilter, Column, TextColumn, DeleteColumn, SecurityColumn } from "@Obsidian/Controls/grid";
+    import Grid, { numberValueFilter, textValueFilter, Column, TextColumn, DeleteColumn, SecurityColumn, pickExistingValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { LearningClassListOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassList/learningClassListOptionsBag";
@@ -123,6 +127,7 @@
 
     const showBlock = ref(config.options?.showBlock || false);
     const hasValidCourse = ref(config.options?.hasValidCourse || false);
+
     // #endregion
 
     // #region Functions

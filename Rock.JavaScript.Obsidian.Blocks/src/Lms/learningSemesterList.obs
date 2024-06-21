@@ -14,7 +14,6 @@
           tooltipField="name"
           stickyHeader
           liveUpdates
-          :hasFullscreen="false"
           @selectItem="onSelectItem"
           :onAddItem="config.isAddEnabled ? onAddItem : undefined">
 

@@ -167,7 +167,7 @@ namespace Rock.Blocks.Lms
                 .AddField( "isFacilitatorCompleted", a => a.IsFacilitatorCompleted )
                 .AddField( "wasCompletedOnTime", a => a.WasCompletedOnTime )
                 .AddField( "isCompleted", a => a.CompletedDateTime.HasValue )
-                .AddField( "hadExtension", a => a.DueDate != a.LearningActivity.DueDateCalculated )
+                .AddField( "hadExtension", a => a.LearningActivity.DueDateCalculated != null && a.DueDate != a.LearningActivity.DueDateCalculated )
                 .AddField( "dueDateCalculated", a => a.LearningActivity.DueDateCalculated )
                 .AddTextField( "facilitatorComment", a => a.FacilitatorComment )
                 .AddTextField( "studentComment", a => a.StudentComment );

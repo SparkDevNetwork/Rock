@@ -70,14 +70,19 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityDetail
         public int? AvailableDateOffset { get; set; }
 
         /// <summary>
-        /// Gets or sets the average grade percent for those who've completed the activity.
-        /// </summary>
-        public double AverageGradePercent { get; set; }
-
-        /// <summary>
         /// Gets or sets the average grade for those who've completed the activity.
         /// </summary>
         public string AverageGrade { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the average grade for the class is a passing grade.
+        /// </summary>
+        public bool AverageGradeIsPassing { get; set; }
+
+        /// <summary>
+        /// Gets or sets the average grade percent for those who've completed the activity.
+        /// </summary>
+        public double AverageGradePercent { get; set; }
 
         /// <summary>
         /// Gets or sets the number of students who have completed the LearningActivity.

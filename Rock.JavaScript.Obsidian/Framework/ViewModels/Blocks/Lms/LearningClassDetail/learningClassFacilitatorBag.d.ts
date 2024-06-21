@@ -25,6 +25,9 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** The facilitator details for the Learning Class Detail block. */
 export type LearningClassFacilitatorBag = {
+    /** Gets or sets the identifier key of this entity. */
+    idKey: string;
+
     /** Gets or sets the facilitator list item. */
     facilitator?: ListItemBag | null;
 

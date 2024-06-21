@@ -155,8 +155,6 @@ export function useLearningComponent<TConfig extends object, TCompletion extends
         configuration = JSON.parse(toValue(activityBag)?.activityComponentSettingsJson ?? "") as TConfig;
     }
     catch (error) {
-        // It's expected that this will happen with new instances so don't log it as an error.
-        console.debug(error, toValue(activityBag)?.activityComponentSettingsJson);
         configuration = defaults.defaultConfig;
     }
 
@@ -165,8 +163,6 @@ export function useLearningComponent<TConfig extends object, TCompletion extends
         completion = JSON.parse(toValue(completionBag)?.activityComponentCompletionJson ?? "") as TCompletion;
     }
     catch (error) {
-        // It's expected that this will happen with new instances so don't log it as an error.
-        console.debug(error, toValue(completionBag)?.activityComponentCompletionJson);
         completion = defaults.defaultCompletion;
     }
 

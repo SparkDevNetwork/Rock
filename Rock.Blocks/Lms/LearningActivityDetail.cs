@@ -32,6 +32,7 @@ using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Lms.LearningActivityComponent;
 using Rock.ViewModels.Blocks.Lms.LearningActivityDetail;
 using Rock.ViewModels.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Lms
@@ -52,7 +53,7 @@ namespace Rock.Blocks.Lms
 
     [Rock.SystemGuid.EntityTypeGuid( "fe13bfef-6266-4667-b51f-01af8e6c5b89" )]
     [Rock.SystemGuid.BlockTypeGuid( "4b18bf0d-d91b-4934-ac2d-a7188b15b893" )]
-    public class LearningActivityDetail : RockEntityDetailBlockType<LearningActivity, LearningActivityBag>
+    public class LearningActivityDetail : RockEntityDetailBlockType<LearningActivity, LearningActivityBag>, IBreadCrumbBlock
     {
         #region Keys
 
@@ -245,6 +246,7 @@ namespace Rock.Blocks.Lms
                 AvailableDateOffset = entity.AvailableDateOffset,
                 AverageGrade = completionStatistics.AverageGrade?.Name,
                 AverageGradePercent = completionStatistics.AverageGradePercent,
+                AverageGradeIsPassing = completionStatistics.AverageGrade.IsPassing,
                 CompleteCount = completionStatistics.Complete,
                 CompletionWorkflowType = entity.CompletionWorkflowType.ToListItemBag(),
                 CurrentPerson = currentPersonBag,
@@ -374,8 +376,8 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         protected override LearningActivity GetInitialEntity()
         {
-            var entityId = PageParameterAsId( PageParameterKey.LearningActivityId );
-
+            var entityId = RequestContext.PageParameterAsId( PageParameterKey.LearningActivityId );
+            
             // If a zero identifier is specified then create a new entity.
             if ( entityId == 0 )
             {
@@ -451,6 +453,27 @@ namespace Rock.Blocks.Lms
             return true;
         }
 
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var entityKey = pageReference.GetPageParameter( PageParameterKey.LearningActivityId ) ?? "";
+
+                var entityName = entityKey.Length > 0 ? new Service<LearningActivity>( rockContext ).GetSelect( entityKey, p => p.Name ) : "New Activity";
+                var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, pageReference.Parameters );
+                var breadCrumb = new BreadCrumbLink( entityName ?? "New Activity", breadCrumbPageRef );
+
+                return new BreadCrumbResult
+                {
+                    BreadCrumbs = new List<IBreadCrumb>
+                    {
+                        breadCrumb
+                    }
+                };
+            }
+        }
+
         #endregion
 
         #region Block Actions
@@ -510,7 +533,7 @@ namespace Rock.Blocks.Lms
             var isNew = entity.Id == 0;
             if ( isNew )
             {
-                entity.LearningClassId = PageParameterAsId( PageParameterKey.LearningClassId );
+                entity.LearningClassId = RequestContext.PageParameterAsId( PageParameterKey.LearningClassId );
             }
 
             RockContext.WrapTransaction( () =>
