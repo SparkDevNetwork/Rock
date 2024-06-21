@@ -68,7 +68,7 @@ export type PublicLearningClassWorkspaceBox = {
     participantBag?: LearningParticipantBag | null;
 
     /** Gets or sets the Learning Program's configuration mode. */
-    progamConfigurationMode: ConfigurationMode;
+    programConfigurationMode: ConfigurationMode;
 
     /** Gets or sets the security grant token. */
     securityGrantToken?: string | null;
