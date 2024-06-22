@@ -180,6 +180,23 @@ namespace RockWeb.Blocks.Groups
         DefaultBooleanValue = false,
         Order = 19 )]
 
+    [BooleanField( "Enable Communication Preference",
+        Description = "Determines if the currently logged in individual should be allowed to set their communication preference for the group.",
+        DefaultBooleanValue = false,
+        Order = 19 )]
+
+    [BooleanField( "Show 'Email Group Leaders' Button",
+        Description = "Determines if the 'Email Group Leaders' button should be displayed.",
+        DefaultBooleanValue = false,
+        Order = 20,
+        Key = AttributeKey.ShowEmailGroupLeadersButton )]
+
+    [BooleanField( "Show 'Email Roster Parents' Button",
+        Description = "Determines if the 'Email Roster Parents' button should be displayed.",
+        DefaultBooleanValue = false,
+        Order = 20,
+        Key = AttributeKey.ShowEmailRosterParentsButton )]
+
     #endregion Block Attributes
 
     [Rock.SystemGuid.BlockTypeGuid( "218B057F-B214-4317-8E84-7A95CF88067E" )]
@@ -216,6 +233,8 @@ namespace RockWeb.Blocks.Groups
             public const string EditGroupMemberPreHTML = "EditGroupMemberPre-HTML";
             public const string EditGroupMemberPostHTML = "EditGroupMemberPost-HTML";
             public const string EnableCommunicationPreference = "EnableCommunicationPreference";
+            public const string ShowEmailRosterParentsButton = "ShowEmailRosterParentsButton";
+            public const string ShowEmailGroupLeadersButton = "ShowEmailGroupLeadersButton";
         }
 
         #endregion Attribute Keys
@@ -428,6 +447,7 @@ namespace RockWeb.Blocks.Groups
         {
             RouteAction();
             BlockSetup();
+            DisplayViewGroup();
         }
 
         /// <summary>
@@ -858,6 +878,14 @@ namespace RockWeb.Blocks.Groups
                         case "SendAlternateCommunication":
                             SendAlternateCommunication();
                             break;
+
+                        case "EmailGroupLeaders":
+                            SendGroupLeadersCommunication();
+                            break;
+
+                        case "EmailRosterParents":
+                            SendRosterParentsCommunication();
+                            break;
                     }
                 }
             }
@@ -951,6 +979,11 @@ namespace RockWeb.Blocks.Groups
                 currentPageProperties.Add( "Id", RockPage.PageId );
                 currentPageProperties.Add( "Path", Request.Path );
                 mergeFields.Add( "CurrentPage", currentPageProperties );
+
+                Dictionary<string, object> buttonVisibility = new Dictionary<string, object>();
+                buttonVisibility.Add( AttributeKey.ShowEmailGroupLeadersButton, GetAttributeValue( AttributeKey.ShowEmailGroupLeadersButton ) );
+                buttonVisibility.Add( AttributeKey.ShowEmailRosterParentsButton, GetAttributeValue( AttributeKey.ShowEmailRosterParentsButton ) );
+                mergeFields.Add( "ButtonVisibility", buttonVisibility );
 
                 string template = GetAttributeValue( AttributeKey.LavaTemplate );
 
@@ -1443,6 +1476,137 @@ namespace RockWeb.Blocks.Groups
                 queryParameters.Add( PageParameterKey.CommunicationId, communication.Id.ToString() );
 
                 NavigateToLinkedPage( AttributeKey.AlternateCommunicationPage, queryParameters );
+            }
+        }
+
+        /// <summary>
+        /// Sends an email to the parents of the members of the current group.
+        /// </summary>
+        private void SendRosterParentsCommunication()
+        {
+            // create communication
+            if ( this.CurrentPerson != null && _groupId != -1 && !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.CommunicationPage ) ) )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var service = new Rock.Model.CommunicationService( rockContext );
+                    var communication = new Rock.Model.Communication();
+                    communication.IsBulkCommunication = false;
+                    communication.Status = Rock.Model.CommunicationStatus.Transient;
+
+                    communication.SenderPersonAliasId = this.CurrentPersonAliasId;
+
+                    service.Add( communication );
+
+                    var groupMemberPersonIds = new GroupMemberService( rockContext ).Queryable()
+                        .Where( m => m.GroupId == _groupId && m.GroupMemberStatus != GroupMemberStatus.Inactive )
+                        .Select( gm => gm.PersonId )
+                        .ToList();
+
+                    int adultRoleId = GroupTypeCache.GetFamilyGroupType().Roles.Where( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Select( a => a.Id ).FirstOrDefault();
+                    int childRoleId = GroupTypeCache.GetFamilyGroupType().Roles.Where( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ).Select( a => a.Id ).FirstOrDefault();
+
+                    // Group may contain several members so we process then in chunks to avoid a SQL Expression limit error.
+                    int skipCount = 0;
+                    var chunkedPersonIds = groupMemberPersonIds.Take( 1000 );
+                    var primaryAliasIdList = new List<int?>( groupMemberPersonIds.Count );
+
+                    while ( chunkedPersonIds.Any() )
+                    {
+                        var chunkedPrimaryAliasList = new PersonService( rockContext ).Queryable()
+                            .Where( p => p.Members.Where( a => ( a.GroupRoleId == adultRoleId ) && !a.IsArchived )
+                                .Any( a => a.Group.Members
+                                .Any( c => ( c.GroupRoleId == childRoleId ) && chunkedPersonIds.Contains( c.PersonId ) ) ) )
+                            .Select( m => m.PrimaryAliasId )
+                            .ToList();
+
+                        primaryAliasIdList.AddRange( chunkedPrimaryAliasList );
+                        skipCount += 1000;
+                        chunkedPersonIds = groupMemberPersonIds.Skip( skipCount ).Take( 1000 );
+                    }
+
+                    if ( primaryAliasIdList.Count > 0 )
+                    {
+                        rockContext.SaveChanges();
+
+                        // NOTE: Set CreatedDateTime, ModifiedDateTime, etc manually set we are using BulkInsert
+                        var currentDateTime = RockDateTime.Now;
+                        var currentPersonAliasId = CurrentPersonAliasId;
+
+                        var communicationRecipientList = primaryAliasIdList.ConvertAll( a => new Rock.Model.CommunicationRecipient
+                        {
+                            CommunicationId = communication.Id,
+                            PersonAliasId = a,
+                            CreatedByPersonAliasId = currentPersonAliasId,
+                            ModifiedByPersonAliasId = currentPersonAliasId,
+                            CreatedDateTime = currentDateTime,
+                            ModifiedDateTime = currentDateTime
+                        } );
+
+                        var communicationRecipientRockContext = new RockContext();
+                        communicationRecipientRockContext.BulkInsert( communicationRecipientList );
+
+                        Dictionary<string, string> queryParameters = new Dictionary<string, string>();
+                        queryParameters.Add( PageParameterKey.CommunicationId, communication.Id.ToString() );
+
+                        NavigateToLinkedPage( AttributeKey.CommunicationPage, queryParameters );
+                    }
+                    else
+                    {
+                        maModalAlert.Show( "There are no available recipients for this communication.", ModalAlertType.Information );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sends an email to the leaders of the current group.
+        /// </summary>
+        private void SendGroupLeadersCommunication()
+        {
+            // create communication
+            if ( this.CurrentPerson != null && _groupId != -1 && !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.CommunicationPage ) ) )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var service = new Rock.Model.CommunicationService( rockContext );
+                    var communication = new Rock.Model.Communication();
+                    communication.IsBulkCommunication = false;
+                    communication.Status = Rock.Model.CommunicationStatus.Transient;
+
+                    communication.SenderPersonAliasId = this.CurrentPersonAliasId;
+
+                    service.Add( communication );
+
+                    var personAliasIds = new GroupMemberService( rockContext ).Queryable()
+                                        .Where( m => m.GroupId == _groupId
+                                            && m.GroupMemberStatus != GroupMemberStatus.Inactive
+                                            && m.GroupRole.IsLeader )
+                                        .Select( m => m.Person.PrimaryAliasId )
+                                        .ToList();
+
+                    if ( personAliasIds.Count > 0 )
+                    {
+                        // Get the primary aliases
+                        foreach ( var personAlias in personAliasIds )
+                        {
+                            var recipient = new Rock.Model.CommunicationRecipient();
+                            recipient.PersonAliasId = personAlias;
+                            communication.Recipients.Add( recipient );
+                        }
+
+                        rockContext.SaveChanges();
+
+                        Dictionary<string, string> queryParameters = new Dictionary<string, string>();
+                        queryParameters.Add( PageParameterKey.CommunicationId, communication.Id.ToString() );
+
+                        NavigateToLinkedPage( AttributeKey.CommunicationPage, queryParameters );
+                    }
+                    else
+                    {
+                        maModalAlert.Show( "There are no available recipients for this communication.", ModalAlertType.Information );
+                    }
+                }
             }
         }
 
