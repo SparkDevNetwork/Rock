@@ -26,7 +26,7 @@ import { Guid } from "@Obsidian/Types";
 /** A bag that contains the mark attendance request information. */
 export type GroupAttendanceDetailMarkAttendanceRequestBag = {
     /** Gets or sets the attendance occurrence unique identifier. */
-    attendanceOccurrenceGuid?: Guid | null;
+    attendanceOccurrenceGuid: Guid;
 
     /** Gets or sets a value indicating whether the Person attended. */
     didAttend?: boolean | null;

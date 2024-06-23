@@ -447,6 +447,8 @@ export const EntityType = {
     MobileCoreNotesBlockType: "2FED71D1-4A60-4EB5-B971-530B5D1FC041",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Core.Search. */
     MobileCoreSearchBlockType: "F81015CD-EBA9-4358-B930-4F1AB29AF879",
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Core.SmartSearch. */
+    MobileCoreSmartSearchBlockType: "45BE4816-3F5B-4AD1-BA89-819325D7E8CF",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Crm.GroupMembers. */
     MobileCrmGroupMembers: "592242ED-7536-49EA-94DE-7B4EBA7E87A6",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Crm.PersonProfile. */
@@ -649,6 +651,14 @@ export const EntityType = {
     Schedule: "0B2C38A7-D79C-4F85-9757-F1B045D32C8A",
     /** The EntityType Guid for Rock.Model.ScheduleCategoryExclusion  */
     ScheduleCategoryExclusion: "E04681EB-7A85-441B-B794-82B025FFB5D4",
+    /** The guid for the Rock.Search.Group.Name search component. */
+    SearchComponentGroupName: "94825231-DC38-4DC0-A1D3-64B4AD6A87F0",
+    /** The guid for the Rock.Search.Person.Email search component. */
+    SearchComponentPersonEmail: "00095C10-72C9-4C82-844E-AE8B146DE4F1",
+    /** The guid for the Rock.Search.Person.Name search component. */
+    SearchComponentPersonName: "3B1D679A-290F-4A53-8E11-159BF0517A19",
+    /** The guid for the Rock.Search.Person.Phone search component. */
+    SearchComponentPersonPhone: "5F92ECC3-4EBD-4C41-A691-C03F1DA4F7BF",
     /** The guid for the Rock.Workflow.Action.SendEmail entity */
     SendEmail: "66197B01-D1F0-4924-A315-47AD54E030DE",
     /** The Service Job entity type */
@@ -727,6 +737,8 @@ export const EntityType = {
     Tag: "d34258d0-d366-4efb-aa76-84b059fb5434",
     /** The EntityType Guid for Rock.Model.TaggedItem  */
     TaggedItem: "AB97403A-206E-4E0C-AC42-856A010FA6DD",
+    /** The EntityType Guid for Rock.Model.Theme  */
+    Theme: "D02B63B9-E945-45BC-9D41-2C3E72B85F46",
     /** The EntityType Guid for Rock.Model.UserLogin  */
     UserLogin: "0FA592F1-728C-4885-BE38-60ED6C0D834F",
     /** The EntityType Guid for Rock.Model.WebFarmNode  */

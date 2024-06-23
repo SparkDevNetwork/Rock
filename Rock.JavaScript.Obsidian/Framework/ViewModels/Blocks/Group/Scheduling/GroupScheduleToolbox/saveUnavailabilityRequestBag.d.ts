@@ -38,7 +38,7 @@ export type SaveUnavailabilityRequestBag = {
     personGuids?: Guid[] | null;
 
     /** Gets or sets the selected person unique identifier. */
-    selectedPersonGuid?: Guid | null;
+    selectedPersonGuid: Guid;
 
     /** Gets or sets the start date. */
     startDate?: string | null;

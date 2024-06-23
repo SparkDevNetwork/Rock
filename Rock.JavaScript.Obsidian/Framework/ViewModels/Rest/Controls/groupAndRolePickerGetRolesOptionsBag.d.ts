@@ -29,5 +29,5 @@ import { Guid } from "@Obsidian/Types";
  */
 export type GroupAndRolePickerGetRolesOptionsBag = {
     /** GUID of the group type we want to filter roles by */
-    groupTypeGuid?: Guid | null;
+    groupTypeGuid: Guid;
 };

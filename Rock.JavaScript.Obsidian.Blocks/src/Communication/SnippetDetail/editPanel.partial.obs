@@ -94,15 +94,16 @@
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
-    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { SnippetBag } from "@Obsidian/ViewModels/Blocks/Communication/SnippetDetail/snippetBag";
     import { SnippetDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/SnippetDetail/snippetDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<SnippetBag>,
+            type: Object as PropType<ValidPropertiesBox<SnippetBag>>,
             required: true
         },
 
@@ -113,24 +114,24 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: SnippetBag): void,
+        (e: "update:modelValue", value: ValidPropertiesBox<SnippetBag>): void,
         (e: "propertyChanged", value: string): void
     }>();
 
     // #region Values
 
-    const attributes = ref(props.modelValue.attributes ?? {});
-    const attributeValues = ref(props.modelValue.attributeValues ?? {});
-    const description = propertyRef(props.modelValue.description ?? "", "Description");
-    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
-    const content = propertyRef(props.modelValue.content ?? "", "Content");
-    const name = propertyRef(props.modelValue.name ?? "", "Name");
-    const isShared = ref(props.modelValue.ownerPersonAlias == null);
-    const isLava = ref(props.modelValue.content?.includes("{") ?? false);
+    const attributes = ref(props.modelValue.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue.bag?.attributeValues ?? {});
+    const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue.bag?.isActive ?? false, "IsActive");
+    const content = propertyRef(props.modelValue.bag?.content ?? "", "Content");
+    const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
+    const isShared = ref(props.modelValue.bag?.ownerPersonAlias == null);
+    const isLava = ref(props.modelValue.bag?.content?.includes("{") ?? false);
     const isAuthorizedToEdit = ref(props.options.isAuthorizedToEdit);
     const isPersonalAllowed = ref(props.options.isPersonalAllowed);
-    const ownerPersonAlias = propertyRef(props.modelValue.ownerPersonAlias ?? undefined, "OwnerPersonAlias");
-    const category = propertyRef(props.modelValue.category ?? null, "Category");
+    const ownerPersonAlias = propertyRef(props.modelValue.bag?.ownerPersonAlias ?? undefined, "OwnerPersonAlias");
+    const category = propertyRef(props.modelValue.bag?.category ?? null, "Category");
     const entityTypeGuid = EntityType.Snippet;
 
     // The properties that are being edited. This should only contain
@@ -156,30 +157,30 @@
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
-        updateRefValue(attributes, props.modelValue.attributes ?? {});
-        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
-        updateRefValue(description, props.modelValue.description ?? "");
-        updateRefValue(isActive, props.modelValue.isActive ?? false);
-        updateRefValue(content, props.modelValue.content ?? "");
-        updateRefValue(name, props.modelValue.name ?? "");
-        updateRefValue(ownerPersonAlias, props.modelValue.ownerPersonAlias ?? undefined);
-        updateRefValue(category, props.modelValue.category ?? null);
+        updateRefValue(attributes, props.modelValue.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.bag?.attributeValues ?? {});
+        updateRefValue(description, props.modelValue.bag?.description ?? "");
+        updateRefValue(isActive, props.modelValue.bag?.isActive ?? false);
+        updateRefValue(content, props.modelValue.bag?.content ?? "");
+        updateRefValue(name, props.modelValue.bag?.name ?? "");
+        updateRefValue(ownerPersonAlias, props.modelValue.bag?.ownerPersonAlias ?? undefined);
+        updateRefValue(category, props.modelValue.bag?.category ?? null);
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
     watch([attributeValues, isShared, ...propRefs], () => {
-
-        const newValue: SnippetBag = {
-            ...props.modelValue,
-            attributeValues: attributeValues.value,
-            description: description.value,
-            isActive: isActive.value,
-            content: content.value,
-            name: name.value,
-            ownerPersonAlias: isShared.value ? null : ownerPersonAlias.value,
-            category: category.value
+        const newValue: ValidPropertiesBox<SnippetBag> = {
+            bag: { ...props.modelValue.bag } as SnippetBag
         };
+
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "isActive", isActive.value);
+        setPropertiesBoxValue(newValue, "content", content.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "ownerPersonAlias", isShared.value ? null : ownerPersonAlias.value);
+        setPropertiesBoxValue(newValue, "category", category.value);
 
         emit("update:modelValue", newValue);
     });

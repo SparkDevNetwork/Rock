@@ -402,7 +402,7 @@ namespace Rock.Data
                     }
                 }
 
-                throw new SystemException( $"Entity Validation Error: { validationErrors.AsDelimited( "; " ) }" );
+                throw new SystemException( $"Entity Validation Error: {validationErrors.AsDelimited( "; " )}" );
             }
         }
 
@@ -1003,7 +1003,7 @@ namespace Rock.Data
             {
                 var entityType = EntityTypeCache.Get<T>();
                 if ( entityType != null )
-                { 
+                {
                     isAchievementsEnabled = entityType.IsAchievementsEnabled == true
                         && AchievementTypeCache.HasActiveAchievementTypesForEntityTypeId( entityType.Id );
                 }
@@ -1137,46 +1137,68 @@ namespace Rock.Data
 
             // Look at each trigger for this entity and for the given trigger type
             // and see if it's a match.
-            foreach ( var trigger in WorkflowTriggersCache.Triggers( entity.TypeName, triggerType ).Where( t => t.IsActive == true ) )
-            {
-                bool match = true;
+            var triggers = WorkflowTriggersCache.Triggers( entity.TypeName, triggerType )
+                .Where( t => t.IsActive == true )
+                .ToList();
 
-                // If a qualifier column was given, then we need to check the previous or current qualifier value
-                // otherwise it's just an automatic match.
-                if ( !string.IsNullOrWhiteSpace( trigger.EntityTypeQualifierColumn ) )
+            if ( !triggers.Any() )
+            {
+                return true;
+            }
+
+            // Determine if this trigger type is one that happens immediately
+            // or after the save is completed in the background.
+            var isImmediate = triggerType == WorkflowTriggerType.PreSave
+                || triggerType == WorkflowTriggerType.PreDelete
+                || triggerType == WorkflowTriggerType.ImmediatePostSave;
+
+            var matchingTriggers = triggers
+                .Where( trigger =>
                 {
-                    // Get and cache the properties https://lotsacode.wordpress.com/2010/04/13/reflection-type-getproperties-and-performance/
-                    // (Note: its possible that none of the triggers need them, so future TODO could be to
-                    // bypass all this in that case.
-                    if ( properties == null )
+                    // If a qualifier column was given, then we need to check the previous or current qualifier value
+                    // otherwise it's just an automatic match.
+                    if ( !string.IsNullOrWhiteSpace( trigger.EntityTypeQualifierColumn ) )
                     {
-                        properties = new Dictionary<string, PropertyInfo>();
-                        foreach ( PropertyInfo propertyInfo in entity.GetType().GetProperties() )
+                        // Get and cache the properties https://lotsacode.wordpress.com/2010/04/13/reflection-type-getproperties-and-performance/
+                        // (Note: its possible that none of the triggers need them, so future TODO could be to
+                        // bypass all this in that case.
+                        if ( properties == null )
                         {
-                            properties.Add( propertyInfo.Name.ToLower(), propertyInfo );
+                            properties = new Dictionary<string, PropertyInfo>();
+                            foreach ( PropertyInfo propertyInfo in entity.GetType().GetProperties() )
+                            {
+                                properties.Add( propertyInfo.Name.ToLower(), propertyInfo );
+                            }
                         }
+
+                        return IsQualifierMatch( item, properties, trigger );
                     }
 
-                    match = IsQualifierMatch( item, properties, trigger );
-                }
+                    return true;
+                } );
 
-                // If we found a matching trigger, then fire it; otherwise do nothing.
-                if ( match )
+            // If we are doing immediate triggers then process now; otherwise queue them.
+            if ( isImmediate )
+            {
+                var entityTypeCache = EntityTypeCache.Get( entity.TypeId );
+
+                using ( var activity = Observability.ObservabilityHelper.StartActivity( $"WT: {entityTypeCache?.FriendlyName}" ) )
                 {
-                    // If it's one of the pre or immediate triggers, fire it immediately; otherwise queue it.
-                    if ( triggerType == WorkflowTriggerType.PreSave || triggerType == WorkflowTriggerType.PreDelete || triggerType == WorkflowTriggerType.ImmediatePostSave )
+                    activity?.SetTag( "rock.trigger.entity_type_id", entity.TypeId );
+                    activity?.SetTag( "rock.trigger.entity_type", entity.TypeName );
+                    activity?.SetTag( "rock.trigger.entity_id", entity.Id );
+
+                    foreach ( var trigger in matchingTriggers )
                     {
                         var workflowType = WorkflowTypeCache.Get( trigger.WorkflowTypeId );
                         if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                         {
                             var workflow = Rock.Model.Workflow.Activate( workflowType, trigger.WorkflowName );
 
-                            List<string> workflowErrors;
-
                             using ( var rockContext = new RockContext() )
                             {
                                 var workflowService = new WorkflowService( rockContext );
-                                if ( !workflowService.Process( workflow, entity, out workflowErrors ) )
+                                if ( !workflowService.Process( workflow, entity, out var workflowErrors ) )
                                 {
                                     SaveErrorMessages.AddRange( workflowErrors );
                                     return false;
@@ -1184,20 +1206,19 @@ namespace Rock.Data
                             }
                         }
                     }
-                    else
-                    {
-                        var processWorkflowTriggerMsg = new ProcessWorkflowTrigger.Message
-                        {
-                            WorkflowTriggerGuid = trigger.Guid,
-                            EntityId = entity.Id,
-                            EntityTypeId = entity.TypeId
-                        };
-
-                        processWorkflowTriggerMsg.SendWhen( this.WrappedTransactionCompletedTask );
-                    }
                 }
             }
+            else
+            {
+                var processWorkflowTriggerMsg = new ProcessWorkflowTrigger.Message
+                {
+                    WorkflowTriggerGuids = matchingTriggers.Select( t => t.Guid ).ToList(),
+                    EntityId = entity.Id,
+                    EntityTypeId = entity.TypeId
+                };
 
+                processWorkflowTriggerMsg.SendWhen( this.WrappedTransactionCompletedTask );
+            }
 
             return true;
         }

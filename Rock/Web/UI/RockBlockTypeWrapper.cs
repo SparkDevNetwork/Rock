@@ -66,13 +66,19 @@ namespace Rock.Web.UI
 
             if ( Block is IRockWebBlockType webBlock )
             {
-                using ( var sw = new StringWriter() )
+                var pageTask = new PageAsyncTask( async () =>
                 {
-                    sw.Write( webBlock.GetControlMarkup() );
+                    using ( var sw = new StringWriter() )
+                    {
+                        sw.Write( await webBlock.GetControlMarkupAsync() );
 
-                    _cachedRenderContent = sw.ToString();
-                }
+                        _cachedRenderContent = sw.ToString();
+                    }
+                } );
+
+                Page.RegisterAsyncTask( pageTask );
             }
+        
         }
 
         /// <inheritdoc/>

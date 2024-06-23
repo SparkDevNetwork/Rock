@@ -87,7 +87,7 @@ namespace Rock.Field.Types
         {
             var scheduleValues = publicValue.FromJsonOrNull<List<ListItemBag>>();
 
-            if ( scheduleValues.Any() )
+            if ( scheduleValues?.Any() == true )
             {
                 return string.Join( ",", scheduleValues.Select( s => s.Value ) );
             }

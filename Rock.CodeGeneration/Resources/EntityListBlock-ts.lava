@@ -28,7 +28,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { {% if UseAttributeValues == true %}AttributeColumns, {% endif %}{{ GridImports | Join:", " }}, {% if ShowDelete == true %}DeleteColumn, {% endif %}{% if ShowReorder == true %}ReorderColumn, {% endif %}{% if ShowSecurity == true %}SecurityColumn, {% endif %}SelectColumn } from "@Obsidian/Controls/grid";
+    import Grid, { {% if UseAttributeValues == true %}AttributeColumns, {% endif %}{% if GridImports != empty %}{{ GridImports | Join:", " }}, {%endif %}{% if ShowDelete == true %}DeleteColumn, {% endif %}{% if ShowReorder == true %}ReorderColumn, {% endif %}{% if ShowSecurity == true %}SecurityColumn, {% endif %}SelectColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { {{ EntityName }}ListOptionsBag } from "@Obsidian/ViewModels/Blocks/{{ DomainNamespace }}/{{ EntityName }}List/{{ EntityName | CamelCase }}ListOptionsBag";

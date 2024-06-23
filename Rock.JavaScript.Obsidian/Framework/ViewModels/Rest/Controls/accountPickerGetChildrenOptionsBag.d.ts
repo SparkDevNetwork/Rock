@@ -35,7 +35,7 @@ export type AccountPickerGetChildrenOptionsBag = {
     loadFullTree: boolean;
 
     /** Get the child accounts for the account of this GUID. Empty Guid gets the root level accounts */
-    parentGuid?: Guid | null;
+    parentGuid: Guid;
 
     /** The security grant token to use when performing authorization checks. */
     securityGrantToken?: string | null;

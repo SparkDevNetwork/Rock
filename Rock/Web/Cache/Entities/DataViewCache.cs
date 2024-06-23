@@ -33,6 +33,12 @@ namespace Rock.Web.Cache
     [DataContract]
     public class DataViewCache : ModelCache<DataViewCache, DataView>, IDataViewDefinition
     {
+        /// <summary>
+        /// The number of seconds <see cref="_volatileEntityIds"/> is considered
+        /// valid before we force a refresh.
+        /// </summary>
+        private const int VolatileEntityIdsLifetimeInSeconds = 300;
+
         #region Fields
 
         /// <summary>
@@ -48,6 +54,23 @@ namespace Rock.Web.Cache
         /// from the database or if the DataView is not persisted.
         /// </summary>
         private IReadOnlyCollection<int> _persistedEntityIds;
+
+        /// <summary>
+        /// The volatile entity id values that have been cached for the
+        /// DataView. This is used if the DataView is not persisted and
+        /// volatile values are requested. These are only cached for a
+        /// short period of time and can be manually cleared. They are
+        /// meant to be used when perfectly correct values are not required,
+        /// such as a batch-type operation where it isn't possible to call
+        /// GetEntityIds() once and re-use the same list.
+        /// </summary>
+        private IReadOnlyCollection<int> _volatileEntityIds;
+
+        /// <summary>
+        /// The timestamp when <see cref="_volatileEntityIds"/> will no longer
+        /// be considered valid and must be refreshed.
+        /// </summary>
+        private DateTime _volatileEntityIdsNextExpire = DateTime.MinValue;
 
         #endregion
 
@@ -317,10 +340,18 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// <para>
         /// Gets the entity identifiers represented by the DataView filters.
         /// This will automatically use the persisted values if they are
         /// configured and available. A new <see cref="RockContext"/> will be
         /// created to query the database if the values are not already cached.
+        /// </para>
+        /// <para>
+        /// If you are working in bulk operation that does not need perfectly
+        /// up to date values and cannot reuse the collection returned by this
+        /// method then consider using <see cref="GetVolatileEntityIds()"/>
+        /// instead.
+        /// </para>
         /// </summary>
         /// <returns>A read-only collection of identifiers.</returns>
         public IReadOnlyCollection<int> GetEntityIds()
@@ -329,13 +360,20 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// <para>
         /// Gets the entity identifiers represented by the DataView filters.
         /// This will automatically use the persisted values if they are
         /// configured and available.
+        /// </para>
+        /// <para>
+        /// If you are working in bulk operation that does not need perfectly
+        /// up to date values and cannot reuse the collection returned by this
+        /// method then consider using <see cref="GetVolatileEntityIds()"/>
+        /// instead.
+        /// </para>
         /// </summary>
         /// <param name="options">The options to use if access to the database is required.</param>
         /// <returns>A read-only collection of identifiers.</returns>
-        /// <exception cref="System.ArgumentNullException">options</exception>
         public IReadOnlyCollection<int> GetEntityIds( GetQueryableOptions options )
         {
             options = options ?? new GetQueryableOptions();
@@ -352,7 +390,7 @@ namespace Rock.Web.Cache
                     return _persistedEntityIds;
                 }
 
-                bool ownsContext = options.DbContext != null;
+                bool ownsContext = options.DbContext == null;
                 var rockContext = options.DbContext ?? new RockContext();
 
                 var idQry = rockContext.Set<DataViewPersistedValue>()
@@ -374,6 +412,98 @@ namespace Rock.Web.Cache
                     .Select( a => a.Id )
                     .ToList();
             }
+        }
+
+        /// <summary>
+        /// <para>
+        /// Gets the volatile entity identifiers. If the data view is not
+        /// persisted then these values will be cached for a short period of
+        /// time and can be manually cleared with <see cref="ClearVolatileEntityIds()"/>.
+        /// They are meant to be used when perfectly correct values are not
+        /// required, such as a batch-type operation where it isn't possible
+        /// to call <see cref="GetEntityIds()"/> once and re-use the same list.
+        /// </para>
+        /// <para>
+        /// A new <see cref="RockContext"/> will be created to query the
+        /// database if the values are not already cached.
+        /// </para>
+        /// <para>
+        /// If the data view is persisted then calling this method is the same
+        /// as calling <see cref="GetEntityIds()"/>.
+        /// </para>
+        /// </summary>
+        /// <returns>A read-only collection of identifiers.</returns>
+        public IReadOnlyCollection<int> GetVolatileEntityIds()
+        {
+            return GetVolatileEntityIds( new GetQueryableOptions() );
+        }
+
+        /// <summary>
+        /// <para>
+        /// Gets the volatile entity identifiers. If the data view is not
+        /// persisted then these values will be cached for a short period of
+        /// time and can be manually cleared with <see cref="ClearVolatileEntityIds()"/>.
+        /// They are meant to be used when perfectly correct values are not
+        /// required, such as a batch-type operation where it isn't possible
+        /// to call <see cref="GetEntityIds(GetQueryableOptions)"/> once and re-use the same list.
+        /// </para>
+        /// <para>
+        /// A new <see cref="RockContext"/> will be created to query the
+        /// database if the values are not already cached.
+        /// </para>
+        /// <para>
+        /// If the data view is persisted then calling this method is the same
+        /// as calling <see cref="GetEntityIds(GetQueryableOptions)"/>.
+        /// </para>
+        /// </summary>
+        /// <param name="options">The options to use if access to the database is required.</param>
+        /// <returns>A read-only collection of identifiers.</returns>
+        public IReadOnlyCollection<int> GetVolatileEntityIds( GetQueryableOptions options )
+        {
+            // If the data view is persisted then just use the normal method.
+            if ( IsPersisted() && PersistedLastRefreshDateTime.HasValue )
+            {
+                return GetEntityIds( options );
+            }
+
+            // Store in a temp variable in case another thread clears the
+            // volatile values before we actually return.
+            var entityIds = _volatileEntityIds;
+
+            // If we already have volatile values and they have not expired
+            // yet then just return them.
+            if ( entityIds != null && _volatileEntityIdsNextExpire > RockDateTime.Now )
+            {
+                return entityIds;
+            }
+
+            // Load the entity ids from the database.
+            entityIds = DataViewQueryBuilder.Instance.GetDataViewQuery( this, options )
+                .Select( a => a.Id )
+                .ToList();
+
+            _volatileEntityIdsNextExpire = RockDateTime.Now.AddSeconds( VolatileEntityIdsLifetimeInSeconds );
+            _volatileEntityIds = entityIds;
+
+            return entityIds;
+        }
+
+        /// <summary>
+        /// <para>
+        /// Clears the volatile entity identifiers from cache. This will cause
+        /// the next call to <see cref="GetVolatileEntityIds()"/> or
+        /// <see cref="GetVolatileEntityIds(GetQueryableOptions)"/> to query
+        /// the database to get new values.
+        /// </para>
+        /// <para>
+        /// This method should be called after you are done with a bulk operation
+        /// and no longer need the entity identifiers.
+        /// </para>
+        /// </summary>
+        public void ClearVolatileEntityIds()
+        {
+            _volatileEntityIds = null;
+            _volatileEntityIdsNextExpire = DateTime.MinValue;
         }
 
         /// <summary>

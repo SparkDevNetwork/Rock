@@ -1475,5 +1475,24 @@ namespace Rock.SystemGuid
         public const string PROJECT_TYPE_PROJECT_DUE = "C999D489-5B8F-4892-BCC3-90DFFBC524F5";
 
         #endregion
+
+        #region Theme Purpose
+
+        /// <summary>
+        /// Check-in
+        /// </summary>
+        public const string THEME_PURPOSE_CHECKIN = "2BBB1A44-708E-4469-80DE-4AAE6227BEF8";
+
+        /// <summary>
+        /// Website Legacy
+        /// </summary>
+        public const string THEME_PURPOSE_WEBSITE_LEGACY = "4E1477FD-B105-4E4B-99BB-E5F1B964DC94";
+
+        /// <summary>
+        /// Website Nextgen
+        /// </summary>
+        public const string THEME_PURPOSE_WEBSITE_NEXTGEN = "B177E07F-7E07-4D7B-AFA7-9DE163797659";
+
+        #endregion
     }
 }

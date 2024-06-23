@@ -17,7 +17,8 @@
 
         <asp:Panel ID="pnlDetails" runat="server" CssClass="panel panel-block">
             <div class="panel-heading">
-                <h3 class="panel-title"><i class="fa fa-mobile"></i> <asp:Literal ID="lPageName" runat="server" /></h3>
+                <h3 class="panel-title"><i class="fa fa-mobile"></i>
+                    <asp:Literal ID="lPageName" runat="server" /></h3>
 
                 <div class="panel-labels">
                     <Rock:HighlightLabel ID="hlInternalWebPage" runat="server" Text="Internal Web Page" LabelType="Warning" />
@@ -34,7 +35,7 @@
             <div class="panel-body">
 
                 <asp:Literal ID="lDescription" runat="server" />
-               
+
                 <div class="row">
                     <asp:Literal ID="lDetails" runat="server" />
                 </div>
@@ -116,9 +117,9 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <Rock:DataTextBox ID="tbCssClass" runat="server"
-                                                  SourceTypeName="Rock.Model.Page, Rock" PropertyName="BodyCssClass"
-                                                  Label="Body CSS Class"
-                                                  Help="The CSS class to add to the page." />
+                                    SourceTypeName="Rock.Model.Page, Rock" PropertyName="BodyCssClass"
+                                    Label="Body CSS Class"
+                                    Help="The CSS class to add to the page." />
                             </div>
 
                             <div class="col-md-6">
@@ -167,7 +168,7 @@
 
         <asp:Panel ID="pnlBlocks" runat="server" CssClass="panel panel-block">
             <div class="panel-heading">
-                <h3 class="panel-title"><i class="fa fa-th-large"></i> Blocks</h3>
+                <h3 class="panel-title"><i class="fa fa-th-large"></i>Blocks</h3>
             </div>
 
             <div class="panel-body padding-all-none">
@@ -209,10 +210,12 @@
                                                             <i class="<%# Eval( "IconCssClass" ) %>"></i>
 
                                                             <div class="margin-l-md leading-snug">
-                                                                <span><%# Eval( "Name" ) %></span> <br /><small class="margin-t-none"><%# Eval( "Type" ) %></small>
+                                                                <span><%# Eval( "Name" ) %></span>
+                                                                <br />
+                                                                <small class="margin-t-none"><%# Eval( "Type" ) %></small>
                                                             </div>
 
-                                                            <div class="pull-right">
+                                                            <div class="pull-right" style="min-width: 200px;">
 
                                                                 <a class="btn btn-default btn-sm btn-link panel-widget-reorder">
                                                                     <i class="fa fa-bars js-reorder"></i>

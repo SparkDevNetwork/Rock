@@ -3,8 +3,13 @@
     <RockFormField disableLabel :modelValue="internalValue" v-bind="standardFieldProps" :rules="mutatedRules" name="campus-account-amount-picker">
         <Loading :isLoading="isLoading">
             <template v-if="accountAmountEntryMode == 'singleAccount'">
-                <CurrencyBox :currencyCodeDefinedValueGuid="currencyCodeDefinedValueGuid" v-model="amount" :class="amountEntrySingleCssClass" />
-                <CampusPicker label="Campus" v-model="internalCampus" v-if="!hideCampusPicker" :includeInactive="includeInactiveCampuses" :campusTypeFilter="campusTypeFilter" :campusStatusFilter="campusStatusFilter" />
+                <CurrencyBox :currencyCodeDefinedValueGuid="currencyCodeDefinedValueGuid ?? undefined" v-model="amount" :class="amountEntrySingleCssClass" />
+                <CampusPicker label="Campus"
+                              v-model="internalCampusBag"
+                              v-if="!hideCampusPicker"
+                              :includeInactive="includeInactiveCampuses"
+                              :campusTypeFilter="campusTypeFilter ?? undefined"
+                              :campusStatusFilter="campusStatusFilter ?? undefined" />
                 <BaseAsyncPicker v-model="selectedAccount"
                                  v-bind="standardFieldProps"
                                  :label="undefined"
@@ -12,8 +17,13 @@
                                  :items="accountPickerAccounts" />
             </template>
             <template v-else>
-                <CurrencyBox v-for="accountAmount in amounts" :key="accountAmount?.account?.value!" :label="accountAmount?.account?.text" v-model="accountAmount.amount" :currencyCodeDefinedValueGuid="currencyCodeDefinedValueGuid" />
-                <CampusPicker label="Campus" v-model="internalCampus" v-if="!hideCampusPicker" :includeInactive="includeInactiveCampuses" :campusTypeFilter="campusTypeFilter" :campusStatusFilter="campusStatusFilter" />
+                <CurrencyBox v-for="accountAmount in amounts" :key="accountAmount?.account?.value!" :label="accountAmount?.account?.text" v-model="accountAmount.amount" :currencyCodeDefinedValueGuid="currencyCodeDefinedValueGuid ?? undefined" />
+                <CampusPicker label="Campus"
+                              v-model="internalCampusBag"
+                              v-if="!hideCampusPicker"
+                              :includeInactive="includeInactiveCampuses"
+                              :campusTypeFilter="campusTypeFilter ?? undefined"
+                              :campusStatusFilter="campusStatusFilter ?? undefined" />
             </template>
         </Loading>
     </RockFormField>
@@ -28,7 +38,7 @@
     import { Guid } from "@Obsidian/Types";
     import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
     import { useVModelPassthrough, standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
-    import { areEqual } from "@Obsidian/Utility/guid";
+    import { areEqual, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { useHttp } from "@Obsidian/Utility/http";
     import { useSuspense } from "@Obsidian/Utility/suspense";
     import { containsRequiredRule, normalizeRules } from "@Obsidian/ValidationRules";
@@ -47,7 +57,7 @@
     const props = defineProps({
         /** The currently selected account(s) and amount value(s). */
         modelValue: {
-            type: Array as PropType<AccountAmount[]>,
+            type: Array as PropType<AccountAmount[] | undefined>,
             required: false
         },
 
@@ -59,7 +69,7 @@
 
         /** Specifies the currency used */
         currencyCodeDefinedValueGuid: {
-            type: String as PropType<Guid>,
+            type: String as PropType<Guid | null>,
             default: null
         },
 
@@ -125,13 +135,13 @@
 
         /** Campus type defined value guids that limit which campuses are included in the list of options. */
         campusTypeFilter: {
-            type: [String, Array] as PropType<Guid | Guid[]>,
+            type: [String, Array] as PropType<Guid | Guid[] | null>,
             default: null
         },
 
         /** Campus status defined value guids that limit which campuses are included in the list of options. */
         campusStatusFilter: {
-            type: [String, Array] as PropType<Guid | Guid[]>,
+            type: [String, Array] as PropType<Guid | Guid[] | null>,
             default: null
         },
 
@@ -183,12 +193,12 @@
     });
 
     /** The ListItemBag version of the internalCampusGuid */
-    const internalCampus = computed<ListItemBag>({
+    const internalCampusBag = computed<ListItemBag>({
         get() {
             return { value: internalCampusGuid.value };
         },
         set(newValue) {
-            internalCampusGuid.value = newValue.value ?? null;
+            internalCampusGuid.value = toGuidOrNull(newValue.value);
         }
     });
 
@@ -270,8 +280,8 @@
 
     /** Loads the items from the server. */
     async function loadAccountOptions(): Promise<ListItemBag[]> {
-        const options: Partial<CampusAccountAmountPickerGetAccountsOptionsBag> = {
-            selectableAccountGuids: props.selectableAccountGuids,
+        const options: CampusAccountAmountPickerGetAccountsOptionsBag = {
+            selectableAccountGuids: props.selectableAccountGuids.map(s => toGuidOrNull(s)).filter(g => g !== null).map(g => g as Guid),
             orderBySelectableAccountsIndex: props.orderBySelectableAccountsIndex,
             accountHeaderTemplate: props.accountHeaderTemplate,
             securityGrantToken: securityToken.value

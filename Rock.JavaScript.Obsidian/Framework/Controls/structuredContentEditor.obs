@@ -18,6 +18,7 @@
     import { getStructuredContentEditorConfiguration } from "@Obsidian/Utility/structuredContentEditor";
     import { normalizeRules } from "@Obsidian/Utility/validationRules";
     import { StructuredContentEditorConfigurationBag } from "@Obsidian/ViewModels/Rest/Controls/structuredContentEditorConfigurationBag";
+    import { areEqual, toGuidOrNull } from "@Obsidian/Utility/guid";
 
     /* eslint-disable @typescript-eslint/naming-convention */
     interface IEditorJsWindow {
@@ -177,11 +178,11 @@
             defaultBlock: "paragraph",
             data: JSON.parse(props.modelValue || "{}"),
             logLevel: EditorJsLogLevel.Error,
-            onReady: function() {
+            onReady: function () {
                 new EditorDragDrop(editor);
             },
             onChange: debounce(() => {
-                editor.save().then(function(savedData: unknown) {
+                editor.save().then(function (savedData: unknown) {
                     emit("update:modelValue", JSON.stringify(savedData));
                 }).catch((e: unknown): void => {
                     console.log("Saving failed: ", e);
@@ -195,6 +196,9 @@
     //#region Watchers
 
     watch(() => props.toolsGuid, async (newValue, oldValue) => {
+        newValue = toGuidOrNull(newValue);
+        oldValue = toGuidOrNull(oldValue);
+
         if (!newValue && !oldValue) {
             // Don't reinitialize the editor if the toolsGuid was and still is an invalid Guid.
             return;
@@ -202,7 +206,7 @@
 
         if (!newValue
             || !oldValue
-            || newValue.toLocaleLowerCase() !== oldValue.toLocaleLowerCase()) {
+            || !areEqual(newValue, oldValue)) {
             // Reinitialize the editor...
             // ...if the toolsGuid was changed to/from a valid Guid to/from an invalid Guid,
             // OR

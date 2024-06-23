@@ -59,7 +59,9 @@ namespace Rock.Migrations
         /// </summary>
         private void ChopEmailPreferenceEntryBlocksUp()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             RockMigrationHelper.ReplaceWebformsWithObsidianBlockMigration(
+#pragma warning restore CS0618 // Type or member is obsolete
                 "Chop EmailPreferenceEntry",
                 blockTypeReplacements: new Dictionary<string, string> {
             { "B3C076C7-1325-4453-9549-456C23702069", "476FBA19-005C-4FF4-996B-CA1B165E5BC8" }, // Email Preference Entry

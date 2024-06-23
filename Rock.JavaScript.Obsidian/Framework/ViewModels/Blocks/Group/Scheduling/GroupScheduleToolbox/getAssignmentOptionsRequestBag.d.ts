@@ -32,8 +32,8 @@ export type GetAssignmentOptionsRequestBag = {
     editAssignmentGuid?: Guid | null;
 
     /** Gets or sets the selected group unique identifier. */
-    selectedGroupGuid?: Guid | null;
+    selectedGroupGuid: Guid;
 
     /** Gets or sets the selected person unique identifier. */
-    selectedPersonGuid?: Guid | null;
+    selectedPersonGuid: Guid;
 };

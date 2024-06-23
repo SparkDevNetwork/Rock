@@ -37,7 +37,7 @@
                     label="Build Script"
                     help="Lava Template to use for building JSON that will be used as the cached dataset object."
                     theme="rock"
-                    mode="text"
+                    mode="lava"
                     :editorHeight="200"
                     :disabled="isSystem" />
 

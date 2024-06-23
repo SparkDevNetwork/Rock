@@ -36,7 +36,7 @@ export type LibraryViewerItemBag = {
     experienceLevel?: ListItemBag | null;
 
     /** Gets or sets the unique identifier. */
-    guid?: Guid | null;
+    guid: Guid;
 
     /**
      * Gets or sets the HTML content.

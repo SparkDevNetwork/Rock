@@ -31,7 +31,7 @@
         <div v-else-if="isDestinationCampusTopic">
             <div class="row">
                 <div class="col-md-4">
-                    <DropDownList v-model="campusTopicGuid"
+                    <DropDownList v-model="campusTopicGuidOrEmptyString"
                                   label="Topic"
                                   rules="required"
                                   :items="campusTopicOptions" />
@@ -56,6 +56,7 @@
     import SegmentedPicker from "../Shared/segmentedPicker.partial.obs";
     import SectionContainer from "@Obsidian/Controls/sectionContainer.obs";
     import { FormNotificationEmail, FormNotificationEmailDestination } from "../Shared/types.partial";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -90,8 +91,8 @@
     /** The e-mail address(es) when destination is set to email address. */
     const emailAddress = ref(props.modelValue.emailAddress ?? "");
 
-    /** The campus topic identifier when destination is set to campus topic. */
-    const campusTopicGuid = ref(props.modelValue.campusTopicGuid ?? "");
+    /** The campus topic identifier when destination is set to campus topic (or empty string if not). */
+    const campusTopicGuidOrEmptyString = ref<string>(props.modelValue.campusTopicGuid ?? "");
 
     /** The source that will generate the e-mail to be sent. */
     const source = ref(props.modelValue.source ?? {});
@@ -126,19 +127,19 @@
         destination.value = props.modelValue.destination?.toString() ?? FormNotificationEmailDestination.SpecificIndividual.toString();
         recipient.value = props.modelValue.recipient ?? undefined;
         emailAddress.value = props.modelValue.emailAddress ?? "";
-        campusTopicGuid.value = props.modelValue.campusTopicGuid ?? "";
+        campusTopicGuidOrEmptyString.value = toGuidOrNull(props.modelValue.campusTopicGuid) ?? "";
         source.value = props.modelValue.source ?? {};
     });
 
     // Watch for changes in our internal values and update the modelValue.
-    watch([enabled, destination, recipient, emailAddress, campusTopicGuid, source], () => {
+    watch([enabled, destination, recipient, emailAddress, campusTopicGuidOrEmptyString, source], () => {
         const newValue: FormNotificationEmail = {
             ...props.modelValue,
             enabled: enabled.value,
             destination: toNumberOrNull(destination.value) ?? FormNotificationEmailDestination.SpecificIndividual,
             recipient: recipient.value,
             emailAddress: emailAddress.value,
-            campusTopicGuid: campusTopicGuid.value,
+            campusTopicGuid: toGuidOrNull(campusTopicGuidOrEmptyString.value),
             source: source.value
         };
 

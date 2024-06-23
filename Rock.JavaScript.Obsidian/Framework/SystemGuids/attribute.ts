@@ -123,6 +123,8 @@ export const Attribute = {
     GlobalPublicApplicationRoot: "49AD7AD6-9BAC-4743-B1E8-B917F6271924",
     /** Group attribute to store the age range of the group */
     GroupAgeRange: "43511B8F-71D9-423A-85BF-D1CD08C1998E",
+    /** Group attribute to store the birth month range of the group */
+    GroupBirthMonthRange: "C86610F1-A011-474A-BB60-1E131F2EEE95",
     /** Group attribute to store the birthdate range of the group */
     GroupBirthdateRange: "F1A43EAB-D682-403F-A05E-CCFFBF879F32",
     /** Group attribute for groups of GroupType CommunicationList to define category */

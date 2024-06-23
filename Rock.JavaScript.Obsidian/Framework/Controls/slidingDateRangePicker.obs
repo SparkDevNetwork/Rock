@@ -60,7 +60,7 @@
 
         previewLocation: {
             type: String as PropType<"Right" | "Top" | "None">,
-            default: "Right"
+            default: "Top"
         }
     });
 

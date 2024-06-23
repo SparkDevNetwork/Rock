@@ -41,5 +41,5 @@ export type AttendanceOccurrenceUpdatedMessageBag = {
     locationGuid?: Guid | null;
 
     /** Gets or sets th attendance occurrence unique identifier. */
-    occurrenceGuid?: Guid | null;
+    occurrenceGuid: Guid;
 };

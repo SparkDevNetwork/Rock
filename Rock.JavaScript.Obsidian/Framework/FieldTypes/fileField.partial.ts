@@ -52,7 +52,7 @@ const configurationComponent = defineAsyncComponent(async () => {
  * The field type handler for the File field.
  */
 export class FileFieldType extends FieldTypeBase {
-    public override getTextValue(value: string, configurationValues: Record<string, string>): string {
+    public override getTextValue(value: string, _configurationValues: Record<string, string>): string {
         try {
             const realValue = JSON.parse(value) as ListItemBag;
 
@@ -63,13 +63,23 @@ export class FileFieldType extends FieldTypeBase {
         }
     }
 
-    public override getHtmlValue(value: string, _configurationValues: Record<string, string>): string {
+    public override getHtmlValue(value: string, _configurationValues: Record<string, string>, isEscaped: boolean = false): string {
         try {
             const realValue = JSON.parse(value ?? "") as ListItemBag;
 
-            return `<a href="/GetFile.ashx?guid=${realValue.value}" title="${escapeHtml(realValue.text ?? "")}" class="btn btn-xs btn-default">View</a>`;
+            const html = `<a href="/GetFile.ashx?guid=${realValue.value}" title="${escapeHtml(realValue.text ?? "")}" class="btn btn-xs btn-default">View</a>`;
+
+            if (isEscaped) {
+                escapeHtml(html);
+            }
+
+            return html;
         }
         catch {
+            if (isEscaped) {
+                escapeHtml(value ?? "");
+            }
+
             return value ?? "";
         }
     }

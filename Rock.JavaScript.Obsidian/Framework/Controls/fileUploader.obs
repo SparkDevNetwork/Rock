@@ -46,6 +46,7 @@
     import { uploadBinaryFile } from "@Obsidian/Utility/http";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import RockFormField from "./rockFormField.obs";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -78,7 +79,7 @@
         (e: "update:modelValue", value: ListItemBag | undefined): void;
     }>();
 
-    const fileGuid = ref<Guid>(props.modelValue?.value ?? "");
+    const fileGuid = ref<Guid | null>(toGuidOrNull(props.modelValue?.value));
     const fileName = ref(props.modelValue?.text ?? "");
 
     // Variables related to the progress of uploading a new file.
@@ -129,7 +130,7 @@
                 }
             });
 
-            fileGuid.value = result.value ?? "";
+            fileGuid.value = toGuidOrNull(result.value);
             fileName.value = result.text ?? "";
         }
         catch (e) {
@@ -156,7 +157,7 @@
      * Event handler for when the remove file button is clicked.
      */
     const onRemoveFileClick = (): void => {
-        fileGuid.value = "";
+        fileGuid.value = null;
         fileName.value = "";
     };
 
@@ -184,7 +185,7 @@
             return;
         }
 
-        fileGuid.value = "";
+        fileGuid.value = null;
         fileName.value = "";
     };
 
@@ -224,7 +225,7 @@
 
     // Watch for changes to the model value and update our internal values.
     watch(() => props.modelValue, () => {
-        fileGuid.value = props.modelValue?.value ?? "";
+        fileGuid.value = toGuidOrNull(props.modelValue?.value);
         fileName.value = props.modelValue?.text ?? "";
     });
 

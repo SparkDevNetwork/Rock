@@ -416,7 +416,7 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <returns><c>true</c> if the type is non-nullable; otherwise, <c>false</c>.</returns>
         private static bool IsNonNullType( Type type )
         {
-            return type.IsPrimitive || type.IsEnum || type == typeof( decimal );
+            return type.IsPrimitive || type.IsEnum || type == typeof( decimal ) || type == typeof( Guid );
         }
 
         /// <summary>
@@ -526,19 +526,23 @@ namespace Rock.CodeGeneration.FileGenerators
                 } );
                 isNullable = isNullable || !isRequired;
             }
-            else if ( type.IsEnum && type.Namespace.StartsWith( "Rock.Enums" ) )
-            {
-                var path = $"{type.Namespace.Substring( 10 ).Trim( '.' ).Replace( '.', '/' )}/{type.Name.CamelCase()}";
-                tsType = type.Name;
-                imports.Add( new TypeScriptImport
-                {
-                    SourcePath = $"@Obsidian/Enums/{path}",
-                    NamedImport = type.Name
-                } );
-            }
             else if ( type.IsEnum )
             {
-                tsType = "number";
+                var importPath = GetImportPathForEnumType( type );
+
+                if ( importPath.IsNotNullOrWhiteSpace() )
+                {
+                    tsType = type.Name;
+                    imports.Add( new TypeScriptImport
+                    {
+                        SourcePath = importPath,
+                        NamedImport = type.Name
+                    } );
+                }
+                else
+                {
+                    tsType = "number";
+                }
             }
 
             if ( isNullable )
@@ -547,6 +551,39 @@ namespace Rock.CodeGeneration.FileGenerators
             }
 
             return (tsType, imports);
+        }
+
+        /// <summary>
+        /// Gets the path to use for where the enum file should be written.
+        /// </summary>
+        /// <param name="type">The type that will be written to a file.</param>
+        /// <returns>A string that represents the directory that will contain the enum file.</returns>
+        /// <exception cref="Exception">Attempt to export an enum with an invalid namespace, this shouldn't happen.</exception>
+        private static string GetImportPathForEnumType( Type type )
+        {
+            if ( type.Namespace.StartsWith( "Rock.Enums" ) )
+            {
+                return $"@Obsidian/Enums/{type.Namespace.Substring( 10 ).Trim( '.' ).Replace( '.', '/' )}/{type.Name.CamelCase()}";
+            }
+            else
+            {
+                // If the type isn't in the Rock.Enums namespace then use the
+                // EnumDomain attribute to determine the actual domain it's in.
+                var domainAttribute = type.GetCustomAttributes()
+                    .FirstOrDefault( a => a.GetType().FullName == "Rock.Enums.EnumDomainAttribute" );
+
+                if ( domainAttribute != null )
+                {
+                    var domain = ( string ) domainAttribute.GetType().GetProperty( "Domain" ).GetValue( domainAttribute );
+                    domain = SupportTools.GetDomainFolderName( domain );
+
+                    return $"@Obsidian/Enums/{domain}/{type.Name.CamelCase()}";
+                }
+                else
+                {
+                    return null;
+                }
+            }
         }
 
         /// <summary>

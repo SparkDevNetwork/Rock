@@ -27,14 +27,15 @@
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";{% endif %}{% if UseIsActive == true %}
     import CheckBox from "@Obsidian/Controls/checkBox.obs";{% endif %}{% if UseDescription == true or UseName == true %}
     import TextBox from "@Obsidian/Controls/textBox.obs";{% endif %}
-    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { {{ EntityName }}Bag } from "@Obsidian/ViewModels/Blocks/{{ DomainNamespace }}/{{ EntityName }}Detail/{{ EntityName | CamelCase }}Bag";
     import { {{ EntityName }}DetailOptionsBag } from "@Obsidian/ViewModels/Blocks/{{ DomainNamespace }}/{{ EntityName }}Detail/{{ EntityName | CamelCase }}DetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<{{ EntityName }}Bag>,
+            type: Object as PropType<ValidPropertiesBox<{{ EntityName }}Bag>>,
             required: true
         },
 
@@ -45,17 +46,17 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: {{ EntityName }}Bag): void{% if UseAttributeValues == true %},
+        (e: "update:modelValue", value: ValidPropertiesBox<{{ EntityName }}Bag>): void{% if UseAttributeValues == true %},
         (e: "propertyChanged", value: string): void{% endif %}
     }>();
 
     // #region Values
 {% if UseAttributeValues == true %}
-    const attributes = ref(props.modelValue.attributes ?? {});
-    const attributeValues = ref(props.modelValue.attributeValues ?? {});{% endif %}{% if UseDescription == true %}
-    const description = propertyRef(props.modelValue.description ?? "", "Description");{% endif %}{% if UseIsActive == true %}
-    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");{% endif %}{% if UseName == true %}
-    const name = propertyRef(props.modelValue.name ?? "", "Name");{% endif %}
+    const attributes = ref(props.modelValue.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue.bag?.attributeValues ?? {});{% endif %}{% if UseDescription == true %}
+    const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");{% endif %}{% if UseIsActive == true %}
+    const isActive = propertyRef(props.modelValue.bag?.isActive ?? false, "IsActive");{% endif %}{% if UseName == true %}
+    const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");{% endif %}
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -81,11 +82,11 @@
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {{ '{' }}{% if UseAttributeValues == true %}
-        updateRefValue(attributes, props.modelValue.attributes ?? {});
-        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});{% endif %}{% if UseDescription == true %}
-        updateRefValue(description, props.modelValue.description ?? "");{% endif %}{% if UseIsActive == true %}
-        updateRefValue(isActive, props.modelValue.isActive ?? false);{% endif %}{% if UseName == true %}
-        updateRefValue(name, props.modelValue.name ?? "");{% endif %}
+        updateRefValue(attributes, props.modelValue.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.bag?.attributeValues ?? {});{% endif %}{% if UseDescription == true %}
+        updateRefValue(description, props.modelValue.bag?.description ?? "");{% endif %}{% if UseIsActive == true %}
+        updateRefValue(isActive, props.modelValue.bag?.isActive ?? false);{% endif %}{% if UseName == true %}
+        updateRefValue(name, props.modelValue.bag?.name ?? "");{% endif %}
     });
 
     // Determines which values we want to track changes on (defined in the
@@ -94,13 +95,14 @@
     {% if UseAttributeValues == true %}{% assign propNames = propNames | AddToArray:'attributeValues' %}{% endif -%}
     {% assign propNames = propNames | AddToArray:'...propRefs' -%}
     watch([{{ propNames | Join:', ' }}], () => {
-        const newValue: {{ EntityName }}Bag = {
-            ...props.modelValue,{% if UseAttributeValues == true %}
-            attributeValues: attributeValues.value,{% endif %}{% if UseDescription == true %}
-            description: description.value,{% endif %}{% if UseIsActive == true %}
-            isActive: isActive.value,{% endif %}{% if UseName == true %}
-            name: name.value{% endif %}
+        const newValue: ValidPropertiesBox<{{ EntityName }}Bag> = {
+            bag: { ...props.modelValue.bag } as {{ EntityName }}Bag
         };
+        {% if UseAttributeValues == true %}
+            setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);{% endif %}{% if UseDescription == true %}
+            setPropertiesBoxValue(newValue, "description", description.value);{% endif %}{% if UseIsActive == true %}
+            setPropertiesBoxValue(newValue, "isActive", isActive.value);{% endif %}{% if UseName == true %}
+            setPropertiesBoxValue(newValue, "name", name.value);{% endif %}
 
         emit("update:modelValue", newValue);
     });

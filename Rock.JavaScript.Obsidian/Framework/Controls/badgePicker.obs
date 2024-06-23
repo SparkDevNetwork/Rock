@@ -17,13 +17,13 @@
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<ListItemBag | ListItemBag[] | null>,
+            type: Object as PropType<ListItemBag | ListItemBag[] | null | undefined>,
             required: false
         },
 
         entityTypeGuid: {
-            type: String as PropType<Guid>,
-            default: null
+            type: String as PropType<Guid | undefined>,
+            default: undefined
         },
 
         ...standardAsyncPickerProps
@@ -60,7 +60,7 @@
      * Loads the items from the server.
      */
     const loadOptions = async (): Promise<ListItemBag[]> => {
-        const options: Partial<BadgePickerGetBadgesOptionsBag> = {
+        const options: BadgePickerGetBadgesOptionsBag = {
             securityGrantToken: securityGrantToken.value
         };
         const result = await post<ListItemBag[]>("/api/v2/Controls/BadgePickerGetBadges", undefined, options);

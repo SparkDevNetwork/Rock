@@ -1,0 +1,89 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Settings"
+           saveText="Save"
+           @save="onSave">
+        <SectionHeader title="Filters" />
+
+        <div class="row">
+            <div class="col-md-4">
+                <DropDownList v-model="entityType"
+                            :items="entityTypeItems"
+                            label="Entity Type" />
+            </div>
+            <div class="col-md-4">
+                <NumberBox v-model="entityId"
+                         label="Entity Id" />
+            </div>
+
+            <div class="col-md-4">
+                <PersonPicker v-model="who"
+                              enableSelfSelection
+                              formGroupClasses="person-picker-container"
+                              label="Who" />
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import { ref, PropType, watch } from "vue";
+    import { propertyRef, updateRefValue, useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import { GridSettingsOptions } from "./types.partial";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+        entityTypeItems: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GridSettingsOptions): void;
+        (e: "update:visible", value: boolean): void;
+        (e: "close"): void;
+    }>();
+
+    const entityType = ref(props.modelValue.entityType ?? "");
+    const entityId = ref(props.modelValue.entityId ?? 0);
+    const who = propertyRef(props.modelValue.who ?? undefined, "who");
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+
+    function onSave(): void {
+        const value: GridSettingsOptions = {
+            entityType: entityType.value,
+            entityId: toNumber(entityId.value),
+            who: who.value,
+        };
+
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
+
+        isVisible.value = false;
+    }
+
+    watch(() => props.modelValue, () => {
+        updateRefValue(who, props.modelValue.who ?? undefined),
+        entityType.value = props.modelValue.entityType ?? "";
+        entityId.value = props.modelValue.entityId ?? 0;
+    });
+
+</script>

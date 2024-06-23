@@ -192,6 +192,11 @@ export const DefinedType = {
     ProtectMyMinistryMvrJurisdictionCodes: "2F8821E8-05B9-4CD5-9FA4-303662AAC85D",
     /** The REST allowed domains */
     RestApiAllowedDomains: "DF7C8DF7-49F9-4858-9E5D-20842AF65AD8",
+    /**
+     * The "Saved Check-in Configurations" defined type that provides a list
+     * of saved configuration settings for quickly starting up kiosks.
+     */
+    SavedCheckinConfigurations: "F986008C-99BB-4C48-8A6E-38C8A121D75B",
     /** The schedule type */
     ScheduleType: "831648D4-2E2C-4940-8358-9B426AEDB460",
     /** The school grades defined type, which has values that determine which grade the person is based. The Value of the DefinedValue is the GradeOffset. */
@@ -212,6 +217,8 @@ export const DefinedType = {
     TemplateBlock: "0F8E2B71-985E-44C4-BF5A-2FB1AAF3E183",
     /** Used to manage the workflows that can be launched via a text message. */
     TextToWorkflow: "2CACB86F-D811-4483-98E1-272F1FF8FF5D",
+    /** Theme Purpose */
+    ThemePurpose: "99FF0317-9B21-4E56-9F83-EA89A3C8C789",
     /** Campus Topic Type */
     TopicType: "41141100-8fc6-44bb-aa36-9778eeda7f62",
     /** Used to manage the lava code that can be launched via webhook. */

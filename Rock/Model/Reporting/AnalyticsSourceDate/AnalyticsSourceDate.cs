@@ -17,6 +17,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Enums.Crm;
@@ -506,4 +507,22 @@ namespace Rock.Model
 
         #endregion Entity Properties Specific to Analytics
     }
+
+    #region Entity Configuration
+
+    /// <summary>
+    /// AnalyticsSourceDate Configuration Class
+    /// </summary>
+    public partial class AnalyticsSourceDateConfiguration : EntityTypeConfiguration<AnalyticsSourceDate>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AnalyticsSourceDateConfiguration"/> class.
+        /// </summary>
+        public AnalyticsSourceDateConfiguration()
+        {
+            // Empty constructor. This is required to tell EF that this model exists.
+        }
+    }
+
+    #endregion Entity Configuration
 }

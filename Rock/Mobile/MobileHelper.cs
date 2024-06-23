@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using System.Web;
 
 using Rock.Attribute;
@@ -275,12 +276,15 @@ namespace Rock.Mobile
         /// </summary>
         /// <param name="applicationId">The application identifier.</param>
         /// <param name="deviceType">The type of device to build for.</param>
+        /// <param name="versionId">The version identifier to use on this package.</param>
         /// <returns>An update package for the specified application and device type.</returns>
-        /// <remarks>This is a backwards compatible method that can be removed at any time, this method shouldn't be used by any plugins.</remarks>
-        [RockObsolete( "1.12" )]
-        public static UpdatePackage BuildMobilePackage( int applicationId, DeviceType deviceType )
+        [Obsolete( "Use BuildMobilePackageAsync() instead." )]
+        [RockObsolete( "1.16.4" )]
+        public static UpdatePackage BuildMobilePackage( int applicationId, DeviceType deviceType, int versionId )
         {
-            return BuildMobilePackage( applicationId, deviceType, ( int ) ( RockDateTime.Now.ToJavascriptMilliseconds() / 1000 ) );
+            var task = Task.Run( async () => await BuildMobilePackageAsync( applicationId, deviceType, versionId ) );
+
+            return task.Result;
         }
 
         /// <summary>
@@ -290,7 +294,7 @@ namespace Rock.Mobile
         /// <param name="deviceType">The type of device to build for.</param>
         /// <param name="versionId">The version identifier to use on this package.</param>
         /// <returns>An update package for the specified application and device type.</returns>
-        public static UpdatePackage BuildMobilePackage( int applicationId, DeviceType deviceType, int versionId )
+        public static async Task<UpdatePackage> BuildMobilePackageAsync( int applicationId, DeviceType deviceType, int versionId )
         {
             var site = SiteCache.Get( applicationId );
             string applicationRoot = GlobalAttributesCache.Value( "PublicApplicationRoot" );
@@ -504,7 +508,7 @@ namespace Rock.Mobile
                         RequiredAbiVersion = mobileBlockEntity.RequiredMobileAbiVersion,
                         BlockType = mobileBlockTypeClass,
 #pragma warning restore CS0618 // Type or member is obsolete
-                        ConfigurationValues = mobileBlockEntity.GetBlockInitialization( Blocks.RockClientType.Mobile ),
+                        ConfigurationValues = await mobileBlockEntity.GetBlockInitializationAsync( Blocks.RockClientType.Mobile ),
                         Order = block.Order,
                         AttributeValues = GetMobileAttributeValues( block, attributes ),
                         PreXaml = block.PreHtml,
