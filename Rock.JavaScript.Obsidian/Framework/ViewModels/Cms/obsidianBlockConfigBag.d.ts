@@ -37,7 +37,7 @@ export type ObsidianBlockConfigBag = {
      * Gets or sets the unique identifier of the block that is being
      * represented by this configuration.
      */
-    blockGuid?: Guid | null;
+    blockGuid: Guid;
 
     /**
      * Gets or sets the custom configuration values for the block. This

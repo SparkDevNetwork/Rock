@@ -26,6 +26,7 @@ import { ConfigurationValueKey } from "./locationListField.partial";
 import { asBoolean, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
 import { asListItemBagOrNull } from "@Obsidian/Utility/listItemBag";
 import { Guid } from "@Obsidian/Types";
+import { toGuidOrNull } from "@Obsidian/Utility/guid";
 
 
 export const EditComponent = defineComponent({
@@ -59,8 +60,8 @@ export const EditComponent = defineComponent({
         });
 
         watch(() => props.configurationValues, () => {
-            locationTypeGuid.value = asListItemBagOrNull(props.configurationValues[ConfigurationValueKey.LocationType])?.value ?? null;
-            parentGuid.value = asListItemBagOrNull(props.configurationValues[ConfigurationValueKey.ParentLocation])?.value ?? null;
+            locationTypeGuid.value = toGuidOrNull(asListItemBagOrNull(props.configurationValues[ConfigurationValueKey.LocationType])?.value);
+            parentGuid.value = toGuidOrNull(asListItemBagOrNull(props.configurationValues[ConfigurationValueKey.ParentLocation])?.value);
             allowAdd.value = asBoolean(props.configurationValues[ConfigurationValueKey.AllowAddingNewLocations]);
             showCityState.value = asBoolean(props.configurationValues[ConfigurationValueKey.ShowCityState]);
             addressRequired.value = asBoolean(props.configurationValues[ConfigurationValueKey.AddressRequired]);

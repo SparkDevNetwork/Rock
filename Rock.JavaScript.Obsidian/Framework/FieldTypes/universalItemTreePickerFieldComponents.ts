@@ -76,7 +76,7 @@ class UniversalTreeItemProvider implements ITreeItemProvider {
             return [];
         }
 
-        const options: Partial<UniversalItemTreePickerOptionsBag> = {
+        const options: UniversalItemTreePickerOptionsBag = {
             parentValue: parentValue,
             expandToValues: expandToValues,
             securityGrantToken: this.securityGrantToken,

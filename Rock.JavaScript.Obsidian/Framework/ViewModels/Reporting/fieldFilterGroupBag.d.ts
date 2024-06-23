@@ -33,7 +33,7 @@ export type FieldFilterGroupBag = {
     groups?: FieldFilterGroupBag[] | null;
 
     /** The unique identifier of this filter group. */
-    guid?: Guid | null;
+    guid: Guid;
 
     /** The collection of rules/expression that make up this group. */
     rules?: FieldFilterRuleBag[] | null;

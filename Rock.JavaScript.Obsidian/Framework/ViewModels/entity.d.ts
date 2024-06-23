@@ -18,7 +18,7 @@
 import { PublicAttributeBag } from "./Utility/publicAttributeBag";
 
 export interface IEntity {
-    idKey: string;
+    idKey?: string | null;
     attributes?: Record<string, PublicAttributeBag> | null;
     attributeValues?: Record<string, string> | null;
 }

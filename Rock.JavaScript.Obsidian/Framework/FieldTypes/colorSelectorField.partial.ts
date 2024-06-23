@@ -20,6 +20,7 @@ import { ConfigurationValueKey } from "./colorSelectorField.types.partial";
 import { deserializeColors, deserializeValue, getSelectedColors, setCamouflagedClass } from "./colorSelectorField.utils.partial";
 import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import guid from "@Obsidian/Utility/guid";
+import { escapeHtml } from "@Obsidian/Utility/stringUtils";
 
 // The edit component can be quite large, so load it only as needed.
 const editComponent = defineAsyncComponent(async () => {
@@ -49,7 +50,7 @@ export class ColorSelectorFieldType extends FieldTypeBase {
         }
     }
 
-    public override getHtmlValue(value: string, configurationValues: Record<string, string>): string {
+    public override getHtmlValue(value: string, configurationValues: Record<string, string>, isEscaped: boolean = false): string {
         const htmlStringBuilder: string[] = [];
         const selectorsToProcess: string[] = [];
         const colors = deserializeColors(configurationValues[ConfigurationValueKey.Colors]);
@@ -78,7 +79,13 @@ export class ColorSelectorFieldType extends FieldTypeBase {
 
         this.processSelectors(selectorsToProcess);
 
-        return htmlStringBuilder.join("\n");
+        const html = htmlStringBuilder.join("\n");
+
+        if (isEscaped) {
+            return escapeHtml(html);
+        }
+
+        return html;
     }
 
     public override getEditComponent(): Component {

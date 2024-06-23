@@ -54,6 +54,12 @@ export type CustomSettingsBag = {
     filters?: FilterOptionsBag[] | null;
 
     /**
+     * Gets or sets the template that will be used to render above each content
+     * collection source group (mobile only).
+     */
+    groupHeaderTemplate?: string | null;
+
+    /**
      * Gets or sets a value indicating whether results should be grouped
      * by source.
      */
@@ -115,6 +121,9 @@ export type CustomSettingsBag = {
      * should be shown.
      */
     showSort: boolean;
+
+    /** Gets or sets the site type for the block. */
+    siteType?: string | null;
 
     /** Gets or sets the trending term to use when displaying the sort option. */
     trendingTerm?: string | null;

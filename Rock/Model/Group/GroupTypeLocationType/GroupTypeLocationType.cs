@@ -16,6 +16,7 @@
 //
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Lava;
 
@@ -84,4 +85,22 @@ namespace Rock.Model
             return LocationTypeValue;
         }
     }
+
+    #region Entity Configuration
+
+    /// <summary>
+    /// GroupTypeLocationType Configuration Class
+    /// </summary>
+    public partial class GroupTypeLocationTypeConfiguration : EntityTypeConfiguration<GroupTypeLocationType>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GroupTypeLocationTypeConfiguration"/> class.
+        /// </summary>
+        public GroupTypeLocationTypeConfiguration()
+        {
+            // Empty constructor. This is required to tell EF that this model exists.
+        }
+    }
+
+    #endregion Entity Configuration
 }

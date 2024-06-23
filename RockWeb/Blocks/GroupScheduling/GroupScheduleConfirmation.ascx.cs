@@ -548,13 +548,14 @@ namespace RockWeb.Blocks.GroupScheduling
                         return;
                     }
 
-                    bool statusChanged = false;
+                    bool statusChangedToYes = false;
 
                     bool isConfirmedParameter = this.PageParameter( PageParameterKey.IsConfirmed ).AsBoolean();
                     if ( isConfirmedParameter )
                     {
                         if ( !attendance.IsScheduledPersonConfirmed() )
                         {
+                            statusChangedToYes = true;
                             attendanceService.ScheduledPersonConfirm( attendance.Id );
                             rockContext.SaveChanges();
                         }
@@ -568,7 +569,7 @@ namespace RockWeb.Blocks.GroupScheduling
                         }
                     }
 
-                    if ( statusChanged )
+                    if ( statusChangedToYes )
                     {
                         rockContext.SaveChanges();
 

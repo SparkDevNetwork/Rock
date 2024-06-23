@@ -13,88 +13,88 @@
 
                         <div v-if="config.isRequesterInfoShown" class="prayer-requester">
                             <TextBox v-model="firstName"
-                                autocomplete="given-name"
-                                :disabled="isSaving || isNavigating"
-                                label="First Name"
-                                rules="required" />
+                                     autocomplete="given-name"
+                                     :disabled="isSaving || isNavigating"
+                                     label="First Name"
+                                     rules="required" />
 
                             <TextBox v-model="lastName"
-                                autocomplete="family-name"
-                                :disabled="isSaving || isNavigating"
-                                label="Last Name"
-                                :rules="config.isLastNameRequired ? 'required' : ''" />
+                                     autocomplete="family-name"
+                                     :disabled="isSaving || isNavigating"
+                                     label="Last Name"
+                                     :rules="config.isLastNameRequired ? 'required' : ''" />
 
                             <EmailBox v-model="email"
-                                autocomplete="email"
-                                :disabled="isSaving || isNavigating"
-                                label="Email" />
+                                      autocomplete="email"
+                                      :disabled="isSaving || isNavigating"
+                                      label="Email" />
 
                             <PhoneNumberBox v-if="config.isMobilePhoneShown"
-                                v-model="mobilePhoneNumber"
-                                v-model:countryCode="mobilePhoneNumberCountryCode"
-                                autocomplete="mobile"
-                                :disabled="isSaving || isNavigating"
-                                label="Mobile Phone" />
+                                            v-model="mobilePhoneNumber"
+                                            v-model:countryCode="mobilePhoneNumberCountryCode"
+                                            autocomplete="mobile"
+                                            :disabled="isSaving || isNavigating"
+                                            label="Mobile Phone" />
 
                             <CampusPicker v-if="config.isCampusShown"
-                                v-model="campusListItemBag"
-                                :disabled="isSaving || isNavigating"
-                                :includeInactive="false"
-                                label="Campus"
-                                :rules="config.isCampusRequired ? 'required' : ''" />
+                                          v-model="campusListItemBag"
+                                          :disabled="isSaving || isNavigating"
+                                          :includeInactive="false"
+                                          label="Campus"
+                                          :rules="config.isCampusRequired ? 'required' : ''" />
                         </div>
 
                         <DropDownList v-if="categories.length"
-                            v-model="categoryGuid"
-                            :disabled="isSaving || isNavigating"
-                            :items="categories"
-                            label="Category" />
+                                      v-model="categoryGuidOrEmptyString"
+                                      :disabled="isSaving || isNavigating"
+                                      :items="categories"
+                                      label="Category" />
 
                         <AttributeValuesContainer v-if="attributes != null"
-                            v-model="attributeValues"
-                            :attributes="attributes"
-                            isEditMode
-                            :showCategoryLabel="false" />
+                                                  v-model="attributeValues"
+                                                  :attributes="attributes"
+                                                  isEditMode
+                                                  :showCategoryLabel="false" />
 
                         <div ref="requestInputWrapper">
                             <TextBox v-model="request"
-                                autocomplete="off"
-                                :disabled="isSaving || isNavigating"
-                                label="Request"
-                                :maxLength="requestCharacterLimit"
-                                :placeholder="requestPlaceholder"
-                                :rows="3"
-                                rules="required"
-                                :showCountDown="!!requestCharacterLimit"
-                                textMode="multiline" />
+                                     autocomplete="off"
+                                     :disabled="isSaving || isNavigating"
+                                     label="Request"
+                                     :maxLength="requestCharacterLimit"
+                                     :placeholder="requestPlaceholder"
+                                     :rows="3"
+                                     rules="required"
+                                     :showCountDown="!!requestCharacterLimit"
+                                     textMode="multiline" />
                         </div>
 
                         <CheckBox v-if="config.isUrgentShown"
-                            v-model="internalIsUrgent"
-                            :disabled="isSaving || isNavigating"
-                            help="If 'Yes' is checked, the request will be flagged as urgent in need of attention quickly."
-                            label="Urgent?"
-                            text="Yes" />
+                                  v-model="internalIsUrgent"
+                                  :disabled="isSaving || isNavigating"
+                                  help="If 'Yes' is checked, the request will be flagged as urgent in need of attention quickly."
+                                  label="Urgent?"
+                                  text="Yes" />
 
                         <CheckBox v-if="config.isAllowCommentsShown"
-                            v-model="internalAllowComments"
-                            :disabled="isSaving || isNavigating"
-                            help="If 'Yes' is checked, the prayer team can offer encouraging comments on the request."
-                            label="Allow Encouraging Comments?"
-                            text="Yes" />
+                                  v-model="internalAllowComments"
+                                  :disabled="isSaving || isNavigating"
+                                  help="If 'Yes' is checked, the prayer team can offer encouraging comments on the request."
+                                  label="Allow Encouraging Comments?"
+                                  text="Yes" />
 
                         <CheckBox v-if="config.isIsPublicShown"
-                            v-model="internalIsPublic"
-                            :disabled="isSaving || isNavigating"
-                            help="If 'Yes' is checked, you give permission to show the request on the public website."
-                            label="Allow Publication?"
-                            text="Yes" />
+                                  v-model="internalIsPublic"
+                                  :disabled="isSaving || isNavigating"
+                                  help="If 'Yes' is checked, you give permission to show the request on the public website."
+                                  label="Allow Publication?"
+                                  text="Yes" />
                     </fieldset>
 
                     <RockButton accesskey="s"
-                        btnType="primary"
-                        :disabled="isSaving || isNavigating"
-                        type="submit">{{ saveButtonText }}</RockButton>
+                                btnType="primary"
+                                :disabled="isSaving || isNavigating"
+                                type="submit">{{ saveButtonText }}</RockButton>
                 </RockForm>
                 <template v-else>
                     <h2>Request Submitted</h2>
@@ -127,6 +127,7 @@
     import { PrayerRequestEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerRequestEntry/prayerRequestEntryInitializationBox";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const config = useConfigurationValues<PrayerRequestEntryInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -139,7 +140,8 @@
     const mobilePhoneNumber = ref<string>("");
     const mobilePhoneNumberCountryCode = ref<string>("");
     const campusListItemBag = ref<ListItemBag | null | undefined>(config.defaultCampus);
-    const categoryGuid = ref<string>(config.defaultCategoryGuid || "");
+    /** The selected category guid (or empty string if none selected). */
+    const categoryGuidOrEmptyString = ref<string>(toGuidOrNull(config.defaultCategoryGuid) ?? "");
     const categories = ref<ListItemBag[]>(config.categories || []);
     const request = ref<string>(config.defaultRequest ?? "");
     const requestCharacterLimit = ref<number | undefined>(config.characterLimit > 0 ? config.characterLimit : undefined);
@@ -241,8 +243,8 @@
 
             const bag: PrayerRequestEntrySaveRequestBag = {
                 allowComments: allowComments.value,
-                campusGuid: campusListItemBag.value?.value,
-                categoryGuid: categoryGuid.value,
+                campusGuid: toGuidOrNull(campusListItemBag.value?.value),
+                categoryGuid: toGuidOrNull(categoryGuidOrEmptyString.value),
                 email: email.value,
                 firstName: firstName.value,
                 isPublic: isPublic.value,

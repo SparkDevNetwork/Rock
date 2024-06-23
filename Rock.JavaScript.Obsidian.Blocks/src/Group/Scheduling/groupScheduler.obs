@@ -276,6 +276,7 @@
     import { GroupSchedulerSendNowResponseBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerSendNowResponseBag";
     import { GroupSchedulerUnassignedResourceCountBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerUnassignedResourceCountBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { Guid } from "@Obsidian/Types";
 
     const config = useConfigurationValues<GroupSchedulerInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -707,7 +708,7 @@
      * @param unassignedResourceCountGuid The targeted "unassigned resource count" unique identifier.
      * @param assignedCount The count of resources that have been assigned.
      */
-    function reportAssignedResources(unassignedResourceCountGuid: string | null | undefined, assignedCount: number): void {
+    function reportAssignedResources(unassignedResourceCountGuid: Guid | null | undefined, assignedCount: number): void {
         if (!unassignedResourceCountGuid || assignedCount <= 0 || !unassignedResourceCounts.value?.length) {
             return;
         }

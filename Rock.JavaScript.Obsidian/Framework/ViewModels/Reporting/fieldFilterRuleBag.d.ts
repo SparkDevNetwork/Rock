@@ -42,7 +42,7 @@ export type FieldFilterRuleBag = {
     comparisonType: number;
 
     /** The unique identifier of this rule. */
-    guid?: Guid | null;
+    guid: Guid;
 
     /** The source location for where to get the left-hand side value. */
     sourceType: number;

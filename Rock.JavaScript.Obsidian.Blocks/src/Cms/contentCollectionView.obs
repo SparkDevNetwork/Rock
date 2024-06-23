@@ -56,7 +56,7 @@
     import { Guid } from "@Obsidian/Types";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { emptyGuid } from "@Obsidian/Utility/guid";
+    import { areEqual, emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { SortOrdersKey } from "./ContentCollectionView/types.partial";
 
     const config = useConfigurationValues<ContentCollectionInitializationBox>();
@@ -169,7 +169,7 @@
      */
     function updateResults(resultsContainerElement: HTMLElement, results: SearchResultBag, seeMore: ((sourceGuid: Guid) => void)): void {
         for (const resultSource of results.resultSources ?? []) {
-            const sourceGuid = resultSource.sourceGuid;
+            const sourceGuid = toGuidOrNull(resultSource.sourceGuid);
 
             if (!sourceGuid) {
                 continue;
@@ -286,11 +286,14 @@
         // Update the URL to match this search.
         updateUrl(query.value, sortOrder.value, filterValues.value, filters.map(f => f.label ?? ""));
 
+        // Ensure the Guid is valid.
+        sourceGuid = toGuidOrNull(sourceGuid) ?? undefined;
+
         const queryBag: SearchQueryBag = {
             text: query.value,
             filters: filterValues.value,
-            sourceGuid: sourceGuid,
-            offset: offset,
+            sourceGuid,
+            offset,
             order: toNumber(sortOrder.value) as SearchOrder
         };
 

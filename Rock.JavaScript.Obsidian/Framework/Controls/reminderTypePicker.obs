@@ -15,6 +15,7 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { PropType, computed, ref, watch } from "vue";
     import BaseAsyncPicker from "./baseAsyncPicker.obs";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         /** The currently selected value(s). */
@@ -25,7 +26,7 @@
 
         /** Filter the resulting reminder types to only be of the given entity type */
         entityTypeGuid: {
-            type: String as PropType<Guid>,
+            type: String as PropType<Guid | undefined>,
             required: false
         },
 
@@ -71,8 +72,8 @@
      * Loads the items from the server.
      */
     async function loadOptions(): Promise<ListItemBag[]> {
-        const options: Partial<ReminderTypePickerGetReminderTypesOptionsBag> = {
-            entityTypeGuid: props.entityTypeGuid
+        const options: ReminderTypePickerGetReminderTypesOptionsBag = {
+            entityTypeGuid: toGuidOrNull(props.entityTypeGuid)
         };
         const result = await http.post<ListItemBag[]>("/api/v2/Controls/ReminderTypePickerGetReminderTypes", undefined, options);
 
@@ -95,6 +96,6 @@
     // Refetch options when entity type guid changes
     watch(() => props.entityTypeGuid, () => loadedItems.value = null);
 
-            // #endregion
+    // #endregion
 
 </script>

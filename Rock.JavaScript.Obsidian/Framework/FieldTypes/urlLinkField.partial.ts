@@ -20,6 +20,7 @@ import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 import { stringComparisonTypes } from "@Obsidian/Core/Reporting/comparisonType";
 import { asBoolean } from "@Obsidian/Utility/booleanUtils";
 import { FieldTypeBase } from "./fieldType";
+import { escapeHtml } from "@Obsidian/Utility/stringUtils";
 
 export const enum ConfigurationValueKey {
     ShouldRequireTrailingForwardSlash = "ShouldRequireTrailingForwardSlash",
@@ -39,7 +40,7 @@ const configurationComponent = defineAsyncComponent(async () => {
  * The field type handler for the Email field.
  */
 export class UrlLinkFieldType extends FieldTypeBase {
-    public override getHtmlValue(value: string, configurationValues: Record<string, string>): string {
+    public override getHtmlValue(value: string, configurationValues: Record<string, string>, isEscaped: boolean = false): string {
         const shouldAlwaysShowCondensed = asBoolean(configurationValues[ConfigurationValueKey.ShouldAlwaysShowCondensed]);
         const textValue = this.getTextValue(value, configurationValues);
 
@@ -47,9 +48,14 @@ export class UrlLinkFieldType extends FieldTypeBase {
         if (textValue) {
             if (!shouldAlwaysShowCondensed) {
                 htmlValue = `<a href="${textValue}">${textValue}</a>`;
-            } else {
+            }
+            else {
                 htmlValue = textValue;
             }
+        }
+
+        if (isEscaped) {
+            return escapeHtml(htmlValue);
         }
 
         return htmlValue;

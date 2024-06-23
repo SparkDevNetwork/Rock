@@ -38,7 +38,7 @@ export type EntityTagListCreatePersonalTagOptionsBag = {
     entityQualifierValue?: string | null;
 
     /** Gets or sets the entity type unique identifier. */
-    entityTypeGuid?: Guid | null;
+    entityTypeGuid: Guid;
 
     /** Gets or sets the name of the tag to be created. */
     name?: string | null;

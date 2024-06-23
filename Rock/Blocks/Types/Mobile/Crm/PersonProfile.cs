@@ -664,49 +664,34 @@ namespace Rock.Blocks.Types.Mobile.Crm
             person.Gender = personBag.Gender.ToNative();
             person.InactiveReasonNote = personBag.InactiveNote;
 
-            if ( personBag.Suffix.HasValue )
-            {
-                person.SuffixValueId = DefinedValueCache.GetId( personBag.Suffix.Value );
-            }
+            person.SuffixValueId = personBag.Suffix.HasValue ? DefinedValueCache.GetId( personBag.Suffix.Value ) : null;
+            person.ConnectionStatusValueId = personBag.ConnectionStatus.HasValue ? DefinedValueCache.GetId( personBag.ConnectionStatus.Value ) : null;
+            person.RecordStatusValueId = personBag.RecordStatus.HasValue ? DefinedValueCache.GetId( personBag.RecordStatus.Value ) : null;
+            person.RecordStatusReasonValueId = personBag.InactiveReason.HasValue ? DefinedValueCache.GetId( personBag.InactiveReason.Value ) : null;
+            person.DeceasedDate = personBag.DeceasedDate.HasValue ? personBag.DeceasedDate.Value.DateTime : ( DateTime? ) null;
+            person.MaritalStatusValueId = personBag.MaritalStatus.HasValue ? DefinedValueCache.GetId( personBag.MaritalStatus.Value ) : null;
+            person.AnniversaryDate = personBag.AnniversaryDate.HasValue ? personBag.AnniversaryDate.Value.DateTime : ( DateTime? ) null;
 
-            if ( personBag.ConnectionStatus.HasValue )
-            {
-                person.ConnectionStatusValueId = DefinedValueCache.GetId( personBag.ConnectionStatus.Value );
-            }
+            var birthday = personBag.BirthDate;
 
-            if ( personBag.RecordStatus.HasValue )
+            if ( birthday.HasValue )
             {
-                person.RecordStatusValueId = DefinedValueCache.GetId( personBag.RecordStatus.Value );
-            }
+                person.BirthMonth = birthday.Value.Month;
+                person.BirthDay = birthday.Value.Day;
+                if ( birthday.Value.Year != DateTime.MinValue.Year )
+                {
+                    person.BirthYear = birthday.Value.Year;
+                }
+                else
+                {
+                    person.BirthYear = null;
+                }
 
-            if ( personBag.InactiveReason.HasValue )
-            {
-                person.RecordStatusReasonValueId = DefinedValueCache.GetId( personBag.InactiveReason.Value );
-            }
-
-            if ( personBag.DeceasedDate.HasValue )
-            {
-                person.DeceasedDate = personBag.DeceasedDate.Value.DateTime;
-            }
-
-            if ( personBag.InactiveNote.IsNotNullOrWhiteSpace() )
-            {
-                person.InactiveReasonNote = personBag.InactiveNote;
-            }
-
-            if ( personBag.BirthDate.HasValue )
-            {
                 person.SetBirthDate( personBag.BirthDate.Value.DateTime );
             }
-
-            if ( personBag.MaritalStatus.HasValue )
+            else
             {
-                person.MaritalStatusValueId = DefinedValueCache.GetId( personBag.MaritalStatus.Value );
-            }
-
-            if ( personBag.AnniversaryDate.HasValue )
-            {
-                person.AnniversaryDate = personBag.AnniversaryDate.Value.DateTime;
+                person.SetBirthDate( null );
             }
         }
 

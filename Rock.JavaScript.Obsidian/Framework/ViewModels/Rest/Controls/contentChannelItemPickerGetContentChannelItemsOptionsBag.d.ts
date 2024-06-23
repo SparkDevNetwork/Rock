@@ -28,7 +28,7 @@ import { Guid } from "@Obsidian/Types";
  * the GroupMemberPicker control.
  */
 export type ContentChannelItemPickerGetContentChannelItemsOptionsBag = {
-    contentChannelGuid?: Guid | null;
+    contentChannelGuid: Guid;
 
     excludeContentChannelItems?: Guid[] | null;
 

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Lava;
@@ -126,4 +127,22 @@ namespace Rock.Model
         private ICollection<BenevolenceRequest> _benevolenceRequests;
         #endregion Navigation Properties
     }
+
+    #region Entity Configuration
+
+    /// <summary>
+    /// BenevolenceType Configuration Class
+    /// </summary>
+    public partial class BenevolenceTypeConfiguration : EntityTypeConfiguration<BenevolenceType>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BenevolenceTypeConfiguration"/> class.
+        /// </summary>
+        public BenevolenceTypeConfiguration()
+        {
+            // Empty constructor. This is required to tell EF that this model exists.
+        }
+    }
+
+    #endregion Entity Configuration
 }

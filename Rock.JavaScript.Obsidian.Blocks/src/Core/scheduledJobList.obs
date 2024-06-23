@@ -1,0 +1,317 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Service Job"
+          :entityTypeGuid="EntityType.ServiceJob"
+          :expectedRowCount="config.expectedRowCount ?? undefined"
+          tooltipField="description"
+          stickyHeader
+          liveUpdates
+          :showLaunchWorkflow="false"
+          gridSettings
+          :gridSettingsActive="hasSettingsFilters"
+          @gridSettingsClick="onGridSettingsClick"
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          @selectItem="onSelectItem">
+
+        <TextColumn name="name"
+                    title="Name"
+                    field="name"
+                    :filter="textValueFilter"
+                    visiblePriority="xs"
+                    width="30%" />
+
+        <DateTimeColumn name="lastSuccessfulRun"
+                        title="Last Successful Run"
+                        field="lastSuccessfulRun"
+                        :filter="dateValueFilter"
+                        visiblePriority="md" />
+
+        <DateTimeColumn name="lastRunDateTime"
+                        title="Last Run Date"
+                        field="lastRunDateTime"
+                        :filter="dateValueFilter"
+                        visiblePriority="md" />
+
+        <TextColumn name="lastRunDurationSeconds"
+                    title="Last Run Duration"
+                    field="lastRunDurationSeconds"
+                    :filter="textValueFilter"
+                    visiblePriority="md" />
+
+        <Column name="lastStatus"
+                title="Last Status"
+                visiblePriority="md"
+                :filter="textValueFilter"
+                :filterValue="getlastStatusFilterValue">
+            <template #format="{ row }">
+                <span :class='getStatusClass(row)'>{{ row.lastStatus === "Exception" ? "Failed" : row.lastStatus }}</span>
+            </template>
+
+            <template #skeleton>
+                <div class="skeleton skeleton-text skeleton-rounded" />
+            </template>
+        </Column>
+
+        <Column name="lastStatusMessage"
+                title="Last Status Message"
+                width="20%"
+                :filter="textValueFilter"
+                :filterValue="getlastStatusMessageFilterValue"
+                visiblePriority="md">
+            <template #format="{ row }">
+                <div v-html="row.lastStatusMessageAsHtml">
+                </div>
+            </template>
+        </Column>
+
+        <BooleanColumn name="isSystem"
+                       title="System"
+                       field="isSystem"
+                       visiblePriority="md"
+                       width="5%" />
+
+        <BooleanColumn name="isActive"
+                       title="Active"
+                       field="isActive"
+                       visiblePriority="md"
+                       width="5%" />
+
+        <Column name="history"
+                width="52px"
+                title="History"
+                itemClass="grid-columncommand">
+            <template #format="{ row }">
+                <button v-if="row.guid !== ServiceJob.JobPulse"
+                        @click.prevent="onShowHistory(row, $event)"
+                        class="btn btn-sm"
+                        title="History">
+                    <i class="fa fa-history"></i>
+                </button>
+            </template>
+        </Column>
+
+        <Column name="runJob"
+                width="52px"
+                title="Run Now"
+                itemClass="grid-columncommand">
+            <template #format="{ row }">
+                <button v-if="row.guid !== ServiceJob.JobPulse"
+                        @click.prevent="onRunNowClick(row, $event)"
+                        class="btn btn-sm"
+                        title="Run Now">
+                    <i class="fa fa-play"></i>
+                </button>
+            </template>
+        </Column>
+
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+    </Grid>
+
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible" />
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { ServiceJob } from "@Obsidian/SystemGuids/serviceJob";
+    import Grid, { BooleanColumn, dateValueFilter, TextColumn, textValueFilter, DeleteColumn, DateTimeColumn, Column } from "@Obsidian/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { ScheduledJobListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/ScheduledJobList/scheduledJobListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { NavigationUrlKey, PreferenceKey, GridSettingsOptions } from "./ScheduledJobList/types.partial";
+    import { computed, reactive, ref, watch } from "vue";
+    import GridSettingsModal from "./ScheduledJobList/gridSettingsModal.partial.obs";
+
+    const config = useConfigurationValues<ListBlockBox<ScheduledJobListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const isGridSettingsVisible = ref(false);
+    const gridSettings = ref<GridSettingsOptions>({
+        name: preferences.getValue(PreferenceKey.FilterName),
+        isActive: preferences.getValue(PreferenceKey.FilterIsActive),
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** `true` if the grid settings is performing any filtering. */
+    const hasSettingsFilters = computed((): boolean => {
+        return !!gridSettings.value.name
+            || !!gridSettings.value.isActive;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    /**
+     * Gets the corresponding label for the row's status.
+     * @param row The current row.
+     */
+    function getStatusClass(row: Record<string, unknown>): string {
+        const lastStatus = row["lastStatus"] as string || "";
+        switch (lastStatus) {
+            case "Success":
+                return "label label-success";
+            case "Running":
+                return "label label-info";
+            case "Exception":
+                return "label label-danger";
+            case "Warning":
+                return "label label-warning";
+            case "":
+                return "";
+            default:
+                return `label label-warning`;
+        }
+    }
+
+    /**
+     * Gets the filter value text to use for the status message column.
+     *
+     * @param row The row to be filtered.
+     */
+     function getlastStatusMessageFilterValue(row: Record<string, unknown>): string {
+        return row.lastStatusMessage as string;
+    }
+
+        /**
+     * Gets the filter value text to use for the status column.
+     *
+     * @param row The row to be filtered.
+     */
+     function getlastStatusFilterValue(row: Record<string, unknown>): string {
+        return row.lastStatus as string;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+        }
+    }
+
+    /**
+     * Called when a row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete service job.");
+        }
+    }
+
+    /**
+     * Called when the Add button has been clicked by the indivual.
+     */
+    function onAddItem(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
+        }
+    }
+
+    /**
+    * Called when the history button is clicked, redirects the user to the job history page.
+    */
+    function onShowHistory(row: Record<string, unknown>, event: Event): void {
+        event.stopPropagation();
+
+        const key = row["idKey"] as string;
+        if (key) {
+            if (config.navigationUrls?.[NavigationUrlKey.HistoryPage]) {
+                window.location.href = config.navigationUrls[NavigationUrlKey.HistoryPage].replace("((Key))", key);
+            }
+        }
+    }
+
+    /**
+    * Called when the run now button is clicked, sends a request to the server to run the job.
+    */
+    async function onRunNowClick(row: Record<string, unknown>, event: Event): Promise<void> {
+        event.stopPropagation();
+
+        const key = row["idKey"] as string;
+        const jobName = row["name"] as string;
+        if (key) {
+            const result = await invokeBlockAction<string>("RunNow", {
+                key
+            });
+
+            if (result.isSuccess) {
+                await alert(`The '${jobName}' job has been started.`);
+                gridDataSource.value = loadGridData();
+            }
+            else {
+                await alert(result.errorMessage ?? "Unknown error while trying to delete service job.");
+            }
+        }
+    }
+
+    /**
+    * Called when the grid setting icon is clicked, displays the block filters.
+    */
+    function onGridSettingsClick(): void {
+        isGridSettingsVisible.value = true;
+    }
+
+    // #endregion
+
+    watch(gridSettings, async () => {
+        preferences.setValue(PreferenceKey.FilterName, gridSettings.value.name ?? "");
+        preferences.setValue(PreferenceKey.FilterIsActive, gridSettings.value.isActive ?? "");
+
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
+    });
+
+    gridDataSource.value = loadGridData();
+</script>

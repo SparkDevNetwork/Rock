@@ -10,7 +10,7 @@
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
-                 entityTypeName="Financial Batch"
+                 entityTypeName="FinancialBatch"
                  :isAuditHidden="false"
                  :isBadgesVisible="true"
                  :footerSecondaryActions="footerActions"

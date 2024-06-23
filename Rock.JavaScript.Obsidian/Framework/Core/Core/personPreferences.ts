@@ -17,6 +17,7 @@
 
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 import { useHttp } from "@Obsidian/Utility/http";
+import mitt, { Emitter } from "mitt";
 import { IPersonPreferenceCollection } from "@Obsidian/Types/Core/personPreferences";
 import { PersonPreferenceValueBag } from "@Obsidian/ViewModels/Core/personPreferenceValueBag";
 import { UpdatePersonPreferencesAccessedOptionsBag } from "@Obsidian/ViewModels/Rest/Utilities/updatePersonPreferencesAccessedOptionsBag";
@@ -30,6 +31,12 @@ import { UpdatePersonPreferencesOptionsBag } from "@Obsidian/ViewModels/Rest/Uti
  * @private This is an internal implementation and should not be used directly
  * by plugins.
  */
+
+export type PersonPreferenceEvents = {
+    /** Called when the {@link IPersonPreferenceCollection} value has been saved. */
+    preferenceSaved: PersonPreferenceValueBag[]
+};
+
 export class PersonPreferenceCollection implements IPersonPreferenceCollection {
     // #region Fields
 
@@ -73,6 +80,9 @@ export class PersonPreferenceCollection implements IPersonPreferenceCollection {
      * timestamps for any keys that were viewed.
      */
     updateAccessedTimer?: number;
+
+    /** The event emitter for all the grid events. */
+    private emitter: Emitter<PersonPreferenceEvents> = mitt<PersonPreferenceEvents>();
 
     // #endregion
 
@@ -174,6 +184,13 @@ export class PersonPreferenceCollection implements IPersonPreferenceCollection {
         if (!this.anonymous && keys.length > 0) {
             await this.saveUpdatedKeys(keys);
         }
+
+        const preferenceToBeEmitted = Object.values(this.preferences)
+            .map(p => ({
+                ...p,
+                key : this.getPrefixedKey(p.key ?? "")
+            })) as PersonPreferenceValueBag[];
+        this.emitter.emit("preferenceSaved", preferenceToBeEmitted);
     }
 
     public withPrefix(prefix: string): IPersonPreferenceCollection {
@@ -193,11 +210,13 @@ export class PersonPreferenceCollection implements IPersonPreferenceCollection {
             });
         }
 
-        return new PersonPreferenceCollection(this.entityTypeKey,
+        const prefixedPreferenceCollection = new PersonPreferenceCollection(this.entityTypeKey,
             this.entityKey,
             `${this.prefix}${prefix}`,
             this.anonymous,
             prefixedPreferences);
+        prefixedPreferenceCollection.setEmitter(this.emitter);
+        return prefixedPreferenceCollection;
     }
 
     // #endregion
@@ -267,6 +286,19 @@ export class PersonPreferenceCollection implements IPersonPreferenceCollection {
         if (!this.anonymous && keys.length > 0) {
             this.postAccessedKeys(keys);
         }
+    }
+
+
+    on(event: keyof PersonPreferenceEvents, callback: (preference: PersonPreferenceValueBag[]) => void): void {
+        this.emitter.on(event, callback);
+    }
+
+    off(event: keyof PersonPreferenceEvents, callback: (preference: PersonPreferenceValueBag[]) => void): void {
+        this.emitter.off(event, callback);
+    }
+
+    setEmitter(emitter: Emitter<PersonPreferenceEvents>) : void  {
+        this.emitter = emitter;
     }
 
     /**

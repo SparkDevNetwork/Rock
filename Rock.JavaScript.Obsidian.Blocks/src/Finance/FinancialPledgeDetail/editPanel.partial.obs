@@ -18,9 +18,9 @@
 
         <div class="row">
             <div class="col-md-6">
-                <DropDownList v-if="selectGroupTypeGuid"
+                <DropDownList v-if="selectGroupTypeGuidOrEmptyString"
                               :label="groupType"
-                              v-model="groupGuid"
+                              v-model="groupGuidOrEmptyString"
                               :items="groups"
                               :showBlankItem="true"
                               :enhanceForLongLists="false"
@@ -82,6 +82,8 @@
     import { FinancialPledgeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialPledgeDetail/financialPledgeDetailOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { ValidationRule } from "@Obsidian/ValidationRules";
+    import { Guid } from "@Obsidian/Types";
+    import { areEqual, emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -110,21 +112,21 @@
     const attributes = ref(props.modelValue.attributes ?? {});
     const attributeValues = ref(props.modelValue.attributeValues ?? {});
     const account = propertyRef(props.modelValue.account ?? {}, "AccountId");
-    const groupGuid = propertyRef(props.modelValue.group?.value ?? "", "GroupId");
+    const groupGuidOrEmptyString = propertyRef(props.modelValue.group?.value ?? "", "GroupId");
     const personAlias = propertyRef(props.modelValue.personAlias ?? undefined, "PersonAliasId");
     const startDate = propertyRef(props.modelValue.startDate ?? "", "StartDate");
     const endDate = propertyRef(props.modelValue.endDate ?? "", "EndDate");
     const totalAmount = propertyRef(props.modelValue.totalAmount ?? null, "TotalAmount");
     const pledgeFrequencyValue = propertyRef(props.modelValue.pledgeFrequencyValue ?? null, "PledgeFrequencyValueId");
     const selectedDateRange = ref<DateRangeParts | undefined>(startDate.value || endDate.value ? { lowerValue: startDate.value, upperValue: endDate.value } : undefined);
-    const selectGroupTypeGuid = ref(props.options.selectGroupTypeGuid ?? "");
+    const selectGroupTypeGuidOrEmptyString = ref<string>(toGuidOrNull(props.options.selectGroupTypeGuid) ?? "");
     const groupType = ref(props.options.groupType ?? "Group");
     const groups = ref(props.options.groups ?? []);
     const invokeBlockAction = useInvokeBlockAction();
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
-    const propRefs = [startDate, endDate, totalAmount, groupGuid, pledgeFrequencyValue, personAlias, account];
+    const propRefs = [startDate, endDate, totalAmount, groupGuidOrEmptyString, pledgeFrequencyValue, personAlias, account];
 
     // #endregion
 
@@ -153,10 +155,16 @@
     // #endregion
 
     watch(() => personAlias.value, async () => {
-        if (personAlias.value?.value) {
-            const result = await invokeBlockAction<ListItemBag[]>("LoadGroups", {
-                personAliasGuid: personAlias.value.value
-            });
+        const personAliasGuid = toGuidOrNull(personAlias.value?.value);
+
+        if (personAliasGuid && !areEqual(personAliasGuid, emptyGuid)) {
+            const request: {
+                personAliasGuid: Guid | null | undefined;
+            } = {
+                personAliasGuid,
+            };
+
+            const result = await invokeBlockAction<ListItemBag[]>("LoadGroups", request);
 
             if (result.isSuccess) {
                 groups.value = result.data ?? [];
@@ -171,11 +179,12 @@
         updateRefValue(startDate, props.modelValue.startDate ?? "");
         updateRefValue(endDate, props.modelValue.endDate ?? "");
         updateRefValue(totalAmount, props.modelValue.totalAmount ?? null);
-        updateRefValue(groupGuid, props.modelValue.group?.value ?? "");
+        updateRefValue(groupGuidOrEmptyString, props.modelValue.group?.value ?? "");
         updateRefValue(pledgeFrequencyValue, props.modelValue.pledgeFrequencyValue ?? null);
         updateRefValue(personAlias, props.modelValue.personAlias ?? undefined);
         updateRefValue(account, props.modelValue.account ?? {});
         updateRefValue(selectedDateRange, startDate.value || endDate.value ? { lowerValue: startDate.value, upperValue: endDate.value } : undefined);
+        // TODO Should selectGroupTypeGuidOrEmptyString, groupType, and groups be updated here?
     });
 
     // Determines which values we want to track changes on (defined in the
@@ -186,7 +195,7 @@
             attributeValues: attributeValues.value,
             totalAmount: totalAmount.value,
             group: {
-                value: groupGuid.value
+                value: groupGuidOrEmptyString.value
             },
             pledgeFrequencyValue: pledgeFrequencyValue.value,
             startDate: selectedDateRange.value?.lowerValue,

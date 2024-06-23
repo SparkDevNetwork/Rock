@@ -7,11 +7,10 @@
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
                  :name="panelName"
-                 :title="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
-                 entityTypeName="Streak Type Exclusion"
+                 entityTypeName="StreakTypeExclusion"
                  :isAuditHidden="isAuditHidden"
                  :isBadgesVisible="true"
                  :isDeleteVisible="isEditable"
@@ -89,12 +88,7 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        if (panelMode.value === DetailPanelMode.View) {
-            return "View Streak Type Exclusion";
-        }
-        else {
-            return streakTypeExclusionViewBag.value?.idKey ? "Edit Streak Type Exclusion" : "Add Streak Type Exclusion";
-        }
+        return streakTypeExclusionViewBag.value?.streakType?.text ?? "";
     });
 
     /**

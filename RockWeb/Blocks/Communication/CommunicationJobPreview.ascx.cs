@@ -255,6 +255,7 @@ namespace RockWeb.Blocks.Communication
                         }
 
                         var emailPerson = GetTargetPerson( rockContext );
+                        var originalEmail = emailPerson.Email;
 
                         // Remove the lava debug command if it is specified in the message template.
                         var message = rockEmailMessage.Message.Replace( PageConstants.LavaDebugCommand, string.Empty );
@@ -297,7 +298,7 @@ namespace RockWeb.Blocks.Communication
                         }
 
                         // Restore email to original email address
-                        emailPerson.Email = currentEmail;
+                        emailPerson.Email = originalEmail;
                         rockContext.SaveChanges( disablePrePostProcessing: DISABLE_PERSON_HISTORY );
                     }
                     catch ( Exception ex )

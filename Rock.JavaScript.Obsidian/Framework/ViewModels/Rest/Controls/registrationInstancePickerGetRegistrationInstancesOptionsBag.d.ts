@@ -26,7 +26,7 @@ import { Guid } from "@Obsidian/Types";
 /** The options that can be passed to the GetRegistrationInstances API action of the RegistrationInstancePicker control. */
 export type RegistrationInstancePickerGetRegistrationInstancesOptionsBag = {
     /** The unique identifier of the Registration Template you want the instances for. */
-    registrationTemplateGuid?: Guid | null;
+    registrationTemplateGuid: Guid;
 
     /** The security grant token to use when performing authorization checks. */
     securityGrantToken?: string | null;

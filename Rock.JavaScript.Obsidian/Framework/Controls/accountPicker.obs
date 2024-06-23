@@ -34,7 +34,7 @@
                         <span class="text-color d-block">{{ item.text }}</span>
                         <span class="text-muted text-sm" v-html="item.category || 'Top Level'"></span>
                     </div>
-                    <button title="Remove From Preview" class="btn btn-link text-color btn-xs btn-square ml-auto flex-shrink-0 text-center" @click.prevent="removePreviewItem(item.value as Guid)">
+                    <button title="Remove From Preview" class="btn btn-link text-color btn-xs btn-square ml-auto flex-shrink-0 text-center" @click.prevent="removePreviewItem(toGuidOrNull(item.value) ?? emptyGuid)">
                         <i class="fa fa-times"></i>
                     </button>
                 </div>
@@ -50,8 +50,8 @@
                     <label>
                         <input class="checkbox js-chk-search"
                                :type="multiple ? 'checkbox' : 'radio'"
-                               @change="selectSearchItem(option.value as string)"
-                               :checked="internalValues.includes(option.value as string)">
+                               @change="selectSearchItem(toGuidOrNull(option.value) ?? emptyGuid)"
+                               :checked="internalValues.includes(toGuidOrNull(option.value) ?? emptyGuid)">
                         <span class="label-text">
                             <span class="text-color d-block">{{ option.text }}</span>
                             <span class="text-muted text-sm" v-html="option.category || 'Top Level'"></span>
@@ -131,7 +131,7 @@
     import { useSecurityGrantToken } from "@Obsidian/Utility/block";
     import { useHttp } from "@Obsidian/Utility/http";
     import { Guid } from "@Obsidian/Types";
-    import { emptyGuid } from "@Obsidian/Utility/guid";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { AccountPickerGetChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/accountPickerGetChildrenOptionsBag";
     import { AccountPickerGetParentGuidsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/accountPickerGetParentGuidsOptionsBag";
     import { AccountPickerGetSearchedAccountsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/accountPickerGetSearchedAccountsOptionsBag";
@@ -180,16 +180,16 @@
     // Values based off the current model value
     const valuesAsArray = computed(() => forceToArray(props.modelValue, props.multiple));
     /** The names of the currently selected items. */
-    const selectedNames = computed((): string => valuesAsArray.value.map(v => v.text).join(", "));
+    const selectedNames = computed<string>(() => valuesAsArray.value.map(v => v.text).join(", "));
     /** The Guids of the selected items */
-    const selectedGuids = computed((): string[] => valuesAsArray.value.map(v => v.value as string));
+    const selectedGuids = computed<Guid[]>(() => valuesAsArray.value.map(v => toGuidOrNull(v.value)).filter(v => v !== null).map(v => v as Guid));
 
     // Internal values based off current selections in the picker prior to hitting "Select"
-    const internalValues = ref(valuesAsArray.value.map(v => v.value ?? ""));
+    const internalValues = ref<Guid[]>(valuesAsArray.value.map(v => toGuidOrNull(v.value)).filter(v => v !== null).map(v => v as Guid));
 
     // Watch for changes to the selected values from the parent control and update our internal values to match.
     watch([() => props.modelValue, () => props.multiple], (oldValues, newValues) => {
-        updateRefValue(internalValues, valuesAsArray.value.map(v => v.value ?? ""));
+        updateRefValue(internalValues, valuesAsArray.value.map(v => toGuidOrNull(v.value)).filter(v => v !== null).map(v => v as Guid));
 
         // If the "multiple" property changed, force update the model value.
         if (newValues[1] !== oldValues[1]) {
@@ -279,7 +279,7 @@
 
     function cancel(): void {
         showPopup.value = false;
-        internalValues.value = valuesAsArray.value.map(v => v.value ?? "");
+        internalValues.value = valuesAsArray.value.map(v => toGuidOrNull(v.value)).filter(v => v !== null).map(v => v as Guid);
     }
 
     function clear(): void {
@@ -375,8 +375,6 @@
             }
         }
 
-        //debugger;
-
         // If we're getting the root elements and we have a selected page, we also want to grab
         // all the parent pages so we can pre-load the entire hierarchy to the selected page
         if (!parentNode && !loadFullTree && internalValues.value?.length > 0) {
@@ -388,8 +386,8 @@
      * Does the actual heavy work of fetching items from the server.
      */
     async function fetchItems(parentGuid?: Guid | null, loadFullTree = false): Promise<TreeItemBag[]> {
-        const options: Partial<AccountPickerGetChildrenOptionsBag> = {
-            parentGuid: parentGuid ?? emptyGuid,
+        const options: AccountPickerGetChildrenOptionsBag = {
+            parentGuid: toGuidOrNull(parentGuid) ?? emptyGuid,
             displayPublicName: props.displayPublicName ?? false,
             includeInactive: !props.activeOnly && includeInactive.value,
             loadFullTree,
@@ -455,9 +453,9 @@
      *
      * @returns A list of GUIDs of the parent pages
      */
-    async function getParentList(guids): Promise<Guid[]> {
+    async function getParentList(guids: string[]): Promise<Guid[]> {
         const options: AccountPickerGetParentGuidsOptionsBag = {
-            guids: guids,
+            guids: guids?.map(g => toGuidOrNull(g)).filter(g => g !== null).map(g => g as Guid),
             securityGrantToken: securityGrantToken.value
         };
         const url = "/api/v2/Controls/AccountPickerGetParentGuids";
@@ -541,7 +539,7 @@
     }
 
     /** Changes internal selected values when an item in the search results is selected */
-    function selectSearchItem(guid: string): void {
+    function selectSearchItem(guid: Guid): void {
         if (props.multiple) {
             if (internalValues.value.includes(guid)) {
                 // Already exists. Remove it from list
@@ -571,14 +569,16 @@
      * @returns A list of GUIDs of the parent pages
      */
     async function getPreviewItems(): Promise<void> {
-        if (internalValues.value.length == 0) {
+        const selectedGuids: Guid[] = internalValues.value.map(v => toGuidOrNull(v)).filter(g => g !== null).map(g => g as Guid);
+
+        if (selectedGuids.length == 0) {
             previewItems.value = [];
             return;
         }
         setLoading(true);
 
         const options: AccountPickerGetPreviewItemsOptionsBag = {
-            selectedGuids: internalValues.value,
+            selectedGuids,
             displayPublicName: props.displayPublicName ?? false,
             securityGrantToken: securityGrantToken.value
         };

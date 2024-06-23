@@ -26,6 +26,7 @@ using System.Xml.Linq;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Blocks;
 using Rock.Common.Mobile.Enums;
 using Rock.Data;
 using Rock.Mobile;
@@ -421,7 +422,7 @@ namespace RockWeb.Blocks.Mobile
         /// </summary>
         /// <param name="category">The category.</param>
         /// <returns>System.String.</returns>
-        private string RemoveMobileCategoryPrefix( string category )
+        private string UpdateCategoryForMobile( string category )
         {
             if ( category.IsNullOrWhiteSpace() )
             {
@@ -431,6 +432,11 @@ namespace RockWeb.Blocks.Mobile
             if ( category.StartsWith( "Mobile >" ) )
             {
                 category = category.Replace( "Mobile >", string.Empty ).Trim();
+            }
+
+            if( category == "CMS" )
+            {
+                category = "Cms";
             }
 
             return category;
@@ -447,7 +453,7 @@ namespace RockWeb.Blocks.Mobile
             // Find all mobile block types and build the component repeater.
             //
             var blockTypes = BlockTypeCache.All()
-                .Where( t => RemoveMobileCategoryPrefix( t.Category ) == ddlBlockTypeCategory.SelectedValue )
+                .Where( t => UpdateCategoryForMobile( t.Category ) == ddlBlockTypeCategory.SelectedValue )
                 .OrderBy( t => t.Name );
 
             foreach ( var blockType in blockTypes )
@@ -673,8 +679,7 @@ namespace RockWeb.Blocks.Mobile
                         }
                     }
 
-                    var category = RemoveMobileCategoryPrefix( blockType.Category );
-
+                    var category = UpdateCategoryForMobile( blockType.Category );
 
                     if ( !categories.Contains( category ) )
                     {
@@ -689,7 +694,7 @@ namespace RockWeb.Blocks.Mobile
             ddlBlockTypeCategory.Items.Clear();
             foreach ( var c in categories.OrderBy( c => c ) )
             {
-                var text = RemoveMobileCategoryPrefix( c );
+                var text = UpdateCategoryForMobile( c );
                 ddlBlockTypeCategory.Items.Add( new ListItem( text, c ) );
             }
             ddlBlockTypeCategory.SetValue( selectedCategory );
@@ -951,6 +956,33 @@ namespace RockWeb.Blocks.Mobile
         {
             Panel pnlAdminButtons = new Panel { ID = "pnlBlockConfigButtons", CssClass = "pull-right block-config-buttons" };
 
+            var blockCompiledType = block.BlockType.GetCompiledType();
+
+            // Add in any custom actions from next generation blocks.
+            if ( typeof( IHasCustomActions ).IsAssignableFrom( blockCompiledType ) )
+            {
+                var customActionsBlock = ( IHasCustomActions ) Activator.CreateInstance( blockCompiledType );
+                var canEdit = BlockCache.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                var canAdministrate = BlockCache.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+                var page = PageCache.Get( hfPageId.Value.AsInteger() );
+
+                var configActions = customActionsBlock.GetCustomActions( canEdit, canAdministrate );
+
+                foreach ( var action in configActions )
+                {
+                    var script = $@"Obsidian.onReady(() => {{
+    System.import('@Obsidian/Templates/rockPage.js').then(module => {{
+        module.showCustomBlockAction('{action.ComponentFileUrl}', '{page.Guid}', '{block.Guid}');
+    }});
+}});";
+
+                    pnlAdminButtons.Controls.Add( new Literal
+                    {
+                        Text = $"<a href=\"#\" onclick=\"event.preventDefault(); {script.EncodeXml( true )}\" title=\"{action.Tooltip.EncodeXml( true )}\" class=\"btn btn-sm btn-default btn-square\"><i class=\"{action.IconCssClass}\"></i></a>"
+                    } );
+                }
+            }
+
             // Block Properties
             var btnBlockProperties = new Literal
             {
@@ -987,7 +1019,7 @@ namespace RockWeb.Blocks.Mobile
             pnlLayoutItem.Controls.Add( pnlAdminButtons );
 
             RockBlock blockControl = null;
-            IEnumerable<WebControl> customAdminControls = new List<WebControl>();
+            List<Control> customAdminControls = new List<Control>();
             try
             {
                 if ( !string.IsNullOrWhiteSpace( block.BlockType.Path ) )
@@ -1001,8 +1033,9 @@ namespace RockWeb.Blocks.Mobile
                     var wrapper = new RockBlockTypeWrapper
                     {
                         Page = RockPage,
-                        Block = ( Rock.Blocks.IRockBlockType ) blockEntity
+                        Block = ( Rock.Blocks.IRockBlockType ) blockEntity,
                     };
+                    wrapper.Block.RequestContext = RockPage.RequestContext;
 
                     wrapper.InitializeAsUserControl( RockPage );
                     wrapper.AppRelativeTemplateSourceDirectory = "~";
@@ -1013,7 +1046,7 @@ namespace RockWeb.Blocks.Mobile
                 blockControl.SetBlock( block.Page, block, true, true );
                 var adminControls = blockControl.GetAdministrateControls( true, true );
                 string[] baseAdminControlClasses = new string[4] { "properties", "security", "block-move", "block-delete" };
-                customAdminControls = adminControls.OfType<WebControl>().Where( a => !baseAdminControlClasses.Any( b => a.CssClass.Contains( b ) ) );
+                customAdminControls = adminControls.OfType<WebControl>().Where( a => !baseAdminControlClasses.Any( b => a.CssClass.Contains( b ) ) ).Cast<Control>().ToList();
             }
             catch ( Exception ex )
             {

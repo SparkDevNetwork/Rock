@@ -10,7 +10,7 @@
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="EntityType.AssetStorageProvider"
-                 entityTypeName="Asset Storage Provider"
+                 entityTypeName="AssetStorageProvider"
                  :isAuditHidden="false"
                  :isBadgesVisible="true"
                  :isDeleteVisible="isEditable"

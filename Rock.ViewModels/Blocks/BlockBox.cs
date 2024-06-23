@@ -22,7 +22,7 @@ namespace Rock.ViewModels.Blocks
     /// <summary>
     /// The information required to render a generic block.
     /// </summary>
-    public class BlockBox
+    public class BlockBox : Internal.IBlockBox
     {
         /// <summary>
         /// Gets or sets the error message. A non-empty value indicates that

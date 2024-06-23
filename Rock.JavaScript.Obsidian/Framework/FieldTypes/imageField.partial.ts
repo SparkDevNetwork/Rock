@@ -19,6 +19,7 @@ import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { FieldTypeBase } from "./fieldType";
+import { escapeHtml } from "@Obsidian/Utility/stringUtils";
 
 /**
  * The key names for the configuration properties available when editing the
@@ -69,7 +70,7 @@ export class ImageFieldType extends FieldTypeBase {
         }
     }
 
-    public override getHtmlValue(value: string, _configurationValues: Record<string, string>): string {
+    public override getHtmlValue(value: string, _configurationValues: Record<string, string>, isEscaped: boolean = false): string {
         try {
             const realValue = JSON.parse(value ?? "") as ListItemBag;
 
@@ -77,14 +78,24 @@ export class ImageFieldType extends FieldTypeBase {
                 return "";
             }
 
-            return `<img src="/GetImage.ashx?guid=${realValue.value}" class="img-responsive" />`;
+            const html = `<img src="/GetImage.ashx?guid=${realValue.value}" class="img-responsive" />`;
+
+            if (isEscaped) {
+                escapeHtml(html);
+            }
+
+            return html;
         }
         catch {
+            if (isEscaped) {
+                escapeHtml(value ?? "");
+            }
+
             return value ?? "";
         }
     }
 
-    public override getCondensedHtmlValue(value: string, _configurationValues: Record<string, string>): string {
+    public override getCondensedHtmlValue(value: string, _configurationValues: Record<string, string>, isEscaped: boolean = false): string {
         try {
             const realValue = JSON.parse(value ?? "") as ListItemBag;
 
@@ -92,9 +103,19 @@ export class ImageFieldType extends FieldTypeBase {
                 return "";
             }
 
-            return `<img src="/GetImage.ashx?guid=${realValue.value}&width=120" class="img-responsive" />`;
+            const html = `<img src="/GetImage.ashx?guid=${realValue.value}&width=120" class="img-responsive" />`;
+
+            if (isEscaped) {
+                return escapeHtml(html);
+            }
+
+            return html;
         }
         catch {
+            if (isEscaped) {
+                escapeHtml(value ?? "");
+            }
+
             return value ?? "";
         }
     }

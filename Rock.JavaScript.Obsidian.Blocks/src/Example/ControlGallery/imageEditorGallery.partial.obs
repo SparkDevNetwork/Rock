@@ -38,8 +38,9 @@
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import { getSfcControlImportPath } from "./utils.partial";
+    import { Guid } from "@Obsidian/Types";
 
-    const binaryFileTypeGuid = ref(BinaryFiletype.Default);
+    const binaryFileTypeGuid = ref<Guid>(BinaryFiletype.Default);
     const disabled = ref(false);
     const hideDeleteButton = ref(false);
     const value = ref(null);

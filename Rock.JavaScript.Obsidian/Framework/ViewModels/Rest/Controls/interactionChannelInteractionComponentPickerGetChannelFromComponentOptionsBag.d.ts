@@ -26,7 +26,7 @@ import { Guid } from "@Obsidian/Types";
 /** The options that can be passed to the GetRegistrationTemplateForInstance API action of the RegistrationInstancePicker control. */
 export type InteractionChannelInteractionComponentPickerGetChannelFromComponentOptionsBag = {
     /** The unique identifier of the Registration Instance you want the template for. */
-    interactionComponentGuid?: Guid | null;
+    interactionComponentGuid: Guid;
 
     /** The security grant token to use when performing authorization checks. */
     securityGrantToken?: string | null;

@@ -506,6 +506,12 @@ export const DefinedValue = {
     StructureContentEditorDefault: "09B25845-B879-4E69-87E9-003F9380B8DD",
     /** Structure Content Editor Message Notes */
     StructureContentEditorMessageNotes: "31C63FB9-1365-4EEF-851D-8AB9A188A06C",
+    /** Check-in */
+    ThemePurposeCheckin: "2BBB1A44-708E-4469-80DE-4AAE6227BEF8",
+    /** Website Legacy */
+    ThemePurposeWebsiteLegacy: "4E1477FD-B105-4E4B-99BB-E5F1B964DC94",
+    /** Website Nextgen */
+    ThemePurposeWebsiteNextgen: "B177E07F-7E07-4D7B-AFA7-9DE163797659",
     /** Every two weeks */
     TransactionFrequencyBiweekly: "72990023-0D43-4554-8D32-28461CAB8920",
     /** A Frequency of First and Fifteenth */

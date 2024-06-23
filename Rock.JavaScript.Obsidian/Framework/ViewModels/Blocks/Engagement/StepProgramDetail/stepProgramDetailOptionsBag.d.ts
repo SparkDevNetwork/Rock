@@ -25,9 +25,6 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** The additional configuration options for the Step Program Detail block. */
 export type StepProgramDetailOptionsBag = {
-    /** Gets or sets the status options. */
-    statusOptions?: ListItemBag[] | null;
-
     /** Gets or sets the trigger types. */
     triggerTypes?: ListItemBag[] | null;
 

@@ -31,7 +31,7 @@ export type SaveSignUpResponseBag = {
     saveError?: string | null;
 
     /** Gets or sets the selected location unique identifier; will only be provided if the save succeeded. */
-    selectedLocationGuid?: Guid | null;
+    selectedLocationGuid: Guid;
 
     /** Gets or sets the updated sign-up occurrence; will only be provided if the save succeeded. */
     signUpOccurrence?: SignUpOccurrenceBag | null;

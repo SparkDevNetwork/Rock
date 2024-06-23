@@ -61,7 +61,7 @@ namespace Rock.Web.UI
     /// RockPage is the base abstract class that all page templates in Rock should inherit from
     /// </summary>
     /// <seealso cref="System.Web.UI.Page" />
-    public abstract class RockPage : Page
+    public abstract class RockPage : Page, IHttpAsyncHandler
     {
         #region Private Variables
 
@@ -110,6 +110,17 @@ namespace Rock.Web.UI
         /// The service scopes that should be disposed.
         /// </summary>
         private readonly List<IServiceScope> _pageServiceScopes = new List<IServiceScope>();
+
+        /// <summary>
+        /// A list of blocks (their paths) that will force the obsidian libraries to be loaded.
+        /// This is particularly useful when a block has a settings dialog that is dependent on
+        /// obsidian, but the block itself is not.
+        /// </summary>
+        private static readonly List<string> _blocksToForceObsidianLoad = new List<string>
+        {
+            "~/Blocks/Cms/PageZoneBlocksEditor.ascx",
+            "~/Blocks/Mobile/MobilePageDetail.ascx"
+        };
 
         #endregion
 
@@ -744,7 +755,7 @@ namespace Rock.Web.UI
         protected override void OnInit( EventArgs e )
         {
             // Add configuration specific to Rock Page to the observability activity
-            if (Activity.Current != null)
+            if ( Activity.Current != null )
             {
                 Activity.Current.DisplayName = $"PAGE: {Context.Request.HttpMethod} {PageReference.Route}";
 
@@ -1319,10 +1330,8 @@ Rock.settings.initialize({{
                                         control = TemplateControl.LoadControl( block.BlockType.Path );
                                         control.ClientIDMode = ClientIDMode.AutoID;
 
-                                        // This block needs Obsidian so that it can
-                                        // open the custom settings dialogs of Obsidian
-                                        // blocks on the page.
-                                        if ( block.BlockType.Path.Equals( "~/Blocks/Cms/PageZoneBlocksEditor.ascx", StringComparison.OrdinalIgnoreCase ) )
+                                        // These blocks needs Obsidian for their settings dialog to display properly.
+                                        if ( _blocksToForceObsidianLoad.Any( blockTypePath => blockTypePath.Equals( block.BlockType.Path ) ) )
                                         {
                                             _pageNeedsObsidian = true;
                                         }
@@ -1331,6 +1340,11 @@ Rock.settings.initialize({{
                                     {
                                         var scope = CreateServiceScope();
                                         var blockEntity = ActivatorUtilities.CreateInstance( scope.ServiceProvider, block.BlockType.EntityType.GetEntityType() );
+
+                                        if ( blockEntity is RockBlockType rockBlockType )
+                                        {
+                                            rockBlockType.RockContext = scope.ServiceProvider.GetRequiredService<RockContext>();
+                                        }
 
                                         if ( blockEntity is IRockBlockType rockBlockEntity )
                                         {
@@ -1474,7 +1488,7 @@ Obsidian.onReady(() => {{
             pageGuid: '{_pageCache.Guid}',
             pageParameters: {sanitizedPageParameters.ToJson()},
             currentPerson: {currentPersonJson},
-            isAnonymousVisitor: {(isAnonymousVisitor ? "true" : "false")},
+            isAnonymousVisitor: {( isAnonymousVisitor ? "true" : "false" )},
             loginUrlWithReturnUrl: '{GetLoginUrlWithReturnUrl()}'
         }});
     }});
@@ -1555,7 +1569,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                             //_btnRestoreImpersonatedByUser.CssClass = "btn";
                             _btnRestoreImpersonatedByUser.Visible = impersonatedByUser != null;
                             _btnRestoreImpersonatedByUser.Click += _btnRestoreImpersonatedByUser_Click;
-                            _btnRestoreImpersonatedByUser.Text = $"<i class='fa-fw fa fa-unlock'></i> " + $"Restore { impersonatedByUser?.Person?.ToString()}";
+                            _btnRestoreImpersonatedByUser.Text = $"<i class='fa-fw fa fa-unlock'></i> " + $"Restore {impersonatedByUser?.Person?.ToString()}";
                             impersonatedByUserDiv.Controls.Add( _btnRestoreImpersonatedByUser );
                             adminFooter.Controls.Add( impersonatedByUserDiv );
                         }
@@ -2209,7 +2223,7 @@ Obsidian.onReady(() => {{
     System.import('@Obsidian/Templates/rockPage.js').then(module => {{
         module.initializePageTimings({{
             elementId: '{_obsidianPageTimingControlId}',
-            debugTimingViewModels: { _debugTimingViewModels.ToCamelCaseJson( false, true ) }
+            debugTimingViewModels: {_debugTimingViewModels.ToCamelCaseJson( false, true )}
         }});
     }});
 }});";
@@ -2456,7 +2470,7 @@ Obsidian.onReady(() => {{
                     }
                 }
 
-                phLoadStats.Controls.Add( new LiteralControl( $"<span class='cms-admin-footer-property'><a href='{ showTimingsUrl }'> Page Load Time: {_tsDuration.TotalSeconds:N2}s </a></span><span class='margin-l-md js-view-state-stats cms-admin-footer-property'></span> <span class='margin-l-md js-html-size-stats cms-admin-footer-property'></span>" ) );
+                phLoadStats.Controls.Add( new LiteralControl( $"<span class='cms-admin-footer-property'><a href='{showTimingsUrl}'> Page Load Time: {_tsDuration.TotalSeconds:N2}s </a></span><span class='margin-l-md js-view-state-stats cms-admin-footer-property'></span> <span class='margin-l-md js-html-size-stats cms-admin-footer-property'></span>" ) );
 
                 if ( !ClientScript.IsStartupScriptRegistered( "rock-js-view-state-size" ) )
                 {
@@ -2519,6 +2533,9 @@ Sys.Application.add_load(function () {
 
             var rockSessionGuid = Session["RockSessionId"]?.ToString().AsGuidOrNull() ?? Guid.Empty;
 
+            // Construct the page interaction data object that will be returned to the client.
+            // This object is serialized into the page script, so we must be sure to sanitize values
+            // extracted from the request header to prevent cross-site scripting (XSS) issues.
             var pageInteraction = new PageInteractionInfo
             {
                 ActionName = "View",
@@ -2529,8 +2546,8 @@ Sys.Application.add_load(function () {
                 PageRequestTimeToServe = _tsDuration.TotalSeconds,
                 UrlReferrerHostAddress = Request.UrlReferrerNormalize(),
                 UrlReferrerSearchTerms = Request.UrlReferrerSearchTerms(),
-                UserAgent = Request.UserAgent,
-                UserHostAddress = Request.UserHostAddress,
+                UserAgent = Request.UserAgent.SanitizeHtml(),
+                UserHostAddress = Request.UserHostAddress.SanitizeHtml(),
                 UserIdKey = CurrentPersonAlias?.IdKey
             };
 
@@ -2540,24 +2557,24 @@ Sys.Application.add_load(function () {
             // UserIdKey supplied to them. For a first visit, the cookie is set in this response.
             string script = @"
 Sys.Application.add_load(function () {
-const getCookieValue = (name) => {
-    return document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)')?.pop() || '';
-};
-var interactionArgs = <jsonData>;
-if (!interactionArgs.<userIdProperty>) {
-    interactionArgs.<userIdProperty> = getCookieValue('<rockVisitorCookieName>');
-}
-$.ajax({
-    url: '/api/Interactions/RegisterPageInteraction',
-    type: 'POST',
-    data: interactionArgs
-    });
+    const getCookieValue = (name) => {
+        return document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)')?.pop() || '';
+    };
+    var interactionArgs = <jsonData>;
+    if (!interactionArgs.<userIdProperty>) {
+        interactionArgs.<userIdProperty> = getCookieValue('<rockVisitorCookieName>');
+    }
+    $.ajax({
+        url: '/api/Interactions/RegisterPageInteraction',
+        type: 'POST',
+        data: interactionArgs
+        });
 });
 ";
 
             script = script.Replace( "<rockVisitorCookieName>", Rock.Personalization.RequestCookieKey.ROCK_VISITOR_KEY );
             script = script.Replace( "<jsonData>", pageInteraction.ToJson() );
-            script = script.Replace( "<userIdProperty>", nameof(pageInteraction.UserIdKey) );
+            script = script.Replace( "<userIdProperty>", nameof( pageInteraction.UserIdKey ) );
 
             ClientScript.RegisterStartupScript( this.Page.GetType(), "rock-js-register-interaction", script, true );
         }
@@ -3113,6 +3130,11 @@ $.ajax({
         /// <returns>An object that implements the <see cref="Rock.Data.IEntity"/> interface referencing the context object. </returns>
         internal Rock.Data.IEntity GetCurrentContext( EntityTypeCache entity, Dictionary<string, KeyEntity> keyEntityDictionary )
         {
+            if ( entity == null || keyEntityDictionary == null )
+            {
+                return null;
+            }
+
             if ( keyEntityDictionary.ContainsKey( entity.Name ) )
             {
                 var keyModel = keyEntityDictionary[entity.Name];
@@ -4867,6 +4889,22 @@ $.ajax({
                 }
             }
         }
+        #endregion
+
+        #region IHttpAsyncHandler Implementation
+
+        /// <inheritdoc/>
+        public IAsyncResult BeginProcessRequest( HttpContext context, AsyncCallback cb, object extraData )
+        {
+            return AsyncPageBeginProcessRequest( context, cb, extraData );
+        }
+
+        /// <inheritdoc/>
+        public void EndProcessRequest( IAsyncResult result )
+        {
+            AsyncPageEndProcessRequest( result );
+        }
+
         #endregion
     }
 

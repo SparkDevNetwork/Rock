@@ -8,6 +8,7 @@
 <script setup lang="ts">
     import { Guid } from "@Obsidian/Types";
     import { alert } from "@Obsidian/Utility/dialogs";
+    import { areEqual, emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { useHttp } from "@Obsidian/Utility/http";
     import { FollowingGetFollowingOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/followingGetFollowingOptionsBag";
     import { FollowingGetFollowingResponseBag } from "@Obsidian/ViewModels/Rest/Controls/followingGetFollowingResponseBag";
@@ -17,7 +18,7 @@
     const props = defineProps({
         /** The unique identifier of the entity type that will be followed. */
         entityTypeGuid: {
-            type: String as PropType<Guid>,
+            type: String as PropType<Guid | undefined>,
             required: false
         },
 
@@ -76,14 +77,16 @@
      * this following control.
      */
     async function getEntityFollowedState(): Promise<void> {
+        const entityTypeGuid = toGuidOrNull(props.entityTypeGuid);
+
         // If we don't have an entity then mark the state as "unknown".
-        if (!props.entityTypeGuid || !props.entityKey) {
+        if (!entityTypeGuid || areEqual(entityTypeGuid, emptyGuid) || !props.entityKey) {
             isEntityFollowed.value = null;
             return;
         }
 
         const data: FollowingGetFollowingOptionsBag = {
-            entityTypeGuid: props.entityTypeGuid,
+            entityTypeGuid,
             entityKey: props.entityKey
         };
 
@@ -106,13 +109,18 @@
             return;
         }
 
+        const entityTypeGuid = toGuidOrNull(props.entityTypeGuid);
+
         // Shouldn't really happen, but just make sure we have everything.
-        if (isEntityFollowed.value === null || !props.entityTypeGuid || !props.entityKey) {
+        if (isEntityFollowed.value === null
+            || !entityTypeGuid
+            || areEqual(entityTypeGuid, emptyGuid)
+            || !props.entityKey) {
             return;
         }
 
         const data: FollowingSetFollowingOptionsBag = {
-            entityTypeGuid: props.entityTypeGuid,
+            entityTypeGuid,
             entityKey: props.entityKey,
             isFollowing: !isEntityFollowed.value
         };

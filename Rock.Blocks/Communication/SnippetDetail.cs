@@ -15,7 +15,6 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -27,6 +26,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Communication.SnippetDetail;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Communication
@@ -54,7 +54,7 @@ namespace Rock.Blocks.Communication
 
     [Rock.SystemGuid.EntityTypeGuid( "4b445492-20e7-41e3-847a-f4d4723e9973" )]
     [Rock.SystemGuid.BlockTypeGuid( "8b0f3048-99ba-4ed1-8de6-6a34f498f556" )]
-    public class SnippetDetail : RockDetailBlockType
+    public class SnippetDetail : RockEntityDetailBlockType<Snippet, SnippetBag>
     {
         #region Keys
 
@@ -93,11 +93,10 @@ namespace Rock.Blocks.Communication
             {
                 var box = new DetailBlockBox<SnippetBag, SnippetDetailOptionsBag>();
 
-                SetBoxInitialEntityState( box, rockContext );
+                SetBoxInitialEntityState( box );
 
                 box.NavigationUrls = GetBoxNavigationUrls();
-                box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<Snippet>();
+                box.Options = GetBoxOptions( box.IsEditable );
 
                 return box;
             }
@@ -108,13 +107,12 @@ namespace Rock.Blocks.Communication
         /// or edit the entity.
         /// </summary>
         /// <param name="isEditable"><c>true</c> if the entity is editable; otherwise <c>false</c>.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>The options that provide additional details to the block.</returns>
-        private SnippetDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext )
+        private SnippetDetailOptionsBag GetBoxOptions( bool isEditable )
         {
             var options = new SnippetDetailOptionsBag();
 
-            var snippetType = GetSnippetType( rockContext );
+            var snippetType = GetSnippetType();
             options.IsAuthorizedToEdit = snippetType?.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) ?? false;
             options.IsPersonalAllowed = snippetType?.IsPersonalAllowed ?? false;
 
@@ -126,10 +124,9 @@ namespace Rock.Blocks.Communication
         /// valid after storing all the data from the client.
         /// </summary>
         /// <param name="snippet">The Snippet to be validated.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <param name="errorMessage">On <c>false</c> return, contains the error message.</param>
         /// <returns><c>true</c> if the Snippet is valid, <c>false</c> otherwise.</returns>
-        private bool ValidateSnippet( Snippet snippet, RockContext rockContext, out string errorMessage )
+        private bool ValidateSnippet( Snippet snippet, out string errorMessage )
         {
             errorMessage = null;
 
@@ -147,10 +144,9 @@ namespace Rock.Blocks.Communication
         /// ErrorMessage properties depending on the entity and permissions.
         /// </summary>
         /// <param name="box">The box to be populated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        private void SetBoxInitialEntityState( DetailBlockBox<SnippetBag, SnippetDetailOptionsBag> box, RockContext rockContext )
+        private void SetBoxInitialEntityState( DetailBlockBox<SnippetBag, SnippetDetailOptionsBag> box )
         {
-            var entity = GetInitialEntity( rockContext );
+            var entity = GetInitialEntity();
 
             if ( entity == null )
             {
@@ -158,10 +154,10 @@ namespace Rock.Blocks.Communication
                 return;
             }
 
-            var snippetType = GetSnippetType( rockContext );
+            var snippetType = GetSnippetType();
             var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) || snippetType.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
 
-            entity.LoadAttributes( rockContext );
+            entity.LoadAttributes( RockContext );
 
             if ( entity.Id != 0 )
             {
@@ -170,7 +166,6 @@ namespace Rock.Blocks.Communication
                 if ( isViewable )
                 {
                     box.Entity = GetEntityBagForView( entity );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
                     box.Entity.CanAdministrate = !entity.OwnerPersonAliasId.HasValue
                         && ( entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) || snippetType?.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) == true );
                 }
@@ -186,13 +181,14 @@ namespace Rock.Blocks.Communication
                 if ( box.IsEditable )
                 {
                     box.Entity = GetEntityBagForEdit( entity );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
                 {
                     box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( Snippet.FriendlyTypeName );
                 }
             }
+
+            PrepareDetailBox( box, entity );
         }
 
         /// <summary>
@@ -220,12 +216,8 @@ namespace Rock.Blocks.Communication
             };
         }
 
-        /// <summary>
-        /// Gets the bag for viewing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for view purposes.</param>
-        /// <returns>A <see cref="SnippetBag"/> that represents the entity.</returns>
-        private SnippetBag GetEntityBagForView( Snippet entity )
+        /// <inheritdoc/>
+        protected override SnippetBag GetEntityBagForView( Snippet entity )
         {
             if ( entity == null )
             {
@@ -239,12 +231,8 @@ namespace Rock.Blocks.Communication
             return bag;
         }
 
-        /// <summary>
-        /// Gets the bag for editing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for edit purposes.</param>
-        /// <returns>A <see cref="SnippetBag"/> that represents the entity.</returns>
-        private SnippetBag GetEntityBagForEdit( Snippet entity )
+        /// <inheritdoc/>
+        protected override SnippetBag GetEntityBagForEdit( Snippet entity )
         {
             if ( entity == null )
             {
@@ -258,50 +246,44 @@ namespace Rock.Blocks.Communication
             return bag;
         }
 
-        /// <summary>
-        /// Updates the entity from the data in the save box.
-        /// </summary>
-        /// <param name="entity">The entity to be updated.</param>
-        /// <param name="box">The box containing the information to be updated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns><c>true</c> if the box was valid and the entity was updated, <c>false</c> otherwise.</returns>
-        private bool UpdateEntityFromBox( Snippet entity, DetailBlockBox<SnippetBag, SnippetDetailOptionsBag> box, RockContext rockContext )
+        /// <inheritdoc/>
+        protected override bool UpdateEntityFromBox( Snippet entity, ValidPropertiesBox<SnippetBag> box )
         {
             if ( box.ValidProperties == null )
             {
                 return false;
             }
 
-            box.IfValidProperty( nameof( box.Entity.Category ),
-                () => entity.CategoryId = box.Entity.Category.GetEntityId<Category>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.Category ),
+                () => entity.CategoryId = box.Bag.Category.GetEntityId<Category>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.Description ),
-                () => entity.Description = box.Entity.Description );
+            box.IfValidProperty( nameof( box.Bag.Description ),
+                () => entity.Description = box.Bag.Description );
 
-            box.IfValidProperty( nameof( box.Entity.IsActive ),
-                () => entity.IsActive = box.Entity.IsActive );
+            box.IfValidProperty( nameof( box.Bag.IsActive ),
+                () => entity.IsActive = box.Bag.IsActive );
 
-            box.IfValidProperty( nameof( box.Entity.Content ),
-                () => entity.Content = box.Entity.Content );
+            box.IfValidProperty( nameof( box.Bag.Content ),
+                () => entity.Content = box.Bag.Content );
 
-            box.IfValidProperty( nameof( box.Entity.Name ),
-                () => entity.Name = box.Entity.Name );
+            box.IfValidProperty( nameof( box.Bag.Name ),
+                () => entity.Name = box.Bag.Name );
 
-            box.IfValidProperty( nameof( box.Entity.Order ),
-                () => entity.Order = box.Entity.Order );
+            box.IfValidProperty( nameof( box.Bag.Order ),
+                () => entity.Order = box.Bag.Order );
 
-            box.IfValidProperty( nameof( box.Entity.OwnerPersonAlias ),
-                () => entity.OwnerPersonAliasId = box.Entity.OwnerPersonAlias.GetEntityId<PersonAlias>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.OwnerPersonAlias ),
+                () => entity.OwnerPersonAliasId = box.Bag.OwnerPersonAlias.GetEntityId<PersonAlias>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.AttributeValues ),
+            box.IfValidProperty( nameof( box.Bag.AttributeValues ),
                 () =>
                 {
-                    entity.LoadAttributes( rockContext );
+                    entity.LoadAttributes( RockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson );
                 } );
 
-            var snippetType = GetSnippetType( rockContext );
+            var snippetType = GetSnippetType();
             if ( snippetType != null )
             {
                 entity.SnippetTypeId = snippetType.Id;
@@ -313,28 +295,22 @@ namespace Rock.Blocks.Communication
         /// <summary>
         /// Gets the snippet type.
         /// </summary>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        private SnippetType GetSnippetType( RockContext rockContext )
+        private SnippetType GetSnippetType()
         {
             if ( _snippetType == null )
             {
                 var snippetTypeGuid = GetAttributeValue( AttributeKey.SnippetType ).AsGuid();
-                _snippetType = new SnippetTypeService( rockContext ).Get( snippetTypeGuid );
+                _snippetType = new SnippetTypeService( RockContext ).Get( snippetTypeGuid );
             }
 
             return _snippetType;
         }
 
-        /// <summary>
-        /// Gets the initial entity from page parameters or creates a new entity
-        /// if page parameters requested creation.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns>The <see cref="Snippet"/> to be viewed or edited on the page.</returns>
-        private Snippet GetInitialEntity( RockContext rockContext )
+        /// <inheritdoc/>
+        protected override Snippet GetInitialEntity()
         {
-            return GetInitialEntity<Snippet, SnippetService>( rockContext, PageParameterKey.SnippetId );
+            return GetInitialEntity<Snippet, SnippetService>( RockContext, PageParameterKey.SnippetId );
         }
 
         /// <summary>
@@ -350,46 +326,9 @@ namespace Rock.Blocks.Communication
         }
 
         /// <inheritdoc/>
-        protected override string RenewSecurityGrantToken()
+        protected override bool TryGetEntityForEditAction( string idKey, out Snippet entity, out BlockActionResult error )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var entity = GetInitialEntity( rockContext );
-
-                if ( entity != null )
-                {
-                    entity.LoadAttributes( rockContext );
-                }
-
-                return GetSecurityGrantToken( entity );
-            }
-        }
-
-        /// <summary>
-        /// Gets the security grant token that will be used by UI controls on
-        /// this block to ensure they have the proper permissions.
-        /// </summary>
-        /// <returns>A string that represents the security grant token.</string>
-        private string GetSecurityGrantToken( Snippet entity )
-        {
-            var securityGrant = new Rock.Security.SecurityGrant();
-
-            securityGrant.AddRulesForAttributes( entity, RequestContext.CurrentPerson );
-
-            return securityGrant.ToToken();
-        }
-
-        /// <summary>
-        /// Attempts to load an entity to be used for an edit action.
-        /// </summary>
-        /// <param name="idKey">The identifier key of the entity to load.</param>
-        /// <param name="rockContext">The database context to load the entity from.</param>
-        /// <param name="entity">Contains the entity that was loaded when <c>true</c> is returned.</param>
-        /// <param name="error">Contains the action error result when <c>false</c> is returned.</param>
-        /// <returns><c>true</c> if the entity was loaded and passed security checks.</returns>
-        private bool TryGetEntityForEditAction( string idKey, RockContext rockContext, out Snippet entity, out BlockActionResult error )
-        {
-            var entityService = new SnippetService( rockContext );
+            var entityService = new SnippetService( RockContext );
             error = null;
 
             // Determine if we are editing an existing entity or creating a new one.
@@ -418,7 +357,7 @@ namespace Rock.Blocks.Communication
                 return false;
             }
 
-            var snippetType = GetSnippetType( rockContext );
+            var snippetType = GetSnippetType();
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) && snippetType?.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) == false )
             {
                 error = ActionBadRequest( $"Not authorized to edit ${Snippet.FriendlyTypeName}." );
@@ -441,22 +380,20 @@ namespace Rock.Blocks.Communication
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                entity.LoadAttributes( rockContext );
-
-                var box = new DetailBlockBox<SnippetBag, SnippetDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity )
-                };
-
-                return ActionOk( box );
+                return actionError;
             }
+
+            entity.LoadAttributes( RockContext );
+
+            var bag = GetEntityBagForEdit( entity );
+
+            return ActionOk( new ValidPropertiesBox<SnippetBag>
+            {
+                Bag = bag,
+                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
+            } );
         }
 
         /// <summary>
@@ -465,51 +402,54 @@ namespace Rock.Blocks.Communication
         /// <param name="box">The box that contains all the information required to save.</param>
         /// <returns>A new entity bag to be used when returning to view mode, or the URL to redirect to after creating a new entity.</returns>
         [BlockAction]
-        public BlockActionResult Save( DetailBlockBox<SnippetBag, SnippetDetailOptionsBag> box )
+        public BlockActionResult Save( ValidPropertiesBox<SnippetBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new SnippetService( RockContext );
+
+            if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )
             {
-                var entityService = new SnippetService( rockContext );
-
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                // Ensure everything is valid before saving.
-                if ( !ValidateSnippet( entity, rockContext, out var validationMessage ) )
-                {
-                    return ActionBadRequest( validationMessage );
-                }
-
-                var isNew = entity.Id == 0;
-
-                rockContext.WrapTransaction( () =>
-                {
-                    rockContext.SaveChanges();
-                    entity.SaveAttributeValues( rockContext );
-                } );
-
-                if ( isNew )
-                {
-                    return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
-                    {
-                        [PageParameterKey.SnippetId] = entity.IdKey
-                    } ) );
-                }
-
-                // Ensure navigation properties will work now.
-                entity = entityService.Get( entity.Id );
-                entity.LoadAttributes( rockContext );
-
-                return ActionOk( GetEntityBagForView( entity ) );
+                return actionError;
             }
+
+            // Update the entity instance from the information in the bag.
+            if ( !UpdateEntityFromBox( entity, box ) )
+            {
+                return ActionBadRequest( "Invalid data." );
+            }
+
+            // Ensure everything is valid before saving.
+            if ( !ValidateSnippet( entity, out var validationMessage ) )
+            {
+                return ActionBadRequest( validationMessage );
+            }
+
+            var isNew = entity.Id == 0;
+
+            RockContext.WrapTransaction( () =>
+            {
+                RockContext.SaveChanges();
+                entity.SaveAttributeValues( RockContext );
+            } );
+
+            if ( isNew )
+            {
+                return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
+                {
+                    [PageParameterKey.SnippetId] = entity.IdKey
+                } ) );
+            }
+
+            // Ensure navigation properties will work now.
+            entity = entityService.Get( entity.Id );
+            entity.LoadAttributes( RockContext );
+
+            var bag = GetEntityBagForEdit( entity );
+
+            return ActionOk( new ValidPropertiesBox<SnippetBag>
+            {
+                Bag = bag,
+                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
+            } );
         }
 
         /// <summary>
@@ -520,79 +460,22 @@ namespace Rock.Blocks.Communication
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new SnippetService( RockContext );
+
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                var entityService = new SnippetService( rockContext );
-
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                return ActionOk( this.GetParentPageUrl() );
+                return actionError;
             }
-        }
 
-        /// <summary>
-        /// Refreshes the list of attributes that can be displayed for editing
-        /// purposes based on any modified values on the entity.
-        /// </summary>
-        /// <param name="box">The box that contains all the information about the entity being edited.</param>
-        /// <returns>A box that contains the entity and attribute information.</returns>
-        [BlockAction]
-        public BlockActionResult RefreshAttributes( DetailBlockBox<SnippetBag, SnippetDetailOptionsBag> box )
-        {
-            using ( var rockContext = new RockContext() )
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
             {
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                // Reload attributes based on the new property values.
-                entity.LoadAttributes( rockContext );
-
-                var refreshedBox = new DetailBlockBox<SnippetBag, SnippetDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity )
-                };
-
-                var oldAttributeGuids = box.Entity.Attributes.Values.Select( a => a.AttributeGuid ).ToList();
-                var newAttributeGuids = refreshedBox.Entity.Attributes.Values.Select( a => a.AttributeGuid );
-
-                // If the attributes haven't changed then return a 204 status code.
-                if ( oldAttributeGuids.SequenceEqual( newAttributeGuids ) )
-                {
-                    return ActionStatusCode( System.Net.HttpStatusCode.NoContent );
-                }
-
-                // Replace any values for attributes that haven't changed with
-                // the value sent by the client. This ensures any unsaved attribute
-                // value changes are not lost.
-                foreach ( var kvp in refreshedBox.Entity.Attributes )
-                {
-                    if ( oldAttributeGuids.Contains( kvp.Value.AttributeGuid ) )
-                    {
-                        refreshedBox.Entity.AttributeValues[kvp.Key] = box.Entity.AttributeValues[kvp.Key];
-                    }
-                }
-
-                return ActionOk( refreshedBox );
+                return ActionBadRequest( errorMessage );
             }
+
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
+
+            return ActionOk( this.GetParentPageUrl() );
         }
 
         #endregion

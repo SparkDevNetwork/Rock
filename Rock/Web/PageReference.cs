@@ -436,8 +436,15 @@ namespace Rock.Web
                 }
             }
 
-            // add base path to url -- Fixed bug #84
-            url = ( HttpContext.Current.Request.ApplicationPath == "/" ) ? "/" + url : HttpContext.Current.Request.ApplicationPath + "/" + url;
+            if ( HttpContext.Current != null )
+            {
+                // add base path to url -- Fixed bug #84
+                url = ( HttpContext.Current.Request.ApplicationPath == "/" ) ? "/" + url : HttpContext.Current.Request.ApplicationPath + "/" + url;
+            }
+            else
+            {
+                url = "/" + url;
+            }
 
             return url;
         }

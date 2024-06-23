@@ -17,7 +17,7 @@
         <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
         <Panel title="Adaptations" :hasCollapse="true" :isDrawerOpen="true">
             <SectionHeader title="Adaptations"
-                       description="The messages below are personalized for the configured segments and are in order by the priority." />
+                           description="The messages below are personalized for the configured segments and are in order by the priority." />
             <Grid :definition="props.modelValue?.adaptationsGridDefinition ?? undefined"
                   :data="adaptationsGridDataSource"
                   :entityTypeGuid="EntityType.AdaptiveMessageAdaptation"
@@ -38,7 +38,7 @@
                         visiblePriority="lg">
                     <template #format="{ row }">
                         <span class='label label-info margin-r-sm' v-for="segment in row.segments">
-                        {{ segment }}
+                            {{ segment }}
                         </span>
                     </template>
 
@@ -53,15 +53,15 @@
                             visiblePriority="lg" />
 
                 <NumberColumn name="views"
-                            title="Views"
-                            field="views"
-                            visiblePriority="sm" />
+                              title="Views"
+                              field="views"
+                              visiblePriority="sm" />
 
                 <EditColumn :onClick="onEditAdaptation" />
                 <DeleteColumn :onClick="onDeleteClick" />
             </Grid>
         </Panel>
-</fieldset>
+    </fieldset>
 </template>
 
 <script setup lang="ts">
@@ -78,11 +78,13 @@
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { NavigationUrlKey } from "./types.partial";
     import Grid, { TextColumn, DeleteColumn, ReorderColumn, EditColumn } from "@Obsidian/Controls/grid";
-import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { Guid } from "@Obsidian/Types";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
-    modelValue: {
-    type: Object as PropType<AdaptiveMessageBag | null>,
+        modelValue: {
+            type: Object as PropType<AdaptiveMessageBag | null>,
             required: false
         },
 
@@ -161,12 +163,12 @@ import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
         }
     }
 
-     /**
+    /**
      * Called when a row has been selected by the individual.
      *
      * @param key The key of the row that was selected.
      */
-     function onEditAdaptation(key: string): void {
+    function onEditAdaptation(key: string): void {
         if (config.navigationUrls?.[NavigationUrlKey.AdaptationDetailPage]) {
             window.location.href = config.navigationUrls[NavigationUrlKey.AdaptationDetailPage].replace("((Key))", key);
         }
@@ -177,11 +179,15 @@ import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
      *
      * @param key The key of the row that was selected.
      */
-     async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<void> {
-        const data = {
+    async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<void> {
+        const data: {
+            key: string | null | undefined;
+            guid: Guid;
+            beforeGuid: Guid | null | undefined;
+        } = {
             key: props.modelValue?.idKey,
-            guid: item.guid,
-            beforeGuid: beforeItem?.guid ?? null
+            guid: toGuidOrNull(item?.guid as string) ?? emptyGuid,
+            beforeGuid: toGuidOrNull(beforeItem?.guid as string)
         };
 
         const result = await invokeBlockAction("ReorderAdaptation", data);
@@ -196,7 +202,7 @@ import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
      * Called when a row's delete button has been clicked by the individual. This
      * happens only if they have confirmed the delete action.
      */
-     async function onDeleteClick(key: string): Promise<void> {
+    async function onDeleteClick(key: string): Promise<void> {
         const result = await invokeBlockAction<string>("DeleteAdaptation", {
             key
         });

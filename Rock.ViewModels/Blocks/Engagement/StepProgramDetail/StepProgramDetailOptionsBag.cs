@@ -40,13 +40,5 @@ namespace Rock.ViewModels.Blocks.Engagement.StepProgramDetail
         /// The trigger types.
         /// </value>
         public List<ListItemBag> TriggerTypes { get; set; }
-
-        /// <summary>
-        /// Gets or sets the status options.
-        /// </summary>
-        /// <value>
-        /// The status options.
-        /// </value>
-        public List<ListItemBag> StatusOptions { get; set; }
     }
 }

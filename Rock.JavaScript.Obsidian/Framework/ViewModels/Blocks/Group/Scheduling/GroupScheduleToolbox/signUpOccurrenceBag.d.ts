@@ -54,7 +54,7 @@ export type SignUpOccurrenceBag = {
     peopleScheduledWithoutLocationCount: number;
 
     /** Gets or sets the occurrence schedule unique identifier. */
-    scheduleGuid?: Guid | null;
+    scheduleGuid: Guid;
 
     /** Gets or sets the occurrence schedule name. */
     scheduleName?: string | null;

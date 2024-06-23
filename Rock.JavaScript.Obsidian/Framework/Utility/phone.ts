@@ -39,7 +39,7 @@ async function fetchPhoneNumberConfiguration(): Promise<PhoneNumberBoxGetConfigu
  * Fetch the configuration for phone numbers, SMS option, and possible phone number formats for different countries
  */
 async function fetchPhoneNumberAndSmsConfiguration(): Promise<PhoneNumberBoxGetConfigurationResultsBag> {
-    const options: Partial<PhoneNumberBoxGetConfigurationOptionsBag> = {
+    const options: PhoneNumberBoxGetConfigurationOptionsBag = {
         showSmsOptIn: true
     };
     const result = await http.post<PhoneNumberBoxGetConfigurationResultsBag>("/api/v2/Controls/PhoneNumberBoxGetConfiguration", undefined, options);

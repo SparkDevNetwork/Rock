@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,6 +16,7 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
 
@@ -74,4 +75,22 @@ namespace Rock.Model
         [MaxLength( 100 )]
         public string PublicName { get; set; }
     }
+
+    #region Entity Configuration
+
+    /// <summary>
+    /// AuthScope Configuration Class
+    /// </summary>
+    public partial class AuthScopeConfiguration : EntityTypeConfiguration<AuthScope>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AuthScopeConfiguration"/> class.
+        /// </summary>
+        public AuthScopeConfiguration()
+        {
+            // Empty constructor. This is required to tell EF that this model exists.
+        }
+    }
+
+    #endregion Entity Configuration
 }

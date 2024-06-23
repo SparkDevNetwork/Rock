@@ -7,7 +7,6 @@
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
                  :name="panelName"
-                 :title="title"
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
@@ -100,10 +99,6 @@
      */
     const panelName = computed((): string => {
         return streakTypeViewBag.value?.name ?? "";
-    });
-
-    const title = computed((): string => {
-        return streakTypeViewBag.value?.name ?? "Streak Type";
     });
 
     /**

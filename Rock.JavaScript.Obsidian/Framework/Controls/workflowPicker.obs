@@ -31,6 +31,7 @@
     import { useHttp } from "@Obsidian/Utility/http";
     import { WorkflowPickerGetWorkflowTypeForWorkflowOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/workflowPickerGetWorkflowTypeForWorkflowOptionsBag";
     import { useSecurityGrantToken } from "@Obsidian/Utility/block";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { deepEqual } from "@Obsidian/Utility/util";
 
     const props = defineProps({
@@ -63,8 +64,8 @@
     const securityGrantToken = useSecurityGrantToken();
     const http = useHttp();
 
-    const internalTypeGuid = computed(() => {
-        return (props.workflowTypeGuid || internalWorkflowType.value?.value) ?? "";
+    const internalTypeGuid = computed<Guid | null>(() => {
+        return toGuidOrNull(props.workflowTypeGuid) ?? toGuidOrNull(internalWorkflowType.value?.value);
     });
     let skipWatcher = false;
 
@@ -103,7 +104,7 @@
 
     async function getChannelFromComponent(): Promise<void> {
         const options: WorkflowPickerGetWorkflowTypeForWorkflowOptionsBag = {
-            workflowGuid: props.modelValue?.value,
+            workflowGuid: toGuidOrNull(props.modelValue?.value) ?? emptyGuid,
             securityGrantToken: securityGrantToken.value
         };
 

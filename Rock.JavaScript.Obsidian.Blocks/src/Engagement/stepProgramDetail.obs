@@ -93,6 +93,7 @@
     import { StepProgramDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepProgramDetail/stepProgramDetailOptionsBag";
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
     import { confirmDelete, showSecurity } from "@Obsidian/Utility/dialogs";
+    import { Guid } from "@Obsidian/Types";
 
     const config = useConfigurationValues<DetailBlockBox<StepProgramBag, StepProgramDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -108,7 +109,7 @@
     const submitForm = ref(false);
     const resetKey = ref("");
     const showAuditDetailsModal = ref(false);
-    const entityTypeGuid = EntityType.StepProgram;
+    const entityTypeGuid: Guid = EntityType.StepProgram;
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
@@ -122,6 +123,8 @@
         "isActive",
         "name",
         "defaultListView",
+        "statuses",
+        "workflowTriggers"
     ];
 
     const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(stepProgramEditBag, validProperties, invokeBlockAction), undefined, true);
