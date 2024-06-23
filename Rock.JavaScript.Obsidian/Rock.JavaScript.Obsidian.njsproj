@@ -423,6 +423,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Reporting\ServiceMetricsEntry\" />
     <Folder Include="Framework\ViewModels\Blocks\Reporting\VolunteerGenerosityAnalysis\" />
     <Folder Include="Framework\ViewModels\Blocks\Security\" />
+    <Folder Include="Framework\ViewModels\Blocks\Security\AuthClientList\" />
     <Folder Include="Framework\ViewModels\Blocks\Security\ForgotUserName\" />
     <Folder Include="Framework\ViewModels\Blocks\Security\ConfirmAccount\" />
     <Folder Include="Framework\ViewModels\Blocks\Security\RestKeyDetail\" />
@@ -1121,6 +1122,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\VolunteerGenerosityAnalysis\volunteerGenerositySetupBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\VolunteerGenerosityAnalysis\volunteerGivingDataBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Reporting\VolunteerGenerosityAnalysis\volunteerGroupDataBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\AuthClientList\authClientListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\ConfirmAccount\confirmAccountAccountConfirmationViewOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\ConfirmAccount\confirmAccountActionNamesBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\ConfirmAccount\confirmAccountAlertControlBag.d.ts" />
