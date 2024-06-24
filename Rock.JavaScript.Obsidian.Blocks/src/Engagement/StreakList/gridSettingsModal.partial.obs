@@ -1,0 +1,92 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Settings"
+           saveText="Save"
+           @save="onSave">
+        <SectionHeader title="Filters" />
+
+        <div class="row">
+            <div class="col-md-4">
+                <TextBox v-model="firstName"
+                         label="FirstName" />
+            </div>
+            <div class="col-md-4">
+                <TextBox v-model="lastName"
+                         label="LastName" />
+            </div>
+            <div class="col-md-4">
+                <DateRangePicker label="Date Range"
+                                 v-model="dateRange" />
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import DateRangePicker from "@Obsidian/Controls/dateRangePicker.obs";
+    import { ref, PropType, watch } from "vue";
+    import { GridSettingsOptions } from "./types.partial";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GridSettingsOptions): void;
+        (e: "update:visible", value: boolean): void;
+        (e: "close"): void;
+    }>();
+
+    const firstName = ref(props.modelValue.firstName ?? "");
+    const lastName = ref(props.modelValue.lastName ?? "");
+    const dateRange = ref<DateRangeParts>({
+        lowerValue: props.modelValue.enrollmentDateLower,
+        upperValue: props.modelValue.enrollmentDateUpper,
+    });
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+
+    function onSave(): void {
+        const value: GridSettingsOptions = {
+            firstName: firstName.value,
+            lastName: lastName.value,
+            enrollmentDateLower: dateRange.value.lowerValue,
+            enrollmentDateUpper: dateRange.value.upperValue
+        };
+
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
+
+        isVisible.value = false;
+    }
+
+    watch(() => props.modelValue, () => {
+        firstName.value = props.modelValue.firstName ?? "";
+        lastName.value = props.modelValue.lastName ?? "";
+        dateRange.value = {
+            lowerValue: props.modelValue.enrollmentDateLower,
+            upperValue: props.modelValue.enrollmentDateUpper,
+        };
+    });
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            emit("close");
+        }
+    });
+</script>
