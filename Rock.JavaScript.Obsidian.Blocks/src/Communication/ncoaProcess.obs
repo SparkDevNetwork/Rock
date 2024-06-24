@@ -13,7 +13,7 @@
             <div class="d-flex flex-row justify-content-around flex-wrap">
                 <RockForm class="well col-md-5 col-sm-10 col-xs-12 d-flex flex-column justify-content-between" style="height: 650px;" @submit="exportFile" :hideErrors="true">
                     <div>
-                        <h3>Step 1: NCOA Export Tool</h3>
+                        <h3>STEP 1: NCOA Export Tool</h3>
                         <div class="ml-2">
                             <p class="text-muted text-wrap">Select a data vew to filter your export.</p>
                             <div class="col-lg-9 col-md-11 col-sm-8 col-xs-12 p-0">
@@ -61,7 +61,7 @@
                             </div>
                             <CheckBox v-model="isMark48Month"
                                 label="Mark 48 Month Move as Previous Address"
-                                help="Mark moves in the 19-48 month catagory as a previous address." />
+                                help="Mark moves in the 19-48 month category as a previous address." />
                             <CheckBox v-model="isMarkInvalidAddresses"
                                 label="Mark Invalid Addresses as Previous Address"
                                 help="Mark Invalid Addresses as Previous Addresses" />
