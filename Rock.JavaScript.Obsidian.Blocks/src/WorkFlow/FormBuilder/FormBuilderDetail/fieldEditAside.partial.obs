@@ -83,6 +83,7 @@
     import RangeSlider from "@Obsidian/Controls/rangeSlider.obs";
     import InlineSwitch from "@Obsidian/Controls/switch.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { getFilterGroupTitleHtml } from "@Obsidian/Core/Reporting/fieldFilter";
     import { ValidationResult, ValidationRule } from "@Obsidian/ValidationRules";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { FormError } from "@Obsidian/Utility/form";
@@ -93,7 +94,7 @@
     import { FieldFilterRuleBag } from "@Obsidian/ViewModels/Reporting/fieldFilterRuleBag";
     import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
     import { FormField, FormFieldType } from "../Shared/types.partial";
-    import { getFilterGroupTitle, getFilterRuleDescription, timeoutAsync, useFormSources } from "./utils.partial";
+    import { getFilterRuleDescription, timeoutAsync, useFormSources } from "./utils.partial";
     import { Guid } from "@Obsidian/Types";
 
     /**
@@ -258,7 +259,7 @@
     /** Contains the "Show/Hide any/all" title of the field visibility rule. */
     const conditionalTitle = computed((): string => {
         return visibilityRule.value
-            ? getFilterGroupTitle(visibilityRule.value)
+            ? getFilterGroupTitleHtml(visibilityRule.value)
             : "";
     });
 

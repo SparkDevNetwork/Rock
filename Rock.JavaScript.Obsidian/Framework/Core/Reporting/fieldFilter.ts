@@ -28,7 +28,7 @@ import { areEqual } from "@Obsidian/Utility/guid";
  *
  * @returns An HTML formatted string with the comparison type text.
  */
-export function getFilterGroupTitle(group: FieldFilterGroupBag): string {
+export function getFilterGroupTitleHtml(group: FieldFilterGroupBag): string {
     switch (group.expressionType) {
         case FilterExpressionType.GroupAll:
             return "<strong>Show</strong> when <strong>all</strong> of the following match:";

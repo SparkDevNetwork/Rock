@@ -17,9 +17,7 @@
 
 import { inject, provide } from "vue";
 import { getFieldType } from "@Obsidian/Utility/fieldTypes";
-import { FilterExpressionType } from "@Obsidian/Core/Reporting/filterExpressionType";
 import { areEqual } from "@Obsidian/Utility/guid";
-import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterGroupBag";
 import { FieldFilterRuleBag } from "@Obsidian/ViewModels/Reporting/fieldFilterRuleBag";
 import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
 import { FormField } from "../Shared/types.partial";
@@ -44,33 +42,6 @@ export function provideFormSources(options: FormValueSources): void {
  */
 export function useFormSources(): FormValueSources {
     return inject<FormValueSources>(sourcesKey) ?? {};
-}
-
-/**
- * Get the friendly formatted title of a filter group. This returns an HTML
- * string.
- *
- * @param group The group that contains the comparison type information.
- *
- * @returns An HTML formatted string with the comparison type text.
- */
-export function getFilterGroupTitle(group: FieldFilterGroupBag): string {
-    switch (group.expressionType) {
-        case FilterExpressionType.GroupAll:
-            return "<strong>Show</strong> when <strong>all</strong> of the following match:";
-
-        case FilterExpressionType.GroupAny:
-            return "<strong>Show</strong> when <strong>any</strong> of the following match:";
-
-        case FilterExpressionType.GroupAllFalse:
-            return "<strong>Hide</strong> when <strong>all</strong> of the following match:";
-
-        case FilterExpressionType.GroupAnyFalse:
-            return "<strong>Hide</strong> when <strong>any</strong> of the following match:";
-
-        default:
-            return "";
-    }
 }
 
 /**

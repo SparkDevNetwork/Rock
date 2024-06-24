@@ -194,11 +194,12 @@
     import FieldConfigRectangle from "./fieldConfigRectangle.partial.obs";
     import { Component, computed, PropType, ref, watch } from "vue";
     import { LabelUndoManager } from "./undoManager.partial";
-    import { createEmptyRuleset, getFilterGroupTitle, getFilterRuleDescription } from "./utils.partial";
+    import { createEmptyRuleset } from "./utils.partial";
     import Modal from "@Obsidian/Controls/modal.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import FieldFilterEditor from "@Obsidian/Controls/fieldFilterEditor.obs";
+    import { getFilterGroupTitleHtml, getFilterRuleDescription } from "@Obsidian/Core/Reporting/fieldFilter";
     import { LabelFieldType } from "@Obsidian/Enums/CheckIn/Labels/labelFieldType";
     import { TextFieldSubType } from "@Obsidian/Enums/CheckIn/Labels/textFieldSubType";
     import { areEqual } from "@Obsidian/Utility/guid";
@@ -335,7 +336,7 @@
     /** Contains the "Show/Hide any/all" title of the field visibility rule. */
     const conditionalTitle = computed((): string => {
         return visibilityRule.value
-            ? getFilterGroupTitle(visibilityRule.value)
+            ? getFilterGroupTitleHtml(visibilityRule.value)
             : "";
     });
 

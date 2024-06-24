@@ -42,7 +42,7 @@
     import { CheckInLabelBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInLabelDetail/checkInLabelBag";
     import { CheckInLabelDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInLabelDetail/checkInLabelDetailOptionsBag";
     import { LabelType, LabelTypeDescription } from "@Obsidian/Enums/CheckIn/Labels/labelType";
-    import { getFilterGroupTitle, getFilterRuleDescription } from "@Obsidian/Core/Reporting/fieldFilter";
+    import { getFilterGroupTitleHtml, getFilterRuleDescription } from "@Obsidian/Core/Reporting/fieldFilter";
     import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
     import { escapeHtml } from "@Obsidian/Utility/stringUtils";
 
@@ -139,7 +139,7 @@
             return undefined;
         }
 
-        let html = getFilterGroupTitle(props.modelValue.conditionalPrintCriteria);
+        let html = getFilterGroupTitleHtml(props.modelValue.conditionalPrintCriteria);
 
         html += "<ul>";
 
