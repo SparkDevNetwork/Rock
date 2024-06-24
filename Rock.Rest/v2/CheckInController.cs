@@ -19,10 +19,13 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Mvc;
 
 using Rock.CheckIn.v2;
+using Rock.CheckIn.v2.Labels;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -302,7 +305,7 @@ namespace Rock.Rest.v2.Controllers
         [Route( "SaveAttendance" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( SaveAttendanceResponseBag ) )]
         [SystemGuid.RestActionGuid( "7ef059cb-99ba-4cf1-b7d5-3723eb320a99" )]
-        public IActionResult PostSaveAttendance( [FromBody] SaveAttendanceOptionsBag options )
+        public async Task<IActionResult> PostSaveAttendance( [FromBody] SaveAttendanceOptionsBag options )
         {
             var configuration = GroupTypeCache.Get( options.TemplateGuid, _rockContext )?.GetCheckInConfiguration( _rockContext );
             DeviceCache kiosk = null;
@@ -329,6 +332,9 @@ namespace Rock.Rest.v2.Controllers
                 var sessionRequest = new AttendanceSessionRequest( options.Session );
 
                 var result = session.SaveAttendance( sessionRequest, options.Requests, kiosk, RockRequestContext.ClientInformation.IpAddress );
+                var cts = new CancellationTokenSource( 5000 );
+
+                await director.LabelProvider.RenderAndPrintLabelsAsync( result, kiosk, new LabelPrintProvider(), cts.Token );
 
                 return Ok( new SaveAttendanceResponseBag
                 {

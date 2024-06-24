@@ -20,6 +20,8 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 using Rock.CheckIn.v2.Labels;
 using Rock.CheckIn.v2.Labels.Renderers;
@@ -62,6 +64,52 @@ namespace Rock.CheckIn.v2
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Renders all the labels for check-in operation result. This will
+        /// also add any print errors to <paramref name="checkInResult"/>.
+        /// </summary>
+        /// <param name="checkInResult">The attendance records to render labels for.</param>
+        /// <param name="kiosk">The kiosk requesting the print or <see langword="null"/> if not known.</param>
+        /// <param name="printProvider">The instance that will handle sending data to the physical printers.</param>
+        /// <param name="cancellationToken">A token that will be triggered if the operation should be aborted.</param>
+        /// <returns>A list of <see cref="RenderedLabel"/> objects that should be printed on the client.</returns>
+        public async Task<List<RenderedLabel>> RenderAndPrintLabelsAsync( CheckInResultBag checkInResult, DeviceCache kiosk, LabelPrintProvider printProvider, CancellationToken cancellationToken = default )
+        {
+            var labels = RenderLabels( checkInResult.Attendances, kiosk );
+
+            // Add any error messages from labels that failed to render.
+            var errorMessages = labels
+                .Where( l => l.Error.IsNotNullOrWhiteSpace() )
+                .Select( l => l.Error );
+
+            checkInResult.Messages.AddRange( errorMessages );
+
+            // Print the labels and wait for completion.
+            var labelsToPrint = labels
+                .Where( l => l.Error.IsNullOrWhiteSpace() && l.Data != null && l.PrintFrom == PrintFrom.Server );
+
+            try
+            {
+                var printErrorMessages = await printProvider.PrintLabelsAsync( labelsToPrint, cancellationToken );
+
+                // Add any print failure messages.
+                if ( printErrorMessages != null && printErrorMessages.Any() )
+                {
+                    checkInResult.Messages.AddRange( printErrorMessages );
+                }
+            }
+            catch ( OperationCanceledException )
+            {
+                checkInResult.Messages.Add( "Timeout waiting for labels to print." );
+            }
+
+            // Return the labels that should be printed on the client.
+            return labels.Where( l => l.Error.IsNullOrWhiteSpace()
+                && l.Data != null
+                && l.PrintFrom == PrintFrom.Client )
+                .ToList();
+        }
 
         /// <summary>
         /// Renders all the labels for the set of attendance records given.
@@ -284,7 +332,8 @@ namespace Rock.CheckIn.v2
 
                 return new RenderedLabel
                 {
-                    Data = memoryStream.ToArray()
+                    Data = memoryStream.ToArray(),
+                    PrintTo = printer
                 };
             }
         }
