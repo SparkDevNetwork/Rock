@@ -14,10 +14,10 @@
 
 /* ======================= CORE  ======================*/
 @import 'core/page-admin';          //TODO polish, parts of the bar is overflowing to the left 
-@import 'core/grid';                // Fully Polish
+@import 'core/layout-grid';         // Fully Polish
+@import 'core/print';                // Fully Polish
 
 /* ==================== COMPONENTS ==================== */
-@import 'components/typography';    // Fully Polish
 @import 'components/alerts';        // Fully Polish (but if we decided to add more color variable, go in and change the color.)
 @import 'components/buttons';       // TODO polish
 @import 'components/button-groups'; // Rely Heavily on _buttons.scss
@@ -31,4 +31,5 @@
 @import 'components/modals';        // ** work in progress ** 
 @import 'components/tables';        // ** work in progress **
 @import 'components/pagination';    // Fully Polish
-@import 'components/forms.scss';    // ** work in progress ** When color-mix() use, go in the file there's comments at where it is need ot be use.
+@import 'components/forms.scss';    // When color-mix() use, go in the file there's comments at where it is need ot be use.
+@import 'components/input-groups'   // Fully Polish. need to move the pickers to the appropriat file

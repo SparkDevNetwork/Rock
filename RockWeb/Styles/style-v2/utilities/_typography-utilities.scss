@@ -43,6 +43,18 @@
     white-space:    nowrap;
 }
 
+.control-label {
+    margin-bottom: 4px;
+    font-size: var(--font-size-small);
+    line-height: 18px;
+  }
+  
+  .control-label-sm {
+    display: block;
+    font-size: var(--font-size-xsmall);
+    color: var(--color-interface-medium);
+  }
+
 .text-hide {
     font: 0/0 a;
     color: transparent;

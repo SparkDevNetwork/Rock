@@ -7,7 +7,7 @@
 //  + Form contorl
 //  + Form group, help block, form-inline
 //  + Check box, radio
-//  + Form control sizing
+//  + Sizing Form control 
 //  + Feedback states
 //  + Horizontal Form
 // =============================================================
@@ -22,27 +22,29 @@ fieldset {
 }
 
 legend {
-  display: block;
-  width: 100%;
-  padding: 0;
-  margin-bottom: var(--spacing-large);
-  font-size: calc(var(--font-size-small) * 1.5);
-  line-height: inherit;
-  color: var(--color-interface-strong);
-  border: 0;
-  border-bottom: 1px solid var(--color-interface-soft);
+  display:    block;
+  width:      100%;
+  padding:    0;
+  margin-bottom:  var(--spacing-large);
+  font-size:      calc(var(--font-size-small) * 1.5);
+  line-height:    inherit;
+  border:         0;
+  border-bottom:  1px solid var(--color-interface-soft);
+  font-weight:    var(--font-weight-light);
+  color:          var(--color-interface-strongest);
+  border-width:   0;
 }
 
 label {
   display: inline-block;
   max-width: 100%; // Force IE8 to wrap long content (see https://github.com/twbs/bootstrap/issues/13141)
   margin-bottom: var(--spacing-tiny);
-  font-weight: var(--font-weight-bold);
+  font-weight: var(--font-weight-semibold);
 }
 
-
-// Normalize form controls
-
+textarea {
+  resize: vertical;
+}
 
 input[type="search"] {
   // Override content-box in Normalize (* isn't specific enough)
@@ -88,7 +90,18 @@ input[type="checkbox"]:focus {
   outline-offset: -2px;
 }
 
-// Adjust output element
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
 output {
   display: block;
   padding-top: (var(--spacing-small) + 1);
@@ -155,6 +168,60 @@ output {
   }
 }
 
+.form-control-group{
+  &,
+  & > .form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-medium);
+    margin-right: var(--spacing-medium);
+    align-items: center;
+  }
+  > .row,
+  > .form-row {
+    width: 100%;
+  }
+
+  > .form-row::before,
+  > .form-row::after {
+    display: none;
+  }
+
+  // Add spacing so time "to" is centered on Request Filter Detail Block
+  .form-control-static + .timepicker-input {
+    margin-left: 35px;
+  }
+
+  // Nested form controls get too much margin
+  .input-group > .form-control {
+    margin-right: 0;
+  }
+
+  // Defined Value w/ Add
+  &.controls-row {
+    flex-wrap: nowrap;
+    margin-right: 0;
+  }
+
+  & > span {
+    display: inline-flex;
+    align-items: center;
+    font-size: var(--font-size-regular);
+    line-height: var(--line-height-normal);
+    color: var(--color-interface-medium);
+  }
+
+  .form-group-auto & {
+    display: -ms-flexbox;
+    display: flex;
+
+    .form-control {
+      -ms-flex: 1 1 0;
+      flex: 1 1 0;
+    }
+  }
+}
+
 .form-control-static {
   min-height: (var(--spacing-large) + var(--font-size-small));
   // Size it appropriately next to real form controls
@@ -170,7 +237,6 @@ output {
   }
 }
 
-// Feedback icon (requires .glyphicon classes)
 .form-control-feedback {
   position: absolute;
   top: 0;
@@ -183,6 +249,19 @@ output {
   text-align: center;
   pointer-events: none;
 }
+
+.form-control.ssn-part {
+  &.ssn-area {
+    width: 50px;
+  }
+  &.ssn-group {
+    width: 45px;
+  }
+  &.ssn-serial {
+    width: 60px;
+  }
+}
+
 // ===================== END FORM CONTROL =====================
 
 
@@ -239,7 +318,12 @@ select.form-control {
 
 // ======================= FORM GROUP, HELP BLOCK, FORM-INLINE =======================
 .form-group {
-  margin-bottom: var(--spacing-medium);
+  margin-bottom:  var(--spacing-medium);
+  font-size:      var(--font-size-regular);
+  line-height:    var(--line-height-normal);
+  .form-group {
+    margin-top:   var(--spacing-medium)
+  }
 }
 
 .help-block {
@@ -317,17 +401,68 @@ select.form-control {
       top: 0;
     }
   }
+
+  .control-wrapper {
+    display: inline-table;
+    width: auto;
+    vertical-align: middle;
+  }
+
+  .date-range-picker .input-group {
+    margin-bottom: 0;
+  }
 }
 
+.form-inline-all {
+  .form-control {
+    display: inline-block;
+    width: auto;
+    vertical-align: middle;
+  }
+
+  .form-control-static {
+    display: inline-block;
+  }
+}
+
+.form-group.captcha {
+  iframe {
+    border: 0;
+  }
+
+  &.has-error {
+    iframe {
+      border: 1px solid var(--color-danger-strong);
+      border-radius: 4px;
+    }
+  }
+}
+
+a.help {
+  margin-left: 6px;
+  color: var(--color-interface-stronger);
+  outline: 0;
+}
+
+a.warning {
+  margin-left: 6px;
+  color: var(--color-warning-strong);
+  outline: 0;
+}
+
+.help-message {
+  font-weight: 400;
+}
 // ===================== END FORM GROUP, HELP BLOCK, FORM-INLINE =====================
+
 
 // ======================= CHECKBOXESAND RADIOS =======================
 .radio,
 .checkbox {
-  position: relative;
-  display: block;
-  margin-top: 10px;
-  margin-bottom: 10px;
+  position:       relative;
+  display:        block;
+  margin-top:     10px;
+  margin-bottom:  10px;
 
   // These are used on elements with <label> descendants
   &.disabled,
@@ -338,13 +473,14 @@ select.form-control {
   }
 
   label {
-    min-height: var(--spacing-large); // Ensure the input doesn't jump when there is no text
-    padding-left: 20px;
-    margin-bottom: 0;
-    font-weight: 400;
-    cursor: pointer;
+    min-height:     var(--spacing-large); // Ensure the input doesn't jump when there is no text
+    padding-left:   20px;
+    margin-bottom:  0;
+    font-weight:    400;
+    cursor:         pointer;
   }
 }
+
 .radio input[type="radio"],
 .radio-inline input[type="radio"],
 .checkbox input[type="checkbox"],
@@ -615,9 +751,6 @@ select.form-control {
 // ======================= HORIZONTAL FORMS =======================
 .form-horizontal {
 
-  // Consistent vertical alignment of radios and checkboxes
-  //
-  // Labels also get some reset styles, but that is scoped to a media query below.
   .radio,
   .checkbox,
   .radio-inline,
@@ -626,22 +759,27 @@ select.form-control {
     margin-top: 0;
     margin-bottom: 0;
   }
-  // Account for padding we're adding to ensure the alignment and of help text
-  // and other content below items
+
   .radio,
   .checkbox {
     min-height: (var(--spacing-large) + (var(--spacing-small) + 1));
   }
 
-  // Make form groups behave like rows
   .form-group {
     margin-right: calc($grid-gutter-width / -2);
     margin-left: calc($grid-gutter-width/ -2);
+
+    .form-control-group,
+    .form-control {
+      float: left;
+    }
+    
     &:before,
     &:after {
       display: table;
       content: " ";
     }
+
     &:after {
       clear: both;
     }
@@ -687,3 +825,6 @@ select.form-control {
   }
 }
 // ===================== END HORIZONTAL FORMS =====================
+
+
+
