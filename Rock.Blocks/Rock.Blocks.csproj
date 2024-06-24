@@ -133,6 +133,7 @@
     <Compile Include="Cms\PageRouteList.cs" />
     <Compile Include="Core\PersonFollowingList.cs" />
     <Compile Include="Communication\NcoaProcess.cs" />
+    <Compile Include="Security\AuthClientList.cs" />
     <Compile Include="Core\PersonSignalList.cs" />
     <Compile Include="Security\RestKeyList.cs" />
     <Compile Include="Crm\PersonMergeRequestList.cs" />

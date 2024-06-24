@@ -125,6 +125,7 @@
     <Compile Include="Blocks\Communication\NcoaProcess\NcoaProcessBag.cs" />
     <Compile Include="Blocks\Communication\NcoaProcess\NcoaProcessSavedSettingsBag.cs" />
     <Compile Include="Blocks\Communication\NcoaProcess\NcoaProcessPersonAddressBag.cs" />
+    <Compile Include="Blocks\Security\AuthClientList\AuthClientListOptionsBag.cs" />
     <Compile Include="Blocks\Core\PersonSignalList\PersonSignalBag.cs" />
     <Compile Include="Blocks\Core\PersonSignalList\PersonSignalListOptionsBag.cs" />
     <Compile Include="Blocks\Core\RestActionList\RestActionListOptionsBag.cs" />
