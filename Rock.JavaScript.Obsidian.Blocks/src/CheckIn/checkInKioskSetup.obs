@@ -178,6 +178,7 @@
     import { SavedCheckInConfigurationBag } from "@Obsidian/ViewModels/CheckIn/savedCheckInConfigurationBag";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import { SavedCheckInConfigurationSettingsBag } from "@Obsidian/ViewModels/CheckIn/savedCheckInConfigurationSettingsBag";
+    import { SavedKioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/savedKioskConfigurationBag";
 
     type TemporaryConfig = {
         timestamp?: number;
@@ -349,11 +350,25 @@
      *
      * @param configuration The kiosk configuration.
      */
-    function configureKiosk(configuration: KioskConfigurationBag, theme: string): void {
-        localStorage.setItem("Rock.CheckIn.CheckInKiosk.Configuration", JSON.stringify(configuration));
+    async function configureKiosk(configuration: KioskConfigurationBag, theme: string): Promise<void> {
+        if (!configuration.template || !configuration.kiosk || !configuration.areas) {
+            await alert("Invalid configuraiton options.");
+            return;
+        }
+
+        const savedConfig: SavedKioskConfigurationBag = {
+            campusGuid: campusGuid.value,
+            templateGuid: configuration.template.guid,
+            kioskGuid: configuration.kiosk.guid,
+            areaGuids: configuration.areas.map(a => a.guid)
+        };
+
+        localStorage.setItem("Rock.CheckIn.CheckInKiosk.Configuration", JSON.stringify(savedConfig));
+
         let url = blockConfiguration.kioskPageRoute;
 
         if (!url) {
+            await alert("Block has not been fully configured.");
             return;
         }
 
@@ -476,7 +491,7 @@
                 throw new Error(result.errorMessage ?? "Unexpected error trying to find kiosk configuraiton.");
             }
 
-            configureKiosk(result.data, theme.value);
+            await configureKiosk(result.data, theme.value);
         }
         catch (error) {
             errorMessage.value = error instanceof Error
@@ -628,7 +643,7 @@
      *
      * @param config The saved configuration item that was selected.
      */
-    function onSavedConfigurationClick(config: SavedCheckInConfigurationBag): void {
+    async function onSavedConfigurationClick(config: SavedCheckInConfigurationBag): Promise<void> {
         const kiosk = selectedKiosk.value;
         const template = blockConfiguration.templates
             ?.find(a => areEqual(a.guid, config.settings?.templateGuid));
@@ -650,13 +665,13 @@
             areas: areas
         };
 
-        configureKiosk(configuration, themeName);
+        await configureKiosk(configuration, themeName);
     }
 
     /**
      * Handles the click event for the Next button.
      */
-    function onNextClick(): void {
+    async function onNextClick(): Promise<void> {
         const kiosk = selectedKiosk.value;
         const template = blockConfiguration.templates
             ?.find(a => areEqual(a.guid, templateGuid.value));
@@ -678,7 +693,7 @@
             areas: areas
         };
 
-        configureKiosk(configuration, theme.value);
+        await configureKiosk(configuration, theme.value);
     }
 
     // #endregion

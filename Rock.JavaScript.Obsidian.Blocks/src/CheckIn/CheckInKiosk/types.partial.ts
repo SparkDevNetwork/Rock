@@ -61,6 +61,11 @@ export type CheckInKioskOptionsBag = {
  */
 export enum Screen {
     /**
+     * No screen shown, this is used while initially loading.
+     */
+    None,
+
+    /**
      * The main screen that will be visible when people want to start a new
      * check-in session.
      */
@@ -143,15 +148,9 @@ export enum Screen {
  */
 export enum AdminScreen {
     /**
-     * The initial screen that allows the kiosk to be configured in various
-     * ways for use.
-     */
-    Configuration = 100,
-
-    /**
      * The screen that will be displayed when an administrator wants to login.
      */
-    Login,
+    Login = 100,
 }
 
 /**

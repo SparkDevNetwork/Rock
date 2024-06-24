@@ -98,22 +98,24 @@
     import WelcomeScreen from "./CheckInKiosk/welcomeScreen.partial.obs";
     import ContentTransition from "./CheckInKiosk/contentTransition.partial.obs";
     import { computed, ref, shallowRef } from "vue";
-    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { provideKioskState } from "./CheckInKiosk/utils.partial";
     import { AdminScreen, KioskButton, Screen } from "./CheckInKiosk/types.partial";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
     import { CheckInSession } from "./CheckInKiosk/checkInSession.partial";
     import { useHttp } from "@Obsidian/Utility/http";
+    import { SavedKioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/savedKioskConfigurationBag";
 
     const blockConfiguration = useConfigurationValues<Record<string, unknown>>();
+    const invokeBlockAction = useInvokeBlockAction();
     const http = useHttp();
 
     const kioskState: Record<string, unknown> = {};
 
     provideKioskState(kioskState);
 
-    const configuration = ref(readConfigurationFromLocalStorage());
-    const currentScreen = ref<Screen | AdminScreen>(Screen.Welcome);
+    const configuration = ref<KioskConfigurationBag>({});
+    const currentScreen = ref<Screen | AdminScreen>(Screen.None);
     const currentSession = shallowRef<CheckInSession>(new CheckInSession(configuration.value, http));
 
     const hasNavigation = computed((): boolean => {
@@ -126,23 +128,36 @@
 
     const currentScreenActions = ref<KioskButton[]>([]);
 
-    function readConfigurationFromLocalStorage(): KioskConfigurationBag {
+    /**
+     * Reads configuration from local storage. This is set by the setup block
+     * before redirecting to us. If everything is valid then show the welcome
+     * screen. Otherwise redirect to the setup page.
+     */
+    async function readConfigurationFromLocalStorage(): Promise<void> {
         const json = localStorage.getItem("Rock.CheckIn.CheckInKiosk.Configuration");
 
         if (!json) {
-            redirectToSetupPage();
-            return {};
+            return redirectToSetupPage();
         }
 
         try {
-            const config = JSON.parse(json);
+            const savedConfig = JSON.parse(json) as SavedKioskConfigurationBag;
+            const data = {
+                savedConfiguration: savedConfig
+            };
 
-            // TODO: Validate configuration.
-            return config;
+            const result = await invokeBlockAction<KioskConfigurationBag>("GetKioskConfiguration", data);
+
+            if (result.isSuccess && result.data) {
+                configuration.value = result.data;
+                navigateToScreen(Screen.Welcome);
+            }
+            else {
+                redirectToSetupPage();
+            }
         }
         catch {
             redirectToSetupPage();
-            return {};
         }
     }
 
@@ -157,7 +172,6 @@
     function navigateToScreen(screen: Screen, preserveSession: boolean = false): void {
         currentScreenActions.value = [];
         currentScreen.value = screen;
-        console.log("navigateToScreen", screen);
 
         if (!preserveSession && screen === Screen.Welcome) {
             currentSession.value = new CheckInSession(configuration.value, http);
@@ -187,6 +201,6 @@
         //primaryContent.value = !primaryContent.value;
     }
 
-    // Start a new session to begin check-in.
-    currentSession.value = new CheckInSession(configuration.value, http);
+    // Read our check-in configuration and then start up.
+    readConfigurationFromLocalStorage();
 </script>

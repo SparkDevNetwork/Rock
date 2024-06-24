@@ -166,7 +166,7 @@ namespace Rock.Blocks.CheckIn
         /// </summary>
         /// <param name="kiosk">The kiosk device.</param>
         /// <returns>A new instance of <see cref="KioskBag"/>.</returns>
-        private WebKioskBag GetKioskBag( DeviceCache kiosk )
+        internal static WebKioskBag GetKioskBag( DeviceCache kiosk )
         {
             var bag = new WebKioskBag
             {

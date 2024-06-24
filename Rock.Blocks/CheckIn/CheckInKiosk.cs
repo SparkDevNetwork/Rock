@@ -22,9 +22,11 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.CheckIn.v2;
 using Rock.Model;
 using Rock.Utility.ExtensionMethods;
 using Rock.ViewModels.Blocks.CheckIn.CheckInKiosk;
+using Rock.ViewModels.CheckIn;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.CheckIn
@@ -80,9 +82,65 @@ namespace Rock.Blocks.CheckIn
             };
         }
 
+        /// <summary>
+        /// Gets the automatic configuration for the specified kiosk.
+        /// </summary>
+        /// <param name="director">The check-in director for this operation.</param>
+        /// <param name="kiosk">The kiosk whose configuration should be retrieved.</param>
+        /// <returns>An instance of <see cref="KioskConfigurationBag"/> if the kiosk was valid; otherwise <c>null</c>.</returns>
+        private KioskConfigurationBag GetKioskConfiguration( CheckInDirector director, SavedKioskConfigurationBag savedConfiguration )
+        {
+            var kiosk = DeviceCache.Get( savedConfiguration.KioskGuid, RockContext );
+            var templateGroupType = GroupTypeCache.Get( savedConfiguration.TemplateGuid, RockContext );
+
+            if ( kiosk == null || templateGroupType == null )
+            {
+                return null;
+            }
+
+            var areas = director.GetKioskAreas( kiosk );
+            var template = director.GetConfigurationTemplateBag( templateGroupType );
+
+            if ( template == null )
+            {
+                return null;
+            }
+
+            return new KioskConfigurationBag
+            {
+                Kiosk = CheckInKioskSetup.GetKioskBag( kiosk ),
+                Areas = areas.Select( a => new CheckInItemBag
+                {
+                    Guid = a.Guid,
+                    Name = a.Name
+                } ).ToList(),
+                Template = template
+            };
+        }
+
         #endregion
 
         #region Block Actions
+
+        /// <summary>
+        /// Gets the kiosk configuration to use given the saved configuration
+        /// options.
+        /// </summary>
+        /// <param name="savedConfiguration">The options the kiosk was configured with.</param>
+        /// <returns>The full configuration data for the kiosk.</returns>
+        [BlockAction]
+        public BlockActionResult GetKioskConfiguration( SavedKioskConfigurationBag savedConfiguration )
+        {
+            var director = new CheckInDirector( RockContext );
+            var configuration = GetKioskConfiguration( director, savedConfiguration );
+
+            if ( configuration == null )
+            {
+                return ActionBadRequest( "Configuration is not valid." );
+            }
+
+            return ActionOk( configuration );
+        }
 
         /// <summary>
         /// Gets the promotion list defined for the template and kiosk.
