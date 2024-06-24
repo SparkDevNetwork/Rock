@@ -25,8 +25,6 @@ import { zeroPad } from "@Obsidian/Utility/numberUtils";
 import { Guid } from "@Obsidian/Types";
 import { areEqual } from "@Obsidian/Utility/guid";
 import { IRockCheckInNative } from "./types.partial";
-import { CheckInSession } from "./checkInSession.partial";
-import { KioskCheckInMode } from "@Obsidian/Enums/CheckIn/kioskCheckInMode";
 
 /** The unique key for the kiosk state in Vue. */
 const kioskStateKey = Symbol("KioskState");
@@ -250,33 +248,6 @@ export function isGuidInList(needle: Guid | Guid[] | null | undefined, haystack:
     }
 
     return haystack.some(h => areEqual(h, needle));
-}
-
-/**
- * If the check-in session is in family mode and a family schedule is being
- * processed then append the schedule name to the text.
- *
- * @param text The text that will have the schedule name appended.
- * @param session The check-in session instance.
- *
- * @returns A new formatted string.
- */
-export function appendScheduleName(text: string, session: CheckInSession): string {
-    if (session.configuration.template?.kioskCheckInType === KioskCheckInMode.Individual) {
-        return text;
-    }
-
-    if (!session.possibleSchedules || !session.currentFamilyScheduleGuid) {
-        return text;
-    }
-
-    const schedule = session.possibleSchedules.find(s => areEqual(s.guid, session.currentFamilyScheduleGuid));
-
-    if (!schedule) {
-        return text;
-    }
-
-    return `${text} @ ${schedule.name}`;
 }
 
 /**

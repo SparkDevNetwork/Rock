@@ -832,6 +832,32 @@ export class CheckInSession {
 
     // #region Public Functions
 
+    /**
+     * If the check-in session is in family mode and a family schedule is being
+     * processed then append the schedule name to the text.
+     *
+     * @param text The text that will have the schedule name appended.
+     *
+     * @returns A new formatted string.
+     */
+    public appendScheduleName(text: string): string {
+        if (this.configuration.template?.kioskCheckInType === KioskCheckInMode.Individual) {
+            return text;
+        }
+
+        if (!this.possibleSchedules || !this.currentFamilyScheduleGuid) {
+            return text;
+        }
+
+        const schedule = this.possibleSchedules.find(s => areEqual(s.guid, this.currentFamilyScheduleGuid));
+
+        if (!schedule) {
+            return text;
+        }
+
+        return `${text} @ ${schedule.name}`;
+    }
+
     /** The current family that is being worked with for this session. */
     public getCurrentFamily(): FamilyBag | undefined {
         return this.families?.find(f => areEqual(f.guid, this.currentFamilyGuid));

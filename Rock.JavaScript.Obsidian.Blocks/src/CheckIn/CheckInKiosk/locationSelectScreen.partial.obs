@@ -23,7 +23,7 @@
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { CheckInSession } from "./checkInSession.partial";
-    import { appendScheduleName, UnexpectedErrorMessage } from "./utils.partial";
+    import { UnexpectedErrorMessage } from "./utils.partial";
     import { KioskButton } from "./types.partial";
     import { LocationOpportunityBag } from "@Obsidian/ViewModels/CheckIn/locationOpportunityBag";
 
@@ -53,7 +53,7 @@
     // #region Computed Values
 
     const title = computed((): string => {
-        return appendScheduleName(props.session.selectedGroup?.name ?? "Location", props.session);
+        return props.session.appendScheduleName(props.session.selectedGroup?.name ?? "Location");
     });
 
     const subtitle = computed((): string => {
