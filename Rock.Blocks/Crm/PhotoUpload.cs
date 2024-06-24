@@ -115,7 +115,7 @@ namespace Rock.Blocks.Crm
                     {
                         isStaffMemberDisabled = false;
 
-                        if ( staffGroup != null && staffGroup.Members.Where( m => m.PersonId == member.Id ).Count() > 0 )
+                        if ( staffGroup != null && staffGroup.Members.Where( m => m.PersonId == member.Person.Id ).Count() > 0 )
                         {
                             isStaffMemberDisabled = true;
                         }
