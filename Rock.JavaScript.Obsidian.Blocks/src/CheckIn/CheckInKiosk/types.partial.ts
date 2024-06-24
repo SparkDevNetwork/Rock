@@ -49,6 +49,8 @@ export type CheckInKioskOptionsBag = {
     themes?: ListItemBag[] | null;
 
     savedConfigurations?: SavedCheckInConfigurationBag[] | null;
+
+    kioskPageRoute?: string | null;
 };
 
 // #endregion
