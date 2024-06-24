@@ -65,6 +65,7 @@
     <Compile Include="Cms\AdaptiveMessageList.cs" />
     <Compile Include="Cms\PageRouteList.cs" />
     <Compile Include="Communication\NcoaProcess.cs" />
+    <Compile Include="Security\AuthScopeList.cs" />
     <Compile Include="Security\AuthClientList.cs" />
     <Compile Include="Core\PersonSignalList.cs" />
     <Compile Include="Crm\PersonDetail\GivingConfiguration.cs" />

@@ -53,6 +53,7 @@
     <Content Include="src\Cms\pageRouteList.obs" />
     <Content Include="src\Core\auditList.obs" />
     <Content Include="src\Communication\systemCommunicationList.obs" />
+    <Content Include="src\Security\authScopeList.obs" />
     <Content Include="src\Security\authClientList.obs" />
     <Content Include="src\Core\binaryFileDetail.obs" />
     <Content Include="src\Core\BinaryFileDetail\editPanel.partial.obs" />
@@ -330,6 +331,7 @@
     <Folder Include="src\Communication\SystemPhoneNumberDetail\" />
     <Folder Include="src\Core\" />
     <Folder Include="src\Core\AssetStorageProviderDetail\" />
+    <Folder Include="src\Security\AuthScopeList\" />
     <Folder Include="src\Security\AuthClientList\" />
     <Folder Include="src\Core\BinaryFileDetail\" />
     <Folder Include="src\Core\CampusDetail\" />
@@ -494,6 +496,7 @@
     <TypeScriptCompile Include="src\Communication\SnippetTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Communication\SystemPhoneNumberDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\attributes.ts" />
+    <TypeScriptCompile Include="src\Security\AuthScopeList\types.partial.ts" />
     <TypeScriptCompile Include="src\Security\AuthClientList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\BinaryFileDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\campusDetail.ts" />
