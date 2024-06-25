@@ -2,7 +2,7 @@
 <template>
     <div class="grid-obsidian" :class="{ 'grid-sticky': isStickyHeader, 'grid-light': light, 'grid-bordered': !light, 'grid-striped': !light, 'grid-hover': !light }">
         <div class="grid-heading">
-            <FilterHeaderRow v-if="!light"
+            <FilterHeaderRow v-if="!light && !hasCustomHeader"
                              v-model:quickFilterValue="quickFilterValue"
                              :grid="gridState"
                              :title="title"
@@ -14,6 +14,7 @@
                              :isCountMessageVisible="isCountMessageVisible"
                              :isSearchVisible="isSearchVisible" />
 
+            <slot name="customHeaderRow" />
             <slot name="gridHeaderPrepend" />
 
             <ColumnHeaderRow :columns="visibleColumnDefinitions"
@@ -968,6 +969,8 @@
     const skeletonRowCount = computed((): number => {
         return Math.min(50, props.expectedRowCount ?? 50);
     });
+
+    const hasCustomHeader = computed((): boolean => !!slots.customHeaderRow);
 
     /**
      * Contains `true` if the merge template action should be visible.

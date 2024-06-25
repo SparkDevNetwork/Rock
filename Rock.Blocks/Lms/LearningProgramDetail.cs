@@ -24,7 +24,9 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Enums.Lms;
 using Rock.Model;
+using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Lms.LearningProgramDetail;
@@ -72,13 +74,13 @@ namespace Rock.Blocks.Lms
         Description = "The page that will show the courses for the learning program.",
         Key = AttributeKey.CoursesPage, IsRequired = false, Order = 4 )]
 
-    [LinkedPage( "Completions Page",
-        Description = "The page that will show the course completions for the learning program.",
-        Key = AttributeKey.CompletionsPage, IsRequired = false, Order = 5 )]
+    [LinkedPage( "Completion Detail Page",
+        Description = "The page that will show the program completion detail.",
+        Key = AttributeKey.CompletionDetailPage, IsRequired = false, Order = 5 )]
 
-    [LinkedPage( "Semesters Page",
-        Description = "The page that will show the semesters for the learning program.",
-        Key = AttributeKey.SemestersPage, IsRequired = false, Order = 6 )]
+    [LinkedPage( "Semester Detail Page",
+        Description = "The page that will show the semester detail.",
+        Key = AttributeKey.SemesterDetailPage, IsRequired = false, Order = 6 )]
 
 
     #endregion
@@ -92,10 +94,10 @@ namespace Rock.Blocks.Lms
         private static class AttributeKey
         {
             public const string Category = "Category";
-            public const string CompletionsPage = "CompletionsPage";
+            public const string CompletionDetailPage = "CompletionDetailPage";
             public const string CoursesPage = "CoursesPage";
             public const string DisplayMode = "DisplayMode";
-            public const string SemestersPage = "SemestersPage";
+            public const string SemesterDetailPage = "SemesterDetailPage";
             public const string ShowKPIs = "ShowKPIs";
         }
 
@@ -114,8 +116,8 @@ namespace Rock.Blocks.Lms
         {
             public const string ParentPage = "ParentPage";
             public const string CoursesPage = "CoursesPage";
-            public const string CompletionsPage = "CompletionsPage";
-            public const string SemestersPage = "SemestersPage";
+            public const string CompletionDetailPage = "CompletionDetailPage";
+            public const string SemesterDetailPage = "SemesterDetailPage";
         }
 
         #endregion Keys
@@ -463,8 +465,8 @@ namespace Rock.Blocks.Lms
             {
                 [NavigationUrlKey.ParentPage] = this.GetParentPageUrl(),
                 [NavigationUrlKey.CoursesPage] = this.GetLinkedPageUrl( AttributeKey.CoursesPage, queryParams ),
-                [NavigationUrlKey.CompletionsPage] = this.GetLinkedPageUrl( AttributeKey.CompletionsPage, queryParams ),
-                [NavigationUrlKey.SemestersPage] = this.GetLinkedPageUrl( AttributeKey.SemestersPage, queryParams )
+                [NavigationUrlKey.CompletionDetailPage] = this.GetLinkedPageUrl( AttributeKey.CompletionDetailPage, queryParams ),
+                [NavigationUrlKey.SemesterDetailPage] = this.GetLinkedPageUrl( AttributeKey.SemesterDetailPage, queryParams )
             };
         }
 
@@ -698,6 +700,94 @@ namespace Rock.Blocks.Lms
         }
 
         /// <summary>
+        /// Deletes the specified entity.
+        /// </summary>
+        /// <param name="key">The identifier of the entity to be deleted.</param>
+        /// <returns>An empty result that indicates if the operation succeeded.</returns>
+        [BlockAction]
+        public BlockActionResult DeleteSemester( string key )
+        {
+            var entityService = new LearningSemesterService( RockContext );
+            var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( entity == null )
+            {
+                return ActionBadRequest( $"{LearningSemester.FriendlyTypeName} not found." );
+            }
+
+            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to delete ${LearningSemester.FriendlyTypeName}." );
+            }
+
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
+
+            return ActionOk();
+        }
+
+        /// <summary>
+        /// Gets a Grid of the <see cref="LearningProgramCompletion"/> records for the LearningProgram specified in the PageParameters.
+        /// If no LearningProgramId page parameter exists an empty list is returned.
+        /// </summary>
+        /// <returns>The GridDataBag of LearningProgramCompletion records.</returns>
+        [BlockAction]
+        public BlockActionResult GetCompletions()
+        {
+            var entityKey = PageParameter( PageParameterKey.LearningProgramId );
+            var program = new LearningProgramService( RockContext ).GetSelect( entityKey, p => new { p.ConfigurationMode, p.Id } );
+
+            var queryable = program == null ? new List<LearningProgramCompletion>().AsQueryable() : GetCompletionListQueryable( program.Id );
+
+            var grid = new GridBuilder<LearningProgramCompletion>()
+                 .WithBlock( this )
+                 .AddTextField( "idKey", a => a.IdKey )
+                 .AddPersonField( "individual", a => a.PersonAlias?.Person )
+                 .AddTextField( "campus", a => a.CampusId.HasValue ? CampusCache.Get( a.CampusId.Value )?.Name : null )
+                 .AddDateTimeField( "startDate", a => a.StartDate )
+                 .AddDateTimeField( "endDate", a => a.EndDate )
+                 .AddField( "status", a => a.CompletionStatus );
+
+            if ( program.ConfigurationMode == ConfigurationMode.AcademicCalendar )
+            {
+                grid.AddTextField( "semester", a => a.LearningProgram.LearningSemesters?
+                    .FirstOrDefault( s =>
+                        s.StartDate >= a.StartDate &&
+                        s.EndDate <= a.EndDate
+                    )?.Name
+                );
+            }
+
+            return ActionOk( grid.Build( queryable ) );
+        }
+
+        /// <summary>
+        /// Gets a Grid of the <see cref="LearningSemester"/> records for the LearningProgram specified in the PageParameters.
+        /// If no LearningProgramId page parameter exists an empty list is returned.
+        /// </summary>
+        /// <returns>The GridDataBag of LearningSemester records.</returns>
+        [BlockAction]
+        public BlockActionResult GetSemesters()
+        {
+            var gridBuilder = new GridBuilder<LearningSemester>()
+                .WithBlock( this )
+                .AddTextField( "idKey", a => a.IdKey )
+                .AddTextField( "name", a => a.Name )
+                .AddDateTimeField( "startDate", a => a.StartDate )
+                .AddDateTimeField( "endDate", a => a.EndDate )
+                .AddDateTimeField( "closeDate", a => a.EnrollmentCloseDate )
+                .AddField( "classCount", a => a.LearningClasses.Count() );
+
+            var semestersQueryable = GetSemesterListQueryable();
+            return ActionOk( gridBuilder.Build( semestersQueryable ) );
+        }
+
+        /// <summary>
         /// Refreshes the list of attributes that can be displayed for editing
         /// purposes based on any modified values on the entity.
         /// </summary>
@@ -749,6 +839,42 @@ namespace Rock.Blocks.Lms
 
                 return ActionOk( refreshedBox );
             }
+        }
+
+        /// <summary>
+        /// Gets the Learning Program Completion Queryable for completions grid.
+        /// </summary>
+        /// <returns>A Queryable of LearningProgramCompletions.</returns>
+        private IQueryable<LearningProgramCompletion> GetCompletionListQueryable( int learningProgramId )
+        {
+            var queryable = new LearningProgramCompletionService( RockContext )
+                .Queryable()
+                .Include( a => a.PersonAlias )
+                .Include( a => a.PersonAlias.Person )
+                .Include( a => a.LearningProgram )
+                .Where( a => a.LearningProgramId == learningProgramId );
+
+            return queryable;
+        }
+
+        /// <summary>
+        /// Gets the Learning Smester Queryable for semesters grid.
+        /// </summary>
+        /// <returns>A Queryable of LearningSemester.</returns>
+        private IQueryable<LearningSemester> GetSemesterListQueryable()
+        {
+            var entityId = RequestContext.PageParameterAsId( PageParameterKey.LearningProgramId );
+
+            // If a Learning Program has been specified then get the semesters for that.
+            if ( entityId > 0 )
+            {
+                return new LearningSemesterService( RockContext )
+                    .Queryable()
+                    .Include( a => a.LearningClasses )
+                    .Where( a => a.LearningProgramId == entityId );
+            }
+
+            return new List<LearningSemester>().AsQueryable();
         }
 
         #endregion
