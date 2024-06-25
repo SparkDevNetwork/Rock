@@ -255,7 +255,7 @@ namespace Rock.Blocks.WebFarm
                 {
                     var metrics = node.WebFarmNodeMetrics.ConvertAll( x => new MetricViewModel() { MetricValue = x.MetricValue, MetricValueDateTime = x.MetricValueDateTime } );
                     var samples = WebFarmNodeMetricService.CalculateMetricSamples( metrics, _cpuMetricSampleCount, ChartMinDate, ChartMaxDate );
-                    node.ChartHtml = GetChartHtml( samples );
+                    node.ChartData = GetChartData( samples );
                 }
             }
 
@@ -338,10 +338,10 @@ namespace Rock.Blocks.WebFarm
         }
 
         /// <summary>
-        /// Gets the chart HTML.
+        /// Gets the chart data.
         /// </summary>
         /// <returns></returns>
-        private string GetChartHtml( decimal[] samples )
+        private string GetChartData( decimal[] samples )
         {
             if ( samples == null || samples.Length <= 1 )
             {
@@ -349,21 +349,20 @@ namespace Rock.Blocks.WebFarm
             }
 
             return string.Format(
-@"<canvas
-    class='js-chart''
-    data-chart='{{
-        ""labels"": [{0}],
-        ""datasets"": [{{
-            ""data"": [{1}],
-            ""backgroundColor"": ""rgba(128, 205, 241, 0.25)"",
-            ""borderColor"": ""#009CE3"",
-            ""borderWidth"": 2,
-            ""pointRadius"": 0,
-            ""pointHoverRadius"": 0
-        }}]
-    }}'>
-</canvas>",
-                samples.Select( _ => "\"\"" ).JoinStrings( "," ),
+@"{{
+            ""labels"": [{0}],
+            ""datasets"": [{{
+                ""data"": [{1}],
+                ""fill"": true,
+                ""backgroundColor"": ""rgba(128, 205, 241, 0.25)"",
+                ""borderColor"": ""#009CE3"",
+                ""borderWidth"": 2,
+                ""pointRadius"": 0,
+                ""pointHoverRadius"": 0,
+                ""tension"": 0.5
+            }}]
+        }}",
+                samples.Select( s => "\"\"" ).JoinStrings( "," ),
                 samples.Select( s => ( ( int ) s ).ToString() ).JoinStrings( "," )
             );
         }
