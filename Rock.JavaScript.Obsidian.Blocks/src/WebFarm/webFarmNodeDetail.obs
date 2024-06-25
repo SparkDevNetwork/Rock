@@ -18,14 +18,14 @@
 
         </RockForm>
         <template #footerActions>
-            <div v-if="panelMode === DetailPanelMode.View">
+            <!-- <div v-if="panelMode === DetailPanelMode.View">
                 <RockButton :btnSize="BtnSize.Default"
                             :btnType="BtnType.Primary"
                             @click="onEdit">
                     Edit
                 </RockButton>
-            </div>
-            <div v-else>
+            </div> -->
+            <div v-if="panelMode === DetailPanelMode.Add || panelMode === DetailPanelMode.Edit">
                 <RockButton :btnSize="BtnSize.Default"
                             :btnType="BtnType.Primary"
                             @click="onSubmit">
