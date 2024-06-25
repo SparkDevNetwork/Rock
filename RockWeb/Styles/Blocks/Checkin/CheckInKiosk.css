@@ -365,52 +365,52 @@
 /**
  * Person Select Screen.
  */
-.check-in-page .person-select-screen .attendee-button {
+.check-in-page .attendee-button.btn {
     justify-content: initial;
     padding: 0;
     border: 0;
 }
 
-.check-in-page .person-select-screen .attendee-button .selection {
+.check-in-page .attendee-button .selection {
     font-size: 50px;
     line-height: 1;
     margin: var(--unit-lg) 0 var(--unit-xl) var(--unit-lg);
 }
 
-.check-in-page .person-select-screen .attendee-button > * {
+.check-in-page .attendee-button > * {
     margin: var(--unit-lg) 0;
 }
 
-.check-in-page .person-select-screen .attendee-button > *:first-child {
+.check-in-page .attendee-button > *:first-child {
     margin-left: var(--unit-xl);
 }
 
-.check-in-page .person-select-screen .attendee-button > *:last-child {
+.check-in-page .attendee-button > *:last-child {
     margin-right: var(--unit-xl);
 }
 
-.check-in-page .person-select-screen .attendee-button .title {
+.check-in-page .attendee-button .title {
     display: flex;
     flex-direction: column;
     flex-grow: 1;
     align-items: start;
 }
 
-.check-in-page .person-select-screen .attendee-button .opportunity {
+.check-in-page .attendee-button .opportunity {
     display: flex;
     gap: calc(var(--item-spacing) * 0.5);
     font-size: var(--font-size-btn-secondary);
 }
 
-.check-in-page .person-select-screen .attendee-button .opportunity + .opportunity {
+.check-in-page .attendee-button .opportunity + .opportunity {
     margin-top: calc(var(--item-spacing) * 0.25);
 }
 
-.check-in-page .person-select-screen .attendee-button .message {
+.check-in-page .attendee-button .message {
     font-size: var(--font-size-btn-secondary);
 }
 
-.check-in-page .person-select-screen .attendee-button .change-selection-button {
+.check-in-page .attendee-button .change-selection-button {
     margin: 0;
     align-self: stretch;
     border-top-left-radius: 0;
