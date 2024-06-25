@@ -74,16 +74,52 @@ namespace Rock.CheckIn.v2
         /// <param name="printProvider">The instance that will handle sending data to the physical printers.</param>
         /// <param name="cancellationToken">A token that will be triggered if the operation should be aborted.</param>
         /// <returns>A list of <see cref="RenderedLabel"/> objects that should be printed on the client.</returns>
-        public async Task<List<RenderedLabel>> RenderAndPrintLabelsAsync( CheckInResultBag checkInResult, DeviceCache kiosk, LabelPrintProvider printProvider, CancellationToken cancellationToken = default )
+        public Task<List<RenderedLabel>> RenderAndPrintCheckInLabelsAsync( CheckInResultBag checkInResult, DeviceCache kiosk, LabelPrintProvider printProvider, CancellationToken cancellationToken = default )
         {
-            var labels = RenderLabels( checkInResult.Attendances, kiosk );
+            var labels = RenderLabels( checkInResult.Attendances, kiosk, false );
 
+            return PrintLabelsAsync( labels, kiosk, printProvider, cancellationToken, msg =>
+                checkInResult.Messages.Add( msg ) );
+        }
+
+        /// <summary>
+        /// Renders all the labels for check-out operation. This will
+        /// also add any print errors to <paramref name="checkOutResult"/>.
+        /// </summary>
+        /// <param name="checkOutResult">The result of the checkout operation to add additional messages to.</param>
+        /// <param name="kiosk">The kiosk requesting the print or <see langword="null"/> if not known.</param>
+        /// <param name="printProvider">The instance that will handle sending data to the physical printers.</param>
+        /// <param name="cancellationToken">A token that will be triggered if the operation should be aborted.</param>
+        /// <returns>A list of <see cref="RenderedLabel"/> objects that should be printed on the client.</returns>
+        public Task<List<RenderedLabel>> RenderAndPrintCheckoutLabelsAsync( CheckoutResultBag checkOutResult, DeviceCache kiosk, LabelPrintProvider printProvider, CancellationToken cancellationToken = default )
+        {
+            var attendanceGuids = checkOutResult.Attendances.Select( a => a.Guid ).ToList();
+            var labels = RenderLabels( attendanceGuids, kiosk, checkout: true );
+
+            return PrintLabelsAsync( labels, kiosk, printProvider, cancellationToken, msg =>
+                checkOutResult.Messages.Add( msg ) );
+        }
+
+        /// <summary>
+        /// Renders all the labels for check-out operation.
+        /// </summary>
+        /// <param name="labels">The rendered labels that should be printed.</param>
+        /// <param name="kiosk">The kiosk requesting the print or <see langword="null"/> if not known.</param>
+        /// <param name="printProvider">The instance that will handle sending data to the physical printers.</param>
+        /// <param name="cancellationToken">A token that will be triggered if the operation should be aborted.</param>
+        /// <param name="messageCallback">The callback when a print related message needs to be recorded.</param>
+        /// <returns>A list of <see cref="RenderedLabel"/> objects that should be printed on the client.</returns>
+        private async Task<List<RenderedLabel>> PrintLabelsAsync( List<RenderedLabel> labels, DeviceCache kiosk, LabelPrintProvider printProvider, CancellationToken cancellationToken, Action<string> messageCallback )
+        {
             // Add any error messages from labels that failed to render.
             var errorMessages = labels
                 .Where( l => l.Error.IsNotNullOrWhiteSpace() )
                 .Select( l => l.Error );
 
-            checkInResult.Messages.AddRange( errorMessages );
+            foreach ( var msg in errorMessages )
+            {
+                messageCallback( msg );
+            }
 
             // Print the labels and wait for completion.
             var labelsToPrint = labels
@@ -94,14 +130,17 @@ namespace Rock.CheckIn.v2
                 var printErrorMessages = await printProvider.PrintLabelsAsync( labelsToPrint, cancellationToken );
 
                 // Add any print failure messages.
-                if ( printErrorMessages != null && printErrorMessages.Any() )
+                if ( printErrorMessages != null )
                 {
-                    checkInResult.Messages.AddRange( printErrorMessages );
+                    foreach ( var msg in errorMessages )
+                    {
+                        messageCallback( msg );
+                    }
                 }
             }
             catch ( OperationCanceledException )
             {
-                checkInResult.Messages.Add( "Timeout waiting for labels to print." );
+                messageCallback( "Timeout waiting for labels to print." );
             }
 
             // Return the labels that should be printed on the client.
@@ -116,16 +155,12 @@ namespace Rock.CheckIn.v2
         /// </summary>
         /// <param name="allRecordedAttendance">The attendance records to render labels for.</param>
         /// <param name="kiosk">The kiosk requesting the print or <see langword="null"/> if not known.</param>
+        /// <param name="checkout"><c>true</c> if the labels to be rendered are for a checkout operation; otherwise <c>false</c>.</param>
         /// <returns>A list of <see cref="RenderedLabel"/> objects that contain all the information required to print the labels.</returns>
-        public List<RenderedLabel> RenderLabels( List<RecordedAttendanceBag> allRecordedAttendance, DeviceCache kiosk )
+        public List<RenderedLabel> RenderLabels( List<RecordedAttendanceBag> allRecordedAttendance, DeviceCache kiosk, bool checkout )
         {
             var attendanceGuids = allRecordedAttendance.Select( a => a.Attendance.Guid ).ToList();
-            var allAttendance = new AttendanceService( RockContext )
-                .Queryable()
-                .Include( a => a.Occurrence )
-                .Include( a => a.AttendanceCode )
-                .Include( a => a.PersonAlias.Person )
-                .Include( a => a.SearchResultGroup )
+            var allAttendance = GetAttendanceQuery()
                 .Where( a => attendanceGuids.Contains( a.Guid ) )
                 .ToList();
 
@@ -141,26 +176,36 @@ namespace Rock.CheckIn.v2
 
             var sessionFamily = allAttendance.Where( a => a.SearchResultGroupId.HasValue ).FirstOrDefault()?.SearchResultGroup;
 
-            return RenderLabels( attendanceLabels, sessionFamily, kiosk );
+            return !checkout
+                ? RenderCheckInLabels( attendanceLabels, sessionFamily, kiosk )
+                : RenderCheckOutLabels( attendanceLabels, sessionFamily, kiosk );
         }
 
         /// <summary>
-        /// Renders all the labels for the set of a single attendance record.
+        /// Renders all the labels for the set of existing attendance records.
         /// </summary>
-        /// <param name="attendanceGuid">The unique identifier of the <see cref="Attendance"/> record to generate labels for.</param>
+        /// <param name="attendanceGuids">The unique identifiers of the <see cref="Attendance"/> records to generate labels for.</param>
         /// <param name="kiosk">The kiosk requesting the print or <see langword="null"/> if not known.</param>
+        /// <param name="checkout"><c>true</c> if the labels to be rendered are for a checkout operation; otherwise <c>false</c>.</param>
         /// <returns>A list of <see cref="RenderedLabel"/> objects that contain all the information required to print the labels.</returns>
-        public List<RenderedLabel> RenderLabels( Guid attendanceGuid, DeviceCache kiosk )
+        public List<RenderedLabel> RenderLabels( List<Guid> attendanceGuids, DeviceCache kiosk, bool checkout )
         {
-            var allAttendance = new AttendanceService( RockContext )
-                .Queryable()
-                .Include( a => a.Occurrence )
-                .Include( a => a.AttendanceCode )
-                .Include( a => a.PersonAlias.Person )
-                .Include( a => a.SearchResultGroup )
-                .Where( a => attendanceGuid == a.Guid )
+            var allAttendance = GetAttendanceQuery()
+                .Where( a => attendanceGuids.Contains( a.Guid ) )
                 .ToList();
 
+            return RenderLabels( allAttendance, kiosk, checkout );
+        }
+
+        /// <summary>
+        /// Renders all the labels for the set of existing attendance records.
+        /// </summary>
+        /// <param name="allAttendance">The <see cref="Attendance"/> records to generate labels for.</param>
+        /// <param name="kiosk">The kiosk requesting the print or <see langword="null"/> if not known.</param>
+        /// <param name="checkout"><c>true</c> if the labels to be rendered are for a checkout operation; otherwise <c>false</c>.</param>
+        /// <returns>A list of <see cref="RenderedLabel"/> objects that contain all the information required to print the labels.</returns>
+        private List<RenderedLabel> RenderLabels( List<Attendance> allAttendance, DeviceCache kiosk, bool checkout )
+        {
             var attendanceLabels = allAttendance
                 .Select( a => new AttendanceLabel( a, RockContext ) )
                 .Where( a => a.Area != null && a.Group != null && a.Location != null && a.Schedule != null )
@@ -173,7 +218,9 @@ namespace Rock.CheckIn.v2
 
             var sessionFamily = allAttendance.Where( a => a.SearchResultGroupId.HasValue ).FirstOrDefault()?.SearchResultGroup;
 
-            return RenderLabels( attendanceLabels, sessionFamily, kiosk );
+            return !checkout
+                ? RenderCheckInLabels( attendanceLabels, sessionFamily, kiosk )
+                : RenderCheckOutLabels( attendanceLabels, sessionFamily, kiosk );
         }
 
         /// <summary>
@@ -183,7 +230,7 @@ namespace Rock.CheckIn.v2
         /// <param name="sessionFamily">The family that was matched during the check-in operation, may be <see langword="null"/>.</param>
         /// <param name="kiosk">The kiosk requesting the print or <see langword="null"/> if not known.</param>
         /// <returns>A list of <see cref="RenderedLabel"/> objects that contain all the information required to print the labels.</returns>
-        public List<RenderedLabel> RenderLabels( List<AttendanceLabel> attendanceLabels, Group sessionFamily, DeviceCache kiosk )
+        private List<RenderedLabel> RenderCheckInLabels( List<AttendanceLabel> attendanceLabels, Group sessionFamily, DeviceCache kiosk )
         {
             if ( attendanceLabels == null || attendanceLabels.Count == 0 )
             {
@@ -266,6 +313,79 @@ namespace Rock.CheckIn.v2
             }
 
             return labels;
+        }
+
+        /// <summary>
+        /// Renders all the labels for the set of attendance records given.
+        /// </summary>
+        /// <param name="attendanceLabels">All attendance records to render labels for.</param>
+        /// <param name="sessionFamily">The family that was matched during the check-in operation, may be <see langword="null"/>.</param>
+        /// <param name="kiosk">The kiosk requesting the print or <see langword="null"/> if not known.</param>
+        /// <returns>A list of <see cref="RenderedLabel"/> objects that contain all the information required to print the labels.</returns>
+        private List<RenderedLabel> RenderCheckOutLabels( List<AttendanceLabel> attendanceLabels, Group sessionFamily, DeviceCache kiosk )
+        {
+            if ( attendanceLabels == null || attendanceLabels.Count == 0 )
+            {
+                return new List<RenderedLabel>();
+            }
+
+            var areaIds = attendanceLabels.Select( a => a.Area.Id ).Distinct().ToList();
+            var groupTypeEntityTypeId = EntityTypeCache.Get<GroupType>( true, RockContext ).Id;
+            var checkInLabelEntityTypeId = EntityTypeCache.Get<Model.CheckInLabel>( true, RockContext ).Id;
+
+            var relatedEntityQry = new RelatedEntityService( RockContext )
+                .Queryable()
+                .Where( a => a.SourceEntityTypeId == groupTypeEntityTypeId
+                    && areaIds.Contains( a.SourceEntityId )
+                    && a.TargetEntityTypeId == checkInLabelEntityTypeId );
+
+            // TODO: This data needs to be cached on GroupTypeCache somehow,
+            // it consumes about 40% of the total processing time.
+            var groupTypeLabels = new CheckInLabelService( RockContext )
+                .Queryable()
+                .Join( relatedEntityQry, cl => cl.Id, re => re.TargetEntityId, ( cl, re ) => new OrderedAreaLabel
+                {
+                    AreaId = re.SourceEntityId,
+                    CheckInLabel = cl,
+                    Order = re.Order
+                } )
+                .ToList();
+
+            // Get all the labels that will be printed.
+            var checkoutLabelsToPrint = groupTypeLabels
+                .Where( gtl => gtl.CheckInLabel.LabelType == LabelType.Checkout )
+                .OrderBy( gtl => gtl.Order )
+                .ThenBy( gtl => gtl.CheckInLabel.Id )
+                .ToList();
+
+            var labels = new List<RenderedLabel>();
+
+            // Print labels that get printed for every attendance record.
+            foreach ( var attendanceLabel in attendanceLabels )
+            {
+                labels.AddRange( RenderLabels( checkoutLabelsToPrint,
+                    new AttendanceLabel[] { attendanceLabel },
+                    attendanceLabels,
+                    kiosk,
+                    sessionFamily ) );
+            }
+
+            return labels;
+        }
+
+        /// <summary>
+        /// Gets the base query to use for retrieving attendance records. This
+        /// will have all the proper navigation properties included.
+        /// </summary>
+        /// <returns>A queryable for <see cref="Attendance"/> records.</returns>
+        private IQueryable<Attendance> GetAttendanceQuery()
+        {
+            return new AttendanceService( RockContext )
+                .Queryable()
+                .Include( a => a.Occurrence )
+                .Include( a => a.AttendanceCode )
+                .Include( a => a.PersonAlias.Person )
+                .Include( a => a.SearchResultGroup );
         }
 
         /// <summary>

@@ -28,6 +28,18 @@
                                     @next="onNextScreen"
                                     @updateActions="onUpdateActions($event, Screen.FamilySelect)" />
 
+                <ActionSelectScreen v-if="currentScreen === Screen.ActionSelect"
+                                    :configuration="configuration"
+                                    :session="currentSession"
+                                    @next="onNextScreen"
+                                    @updateActions="onUpdateActions($event, Screen.ActionSelect)" />
+
+                <CheckoutSelectScreen v-if="currentScreen === Screen.CheckoutSelect"
+                                      :configuration="configuration"
+                                      :session="currentSession"
+                                      @next="onNextScreen"
+                                      @updateActions="onUpdateActions($event, Screen.CheckoutSelect)" />
+
                 <PersonSelectScreen v-if="currentScreen === Screen.PersonSelect"
                                     :configuration="configuration"
                                     :session="currentSession"
@@ -74,17 +86,25 @@
                                :configuration="configuration"
                                :session="currentSession"
                                @updateActions="onUpdateActions($event, Screen.Success)" />
+
+                <CheckoutSuccessScreen v-if="currentScreen === Screen.CheckoutSuccess"
+                               :configuration="configuration"
+                               :session="currentSession"
+                               @updateActions="onUpdateActions($event, Screen.CheckoutSuccess)" />
             </ContentTransition>
         </section>
 
-        <PageFooter title="West Lobby &#xb7 Weekly Service Check-in"
+        <PageFooter :title="footerStatusText"
                     :actions="currentScreenActions" />
     </div>
 </template>
 
 <script setup lang="ts">
     import AbilityLevelSelectScreen from "./CheckInKiosk/abilityLevelSelectScreen.partial.obs";
+    import ActionSelectScreen from "./CheckInKiosk/actionSelectScreen.partial.obs";
     import AreaSelectScreen from "./CheckInKiosk/areaSelectScreen.partial.obs";
+    import CheckoutSelectScreen from "./CheckInKiosk/checkoutSelectScreen.partial.obs";
+    import CheckoutSuccessScreen from "./CheckInKiosk/checkoutSuccessScreen.partial.obs";
     import FamilySelectScreen from "./CheckInKiosk/familySelectScreen.partial.obs";
     import GroupSelectScreen from "./CheckInKiosk/groupSelectScreen.partial.obs";
     import LocationSelectScreen from "./CheckInKiosk/locationSelectScreen.partial.obs";
@@ -116,6 +136,7 @@
 
     const configuration = ref<KioskConfigurationBag>({});
     const currentScreen = ref<Screen | AdminScreen>(Screen.None);
+    const currentScreenActions = ref<KioskButton[]>([]);
     const currentSession = shallowRef<CheckInSession>(new CheckInSession(configuration.value, http));
 
     const hasNavigation = computed((): boolean => {
@@ -126,7 +147,13 @@
         return currentScreen.value !== Screen.Welcome;
     });
 
-    const currentScreenActions = ref<KioskButton[]>([]);
+    const footerStatusText = computed((): string => {
+        if (!configuration.value.kiosk || !configuration.value.template) {
+            return "";
+        }
+
+        return `${configuration.value.kiosk.name} · ${configuration.value.template.name}`;
+    });
 
     /**
      * Reads configuration from local storage. This is set by the setup block

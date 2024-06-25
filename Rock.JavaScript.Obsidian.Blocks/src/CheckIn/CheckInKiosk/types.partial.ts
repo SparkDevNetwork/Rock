@@ -89,6 +89,12 @@ export enum Screen {
     ActionSelect,
 
     /**
+     * Displays the list of people currently checked in and allows selecting one
+     * to checkout.
+     */
+    CheckoutSelect,
+
+    /**
      * Displays the members and relations for a single family. This also handles
      * showing the current check-in options when using auto-select mode.
      * Depending on the mode either a single person can be selected or
@@ -139,6 +145,11 @@ export enum Screen {
      * to the native apps.
      */
     Success,
+
+    /**
+     * Displays the success message associated with a completed check out.
+     */
+    CheckoutSuccess,
 }
 
 /**

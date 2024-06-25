@@ -332,9 +332,12 @@ namespace Rock.Rest.v2.Controllers
                 var sessionRequest = new AttendanceSessionRequest( options.Session );
 
                 var result = session.SaveAttendance( sessionRequest, options.Requests, kiosk, RockRequestContext.ClientInformation.IpAddress );
-                var cts = new CancellationTokenSource( 5000 );
 
-                await director.LabelProvider.RenderAndPrintLabelsAsync( result, kiosk, new LabelPrintProvider(), cts.Token );
+                if ( !options.Session.IsPending )
+                {
+                    var cts = new CancellationTokenSource( 5000 );
+                    await director.LabelProvider.RenderAndPrintCheckInLabelsAsync( result, kiosk, new LabelPrintProvider(), cts.Token );
+                }
 
                 return Ok( new SaveAttendanceResponseBag
                 {
@@ -359,13 +362,24 @@ namespace Rock.Rest.v2.Controllers
         [Route( "ConfirmAttendance" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( ConfirmAttendanceResponseBag ) )]
         [SystemGuid.RestActionGuid( "52070226-289b-442d-a8fe-a8323c0f922c" )]
-        public IActionResult PostConfirmAttendance( [FromBody] ConfirmAttendanceOptionsBag options )
+        public async Task<IActionResult> PostConfirmAttendance( [FromBody] ConfirmAttendanceOptionsBag options )
         {
             var configuration = GroupTypeCache.Get( options.TemplateGuid, _rockContext )?.GetCheckInConfiguration( _rockContext );
+            DeviceCache kiosk = null;
 
             if ( configuration == null )
             {
                 return BadRequest( "Configuration was not found." );
+            }
+
+            if ( options.KioskGuid.HasValue )
+            {
+                kiosk = DeviceCache.Get( options.KioskGuid.Value, _rockContext );
+
+                if ( kiosk == null )
+                {
+                    return BadRequest( "Kiosk was not found." );
+                }
             }
 
             try
@@ -375,11 +389,64 @@ namespace Rock.Rest.v2.Controllers
 
                 var result = session.ConfirmAttendance( options.SessionGuid );
 
+                var cts = new CancellationTokenSource( 5000 );
+                await director.LabelProvider.RenderAndPrintCheckInLabelsAsync( result, kiosk, new LabelPrintProvider(), cts.Token );
+
                 return Ok( new ConfirmAttendanceResponseBag
                 {
                     Messages = result.Messages,
                     Attendances = result.Attendances
                 } );
+            }
+            catch ( CheckInMessageException ex )
+            {
+                return BadRequest( ex.Message );
+            }
+        }
+
+        /// <summary>
+        /// Saves the attendance for the specified requests.
+        /// </summary>
+        /// <param name="options">The options that describe the request.</param>
+        /// <returns>The results from the save operation.</returns>
+        [HttpPost]
+        [Authenticate]
+        //[Secured]
+        [Route( "Checkout" )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( CheckoutResponseBag ) )]
+        [SystemGuid.RestActionGuid( "733be2ee-dec6-4f7f-92bd-df367c20543d" )]
+        public async Task<IActionResult> PostCheckout( [FromBody] CheckoutOptionsBag options )
+        {
+            var configuration = GroupTypeCache.Get( options.TemplateGuid, _rockContext )?.GetCheckInConfiguration( _rockContext );
+            DeviceCache kiosk = null;
+
+            if ( configuration == null )
+            {
+                return BadRequest( "Configuration was not found." );
+            }
+
+            if ( options.KioskGuid.HasValue )
+            {
+                kiosk = DeviceCache.Get( options.KioskGuid.Value, _rockContext );
+
+                if ( kiosk == null )
+                {
+                    return BadRequest( "Kiosk was not found." );
+                }
+            }
+
+            try
+            {
+                var director = new CheckInDirector( _rockContext );
+                var session = director.CreateSession( configuration );
+                var sessionRequest = new AttendanceSessionRequest( options.Session );
+
+                var result = session.Checkout( sessionRequest, options.AttendanceGuids, kiosk );
+
+                var cts = new CancellationTokenSource( 5000 );
+                await director.LabelProvider.RenderAndPrintCheckoutLabelsAsync( result, kiosk, new LabelPrintProvider(), cts.Token );
+
+                return Ok( result );
             }
             catch ( CheckInMessageException ex )
             {

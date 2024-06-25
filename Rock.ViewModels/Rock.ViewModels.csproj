@@ -471,6 +471,7 @@
     <Compile Include="CheckIn\AttendanceRequestBag.cs" />
     <Compile Include="CheckIn\AttendanceSessionRequestBag.cs" />
     <Compile Include="CheckIn\CheckInResultBag.cs" />
+    <Compile Include="CheckIn\CheckoutResultBag.cs" />
     <Compile Include="CheckIn\ConfigurationAreaBag.cs" />
     <Compile Include="CheckIn\AreaOpportunityBag.cs" />
     <Compile Include="CheckIn\AttendanceBag.cs" />
@@ -510,6 +511,8 @@
     <Compile Include="Controls\PhoneNumberBoxWithSmsControlBag.cs" />
     <Compile Include="Controls\NoteMentionItemBag.cs" />
     <Compile Include="Reporting\FieldFilterPropertyBag.cs" />
+    <Compile Include="Rest\CheckIn\CheckoutOptionsBag.cs" />
+    <Compile Include="Rest\CheckIn\CheckoutResponseBag.cs" />
     <Compile Include="Rest\CheckIn\ConfigurationOptionsBag.cs" />
     <Compile Include="Rest\CheckIn\ConfigurationResponseBag.cs" />
     <Compile Include="Rest\CheckIn\ConfirmAttendanceOptionsBag.cs" />

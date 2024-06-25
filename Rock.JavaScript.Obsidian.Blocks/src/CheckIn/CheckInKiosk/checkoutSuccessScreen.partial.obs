@@ -1,0 +1,70 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="group-select-screen">
+        <MainPanel :title="title">
+            <div v-for="attendance in attendances">
+                {{ attendance.person?.fullName }} was checked out of
+                {{ attendance.group?.name }} in
+                {{ attendance.location?.name }} at
+                {{ attendance.schedule?.name }}.
+            </div>
+        </MainPanel>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import MainPanel from "./mainPanel.partial.obs";
+    import { computed, PropType } from "vue";
+    import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
+    import { CheckInSession } from "./checkInSession.partial";
+    import { KioskButton } from "./types.partial";
+    import { AttendanceBag } from "@Obsidian/ViewModels/CheckIn/attendanceBag";
+
+    const props = defineProps({
+        configuration: {
+            type: Object as PropType<KioskConfigurationBag>,
+            required: true
+        },
+
+        session: {
+            type: Object as PropType<CheckInSession>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (event: "next", session: CheckInSession): void;
+        (event: "updateActions", actions: KioskButton[]): void;
+    }>();
+
+    // #region Values
+
+    // #endregion
+
+    // #region Computed Values
+
+    const title = computed((): string => {
+        return "Checked Out";
+    });
+
+    const attendances = computed((): AttendanceBag[] => {
+        return props.session.checkedOutAttendances;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Update the actions supported by this screen.
+     */
+    function updateActions(): void {
+        const actions: KioskButton[] = [];
+
+        emit("updateActions", actions);
+    }
+
+    // #endregion
+
+    updateActions();
+</script>

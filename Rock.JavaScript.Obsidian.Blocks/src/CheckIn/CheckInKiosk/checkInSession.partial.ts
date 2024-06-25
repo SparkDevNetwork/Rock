@@ -32,6 +32,8 @@ import { OpportunityCollectionBag } from "@Obsidian/ViewModels/CheckIn/opportuni
 import { ScheduleOpportunityBag } from "@Obsidian/ViewModels/CheckIn/scheduleOpportunityBag";
 import { AttendeeOpportunitiesOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/attendeeOpportunitiesOptionsBag";
 import { AttendeeOpportunitiesResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/attendeeOpportunitiesResponseBag";
+import { CheckoutOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/checkoutOptionsBag";
+import { CheckoutResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/checkoutResponseBag";
 import { ConfirmAttendanceOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/confirmAttendanceOptionsBag";
 import { ConfirmAttendanceResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/confirmAttendanceResponseBag";
 import { FamilyMembersOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/familyMembersOptionsBag";
@@ -142,6 +144,12 @@ export class CheckInSession {
     /** The attendance records that have been sent to the server and saved. */
     public readonly attendances: RecordedAttendanceBag[] = [];
 
+    /** `true` if the current operation is for checkout. */
+    public readonly isCheckoutAction: boolean = false;
+
+    /** The attendance records that were checked out. */
+    public readonly checkedOutAttendances: AttendanceBag[] = [];
+
     /**
      * The unique identifer for this check-in session. This is used to link
      * all attendance records together since we might save them at different
@@ -202,6 +210,8 @@ export class CheckInSession {
             this.possibleSchedules = configurationOrSession.possibleSchedules;
             this.allAttendeeSelections = clone(configurationOrSession.allAttendeeSelections);
             this.attendances = clone(configurationOrSession.attendances);
+            this.isCheckoutAction = configurationOrSession.isCheckoutAction;
+            this.checkedOutAttendances = configurationOrSession.checkedOutAttendances;
 
             for (const key of Object.keys(httpOrOverrides as CheckInSessionProperties)) {
                 this[key] = httpOrOverrides[key];
@@ -322,6 +332,7 @@ export class CheckInSession {
         // Build the API request options.
         const request: ConfirmAttendanceOptionsBag = {
             templateGuid: this.configuration.template.guid,
+            kioskGuid: this.configuration.kiosk?.guid,
             sessionGuid: this.sessionGuid
         };
 
@@ -436,6 +447,64 @@ export class CheckInSession {
             attendees: response.data.people,
             possibleSchedules: response.data.possibleSchedules ?? [],
             currentlyCheckedIn: response.data.currentlyCheckedInAttendances ?? []
+        });
+    }
+
+    /**
+     * Creates a new session by configuring it for the checkout action.
+     *
+     * @returns A new CheckInSession object.
+     */
+    public async withCheckoutAction(): Promise<CheckInSession> {
+        if (!this.configuration.template || !this.configuration.kiosk) {
+            throw new InvalidCheckInStateError("No configuration template or kiosk.");
+        }
+
+        return new CheckInSession(this, {
+            isCheckoutAction: true
+        });
+    }
+
+    /**
+     * Creates a new session by selecting the attendance that should be
+     * processed for checkout.
+     *
+     * @param attendanceGuids The attendance identifiers that should be selected.
+     *
+     * @returns A new CheckInSession object.
+     */
+    public async withCheckoutAttendances(attendanceGuids: Guid[]): Promise<CheckInSession> {
+        if (!this.configuration.template || !this.configuration.kiosk) {
+            throw new InvalidCheckInStateError("No configuration template or kiosk.");
+        }
+
+        // We need a valid search type.
+        if (this.searchType === undefined) {
+            throw new InvalidCheckInStateError("Search type was not defined.");
+        }
+
+        // Build the API request options.
+        const request: CheckoutOptionsBag = {
+            kioskGuid: this.configuration.kiosk?.guid,
+            templateGuid: this.configuration.template.guid,
+            session: {
+                guid: this.sessionGuid,
+                isPending: false,
+                searchMode: this.searchType,
+                searchTerm: this.searchTerm,
+                familyGuid: this.currentFamilyGuid
+            },
+            attendanceGuids: attendanceGuids
+        };
+
+        const response = await this.http.post<CheckoutResponseBag>("/api/v2/checkin/Checkout", undefined, request);
+
+        if (!response.isSuccess || !response.data?.attendances) {
+            throw new Error(response.errorMessage || UnexpectedErrorMessage);
+        }
+
+        return new CheckInSession(this, {
+            checkedOutAttendances: [...this.checkedOutAttendances, ...response.data.attendances]
         });
     }
 
@@ -1132,6 +1201,12 @@ export class CheckInSession {
         else if (this.currentScreen === Screen.FamilySelect) {
             return this.withNextScreenFromFamilySelect();
         }
+        else if (this.currentScreen === Screen.ActionSelect) {
+            return this.withNextScreenFromActionSelect();
+        }
+        else if (this.currentScreen === Screen.CheckoutSelect) {
+            return this.withNextScreenFromCheckoutSelect();
+        }
         else if (this.currentScreen === Screen.PersonSelect) {
             return this.withNextScreenFromPersonSelect();
         }
@@ -1200,11 +1275,11 @@ export class CheckInSession {
      *
      * @returns A new CheckInSession object.
      */
-    private withNextScreenFromFamilySelect(): Promise<CheckInSession> {
+    private withNextScreenFromFamilySelect(forceCheckin: boolean = false): Promise<CheckInSession> {
         if (!this.getCurrentFamily() || !this.attendees) {
             return Promise.resolve(this.withScreen(Screen.Welcome));
         }
-        else if (this.currentlyCheckedIn && this.currentlyCheckedIn.length > 0) {
+        else if (!forceCheckin && this.currentlyCheckedIn && this.currentlyCheckedIn.length > 0) {
             return Promise.resolve(this.withScreen(Screen.ActionSelect));
         }
 
@@ -1233,6 +1308,35 @@ export class CheckInSession {
         }
 
         return Promise.resolve(this.withScreen(Screen.PersonSelect));
+    }
+
+    /**
+     * Creates a new session that has been updated to reflect the next screen
+     * after the action select screen.
+     *
+     * @returns A new CheckInSession object.
+     */
+    private withNextScreenFromActionSelect(): Promise<CheckInSession> {
+        if (this.isCheckoutAction) {
+            if (this.currentlyCheckedIn && this.currentlyCheckedIn.length > 0) {
+                return Promise.resolve(this.withScreen(Screen.CheckoutSelect));
+            }
+            else {
+                return Promise.resolve(this.withScreen(Screen.Welcome));
+            }
+        }
+
+        return this.withNextScreenFromFamilySelect(true);
+    }
+
+    /**
+     * Creates a new session that has been updated to reflect the next screen
+     * after the checkout select screen.
+     *
+     * @returns A new CheckInSession object.
+     */
+    private withNextScreenFromCheckoutSelect(): Promise<CheckInSession> {
+        return Promise.resolve(this.withScreen(Screen.CheckoutSuccess));
     }
 
     /**

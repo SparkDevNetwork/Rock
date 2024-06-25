@@ -259,6 +259,55 @@ namespace Rock.CheckIn.v2
         }
 
         /// <summary>
+        /// Saves the attendance requests to the database by creating or updating
+        /// existing <see cref="Attendance"/> records.
+        /// </summary>
+        /// <param name="sessionRequest">The data that describes the check-in session.</param>
+        /// <param name="attendanceGuids">The attendance records to checkout.</param>
+        /// <param name="kiosk">The kiosk that is performing this checkout or <c>null</c>.</param>
+        /// <returns>An instance of <see cref="CheckoutResultBag"/> that contains the result of the operation.</returns>
+        public CheckoutResultBag Checkout( AttendanceSessionRequest sessionRequest, IReadOnlyCollection<Guid> attendanceGuids, DeviceCache kiosk )
+        {
+            var attendanceService = new AttendanceService( Session.RockContext );
+            var result = new CheckoutResultBag
+            {
+                Messages = new List<string>(),
+                Attendances = new List<AttendanceBag>()
+            };
+
+            var attendances = attendanceService.Queryable()
+                .Include( a => a.Occurrence )
+                .Include( a => a.PersonAlias.Person )
+                .Where( a => attendanceGuids.Contains( a.Guid ) )
+                .ToList();
+
+            if ( attendances.Count == 0 )
+            {
+                result.Messages.Add( "There were no attendance records to be checked out." );
+
+                return result;
+            }
+
+            var checkedOutByPersonAliasId = GetCheckedInByPersonAliasId( sessionRequest );
+
+            foreach ( var attendance in attendances )
+            {
+                var now = attendance.CampusId.HasValue
+                    ? CampusCache.Get( attendance.CampusId.Value, Session.RockContext )?.CurrentDateTime ?? RockDateTime.Now
+                    : RockDateTime.Now;
+
+                attendance.EndDateTime = now;
+                attendance.CheckedOutByPersonAliasId = checkedOutByPersonAliasId;
+
+                result.Attendances.Add( Session.Director.ConversionProvider.GetAttendanceBag( attendance ) );
+            }
+
+            Session.RockContext.SaveChanges();
+
+            return result;
+        }
+
+        /// <summary>
         /// Saves the attendance records attached to the session's RockContext
         /// to the database. If this is not a pending save then also get the
         /// achievement information.

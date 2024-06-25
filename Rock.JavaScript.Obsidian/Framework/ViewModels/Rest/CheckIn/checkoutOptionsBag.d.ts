@@ -22,17 +22,27 @@
 //
 
 import { Guid } from "@Obsidian/Types";
+import { AttendanceSessionRequestBag } from "@Obsidian/ViewModels/CheckIn/attendanceSessionRequestBag";
 
 /**
- * The options that will be provided to the ConfirmAttendance check-in
- * REST endpoint.
+ * The options that will be provided to the Checkout check-in REST
+ * endpoint.
  */
-export type ConfirmAttendanceOptionsBag = {
+export type CheckoutOptionsBag = {
+    /**
+     * Gets or sets the attendance unique identifiers that will be checked
+     * out for this operation.
+     */
+    attendanceGuids?: Guid[] | null;
+
     /** Gets or sets the kiosk unique identifier. */
     kioskGuid?: Guid | null;
 
-    /** Gets or sets the unique identifier of the session to be confirmed. */
-    sessionGuid: Guid;
+    /**
+     * Gets or sets the details about the check-in session that apply
+     * to the checkout operation.
+     */
+    session?: AttendanceSessionRequestBag | null;
 
     /** Gets or sets the check-in configuration template unique identifier. */
     templateGuid: Guid;

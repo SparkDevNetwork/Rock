@@ -511,6 +511,35 @@ namespace Rock.CheckIn.v2
             }
         }
 
+        /// <summary>
+        /// Saves the attendance requests to the database by creating or updating
+        /// existing <see cref="Attendance"/> records.
+        /// </summary>
+        /// <param name="sessionRequest">The data that describes the check-in session.</param>
+        /// <param name="attendanceGuids">The attendance unique identifiers.</param>
+        /// <param name="kiosk">The kiosk that is performing this check-in or <c>null</c>.</param>
+        /// <exception cref="System.ArgumentNullException"><paramref name="sessionRequest"/> is <c>null</c>.</exception>
+        /// <exception cref="System.ArgumentNullException"><paramref name="attendanceGuids"/> is <c>null</c>.</exception>
+        public CheckoutResultBag Checkout( AttendanceSessionRequest sessionRequest, IReadOnlyCollection<Guid> attendanceGuids, DeviceCache kiosk )
+        {
+            if ( sessionRequest == null )
+            {
+                throw new ArgumentNullException( nameof( sessionRequest ) );
+            }
+
+            if ( attendanceGuids == null )
+            {
+                throw new ArgumentNullException( nameof( attendanceGuids ) );
+            }
+
+            using ( var activity = ObservabilityHelper.StartActivity( "Checkout" ) )
+            {
+                activity?.AddTag( "rock.checkin.save_provider", SaveProvider.GetType().FullName );
+
+                return SaveProvider.Checkout( sessionRequest, attendanceGuids, kiosk );
+            }
+        }
+
         #endregion
     }
 }

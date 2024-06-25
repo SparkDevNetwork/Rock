@@ -15,14 +15,17 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+
+using Rock.ViewModels.CheckIn;
 
 namespace Rock.ViewModels.Rest.CheckIn
 {
     /// <summary>
-    /// The options that will be provided to the ConfirmAttendance check-in
-    /// REST endpoint.
+    /// The options that will be provided to the Checkout check-in REST
+    /// endpoint.
     /// </summary>
-    public class ConfirmAttendanceOptionsBag
+    public class CheckoutOptionsBag
     {
         /// <summary>
         /// Gets or sets the check-in configuration template unique identifier.
@@ -37,9 +40,17 @@ namespace Rock.ViewModels.Rest.CheckIn
         public Guid? KioskGuid { get; set; }
 
         /// <summary>
-        /// Gets or sets the unique identifier of the session to be confirmed.
+        /// Gets or sets the attendance unique identifiers that will be checked
+        /// out for this operation.
         /// </summary>
-        /// <value>The session unique identifier.</value>
-        public Guid SessionGuid { get; set; }
+        /// <value>The attendance unique identifiers.</value>
+        public List<Guid> AttendanceGuids { get; set; }
+
+        /// <summary>
+        /// Gets or sets the details about the check-in session that apply
+        /// to the checkout operation.
+        /// </summary>
+        /// <value>The session details.</value>
+        public AttendanceSessionRequestBag Session { get; set; }
     }
 }

@@ -276,6 +276,67 @@ namespace Rock.CheckIn.v2
         }
 
         /// <summary>
+        /// Gets the attendance bag with the details from the <see cref="Attendance"/>
+        /// record.
+        /// </summary>
+        /// <param name="attendance">The attendance record.</param>
+        /// <returns>A new instance of <see cref="AttendanceBag"/>.</returns>
+        public virtual AttendanceBag GetAttendanceBag( Attendance attendance )
+        {
+            var attendanceBag = new AttendanceBag
+            {
+                Guid = attendance.Guid,
+                Person = attendance.PersonAlias?.Person != null
+                    ? GetPersonBag( attendance.PersonAlias.Person )
+                    : null,
+                Status = attendance.CheckInStatus
+            };
+
+            var group = GroupCache.Get( attendance.Occurrence.GroupId.Value, RockContext );
+            var area = GroupTypeCache.Get( group.GroupTypeId, RockContext );
+            var location = NamedLocationCache.Get( attendance.Occurrence.LocationId.Value, RockContext );
+            var schedule = NamedScheduleCache.Get( attendance.Occurrence.ScheduleId.Value, RockContext );
+
+            if ( area != null )
+            {
+                attendanceBag.Area = new CheckInItemBag
+                {
+                    Guid = area.Guid,
+                    Name = area.Name
+                };
+            }
+
+            if ( group != null )
+            {
+                attendanceBag.Group = new CheckInItemBag
+                {
+                    Guid = group.Guid,
+                    Name = group.Name
+                };
+            }
+
+            if ( location != null )
+            {
+                attendanceBag.Location = new CheckInItemBag
+                {
+                    Guid = location.Guid,
+                    Name = location.Name
+                };
+            }
+
+            if ( schedule != null )
+            {
+                attendanceBag.Schedule = new CheckInItemBag
+                {
+                    Guid = schedule.Guid,
+                    Name = schedule.Name
+                };
+            }
+
+            return attendanceBag;
+        }
+
+        /// <summary>
         /// Gets the potential attendee bag from the attendee item.
         /// </summary>
         /// <param name="attendee">The attendee.</param>

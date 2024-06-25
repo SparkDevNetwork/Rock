@@ -801,6 +801,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\Configuration\LabelDesigner\iconItemBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\Configuration\LabelDesigner\labelDesignerOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\Configuration\LabelDesigner\labelDetailBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\CheckIn\checkoutResultBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\Labels\attendeePhotoFieldConfigurationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\Labels\barcodeFieldConfigurationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\Labels\designedLabelBag.d.ts" />
@@ -1330,6 +1331,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Reporting\fieldFilterSourceBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\CheckIn\attendeeOpportunitiesOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\CheckIn\attendeeOpportunitiesResponseBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\CheckIn\checkoutOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Rest\CheckIn\checkoutResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\CheckIn\configurationOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\CheckIn\configurationResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\CheckIn\confirmAttendanceOptionsBag.d.ts" />
