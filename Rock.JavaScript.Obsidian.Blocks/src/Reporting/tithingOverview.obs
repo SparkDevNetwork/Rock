@@ -1,28 +1,34 @@
 <template>
-    <NotificationBox v-if="!config.hasData" alertType="info">There are no computed tithing metrics.</NotificationBox>
-    <Panel v-else title="Tithing Overview By Campus" type="block">
-        <template #headerActions>
-            <div class="control-wrapper mr-3">
-                <div class="toggle-container">
-                    <div class="btn-group btn-toggle btn-group-sm">
-                        <RockButton :class="isToggled ? onButtonSelectedClasses : unselectedClasses" @click="onChartTypeClick(ChartTypeKey.BarChart)">
-                            <i class="icon-fw fa fa-chart-bar"></i>
-                        </RockButton>
-                        <RockButton :class="isToggled ? unselectedClasses : offButtonSelectedClasses" @click="onChartTypeClick(ChartTypeKey.LineChart)">
-                            <i class="icon-fw fa fa-chart-area"></i>
-                        </RockButton>
+    <div class="tithing-overview">
+        <NotificationBox v-if="!config.hasData" alertType="info">There are no computed tithing metrics.</NotificationBox>
+        <Panel v-else title="Tithing Overview By Campus" type="block">
+            <template #headerActions>
+                <div class="control-wrapper mr-3">
+                    <div class="toggle-container">
+                        <div class="btn-group btn-toggle btn-group-sm">
+                            <RockButton :class="isToggled ? onButtonSelectedClasses : unselectedClasses" @click="onChartTypeClick(ChartTypeKey.BarChart)">
+                                <i class="icon-fw fa fa-chart-bar"></i>
+                            </RockButton>
+                            <RockButton :class="isToggled ? unselectedClasses : offButtonSelectedClasses" @click="onChartTypeClick(ChartTypeKey.LineChart)">
+                                <i class="icon-fw fa fa-chart-area"></i>
+                            </RockButton>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </template>
-        <template #default>
-            <div class="chart-container" style="height: 500px; width: 98%;">
-                <canvas ref="canvasElement"></canvas>
-            </div>
-        </template>
-    </Panel>
+            </template>
+            <template #default>
+                <div class="chart-container" style="height: 500px; width: 98%;">
+                    <canvas ref="canvasElement"></canvas>
+                </div>
+            </template>
+        </Panel>
+    </div>
 </template>
-
+<style scoped>
+    .tithing-overview :deep(.panel-heading) {
+        background-color: var(--theme-white)
+    }
+</style>
 <script setup lang="ts">
     import { computed, onMounted, ref, shallowRef } from "vue";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
