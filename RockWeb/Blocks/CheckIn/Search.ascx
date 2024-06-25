@@ -70,28 +70,54 @@
                     <asp:Panel ID="pnlSearchPhone" runat="server" CssClass="clearfix">
                         <Rock:RockTextBox ID="tbPhone" MaxLength="10" CssClass="search-input checkin-phone-entry input-lg js-search-input js-phone-search" FormGroupCssClass="search-phone-form-group" runat="server" Label="Phone Number" autocomplete="off" />
 
+                        <!-- LPC MODIFIED CODE -->
                         <div class="tenkey checkin-phone-keypad">
-                            <div>
-                                <a href="#" class="btn btn-default btn-lg btn-keypad digit">1</a>
-                                <a href="#" class="btn btn-default btn-lg btn-keypad digit">2</a>
-                                <a href="#" class="btn btn-default btn-lg btn-keypad digit">3</a>
+                            <div class="keypad-row row">
+                                <div class="keypad-column col-xs-4">
+                                    <a href="#" class="btn btn-default btn-lg btn-keypad digit">1</a>
+                                </div>
+                                <div class="keypad-column col-xs-4">
+                                    <a href="#" class="btn btn-default btn-lg btn-keypad digit">2</a>
+                                </div>
+                                <div class="keypad-column col-xs-4">
+                                    <a href="#" class="btn btn-default btn-lg btn-keypad digit">3</a>
+                                </div>
                             </div>
-                            <div>
-                                <a href="#" class="btn btn-default btn-lg btn-keypad digit">4</a>
-                                <a href="#" class="btn btn-default btn-lg btn-keypad digit">5</a>
-                                <a href="#" class="btn btn-default btn-lg btn-keypad digit">6</a>
+                            <div class="keypad-row row">
+                                <div class="keypad-column col-xs-4">
+                                    <a href="#" class="btn btn-default btn-lg btn-keypad digit">4</a>
+                                </div>
+                                <div class="keypad-column col-xs-4">
+                                    <a href="#" class="btn btn-default btn-lg btn-keypad digit">5</a>
+                                </div>
+                                <div class="keypad-column col-xs-4">
+                                    <a href="#" class="btn btn-default btn-lg btn-keypad digit">6</a>
+                                </div>
                             </div>
-                            <div>
-                                <a href="#" class="btn btn-default btn-lg btn-keypad digit">7</a>
-                                <a href="#" class="btn btn-default btn-lg btn-keypad digit">8</a>
-                                <a href="#" class="btn btn-default btn-lg btn-keypad digit">9</a>
+                            <div class="keypad-row row">
+                                <div class="keypad-column col-xs-4">
+                                    <a href="#" class="btn btn-default btn-lg btn-keypad digit">7</a>
+                                </div>
+                                <div class="keypad-column col-xs-4">
+                                    <a href="#" class="btn btn-default btn-lg btn-keypad digit">8</a>
+                                </div>
+                                <div class="keypad-column col-xs-4">
+                                    <a href="#" class="btn btn-default btn-lg btn-keypad digit">9</a>
+                                </div>
                             </div>
-                            <div>
-                                <a href="#" class="btn btn-default btn-lg btn-keypad command clear">Clear</a>
-                                <a href="#" class="btn btn-default btn-lg btn-keypad digit">0</a>
-                                <a href="#" class="btn btn-default btn-lg btn-keypad command back"><i class="fas fa-backspace"></i></a>
+                            <div class="keypad-row row">
+                                <div class="keypad-column col-xs-4">
+                                    <a href="#" class="btn btn-default btn-lg btn-keypad command clear">Clear</a>
+                                </div>
+                                <div class="keypad-column col-xs-4">
+                                    <a href="#" class="btn btn-default btn-lg btn-keypad digit">0</a>
+                                </div>
+                                <div class="keypad-column col-xs-4">
+                                    <a href="#" class="btn btn-default btn-lg btn-keypad command back"><i class="fas fa-backspace"></i></a>
+                                </div>
                             </div>
                         </div>
+                        <!-- END LPC MODIFIED CODE -->
                     </asp:Panel>
 
                     <asp:Panel ID="pnlSearchName" CssClass="clearfix" runat="server">
@@ -107,6 +133,35 @@
             </div>
         </div>
     </div>
+    <!-- LPC CODE -->
+    <style>
+        .keypad-row {
+            height: 84px;
+            width: 100%;
+            margin: 0;
+        }
+
+        .keypad-column {
+            height: 100%;
+            padding: 2px 4px;
+        }
+
+        .tenkey {
+            width: 300px;
+            margin-left: 0;
+            margin-right: 0;
+        }
+
+        .tenkey .btn {
+            width: 100%;
+            height: 100%;
+        }
+
+        .checkin-search-body.search-phone, .search-phone-form-group, input.checkin-phone-entry {
+            width: 300px;
+        }
+    </style>
+    <!-- END LPC CODE -->
 
 </ContentTemplate>
 </asp:UpdatePanel>

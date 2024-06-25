@@ -1,4 +1,4 @@
-{% comment %} Volunteer Label {% endcomment %}
+{% comment %} Childcare Contractor Label {% endcomment %}
 
 {% comment %} Determine Group Information {% endcomment %}
 
@@ -8,6 +8,11 @@
 {% for gt in Person.GroupTypes %}
     {%  for g in gt.Groups %}
         {% assign groupObject = g.Id | GroupById %}
+
+        {% assign selected = groupObject | Property:'Selected' %}
+        {% if selected == true %}
+            {% continue %}
+        {% endif %}
 
         {% capture groupScheduleStartTime %}{[ GetGroupScheduleStartTime group:groupObject ]}{% endcapture %}
         {% assign cleanGroupScheduleStartTime = groupScheduleStartTime | Date:'H:mm' | Remove:':' %}

@@ -1591,6 +1591,11 @@ $('body :not(script)').contents().filter( function() {{
                     childRow.ShowUploadImage = showUploadPhoto;
                     childRow.ShowCommunicationPreference = showCommunicationPreference;
 
+                    childRow.ShowRace = false;
+                    childRow.RequireRace = false;
+                    childRow.ShowEthnicity = false;
+                    childRow.RequireEthnicity = false;
+                    childRow.ShowProfilePhoto = false;
 
                     childRow.ValidationGroup = BlockValidationGroup;
 

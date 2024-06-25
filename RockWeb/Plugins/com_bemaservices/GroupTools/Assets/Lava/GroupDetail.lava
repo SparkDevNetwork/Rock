@@ -21,7 +21,7 @@
 
 .sg-campus {
   font-size: 16px;
-  color: #777779;
+  color: var(--text-muted);
 }
 
 .sg-description, .sg-moreinfo {
@@ -35,14 +35,14 @@
   text-align: center;
   font-size: 28px;
 
-  color: #f04b28;
+  color: var(--brand-primary);
   font-weight: bold;
 }
 
 .sg-sub-head {
   font-size: 14px;
   text-align: center;
-  color: #8a8a8c;
+  color: var(--text-muted);
   margin-bottom: 30px;
 }
 
@@ -66,25 +66,24 @@
 </style>
 
 {% assign group = Workflow | Attribute:'Group','Object' %}
-{% case group.CampusId  %}
-  {% when '3' or '7' %}
-    {% assign mapLink = 'https://interiormaps.s3.amazonaws.com/Lakepointe-Rockwall-Interior-Map.png' %}
-  {% when '2' or '13' %}
-    {% assign mapLink = 'https://interiormaps.s3.amazonaws.com/Lakepointe-Town%20East-Interior-Map.png' %}
-  {% when '4' %}
-    {% assign mapLink = 'https://interiormaps.s3.amazonaws.com/Lakepointe-Firewheel-Interior-Map.png' %}
-  {% when '5' %}
-    {% assign mapLink = 'https://interiormaps.s3.amazonaws.com/Lakepointe-Forney-Interior-Map.png' %}
-  {% when '12' %}
-    {% assign mapLink = 'https://lakepointe.church/wp-content/uploads/2023/01/Lakepointe-White-Rock-Interior-Map.png' %}
-  {% when '8' or '14' %}
-    {% assign mapLink = 'https://interiormaps.s3.amazonaws.com/Lakepointe-North%20Dallas-Interior-Map.png' %}
-{% endcase %}
+{% assign mapLink = group.Campus | Attribute:'CampusMap','RawValue' %}
 
 <div class="sg-group-details">
-  <div class="sg-name">{{group.Name}}</div>
-  <div class="sg-campus"> {{group.Campus.Name}} </div>
-  <div class="sg-description"> {{group.Description}} </div>
+  <div class="row">
+    <div class="col-md-6">
+      <div class="sg-name">{{group.Name}}</div>
+      <div class="sg-campus"> {{group.Campus.Name}} </div>
+      <div class="sg-description"> {{group.Description}} </div>
+    </div>
+    <div class="col-md-6">
+      {% assign groupImage = group | Attribute:'GroupImage','RawValue' %}
+      {% if groupImage != null and groupImage != empty %}
+        <img src="/GetImage.ashx?guid={{groupImage}}" alt="An image of this group's members" class="img-responsive mt-3 rounded">
+      {% else %}
+        <img src="/Content/ExternalSite/GroupLocator/DefaultGroupImage.png" alt="" class="img-responsive mt-3 rounded">
+      {% endif %}
+    </div>
+  </div>
 
   {% assign moreInfo = group | Attribute:'MoreInfo' | Trim %}
   {% if moreInfo != ''  %}

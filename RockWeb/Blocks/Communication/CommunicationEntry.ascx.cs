@@ -15,9 +15,12 @@
 // </copyright>
 //
 using System;
-using System.ComponentModel;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -28,12 +31,11 @@ using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Tasks;
 using Rock.Web.Cache;
 using Rock.Web.UI;
-using Rock.Web.UI.Controls.Communication;
 using Rock.Web.UI.Controls;
-using System.Data.Entity;
-using Rock.Tasks;
+using Rock.Web.UI.Controls.Communication;
 
 namespace RockWeb.Blocks.Communication
 {
@@ -201,6 +203,36 @@ namespace RockWeb.Blocks.Communication
 
         private bool _fullMode = true;
         private bool _editingApproved = false;
+        private bool _isBulkCommunicationForced = false;
+
+        #endregion
+
+        #region Events
+
+        private delegate void OnPropertyChangedHandler( object sender, PropertyChangedEventArgs e );
+
+        private event OnPropertyChangedHandler OnPropertyChanged;
+
+        /// <summary>
+        /// Sets a view state property and raises the <see cref="OnPropertyChanged"/> event.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="value">The value.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        private void SetViewState<T>( T value, [CallerMemberName] string propertyName = null )
+        {
+            ViewState[propertyName] = value;
+            RaisePropertyChanged( propertyName );
+        }
+
+        /// <summary>
+        /// Raises the <see cref="OnPropertyChanged"/> event.
+        /// </summary>
+        /// <param name="propertyName">Name of the property.</param>
+        private void RaisePropertyChanged( [CallerMemberName] string propertyName = null )
+        {
+            OnPropertyChanged?.Invoke( this, new PropertyChangedEventArgs( propertyName ) );
+        }
 
         #endregion
 
@@ -215,13 +247,16 @@ namespace RockWeb.Blocks.Communication
         /// <summary>
         /// Gets or sets the medium entity type id.
         /// </summary>
+        /// <remarks>
+        /// The <see cref="OnPropertyChanged"/> event is raised when the value changes.
+        /// </remarks>
         /// <value>
         /// The medium entity type id.
         /// </value>
         protected int? MediumEntityTypeId
         {
             get { return ViewState["MediumEntityTypeId"] as int?; }
-            set { ViewState["MediumEntityTypeId"] = value; }
+            set { SetViewState( value ); }
         }
 
         /// <summary>
@@ -248,23 +283,65 @@ namespace RockWeb.Blocks.Communication
         /// <summary>
         /// Gets or sets the recipients.
         /// </summary>
+        /// <remarks>
+        /// The <see cref="OnPropertyChanged"/> event is raised when the value changes or when items are added/removed.
+        /// </remarks>
         /// <value>
         /// The recipient ids.
         /// </value>
-        protected List<Recipient> Recipients
+        protected ObservableCollection<Recipient> Recipients
         {
             get
             {
-                var recipients = ViewState["Recipients"] as List<Recipient>;
-                if ( recipients == null )
+                if ( !( ViewState[nameof( Recipients )] is ObservableCollection<Recipient> recipients ) )
                 {
-                    recipients = new List<Recipient>();
-                    ViewState["Recipients"] = recipients;
+                    recipients = new ObservableCollection<Recipient>();
+                    recipients.CollectionChanged += Recipients_CollectionChanged;
+
+                    SetViewState( recipients );
                 }
+                else
+                {
+                    // Make sure the event handlers are set up in case the recipients were deserialized from view state.
+                    recipients.CollectionChanged -= Recipients_CollectionChanged;
+                    recipients.CollectionChanged += Recipients_CollectionChanged;
+                } 
+                
                 return recipients;
             }
 
-            set { ViewState["Recipients"] = value; }
+            set
+            {
+                if ( ViewState[nameof( Recipients )] is ObservableCollection<Recipient> recipients )
+                {
+                    // Stop listening for changes to the collection.
+                    recipients.CollectionChanged -= Recipients_CollectionChanged;
+                }
+
+                // Start listening for changes to the collection.
+                if ( value != null )
+                {
+                    value.CollectionChanged -= Recipients_CollectionChanged;
+                    value.CollectionChanged += Recipients_CollectionChanged;
+                }
+
+                SetViewState( value );
+            }
+        }
+
+        /// <summary>
+        /// Handles the CollectionChanged event of the Recipients collection.
+        /// </summary>
+        /// <remarks>
+        /// When an item is added, removed, or when the collection is cleared,
+        /// the <see cref="OnPropertyChanged"/> event is raised indicating
+        /// the <see cref="Recipients"/> property changed.
+        /// </remarks>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.Collections.Specialized.NotifyCollectionChangedEventArgs"/> instance containing the event data.</param>
+        private void Recipients_CollectionChanged( object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e )
+        {
+            RaisePropertyChanged( nameof( Recipients ) );
         }
 
         /// <summary>
@@ -349,11 +426,15 @@ namespace RockWeb.Blocks.Communication
     });
 ";
             ScriptManager.RegisterStartupScript( lbRemoveAllRecipients, lbRemoveAllRecipients.GetType(), "ConfirmRemoveAll", script, true );
+            
+            this.OnPropertyChanged -= CommunicationEntry_OnPropertyChanged;
+            this.OnPropertyChanged += CommunicationEntry_OnPropertyChanged;
 
             string mode = GetAttributeValue( AttributeKey.Mode );
             _fullMode = string.IsNullOrWhiteSpace( mode ) || mode != "Simple";
             ppAddPerson.Visible = _fullMode;
-            cbBulk.Visible = _fullMode;
+            ShowHideIsBulkOption();
+
             ddlTemplate.Visible = _fullMode;
             dtpFutureSend.Visible = _fullMode;
             btnTest.Visible = _fullMode;
@@ -367,12 +448,30 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
+        /// Handles the <see cref="OnPropertyChanged"/> event of the CommunicationEntry control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="PropertyChangedEventArgs"/> instance containing the event data.</param>
+        private void CommunicationEntry_OnPropertyChanged( object sender, PropertyChangedEventArgs e )
+        {
+            var isBulkViewStateDependencies = new List<string> { nameof( Recipients ), nameof( MediumEntityTypeId ) };
+            if ( isBulkViewStateDependencies.Contains( e.PropertyName ) )
+            {
+                // If one of the "Is Bulk" dependencies change, then show or hide the bulk option.
+                ShowHideIsBulkOption();
+            }
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+            
+            this.OnPropertyChanged -= CommunicationEntry_OnPropertyChanged;
+            this.OnPropertyChanged += CommunicationEntry_OnPropertyChanged;
 
             nbTestResult.Visible = false;
 
@@ -568,7 +667,7 @@ namespace RockWeb.Blocks.Communication
                                         if ( recipient.EmailPreference == EmailPreference.NoMassEmails )
                                         {
                                             textClass = "js-no-bulk-email";
-                                            if ( cbBulk.Checked )
+                                            if ( cbBulk.Checked || _isBulkCommunicationForced )
                                             {
                                                 // This is a bulk email and user does not want bulk emails
                                                 textClass += " text-danger";
@@ -619,7 +718,7 @@ namespace RockWeb.Blocks.Communication
             int personId = int.MinValue;
             if ( int.TryParse( e.CommandArgument.ToString(), out personId ) )
             {
-                Recipients = Recipients.Where( r => r.PersonId != personId ).ToList();
+                Recipients = new ObservableCollection<Recipient>( Recipients.Where( r => r.PersonId != personId ) );
             }
         }
 
@@ -640,7 +739,7 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void lbRemoveAllRecipients_Click( object sender, EventArgs e )
         {
-            Recipients = Recipients.Where( r => r.Status != CommunicationRecipientStatus.Pending ).ToList();
+            Recipients = new ObservableCollection<Recipient>( Recipients.Where( r => r.Status != CommunicationRecipientStatus.Pending ).ToList() );
         }
 
         /// <summary>
@@ -939,14 +1038,14 @@ namespace RockWeb.Blocks.Communication
                     } ).ToList();
 
                 mediumEntityTypeId = PageParameter( PageParameterKey.MediumId ).AsIntegerOrNull() ?? recipientList.Where( a => a.MediumEntityTypeId.HasValue ).Select( a => a.MediumEntityTypeId ).FirstOrDefault();
-                Recipients = recipientList.Select( recipient => new Recipient( recipient.Person, recipient.PersonHasSMS, recipient.HasPersonalDevice, recipient.Status, recipient.StatusNote, recipient.OpenedClient, recipient.OpenedDateTime ) ).ToList();
+                Recipients = new ObservableCollection<Recipient>( recipientList.Select( recipient => new Recipient( recipient.Person, recipient.PersonHasSMS, recipient.HasPersonalDevice, recipient.Status, recipient.StatusNote, recipient.OpenedClient, recipient.OpenedDateTime ) ).ToList() );
             }
             else
             {
                 communication = new Rock.Model.Communication() { Status = CommunicationStatus.Transient };
                 communication.SenderPersonAliasId = CurrentPersonAliasId;
                 communication.EnabledLavaCommands = GetAttributeValue( AttributeKey.EnabledLavaCommands );
-                communication.IsBulkCommunication = GetAttributeValue( AttributeKey.DefaultAsBulk ).AsBoolean();
+                communication.IsBulkCommunication = _isBulkCommunicationForced || GetAttributeValue( AttributeKey.DefaultAsBulk ).AsBoolean();
 
                 lTitle.Text = "New Communication".FormatAsHtmlTitle();
                 if ( GetAttributeValue( AttributeKey.EnablePersonParameter ).AsBoolean() )
@@ -957,7 +1056,7 @@ namespace RockWeb.Blocks.Communication
 
                     if ( personId.HasValue )
                     {
-                        communication.IsBulkCommunication = false;
+                        communication.IsBulkCommunication = _isBulkCommunicationForced;
                         var context = new RockContext();
                         var person = new PersonService( context ).Get( personId.Value );
                         if ( person != null )
@@ -1016,11 +1115,11 @@ namespace RockWeb.Blocks.Communication
                 }
             }
 
-            cbBulk.Checked = communication.IsBulkCommunication;
+            cbBulk.Checked = _isBulkCommunicationForced || communication.IsBulkCommunication;
 
             if ( !_fullMode )
             {
-                cbBulk.Checked = GetAttributeValue( AttributeKey.SendSimpleAsBulk ).AsBoolean();
+                cbBulk.Checked = _isBulkCommunicationForced || GetAttributeValue( AttributeKey.SendSimpleAsBulk ).AsBoolean();
             }
 
             MediumControl control = LoadMediumControl( true );
@@ -1154,8 +1253,9 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
-        /// Shows the medium.
+        /// Shows the control for the currently selected medium (or the first medium if none selected).
         /// </summary>
+        /// <param name="setData">When <see langword="true"/>, populates the medium control with the current communication data.</param>
         private MediumControl LoadMediumControl( bool setData )
         {
             if ( setData )
@@ -1209,7 +1309,7 @@ namespace RockWeb.Blocks.Communication
                 {
                     var allowedSmsNumbersGuids = GetAttributeValue( AttributeKey.AllowedSMSNumbers ).SplitDelimitedValues( true ).AsGuidList();
 
-                    ( ( Sms ) mediumControl ).SelectedNumbers = SystemPhoneNumberCache.All()
+                    ( ( Sms ) mediumControl ).SelectedNumbers = SystemPhoneNumberCache.All( false )
                         .Where( spn => spn.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) && allowedSmsNumbersGuids.ContainsOrEmpty( spn.Guid ) )
                         .Select( spn => spn.Guid )
                         .ToList();
@@ -1279,8 +1379,6 @@ namespace RockWeb.Blocks.Communication
                     nbInvalidTransport.Visible = false;
                 }
 
-                cbBulk.Visible = _fullMode;
-
                 return mediumControl;
             }
 
@@ -1304,6 +1402,30 @@ namespace RockWeb.Blocks.Communication
             }
         }
 
+        /// <summary>
+        /// Shows or hides the bulk option.
+        /// </summary>
+        private void ShowHideIsBulkOption()
+        {
+            if ( MediumEntityTypeId.HasValue
+                 && MediumContainer.GetComponentByEntityTypeId( MediumEntityTypeId ) is Rock.Communication.Medium.Email emailMediumComponent
+                 && emailMediumComponent.IsBulkEmailThresholdExceeded( Recipients?.Count ?? 0 ) )
+            {
+                // Override to unchecked when bulk communication is prevented.
+                cbBulk.Visible = false;
+
+                // Force bulk communication since the recipient count has exceeded the threshold.
+                _isBulkCommunicationForced = true;
+            }
+            else
+            {
+                cbBulk.Visible = _fullMode;
+
+                // Do not force bulk communication since the recipient count has not exceeded the threshold.
+                _isBulkCommunicationForced = false;
+            }
+        }
+
         private MediumControl GetMediumControl()
         {
             if ( phContent.Controls.Count == 1 )
@@ -1314,7 +1436,7 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
-        /// Gets the medium data.
+        /// Updates the communication data from the current medium control.
         /// </summary>
         private void GetMediumData()
         {
@@ -1500,7 +1622,7 @@ namespace RockWeb.Blocks.Communication
                 }
             }
 
-            communication.IsBulkCommunication = cbBulk.Checked;
+            communication.IsBulkCommunication = _isBulkCommunicationForced || cbBulk.Checked;
             var medium = MediumContainer.GetComponentByEntityTypeId( MediumEntityTypeId );
             if ( medium != null )
             {

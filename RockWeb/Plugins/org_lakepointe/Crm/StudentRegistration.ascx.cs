@@ -9,17 +9,14 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
-using System.Threading;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 
 namespace RockWeb.Plugins.org_lakepointe.Crm
 {
-    [DisplayName("Student Registration")]
-    [Category("LPC > CRM")]
-    [Description("Form that will allow a new student to register for check-in.")]
+    [DisplayName( "Student Registration" )]
+    [Category( "LPC > CRM" )]
+    [Description( "Form that will allow a new student to register for check-in." )]
 
-    /*General Configuration */
     [CampusField(
         name: "Campus",
         description: "The campus that will be assigned to all registrations from this page.",
@@ -27,7 +24,7 @@ namespace RockWeb.Plugins.org_lakepointe.Crm
         defaultCampusId: "3",
         category: "",
         order: 0,
-        includeInactive: false)]
+        includeInactive: false )]
     [CodeEditorField(
         name: "Intro Message Template",
         description: "The lava template for the message to show on the Welcome Screen.",
@@ -36,7 +33,7 @@ namespace RockWeb.Plugins.org_lakepointe.Crm
         height: 200,
         required: true,
         defaultValue: "",
-        order: 1)]
+        order: 1 )]
     [CodeEditorField(
         name: "Confirmation Message Template",
         description: "The lava template for the message to show on the Confirmation Screen.",
@@ -45,26 +42,26 @@ namespace RockWeb.Plugins.org_lakepointe.Crm
         height: 200,
         required: true,
         defaultValue: "",
-        order: 2)]
+        order: 2 )]
     [LavaCommandsField(
         name: "Enabled Lava Commands",
         description: "The Lava commans that are enabled for this block",
         required: false,
         defaultValue: "",
-        order: 3)]
+        order: 3 )]
     [WorkflowTypeField(
         name: "Registration Workflow",
         description: "The workflow that this form activates to complete the student registration.",
         allowMultiple: false,
         required: true,
         defaultWorkflowTypeGuid: "",
-        order: 4)]
+        order: 4 )]
     [BooleanField(
-        name:"Display Campus Picker",
-        description:"Display a campus picker control.",
+        name: "Display Campus Picker",
+        description: "Display a campus picker control.",
         defaultValue: false,
-        order:5)]
-        
+        order: 5 )]
+
 
     public partial class StudentRegistration : RockBlock
     {
@@ -85,9 +82,9 @@ namespace RockWeb.Plugins.org_lakepointe.Crm
         #endregion
 
         #region Base Control Methods
-        protected override void OnInit(EventArgs e)
+        protected override void OnInit( EventArgs e )
         {
-            base.OnInit(e);
+            base.OnInit( e );
 
             lbNext.Click += LbNext_Click;
 
@@ -96,20 +93,20 @@ namespace RockWeb.Plugins.org_lakepointe.Crm
             lbCancel.Click += LbCancel_Click;
             lbFinished.Click += lbFinished_Click;
 
-            if (_context == null)
+            if ( _context == null )
             {
                 _context = new RockContext();
             }
 
             this.BlockUpdated += OnBlockUpdated;
-            this.AddConfigurationUpdateTrigger(upStudentRegistration);
+            this.AddConfigurationUpdateTrigger( upStudentRegistration );
         }
 
-        protected override void OnLoad(EventArgs e)
+        protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad(e);
+            base.OnLoad( e );
 
-            if (!Page.IsPostBack)
+            if ( !Page.IsPostBack )
             {
                 ClearFields();
                 InitializeForm();
@@ -118,7 +115,7 @@ namespace RockWeb.Plugins.org_lakepointe.Crm
 
         protected override object SaveViewState()
         {
-            ViewState["CampusId"] = Campus != null ? Campus.Id : (int?)null;
+            ViewState["CampusId"] = Campus != null ? Campus.Id : ( int? ) null;
             ViewState["Program"] = Program;
             return base.SaveViewState();
         }
@@ -137,23 +134,21 @@ namespace RockWeb.Plugins.org_lakepointe.Crm
 
         }
 
-
-
         #endregion
 
         #region Events
 
-        private void OnBlockUpdated(object sender, EventArgs e)
+        private void OnBlockUpdated( object sender, EventArgs e )
         {
             InitializeForm();
         }
 
-        private void lbReset_Click(object sender, EventArgs e)
+        private void lbReset_Click( object sender, EventArgs e )
         {
             ClearFields();
         }
 
-        private void lbSubmit_Click(object sender, EventArgs e)
+        private void lbSubmit_Click( object sender, EventArgs e )
         {
             SaveImage();
             SaveLocation();
@@ -165,20 +160,20 @@ namespace RockWeb.Plugins.org_lakepointe.Crm
             LoadConfirmationLava();
         }
 
-        private void LbCancel_Click(object sender, EventArgs e)
+        private void LbCancel_Click( object sender, EventArgs e )
         {
             pnlSnapshot.Visible = false;
             ClearFields();
             InitializeForm();
         }
 
-        private void LbNext_Click(object sender, EventArgs e)
+        private void LbNext_Click( object sender, EventArgs e )
         {
             pnlSignupForm.Visible = false;
             pnlSnapshot.Visible = true;
         }
 
-        private void lbFinished_Click(object sender, EventArgs e)
+        private void lbFinished_Click( object sender, EventArgs e )
         {
             ClearFields();
             InitializeForm();
@@ -186,7 +181,7 @@ namespace RockWeb.Plugins.org_lakepointe.Crm
 
         [System.Web.Services.WebMethod()]
         [System.Web.Script.Services.ScriptMethod()]
-        protected void lbCamera_Click(object sender, EventArgs e)
+        protected void lbCamera_Click( object sender, EventArgs e )
         {
             IndexedSnap();
         }
@@ -204,6 +199,7 @@ namespace RockWeb.Plugins.org_lakepointe.Crm
             tbPhone.Text = string.Empty;
             cbPermissionToText.Checked = true;
             tbSchool.Text = string.Empty;
+            tbFriend.Text = string.Empty;
             tbAddress.Text = string.Empty;
             tbCity.Text = string.Empty;
             tbState.Text = "Texas";
@@ -213,7 +209,6 @@ namespace RockWeb.Plugins.org_lakepointe.Crm
             pnbParentPhone.Text = string.Empty;
             embParentEmail.Text = string.Empty;
             rrblGender.ClearSelection();
-            //rddlGrade.ClearSelection();
             gpGrade.ClearSelection();
             rrblService.ClearSelection();
             rddlPhoneType.ClearSelection();
@@ -224,28 +219,28 @@ namespace RockWeb.Plugins.org_lakepointe.Crm
 
         private void InitializeForm()
         {
-            var programParameter = PageParameter("Program");
+            var programParameter = PageParameter( "Program" );
             Program = programParameter.IsNotNullOrWhiteSpace() ? programParameter : "LP Students";
 
-            var campusQSValue = PageParameter("campus").AsIntegerOrNull();
-            if (campusQSValue.HasValue)
+            var campusQSValue = PageParameter( "campus" ).AsIntegerOrNull();
+            if ( campusQSValue.HasValue )
             {
-                Campus = CampusCache.Get(campusQSValue.Value, _context);
+                Campus = CampusCache.Get( campusQSValue.Value, _context );
             }
             else
             {
-                var campusId = GetAttributeValue("Campus").AsIntegerOrNull();
-                if (campusId.HasValue)
+                var campusId = GetAttributeValue( "Campus" ).AsIntegerOrNull();
+                if ( campusId.HasValue )
                 {
-                    Campus = CampusCache.Get(campusId.Value, _context);
+                    Campus = CampusCache.Get( campusId.Value, _context );
                 }
             }
 
-            ShowCampusSelector = GetAttributeValue("DisplayCampusPicker").AsBoolean();
+            ShowCampusSelector = GetAttributeValue( "DisplayCampusPicker" ).AsBoolean();
             pnlCampusPicker.Visible = ShowCampusSelector; // do this on the wrapper panel because CampusPicker overrides the implementation of the Visible property.
-            if (ShowCampusSelector)
+            if ( ShowCampusSelector )
             {
-                cpCampus.SelectedCampusId = (Campus == null) ? 0 : Campus.Id;
+                cpCampus.SelectedCampusId = ( Campus == null ) ? 0 : Campus.Id;
             }
 
             pnlConfirmation.Visible = false;
@@ -259,26 +254,26 @@ namespace RockWeb.Plugins.org_lakepointe.Crm
 
         private void LoadConfirmationLava()
         {
-            var programParameter = PageParameter("Program");
+            var programParameter = PageParameter( "Program" );
             Program = programParameter.IsNotNullOrWhiteSpace() ? programParameter : "LP Students";
 
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields(this.RockPage, CurrentPerson,
-                new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false });
-            mergeFields.Add("Program", Program);
-            mergeFields.Add("Phone", tbPhone.Number.Trim());
-            lConfirmation.Text = GetAttributeValue("ConfirmationMessageTemplate").ResolveMergeFields(mergeFields, GetAttributeValue("EnabledLavaCommands"));
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, CurrentPerson,
+                new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+            mergeFields.Add( "Program", Program );
+            mergeFields.Add( "Phone", tbPhone.Number.Trim() );
+            lConfirmation.Text = GetAttributeValue( "ConfirmationMessageTemplate" ).ResolveMergeFields( mergeFields, GetAttributeValue( "EnabledLavaCommands" ) );
         }
         private void LoadIntroLava()
         {
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields(this.RockPage, CurrentPerson,
-                new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false });
-            mergeFields.Add("Program", Program);
-            lIntro.Text = GetAttributeValue("IntroMessageTemplate").ResolveMergeFields(mergeFields, GetAttributeValue("EnabledLavaCommands"));
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, CurrentPerson,
+                new Rock.Lava.CommonMergeFieldsOptions { GetLegacyGlobalMergeFields = false } );
+            mergeFields.Add( "Program", Program );
+            lIntro.Text = GetAttributeValue( "IntroMessageTemplate" ).ResolveMergeFields( mergeFields, GetAttributeValue( "EnabledLavaCommands" ) );
         }
 
         private void CheckCredentials()
         {
-            if (tbPhone.Number.Trim().IsNullOrWhiteSpace())
+            if ( tbPhone.Number.Trim().IsNullOrWhiteSpace() )
             {
                 cbPermissionToText.Checked = false; // if no phone, don't enable SMS
 
@@ -289,10 +284,10 @@ namespace RockWeb.Plugins.org_lakepointe.Crm
                 }
 
                 // create a fake phone number
-                tbPhone.Number = string.Format("{1:D2}{0}", dpBirthDate.SelectedDate.Value.ToString("MMddyyyy"), Campus.Id);
+                tbPhone.Number = string.Format( "{1:D2}{0}", dpBirthDate.SelectedDate.Value.ToString( "MMddyyyy" ), Campus.Id );
             }
 
-            if (!rddlPhoneType.SelectedValue.Equals("Mine"))
+            if ( !rddlPhoneType.SelectedValue.Equals( "Mine" ) )
             {
                 cbPermissionToText.Checked = false;
             }
@@ -300,64 +295,45 @@ namespace RockWeb.Plugins.org_lakepointe.Crm
 
         private void StartConnectionWorkflow()
         {
-            //var programParameter = PageParameter("Program");
-            //Program = programParameter.IsNotNullOrWhiteSpace() ? programParameter : "LP Students";
-
-            var workflowGuid = GetAttributeValue("RegistrationWorkflow").AsGuid();
-            var workflowType = WorkflowTypeCache.Get( workflowGuid );//new WorkflowTypeService(_context).Get(workflowGuid);
-            if (workflowType == null)
+            var workflowGuid = GetAttributeValue( "RegistrationWorkflow" ).AsGuid();
+            var workflowType = WorkflowTypeCache.Get( workflowGuid );
+            if ( workflowType == null )
             {
-                throw new Exception("Student Registration workflow type not provided.");
+                throw new Exception( "Student Registration workflow type not provided." );
             }
 
             var workflowAttributes = new Dictionary<string, string>();
-            workflowAttributes.Add("FirstName", tbFirstName.Text.Trim());
-            workflowAttributes.Add("LastName", tbLastName.Text.Trim());
-            workflowAttributes.Add("BirthDate", dpBirthDate.SelectedDate.Value.ToShortDateString());
-            workflowAttributes.Add("Gender", rrblGender.SelectedValue);
-            workflowAttributes.Add("Phone", PhoneNumber.FormattedNumber("1", PhoneNumber.CleanNumber(tbPhone.Number.Trim()), false));
-            workflowAttributes.Add("TextOkay", cbPermissionToText.Checked ? "Yes" : "No");
-            workflowAttributes.Add("WhosePhone", rddlPhoneType.SelectedValue);
-            workflowAttributes.Add("Email", tbEmail.Text.Trim());
-            workflowAttributes.Add("School", tbSchool.Text.Trim());
-            workflowAttributes.Add("GraduationYear", Person.GraduationYearFromGradeOffset(gpGrade.SelectedValue.AsIntegerOrNull()).ToString());
-            workflowAttributes.Add("Home", HomeLocationGuid);
-            workflowAttributes.Add("ParentFirstName", tbParentFirstName.Text.Trim());
-            workflowAttributes.Add("ParentLastName", tbParentLastName.Text.Trim());
-            workflowAttributes.Add("ParentPhone", PhoneNumber.FormattedNumber("1", PhoneNumber.CleanNumber(pnbParentPhone.Number.Trim()), false));
-            workflowAttributes.Add("ParentEmail", embParentEmail.Text.Trim());
-            workflowAttributes.Add("PhotoId", PhotoId.ToString());
-            if (ShowCampusSelector)
+            workflowAttributes.Add( "FirstName", tbFirstName.Text.Trim() );
+            workflowAttributes.Add( "LastName", tbLastName.Text.Trim() );
+            workflowAttributes.Add( "BirthDate", dpBirthDate.SelectedDate.Value.ToShortDateString() );
+            workflowAttributes.Add( "Gender", rrblGender.SelectedValue );
+            workflowAttributes.Add( "Phone", PhoneNumber.FormattedNumber( "1", PhoneNumber.CleanNumber( tbPhone.Number.Trim() ), false ) );
+            workflowAttributes.Add( "TextOkay", cbPermissionToText.Checked ? "Yes" : "No" );
+            workflowAttributes.Add( "WhosePhone", rddlPhoneType.SelectedValue );
+            workflowAttributes.Add( "Email", tbEmail.Text.Trim() );
+            workflowAttributes.Add( "School", tbSchool.Text.Trim() );
+            workflowAttributes.Add( "Friend", tbFriend.Text.Trim() );
+            workflowAttributes.Add( "GraduationYear", Person.GraduationYearFromGradeOffset( gpGrade.SelectedValue.AsIntegerOrNull() ).ToString() );
+            workflowAttributes.Add( "Home", HomeLocationGuid );
+            workflowAttributes.Add( "ParentFirstName", tbParentFirstName.Text.Trim() );
+            workflowAttributes.Add( "ParentLastName", tbParentLastName.Text.Trim() );
+            workflowAttributes.Add( "ParentPhone", PhoneNumber.FormattedNumber( "1", PhoneNumber.CleanNumber( pnbParentPhone.Number.Trim() ), false ) );
+            workflowAttributes.Add( "ParentEmail", embParentEmail.Text.Trim() );
+            workflowAttributes.Add( "PhotoId", PhotoId.ToString() );
+            if ( ShowCampusSelector )
             {
-                Campus = CampusCache.Get(cpCampus.SelectedCampusId ?? 3);
-                workflowAttributes.Add("Campus", Campus.Guid.ToString());
+                Campus = CampusCache.Get( cpCampus.SelectedCampusId ?? 3 );
+                workflowAttributes.Add( "Campus", Campus.Guid.ToString() );
             }
             else
             {
-                //var campusQSValue = PageParameter("campus").AsIntegerOrNull();
-                //if (campusQSValue.HasValue)
-                //{
-                //    Campus = CampusCache.Get(campusQSValue.Value, _context);
-                //}
-                //else
-                //{
-                //    var campusId = GetAttributeValue("Campus").AsIntegerOrNull();
-                //    if (campusId.HasValue)
-                //    {
-                //        Campus = CampusCache.Get(campusId.Value, _context);
-                //    }
-                //}
-                if (Campus != null)
+                if ( Campus != null )
                 {
-                    workflowAttributes.Add("Campus", Campus.Guid.ToString());
+                    workflowAttributes.Add( "Campus", Campus.Guid.ToString() );
                 }
             }
-            workflowAttributes.Add("Program", Program);
-            workflowAttributes.Add("ParentServicePreference", rrblService.SelectedValue);
-
-            //var transaction = new Rock.Transactions.LaunchWorkflowTransaction(workflowGuid, string.Format("New Student - {0} {1}", tbFirstName.Text, tbLastName.Text));
-            //transaction.WorkflowAttributeValues = workflowAttributes;
-            //Rock.Transactions.RockQueue.TransactionQueue.Enqueue(transaction);
+            workflowAttributes.Add( "Program", Program );
+            workflowAttributes.Add( "ParentServicePreference", rrblService.SelectedValue );
 
             var workflow = Workflow.Activate( workflowType, "New Student Registration" );
             workflow.LoadAttributes( _context );
@@ -373,26 +349,26 @@ namespace RockWeb.Plugins.org_lakepointe.Crm
 
         private void IndexedSnap()
         {
-            ScriptManager.RegisterStartupScript(dlgCamera, dlgCamera.GetType(), "callSnapImage" + RockDateTime.Now.Ticks.ToString(), "snapImage();", true);
+            ScriptManager.RegisterStartupScript( dlgCamera, dlgCamera.GetType(), "callSnapImage" + RockDateTime.Now.Ticks.ToString(), "snapImage();", true );
             dlgCamera.Show();
         }
 
         private void SaveImage()
         {
-            if (hfImage.Value.Length > 23)
+            if ( hfImage.Value.Length > 23 )
             {
                 // always create a new BinaryFile record of IsTemporary when a file is uploaded
-                var binaryFileService = new BinaryFileService(_context);
+                var binaryFileService = new BinaryFileService( _context );
                 Guid fileTypeGuid = Rock.SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid();
-                BinaryFileType binaryFileType = new BinaryFileTypeService(_context).Get(fileTypeGuid);
+                BinaryFileType binaryFileType = new BinaryFileTypeService( _context ).Get( fileTypeGuid );
 
                 var binaryFile = new BinaryFile();
 
-                binaryFileService.Add(binaryFile);
-                var uploadedFile = hfImage.Value.Substring(23);
+                binaryFileService.Add( binaryFile );
+                var uploadedFile = hfImage.Value.Substring( 23 );
 
-                byte[] imageBytes = Convert.FromBase64String(uploadedFile);
-                MemoryStream ms = new MemoryStream(imageBytes, 0, imageBytes.Length);
+                byte[] imageBytes = Convert.FromBase64String( uploadedFile );
+                MemoryStream ms = new MemoryStream( imageBytes, 0, imageBytes.Length );
                 binaryFile.ContentStream = ms;
 
                 // assume file is temporary so files that don't end up getting used will get cleaned up

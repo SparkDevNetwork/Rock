@@ -159,7 +159,7 @@ namespace Rock.Web.UI.Controls.Communication
             Controls.Clear();
 
             var selectedNumberGuids = SelectedNumbers; //GetAttributeValue( "FilterCategories" ).SplitDelimitedValues( true ).AsGuidList();
-            var smsNumbers = SystemPhoneNumberCache.All()
+            var smsNumbers = SystemPhoneNumberCache.All( false )
                 .OrderBy( spn => spn.Order )
                 .ThenBy( spn => spn.Name )
                 .ThenBy( spn => spn.Id )
@@ -245,7 +245,7 @@ namespace Rock.Web.UI.Controls.Communication
         /// <exception cref="System.NotImplementedException"></exception>
         public override void InitializeFromSender( Person sender )
         {
-            foreach ( var number in SystemPhoneNumberCache.All() )
+            foreach ( var number in SystemPhoneNumberCache.All( false ) )
             {
                 var personAliasId = number.AssignedToPersonAliasId;
                 if ( personAliasId.HasValue && sender.Aliases.Any( a => a.Id == personAliasId.Value ) )

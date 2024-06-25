@@ -270,6 +270,10 @@ namespace RockWeb.Blocks.Connection
 
             this.BlockUpdated += Block_BlockUpdated;
 
+            // LPC CODE
+            lbRequestModalViewModeAddActivity.Click += gConnectionRequestActivities_Add;
+            // END LPC CODE
+
             gConnectionRequestActivities.DataKeyNames = new string[] { "Guid" };
             gConnectionRequestActivities.Actions.AddClick += gConnectionRequestActivities_Add;
             gConnectionRequestActivities.GridRebind += gConnectionRequestActivities_GridRebind;
@@ -2025,6 +2029,10 @@ namespace RockWeb.Blocks.Connection
                         }
                     }
                 }
+
+                // LPC CODE
+                lbRequestModalViewModeAddActivity.Visible = editAllowed;
+                // END LPC CODE
 
                 lbConnect.Visible = editAllowed;
                 lbEdit.Visible = editAllowed;

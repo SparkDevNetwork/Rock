@@ -95,6 +95,16 @@ namespace RockWeb.Blocks.CheckIn.Manager
         Order = 6
         )]
 
+    // LPC CODE
+    [BooleanField(
+        "Show Contact Info",
+        Key = AttributeKey.ShowContactInfo,
+        Description = "If the contact information panel should be shown.",
+        DefaultBooleanValue = true,
+        IsRequired = false,
+        Order = 7 )]
+    // END LPC CODE
+
     [Rock.SystemGuid.BlockTypeGuid( "D54909DB-8A5D-4665-97ED-E2C8577E3C64" )]
     public partial class PersonLeft : Rock.Web.UI.RockBlock
     {
@@ -109,6 +119,9 @@ namespace RockWeb.Blocks.CheckIn.Manager
             public const string SharePersonPage = "SharePersonPage";
             public const string ShowSharePersonButton = "ShowSharePersonButton";
             public const string PersonProfilePage = "PersonProfilePage";
+            // LPC CODE
+            public const string ShowContactInfo = "ShowContactInfo";
+            // END LPC CODE
         }
 
         #endregion
@@ -574,7 +587,9 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 var phoneNumbers = person.PhoneNumbers.Where( p => !p.IsUnlisted ).ToList();
                 rptrPhones.DataSource = phoneNumbers;
                 rptrPhones.DataBind();
-                pnlContact.Visible = phoneNumbers.Any() || lEmail.Visible;
+                // LPC MODIFIED CODE
+                pnlContact.Visible = (phoneNumbers.Any() || lEmail.Visible) && GetAttributeValue( AttributeKey.ShowContactInfo ).AsBoolean( true );
+                // END LPC MODIFIED CODE
             }
         }
 

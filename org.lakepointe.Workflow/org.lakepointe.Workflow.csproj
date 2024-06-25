@@ -61,11 +61,7 @@
   <ItemGroup>
     <Compile Include="Migrations\001_CreateAttributes.cs" />
     <Compile Include="Migrations\002_CreateWorkflowActions.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>AssemblyInfo.tt</DependentUpon>
-    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Workflow\Action\CheckIn\CustomCalculateLastAttended.cs" />
     <Compile Include="Workflow\Action\CheckIn\AddGroupsByAbsoluteGradeAndAge.cs" />
     <Compile Include="Workflow\Action\Communications\SendEmail.cs" />
@@ -80,12 +76,6 @@
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Properties\AssemblyInfo.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>AssemblyInfo.cs</LastGenOutput>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Rock.Common\Rock.Common.csproj">

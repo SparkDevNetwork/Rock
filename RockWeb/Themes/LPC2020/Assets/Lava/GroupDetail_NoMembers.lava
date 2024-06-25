@@ -29,6 +29,26 @@
 	{% endfor %}
 	{% assign countInactive = -1 %} {% comment %} Hack to prevent Inactive members from being displayed {% endcomment %}
 
+	{% comment %} If we haven't already identified the current user as a leader, look to see if they're a coach in the parent group {% endcomment %}
+	{% unless isCurrentPersonLeader %}
+		{% assign coachGroup = Group.ParentGroup %}
+		{% for member in coachGroup.Members %}
+			{% if member.GroupMemberStatus == 1 and member.PersonId == CurrentPerson.Id %}
+				{% assign isCurrentPersonLeader = true %}
+			{% endif %}
+		{% endfor %}
+	{% endunless %}
+
+	{% comment %} If we haven't already identified the current user as a leader, look to see if they're a captain in the grandparent group {% endcomment %}
+	{% unless isCurrentPersonLeader %}
+		{% assign captainGroup = Group.ParentGroup.ParentGroup %}
+		{% for member in captainGroup.Members %}
+			{% if member.GroupMemberStatus == 1 and member.PersonId == CurrentPerson.Id %}
+				{% assign isCurrentPersonLeader = true %}
+			{% endif %}
+		{% endfor %}
+	{% endunless %}
+
 	{% comment %}
 	{% for groupLocation in Group.GroupLocations %}
 		{% if groupLocation.Location.GeoPoint != '' %}
@@ -45,7 +65,7 @@
 
 	<h1>{{ Group.Name }}</h1>
 	{% if addGuestButton == true %}
-    <a href='/page/2445?Group={{Group.Guid}}&IsFormPrefilled=False' class="btn btn-primary btn-xs">Add Guest for {{Group.Name}}</a></br></br>
+    <a href='/page/2445?Group={{Group.Guid}}&IsFormPrefilled=False' class="btn btn-primary btn-xs">Add Guest</a></br></br>  //- shanedlp 5/7/24 - Removed the Life Group name from the hyperlink/button.
 	{% endif %}
 	{% if isCurrentPersonLeader == true and schedulerButton == true %}
     <a href='/schedulegroup?GroupId={{Group.Id}}' class="btn btn-primary btn-xs">Scheduler</a></br></br>
@@ -68,32 +88,70 @@
 	{% endif %}
 
 	<div class="row">
-		<div class="col-md-6">
+		{% assign anyLocations = false %}
+		{% for location in Group.GroupLocations %}
+			{% assign address = location.Location.FormattedAddress %}
+			{% if address != null and address != '' %}
+				{% assign anyLocations = true %}
+				{% break %}
+			{% endif %}
+		{% endfor %}
+
+		{% assign leaders = Group.Members | Where:'GroupMemberStatus == 1 && GroupRole.IsLeader' %}
+		{% assign leaderCount = leaders | Size %}
+
+		{% if anyLocations == true or leaderCount > 0 %}
+			<div class="col-md-6">
+		{% else %}
+			<div class="col-md-12">
+		{% endif %}
+
 		<h4>Group Details:</h4>
+
+		{% assign coaches = Group.ParentGroup.Members | Where:'GroupMemberStatus == 1' %}
+		{% assign coachCount = coaches | Size %}
+		{% if coachCount > 0 %}
+			<p><strong>{{ 'Coach' | Pluralize:coachCount }}:</strong> {{ coaches | Join:', ' }}</p>
+		{% endif %}
+
+		{% assign captains = Group.ParentGroup.ParentGroup.Members | Where:'GroupMemberStatus == 1' %}
+		{% assign captainCount = captains | Size %}
+		{% if captainCount > 0 %}
+			<p><strong>{{ 'Captain' | Pluralize:captainCount }}:</strong> {{ captains | Join:', ' }}</p>
+		{% endif %}
+
 		{% for attribute in Group.AttributeValues %}
 		<strong>{{ attribute.AttributeName }}:</strong> {{ attribute.ValueFormatted }} <br />
 		{% endfor %}
+
 		{% if addSendEmailToCoachButton == true %}
-			{% assign coachRoleId = Group.GroupType.Roles | Where:'Name','Coach' | Select:'Id' | First %}
-			{% if coachRoleId != null %}
-				{% assign coachEmails = Group.Members | Where:'GroupRoleId',coachRoleId | Select:'Person' | Where:'IsEmailActive',1 | Select:'Email' | Join:',' %}
-			{% endif %}
-			{% if coachEmails and coachEmails != '' %}
+			{% if coachCount > 0 %}
+				{% assign coachEmails = Group.ParentGroup.Members | Select:'Person' | Where:'IsEmailActive',1 | Select:'Email' | Join:',' %}
 				<a href="mailto:{{ coachEmails }}" class="btn btn-xs btn-default" style="margin-bottom:10px;">Send Email to Group Coach</a> <br />
-			{% else %}
-				{% assign coach = Group | Attribute:'AGCoach','Object' %}
-				{% if coach.Email != '' %}
-					<a href="mailto:{{ coach.Email }}" class="btn btn-xs btn-default" style="margin-bottom:10px;">Send Email to Group Coach</a> <br />
+			{% elseif captainCount > 0 %}
+				{% assign coachEmails = Group.ParentGroup.ParentGroup.Members | Select:'Person' | Where:'IsEmailActive',1 | Select:'Email' | Join:',' %}
+				<a href="mailto:{{ coachEmails }}" class="btn btn-xs btn-default" style="margin-bottom:10px;">Send Email to Group Captain</a> <br />
+			{% else %} {% comment %} This else clause is doing things the old way and should eventually be removed {% endcomment %}
+				{% assign coachRoleId = Group.GroupType.Roles | Where:'Name','Coach' | Select:'Id' | First %}
+				{% if coachRoleId != null %}
+					{% assign coachEmails = Group.Members | Where:'GroupRoleId',coachRoleId | Select:'Person' | Where:'IsEmailActive',1 | Select:'Email' | Join:',' %}
+				{% endif %}
+				{% if coachEmails and coachEmails != '' %}
+					<a href="mailto:{{ coachEmails }}" class="btn btn-xs btn-default" style="margin-bottom:10px;">Send Email to Group Coach</a> <br />
 				{% else %}
-					{% assign lgCoach = Group | Attribute:'LGCoach','Object' %} {% comment %} Actually the Groups Pastor {% endcomment %}
-					{% if lgCoach and lgCoach != '' %}
-						{% assign emailLength = lgCoach.Email | Size %}
-						{% if emailLength > 4  %}
-							<a href="mailto:{{ lgCoach.Email }}" class="btn btn-xs btn-default" style="margin-bottom:10px;">Send Email to Groups Pastor</a> <br />
+					{% assign coach = Group | Attribute:'AGCoach','Object' %}
+					{% if coach.Email != '' %}
+						<a href="mailto:{{ coach.Email }}" class="btn btn-xs btn-default" style="margin-bottom:10px;">Send Email to Group Coach</a> <br />
+					{% else %}
+						{% assign lgCoach = Group | Attribute:'LGCoach','Object' %} {% comment %} Actually the Groups Pastor {% endcomment %}
+						{% if lgCoach and lgCoach != '' %}
+							{% assign emailLength = lgCoach.Email | Size %}
+							{% if emailLength > 4  %}
+								<a href="mailto:{{ lgCoach.Email }}" class="btn btn-xs btn-default" style="margin-bottom:10px;">Send Email to Groups Pastor</a> <br />
+							{% endif %}
 						{% endif %}
 					{% endif %}
 				{% endif %}
-
 			{% endif %}
 		{% endif %}
 		{% if showHeadCount == true %}
@@ -101,48 +159,45 @@
 		{% endif %}
 		</div>
 
-		<div class="col-md-6">
-		<h4>Leaders:</h4>
-		<ul>
-			{% for member in Group.Members %}
-
-			{% if member.GroupRole.IsLeader and member.GroupMemberStatus == 1 %}
-			<li>
-			{{ member.Person.FullName }} <small>({{ member.GroupRole.Name }})</small>
-			</li>
-			{% endif %}
-			{% endfor %}
-		</ul>
-		</div>
-
-		<div class="col-md-6">
-			{% assign any = false %}
-			{% for location in Group.GroupLocations %}
-				{% assign address = location.Location.FormattedAddress %}
-				{% if address != null and address != '' %}
-					{% assign any = true %}
-					{% break %}
+		{% if anyLocations == true or leaderCount > 0 %}
+			<div class="col-md-6">
+				{% if leaderCount > 0 %}
+					<div class="row">
+						<div class="col-md-12">
+							<h4>Leaders:</h4>
+							<ul>
+								{% for leader in leaders %}
+									<li>{{ leader.Person.FullName }} <small>({{ leader.GroupRole.Name }})</small></li>
+								{% endfor %}
+							</ul>
+						</div>
+					</div>
 				{% endif %}
-			{% endfor %}
-			{% if any == true %}
-				<h4>Location:</h4>
-				{% for location in Group.GroupLocations %}
-					{% assign address = location.Location.FormattedAddress | RegExReplace:'-[0-9]+$','' %}
-					<p>
-						<a href="https://www.google.com/maps/place/{{ address | Replace:' ','+' | Replace:'\r\n',',+' }}" target="_blank" rel="noopener noreferrer">{{ location.Location.FormattedHtmlAddress }}</a>
-					</p>
-				{% endfor %}
-			{% endif %}
-		</div>
+
+				{% if anyLocations == true %}
+					<div class="row">
+						<div class="col-md-12">
+							<h4>Location:</h4>
+							{% for location in Group.GroupLocations %}
+								{% assign address = location.Location.FormattedAddress | RegExReplace:'-[0-9]+$','' %}
+								<p><a href="https://www.google.com/maps/place/{{ address | Replace:' ','+' | Replace:'\r\n',',+' }}" target="_blank" rel="noopener noreferrer">{{ location.Location.FormattedHtmlAddress }}</a></p>
+							{% endfor %}
+						</div>
+					</div>
+				{% endif %}
+				</div>
+		{% endif %}
 	</div>
 
 	{% if requestUpdates == true %}
 		{% assign gm =  Group.Members | Where:'PersonId', CurrentPerson.Id | Where:'GroupMemberStatus',1 | First %}
 		{% if gm != null and gm.GroupRole.IsLeader == true %}
 			<div class="actions margin-v-md clearfix">
-				{% capture editLink %}/page/2308?Group={{Group.Guid}}{% endcapture %}
+				{% capture editLink %}/RequestGroupUpdate?Group={{Group.Guid}}{% endcapture %}
+				{% capture imageEditLink %}/RequestGroupImageUpdate?Group={{Group.Guid}}{% endcapture %}
 				<!--<a class="btn btn-default btn-sm pull-right" href="#" onclick="{{ Group.Id | Postback:'EditGroup' }}">Edit</a>-->
 				<a class="btn btn-default btn-sm pull-right" href="{{editLink}}">Request Update</a>
+				<a class="btn btn-default btn-sm pull-right mr-2" href="{{imageEditLink}}">Request Image Update</a>
 			</div>
 		{% endif %}
 	{% endif %}
@@ -176,8 +231,6 @@
 			{% endif %}
 		</ul>
 	{% endif %}
-
-
 
 {% else %}
 	{% if Group.Id %}

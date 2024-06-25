@@ -66,21 +66,7 @@
 </style>
 
     {% assign group = Workflow | Attribute:'Group','Object' %}
-    {% case group.CampusId  %}
-    {% when '3' or '7' %}
-    {% assign mapLink = 'https://interiormaps.s3.amazonaws.com/Lakepointe-Rockwall-Interior-Map.png' %}
-    {% when '2' or '13' %}
-    {% assign mapLink = 'https://interiormaps.s3.amazonaws.com/Lakepointe-Town%20East-Interior-Map.png' %}
-    {% when '4' %}
-    {% assign mapLink = 'https://interiormaps.s3.amazonaws.com/Lakepointe-Firewheel-Interior-Map.png' %}
-    {% when '5' %}
-    {% assign mapLink = 'https://interiormaps.s3.amazonaws.com/Lakepointe-Forney-Interior-Map.png' %}
-    {% when '12' %}
-    {% assign mapLink = 'https://lakepointe.church/wp-content/uploads/2023/01/Lakepointe-White-Rock-Interior-Map.png' %}
-    {% when '8' or '14' %}
-    {% assign mapLink = 'https://interiormaps.s3.amazonaws.com/Lakepointe-North%20Dallas-Interior-Map.png' %}
-    {% endcase %}
-
+    {% assign mapLink = group.Campus | Attribute:'CampusMap','RawValue' %}
 
     <div class="sg-group-details">
         <div class="sg-name">{{group.Name}}</div>

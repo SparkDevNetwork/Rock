@@ -219,14 +219,14 @@ SELECT cr.*
                                     isL3 = maxConnectionRequest.AssignedGroup.Name.Contains( "Minor" );
                                 }
                                 if ( ( key.Contains( "L2" ) || key.Contains( "Level 2" ) )
-                                    && (groupName.Contains( "Level 2" ) || groupName.Contains( "Minor" ) )
+                                    && ( groupName.Contains( "Level 2" ) || groupName.Contains( "L2" ) || groupName.Contains( "Minor" ) )
                                     && isL3 == false )
                                 {
                                     maxConnectionRequest = connectionRequest;
                                     maxStatus = statusInt;
                                 }
                                 else if ( ( key.Contains( "L3" ) || key.Contains( "Level 3" ) )
-                                    && groupName.Contains( "Minor" ) )
+                                    && ( groupName.Contains( "Level 3" ) || groupName.Contains( "L3" ) || groupName.Contains( "Minor" ) ) )
                                 {
                                     maxConnectionRequest = connectionRequest;
                                     maxStatus = statusInt;

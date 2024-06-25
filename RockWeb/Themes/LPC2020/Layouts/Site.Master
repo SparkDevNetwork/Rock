@@ -269,20 +269,21 @@
 							</asp:Panel>
 							
 							<div style="width: 80%; margin: auto;">
-							<div class="col-sm-12 align-self-center billboardInnerContent">
-								<div id="divImagePageTitle" runat="server" class="container" visible="false">
-									<div class="page__title">
-										<h1 style="font-weight: 700; font-size: 38px; color: #FFFFFF; margin: 0;"><asp:Literal id="lImagePageTitle" runat="server" /></h1>
+								<div class="col-sm-12 align-self-center billboardInnerContent">
+									<div id="divImagePageTitle" runat="server" class="container" visible="false">
+										<div class="page__title">
+											<h1 style="font-weight: 700; font-size: 38px; color: #FFFFFF; margin: 0;"><asp:Literal id="lImagePageTitle" runat="server" /></h1>
+										</div>
+									</div>
+									<Rock:Zone Name="PageHeader" runat="server" />
+									<div>
+										<div class="page-title-underline" id="lImagePageTitleUnderline" runat="server"></div>
+										<asp:Panel runat="server" id="pnlPageDescriptionImage" visible="false" CssClass="page_description" style="margin-top: 21px;">
+											<h3 style="margin: 0; padding: 0; color: #fff; font-size: 20px; font-weight: 400;"><asp:Literal id="lDefaultPageDescriptionImage" runat="server" /></h3>
+										</asp:Panel>
 									</div>
 								</div>
-								<Rock:Zone Name="PageHeader" runat="server" />
-								<div>
-									<div class="page-title-underline" id="lImagePageTitleUnderline" runat="server"></div>
-									<asp:Panel runat="server" id="pnlPageDescriptionImage" visible="false" CssClass="page_description" style="margin-top: 21px;">
-										<h3 style="margin: 0; padding: 0; color: #fff; font-size: 20px; font-weight: 400;"><asp:Literal id="lDefaultPageDescriptionImage" runat="server" /></h3>
-									</asp:Panel>
-								</div>
-							</div>								
+							</div>
 						</div>
 					</div>
 				</section>
@@ -302,28 +303,29 @@
 								</div>
 							</div>
 							<div style="width: 80%; margin: auto;">
-							<div class="col-sm-12 align-self-center billboardInnerContent">
-								<div id="divDefaultPageTitle" class="container" runat="server">	
-									<div class="page__title">
-											<h1 style="font-weight: 700; font-size: 38px; color: #FFFFFF; margin: 0;"><asp:Literal id="lTextPageTitle" runat="server" /></h1>
+								<div class="col-sm-12 align-self-center billboardInnerContent">
+									<div id="divDefaultPageTitle" class="container" runat="server">	
+										<div class="page__title">
+												<h1 style="font-weight: 700; font-size: 38px; color: #FFFFFF; margin: 0;"><asp:Literal id="lTextPageTitle" runat="server" /></h1>
+										</div>
 									</div>
+									<div>
+										<div class="page-title-underline" id="lTextPageTitleUnderline" runat="server"></div>
+										<asp:Panel runat="server" id="pnlPageDescriptionText" visible="false" CssClass="page_description" style="margin-top: 21px;">
+											<h3 style="margin: 0; padding: 0; color: #fff; font-size: 20px; font-weight: 400;"><asp:Literal id="lDefaultPageDescriptionText" runat="server" /></h3>
+										</asp:Panel>
+									</div>
+									<svg id="svgHero" runat="server" visible="false"
+										xmlns="http://www.w3.org/2000/svg"
+										version="1.1"
+										viewBox="0 0 268.65866 288"
+										fill="#282828"
+										style="scale: 5; width: 100%; height: 15vw; min-height: 75px;">
+										<g
+											transform="matrix(1.3333333,0,0,-1.3333333,-261.67066,443.99999)"><g
+											transform="translate(321.877,183.627)"><path
+												d="M 0,0 V 34.063 L -49.783,83.955 V 49.782 Z M -95.926,149.373 13.642,39.547 13.641,39.546 h 10e-4 V -13.643 L 30.43,-30.43 v 80.179 l -99.475,99.624 h 19.132 L 44.07,55.237 44.069,55.236 H 44.07 L 44.071,-44.07 62.229,-62.229 V 66.847 l -82.491,82.526 H -1.129 L 75.87,72.274 V 72.216 -66.627 H 47.494 L -62.367,43.31 l -1.056,0.824 v 0.233 h -0.002 l 0.002,0.001 V 97.625 L -81.11,115.35 V 32.747 L 18.265,-66.627 H -0.868 l -93.883,94.001 v 0.021 l 0.043,101.584 -17.274,17.31 V 15.963 l 82.59,-82.59 h -19.132 l -77.1,77.156 v 0.222 138.622 z" /></g></g></svg>
 								</div>
-								<div>
-									<div class="page-title-underline" id="lTextPageTitleUnderline" runat="server"></div>
-									<asp:Panel runat="server" id="pnlPageDescriptionText" visible="false" CssClass="page_description" style="margin-top: 21px;">
-										<h3 style="margin: 0; padding: 0; color: #fff; font-size: 20px; font-weight: 400;"><asp:Literal id="lDefaultPageDescriptionText" runat="server" /></h3>
-									</asp:Panel>
-								</div>
-								<svg id="svgHero" runat="server" visible="false"
-									xmlns="http://www.w3.org/2000/svg"
-									version="1.1"
-									viewBox="0 0 268.65866 288"
-									fill="#282828"
-									style="scale: 5; width: 100%; height: 15vw; min-height: 75px;">
-									<g
-										transform="matrix(1.3333333,0,0,-1.3333333,-261.67066,443.99999)"><g
-										transform="translate(321.877,183.627)"><path
-											d="M 0,0 V 34.063 L -49.783,83.955 V 49.782 Z M -95.926,149.373 13.642,39.547 13.641,39.546 h 10e-4 V -13.643 L 30.43,-30.43 v 80.179 l -99.475,99.624 h 19.132 L 44.07,55.237 44.069,55.236 H 44.07 L 44.071,-44.07 62.229,-62.229 V 66.847 l -82.491,82.526 H -1.129 L 75.87,72.274 V 72.216 -66.627 H 47.494 L -62.367,43.31 l -1.056,0.824 v 0.233 h -0.002 l 0.002,0.001 V 97.625 L -81.11,115.35 V 32.747 L 18.265,-66.627 H -0.868 l -93.883,94.001 v 0.021 l 0.043,101.584 -17.274,17.31 V 15.963 l 82.59,-82.59 h -19.132 l -77.1,77.156 v 0.222 138.622 z" /></g></g></svg>
 							</div>
 						</div>
 					</div>

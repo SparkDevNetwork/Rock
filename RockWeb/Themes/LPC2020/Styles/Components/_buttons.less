@@ -1,7 +1,7 @@
 /*Button Styles*/
 
 .btn {
-  font-family: 'Montserrat',Helvetica,Arial,Lucida,sans-serif;
+	font-family: 'Montserrat',Helvetica,Arial,Lucida,sans-serif;
 	border-radius: @border-radius-base;
 }
 
@@ -9,6 +9,7 @@
 	border-color: @btn-primary-border;
 	background-color: @btn-primary-bg;
 	color: @theme-1-text;
+
 	&:hover, &:hover i, &:active, &:focus, &:active:focus {
 		background-color: @theme-1;
 		text-decoration: none;
@@ -20,6 +21,7 @@
 		border-color: @btn-primary-border;
 		background-color: @btn-primary-bg;
 		color: @theme-1-text;
+
 		&:hover, &:hover i, &:active, &:focus, &:active:focus {
 			background-color: @theme-1;
 			text-decoration: none;
@@ -39,6 +41,7 @@
 	transition: all .4s ease-in-out;
 	color: @brand-primary;
 	background-color: transparent;
+
 	&:hover, &:focus {
 		letter-spacing: 1px;
 		transition: all .4s ease-in-out;
@@ -46,32 +49,53 @@
 }
 
 .btn-danger {
-	color: #fff;
+	color: @theme-1-text;
 	background-color: @btn-danger-bg;
 	border-color: @btn-danger-border;
 }
 
 .dropdown-menu {
-	.btn-link {
-		color: @theme-1-text;
-		background-color: @btn-primary-bg;
+	padding: 0;
+
+	.btn-link, .btn-primary {
+		background-color: @btn-default-bg;
+		color: @btn-default-color;
+		border-bottom: 1px solid @btn-default-border;
 		padding: 3px 20px;
 		line-height: 1.7em;
+
 		&:hover {
-			color: @theme-1-text;
-			background-color: @btn-primary-bg;
+			background-color: darken(@btn-default-bg, 10%);
+		}
+
+		&.dropdown-item-danger {
+			color: @brand-danger;
+		}
+
+		&.dropdown-item-success {
+			color: @brand-success;
+		}
+
+		&.dropdown-item-info {
+			color: @brand-info;
+		}
+
+		&.dropdown-item-warning {
+			color: @brand-warning;
+		}
+
+		&.dropdown-item-danger {
+			color: @brand-danger;
 		}
 	}
-	.btn-primary {
-		color: @theme-3-text;
-		background-color: @theme-3;
-		padding: 3px 20px;
-		line-height: 1.7em;
-		&:hover {
-			background-color: darken(@theme-3, 10%);
-		}
-	}
+
 	.rock-checkbox-icon {
 		color: @theme-1-text;
+	}
+
+	li:last-child {
+		.btn-link, .btn-primary {
+			border-bottom: none;
+		}
 	}
 }

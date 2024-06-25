@@ -184,17 +184,21 @@ namespace org.lakepointe.Connections.Workflow.Action
             }
 
             // figure out which group to assign them to
-            int targetGroup = new ConnectionOpportunityGroupService( rockContext ).Queryable( "Group" ).AsNoTracking()
+            int? targetGroup = new ConnectionOpportunityGroupService( rockContext ).Queryable( "Group" ).AsNoTracking()
                 .Where( g =>
                     g.ConnectionOpportunityId == opportunity.Id &&
                     g.Group.CampusId == campus.Id )
-                .FirstOrDefault().Group.Id;
+                .FirstOrDefault()?.Group.Id;
 
-            // And their role in that group
-            var groupRole = new GroupService( rockContext ).Queryable().AsNoTracking()
-                .Where( g => g.Id == targetGroup )
-                .First().GroupType.Roles.
-                    Where( r => r.Name == "Member" ).FirstOrDefault().Id;
+            int? groupRole = null;
+            if ( targetGroup.HasValue )
+            {
+                // And their role in that group
+                groupRole = new GroupService( rockContext ).Queryable().AsNoTracking()
+                    .Where( g => g.Id == targetGroup )
+                    .First().GroupType.Roles.
+                        Where( r => r.Name == "Member" ).FirstOrDefault()?.Id;
+            }
 
             var connectionRequest = new ConnectionRequest();
             connectionRequest.PersonAliasId = personAlias.Id;

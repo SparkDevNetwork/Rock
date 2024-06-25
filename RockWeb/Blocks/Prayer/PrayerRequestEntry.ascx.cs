@@ -213,6 +213,22 @@ namespace RockWeb.Blocks.Prayer
         Order = 21,
         Key = AttributeKey.Workflow )]
 
+    // LPC Addition
+    [BooleanField( "Require Email",
+        Description = "Require that an email address be provided.",
+        DefaultBooleanValue = false,
+        Category = "Features",
+        Order = 31,
+        Key = AttributeKey.RequireEmail )]
+
+    [BooleanField( "Require Phone",
+        Description = "Require that a phone number be provided.",
+        DefaultBooleanValue = false,
+        Category = "Features",
+        Order = 32,
+        Key = AttributeKey.RequirePhone )]
+    // End of LPC Addition
+
     [ContextAware(typeof(Rock.Model.Person))]
     [Rock.SystemGuid.BlockTypeGuid( "4C32F2CD-5A88-4C3A-ADEA-CF94E85D20A6" )]
     public partial class PrayerRequestEntry : RockBlock
@@ -248,6 +264,11 @@ namespace RockWeb.Blocks.Prayer
 
             public const string SaveSuccessText = "SaveSuccessText";
             public const string Workflow = "Workflow";
+
+            // LPC Addition
+            public const string RequireEmail = "RequireEmail";
+            public const string RequirePhone = "RequirePhone";
+            // End of LPC Addition
         }
 
         #endregion
@@ -310,6 +331,12 @@ namespace RockWeb.Blocks.Prayer
             }
 
             pnbPhone.Visible = GetAttributeValue( AttributeKey.EnablePersonMatching ).AsBoolean();
+
+            // LPC Addition
+            pnbPhone.Required = GetAttributeValue( AttributeKey.RequirePhone ).AsBoolean();
+
+            tbEmail.Required = GetAttributeValue( AttributeKey.RequireEmail ).AsBoolean();
+            // End of LPC Addition
 
             var categoryGuid = GetAttributeValue( AttributeKey.GroupCategoryId );
             if ( ! string.IsNullOrEmpty( categoryGuid ) )

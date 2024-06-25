@@ -151,9 +151,6 @@ namespace RockWeb.Plugins.org_lakepointe.Groups
         Category = "Group Member",
         Order = 8 )]
 
-
-
-
     [DisplayName( "Serve Team Roster" )]
     [Category( "LPC > Groups" )]
     [Description( "Displays the members of a group." )]
@@ -178,6 +175,8 @@ namespace RockWeb.Plugins.org_lakepointe.Groups
             public const string ShowPhoto = "ShowPhoto";
             public const string ShowCommonProperties = "ShowCommonProperties";
         }
+
+        private const string EditGroupMembersDefinedValueGuid = "1f54b1cc-b94c-429b-b927-1e542d8c7fe3";
         #endregion
 
         #region Fields
@@ -250,7 +249,9 @@ namespace RockWeb.Plugins.org_lakepointe.Groups
                 }
                 if ( !_allowMemberEdit.HasValue )
                 {
-                    if ( SelectedGroup.IsAuthorized( Authorization.MANAGE_MEMBERS, CurrentPerson )
+                    if ( ( SelectedGroup.IsAuthorized( Authorization.MANAGE_MEMBERS, CurrentPerson )
+                        || SelectedGroup.IsAuthorized( Authorization.EDIT, CurrentPerson )
+                        || IsCoach || IsCaptain )
                         && GetAttributeValue( AttributeKey.AllowMemberEdit ).AsBoolean() )
                     {
                         _allowMemberEdit = true;
@@ -262,6 +263,46 @@ namespace RockWeb.Plugins.org_lakepointe.Groups
                 }
 
                 return _allowMemberEdit.Value;
+            }
+        }
+
+        private bool IsCoach
+        {
+            get
+            {
+                if ( SelectedGroup == null || SelectedGroup.ParentGroup == null )
+                {
+                    return false;
+                }
+                foreach ( var member in SelectedGroup.ParentGroup.Members.Where( m => m.PersonId == CurrentPerson.Id ) )
+                {
+                    member.GroupRole.LoadAttributes();
+                    if ( member.GroupRole.AttributeValues.Where( av => av.Key == "GroupLeaderToolboxFeatureSet" && av.Value.Value.Contains( EditGroupMembersDefinedValueGuid ) ).Any() )
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
+
+        private bool IsCaptain
+        {
+            get
+            {
+                if ( SelectedGroup == null || SelectedGroup.ParentGroup == null || SelectedGroup.ParentGroup.ParentGroup == null )
+                {
+                    return false;
+                }
+                foreach ( var member in SelectedGroup.ParentGroup.ParentGroup.Members.Where( m => m.PersonId == CurrentPerson.Id ) )
+                {
+                    member.GroupRole.LoadAttributes();
+                    if ( member.GroupRole.AttributeValues.Where( av => av.Key == "GroupLeaderToolboxFeatureSet" && av.Value.Value.Contains( EditGroupMembersDefinedValueGuid ) ).Any() )
+                    {
+                        return true;
+                    }
+                }
+                return false;
             }
         }
 
@@ -431,6 +472,18 @@ namespace RockWeb.Plugins.org_lakepointe.Groups
                 }
             }
         }
+
+        private List<Assignment> Assignments
+        {
+            get
+            {
+                return ( List<Assignment> ) ViewState["assignments"];
+            }
+            set
+            {
+                ViewState["assignments"] = value;
+            }
+        }
         #endregion
 
         #region Control Methods
@@ -438,6 +491,12 @@ namespace RockWeb.Plugins.org_lakepointe.Groups
         {
             base.OnInit( e );
             _rockContext = new RockContext();
+
+            gGroupPreferenceAssignments.DataKeyNames = new string[] { "AssignmentGuid" };
+            gGroupPreferenceAssignments.Actions.ShowAdd = true;
+            gGroupPreferenceAssignments.Actions.AddClick += gGroupPreferenceAssignments_Add;
+            gGroupPreferenceAssignments.GridRebind += gGroupPreferenceAssignments_GridRebind;
+
             this.BlockUpdated += ServeTeamRoster_BlockUpdated;
             this.AddConfigurationUpdateTrigger( upGroupRoster );
         }
@@ -567,62 +626,124 @@ namespace RockWeb.Plugins.org_lakepointe.Groups
                     return;
                 }
 
-                GroupTypeRole groupRole = gmRoleService.Get( rblGroupMemberRole.SelectedValueAsInt().GetValueOrDefault() );
-
-                if ( groupRole == null )
+                var removeGroupMembers = gmService.Queryable().Where( m =>
+                                                     m.GroupId == groupMember.GroupId &&
+                                                     m.PersonId == groupMember.PersonId &&
+                                                     m.GroupRole.IsLeader == false &&
+                                                     !cblGroupMemberRole.SelectedValuesAsInt.Contains( m.GroupRoleId ) );
+                foreach ( var removeGroupMember in removeGroupMembers )
                 {
-                    groupRole = groupMember.GroupRole;
+                    removeGroupMember.GroupMemberStatus = GroupMemberStatus.Inactive;
+                }
+                gmUpdateContext.SaveChanges();
+
+                var selectedMemberRoles = cblGroupMemberRole.SelectedValuesAsInt;
+                var memberRole = group.GroupType.Roles.Where( r => r.Name == "Member" ).FirstOrDefault();
+                if ( memberRole != null )
+                {
+                    var isProspect = gmService.Queryable().Where( m =>
+                                                     m.GroupId == groupMember.GroupId &&
+                                                     m.PersonId == groupMember.PersonId &&
+                                                     m.GroupRole.Name.Contains( "Prospect" ) ).Any();
+                    if ( !isProspect )
+                    {
+                        selectedMemberRoles.Add( memberRole.Id );
+                    }
                 }
 
-                if ( groupRole != null )
+                foreach ( var groupRoleId in selectedMemberRoles )
                 {
-                    GroupMember updateGroupMember = null;
-                    updateGroupMember = gmService.Queryable( false, true ).Where( m =>
-                                                    m.GroupId == groupMember.GroupId &&
-                                                    m.PersonId == groupMember.PersonId &&
-                                                    ( m.GroupMemberStatus == GroupMemberStatus.Active || m.GroupMemberStatus == GroupMemberStatus.Pending ) )
-                                        .FirstOrDefault();
-
-                    if ( updateGroupMember == null )
+                    GroupTypeRole groupRole = gmRoleService.Get( groupRoleId );
+                    if ( groupRole != null && !groupRole.IsLeader )
                     {
-                        updateGroupMember = new GroupMember { Id = 0 };
-                        updateGroupMember.GroupId = group.Id;
-                        updateGroupMember.PersonId = personId.Value;
-                        updateGroupMember.GroupRoleId = groupRole.Id;
-                        updateGroupMember.CommunicationPreference = groupMember.CommunicationPreference;
-                        updateGroupMember.IsNotified = groupMember.IsNotified;
-                        gmService.Add( updateGroupMember );
+                        GroupMember updateGroupMember = null;
+                        updateGroupMember = gmService.Queryable( false, true ).Where( m =>
+                                                      m.GroupId == groupMember.GroupId &&
+                                                      m.PersonId == groupMember.PersonId &&
+                                                      m.GroupRoleId == groupRoleId )
+                                            .FirstOrDefault();
+
+                        if ( updateGroupMember == null )
+                        {
+                            updateGroupMember = new GroupMember { Id = 0 };
+                            updateGroupMember.GroupId = group.Id;
+                            updateGroupMember.PersonId = personId.Value;
+                            updateGroupMember.GroupRoleId = groupRole.Id;
+                            updateGroupMember.IsNotified = groupMember.IsNotified;
+                            updateGroupMember.CommunicationPreference = groupMember.CommunicationPreference;
+                            gmService.Add( updateGroupMember );
+                        }
+
+                        if ( updateGroupMember == null )
+                        {
+                            return;
+                        }
+
+                        updateGroupMember.Note = tbNote.Text;
+                        updateGroupMember.CommunicationPreference = Enum.TryParse( rblCommunicationPreference.Text, out CommunicationType result ) ? result : CommunicationType.RecipientPreference;
+
+                        if ( groupMemberStatus == GroupMemberStatus.Pending )
+                        {
+                            if ( groupRole.Name == "Member" )
+                            {
+                                updateGroupMember.GroupMemberStatus = GroupMemberStatus.Pending;
+                            }
+                            else
+                            {
+                                updateGroupMember.GroupMemberStatus = GroupMemberStatus.Inactive;
+                            }
+                        }
+                        else
+                        {
+                            updateGroupMember.GroupMemberStatus = groupMemberStatus;
+                        }
+
+                        if ( pnlScheduling.Visible )
+                        {
+                            updateGroupMember.ScheduleTemplateId = ddlGroupMemberScheduleTemplate.SelectedValue.AsIntegerOrNull();
+                            updateGroupMember.ScheduleStartDate = dpScheduleStartDate.SelectedDate;
+                            updateGroupMember.ScheduleReminderEmailOffsetDays = nbScheduleReminderEmailOffsetDays.Text.AsIntegerOrNull();
+
+                            var groupMemberAssignmentService = new GroupMemberAssignmentService( gmUpdateContext );
+                            var groupLocationService = new GroupLocationService( gmUpdateContext );
+                            var qryGroupLocations = groupLocationService
+                                .Queryable()
+                                .Where( g => g.GroupId == group.Id );
+
+                            var uiGroupMemberAssignments = Assignments.Select( r => r.AssignmentGuid );
+                            foreach ( var groupMemberAssignment in groupMember.GroupMemberAssignments.Where( r => !uiGroupMemberAssignments.Contains( r.Guid ) && (
+                                        !r.LocationId.HasValue
+                                        || qryGroupLocations.Any( gl => gl.LocationId == r.LocationId && gl.Schedules.Any( s => s.Id == r.ScheduleId ) )
+                                    ) ).ToList() )
+                            {
+                                groupMember.GroupMemberAssignments.Remove( groupMemberAssignment );
+                                groupMemberAssignmentService.Delete( groupMemberAssignment );
+                            }
+
+                            foreach ( var entry in Assignments )
+                            {
+                                GroupMemberAssignment groupMemberAssignment = groupMember.GroupMemberAssignments.Where( a => a.Guid == entry.AssignmentGuid ).FirstOrDefault();
+                                if ( groupMemberAssignment == null )
+                                {
+                                    groupMemberAssignment = new GroupMemberAssignment();
+                                    groupMember.GroupMemberAssignments.Add( groupMemberAssignment );
+                                }
+
+                                groupMemberAssignment.ScheduleId = entry.ScheduleId;
+                                groupMemberAssignment.LocationId = entry.LocationId;
+                            }
+                        }
+
+                        gmService.Restore( updateGroupMember );
+                        gmUpdateContext.SaveChanges();
                     }
 
-                    if ( updateGroupMember == null )
-                    {
-                        return;
-                    }
-
-                    // Don't change role or status if groupmember is a leader or coach
-                    var coachGuid = "06158dfe-419b-42b2-8545-539dbcb11fd8".AsGuid();
-                    if ( groupMember.GroupRole.Guid != coachGuid && !groupMember.GroupRole.IsLeader )
-                    {
-                        updateGroupMember.GroupMemberStatus = groupMemberStatus;
-                        updateGroupMember.GroupRole = groupRole;
-                    }
-
-                    updateGroupMember.CommunicationPreference = rblCommunicationPreference.SelectedValueAsEnum<CommunicationType>();
-
-                    updateGroupMember.Note = tbNote.Text;
-
-                    updateGroupMember.ScheduleTemplateId = ddlGroupMemberScheduleTemplate.SelectedValueAsInt();
-                    updateGroupMember.ScheduleStartDate = dpScheduleStartDate.SelectedDate;
-                    updateGroupMember.ScheduleReminderEmailOffsetDays = nbScheduleReminderEmailOffsetDays.IntegerValue;
-
-                    gmService.Restore( updateGroupMember );
-                    gmUpdateContext.SaveChanges();
                 }
             }
 
+            Assignments = new List<Assignment>();
             ClearEditPanel();
             BlockSetup();
-
         }
 
         protected void rptGroupMember_ItemCommand( object source, RepeaterCommandEventArgs e )
@@ -669,6 +790,7 @@ namespace RockWeb.Plugins.org_lakepointe.Groups
             var lRole = e.Item.FindControl( "lRole" ) as Literal;
             var lRowHeader = e.Item.FindControl( "lRowHeader" ) as Literal;
             var lRowFooter = e.Item.FindControl( "lRowFooter" ) as Literal;
+            var lBaptismDate = e.Item.FindControl( "lBaptismDate" ) as Literal;
             var lSchool = e.Item.FindControl( "lSchool" ) as Literal;
             var lParent1Name = e.Item.FindControl( "lParent1Name" ) as Literal;
             var lParent1Mobile = e.Item.FindControl( "lParent1Mobile" ) as Literal;
@@ -695,6 +817,7 @@ namespace RockWeb.Plugins.org_lakepointe.Groups
             var pnlScheduleStart = e.Item.FindControl( "pnlScheduleStart" ) as Panel;
             var pnlNote = e.Item.FindControl( "pnlNote" ) as Panel;
             var pnlPhones = e.Item.FindControl( "pnlPhones" ) as Panel;
+            var pnlBaptismDate = e.Item.FindControl( "pnlBaptism" ) as Panel;
             var pnlSchool = e.Item.FindControl( "pnlSchool" ) as Panel;
             var pnlParent1 = e.Item.FindControl( "pnlParent1" ) as Panel;
             var pnlParent1Name = e.Item.FindControl( "pnlParent1Name" ) as Panel;
@@ -719,6 +842,7 @@ namespace RockWeb.Plugins.org_lakepointe.Groups
             pnlFirstAttended.Visible = false;
             pnlLastAttended.Visible = false;
             pnlPhones.Visible = false;
+            pnlBaptismDate.Visible = false;
             pnlSchool.Visible = false;
             pnlParent1.Visible = false;
             pnlParent1Name.Visible = false;
@@ -914,6 +1038,9 @@ namespace RockWeb.Plugins.org_lakepointe.Groups
             if ( _featureSet.DisplayParentInfo && !isLeader )
             {
                 person.LoadAttributes();
+
+                pnlBaptismDate.Visible = true;
+                lBaptismDate.Text = person.GetAttributeValue( "Arena-15-73" ).AsDateTime().ToShortDateString();
 
                 pnlSchool.Visible = true;
                 lSchool.Text = person.GetAttributeValue( "SchoolRegistration" );
@@ -1133,9 +1260,193 @@ namespace RockWeb.Plugins.org_lakepointe.Groups
         {
             dpScheduleStartDate.Required = ddlGroupMemberScheduleTemplate.SelectedValue.AsIntegerOrNull().HasValue;
         }
+
+        protected void gGroupPreferenceAssignments_Add( object sender, EventArgs e )
+        {
+            gGroupPreferenceAssignments_ShowEdit( Guid.Empty );
+        }
+
+        protected void gGroupPreferenceAssignments_Edit( object sender, RowEventArgs e )
+        {
+            Guid rowGuid = ( Guid ) e.RowKeyValue;
+            gGroupPreferenceAssignments_ShowEdit( rowGuid );
+        }
+
+        protected void gGroupPreferenceAssignments_Delete( object sender, RowEventArgs e )
+        {
+            Guid rowGuid = ( Guid ) e.RowKeyValue;
+
+            var entry = Assignments.Where( a => a.AssignmentGuid == rowGuid ).FirstOrDefault();
+            if ( entry != null )
+            {
+                Assignments.Remove( entry );
+            }
+
+            BindGroupPreferenceAssignmentsGrid();
+        }
+
+        protected void gGroupPreferenceAssignments_GridRebind( object sender, EventArgs e )
+        {
+            BindGroupPreferenceAssignmentsGrid();
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlGroupScheduleAssignmentSchedule control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlGroupScheduleAssignmentSchedule_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            PopulateGroupScheduleAssignmentLocations( GroupId, ddlGroupScheduleAssignmentSchedule.SelectedValue.AsIntegerOrNull() );
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the mdGroupScheduleAssignment control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdGroupScheduleAssignment_SaveClick( object sender, EventArgs e )
+        {
+            var groupMemberAssignmentGuid = hfGroupScheduleAssignmentGuid.Value.AsGuid();
+            var scheduleId = ddlGroupScheduleAssignmentSchedule.SelectedValue.AsIntegerOrNull();
+            var locationId = ddlGroupScheduleAssignmentLocation.SelectedValue.AsIntegerOrNull();
+
+            // schedule is required, but locationId can be null (which means no location specified )
+            if ( !scheduleId.HasValue )
+            {
+                return;
+            }
+
+            var schedule = new ScheduleService( new RockContext() ).Get( scheduleId.Value );
+            if ( schedule == null )
+            {
+                return;
+            }
+
+            var groupMemberAssignment = Assignments.Where( w => w.AssignmentGuid.Equals( groupMemberAssignmentGuid ) && !groupMemberAssignmentGuid.Equals( Guid.Empty ) ).FirstOrDefault();
+            if ( groupMemberAssignment == null )
+            {
+                groupMemberAssignment = new Assignment();
+                groupMemberAssignment.AssignmentGuid = Guid.NewGuid();
+                Assignments.Add( groupMemberAssignment );
+            }
+
+            // Calculate the Next Start Date Time based on the start of the week so that schedule columns are in the correct order
+            var occurrenceDate = RockDateTime.Now.SundayDate().AddDays( 1 );
+            groupMemberAssignment.ScheduleId = scheduleId.Value;
+            groupMemberAssignment.FormattedScheduleName = schedule.StartTimeOfDay.ToTimeString();
+            groupMemberAssignment.LocationId = locationId;
+            groupMemberAssignment.LocationName = ddlGroupScheduleAssignmentLocation.SelectedItem.Text;
+
+            BindGroupPreferenceAssignmentsGrid();
+            mdGroupScheduleAssignment.Hide();
+        }
         #endregion
 
-        #region Internal Methodds
+        #region Internal Methods
+        /// <summary>
+        /// Binds the group preference assignments grid.
+        /// </summary>
+        private void BindGroupPreferenceAssignmentsGrid()
+        {
+            gGroupPreferenceAssignments.DataSource = Assignments;
+            gGroupPreferenceAssignments.DataBind();
+            upGroupRoster.Update();
+        }
+
+        /// <summary>
+        /// gs the statuses_ show edit.
+        /// </summary>
+        /// <param name="groupPreferenceAssignmentGuid">The group preference assignment status unique identifier.</param>
+        protected void gGroupPreferenceAssignments_ShowEdit( Guid guid )
+        {
+            int? selectedScheduleId = null;
+            int? selectedLocationId = null;
+            var entry = Assignments.Where( a => a.AssignmentGuid == guid ).FirstOrDefault();
+            if ( entry != null )
+            {
+                selectedScheduleId = entry.ScheduleId;
+                selectedLocationId = entry.LocationId;
+            }
+
+            hfGroupScheduleAssignmentGuid.Value = guid.ToString();
+            var rockContext = new RockContext();
+            var groupLocationService = new GroupLocationService( rockContext );
+            var scheduleList = groupLocationService
+                .Queryable()
+                .AsNoTracking()
+                .Where( g => g.GroupId == GroupId )
+                .SelectMany( g => g.Schedules )
+                .Distinct()
+                .ToList();
+
+            List<Schedule> sortedScheduleList = scheduleList.OrderByOrderAndNextScheduledDateTime();
+
+            var configuredScheduleIds = Assignments
+                .Select( s => s.ScheduleId ).Distinct().ToList();
+
+            // limit to schedules that haven't had a schedule preference set yet
+            sortedScheduleList = sortedScheduleList.Where( a =>
+                a.IsActive
+                && a.IsPublic.HasValue
+                && a.IsPublic.Value
+                && ( !configuredScheduleIds.Contains( a.Id )
+                || ( selectedScheduleId.HasValue
+                    && a.Id == selectedScheduleId.Value ) ) )
+             .ToList();
+
+            ddlGroupScheduleAssignmentSchedule.Items.Clear();
+            ddlGroupScheduleAssignmentSchedule.Items.Add( new ListItem() );
+            foreach ( var schedule in sortedScheduleList )
+            {
+                var scheduleName = schedule.StartTimeOfDay.ToTimeString();
+                var scheduleListItem = new ListItem( scheduleName, schedule.Id.ToString() );
+                if ( selectedScheduleId.HasValue && selectedScheduleId.Value == schedule.Id )
+                {
+                    scheduleListItem.Selected = true;
+                }
+
+                ddlGroupScheduleAssignmentSchedule.Items.Add( scheduleListItem );
+            }
+
+            PopulateGroupScheduleAssignmentLocations( GroupId, selectedScheduleId );
+            ddlGroupScheduleAssignmentLocation.SetValue( selectedLocationId );
+
+            mdGroupScheduleAssignment.Show();
+        }
+
+        /// <summary>
+        /// Populates the group schedule assignment locations.
+        /// </summary>
+        /// <param name="groupId">The group identifier.</param>
+        /// <param name="scheduleId">The schedule identifier.</param>
+        private void PopulateGroupScheduleAssignmentLocations( int groupId, int? scheduleId )
+        {
+            int? selectedLocationId = ddlGroupScheduleAssignmentLocation.SelectedValue.AsIntegerOrNull();
+            ddlGroupScheduleAssignmentLocation.Items.Clear();
+            ddlGroupScheduleAssignmentLocation.Items.Add( new ListItem( "No Location Preference", "No Location Preference" ) );
+            if ( scheduleId.HasValue )
+            {
+                var locations = new LocationService( new RockContext() ).GetByGroupSchedule( scheduleId.Value, groupId )
+                    .OrderBy( a => a.Name )
+                    .Select( a => new
+                    {
+                        a.Id,
+                        a.Name
+                    } ).ToList();
+
+                foreach ( var location in locations )
+                {
+                    var locationListItem = new ListItem( location.Name, location.Id.ToString() );
+                    if ( selectedLocationId.HasValue && location.Id == selectedLocationId.Value )
+                    {
+                        locationListItem.Selected = true;
+                    }
+
+                    ddlGroupScheduleAssignmentLocation.Items.Add( locationListItem );
+                }
+            }
+        }
 
         private void BlockSetup()
         {
@@ -1177,7 +1488,7 @@ namespace RockWeb.Plugins.org_lakepointe.Groups
             imgEditPhoto.ImageUrl = string.Empty;
             lName.Text = string.Empty;
             lGroupMemberRole.Text = string.Empty;
-            rblGroupMemberRole.SelectedValue = null;
+            cblGroupMemberRole.SelectedValue = null;
 
         }
 
@@ -1196,7 +1507,7 @@ namespace RockWeb.Plugins.org_lakepointe.Groups
         private void EditGroupMember( int groupMemberId )
         {
 
-            rblGroupMemberRole.Visible = false;
+            cblGroupMemberRole.Visible = false;
 
             lGroupMemberRole.Visible = false;
 
@@ -1251,22 +1562,19 @@ namespace RockWeb.Plugins.org_lakepointe.Groups
             if ( leaderRoleMember != null )
             {
                 nbRoleNotEditable.Visible = true;
-                rblGroupMemberRole.Required = false;
+                cblGroupMemberRole.Required = false;
             }
             else
             {
-                rblGroupMemberRole.Required = true;
+                cblGroupMemberRole.Required = true;
             }
 
-            rblGroupMemberRole.SetValue( groupMember.GroupRole );
-            if ( rblGroupMemberRole.Items.Count > 1 )
-            {
-                rblGroupMemberRole.Visible = true;
-            }
+            cblGroupMemberRole.SetValues( groupMembers.Select( gm => gm.GroupRoleId.ToString() ).ToList() );
+            cblGroupMemberRole.Visible = true;
 
             tbNote.Text = groupMember.Note;
 
-            rblCommunicationPreference.SetValue( ( ( int )groupMember.CommunicationPreference ).ToString() );
+            rblCommunicationPreference.SetValue( ( ( int ) groupMember.CommunicationPreference ).ToString() );
 
             ddlGroupMemberScheduleTemplate.Items.Clear();
             ddlGroupMemberScheduleTemplate.Items.Add( new ListItem() );
@@ -1292,6 +1600,27 @@ namespace RockWeb.Plugins.org_lakepointe.Groups
 
             dpScheduleStartDate.SelectedDate = groupMember.ScheduleStartDate;
             nbScheduleReminderEmailOffsetDays.Text = groupMember.ScheduleReminderEmailOffsetDays.ToString();
+
+            // Get group member assignments
+            var groupLocationService = new GroupLocationService( rockContext );
+            var qryGroupLocations = groupLocationService
+                .Queryable()
+                .Where( g => g.GroupId == groupMember.GroupId );
+
+            var groupMemberAssignmentService = new GroupMemberAssignmentService( rockContext );
+            var groupMemberAssignmentQuery = groupMemberAssignmentService
+                .Queryable()
+                .AsNoTracking()
+                .Where( x =>
+                    x.GroupMemberId == groupMemberId
+                    && (
+                        !x.LocationId.HasValue
+                        || qryGroupLocations.Any( gl => gl.LocationId == x.LocationId && gl.Schedules.Any( s => s.Id == x.ScheduleId ) )
+                    ) );
+
+            Assignments = groupMemberAssignmentQuery.ToList().Select( a => new Assignment( a ) ).ToList();
+
+            BindGroupPreferenceAssignmentsGrid();
 
             pnlGroupMembers.Visible = false;
             pnlEditGroupMember.Visible = true;
@@ -1593,11 +1922,11 @@ namespace RockWeb.Plugins.org_lakepointe.Groups
                     .OrderBy( r => r.Name )
                     .ToList();
 
-                rblGroupMemberRole.Items.Clear();
-                rblGroupMemberRole.DataSource = roles;
-                rblGroupMemberRole.DataValueField = "Id";
-                rblGroupMemberRole.DataTextField = "Name";
-                rblGroupMemberRole.DataBind();
+                cblGroupMemberRole.Items.Clear();
+                cblGroupMemberRole.DataSource = roles;
+                cblGroupMemberRole.DataValueField = "Id";
+                cblGroupMemberRole.DataTextField = "Name";
+                cblGroupMemberRole.DataBind();
 
                 // ddlGroupMemberRole.Items.Insert( 0, new ListItem( String.Empty, String.Empty ) );
             }
@@ -1668,6 +1997,29 @@ namespace RockWeb.Plugins.org_lakepointe.Groups
             nbGroupMembers.NotificationBoxType = boxType;
 
             nbGroupMembers.Visible = message.IsNotNullOrWhiteSpace();
+        }
+        #endregion
+
+        #region Helper Classes
+        [Serializable]
+        private class Assignment
+        {
+            public Guid AssignmentGuid { get; set; }
+            public int? LocationId { get; set; }
+            public string LocationName { get; set; }
+            public int? ScheduleId { get; set; }
+            public string FormattedScheduleName { get; set; }
+
+            public Assignment( GroupMemberAssignment assignment )
+            {
+                AssignmentGuid = assignment.Guid;
+                LocationId = assignment.LocationId;
+                LocationName = assignment.Location?.Name ?? "No Location Preference";
+                ScheduleId = assignment.ScheduleId;
+                FormattedScheduleName = assignment.Schedule.StartTimeOfDay.ToTimeString();
+            }
+
+            public Assignment() { }
         }
         #endregion
     }

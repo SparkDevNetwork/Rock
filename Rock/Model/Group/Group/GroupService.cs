@@ -1843,6 +1843,16 @@ namespace Rock.Model
 
             return groupLocationsQuery;
         }
+
+        /// <summary>
+        /// Returns a queryable of Groups with the Communication List Group Type Id.
+        /// </summary>
+        /// <param name="groupQuery">The group query.</param>
+        public static IQueryable<Group> IsCommunicationList( this IQueryable<Group> groupQuery )
+        {
+            var groupTypeId = GroupTypeCache.GetId( Rock.SystemGuid.GroupType.GROUPTYPE_COMMUNICATIONLIST.AsGuid() ) ?? -1;
+            return IsGroupType( groupQuery, groupTypeId );
+        }
     }
 
     #endregion

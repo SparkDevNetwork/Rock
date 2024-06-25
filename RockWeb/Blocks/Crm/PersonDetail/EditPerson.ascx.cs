@@ -550,8 +550,16 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         // Remove any duplicates and blank numbers
                         personService.RemoveEmptyAndDuplicatePhoneNumbers( person, phoneNumberTypeIds, rockContext );
 
-                        person.Email = tbEmail.Text.Trim();
+                        // LPC MODIFIED CODE -- SNS 20231011 -- activate email if email address changes
                         person.IsEmailActive = cbIsEmailActive.Checked;
+                        var newEmail = tbEmail.Text.Trim();
+                        if ( person.Email?.ToLower() != newEmail.ToLower() ) // casing differences in email addresses are not significant and don't justify automatic reactivation
+                        {
+                            person.IsEmailActive = true;
+                        }
+                        person.Email = newEmail; // Update the email address even if the differences are only inconsequential casing
+                        // END OF LPC MODIFIED CODE
+
                         person.EmailPreference = rblEmailPreference.SelectedValue.ConvertToEnum<EmailPreference>();
 
                         /* 2020-10-06 MDP

@@ -50,17 +50,12 @@
                     <Rock:RockTextBox ID="tbSchool" runat="server" Label="School" Visible="true" Required="false" />
                 </div>
                 <div class="col-md-2">
-                    <%--<Rock:RockDropDownList ID="rddlGrade" runat="server" Label="Grade" Visible="true" Required="true" ValidationGroup="vgSignup" RequiredErrorMessage="Grade is required." >
-                        <asp:ListItem Text="" Value="" />
-                        <asp:ListItem Text="Senior" Value="0" />
-                        <asp:ListItem Text="Junior" Value="1" />
-                        <asp:ListItem Text="Sophomore" Value="2" />
-                        <asp:ListItem Text="Freshman" Value="3" />
-                        <asp:ListItem Text="8th Grade" Value="4" />
-                        <asp:ListItem Text="7th Grade" Value="5" />
-                        <asp:ListItem Text="6th Grade" Value="6" />
-                    </Rock:RockDropDownList>--%>
                     <Rock:GradePicker ID="gpGrade" runat="server" Label="Grade" Visible="true" Required="true" ValidationGroup="vgSignup" RequiredErrorMessage="Grade is required." />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <Rock:RockTextBox ID="tbFriend" runat="server" Label="Who you came with" Visible="true" Required="false" />
                 </div>
             </div>
             <h3>Home Address</h3>

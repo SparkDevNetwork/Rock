@@ -73,7 +73,7 @@
 {% enddefinedvalue %}
 
 
-{% if CurrentPerson != null and lang == '' %}
+{% if showButton and CurrentPerson != null and lang == '' %}
     {% assign currentPersonId = CurrentPerson.Id %}
     {% capture perfLang %}{[GetLanguage personid:currentPersonId]}{% endcapture %}
     {% capture redirectUrl %}{{ redirectUrlPartial }}&lang={{perfLang}}{% endcapture %}

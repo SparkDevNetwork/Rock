@@ -1112,7 +1112,7 @@ namespace Rock.Web.UI.Controls
             _tbLastName.Label = Translation.GetValueOrDefault( "LabelLastName", "Last Name" );
 
             _tgHasAllergy.Required = true;
-            _tgHasAllergy.Label = Translation.GetValueOrDefault( "LabelHasAllergy", "Does the child have and allergy?" );
+            _tgHasAllergy.Label = Translation.GetValueOrDefault( "LabelHasAllergy", "Does the child have an allergy?" );
             _tgHasAllergy.OnText = Translation.GetValueOrDefault( "Yes", "Yes" );
             _tgHasAllergy.OffText = Translation.GetValueOrDefault( "No", "No" );
             _tgHasAllergy.Checked = false;

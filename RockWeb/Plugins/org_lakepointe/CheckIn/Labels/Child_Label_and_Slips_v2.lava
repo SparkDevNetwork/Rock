@@ -18,6 +18,11 @@
     {%  for g in gt.Groups %}
         {% assign groupObject = g.Id | GroupById %}
 
+        {% assign selected = groupObject | Property:'Selected' %}
+        {% if selected == true %}
+            {% continue %}
+        {% endif %}
+
         {% if isNursery == false %}
             {% assign isNursery = groupObject | Attribute:'IncludeNurseryCareOnLabel' | AsBoolean %}
         {% endif %}

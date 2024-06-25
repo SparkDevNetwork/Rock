@@ -456,8 +456,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 a.IsActive
                 && groupLocationQuery.Any( x => x.Schedules.Any( s => s.Id == a.Id ) )
                 && a.Name != null
-                && a.Name != string.Empty
-                && a.IsScheduleActive ).ToList(); // LPC Change SNS 20230918 Removes schedule not currently live
+                && a.Name != string.Empty ).ToList();
 
             var scheduleList = scheduleQry.ToList();
 

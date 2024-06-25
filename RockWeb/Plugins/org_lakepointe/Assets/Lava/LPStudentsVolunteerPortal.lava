@@ -95,20 +95,39 @@
 /* Query running from RockWeb/Plugins/org_lakepointe/Assets/Lava/LPStudentsVolunteerPortal.lava */
 /* Query written by Jon Corey on 04/03/2022 */
 /* Updated by Jon Corey on 04/04/2023 to ensure only one row is returned and that it has all nescessary data */
+/* Updated by Jon Corey on 06/13/2024 to use group type tags instead of hard-coded group type ids */
 /* Purpose: Check if the person serves in Student Connect, serves in United, serves with Middle School, and/or serves with High School. */
 /*          Returns one row where each column is the number of groups where the person serves in that area. */
-SELECT COUNT(CASE g.GroupTypeId WHEN 431 THEN 1 ELSE NULL END) AS StudentConnect,
-    COUNT(CASE g.GroupTypeId WHEN 432 THEN 1 ELSE NULL END) AS United,
-    COUNT(CASE WHEN av.Value like '%Middle%' THEN 1 ELSE NULL END ) AS MiddleSchool,
-    COUNT(CASE WHEN av.Value like '%High%' THEN 1 ELSE NULL END ) AS HighSchool,
-	STRING_AGG( g.CampusId, ',') as Campuses
-    FROM GroupMember gm
-    JOIN PersonAlias pa ON gm.PersonId = pa.PersonId
-    JOIN [dbo].[Group] g ON gm.GroupId = g.Id
-    LEFT OUTER JOIN [dbo].[AttributeValue] av ON av.EntityId = gm.Id
-        AND (av.AttributeId = 35951 OR AttributeId = 36566)
-    WHERE pa.Guid = @personAliasGuid AND g.GroupTypeId IN (431, 432) AND g.IsActive = 1;
+SELECT
+    COUNT(CASE WHEN saAv.[Value] LIKE '%6001B464-A8D9-46C5-B2CF-A576A7B11AB4%' THEN 1 ELSE NULL END) AS StudentConnect,
+    COUNT(CASE WHEN saAv.[Value] LIKE '%5DC7B5D0-8F01-4ACC-A62F-6A63B8BB9047%' THEN 1 ELSE NULL END) AS United,
+    COUNT(CASE WHEN agAv.[Value] LIKE '%Middle%' THEN 1 ELSE NULL END) AS MiddleSchool,
+    COUNT(CASE WHEN agAv.[Value] LIKE '%High%' THEN 1 ELSE NULL END) AS HighSchool,
+    STRING_AGG(g.CampusId, ',') AS Campuses
+FROM GroupMember gm
+JOIN PersonAlias pa ON gm.PersonId = pa.PersonId
+JOIN [Group] g ON gm.GroupId = g.Id
+JOIN GroupType gt ON gt.Id = g.GroupTypeId
+JOIN TaggedItem ti ON ti.EntityGuid = gt.[Guid] AND ti.TagId = 461 --LP Student Leader
+LEFT JOIN (
+    AttributeValue agAv
+    JOIN Attribute agA ON agA.Id = agAv.AttributeId AND agA.[Key] = 'SMServingAgeGroup'
+    ) ON agAv.EntityId = gm.Id
+LEFT JOIN (
+    AttributeValue saAv
+    JOIN Attribute saA ON saA.Id = saAv.AttributeId AND saA.[Key] = 'StudentMinistryServingArea'
+    ) ON saAv.EntityId = gm.Id
+WHERE pa.Guid = @personAliasGuid
+    AND g.IsActive = 1 AND g.IsArchived = 0
+    AND gm.GroupMemberStatus != 0 AND gm.IsArchived = 0;
 {% endsql %}
+
+{% comment %} Override Group {% endcomment %}
+{% assign override = false %}
+{% assign groupMember = CurrentPerson | Group:823291 %}
+{% if groupMember != null %}
+    {% assign override = true %}
+{% endif %}
 
 {% assign today = 'Global' | PageParameter:'Date' | AsDateTime %}
 {% if today == null %}
@@ -118,21 +137,33 @@ SELECT COUNT(CASE g.GroupTypeId WHEN 431 THEN 1 ELSE NULL END) AS StudentConnect
 {% assign united = 'Global' | PageParameter:'United' | AsInteger %}
 {% if united == null %}
     {% assign united = roles[0].United %}
+    {% if override == true %}
+        {% assign united = 1 %}
+    {% endif %}
 {% endif %}
 
 {% assign studentConnect = 'Global' | PageParameter:'StudentConnect' | AsInteger %}
 {% if studentConnect == null %}
     {% assign studentConnect = roles[0].StudentConnect %}
+    {% if override == true %}
+        {% assign studentConnect = 1 %}
+    {% endif %}
 {% endif %}
 
 {% assign middleSchool = 'Global' | PageParameter:'MiddleSchool' | AsInteger %}
 {% if middleSchool == null %}
     {% assign middleSchool = roles[0].MiddleSchool %}
+    {% if override == true %}
+        {% assign middleSchool = 1 %}
+    {% endif %}
 {% endif %}
 
 {% assign highSchool = 'Global' | PageParameter:'HighSchool' | AsInteger %}
 {% if highSchool == null %}
     {% assign highSchool = roles[0].HighSchool %}
+    {% if override == true %}
+        {% assign highSchool = 1 %}
+    {% endif %}
 {% endif %}
 
 {% assign personsCampus = 'Global' | PageParameter:'Campus' | UrlDecode %}
@@ -140,6 +171,9 @@ SELECT COUNT(CASE g.GroupTypeId WHEN 431 THEN 1 ELSE NULL END) AS StudentConnect
     {% assign campusIds = personsCampus | Split:',' %}
 {% else %}
     {% assign campusIds = roles[0].Campuses | Split:',' %}
+    {% if override == true %}
+        {% assign campusIds = campusIds | AddToArray:CurrentPerson.PrimaryCampusId %}
+    {% endif %}
 {% endif %}
 {% for id in campusIds %}
     {% if id != null and id != '' %}
@@ -148,6 +182,19 @@ SELECT COUNT(CASE g.GroupTypeId WHEN 431 THEN 1 ELSE NULL END) AS StudentConnect
         {% endcampus %}
     {% endif %}
 {% endfor %}
+
+{% assign debug = 'Global' | PageParameter:'Debug' | AsBoolean %}
+{% if debug != null and debug == true %}
+    <ul>
+        <li>override: {{ override }}</li>
+        <li>today: {{ today }}</li>
+        <li>united: {{ united }}</li>
+        <li>studentConnect: {{ studentConnect }}</li>
+        <li>middleSchool: {{ middleSchool }}</li>
+        <li>highSchool: {{ highSchool }}</li>
+        <li>campusIds: {{ campusIds | Join:', ' }}</li>
+    </ul>
+{% endif %}
 
 {% assign totalCount = 0 %}
 
@@ -184,8 +231,11 @@ SELECT COUNT(CASE g.GroupTypeId WHEN 431 THEN 1 ELSE NULL END) AS StudentConnect
 {% if united > 0 and middleSchool > 0 %}
     {% assign targetGroups = targetGroups | AddToArray:'2' %}
 {% endif %}
-{% if studentConnect > 0 %}
+{% if studentConnect > 0 and highSchool > 0 %}
     {% assign targetGroups = targetGroups | AddToArray:'3' %}
+{% endif %}
+{% if studentConnect > 0 and middleSchool > 0 %}
+    {% assign targetGroups = targetGroups | AddToArray:'4' %}
 {% endif %}
 
 {% assign prevCampus = '' %}
@@ -392,26 +442,38 @@ SELECT COUNT(CASE g.GroupTypeId WHEN 431 THEN 1 ELSE NULL END) AS StudentConnect
     <div class="spacer"></div>
 {% endfor %}
 
-<!-- Student Connect Curriculum -->
-{% if studentConnect > 0 %}
+<!-- Student Connect High School Curriculum -->
+{% if studentConnect > 0 and highSchool > 0 %}
     {% sql now:'{{ today | Date:"yyyy-MM-ddTHH:mm:ss" }}' return:'Items' %}
         SELECT cci.Id, cci.Title, cci.Content, cci.Priority, cci.Status, cci.StartDateTime, cci.ExpireDateTime,
             image.Value AS [Image], video.Value AS [Video], pdf.Value AS [PDF], button1.Value AS [Button1], button1Label.Value AS [Button1Label], button2.Value AS [Button2], button2Label.Value AS [Button2Label],
-            button3.Value AS [Button3], button3Label.Value AS [Button3Label], button4.Value AS [Button4], button4Label.Value AS [Button4Label], button5.Value AS [Button5], button5Label.Value AS [Button5Label]
+            button3.Value AS [Button3], button3Label.Value AS [Button3Label], button4.Value AS [Button4], button4Label.Value AS [Button4Label], button5.Value AS [Button5], button5Label.Value AS [Button5Label],
+            button6.Value AS [Button6], button6Label.Value AS [Button6Label], button7.Value AS [Button7], button7Label.Value AS [Button7Label], button8.Value AS [Button8], button8Label.Value AS [Button8Label],
+            button9.Value AS [Button9], button9Label.Value AS [Button9Label], button10.Value AS [Button10], button10Label.Value AS [Button10Label]
         FROM [dbo].[ContentChannelItem] cci
         LEFT OUTER JOIN [dbo].[AttributeValue] image ON image.EntityId = cci.Id AND image.AttributeId = 111312
         LEFT OUTER JOIN [dbo].[AttributeValue] video ON video.EntityId = cci.Id AND video.AttributeId = 111311
         LEFT OUTER JOIN [dbo].[AttributeValue] pdf ON pdf.EntityId = cci.Id AND pdf.AttributeId = 111313
         LEFT OUTER JOIN [dbo].[AttributeValue] button1 ON button1.EntityId = cci.Id AND button1.AttributeId = 111314
         LEFT OUTER JOIN [dbo].[AttributeValue] button1Label ON button1Label.EntityId = cci.Id AND button1Label.AttributeId = 111428
-        LEFT OUTER JOIN [dbo].[AttributeValue] button2 ON button2.EntityId = cci.Id AND button2.AttributeId = 111315
-        LEFT OUTER JOIN [dbo].[AttributeValue] button2Label ON button2Label.EntityId = cci.Id AND button2Label.AttributeId = 111429
-        LEFT OUTER JOIN [dbo].[AttributeValue] button3 ON button3.EntityId = cci.Id AND button3.AttributeId = 111316
-        LEFT OUTER JOIN [dbo].[AttributeValue] button3Label ON button3Label.EntityId = cci.Id AND button3Label.AttributeId = 111430
-        LEFT OUTER JOIN [dbo].[AttributeValue] button4 ON button4.EntityId = cci.Id AND button4.AttributeId = 111317
-        LEFT OUTER JOIN [dbo].[AttributeValue] button4Label ON button4Label.EntityId = cci.Id AND button4Label.AttributeId = 111431
-        LEFT OUTER JOIN [dbo].[AttributeValue] button5 ON button5.EntityId = cci.Id AND button5.AttributeId = 111318
-        LEFT OUTER JOIN [dbo].[AttributeValue] button5Label ON button5Label.EntityId = cci.Id AND button5Label.AttributeId = 111432
+        LEFT OUTER JOIN [dbo].[AttributeValue] button2 ON button2.EntityId = cci.Id AND button2.AttributeId = 131279
+        LEFT OUTER JOIN [dbo].[AttributeValue] button2Label ON button2Label.EntityId = cci.Id AND button2Label.AttributeId = 131280
+        LEFT OUTER JOIN [dbo].[AttributeValue] button3 ON button3.EntityId = cci.Id AND button3.AttributeId = 111315
+        LEFT OUTER JOIN [dbo].[AttributeValue] button3Label ON button3Label.EntityId = cci.Id AND button3Label.AttributeId = 111429
+        LEFT OUTER JOIN [dbo].[AttributeValue] button4 ON button4.EntityId = cci.Id AND button4.AttributeId = 131281
+        LEFT OUTER JOIN [dbo].[AttributeValue] button4Label ON button4Label.EntityId = cci.Id AND button4Label.AttributeId = 131282
+        LEFT OUTER JOIN [dbo].[AttributeValue] button5 ON button5.EntityId = cci.Id AND button5.AttributeId = 111316
+        LEFT OUTER JOIN [dbo].[AttributeValue] button5Label ON button5Label.EntityId = cci.Id AND button5Label.AttributeId = 111430
+        LEFT OUTER JOIN [dbo].[AttributeValue] button6 ON button6.EntityId = cci.Id AND button6.AttributeId = 131283
+        LEFT OUTER JOIN [dbo].[AttributeValue] button6Label ON button6Label.EntityId = cci.Id AND button6Label.AttributeId = 131284
+        LEFT OUTER JOIN [dbo].[AttributeValue] button7 ON button7.EntityId = cci.Id AND button7.AttributeId = 111317
+        LEFT OUTER JOIN [dbo].[AttributeValue] button7Label ON button7Label.EntityId = cci.Id AND button7Label.AttributeId = 111431
+        LEFT OUTER JOIN [dbo].[AttributeValue] button8 ON button8.EntityId = cci.Id AND button8.AttributeId = 131285
+        LEFT OUTER JOIN [dbo].[AttributeValue] button8Label ON button8Label.EntityId = cci.Id AND button8Label.AttributeId = 131286
+        LEFT OUTER JOIN [dbo].[AttributeValue] button9 ON button9.EntityId = cci.Id AND button9.AttributeId = 111318
+        LEFT OUTER JOIN [dbo].[AttributeValue] button9Label ON button9Label.EntityId = cci.Id AND button9Label.AttributeId = 111432
+        LEFT OUTER JOIN [dbo].[AttributeValue] button10 ON button10.EntityId = cci.Id AND button10.AttributeId = 131287
+        LEFT OUTER JOIN [dbo].[AttributeValue] button10Label ON button10Label.EntityId = cci.Id AND button10Label.AttributeId = 131288
         WHERE cci.ContentChannelId = 102
             AND (cci.StartDateTime <= @now)
             AND (cci.ExpireDateTime IS NULL OR cci.ExpireDateTime >= @now)
@@ -420,7 +482,7 @@ SELECT COUNT(CASE g.GroupTypeId WHEN 431 THEN 1 ELSE NULL END) AS StudentConnect
 
     {% for item in Items %}
         {% if forloop.first %}
-            <h1>Student Connect Curriculum</h1>
+            <h1>Student Connect High School Curriculum</h1>
         {% endif %}
         {% assign totalCount = totalCount | Plus:1 %}
         {% assign x = 0 %}
@@ -434,6 +496,11 @@ SELECT COUNT(CASE g.GroupTypeId WHEN 431 THEN 1 ELSE NULL END) AS StudentConnect
         {% if item.Button3 and item.Button3 != '' %}{% assign x = x | Plus:1 %}{% endif %}
         {% if item.Button4 and item.Button4 != '' %}{% assign x = x | Plus:1 %}{% endif %}
         {% if item.Button5 and item.Button5 != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.Button6 and item.Button6 != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.Button7 and item.Button7 != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.Button8 and item.Button8 != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.Button9 and item.Button9 != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.Button10 and item.Button10 != '' %}{% assign x = x | Plus:1 %}{% endif %}
         {% if x > 0 %}
             {% if x == 1 %}
                 {% assign cw = 'col-md-12' %}
@@ -479,27 +546,210 @@ SELECT COUNT(CASE g.GroupTypeId WHEN 431 THEN 1 ELSE NULL END) AS StudentConnect
             <div class="contentItem row buttons">
                 {% if item.Button1 and item.Button1 != '' %}
                     <div class='{{ cw }}'>
-                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Button1 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">{{ item.Button1Label | Default:'Week 1 Curriculum' }}</a></p>
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Button1 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">{{ item.Button1Label | Default:'Week 1 Teaching Guide' }}</a></p>
                     </div>
                 {% endif %}
                 {% if item.Button2 and item.Button2 != '' %}
                     <div class='{{ cw }}'>
-                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Button2 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">{{ item.Button2Label | Default:'Week 2 Curriculum' }}</a></p>
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Button2 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">{{ item.Button2Label | Default:'Week 1 Discussion Guide' }}</a></p>
                     </div>
                 {% endif %}
                 {% if item.Button3 and item.Button3 != '' %}
                     <div class='{{ cw }}'>
-                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Button3 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">{{ item.Button3Label | Default:'Week 3 Curriculum' }}</a></p>
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Button3 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">{{ item.Button3Label | Default:'Week 2 Teaching Guide' }}</a></p>
                     </div>
                 {% endif %}
                 {% if item.Button4 and item.Button4 != '' %}
                     <div class='{{ cw }}'>
-                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Button4 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">{{ item.Button4Label | Default:'Week 4 Curriculum' }}</a></p>
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Button4 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">{{ item.Button4Label | Default:'Week 2 Discussion Guide' }}</a></p>
                     </div>
                 {% endif %}
                 {% if item.Button5 and item.Button5 != '' %}
                     <div class='{{ cw }}'>
-                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Button5 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">{{ item.Button5Label | Default:'Week 5 Curriculum' }}</a></p>
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Button5 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">{{ item.Button5Label | Default:'Week 3 Teaching Guide' }}</a></p>
+                    </div>
+                {% endif %}
+                {% if item.Button6 and item.Button6 != '' %}
+                    <div class='{{ cw }}'>
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Button6 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">{{ item.Button6Label | Default:'Week 3 Discussion Guide' }}</a></p>
+                    </div>
+                {% endif %}
+                {% if item.Button7 and item.Button7 != '' %}
+                    <div class='{{ cw }}'>
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Button7 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">{{ item.Button7Label | Default:'Week 4 Teaching Guide' }}</a></p>
+                    </div>
+                {% endif %}
+                {% if item.Button8 and item.Button8 != '' %}
+                    <div class='{{ cw }}'>
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Button8 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">{{ item.Button8Label | Default:'Week 4 Discussion Guide' }}</a></p>
+                    </div>
+                {% endif %}
+                {% if item.Button9 and item.Button9 != '' %}
+                    <div class='{{ cw }}'>
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Button9 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">{{ item.Button9Label | Default:'Week 5 Teaching Guide' }}</a></p>
+                    </div>
+                {% endif %}
+                {% if item.Button10 and item.Button10 != '' %}
+                    <div class='{{ cw }}'>
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Button10 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">{{ item.Button10Label | Default:'Week 5 Discussion Guide' }}</a></p>
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+        <div class="spacer"></div>
+    {% endfor %}
+{% endif %}
+
+<!-- Student Connect Middle School Curriculum -->
+{% if studentConnect > 0 and middleSchool > 0 %}
+    {% sql now:'{{ today | Date:"yyyy-MM-ddTHH:mm:ss" }}' return:'Items' %}
+        SELECT cci.Id, cci.Title, cci.Content, cci.Priority, cci.Status, cci.StartDateTime, cci.ExpireDateTime,
+            image.Value AS [Image], video.Value AS [Video], pdf.Value AS [PDF], button1.Value AS [Button1], button1Label.Value AS [Button1Label], button2.Value AS [Button2], button2Label.Value AS [Button2Label],
+            button3.Value AS [Button3], button3Label.Value AS [Button3Label], button4.Value AS [Button4], button4Label.Value AS [Button4Label], button5.Value AS [Button5], button5Label.Value AS [Button5Label],
+            button6.Value AS [Button6], button6Label.Value AS [Button6Label], button7.Value AS [Button7], button7Label.Value AS [Button7Label], button8.Value AS [Button8], button8Label.Value AS [Button8Label],
+            button9.Value AS [Button9], button9Label.Value AS [Button9Label], button10.Value AS [Button10], button10Label.Value AS [Button10Label]
+        FROM [dbo].[ContentChannelItem] cci
+        LEFT OUTER JOIN [dbo].[AttributeValue] image ON image.EntityId = cci.Id AND image.AttributeId = 131289
+        LEFT OUTER JOIN [dbo].[AttributeValue] video ON video.EntityId = cci.Id AND video.AttributeId = 131291
+        LEFT OUTER JOIN [dbo].[AttributeValue] pdf ON pdf.EntityId = cci.Id AND pdf.AttributeId = 131290
+        LEFT OUTER JOIN [dbo].[AttributeValue] button1 ON button1.EntityId = cci.Id AND button1.AttributeId = 131292
+        LEFT OUTER JOIN [dbo].[AttributeValue] button1Label ON button1Label.EntityId = cci.Id AND button1Label.AttributeId = 131293
+        LEFT OUTER JOIN [dbo].[AttributeValue] button2 ON button2.EntityId = cci.Id AND button2.AttributeId = 131302
+        LEFT OUTER JOIN [dbo].[AttributeValue] button2Label ON button2Label.EntityId = cci.Id AND button2Label.AttributeId = 131303
+        LEFT OUTER JOIN [dbo].[AttributeValue] button3 ON button3.EntityId = cci.Id AND button3.AttributeId = 131294
+        LEFT OUTER JOIN [dbo].[AttributeValue] button3Label ON button3Label.EntityId = cci.Id AND button3Label.AttributeId = 131295
+        LEFT OUTER JOIN [dbo].[AttributeValue] button4 ON button4.EntityId = cci.Id AND button4.AttributeId = 131304
+        LEFT OUTER JOIN [dbo].[AttributeValue] button4Label ON button4Label.EntityId = cci.Id AND button4Label.AttributeId = 131305
+        LEFT OUTER JOIN [dbo].[AttributeValue] button5 ON button5.EntityId = cci.Id AND button5.AttributeId = 131296
+        LEFT OUTER JOIN [dbo].[AttributeValue] button5Label ON button5Label.EntityId = cci.Id AND button5Label.AttributeId = 131297
+        LEFT OUTER JOIN [dbo].[AttributeValue] button6 ON button6.EntityId = cci.Id AND button6.AttributeId = 131306
+        LEFT OUTER JOIN [dbo].[AttributeValue] button6Label ON button6Label.EntityId = cci.Id AND button6Label.AttributeId = 131307
+        LEFT OUTER JOIN [dbo].[AttributeValue] button7 ON button7.EntityId = cci.Id AND button7.AttributeId = 131298
+        LEFT OUTER JOIN [dbo].[AttributeValue] button7Label ON button7Label.EntityId = cci.Id AND button7Label.AttributeId = 131299
+        LEFT OUTER JOIN [dbo].[AttributeValue] button8 ON button8.EntityId = cci.Id AND button8.AttributeId = 131308
+        LEFT OUTER JOIN [dbo].[AttributeValue] button8Label ON button8Label.EntityId = cci.Id AND button8Label.AttributeId = 131309
+        LEFT OUTER JOIN [dbo].[AttributeValue] button9 ON button9.EntityId = cci.Id AND button9.AttributeId = 131300
+        LEFT OUTER JOIN [dbo].[AttributeValue] button9Label ON button9Label.EntityId = cci.Id AND button9Label.AttributeId = 131301
+        LEFT OUTER JOIN [dbo].[AttributeValue] button10 ON button10.EntityId = cci.Id AND button10.AttributeId = 131310
+        LEFT OUTER JOIN [dbo].[AttributeValue] button10Label ON button10Label.EntityId = cci.Id AND button10Label.AttributeId = 131311
+        WHERE cci.ContentChannelId = 123
+            AND (cci.StartDateTime <= @now)
+            AND (cci.ExpireDateTime IS NULL OR cci.ExpireDateTime >= @now)
+        ORDER BY cci.Priority, cci.StartDateTime
+    {% endsql %}
+
+    {% for item in Items %}
+        {% if forloop.first %}
+            <h1>Student Connect Middle School Curriculum</h1>
+        {% endif %}
+        {% assign totalCount = totalCount | Plus:1 %}
+        {% assign x = 0 %}
+        {% assign y = 0 %}
+        {% if item.Content and item.Content != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.Image and item.Image != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.PDF and item.PDF != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.Video and item.Video != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.Button1 and item.Button1 != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.Button2 and item.Button2 != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.Button3 and item.Button3 != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.Button4 and item.Button4 != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.Button5 and item.Button5 != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.Button6 and item.Button6 != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.Button7 and item.Button7 != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.Button8 and item.Button8 != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.Button9 and item.Button9 != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if item.Button10 and item.Button10 != '' %}{% assign x = x | Plus:1 %}{% endif %}
+        {% if x > 0 %}
+            {% if x == 1 %}
+                {% assign cw = 'col-md-12' %}
+            {% else %}
+                {% assign cw = 'col-md-6' %}
+            {% endif %}
+            <div class="contentItem">
+                <div class="row">
+                    {% if item.Content and item.Content != '' %}
+                        {% assign y = y | Plus:1 %}
+                        <div class='{{ cw }}'>
+                            {{ item.Content }}
+                        </div>
+                    {% endif %}
+                    {% if item.Image and item.Image != '' %}
+                        {% assign y = y | Plus:1 %}
+                        <div class='{{ cw }}' style="text-align:center;">
+                            <img src="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetImage.ashx?Guid={{ item.Image }}" style="max-width: 100%; max-height: 500px;">
+                        </div>
+                    {% endif %}
+                    {% if y == 2 %}</div><div class="row">{% endif %}{% comment %} Split the remaining content into a new row {% endcomment %}
+                    {% if item.PDF and item.PDF != '' %}
+                        {% assign y = y | Plus:1 %}
+                        <div class='{{ cw }}' style="text-align:center;">
+                            <div style="--aspect-ratio: 16/9;" class="DesktopPdfViewer">
+                                <iframe src="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.PDF }}" title="Central News Dynamic PDF" frameborder="0" width="1600" height="900"></iframe>
+                            </div>
+                            <div style="--aspect-ratio: 16/9;" class="MobilePdfViewer">
+                                <iframe src="https://docs.google.com/gview?url={{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.PDF }}&embedded=true" title="Student Connect Curriculum Dynamic PDF" frameborder="0" width="1600" height="900"></iframe>
+                            </div>
+                        </div>
+                    {% endif %}
+                    {% if y == 2 %}</div><div class="row">{% endif %}{% comment %} Split the remaining content into a new row {% endcomment %}
+                    {% if item.Video and item.Video != '' %}
+                        <div class='{{ cw }}' style="text-align:center;">
+                            <div style="--aspect-ratio: 16/9;">
+                                <iframe src="//fast.wistia.net/embed/iframe/{{ item.Video }}?playerColor=f04b28" loading="lazy" allowtransparency="true" frameborder="0" scrolling="no" class="wistia_embed" name="wistia_embed" allowfullscreen mozallowfullscreen webkitallowfullscreen oallowfullscreen msallowfullscreen width="1600" height="900"></iframe>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="contentItem row buttons">
+                {% if item.Button1 and item.Button1 != '' %}
+                    <div class='{{ cw }}'>
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Button1 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">{{ item.Button1Label | Default:'Week 1 Teaching Guide' }}</a></p>
+                    </div>
+                {% endif %}
+                {% if item.Button2 and item.Button2 != '' %}
+                    <div class='{{ cw }}'>
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Button2 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">{{ item.Button2Label | Default:'Week 1 Discussion Guide' }}</a></p>
+                    </div>
+                {% endif %}
+                {% if item.Button3 and item.Button3 != '' %}
+                    <div class='{{ cw }}'>
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Button3 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">{{ item.Button3Label | Default:'Week 2 Teaching Guide' }}</a></p>
+                    </div>
+                {% endif %}
+                {% if item.Button4 and item.Button4 != '' %}
+                    <div class='{{ cw }}'>
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Button4 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">{{ item.Button4Label | Default:'Week 2 Discussion Guide' }}</a></p>
+                    </div>
+                {% endif %}
+                {% if item.Button5 and item.Button5 != '' %}
+                    <div class='{{ cw }}'>
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Button5 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">{{ item.Button5Label | Default:'Week 3 Teaching Guide' }}</a></p>
+                    </div>
+                {% endif %}
+                {% if item.Button6 and item.Button6 != '' %}
+                    <div class='{{ cw }}'>
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Button6 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">{{ item.Button6Label | Default:'Week 3 Discussion Guide' }}</a></p>
+                    </div>
+                {% endif %}
+                {% if item.Button7 and item.Button7 != '' %}
+                    <div class='{{ cw }}'>
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Button7 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">{{ item.Button7Label | Default:'Week 4 Teaching Guide' }}</a></p>
+                    </div>
+                {% endif %}
+                {% if item.Button8 and item.Button8 != '' %}
+                    <div class='{{ cw }}'>
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Button8 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">{{ item.Button8Label | Default:'Week 4 Discussion Guide' }}</a></p>
+                    </div>
+                {% endif %}
+                {% if item.Button9 and item.Button9 != '' %}
+                    <div class='{{ cw }}'>
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Button9 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">{{ item.Button9Label | Default:'Week 5 Teaching Guide' }}</a></p>
+                    </div>
+                {% endif %}
+                {% if item.Button10 and item.Button10 != '' %}
+                    <div class='{{ cw }}'>
+                        <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.Button10 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">{{ item.Button10Label | Default:'Week 5 Discussion Guide' }}</a></p>
                     </div>
                 {% endif %}
             </div>

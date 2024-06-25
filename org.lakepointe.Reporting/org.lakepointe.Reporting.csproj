@@ -55,7 +55,6 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Reporting\DataFilter\Group\TagFilter.cs" />
-    <Compile Include="Reporting\DataFilter\Person\PersonInGroupAttribute.cs" />
     <Compile Include="Reporting\DataFilter\Person\FirstAttendanceOnCampusFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\PersonInGroupAttribute.cs" />
     <Compile Include="Reporting\DataSelect\Person\FirstAttendanceOnCampus.cs" />

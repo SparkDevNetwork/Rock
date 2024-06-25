@@ -2,15 +2,13 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Net.Sockets;
-using System.Net;
 using System.Web.UI;
-using AngleSharp.Text;
 using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 using Rock.Communication;
+using System.Web;
 
 namespace RockWeb.Plugins.org_lakepointe.Communications
 {
@@ -24,21 +22,17 @@ namespace RockWeb.Plugins.org_lakepointe.Communications
 
         #region Properties
 
-        // If we ever add a new dev environment, adding it to this block is as simple as adding it to this dictionary here
-        // - The dictionary key needs to be the lowercase of the site's database's name without the 'rock'
-        //     - For example: the DB name of RockDev is 'RockDev', which is 'rockdev' in lowercase, and without the 'rock' it is just 'dev'
-        // - The port needs to be the SMTP port of the dev email server
-        //     - This is configured in the startup and nightly scripts
-        // - The uiPort needs to be the WebUI port of the dev email server
-        //     - This is configured in the startup and nightly scripts
-        Dictionary<string, SmtpConfiguration> smtpConfigurations = new Dictionary<string, SmtpConfiguration>
+        private readonly SmtpConfiguration _smtpConfiguration = new SmtpConfiguration
         {
-            { "default", new SmtpConfiguration( port:1025, uiPort:8025 ) },
-            { "dev",     new SmtpConfiguration( port:1026, uiPort:8026 ) },
-            { "train",   new SmtpConfiguration( port:1027, uiPort:8027 ) },
-            { "gamma",   new SmtpConfiguration( port:1028, uiPort:8028 ) },
-            { "beta",    new SmtpConfiguration( port:1029, uiPort:8029 ) }
+            Server = "localhost",
+            Active = true,
+            Port = 1025,
+            UserName = "",
+            Password = "",
+            UseSSL = false,
+            MaxParallelization = 1
         };
+        private const int _uiPort = 8025;
 
         #endregion
         #region Base Control Methods
@@ -55,15 +49,13 @@ namespace RockWeb.Plugins.org_lakepointe.Communications
 
             if ( !Page.IsPostBack )
             {
-                // Check if environment is prod
-                string environmentName = GetEnvironmentName();
-                if ( environmentName.IsNullOrWhiteSpace() || environmentName == "prod" )
+                if ( CheckIfEnvironmentIsProduction() == true )
                 {
                     pnlAlert.Visible = true;
                     btnConfigureSmtp.Visible = false;
                     lContent.Visible = false;
                     btnGoToSmtpUi.Visible = false;
-                    lWarning.Text = "You are on a production/staging environment. There is no use for a dev SMTP server here. All functions of this block have been disabled.";
+                    lWarning.Text = "You are on a production environment. There is no use for a dev SMTP server here. All functions of this block have been disabled.";
 
                     return;
                 }
@@ -86,33 +78,15 @@ namespace RockWeb.Plugins.org_lakepointe.Communications
                 }
 
                 // Check configuration values
-                if ( smtpConfig.Uri != smtpConfigurations[environmentName].Url )
+                foreach ( var prop in typeof( SmtpConfiguration ).GetProperties() )
                 {
-                    warnings.Add( $"The current URL of \"{smtpConfig.Uri}\" does not match the desired config value of \"{smtpConfigurations[environmentName].Url}\"." );
-                }
-                if ( smtpConfig.Active != true )
-                {
-                    warnings.Add( $"The SMTP server config is not currently active." );
-                }
-                if ( smtpConfig.Port != smtpConfigurations[environmentName].Port )
-                {
-                    warnings.Add( $"The SMTP server port of \"{smtpConfig.Port}\" does not match the desired config value of \"{smtpConfigurations[environmentName].Port}\"." );
-                }
-                if ( smtpConfig.UserName != "" )
-                {
-                    warnings.Add( $"The SMTP server username is not currently empty." );
-                }
-                if ( smtpConfig.Password != "" )
-                {
-                    warnings.Add( $"The SMTP server password is not currently empty." );
-                }
-                if ( smtpConfig.UseSSL != false )
-                {
-                    warnings.Add( $"The SMTP server has UseSSL enabled." );
-                }
-                if ( smtpConfig.MaxParallelization != 1 )
-                {
-                    warnings.Add( $"The SMTP server max parallelization config of \"{smtpConfig.MaxParallelization}\" does not match the desired config value of \"1\"." );
+                    var currentValue = prop.GetValue( smtpConfig, null );
+                    var desiredValue = prop.GetValue( _smtpConfiguration, null );
+
+                    if ( currentValue.Equals( desiredValue ) == false )
+                    {
+                        warnings.Add( $"The SMTP server {prop.Name} config of \"{currentValue}\" does not match the desired config value of \"{desiredValue}\"" );
+                    }
                 }
 
                 if ( smtpConfig.Active == true )
@@ -134,8 +108,7 @@ namespace RockWeb.Plugins.org_lakepointe.Communications
                 }
 
                 // Set the URL of the SMTP server web UI so that we can set it or redirect to it
-                string http = smtpConfigurations[environmentName].Url.Contains( "http" ) ? "" : "http://";
-                string fullUrl = $"{http}{(environmentName == "default" ? smtpConfig.Uri : smtpConfig.Url)}:{smtpConfigurations[environmentName].UiPort}";
+                string redirectUrl = $"http://{HttpContext.Current.Request.Url.Host}:{_uiPort}";
 
                 // Display any warnings
                 if ( warnings.Any() )
@@ -157,12 +130,12 @@ namespace RockWeb.Plugins.org_lakepointe.Communications
                     if ( redirectParam != false )
                     {
                         // If there are no warnings, redirect the user to the SMTP server web UI
-                        Response.Redirect( fullUrl );
+                        Response.Redirect( redirectUrl );
                     }
                 }
 
                 // If the user is still here, set the link to the SMTP server web UI
-                btnGoToSmtpUi.HRef = fullUrl;
+                btnGoToSmtpUi.HRef = redirectUrl;
             }
         }
 
@@ -171,15 +144,13 @@ namespace RockWeb.Plugins.org_lakepointe.Communications
 
         protected void btnConfigureSmtp_Click( object sender, EventArgs e )
         {
-            string environmentName = GetEnvironmentName();
-
-            if ( environmentName.IsNullOrWhiteSpace() || environmentName == "prod" )
+            if ( CheckIfEnvironmentIsProduction() == true )
             {
                 pnlAlert.Visible = true;
                 btnConfigureSmtp.Visible = false;
                 lContent.Visible = false;
                 btnGoToSmtpUi.Visible = false;
-                lWarning.Text = "You are on a production/staging environment. There is no use for a dev SMTP server here. All functions of this block have been disabled.";
+                lWarning.Text = "You are on a production environment. There is no use for a dev SMTP server here. All functions of this block have been disabled.";
 
                 return;
             }
@@ -195,13 +166,13 @@ namespace RockWeb.Plugins.org_lakepointe.Communications
                 }
                 else
                 {
-                    transport.SetAttributeValue( "Active", "True" );
-                    transport.SetAttributeValue( "Server", smtpConfigurations[environmentName].Url );
-                    transport.SetAttributeValue( "Port", smtpConfigurations[environmentName].Port );
-                    transport.SetAttributeValue( "UserName", "" );
-                    transport.SetAttributeValue( "Password", "" );
-                    transport.SetAttributeValue( "UseSSL", "False" );
-                    transport.SetAttributeValue( "MaxParallelization", "1" );
+                    transport.SetAttributeValue( "Active", _smtpConfiguration.Active.ToString() );
+                    transport.SetAttributeValue( "Server", _smtpConfiguration.Server );
+                    transport.SetAttributeValue( "Port", _smtpConfiguration.Port );
+                    transport.SetAttributeValue( "UserName", _smtpConfiguration.UserName );
+                    transport.SetAttributeValue( "Password", _smtpConfiguration.Password );
+                    transport.SetAttributeValue( "UseSSL", _smtpConfiguration.UseSSL.ToString() );
+                    transport.SetAttributeValue( "MaxParallelization", _smtpConfiguration.MaxParallelization );
                     transport.SaveAttributeValues( _context );
 
                     var mediumsDictionary = MediumContainer.Instance.Components.Values
@@ -218,31 +189,29 @@ namespace RockWeb.Plugins.org_lakepointe.Communications
             }
 
             // Set the URL of the SMTP server web UI so that we can set it or redirect to it
-            var smtpConfig = GetCurrentSmtpConfig();
-            string http = smtpConfigurations[environmentName].Url.Contains( "http" ) ? "" : "http://";
-            string fullUrl = $"{http}{( environmentName == "default" ? smtpConfig.Uri : smtpConfig.Url )}:{smtpConfigurations[environmentName].UiPort}";
+            string redirectUrl = $"http://{HttpContext.Current.Request.Url.Host}:{_uiPort}";
 
             // Check if query strings has "redirect=false"
             bool? redirectParam = Request.QueryString["redirect"].AsBooleanOrNull();
             if ( redirectParam != false )
             {
                 // If there are no warnings, redirect the user to the SMTP server web UI
-                Response.Redirect( fullUrl );
+                Response.Redirect( redirectUrl );
             }
 
             // If the user is still here, set the link to the SMTP server web UI
             pnlAlert.Visible = false;
-            btnGoToSmtpUi.HRef = fullUrl;
+            btnGoToSmtpUi.HRef = redirectUrl;
         }
 
         #endregion
         #region Methods
 
-        private ( string Uri, string Url, bool Active, int Port, string UserName, string Password, bool UseSSL, int MaxParallelization ) GetCurrentSmtpConfig()
+        private SmtpConfiguration GetCurrentSmtpConfig()
         {
             var attributeValues = new AttributeValueService( _context ).Queryable()
                 .Where( a => a.Attribute.EntityType.Name == "Rock.Communication.Transport.SMTP" );
-            string uri = attributeValues.FirstOrDefault( a => a.Attribute.Key == "Server" )?.Value ?? "";
+            string server = attributeValues.FirstOrDefault( a => a.Attribute.Key == "Server" )?.Value ?? "";
             bool active = attributeValues.FirstOrDefault( a => a.Attribute.Key == "Active" )?.Value.AsBoolean() ?? false;
             int port = attributeValues.FirstOrDefault( a => a.Attribute.Key == "Port" )?.Value.AsInteger() ?? 0;
             string userName = attributeValues.FirstOrDefault( a => a.Attribute.Key == "UserName" )?.Value ?? "";
@@ -250,76 +219,41 @@ namespace RockWeb.Plugins.org_lakepointe.Communications
             bool useSSL = attributeValues.FirstOrDefault( a => a.Attribute.Key == "UseSSL" )?.Value.AsBoolean() ?? false;
             int maxParallelization = attributeValues.FirstOrDefault( a => a.Attribute.Key == "MaxParallelization" )?.Value.AsInteger() ?? 0;
 
-            string url = "";
-
-            if ( uri.ToLower() == "localhost" || uri == "." )
+            return new SmtpConfiguration
             {
-                try
-                {
-                    url = GetLocalIPAddress();
-                }
-                catch { }
-            }
-
-            if ( url == "" )
-            {
-                url = uri;
-            }
-
-            return ( uri, url, active, port, userName, password, useSSL, maxParallelization );
+                Server = server,
+                Active = active,
+                Port = port,
+                UserName = userName,
+                Password = password,
+                UseSSL = useSSL,
+                MaxParallelization = maxParallelization
+            };
         }
 
-        public string GetLocalIPAddress()
+        private bool CheckIfEnvironmentIsProduction()
         {
-            var host = Dns.GetHostEntry( Dns.GetHostName() );
-            foreach ( var ip in host.AddressList )
-            {
-                if ( ip.AddressFamily == AddressFamily.InterNetwork && ip.ToString().StartsWith( "172." ) == false )
-                {
-                    return ip.ToString();
-                }
-            }
-            throw new Exception( "No network adapters with an IPv4 address in the system!" );
-        }
-
-        private string GetEnvironmentName()
-        {
-            var acceptableEnvironmentNames = new List<string>( smtpConfigurations.Keys );
-
             string dbName = _context.Database.Connection.Database.ToLower();
 
-            // Check if environment is production or staging
-            if ( dbName == "rock" || dbName == "staging" )
+            // Check if environment is production
+            if ( dbName == "rock" )
             {
-                return "prod";
+                return true;
             }
-
-            dbName = dbName.Replace( "rock", "" );
-
-            if ( acceptableEnvironmentNames.Contains( dbName ) )
-            {
-                return dbName;
-            }
-            else
-            {
-                return "default";
-            }
+            return false;
         }
 
         #endregion
 
         private class SmtpConfiguration
         {
-            public string Url { get; set; }
+            public string Server { get; set; }
+            public bool Active { get; set; }
             public int Port { get; set; }
-            public int UiPort { get; set; }
-
-            public SmtpConfiguration(int port, int uiPort, string url = "localhost" )
-            {
-                Url = url;
-                Port = port;
-                UiPort = uiPort;
-            }
+            public string UserName { get; set; }
+            public string Password { get; set; }
+            public bool UseSSL { get; set; }
+            public int MaxParallelization { get; set; }
         }
     }
 }

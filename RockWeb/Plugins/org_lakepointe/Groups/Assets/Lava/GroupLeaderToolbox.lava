@@ -1,0 +1,606 @@
+<!-- Group Leader Toolbox Prototype -->
+<style>
+    .btn-primary, .btn-info {
+        margin-top: 15px;
+        margin-bottom: 15px;
+        padding-top: 15px;
+        padding-bottom: 15px;
+        display: block;
+    }
+
+    .two-lines {
+        height: 3em;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        text-wrap: wrap;
+        margin: 0;
+    }
+
+    .six-lines {
+        height: 7em;
+        line-height: 1.2em;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 6;
+        -webkit-box-orient: vertical;
+        text-wrap: wrap;
+        margin: 0;
+    }
+</style>
+
+<div class="container-fluid">
+    <!--  Group Leader Application -->
+    {% person dataview:'2704' where:'Id == {{CurrentPerson.Id}}'  %}
+        {% assign personGroupLeaderApplicationCount = personItems | Size %}
+        {% if personGroupLeaderApplicationCount > 0 %}
+            <div class="row">
+                <div class="col-sm-12 col-md-6 col-lg-3">
+                    <a href="~/page/4670" class="btn btn-info stretched-link"
+                        data-toggle="tooltip" data-placement="top" data-html="true"
+                        title="Potential Group Leader Application">
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <i class="fal fa-file-certificate fa-5x"></i>
+                            </div>
+                            <div class="col-sm-8">
+                                <p class="six-lines">Potential Group Leader Application</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    {% endperson %}
+
+    <!-- Check-in -->
+    {% sql personalias:'{{ Person.PrimaryAlias.Guid }}' return:'coaches' %}
+        -- Coach and Captain Check-in
+        SELECT g.Name, c.Name AS [Campus], gt.Name AS [GroupType], g.Guid AS [Group]
+        FROM [Person] p
+        JOIN [GroupMember] gm ON gm.PersonId = p.Id
+            AND gm.GroupMemberStatus = 1
+            AND gm.IsArchived = 0
+        JOIN [Group] g ON g.Id = gm.GroupId
+            AND g.IsActive = 1
+            AND g.IsArchived = 0
+            AND g.GroupTypeId IN (666, 667) -- Small Group Coach, Small Group Captain
+        JOIN [Campus] c ON c.Id = g.CampusId
+        JOIN [GroupType] gt ON gt.Id = g.GroupTypeId
+        JOIN [PersonAlias] pa ON pa.PersonId = p.Id AND pa.Guid = TRY_CAST(@personalias AS UNIQUEIDENTIFIER)
+        GROUP BY g.Name, c.Name, gt.Name, g.Guid
+    {% endsql %}
+
+    {% assign coachcount = coaches | Size %}
+    {% if coachcount > 0 %}
+        <div class="row">
+            <div class="col-md-12">
+                <h1>Serve Team Check-in</h1>
+                <div class="row">
+                    {% for coach in coaches %}
+                        <div class="col-sm-12 col-md-6 col-lg-3">
+                            <a href="~/page/5021?Group={{ coach.Group }}&Person={{ Person.PrimaryAlias.Guid }}" class="btn btn-info stretched-link"
+                                data-toggle="tooltip" data-placement="top" data-html="true"
+                                title="Check in when supervising Life Groups">
+                                <div class="row">
+                                    <div class="col-sm-4">
+                                        <i class="fal fa-clipboard-check fa-5x"></i>
+                                    </div>
+                                    <div class="col-sm-8">
+                                        <p class="six-lines">Check in as {{ coach.GroupType }}<br>to {{ coach.Name }} - {{ coach.Campus }}</p>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Adult Life Groups -->
+    <div class="row">
+        <div class="col-md-12">
+            <!-- Group List -->
+            {% sql personAliasId:'{{ Person.PrimaryAlias.Id }}' return:'lifegroups'%}
+                DECLARE @FeatureSetAttributeId INT = 132518
+                DECLARE @GroupsTag INT = 471 -- tag for groups toolbox
+                DECLARE @Roster NVARCHAR(40) = '%5C3E2545-EE21-43B4-A7C9-F3CC4ECA018B%'
+
+                SELECT GroupId, GroupName, STRING_AGG(Role, ', ') AS [Roles], GroupType, GroupTypeId, IconCssClass, Campus
+                FROM
+                (
+                    -- Leaders who are members of the group
+                    SELECT g.Id AS [GroupId], g.Name AS [GroupName], gtr.Name AS [Role]
+                        , gt.Name AS [GroupType], gt.Id AS [GroupTypeId], gt.IconCssClass AS [IconCssClass]
+                        , c.Name AS [Campus]
+                    FROM [Group] g
+                    LEFT JOIN [Campus] c ON c.Id = g.CampusId
+                    JOIN [GroupType] gt ON gt.Id = g.GroupTypeId
+                    JOIN [TaggedItem] ti ON ti.EntityGuid = gt.Guid AND ti.TagId = @GroupsTag
+                    JOIN [GroupMember] gm ON gm.GroupId = g.Id AND gm.GroupMemberStatus = 1 AND gm.IsArchived = 0
+                    JOIN [PersonAlias] pa ON pa.PersonId = gm.PersonId
+                        AND pa.Id = @PersonAliasId
+                    JOIN [GroupTypeRole] gtr ON gtr.Id = gm.GroupRoleId
+                    JOIN [AttributeValue] av ON av.EntityId = gtr.Id
+                        AND av.AttributeId = @FeatureSetAttributeId
+                        AND av.Value LIKE @Roster
+                    WHERE g.IsActive = 1
+                        AND g.IsArchived = 0
+
+                    UNION ALL
+
+                    -- Leaders who are members of the Coach group
+                    SELECT g.Id AS [GroupId], g.Name AS [GroupName], 'Coach' AS [Role]
+                        , gt.Name AS [GroupType], gt.Id AS [GroupTypeId], gt.IconCssClass AS [IconCssClass]
+                        , c.Name AS [Campus]
+                    FROM [Group] g
+                    LEFT JOIN [Campus] c ON c.Id = g.CampusId
+                    JOIN [GroupType] gt ON gt.Id = g.GroupTypeId
+                    JOIN [TaggedItem] ti ON ti.EntityGuid = gt.Guid AND ti.TagId = @GroupsTag
+                    JOIN [Group] coachGroup ON coachGroup.Id = g.ParentGroupId
+                    JOIN [GroupMember] gm ON gm.GroupId = coachGroup.Id AND gm.GroupMemberStatus = 1 AND gm.IsArchived = 0
+                    JOIN [PersonAlias] pa ON pa.PersonId = gm.PersonId
+                        AND pa.Id = @PersonAliasId
+                    JOIN [GroupTypeRole] gtr ON gtr.Id = gm.GroupRoleId
+                    JOIN [AttributeValue] av ON av.EntityId = gtr.Id
+                        AND av.AttributeId = @FeatureSetAttributeId
+                        AND av.Value LIKE @Roster
+                    WHERE g.IsActive = 1
+                        AND g.IsArchived = 0
+
+                    UNION ALL
+
+                    -- Leaders who are members of the Captain group
+                    SELECT g.Id AS [GroupId], g.Name AS [GroupName], 'Captain' AS [Role]
+                        , gt.Name AS [GroupType], gt.Id AS [GroupTypeId], gt.IconCssClass AS [IconCssClass]
+                        , c.Name AS [Campus]
+                    FROM [Group] g
+                    LEFT JOIN [Campus] c ON c.Id = g.CampusId
+                    JOIN [GroupType] gt ON gt.Id = g.GroupTypeId
+                    JOIN [TaggedItem] ti ON ti.EntityGuid = gt.Guid AND ti.TagId = @GroupsTag
+                    JOIN [Group] coachGroup ON coachGroup.Id = g.ParentGroupId
+                    JOIN [Group] captainGroup ON captainGroup.Id = coachGroup.ParentGroupId
+                    JOIN [GroupMember] gm ON gm.GroupId = captainGroup.Id AND gm.GroupMemberStatus = 1 AND gm.IsArchived = 0
+                    JOIN [PersonAlias] pa ON pa.PersonId = gm.PersonId
+                        AND pa.Id = @PersonAliasId
+                    JOIN [GroupTypeRole] gtr ON gtr.Id = gm.GroupRoleId
+                    JOIN [AttributeValue] av ON av.EntityId = gtr.Id
+                        AND av.AttributeId = @FeatureSetAttributeId
+                        AND av.Value LIKE @Roster
+                    WHERE g.IsActive = 1
+                        AND g.IsArchived = 0
+
+                    UNION ALL
+
+                    -- Leaders who are members of the Pastor group
+                    SELECT g.Id AS [GroupId], g.Name AS [GroupName], 'Pastor' AS [Role]
+                        , gt.Name AS [GroupType], gt.Id AS [GroupTypeId], gt.IconCssClass AS [IconCssClass]
+                        , c.Name AS [Campus]
+                    FROM [Group] g
+                    LEFT JOIN [Campus] c ON c.Id = g.CampusId
+                    JOIN [GroupType] gt ON gt.Id = g.GroupTypeId
+                    JOIN [TaggedItem] ti ON ti.EntityGuid = gt.Guid AND ti.TagId = @GroupsTag
+                    JOIN [Group] coachGroup ON coachGroup.Id = g.ParentGroupId
+                    JOIN [Group] captainGroup ON captainGroup.Id = coachGroup.ParentGroupId
+                    JOIN [Group] pastorGroup ON pastorGroup.Id = captainGroup.ParentGroupId
+                    JOIN [GroupMember] gm ON gm.GroupId = pastorGroup.Id AND gm.GroupMemberStatus = 1 AND gm.IsArchived = 0
+                    JOIN [PersonAlias] pa ON pa.PersonId = gm.PersonId
+                        AND pa.Id = @PersonAliasId
+                    JOIN [GroupTypeRole] gtr ON gtr.Id = gm.GroupRoleId
+                    JOIN [AttributeValue] av ON av.EntityId = gtr.Id
+                        AND av.AttributeId = @FeatureSetAttributeId
+                        AND av.Value LIKE @Roster
+                    WHERE g.IsActive = 1
+                        AND g.IsArchived = 0
+                ) a
+                GROUP BY a.Campus, a.GroupId, a.GroupName, a.GroupType, a.GroupTypeId, a.IconCssClass
+                ORDER BY [GroupName]
+            {% endsql %}
+
+            {% assign groupcount = lifegroups | Size %}
+            {% if groupcount > 0 %}
+                <h1>Life Groups</h1>
+                <div class="row">
+                    {% for lifegroup in lifegroups %}
+                        <div class="col-sm-12 col-md-6 col-lg-3">
+                            <a href="~/page/4656?GroupId={{ lifegroup.GroupId }}" class="btn btn-primary stretched-link"
+                                data-toggle="tooltip" data-placement="top" data-html="true"
+                                title="{{ lifegroup.Roles }}<br>{{ lifegroup.GroupType }}<br>{{ lifegroup.Campus }}">
+                                <div class="row">
+                                    <div class="col-sm-4">
+                                        <i class="{{ lifegroup.IconCssClass }} fa-5x"></i>
+                                    </div>
+                                    <div class="col-sm-8">
+                                        <p class="six-lines">{{ lifegroup.GroupName }}</p>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        <hr/>
+
+        <!-- Serve Teams -->
+        <div class="col-md-12">
+            <!-- Group List -->
+            {% sql personAliasId:'{{ Person.PrimaryAlias.Id }}' return:'serveteams'%}
+                DECLARE @FeatureSetAttributeId INT = 132518
+                DECLARE @ServeTag INT = 472
+                DECLARE @Roster NVARCHAR(40) = '%5C3E2545-EE21-43B4-A7C9-F3CC4ECA018B%'
+
+                SELECT GroupId, GroupName, STRING_AGG(Role, ', ') AS [Roles], GroupType, GroupTypeId, IconCssClass, Campus
+                FROM
+                (
+                    -- Leaders who are members of the Coach group
+                    SELECT g.Id AS [GroupId], g.Name AS [GroupName], 'Coach' AS [Role]
+                        , gt.Name AS [GroupType], gt.Id AS [GroupTypeId], gt.IconCssClass AS [IconCssClass]
+                        , c.Name AS [Campus]
+                    FROM [Group] g
+                    LEFT JOIN [Campus] c ON c.Id = g.CampusId
+                    JOIN [GroupType] gt ON gt.Id = g.GroupTypeId
+                    JOIN [TaggedItem] ti ON ti.EntityGuid = gt.Guid AND ti.TagId = @ServeTag
+                    JOIN [Group] coachGroup ON coachGroup.Id = g.ParentGroupId
+                    JOIN [GroupMember] gm ON gm.GroupId = coachGroup.Id AND gm.GroupMemberStatus = 1 AND gm.IsArchived = 0
+                    JOIN [PersonAlias] pa ON pa.PersonId = gm.PersonId
+                        AND pa.Id = @PersonAliasId
+                    JOIN [GroupTypeRole] gtr ON gtr.Id = gm.GroupRoleId
+                    JOIN [AttributeValue] av ON av.EntityId = gtr.Id
+                        AND av.AttributeId = @FeatureSetAttributeId
+                        AND av.Value LIKE @Roster
+                    WHERE g.IsActive = 1
+                        AND g.IsArchived = 0
+
+                    UNION ALL
+
+                    -- Leaders who are members of the Captain group
+                    SELECT g.Id AS [GroupId], g.Name AS [GroupName], 'Captain' AS [Role]
+                        , gt.Name AS [GroupType], gt.Id AS [GroupTypeId], gt.IconCssClass AS [IconCssClass]
+                        , c.Name AS [Campus]
+                    FROM [Group] g
+                    LEFT JOIN [Campus] c ON c.Id = g.CampusId
+                    JOIN [GroupType] gt ON gt.Id = g.GroupTypeId
+                    JOIN [TaggedItem] ti ON ti.EntityGuid = gt.Guid AND ti.TagId = @ServeTag
+                    JOIN [Group] coachGroup ON coachGroup.Id = g.ParentGroupId
+                    JOIN [Group] captainGroup ON captainGroup.Id = coachGroup.ParentGroupId
+                    JOIN [GroupMember] gm ON gm.GroupId = captainGroup.Id AND gm.GroupMemberStatus = 1 AND gm.IsArchived = 0
+                    JOIN [PersonAlias] pa ON pa.PersonId = gm.PersonId
+                        AND pa.Id = @PersonAliasId
+                    JOIN [GroupTypeRole] gtr ON gtr.Id = gm.GroupRoleId
+                    JOIN [AttributeValue] av ON av.EntityId = gtr.Id
+                        AND av.AttributeId = @FeatureSetAttributeId
+                        AND av.Value LIKE @Roster
+                    WHERE g.IsActive = 1
+                        AND g.IsArchived = 0
+
+                    UNION ALL
+
+                    -- Leaders who are members of the Pastor group
+                    SELECT g.Id AS [GroupId], g.Name AS [GroupName], 'Pastor' AS [Role]
+                        , gt.Name AS [GroupType], gt.Id AS [GroupTypeId], gt.IconCssClass AS [IconCssClass]
+                        , c.Name AS [Campus]
+                    FROM [Group] g
+                    LEFT JOIN [Campus] c ON c.Id = g.CampusId
+                    JOIN [GroupType] gt ON gt.Id = g.GroupTypeId
+                    JOIN [TaggedItem] ti ON ti.EntityGuid = gt.Guid AND ti.TagId = @ServeTag
+                    JOIN [Group] coachGroup ON coachGroup.Id = g.ParentGroupId
+                    JOIN [Group] captainGroup ON captainGroup.Id = coachGroup.ParentGroupId
+                    JOIN [Group] pastorGroup ON pastorGroup.Id = captainGroup.ParentGroupId
+                    JOIN [GroupMember] gm ON gm.GroupId = pastorGroup.Id AND gm.GroupMemberStatus = 1 AND gm.IsArchived = 0
+                    JOIN [PersonAlias] pa ON pa.PersonId = gm.PersonId
+                        AND pa.Id = @PersonAliasId
+                    JOIN [GroupTypeRole] gtr ON gtr.Id = gm.GroupRoleId
+                    JOIN [AttributeValue] av ON av.EntityId = gtr.Id
+                        AND av.AttributeId = @FeatureSetAttributeId
+                        AND av.Value LIKE @Roster
+                    WHERE g.IsActive = 1
+                        AND g.IsArchived = 0
+                ) a
+                GROUP BY a.Campus, a.GroupId, a.GroupName, a.GroupType, a.GroupTypeId, a.IconCssClass
+                ORDER BY [GroupName]
+            {% endsql %}
+
+            {% assign groupcount = serveteams | Size %}
+            {% if groupcount > 0 %}
+                <h1>Serve Teams</h1>
+                <div class="row">
+                    {% for serveteam in serveteams %}
+                        <div class="col-sm-12 col-md-6 col-lg-3">
+                            <a href="~/page/4656?GroupId={{ serveteam.GroupId }}" class="btn btn-primary stretched-link"
+                                data-toggle="tooltip" data-placement="top" data-html="true"
+                                title="{{ serveteam.Roles }}<br>{{ serveteam.GroupType }}<br>{{ serveteam.Campus }}">
+                                <div class="row">
+                                    <div class="col-sm-4">
+                                        <i class="{{ serveteam.IconCssClass }} fa-5x"></i>
+                                    </div>
+                                    <div class="col-sm-8">
+                                        <p class="six-lines">{{ serveteam.GroupName }}</p>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        <hr/>
+
+        <!-- Tools -->
+        <div class="col-md-12">
+            <h1>Tools</h1>
+            <div class="row">
+                <!-- Leader News Portals -->
+                {% sql personAliasId:'{{ Person.PrimaryAlias.Id }}' return:'newschannels'%}
+                    DECLARE @FeatureSetAttributeId INT = 132518
+                    DECLARE @News NVARCHAR(40) = '%E93C8E1D-AFE2-486C-BD10-74DFE47593F5%' -- Leader News Portal
+                    SELECT ChannelName, ChannelUrl
+                    FROM
+                    (
+                        -- members of a group with a role that can view a Leader News Portal
+                        SELECT newsChannel.Value AS [ChannelName], newsChannel.Description AS [ChannelUrl], newsChannel.[Order] AS [Order]
+                        FROM [Group] g
+                        JOIN [GroupType] gt ON gt.Id = g.GroupTypeId
+                        JOIN [GroupMember] gm ON gm.GroupId = g.Id AND gm.GroupMemberStatus = 1
+                        JOIN [PersonAlias] pa ON pa.PersonId = gm.PersonId
+                            AND pa.Id = @PersonAliasId
+                        JOIN [GroupTypeRole] gtr ON gtr.Id = gm.GroupRoleId
+                        JOIN [AttributeValue] av ON av.EntityId = gtr.Id
+                            AND av.AttributeId = @FeatureSetAttributeId
+                            AND av.Value LIKE @News
+                        JOIN [AttributeValue] nc ON nc.EntityId = gt.Id
+                        JOIN [Attribute] nct ON nct.Id = nc.AttributeId AND nct.[Key] = 'LeaderNewsPortal'
+                        JOIN [DefinedValue] newsChannel ON newsChannel.Guid = TRY_CAST(nc.Value AS UNIQUEIDENTIFIER)
+                        WHERE g.IsActive = 1
+                            AND g.IsArchived = 0
+                    ) a
+                    GROUP BY [ChannelName], [ChannelUrl], [Order]
+                    ORDER BY [Order]
+                {% endsql %}
+
+                {% assign channelCount = newschannels | Size %}
+                {% if channelCount > 0 %}
+                    <div class="col-sm-12 col-md-6 col-lg-3">
+                        <a href="~/page/4977" class="btn btn-primary stretched-link"
+                            data-toggle="tooltip" data-placement="top" data-html="true"
+                            title="See the latest news and information for the ministries you support.">
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <i class="fal fa-newspaper fa-5x"></i>
+                                </div>
+                                <div class="col-sm-8">
+                                    <p class="six-lines">Leader News Portal</p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                {% endif %}
+
+                <!-- Curricula -->
+                {% sql personAliasId:'{{ Person.PrimaryAlias.Id }}' return:'curricula'%}
+                    -- This will replace the old _org_lakepointe_sp_CanViewLgCurriculum
+                    DECLARE @FeatureSetAttributeId INT = 132518
+                    DECLARE @Curriculum NVARCHAR(40) = '%63E6EA73-7E54-4BF6-A060-100F028B19A1%' --  Curriculum -- change for production
+
+                    -- check if in an Override Group
+                    DECLARE @Override INT;
+                    SELECT @Override = CASE WHEN EXISTS
+                    (
+                        SELECT gm.PersonId
+                        FROM [GroupMember] gm
+                        JOIN [PersonAlias] pa ON pa.PersonId = gm.PersonId AND pa.Id = @PersonAliasId
+                        WHERE gm.GroupId IN (1002372, 800522)
+                            AND gm.IsArchived = 0 AND gm.GroupMemberStatus = 1
+                    ) THEN 1 ELSE 0 END;
+
+                    SELECT dv.Id, dv.Value, dv.Description, ldv.Id AS [LanguageId], ldv.Value AS [Language],
+                        CASE WHEN glt.Value IS NULL THEN 'True' ELSE glt.Value END AS [DisplayOnGLT] -- attribute defaults to true but may not be present
+                    FROM [DefinedValue] dv
+                    JOIN [AttributeValue] av ON TRY_CAST(av.Value AS UNIQUEIDENTIFIER) = dv.Guid
+                    JOIN [Attribute] a ON a.Id = av.AttributeId AND a.[Key] = 'GroupCurriculum'
+                    JOIN
+                    (
+                        SELECT g.Id, pa.Id AS PersonAliasId
+                        FROM [Group] g
+                        JOIN [GroupMember] gm ON gm.GroupId = g.Id AND gm.IsArchived = 0 AND gm.GroupMemberStatus = 1
+                        JOIN [PersonAlias] pa ON pa.PersonId = gm.PersonId
+                        JOIN [GroupTypeRole] gtr ON gtr.Id = gm.GroupRoleId
+                        JOIN [AttributeValue] av ON av.EntityId = gtr.Id
+                            AND av.AttributeId = @FeatureSetAttributeId
+                            AND av.Value LIKE @Curriculum
+                    ) gd ON gd.Id = av.EntityId AND (@Override = 1 OR gd.PersonAliasId = @PersonAliasId)
+                    JOIN [AttributeValue] l ON l.EntityId = dv.Id AND l.AttributeId = 107473
+                    JOIN [DefinedValue] ldv ON ldv.Guid = TRY_CAST(l.Value AS UNIQUEIDENTIFIER) AND ldv.DefinedTypeId = 350
+                    LEFT JOIN [AttributeValue] glt ON glt.EntityId = dv.Id AND glt.AttributeId = 108716
+                    WHERE dv.DefinedTypeId = 381 AND dv.IsActive = 1
+                    GROUP BY dv.Id, dv.Value, dv.Description, ldv.Id, ldv.Value, glt.Value
+                {% endsql %}
+
+                {% assign channelCount = curricula | Size %}
+                {% if channelCount > 0 %}
+                    <div class="col-sm-12 col-md-6 col-lg-3">
+                        <a href="~/page/4978" class="btn btn-primary stretched-link"
+                            data-toggle="tooltip" data-placement="top" data-html="true"
+                            title="Access the curriculum for the groups you lead.">
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <i class="fal fa-bible fa-5x"></i>
+                                </div>
+                                <div class="col-sm-8">
+                                    <p class="six-lines">Curriculum</p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                {% endif %}
+
+                <!-- Resources -->
+                {% sql personAliasId:'{{ Person.PrimaryAlias.Id }}' return:'resources'%}
+                    -- replaces old _org_lakepointe_sp_CanViewAdultLeaderResources
+                    -- Adult LG Leader Resources
+                    DECLARE @FeatureSetAttributeId INT = 132518
+                    DECLARE @Curriculum NVARCHAR(40) = '%63E6EA73-7E54-4BF6-A060-100F028B19A1%' -- 10093 Curriculum (also controls access to leader resources)
+
+                    -- Override Groups
+                    DECLARE @AO INT;
+                    SELECT @AO = CASE WHEN EXISTS
+                    (
+                        SELECT gm.PersonId
+                        FROM [GroupMember] gm
+                        JOIN [PersonAlias] pa ON pa.PersonId = gm.PersonId AND pa.Id = @PersonAliasId
+                        WHERE gm.GroupId IN (1002372, 800522)
+                            AND gm.IsArchived = 0 AND gm.GroupMemberStatus = 1
+                    ) THEN 1 ELSE 0 END;
+
+                    SELECT dv.Id, dv.Value, dv.Description
+                    FROM [DefinedValue] dv
+                    JOIN [AttributeValue] av ON TRY_CAST(av.Value AS UNIQUEIDENTIFIER) = dv.Guid
+                    JOIN [Attribute] a ON a.Id = av.AttributeId AND a.[Key] = 'Language'
+                    JOIN
+                    (
+                        SELECT g.Id, pa.Id AS PersonAliasId
+                        FROM [Group] g
+                        JOIN [GroupMember] gm ON gm.GroupId = g.Id AND gm.IsArchived = 0 AND gm.GroupMemberStatus = 1
+                        JOIN [PersonAlias] pa ON pa.PersonId = gm.PersonId
+                        JOIN [GroupTypeRole] gtr ON gtr.Id = gm.GroupRoleId
+                        JOIN [AttributeValue] av ON av.EntityId = gtr.Id
+                            AND av.AttributeId = @FeatureSetAttributeId
+                            AND av.Value LIKE @Curriculum
+                    ) gd ON gd.Id = av.EntityId AND (@AO = 1 OR gd.PersonAliasId = @PersonAliasId)
+                    WHERE dv.DefinedTypeId = 350 AND dv.IsActive = 1
+                    GROUP BY dv.Id, dv.Value, dv.Description
+                {% endsql %}
+
+                {% assign channelCount = resources | Size %}
+                {% if channelCount > 0 %}
+                    <div class="col-sm-12 col-md-6 col-lg-3">
+                        <a href="~/page/4979" class="btn btn-primary stretched-link"
+                            data-toggle="tooltip" data-placement="top" data-html="true"
+                            title="Resources to support you in your ministry.">
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <i class="fal fa-treasure-chest fa-5x"></i>
+                                </div>
+                                <div class="col-sm-8">
+                                    <p class="six-lines">Leader Resources</p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                {% endif %}
+
+                <!-- Serve Schedule Toolbox -->
+                <div class="col-sm-12 col-md-6 col-lg-3">
+                    <a href="~/page/4980" class="btn btn-primary stretched-link"
+                        data-toggle="tooltip" data-placement="top" data-html="true"
+                        title="Manage your serve schedule.">
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <i class="fal fa-calendar-edit fa-5x"></i>
+                            </div>
+                            <div class="col-sm-8">
+                                <p class="six-lines">Serve Schedule Toolbox</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Coordinator Dashboard -->
+                {% assign CanSeeCoordinator = 4998 | HasRightsTo:'View','Rock.Model.Page' | AsBoolean %}
+                {% if CanSeeCoordinator == true %}
+                    <div class="col-sm-12 col-md-6 col-lg-3">
+                        <a href="~/page/4998" class="btn btn-primary stretched-link"
+                            data-toggle="tooltip" data-placement="top" data-html="true"
+                            title="Check the status of the Serve Teams you manage.">
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <i class="fal fa-people-carry fa-5x"></i>
+                                </div>
+                                <div class="col-sm-8">
+                                    <p class="six-lines">Coordinator Dashboard</p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                {% endif %}
+
+                <!-- Connections -->
+                {% assign canSeeConnections = 4996 | HasRightsTo:'View','Rock.Model.Page' | AsBoolean %}
+                {% if canSeeConnections == true %}
+                    <div class="col-sm-12 col-md-6 col-lg-3">
+                        <a href="~/page/4996" class="btn btn-primary stretched-link"
+                            data-toggle="tooltip" data-placement="top" data-html="true"
+                            title="Manage the connection requests that have been assigned to you.">
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <i class="fal fa-handshake fa-5x"></i>
+                                </div>
+                                <div class="col-sm-8">
+                                    <p class="six-lines">My Connections</p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                {% endif %}
+
+                <!-- Prayer -->
+                {% assign canSeePrayer = 4999 | HasRightsTo:'View','Rock.Model.Page' | AsBoolean %}
+                {% if canSeePrayer == true %}
+                    <div class="col-sm-12 col-md-6 col-lg-3">
+                        <a href="~/page/4999" class="btn btn-primary stretched-link"
+                            data-toggle="tooltip" data-placement="top" data-html="true"
+                            title="Find where your prayers can have an impact.">
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <i class="fal fa-praying-hands fa-5x"></i>
+                                </div>
+                                <div class="col-sm-8">
+                                    <p class="six-lines">Prayer Ministry</p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                {% endif %}
+
+                <!-- Pastoral Care -->
+                {% assign canSeePastoral = 5000 | HasRightsTo:'View','Rock.Model.Page' | AsBoolean %}
+                {% if canSeePastoral == true %}
+                    <div class="col-sm-12 col-md-6 col-lg-3">
+                        <a href="~/page/5000" class="btn btn-primary stretched-link"
+                            data-toggle="tooltip" data-placement="top" data-html="true"
+                            title="Find where you can touch the lives of those in need.">
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <i class="fal fa-hospitals fa-5x"></i>
+                                </div>
+                                <div class="col-sm-8">
+                                    <p class="six-lines">Pastoral Care Ministry</p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                {% endif %}
+
+                <!-- Find a Place to Serve -->
+                <div class="col-sm-12 col-md-6 col-lg-3">
+                    <a href="https://lakepointe.church/serve" class="btn btn-primary stretched-link"
+                        data-toggle="tooltip" data-placement="top" data-html="true"
+                        title="Learn where you can make a difference.">
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <i class="fal fa-people-carry fa-5x"></i>
+                            </div>
+                            <div class="col-sm-8">
+                                <p class="six-lines">Find Your Place to Serve</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

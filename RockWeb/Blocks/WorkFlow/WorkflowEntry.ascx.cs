@@ -259,6 +259,25 @@ namespace RockWeb.Blocks.WorkFlow
             set { ViewState[ViewStateKey.SignatureDocumentHtml] = value; }
         }
 
+        // LPC CODE
+        /// <summary>
+        /// Gets the value indicating if the current user is trusted and the Captcha should be waived.
+        /// </summary>
+        /// <value>The value inicating if the current user is trusted.</value>
+        public bool IsTrustedUser
+        {
+            get
+            {
+                if ( CurrentPerson != null && CurrentPerson.CreatedDateTime < DateTime.Now.AddDays( -7 ) )
+                {
+                    return true;
+                }
+
+                return false;
+            }
+        }
+        // END LPC CODE
+
         #endregion Properties
 
         #region Base Control Methods
@@ -372,7 +391,9 @@ namespace RockWeb.Blocks.WorkFlow
             }
 
             var disableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
-            if ( !disableCaptchaSupport && !cpCaptcha.IsResponseValid() )
+            // LPC MODIFIED CODE
+            if ( !disableCaptchaSupport && !cpCaptcha.IsResponseValid() && !IsTrustedUser )
+            // END LPC MODIFIED CODE
             {
                 ShowMessage( NotificationBoxType.Validation, string.Empty, "There was an issue processing your request. Please try again. If the issue persists please contact us." );
                 return;
@@ -437,7 +458,9 @@ namespace RockWeb.Blocks.WorkFlow
             // Get the block setting to disable passing WorkflowTypeID set.
             bool allowPassingWorkflowTypeId = !this.GetAttributeValue( AttributeKey.DisablePassingWorkflowTypeId ).AsBoolean();
 
-            var disableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || !cpCaptcha.IsAvailable;
+            // LPC MODIFIED CODE
+            var disableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || !cpCaptcha.IsAvailable || IsTrustedUser;
+            // END LPC MODIFIED CODE
             cpCaptcha.Visible = !disableCaptchaSupport;
 
             if ( workflowType == null )

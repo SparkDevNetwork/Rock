@@ -322,3 +322,35 @@ body:not(.is-fullscreen) {
     }
   }
 }
+
+.resource {
+  display: block;
+  padding: 16px 12px;
+  margin-bottom: 12px;
+  font-family: @font-family-sans-serif;
+  line-height: 1;
+  color: @btn-default-color;
+  background-color: @btn-default-bg;
+  border: 1px solid @btn-default-border;
+  border-radius: 4px;
+  box-shadow: 0 1px 0 #d1d2d7;
+
+  .resource-name {
+    margin-right: 20px;
+    overflow: hidden;
+    font-weight: @font-weight-semibold;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: sub;
+  }
+
+  .resource-disabled {
+    font-style: italic;
+  }
+
+  .resource-preference,
+  .resource-scheduled,
+  .resource-notes-section {
+    margin-top: 4px;
+  }
+}

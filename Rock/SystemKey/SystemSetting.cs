@@ -307,5 +307,10 @@ namespace Rock.SystemKey
         /// The Captcha secret key.
         /// </summary>
         public const string CAPTCHA_SECRET_KEY = "core_CaptchaSecretKey";
+
+        /// <summary>
+        /// The label text for the SMS Opt-In checkbox
+        /// </summary>
+        public const string SMS_OPT_IN_MESSAGE_LABEL = "core_SmsOptInMessageLabel";
     }
 }

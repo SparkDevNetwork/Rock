@@ -45,6 +45,9 @@ namespace org.lakepointe.Checkin.Workflow.Action.Checkin
     [GroupTypeField( "StudentConnectGroupType", "Group Type for Student Connect Groups", true, "eb80b420-988e-4898-8ee5-67c96c9f0b18" )]
     [GroupTypeField( "StudentUnitedGroupType", "Group Type for Student United Groups", true, "19051a16-0437-49b8-a0b2-1533f529222e" )]
     [GroupTypeField( "StudentUnassignedGroupType", "Group Type for Unassigned Student Groups", true, "b9c96802-c955-4892-b935-2e46f66adb55" )]
+    [GroupTypeField( "PreschoolSmallGroupsGroupType", "Group Type for Preschool Small Groups", true, "467cea4d-1620-4d84-ac55-a85ad668fd43" )]
+    [BooleanField( "KidZoneSupport", "Is Kid Zone Programming Supported", true )]
+
     public class RemoveProscribedOpportunities : CheckInActionComponent
     {
         /// <summary>
@@ -70,6 +73,7 @@ namespace org.lakepointe.Checkin.Workflow.Action.Checkin
                         RemoveGroupsForSchedulesNotSelected( rockContext, action, person );
                         ApplySmallGroupKidsTownPolicy( rockContext, action, person );
                         ApplyStudentUnassignedPolicy( action, person );
+                        ApplyStudentChildrenLeaderPolicy( rockContext, action, person );
 
                         // Before adding other policies here, consider whether it would be better to put each policy in a separate CheckInActionComponent (workflow action)
                     }
@@ -118,6 +122,7 @@ namespace org.lakepointe.Checkin.Workflow.Action.Checkin
             var tempSmallGroupTypeGuid = GetAttributeValue( action, "TempGroupType" ).AsGuid();
             var kidZoneGroupTypeGuid = GetAttributeValue( action, "KidZoneGroupType" ).AsGuid();
             var soarGroupTypeGuid = GetAttributeValue( action, "SoarGroupType" ).AsGuid();
+            var kidZoneSupport = GetAttributeValue( action, "KidZoneSupport" ).AsBoolean();
 
             bool smallGroupAssigned = false;
             int kidZoneLocationId = 0;
@@ -163,7 +168,7 @@ namespace org.lakepointe.Checkin.Workflow.Action.Checkin
                         var thisGroup = groups.First();
                         thisGroup.Selected = true;
                         kidZoneLocationId = GetKidZoneLocationId( rockContext, thisGroup );
-                        smallGroupAssigned = true;
+                        smallGroupAssigned = kidZoneSupport; // True for check-in 2.0, False for check-in 2.1 where we want to continue looking for small groups
                         Debug.WriteLine( $"Selected {thisGroup.Group.Name}" );
 
                         // remove any other groups on this schedule
@@ -197,7 +202,7 @@ namespace org.lakepointe.Checkin.Workflow.Action.Checkin
                         var thisGroup = groups.First();
                         thisGroup.Selected = true;
                         kidZoneLocationId = GetKidZoneLocationId( rockContext, thisGroup );
-                        smallGroupAssigned = true;
+                        smallGroupAssigned = kidZoneSupport; // True for check-in 2.0, False for check-in 2.1 where we want to continue looking for small groups
                         Debug.WriteLine( $"Selected {thisGroup.Group.Name}" );
 
                         // remove any other groups on this schedule
@@ -384,6 +389,54 @@ namespace org.lakepointe.Checkin.Workflow.Action.Checkin
                     }
 
                     return;  // and bail out
+                }
+            }
+        }
+
+        // Removes student/child groups as an option for adult leaders
+        private void ApplyStudentChildrenLeaderPolicy( RockContext rockContext, WorkflowAction action, CheckInPerson person )
+        {
+            if ( person.PersonSelectedSchedules == null )
+            {
+                return;
+            }
+
+            var studentConnectGroupType = GetAttributeValue( action, "StudentConnectGroupType" ).AsGuid();
+            var studentUnitedGroupType = GetAttributeValue( action, "StudentUnitedGroupType" ).AsGuid();
+            var childrenSmallGroupTypeGuid = GetAttributeValue( action, "SmallGroupType" ).AsGuid();
+            var soarGroupTypeGuid = GetAttributeValue( action, "SoarGroupType" ).AsGuid();
+            var preschoolGroupTypeGuid = GetAttributeValue( action, "PreschoolSmallGroupsGroupType" ).AsGuid();
+
+            Debug.WriteLine( $"Processing kid groups where person is a leader." );
+
+            // check for kid groups where the person is in a leader role and remove those groups
+            // (they should be checking into a serve team instead)
+            var groups = person.GroupTypes  // groups (via GroupTypes) potentially associated with this person
+                .Where( gt => gt.GroupType.Guid == studentConnectGroupType       // that are student connect groups
+                           || gt.GroupType.Guid == studentUnitedGroupType       // or student united groups
+                           || gt.GroupType.Guid == childrenSmallGroupTypeGuid   // or children's small groups
+                           || gt.GroupType.Guid == soarGroupTypeGuid            // or soar small groups
+                           || gt.GroupType.Guid == preschoolGroupTypeGuid )     // or preschool small groups
+                .SelectMany( gt => gt.Groups );
+                //.Where( g => g.Group.Members.Any( gm => gm.GroupRole.IsLeader && gm.PersonId == person.Person.Id )); // where this person is in a leader role
+                // Elegant and tempting, but Members isn't populated in the CheckinGroup data structure.
+                // Do this below instead.
+
+            if ( groups.Any() )
+            {
+                Debug.WriteLine( $"Found {groups.Count()} kid groups where this person is a member." );
+                var gms = new GroupMemberService( rockContext );
+
+                foreach ( var g in groups )
+                {
+                    var isLeader = gms.GetByGroupIdAndPersonId( g.Group.Id, person.Person.Id )
+                        .Any( m => m.GroupRole.IsLeader );
+
+                    if ( isLeader )
+                    {
+                        Debug.WriteLine( $"Filtering group {g.Group.Name}" );
+                        g.ExcludedByFilter = true;
+                    }
                 }
             }
         }
