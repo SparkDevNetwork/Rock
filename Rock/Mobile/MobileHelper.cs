@@ -189,6 +189,7 @@ namespace Rock.Mobile
                 HomeAddress = GetMobileAddress( person.GetHomeLocation() ),
                 CampusGuid = person.GetCampus()?.Guid,
                 PersonAliasId = person.PrimaryAliasId.Value,
+                PersonAliasGuid = person.PrimaryAlias.Guid,
                 PhotoUrl = ( person.PhotoId.HasValue ? $"{baseUrl}{person.PhotoUrl}" : null ),
                 SecurityGroupGuids = roleGuids,
                 PersonalizationSegmentGuids = new List<Guid>(),
