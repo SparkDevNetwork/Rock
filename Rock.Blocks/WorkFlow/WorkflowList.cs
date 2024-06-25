@@ -298,7 +298,7 @@ namespace Rock.Blocks.Workflow
                 .AddTextField( "name", a => a.Name )
                 .AddPersonField( "initiator", a => a.InitiatorPersonAlias?.Person )
                 .AddField( "activities", a => a.Activities.Where( wa => wa.ActivatedDateTime.HasValue && !wa.CompletedDateTime.HasValue ).OrderBy( wa => wa.ActivityType.Order ).Select( wa => wa.ActivityType.Name ) )
-                .AddTextField( "createdDateTime", a => a.CreatedDateTime.ToElapsedString() )
+                .AddDateTimeField( "createdDateTime", a => a.CreatedDateTime )
                 .AddTextField( "status", a => a.Status )
                 .AddField( "isCompleted", a => a.CompletedDateTime.HasValue )
                 .AddField( "guid", a => a.Guid )
