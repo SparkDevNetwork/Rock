@@ -129,7 +129,7 @@ namespace Rock.Blocks.Core
                 .AddDateTimeField( "stopDateTime", a => a.StopDateTime )
                 .AddTextField( "runDuration", a => FormatDuration( a.DurationSeconds ) )
                 .AddField( "durationSeconds", a => a.DurationSeconds )
-                .AddTextField( "status", a => a.Status )
+                .AddTextField( "status", a => a.Status == "Exception" ? "Failed" : a.Status )
                 .AddTextField( "statusMessage", a => a.StatusMessage )
                 .AddTextField( "statusMessageHtml", a => a.StatusMessageAsHtml );
         }

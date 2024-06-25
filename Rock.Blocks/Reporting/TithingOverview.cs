@@ -45,6 +45,15 @@ namespace Rock.Blocks.Reporting
     {
         #region Fields
 
+        /*
+           6/25/2024 - KA
+
+           Ideally the colors should be identified by their css classes but the Chart.js
+           prefers the colors be either hex or string, and since the Chart.js data is generated
+           server-side replacing the css class with their hex components client-side will be difficult.           
+
+           #techdebt: Use hex from the Theme's AdditionalSettingsJson when they become available in a upcoming version of Rock.
+        */
         /// <summary>
         /// The available colors for the charts
         /// </summary>

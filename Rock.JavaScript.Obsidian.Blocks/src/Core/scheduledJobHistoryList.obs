@@ -6,7 +6,8 @@
           :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
-          :itemTerm="itemTerm"
+          :title="itemTerm"
+          itemTerm="Service Job History"
           :entityTypeGuid="EntityType.ServiceJobHistory"
           :showLaunchWorkflow="false"
           stickyHeader
@@ -38,7 +39,7 @@
                 :filter="pickExistingValueFilter"
                 :filterValue="getStatusRowFilterValue">
             <template #format="{ row }">
-                <span :class='getStatusClass(row)'>{{ row.status === "Exception" ? "Failed" : row.status }}</span>
+                <span :class='getStatusClass(row)'>{{ row.status }}</span>
             </template>
 
             <template #skeleton>
@@ -154,7 +155,7 @@
                 return "label label-success";
             case "Running":
                 return "label label-info";
-            case "Exception":
+            case "Failed":
                 return "label label-danger";
             case "Warning":
                 return "label label-warning";
@@ -171,8 +172,7 @@
     * @param row The row to be filtered.
     */
     function getStatusRowFilterValue(row: Record<string, unknown>): string {
-        const status = row.status as string ?? "";
-        return status == "Exception" ? "Failed" : status;
+        return row.status as string;
     }
 
     /**
@@ -191,7 +191,6 @@
     */
     function getRunDurationRowFilterValue(row: Record<string, unknown>): string {
         const durationSeconds = row.durationSeconds as string;
-        console.log("🚀 ~ getRunDurationRowFilterValue ~ durationSeconds:", durationSeconds);
         return row.durationSeconds as string ?? "";
     }
 
