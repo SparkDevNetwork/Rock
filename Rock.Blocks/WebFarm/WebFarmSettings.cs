@@ -338,7 +338,7 @@ namespace Rock.Blocks.WebFarm
         }
 
         /// <summary>
-        /// Gets the chart HTML.
+        /// Gets the chart data.
         /// </summary>
         /// <returns></returns>
         private string GetChartData( decimal[] samples )

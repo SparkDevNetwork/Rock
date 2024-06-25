@@ -66,13 +66,17 @@
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []"
                           visiblePriority="md" />
 
-        <TextColumn name="createdDateTime"
-                    title="Created"
-                    field="createdDateTime"
-                    :filter="textValueFilter"
-                    visiblePriority="xs"
-                    itemClass="grid-item-pull-left"
-                    width="150" />
+        <DateTimeColumn name="createdDateTime"
+                        title="Created"
+                        field="createdDateTime"
+                        :filter="dateValueFilter"
+                        visiblePriority="xs"
+                        itemClass="grid-item-pull-left"
+                        width="150">
+            <template #format="{ row }">
+                <span>{{ getElapsed(row.createdDateTime) }}</span>
+            </template>
+        </DateTimeColumn>
 
         <Column name="status"
                 title="Status"
@@ -124,7 +128,7 @@
 
         <template #gridFooterAppend>
             <div v-if="isDeleteButtonVisible" class="d-flex" style="padding: var(--table-cell-padding-y) 52px var(--table-cell-padding-y) var(--table-cell-padding-x);">
-                <RockButton @click="onDeleteButtonClick" :btnType="BtnType.Default" :btnSize="BtnSize.Small" class="mr-2">
+                <RockButton @click="onDeleteButtonClick" :btnType="BtnType.Default" :btnSize="BtnSize.ExtraSmall" class="mr-2">
                     Delete
                 </RockButton>
             </div>
@@ -149,7 +153,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, PersonColumn, TextColumn, DeleteColumn, SelectColumn, Column, pickExistingValueFilter, textValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, PersonColumn, TextColumn, DeleteColumn, SelectColumn, Column, DateTimeColumn, pickExistingValueFilter, textValueFilter, dateValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { WorkflowListOptionsBag } from "@Obsidian/ViewModels/Blocks/Workflow/WorkflowList/workflowListOptionsBag";
@@ -165,6 +169,7 @@
     import { Guid } from "@Obsidian/Types";
     import Modal from "@Obsidian/Controls/modal.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
     const config = useConfigurationValues<ListBlockBox<WorkflowListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -281,6 +286,10 @@
             return `${config.options?.workflowTypeIdKey}-${key}`;
         }
         return key;
+    }
+
+    function getElapsed(date: string): string {
+        return RockDateTime.parseISO(date)?.localDateTime.humanizeElapsed() ?? "";
     }
 
     // #endregion
