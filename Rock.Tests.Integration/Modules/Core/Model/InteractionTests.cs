@@ -18,7 +18,6 @@ using System;
 using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Shared.TestFramework;
@@ -26,6 +25,7 @@ using Rock.Tests.Shared.TestFramework;
 namespace Rock.Tests.Integration.Modules.Core.Model
 {
     [TestClass]
+    [TestCategory( "Interactions" )]
     public class InteractionTests : DatabaseTestsBase
     {
         private readonly string interactionForeignKey = $"Test {Guid.NewGuid()}";

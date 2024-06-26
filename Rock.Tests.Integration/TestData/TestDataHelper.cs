@@ -428,7 +428,7 @@ namespace Rock.Tests.Integration
 
         #endregion
 
-        private static RockContext GetActiveRockContext( RockContext rockContext )
+        internal static RockContext GetActiveRockContext( RockContext rockContext )
         {
             return rockContext ?? new RockContext();
         }

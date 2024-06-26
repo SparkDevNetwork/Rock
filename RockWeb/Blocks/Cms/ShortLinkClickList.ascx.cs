@@ -29,6 +29,8 @@ using Rock.Web.UI.Controls;
 using System.ComponentModel;
 using Rock.Security;
 using System.Data.Entity;
+using System.Web.UI.WebControls;
+using Rock.Cms.Utm;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -54,6 +56,7 @@ namespace RockWeb.Blocks.Cms
             gShortLinkClicks.DataKeyNames = new string[] { "Id" };
             gShortLinkClicks.Actions.ShowAdd = false;
             gShortLinkClicks.GridRebind += gShortLinkClicks_GridRebind;
+            gShortLinkClicks.RowDataBound += gShortLinkClicks_RowDataBound;
         }
 
         /// <summary>
@@ -83,6 +86,31 @@ namespace RockWeb.Blocks.Cms
         protected void gShortLinkClicks_GridRebind( object sender, EventArgs e )
         {
             BindShortLinkClicksGrid();
+        }
+
+        private void gShortLinkClicks_RowDataBound( object sender, System.Web.UI.WebControls.GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType != DataControlRowType.DataRow )
+            {
+                return;
+            }
+
+            var sourceValueId = e.Row.DataItem.GetPropertyValue( "SourceValueId" ).ToStringSafe().AsIntegerOrNull();
+            if ( sourceValueId == null )
+            {
+                return;
+            }
+
+            var colSource = gShortLinkClicks.GetColumnByHeaderText( "UTM Source" );
+            if ( colSource == null )
+            {
+                return;
+            }
+
+            var colIndex = gShortLinkClicks.GetColumnIndex( colSource );
+            var cell = e.Row.Cells[colIndex];
+
+            cell.Text = UtmHelper.GetUtmSourceNameFromDefinedValueOrText( sourceValueId, string.Empty );
         }
 
         /// <summary>
@@ -120,7 +148,8 @@ namespace RockWeb.Blocks.Cms
                             i.InteractionSession.DeviceType.Application,
                             i.InteractionSession.DeviceType.OperatingSystem,
                             i.InteractionSession.DeviceType.ClientType,
-                            i.Source
+                            i.Source,
+                            i.SourceValueId
                         } );
 
                     SortProperty sortProperty = gShortLinkClicks.SortProperty;

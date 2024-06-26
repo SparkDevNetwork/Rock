@@ -23,6 +23,15 @@ namespace Rock.SystemGuid
     /// </summary>
     public class Category
     {
+        #region CMS Categories
+
+        /// <summary>
+        /// Marketing Category Guid
+        /// </summary>
+        public const string MARKETING = "FE0AE3EB-B648-4264-A222-96CEA3A25E20";
+
+        #endregion
+
         #region Dataview Categories
 
         /// <summary>
