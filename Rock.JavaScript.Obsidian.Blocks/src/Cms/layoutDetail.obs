@@ -126,6 +126,13 @@
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
     async function onCancelEdit(): Promise<boolean | string> {
+        const siteId = layoutEditBag.value?.siteId?.toString();
+            if (siteId) {
+                const qryString = new URLSearchParams();
+                qryString.append("SiteId", siteId);
+                return `${config.navigationUrls?.[NavigationUrlKey.ParentPage]}?${qryString.toString()}`;
+            }
+
         if (!layoutEditBag.value?.idKey) {
             if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
                 return config.navigationUrls[NavigationUrlKey.ParentPage];
