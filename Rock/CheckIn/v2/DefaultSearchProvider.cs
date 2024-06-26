@@ -184,7 +184,7 @@ namespace Rock.CheckIn.v2
         /// </summary>
         /// <param name="familyMemberQry">The family member query.</param>
         /// <returns>A list of <see cref="FamilyBag"/> instances.</returns>
-        public virtual List<FamilyBag> GetFamilySearchItemBags( IEnumerable<GroupMember> familyMemberQry )
+        public virtual List<FamilyBag> GetFamilySearchItemBags( IQueryable<GroupMember> familyMemberQry )
         {
             // Pull just the information we need from the database.
             var familyMembers = familyMemberQry

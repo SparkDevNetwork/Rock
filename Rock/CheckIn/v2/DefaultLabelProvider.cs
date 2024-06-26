@@ -28,6 +28,7 @@ using Rock.CheckIn.v2.Labels.Renderers;
 using Rock.Data;
 using Rock.Enums.CheckIn.Labels;
 using Rock.Model;
+using Rock.Observability;
 using Rock.SystemKey;
 using Rock.ViewModels.CheckIn;
 using Rock.ViewModels.CheckIn.Labels;
@@ -76,10 +77,23 @@ namespace Rock.CheckIn.v2
         /// <returns>A list of <see cref="RenderedLabel"/> objects that should be printed on the client.</returns>
         public Task<List<RenderedLabel>> RenderAndPrintCheckInLabelsAsync( CheckInResultBag checkInResult, DeviceCache kiosk, LabelPrintProvider printProvider, CancellationToken cancellationToken = default )
         {
-            var labels = RenderLabels( checkInResult.Attendances, kiosk, false );
+            List<RenderedLabel> labels;
 
-            return PrintLabelsAsync( labels, kiosk, printProvider, cancellationToken, msg =>
-                checkInResult.Messages.Add( msg ) );
+            var group = new GroupService( RockContext ).Get( 5 );
+            using ( var activity = ObservabilityHelper.StartActivity( "Render Labels" ) )
+            {
+                activity?.AddTag( "rock.checkin.print_provider", GetType().FullName );
+
+                labels = RenderLabels( checkInResult.Attendances, kiosk, false );
+            }
+
+            using ( var activity = ObservabilityHelper.StartActivity( "Print Labels" ) )
+            {
+                activity?.AddTag( "rock.checkin.print_provider", GetType().FullName );
+
+                return PrintLabelsAsync( labels, kiosk, printProvider, cancellationToken, msg =>
+                        checkInResult.Messages.Add( msg ) );
+            }
         }
 
         /// <summary>
@@ -93,11 +107,23 @@ namespace Rock.CheckIn.v2
         /// <returns>A list of <see cref="RenderedLabel"/> objects that should be printed on the client.</returns>
         public Task<List<RenderedLabel>> RenderAndPrintCheckoutLabelsAsync( CheckoutResultBag checkOutResult, DeviceCache kiosk, LabelPrintProvider printProvider, CancellationToken cancellationToken = default )
         {
-            var attendanceGuids = checkOutResult.Attendances.Select( a => a.Guid ).ToList();
-            var labels = RenderLabels( attendanceGuids, kiosk, checkout: true );
+            List<RenderedLabel> labels;
 
-            return PrintLabelsAsync( labels, kiosk, printProvider, cancellationToken, msg =>
-                checkOutResult.Messages.Add( msg ) );
+            using ( var activity = ObservabilityHelper.StartActivity( "Render Labels" ) )
+            {
+                activity?.AddTag( "rock.checkin.print_provider", GetType().FullName );
+
+                var attendanceGuids = checkOutResult.Attendances.Select( a => a.Guid ).ToList();
+                labels = RenderLabels( attendanceGuids, kiosk, checkout: true );
+            }
+
+            using ( var activity = ObservabilityHelper.StartActivity( "Print Labels" ) )
+            {
+                activity?.AddTag( "rock.checkin.print_provider", GetType().FullName );
+
+                return PrintLabelsAsync( labels, kiosk, printProvider, cancellationToken, msg =>
+                    checkOutResult.Messages.Add( msg ) );
+            }
         }
 
         /// <summary>
@@ -160,9 +186,11 @@ namespace Rock.CheckIn.v2
         public List<RenderedLabel> RenderLabels( List<RecordedAttendanceBag> allRecordedAttendance, DeviceCache kiosk, bool checkout )
         {
             var attendanceGuids = allRecordedAttendance.Select( a => a.Attendance.Guid ).ToList();
-            var allAttendance = GetAttendanceQuery()
-                .Where( a => attendanceGuids.Contains( a.Guid ) )
-                .ToList();
+            var allAttendanceQry = GetAttendanceQuery();
+
+            allAttendanceQry = CheckInDirector.WhereContains( allAttendanceQry, attendanceGuids, a => a.Guid );
+
+            var allAttendance = allAttendanceQry.ToList();
 
             var attendanceLabels = allAttendance
                 .Select( a => new AttendanceLabel( a, allRecordedAttendance.First( ra => ra.Attendance.Guid == a.Guid ), RockContext ) )
@@ -190,11 +218,11 @@ namespace Rock.CheckIn.v2
         /// <returns>A list of <see cref="RenderedLabel"/> objects that contain all the information required to print the labels.</returns>
         public List<RenderedLabel> RenderLabels( List<Guid> attendanceGuids, DeviceCache kiosk, bool checkout )
         {
-            var allAttendance = GetAttendanceQuery()
-                .Where( a => attendanceGuids.Contains( a.Guid ) )
-                .ToList();
+            var allAttendanceQry = GetAttendanceQuery();
 
-            return RenderLabels( allAttendance, kiosk, checkout );
+            allAttendanceQry = CheckInDirector.WhereContains( allAttendanceQry, attendanceGuids, a => a.Guid );
+
+            return RenderLabels( allAttendanceQry.ToList(), kiosk, checkout );
         }
 
         /// <summary>
@@ -238,26 +266,7 @@ namespace Rock.CheckIn.v2
             }
 
             var areaIds = attendanceLabels.Select( a => a.Area.Id ).Distinct().ToList();
-            var groupTypeEntityTypeId = EntityTypeCache.Get<GroupType>( true, RockContext ).Id;
-            var checkInLabelEntityTypeId = EntityTypeCache.Get<Model.CheckInLabel>( true, RockContext ).Id;
-
-            var relatedEntityQry = new RelatedEntityService( RockContext )
-                .Queryable()
-                .Where( a => a.SourceEntityTypeId == groupTypeEntityTypeId
-                    && areaIds.Contains( a.SourceEntityId )
-                    && a.TargetEntityTypeId == checkInLabelEntityTypeId );
-
-            // TODO: This data needs to be cached on GroupTypeCache somehow,
-            // it consumes about 40% of the total processing time.
-            var groupTypeLabels = new CheckInLabelService( RockContext )
-                .Queryable()
-                .Join( relatedEntityQry, cl => cl.Id, re => re.TargetEntityId, ( cl, re ) => new OrderedAreaLabel
-                {
-                    AreaId = re.SourceEntityId,
-                    CheckInLabel = cl,
-                    Order = re.Order
-                } )
-                .ToList();
+            var groupTypeLabels = GetOrderedLabels( areaIds );
 
             // Get all the labels that will be printed for families.
             var familyLabelsToPrint = groupTypeLabels
@@ -330,26 +339,7 @@ namespace Rock.CheckIn.v2
             }
 
             var areaIds = attendanceLabels.Select( a => a.Area.Id ).Distinct().ToList();
-            var groupTypeEntityTypeId = EntityTypeCache.Get<GroupType>( true, RockContext ).Id;
-            var checkInLabelEntityTypeId = EntityTypeCache.Get<Model.CheckInLabel>( true, RockContext ).Id;
-
-            var relatedEntityQry = new RelatedEntityService( RockContext )
-                .Queryable()
-                .Where( a => a.SourceEntityTypeId == groupTypeEntityTypeId
-                    && areaIds.Contains( a.SourceEntityId )
-                    && a.TargetEntityTypeId == checkInLabelEntityTypeId );
-
-            // TODO: This data needs to be cached on GroupTypeCache somehow,
-            // it consumes about 40% of the total processing time.
-            var groupTypeLabels = new CheckInLabelService( RockContext )
-                .Queryable()
-                .Join( relatedEntityQry, cl => cl.Id, re => re.TargetEntityId, ( cl, re ) => new OrderedAreaLabel
-                {
-                    AreaId = re.SourceEntityId,
-                    CheckInLabel = cl,
-                    Order = re.Order
-                } )
-                .ToList();
+            var groupTypeLabels = GetOrderedLabels( areaIds );
 
             // Get all the labels that will be printed.
             var checkoutLabelsToPrint = groupTypeLabels
@@ -371,6 +361,40 @@ namespace Rock.CheckIn.v2
             }
 
             return labels;
+        }
+
+        /// <summary>
+        /// Gets the labels to be printed for the specified area identifiers.
+        /// The returned object contains the AreaId and the Label referenced
+        /// by that area. This means a single <see cref="CheckInLabel"/> could
+        /// be included in the list more than once if two areas point to the
+        /// same label.
+        /// </summary>
+        /// <param name="areaIds">The area identifies to query for labels.</param>
+        /// <returns>A list of check-in labels in print order.</returns>
+        private List<OrderedAreaLabel> GetOrderedLabels( List<int> areaIds )
+        {
+            var groupTypeEntityTypeId = EntityTypeCache.Get<GroupType>( true, RockContext ).Id;
+            var checkInLabelEntityTypeId = EntityTypeCache.Get<Model.CheckInLabel>( true, RockContext ).Id;
+
+            var relatedEntityQry = new RelatedEntityService( RockContext )
+                .Queryable()
+                .Where( a => a.SourceEntityTypeId == groupTypeEntityTypeId
+                    && a.TargetEntityTypeId == checkInLabelEntityTypeId );
+
+            relatedEntityQry = CheckInDirector.WhereContains( relatedEntityQry, areaIds, a => a.SourceEntityId );
+
+            // TODO: This data needs to be cached on GroupTypeCache somehow,
+            // it consumes about 40% of the total processing time.
+            return new CheckInLabelService( RockContext )
+                .Queryable()
+                .Join( relatedEntityQry, cl => cl.Id, re => re.TargetEntityId, ( cl, re ) => new OrderedAreaLabel
+                {
+                    AreaId = re.SourceEntityId,
+                    CheckInLabel = cl,
+                    Order = re.Order
+                } )
+                .ToList();
         }
 
         /// <summary>

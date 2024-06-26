@@ -343,7 +343,7 @@ namespace Rock.CheckIn.v2
         /// <param name="personGuids">The person unique identifiers to query the database for.</param>
         /// <param name="rockContext">The database context to execute the query on.</param>
         /// <returns>A collection of <see cref="RecentAttendance"/> records.</returns>
-        public static List<RecentAttendance> GetRecentAttendance( DateTime cutoffDateTime, IEnumerable<Guid> personGuids, RockContext rockContext )
+        public static List<RecentAttendance> GetRecentAttendance( DateTime cutoffDateTime, IReadOnlyList<Guid> personGuids, RockContext rockContext )
         {
             var attendanceService = new AttendanceService( rockContext );
 
@@ -388,7 +388,7 @@ namespace Rock.CheckIn.v2
         /// <param name="locationIds">The location identifiers to load attendance data for.</param>
         /// <param name="rockContext">The database context to execute the query on.</param>
         /// <returns>A collection of <see cref="RecentAttendance"/> records.</returns>
-        public static List<RecentAttendance> GetCurrentAttendance( DateTime startDateTime, IEnumerable<int> locationIds, RockContext rockContext )
+        public static List<RecentAttendance> GetCurrentAttendance( DateTime startDateTime, IReadOnlyList<int> locationIds, RockContext rockContext )
         {
             var attendanceService = new AttendanceService( rockContext );
 
@@ -541,29 +541,125 @@ namespace Rock.CheckIn.v2
         /// <param name="values">The values that <paramref name="expression"/> must match one of.</param>
         /// <param name="expression">The expression to the property.</param>
         /// <returns>A new queryable with the updated where clause.</returns>
-        internal static IQueryable<T> WhereContains<T, V>( IQueryable<T> source, IEnumerable<V> values, Expression<Func<T, V>> expression )
+        internal static IQueryable<T> WhereContains<T, V>( IQueryable<T> source, IReadOnlyList<V> values, Expression<Func<T, V>> expression )
         {
             Expression<Func<T, bool>> predicate = null;
             var parameter = expression.Parameters[0];
 
-            foreach ( var value in values )
-            {
-                var equalExpr = Expression.Equal( expression.Body, Expression.Constant( value ) );
-                var lambdaExpr = Expression.Lambda<Func<T, bool>>( equalExpr, parameter );
-
-                predicate = predicate != null
-                    ? predicate.Or( lambdaExpr )
-                    : lambdaExpr;
-            }
-
-            if ( predicate != null )
-            {
-                return source.Where( predicate );
-            }
-            else
+            if ( values.Count == 0 )
             {
                 return source.Where( a => false );
             }
+
+            if ( values.Count <= 5 )
+            {
+                /*
+                     2024-06-26 - DSH
+
+                     This behaves the same way as the C# compiler. When you
+                     write something like this:
+                       var myValue = 5;
+                       list.Where( a => a.Id == myValue )
+                     it gets translated into something like this:
+                       private sealed class CompilerGenerated
+                       {
+                           public int myValue;
+                       }
+                       var compilerGenerated = new CompilerGenerated();
+                       compilerGenerated.myValue = 5;
+                       list.Where( Expression.Field( Expression.Constant( compilerGenerated ), "myValue" ) )
+                     
+                     So we are doing the same in a somewhat dynamic way. This makes
+                     the expression cacheable by entity framework so it doesn't need
+                     to rebuild the SQL every time. It also makes these values
+                     parameters so SQL can re-use the same query plan.
+                     
+                     NOTE: We limit to 5 because that is fairly safe for check-in.
+                     It is unlikely to need more than 5 achievement types, or
+                     person guids, etc. in a Where() check. There are two reasons
+                     for the limit:
+                     
+                     1. We have a limited number of SQL parameters in a query. We
+                        don't want to use them all up here and then have the query
+                        blow up on the developer when they add an unrelated where
+                        clause somewhere else.
+                     2. The cache will only be valid for the same number of parameters.
+                        So using this on up to 5 values means we could fill up 5 slots
+                        in the EF and SQL cache, since EF especially is pretty limited
+                        we don't want to waste cache slots.
+                 
+                 */
+
+                var valueHelper = new WhereContainsValues<V>();
+                var valueHelperExpr = Expression.Constant( valueHelper );
+
+                for (int i = 0; i < values.Count; i++ )
+                {
+                    Expression valuePropExpr;
+
+                    if ( i == 0 )
+                    {
+                        valueHelper.P0 = values[0];
+                        valuePropExpr = Expression.Field( valueHelperExpr, "P0" );
+                    }
+                    else if ( i == 1 )
+                    {
+                        valueHelper.P1 = values[1];
+                        valuePropExpr = Expression.Field( valueHelperExpr, "P1" );
+                    }
+                    else if ( i == 2 )
+                    {
+                        valueHelper.P2 = values[2];
+                        valuePropExpr = Expression.Field( valueHelperExpr, "P2" );
+                    }
+                    else if ( i == 3 )
+                    {
+                        valueHelper.P3 = values[3];
+                        valuePropExpr = Expression.Field( valueHelperExpr, "P3" );
+                    }
+                    else
+                    {
+                        valueHelper.P4 = values[4];
+                        valuePropExpr = Expression.Field( valueHelperExpr, "P4" );
+                    }
+
+                    var equalExpr = Expression.Equal( expression.Body, valuePropExpr );
+                    var lambdaExpr = Expression.Lambda<Func<T, bool>>( equalExpr, parameter );
+
+                    predicate = predicate != null
+                        ? predicate.Or( lambdaExpr )
+                        : lambdaExpr;
+                }
+            }
+            else
+            {
+                // If we have more than 5 values just build a query with
+                // constant values.
+                foreach ( var value in values )
+                {
+                    var equalExpr = Expression.Equal( expression.Body, Expression.Constant( value ) );
+                    var lambdaExpr = Expression.Lambda<Func<T, bool>>( equalExpr, parameter );
+
+                    predicate = predicate != null
+                        ? predicate.Or( lambdaExpr )
+                        : lambdaExpr;
+                }
+            }
+
+            return source.Where( predicate );
+        }
+
+        private class WhereContainsValues<T>
+        {
+            public T P0;
+
+            public T P1;
+
+            public T P2;
+
+            public T P3;
+
+            public T P4;
         }
 
         #endregion

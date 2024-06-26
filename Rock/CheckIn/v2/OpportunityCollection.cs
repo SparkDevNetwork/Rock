@@ -377,7 +377,7 @@ namespace Rock.CheckIn.v2
         /// identifiers of the people in the location. No value will be available
         /// if there are not any attendance records for the location.
         /// </returns>
-        private static Dictionary<Guid, HashSet<Guid>> GetCurrentCountsForLocations( IReadOnlyCollection<int> locationIds, DateTime now, RockContext rockContext )
+        private static Dictionary<Guid, HashSet<Guid>> GetCurrentCountsForLocations( IReadOnlyList<int> locationIds, DateTime now, RockContext rockContext )
         {
             if ( locationIds.Count == 0 )
             {

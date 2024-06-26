@@ -306,7 +306,7 @@ namespace Rock.CheckIn.v2
                 activity?.AddTag( "rock.checkin.conversion_provider", Director.ConversionProvider.GetType().FullName );
 
                 var preSelectCutoff = RockDateTime.Today.AddDays( Math.Min( -1, 0 - TemplateConfiguration.AutoSelectDaysBack ) );
-                var recentAttendance = CheckInDirector.GetRecentAttendance( preSelectCutoff, people.Select( fm => fm.Guid ), RockContext );
+                var recentAttendance = CheckInDirector.GetRecentAttendance( preSelectCutoff, people.Select( fm => fm.Guid ).ToList(), RockContext );
 
                 var attendees = Director.ConversionProvider.GetAttendeeItems( people, baseOpportunities, recentAttendance );
 

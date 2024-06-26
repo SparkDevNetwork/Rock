@@ -324,7 +324,7 @@ namespace Rock.CheckIn.v2
 
             using ( var activity = ObservabilityHelper.StartActivity( "Save Attendance Records" ) )
             {
-                var configuredAchievementTypeGuids = TemplateConfiguration.AchievementTypeGuids;
+                var configuredAchievementTypeGuids = TemplateConfiguration.AchievementTypeGuids.ToList();
                 var attendanceRecordsPersonGuids = people.Select( p => p.Guid ).ToList();
 
                 Session.RockContext.WrapTransaction( () =>
@@ -453,19 +453,32 @@ namespace Rock.CheckIn.v2
                     EnsurePersonInGroup( request.Group.Id, request.Person.Id, request.Area.DefaultGroupRoleId.Value );
                 }
 
-                Activity.Current?.AddEvent( new ActivityEvent( "Add Or Update Attendance" ) );
-                attendance = attendanceService.AddOrUpdate(
-                    request.Person.PrimaryAliasId,
+                Activity.Current?.AddEvent( new ActivityEvent( "Get Or Add Occurrence" ) );
+                var occurrence = occurrenceService.GetOrAdd(
                     request.StartDateTime,
                     request.Group.Id,
                     request.Location.Id,
                     request.Schedule.Id,
-                    request.Location.CampusId,
-                    request.Kiosk?.Id,
-                    GetSearchTypeValueId( request.SearchMode ),
-                    request.SearchTerm,
-                    request.FamilyId,
-                    request.AttendanceCode.Id );
+                    "Attendees",
+                    null );
+
+                Activity.Current?.AddEvent( new ActivityEvent( "Add Attendance" ) );
+                attendance = new Attendance
+                {
+                    Occurrence = occurrence,
+                    OccurrenceId = occurrence.Id,
+                    PersonAliasId = request.Person.PrimaryAliasId,
+                    StartDateTime = request.StartDateTime,
+                    CampusId = request.Location.CampusId,
+                    DeviceId = request.Kiosk?.Id,
+                    SearchTypeValueId = GetSearchTypeValueId( request.SearchMode ),
+                    SearchValue = request.SearchTerm,
+                    SearchResultGroupId = request.FamilyId,
+                    AttendanceCodeId = request.AttendanceCode.Id,
+                    DidAttend = true
+                };
+
+                attendanceService.Add( attendance );
 
                 Activity.Current?.AddEvent( new ActivityEvent( "Start IsFirstTime" ) );
                 attendance.IsFirstTime = !attendanceService
@@ -690,22 +703,15 @@ namespace Rock.CheckIn.v2
         /// <param name="attendanceRecordsPersonGuids">The attendance records person unique identifiers.</param>
         /// <param name="configuredAchievementTypeGuids">The configured achievement type unique identifiers.</param>
         /// <returns>A list of unique identifiers of achievement attempts that are already completed.</returns>
-        protected List<Guid> GetSuccessfullyCompletedAchievementAttemptGuids( List<Guid> attendanceRecordsPersonGuids, IReadOnlyCollection<Guid> configuredAchievementTypeGuids )
+        protected List<Guid> GetSuccessfullyCompletedAchievementAttemptGuids( List<Guid> attendanceRecordsPersonGuids, List<Guid> configuredAchievementTypeGuids )
         {
             if ( !attendanceRecordsPersonGuids.Any() || !configuredAchievementTypeGuids.Any() )
             {
                 return new List<Guid>();
             }
 
-            var achievementAttemptService = new AchievementAttemptService( new RockContext() );
-            var completedAchievementAttempts = achievementAttemptService.GetAchievementAttemptWithAchieverPersonAliasQuery()
-                .Where( a => attendanceRecordsPersonGuids.Contains( a.AchieverPersonAlias.Person.Guid )
-                    && configuredAchievementTypeGuids.Contains( a.AchievementAttempt.AchievementType.Guid )
-                    && a.AchievementAttempt.IsSuccessful )
-                .AsNoTracking()
-                .ToList();
-
-            return completedAchievementAttempts
+            return GetBaseAchievementQuery( attendanceRecordsPersonGuids, configuredAchievementTypeGuids )
+                .Where( a => a.AchievementAttempt.IsSuccessful )
                 .Select( a => a.AchievementAttempt.Guid )
                 .ToList();
         }
@@ -717,23 +723,42 @@ namespace Rock.CheckIn.v2
         /// <param name="attendanceRecordsPersonGuids">The attendance records person unique identifiers.</param>
         /// <param name="configuredAchievementTypeGuids">The configured achievement type unique identifiers.</param>
         /// <returns>A list of achievement attempts.</returns>
-        protected List<AchievementAttemptService.AchievementAttemptWithPersonAlias> GetAchievementAttemptsWithPersonAlias( IReadOnlyCollection<Guid> attendanceRecordsPersonGuids, IReadOnlyCollection<Guid> configuredAchievementTypeGuids )
+        protected List<AchievementAttemptService.AchievementAttemptWithPersonAlias> GetAchievementAttemptsWithPersonAlias( List<Guid> attendanceRecordsPersonGuids, List<Guid> configuredAchievementTypeGuids )
         {
             if ( !attendanceRecordsPersonGuids.Any() || !configuredAchievementTypeGuids.Any() )
             {
                 return new List<AchievementAttemptService.AchievementAttemptWithPersonAlias>();
             }
 
-            var achievementAttemptService = new AchievementAttemptService( Session.RockContext );
-            var achievementAttempts = achievementAttemptService.GetAchievementAttemptWithAchieverPersonAliasQuery()
-                 .Where( a => configuredAchievementTypeGuids.Contains( a.AchievementAttempt.AchievementType.Guid )
-                    && attendanceRecordsPersonGuids.Contains( a.AchieverPersonAlias.Person.Guid )
-                    && ( ( a.AchievementAttempt.IsSuccessful && a.AchievementAttempt.IsClosed )
-                        || ( !a.AchievementAttempt.IsSuccessful && !a.AchievementAttempt.IsClosed ) ) )
+            return GetBaseAchievementQuery( attendanceRecordsPersonGuids, configuredAchievementTypeGuids )
+                 .Where( a => ( a.AchievementAttempt.IsSuccessful && a.AchievementAttempt.IsClosed )
+                        || ( !a.AchievementAttempt.IsSuccessful && !a.AchievementAttempt.IsClosed ) )
                  .AsNoTracking()
                  .ToList();
+        }
 
-            return achievementAttempts;
+        /// <summary>
+        /// Gets the base query to use when retrieving the achievement attempt
+        /// information. This attempts to optimize common queries so that EF
+        /// cache is still effective.
+        /// </summary>
+        /// <param name="personGuids">The attendance records person unique identifiers.</param>
+        /// <param name="achievementTypeGuids">The configured achievement type unique identifiers.</param>
+        /// <returns></returns>
+        private IQueryable<AchievementAttemptService.AchievementAttemptWithPersonAlias> GetBaseAchievementQuery( List<Guid> personGuids, List<Guid> achievementTypeGuids )
+        {
+            var achievementAttemptService = new AchievementAttemptService( Session.RockContext );
+            var qry = achievementAttemptService.GetAchievementAttemptWithAchieverPersonAliasQuery();
+
+            qry = CheckInDirector.WhereContains( qry, achievementTypeGuids, a => a.AchievementAttempt.AchievementType.Guid );
+
+            if ( personGuids.Count == 1 )
+            {
+                var personGuid = personGuids.First();
+                qry = qry.Where( a => a.AchieverPersonAlias.Person.Guid == personGuid );
+            }
+
+            return qry;
         }
 
         /// <summary>
@@ -798,10 +823,22 @@ namespace Rock.CheckIn.v2
             var codeLookup = CreateAttendanceCodes( personGuids );
 
             // Load all the people related to the check-in.
-            var personLookup = personService.Queryable()
-                .Where( p => personGuids.Contains( p.Guid ) )
-                .ToList()
-                .ToDictionary( p => p.Guid, p => p );
+            Dictionary<Guid, Person> personLookup;
+            if ( personGuids.Count == 1 )
+            {
+                var personGuid = personGuids[0];
+                personLookup = personService.Queryable()
+                    .Where( p => p.Guid == personGuid )
+                    .ToList()
+                    .ToDictionary( p => p.Guid, p => p );
+            }
+            else
+            {
+                personLookup = personService.Queryable()
+                    .Where( p => personGuids.Contains( p.Guid ) )
+                    .ToList()
+                    .ToDictionary( p => p.Guid, p => p );
+            }
 
             // Load all the attributes in one go.
             personLookup.Values.LoadAttributes( Session.RockContext );
