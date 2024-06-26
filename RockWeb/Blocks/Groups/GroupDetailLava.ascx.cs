@@ -176,21 +176,22 @@ namespace RockWeb.Blocks.Groups
         Order = 18 )]
 
     [BooleanField( "Enable Communication Preference",
+        Key = AttributeKey.EnableCommunicationPreference,
         Description = "Determines if the currently logged in individual should be allowed to set their communication preference for the group.",
         DefaultBooleanValue = false,
         Order = 19 )]
 
     [BooleanField( "Show 'Email Group Leaders' Button",
+        Key = AttributeKey.ShowEmailGroupLeadersButton,
         Description = "Determines if the 'Email Group Leaders' button should be displayed.",
         DefaultBooleanValue = false,
-        Order = 20,
-        Key = AttributeKey.ShowEmailGroupLeadersButton )]
+        Order = 20 )]
 
     [BooleanField( "Show 'Email Roster Parents' Button",
+        Key = AttributeKey.ShowEmailRosterParentsButton,
         Description = "Determines if the 'Email Roster Parents' button should be displayed.",
         DefaultBooleanValue = false,
-        Order = 21,
-        Key = AttributeKey.ShowEmailRosterParentsButton )]
+        Order = 21 )]
 
     #endregion Block Attributes
 
