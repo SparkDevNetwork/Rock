@@ -21,6 +21,7 @@ using System.Linq;
 using Rock.Data;
 using Rock.Extension;
 using Rock.Model;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Communication.VideoEmbed
@@ -66,10 +67,7 @@ namespace Rock.Communication.VideoEmbed
 
             if ( preMadeThumbnail != null )
             {
-                return string.Format( "{0}/GetImage.ashx/Thumbnail{1}.png?guid={1}&filename={2}",
-                    GlobalAttributesCache.Value( "PublicApplicationRoot" ).Trim( '/' ),
-                    preMadeThumbnail.Guid,
-                    preMadeThumbnail.FileName );
+                return FileUrlHelper.GetFileUrl( preMadeThumbnail.Guid, "GetImage", GlobalAttributesCache.Value( "PublicApplicationRoot" ).Trim( '/' ) );
             }
 
             image = ScaleImage( image );
@@ -102,10 +100,7 @@ namespace Rock.Communication.VideoEmbed
                 binaryFileService.Add( binaryImage );
                 rockContext.SaveChanges();
 
-                return string.Format( "{0}/GetImage.ashx/Thumbnail{1}.png?guid={1}&filename={2}",
-                    GlobalAttributesCache.Value( "PublicApplicationRoot" ).Trim( '/' ),
-                    binaryImage.Guid,
-                    binaryImage.FileName );
+                return FileUrlHelper.GetFileUrl( binaryImage.Guid, "GetImage", GlobalAttributesCache.Value( "PublicApplicationRoot" ).Trim( '/' ) );
             }
         }
 

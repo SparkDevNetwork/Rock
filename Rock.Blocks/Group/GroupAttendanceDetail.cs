@@ -714,7 +714,7 @@ namespace Rock.Blocks.Group
 
                 return ActionOk( new GroupAttendanceDetailPrintRosterResponseBag
                 {
-                    RedirectUrl = $"{this.RequestContext.RootUrlPath}/GetFile.ashx?Guid={outputBinaryFileDoc.Guid}&attachment=true"
+                    RedirectUrl = $"{this.RequestContext.RootUrlPath}/GetFile.ashx?guid={outputBinaryFileDoc.Guid}&attachment=true"
                 } );
             }
         }

@@ -1210,7 +1210,7 @@ namespace RockWeb.Blocks.Communication
                     var file = _gridBinaryFileService.Get( info.Detail.InternalPushImageFileId.ToIntSafe( 0 ) );
                     if ( file != null )
                     {
-                        info.Detail.Attachments = new List<string>() { $"{System.Web.VirtualPathUtility.ToAbsolute( "~" )}GetImage.ashx?id={ file.Id }" };
+                        info.Detail.Attachments = new List<string>() { FileUrlHelper.GetFileUrl(file.Id, "GetImage") };
                     }
                 }
             }
@@ -1226,7 +1226,7 @@ namespace RockWeb.Blocks.Communication
                         var file = _gridBinaryFileService.Get( attachment.BinaryFileId );
                         if ( file != null )
                         {
-                            info.Detail.Attachments.Add( $"{System.Web.VirtualPathUtility.ToAbsolute( "~" )}GetFile.ashx?id={ file.Id }" );
+                            info.Detail.Attachments.Add( FileUrlHelper.GetFileUrl( file.Id, "GetFile" ) );
                         }
                     }
                 }

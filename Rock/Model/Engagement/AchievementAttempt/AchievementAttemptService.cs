@@ -23,6 +23,7 @@ using System.Threading.Tasks;
 using Rock.Data;
 using Rock.RealTime;
 using Rock.RealTime.Topics;
+using Rock.Utility;
 using Rock.ViewModels.Engagement;
 using Rock.Web.Cache;
 
@@ -367,12 +368,12 @@ namespace Rock.Model
 
                         if ( achievementTypeCache.ImageBinaryFileId.HasValue )
                         {
-                            bag.AchievementTypeImageUrl = $"{publicApplicationRoot}GetImage.ashx?Id={achievementTypeCache.ImageBinaryFileId}";
+                            bag.AchievementTypeImageUrl = FileUrlHelper.GetFileUrl( achievementTypeCache.ImageBinaryFileId.Value, "GetImage", publicApplicationRoot );
                         }
 
                         if ( achievementTypeCache.AlternateImageBinaryFileId.HasValue )
                         {
-                            bag.AchievementTypeAlternateImageUrl = $"{publicApplicationRoot}GetImage.ashx?Id={achievementTypeCache.AlternateImageBinaryFileId}";
+                            bag.AchievementTypeAlternateImageUrl = FileUrlHelper.GetFileUrl( achievementTypeCache.AlternateImageBinaryFileId.Value, "GetImage", publicApplicationRoot );
                         }
 
                         // If the entity is a person, populate the photo URL.

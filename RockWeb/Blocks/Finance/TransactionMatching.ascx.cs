@@ -969,11 +969,8 @@ namespace RockWeb.Blocks.Finance
                 return string.Empty;
             }
 
-            return string.Format(
-                "<a href='{0}' target='_blank' rel='noopener noreferrer'><img src='{0}'/></a>",
-                ResolveRockUrl( string.Format(
-                    "~/GetImage.ashx?id={0}",
-                    financialTransactionImage.BinaryFileId ) ) );
+            var imageUrl = FileUrlHelper.GetFileUrl( financialTransactionImage.BinaryFileId, "GetImage" );
+            return $"<a href='{imageUrl}' target='_blank' rel='noopener noreferrer'><img src='{imageUrl}'/></a>";
         }
 
         private void UpdateVisibleAccountBoxes( bool onlyShowSelectedAccounts = false )
@@ -1636,7 +1633,7 @@ namespace RockWeb.Blocks.Finance
         {
             string width = maxWidth.HasValue ? string.Format( "&maxWidth={0}", maxWidth.Value ) : string.Empty;
             string height = maxHeight.HasValue ? string.Format( "&maxHeight={0}", maxHeight.Value ) : string.Empty;
-            return ResolveRockUrl( string.Format( "~/GetImage.ashx?id={0}{1}{2}", binaryFileId, width, height ) );
+            return FileUrlHelper.GetFileUrl( binaryFileId, "GetImage" ) + $"{width}{height}";
         }
 
         /// <summary>

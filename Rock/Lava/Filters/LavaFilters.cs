@@ -3999,18 +3999,12 @@ namespace Rock.Lava
         public static string ImageUrl( object input, string fallbackUrl = null, object rootUrl = null )
         {
             string inputString = input?.ToString();
-            var queryStringKey = "Id";
             var useFallbackUrl = false;
 
-            if ( !inputString.AsIntegerOrNull().HasValue )
+            if ( !inputString.AsIntegerOrNull().HasValue && !inputString.AsGuidOrNull().HasValue )
             {
-                queryStringKey = "Guid";
-
-                if ( !inputString.AsGuidOrNull().HasValue )
-                {
-                    RockLogger.Log.Information( RockLogDomains.Lava, $"The input value provided ('{( inputString ?? "null" )}') is neither an integer nor a Guid." );
-                    useFallbackUrl = true;
-                }
+                RockLogger.Log.Information( RockLogDomains.Lava, $"The input value provided ('{( inputString ?? "null" )}') is neither an integer nor a Guid." );
+                useFallbackUrl = true;
             }
 
             if ( useFallbackUrl )
@@ -4030,7 +4024,6 @@ namespace Rock.Lava
 
                 3. Future dev will dictate (i.e. If the object is a string whose value is "cdnUrl" ...)
             */
-            bool useGetImageHandler = false;
             bool prependAppRootUrl = false;
 
             string rootUrlString = rootUrl?.ToString();
@@ -4040,22 +4033,15 @@ namespace Rock.Lava
 
             if ( rootUrlString?.Equals( "rootUrl", StringComparison.OrdinalIgnoreCase ) == true )
             {
-                useGetImageHandler = true;
                 prependAppRootUrl = true;
             }
-            else if ( rootUrlAsBool.HasValue || rootUrl == null )
+
+            string url = FileUrlHelper.GetFileUrl(inputString.ToIntSafe(), "GetImage");
+
+            if ( prependAppRootUrl )
             {
-                useGetImageHandler = true;
-                prependAppRootUrl = rootUrlAsBool ?? false;
-            }
-
-            string url = null;
-
-            if ( useGetImageHandler )
-            {
-                string prefix = prependAppRootUrl ? GlobalAttributesCache.Value( "PublicApplicationRoot" ) : "/";
-
-                url = $"{prefix}GetImage.ashx?{queryStringKey}={inputString}";
+                string prefix = GlobalAttributesCache.Value( "PublicApplicationRoot" );
+                url = $"{prefix.TrimEnd( '/' )}/{url.TrimStart( '/' )}";
             }
 
             return url;

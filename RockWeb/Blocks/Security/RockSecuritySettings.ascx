@@ -81,6 +81,15 @@
                 </div>
                 <div class="row mt-3">
                     <div class="col-md-6">
+                        <Rock:RockCheckBox
+                            ID="cbDisablePredictableIds"
+                            runat="server"
+                            Label="Disable Predictable IDs"
+                            Help="When enabled, the GetFile, GetImage and GetAvatar endpoint will use IdKey instead of predictable IDs." />
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-6">
                         <Rock:RockDropDownList
                             runat="server"
                             ID="ddlHighRoles"

@@ -27,6 +27,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Tasks;
+using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Event.EventItemDetail;
 using Rock.ViewModels.Utility;
@@ -213,7 +214,7 @@ namespace Rock.Blocks.Event
             }
 
             var bag = GetCommonEntityBag( entity );
-            bag.PhotoUrl = RequestContext.ResolveRockUrl( $"~/GetImage.ashx?id={entity.PhotoId}" );
+            bag.PhotoUrl = FileUrlHelper.GetFileUrl( entity.PhotoId.Value, "GetImage" );
             bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
 
             return bag;

@@ -26,6 +26,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -139,7 +140,7 @@ namespace RockWeb.Blocks.Fundraising
 
             // Left Top Sidebar
             var photoGuid = group.GetAttributeValue( "OpportunityPhoto" );
-            imgOpportunityPhoto.ImageUrl = string.Format( "~/GetImage.ashx?Guid={0}", photoGuid );
+            imgOpportunityPhoto.ImageUrl = FileUrlHelper.GetFileUrl( photoGuid.AsGuid(), "GetImage" );
 
             // Top Main
             string summaryLavaTemplate = this.GetAttributeValue( "SummaryLavaTemplate" );

@@ -20,6 +20,7 @@ using System.Web;
 
 using Rock.Extension;
 using Rock.Model;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Storage
@@ -70,17 +71,14 @@ namespace Rock.Storage
 
             if ( file != null )
             {
-                url = "~/GetFile.ashx";
-                if ( file.MimeType != null && file.MimeType.StartsWith( "image/", StringComparison.OrdinalIgnoreCase ) )
-                {
-                    url = "~/GetImage.ashx";
-                }
-
-                url += "?guid=" + file.Guid.ToString();
+                url = file.MimeType != null && file.MimeType.StartsWith( "image/", StringComparison.OrdinalIgnoreCase )
+                    ? FileUrlHelper.GetFileUrl( file.Guid, "GetImage" )
+                    : FileUrlHelper.GetFileUrl( file.Guid );
             }
 
             return url;
         }
+
 
         /// <summary>
         /// Generate a URL for the file based on the rules of the StorageProvider

@@ -48,7 +48,7 @@ async function uploadByFile(file: File, fileTypeGuid: string): Promise<ImageUplo
             return {
                 success: true,
                 file: {
-                    url: `/GetImage.ashx?Id=${uploadedFile.Id}`,
+                    url: `/GetImage.ashx?guid=${uploadedFile.Guid}`,
                     fileId: uploadedFile.Id
                 }
             }

@@ -19,12 +19,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
 using Rock.Apps.CheckScannerUtility.Models;
 using Rock.Client;
 using Rock.Net;
+using Rock;
 
 namespace Rock.Apps.CheckScannerUtility
 {
@@ -33,13 +35,19 @@ namespace Rock.Apps.CheckScannerUtility
     /// </summary>
     public partial class BatchItemDetailPage : System.Windows.Controls.Page
     {
+
+        private RockRestClient _client;
+        private bool _disablePredictableIds;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="BatchItemDetailPage"/> class.
         /// </summary>
         public BatchItemDetailPage()
         {
             InitializeComponent();
-
+            RockConfig config = RockConfig.Load();
+            _client = new RockRestClient( config.RockBaseUrl );
+            _client.Login( config.Username, config.Password );
         }
 
         /// <summary>
@@ -69,6 +77,7 @@ namespace Rock.Apps.CheckScannerUtility
         {
             var financialTransaction = this.FinancialTransaction;
             LoadFinancialTransactionDetails( financialTransaction );
+            GetDisablePredictableIdsSetting();
 
             var images = financialTransaction.Images.OrderBy( a => a.Order ).ToList();
 
@@ -96,7 +105,9 @@ namespace Rock.Apps.CheckScannerUtility
             if ( images.Count > 0 )
             {
                 imgScannedItemNone.Visibility = Visibility.Collapsed;
-                var imageUrl = string.Format( "{0}GetImage.ashx?Id={1}", config.RockBaseUrl.EnsureTrailingForwardslash(), images[0].BinaryFileId );
+                string idOrGuid = GetGuid( images[0].BinaryFileId );
+                var imageUrl = $"{config.RockBaseUrl.EnsureTrailingForwardslash()}GetImage.ashx?{( _disablePredictableIds ? "guid" : "id" )}={idOrGuid}";
+
                 var imageBytes = client.DownloadData( imageUrl );
 
                 BitmapImage bitmapImage = new BitmapImage();
@@ -115,7 +126,9 @@ namespace Rock.Apps.CheckScannerUtility
 
             if ( images.Count > 1 )
             {
-                var imageUrl = string.Format( "{0}GetImage.ashx?Id={1}", config.RockBaseUrl.EnsureTrailingForwardslash(), images[1].BinaryFileId );
+                string idOrGuid = GetGuid( images[1].BinaryFileId );
+                var imageUrl = $"{config.RockBaseUrl.EnsureTrailingForwardslash()}GetImage.ashx?{( _disablePredictableIds ? "guid" : "id" )}={idOrGuid}";
+
                 var imageBytes = client.DownloadData( imageUrl );
 
                 BitmapImage bitmapImage = new BitmapImage();
@@ -199,6 +212,41 @@ namespace Rock.Apps.CheckScannerUtility
 
             this.lvAccountDetails.ItemsSource = displayFinancialTransactionDetailList;
             this.lblTotals.Content = sum.ToString( "C" );
+        }
+
+        private bool GetDisablePredictableIdsSetting()
+        {
+            RockConfig config = RockConfig.Load();
+            RockRestClient client = new RockRestClient( config.RockBaseUrl );
+            client.Login( config.Username, config.Password );
+
+            try
+            {
+                var securitySettings = client.GetData<List<Rock.Client.Attribute>>( "api/Attributes?$filter=Key eq 'core_RockSecuritySettings'" );
+                var setting = securitySettings.FirstOrDefault();
+                if ( setting != null )
+                {
+                    dynamic defaultValue = setting?.DefaultValue;
+                    _disablePredictableIds = defaultValue?.Contains("\"DisablePredictableIds\":true") ?? false;
+                }
+            }
+            catch ( Exception ex )
+            {
+                // Log the exception
+                Console.WriteLine( $"Error fetching security settings: {ex.Message}" );
+            }
+
+            return false;
+        }
+
+        private string GetGuid( int binaryFileId )
+        {
+            if ( _disablePredictableIds )
+            {
+                var binaryFile = _client.GetData<BinaryFile>( $"api/BinaryFiles/{binaryFileId}" );
+                return binaryFile.Guid.ToString();
+            }
+            return binaryFileId.ToString();
         }
 
         /// <summary>

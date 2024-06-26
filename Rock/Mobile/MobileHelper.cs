@@ -30,6 +30,7 @@ using Rock.DownhillCss;
 using Rock.Mobile.JsonFields;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 using Authorization = Rock.Security.Authorization;
@@ -432,7 +433,7 @@ namespace Rock.Mobile
 
             if ( site.FavIconBinaryFileId.HasValue )
             {
-                package.AppearanceSettings.LogoUrl = $"{applicationRoot}/GetImage.ashx?Id={site.FavIconBinaryFileId.Value}";
+                package.AppearanceSettings.LogoUrl = FileUrlHelper.GetFileUrl( site.FavIconBinaryFileId.Value, "GetImage" );
             }
 
             //

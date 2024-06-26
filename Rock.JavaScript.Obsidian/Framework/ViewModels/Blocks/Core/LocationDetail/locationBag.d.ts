@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
 import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
@@ -53,11 +54,17 @@ export type LocationBag = {
     /** Gets or sets the GeoPoint image HTML. */
     geoPointImageHtml?: string | null;
 
+    /** Gets or sets the guid. */
+    guid: Guid;
+
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
 
     /** Gets or sets the image identifier. */
     imageId?: number | null;
+
+    /** Gets or sets the image identifier. */
+    imageUrlParam?: string | null;
 
     /** Gets or sets a value indicating whether this instance is active. */
     isActive: boolean;

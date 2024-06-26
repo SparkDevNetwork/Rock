@@ -336,7 +336,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
 <AbsoluteLayout HorizontalOptions=""Fill""
                 StyleClass=""hero""
                 HeightRequest=""{height}"">
-    <Rock:Image Source=""{MobileHelper.BuildPublicApplicationRootUrl( $"GetImage.ashx?Guid={imageGuid}&amp;height={imageHeight}" )}""
+    <Rock:Image Source=""{MobileHelper.BuildPublicApplicationRootUrl( $"GetImage.ashx?guid={imageGuid}&amp;height={imageHeight}" )}""
                 StyleClass=""hero-image""
                 Aspect=""AspectFill""
                 AbsoluteLayout.LayoutBounds=""0,0,1,1""

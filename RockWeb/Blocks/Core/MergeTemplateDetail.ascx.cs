@@ -28,6 +28,7 @@ using Rock.Data;
 using Rock.MergeTemplates;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -583,10 +584,7 @@ namespace RockWeb.Blocks.Core
             hfMergeTemplateId.SetValue( mergeTemplate.Id );
             lReadOnlyTitle.Text = mergeTemplate.Name.FormatAsHtmlTitle();
 
-            var getFileUrl = string.Format(
-                "{0}GetFile.ashx?guid={1}",
-                System.Web.VirtualPathUtility.ToAbsolute( "~" ),
-                mergeTemplate.TemplateBinaryFile != null ? mergeTemplate.TemplateBinaryFile.Guid : ( Guid? ) null );
+            var getFileUrl = FileUrlHelper.GetFileUrl( mergeTemplate.TemplateBinaryFile.Guid, "GetFile" );
 
             DescriptionList descriptionListCol1 = new DescriptionList()
                 .Add( "Template File", string.Format( "<a href='{0}'>{1}</a>", getFileUrl, mergeTemplate.TemplateBinaryFile.FileName ) )

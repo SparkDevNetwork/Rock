@@ -107,6 +107,12 @@ namespace Rock.Security
         public int PasswordlessSignInSessionDuration { get; set; }
 
         /// <summary>
+        /// Gets or sets the toggle option to disable predictable ids for get file.
+        /// </summary>
+        /// <value>The toggle option to disable predictable ids for GetFile, GetImage, and GetAvatar endpoints.</value>
+        public bool DisablePredictableIds { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="SecuritySettings"/> class.
         /// </summary>
         public SecuritySettings()

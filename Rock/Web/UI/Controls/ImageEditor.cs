@@ -26,6 +26,7 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Utility;
 
 namespace Rock.Web.UI.Controls
 {
@@ -946,7 +947,7 @@ namespace Rock.Web.UI.Controls
 
             if ( BinaryFileId != null )
             {
-                imageDivHtml = string.Format( backgroundImageFormat, this.ClientID + "_divPhoto", this.ResolveUrl( "~/GetImage.ashx?id=" + BinaryFileId.ToString() + "&width=150" ) );
+                imageDivHtml = string.Format( backgroundImageFormat, this.ClientID + "_divPhoto", FileUrlHelper.GetFileUrl( BinaryFileId, "GetImage") + "&width=150" );
             }
             else
             {

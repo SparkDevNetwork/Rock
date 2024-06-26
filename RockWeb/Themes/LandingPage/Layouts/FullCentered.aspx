@@ -9,11 +9,12 @@
     <Rock:Lava ID="HeaderImage" runat="server">
         {%- assign headerImageId = CurrentPage | Attribute:'HeaderImage','Id' -%}
         {%- if headerImageId != '' -%}
-        <div class="hero has-overlay" style="background-image: url('{{ '~' | ResolveRockUrl }}GetImage.ashx?Id={{ headerImageId }}&maxWidth=2500');">
+        <div class="hero has-overlay" style="background-image: url('{{ headerImageId | ImageUrl:'','rootUrl' }}&maxWidth=2500');">
         {%- else -%}
         <div class="hero has-overlay" style="background-image:url('https://source.unsplash.com/mvxrY7z7gtM/2500x1800');">
         {%- endif -%}
     </Rock:Lava>
+
         <div class="container d-flex flex-column text-white" style="min-height: 105vh;">
             <div class="row my-auto">
                 <div class="col-lg-10 col-md-8 col-sm-12 text-center mx-auto py-5 my-5">

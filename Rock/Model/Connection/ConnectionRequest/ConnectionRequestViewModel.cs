@@ -393,7 +393,7 @@ namespace Rock.Model
             {
                 if ( PersonPhotoId.HasValue )
                 {
-                    return string.Format( "/GetImage.ashx?id={0}", PersonPhotoId.Value );
+                    return FileUrlHelper.GetFileUrl( PersonPhotoId.Value, "GetImage" );
                 }
                 else
                 {
@@ -412,7 +412,7 @@ namespace Rock.Model
             {
                 if ( ConnectorPhotoId.HasValue )
                 {
-                    return string.Format( "/GetImage.ashx?id={0}", ConnectorPhotoId.Value );
+                    return FileUrlHelper.GetFileUrl( ConnectorPhotoId.Value, "GetImage" );
                 }
                 else
                 {

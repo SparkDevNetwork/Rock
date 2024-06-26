@@ -27,6 +27,7 @@ using Owin.Security.OpenIdConnect.Server;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Oidc.Authorization
@@ -126,12 +127,12 @@ namespace Rock.Oidc.Authorization
                 {
                     OpenIdConnectConstants.Claims.Picture, (p) =>
                     {
-                        if ( user.Person.PhotoId != null )
+                        if (user.Person.PhotoId != null)
                         {
-                            var photoGuid = HttpUtility.UrlEncode( user.Person.Photo.Guid.ToString() );
-                            var publicAppRoot = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" );
+                            var photoGuid = user.Person.Photo.Guid;
+                            var publicAppRoot = GlobalAttributesCache.Get().GetValue("PublicApplicationRoot");
 
-                            return $"{publicAppRoot}GetImage.ashx?guid={photoGuid}";
+                            return FileUrlHelper.GetFileUrl(photoGuid, "GetImage", publicAppRoot);
                         }
 
                         return string.Empty;

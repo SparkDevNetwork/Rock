@@ -34,7 +34,7 @@
 
 	<article class="series-detail">
 		{% assign seriesImageGuid = item | Attribute:'SeriesImage','RawValue' %}
-		<div class="series-banner" style="background-image: url('/GetImage.ashx?Guid={{ seriesImageGuid }}');" ></div>
+		<div class="series-banner" style="background-image: url('/GetImage.ashx?guid={{ seriesImageGuid }}');" ></div>
 
 		<h1 class="series-title">{{ item.Title }}</h1>
 		<p class="series-dates">

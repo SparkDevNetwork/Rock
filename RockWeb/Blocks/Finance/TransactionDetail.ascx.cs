@@ -30,6 +30,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -1681,7 +1682,7 @@ namespace RockWeb.Blocks.Finance
                     var primaryImage = txn.Images
                         .OrderBy( i => i.Order )
                         .FirstOrDefault();
-                    imgPrimary.ImageUrl = string.Format( "~/GetImage.ashx?id={0}", primaryImage.BinaryFileId );
+                    imgPrimary.ImageUrl = FileUrlHelper.GetFileUrl( primaryImage.BinaryFileId, "GetImage" );
 
                     rptrImages.DataSource = txn.Images
                         .Where( i => !i.Id.Equals( primaryImage.Id ) )
@@ -2267,7 +2268,7 @@ namespace RockWeb.Blocks.Finance
         {
             string width = maxWidth.HasValue ? string.Format( "&maxWidth={0}", maxWidth.Value ) : string.Empty;
             string height = maxHeight.HasValue ? string.Format( "&maxHeight={0}", maxHeight.Value ) : string.Empty;
-            return ResolveRockUrl( string.Format( "~/GetImage.ashx?id={0}{1}{2}", binaryFileId, width, height ) );
+            return FileUrlHelper.GetFileUrl( binaryFileId, "GetImage" ) + $"{width}{height}";
         }
 
         /// <summary>
