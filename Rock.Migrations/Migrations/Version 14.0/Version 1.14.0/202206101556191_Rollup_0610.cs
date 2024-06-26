@@ -372,11 +372,13 @@ namespace Rock.Migrations
             // Internal Name: IP Address Location Service
             // Site: Rock RMS
             RockMigrationHelper.AddPage( true, "C831428A-6ACD-4D49-9B2D-046D399E3123", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "IP Address Location Service", "", "9B6AE429-EFBE-47BF-B4D3-E4FB85D37B49", "fa fa-globe-americas" );
-            
+
+#pragma warning disable CS0618 // Type or member is obsolete
             // Add Page Route
             //  Page:IP Address Location Service
             // Route:admin/system/ip-location-services
             RockMigrationHelper.AddPageRoute( "9B6AE429-EFBE-47BF-B4D3-E4FB85D37B49", "admin/system/ip-location-services", "3D69707E-5F37-4F15-AFE8-903861DE8D90" );
+#pragma warning restore CS0618 // Type or member is obsolete
             
             // Add Block
             // Block Name: Components

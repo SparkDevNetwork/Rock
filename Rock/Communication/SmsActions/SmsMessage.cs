@@ -27,6 +27,8 @@ namespace Rock.Communication.SmsActions
     /// </summary>
     public class SmsMessage : ILavaDataDictionary, Lava.ILiquidizable
     {
+        private string _message;
+
         /// <summary>
         /// Gets or sets the number the message was sent to.
         /// </summary>
@@ -57,7 +59,11 @@ namespace Rock.Communication.SmsActions
         /// <value>
         /// The message content.
         /// </value>
-        public string Message { get; set; }
+        public string Message
+        {
+            get { return _message; }
+            set { _message = value?.Trim() ?? string.Empty; }
+        }
 
         /// <summary>
         /// Gets or sets the attachments.

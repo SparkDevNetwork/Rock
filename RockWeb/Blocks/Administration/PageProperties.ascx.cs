@@ -125,6 +125,11 @@ namespace RockWeb.Blocks.Administration
             }
         }
 
+        /// <summary>
+        /// Gets the interaction intent defined type cache.
+        /// </summary>
+        protected DefinedTypeCache InteractionIntentDefinedTypeCache => DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.INTERACTION_INTENT ) );
+
         #endregion
 
         #region Base Control Methods
@@ -204,10 +209,9 @@ namespace RockWeb.Blocks.Administration
                     }
                 }
 
-                var interactionIntentDefinedType = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.INTERACTION_INTENT ) );
-                if ( interactionIntentDefinedType != null )
+                if ( InteractionIntentDefinedTypeCache != null )
                 {
-                    dvpPageIntents.DefinedTypeId = interactionIntentDefinedType.Id;
+                    dvpPageIntents.DefinedTypeId = InteractionIntentDefinedTypeCache.Id;
                     dvpPageIntents.Visible = true;
                 }
                 else
@@ -591,7 +595,7 @@ namespace RockWeb.Blocks.Administration
             ceHeaderContent.Text = page.HeaderContent;
             tbPageRoute.Text = string.Join( ",", page.PageRoutes.Select( route => route.Route ).ToArray() );
 
-            if ( dvpPageIntents.Visible )
+            if ( InteractionIntentDefinedTypeCache != null )
             {
                 var intentSettings = page.GetAdditionalSettings<PageService.IntentSettings>();
                 if ( intentSettings.InteractionIntentValueIds?.Any() == true )
@@ -833,7 +837,7 @@ namespace RockWeb.Blocks.Administration
             }
 
             // Intent Settings
-            if ( dvpPageIntents.Visible )
+            if ( InteractionIntentDefinedTypeCache != null )
             {
                 var intentSettings = page.GetAdditionalSettings<PageService.IntentSettings>();
 

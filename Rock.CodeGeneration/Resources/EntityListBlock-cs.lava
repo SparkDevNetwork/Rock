@@ -185,7 +185,7 @@ namespace Rock.Blocks.{{ DomainNamespace }}
 
             if ( !{% if UseEntitySecurity == true %}entity{% else %}BlockCache{% endif %}.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                return ActionBadRequest( $"Not authorized to delete ${{'{'}}{{ EntityName }}.FriendlyTypeName}." );
+                return ActionBadRequest( $"Not authorized to delete {{'{'}}{{ EntityName }}.FriendlyTypeName}." );
             }
 
             if ( !entityService.CanDelete( entity, out var errorMessage ) )

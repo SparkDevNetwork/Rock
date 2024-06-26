@@ -250,6 +250,8 @@ namespace Rock.Web.Cache
             HighlightColor = dataView.HighlightColor;
             IconCssClass = dataView.IconCssClass;
             IncludeDeceased = dataView.IncludeDeceased;
+            HighlightColor = dataView.HighlightColor;
+            IconCssClass = dataView.IconCssClass;
             IsSystem = dataView.IsSystem;
             LastRunDateTime = dataView.LastRunDateTime;
             Name = dataView.Name;

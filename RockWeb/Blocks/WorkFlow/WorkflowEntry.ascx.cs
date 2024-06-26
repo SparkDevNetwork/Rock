@@ -1402,8 +1402,11 @@ namespace RockWeb.Blocks.WorkFlow
 
             lPersonEntryPostHtml.Text = postHtml.ResolveMergeFields( mergeFields );
 
+            // Set the visibility of the Address Control.
+            // If hidden, also hide the containing column to ensure remaining columns are left-aligned.
             var promptForAddress = ( formPersonEntrySettings.Address != WorkflowActionFormPersonEntryOption.Hidden ) && formPersonEntrySettings.AddressTypeValueId.HasValue;
             acPersonEntryAddress.Visible = promptForAddress;
+            pnlPersonEntryRow2Column1.Visible = promptForAddress;
 
             if ( setValues )
             {
@@ -2076,7 +2079,7 @@ namespace RockWeb.Blocks.WorkFlow
                 var attribute = AttributeCache.Get( formAttribute.AttributeId );
                 var control = phWorkflowFormAttributes.FindControl( string.Format( "attribute_field_{0}", formAttribute.AttributeId ) );
 
-                if ( attribute != null && control != null )
+                if ( attribute != null && control != null && control.Visible )
                 {
                     var editValue = attribute.FieldType.Field.GetEditValue( attribute.GetControl( control ), attribute.QualifierValues );
                     result.Add( attribute.Id, new AttributeValueCache( attribute.Id, null, editValue ) );
@@ -2314,7 +2317,7 @@ namespace RockWeb.Blocks.WorkFlow
 
                     foreach ( var key in pageReference.QueryString.AllKeys.Where( k => !k.Equals( PageParameterKey.Command, StringComparison.OrdinalIgnoreCase ) ) )
                     {
-                        pageReference.Parameters.AddOrIgnore( key, pageReference.QueryString[key] );
+                        pageReference.Parameters.TryAdd( key, pageReference.QueryString[key] );
                     }
 
                     pageReference.QueryString = new System.Collections.Specialized.NameValueCollection();

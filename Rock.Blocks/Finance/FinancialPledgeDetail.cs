@@ -124,7 +124,7 @@ namespace Rock.Blocks.Finance
 
             if ( !financialPledge.IsValid )
             {
-                errorMessage = string.Join("</br>", financialPledge.ValidationResults.Select( x => x.ErrorMessage ) );
+                errorMessage = string.Format( "Please correct the following:<ul><li>{0}</li></ul>", financialPledge.ValidationResults.AsDelimited( "</li><li>" ) ); ;
                 return false;
             }
 
@@ -204,8 +204,8 @@ namespace Rock.Blocks.Finance
 
             if ( entity.Id != 0 )
             {
-                bag.StartDate = entity.StartDate == DateTime.MinValue ? ( DateTime? ) null : entity.StartDate;
-                bag.EndDate = entity.EndDate;
+                bag.StartDate = entity.StartDate == DateTime.MinValue.Date ? ( DateTime? ) null : entity.StartDate;
+                bag.EndDate = entity.EndDate == DateTime.MaxValue.Date ? ( DateTime? ) null : entity.EndDate;
             }
 
             return bag;

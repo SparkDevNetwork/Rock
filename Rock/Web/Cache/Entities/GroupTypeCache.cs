@@ -36,8 +36,6 @@ namespace Rock.Web.Cache
 
         #region Properties
 
-        private readonly object _obj = new object();
-
         /// <summary>
         /// Gets or sets a value indicating whether this instance is system.
         /// </summary>
@@ -394,7 +392,7 @@ namespace Rock.Web.Cache
             {
                 // skip if parent group type and current group type are the same (a situation that should not be possible) to prevent stack overflow
                 if ( groupType.Id == parentGroupType.Id ||
-                    // also skip if the parent group type and starting group type are the same as this is a circular reference and can cause a stack overflow
+                     // also skip if the parent group type and starting group type are the same as this is a circular reference and can cause a stack overflow
                      startingGroup.Id == parentGroupType.Id )
                 {
                     continue;
@@ -639,20 +637,15 @@ namespace Rock.Web.Cache
             {
                 if ( _roles == null )
                 {
-                    lock ( _obj )
+                    using ( var rockContext = new RockContext() )
                     {
-                        using ( var rockContext = new RockContext() )
-                        {
-                            var roles = new List<GroupTypeRoleCache>();
-                            new GroupTypeRoleService( rockContext )
-                                .Queryable().AsNoTracking()
-                                .Where( r => r.GroupTypeId == Id )
-                                .OrderBy( r => r.Order )
-                                .ToList()
-                                .ForEach( r => roles.Add( new GroupTypeRoleCache( r ) ) );
-
-                            _roles = roles;
-                        }
+                        _roles = new GroupTypeRoleService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( r => r.GroupTypeId == Id )
+                            .OrderBy( r => r.Order )
+                            .ToList()
+                            .Select( r => new GroupTypeRoleCache( r ) )
+                            .ToList();
                     }
                 }
 
@@ -675,36 +668,26 @@ namespace Rock.Web.Cache
             {
                 if ( _groupScheduleExclusions == null )
                 {
-                    lock ( _obj )
+                    using ( var rockContext = new RockContext() )
                     {
-                        if ( _groupScheduleExclusions == null )
-                        {
-                            using ( var rockContext = new RockContext() )
-                            {
-                                GroupScheduleExclusions = new List<DateRange>();
-                                new GroupScheduleExclusionService( rockContext )
-                                    .Queryable().AsNoTracking()
-                                    .Where( s => s.GroupTypeId == Id )
-                                    .OrderBy( s => s.StartDate )
-                                    .ToList()
-                                    .ForEach( s => GroupScheduleExclusions.Add( new DateRange( s.StartDate, s.EndDate ) ) );
-
-                            }
-                        }
+                        _groupScheduleExclusions = new GroupScheduleExclusionService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( s => s.GroupTypeId == Id )
+                            .OrderBy( s => s.StartDate )
+                            .ToList()
+                            .Select( s => new DateRange( s.StartDate, s.EndDate ) )
+                            .ToList();
                     }
                 }
                 return _groupScheduleExclusions;
-            }
-            private set
-            {
-                _groupScheduleExclusions = value;
             }
         }
         private List<DateRange> _groupScheduleExclusions;
 
         /// <summary>
         /// Gets the group types that are allowed for child groups.
-        /// Use this along with <seealso cref="AllowAnyChildGroupType"/> to determine if a child group can have a parent group of this group type
+        /// Use this along with <seealso cref="AllowAnyChildGroupType"/> to
+        /// determine if a child group can have a parent group of this group type
         /// </summary>
         /// <value>
         /// The child group types.
@@ -719,27 +702,6 @@ namespace Rock.Web.Cache
             {
                 var childGroupTypes = new List<GroupTypeCache>();
 
-                if ( ChildGroupTypeIds == null )
-                {
-                    lock ( _obj )
-                    {
-                        if ( ChildGroupTypeIds == null )
-                        {
-                            using ( var rockContext = new RockContext() )
-                            {
-                                ChildGroupTypeIds = new GroupTypeService( rockContext )
-                                    .GetChildGroupTypes( Id )
-                                    .Select( g => g.Id )
-                                    .ToList();
-                            }
-                        }
-                    }
-                }
-
-
-                if ( ChildGroupTypeIds == null )
-                    return childGroupTypes;
-
                 foreach ( var id in ChildGroupTypeIds )
                 {
                     var groupType = Get( id );
@@ -753,8 +715,34 @@ namespace Rock.Web.Cache
             }
         }
 
+        /// <summary>
+        /// Gets the group type identifiers that are allowed for child groups.
+        /// Use this along with <seealso cref="AllowAnyChildGroupType"/> to
+        /// determine if a child group can have a parent group of this group type
+        /// </summary>
+        /// <value>
+        /// The child group type identifiers.
+        /// </value>
         [DataMember]
-        private List<int> ChildGroupTypeIds { get; set; }
+        private List<int> ChildGroupTypeIds
+        {
+            get
+            {
+                if ( _childGroupTypeIds == null )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        _childGroupTypeIds = new GroupTypeService( rockContext )
+                            .GetChildGroupTypes( Id )
+                            .Select( g => g.Id )
+                            .ToList();
+                    }
+                }
+
+                return _childGroupTypeIds;
+            }
+        }
+        private List<int> _childGroupTypeIds;
 
         /// <summary>
         /// Gets the parent group types.
@@ -768,27 +756,7 @@ namespace Rock.Web.Cache
             {
                 var parentGroupTypes = new List<GroupTypeCache>();
 
-                if ( _parentGroupTypeIds == null )
-                {
-                    lock ( _obj )
-                    {
-                        if ( _parentGroupTypeIds == null )
-                        {
-                            using ( var rockContext = new RockContext() )
-                            {
-                                _parentGroupTypeIds = new GroupTypeService( rockContext )
-                                    .GetParentGroupTypes( Id )
-                                    .Select( g => g.Id )
-                                    .ToList();
-                            }
-                        }
-                    }
-                }
-
-                if ( _parentGroupTypeIds == null )
-                    return parentGroupTypes;
-
-                foreach ( var id in _parentGroupTypeIds )
+                foreach ( var id in ParentGroupTypeIds )
                 {
                     var groupType = Get( id );
                     if ( groupType != null )
@@ -798,6 +766,31 @@ namespace Rock.Web.Cache
                 }
 
                 return parentGroupTypes;
+            }
+        }
+
+        /// <summary>
+        /// Gets the parent group type identifiers.
+        /// </summary>
+        /// <value>
+        /// The parent group type identifiers.
+        /// </value>
+        private List<int> ParentGroupTypeIds
+        {
+            get
+            {
+                if ( _parentGroupTypeIds == null )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        _parentGroupTypeIds = new GroupTypeService( rockContext )
+                            .GetParentGroupTypes( Id )
+                            .Select( g => g.Id )
+                            .ToList();
+                    }
+                }
+
+                return _parentGroupTypeIds;
             }
         }
         private List<int> _parentGroupTypeIds;

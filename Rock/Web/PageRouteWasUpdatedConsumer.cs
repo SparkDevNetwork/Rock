@@ -18,9 +18,9 @@ using Rock.Bus;
 using Rock.Bus.Consumer;
 using Rock.Bus.Message;
 using Rock.Bus.Queue;
+using Rock.Configuration;
 using Rock.Logging;
 using Rock.Model;
-using Rock.Utility.Settings;
 
 namespace Rock.Web
 {
@@ -45,7 +45,7 @@ namespace Rock.Web
                 // Don't publish events until Rock is all the way started
                 var logMessage = $"'Page Route Was Updated' message was not consumed because Rock is not fully started.";
 
-                var elapsedSinceProcessStarted = RockDateTime.Now - RockInstanceConfig.ApplicationStartedDateTime;
+                var elapsedSinceProcessStarted = RockDateTime.Now - RockApp.Current.HostingSettings.ApplicationStartDateTime;
 
                 if ( elapsedSinceProcessStarted.TotalSeconds > RockMessageBus.MAX_SECONDS_SINCE_STARTTIME_LOG_ERROR )
                 {

@@ -1109,7 +1109,7 @@ namespace RockWeb.Blocks.Event
                 var parts = mergeField.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
                 if ( parts.Any() )
                 {
-                    communicationMergeFields.AddOrIgnore( parts.First().Replace( '.', '_' ), parts.Last().Replace( '.', '_' ) );
+                    communicationMergeFields.TryAdd( parts.First().Replace( '.', '_' ), parts.Last().Replace( '.', '_' ) );
                 }
             }
 
@@ -1733,13 +1733,22 @@ namespace RockWeb.Blocks.Event
                     {
                         var groupMemberService = new GroupMemberService( rockContext );
                         var groupMemberQry = groupMemberService.Queryable().AsNoTracking();
+                        bool isFilterModeApplied = false;
                         foreach ( var attribute in groupMemberAttributes )
                         {
                             var filterControl = phRegistrantsRegistrantFormFieldFilters.FindControl( FILTER_ATTRIBUTE_PREFIX + attribute.Id.ToString() );
-                            groupMemberQry = attribute.FieldType.Field.ApplyAttributeQueryFilter( groupMemberQry, filterControl, attribute, groupMemberService, Rock.Reporting.FilterMode.SimpleFilter );
+                            var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
+                            if ( filterValues.Any( a => a.IsNotNullOrWhiteSpace() ) )
+                            {
+                                isFilterModeApplied = true;
+                                groupMemberQry = attribute.FieldType.Field.ApplyAttributeQueryFilter( groupMemberQry, filterControl, attribute, groupMemberService, Rock.Reporting.FilterMode.SimpleFilter );
+                            }
                         }
 
-                        qry = qry.Where( r => groupMemberQry.Any( g => g.Id == r.GroupMemberId ) );
+                        if ( isFilterModeApplied )
+                        {
+                            qry = qry.Where( r => groupMemberQry.Any( g => g.Id == r.GroupMemberId ) );
+                        }
                     }
                 }
 
@@ -1793,7 +1802,7 @@ namespace RockWeb.Blocks.Event
                             groupMemberIds.Add( groupMember.Id );
 
                             string linkedPageUrl = LinkedPageUrl( AttributeKey.GroupDetailPage, new Dictionary<string, string> { { "GroupId", groupMember.GroupId.ToString() } } );
-                            GroupLinks.AddOrIgnore(
+                            GroupLinks.TryAdd(
                                 groupMember.GroupId,
                                 isExporting ? groupMember.Group.Name : string.Format( "<a href='{0}'>{1}</a>", linkedPageUrl, groupMember.Group.Name ) );
                         }
@@ -1857,7 +1866,7 @@ namespace RockWeb.Blocks.Event
                                     .Select( f => f.Attribute )
                                     .ToList()
                                 .ForEach( a => attributes
-                                    .AddOrIgnore( a.Id.ToString() + a.Key, a ) );
+                                    .TryAdd( a.Id.ToString() + a.Key, a ) );
 
                             // Initialize the grid's object list
                             gRegistrants.ObjectList = new Dictionary<string, object>();

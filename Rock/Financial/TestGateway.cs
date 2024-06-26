@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Globalization;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -111,7 +112,7 @@ namespace Rock.Financial
         Order = 9 )]
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.FINANCIAL_GATEWAY_TEST_GATEWAY )]
-    public class TestGateway : GatewayComponent, IAutomatedGatewayComponent, IObsidianHostedGatewayComponent, IHostedGatewayComponent, IFeeCoverageGatewayComponent, ISettlementGateway
+    public class TestGateway : GatewayComponent, IAutomatedGatewayComponent, IObsidianHostedGatewayComponent, IHostedGatewayComponent, IFeeCoverageGatewayComponent, ISettlementGateway, IScheduledNumberOfPaymentsGateway
     {
         #region Attribute Keys
 
@@ -258,6 +259,7 @@ namespace Rock.Financial
                 values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ) );
                 values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_WEEKLY ) );
                 values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_BIWEEKLY ) );
+                values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_FIRST_AND_FIFTEENTH ) );
                 values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEMONTHLY ) );
                 values.Add( DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_MONTHLY ) );
                 return values;
@@ -383,27 +385,28 @@ namespace Rock.Financial
         /// <returns></returns>
         public override FinancialScheduledTransaction AddScheduledPayment( FinancialGateway financialGateway, PaymentSchedule schedule, PaymentInfo paymentInfo, out string errorMessage )
         {
-            errorMessage = string.Empty;
-
             if ( ValidateCard( financialGateway, paymentInfo, out errorMessage ) )
             {
-                var scheduledTransaction = new FinancialScheduledTransaction();
-                scheduledTransaction.IsActive = true;
-                scheduledTransaction.StartDate = schedule.StartDate;
-                scheduledTransaction.NextPaymentDate = schedule.StartDate;
-                scheduledTransaction.TransactionCode = "T" + RockDateTime.Now.ToString( "yyyyMMddHHmmssFFF" );
-                scheduledTransaction.GatewayScheduleId = "Subscription_" + RockDateTime.Now.ToString( "yyyyMMddHHmmssFFF" );
-                scheduledTransaction.LastStatusUpdateDateTime = RockDateTime.Now;
-                scheduledTransaction.Status = FinancialScheduledTransactionStatus.Active;
-                scheduledTransaction.StatusMessage = "active";
-
-                scheduledTransaction.FinancialPaymentDetail = new FinancialPaymentDetail()
+                var scheduledTransaction = new FinancialScheduledTransaction
                 {
-                    ExpirationMonth = ( paymentInfo as ReferencePaymentInfo )?.PaymentExpirationDate?.Month,
-                    ExpirationYear = ( paymentInfo as ReferencePaymentInfo )?.PaymentExpirationDate?.Year,
-                    CurrencyTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() ),
-                    AccountNumberMasked = paymentInfo.MaskedNumber,
-                    CreditCardTypeValueId = CreditCardPaymentInfo.GetCreditCardTypeFromCreditCardNumber( paymentInfo.MaskedNumber )?.Id ?? DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.CREDITCARD_TYPE_VISA.AsGuid() )
+                    IsActive = true,
+                    StartDate = schedule.StartDate,
+                    NextPaymentDate = schedule.StartDate,
+                    TransactionCode = "T" + RockDateTime.Now.ToString( "yyyyMMddHHmmssFFF" ),
+                    GatewayScheduleId = "Subscription_" + RockDateTime.Now.ToString( "yyyyMMddHHmmssFFF" ),
+                    LastStatusUpdateDateTime = RockDateTime.Now,
+                    Status = FinancialScheduledTransactionStatus.Active,
+                    StatusMessage = "active",
+                    NumberOfPayments = schedule.NumberOfPayments,
+
+                    FinancialPaymentDetail = new FinancialPaymentDetail()
+                    {
+                        ExpirationMonth = ( paymentInfo as ReferencePaymentInfo )?.PaymentExpirationDate?.Month,
+                        ExpirationYear = ( paymentInfo as ReferencePaymentInfo )?.PaymentExpirationDate?.Year,
+                        CurrencyTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() ),
+                        AccountNumberMasked = "************6789",
+                        CreditCardTypeValueId = CreditCardPaymentInfo.GetCreditCardTypeFromCreditCardNumber( "************6789" )?.Id ?? DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.CREDITCARD_TYPE_VISA.AsGuid() )
+                    }
                 };
 
                 return scheduledTransaction;
@@ -470,6 +473,7 @@ namespace Rock.Financial
             if ( !transaction.IsActive )
             {
                 transaction.NextPaymentDate = null;
+                transaction.Status = FinancialScheduledTransactionStatus.Canceled;
             }
 
             errorMessage = string.Empty;
@@ -1051,7 +1055,23 @@ namespace Rock.Financial
             {
                 var expirationMonth = mmyy.Substring( 0, 2 ).AsIntegerOrNull() ?? 1;
                 var expirationYear = mmyy.Substring( 2, 2 ).AsIntegerOrNull() ?? 00;
-                var fourDigitYear = System.Globalization.CultureInfo.CurrentCulture.Calendar.ToFourDigitYear( expirationYear );
+
+                /*
+                     5/13/2024 - NA
+
+                      Calendar.TwoDigitYearMax defaulted to 2029 for GregorianCalendar and other Gregorian-like calendars.
+                      That value meant that two-digit years from 00 to 29 translated to 2000-2029. Two-digit years from
+                      30 to 99 translated to 1930-1999. 
+
+                      In .NET 8, the default TwoDigitYearMax property value for GregorianCalendar and other
+                      Gregorian-like calendars has now changed from 2029 to 2049.
+
+                      Therefore, please remove this after we update to .NET 8.
+
+                     Reason: See https://learn.microsoft.com/en-us/dotnet/core/compatibility/globalization/8.0/twodigityearmax-default
+                */
+
+                var fourDigitYear = RockDateTime.ToFourDigitYearForCreditCardExpiration( expirationYear );
                 expirationDate = new DateTime( fourDigitYear, expirationMonth, 1 );
             }
 

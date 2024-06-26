@@ -178,6 +178,7 @@
     <Compile Include="Controllers\CodeGenerated\SnippetsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\SnippetTypesController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\SystemPhoneNumbersController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\ThemesController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowActionFormSectionsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowFormBuilderTemplatesController.CodeGenerated.cs" />
     <Compile Include="Controllers\EntitySetsController.cs" />
@@ -188,6 +189,7 @@
     <Compile Include="Handler\RockHttpControllerSelector.cs" />
     <Compile Include="Handler\ServiceScopeHandler.cs" />
     <Compile Include="HttpRequestMessageWrapper.cs" />
+    <Compile Include="ProducesResponseTypeAttribute.cs" />
     <Compile Include="Utility\RockMessageResponseContext.cs" />
     <Compile Include="v2\ControlsController.cs" />
     <Compile Include="v2\TvController.cs" />

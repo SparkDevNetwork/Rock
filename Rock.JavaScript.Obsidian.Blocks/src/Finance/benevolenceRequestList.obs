@@ -1,0 +1,436 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          :customActions="customActions"
+          itemTerm="Benevolence Request"
+          :entityTypeGuid="EntityType.BenevolenceRequest"
+          stickyHeader
+          liveUpdates
+          gridSettings
+          :gridSettingsActive="hasSettingsFilters"
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          @gridSettingsClick="isGridSettingsVisible = true"
+          @filteredRowsChanged="onFilteredRowsChanged"
+          @selectItem="onSelectItem">
+
+        <DateColumn name="date"
+                    title="Date"
+                    field="date"
+                    :filter="dateValueFilter"
+                    visiblePriority="xs" />
+
+        <TextColumn name="campus"
+                    title="Campus"
+                    field="campus"
+                    :filter="textValueFilter"
+                    visiblePriority="md" />
+
+        <Column name="requestedBy"
+                title="Name"
+                :filter="textValueFilter"
+                :filterValue="getPersonNameFilterValue"
+                visiblePriority="xs">
+            <template #format="{ row }">
+                <span v-if="row.requestedBy"><a :href="`/person/${row.requestedByIdKey}`">{{ row.requestedByFullName }}</a></span>
+                <span v-else>{{ row.firstName }} {{ row.lastName }}</span>
+            </template>
+
+            <template #skeleton>
+                <div class="skeleton skeleton-text skeleton-rounded" />
+            </template>
+        </Column>
+
+        <TextColumn name="connectionStatus"
+                    title="Connection Status"
+                    field="connectionStatus"
+                    :filter="textValueFilter"
+                    visiblePriority="md" />
+
+        <TextColumn v-if="!config.options?.columnsToHide?.includes(ColumnKey.GovernmentId)"
+                    name="governmentId"
+                    title="Government ID"
+                    field="governmentId"
+                    :filter="textValueFilter"
+                    visiblePriority="md" />
+
+        <TextColumn name="requestText"
+                    title="Request"
+                    field="requestText"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <PersonColumn v-if="!config.options?.columnsToHide?.includes(ColumnKey.AssignedTo)"
+                      name="caseWorker"
+                      title="Assigned To"
+                      field="caseWorker"
+                      :hideAvatar="true"
+                      :filter="pickExistingValueFilter"
+                      :filterValue="getAssignedToFilterValue"
+                      visiblePriority="md" />
+
+        <TextColumn name="resultSummary"
+                    title="Result Summary"
+                    field="resultSummary"
+                    :filter="textValueFilter"
+                    visiblePriority="md" />
+
+        <Column name="resultSpecifics"
+                title="Result Specifics"
+                :filter="textValueFilter"
+                :filterValue="getResultSpecificsFilterValue"
+                visiblePriority="md"
+                width="20%">
+            <template #format="{ row }">
+                <div class="text-lg">
+                    <div v-for="result of row.resultSpecifics">
+                        <div v-if="result.amount">{{ result.result }} ({{ toCurrencyOrNull(result.amount, config.options?.currencyInfo) }})</div>
+                        <div v-else="result.amount">{{ result.result }}</div>
+                    </div>
+                </div>
+            </template>
+
+            <template #skeleton>
+                <div class="skeleton skeleton-text skeleton-rounded" />
+            </template>
+        </Column>
+
+        <Column name="requestStatus"
+                title="Status"
+                :filter="textValueFilter"
+                :filterValue="getRequestStatusFilterValue"
+                visiblePriority="md">
+            <template #format="{ row }">
+                <div>
+                    <span :class="getStatusLabel(row.requestStatus)">{{ row.requestStatus }}</span>
+                </div>
+            </template>
+
+            <template #skeleton>
+                <div class="skeleton skeleton-text skeleton-rounded" />
+            </template>
+        </Column>
+
+        <CurrencyColumn v-if="!config.options?.columnsToHide?.includes(ColumnKey.TotalAmount)"
+                        name="totalAmount"
+                        title="Total Amount"
+                        field="totalAmount"
+                        :filter="numberValueFilter"
+                        visiblePriority="md" />
+
+        <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
+
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+
+        <template v-if="!config.options?.columnsToHide?.includes(ColumnKey.TotalResults)" #gridFooterAppend>
+            <div class="d-flex" style="background-color: #faf7f5; padding: var(--table-cell-padding-y) 52px var(--table-cell-padding-y) var(--table-cell-padding-x);">
+                <div class="flex-grow-1"></div>
+                <div>
+                    <SectionHeader title="Total Results">
+                    </SectionHeader>
+                    <div v-for="[key, value] of Object.entries(resultTotals)">
+                        <div class="row">
+                            <div class="col-xs-8">{{ key }}: </div>
+                            <div class="col-xs-4 text-right">{{ toCurrencyOrNull(value, config.options?.currencyInfo) }}</div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-8"><b>Total: </b></div>
+                        <div class="col-xs-4 text-right"><b>{{ toCurrencyOrNull(totalAmount, config.options?.currencyInfo) }}</b></div>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </Grid>
+
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible"
+                       :benevolenceTypeItems="config.options?.benevolenceTypes ?? []"
+                       :caseWorkerItems="config.options?.caseWorkers ?? []" />
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { AttributeColumns, PersonColumn, pickExistingValueFilter, TextColumn, textValueFilter, dateValueFilter, numberValueFilter, DeleteColumn, DateColumn, Column, CurrencyColumn } from "@Obsidian/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import { BenevolenceRequestListOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceRequestList/benevolenceRequestListOptionsBag";
+    import { BenevolenceResultBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceRequestList/benevolenceResultBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { ColumnKey, GridSettingsOptions, NavigationUrlKey, PreferenceKey } from "./BenevolenceRequestList/types.partial";
+    import { computed, reactive, ref, watch } from "vue";
+    import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
+    import { GridAction, IGridState } from "@Obsidian/Types/Controls/grid";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+    import GridSettingsModal from "./BenevolenceRequestList/gridSettingsModal.partial.obs";
+
+    const config = useConfigurationValues<ListBlockBox<BenevolenceRequestListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const resultTotals = ref<Record<string, number>>({});
+    const totalAmount = ref(0);
+
+    const isGridSettingsVisible = ref(false);
+    const gridSettings = ref<GridSettingsOptions>({
+        startDateLowerValue: preferences.getValue(PreferenceKey.FilterStartDateLowerValue),
+        startDateUpperValue: preferences.getValue(PreferenceKey.FilterStartDateUpperValue),
+        firstName: preferences.getValue(PreferenceKey.FilterFirstName),
+        lastName: preferences.getValue(PreferenceKey.FilterLastName),
+        governmentId: preferences.getValue(PreferenceKey.FilterGovernmentId),
+        caseWorker: preferences.getValue(PreferenceKey.FilterCaseWorker),
+        result: JSON.parse(preferences.getValue(PreferenceKey.FilterResult) || "{}"),
+        requestStatus: JSON.parse(preferences.getValue(PreferenceKey.FilterRequestStatus) || "{}"),
+        benevolenceTypes: JSON.parse(preferences.getValue(PreferenceKey.FilterBenevolenceTypes) || "[]"),
+        campus: JSON.parse(preferences.getValue(PreferenceKey.FilterCampus) || "{}"),
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+
+    /** `true` if the grid settings is performing any filtering. */
+    const hasSettingsFilters = computed((): boolean => {
+        return !!gridSettings.value.startDateLowerValue
+            || !!gridSettings.value.startDateUpperValue
+            || !!gridSettings.value.firstName
+            || !!gridSettings.value.lastName
+            || !!gridSettings.value.governmentId
+            || !!gridSettings.value.caseWorker
+            || !!gridSettings.value.result?.value
+            || !!gridSettings.value.requestStatus?.value
+            || !!gridSettings.value.campus?.value
+            || gridSettings.value.benevolenceTypes?.length > 0;
+    });
+
+    /**
+     * The custom actions supported by this grid.
+     */
+    const customActions = computed((): GridAction[] => {
+        let actions: GridAction[] = [];
+
+        if (config.options?.canAdministrate == true) {
+            actions.push({
+                title: "Options",
+                iconCssClass: "fa fa-gear",
+                handler: onBenevolenceTypesClick
+            });
+        }
+
+        return actions;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            if (result.data.rows) {
+                calculateTotals(result.data.rows);
+            }
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    /**
+     * Gets the corresponding class for the request status.
+     * @param status The request status.
+     */
+    function getStatusLabel(status: string): string {
+        switch (status) {
+            case "Approved":
+                return "label label-success";
+            case "Denied":
+                return "label label-danger";
+            case "Pending":
+                return "label label-default";
+            default:
+                return "label label-info";
+        }
+    }
+
+    /**
+    * Gets the filter value text to use for the status column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getRequestStatusFilterValue(row: Record<string, unknown>): string {
+        return row.status as string;
+
+    }
+
+    /**
+    * Gets the filter value text to use for the result specifics column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getResultSpecificsFilterValue(row: Record<string, unknown>): string {
+        let filterValue = "";
+
+        for (const account of row.resultSpecifics as BenevolenceResultBag[]) {
+            filterValue += ` ${account.result} (${toCurrencyOrNull(account.amount, config.options?.currencyInfo)}`;
+        }
+
+        return filterValue;
+    }
+
+    /**
+    * Gets the filter value text to use for the name column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getPersonNameFilterValue(row: Record<string, unknown>): string {
+        const requestedBy = row.requestedBy as PersonFieldBag;
+
+        if (requestedBy) {
+            return row.requestedByFullName as string;
+        }
+        else {
+            return `${row.firstName} ${row.lastName}`;
+        }
+    }
+
+    /**
+    * Gets the filter value text to use for the assigned to column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getAssignedToFilterValue(row: Record<string, unknown>): string {
+        const person = row["caseWorker"] as PersonFieldBag;
+        return !person ? "" : `${person.nickName} ${person.lastName}`;
+    }
+
+    /**
+    * Calculates the account summary totals at the bottom of the grid.
+    *
+    * @param rows The rows that will be used for the calculation.
+    */
+    function calculateTotals(rows: Record<string, unknown>[]): void {
+
+        totalAmount.value = 0;
+        resultTotals.value = {};
+
+        for (const row of rows) {
+            for (const result of row.resultSpecifics as BenevolenceResultBag[]) {
+                if (result.result) {
+                    if (result.result in resultTotals) {
+                        resultTotals.value[result.result] += result.amount ?? 0;
+                    }
+                    else {
+                        resultTotals.value[result.result] = result.amount ?? 0;
+                    }
+
+                    totalAmount.value += result.amount ?? 0;
+                }
+            }
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+        }
+    }
+
+    /**
+     * Called when a row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete benevolence request.");
+        }
+    }
+
+    /**
+     * Called when the Add button has been clicked by the indivual.
+     */
+    function onAddItem(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
+        }
+    }
+
+    /**
+    * Called when the rows that match the user filters have changed.
+    *
+    * @param state The state object that describes the grid.
+    */
+    function onFilteredRowsChanged(state: IGridState): void {
+        calculateTotals(state.filteredRows as Record<string, unknown>[]);
+    }
+
+    /**
+    * Called when the individual picks the "options" action
+    * from the grid menu.
+    *
+    * @param state The state object that describes the grid.
+    */
+    function onBenevolenceTypesClick(_: IGridState): void {
+        if (config.navigationUrls?.[NavigationUrlKey.ConfigurationPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.ConfigurationPage];
+        }
+    }
+
+    // #endregion
+
+    watch(gridSettings, async () => {
+        preferences.setValue(PreferenceKey.FilterStartDateLowerValue, gridSettings.value?.startDateLowerValue ?? "");
+        preferences.setValue(PreferenceKey.FilterStartDateUpperValue, gridSettings.value?.startDateUpperValue ?? "");
+        preferences.setValue(PreferenceKey.FilterFirstName, gridSettings.value.firstName ?? "");
+        preferences.setValue(PreferenceKey.FilterLastName, gridSettings.value.lastName ?? "");
+        preferences.setValue(PreferenceKey.FilterGovernmentId, gridSettings.value.governmentId ?? "");
+        preferences.setValue(PreferenceKey.FilterCaseWorker, gridSettings.value.caseWorker ?? "");
+        preferences.setValue(PreferenceKey.FilterResult, JSON.stringify(gridSettings.value.result));
+        preferences.setValue(PreferenceKey.FilterRequestStatus, JSON.stringify(gridSettings.value.requestStatus));
+        preferences.setValue(PreferenceKey.FilterBenevolenceTypes, JSON.stringify(gridSettings.value.benevolenceTypes));
+        preferences.setValue(PreferenceKey.FilterCampus, JSON.stringify(gridSettings.value.campus));
+
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
+    });
+
+    gridDataSource.value = loadGridData();
+</script>

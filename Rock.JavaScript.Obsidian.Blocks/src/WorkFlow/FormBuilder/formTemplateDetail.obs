@@ -17,7 +17,7 @@
             <ViewPanel :modelValue="templateDetail" />
 
             <div class="actions">
-                <RockButton v-if="isEditable" btnType="primary" accesskey="e" @click="onEditClick">Edit</RockButton>
+                <RockButton v-if="isEditable" btnType="primary" shortcutKey="e" @click="onEditClick">Edit</RockButton>
             </div>
         </div>
 

@@ -27,6 +27,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Finance.FinancialGatewayDetail;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Finance
@@ -47,7 +48,7 @@ namespace Rock.Blocks.Finance
 
     [Rock.SystemGuid.EntityTypeGuid( "68cc9376-8123-4749-aca0-1e7ed8459704" )]
     [Rock.SystemGuid.BlockTypeGuid( "c12c615c-384d-478e-892d-0f353e2ef180" )]
-    public class FinancialGatewayDetail : RockDetailBlockType
+    public class FinancialGatewayDetail : RockEntityDetailBlockType<FinancialGateway, FinancialGatewayBag>
     {
         #region Keys
 
@@ -71,18 +72,14 @@ namespace Rock.Blocks.Finance
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var box = new DetailBlockBox<FinancialGatewayBag, FinancialGatewayDetailOptionsBag>();
+            var box = new DetailBlockBox<FinancialGatewayBag, FinancialGatewayDetailOptionsBag>();
 
-                SetBoxInitialEntityState( box, rockContext );
+            SetBoxInitialEntityState( box );
 
-                box.NavigationUrls = GetBoxNavigationUrls();
-                box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<FinancialGateway>();
+            box.NavigationUrls = GetBoxNavigationUrls();
+            box.Options = GetBoxOptions( box.IsEditable );
 
-                return box;
-            }
+            return box;
         }
 
         /// <summary>
@@ -92,7 +89,7 @@ namespace Rock.Blocks.Finance
         /// <param name="isEditable"><c>true</c> if the entity is editable; otherwise <c>false</c>.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns>The options that provide additional details to the block.</returns>
-        private FinancialGatewayDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext )
+        private FinancialGatewayDetailOptionsBag GetBoxOptions( bool isEditable )
         {
             var options = new FinancialGatewayDetailOptionsBag();
 
@@ -107,7 +104,7 @@ namespace Rock.Blocks.Finance
         /// <param name="rockContext">The rock context.</param>
         /// <param name="errorMessage">On <c>false</c> return, contains the error message.</param>
         /// <returns><c>true</c> if the FinancialGateway is valid, <c>false</c> otherwise.</returns>
-        private bool ValidateFinancialGateway( FinancialGateway financialGateway, RockContext rockContext, out string errorMessage )
+        private bool ValidateFinancialGateway( FinancialGateway financialGateway, out string errorMessage )
         {
             errorMessage = null;
 
@@ -120,9 +117,9 @@ namespace Rock.Blocks.Finance
         /// </summary>
         /// <param name="box">The box to be populated.</param>
         /// <param name="rockContext">The rock context.</param>
-        private void SetBoxInitialEntityState( DetailBlockBox<FinancialGatewayBag, FinancialGatewayDetailOptionsBag> box, RockContext rockContext )
+        private void SetBoxInitialEntityState( DetailBlockBox<FinancialGatewayBag, FinancialGatewayDetailOptionsBag> box )
         {
-            var entity = GetInitialEntity( rockContext );
+            var entity = GetInitialEntity();
 
             if ( entity == null )
             {
@@ -133,7 +130,7 @@ namespace Rock.Blocks.Finance
             var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
             box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
-            entity.LoadAttributes( rockContext );
+            entity.LoadAttributes( RockContext );
 
             if ( entity.Id != 0 )
             {
@@ -141,7 +138,6 @@ namespace Rock.Blocks.Finance
                 if ( isViewable )
                 {
                     box.Entity = GetEntityBagForView( entity );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
                 {
@@ -154,13 +150,13 @@ namespace Rock.Blocks.Finance
                 if ( box.IsEditable )
                 {
                     box.Entity = GetEntityBagForEdit( entity );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
                 {
                     box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( FinancialGateway.FriendlyTypeName );
                 }
             }
+            PrepareDetailBox( box, entity );
         }
 
         /// <summary>
@@ -188,12 +184,8 @@ namespace Rock.Blocks.Finance
             };
         }
 
-        /// <summary>
-        /// Gets the bag for viewing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for view purposes.</param>
-        /// <returns>A <see cref="FinancialGatewayBag"/> that represents the entity.</returns>
-        private FinancialGatewayBag GetEntityBagForView( FinancialGateway entity )
+        /// <inheritdoc/>
+        protected override FinancialGatewayBag GetEntityBagForView( FinancialGateway entity )
         {
             if ( entity == null )
             {
@@ -207,12 +199,8 @@ namespace Rock.Blocks.Finance
             return bag;
         }
 
-        /// <summary>
-        /// Gets the bag for editing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for edit purposes.</param>
-        /// <returns>A <see cref="FinancialGatewayBag"/> that represents the entity.</returns>
-        private FinancialGatewayBag GetEntityBagForEdit( FinancialGateway entity )
+        /// <inheritdoc/>
+        protected override FinancialGatewayBag GetEntityBagForEdit( FinancialGateway entity )
         {
             if ( entity == null )
             {
@@ -238,41 +226,35 @@ namespace Rock.Blocks.Finance
             return attribute.Key != "Order" && attribute.Key != "Active";
         }
 
-        /// <summary>
-        /// Updates the entity from the data in the save box.
-        /// </summary>
-        /// <param name="entity">The entity to be updated.</param>
-        /// <param name="box">The box containing the information to be updated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns><c>true</c> if the box was valid and the entity was updated, <c>false</c> otherwise.</returns>
-        private bool UpdateEntityFromBox( FinancialGateway entity, DetailBlockBox<FinancialGatewayBag, FinancialGatewayDetailOptionsBag> box, RockContext rockContext )
+        /// <inheritdoc/>
+        protected override bool UpdateEntityFromBox( FinancialGateway entity, ValidPropertiesBox<FinancialGatewayBag> box )
         {
             if ( box.ValidProperties == null )
             {
                 return false;
             }
 
-            box.IfValidProperty( nameof( box.Entity.BatchTimeOffsetTicks ),
-                () => entity.BatchTimeOffsetTicks = GetTimespan( box.Entity.BatchTimeOffsetTicks ) );
+            box.IfValidProperty( nameof( box.Bag.BatchTimeOffsetTicks ),
+                () => entity.BatchTimeOffsetTicks = GetTimespan( box.Bag.BatchTimeOffsetTicks ) );
 
-            box.IfValidProperty( nameof( box.Entity.Description ),
-                () => entity.Description = box.Entity.Description );
+            box.IfValidProperty( nameof( box.Bag.Description ),
+                () => entity.Description = box.Bag.Description );
 
-            box.IfValidProperty( nameof( box.Entity.EntityType ),
-                () => entity.EntityTypeId = box.Entity.EntityType.GetEntityId<EntityType>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.EntityType ),
+                () => entity.EntityTypeId = box.Bag.EntityType.GetEntityId<EntityType>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.IsActive ),
-                () => entity.IsActive = box.Entity.IsActive );
+            box.IfValidProperty( nameof( box.Bag.IsActive ),
+                () => entity.IsActive = box.Bag.IsActive );
 
-            box.IfValidProperty( nameof( box.Entity.Name ),
-                () => entity.Name = box.Entity.Name );
+            box.IfValidProperty( nameof( box.Bag.Name ),
+                () => entity.Name = box.Bag.Name );
 
-            box.IfValidProperty( nameof( box.Entity.AttributeValues ),
+            box.IfValidProperty( nameof( box.Bag.AttributeValues ),
                 () =>
                 {
-                    entity.LoadAttributes( rockContext );
+                    entity.LoadAttributes( RockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson );
                 } );
 
             return true;
@@ -290,15 +272,10 @@ namespace Rock.Blocks.Finance
             }
         }
 
-        /// <summary>
-        /// Gets the initial entity from page parameters or creates a new entity
-        /// if page parameters requested creation.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns>The <see cref="FinancialGateway"/> to be viewed or edited on the page.</returns>
-        private FinancialGateway GetInitialEntity( RockContext rockContext )
+        /// <inheritdoc/>
+        protected override FinancialGateway GetInitialEntity()
         {
-            return GetInitialEntity<FinancialGateway, FinancialGatewayService>( rockContext, PageParameterKey.FinancialGatewayId );
+            return GetInitialEntity<FinancialGateway, FinancialGatewayService>( RockContext, PageParameterKey.FinancialGatewayId );
         }
 
         /// <summary>
@@ -314,46 +291,9 @@ namespace Rock.Blocks.Finance
         }
 
         /// <inheritdoc/>
-        protected override string RenewSecurityGrantToken()
+        protected override bool TryGetEntityForEditAction( string idKey, out FinancialGateway entity, out BlockActionResult error )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var entity = GetInitialEntity( rockContext );
-
-                if ( entity != null )
-                {
-                    entity.LoadAttributes( rockContext );
-                }
-
-                return GetSecurityGrantToken( entity );
-            }
-        }
-
-        /// <summary>
-        /// Gets the security grant token that will be used by UI controls on
-        /// this block to ensure they have the proper permissions.
-        /// </summary>
-        /// <returns>A string that represents the security grant token.</string>
-        private string GetSecurityGrantToken( FinancialGateway entity )
-        {
-            var securityGrant = new Rock.Security.SecurityGrant();
-
-            securityGrant.AddRulesForAttributes( entity, RequestContext.CurrentPerson );
-
-            return securityGrant.ToToken();
-        }
-
-        /// <summary>
-        /// Attempts to load an entity to be used for an edit action.
-        /// </summary>
-        /// <param name="idKey">The identifier key of the entity to load.</param>
-        /// <param name="rockContext">The database context to load the entity from.</param>
-        /// <param name="entity">Contains the entity that was loaded when <c>true</c> is returned.</param>
-        /// <param name="error">Contains the action error result when <c>false</c> is returned.</param>
-        /// <returns><c>true</c> if the entity was loaded and passed security checks.</returns>
-        private bool TryGetEntityForEditAction( string idKey, RockContext rockContext, out FinancialGateway entity, out BlockActionResult error )
-        {
-            var entityService = new FinancialGatewayService( rockContext );
+            var entityService = new FinancialGatewayService( RockContext );
             error = null;
 
             // Determine if we are editing an existing entity or creating a new one.
@@ -398,22 +338,20 @@ namespace Rock.Blocks.Finance
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                entity.LoadAttributes( rockContext );
-
-                var box = new DetailBlockBox<FinancialGatewayBag, FinancialGatewayDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity )
-                };
-
-                return ActionOk( box );
+                return actionError;
             }
+
+            entity.LoadAttributes( RockContext );
+
+            var bag = GetEntityBagForEdit( entity );
+
+            return ActionOk( new ValidPropertiesBox<FinancialGatewayBag>
+            {
+                Bag = bag,
+                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
+            } );
         }
 
         /// <summary>
@@ -422,48 +360,45 @@ namespace Rock.Blocks.Finance
         /// <param name="box">The box that contains all the information required to save.</param>
         /// <returns>A new entity bag to be used when returning to view mode, or the URL to redirect to after creating a new entity.</returns>
         [BlockAction]
-        public BlockActionResult Save( DetailBlockBox<FinancialGatewayBag, FinancialGatewayDetailOptionsBag> box )
+        public BlockActionResult Save( ValidPropertiesBox<FinancialGatewayBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )
             {
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                var isWeekly = box.Entity.BatchSchedule == BatchWeekly;
-                if ( isWeekly && int.TryParse( box.Entity.BatchStartDay, out int intValue ) && Enum.IsDefined( typeof( DayOfWeek ), intValue ) )
-                {
-                    entity.BatchDayOfWeek = ( DayOfWeek ) intValue;
-                }
-                else
-                {
-                    entity.BatchDayOfWeek = null;
-                }
-
-                // Ensure everything is valid before saving.
-                if ( !ValidateFinancialGateway( entity, rockContext, out var validationMessage ) )
-                {
-                    return ActionBadRequest( validationMessage );
-                }
-
-                rockContext.WrapTransaction( () =>
-                {
-                    rockContext.SaveChanges();
-                    entity.SaveAttributeValues( rockContext );
-                } );
-
-                return ActionOk( this.GetParentPageUrl( new Dictionary<string, string>
-                {
-                    [PageParameterKey.FinancialGatewayId] = entity.IdKey
-                } ) );
+                return actionError;
             }
+
+            // Update the entity instance from the information in the bag.
+            if ( !UpdateEntityFromBox( entity, box ) )
+            {
+                return ActionBadRequest( "Invalid data." );
+            }
+
+            var isWeekly = box.Bag.BatchSchedule == BatchWeekly;
+            if ( isWeekly && int.TryParse( box.Bag.BatchStartDay, out int intValue ) && Enum.IsDefined( typeof( DayOfWeek ), intValue ) )
+            {
+                entity.BatchDayOfWeek = ( DayOfWeek ) intValue;
+            }
+            else
+            {
+                entity.BatchDayOfWeek = null;
+            }
+
+            // Ensure everything is valid before saving.
+            if ( !ValidateFinancialGateway( entity, out var validationMessage ) )
+            {
+                return ActionBadRequest( validationMessage );
+            }
+
+            RockContext.WrapTransaction( () =>
+            {
+                RockContext.SaveChanges();
+                entity.SaveAttributeValues( RockContext );
+            } );
+
+            return ActionOk( this.GetParentPageUrl( new Dictionary<string, string>
+            {
+                [PageParameterKey.FinancialGatewayId] = entity.IdKey
+            } ) );
         }
 
         /// <summary>
@@ -474,25 +409,22 @@ namespace Rock.Blocks.Finance
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new FinancialGatewayService( RockContext );
+
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                var entityService = new FinancialGatewayService( rockContext );
-
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                return ActionOk( this.GetParentPageUrl() );
+                return actionError;
             }
+
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
+
+            return ActionOk( this.GetParentPageUrl() );
         }
 
         /// <summary>
@@ -502,84 +434,27 @@ namespace Rock.Blocks.Finance
         [BlockAction]
         public BlockActionResult GetInactiveGatewayMessage()
         {
-            using ( var rockContext = new RockContext() )
+            var entity = GetInitialEntity();
+
+            var message = "An 'Inactive' status will prevent the gateway from being shown in the gateway picker for Registration templates if it is not already selected. An 'Inactive' status DOES NOT prevent charges from being processed for a registration where the gateway is already assigned.";
+
+            if ( entity == null || entity.Id == 0 )
             {
-                var entity = GetInitialEntity( rockContext );
-
-                var message = "An 'Inactive' status will prevent the gateway from being shown in the gateway picker for Registration templates if it is not already selected. An 'Inactive' status DOES NOT prevent charges from being processed for a registration where the gateway is already assigned.";
-
-                if ( entity == null || entity.Id == 0 )
-                {
-                    // This is a new gateway so show the message but don't bother looking for registrations using it.
-                    return ActionOk(new { inactiveGatewayMessage = message } );
-                }
-
-                var activeRegistrations = new FinancialGatewayService( new RockContext() ).GetRegistrationTemplatesForGateway( entity.Id, false ).ToList();
-                if ( !activeRegistrations.Any() )
-                {
-                    // This gateway isn't used by any registrations so show the message but don't bother looking for registrations using it.
-                    return ActionOk( new { inactiveGatewayMessage = message } );
-                }
-
-                var registrationNames = " To prevent this choose a different payment gateway for these registrations: <b>'" + string.Join( "', '", activeRegistrations.Select( r => r.Name ) ).Trim().TrimEnd( ',' ) + "'</b>";
-                message += registrationNames;
-
+                // This is a new gateway so show the message but don't bother looking for registrations using it.
                 return ActionOk( new { inactiveGatewayMessage = message } );
             }
-        }
 
-        /// <summary>
-        /// Refreshes the list of attributes that can be displayed for editing
-        /// purposes based on any modified values on the entity.
-        /// </summary>
-        /// <param name="box">The box that contains all the information about the entity being edited.</param>
-        /// <returns>A box that contains the entity and attribute information.</returns>
-        [BlockAction]
-        public BlockActionResult RefreshAttributes( DetailBlockBox<FinancialGatewayBag, FinancialGatewayDetailOptionsBag> box )
-        {
-            using ( var rockContext = new RockContext() )
+            var activeRegistrations = new FinancialGatewayService( new RockContext() ).GetRegistrationTemplatesForGateway( entity.Id, false ).ToList();
+            if ( !activeRegistrations.Any() )
             {
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                // Reload attributes based on the new property values.
-                entity.LoadAttributes( rockContext );
-
-                var refreshedBox = new DetailBlockBox<FinancialGatewayBag, FinancialGatewayDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity )
-                };
-
-                var oldAttributeGuids = box.Entity.Attributes.Values.Select( a => a.AttributeGuid ).ToList();
-                var newAttributeGuids = refreshedBox.Entity.Attributes.Values.Select( a => a.AttributeGuid );
-
-                // If the attributes haven't changed then return a 204 status code.
-                if ( oldAttributeGuids.SequenceEqual( newAttributeGuids ) )
-                {
-                    return ActionStatusCode( System.Net.HttpStatusCode.NoContent );
-                }
-
-                // Replace any values for attributes that haven't changed with
-                // the value sent by the client. This ensures any unsaved attribute
-                // value changes are not lost.
-                foreach ( var kvp in refreshedBox.Entity.Attributes )
-                {
-                    if ( oldAttributeGuids.Contains( kvp.Value.AttributeGuid ) )
-                    {
-                        refreshedBox.Entity.AttributeValues[kvp.Key] = box.Entity.AttributeValues[kvp.Key];
-                    }
-                }
-
-                return ActionOk( refreshedBox );
+                // This gateway isn't used by any registrations so show the message but don't bother looking for registrations using it.
+                return ActionOk( new { inactiveGatewayMessage = message } );
             }
+
+            var registrationNames = " To prevent this choose a different payment gateway for these registrations: <b>'" + string.Join( "', '", activeRegistrations.Select( r => r.Name ) ).Trim().TrimEnd( ',' ) + "'</b>";
+            message += registrationNames;
+
+            return ActionOk( new { inactiveGatewayMessage = message } );
         }
 
         #endregion

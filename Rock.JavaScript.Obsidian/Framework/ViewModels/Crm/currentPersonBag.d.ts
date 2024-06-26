@@ -21,6 +21,8 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
+
 /** Represents the currently logged in person. */
 export type CurrentPersonBag = {
     /** Gets or sets the email. */
@@ -32,6 +34,9 @@ export type CurrentPersonBag = {
     /** Gets or sets the full name. */
     fullName?: string | null;
 
+    /** Gets or set the unique identifier of the person. */
+    guid: Guid;
+
     /** Gets or sets the identifier key of the person. */
     idKey?: string | null;
 
@@ -40,4 +45,10 @@ export type CurrentPersonBag = {
 
     /** Gets or sets the name of the nick. */
     nickName?: string | null;
+
+    /** Gets or set the unique identifier of the person's primary alias. */
+    primaryAliasGuid: Guid;
+
+    /** Gets or set the identifier key of the person's primary alias. */
+    primaryAliasIdKey?: string | null;
 };

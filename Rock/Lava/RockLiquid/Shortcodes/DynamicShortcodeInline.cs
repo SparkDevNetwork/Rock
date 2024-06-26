@@ -22,8 +22,9 @@ using System.Linq;
 using System.Text.RegularExpressions;
 
 using DotLiquid;
+
+using Rock.Configuration;
 using Rock.Model;
-using Rock.Utility.Settings;
 using Rock.Web.Cache;
 
 namespace Rock.Lava.Shortcodes
@@ -49,7 +50,7 @@ namespace Rock.Lava.Shortcodes
         {
             // If the database is not connected, we do not have access to dynamic shortcodes.
             // This can occur when the Lava engine is started without an attached database.
-            if ( !RockInstanceConfig.DatabaseIsAvailable )
+            if ( !RockApp.Current.IsDatabaseAvailable() )
             {
                 return;
             }

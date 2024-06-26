@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Diagnostics;
 
 using Rock.Data;
 using Rock.Utility;
@@ -148,6 +149,8 @@ namespace Rock.Model
         /// <param name="segment">The segment.</param>
         internal SegmentUpdateResults UpdatePersonAliasPersonalizationDataForSegment( PersonalizationSegmentCache segment )
         {
+            var stopwatch = Stopwatch.StartNew();
+
             var rockContext = this.Context as RockContext;
             var personAliasService = new PersonAliasService( rockContext );
             var parameterExpression = personAliasService.ParameterExpression;
@@ -205,6 +208,17 @@ namespace Rock.Model
             if ( countAddedToSegment > 0 )
             {
                 rockContext.BulkInsert( personAliasPersonalizationsToInsert );
+            }
+
+            stopwatch.Stop();
+            var durationMilliseconds = stopwatch.Elapsed.TotalMilliseconds;
+
+            var segmentEntity = rockContext.Set<PersonalizationSegment>().FirstOrDefault( s => s.Id == segment.Id );
+
+            if ( segmentEntity != null )
+            {
+                segmentEntity.TimeToUpdateDurationMilliseconds = durationMilliseconds;
+                rockContext.SaveChanges();
             }
 
             return new SegmentUpdateResults( countAddedToSegment, countRemovedFromSegment );

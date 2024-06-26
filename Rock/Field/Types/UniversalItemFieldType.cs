@@ -548,7 +548,7 @@ namespace Rock.Field.Types
                 if ( field != null && controls.Count > i )
                 {
                     var value = field.GetEditValue( controls[i], fieldTypeAttribute.FieldConfigurationValues );
-                    configurationValues.AddOrIgnore( fieldTypeAttribute.Key, new ConfigurationValue( value ) );
+                    configurationValues.TryAdd( fieldTypeAttribute.Key, new ConfigurationValue( value ) );
                 }
             }
 

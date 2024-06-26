@@ -138,6 +138,8 @@ namespace Rock.Model
                 return false;
             }
 
+            // ignoring LearningClass,Id
+
             if ( new Service<Person>( Context ).Queryable().Any( a => a.GivingGroupId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, Person.FriendlyTypeName );
@@ -253,9 +255,15 @@ namespace Rock.Model
             target.IsPublic = source.IsPublic;
             target.IsSecurityRole = source.IsSecurityRole;
             target.IsSystem = source.IsSystem;
+            target.LeaderToLeaderRelationshipMultiplierOverride = source.LeaderToLeaderRelationshipMultiplierOverride;
+            target.LeaderToNonLeaderRelationshipMultiplierOverride = source.LeaderToNonLeaderRelationshipMultiplierOverride;
             target.Name = source.Name;
+            target.NonLeaderToLeaderRelationshipMultiplierOverride = source.NonLeaderToLeaderRelationshipMultiplierOverride;
+            target.NonLeaderToNonLeaderRelationshipMultiplierOverride = source.NonLeaderToNonLeaderRelationshipMultiplierOverride;
             target.Order = source.Order;
             target.ParentGroupId = source.ParentGroupId;
+            target.RelationshipGrowthEnabledOverride = source.RelationshipGrowthEnabledOverride;
+            target.RelationshipStrengthOverride = source.RelationshipStrengthOverride;
             target.ReminderAdditionalDetails = source.ReminderAdditionalDetails;
             target.ReminderOffsetDays = source.ReminderOffsetDays;
             target.ReminderSystemCommunicationId = source.ReminderSystemCommunicationId;

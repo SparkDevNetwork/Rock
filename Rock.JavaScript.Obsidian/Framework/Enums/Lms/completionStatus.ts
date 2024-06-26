@@ -24,22 +24,22 @@
 /** Determines the completion status of a LearningProgramCompletion. */
 export const CompletionStatus = {
     /** The program is pending completion. */
-    Pending: 1,
+    Pending: 0,
 
     /** The program was completed. */
-    Completed: 2,
+    Completed: 1,
 
     /** The program not completed before expiring. */
-    Expired: 3
+    Expired: 2
 } as const;
 
 /** Determines the completion status of a LearningProgramCompletion. */
 export const CompletionStatusDescription: Record<number, string> = {
-    1: "Pending",
+    0: "Pending",
 
-    2: "Completed",
+    1: "Completed",
 
-    3: "Expired"
+    2: "Expired"
 };
 
 /** Determines the completion status of a LearningProgramCompletion. */

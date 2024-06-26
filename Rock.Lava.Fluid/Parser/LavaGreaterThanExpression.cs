@@ -81,16 +81,12 @@ namespace Rock.Lava.Fluid
 
         private FluidValue Evaluate( FluidValue leftValue, FluidValue rightValue )
         {
+            // If either value is null, the comparison should evaluate to false.
+            // This aligns with the behavior of Shopify Liquid and the historical DotLiquid implementation of Lava,
+            // but differs from the standard Fluid implementation (v2.3.1)
             if ( leftValue.IsNil() || rightValue.IsNil() )
             {
-                if ( FailIfEqual )
-                {
-                    return BooleanValue.False;
-                }
-
-                return leftValue.IsNil() && rightValue.IsNil()
-                    ? BooleanValue.True
-                    : BooleanValue.False;
+                return BooleanValue.False;
             }
 
             // If either value is numeric, perform a numeric comparison.

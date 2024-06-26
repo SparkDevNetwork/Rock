@@ -372,7 +372,7 @@ namespace Rock.Model
 
                     foreach ( var fee in registrant.Fees )
                     {
-                        FeeValues.AddOrIgnore( fee.RegistrationTemplateFeeId, new List<FeeInfo>() );
+                        FeeValues.TryAdd( fee.RegistrationTemplateFeeId, new List<FeeInfo>() );
                         FeeValues[fee.RegistrationTemplateFeeId].Add( new FeeInfo( fee ) );
                     }
                 }

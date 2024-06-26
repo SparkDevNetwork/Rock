@@ -123,6 +123,18 @@ namespace RockWeb.Blocks.Reporting
         protected void btnGenerate_Click( object sender, EventArgs e )
         {
             var startDate = dpStartDate.SelectedDate.Value;
+            var maximumStartDate = RockDateTime.Now.AddYears( -120 ).Date;
+            if ( startDate > maximumStartDate )
+            {
+                nbGenerateWarning.Text = $"The latest the Start Date may be is 120 years before today's date ({maximumStartDate:d}). The data in this Calendar Dimensions table is used for various calculations including determining a person's age.";
+                nbGenerateWarning.Visible = true;
+                return;
+            }
+            else
+            {
+                nbGenerateWarning.Visible = false;
+            }
+
             Rock.Web.SystemSettings.SetValue( Rock.SystemKey.SystemSetting.ANALYTICS_CALENDAR_DIMENSION_START_DATE, startDate.ToString( "o" ) );
 
             var endDate = dpEndDate.SelectedDate.Value;

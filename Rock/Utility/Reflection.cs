@@ -79,7 +79,7 @@ namespace Rock
                 {
                     if ( string.IsNullOrWhiteSpace( typeName ) || typeEntry.Key == typeName )
                     {
-                        types.AddOrIgnore( typeEntry.Key, typeEntry.Value );
+                        types.TryAdd( typeEntry.Key, typeEntry.Value );
                     }
                 }
             }
@@ -596,7 +596,7 @@ namespace Rock
 
                 if ( entityId.HasValue )
                 {
-                    entityIds.AddOrIgnore( entityKey, entityId.Value );
+                    entityIds.TryAdd( entityKey, entityId.Value );
                 }
                 else if ( Guid.TryParse( entityKey, out var guid ) )
                 {
@@ -641,7 +641,7 @@ namespace Rock
 
                         if ( key != null )
                         {
-                            entityIds.AddOrIgnore( key, id.Id );
+                            entityIds.TryAdd( key, id.Id );
                         }
                     }
                 }

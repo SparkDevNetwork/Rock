@@ -217,9 +217,7 @@
             {%- capture dateDivider -%}
                 {%- if dateDiff > 1 -%}
                 {%- assign dateLabel = historySummaryByDateByVerb.FirstHistoryDateTime | Date:'dddd, MMMM d' -%}
-                <span>{{ dateLabel }}{%- if currentYear != firstHistoryYear -%}
-                {{ firstHistoryYear }}
-                {%- endif -%}</span>
+                <span>{{ dateLabel }}{% if currentYear != firstHistoryYear %}, {{ firstHistoryYear }}{% endif %}</span>
                 {%- elseif dateDiff == 1 -%}
                     Yesterday
                 {%- elseif dateDiff == 0 -%}

@@ -205,6 +205,8 @@ namespace Rock
         /// </summary>
         /// <param name="email">The string to validate</param>
         /// <returns>true if valid email, false otherwise</returns>
+        [Obsolete( "Use EmailAddressFieldValidator.IsValid() instead." )]
+        [RockObsolete( "1.16" )]
         public static bool IsValidEmail( this string email )
         {
             Match match = Regex.Match( email, @"[\w\.\'_%-]+(\+[\w-]*)?@([\w-]+\.)+[\w-]+" );

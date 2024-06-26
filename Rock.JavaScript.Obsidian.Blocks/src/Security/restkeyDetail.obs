@@ -3,6 +3,7 @@
     <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
 
     <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+    <NotificationBox v-if="warningMessage" alertType="warning">{{ warningMessage }}</NotificationBox>
 
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
@@ -54,6 +55,7 @@
 
     const blockError = ref("");
     const errorMessage = ref("");
+    const warningMessage = ref("");
 
     const restKeyViewBag = ref(config.entity);
     const restKeyEditBag = ref<RestKeyBag>({} as RestKeyBag);
@@ -225,7 +227,7 @@
             }
         }
 
-        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save Rest Key.";
+        warningMessage.value = result.errorMessage ?? "Unknown error while trying to save Rest Key.";
 
         return false;
     }

@@ -44,14 +44,9 @@ using Rock.Security;
 using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Utility;
-using Rock.Utility.Settings;
-using Rock.ViewModels;
 using Rock.ViewModels.Crm;
-using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-
-using static Rock.Security.Authorization;
 
 using Page = System.Web.UI.Page;
 
@@ -715,6 +710,51 @@ namespace Rock.Web.UI
             }
         }
 
+        /// <summary>
+        /// Occurs when [page initialized]. This event is for registering any custom event shortkeys for the page.
+        /// </summary>
+        protected virtual void RegisterShortcutKeys()
+        {
+            // Register the shortcut keys with debouncing
+            string script = @"
+                (function() {
+                    var lastDispatchTime = 0;
+                    var lastDispatchedElement = null;
+                    var debounceDelay = 500;
+
+                    document.addEventListener('keydown', function (event) {
+                        if (event.altKey) {
+                            var shortcutKey = event.key.toLowerCase();
+
+                            // Check if a shortcut key is registered for the pressed key
+                            var element = document.querySelector('[data-shortcut-key=""' + shortcutKey + '""]');
+
+                    
+                            if (element) {
+                                var currentTime = performance.now();
+
+                                if (lastDispatchedElement === element && (currentTime - lastDispatchTime) < debounceDelay) {
+                                    return;
+                                }
+
+                                lastDispatchTime = currentTime;
+                                lastDispatchedElement = element;
+
+                                if (shortcutKey === 'arrowright' || shortcutKey === 'arrowleft') {
+                                    event.preventDefault();
+                                }
+
+                                event.preventDefault();
+                                element.click();
+                            }
+                        }
+                    });
+                })();
+            ";
+
+            ScriptManager.RegisterStartupScript( this, typeof( RockPage ), "ShortcutKeys", script, true );
+        }
+
         #endregion
 
         #region Overridden Methods
@@ -794,6 +834,9 @@ namespace Rock.Web.UI
             }
 
             var stopwatchInitEvents = Stopwatch.StartNew();
+
+            // Register shortcut keys
+            RegisterShortcutKeys();
 
 #pragma warning disable 618
             ConvertLegacyContextCookiesToJSON();
@@ -1081,7 +1124,7 @@ namespace Rock.Web.UI
                     SessionStateSection sessionState = ( SessionStateSection ) ConfigurationManager.GetSection( "system.web/sessionState" );
                     string sidCookieName = sessionState.CookieName; // ASP.NET_SessionId
                     var cookie = Response.Cookies[sidCookieName];
-                    cookie.Expires = RockInstanceConfig.SystemDateTime.AddDays( -1 );
+                    cookie.Expires = RockDateTime.SystemDateTime.AddDays( -1 );
                     AddOrUpdateCookie( cookie );
 
                     Response.Redirect( redirectUrl, false );
@@ -1457,11 +1500,14 @@ Rock.settings.initialize({{
                                 currentPersonJson = new CurrentPersonBag
                                 {
                                     IdKey = CurrentPerson.IdKey,
+                                    Guid = CurrentPerson.Guid,
+                                    PrimaryAliasIdKey = CurrentPerson.PrimaryAlias.IdKey,
+                                    PrimaryAliasGuid = CurrentPerson.PrimaryAlias.Guid,
                                     FirstName = CurrentPerson.FirstName,
                                     NickName = CurrentPerson.NickName,
                                     LastName = CurrentPerson.LastName,
                                     FullName = CurrentPerson.FullName,
-                                    Email = CurrentPerson.Email
+                                    Email = CurrentPerson.Email,
                                 }.ToCamelCaseJson( false, false );
                             }
                             else if ( CurrentPerson != null )
@@ -2547,7 +2593,7 @@ Sys.Application.add_load(function () {
                 UrlReferrerHostAddress = Request.UrlReferrerNormalize(),
                 UrlReferrerSearchTerms = Request.UrlReferrerSearchTerms(),
                 UserAgent = Request.UserAgent.SanitizeHtml(),
-                UserHostAddress = Request.UserHostAddress.SanitizeHtml(),
+                UserHostAddress = GetClientIpAddress().SanitizeHtml(),
                 UserIdKey = CurrentPersonAlias?.IdKey
             };
 
@@ -2558,7 +2604,9 @@ Sys.Application.add_load(function () {
             string script = @"
 Sys.Application.add_load(function () {
     const getCookieValue = (name) => {
-        return document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)')?.pop() || '';
+        const match = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+
+        return !match ? '' : match.pop();
     };
     var interactionArgs = <jsonData>;
     if (!interactionArgs.<userIdProperty>) {
@@ -3542,7 +3590,7 @@ Sys.Application.add_load(function () {
                 if ( LinkPersonAliasToDevice( ( int ) personAliasId, httpCookie.Values["ROCK_PERSONALDEVICE_ADDRESS"] ) )
                 {
                     var wiFiCookie = Response.Cookies["rock_wifi"];
-                    wiFiCookie.Expires = RockInstanceConfig.SystemDateTime.AddDays( -1 );
+                    wiFiCookie.Expires = RockDateTime.SystemDateTime.AddDays( -1 );
                     AddOrUpdateCookie( wiFiCookie );
                 }
             }
@@ -3989,7 +4037,7 @@ Sys.Application.add_load(function () {
                         and ignore the value stored in the QueryString list (the value is the same). In any case if there is contention between a
                         Route Key and QueryString Key the Route will take precedence.
                     */
-                    parameters.AddOrIgnore( param, Request.QueryString[param] );
+                    parameters.TryAdd( param, Request.QueryString[param] );
                 }
             }
 
@@ -4711,7 +4759,7 @@ Sys.Application.add_load(function () {
 
             foreach ( var key in preferences.GetKeys().Where( k => k.StartsWith( keyPrefix ) ) )
             {
-                selectedValues.AddOrIgnore( key, preferences.GetValue( key ) );
+                selectedValues.TryAdd( key, preferences.GetValue( key ) );
             }
 
             return selectedValues;
@@ -4776,7 +4824,7 @@ Sys.Application.add_load(function () {
 
             foreach ( var key in preferences.GetKeys() )
             {
-                userPreferences.AddOrIgnore( key, preferences.GetValue( key ) );
+                userPreferences.TryAdd( key, preferences.GetValue( key ) );
             }
 
             return userPreferences;

@@ -307,7 +307,10 @@ namespace Rock.Reporting
             }
 
             // Get Attributes
-            var entityTypeCache = EntityTypeCache.Get( entityType, true );
+            var entityTypeCache = typeof( IHasAttributes ).IsAssignableFrom( entityType )
+                ? EntityTypeCache.Get( entityType, true )
+                : null;
+
             if ( entityTypeCache != null )
             {
                 int entityTypeId = entityTypeCache.Id;
@@ -645,6 +648,18 @@ namespace Rock.Reporting
 
             return entityField;
         }
+
+        /// <summary>
+        /// Takes a property name and returns the <see cref="EntityField.UniqueName"/>
+        /// version of it.
+        /// </summary>
+        /// <param name="name">The name of the property.</param>
+        /// <returns>A new string that represents the unique name.</returns>
+        [RockInternal( "1.16.6", true )]
+        internal static string MakePropertyNameUnique( string name )
+        {
+            return $"Property_{name}";
+        }
     }
 
     #region Helper Classes
@@ -670,7 +685,7 @@ namespace Rock.Reporting
                 }
                 else
                 {
-                    return string.Format( "Property_{0}", this.Name );
+                    return EntityHelper.MakePropertyNameUnique( Name );
                 }
             }
         }

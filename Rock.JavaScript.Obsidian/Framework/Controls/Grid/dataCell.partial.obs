@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="grid-cell" :class="additionalItemClass" :style="additionalCellStyles" @click="onClick" role="gridcell">
+    <div class="grid-cell" :class="[additionalItemClass, columnTypeClass]" :style="additionalCellStyles" @click="onClick" role="gridcell">
         <component :is="props.column.formatComponent"
                    :row="props.row"
                    :column="props.column"
@@ -71,6 +71,11 @@
         };
 
         return styles;
+    });
+
+    // create a computed property that will set the column type class to the correct value
+    const columnTypeClass = computed((): string => {
+        return `grid-cell-${props.column.columnType}`;
     });
 
     /**

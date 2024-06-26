@@ -83,7 +83,7 @@
                                              v-model="adult1.firstName"
                                              :disabled="isSaving || isNavigating"
                                              label="First Name"
-                                             :rules="[atLeastOneAdultFirstNameRule, adult1FirstNameRule]" />
+                                             :rules="adult1RequiredRules" />
                                 </div>
                                 <div class="col-sm-6">
                                     <StaticFormControl
@@ -94,7 +94,7 @@
                                              v-model="adult1.lastName"
                                              :disabled="isSaving || isNavigating"
                                              label="Last Name"
-                                             :rules="[adult1LastNameRule]" />
+                                             :rules="adult1RequiredRules" />
                                 </div>
                             </div>
                             <div class="row">
@@ -286,7 +286,7 @@
                                                  v-model="adult2.firstName"
                                                  :disabled="isSaving || isNavigating"
                                                  label="First Name"
-                                                 :rules="[adult2FirstNameRule]" />
+                                                 :rules="isAdult2Entered ? adult2RequiredRules : ''" />
                                     </div>
                                     <div class="col-sm-6">
                                         <StaticFormControl
@@ -297,7 +297,7 @@
                                                  v-model="adult2.lastName"
                                                  :disabled="isSaving || isNavigating"
                                                  label="Last Name"
-                                                 :rules="[adult2LastNameRule]" />
+                                                 :rules="isAdult2Entered ? adult2RequiredRules : ''" />
                                     </div>
                                 </div>
                                 <div class="row">
@@ -508,7 +508,7 @@
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { FormError } from "@Obsidian/Utility/form";
     import { useHttp } from "@Obsidian/Utility/http";
-    import { ValidationResult, ValidationRule } from "@Obsidian/ValidationRules";
+    import { ValidationRule } from "@Obsidian/ValidationRules";
     import { FamilyPreRegistrationGetScheduleDatesRequestBag } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationGetScheduleDatesRequestBag";
     import { FamilyPreRegistrationGetScheduleDatesResponseBag } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationGetScheduleDatesResponseBag";
     import { FamilyPreRegistrationInitializationBox } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationInitializationBox";
@@ -564,8 +564,6 @@
 
     const isAdult1Entered = computed<boolean>(() => !!adult1.firstName.trim());
     const isAdult2Entered = computed<boolean>(() => !!adult2.firstName.trim());
-    const isAdult2FirstNameEntered = computed<boolean>(() => !!adult2.firstName.trim());
-    const isAdult2LastNameEntered = computed<boolean>(() => !!adult2.lastName.trim());
 
     // Validation rules are executed in order and stop on the first failure.
     // Even though the first rule is a required rule,
@@ -701,76 +699,6 @@
     //#endregion
 
     //#region Functions
-
-    /**
-     * Validates whether adult1 has a first name and a last name.
-     */
-    function adult1FirstNameRule(): ValidationResult {
-        const adult1FirstName = adult1.firstName?.trim();
-        const adult1LastName = adult1.lastName?.trim();
-
-        if (!adult1FirstName && adult1LastName) {
-            return "is invalid. First and Last Name are required.";
-        }
-
-        return true;
-    }
-
-    /**
-     * Validates whether adult1 has a first name and a last name.
-     */
-    function adult1LastNameRule(): ValidationResult {
-        const adult1FirstName = adult1.firstName?.trim();
-        const adult1LastName = adult1.lastName?.trim();
-
-        if (adult1FirstName && !adult1LastName) {
-            return "is invalid. First and Last Name are required.";
-        }
-
-        return true;
-    }
-
-    /**
-     * Validates whether adult2 has a first name and a last name.
-     */
-    function adult2FirstNameRule(): ValidationResult {
-        const adult2FirstName = adult2.firstName?.trim();
-        const adult2LastName = adult2.lastName?.trim();
-
-        if (!adult2FirstName && adult2LastName) {
-            return "is invalid. First and Last Name are required.";
-        }
-
-        return true;
-    }
-
-    /**
-     * Validates whether adult2 has a first name and a last name.
-     */
-    function adult2LastNameRule(): ValidationResult {
-        const adult2FirstName = adult2.firstName?.trim();
-        const adult2LastName = adult2.lastName?.trim();
-
-        if (adult2FirstName && !adult2LastName) {
-            return "is invalid. First and Last Name are required.";
-        }
-
-        return true;
-    }
-
-    /**
-     * Validates whether at least one adult has a first name.
-     */
-    function atLeastOneAdultFirstNameRule(): ValidationResult {
-        const adult1FirstName = adult1.firstName?.trim();
-        const adult2FirstName = adult2.firstName?.trim();
-
-        if (!adult1FirstName && !adult2FirstName) {
-            return "is invalid. The name of at least one adult needs to be entered.";
-        }
-
-        return true;
-    }
 
     /**
      * Checks availability of the username.

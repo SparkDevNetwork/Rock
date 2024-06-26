@@ -112,7 +112,7 @@ namespace Rock.Model
             {
                 foreach ( var additionalMergeField in additionalMergeFields )
                 {
-                    mergeFields.AddOrIgnore( additionalMergeField.Key, additionalMergeField.Value );
+                    mergeFields.TryAdd( additionalMergeField.Key, additionalMergeField.Value );
                 }
             }
 

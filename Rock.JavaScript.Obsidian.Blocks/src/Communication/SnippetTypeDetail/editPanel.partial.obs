@@ -34,14 +34,15 @@
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
-    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { SnippetTypeBag } from "@Obsidian/ViewModels/Blocks/Communication/SnippetTypeDetail/snippetTypeBag";
     import { SnippetTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/SnippetTypeDetail/snippetTypeDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const props = defineProps({
-    modelValue: {
-    type: Object as PropType<SnippetTypeBag>,
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<SnippetTypeBag>>,
             required: true
         },
 
@@ -52,19 +53,19 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: SnippetTypeBag): void,
+        (e: "update:modelValue", value: ValidPropertiesBox<SnippetTypeBag>): void,
         (e: "propertyChanged", value: string): void
         }>();
 
         // #region Values
 
-        const attributes = ref(props.modelValue.attributes ?? {});
-        const attributeValues = ref(props.modelValue.attributeValues ?? {});
-        const description = propertyRef(props.modelValue.description ?? "", "Description");
-        const name = propertyRef(props.modelValue.name ?? "", "Name");
-        const helpText = propertyRef(props.modelValue.helpText ?? "", "HelpText");
-        const isPersonalAllowed = propertyRef(props.modelValue.isPersonalAllowed, "IsPersonalAllowed");
-        const isSharedAllowed = propertyRef(props.modelValue.isSharedAllowed, "IsSharedAllowed");
+        const attributes = ref(props.modelValue?.bag?.attributes ?? {});
+        const attributeValues = ref(props.modelValue?.bag?.attributeValues ?? {});
+        const description = propertyRef(props.modelValue?.bag?.description ?? "", "Description");
+        const name = propertyRef(props.modelValue?.bag?.name ?? "", "Name");
+        const helpText = propertyRef(props.modelValue?.bag?.helpText ?? "", "HelpText");
+        const isPersonalAllowed = propertyRef(props.modelValue?.bag?.isPersonalAllowed ?? false, "IsPersonalAllowed");
+        const isSharedAllowed = propertyRef(props.modelValue?.bag?.isSharedAllowed ??  false, "IsSharedAllowed");
 
         // The properties that are being edited. This should only contain
         // objects returned by propertyRef().
@@ -86,29 +87,29 @@
 
         // Watch for parental changes in our model value and update all our values.
         watch(() => props.modelValue, () => {
-        updateRefValue(attributes, props.modelValue.attributes ?? {});
-        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
-        updateRefValue(description, props.modelValue.description ?? "");
-        updateRefValue(name, props.modelValue.name ?? "");
-        updateRefValue(helpText, props.modelValue.helpText ?? "");
-        updateRefValue(isPersonalAllowed, props.modelValue.isPersonalAllowed);
-        updateRefValue(isSharedAllowed, props.modelValue.isSharedAllowed);
+            updateRefValue(attributes, props.modelValue?.bag?.attributes ?? {});
+            updateRefValue(attributeValues, props.modelValue?.bag?.attributeValues ?? {});
+            updateRefValue(description, props.modelValue?.bag?.description ?? "");
+            updateRefValue(name, props.modelValue?.bag?.name ?? "");
+            updateRefValue(helpText, props.modelValue?.bag?.helpText ?? "");
+            updateRefValue(isPersonalAllowed, props.modelValue?.bag?.isPersonalAllowed ?? false);
+            updateRefValue(isSharedAllowed, props.modelValue?.bag?.isSharedAllowed ??  false);
         });
 
         // Determines which values we want to track changes on (defined in the
         // array) and then emit a new object defined as newValue.
         watch([attributeValues, ...propRefs], () => {
-        const newValue: SnippetTypeBag = {
-        ...props.modelValue,
-        attributeValues: attributeValues.value,
-        description: description.value,
-        name: name.value,
-        helpText: helpText.value,
-        isPersonalAllowed: isPersonalAllowed.value,
-        isSharedAllowed: isSharedAllowed.value,
-        };
+            const newValue: ValidPropertiesBox<SnippetTypeBag> = {
+                bag: { ...props.modelValue.bag } as SnippetTypeBag
+            };
+            setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value),
+            setPropertiesBoxValue(newValue, "description", description.value),
+            setPropertiesBoxValue(newValue, "name", name.value),
+            setPropertiesBoxValue(newValue, "helpText", helpText.value),
+            setPropertiesBoxValue(newValue, "isPersonalAllowed", isPersonalAllowed.value),
+            setPropertiesBoxValue(newValue, "isSharedAllowed", isSharedAllowed.value),
 
-        emit("update:modelValue", newValue);
+            emit("update:modelValue", newValue);
         });
 
         // Watch for any changes to props that represent properties and then

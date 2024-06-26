@@ -86,8 +86,11 @@ namespace RockWeb.Blocks.Core
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+            var locationId = PageParameter( "LocationId" ).AsInteger();
+            var location = NamedLocationCache.Get( locationId );
+            var locationName = location != null ? location.Name : string.Empty;
 
-            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Location.FriendlyTypeName );
+            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '\"{0}\" location');", locationName );
             btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Location ) ).Id;
 
             ddlPrinter.Items.Clear();

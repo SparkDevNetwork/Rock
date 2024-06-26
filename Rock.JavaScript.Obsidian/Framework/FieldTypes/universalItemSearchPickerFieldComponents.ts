@@ -42,6 +42,10 @@ export const EditComponent = defineComponent({
             return asBoolean(props.configurationValues["isIncludeInactiveVisible"]);
         });
 
+        const iconCssClass = computed((): string | undefined => {
+            return props.configurationValues["iconCssClass"] ?? undefined;
+        });
+
         const searchUrl = computed((): string => {
             return props.configurationValues["searchUrl"];
         });
@@ -65,6 +69,7 @@ export const EditComponent = defineComponent({
 
         return {
             areDetailsAlwaysVisible,
+            iconCssClass,
             isIncludeInactiveVisible,
             internalValue,
             isRequired,
@@ -75,6 +80,7 @@ export const EditComponent = defineComponent({
     template: `
 <UniversalItemSearchPicker v-model="internalValue"
                            :areDetailsAlwaysVisible="areDetailsAlwaysVisible"
+                           :iconCssClass="iconCssClass"
                            :isIncludeInactiveVisible="isIncludeInactiveVisible"
                            :isRequired="isRequired"
                            :searchUrl="searchUrl" />

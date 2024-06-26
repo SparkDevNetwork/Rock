@@ -54,6 +54,13 @@ namespace Rock.Blocks.Types.Mobile.Reminders
         Key = AttributeKey.SaveNavigationAction,
         Order = 1 )]
 
+    [BooleanField( "Show Assigned To",
+        Description = "Whether to show the assigned to field. Otherwise defaults to the Current Person.",
+        IsRequired = false,
+        DefaultBooleanValue = false,
+        Key = AttributeKey.ShowAssignedTo,
+        Order = 2 )]
+
     #endregion
 
     [SystemGuid.EntityTypeGuid( SystemGuid.EntityType.MOBILE_REMINDERS_REMINDER_EDIT )]
@@ -76,6 +83,11 @@ namespace Rock.Blocks.Types.Mobile.Reminders
             /// The save navigation action.
             /// </summary>
             public const string SaveNavigationAction = "SaveNavigationAction";
+
+            /// <summary>
+            /// Whether to show the assigned to field.
+            /// </summary>
+            public const string ShowAssignedTo = "ShowAssignedTo";
         }
 
         #endregion
@@ -173,7 +185,8 @@ namespace Rock.Blocks.Types.Mobile.Reminders
             return new Rock.Common.Mobile.Blocks.Reminders.ReminderEdit.Configuration
             {
                 HeaderTemplate = GetAttributeValue( AttributeKey.HeaderTemplate ),
-                SaveNavigationAction = GetAttributeValue( AttributeKey.SaveNavigationAction ).FromJsonOrNull<MobileNavigationActionViewModel>() ?? new MobileNavigationActionViewModel()
+                SaveNavigationAction = GetAttributeValue( AttributeKey.SaveNavigationAction ).FromJsonOrNull<MobileNavigationActionViewModel>() ?? new MobileNavigationActionViewModel(),
+                ShowAssignTo = GetAttributeValue( AttributeKey.ShowAssignedTo ).AsBoolean()
             };
         }
 
@@ -190,9 +203,10 @@ namespace Rock.Blocks.Types.Mobile.Reminders
         /// <param name="note">The note.</param>
         /// <param name="renewPeriodDays">The renew period days.</param>
         /// <param name="renewMaxCount">The renew maximum count.</param>
+        /// <param name="assignedToPrimaryAliasGuid">The person this reminder should be assigned to.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <remarks>This method should only be called when there is a Current Person in the request.</remarks>
-        private void CreateReminder( Guid reminderTypeGuid, Guid entityGuid, DateTime reminderDate, string note, int? renewPeriodDays, int? renewMaxCount, RockContext rockContext )
+        private void CreateReminder( Guid reminderTypeGuid, Guid entityGuid, DateTime reminderDate, string note, int? renewPeriodDays, int? renewMaxCount, Guid? assignedToPrimaryAliasGuid, RockContext rockContext )
         {
             var reminderService = new ReminderService( rockContext );
             var reminderType = new ReminderTypeService( rockContext ).Get( reminderTypeGuid );
@@ -223,10 +237,22 @@ namespace Rock.Blocks.Types.Mobile.Reminders
                 RenewCurrentCount = 0
             };
 
-            var person = RequestContext.CurrentPerson;
-            reminder.PersonAliasId = person.PrimaryAliasId.Value;
-            reminderService.Add( reminder );
+            if ( GetAttributeValue( AttributeKey.ShowAssignedTo ).AsBoolean() )
+            {
+                var assignedToPersonAlias = new PersonAliasService( rockContext ).GetId( assignedToPrimaryAliasGuid.Value );
 
+                if ( assignedToPersonAlias.HasValue )
+                {
+                    reminder.PersonAliasId = assignedToPersonAlias.Value;
+                }
+            }
+            else
+            {
+                var person = RequestContext.CurrentPerson;
+                reminder.PersonAliasId = person.PrimaryAliasId.Value;
+            }
+
+            reminderService.Add( reminder );
             rockContext.SaveChanges();
         }
 
@@ -239,9 +265,10 @@ namespace Rock.Blocks.Types.Mobile.Reminders
         /// <param name="note">The note.</param>
         /// <param name="renewPeriodDays">The renew period days.</param>
         /// <param name="renewMaxCount">The renew maximum count.</param>
+        /// <param name="assignedToPersonAliasGuid">The person this reminder should be assigned to.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <remarks>This method should only be called when there is a Current Person in the request.</remarks>
-        private void UpdateReminder( Guid reminderGuid, Guid reminderTypeGuid, DateTime reminderDate, string note, int? renewPeriodDays, int? renewMaxCount, RockContext rockContext )
+        private void UpdateReminder( Guid reminderGuid, Guid reminderTypeGuid, DateTime reminderDate, string note, int? renewPeriodDays, int? renewMaxCount, Guid? assignedToPersonAliasGuid, RockContext rockContext )
         {
             var reminderService = new ReminderService( rockContext );
             var reminder = reminderService.Get( reminderGuid );
@@ -253,8 +280,20 @@ namespace Rock.Blocks.Types.Mobile.Reminders
             reminder.RenewPeriodDays = renewPeriodDays;
             reminder.RenewMaxCount = renewMaxCount;
 
-            var person = RequestContext.CurrentPerson;
-            reminder.PersonAliasId = person.PrimaryAliasId.Value;
+            if ( GetAttributeValue( AttributeKey.ShowAssignedTo ).AsBoolean() )
+            {
+                var assignedToPersonAlias = new PersonAliasService( rockContext ).GetId( assignedToPersonAliasGuid.Value );
+
+                if ( assignedToPersonAlias.HasValue )
+                {
+                    reminder.PersonAliasId = assignedToPersonAlias.Value;
+                }
+            }
+            else
+            {
+                var person = RequestContext.CurrentPerson;
+                reminder.PersonAliasId = person.PrimaryAliasId.Value;
+            }
 
             rockContext.SaveChanges();
         }
@@ -433,12 +472,12 @@ namespace Rock.Blocks.Types.Mobile.Reminders
                 // If we have an existing reminder, update that.
                 if ( reminderGuid.HasValue )
                 {
-                    UpdateReminder( reminderGuid.Value, reminderBag.ReminderTypeGuid, reminderBag.ReminderDate.DateTime, reminderBag.Note, reminderBag.RenewPeriodDays, reminderBag.RenewMaxCount, rockContext );
+                    UpdateReminder( reminderGuid.Value, reminderBag.ReminderTypeGuid, reminderBag.ReminderDate.DateTime, reminderBag.Note, reminderBag.RenewPeriodDays, reminderBag.RenewMaxCount, reminderBag.AssignedToPrimaryAliasGuid, rockContext );
                 }
                 // Otherwise, create a new reminder.
                 else
                 {
-                    CreateReminder( reminderBag.ReminderTypeGuid, reminderBag.EntityGuid, reminderBag.ReminderDate.DateTime, reminderBag.Note, reminderBag.RenewPeriodDays, reminderBag.RenewMaxCount, rockContext );
+                    CreateReminder( reminderBag.ReminderTypeGuid, reminderBag.EntityGuid, reminderBag.ReminderDate.DateTime, reminderBag.Note, reminderBag.RenewPeriodDays, reminderBag.RenewMaxCount, reminderBag.AssignedToPrimaryAliasGuid, rockContext );
                 }
 
                 return ActionOk();

@@ -17,17 +17,20 @@
                     title="Route"
                     field="route"
                     :filter="textValueFilter"
+                    width="37%"
                     visiblePriority="xs" />
 
         <TextColumn name="siteName"
                     title="Site"
                     field="siteName"
                     :filter="textValueFilter"
+                    width="7%"
                     visiblePriority="md" />
 
         <TextColumn name="pageName"
                     title="Page Name"
                     field="pageName"
+                    width="35%"
                     :filter="textValueFilter"
                     visiblePriority="md" />
 
@@ -35,16 +38,19 @@
                     title="Page Id"
                     field="pageId"
                     :filter="textValueFilter"
+                    width="5%"
                     visiblePriority="md" />
 
         <BooleanColumn name="isGlobal"
                        title="Global Route"
                        field="isGlobal"
+                       width="5%"
                        visiblePriority="md" />
 
         <BooleanColumn name="isSystem"
                        title="System"
                        field="isSystem"
+                       width="5%"
                        visiblePriority="md" />
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />

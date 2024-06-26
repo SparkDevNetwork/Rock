@@ -27,6 +27,7 @@ import { DayOfWeek, RockDateTime } from "@Obsidian/Utility/rockDateTime";
 import { resolveMergeFields } from "@Obsidian/Utility/lava";
 import { deepEqual } from "@Obsidian/Utility/util";
 import { AttributeFieldDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/attributeFieldDefinitionBag";
+import { DynamicFieldDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/dynamicFieldDefinitionBag";
 import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
 import { GridEntitySetBag } from "@Obsidian/ViewModels/Core/Grid/gridEntitySetBag";
 import { GridEntitySetItemBag } from "@Obsidian/ViewModels/Core/Grid/gridEntitySetItemBag";
@@ -35,6 +36,7 @@ import mitt, { Emitter } from "mitt";
 import { CustomColumnDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/customColumnDefinitionBag";
 import { ColumnPositionAnchor } from "@Obsidian/Enums/Core/Grid/columnPositionAnchor";
 import { BooleanFilterMethod } from "@Obsidian/Enums/Core/Grid/booleanFilterMethod";
+import { getValueFromPath } from "@Obsidian/Utility/objectUtils";
 
 // #region Internal Types
 
@@ -141,6 +143,11 @@ export const standardColumnProps: StandardColumnProps = {
 
     exportValue: {
         type: Function as PropType<ExportValueFunction>,
+        required: false
+    },
+
+    columnType: {
+        type: String as PropType<string>,
         required: false
     },
 
@@ -619,7 +626,7 @@ export async function getEntitySetBag(grid: IGridState, keyFields: string[], opt
         // Search each of the key fields we were told to check and look
         // for any entity keys.
         for (const key of keyFields) {
-            const keyValue = row[key];
+            const keyValue = getValueFromPath(row, key);
 
             if (typeof keyValue === "number" && keyValue !== 0) {
                 entityKeyValues.push(keyValue.toString());
@@ -723,7 +730,7 @@ export async function getEntitySetBag(grid: IGridState, keyFields: string[], opt
 
     // Because we might be dealing with large data sets and might be pulling
     // formatted data from components, use a worker so the UI doesn't freeze.
-    const worker = new BackgroundItemsFunctionWorker(grid.getSortedRows(), processRow);
+    const worker = new BackgroundItemsFunctionWorker(grid.sortedRows, processRow);
 
     await worker.run();
 
@@ -872,8 +879,60 @@ function buildAttributeColumns(columns: ColumnDefinition[], node: VNode): void {
                 unitType: "%"
             },
             props: {},
+            slots: {},
             data: {}
         });
+    }
+}
+
+/**
+ * Builds the column definitions for the dynamic columns defined on the node.
+ *
+ * @param columns The array of columns that the new dynamic columns will be appended to.
+ * @param node The node that defines the dynamic fields.
+ */
+function buildDynamicColumns(columns: ColumnDefinition[], node: VNode): void {
+    const dynamicFields = getVNodeProp<(DynamicFieldDefinitionBag & { filter?: ColumnFilter, filterValue?: FilterValueFunction | string })[]>(node, "dynamicFields");
+    if (!dynamicFields) {
+        return;
+    }
+
+    const columnComponents = getVNodeProp<Record<string, Component>>(node, "columnComponents") ?? {};
+    const defaultColumnComponent = getVNodeProp<Component>(node, "defaultColumnComponent");
+    if (!defaultColumnComponent) {
+        return;
+    }
+
+    for (const dynamicField of dynamicFields) {
+        if (!dynamicField.name) {
+            continue;
+        }
+
+        const columnComponent = columnComponents?.[dynamicField.columnType ?? ""]
+            ?? defaultColumnComponent;
+
+        const vNode = createElementVNode(columnComponent, {
+            name: dynamicField.name,
+            title: dynamicField.title,
+            field: dynamicField.name,
+            width: dynamicField.width,
+            filter: dynamicField.filter,
+            filterValue: dynamicField.filterValue ?? columnComponent["filterValue"],
+            hideOnScreen: dynamicField.hideOnScreen,
+            excludeFromExport: dynamicField.excludeFromExport,
+            visiblePriority: dynamicField.visiblePriority
+        });
+
+        if (dynamicField.fieldProperties) {
+            Object.entries(dynamicField.fieldProperties).forEach(([key, value]) => {
+                if (value && vNode.props) {
+                    vNode.props[key] = value;
+                }
+            });
+        }
+
+        const columnDefinition = buildColumn(dynamicField.name, vNode);
+        columns.push(columnDefinition);
     }
 }
 
@@ -902,6 +961,7 @@ function insertCustomColumns(columns: ColumnDefinition[], customColumns: CustomC
             exportValue: (r, c) => c.field ? String(r[c.field]) : undefined,
             formatComponent: htmlCell,
             condensedComponent: htmlCell,
+            columnType: "",
             headerClass: customColumn.headerClass ?? undefined,
             itemClass: customColumn.itemClass ?? undefined,
             hideOnScreen: false,
@@ -912,6 +972,7 @@ function insertCustomColumns(columns: ColumnDefinition[], customColumns: CustomC
                 unitType: "%"
             },
             props: {},
+            slots: {},
             data: {}
         };
 
@@ -951,6 +1012,7 @@ function buildColumn(name: string, node: VNode): ColumnDefinition {
     const filter = getVNodeProp<ColumnFilter>(node, "filter");
     const headerClass = getVNodeProp<string>(node, "headerClass");
     const itemClass = getVNodeProp<string>(node, "itemClass");
+    const columnType = getVNodeProp<string>(node, "columnType");
     const hideOnScreen = getVNodeProp<boolean>(node, "hideOnScreen") === true || getVNodeProp<string>(node, "hideOnScreen") === "";
     const excludeFromExport = getVNodeProp<boolean>(node, "excludeFromExport") === true || getVNodeProp<string>(node, "excludeFromExport") === "";
     const visiblePriority = getVNodeProp<"xs" | "sm" | "md" | "lg" | "xl">(node, "visiblePriority") || "xs";
@@ -1101,9 +1163,11 @@ function buildColumn(name: string, node: VNode): ColumnDefinition {
         excludeFromExport,
         visiblePriority,
         width: parseGridLength(width),
+        columnType,
         headerClass,
         itemClass,
         props: getVNodeProps(node),
+        slots: node.children as Record<string, Component> ?? {},
         data: {}
     };
 
@@ -1124,13 +1188,14 @@ export function getColumnDefinitions(columnNodes: VNode[]): ColumnDefinition[] {
     for (const node of columnNodes) {
         const name = getVNodeProp<string>(node, "name");
 
-        // Check if this node is the special AttributeColumns node.
+        // Check if this node is the special AttributeColumns or DynamicColumns node.
         if (!name) {
-            if (getVNodeProp<boolean>(node, "__attributeColumns") !== true) {
-                continue;
+            if (getVNodeProp<boolean>(node, "__attributeColumns") === true) {
+                buildAttributeColumns(columns, node);
             }
-
-            buildAttributeColumns(columns, node);
+            else if (getVNodeProp<boolean>(node, "__dynamicColumns") === true) {
+                buildDynamicColumns(columns, node);
+            }
 
             continue;
         }
@@ -1156,7 +1221,7 @@ export function getRowKey(row: Record<string, unknown>, itemIdKey?: string): str
         return undefined;
     }
 
-    const rowKey = row[itemIdKey];
+    const rowKey = getValueFromPath(row, itemIdKey);
 
     if (typeof rowKey === "string") {
         return rowKey;
@@ -1544,7 +1609,7 @@ class BackgroundItemsFunctionWorker<T> extends BackgroundWorker {
     private workerFunction: (item: T) => void;
 
     /** The array of items to be processed. */
-    private items: T[];
+    private items: readonly T[];
 
     /** The index of the next item to be processed. */
     private itemIndex: number = 0;
@@ -1556,7 +1621,7 @@ class BackgroundItemsFunctionWorker<T> extends BackgroundWorker {
      * @param items The array of items to be processed.
      * @param workerFunction The function to be called for each item in the array.
      */
-    constructor(items: T[], workerFunction: ((item: T) => void)) {
+    constructor(items: readonly T[], workerFunction: ((item: T) => void)) {
         super();
 
         this.workerFunction = workerFunction;
@@ -1744,7 +1809,7 @@ export class GridState implements IGridState {
         return this.internalSelectedKeys;
     }
 
-    private set selectedKeys(value: string[]) {
+    public set selectedKeys(value: string[]) {
         this.internalSelectedKeys = value;
         this.emitter.emit("selectedKeysChanged", this);
     }
@@ -1870,6 +1935,7 @@ export class GridState implements IGridState {
     private updateFilteredRows(): void {
         if (this.visibleColumns.length === 0) {
             this.filteredRows = [];
+            this.selectedKeys = [];
             this.updateSortedRows();
 
             return;
@@ -1877,6 +1943,7 @@ export class GridState implements IGridState {
 
         const columns = this.visibleColumns;
         const quickFilterRawValue = this.quickFilter.toLowerCase();
+        const oldFilteredKeys = this.filteredRows.map(r => this.getRowKey(r));
 
         const result = toRaw(this.rows).filter(row => {
             // Check if the row matches the quick filter.
@@ -1914,6 +1981,12 @@ export class GridState implements IGridState {
         });
 
         this.filteredRows = result;
+
+        // If anything actually changed, clear the selection.
+        const newFilteredKeys = this.filteredRows.map(r => this.getRowKey(r));
+        if (!deepEqual(oldFilteredKeys, newFilteredKeys, true)) {
+            this.selectedKeys = [];
+        }
 
         this.updateSortedRows();
     }

@@ -38,6 +38,9 @@ export type GroupSchedulerOccurrenceBag = {
     /** Gets or sets the group name for this occurrence. */
     groupName?: string | null;
 
+    /** Gets or sets the group order for this occurrence. */
+    groupOrder: number;
+
     /** Gets or sets whether scheduling is enabled for this occurrence. */
     isSchedulingEnabled: boolean;
 

@@ -320,7 +320,7 @@ namespace RockWeb.Blocks.RSVP
                         .AsNoTracking();
 
                     groupLocations.SelectMany( l => l.Schedules ).OrderBy( s => s.Name ).ToList()
-                    .ForEach( s => schedules.AddOrIgnore( s.Id, s.Name ) );
+                    .ForEach( s => schedules.TryAdd( s.Id, s.Name ) );
                     if ( schedules.Any() )
                     {
                         ddlSchedule.Visible = true;

@@ -76,6 +76,17 @@ namespace Rock.Tests.Shared
             StringAssert.Contains( value, substring );
         }
 
+        public static void Contains( this Assert assert, System.String value, System.String substring, bool ignoreWhiteSpace )
+        {
+            if ( ignoreWhiteSpace )
+            {
+                value = value.RemoveWhiteSpace();
+                substring = substring.RemoveWhiteSpace();
+            }
+
+            StringAssert.Contains( value, substring );
+        }
+
         public static void DoesNotContain( this Assert assert, System.String value, System.String substring )
         {
             if ( value == null && substring == null )
@@ -92,6 +103,11 @@ namespace Rock.Tests.Shared
             }
 
             Assert.IsFalse( value.Contains( substring ), $"The result \"{ value }\" contains the unexpected value \"{ substring }\"." );
+        }
+
+        public static void Matches( this Assert assert, System.String value, System.Text.RegularExpressions.Regex pattern )
+        {
+            StringAssert.Matches( value, pattern );
         }
 
         public static void AreEqual( this Assert assert, System.Single expected, System.Single actual, System.Single delta )

@@ -25,6 +25,7 @@ using System.Text;
 using System.Web;
 
 using Rock;
+using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
 using Rock.Slingshot.Model;
@@ -2196,7 +2197,7 @@ WHERE gta.GroupTypeId IS NULL" );
             person.GraduationYear = personImport.GraduationYear;
             person.Email = personImport.Email.Left( 75 );
 
-            if ( !person.Email.IsValidEmail() )
+            if ( !EmailAddressFieldValidator.IsValid( person.Email ) )
             {
                 person.Email = null;
             }
@@ -2810,7 +2811,7 @@ WHERE gta.GroupTypeId IS NULL" );
 
             business.Email = businessImport.Email.Left( 75 );
 
-            if ( !business.Email.IsValidEmail() )
+            if ( !EmailAddressFieldValidator.IsValid( business.Email ) )
             {
                 business.Email = null;
             }

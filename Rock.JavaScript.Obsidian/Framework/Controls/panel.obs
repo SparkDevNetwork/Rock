@@ -16,7 +16,7 @@
                     </template>
                 </h1>
 
-                <div class="panel-header-actions" @click.prevent.stop="onIgnoreClick">
+                <div class="panel-header-actions">
                     <slot name="headerActions" />
 
                     <span v-if="isZoomActive && hasZoom" class="mr-1 ml-1 panel-action-zoom-control">
@@ -317,8 +317,6 @@
         return action.disabled ? "disabled" : "";
     };
 
-    const onIgnoreClick = (): void => { /* Intentionally blank to ignore click. */ };
-
     /** Event handler when the drawer expander is clicked. */
     const onDrawerPullClick = (): void => {
         isDrawerOpen.value = !isDrawerOpen.value;
@@ -329,7 +327,12 @@
     };
 
     /** Event handler when the panel heading is clicked. */
-    const onPanelHeadingClick = (): void => {
+    const onPanelHeadingClick = (event: Event): void => {
+        // Ignore the click if it happened inside the panel actions.
+        if (event.target && event.target instanceof HTMLElement && event.target.closest(".panel-header-actions")) {
+            return;
+        }
+
         if (props.hasCollapse) {
             internalValue.value = !isPanelOpen.value;
         }

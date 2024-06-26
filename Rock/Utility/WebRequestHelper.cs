@@ -300,7 +300,7 @@ namespace Rock.Utility
         {
             var cookie = new HttpCookie( name )
             {
-                Expires = expirationDate ?? RockInstanceConfig.SystemDateTime.AddYears( 1 ),
+                Expires = expirationDate ?? RockDateTime.SystemDateTime.AddYears( 1 ),
                 Value = value
             };
 

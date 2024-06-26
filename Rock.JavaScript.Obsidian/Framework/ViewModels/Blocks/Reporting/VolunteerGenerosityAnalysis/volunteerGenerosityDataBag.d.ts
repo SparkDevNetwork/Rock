@@ -21,9 +21,50 @@
 // </copyright>
 //
 
-import { VolunteerGenerosityPersonDataBag } from "@Obsidian/ViewModels/Blocks/Reporting/VolunteerGenerosityAnalysis/volunteerGenerosityPersonDataBag";
-
-/** A bag that contains all data for the Volunteer Generosity Analysis block. */
+/** Bag for person-related data in the Volunteer Generosity Analysis block. */
 export type VolunteerGenerosityDataBag = {
-    peopleData?: VolunteerGenerosityPersonDataBag[] | null;
+    /** Gets or sets the Campus ID. */
+    campusId?: string | null;
+
+    /** Gets or sets the Campus Short Code */
+    campusShortCode?: string | null;
+
+    /** Gets or sets the person's connection status */
+    connectionStatus?: string | null;
+
+    /** Gets or sets the person's donation months */
+    donationMonths?: string | null;
+
+    /** Gets or sets the person's bit mask */
+    donationMonthYearBitmask?: string | null;
+
+    /** Gets or sets the person's giving identifier. */
+    givingId?: string | null;
+
+    /** Gets or sets the Group ID. */
+    groupId?: string | null;
+
+    /** Gets or sets the Group Name. */
+    groupName?: string | null;
+
+    /** Gets or sets the IsActive flag. */
+    isActive: boolean;
+
+    /** Gets or sets the person's last attendance date. */
+    lastAttendanceDate?: string | null;
+
+    /** Gets or sets the person's last name. */
+    lastName?: string | null;
+
+    /** Gets or sets the person's nickname. */
+    nickName?: string | null;
+
+    /** Gets or sets the person group key. */
+    personGroupKey?: string | null;
+
+    /** Gets or sets the person identifier. */
+    personId: number;
+
+    /** Gets or sets the person's photo URL. */
+    photoUrl?: string | null;
 };

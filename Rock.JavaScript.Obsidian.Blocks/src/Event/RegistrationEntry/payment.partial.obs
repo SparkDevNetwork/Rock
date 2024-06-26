@@ -179,7 +179,7 @@
         loading.value = true;
 
         // If there is a cost, then the gateway will need to be used to pay
-        if (registrationEntryState.amountToPayToday) {
+        if (registrationEntryState.amountToPayToday || registrationEntryState.paymentPlan?.amountPerPayment) {
             if (showGateway.value) {
                 // Otherwise, this is a traditional gateway
                 gatewayErrorMessage.value = "";

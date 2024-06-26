@@ -49,7 +49,17 @@ export const EditComponent = defineComponent({
         /** The options to choose from in the drop down list */
         const options = computed((): ListItemBag[] => {
             try {
-                return JSON.parse(props.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
+                const optionsListItems = JSON.parse(props.configurationValues[ConfigurationValueKey.Values] ?? "[]") as ListItemBag[];
+                const isIncludeInactive = asBoolean(!props.configurationValues[ConfigurationValueKey.IncludeInactive]);
+                const isValueFoundOnActiveItems = optionsListItems.find(x => x.value == internalValue.value);
+                if (!isIncludeInactive && !isValueFoundOnActiveItems) {
+                    const inactiveListItem = JSON.parse(props.configurationValues[ConfigurationValueKey.ValuesInactive] ?? "[]") as ListItemBag[];
+                    const selectedValue = inactiveListItem.find(x => x.value == internalValue.value);
+                    if (selectedValue) {
+                        optionsListItems.push(selectedValue);
+                    }
+                }
+                return optionsListItems;
             }
             catch {
                 return [];

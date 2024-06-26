@@ -12,7 +12,7 @@
             <div class="col-md-7">
                 <span class="control-label">CPU Utilization</span>
                 <div style="height:250px;">
-                    <div v-html="chartHtml"></div>
+                    <Chart type="line" :data="chartData" :options="options" />
                 </div>
             </div>
         </div>
@@ -22,26 +22,26 @@
 </template>
 
 <style>
-    .card .indicator {
-        height: 4px;
-    }
+.card .indicator {
+    height: 4px;
+}
 
-    .server-meta {
-        font-size: 20px;
-    }
+.server-meta {
+    font-size: 20px;
+}
 
-    .bg-disabled {
-        background: #F5F5F5;
-        color: #AEAEAE;
-    }
+.bg-disabled {
+    background: #F5F5F5;
+    color: #AEAEAE;
+}
 
-    .bg-disabled .indicator {
-        background: #A3A3A3;
-    }
+.bg-disabled .indicator {
+    background: #A3A3A3;
+}
 </style>
 
 <script setup lang="ts">
-    import { computed, PropType, ref, onMounted } from "vue";
+    import { computed, PropType, ref } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
     import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
@@ -49,6 +49,8 @@
     import { WebFarmNodeBag } from "@Obsidian/ViewModels/Blocks/WebFarm/WebFarmNodeDetail/webFarmNodeBag";
     import { WebFarmNodeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/WebFarm/WebFarmNodeDetail/webFarmNodeDetailOptionsBag";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import Chart from "@Obsidian/Controls/chart.obs";
+    import { ChartData, ChartOptions } from "@Obsidian/Libs/chart";
 
     const props = defineProps({
         modelValue: {
@@ -66,7 +68,43 @@
 
     const attributes = ref(props.modelValue?.attributes ?? {});
     const attributeValues = ref(props.modelValue?.attributeValues ?? {});
-    const chartHtml = ref(props.modelValue?.chartHtml ?? "");
+    const chartData = ref<ChartData>(JSON.parse(props.modelValue?.chartData ?? "{}"));
+    const options = ref<ChartOptions>({
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            },
+            tooltip: {
+                intersect: false,
+                callbacks: {
+                    label: function (context) {
+                        var label = context.dataset.data[context.dataIndex] || "";
+                        if (label) {
+                            label = "CPU: " + label + "%";
+                        }
+
+                        return `${label}`;
+                    }
+                }
+            }
+        },
+        scales: {
+            y: {
+                display: false,
+                min: 0,
+                max: 100,
+            },
+            x: {
+                display: false
+            }
+        },
+        hover: {
+            mode: "nearest",
+            intersect: false
+        },
+    });
 
     // #endregion
 
@@ -122,54 +160,5 @@
         return valueBuilder.build();
     });
 
-    // #endregion
-
-    // #region Functions
-        onMounted(() => {
-        var $ = window["$"];
-        var options = {
-            responsive: true,
-            maintainAspectRatio: false,
-            legend: {
-                display: false
-            },
-            scales: {
-                yAxes: [{
-                    display: false,
-                    ticks: {
-                        min: 0,
-                        max: 100
-                    }
-                }],
-                xAxes: [{
-                    display: false
-                }]
-            },
-            hover: {
-                mode: "nearest",
-                intersect: false
-            },
-            tooltips: {
-                hasIndicator: true,
-                intersect: false,
-                callbacks: {
-                    label: function (tooltipItem, data) {
-                        var label = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || "";
-                        if (label) {
-                            label = "CPU: " + label + "%";
-                        }
-
-                        return label;
-                    }
-                }
-            }
-        };
-
-        $(".js-chart").each(() =>  {
-            var el = $(this);
-            var data = el.attr("data-chart") ? JSON.parse(el.attr("data-chart")) : {};
-            //var chart = new Chart(el, { type: "line", data: data, options: options });
-        });
-    });
     // #endregion
 </script>

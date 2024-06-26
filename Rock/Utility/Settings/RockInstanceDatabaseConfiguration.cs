@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -24,6 +25,8 @@ namespace Rock.Utility.Settings
     /// <summary>
     /// Returns information about the database associated with a Rock instance.
     /// </summary>
+    [Obsolete( "Use RockApp.Current.GetDatabaseConfiguration() instead." )]
+    [RockObsolete( "1.16.6" )]
     public class RockInstanceDatabaseConfiguration
     {
         #region Fields
@@ -53,6 +56,8 @@ namespace Rock.Utility.Settings
         /// <summary>
         /// Initializes a new instance of the <see cref="RockInstanceDatabaseConfiguration"/> class.
         /// </summary>
+        [Obsolete( "Use RockApp.Current.GetDatabaseConfiguration() instead." )]
+        [RockObsolete( "1.16.6" )]
         public RockInstanceDatabaseConfiguration()
         {
             //
@@ -62,6 +67,8 @@ namespace Rock.Utility.Settings
         /// Initializes a new instance of the <see cref="RockInstanceDatabaseConfiguration"/> class.
         /// </summary>
         /// <param name="connectionString"></param>
+        [Obsolete( "Use RockApp.Current.GetDatabaseConfiguration() instead." )]
+        [RockObsolete( "1.16.6" )]
         public RockInstanceDatabaseConfiguration( string connectionString )
         {
             SetConnectionString( connectionString );
@@ -72,6 +79,8 @@ namespace Rock.Utility.Settings
         /// <summary>
         /// Gets the database connection string.
         /// </summary>
+        [Obsolete( "Use RockApp.Current.GetDatabaseConfiguration() instead." )]
+        [RockObsolete( "1.16.6" )]
         public string ConnectionString { get; private set; }
 
         /// <summary>
@@ -79,6 +88,8 @@ namespace Rock.Utility.Settings
         /// If no read-only connection string has been configured then
         /// the standard connection string is returned.
         /// </summary>
+        [Obsolete( "Use RockApp.Current.GetDatabaseConfiguration() instead." )]
+        [RockObsolete( "1.16.6" )]
         public string ReadOnlyConnectionString => _readOnlyConnectionString ?? ConnectionString;
 
         /// <summary>
@@ -86,12 +97,16 @@ namespace Rock.Utility.Settings
         /// If no analytics connection string has been configured then
         /// the standard connection string is returned.
         /// </summary>
+        [Obsolete( "Use RockApp.Current.GetDatabaseConfiguration() instead." )]
+        [RockObsolete( "1.16.6" )]
         public string AnalyticsConnectionString => _analyticsConnectionString ?? ConnectionString;
 
         /// <summary>
         /// Set the database connection string.
         /// </summary>
         /// <param name="connectionString"></param>
+        [Obsolete( "Use RockApp.Current.GetDatabaseConfiguration() instead." )]
+        [RockObsolete( "1.16.6" )]
         public void SetConnectionString( string connectionString )
         {
             if ( string.IsNullOrWhiteSpace( connectionString ) )
@@ -127,6 +142,8 @@ namespace Rock.Utility.Settings
         /// Sets the read-only replica connection string for this Rock instance.
         /// </summary>
         /// <param name="connectionString">The connection string.</param>
+        [Obsolete( "Use RockApp.Current.GetDatabaseConfiguration() instead." )]
+        [RockObsolete( "1.16.6" )]
         public void SetReadOnlyConnectionString( string connectionString )
         {
             _readOnlyConnectionString = connectionString;
@@ -136,6 +153,8 @@ namespace Rock.Utility.Settings
         /// Sets the analytics replica connection string for this Rock instance.
         /// </summary>
         /// <param name="connectionString">The connection string.</param>
+        [Obsolete( "Use RockApp.Current.GetDatabaseConfiguration() instead." )]
+        [RockObsolete( "1.16.6" )]
         public void SetAnalyticsConnectionString( string connectionString )
         {
             _analyticsConnectionString = connectionString;
@@ -144,6 +163,8 @@ namespace Rock.Utility.Settings
         /// <summary>
         /// Gets the type of database platform on which the Rock database is hosted.
         /// </summary>
+        [Obsolete( "Use RockApp.Current.GetDatabaseConfiguration() instead." )]
+        [RockObsolete( "1.16.6" )]
         public PlatformSpecifier Platform
         {
             get
@@ -161,6 +182,8 @@ namespace Rock.Utility.Settings
         /// Gets a flag indicating if READ COMMITTED SNAPSHOT isolation level is enabled for the database.
         /// If this isolation level is enabled, the database does not hold record locks during the reading phase of a transaction.
         /// </summary>
+        [Obsolete( "Use RockApp.Current.GetDatabaseConfiguration() instead." )]
+        [RockObsolete( "1.16.6" )]
         public bool ReadCommittedSnapshotEnabled
         {
             get
@@ -178,6 +201,8 @@ namespace Rock.Utility.Settings
         /// Gets a flag indicating if snapshot isolation is enabled for the database.
         /// If this feature is available, each transaction operates on a snapshot of the database in isolation from other concurrent operations.
         /// </summary>
+        [Obsolete( "Use RockApp.Current.GetDatabaseConfiguration() instead." )]
+        [RockObsolete( "1.16.6" )]
         public bool SnapshotIsolationAllowed
         {
             get
@@ -194,6 +219,8 @@ namespace Rock.Utility.Settings
         /// <summary>
         /// Gets the size of the database, measured in megabytes (MB).
         /// </summary>
+        [Obsolete( "Use RockApp.Current.GetDatabaseConfiguration() instead." )]
+        [RockObsolete( "1.16.6" )]
         public decimal? DatabaseSize
         {
             get
@@ -236,6 +263,8 @@ WHERE  data_space_id = 1
         /// <summary>
         /// Gets the size of the database log, measured in megabytes (MB).
         /// </summary>
+        [Obsolete( "Use RockApp.Current.GetDatabaseConfiguration() instead." )]
+        [RockObsolete( "1.16.6" )]
         public decimal? LogSize
         {
             get
@@ -278,6 +307,8 @@ WHERE  data_space_id = 0
         /// <summary>
         /// Gets the database platform version number string.
         /// </summary>
+        [Obsolete( "Use RockApp.Current.GetDatabaseConfiguration() instead." )]
+        [RockObsolete( "1.16.6" )]
         public string VersionNumber
         {
             get
@@ -294,6 +325,8 @@ WHERE  data_space_id = 0
         /// <summary>
         /// Gets the database platform version string.
         /// </summary>
+        [Obsolete( "Use RockApp.Current.GetDatabaseConfiguration() instead." )]
+        [RockObsolete( "1.16.6" )]
         public string Version
         {
             get
@@ -310,6 +343,8 @@ WHERE  data_space_id = 0
         /// <summary>
         /// Gets a user-friendly description of the database platform version.
         /// </summary>
+        [Obsolete( "Use RockApp.Current.GetDatabaseConfiguration() instead." )]
+        [RockObsolete( "1.16.6" )]
         public string VersionFriendlyName
         {
             get
@@ -327,6 +362,8 @@ WHERE  data_space_id = 0
         /// <summary>
         /// Gets a description of the database server edition or product variant.
         /// </summary>
+        [Obsolete( "Use RockApp.Current.GetDatabaseConfiguration() instead." )]
+        [RockObsolete( "1.16.6" )]
         public string Edition
         {
             get
@@ -341,6 +378,8 @@ WHERE  data_space_id = 0
         /// <summary>
         /// Gets a description of the database server RecoverMode or product variant.
         /// </summary>
+        [Obsolete( "Use RockApp.Current.GetDatabaseConfiguration() instead." )]
+        [RockObsolete( "1.16.6" )]
         public string RecoverMode
         {
             get
@@ -378,6 +417,8 @@ WHERE  name = DB_NAME()
         /// <summary>
         /// Gets a description of the expected capability of the database platform, or null if the capability cannot be determined.
         /// </summary>
+        [Obsolete( "Use RockApp.Current.GetDatabaseConfiguration() instead." )]
+        [RockObsolete( "1.16.6" )]
         public string ServiceObjective
         {
             get
@@ -393,6 +434,8 @@ WHERE  name = DB_NAME()
         /// <summary>
         /// Get the name of the operating system on which the database server is hosted.
         /// </summary>
+        [Obsolete( "Use RockApp.Current.GetDatabaseConfiguration() instead." )]
+        [RockObsolete( "1.16.6" )]
         public string DatabaseServerOperatingSystem
         {
             get
@@ -409,6 +452,8 @@ WHERE  name = DB_NAME()
         /// <summary>
         /// Gets the name of the database server.
         /// </summary>
+        [Obsolete( "Use RockApp.Current.GetDatabaseConfiguration() instead." )]
+        [RockObsolete( "1.16.6" )]
         public string ServerName
         {
             get
@@ -420,6 +465,8 @@ WHERE  name = DB_NAME()
         /// <summary>
         /// Gets the name of the database instance.
         /// </summary>
+        [Obsolete( "Use RockApp.Current.GetDatabaseConfiguration() instead." )]
+        [RockObsolete( "1.16.6" )]
         public string DatabaseName
         {
             get
@@ -431,6 +478,8 @@ WHERE  name = DB_NAME()
         /// <summary>
         /// Gets the Compatibility Level of the database
         /// </summary>
+        [Obsolete( "Use RockApp.Current.GetDatabaseConfiguration() instead." )]
+        [RockObsolete( "1.16.6" )]
         public int CompatibilityLevel
         {
             get
@@ -447,6 +496,8 @@ WHERE  name = DB_NAME()
         /// <summary>
         /// Gets the compatibility version of the database.
         /// </summary>
+        [Obsolete( "Use RockApp.Current.GetDatabaseConfiguration() instead." )]
+        [RockObsolete( "1.16.6" )]
         public string CompatibilityVersion
         {
             get
@@ -729,6 +780,8 @@ WHERE d.name = '<db_name>';
         /// <summary>
         /// A database server platform that is capable of hosting an instance of a Rock database.
         /// </summary>
+        [Obsolete( "Use RockApp.Current.GetDatabaseConfiguration() instead." )]
+        [RockObsolete( "1.16.6" )]
         public enum PlatformSpecifier
         {
             /// <summary>

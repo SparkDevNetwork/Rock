@@ -274,13 +274,11 @@
   <ItemGroup>
     <Compile Include="BenchmarkRunners\PersonSearchBenchmarks.cs" />
     <Compile Include="BenchmarkRunners\Program.cs" />
-    <Compile Include="Modules\Reporting\DataViewTests.cs" />
     <Compile Include="PerformanceTestInitializer.cs" />
     <Compile Include="Modules\Checkin\AttendanceCodeTests.cs" />
     <Compile Include="Modules\Checkin\CheckinAttendance.cs" />
     <Compile Include="Modules\Core\SundayDateTest.cs" />
     <Compile Include="Modules\Crm\ConnectionStatusChangeReportTests.cs" />
-    <Compile Include="Modules\Crm\Groups\GroupRequirementsTests.cs" />
     <Compile Include="Modules\Crm\Interactions\PageViewTests.cs" />
     <Compile Include="Modules\Crm\Person\PersonPickerControllerTests.cs" />
     <Compile Include="Modules\Lava\LavaPerformanceTestConsole.cs" />

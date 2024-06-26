@@ -1933,7 +1933,7 @@ namespace RockWeb.Blocks.Groups
                 _memberRequirements.Clear();
                 foreach ( var member in _group.Members )
                 {
-                    _memberRequirements.AddOrIgnore(
+                    _memberRequirements.TryAdd(
                         member.Id,
                         member.GetGroupRequirementsStatuses( rockContext )
                         	.Where( s => s.GroupRequirement.GroupRequirementType.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
@@ -2169,6 +2169,12 @@ namespace RockWeb.Blocks.Groups
             _requirementFullNameField = gGroupMemberRequirements.ColumnsOfType<RockLiteralField>().Where( a => a.ID == "lRequirementExportFullName" ).FirstOrDefault();
             _nameWithHtmlField = gGroupMemberRequirements.ColumnsOfType<RockLiteralField>().Where( a => a.ID == "lRequirementNameWithHtml" ).FirstOrDefault();
             _requirementStatesField = gGroupMemberRequirements.ColumnsOfType<RockLiteralField>().Where( a => a.ID == "lRequirementStates" ).FirstOrDefault();
+
+            _exportHomePhoneField = gGroupMemberRequirements.ColumnsOfType<RockLiteralField>().Where( a => a.ID == "lRequirementExportHomePhone" ).FirstOrDefault();
+            _exportCellPhoneField = gGroupMemberRequirements.ColumnsOfType<RockLiteralField>().Where( a => a.ID == "lRequirementExportCellPhone" ).FirstOrDefault();
+            _exportHomeAddressField = gGroupMemberRequirements.ColumnsOfType<RockLiteralField>().Where( a => a.ID == "lRequirementExportHomeAddress" ).FirstOrDefault();
+            _exportLatitudeField = gGroupMemberRequirements.ColumnsOfType<RockLiteralField>().Where( a => a.ID == "lRequirementExportLatitude" ).FirstOrDefault();
+            _exportLongitude = gGroupMemberRequirements.ColumnsOfType<RockLiteralField>().Where( a => a.ID == "lRequirementExportLongitude" ).FirstOrDefault();
 
             _groupTypeRoleIdsWithGroupSync = new HashSet<int>( _group.GroupSyncs.Select( a => a.GroupTypeRoleId ).ToList() );
 

@@ -173,6 +173,9 @@ export function addQuickReturn(title: string, section: string, sectionOrder?: nu
             addQuickReturn: (type: string, typeOrder: number, itemName: string) => void
         }
     }
-
-    (window["Rock"] as IRock).personalLinks.addQuickReturn(section, sectionOrder ?? 0, title);
+    
+    const rock = window["Rock"] as IRock;
+    if (rock && rock.personalLinks) {
+        rock.personalLinks.addQuickReturn(section, sectionOrder ?? 0, title);
+    }
 }

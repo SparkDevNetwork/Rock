@@ -142,6 +142,7 @@ namespace Rock.Model
             target.Name = source.Name;
             target.ResultsLavaTemplate = source.ResultsLavaTemplate;
             target.SourceEntityTypeId = source.SourceEntityTypeId;
+            target.TargetCount = source.TargetCount;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

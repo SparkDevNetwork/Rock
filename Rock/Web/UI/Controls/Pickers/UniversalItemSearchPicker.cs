@@ -504,10 +504,9 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( HtmlTextWriterAttribute.Href, "#" );
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
 
-                // TODO: IconCssClass property.
                 writer.Write(
                     $@"
-                <i class='fa fa-user'></i>
+                <i class='{IconCssClass} fa-fw'></i>
                 <span class='js-universalitemsearchpicker-selecteditem-label picker-selecteditem'>{selectedText}</span>
 " );
 

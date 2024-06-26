@@ -189,6 +189,7 @@ namespace Rock.Mobile
                 HomeAddress = GetMobileAddress( person.GetHomeLocation() ),
                 CampusGuid = person.GetCampus()?.Guid,
                 PersonAliasId = person.PrimaryAliasId.Value,
+                PersonAliasGuid = person.PrimaryAlias.Guid,
                 PhotoUrl = ( person.PhotoId.HasValue ? $"{baseUrl}{person.PhotoUrl}" : null ),
                 SecurityGroupGuids = roleGuids,
                 PersonalizationSegmentGuids = new List<Guid>(),
@@ -581,7 +582,7 @@ namespace Rock.Mobile
         {
             foreach ( var page in pages )
             {
-                var additionalPageSettings = page.AdditionalSettings.FromJsonOrNull<AdditionalPageSettings>() ?? new AdditionalPageSettings();
+                var additionalPageSettings = page.GetAdditionalSettings<AdditionalPageSettings>();
 
 
                 var mobilePage = new MobilePage
@@ -608,7 +609,7 @@ namespace Rock.Mobile
                     HideNavigationBar = additionalPageSettings.HideNavigationBar,
                     ShowFullScreen = additionalPageSettings.ShowFullScreen,
                     AutoRefresh = additionalPageSettings.AutoRefresh,
-                    PageType = additionalPageSettings.PageType,
+                    PageType = additionalPageSettings.PageType.ToMobile(),
                     WebPageUrl = additionalPageSettings.WebPageUrl
                 };
 

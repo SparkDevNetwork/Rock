@@ -543,10 +543,15 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
+            // Don't remove Id as this is required if this control is defined as attribute Field in Bulk Update
+            writer.AddAttribute( "id", this.ClientID );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
             _etpEntityType.Visible = EntityTypePickerVisible;
             _etpEntityType.RenderControl( writer );
 
             _phEntityTypeEntityIdValue.RenderControl( writer );
+            writer.RenderEndTag();
         }
 
         /// <summary>

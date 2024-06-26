@@ -165,6 +165,8 @@ namespace Rock.Tests.Shared
             public const string ScheduleSun0900Guid = "FF6FB240-0C32-4542-BE40-159C522F7E51";
             public const string ScheduleSun1030Guid = "4628D917-EC9C-4269-B39C-5BCBEF3658E7";
             public const string ScheduleSun1200Guid = "1F6C15DA-982F-43B1-BDE9-D4E70CFBCB45";
+
+            public const string ScheduleDaily1630Guid = "A5C81078-EB8C-46AA-BB91-1E2BA8BA76AE";
         }
 
         public static class Steps

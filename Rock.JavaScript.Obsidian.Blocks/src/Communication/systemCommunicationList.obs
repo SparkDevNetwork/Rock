@@ -1,0 +1,209 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="!config.options?.canAdministrate" alertType="danger"><strong>Error</strong> You are not authorized to edit system communications</NotificationBox>
+
+    <Grid v-else
+          :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="System Communication"
+          :entityTypeGuid="EntityType.SystemCommunication"
+          stickyHeader
+          liveUpdates
+          gridSettings
+          :gridSettingsActive="hasSettingsFilters"
+          @gridSettingsClick="onGridSettingsClick"
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          @selectItem="onSelectItem">
+
+        <TextColumn name="title"
+                    title="Title"
+                    field="title"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <TextColumn name="subject"
+                    title="Subject"
+                    field="subject"
+                    :filter="textValueFilter"
+                    width="40%"
+                    visiblePriority="md" />
+
+        <TextColumn name="category"
+                    title="Category"
+                    field="category"
+                    :filter="textValueFilter"
+                    visiblePriority="md" />
+
+        <TextColumn name="from"
+                    title="From Address"
+                    field="from"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <Column name="mediums"
+                title="Mediums">
+            <template #format="{ row }">
+                <span v-if="row.smsMessage" class='label label-info mr-1'>SMS</span>
+                <span v-if="row.pushMessage" class='label label-info'>Push</span>
+            </template>
+        </Column>
+
+        <ButtonColumn name="preview"
+                      iconClass="fa fa-search"
+                      visiblePriority="xs"
+                      @click="onPreviewClick" />
+
+        <BooleanColumn name="isActive"
+                       title="Active"
+                       field="isActive"
+                       width="57"
+                       visiblePriority="xs" />
+
+        <SecurityColumn />
+
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+    </Grid>
+
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible" />
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { BooleanColumn, TextColumn, textValueFilter, DeleteColumn, SecurityColumn, ButtonColumn, Column } from "@Obsidian/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { SystemCommunicationListOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/SystemCommunicationList/systemCommunicationListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { NavigationUrlKey, PreferenceKey, GridSettingsOptions } from "./SystemCommunicationList/types.partial";
+    import { computed, reactive, ref, watch } from "vue";
+    import GridSettingsModal from "./SystemCommunicationList/gridSettingsModal.partial.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+
+    const config = useConfigurationValues<ListBlockBox<SystemCommunicationListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const isGridSettingsVisible = ref(false);
+    const gridSettings = ref<GridSettingsOptions>({
+        activeStatus: preferences.getValue(PreferenceKey.FilterActive),
+        category: JSON.parse(preferences.getValue(PreferenceKey.FilterCategory) || "{}"),
+        supports: preferences.getValue(PreferenceKey.FilterSupports),
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** `true` if the grid settings is performing any filtering. */
+    const hasSettingsFilters = computed((): boolean => {
+        return !!gridSettings.value.activeStatus
+            || !!gridSettings.value.supports
+            || !!gridSettings.value.category?.value;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+        }
+    }
+
+    /**
+     * Called when a row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete system communication.");
+        }
+    }
+
+    /**
+     * Called when the Add button has been clicked by the indivual.
+     */
+    function onAddItem(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
+        }
+    }
+
+    /**
+    * Called when the Preview button has been clicked by the indivual.
+    */
+    function onPreviewClick(key: string): void {
+        const previewUrl = gridData?.rows?.find(r => r["idKey"] === key)?.previewUrl as string;
+        if (previewUrl) {
+            window.location.href = previewUrl;
+        }
+    }
+
+    /**
+    * Called when the grid setting icon is clicked, displays the block filters.
+    *
+    */
+    function onGridSettingsClick(): void {
+        isGridSettingsVisible.value = true;
+    }
+
+    // #endregion
+
+    watch(gridSettings, async () => {
+        preferences.setValue(PreferenceKey.FilterActive, gridSettings.value.activeStatus ?? "");
+        preferences.setValue(PreferenceKey.FilterCategory, JSON.stringify(gridSettings.value.category));
+        preferences.setValue(PreferenceKey.FilterSupports, gridSettings.value.supports ?? "");
+
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
+    });
+
+    gridDataSource.value = loadGridData();
+</script>

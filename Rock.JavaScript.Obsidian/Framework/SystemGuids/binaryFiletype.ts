@@ -39,6 +39,8 @@ export const BinaryFiletype = {
     Default: "C1142570-8CD6-4A20-83B1-ACB47C1CD377",
     /** The Digitally Signed Document guid */
     DigitallySignedDocuments: "40871411-4E2D-45C2-9E21-D9FCBA5FC340",
+    /** The Learning Management System (LMS) guid */
+    LearningManagementSystem: "4f55987b-5279-4d10-8c38-f320046b4bbb",
     /** The Location Image file type guid */
     LocationImage: "DAB74416-3272-4411-BA69-70944B549A4B",
     /** The Media File file type guid */

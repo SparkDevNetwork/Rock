@@ -96,7 +96,7 @@ namespace Rock.Model
                         {
                             foreach ( var sa in method.GetCustomAttributes<SecurityActionAttribute>() )
                             {
-                                actions.AddOrIgnore( sa.Action, sa.Description );
+                                actions.TryAdd( sa.Action, sa.Description );
                             }
                         }
                     }

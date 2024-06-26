@@ -275,12 +275,12 @@ namespace Rock.Tests.UnitTests.Lava
         /// The Date filter should translate a date input using a standard .NET format string correctly.
         /// </summary>
         [DataTestMethod]
-        [DataRow( "d/MMM/yy", "1/May/18" )]
+        [DataRow( "d'/'MMM'/'yy", "1/May/18" )]
         [DataRow( "MMMM dd, yyyy H:mm:ss", "May 01, 2018 18:30:00" )]
         [DataRow( "yyyy-MM-dd HH:mm:ss", "2018-05-01 18:30:00" )]
         public void Date_UsingValidDotNetFormatString_ProducesValidDate( string formatString, string result )
         {
-            var template = "{{ '1-May-2018 6:30 PM' | Date:'<formatString>' }}"
+            var template = @"{% capture formatString %}<formatString>{% endcapture %}{{ '1-May-2018 6:30 PM' | Date:formatString }}"
                 .Replace( "<formatString>", formatString );
 
             TestHelper.AssertTemplateOutput( result, template );

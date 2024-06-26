@@ -110,7 +110,8 @@ namespace RockWeb.Blocks.Follow
                         f.FollowedEntityTypeId.HasValue &&
                         f.FollowedEntityTypeId.Value == followedEntityType.Id &&
                         f.IsActive )
-                    .OrderBy( f => f.Name ) )
+                    .OrderBy( f => f.Order )
+                    .ThenBy( f => f.Name ) )
                 {
                     if ( feType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                     {

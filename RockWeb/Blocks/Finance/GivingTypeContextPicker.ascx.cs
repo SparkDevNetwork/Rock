@@ -20,6 +20,7 @@ using System.Linq;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -33,9 +34,35 @@ namespace RockWeb.Blocks.Finance
     [DisplayName( "Giving Type Context Setter" )]
     [Category( "Finance" )]
     [Description( "Block that can be used to set the Person context to either the current person or one of the current person's businesses." )]
+
+    [CustomDropdownListField(
+        "Display Type",
+        Description = "Determines how the picker options are displayed, either in a dropdown or as buttons.",
+        ListSource = "buttons^Buttons,dropDown^Dropdown",
+        IsRequired = false,
+        DefaultValue = "buttons",
+        Order = 0,
+        Key = AttributeKey.DisplayType
+        )]
+
     [Rock.SystemGuid.BlockTypeGuid( "57B00D03-1CDC-4492-95CF-7BD127CE61F0" )]
     public partial class GivingTypeContextPicker : RockBlock
     {
+        #region Keys
+
+        private static class AttributeKey
+        {
+            public const string DisplayType = "DisplayType";
+        }
+
+        private static class DisplayTypeKey
+        {
+            public const string Buttons = "buttons";
+            public const string DropDown = "dropDown";
+        }
+
+        #endregion
+
         #region Base Control Methods
 
         protected override void OnInit( EventArgs e )
@@ -55,7 +82,10 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnLoad( e );
 
-            LoadContextOptions();
+            if ( !Page.IsPostBack )
+            {
+                LoadContextOptions();
+            }
         }
 
         /// <summary>
@@ -82,6 +112,10 @@ namespace RockWeb.Blocks.Finance
                 var rockContext = new RockContext();
                 var personService = new PersonService( rockContext );
                 var personAndBusinesses = personService.GetBusinesses( CurrentPersonId.Value ).ToList();
+                var displayType = GetAttributeValue( AttributeKey.DisplayType );
+
+                btnGivingTypes.Visible = displayType == DisplayTypeKey.Buttons;
+                ddlGivingTypes.Visible = displayType == DisplayTypeKey.DropDown;
 
                 // only show the ContextPicker if the person has businesses
                 this.Visible = personAndBusinesses.Any();
@@ -106,15 +140,29 @@ namespace RockWeb.Blocks.Finance
                 }
                 else
                 {
-                    var pickerList = personAndBusinesses.Select( a => new
+                    if ( displayType == DisplayTypeKey.Buttons )
                     {
-                        Id = a.Id,
-                        Name = a.FullName,
-                        ButtonClass = ( a.Id == currentPersonOrBusiness.Id ) ? "btn btn-xs btn-primary" : "btn btn-xs btn-default"
-                    } ).ToList();
+                        var pickerList = personAndBusinesses.Select( a => new
+                        {
+                            Id = a.Id,
+                            Name = a.FullName,
+                            ButtonClass = ( a.Id == currentPersonOrBusiness.Id ) ? "btn btn-xs btn-primary" : "btn btn-xs btn-default"
+                        } ).ToList();
 
-                    rptGivingTypes.DataSource = pickerList;
-                    rptGivingTypes.DataBind();
+                        rptGivingTypes.DataSource = pickerList;
+                        rptGivingTypes.DataBind();
+                    }
+                    else
+                    {
+                        var dropdownList = personAndBusinesses.Select( a => new ListItem
+                        {
+                            Text = a.FullName,
+                            Value = a.Id.ToString(),
+                        } ).ToArray();
+
+                        ddlGivingTypes.Items.AddRange( dropdownList );
+                        ddlGivingTypes.SetValue( currentPersonOrBusiness.Id );
+                    }
                 }
             }
             else
@@ -162,6 +210,20 @@ namespace RockWeb.Blocks.Finance
             if ( personOrBusinessId != null )
             {
                 SetGivingTypeContext( personOrBusinessId.AsInteger(), true );
+            }
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlGivingTypes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlGivingTypes_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            var personOrBusinessId = ddlGivingTypes.SelectedValueAsInt();
+            if ( personOrBusinessId.HasValue )
+            {
+                SetGivingTypeContext( personOrBusinessId.Value, true );
             }
         }
 

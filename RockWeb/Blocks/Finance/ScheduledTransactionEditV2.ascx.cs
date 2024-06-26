@@ -382,6 +382,13 @@ mission. We are so grateful for your commitment.</p>
                 pnlPromptForChanges.Visible = false;
                 return;
             }
+            else if ( IsEventRegistrationTransactionType( scheduledTransaction ) )
+            {
+                // NOTE: Also verified in ShowDetails()
+                ShowConfigurationMessage( NotificationBoxType.Warning, "Warning", "Event Registration Scheduled Transactions cannot be updated." );
+                pnlPromptForChanges.Visible = false;
+                return;
+            }
 
             hfFinancialGatewayId.Value = scheduledTransaction.FinancialGatewayId.ToString();
             var financialGateway = this.FinancialGateway;
@@ -532,6 +539,12 @@ mission. We are so grateful for your commitment.</p>
             {
                 // Note: Also verified in OnInit
                 ShowConfigurationMessage( NotificationBoxType.Warning, "Warning", "Scheduled Transaction not found." );
+                return;
+            }            
+            else if ( IsEventRegistrationTransactionType( scheduledTransaction ) )
+            {
+                // NOTE: Also verified in ShowDetails()
+                ShowConfigurationMessage( NotificationBoxType.Warning, "Warning", "Event Registration Scheduled Transactions cannot be updated." );
                 return;
             }
 
@@ -765,6 +778,18 @@ mission. We are so grateful for your commitment.</p>
         }
 
         /// <summary>
+        /// Determines if the financial scheduled transaction is an event registration.
+        /// </summary>
+        /// <param name="financialScheduledTransaction">The financial scheduled transaction.</param>
+        private bool IsEventRegistrationTransactionType( FinancialScheduledTransaction financialScheduledTransaction )
+        {
+            var eventRegistrationTransactionTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_EVENT_REGISTRATION.AsGuid() );
+
+            return eventRegistrationTransactionTypeValueId.HasValue
+                && eventRegistrationTransactionTypeValueId == financialScheduledTransaction?.TransactionTypeValueId;
+        }
+
+        /// <summary>
         /// Hides the configuration message.
         /// </summary>
         private void HideConfigurationMessage()
@@ -894,6 +919,14 @@ mission. We are so grateful for your commitment.</p>
             var financialScheduledTransactionDetailService = new FinancialScheduledTransactionDetailService( rockContext );
             Guid scheduledTransactionGuid = hfScheduledTransactionGuid.Value.AsGuid();
             var financialScheduledTransaction = financialScheduledTransactionService.Get( scheduledTransactionGuid );
+
+            if ( IsEventRegistrationTransactionType( financialScheduledTransaction ) )
+            {
+                // Prevent updating Event Registration scheduled transactions.
+                nbUpdateScheduledPaymentWarning.Visible = true;
+                nbUpdateScheduledPaymentWarning.Text = "Event Registration Scheduled Transactions cannot be updated.";
+                return;
+            }
 
             financialScheduledTransaction.StartDate = dtpStartDate.SelectedDate.Value;
             financialScheduledTransaction.TransactionFrequencyValueId = ddlFrequency.SelectedValue.AsInteger();

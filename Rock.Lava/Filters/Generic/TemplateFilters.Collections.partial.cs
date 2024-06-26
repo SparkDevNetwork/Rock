@@ -82,7 +82,9 @@ namespace Rock.Lava.Filters
 
             if ( string.IsNullOrWhiteSpace( property ) )
             {
-                return e.ToList().Distinct();
+                // Materialize the enumerable to a List, determine the distinct values, then convert the
+                // output of that operation to a List to ensure that it can be processed by downstream filters.
+                return e.ToList().Distinct().ToList();
             }
             else
             {

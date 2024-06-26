@@ -49,5 +49,14 @@ namespace Rock.Logging
         /// </value>
         public static IRockLogReader LogReader => new RockSerilogReader( Log );
 
+        /// <summary>
+        /// Sets the logger to the specified instance.
+        /// </summary>
+        /// <remarks>This is meant to be used by unit tests.</remarks>
+        /// <param name="logger">The logger instance.</param>
+        internal static void SetLoggerInternal( IRockLogger logger )
+        {
+            _log = logger;
+        }
     }
 }

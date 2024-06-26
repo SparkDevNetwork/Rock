@@ -1,0 +1,85 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Settings"
+           saveText="Save"
+           @save="onSave">
+        <SectionHeader title="Filters" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <SlidingDateRangePicker v-model="dateRange"
+                                        label="Date Range"
+                                        :enabledSlidingDateRangeUnits="[RangeType.Previous, RangeType.Last, RangeType.Current, RangeType.DateRange]"
+                                        :enabledTimeUnits="[TimeUnit.Hour, TimeUnit.Day, TimeUnit.Week, TimeUnit.Month, TimeUnit.Year]"
+                                        previewLocation="None" />
+            </div>
+            <div class="col-md-6">
+                <CategoryPicker v-model="category"
+                                    label="Category"
+                                    rules="required"
+                                    :entityTypeGuid="EntityType.PrayerRequest" />
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { RangeType, SlidingDateRange, TimeUnit, slidingDateRangeToString, parseSlidingDateRangeString } from "@Obsidian/Utility/slidingDateRange";
+    import { ref, PropType, watch } from "vue";
+    import { GridSettingsOptions } from "./types.partial";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GridSettingsOptions): void;
+        (e: "update:visible", value: boolean): void;
+        (e: "close"): void;
+    }>();
+
+    const dateRange = ref(parseSlidingDateRangeString(props.modelValue.dateRange ?? ""));
+    const category =  ref<ListItemBag | null | undefined>(props.modelValue.category ?? null);
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+
+    function onSave(): void {
+        const value: GridSettingsOptions = {
+            dateRange: dateRange.value ? slidingDateRangeToString(dateRange.value as SlidingDateRange) : "",
+            category: category.value,
+        };
+
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
+
+        isVisible.value = false;
+    }
+
+    watch(() => props.modelValue, () => {
+        dateRange.value = parseSlidingDateRangeString(props.modelValue.dateRange ?? "");
+        category.value = props.modelValue.category;
+    });
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            emit("close");
+        }
+    });
+</script>

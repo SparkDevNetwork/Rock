@@ -109,6 +109,12 @@ namespace Rock.Blocks.Cms
         {
             errorMessage = null;
 
+            if ( pageRoute.PageId == 0 )
+            {
+                errorMessage = "Page is required";
+                return false;
+            }
+
             int? siteId = null;
             var entityService = new PageRouteService( rockContext );
             var pageCache = Web.Cache.PageCache.Get( pageRoute.PageId );
@@ -286,7 +292,7 @@ namespace Rock.Blocks.Cms
                 () => entity.IsGlobal = box.Entity.IsGlobal );
 
             box.IfValidProperty( nameof( box.Entity.Page ),
-                () => entity.PageId = box.Entity.Page.GetEntityId<Page>( rockContext ).Value );
+                () => entity.PageId = box.Entity.Page.GetEntityId<Page>( rockContext ) ?? 0 );
 
             box.IfValidProperty( nameof( box.Entity.Route ),
                 () => entity.Route = box.Entity.Route );

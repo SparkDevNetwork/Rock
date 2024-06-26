@@ -132,7 +132,7 @@ namespace Rock.CheckIn
                         string mergeField = definedValue.GetAttributeValue( "MergeField" );
                         if ( mergeField != null )
                         {
-                            mergeFields.AddOrIgnore( keyDefinedValueId.Key, mergeField );
+                            mergeFields.TryAdd( keyDefinedValueId.Key, mergeField );
                         }
                     }
                 }
@@ -197,7 +197,7 @@ namespace Rock.CheckIn
                                 int? definedValueId = nameAndValue[1].AsIntegerOrNull();
                                 if ( definedValueId.HasValue )
                                 {
-                                    label._mergeCodeDefinedValueIds.AddOrIgnore( mergeCodeKey, definedValueId.Value );
+                                    label._mergeCodeDefinedValueIds.TryAdd( mergeCodeKey, definedValueId.Value );
                                 }
                             }
                         }
