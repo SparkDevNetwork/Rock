@@ -23,7 +23,7 @@ namespace Rock.CheckIn.v2
     /// Identifies information about an attendance session that is being
     /// requested to be created.
     /// </summary>
-    public class AttendanceSessionRequest : AttendanceSessionRequestBag
+    internal class AttendanceSessionRequest : AttendanceSessionRequestBag
     {
         /// <summary>
         /// Gets or sets a value indicating whether this session should enforce
