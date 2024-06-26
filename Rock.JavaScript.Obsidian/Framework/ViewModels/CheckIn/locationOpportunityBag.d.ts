@@ -21,8 +21,6 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
-
 /** Defines a single location that can be used during check-in. */
 export type LocationOpportunityBag = {
     /** Gets or sets the maximum capacity of the location. */
@@ -31,15 +29,15 @@ export type LocationOpportunityBag = {
     /** Gets or sets the number of spots currently filled in the location. */
     currentCount: number;
 
-    /** Gets or sets the unique identifier of this item. */
-    guid: Guid;
+    /** Gets or sets the identifier of this item. */
+    id?: string | null;
 
     /** Gets or sets the display name of this item. */
     name?: string | null;
 
     /**
-     * Gets or sets the schedule unique identifiers that this location
-     * is valid for.
+     * Gets or sets the schedule identifiers that this location is valid
+     * for.
      */
-    scheduleGuids?: Guid[] | null;
+    scheduleIds?: string[] | null;
 };

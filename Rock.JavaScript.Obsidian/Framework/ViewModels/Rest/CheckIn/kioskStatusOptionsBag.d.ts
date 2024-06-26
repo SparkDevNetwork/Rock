@@ -21,16 +21,14 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
-
 /** The request parameters to use when requesting the current status of a kiosk. */
 export type KioskStatusOptionsBag = {
     /**
-     * Gets or sets the area unique identifiers the kiosk is currently
+     * Gets or sets the area identifiers the kiosk is currently
      * configured for.
      */
-    areaGuids?: Guid[] | null;
+    areaIds?: string[] | null;
 
-    /** Gets or sets the kiosk unique identifier. */
-    kioskGuid: Guid;
+    /** Gets or sets the kiosk identifier. */
+    kioskId?: string | null;
 };

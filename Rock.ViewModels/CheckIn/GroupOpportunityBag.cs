@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 
 namespace Rock.ViewModels.CheckIn
@@ -25,23 +24,23 @@ namespace Rock.ViewModels.CheckIn
     public class GroupOpportunityBag : CheckInItemBag
     {
         /// <summary>
-        /// Gets or sets the area unique identifier that this group belongs to.
+        /// Gets or sets the area identifier that this group belongs to.
         /// </summary>
-        /// <value>The area unique identifier.</value>
-        public Guid AreaGuid { get; set; }
+        /// <value>The area identifier.</value>
+        public string AreaId { get; set; }
 
         /// <summary>
-        /// Gets or sets the ability level unique identifier required to
+        /// Gets or sets the ability level identifier required to
         /// attend this group.
         /// </summary>
-        /// <value>The required ability level unique identifier; or <c>null</c> if not required.</value>
-        public Guid? AbilityLevelGuid { get; set; }
+        /// <value>The required ability level identifier; or <c>null</c> if not required.</value>
+        public string AbilityLevelId { get; set; }
 
         /// <summary>
-        /// Gets or sets the location unique identifiers. These are in proper
-        /// order of location priority.
+        /// Gets or sets the location identifiers. These are in proper order
+        /// of location priority.
         /// </summary>
-        /// <value>The location unique identifiers.</value>
-        public List<Guid> LocationGuids { get; set; }
+        /// <value>The location identifiers.</value>
+        public List<string> LocationIds { get; set; }
     }
 }

@@ -22,8 +22,6 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { KioskBag } from "@Obsidian/ViewModels/CheckIn/kioskBag";
 import { inject, provide } from "vue";
 import { zeroPad } from "@Obsidian/Utility/numberUtils";
-import { Guid } from "@Obsidian/Types";
-import { areEqual } from "@Obsidian/Utility/guid";
 import { IRockCheckInNative } from "./types.partial";
 
 /** The unique key for the kiosk state in Vue. */
@@ -229,25 +227,24 @@ export function clone<T>(value: T): T {
 }
 
 /**
- * Determines if the needle is in the haystack of guids. If needle is a single
- * value then the haystack is searched for that one value. If needle is an array
- * of values then only one of those values must exist in the haystack.
+ * Determines if the needle is in the haystack of ids. Only one of the needle
+ * values must exist in the haystack.
  *
- * @param needle The guid or guids to be searched for.
- * @param haystack The array of guids to be searched in.
+ * @param needle The ids to be searched for.
+ * @param haystack The array of ids to be searched in.
  *
  * @returns true if needle was found in the haystack.
  */
-export function isGuidInList(needle: Guid | Guid[] | null | undefined, haystack: Guid[] | null | undefined): boolean {
+export function isAnyIdInList(needle: string | string[] | null | undefined, haystack: string[] | null | undefined): boolean {
     if (!needle || !haystack) {
         return false;
     }
 
     if (Array.isArray(needle)) {
-        return haystack.some(h => needle.some(n => areEqual(h, n)));
+        return haystack.some(h => needle.some(n => h === n));
     }
 
-    return haystack.some(h => areEqual(h, needle));
+    return haystack.some(h => h === needle);
 }
 
 /**

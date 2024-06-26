@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 
 namespace Rock.ViewModels.CheckIn
@@ -26,10 +25,10 @@ namespace Rock.ViewModels.CheckIn
     public class FamilyBag
     {
         /// <summary>
-        /// Gets or sets the unique identifier of the family Group.
+        /// Gets or sets the identifier of the family Group.
         /// </summary>
-        /// <value>The unique identifier of the family Group.</value>
-        public Guid Guid { get; set; }
+        /// <value>The identifier of the family Group.</value>
+        public string Id { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the family.
@@ -38,10 +37,10 @@ namespace Rock.ViewModels.CheckIn
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the family campus unique identifier.
+        /// Gets or sets the family campus identifier.
         /// </summary>
-        /// <value>The family campus unique identifier.</value>
-        public Guid? CampusGuid { get; set; }
+        /// <value>The family campus identifier.</value>
+        public string CampusId { get; set; }
 
         /// <summary>
         /// Gets or sets the family members.

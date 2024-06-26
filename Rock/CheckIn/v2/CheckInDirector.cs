@@ -23,6 +23,7 @@ using System.Linq.Expressions;
 using Rock.Data;
 using Rock.Model;
 using Rock.Observability;
+using Rock.Utility;
 using Rock.ViewModels.CheckIn;
 using Rock.Web.Cache;
 
@@ -104,7 +105,7 @@ namespace Rock.CheckIn.v2
         /// <returns>A collection of <see cref="ConfigurationAreaBag"/> objects.</returns>
         public virtual List<ConfigurationAreaBag> GetCheckInAreaSummaries( DeviceCache kiosk, GroupTypeCache checkinTemplate )
         {
-            var areas = new Dictionary<Guid, ConfigurationAreaBag>();
+            var areas = new Dictionary<string, ConfigurationAreaBag>();
             List<GroupTypeCache> templates;
             HashSet<int> kioskGroupTypeIds = null;
 
@@ -127,7 +128,7 @@ namespace Rock.CheckIn.v2
 
             // Go through each template and get all areas that belong to
             // it. Then either add them to the list of areas or update the
-            // primary template guids of the existing area.
+            // primary template ids of the existing area.
             foreach ( var cfg in templates )
             {
                 foreach ( var areaGroupType in cfg.GetDescendentGroupTypes() )
@@ -145,17 +146,17 @@ namespace Rock.CheckIn.v2
                         continue;
                     }
 
-                    if ( areas.TryGetValue( areaGroupType.Guid, out var area ) )
+                    if ( areas.TryGetValue( areaGroupType.IdKey, out var area ) )
                     {
-                        area.PrimaryTemplateGuids.Add( cfg.Guid );
+                        area.PrimaryTemplateIds.Add( cfg.IdKey );
                     }
                     else
                     {
-                        areas.Add( areaGroupType.Guid, new ConfigurationAreaBag
+                        areas.Add( areaGroupType.IdKey, new ConfigurationAreaBag
                         {
-                            Guid = areaGroupType.Guid,
+                            Id = areaGroupType.IdKey,
                             Name = areaGroupType.Name,
-                            PrimaryTemplateGuids = new List<Guid> { cfg.Guid }
+                            PrimaryTemplateIds = new List<string> { cfg.IdKey }
                         } );
                     }
                 }
@@ -319,8 +320,8 @@ namespace Rock.CheckIn.v2
                     NextStopDateTime = nextStopDateTime,
                     CampusCurrentDateTime = now,
                     ServerCurrentDateTime = serverNow,
-                    LocationGuids = locations.Select( l => l.Guid ).ToList(),
-                    ScheduleGuids = schedules.Select( s => s.Guid ).ToList()
+                    LocationIds = locations.Select( l => l.IdKey ).ToList(),
+                    ScheduleIds = schedules.Select( s => s.IdKey ).ToList()
                 };
             }
         }
@@ -340,10 +341,10 @@ namespace Rock.CheckIn.v2
         /// include pending attendance records.
         /// </summary>
         /// <param name="cutoffDateTime">Attendance records must start on or after this date and time.</param>
-        /// <param name="personGuids">The person unique identifiers to query the database for.</param>
+        /// <param name="personIds">The person identifiers to query the database for.</param>
         /// <param name="rockContext">The database context to execute the query on.</param>
         /// <returns>A collection of <see cref="RecentAttendance"/> records.</returns>
-        public static List<RecentAttendance> GetRecentAttendance( DateTime cutoffDateTime, IReadOnlyList<Guid> personGuids, RockContext rockContext )
+        public static List<RecentAttendance> GetRecentAttendance( DateTime cutoffDateTime, IReadOnlyList<string> personIds, RockContext rockContext )
         {
             var attendanceService = new AttendanceService( rockContext );
 
@@ -357,25 +358,43 @@ namespace Rock.CheckIn.v2
                     && a.DidAttend.Value == true
                     && a.CheckInStatus != Enums.Event.CheckInStatus.Pending );
 
-            // TODO: This should probably be changed to a raw SQL query for performance.
-            // Because the list of personGuids will be changing constantly it
-            // will still not be cached by EF.
-            personAttendanceQuery = WhereContains( personAttendanceQuery, personGuids, a => a.PersonAlias.Person.Guid );
+            var personIdNumbers = personIds
+                .Select( a => IdHasher.Instance.GetId( a ) )
+                .Where( a => a.HasValue )
+                .Select( a => a.Value )
+                .ToList();
+
+            personAttendanceQuery = WhereContains( personAttendanceQuery, personIdNumbers, a => a.PersonAlias.PersonId );
 
             return personAttendanceQuery
-                .Select( a => new RecentAttendance
+                .Select( a => new
                 {
                     AttendanceId = a.Id,
-                    AttendanceGuid = a.Guid,
                     Status = a.CheckInStatus,
+                    a.StartDateTime,
+                    a.EndDateTime,
+                    PersonId = a.PersonAlias.Person.Id,
+                    GroupTypeId = a.Occurrence.Group.GroupType.Id,
+                    GroupId = a.Occurrence.Group.Id,
+                    LocationId = a.Occurrence.Location.Id,
+                    ScheduleId = a.Occurrence.Schedule.Id,
+                    CampusId = a.CampusId.HasValue ? a.CampusId.Value : ( int? ) null
+                } )
+                .ToList()
+                .Select( a => new RecentAttendance
+                {
+                    AttendanceId = IdHasher.Instance.GetHash( a.AttendanceId ),
+                    Status = a.Status,
                     StartDateTime = a.StartDateTime,
                     EndDateTime = a.EndDateTime,
-                    PersonGuid = a.PersonAlias.Person.Guid,
-                    GroupTypeGuid = a.Occurrence.Group.GroupType.Guid,
-                    GroupGuid = a.Occurrence.Group.Guid,
-                    LocationGuid = a.Occurrence.Location.Guid,
-                    ScheduleGuid = a.Occurrence.Schedule.Guid,
-                    CampusGuid = a.CampusId.HasValue ? a.Campus.Guid : ( Guid? ) null
+                    PersonId = IdHasher.Instance.GetHash( a.PersonId ),
+                    GroupTypeId = IdHasher.Instance.GetHash( a.GroupTypeId ),
+                    GroupId = IdHasher.Instance.GetHash( a.GroupId ),
+                    LocationId = IdHasher.Instance.GetHash( a.LocationId ),
+                    ScheduleId = IdHasher.Instance.GetHash( a.ScheduleId ),
+                    CampusId = a.CampusId.HasValue
+                        ? IdHasher.Instance.GetHash( a.CampusId.Value )
+                        : null
                 } )
                 .ToList();
         }
@@ -403,25 +422,37 @@ namespace Rock.CheckIn.v2
                     && a.DidAttend.Value == true
                     && !a.EndDateTime.HasValue );
 
-            // TODO: This should probably be changed to a raw SQL query for performance.
-            // Because the list of locationGuids will be changing constantly it
-            // will still not be cached by EF.
             personAttendanceQuery = WhereContains( personAttendanceQuery, locationIds, a => a.Occurrence.Location.Id );
 
             return personAttendanceQuery
-                .Select( a => new RecentAttendance
+                .Select( a => new
                 {
                     AttendanceId = a.Id,
-                    AttendanceGuid = a.Guid,
                     Status = a.CheckInStatus,
+                    a.StartDateTime,
+                    a.EndDateTime,
+                    PersonId = a.PersonAlias.Person.Id,
+                    GroupTypeId = a.Occurrence.Group.GroupType.Id,
+                    GroupId = a.Occurrence.Group.Id,
+                    LocationId = a.Occurrence.Location.Id,
+                    ScheduleId = a.Occurrence.Schedule.Id,
+                    CampusId = a.CampusId.HasValue ? a.CampusId.Value : ( int? ) null
+                } )
+                .ToList()
+                .Select( a => new RecentAttendance
+                {
+                    AttendanceId = IdHasher.Instance.GetHash( a.AttendanceId ),
+                    Status = a.Status,
                     StartDateTime = a.StartDateTime,
                     EndDateTime = a.EndDateTime,
-                    PersonGuid = a.PersonAlias.Person.Guid,
-                    GroupTypeGuid = a.Occurrence.Group.GroupType.Guid,
-                    GroupGuid = a.Occurrence.Group.Guid,
-                    LocationGuid = a.Occurrence.Location.Guid,
-                    ScheduleGuid = a.Occurrence.Schedule.Guid,
-                    CampusGuid = a.CampusId.HasValue ? a.Campus.Guid : ( Guid? ) null
+                    PersonId = IdHasher.Instance.GetHash( a.PersonId ),
+                    GroupTypeId = IdHasher.Instance.GetHash( a.GroupTypeId ),
+                    GroupId = IdHasher.Instance.GetHash( a.GroupId ),
+                    LocationId = IdHasher.Instance.GetHash( a.LocationId ),
+                    ScheduleId = IdHasher.Instance.GetHash( a.ScheduleId ),
+                    CampusId = a.CampusId.HasValue
+                        ? IdHasher.Instance.GetHash( a.CampusId.Value )
+                        : null
                 } )
                 .ToList();
         }
@@ -494,7 +525,7 @@ namespace Rock.CheckIn.v2
 
             return new ConfigurationTemplateBag
             {
-                Guid = groupType.Guid,
+                Id = groupType.IdKey,
                 Name = groupType.Name,
                 IconCssClass = groupType.IconCssClass,
                 AbilityLevelDetermination = configuration.AbilityLevelDetermination,
@@ -576,7 +607,7 @@ namespace Rock.CheckIn.v2
                      
                      NOTE: We limit to 5 because that is fairly safe for check-in.
                      It is unlikely to need more than 5 achievement types, or
-                     person guids, etc. in a Where() check. There are two reasons
+                     person ids, etc. in a Where() check. There are two reasons
                      for the limit:
                      
                      1. We have a limited number of SQL parameters in a query. We

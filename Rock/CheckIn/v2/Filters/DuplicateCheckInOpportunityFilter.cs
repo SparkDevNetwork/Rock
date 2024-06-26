@@ -30,11 +30,11 @@ namespace Rock.CheckIn.v2.Filters
         #region Properties
 
         /// <summary>
-        /// Gets the schedule unique identifiers this person is currently
+        /// Gets the schedule identifiers this person is currently
         /// checked into today.
         /// </summary>
-        /// <value>The checked in schedule unique identifiers.</value>
-        private Lazy<HashSet<Guid>> CheckedInScheduleGuids { get; }
+        /// <value>The checked in schedule identifiers.</value>
+        private Lazy<HashSet<string>> CheckedInScheduleIds { get; }
 
         #endregion
 
@@ -45,15 +45,15 @@ namespace Rock.CheckIn.v2.Filters
         /// </summary>
         public DuplicateCheckInOpportunityFilter()
         {
-            CheckedInScheduleGuids = new Lazy<HashSet<Guid>>( () =>
+            CheckedInScheduleIds = new Lazy<HashSet<string>>( () =>
             {
                 var today = RockDateTime.Today;
                 var attendances = Person.RecentAttendances
                     .Where( a => a.StartDateTime.Date == today
                         && !a.EndDateTime.HasValue )
-                    .Select( a => a.ScheduleGuid );
+                    .Select( a => a.ScheduleId );
 
-                return new HashSet<Guid>( attendances );
+                return new HashSet<string>( attendances );
             }, true );
         }
 
@@ -70,7 +70,7 @@ namespace Rock.CheckIn.v2.Filters
             }
 
             // Remove any schedules the attendee has already checked in for.
-            return !CheckedInScheduleGuids.Value.Contains( schedule.Guid );
+            return !CheckedInScheduleIds.Value.Contains( schedule.Id );
         }
 
         #endregion

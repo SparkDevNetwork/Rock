@@ -40,8 +40,6 @@
     import { UnexpectedErrorMessage } from "./utils.partial";
     import { KioskButton } from "./types.partial";
     import { AttendanceBag } from "@Obsidian/ViewModels/CheckIn/attendanceBag";
-    import { areEqual } from "@Obsidian/Utility/guid";
-    import { Guid } from "@Obsidian/Types";
 
     const props = defineProps({
         configuration: {
@@ -62,7 +60,7 @@
 
     // #region Values
 
-    const selections = ref<Guid[]>(props.session.currentlyCheckedIn?.map(a => a.guid) ?? []);
+    const selections = ref<string[]>(props.session.currentlyCheckedIn?.map(a => a.id as string) ?? []);
 
     // #endregion
 
@@ -110,7 +108,7 @@
      * @returns true if the attendee is currently selected.
      */
     function isAttendanceSelected(attendance: AttendanceBag): boolean {
-        return selections.value.some(s => areEqual(s, attendance.guid));
+        return selections.value.some(s => s === attendance.id);
     }
 
     /**
@@ -136,10 +134,10 @@
      */
      async function onAttendanceClick(attendance: AttendanceBag): Promise<void> {
         if (isAttendanceSelected(attendance)) {
-            selections.value = selections.value.filter(s => !areEqual(s, attendance.guid));
+            selections.value = selections.value.filter(s => s !== attendance.id);
         }
-        else {
-            selections.value = [attendance.guid, ...selections.value];
+        else if (attendance.id) {
+            selections.value = [attendance.id, ...selections.value];
         }
     }
 

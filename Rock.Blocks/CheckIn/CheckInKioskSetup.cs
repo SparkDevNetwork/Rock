@@ -170,8 +170,8 @@ namespace Rock.Blocks.CheckIn
         {
             var bag = new WebKioskBag
             {
-                Id = kiosk.Id,
-                Guid = kiosk.Guid,
+                Id = kiosk.IdKey,
+                IdNumber = kiosk.Id,
                 Name = kiosk.Name,
                 Type = kiosk.KioskType,
                 IsCameraEnabled = kiosk.HasCamera,
@@ -217,7 +217,7 @@ namespace Rock.Blocks.CheckIn
             {
                 campusBags.Add( new CampusBag
                 {
-                    Guid = Guid.Empty,
+                    Id = string.Empty,
                     Name = string.Empty,
                     Kiosks = kiosks[0].Select( k => GetKioskBag( k.Kiosk ) ).ToList()
                 } );
@@ -229,7 +229,7 @@ namespace Rock.Blocks.CheckIn
 
                 campusBags.Add( new CampusBag
                 {
-                    Guid = campus.Guid,
+                    Id = campus.IdKey,
                     Name = campus.Name,
                     Kiosks = campusKiosks?.Select( k => GetKioskBag( k.Kiosk ) ).ToList()
                         ?? new List<WebKioskBag>()
@@ -333,7 +333,7 @@ namespace Rock.Blocks.CheckIn
                 Template = urlTemplate,
                 Areas = urlAreas.Select( a => new CheckInItemBag
                 {
-                    Guid = a.Guid,
+                    Id = a.IdKey,
                     Name = a.Name
                 } ).ToList()
             };
@@ -420,7 +420,7 @@ namespace Rock.Blocks.CheckIn
                 Kiosk = GetKioskBag( kiosk ),
                 Areas = areas.Select( a => new CheckInItemBag
                 {
-                    Guid = a.Guid,
+                    Id = a.IdKey,
                     Name = a.Name
                 } ).ToList(),
                 Template = template
@@ -470,7 +470,7 @@ namespace Rock.Blocks.CheckIn
         {
             return new SavedCheckInConfigurationBag
             {
-                Guid = definedValue.Guid,
+                Id = definedValue.IdKey,
                 Name = definedValue.Value,
                 Description = definedValue.Description,
                 Campuses = definedValue.GetAttributeValue( "Campuses" )
@@ -589,7 +589,7 @@ namespace Rock.Blocks.CheckIn
         {
             var savedConfigurationDefinedTypeId = DefinedTypeCache.Get( SystemGuid.DefinedType.SAVED_CHECKIN_CONFIGURATIONS.AsGuid(), RockContext )?.Id;
 
-            if ( box.Bag.Guid != Guid.Empty )
+            if ( box.Bag.Id.IsNotNullOrWhiteSpace() )
             {
                 return ActionBadRequest( "Editing existing saved configurations is not supported." );
             }

@@ -166,14 +166,14 @@ namespace Rock.CheckIn.v2
                     .OrderBy( dv => dv.Order )
                     .Select( dv => new AbilityLevelOpportunity
                     {
-                        Guid = dv.Guid,
+                        Id = dv.IdKey,
                         Name = dv.Value
                     } )
                     .ToList() ?? new List<AbilityLevelOpportunity>(),
                 Areas = activeAreas
                     .Select( a => new AreaOpportunity
                     {
-                        Guid = a.Guid,
+                        Id = a.IdKey,
                         Name = a.Name
                     } )
                     .ToList(),
@@ -182,7 +182,7 @@ namespace Rock.CheckIn.v2
                 Schedules = activeSchedules
                     .Select( s => new ScheduleOpportunity
                     {
-                        Guid = s.Guid,
+                        Id = s.IdKey,
                         Name = s.Name
                     } )
                     .ToList()
@@ -195,12 +195,12 @@ namespace Rock.CheckIn.v2
             {
                 var location = NamedLocationCache.Get( grp.Key, rockContext );
                 var locationScheduleIds = new HashSet<int>( grp.SelectMany( gl => gl.ScheduleIds ).Distinct() );
-                var attendeeGuids = locationCounts.GetValueOrDefault( location.Guid, new HashSet<Guid>() );
+                var attendeeIds = locationCounts.GetValueOrDefault( location.IdKey, new HashSet<string>() );
 
                 // Check if this room is at all valid. If it is over the firm
                 // threshold then not even an override is allowed.
                 var isThresholdExceeded = location.FirmRoomThreshold.HasValue
-                    && attendeeGuids.Count > location.FirmRoomThreshold.Value;
+                    && attendeeIds.Count > location.FirmRoomThreshold.Value;
 
                 if ( isThresholdExceeded )
                 {
@@ -211,13 +211,13 @@ namespace Rock.CheckIn.v2
 
                 opportunities.Locations.Add( new LocationOpportunity
                 {
-                    Guid = location.Guid,
+                    Id = location.IdKey,
                     Name = location.Name,
                     IsClosed = !location.IsActive,
-                    CurrentCount = attendeeGuids.Count,
+                    CurrentCount = attendeeIds.Count,
                     Capacity = location.SoftRoomThreshold,
-                    CurrentPersonGuids = attendeeGuids,
-                    ScheduleGuids = activeSchedules.Where( s => locationScheduleIds.Contains( s.Id ) ).Select( s => s.Guid ).ToList()
+                    CurrentPersonIds = attendeeIds,
+                    ScheduleIds = activeSchedules.Where( s => locationScheduleIds.Contains( s.Id ) ).Select( s => s.IdKey ).ToList()
                 } );
             }
 
@@ -236,19 +236,23 @@ namespace Rock.CheckIn.v2
             foreach ( var grp in activeGroupLocationsUnderCapacity )
             {
                 var groupType = grp.Group.GroupType;
+                var abilityLevelGuid = grp.Group.GetAttributeValue( "AbilityLevel" ).AsGuidOrNull();
+                var abilityLevel = abilityLevelGuid.HasValue
+                    ? DefinedValueCache.Get( abilityLevelGuid.Value, rockContext )
+                    : null;
 
                 opportunities.Groups.Add( new GroupOpportunity
                 {
-                    Guid = grp.Group.Guid,
+                    Id = grp.Group.IdKey,
                     Name = grp.Group.Name,
-                    AbilityLevelGuid = grp.Group.GetAttributeValue( "AbilityLevel" ).AsGuidOrNull(),
-                    AreaGuid = groupType.Guid,
+                    AbilityLevelId = abilityLevel?.IdKey,
+                    AreaId = groupType.IdKey,
                     CheckInData = grp.Group.GetCheckInData( rockContext ),
                     CheckInAreaData = groupType.GetCheckInAreaData( rockContext ),
-                    LocationGuids = grp.Locations.OrderBy( gl => gl.Order )
+                    LocationIds = grp.Locations.OrderBy( gl => gl.Order )
                         .Select( gl => NamedLocationCache.Get( gl.LocationId ) )
                         .Where( l => l != null )
-                        .Select( l => l.Guid )
+                        .Select( l => l.IdKey )
                         .ToList()
                 } );
             }
@@ -271,45 +275,45 @@ namespace Rock.CheckIn.v2
                 AbilityLevels = AbilityLevels
                     .Select( al => new AbilityLevelOpportunity
                     {
-                        Guid = al.Guid,
+                        Id = al.Id,
                         Name = al.Name
                     } )
                     .ToList(),
                 Areas = Areas
                     .Select( a => new AreaOpportunity
                     {
-                        Guid = a.Guid,
+                        Id = a.Id,
                         Name = a.Name
                     } )
                     .ToList(),
                 Groups = Groups
                     .Select( g => new GroupOpportunity
                     {
-                        Guid = g.Guid,
+                        Id = g.Id,
                         Name = g.Name,
-                        AbilityLevelGuid = g.AbilityLevelGuid,
-                        AreaGuid = g.AreaGuid,
+                        AbilityLevelId = g.AbilityLevelId,
+                        AreaId = g.AreaId,
                         CheckInData = g.CheckInData,
                         CheckInAreaData = g.CheckInAreaData,
-                        LocationGuids = g.LocationGuids.ToList()
+                        LocationIds = g.LocationIds.ToList()
                     } )
                     .ToList(),
                 Locations = Locations
                     .Select( l => new LocationOpportunity
                     {
-                        Guid = l.Guid,
+                        Id = l.Id,
                         Name = l.Name,
                         IsClosed = l.IsClosed,
                         CurrentCount = l.CurrentCount,
                         Capacity = l.Capacity,
-                        CurrentPersonGuids = new HashSet<Guid>( l.CurrentPersonGuids ),
-                        ScheduleGuids = l.ScheduleGuids.ToList()
+                        CurrentPersonIds = new HashSet<string>( l.CurrentPersonIds ),
+                        ScheduleIds = l.ScheduleIds.ToList()
                     } )
                     .ToList(),
                 Schedules = Schedules
                     .Select( s => new ScheduleOpportunity
                     {
-                        Guid = s.Guid,
+                        Id = s.Id,
                         Name = s.Name
                     } )
                     .ToList()
@@ -334,36 +338,36 @@ namespace Rock.CheckIn.v2
 
             // Start at the "bottom" and work our way up. So first remove all
             // locations without schedules.
-            var allScheduleGuids = new HashSet<Guid>( Schedules.Select( s => s.Guid ) );
-            var allReferencedLocationGuids = new HashSet<Guid>( Groups.SelectMany( g => g.LocationGuids ) );
+            var allScheduleIds = new HashSet<string>( Schedules.Select( s => s.Id ) );
+            var allReferencedLocationIds = new HashSet<string>( Groups.SelectMany( g => g.LocationIds ) );
 
             foreach ( var location in Locations )
             {
-                location.ScheduleGuids.RemoveAll( scheduleGuid => !allScheduleGuids.Contains( scheduleGuid ) );
+                location.ScheduleIds.RemoveAll( scheduleId => !allScheduleIds.Contains( scheduleId ) );
             }
 
-            Locations.RemoveAll( l => l.ScheduleGuids.Count == 0
-                || !allReferencedLocationGuids.Contains( l.Guid ) );
+            Locations.RemoveAll( l => l.ScheduleIds.Count == 0
+                || !allReferencedLocationIds.Contains( l.Id ) );
 
             // Next remove all schedules without locations.
-            var allReferencedScheduleGuids = new HashSet<Guid>( Locations.SelectMany( l => l.ScheduleGuids ) );
+            var allReferencedScheduleIds = new HashSet<string>( Locations.SelectMany( l => l.ScheduleIds ) );
 
-            Schedules.RemoveAll( s => !allReferencedScheduleGuids.Contains( s.Guid ) );
+            Schedules.RemoveAll( s => !allReferencedScheduleIds.Contains( s.Id ) );
 
             // Next remove all groups without locations.
-            var allLocationGuids = new HashSet<Guid>( Locations.Select( l => l.Guid ) );
+            var allLocationIds = new HashSet<string>( Locations.Select( l => l.Id ) );
 
             foreach ( var group in Groups )
             {
-                group.LocationGuids.RemoveAll( locationGuid => !allLocationGuids.Contains( locationGuid ) );
+                group.LocationIds.RemoveAll( locationId => !allLocationIds.Contains( locationId ) );
             }
 
-            Groups.RemoveAll( g => g.LocationGuids.Count == 0 );
+            Groups.RemoveAll( g => g.LocationIds.Count == 0 );
 
             // Finally remove all areas without groups.
-            var allReferencedAreaGuids = new HashSet<Guid>( Groups.Select( g => g.AreaGuid ) );
+            var allReferencedAreaIds = new HashSet<string>( Groups.Select( g => g.AreaId ) );
 
-            Areas.RemoveAll( a => !allReferencedAreaGuids.Contains( a.Guid ) );
+            Areas.RemoveAll( a => !allReferencedAreaIds.Contains( a.Id ) );
         }
 
         /// <summary>
@@ -377,11 +381,11 @@ namespace Rock.CheckIn.v2
         /// identifiers of the people in the location. No value will be available
         /// if there are not any attendance records for the location.
         /// </returns>
-        private static Dictionary<Guid, HashSet<Guid>> GetCurrentCountsForLocations( IReadOnlyList<int> locationIds, DateTime now, RockContext rockContext )
+        private static Dictionary<string, HashSet<string>> GetCurrentCountsForLocations( IReadOnlyList<int> locationIds, DateTime now, RockContext rockContext )
         {
             if ( locationIds.Count == 0 )
             {
-                return new Dictionary<Guid, HashSet<Guid>>();
+                return new Dictionary<string, HashSet<string>>();
             }
 
             var attendances = CheckInDirector.GetCurrentAttendance( now, locationIds, rockContext );
@@ -392,22 +396,20 @@ namespace Rock.CheckIn.v2
             // active.
 
             var activeAttendances = attendances
-                .GroupBy( a => new { a.ScheduleGuid, a.CampusGuid } )
+                .GroupBy( a => new { a.ScheduleId, a.CampusId } )
                 .SelectMany( grp =>
                 {
                     // The vast majority of attendance records for a single
                     // location should have the same schedule and campus.
-                    var scheduleCache = NamedScheduleCache.Get( grp.Key.ScheduleGuid, rockContext );
-                    var campusCache = grp.Key.CampusGuid.HasValue
-                        ? CampusCache.Get( grp.Key.CampusGuid.Value, rockContext )
-                        : null;
+                    var scheduleCache = NamedScheduleCache.GetByIdKey( grp.Key.ScheduleId, rockContext );
+                var campusCache = CampusCache.GetByIdKey( grp.Key.CampusId, rockContext );
 
                     return grp.Where( a => Attendance.CalculateIsCurrentlyCheckedIn( a.StartDateTime, a.EndDateTime, campusCache, scheduleCache ) );
                 } );
 
             return activeAttendances
-                .GroupBy( a => a.LocationGuid )
-                .ToDictionary( grp => grp.Key, grp => new HashSet<Guid>( grp.Select( a => a.PersonGuid ) ) );
+                .GroupBy( a => a.LocationId )
+                .ToDictionary( grp => grp.Key, grp => new HashSet<string>( grp.Select( a => a.PersonId ) ) );
         }
 
         #endregion

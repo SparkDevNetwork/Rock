@@ -22,6 +22,7 @@ using System.Linq;
 
 using Rock.Enums.CheckIn;
 using Rock.Model;
+using Rock.Utility;
 using Rock.ViewModels.CheckIn;
 using Rock.Web.Cache;
 
@@ -190,9 +191,9 @@ namespace Rock.CheckIn.v2
             var familyMembers = familyMemberQry
                 .Select( gm => new
                 {
-                    GroupGuid = gm.Group.Guid,
+                    gm.GroupId,
                     GroupName = gm.Group.Name,
-                    CampusGuid = gm.Group.Campus.Guid,
+                    gm.Group.CampusId,
                     RoleOrder = gm.GroupRole.Order,
                     gm.Person
                 } )
@@ -203,16 +204,18 @@ namespace Rock.CheckIn.v2
             // Convert the raw database data into the bags that are understood
             // by different elements of the check-in system.
             var families = familyMembers
-                .GroupBy( fm => fm.GroupGuid )
+                .GroupBy( fm => fm.GroupId )
                 .Select( family =>
                 {
                     var firstMember = family.First();
 
                     return new FamilyBag
                     {
-                        Guid = firstMember.GroupGuid,
+                        Id = IdHasher.Instance.GetHash( firstMember.GroupId ),
                         Name = firstMember.GroupName,
-                        CampusGuid = firstMember.CampusGuid,
+                        CampusId = firstMember.CampusId.HasValue
+                            ? IdHasher.Instance.GetHash( firstMember.CampusId.Value )
+                            : null,
                         Members = family
                             .OrderBy( member => member.RoleOrder )
                             .ThenBy( member => member.Person.BirthYear )
@@ -223,7 +226,7 @@ namespace Rock.CheckIn.v2
                             .Select( member => new FamilyMemberBag
                             {
                                 Person = Session.Director.ConversionProvider.GetPersonBag( member.Person ),
-                                FamilyGuid = member.GroupGuid,
+                                FamilyId = IdHasher.Instance.GetHash( member.GroupId ),
                                 RoleOrder = member.RoleOrder
                             } )
                             .ToList()
@@ -235,38 +238,40 @@ namespace Rock.CheckIn.v2
         }
 
         /// <summary>
-        /// Find all group members that match the specified family unique
+        /// Find all group members that match the specified family
         /// identifier for check-in. This normally includes immediate family
         /// members as well as people associated to the family with one of
         /// the configured "can check-in" known relationships.
         /// </summary>
-        /// <param name="familyGuid">The family unique identifier.</param>
+        /// <param name="familyId">The family identifier.</param>
         /// <returns>A queryable that can be used to load all the group members associated with the family.</returns>
-        public virtual IQueryable<GroupMember> GetGroupMembersForFamilyQuery( Guid familyGuid )
+        public virtual IQueryable<GroupMember> GetGroupMembersForFamilyQuery( string familyId )
         {
-            var familyMemberQry = GetImmediateFamilyMembersQuery( familyGuid );
-            var canCheckInFamilyMemberQry = GetCanCheckInFamilyMembersQuery( familyGuid );
+            var familyMemberQry = GetImmediateFamilyMembersQuery( familyId );
+            var canCheckInFamilyMemberQry = GetCanCheckInFamilyMembersQuery( familyId );
 
             return familyMemberQry.Union( canCheckInFamilyMemberQry );
         }
 
         /// <summary>
-        /// Find the family member that matches the specified person unique
-        /// identifier for check-in. If the family unique identifier is specified
+        /// Find the family member that matches the specified person
+        /// identifier for check-in. If the family identifier is specified
         /// then it is used to sort the result so the GroupMember record
-        /// associated with that family is the one used. If the family unique
+        /// associated with that family is the one used. If the family
         /// identifer is not specified or not found then the first family GroupMember
         /// record will be returned.
         /// </summary>
-        /// <param name="personGuid">The person unique identifier.</param>
-        /// <param name="familyGuid">The family unique identifier.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="familyId">The family identifier.</param>
         /// <returns>A queryable that can be used to load this person from the family.</returns>
         /// <exception cref="Exception">Inactive person record status was not found in the database, please check your installation.</exception>
         /// <exception cref="Exception">Family group type was not found in the database, please check your installation.</exception>
-        public virtual IQueryable<GroupMember> GetPersonForFamilyQuery( Guid personGuid, Guid? familyGuid )
+        public virtual IQueryable<GroupMember> GetPersonForFamilyQuery( string personId, string familyId )
         {
             var groupMemberService = new GroupMemberService( Session.RockContext );
             var familyGroupTypeId = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid(), Session.RockContext )?.Id;
+            var personIdNumber = IdHasher.Instance.GetId( personId ) ?? 0;
+            var familyIdNumber = IdHasher.Instance.GetId( familyId );
 
             if ( !familyGroupTypeId.HasValue )
             {
@@ -275,7 +280,7 @@ namespace Rock.CheckIn.v2
 
             var qry = groupMemberService.Queryable()
                 .Where( gm => gm.GroupTypeId == familyGroupTypeId.Value
-                    && gm.Person.Guid == personGuid );
+                    && gm.PersonId == personIdNumber );
 
             if ( TemplateConfiguration.IsInactivePersonExcluded )
             {
@@ -290,15 +295,15 @@ namespace Rock.CheckIn.v2
             }
 
             // Make the specified family the first one in the list.
-            if ( familyGuid.HasValue )
+            if ( familyIdNumber.HasValue )
             {
-                qry = qry.OrderByDescending( gm => gm.Guid == familyGuid.Value );
+                qry = qry.OrderByDescending( gm => gm.GroupId == familyIdNumber.Value );
             }
             else
             {
                 // Order by the primary family.
                 qry = qry.OrderByDescending( gm => gm.Person.PrimaryFamilyId.HasValue
-                    && gm.Guid == gm.Person.PrimaryFamily.Guid );
+                    && gm.GroupId == gm.Person.PrimaryFamilyId );
             }
 
             // We only want one result.
@@ -452,15 +457,15 @@ namespace Rock.CheckIn.v2
         /// Gets a queryable that will return all family members that are
         /// part of the specified family. Only <see cref="GroupMember"/>
         /// records that are part of the <see cref="Group"/> specified by
-        /// <paramref name="familyGuid"/> will be returned.
+        /// <paramref name="familyId"/> will be returned.
         /// </summary>
-        /// <param name="familyGuid">The unique identifier of the family.</param>
+        /// <param name="familyId">The unique identifier of the family.</param>
         /// <returns>A queryable of matching <see cref="GroupMember"/> objects.</returns>
         /// <exception cref="Exception">Inactive person record status was not found in the database, please check your installation.</exception>
-        protected virtual IQueryable<GroupMember> GetImmediateFamilyMembersQuery( Guid familyGuid )
+        protected virtual IQueryable<GroupMember> GetImmediateFamilyMembersQuery( string familyId )
         {
             var groupMemberService = new GroupMemberService( Session.RockContext );
-            var qry = groupMemberService.GetByGroupGuid( familyGuid ).AsNoTracking();
+            var qry = groupMemberService.GetByGroupId( IdHasher.Instance.GetId( familyId ) ?? 0 ).AsNoTracking();
 
             if ( TemplateConfiguration.IsInactivePersonExcluded )
             {
@@ -482,12 +487,12 @@ namespace Rock.CheckIn.v2
         /// a valid relationship to any member of the family. This uses the
         /// allowed can check-in roles defined on the template configuration.
         /// </summary>
-        /// <param name="familyGuid">The family unique identifier.</param>
+        /// <param name="familyId">The family identifier.</param>
         /// <returns>A queryable of matching <see cref="GroupMember"/> objects.</returns>
         /// <exception cref="Exception">Known relationship group type was not found in the database, please check your installation.</exception>
         /// <exception cref="Exception">Inactive person record status was not found in the database, please check your installation.</exception>
         /// <exception cref="Exception">Known relationship owner role was not found in the database, please check your installation.</exception>
-        protected virtual IQueryable<GroupMember> GetCanCheckInFamilyMembersQuery( Guid familyGuid )
+        protected virtual IQueryable<GroupMember> GetCanCheckInFamilyMembersQuery( string familyId )
         {
             var knownRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid(), Session.RockContext );
             int? personRecordStatusInactiveId = null;
@@ -515,7 +520,7 @@ namespace Rock.CheckIn.v2
                 throw new Exception( "Known relationship owner role was not found in the database, please check your installation." );
             }
 
-            var familyMemberPersonIdQry = GetImmediateFamilyMembersQuery( familyGuid )
+            var familyMemberPersonIdQry = GetImmediateFamilyMembersQuery( familyId )
                 .Select( fm => fm.PersonId );
             var groupMemberService = new GroupMemberService( Session.RockContext );
             var canCheckInRoleIds = knownRelationshipGroupType.Roles

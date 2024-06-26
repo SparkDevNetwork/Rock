@@ -12,7 +12,7 @@
                 <div>People:</div>
 
                 <ol>
-                    <li v-for="item in family.people" :key="item.person!.guid!">
+                    <li v-for="item in family.people" :key="item.person!.id!">
                         {{ item.person?.fullName }}
                         <ul v-if="item.selectedOpportunities && item.selectedOpportunities.length > 0">
                             <li v-for="option in item.selectedOpportunities">
@@ -27,7 +27,7 @@
                 <div>Already checked in:</div>
 
                 <ol>
-                    <li v-for="item in family.currentlyCheckedInAttendances" :key="item.guid!">
+                    <li v-for="item in family.currentlyCheckedInAttendances" :key="item.id!">
                         {{ item.person?.fullName }} (Group="{{ item.group!.name }}"; Location="{{ item.location!.name }}"; Schedule="{{ item.schedule!.name }}")
                     </li>
                 </ol>

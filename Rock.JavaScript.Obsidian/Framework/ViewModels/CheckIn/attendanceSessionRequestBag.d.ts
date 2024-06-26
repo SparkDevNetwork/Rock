@@ -30,18 +30,16 @@ import { Guid } from "@Obsidian/Types";
  */
 export type AttendanceSessionRequestBag = {
     /**
-     * Gets or sets the unique identifier of the person performing the request
-     * to check-in the attendees.
+     * Gets or sets the family identifier that was determined during
+     * the family search operation.
      */
-    checkedInByPersonGuid?: Guid | null;
+    familyId?: string | null;
 
     /**
-     * Gets or sets the family unique identifier that was determined
-     * during the family search operation.
+     * Gets or sets the unique identifier of the check-in session. This is
+     * a unique identifier instead of a regular identifier since it needs
+     * to come from the client.
      */
-    familyGuid?: Guid | null;
-
-    /** Gets or sets the unique identifier of the check-in session. */
     guid: Guid;
 
     /**
@@ -50,6 +48,12 @@ export type AttendanceSessionRequestBag = {
      * at once.
      */
     isPending: boolean;
+
+    /**
+     * Gets or sets the identifier of the person performing the action
+     * for this session.
+     */
+    performedByPersonId?: string | null;
 
     /** Gets or sets the mode used when searching for families. */
     searchMode: FamilySearchMode;

@@ -21,21 +21,17 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
 import { PersonBag } from "@Obsidian/ViewModels/CheckIn/personBag";
 
 /**
  * A single member of a family. A family member may not belong to the actual
  * family as they may be assocaited via a "can check-in" relationship. This
- * can be determined by the Rock.ViewModels.CheckIn.FamilyMemberBag.FamilyGuid value being different
- * from the guid on the family object.
+ * can be determined by the Rock.ViewModels.CheckIn.FamilyMemberBag.FamilyId value being different
+ * from the id on the family object.
  */
 export type FamilyMemberBag = {
-    /**
-     * Gets or sets the primary family unique identifier this person
-     * belongs to.
-     */
-    familyGuid: Guid;
+    /** Gets or sets the primary family identifier this person belongs to. */
+    familyId?: string | null;
 
     /** Gets or sets the person that represents this family member. */
     person?: PersonBag | null;

@@ -15,7 +15,6 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 
 using Rock.ViewModels.CheckIn;
@@ -28,11 +27,11 @@ namespace Rock.CheckIn.v2
     internal class LocationOpportunity : LocationOpportunityBag
     {
         /// <summary>
-        /// Gets or sets the person unique identifiers that are checked into
+        /// Gets or sets the person identifiers that are checked into
         /// this location.
         /// </summary>
-        /// <value>The current person unique identifiers.</value>
-        public HashSet<Guid> CurrentPersonGuids { get; set; }
+        /// <value>The current person identifiers.</value>
+        public HashSet<string> CurrentPersonIds { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this location is closed.

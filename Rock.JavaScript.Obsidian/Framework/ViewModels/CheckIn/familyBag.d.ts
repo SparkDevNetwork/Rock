@@ -21,7 +21,6 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
 import { FamilyMemberBag } from "@Obsidian/ViewModels/CheckIn/familyMemberBag";
 
 /**
@@ -29,11 +28,11 @@ import { FamilyMemberBag } from "@Obsidian/ViewModels/CheckIn/familyMemberBag";
  * family search.
  */
 export type FamilyBag = {
-    /** Gets or sets the family campus unique identifier. */
-    campusGuid?: Guid | null;
+    /** Gets or sets the family campus identifier. */
+    campusId?: string | null;
 
-    /** Gets or sets the unique identifier of the family Group. */
-    guid: Guid;
+    /** Gets or sets the identifier of the family Group. */
+    id?: string | null;
 
     /** Gets or sets the family members. */
     members?: FamilyMemberBag[] | null;

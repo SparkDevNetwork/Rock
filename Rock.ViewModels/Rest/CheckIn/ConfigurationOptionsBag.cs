@@ -14,8 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-
 namespace Rock.ViewModels.Rest.CheckIn
 {
     /// <summary>
@@ -25,10 +23,10 @@ namespace Rock.ViewModels.Rest.CheckIn
     public class ConfigurationOptionsBag
     {
         /// <summary>
-        /// Gets or sets the kiosk unique identifier to use when filtering
+        /// Gets or sets the kiosk identifier to use when filtering
         /// the configuration list.
         /// </summary>
-        /// <value>The kiosk unique identifier.</value>
-        public Guid? KioskGuid { get; set; }
+        /// <value>The kiosk identifier.</value>
+        public string KioskId { get; set; }
     }
 }

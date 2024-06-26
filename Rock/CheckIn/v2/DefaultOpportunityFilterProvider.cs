@@ -116,8 +116,8 @@ namespace Rock.CheckIn.v2
             }
 
             // Remove any locations that have no group referencing them.
-            var allReferencedLocationGuids = new HashSet<Guid>( person.Opportunities.Groups.SelectMany( g => g.LocationGuids ) );
-            person.Opportunities.Locations.RemoveAll( l => !allReferencedLocationGuids.Contains( l.Guid ) );
+            var allReferencedLocationIds = new HashSet<string>( person.Opportunities.Groups.SelectMany( g => g.LocationIds ) );
+            person.Opportunities.Locations.RemoveAll( l => !allReferencedLocationIds.Contains( l.Id ) );
 
             // Run location filters.
             locationFilters.ForEach( f => f.FilterLocations( person.Opportunities ) );
@@ -131,8 +131,8 @@ namespace Rock.CheckIn.v2
             }
 
             // Remove any schedules that have no group referencing them.
-            var allReferencedScheduleGuids = new HashSet<Guid>( person.Opportunities.Locations.SelectMany( l => l.ScheduleGuids ) );
-            person.Opportunities.Schedules.RemoveAll( s => !allReferencedScheduleGuids.Contains( s.Guid ) );
+            var allReferencedScheduleIds = new HashSet<string>( person.Opportunities.Locations.SelectMany( l => l.ScheduleIds ) );
+            person.Opportunities.Schedules.RemoveAll( s => !allReferencedScheduleIds.Contains( s.Id ) );
 
             // Run schedule filters.
             scheduleFilters.ForEach( f => f.FilterSchedules( person.Opportunities ) );

@@ -21,8 +21,6 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
-
 /** Defines the current status of a kiosk configuration. */
 export type KioskStatusBag = {
     /** Gets or sets the campus current date time. */
@@ -35,10 +33,10 @@ export type KioskStatusBag = {
     isCheckInActive: boolean;
 
     /**
-     * Gets or sets the location unique identifiers. A change in one of
+     * Gets or sets the location identifiers. A change in one of
      * these locations should trigger an update of the kiosk status.
      */
-    locationGuids?: Guid[] | null;
+    locationIds?: string[] | null;
 
     /**
      * Gets or sets the next start date time today. A value of null
@@ -50,10 +48,10 @@ export type KioskStatusBag = {
     nextStopDateTime?: string | null;
 
     /**
-     * Gets or sets the schedule unique identifiers. A change in one of
+     * Gets or sets the schedule identifiers. A change in one of
      * these schedules should trigger an update of the kiosk status.
      */
-    scheduleGuids?: Guid[] | null;
+    scheduleIds?: string[] | null;
 
     /** Gets or sets the server current date time. */
     serverCurrentDateTime?: string | null;

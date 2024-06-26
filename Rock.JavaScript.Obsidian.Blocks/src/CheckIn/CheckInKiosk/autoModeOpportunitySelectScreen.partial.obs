@@ -33,7 +33,6 @@
     import { CheckInSession } from "./checkInSession.partial";
     import { KioskButton } from "./types.partial";
     import { OpportunitySelectionBag } from "@Obsidian/ViewModels/CheckIn/opportunitySelectionBag";
-    import { areEqual } from "@Obsidian/Utility/guid";
     import { UnexpectedErrorMessage } from "./utils.partial";
 
     const props = defineProps({
@@ -55,7 +54,7 @@
 
     // #region Values
 
-    const selectedOpportunities = ref(props.session.currentAttendeeGuid ? props.session.getAttendeeSelections(props.session.currentAttendeeGuid) : []);
+    const selectedOpportunities = ref(props.session.currentAttendeeId ? props.session.getAttendeeSelections(props.session.currentAttendeeId) : []);
 
     // #endregion
 
@@ -95,20 +94,20 @@
         for (const schedule of props.session.attendeeOpportunities.schedules) {
             for (const area of props.session.attendeeOpportunities.areas) {
                 for (const group of props.session.attendeeOpportunities.groups) {
-                    if (!areEqual(group.areaGuid, area.guid) || !group.locationGuids) {
+                    if (group.areaId !== area.id || !group.locationIds) {
                         continue;
                     }
 
                     for (const location of props.session.attendeeOpportunities.locations) {
-                        if (!group.locationGuids.some(l => areEqual(l, location.guid))) {
+                        if (!group.locationIds.some(l => l === location.id)) {
                             continue;
                         }
 
-                        if (!location.scheduleGuids) {
+                        if (!location.scheduleIds) {
                             continue;
                         }
 
-                        if (!location.scheduleGuids.some(s => areEqual(s, schedule.guid))) {
+                        if (!location.scheduleIds.some(s => s === schedule.id)) {
                             continue;
                         }
 
@@ -159,10 +158,10 @@
      * @returns true if the two opportunity selections are the same.
      */
     function isOpportunityEqual(a: OpportunitySelectionBag, b: OpportunitySelectionBag): boolean {
-        return areEqual(a.area?.guid, b.area?.guid)
-            && areEqual(a.group?.guid, b.group?.guid)
-            && areEqual(a.location?.guid, b.location?.guid)
-            && areEqual(a.schedule?.guid, b.schedule?.guid);
+        return a.area?.id === b.area?.id
+            && a.group?.id === b.group?.id
+            && a.location?.id === b.location?.id
+            && a.schedule?.id === b.schedule?.id;
     }
 
     /**
@@ -187,7 +186,7 @@
      */
     function isConflictingOpportunitySelected(opportunity: OpportunitySelectionBag): boolean {
         return selectedOpportunities.value
-            .some(o => areEqual(o.schedule?.guid, opportunity.schedule?.guid)
+            .some(o => o.schedule?.id === opportunity.schedule?.id
                 && !isOpportunityEqual(o, opportunity));
     }
 

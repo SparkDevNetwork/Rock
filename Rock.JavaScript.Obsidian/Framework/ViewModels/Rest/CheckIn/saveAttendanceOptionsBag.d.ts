@@ -21,7 +21,6 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
 import { AttendanceRequestBag } from "@Obsidian/ViewModels/CheckIn/attendanceRequestBag";
 import { AttendanceSessionRequestBag } from "@Obsidian/ViewModels/CheckIn/attendanceSessionRequestBag";
 
@@ -30,8 +29,8 @@ import { AttendanceSessionRequestBag } from "@Obsidian/ViewModels/CheckIn/attend
  * REST endpoint.
  */
 export type SaveAttendanceOptionsBag = {
-    /** Gets or sets the kiosk unique identifier. */
-    kioskGuid?: Guid | null;
+    /** Gets or sets the kiosk identifier. */
+    kioskId?: string | null;
 
     /** Gets or sets the requests. */
     requests?: AttendanceRequestBag[] | null;
@@ -42,6 +41,6 @@ export type SaveAttendanceOptionsBag = {
      */
     session?: AttendanceSessionRequestBag | null;
 
-    /** Gets or sets the check-in configuration template unique identifier. */
-    templateGuid: Guid;
+    /** Gets or sets the check-in configuration template identifier. */
+    templateId?: string | null;
 };

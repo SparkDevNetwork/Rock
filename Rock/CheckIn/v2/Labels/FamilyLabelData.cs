@@ -157,9 +157,9 @@ namespace Rock.CheckIn.v2.Labels
 
             // Just completed achievements.
             var justCompletedAchievements = AllAttendance
-                .SelectMany( a => a.JustCompletedAchievements.Select( ach => ach.AchievementTypeGuid ) )
+                .SelectMany( a => a.JustCompletedAchievements.Select( ach => ach.AchievementTypeId ) )
                 .Distinct()
-                .Select( guid => AchievementTypeCache.Get( guid, rockContext ) )
+                .Select( id => AchievementTypeCache.GetByIdKey( id, rockContext ) )
                 .Where( a => a != null )
                 .ToList();
 

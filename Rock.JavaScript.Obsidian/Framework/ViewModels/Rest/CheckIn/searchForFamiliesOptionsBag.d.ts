@@ -22,7 +22,6 @@
 //
 
 import { FamilySearchMode } from "@Obsidian/Enums/CheckIn/familySearchMode";
-import { Guid } from "@Obsidian/Types";
 
 /**
  * The options that will be provided to the SearchForFamilies check-in
@@ -30,14 +29,14 @@ import { Guid } from "@Obsidian/Types";
  */
 export type SearchForFamiliesOptionsBag = {
     /**
-     * Gets or sets the check-in configuration template unique identifier.
+     * Gets or sets the check-in configuration template identifier.
      * This identifies the configuration that should be used when
      * validating the search and compiling results.
      */
-    configurationTemplateGuid: Guid;
+    configurationTemplateId?: string | null;
 
-    /** Gets or sets the optional kiosk unique identifier. */
-    kioskGuid?: Guid | null;
+    /** Gets or sets the optional kiosk identifier. */
+    kioskId?: string | null;
 
     /**
      * Gets or sets a value indicating whether to prioritize families

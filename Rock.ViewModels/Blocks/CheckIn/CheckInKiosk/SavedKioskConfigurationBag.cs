@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.CheckIn.CheckInKiosk
@@ -26,25 +25,25 @@ namespace Rock.ViewModels.Blocks.CheckIn.CheckInKiosk
     public class SavedKioskConfigurationBag
     {
         /// <summary>
-        /// The campus unique identifier that was selected when the kiosk was
+        /// The campus identifier that was selected when the kiosk was
         /// configured. This may be null.
         /// </summary>
-        public Guid? CampusGuid { get; set; }
+        public string CampusId { get; set; }
 
         /// <summary>
-        /// The check-in configuration template unique identifier.
+        /// The check-in configuration template identifier.
         /// </summary>
-        public Guid TemplateGuid { get; set; }
+        public string TemplateId { get; set; }
 
         /// <summary>
-        /// The device unique identifier the kiosk was configured to use.
+        /// The device identifier the kiosk was configured to use.
         /// </summary>
-        public Guid KioskGuid { get; set; }
+        public string KioskId { get; set; }
 
         /// <summary>
-        /// The list of check-in area unique identifiers the kiosk was
+        /// The list of check-in area identifiers the kiosk was
         /// configured to use.
         /// </summary>
-        public List<Guid> AreaGuids { get; set; }
+        public List<string> AreaIds { get; set; }
     }
 }

@@ -30,6 +30,7 @@ using Rock.Enums.CheckIn.Labels;
 using Rock.Model;
 using Rock.Observability;
 using Rock.SystemKey;
+using Rock.Utility;
 using Rock.ViewModels.CheckIn;
 using Rock.ViewModels.CheckIn.Labels;
 using Rock.Web.Cache;
@@ -113,8 +114,12 @@ namespace Rock.CheckIn.v2
             {
                 activity?.AddTag( "rock.checkin.print_provider", GetType().FullName );
 
-                var attendanceGuids = checkOutResult.Attendances.Select( a => a.Guid ).ToList();
-                labels = RenderLabels( attendanceGuids, kiosk, checkout: true );
+                var attendanceIds = checkOutResult.Attendances
+                    .Select( a => IdHasher.Instance.GetId( a.Id ) )
+                    .Where( a => a.HasValue )
+                    .Select( a => a.Value )
+                    .ToList();
+                labels = RenderLabels( attendanceIds, kiosk, checkout: true );
             }
 
             using ( var activity = ObservabilityHelper.StartActivity( "Print Labels" ) )
@@ -185,15 +190,19 @@ namespace Rock.CheckIn.v2
         /// <returns>A list of <see cref="RenderedLabel"/> objects that contain all the information required to print the labels.</returns>
         public List<RenderedLabel> RenderLabels( List<RecordedAttendanceBag> allRecordedAttendance, DeviceCache kiosk, bool checkout )
         {
-            var attendanceGuids = allRecordedAttendance.Select( a => a.Attendance.Guid ).ToList();
+            var attendanceIds = allRecordedAttendance
+                .Select( a => IdHasher.Instance.GetId( a.Attendance.Id ) )
+                .Where( a => a.HasValue )
+                .Select( a => a.Value )
+                .ToList();
             var allAttendanceQry = GetAttendanceQuery();
 
-            allAttendanceQry = CheckInDirector.WhereContains( allAttendanceQry, attendanceGuids, a => a.Guid );
+            allAttendanceQry = CheckInDirector.WhereContains( allAttendanceQry, attendanceIds, a => a.Id );
 
             var allAttendance = allAttendanceQry.ToList();
 
             var attendanceLabels = allAttendance
-                .Select( a => new AttendanceLabel( a, allRecordedAttendance.First( ra => ra.Attendance.Guid == a.Guid ), RockContext ) )
+                .Select( a => new AttendanceLabel( a, allRecordedAttendance.First( ra => ra.Attendance.Id == a.IdKey), RockContext ) )
                 .Where( a => a.Area != null && a.Group != null && a.Location != null && a.Schedule != null )
                 .ToList();
 
@@ -212,15 +221,15 @@ namespace Rock.CheckIn.v2
         /// <summary>
         /// Renders all the labels for the set of existing attendance records.
         /// </summary>
-        /// <param name="attendanceGuids">The unique identifiers of the <see cref="Attendance"/> records to generate labels for.</param>
+        /// <param name="attendanceIds">The identifiers of the <see cref="Attendance"/> records to generate labels for.</param>
         /// <param name="kiosk">The kiosk requesting the print or <see langword="null"/> if not known.</param>
         /// <param name="checkout"><c>true</c> if the labels to be rendered are for a checkout operation; otherwise <c>false</c>.</param>
         /// <returns>A list of <see cref="RenderedLabel"/> objects that contain all the information required to print the labels.</returns>
-        public List<RenderedLabel> RenderLabels( List<Guid> attendanceGuids, DeviceCache kiosk, bool checkout )
+        public List<RenderedLabel> RenderLabels( List<int> attendanceIds, DeviceCache kiosk, bool checkout )
         {
             var allAttendanceQry = GetAttendanceQuery();
 
-            allAttendanceQry = CheckInDirector.WhereContains( allAttendanceQry, attendanceGuids, a => a.Guid );
+            allAttendanceQry = CheckInDirector.WhereContains( allAttendanceQry, attendanceIds, a => a.Id );
 
             return RenderLabels( allAttendanceQry.ToList(), kiosk, checkout );
         }

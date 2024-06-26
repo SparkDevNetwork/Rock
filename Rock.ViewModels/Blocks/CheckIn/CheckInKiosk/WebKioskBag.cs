@@ -27,6 +27,6 @@ namespace Rock.ViewModels.Blocks.CheckIn.CheckInKiosk
         /// Gets or sets the kiosk identifier. This is used by the iPad app.
         /// </summary>
         /// <value>The kiosk identifier.</value>
-        public int Id { get; set; }
+        public int IdNumber { get; set; }
     }
 }

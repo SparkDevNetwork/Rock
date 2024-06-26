@@ -92,12 +92,6 @@ namespace Rock.CheckIn.v2
         public DateTime StartDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the unique identifier of the family selected during check-in.
-        /// </summary>
-        /// <value>The unique identifier of the family selected during check-in.</value>
-        public Guid? FamilyGuid { get; set; }
-
-        /// <summary>
         /// Gets or sets the identifier of the family selected during check-in.
         /// </summary>
         /// <value>The identifier of the family selected during check-in.</value>

@@ -14,8 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-
 using Rock.Enums.CheckIn;
 
 namespace Rock.ViewModels.CheckIn
@@ -26,11 +24,11 @@ namespace Rock.ViewModels.CheckIn
     public class ConfigurationTemplateBag
     {
         /// <summary>
-        /// Gets or sets the unique identifier of this check-in configuration
+        /// Gets or sets the identifier of this check-in configuration
         /// template.
         /// </summary>
-        /// <value>The unique identifier.</value>
-        public Guid Guid { get; set; }
+        /// <value>The identifier.</value>
+        public string Id { get; set; }
 
         /// <summary>
         /// Gets or sets the name of this check-in configuration.

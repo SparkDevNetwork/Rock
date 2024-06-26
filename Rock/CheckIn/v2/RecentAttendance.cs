@@ -25,20 +25,19 @@ namespace Rock.CheckIn.v2
     internal class RecentAttendance
     {
         /// <summary>
+        /// Gets or sets the Attendance unique identifier.
+        /// </summary>
+        /// <value>
+        /// The unique identifier.</value>
+        public Guid AttendanceGuid { get; set; }
+
+        /// <summary>
         /// Gets or sets the Attendance identifier.
         /// </summary>
         /// <value>
         /// The identifier.
         /// </value>
-        public int AttendanceId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the Attendance unique identifier.
-        /// </summary>
-        /// <value>
-        /// The unique identifier.
-        /// </value>
-        public Guid AttendanceGuid { get; set; }
+        public string AttendanceId { get; set; }
 
         /// <summary>
         /// Gets or sets the status of the attendance record.
@@ -63,49 +62,49 @@ namespace Rock.CheckIn.v2
         public DateTime? EndDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the person unique identifier.
+        /// Gets or sets the person identifier.
         /// </summary>
         /// <value>
-        /// The person unique identifier.
+        /// The person identifier.
         /// </value>
-        public Guid PersonGuid { get; set; }
+        public string PersonId { get; set; }
 
         /// <summary>
-        /// Gets or sets the group type unique identifier.
+        /// Gets or sets the group type identifier.
         /// </summary>
         /// <value>
-        /// The group type unique identifier.
+        /// The group type identifier.
         /// </value>
-        public Guid GroupTypeGuid { get; set; }
+        public string GroupTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the group unique identifier.
+        /// Gets or sets the group identifier.
         /// </summary>
         /// <value>
-        /// The group unique identifier.
+        /// The group identifier.
         /// </value>
-        public Guid GroupGuid { get; set; }
+        public string GroupId { get; set; }
 
         /// <summary>
-        /// Gets or sets the location unique identifier.
+        /// Gets or sets the location identifier.
         /// </summary>
         /// <value>
-        /// The location unique identifier.
+        /// The location identifier.
         /// </value>
-        public Guid LocationGuid { get; set; }
+        public string LocationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the schedule unique identifier.
+        /// Gets or sets the schedule identifier.
         /// </summary>
         /// <value>
-        /// The schedule unique identifier.
+        /// The schedule identifier.
         /// </value>
-        public Guid ScheduleGuid { get; set; }
+        public string ScheduleId { get; set; }
 
         /// <summary>
-        /// Gets or sets the campus unique identifier.
+        /// Gets or sets the campus identifier.
         /// </summary>
-        /// <value>The campus unique identifier.</value>
-        public Guid? CampusGuid { get; set; }
+        /// <value>The campus identifier.</value>
+        public string CampusId { get; set; }
     }
 }

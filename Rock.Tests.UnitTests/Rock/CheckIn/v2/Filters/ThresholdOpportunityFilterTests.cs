@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.CheckIn.v2;
 using Rock.CheckIn.v2.Filters;
+using Rock.Utility;
 using Rock.ViewModels.CheckIn;
 
 namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
@@ -22,10 +24,10 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
         [TestMethod]
         public void ThresholdFilter_WithNewAttendee_IncludesLocationWithoutCapacity()
         {
-            var personGuid = new Guid( "ad90891f-274d-4b8b-838e-61144080288e" );
+            var personId = 20;
 
-            var filter = CreateThresholdFilter( personGuid );
-            var locationOpportunity = CreateLocationOpportunity( null, Array.Empty<Guid>() );
+            var filter = CreateThresholdFilter( personId );
+            var locationOpportunity = CreateLocationOpportunity( null, Array.Empty<int>() );
 
             var isIncluded = filter.IsLocationValid( locationOpportunity );
 
@@ -36,15 +38,15 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
         public void ThresholdFilter_WithNewAttendee_IncludesLocationUnderCapacity()
         {
             var capacity = 3;
-            var personGuid = new Guid( "ad90891f-274d-4b8b-838e-61144080288e" );
-            var currentAttendeePersonGuids = new[]
+            var personId = 20;
+            var currentAttendeePersonIds = new[]
             {
-                new Guid( "10317735-d78f-419b-97ef-ca379753fbbd" ),
-                new Guid( "32eea596-fabd-4732-bd2c-63c1f89b81a3" )
+                21,
+                22
             };
 
-            var filter = CreateThresholdFilter( personGuid );
-            var locationOpportunity = CreateLocationOpportunity( capacity, currentAttendeePersonGuids );
+            var filter = CreateThresholdFilter( personId );
+            var locationOpportunity = CreateLocationOpportunity( capacity, currentAttendeePersonIds );
 
             var isIncluded = filter.IsLocationValid( locationOpportunity );
 
@@ -55,15 +57,15 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
         public void ThresholdFilter_WithNewAttendee_ExcludesLocationAtCapacity()
         {
             var capacity = 2;
-            var personGuid = new Guid( "ad90891f-274d-4b8b-838e-61144080288e" );
-            var currentAttendeePersonGuids = new[]
+            var personId = 20;
+            var currentAttendeePersonIds = new[]
             {
-                new Guid( "10317735-d78f-419b-97ef-ca379753fbbd" ),
-                new Guid( "32eea596-fabd-4732-bd2c-63c1f89b81a3" )
+                21,
+                22
             };
 
-            var filter = CreateThresholdFilter( personGuid );
-            var locationOpportunity = CreateLocationOpportunity( capacity, currentAttendeePersonGuids );
+            var filter = CreateThresholdFilter( personId );
+            var locationOpportunity = CreateLocationOpportunity( capacity, currentAttendeePersonIds );
 
             var isIncluded = filter.IsLocationValid( locationOpportunity );
 
@@ -74,15 +76,15 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
         public void ThresholdFilter_WithNewAttendee_ExcludesLocationOverCapacity()
         {
             var capacity = 1;
-            var personGuid = new Guid( "ad90891f-274d-4b8b-838e-61144080288e" );
-            var currentAttendeePersonGuids = new[]
+            var personId = 20;
+            var currentAttendeePersonIds = new[]
             {
-                new Guid( "10317735-d78f-419b-97ef-ca379753fbbd" ),
-                new Guid( "32eea596-fabd-4732-bd2c-63c1f89b81a3" )
+                21,
+                22
             };
 
-            var filter = CreateThresholdFilter( personGuid );
-            var locationOpportunity = CreateLocationOpportunity( capacity, currentAttendeePersonGuids );
+            var filter = CreateThresholdFilter( personId );
+            var locationOpportunity = CreateLocationOpportunity( capacity, currentAttendeePersonIds );
 
             var isIncluded = filter.IsLocationValid( locationOpportunity );
 
@@ -93,15 +95,15 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
         public void ThresholdFilter_WithAttendeeAlreadyInLocation_IncludesLocationAtCapacity()
         {
             var capacity = 2;
-            var personGuid = new Guid( "ad90891f-274d-4b8b-838e-61144080288e" );
-            var currentAttendeePersonGuids = new[]
+            var personId = 20;
+            var currentAttendeePersonIds = new[]
             {
-                new Guid( "10317735-d78f-419b-97ef-ca379753fbbd" ),
-                personGuid
+                21,
+                personId
             };
 
-            var filter = CreateThresholdFilter( personGuid );
-            var locationOpportunity = CreateLocationOpportunity( capacity, currentAttendeePersonGuids );
+            var filter = CreateThresholdFilter( personId );
+            var locationOpportunity = CreateLocationOpportunity( capacity, currentAttendeePersonIds );
 
             var isIncluded = filter.IsLocationValid( locationOpportunity );
 
@@ -112,15 +114,15 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
         public void ThresholdFilter_WithAttendeeAlreadyInLocation_IncludesLocationOverCapacity()
         {
             var capacity = 1;
-            var personGuid = new Guid( "ad90891f-274d-4b8b-838e-61144080288e" );
-            var currentAttendeePersonGuids = new[]
+            var personId = 20;
+            var currentAttendeePersonIds = new[]
             {
-                new Guid( "10317735-d78f-419b-97ef-ca379753fbbd" ),
-                personGuid
+                21,
+                personId
             };
 
-            var filter = CreateThresholdFilter( personGuid );
-            var locationOpportunity = CreateLocationOpportunity( capacity, currentAttendeePersonGuids );
+            var filter = CreateThresholdFilter( personId );
+            var locationOpportunity = CreateLocationOpportunity( capacity, currentAttendeePersonIds );
 
             var isIncluded = filter.IsLocationValid( locationOpportunity );
 
@@ -135,9 +137,9 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
         /// Creates the <see cref="ThresholdOpportunityFilter"/> along with the
         /// person to be filtered.
         /// </summary>
-        /// <param name="personGuid">The unique identifier of the person being checked in.</param>
+        /// <param name="personId">The identifier of the person being checked in.</param>
         /// <returns>An instance of <see cref="ThresholdOpportunityFilter"/>.</returns>
-        private ThresholdOpportunityFilter CreateThresholdFilter( Guid personGuid )
+        private ThresholdOpportunityFilter CreateThresholdFilter( int personId )
         {
             // Create the filter.
             var filter = new ThresholdOpportunityFilter
@@ -148,7 +150,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
                 },
             };
 
-            filter.Person.Person.Guid = personGuid;
+            filter.Person.Person.Id = IdHasher.Instance.GetHash( personId );
 
             return filter;
         }
@@ -157,15 +159,15 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
         /// Creates a location opportunity with the specified capacity and occupants.
         /// </summary>
         /// <param name="capacity">The maximum location capacity or <c>null</c>.</param>
-        /// <param name="personGuids">The unique identifiers of the people already in this location.</param>
+        /// <param name="personIds">The identifiers of the people already in this location.</param>
         /// <returns>A new instance of <see cref="LocationOpportunity"/>.</returns>
-        private LocationOpportunity CreateLocationOpportunity( int? capacity, IReadOnlyCollection<Guid> personGuids )
+        private LocationOpportunity CreateLocationOpportunity( int? capacity, IReadOnlyCollection<int> personIds )
         {
             return new LocationOpportunity
             {
                 Capacity = capacity,
-                CurrentCount = personGuids.Count,
-                CurrentPersonGuids = new HashSet<Guid>( personGuids )
+                CurrentCount = personIds.Count,
+                CurrentPersonIds = new HashSet<string>( personIds.Select( id => IdHasher.Instance.GetHash( id ) ) )
             };
         }
 

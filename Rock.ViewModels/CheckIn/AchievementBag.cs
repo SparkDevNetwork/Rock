@@ -24,16 +24,16 @@ namespace Rock.ViewModels.CheckIn
     public class AchievementBag
     {
         /// <summary>
-        /// Gets or sets the unique identifier of the achievement attempt.
+        /// Gets or sets the identifier of the achievement attempt.
         /// </summary>
-        /// <value>The unique identifier of the achievement attempt.</value>
-        public Guid Guid { get; set; }
+        /// <value>The identifier of the achievement attempt.</value>
+        public string Id { get; set; }
 
         /// <summary>
-        /// Gets or sets the unique identifier of the achievement type.
+        /// Gets or sets the identifier of the achievement type.
         /// </summary>
-        /// <value>The unique identifier of the achievement type.</value>
-        public Guid AchievementTypeGuid { get; set; }
+        /// <value>The identifier of the achievement type.</value>
+        public string AchievementTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the achievement type.

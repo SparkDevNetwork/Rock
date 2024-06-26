@@ -21,7 +21,6 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
 import { SavedCheckInConfigurationSettingsBag } from "@Obsidian/ViewModels/CheckIn/savedCheckInConfigurationSettingsBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
@@ -36,8 +35,8 @@ export type SavedCheckInConfigurationBag = {
     /** Gets or sets the text that describes this saved configuration. */
     description?: string | null;
 
-    /** Gets or sets the unique identifier. */
-    guid: Guid;
+    /** Gets or sets the identifier of the configuration. */
+    id?: string | null;
 
     /** Gets or sets the name of this saved configuration. */
     name?: string | null;

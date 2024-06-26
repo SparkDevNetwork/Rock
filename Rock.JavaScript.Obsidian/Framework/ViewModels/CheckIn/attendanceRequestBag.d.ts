@@ -21,7 +21,6 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
 import { OpportunitySelectionBag } from "@Obsidian/ViewModels/CheckIn/opportunitySelectionBag";
 
 /**
@@ -36,14 +35,14 @@ export type AttendanceRequestBag = {
     note?: string | null;
 
     /**
-     * Gets or sets the unique identifier of the person to create an
-     * attendance record for.
+     * Gets or sets the identifier of the person to create an attendance
+     * record for.
      */
-    personGuid: Guid;
+    personId?: string | null;
 
     /**
      * Gets or sets the selection that identify where the person should
-     * be checked in to. Only the Guid values are used.
+     * be checked in to. Only the Id values are used.
      */
     selection?: OpportunitySelectionBag | null;
 };

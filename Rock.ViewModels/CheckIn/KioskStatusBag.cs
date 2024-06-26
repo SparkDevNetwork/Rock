@@ -62,17 +62,17 @@ namespace Rock.ViewModels.CheckIn
         public DateTimeOffset ServerCurrentDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the location unique identifiers. A change in one of
+        /// Gets or sets the location identifiers. A change in one of
         /// these locations should trigger an update of the kiosk status.
         /// </summary>
-        /// <value>The location unique identifiers.</value>
-        public List<Guid> LocationGuids { get; set; }
+        /// <value>The location identifiers.</value>
+        public List<string> LocationIds { get; set; }
 
         /// <summary>
-        /// Gets or sets the schedule unique identifiers. A change in one of
+        /// Gets or sets the schedule identifiers. A change in one of
         /// these schedules should trigger an update of the kiosk status.
         /// </summary>
-        /// <value>The schedule unique identifiers.</value>
-        public List<Guid> ScheduleGuids { get; set; }
+        /// <value>The schedule identifiers.</value>
+        public List<string> ScheduleIds { get; set; }
     }
 }

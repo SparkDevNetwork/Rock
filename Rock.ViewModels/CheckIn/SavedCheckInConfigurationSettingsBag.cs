@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 
 namespace Rock.ViewModels.CheckIn
@@ -25,18 +24,18 @@ namespace Rock.ViewModels.CheckIn
     public class SavedCheckInConfigurationSettingsBag
     {
         /// <summary>
-        /// Gets or sets the check-in template unique identifier used for
-        /// general kiosk configuration options.
+        /// Gets or sets the check-in template identifier used for general
+        /// kiosk configuration options.
         /// </summary>
-        /// <value>The check-in template unique identifier.</value>
-        public Guid TemplateGuid { get; set; }
+        /// <value>The check-in template identifier.</value>
+        public string TemplateId { get; set; }
 
         /// <summary>
-        /// Gets or sets the area unique identifiers that are valid for this
+        /// Gets or sets the area identifiers that are valid for this
         /// configuration.
         /// </summary>
-        /// <value>The area unique identifiers.</value>
-        public List<Guid> AreaGuids { get; set; }
+        /// <value>The area identifiers.</value>
+        public List<string> AreaIds { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the theme that will be used with this configuration.

@@ -15,8 +15,6 @@
 // </copyright>
 //
 
-using System;
-
 namespace Rock.ViewModels.CheckIn
 {
     /// <summary>
@@ -26,15 +24,15 @@ namespace Rock.ViewModels.CheckIn
     public class AttendanceRequestBag
     {
         /// <summary>
-        /// Gets or sets the unique identifier of the person to create an
-        /// attendance record for.
+        /// Gets or sets the identifier of the person to create an attendance
+        /// record for.
         /// </summary>
-        /// <value>The person unique identifier.</value>
-        public Guid PersonGuid { get; set; }
+        /// <value>The person identifier.</value>
+        public string PersonId { get; set; }
 
         /// <summary>
         /// Gets or sets the selection that identify where the person should
-        /// be checked in to. Only the Guid values are used.
+        /// be checked in to. Only the Id values are used.
         /// </summary>
         /// <value>The selections.</value>
         public OpportunitySelectionBag Selection { get; set; }

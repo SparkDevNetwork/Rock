@@ -29,12 +29,11 @@
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { CheckInSession } from "./checkInSession.partial";
-    import { isGuidInList, UnexpectedErrorMessage } from "./utils.partial";
+    import { isAnyIdInList, UnexpectedErrorMessage } from "./utils.partial";
     import { ScheduleOpportunityBag } from "@Obsidian/ViewModels/CheckIn/scheduleOpportunityBag";
     import { KioskCheckInMode } from "@Obsidian/Enums/CheckIn/kioskCheckInMode";
     import { Guid } from "@Obsidian/Types";
     import { CheckInItemBag } from "@Obsidian/ViewModels/CheckIn/checkInItemBag";
-    import { areEqual } from "@Obsidian/Utility/guid";
     import { KioskButton } from "./types.partial";
     import { PersonBag } from "@Obsidian/ViewModels/CheckIn/personBag";
 
@@ -97,20 +96,20 @@
 
     // #region Functions
 
-    function getDefaultSelections(schedule: CheckInItemBag | CheckInItemBag[] | undefined | null): Guid[] {
+    function getDefaultSelections(schedule: CheckInItemBag | CheckInItemBag[] | undefined | null): string[] {
         if (!schedule) {
             return [];
         }
         else if (Array.isArray(schedule)) {
-            return schedule.map(s => s.guid);
+            return schedule.map(s => s.id as string);
         }
         else {
-            return [schedule.guid];
+            return [schedule.id as string];
         }
     }
 
     function isSelected(schedule: CheckInItemBag): boolean {
-        return selections.value.some(s => areEqual(s, schedule.guid));
+        return selections.value.some(s => s === schedule.id);
     }
 
     /**
@@ -131,11 +130,11 @@
     }
 
     function onScheduleClick(schedule: CheckInItemBag): void {
-        if (isGuidInList(schedule.guid, selections.value)) {
-            selections.value = selections.value.filter(s => !areEqual(s, schedule.guid));
+        if (isAnyIdInList(schedule.id, selections.value)) {
+            selections.value = selections.value.filter(s => s !== schedule.id);
         }
-        else {
-            selections.value = [schedule.guid, ...selections.value];
+        else if (schedule.id) {
+            selections.value = [schedule.id, ...selections.value];
         }
     }
 

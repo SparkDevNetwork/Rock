@@ -14,8 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-
 using Rock.Enums.CheckIn;
 
 namespace Rock.ViewModels.Rest.CheckIn
@@ -27,18 +25,18 @@ namespace Rock.ViewModels.Rest.CheckIn
     public class SearchForFamiliesOptionsBag
     {
         /// <summary>
-        /// Gets or sets the check-in configuration template unique identifier.
+        /// Gets or sets the check-in configuration template identifier.
         /// This identifies the configuration that should be used when
         /// validating the search and compiling results.
         /// </summary>
-        /// <value>The check-in configuration template unique identifier.</value>
-        public Guid ConfigurationTemplateGuid { get; set; }
+        /// <value>The check-in configuration template identifier.</value>
+        public string ConfigurationTemplateId { get; set; }
 
         /// <summary>
-        /// Gets or sets the optional kiosk unique identifier.
+        /// Gets or sets the optional kiosk identifier.
         /// </summary>
-        /// <value>The optional kiosk unique identifier.</value>
-        public Guid? KioskGuid { get; set; }
+        /// <value>The optional kiosk identifier.</value>
+        public string KioskId { get; set; }
 
         /// <summary>
         /// Gets or sets the term to search for.

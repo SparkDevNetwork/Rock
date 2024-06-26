@@ -28,7 +28,9 @@ namespace Rock.ViewModels.CheckIn
     public class AttendanceSessionRequestBag
     {
         /// <summary>
-        /// Gets or sets the unique identifier of the check-in session.
+        /// Gets or sets the unique identifier of the check-in session. This is
+        /// a unique identifier instead of a regular identifier since it needs
+        /// to come from the client.
         /// </summary>
         /// <value>The unique identifier of the check-in session.</value>
         public Guid Guid { get; set; }
@@ -42,11 +44,11 @@ namespace Rock.ViewModels.CheckIn
         public bool IsPending { get; set; }
 
         /// <summary>
-        /// Gets or sets the family unique identifier that was determined
-        /// during the family search operation.
+        /// Gets or sets the family identifier that was determined during
+        /// the family search operation.
         /// </summary>
-        /// <value>The family unique identifier.</value>
-        public Guid? FamilyGuid { get; set; }
+        /// <value>The family identifier.</value>
+        public string FamilyId { get; set; }
 
         /// <summary>
         /// Gets or sets the mode used when searching for families.
@@ -61,10 +63,10 @@ namespace Rock.ViewModels.CheckIn
         public string SearchTerm { get; set; }
 
         /// <summary>
-        /// Gets or sets the unique identifier of the person performing the request
-        /// to check-in the attendees.
+        /// Gets or sets the identifier of the person performing the action
+        /// for this session.
         /// </summary>
-        /// <value>The unique identifier of the person performing the request.</value>
-        public Guid? CheckedInByPersonGuid { get; set; }
+        /// <value>The identifier of the person performing the action.</value>
+        public string PerformedByPersonId { get; set; }
     }
 }

@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 
 namespace Rock.ViewModels.Rest.CheckIn
@@ -25,16 +24,16 @@ namespace Rock.ViewModels.Rest.CheckIn
     public class KioskStatusOptionsBag
     {
         /// <summary>
-        /// Gets or sets the kiosk unique identifier.
+        /// Gets or sets the kiosk identifier.
         /// </summary>
-        /// <value>The kiosk unique identifier.</value>
-        public Guid KioskGuid { get; set; }
+        /// <value>The kiosk identifier.</value>
+        public string KioskId { get; set; }
 
         /// <summary>
-        /// Gets or sets the area unique identifiers the kiosk is currently
+        /// Gets or sets the area identifiers the kiosk is currently
         /// configured for.
         /// </summary>
         /// <value>The area unique identifiers.</value>
-        public List<Guid> AreaGuids { get; set; }
+        public List<string> AreaIds { get; set; }
     }
 }

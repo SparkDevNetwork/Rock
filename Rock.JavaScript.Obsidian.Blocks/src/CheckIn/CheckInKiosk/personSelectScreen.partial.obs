@@ -53,7 +53,6 @@
     import { UnexpectedErrorMessage } from "./utils.partial";
     import { AttendeeBag } from "@Obsidian/ViewModels/CheckIn/attendeeBag";
     import { Guid } from "@Obsidian/Types";
-    import { areEqual } from "@Obsidian/Utility/guid";
     import { KioskCheckInMode } from "@Obsidian/Enums/CheckIn/kioskCheckInMode";
     import { KioskButton } from "./types.partial";
     import { OpportunitySelectionBag } from "@Obsidian/ViewModels/CheckIn/opportunitySelectionBag";
@@ -149,10 +148,10 @@
     /**
      * Gets the initially selected attendees when the screen loads.
      */
-    function getInitialSelections(): Guid[] {
+    function getInitialSelections(): string[] {
         // If we have previously selected attendees then use those again.
-        if (props.session.selectedAttendeeGuids) {
-            return props.session.selectedAttendeeGuids;
+        if (props.session.selectedAttendeeIds) {
+            return props.session.selectedAttendeeIds;
         }
 
         // Otherwise we need to check what the default selections from the
@@ -162,8 +161,8 @@
         }
 
         return props.session.attendees
-            .filter(a => a.isPreSelected && !!a.person?.guid)
-            .map(a => a.person?.guid as Guid);
+            .filter(a => a.isPreSelected && !!a.person?.id)
+            .map(a => a.person?.id as string);
     }
 
     /**
@@ -174,11 +173,11 @@
      * @returns A colleciton of opportunity selections.
      */
     function getAttendeeSelections(attendee: AttendeeBag): OpportunitySelectionBag[] {
-        if (!attendee.person) {
+        if (!attendee.person?.id) {
             return [];
         }
 
-        const selections = props.session.getAttendeeSelections(attendee.person.guid);
+        const selections = props.session.getAttendeeSelections(attendee.person.id);
 
         return selections;
     }
@@ -221,7 +220,7 @@
      * @returns true if the attendee is currently selected.
      */
     function isAttendeeSelected(attendee: AttendeeBag): boolean {
-        return selections.value.some(s => areEqual(s, attendee.person?.guid));
+        return selections.value.some(s => s === attendee.person?.id);
     }
 
     /**
@@ -248,18 +247,18 @@
     async function onAttendeeClick(attendee: AttendeeBag): Promise<void> {
         if (isFamilyMode.value) {
             if (isAttendeeSelected(attendee)) {
-                selections.value = selections.value.filter(s => !areEqual(s, attendee.person?.guid));
+                selections.value = selections.value.filter(s => s !== attendee.person?.id);
             }
-            else if (attendee.person?.guid) {
-                selections.value = [attendee.person?.guid, ...selections.value];
+            else if (attendee.person?.id) {
+                selections.value = [attendee.person?.id, ...selections.value];
             }
         }
         else {
-            if (attendee.person?.guid) {
+            if (attendee.person?.id) {
                 try {
-                    let newSession = props.session.withSelectedAttendees([attendee.person.guid]);
+                    let newSession = props.session.withSelectedAttendees([attendee.person.id]);
 
-                    newSession = await newSession.withAttendee(attendee.person.guid);
+                    newSession = await newSession.withAttendee(attendee.person.id);
 
                     emit("next", await newSession.withNextScreen());
                 }
@@ -271,14 +270,14 @@
     }
 
     async function onChangeSelection(attendee: AttendeeBag): Promise<void> {
-        if (!attendee.person?.guid) {
+        if (!attendee.person?.id) {
             return;
         }
 
         try {
             let newSession = props.session.withSelectedAttendees(selections.value);
 
-            newSession = await newSession.withAttendee(attendee.person?.guid);
+            newSession = await newSession.withAttendee(attendee.person?.id);
 
             emit("next", await newSession.withNextScreen());
         }

@@ -21,7 +21,6 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
 import { AttendanceSessionRequestBag } from "@Obsidian/ViewModels/CheckIn/attendanceSessionRequestBag";
 
 /**
@@ -30,13 +29,13 @@ import { AttendanceSessionRequestBag } from "@Obsidian/ViewModels/CheckIn/attend
  */
 export type CheckoutOptionsBag = {
     /**
-     * Gets or sets the attendance unique identifiers that will be checked
+     * Gets or sets the attendance identifiers that will be checked
      * out for this operation.
      */
-    attendanceGuids?: Guid[] | null;
+    attendanceIds?: string[] | null;
 
-    /** Gets or sets the kiosk unique identifier. */
-    kioskGuid?: Guid | null;
+    /** Gets or sets the kiosk identifier. */
+    kioskId?: string | null;
 
     /**
      * Gets or sets the details about the check-in session that apply
@@ -44,6 +43,6 @@ export type CheckoutOptionsBag = {
      */
     session?: AttendanceSessionRequestBag | null;
 
-    /** Gets or sets the check-in configuration template unique identifier. */
-    templateGuid: Guid;
+    /** Gets or sets the check-in configuration template identifier. */
+    templateId?: string | null;
 };

@@ -90,8 +90,8 @@ namespace Rock.Blocks.CheckIn
         /// <returns>An instance of <see cref="KioskConfigurationBag"/> if the kiosk was valid; otherwise <c>null</c>.</returns>
         private KioskConfigurationBag GetKioskConfiguration( CheckInDirector director, SavedKioskConfigurationBag savedConfiguration )
         {
-            var kiosk = DeviceCache.Get( savedConfiguration.KioskGuid, RockContext );
-            var templateGroupType = GroupTypeCache.Get( savedConfiguration.TemplateGuid, RockContext );
+            var kiosk = DeviceCache.GetByIdKey( savedConfiguration.KioskId, RockContext );
+            var templateGroupType = GroupTypeCache.GetByIdKey( savedConfiguration.TemplateId, RockContext );
 
             if ( kiosk == null || templateGroupType == null )
             {
@@ -111,7 +111,7 @@ namespace Rock.Blocks.CheckIn
                 Kiosk = CheckInKioskSetup.GetKioskBag( kiosk ),
                 Areas = areas.Select( a => new CheckInItemBag
                 {
-                    Guid = a.Guid,
+                    Id = a.IdKey,
                     Name = a.Name
                 } ).ToList(),
                 Template = template
@@ -145,13 +145,13 @@ namespace Rock.Blocks.CheckIn
         /// <summary>
         /// Gets the promotion list defined for the template and kiosk.
         /// </summary>
-        /// <param name="templateGuid">The check-in template unique identifier.</param>
-        /// <param name="kioskGuid">The kiosk unique identifier.</param>
+        /// <param name="templateId">The check-in template identifier.</param>
+        /// <param name="kioskId">The kiosk identifier.</param>
         /// <returns>A list of <see cref="PromotionBag"/> objects.</returns>
         [BlockAction]
-        public BlockActionResult GetPromotionList( Guid templateGuid, Guid kioskGuid )
+        public BlockActionResult GetPromotionList( string templateId, string kioskId )
         {
-            var kiosk = DeviceCache.Get( kioskGuid, RockContext );
+            var kiosk = DeviceCache.GetByIdKey( kioskId, RockContext );
             var contentChannel = new ContentChannelService( RockContext )
                 .Queryable()
                 .AsNoTracking()

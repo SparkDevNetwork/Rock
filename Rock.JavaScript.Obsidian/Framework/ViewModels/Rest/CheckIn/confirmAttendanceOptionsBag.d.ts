@@ -28,12 +28,12 @@ import { Guid } from "@Obsidian/Types";
  * REST endpoint.
  */
 export type ConfirmAttendanceOptionsBag = {
-    /** Gets or sets the kiosk unique identifier. */
-    kioskGuid?: Guid | null;
+    /** Gets or sets the kiosk identifier. */
+    kioskId?: string | null;
 
     /** Gets or sets the unique identifier of the session to be confirmed. */
     sessionGuid: Guid;
 
-    /** Gets or sets the check-in configuration template unique identifier. */
-    templateGuid: Guid;
+    /** Gets or sets the check-in configuration template identifier. */
+    templateId?: string | null;
 };

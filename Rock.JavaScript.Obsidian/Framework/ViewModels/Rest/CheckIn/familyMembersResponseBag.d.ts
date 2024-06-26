@@ -21,7 +21,6 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
 import { AttendanceBag } from "@Obsidian/ViewModels/CheckIn/attendanceBag";
 import { AttendeeBag } from "@Obsidian/ViewModels/CheckIn/attendeeBag";
 import { ScheduleOpportunityBag } from "@Obsidian/ViewModels/CheckIn/scheduleOpportunityBag";
@@ -34,8 +33,8 @@ export type FamilyMembersResponseBag = {
     /** Gets or sets the current attendance records that can be checked out. */
     currentlyCheckedInAttendances?: AttendanceBag[] | null;
 
-    /** Gets or sets the family unique identifier. */
-    familyGuid: Guid;
+    /** Gets or sets the family identifier. */
+    familyId?: string | null;
 
     /**
      * Gets or sets the people that can be potentially checked in for

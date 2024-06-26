@@ -14,8 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-
 using Rock.Enums.Event;
 
 namespace Rock.ViewModels.CheckIn
@@ -26,10 +24,10 @@ namespace Rock.ViewModels.CheckIn
     public class AttendanceBag
     {
         /// <summary>
-        /// Gets or sets the attendance unique identifier.
+        /// Gets or sets the attendance identifier.
         /// </summary>
-        /// <value>The attendance unique identifier.</value>
-        public Guid Guid { get; set; }
+        /// <value>The attendance identifier.</value>
+        public string Id { get; set; }
 
         /// <summary>
         /// Gets or sets the person this attendance record is for.

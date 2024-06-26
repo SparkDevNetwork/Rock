@@ -21,21 +21,19 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
-
 /** The configuration details of a single saved check-in configuration. */
 export type SavedCheckInConfigurationSettingsBag = {
     /**
-     * Gets or sets the area unique identifiers that are valid for this
+     * Gets or sets the area identifiers that are valid for this
      * configuration.
      */
-    areaGuids?: Guid[] | null;
+    areaIds?: string[] | null;
 
     /**
-     * Gets or sets the check-in template unique identifier used for
-     * general kiosk configuration options.
+     * Gets or sets the check-in template identifier used for general
+     * kiosk configuration options.
      */
-    templateGuid: Guid;
+    templateId?: string | null;
 
     /** Gets or sets the name of the theme that will be used with this configuration. */
     themeName?: string | null;

@@ -21,28 +21,26 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
-
 /**
  * The request parameters to use when requesting the options available
  * for a single attendee.
  */
 export type AttendeeOpportunitiesOptionsBag = {
     /**
-     * Gets or sets the area unique identifiers that will be used to
+     * Gets or sets the area identifiers that will be used to
      * determine which options are available for each family member.
      */
-    areaGuids?: Guid[] | null;
+    areaIds?: string[] | null;
 
-    /** Gets or sets the configuration template unique identifier. */
-    configurationTemplateGuid: Guid;
+    /** Gets or sets the configuration template identifier. */
+    configurationTemplateId?: string | null;
 
-    /** Gets or sets the family unique identifier. */
-    familyGuid?: Guid | null;
+    /** Gets or sets the family identifier. */
+    familyId?: string | null;
 
-    /** Gets or sets the kiosk unique identifier. */
-    kioskGuid: Guid;
+    /** Gets or sets the kiosk identifier. */
+    kioskId?: string | null;
 
-    /** Gets or sets the person unique identifier. */
-    personGuid: Guid;
+    /** Gets or sets the person identifier. */
+    personId?: string | null;
 };

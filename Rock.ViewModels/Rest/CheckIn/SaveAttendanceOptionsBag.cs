@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 
 using Rock.ViewModels.CheckIn;
@@ -28,16 +27,16 @@ namespace Rock.ViewModels.Rest.CheckIn
     public class SaveAttendanceOptionsBag
     {
         /// <summary>
-        /// Gets or sets the check-in configuration template unique identifier.
+        /// Gets or sets the check-in configuration template identifier.
         /// </summary>
-        /// <value>The check-in configuration template unique identifier.</value>
-        public Guid TemplateGuid { get; set; }
+        /// <value>The check-in configuration template identifier.</value>
+        public string TemplateId { get; set; }
 
         /// <summary>
-        /// Gets or sets the kiosk unique identifier.
+        /// Gets or sets the kiosk identifier.
         /// </summary>
-        /// <value>The kiosk unique identifier.</value>
-        public Guid? KioskGuid { get; set; }
+        /// <value>The kiosk identifier.</value>
+        public string KioskId { get; set; }
 
         /// <summary>
         /// Gets or sets the details about the check-in session that apply

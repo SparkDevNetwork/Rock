@@ -1,4 +1,3 @@
-import { Guid } from "@Obsidian/Types";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { Ref, reactive, ref } from "vue";
@@ -6,13 +5,13 @@ import { Ref, reactive, ref } from "vue";
 export const SimulatorNoteKey: string = "Simulated Attendance";
 
 export type Configuration = {
-    templateGuid?: Guid;
+    templateId?: string;
 
-    kioskGuid?: Guid;
+    kioskId?: string;
 
-    primaryAreaGuids?: Guid[];
+    primaryAreaIds?: string[];
 
-    secondaryAreaGuids?: Guid[];
+    secondaryAreaIds?: string[];
 
     benchmarkIterations?: number;
 

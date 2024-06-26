@@ -69,7 +69,7 @@ namespace Rock.CheckIn.v2.Filters
         /// </summary>
         public OpportunityFilter()
         {
-            PersonId = new Lazy<int>( () => IdHasher.Instance.GetId( Person.Person.IdKey ) ?? 0 );
+            PersonId = new Lazy<int>( () => IdHasher.Instance.GetId( Person.Person.Id ) ?? 0 );
         }
 
         #endregion

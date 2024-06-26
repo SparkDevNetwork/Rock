@@ -22,12 +22,11 @@
 //
 
 import { KioskType } from "@Obsidian/Enums/Core/kioskType";
-import { Guid } from "@Obsidian/Types";
 
 /** Details about a single kiosk device. */
 export type KioskBag = {
-    /** Gets or sets the unique identifier of this item. */
-    guid: Guid;
+    /** Gets or sets the identifier of this item. */
+    id?: string | null;
 
     /** Gets or sets a value indicating whether this kiosk has the camera enabled. */
     isCameraEnabled: boolean;

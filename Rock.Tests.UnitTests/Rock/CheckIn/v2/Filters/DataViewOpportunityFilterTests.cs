@@ -150,7 +150,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
                 TemplateConfiguration = templateConfigurationMock.Object
             };
 
-            filter.Person.Person.IdKey = IdHasher.Instance.GetHash( personId );
+            filter.Person.Person.Id = IdHasher.Instance.GetHash( personId );
 
             return filter;
         }

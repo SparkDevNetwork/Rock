@@ -21,28 +21,26 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
-
 /**
  * Details about how a kiosk was configured. This is saved in the local
  * storage in the browser and used to retrieve a full KioskConfigurationBag.
  */
 export type SavedKioskConfigurationBag = {
     /**
-     * The list of check-in area unique identifiers the kiosk was
+     * The list of check-in area identifiers the kiosk was
      * configured to use.
      */
-    areaGuids?: Guid[] | null;
+    areaIds?: string[] | null;
 
     /**
-     * The campus unique identifier that was selected when the kiosk was
+     * The campus identifier that was selected when the kiosk was
      * configured. This may be null.
      */
-    campusGuid?: Guid | null;
+    campusId?: string | null;
 
-    /** The device unique identifier the kiosk was configured to use. */
-    kioskGuid: Guid;
+    /** The device identifier the kiosk was configured to use. */
+    kioskId?: string | null;
 
-    /** The check-in configuration template unique identifier. */
-    templateGuid: Guid;
+    /** The check-in configuration template identifier. */
+    templateId?: string | null;
 };

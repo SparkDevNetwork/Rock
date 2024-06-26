@@ -21,16 +21,14 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
-
 /**
  * The request parameters to use when requesting the list of valid
  * check-in configurations.
  */
 export type ConfigurationOptionsBag = {
     /**
-     * Gets or sets the kiosk unique identifier to use when filtering
+     * Gets or sets the kiosk identifier to use when filtering
      * the configuration list.
      */
-    kioskGuid?: Guid | null;
+    kioskId?: string | null;
 };

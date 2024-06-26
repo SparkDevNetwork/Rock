@@ -21,18 +21,16 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
-
 /** Defines the details of an achievement for the check-in process. */
 export type AchievementBag = {
-    /** Gets or sets the unique identifier of the achievement type. */
-    achievementTypeGuid: Guid;
+    /** Gets or sets the identifier of the achievement type. */
+    achievementTypeId?: string | null;
 
     /** Gets or sets the end date time. */
     endDateTime?: string | null;
 
-    /** Gets or sets the unique identifier of the achievement attempt. */
-    guid: Guid;
+    /** Gets or sets the identifier of the achievement attempt. */
+    id?: string | null;
 
     /**
      * Gets or sets a value indicating whether this achievement is closed.

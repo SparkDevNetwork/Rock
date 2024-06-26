@@ -104,14 +104,14 @@
      */
     async function onFamilyClick(family: FamilyBag): Promise<void> {
         // Prevent tapping two different family buttons.
-        if (isSelectingFamily) {
+        if (isSelectingFamily || !family.id) {
             return;
         }
 
         try {
             isSelectingFamily = true;
 
-            const newSession = await props.session.withFamily(family.guid);
+            const newSession = await props.session.withFamily(family.id);
 
             if (!newSession.attendees || newSession.attendees.length === 0) {
                 await alert("There were not any family members in this family.");

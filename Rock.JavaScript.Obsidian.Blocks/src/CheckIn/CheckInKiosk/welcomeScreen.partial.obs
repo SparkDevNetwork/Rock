@@ -195,12 +195,12 @@
 
             newSession = await newSession.withFamilySearch(code, FamilySearchMode.ScannedId);
 
-            if (!newSession.families || newSession.families.length === 0) {
+            if (!newSession.families || newSession.families.length === 0 || !newSession.families[0].id) {
                 await alert("Sorry, there were not any families found with the selected identifier.");
                 return;
             }
 
-            newSession = await newSession.withFamily(newSession.families[0].guid);
+            newSession = await newSession.withFamily(newSession.families[0].id);
 
             emit("start", await newSession.withNextScreen());
         }
@@ -218,8 +218,8 @@
      */
     async function updatePromotionList(): Promise<void> {
         const result = await invokeBlockAction<PromotionBag[]>("GetPromotionList", {
-            templateGuid: props.configuration.template?.guid,
-            kioskGuid: props.configuration.kiosk?.guid
+            templateId: props.configuration.template?.id,
+            kioskId: props.configuration.kiosk?.id
         });
 
         if (result.isSuccess && result.data) {
@@ -246,8 +246,8 @@
         isUpdatingKioskStatus = true;
 
         const request: KioskStatusOptionsBag = {
-            kioskGuid: props.configuration.kiosk.guid,
-            areaGuids: props.configuration.areas?.map(a => a.guid ?? "") ?? []
+            kioskId: props.configuration.kiosk.id,
+            areaIds: props.configuration.areas?.map(a => a.id ?? "") ?? []
         };
 
         const result = await http.post<KioskStatusResponseBag>("/api/v2/checkin/KioskStatus", undefined, request);
@@ -507,7 +507,7 @@
 
         // If we have a native check-in app then initialize it.
         if (native && props.configuration.kiosk && native.SetKioskId) {
-            native.SetKioskId(props.configuration.kiosk.id);
+            native.SetKioskId(props.configuration.kiosk.idNumber);
         }
 
         // Install the native check-in app function for code scanning.

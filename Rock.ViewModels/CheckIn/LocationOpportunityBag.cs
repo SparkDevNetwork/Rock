@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 
 namespace Rock.ViewModels.CheckIn
@@ -37,10 +36,10 @@ namespace Rock.ViewModels.CheckIn
         public int CurrentCount { get; set; }
 
         /// <summary>
-        /// Gets or sets the schedule unique identifiers that this location
-        /// is valid for.
+        /// Gets or sets the schedule identifiers that this location is valid
+        /// for.
         /// </summary>
-        /// <value>The schedule unique identifiers.</value>
-        public List<Guid> ScheduleGuids { get; set; }
+        /// <value>The schedule identifiers.</value>
+        public List<string> ScheduleIds { get; set; }
     }
 }

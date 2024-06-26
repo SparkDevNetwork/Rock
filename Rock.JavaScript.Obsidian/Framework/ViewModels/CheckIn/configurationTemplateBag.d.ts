@@ -25,7 +25,6 @@ import { AbilityLevelDeterminationMode } from "@Obsidian/Enums/CheckIn/abilityLe
 import { FamilySearchMode } from "@Obsidian/Enums/CheckIn/familySearchMode";
 import { KioskCheckInMode } from "@Obsidian/Enums/CheckIn/kioskCheckInMode";
 import { PhoneSearchMode } from "@Obsidian/Enums/CheckIn/phoneSearchMode";
-import { Guid } from "@Obsidian/Types";
 
 /** The summary information about a single check-in configuration template. */
 export type ConfigurationTemplateBag = {
@@ -41,14 +40,14 @@ export type ConfigurationTemplateBag = {
      */
     familySearchType: FamilySearchMode;
 
-    /**
-     * Gets or sets the unique identifier of this check-in configuration
-     * template.
-     */
-    guid: Guid;
-
     /** Gets or sets the icon CSS class defined on the check-in configuration. */
     iconCssClass?: string | null;
+
+    /**
+     * Gets or sets the identifier of this check-in configuration
+     * template.
+     */
+    id?: string | null;
 
     /**
      * Gets or sets a value indicating whether auto-select mode is enabled

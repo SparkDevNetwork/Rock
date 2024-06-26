@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Model;
+using Rock.Utility;
 
 namespace Rock.CheckIn.v2.Filters
 {
@@ -32,11 +33,10 @@ namespace Rock.CheckIn.v2.Filters
         #region Properties
 
         /// <summary>
-        /// Gets the group unique identifiers that the person is an active
-        /// member of.
+        /// Gets the group identifiers that the person is an active member of.
         /// </summary>
-        /// <value>The group unique identifiers.</value>
-        public Lazy<HashSet<Guid>> GroupGuids { get; }
+        /// <value>The group identifiers.</value>
+        public Lazy<HashSet<string>> GroupIds { get; }
 
         #endregion
 
@@ -50,14 +50,17 @@ namespace Rock.CheckIn.v2.Filters
             // Make sure we only load the group unique identifiers once. Because
             // this is lazy initialized, it will only load the data if we come
             // across any group with an AlreadyBelongs attendance rule.
-            GroupGuids = new Lazy<HashSet<Guid>>( () =>
+            GroupIds = new Lazy<HashSet<string>>( () =>
             {
-                var groupGuidQry = new GroupMemberService( RockContext )
+                var personIdNumber = IdHasher.Instance.GetId( Person.Person.Id ) ?? 0;
+                var groupIds = new GroupMemberService( RockContext )
                     .Queryable()
-                    .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active && m.Person.Guid == Person.Person.Guid )
-                    .Select( m => m.Group.Guid );
+                    .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active && m.Person.Id == personIdNumber )
+                    .Select( m => m.Group.Id )
+                    .ToList()
+                    .Select( id => IdHasher.Instance.GetHash( id ) );
 
-                return new HashSet<Guid>( groupGuidQry );
+                return new HashSet<string>( groupIds );
             } );
         }
 
@@ -70,7 +73,7 @@ namespace Rock.CheckIn.v2.Filters
         {
             if ( group.CheckInAreaData.AttendanceRule == AttendanceRule.AlreadyBelongs )
             {
-                return GroupGuids.Value.Contains( group.Guid );
+                return GroupIds.Value.Contains( group.Id );
             }
 
             return true;

@@ -194,9 +194,9 @@ namespace Rock.CheckIn.v2.Labels
 
             // Just completed achievements.
             var justCompletedAchievements = PersonAttendance
-                .SelectMany( a => a.JustCompletedAchievements.Select( ach => ach.AchievementTypeGuid ) )
+                .SelectMany( a => a.JustCompletedAchievements.Select( ach => ach.AchievementTypeId ) )
                 .Distinct()
-                .Select( guid => AchievementTypeCache.Get( guid, rockContext ) )
+                .Select( id => AchievementTypeCache.GetByIdKey( id, rockContext ) )
                 .Where( a => a != null )
                 .ToList();
 
@@ -209,9 +209,9 @@ namespace Rock.CheckIn.v2.Labels
 
             // In progress achievements.
             var inProgressAchievements = PersonAttendance
-                .SelectMany( a => a.InProgressAchievements.Select( ach => ach.AchievementTypeGuid ) )
+                .SelectMany( a => a.InProgressAchievements.Select( ach => ach.AchievementTypeId ) )
                 .Distinct()
-                .Select( guid => AchievementTypeCache.Get( guid, rockContext ) )
+                .Select( id => AchievementTypeCache.GetByIdKey( id, rockContext ) )
                 .Where( a => a != null )
                 .ToList();
 
@@ -224,9 +224,9 @@ namespace Rock.CheckIn.v2.Labels
 
             // Just completed achievements.
             var previouslyCompletedAchievements = PersonAttendance
-                .SelectMany( a => a.PreviouslyCompletedAchievements.Select( ach => ach.AchievementTypeGuid ) )
+                .SelectMany( a => a.PreviouslyCompletedAchievements.Select( ach => ach.AchievementTypeId ) )
                 .Distinct()
-                .Select( guid => AchievementTypeCache.Get( guid, rockContext ) )
+                .Select( id => AchievementTypeCache.GetByIdKey( id, rockContext ) )
                 .Where( a => a != null )
                 .ToList();
 

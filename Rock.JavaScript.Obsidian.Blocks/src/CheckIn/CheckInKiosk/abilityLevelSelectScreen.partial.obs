@@ -81,14 +81,14 @@
      */
     async function onAbilityLevelClick(abilityLevel: AbilityLevelOpportunityBag): Promise<void> {
         // Prevent tapping two different buttons.
-        if (isSelectingValue) {
+        if (isSelectingValue || !abilityLevel.id) {
             return;
         }
 
         try {
             isSelectingValue = true;
 
-            const newSession = props.session.withSelectedAbilityLevel(abilityLevel.guid);
+            const newSession = props.session.withSelectedAbilityLevel(abilityLevel.id);
 
             emit("next", await newSession.withNextScreen());
         }

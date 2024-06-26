@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 
 namespace Rock.ViewModels.Rest.CheckIn
@@ -26,34 +25,34 @@ namespace Rock.ViewModels.Rest.CheckIn
     public class AttendeeOpportunitiesOptionsBag
     {
         /// <summary>
-        /// Gets or sets the configuration template unique identifier.
+        /// Gets or sets the configuration template identifier.
         /// </summary>
-        /// <value>The configuration template unique identifier.</value>
-        public Guid ConfigurationTemplateGuid { get; set; }
+        /// <value>The configuration template identifier.</value>
+        public string ConfigurationTemplateId { get; set; }
 
         /// <summary>
-        /// Gets or sets the area unique identifiers that will be used to
+        /// Gets or sets the area identifiers that will be used to
         /// determine which options are available for each family member.
         /// </summary>
-        /// <value>The check-in area unique identifiers.</value>
-        public List<Guid> AreaGuids { get; set; }
+        /// <value>The check-in area identifiers.</value>
+        public List<string> AreaIds { get; set; }
 
         /// <summary>
-        /// Gets or sets the kiosk unique identifier.
+        /// Gets or sets the kiosk identifier.
         /// </summary>
-        /// <value>The kiosk unique identifier.</value>
-        public Guid KioskGuid { get; set; }
+        /// <value>The kiosk identifier.</value>
+        public string KioskId { get; set; }
 
         /// <summary>
-        /// Gets or sets the person unique identifier.
+        /// Gets or sets the person identifier.
         /// </summary>
-        /// <value>The person unique identifier.</value>
-        public Guid PersonGuid { get; set; }
+        /// <value>The person identifier.</value>
+        public string PersonId { get; set; }
 
         /// <summary>
-        /// Gets or sets the family unique identifier.
+        /// Gets or sets the family identifier.
         /// </summary>
-        /// <value>The family unique identifier.</value>
-        public Guid? FamilyGuid { get; set; }
+        /// <value>The family identifier.</value>
+        public string FamilyId { get; set; }
     }
 }

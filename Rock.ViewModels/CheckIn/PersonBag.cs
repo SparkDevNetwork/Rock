@@ -26,16 +26,10 @@ namespace Rock.ViewModels.CheckIn
     public class PersonBag
     {
         /// <summary>
-        /// Gets or sets the unique identifier of the Person.
+        /// Gets or sets the identifier of the Person.
         /// </summary>
-        /// <value>The unique identifier of the Person.</value>
-        public Guid Guid { get; set; }
-
-        /// <summary>
-        /// Gets or sets the identifier key of the Person.
-        /// </summary>
-        /// <value>The identifier key of the Person.</value>
-        public string IdKey { get; set; }
+        /// <value>The identifier of the Person.</value>
+        public string Id { get; set; }
 
         /// <summary>
         /// Gets or sets the first name.

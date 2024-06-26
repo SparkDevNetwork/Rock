@@ -23,6 +23,7 @@ using Rock.Data;
 using Rock.Enums.CheckIn;
 using Rock.Model;
 using Rock.Observability;
+using Rock.Utility;
 using Rock.ViewModels.CheckIn;
 using Rock.Web.Cache;
 
@@ -172,15 +173,15 @@ namespace Rock.CheckIn.v2
         /// populate the <see cref="Attendees"/> property and perform all
         /// filtering and default selections.
         /// </summary>
-        /// <param name="familyGuid">The family unique identifier to load.</param>
+        /// <param name="familyId">The family identifier to load.</param>
         /// <param name="possibleAreas">The possible areas that are to be considered when generating the opportunities.</param>
         /// <param name="kiosk">The optional kiosk to use.</param>
         /// <param name="locations">The list of locations to use.</param>
-        public void LoadAndPrepareAttendeesForFamily( Guid familyGuid, IReadOnlyCollection<GroupTypeCache> possibleAreas, DeviceCache kiosk, IReadOnlyCollection<NamedLocationCache> locations )
+        public void LoadAndPrepareAttendeesForFamily( string familyId, IReadOnlyCollection<GroupTypeCache> possibleAreas, DeviceCache kiosk, IReadOnlyCollection<NamedLocationCache> locations )
         {
             var opportunities = Director.GetAllOpportunities( possibleAreas, kiosk, locations );
-            var groupMemberQry = GetGroupMembersQueryForFamily( familyGuid );
-            var members = GetFamilyMemberBags( familyGuid, groupMemberQry );
+            var groupMemberQry = GetGroupMembersQueryForFamily( familyId );
+            var members = GetFamilyMemberBags( familyId, groupMemberQry );
 
             LoadAttendees( members.Select( fm => fm.Person ).ToList(), opportunities );
             PrepareAttendees();
@@ -191,16 +192,16 @@ namespace Rock.CheckIn.v2
         /// populate the <see cref="Attendees"/> property and perform all
         /// filtering and default selections.
         /// </summary>
-        /// <param name="personGuid"></param>
-        /// <param name="familyGuid">The family unique identifier to load.</param>
+        /// <param name="personId">The identifier of the person to load attendee information for.</param>
+        /// <param name="familyId">The family identifier to load.</param>
         /// <param name="possibleAreas">The possible areas that are to be considered when generating the opportunities.</param>
         /// <param name="kiosk">The optional kiosk to use.</param>
         /// <param name="locations">The list of locations to use.</param>
-        public void LoadAndPrepareAttendeesForPerson( Guid personGuid, Guid? familyGuid, IReadOnlyCollection<GroupTypeCache> possibleAreas, DeviceCache kiosk, IReadOnlyCollection<NamedLocationCache> locations )
+        public void LoadAndPrepareAttendeesForPerson( string personId, string familyId, IReadOnlyCollection<GroupTypeCache> possibleAreas, DeviceCache kiosk, IReadOnlyCollection<NamedLocationCache> locations )
         {
             var checkInOpportunities = Director.GetAllOpportunities( possibleAreas, kiosk, locations );
-            var familyMembersQry = GetGroupMemberQueryForPerson( personGuid, familyGuid );
-            var members = GetFamilyMemberBags( Guid.Empty, familyMembersQry );
+            var familyMembersQry = GetGroupMemberQueryForPerson( personId, familyId );
+            var members = GetFamilyMemberBags( null, familyMembersQry );
 
             LoadAttendees( members.Select( fm => fm.Person ).ToList(), checkInOpportunities );
             PrepareAttendees();
@@ -212,15 +213,15 @@ namespace Rock.CheckIn.v2
         /// members as well as people associated to the family with one of
         /// the configured "can check-in" known relationships.
         /// </summary>
-        /// <param name="familyGuid">The family unique identifier.</param>
+        /// <param name="familyId">The family identifier.</param>
         /// <returns>A queryable that can be used to load all the group members associated with the family.</returns>
-        public IQueryable<GroupMember> GetGroupMembersQueryForFamily( Guid familyGuid )
+        public IQueryable<GroupMember> GetGroupMembersQueryForFamily( string familyId )
         {
             using ( var activity = ObservabilityHelper.StartActivity( "Get Group Members Query For Family" ) )
             {
                 activity?.AddTag( "rock.checkin.search_provider", SearchProvider.GetType().FullName );
 
-                return SearchProvider.GetGroupMembersForFamilyQuery( familyGuid );
+                return SearchProvider.GetGroupMembersForFamilyQuery( familyId );
             }
         }
 
@@ -232,16 +233,16 @@ namespace Rock.CheckIn.v2
         /// identifer is not specified or not found then the first family GroupMember
         /// record will be returned.
         /// </summary>
-        /// <param name="personGuid">The person unique identifier.</param>
-        /// <param name="familyGuid">The family unique identifier used to sort the records.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="familyId">The family identifier used to sort the records.</param>
         /// <returns>A queryable that can be used to load this person.</returns>
-        public IQueryable<GroupMember> GetGroupMemberQueryForPerson( Guid personGuid, Guid? familyGuid )
+        public IQueryable<GroupMember> GetGroupMemberQueryForPerson( string personId, string familyId )
         {
             using ( var activity = ObservabilityHelper.StartActivity( "Get Group Member Query For Person" ) )
             {
                 activity?.AddTag( "rock.checkin.search_provider", SearchProvider.GetType().FullName );
 
-                return SearchProvider.GetPersonForFamilyQuery( personGuid, familyGuid );
+                return SearchProvider.GetPersonForFamilyQuery( personId, familyId );
             }
         }
 
@@ -249,16 +250,16 @@ namespace Rock.CheckIn.v2
         /// Converts the group members into bags that represent the people
         /// for check-in.
         /// </summary>
-        /// <param name="familyGuid">The primary family unique identifier, this is used to resolve duplicates where a family member is also marked as can check-in.</param>
+        /// <param name="familyId">The primary family unique identifier, this is used to resolve duplicates where a family member is also marked as can check-in.</param>
         /// <param name="groupMembers">The <see cref="GroupMember"/> objects to be converted to bags.</param>
         /// <returns>A collection of <see cref="FamilyMemberBag"/> objects.</returns>
-        public List<FamilyMemberBag> GetFamilyMemberBags( Guid familyGuid, IEnumerable<GroupMember> groupMembers )
+        public List<FamilyMemberBag> GetFamilyMemberBags( string familyId, IEnumerable<GroupMember> groupMembers )
         {
             using ( var activity = ObservabilityHelper.StartActivity( "Get Person Bags" ) )
             {
                 activity?.AddTag( "rock.checkin.conversion_provider", Director.ConversionProvider.GetType().FullName );
 
-                return Director.ConversionProvider.GetFamilyMemberBags( familyGuid, groupMembers );
+                return Director.ConversionProvider.GetFamilyMemberBags( familyId, groupMembers );
             }
         }
 
@@ -306,7 +307,7 @@ namespace Rock.CheckIn.v2
                 activity?.AddTag( "rock.checkin.conversion_provider", Director.ConversionProvider.GetType().FullName );
 
                 var preSelectCutoff = RockDateTime.Today.AddDays( Math.Min( -1, 0 - TemplateConfiguration.AutoSelectDaysBack ) );
-                var recentAttendance = CheckInDirector.GetRecentAttendance( preSelectCutoff, people.Select( fm => fm.Guid ).ToList(), RockContext );
+                var recentAttendance = CheckInDirector.GetRecentAttendance( preSelectCutoff, people.Select( fm => fm.Id ).ToList(), RockContext );
 
                 var attendees = Director.ConversionProvider.GetAttendeeItems( people, baseOpportunities, recentAttendance );
 
@@ -386,8 +387,8 @@ namespace Rock.CheckIn.v2
                     // will just do a simple loop.
                     foreach ( var attendance in activeAttendances )
                     {
-                        var location = NamedLocationCache.Get( attendance.LocationGuid, RockContext );
-                        var schedule = NamedScheduleCache.Get( attendance.ScheduleGuid, RockContext );
+                        var location = NamedLocationCache.GetByIdKey( attendance.LocationId, RockContext );
+                        var schedule = NamedScheduleCache.GetByIdKey( attendance.ScheduleId, RockContext );
 
                         if ( location == null || schedule == null )
                         {
@@ -442,10 +443,10 @@ namespace Rock.CheckIn.v2
         {
             return Attendees
                 .SelectMany( a => a.Opportunities.Schedules )
-                .DistinctBy( s => s.Guid )
+                .DistinctBy( s => s.Id )
                 .Select( s => new ScheduleOpportunityBag
                 {
-                    Guid = s.Guid,
+                    Id = s.Id,
                     Name = s.Name
                 } )
                 .ToList();
@@ -516,27 +517,27 @@ namespace Rock.CheckIn.v2
         /// existing <see cref="Attendance"/> records.
         /// </summary>
         /// <param name="sessionRequest">The data that describes the check-in session.</param>
-        /// <param name="attendanceGuids">The attendance unique identifiers.</param>
+        /// <param name="attendanceIds">The attendance identifiers.</param>
         /// <param name="kiosk">The kiosk that is performing this check-in or <c>null</c>.</param>
         /// <exception cref="System.ArgumentNullException"><paramref name="sessionRequest"/> is <c>null</c>.</exception>
-        /// <exception cref="System.ArgumentNullException"><paramref name="attendanceGuids"/> is <c>null</c>.</exception>
-        public CheckoutResultBag Checkout( AttendanceSessionRequest sessionRequest, IReadOnlyList<Guid> attendanceGuids, DeviceCache kiosk )
+        /// <exception cref="System.ArgumentNullException"><paramref name="attendanceIds"/> is <c>null</c>.</exception>
+        public CheckoutResultBag Checkout( AttendanceSessionRequest sessionRequest, IReadOnlyList<string> attendanceIds, DeviceCache kiosk )
         {
             if ( sessionRequest == null )
             {
                 throw new ArgumentNullException( nameof( sessionRequest ) );
             }
 
-            if ( attendanceGuids == null )
+            if ( attendanceIds == null )
             {
-                throw new ArgumentNullException( nameof( attendanceGuids ) );
+                throw new ArgumentNullException( nameof( attendanceIds ) );
             }
 
             using ( var activity = ObservabilityHelper.StartActivity( "Checkout" ) )
             {
                 activity?.AddTag( "rock.checkin.save_provider", SaveProvider.GetType().FullName );
 
-                return SaveProvider.Checkout( sessionRequest, attendanceGuids, kiosk );
+                return SaveProvider.Checkout( sessionRequest, attendanceIds, kiosk );
             }
         }
 

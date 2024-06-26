@@ -43,7 +43,7 @@ namespace Rock.CheckIn.v2.Filters
 
             // If we are over limit, but the person is already checked into
             // the location, then allow check-in.
-            return location.CurrentPersonGuids.Contains( Person.Person.Guid );
+            return location.CurrentPersonIds.Contains( Person.Person.Id );
         }
 
         #endregion

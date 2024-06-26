@@ -21,20 +21,18 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
-
 /** The summary information about a single check-in area. */
 export type ConfigurationAreaBag = {
-    /** Gets or sets the unique identifier of this check-in area. */
-    guid: Guid;
+    /** Gets or sets the identifier of this check-in area. */
+    id?: string | null;
 
     /** Gets or sets the name of this check-in area. */
     name?: string | null;
 
     /**
-     * Gets or sets the configuration template unique identifiers that are
+     * Gets or sets the configuration template identifiers that are
      * considered primary for this area. A primary configuration template
      * is one that this area is a descendant of.
      */
-    primaryTemplateGuids?: Guid[] | null;
+    primaryTemplateIds?: string[] | null;
 };

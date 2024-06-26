@@ -21,6 +21,7 @@ using System.Linq;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Utility;
 using Rock.ViewModels.CheckIn;
 using Rock.Web.Cache;
 
@@ -60,12 +61,13 @@ namespace Rock.CheckIn.v2
         /// Converts the family members into bags that represent the data
         /// required for check-in.
         /// </summary>
-        /// <param name="familyGuid">The primary family unique identifier, this is used to resolve duplicates where a family member is also marked as can check-in.</param>
+        /// <param name="familyId">The primary family identifier, this is used to resolve duplicates where a family member is also marked as can check-in.</param>
         /// <param name="groupMembers">The <see cref="GroupMember"/> objects to be converted to bags.</param>
         /// <returns>A collection of <see cref="FamilyMemberBag"/> objects.</returns>
-        public List<FamilyMemberBag> GetFamilyMemberBags( Guid familyGuid, IEnumerable<GroupMember> groupMembers )
+        public List<FamilyMemberBag> GetFamilyMemberBags( string familyId, IEnumerable<GroupMember> groupMembers )
         {
             var familyMembers = new List<FamilyMemberBag>();
+            var familyIdNumber = IdHasher.Instance.GetId( familyId ) ?? 0;
 
             // Get the group members along with the person record in memory.
             // Then sort by those that match the correct family first so that
@@ -80,22 +82,22 @@ namespace Rock.CheckIn.v2
                 ? groupMembersQry
                     .Select( gm => new
                     {
-                        GroupGuid = gm.Person.PrimaryFamilyId.HasValue ? gm.Person.PrimaryFamily.Guid : ( Guid? ) null,
+                        GroupId = gm.Person.PrimaryFamilyId.HasValue ? gm.Person.PrimaryFamilyId.Value : ( int? ) null,
                         RoleOrder = gm.GroupRole.Order,
                         gm.Person
                     } )
                     .ToList()
-                    .OrderByDescending( gm => gm.GroupGuid == familyGuid )
+                    .OrderByDescending( gm => gm.GroupId == familyIdNumber )
                     .ThenBy( gm => gm.RoleOrder )
                 : groupMembers
                     .Select( gm => new
                     {
-                        GroupGuid = gm.Person.PrimaryFamilyId.HasValue ? gm.Person.PrimaryFamily.Guid : ( Guid? ) null,
+                        GroupId = gm.Person.PrimaryFamilyId.HasValue ? gm.Person.PrimaryFamilyId.Value : ( int? ) null,
                         RoleOrder = gm.GroupRole.Order,
                         gm.Person
                     } )
                     .ToList()
-                    .OrderByDescending( gm => gm.GroupGuid == familyGuid )
+                    .OrderByDescending( gm => gm.GroupId == familyIdNumber )
                     .ThenBy( gm => gm.RoleOrder );
 
             members.Select( fm => fm.Person ).LoadAttributes( RockContext );
@@ -103,7 +105,7 @@ namespace Rock.CheckIn.v2
             foreach ( var member in members )
             {
                 // Skip any duplicates.
-                if ( familyMembers.Any( fm => fm.Person.Guid == member.Person.Guid ) )
+                if ( familyMembers.Any( fm => fm.Person.Id == member.Person.IdKey ) )
                 {
                     continue;
                 }
@@ -111,7 +113,7 @@ namespace Rock.CheckIn.v2
                 familyMembers.Add( new FamilyMemberBag
                 {
                     Person = GetPersonBag( member.Person ),
-                    FamilyGuid = member.GroupGuid ?? Guid.Empty,
+                    FamilyId = member.GroupId.HasValue ? IdHasher.Instance.GetHash( member.GroupId.Value ) : string.Empty,
                     RoleOrder = member.RoleOrder
                 } );
             }
@@ -137,7 +139,7 @@ namespace Rock.CheckIn.v2
                 {
                     abilityLevel = new CheckInItemBag
                     {
-                        Guid = definedValue.Guid,
+                        Id = definedValue.IdKey,
                         Name = definedValue.Value
                     };
                 }
@@ -145,8 +147,7 @@ namespace Rock.CheckIn.v2
 
             return new PersonBag
             {
-                Guid = person.Guid,
-                IdKey = person.IdKey,
+                Id = person.IdKey,
                 FirstName = person.FirstName,
                 NickName = person.NickName,
                 LastName = person.LastName,
@@ -180,7 +181,7 @@ namespace Rock.CheckIn.v2
                 .Select( fm =>
                 {
                     var attendeeAttendances = recentAttendance
-                        .Where( a => a.PersonGuid == fm.Guid )
+                        .Where( a => a.PersonId == fm.Id )
                         .ToList();
 
                     return new Attendee
@@ -226,21 +227,21 @@ namespace Rock.CheckIn.v2
         {
             var attendanceBag = new AttendanceBag
             {
-                Guid = attendance.AttendanceGuid,
+                Id = attendance.AttendanceId,
                 Person = person,
                 Status = attendance.Status
             };
 
-            var area = GroupTypeCache.Get( attendance.GroupTypeGuid, RockContext );
-            var group = GroupCache.Get( attendance.GroupGuid, RockContext );
-            var location = NamedLocationCache.Get( attendance.LocationGuid, RockContext );
-            var schedule = NamedScheduleCache.Get( attendance.ScheduleGuid, RockContext );
+            var area = GroupTypeCache.GetByIdKey( attendance.GroupTypeId, RockContext );
+            var group = GroupCache.GetByIdKey( attendance.GroupId, RockContext );
+            var location = NamedLocationCache.GetByIdKey( attendance.LocationId, RockContext );
+            var schedule = NamedScheduleCache.GetByIdKey( attendance.ScheduleId, RockContext );
 
             if ( area != null )
             {
                 attendanceBag.Area = new CheckInItemBag
                 {
-                    Guid = area.Guid,
+                    Id = area.IdKey,
                     Name = area.Name
                 };
             }
@@ -249,7 +250,7 @@ namespace Rock.CheckIn.v2
             {
                 attendanceBag.Group = new CheckInItemBag
                 {
-                    Guid = group.Guid,
+                    Id = group.IdKey,
                     Name = group.Name
                 };
             }
@@ -258,7 +259,7 @@ namespace Rock.CheckIn.v2
             {
                 attendanceBag.Location = new CheckInItemBag
                 {
-                    Guid = location.Guid,
+                    Id = location.IdKey,
                     Name = location.Name
                 };
             }
@@ -267,7 +268,7 @@ namespace Rock.CheckIn.v2
             {
                 attendanceBag.Schedule = new CheckInItemBag
                 {
-                    Guid = schedule.Guid,
+                    Id = schedule.IdKey,
                     Name = schedule.Name
                 };
             }
@@ -285,7 +286,7 @@ namespace Rock.CheckIn.v2
         {
             var attendanceBag = new AttendanceBag
             {
-                Guid = attendance.Guid,
+                Id = attendance.IdKey,
                 Person = attendance.PersonAlias?.Person != null
                     ? GetPersonBag( attendance.PersonAlias.Person )
                     : null,
@@ -301,7 +302,7 @@ namespace Rock.CheckIn.v2
             {
                 attendanceBag.Area = new CheckInItemBag
                 {
-                    Guid = area.Guid,
+                    Id = area.IdKey,
                     Name = area.Name
                 };
             }
@@ -310,7 +311,7 @@ namespace Rock.CheckIn.v2
             {
                 attendanceBag.Group = new CheckInItemBag
                 {
-                    Guid = group.Guid,
+                    Id = group.IdKey,
                     Name = group.Name
                 };
             }
@@ -319,7 +320,7 @@ namespace Rock.CheckIn.v2
             {
                 attendanceBag.Location = new CheckInItemBag
                 {
-                    Guid = location.Guid,
+                    Id = location.IdKey,
                     Name = location.Name
                 };
             }
@@ -328,7 +329,7 @@ namespace Rock.CheckIn.v2
             {
                 attendanceBag.Schedule = new CheckInItemBag
                 {
-                    Guid = schedule.Guid,
+                    Id = schedule.IdKey,
                     Name = schedule.Name
                 };
             }
@@ -390,7 +391,7 @@ namespace Rock.CheckIn.v2
         {
             return new AbilityLevelOpportunityBag
             {
-                Guid = abilityLevel.Guid,
+                Id = abilityLevel.Id,
                 Name = abilityLevel.Name
             };
         }
@@ -404,7 +405,7 @@ namespace Rock.CheckIn.v2
         {
             return new AreaOpportunityBag
             {
-                Guid = area.Guid,
+                Id = area.Id,
                 Name = area.Name
             };
         }
@@ -418,10 +419,10 @@ namespace Rock.CheckIn.v2
         {
             return new GroupOpportunityBag
             {
-                AbilityLevelGuid = group.AbilityLevelGuid,
-                AreaGuid = group.AreaGuid,
-                Guid = group.Guid,
-                LocationGuids = group.LocationGuids,
+                AbilityLevelId = group.AbilityLevelId,
+                AreaId = group.AreaId,
+                Id = group.Id,
+                LocationIds = group.LocationIds,
                 Name = group.Name
             };
         }
@@ -437,9 +438,9 @@ namespace Rock.CheckIn.v2
             {
                 Capacity = location.Capacity,
                 CurrentCount = location.CurrentCount,
-                Guid = location.Guid,
+                Id = location.Id,
                 Name = location.Name,
-                ScheduleGuids = location.ScheduleGuids
+                ScheduleIds = location.ScheduleIds
             };
         }
 
@@ -452,7 +453,7 @@ namespace Rock.CheckIn.v2
         {
             return new ScheduleOpportunityBag
             {
-                Guid = schedule.Guid,
+                Id = schedule.Id,
                 Name = schedule.Name
             };
         }
@@ -468,8 +469,8 @@ namespace Rock.CheckIn.v2
 
             return new AchievementBag
             {
-                Guid = achievementAttempt.Guid,
-                AchievementTypeGuid = achievementType?.Guid ?? Guid.Empty,
+                Id = achievementAttempt.IdKey,
+                AchievementTypeId = achievementType?.IdKey ?? string.Empty,
                 Name = achievementType?.Name ?? "Unknown Achievement",
                 IsSuccess = achievementAttempt.IsSuccessful,
                 IsClosed = achievementAttempt.IsClosed,

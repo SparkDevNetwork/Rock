@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 
 using Rock.ViewModels.Utility;
@@ -27,10 +26,10 @@ namespace Rock.ViewModels.CheckIn
     public class SavedCheckInConfigurationBag
     {
         /// <summary>
-        /// Gets or sets the unique identifier.
+        /// Gets or sets the identifier of the configuration.
         /// </summary>
-        /// <value>The unique identifier.</value>
-        public Guid Guid { get; set; }
+        /// <value>The identifier.</value>
+        public string Id { get; set; }
 
         /// <summary>
         /// Gets or sets the name of this saved configuration.

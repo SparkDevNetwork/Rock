@@ -22,7 +22,6 @@
 //
 
 import { Gender } from "@Obsidian/Enums/Crm/gender";
-import { Guid } from "@Obsidian/Types";
 import { CheckInItemBag } from "@Obsidian/ViewModels/CheckIn/checkInItemBag";
 
 /** A family member that identifies a single individual for check-in. */
@@ -71,11 +70,8 @@ export type PersonBag = {
      */
     gradeOffset?: number | null;
 
-    /** Gets or sets the unique identifier of the Person. */
-    guid: Guid;
-
-    /** Gets or sets the identifier key of the Person. */
-    idKey?: string | null;
+    /** Gets or sets the identifier of the Person. */
+    id?: string | null;
 
     /** Gets or sets the last name. */
     lastName?: string | null;

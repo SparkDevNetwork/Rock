@@ -56,10 +56,10 @@ namespace Rock.CheckIn.v2
         {
             Guid = requestBag.Guid;
             IsPending = requestBag.IsPending;
-            FamilyGuid = requestBag.FamilyGuid;
+            FamilyId = requestBag.FamilyId;
             SearchMode = requestBag.SearchMode;
             SearchTerm = requestBag.SearchTerm;
-            CheckedInByPersonGuid = requestBag.CheckedInByPersonGuid;
+            PerformedByPersonId = requestBag.PerformedByPersonId;
         }
 
         #endregion

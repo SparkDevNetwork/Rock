@@ -29,6 +29,7 @@ using Rock.CheckIn.v2.Labels;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
+using Rock.Utility;
 using Rock.ViewModels.CheckIn;
 using Rock.ViewModels.Rest.CheckIn;
 using Rock.Web.Cache;
@@ -79,9 +80,9 @@ namespace Rock.Rest.v2.Controllers
             var helper = new CheckInDirector( _rockContext );
             DeviceCache kiosk = null;
 
-            if ( options.KioskGuid.HasValue )
+            if ( options.KioskId.IsNotNullOrWhiteSpace() )
             {
-                kiosk = DeviceCache.Get( options.KioskGuid.Value );
+                kiosk = DeviceCache.GetByIdKey( options.KioskId, _rockContext );
 
                 if ( kiosk == null )
                 {
@@ -118,10 +119,19 @@ namespace Rock.Rest.v2.Controllers
         public IActionResult PostKioskStatus( [FromBody] KioskStatusOptionsBag options )
         {
             var director = new CheckInDirector( _rockContext );
-            var kiosk = DeviceCache.Get( options.KioskGuid, _rockContext );
-            var areas = options.AreaGuids != null
-                ? GroupTypeCache.GetMany( options.AreaGuids, _rockContext ).ToList()
-                : null;
+            var kiosk = DeviceCache.GetByIdKey( options.KioskId, _rockContext );
+            List<GroupTypeCache> areas = null;
+
+            if ( options.AreaIds != null )
+            {
+                var areaIdNumbers = options.AreaIds
+                    .Select( id => IdHasher.Instance.GetId( id ) )
+                    .Where( id => id.HasValue )
+                    .Select( id => id.Value )
+                    .ToList();
+
+                areas = GroupTypeCache.GetMany( areaIdNumbers, _rockContext ).ToList();
+            }
 
             if ( kiosk == null )
             {
@@ -152,7 +162,7 @@ namespace Rock.Rest.v2.Controllers
         [SystemGuid.RestActionGuid( "2c587733-0e08-4e93-8f2b-3e2518362768" )]
         public IActionResult PostSearchForFamilies( [FromBody] SearchForFamiliesOptionsBag options )
         {
-            var configuration = GroupTypeCache.Get( options.ConfigurationTemplateGuid, _rockContext )?.GetCheckInConfiguration( _rockContext );
+            var configuration = GroupTypeCache.GetByIdKey( options.ConfigurationTemplateId, _rockContext )?.GetCheckInConfiguration( _rockContext );
             CampusCache sortByCampus = null;
 
             if ( configuration == null )
@@ -160,9 +170,9 @@ namespace Rock.Rest.v2.Controllers
                 return BadRequest( "Configuration was not found." );
             }
 
-            if ( options.KioskGuid.HasValue && options.PrioritizeKioskCampus )
+            if ( options.KioskId.IsNotNullOrWhiteSpace() && options.PrioritizeKioskCampus )
             {
-                var kiosk = DeviceCache.Get( options.KioskGuid.Value );
+                var kiosk = DeviceCache.GetByIdKey( options.KioskId, _rockContext );
 
                 if ( kiosk == null )
                 {
@@ -209,9 +219,9 @@ namespace Rock.Rest.v2.Controllers
         [SystemGuid.RestActionGuid( "2bd5afdf-da57-48bb-a6db-7dd9ad1ab8da" )]
         public IActionResult PostFamilyMembers( [FromBody] FamilyMembersOptionsBag options )
         {
-            var configuration = GroupTypeCache.Get( options.ConfigurationTemplateGuid, _rockContext )?.GetCheckInConfiguration( _rockContext );
-            var kiosk = DeviceCache.Get( options.KioskGuid, _rockContext );
-            var areas = options.AreaGuids.Select( guid => GroupTypeCache.Get( guid, _rockContext ) ).ToList();
+            var configuration = GroupTypeCache.GetByIdKey( options.ConfigurationTemplateId, _rockContext )?.GetCheckInConfiguration( _rockContext );
+            var kiosk = DeviceCache.GetByIdKey( options.KioskId, _rockContext );
+            var areas = options.AreaIds.Select( id => GroupTypeCache.GetByIdKey( id, _rockContext ) ).ToList();
 
             if ( configuration == null )
             {
@@ -228,11 +238,11 @@ namespace Rock.Rest.v2.Controllers
                 var director = new CheckInDirector( _rockContext );
                 var session = director.CreateSession( configuration );
 
-                session.LoadAndPrepareAttendeesForFamily( options.FamilyGuid, areas, kiosk, null );
+                session.LoadAndPrepareAttendeesForFamily( options.FamilyId, areas, kiosk, null );
 
                 return Ok( new FamilyMembersResponseBag
                 {
-                    FamilyGuid = options.FamilyGuid,
+                    FamilyId = options.FamilyId,
                     PossibleSchedules = session.GetAllPossibleScheduleBags(),
                     People = session.GetAttendeeBags(),
                     CurrentlyCheckedInAttendances = session.GetCurrentAttendanceBags()
@@ -257,9 +267,9 @@ namespace Rock.Rest.v2.Controllers
         [SystemGuid.RestActionGuid( "2bd5afdf-da57-48bb-a6db-7dd9ad1ab8da" )]
         public IActionResult PostAttendeeOpportunities( [FromBody] AttendeeOpportunitiesOptionsBag options )
         {
-            var configuration = GroupTypeCache.Get( options.ConfigurationTemplateGuid, _rockContext )?.GetCheckInConfiguration( _rockContext );
-            var areas = options.AreaGuids.Select( guid => GroupTypeCache.Get( guid, _rockContext ) ).ToList();
-            var kiosk = DeviceCache.Get( options.KioskGuid, _rockContext );
+            var configuration = GroupTypeCache.GetByIdKey( options.ConfigurationTemplateId, _rockContext )?.GetCheckInConfiguration( _rockContext );
+            var areas = options.AreaIds.Select( id => GroupTypeCache.GetByIdKey( id, _rockContext ) ).ToList();
+            var kiosk = DeviceCache.GetByIdKey( options.KioskId, _rockContext );
 
             if ( configuration == null )
             {
@@ -276,7 +286,7 @@ namespace Rock.Rest.v2.Controllers
                 var director = new CheckInDirector( _rockContext );
                 var session = director.CreateSession( configuration );
 
-                session.LoadAndPrepareAttendeesForPerson( options.PersonGuid, options.FamilyGuid, areas, kiosk, null );
+                session.LoadAndPrepareAttendeesForPerson( options.PersonId, options.FamilyId, areas, kiosk, null );
 
                 if ( session.Attendees.Count == 0 )
                 {
@@ -307,7 +317,7 @@ namespace Rock.Rest.v2.Controllers
         [SystemGuid.RestActionGuid( "7ef059cb-99ba-4cf1-b7d5-3723eb320a99" )]
         public async Task<IActionResult> PostSaveAttendance( [FromBody] SaveAttendanceOptionsBag options )
         {
-            var configuration = GroupTypeCache.Get( options.TemplateGuid, _rockContext )?.GetCheckInConfiguration( _rockContext );
+            var configuration = GroupTypeCache.GetByIdKey( options.TemplateId, _rockContext )?.GetCheckInConfiguration( _rockContext );
             DeviceCache kiosk = null;
 
             if ( configuration == null )
@@ -315,9 +325,9 @@ namespace Rock.Rest.v2.Controllers
                 return BadRequest( "Configuration was not found." );
             }
 
-            if ( options.KioskGuid.HasValue )
+            if ( options.KioskId.IsNotNullOrWhiteSpace() )
             {
-                kiosk = DeviceCache.Get( options.KioskGuid.Value, _rockContext );
+                kiosk = DeviceCache.GetByIdKey( options.KioskId, _rockContext );
 
                 if ( kiosk == null )
                 {
@@ -364,7 +374,7 @@ namespace Rock.Rest.v2.Controllers
         [SystemGuid.RestActionGuid( "52070226-289b-442d-a8fe-a8323c0f922c" )]
         public async Task<IActionResult> PostConfirmAttendance( [FromBody] ConfirmAttendanceOptionsBag options )
         {
-            var configuration = GroupTypeCache.Get( options.TemplateGuid, _rockContext )?.GetCheckInConfiguration( _rockContext );
+            var configuration = GroupTypeCache.GetByIdKey( options.TemplateId, _rockContext )?.GetCheckInConfiguration( _rockContext );
             DeviceCache kiosk = null;
 
             if ( configuration == null )
@@ -372,9 +382,9 @@ namespace Rock.Rest.v2.Controllers
                 return BadRequest( "Configuration was not found." );
             }
 
-            if ( options.KioskGuid.HasValue )
+            if ( options.KioskId.IsNotNullOrWhiteSpace() )
             {
-                kiosk = DeviceCache.Get( options.KioskGuid.Value, _rockContext );
+                kiosk = DeviceCache.GetByIdKey( options.KioskId, _rockContext );
 
                 if ( kiosk == null )
                 {
@@ -417,7 +427,7 @@ namespace Rock.Rest.v2.Controllers
         [SystemGuid.RestActionGuid( "733be2ee-dec6-4f7f-92bd-df367c20543d" )]
         public async Task<IActionResult> PostCheckout( [FromBody] CheckoutOptionsBag options )
         {
-            var configuration = GroupTypeCache.Get( options.TemplateGuid, _rockContext )?.GetCheckInConfiguration( _rockContext );
+            var configuration = GroupTypeCache.GetByIdKey( options.TemplateId, _rockContext )?.GetCheckInConfiguration( _rockContext );
             DeviceCache kiosk = null;
 
             if ( configuration == null )
@@ -425,9 +435,9 @@ namespace Rock.Rest.v2.Controllers
                 return BadRequest( "Configuration was not found." );
             }
 
-            if ( options.KioskGuid.HasValue )
+            if ( options.KioskId.IsNotNullOrWhiteSpace() )
             {
-                kiosk = DeviceCache.Get( options.KioskGuid.Value, _rockContext );
+                kiosk = DeviceCache.GetByIdKey( options.KioskId, _rockContext );
 
                 if ( kiosk == null )
                 {
@@ -441,7 +451,7 @@ namespace Rock.Rest.v2.Controllers
                 var session = director.CreateSession( configuration );
                 var sessionRequest = new AttendanceSessionRequest( options.Session );
 
-                var result = session.Checkout( sessionRequest, options.AttendanceGuids, kiosk );
+                var result = session.Checkout( sessionRequest, options.AttendanceIds, kiosk );
 
                 var cts = new CancellationTokenSource( 5000 );
                 await director.LabelProvider.RenderAndPrintCheckoutLabelsAsync( result, kiosk, new LabelPrintProvider(), cts.Token );
@@ -453,211 +463,5 @@ namespace Rock.Rest.v2.Controllers
                 return BadRequest( ex.Message );
             }
         }
-
-        #region Temporary Benchmark
-
-        /// <summary>
-        /// Performs a set of benchmark runs to determine timings.
-        /// </summary>
-        /// <returns>The results of the benchmarks.</returns>
-        [HttpPost]
-        [Authenticate]
-        [Route( "Benchmark" )]
-        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
-        [SystemGuid.RestActionGuid( "1eb635a9-6a6a-4445-a0a2-bb59a5a08982" )]
-        public IActionResult PostBenchmark( [FromBody] BenchmarkOptionsBag options )
-        {
-            var configuration = GroupTypeCache.Get( options.ConfigurationTemplateGuid, _rockContext )?.GetCheckInConfiguration( _rockContext );
-            var kiosk = DeviceCache.Get( options.KioskGuid, _rockContext );
-            var areas = options.AreaGuids.Select( guid => GroupTypeCache.Get( guid, _rockContext ) ).ToList();
-            var bench = new Rock.Utility.Performance.MicroBench();
-            var validBenchmarks = new List<string> { "empty", "familySearch", "getFamilyMembers", "getFamilyMemberBags", "getAllOpportunities", "cloneOpportunities", "filterOpportunities" };
-
-            bench.RepititionMode = Rock.Enums.Core.BenchmarkRepititionMode.Fast;
-
-            if ( configuration == null )
-            {
-                return BadRequest( "Configuration was not found." );
-            }
-
-            if ( kiosk == null )
-            {
-                return BadRequest( "Kiosk was not found." );
-            }
-
-            if ( options.Benchmarks.Count == 1 && options.Benchmarks[0] == "all" )
-            {
-                options.Benchmarks = validBenchmarks;
-            }
-
-            if ( options.Benchmarks.Any( b => !validBenchmarks.Contains( b ) ) )
-            {
-                return BadRequest( "Invalid benchmark specified." );
-            }
-
-            var results = new Dictionary<string, object>();
-
-            foreach ( var benchmark in options.Benchmarks )
-            {
-                if ( benchmark == "empty" )
-                {
-                    var result = bench.Benchmark( () =>
-                    {
-                        using ( var rockContext = new RockContext() )
-                        {
-                            var director = new CheckInDirector( rockContext );
-                        }
-                    } );
-
-                    results.Add( benchmark, result.NormalizedStatistics.ToString() );
-                }
-                else if ( benchmark == "familySearch" )
-                {
-                    var result = bench.Benchmark( () =>
-                    {
-                        using ( var rockContext = new RockContext() )
-                        {
-                            var director = new CheckInDirector( rockContext );
-                            var session = director.CreateSession( configuration );
-
-                            var families = session.SearchForFamilies( "5553322",
-                                Enums.CheckIn.FamilySearchMode.PhoneNumber,
-                                null );
-                        }
-                    } );
-
-                    results.Add( benchmark, result.NormalizedStatistics.ToString() );
-                }
-                else if ( benchmark == "getFamilyMembers" )
-                {
-                    var result = bench.Benchmark( () =>
-                    {
-                        using ( var rockContext = new RockContext() )
-                        {
-                            var director = new CheckInDirector( rockContext );
-                            var session = director.CreateSession( configuration );
-                            var familyMembersQry = session.GetGroupMembersQueryForFamily( options.FamilyGuid );
-                        }
-                    } );
-
-                    results.Add( benchmark, result.NormalizedStatistics.ToString() );
-                }
-                else if ( benchmark == "getFamilyMemberBags" )
-                {
-                    IEnumerable<GroupMember> familyMembers;
-                    FamilyMemberBag familyMemberBag;
-
-                    using ( var rockContext = new RockContext() )
-                    {
-                        var director = new CheckInDirector( rockContext );
-                        var session = director.CreateSession( configuration );
-                        var familyMembersQry = session.GetGroupMembersQueryForFamily( options.FamilyGuid );
-
-                        familyMembers = familyMembersQry
-                            .Include( fm => fm.Person )
-                            .Include( fm => fm.Person.PrimaryFamily )
-                            .Include( fm => fm.GroupRole )
-                            .ToList();
-
-                        familyMemberBag = session.GetFamilyMemberBags( options.FamilyGuid, familyMembers ).First( fm => fm.Person.FirstName == "Noah" );
-                    }
-
-                    var result = bench.Benchmark( () =>
-                    {
-                        using ( var rockContext = new RockContext() )
-                        {
-                            var director = new CheckInDirector( rockContext );
-                            var session = director.CreateSession( configuration );
-
-                            var bags = session.GetFamilyMemberBags( options.FamilyGuid, familyMembers );
-                        }
-                    } );
-
-                    results.Add( benchmark, result.NormalizedStatistics.ToString() );
-                }
-                else if ( benchmark == "getAllOpportunities" )
-                {
-                    var result = bench.Benchmark( () =>
-                    {
-                        using ( var rockContext = new RockContext() )
-                        {
-                            var director = new CheckInDirector( rockContext );
-
-                            var opportunities = director.GetAllOpportunities( areas, kiosk, null );
-                        }
-                    } );
-
-                    results.Add( benchmark, result.NormalizedStatistics.ToString() );
-                }
-                else if ( benchmark == "cloneOpportunities" )
-                {
-                    OpportunityCollection mainOpportunities;
-
-                    using ( var rockContext = new RockContext() )
-                    {
-                        var director = new CheckInDirector( rockContext );
-
-                        mainOpportunities = director.GetAllOpportunities( areas, kiosk, null );
-                    }
-
-                    var result = bench.Benchmark( () =>
-                    {
-                        var clonedOpportunities = mainOpportunities.Clone();
-                    } );
-
-                    results.Add( benchmark, result.NormalizedStatistics.ToString() );
-                }
-                else if ( benchmark == "filterOpportunities" )
-                {
-                    OpportunityCollection mainOpportunities;
-                    FamilyMemberBag familyMemberBag;
-
-                    using ( var rockContext = new RockContext() )
-                    {
-                        var director = new CheckInDirector( rockContext );
-                        var session = director.CreateSession( configuration );
-                        var familyMembersQry = session.GetGroupMembersQueryForFamily( options.FamilyGuid );
-
-                        familyMemberBag = session.GetFamilyMemberBags( options.FamilyGuid, familyMembersQry ).First( fm => fm.Person.FirstName == "Noah" );
-                        mainOpportunities = director.GetAllOpportunities( areas, kiosk, null );
-                    }
-
-                    var result = bench.Benchmark( () =>
-                    {
-                        using ( var rockContext = new RockContext() )
-                        {
-                            var director = new CheckInDirector( rockContext );
-                            var session = director.CreateSession( configuration );
-
-                            var person = new Attendee
-                            {
-                                Person = familyMemberBag.Person,
-                                Opportunities = mainOpportunities.Clone()
-                            };
-
-                            session.FilterPersonOpportunities( person );
-                        }
-                    } );
-
-                    results.Add( benchmark, result.NormalizedStatistics.ToString() );
-                }
-            }
-
-            return Ok( results );
-        }
-
-        /// <summary>
-        /// Temporary, used by benchmark action.
-        /// </summary>
-        public class BenchmarkOptionsBag : FamilyMembersOptionsBag
-        {
-            /// <summary>
-            /// Gets or sets the benchmarks.
-            /// </summary>
-            /// <value>The benchmarks.</value>
-            public List<string> Benchmarks { get; set; }
-        }
-
-        #endregion
     }
 }

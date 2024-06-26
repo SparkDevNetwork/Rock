@@ -27,7 +27,6 @@
     import { AggregateAttendance, KioskButton } from "./types.partial";
     import { AchievementBag } from "@Obsidian/ViewModels/CheckIn/achievementBag";
     import { PersonBag } from "@Obsidian/ViewModels/CheckIn/personBag";
-    import { areEqual } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         configuration: {
@@ -64,8 +63,8 @@
 
             for (const achievement of attendance.justCompletedAchievements) {
                 const existingItem = items
-                    .find(item => areEqual(item.achievement.guid, achievement.guid)
-                        && areEqual(item.person.guid, attendance.attendance?.person?.guid));
+                    .find(item => item.achievement.id === achievement.id
+                        && item.person.id === attendance.attendance?.person?.id);
 
                 if (!existingItem) {
                     items.push({
@@ -87,7 +86,7 @@
                 continue;
             }
 
-            let item = items.find(i => areEqual(i.person.guid, attendance.attendance?.person?.guid));
+            let item = items.find(i => i.person.id === attendance.attendance?.person?.id);
 
             if (!item) {
                 item = {
@@ -103,13 +102,13 @@
             item.attendances.push(attendance.attendance);
 
             for (const achievement of attendance.inProgressAchievements ?? []) {
-                if (!item.inProgressAchievements.find(i => areEqual(i.guid, achievement.guid))) {
+                if (!item.inProgressAchievements.find(i => i.id === achievement.id)) {
                     item.inProgressAchievements.push(achievement);
                 }
             }
 
             for (const achievement of attendance.justCompletedAchievements ?? []) {
-                if (!item.justCompletedAchievements.find(i => areEqual(i.guid, achievement.guid))) {
+                if (!item.justCompletedAchievements.find(i => i.id === achievement.id)) {
                     item.justCompletedAchievements.push(achievement);
                 }
             }

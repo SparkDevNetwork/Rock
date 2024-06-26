@@ -7,6 +7,7 @@ using Moq;
 
 using Rock.CheckIn.v2;
 using Rock.CheckIn.v2.Filters;
+using Rock.Utility;
 using Rock.ViewModels.CheckIn;
 
 namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
@@ -24,10 +25,10 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
         [TestMethod]
         public void DuplicateCheckInFilter_WithNoConditions_IncludesAnySchedule()
         {
-            var scheduleGuid = new Guid( "6ecc6067-6464-4c4c-a297-533b47e76254" );
+            var scheduleId = "6ecc6067-6464-4c4c-a297-533b47e76254";
 
             var filter = CreateDuplicateCheckInFilter( false, Array.Empty<RecentAttendance>() );
-            var scheduleOpportunity = CreateScheduleOpportunity( scheduleGuid );
+            var scheduleOpportunity = CreateScheduleOpportunity( scheduleId );
 
             var isIncluded = filter.IsScheduleValid( scheduleOpportunity );
 
@@ -37,18 +38,18 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
         [TestMethod]
         public void DuplicateCheckInFilter_WithDuplicateAttendance_ExcludesSchedule()
         {
-            var scheduleGuid = new Guid( "6ecc6067-6464-4c4c-a297-533b47e76254" );
+            var scheduleId = "6ecc6067-6464-4c4c-a297-533b47e76254";
             var recentAttendance = new List<RecentAttendance>
             {
                 new RecentAttendance
                 {
                     StartDateTime = RockDateTime.Now,
-                    ScheduleGuid = scheduleGuid
+                    ScheduleId = scheduleId
                 }
             };
 
             var filter = CreateDuplicateCheckInFilter( true, recentAttendance );
-            var scheduleOpportunity = CreateScheduleOpportunity( scheduleGuid );
+            var scheduleOpportunity = CreateScheduleOpportunity( scheduleId );
 
             var isIncluded = filter.IsScheduleValid( scheduleOpportunity );
 
@@ -58,19 +59,19 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
         [TestMethod]
         public void DuplicateCheckInFilter_WithDuplicateCheckedOutAttendance_IncludesSchedule()
         {
-            var scheduleGuid = new Guid( "6ecc6067-6464-4c4c-a297-533b47e76254" );
+            var scheduleId = "6ecc6067-6464-4c4c-a297-533b47e76254";
             var recentAttendance = new List<RecentAttendance>
             {
                 new RecentAttendance
                 {
                     StartDateTime = RockDateTime.Now,
                     EndDateTime = RockDateTime.Now,
-                    ScheduleGuid = scheduleGuid
+                    ScheduleId = scheduleId
                 }
             };
 
             var filter = CreateDuplicateCheckInFilter( true, recentAttendance );
-            var scheduleOpportunity = CreateScheduleOpportunity( scheduleGuid );
+            var scheduleOpportunity = CreateScheduleOpportunity( scheduleId );
 
             var isIncluded = filter.IsScheduleValid( scheduleOpportunity );
 
@@ -80,18 +81,18 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
         [TestMethod]
         public void DuplicateCheckInFilter_WithDuplicateAttendanceForDifferentDay_IncludesSchedule()
         {
-            var scheduleGuid = new Guid( "6ecc6067-6464-4c4c-a297-533b47e76254" );
+            var scheduleId = "6ecc6067-6464-4c4c-a297-533b47e76254";
             var recentAttendance = new List<RecentAttendance>
             {
                 new RecentAttendance
                 {
                     StartDateTime = RockDateTime.Now.AddDays( -1 ),
-                    ScheduleGuid = scheduleGuid
+                    ScheduleId = scheduleId
                 }
             };
 
             var filter = CreateDuplicateCheckInFilter( true, recentAttendance );
-            var scheduleOpportunity = CreateScheduleOpportunity( scheduleGuid );
+            var scheduleOpportunity = CreateScheduleOpportunity( scheduleId );
 
             var isIncluded = filter.IsScheduleValid( scheduleOpportunity );
 
@@ -101,11 +102,11 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
         [TestMethod]
         public void DuplicateCheckInFilter_WithoutDuplicateAttendance_IncludesSchedule()
         {
-            var scheduleGuid = new Guid( "6ecc6067-6464-4c4c-a297-533b47e76254" );
+            var scheduleId = "6ecc6067-6464-4c4c-a297-533b47e76254";
             var recentAttendance = new List<RecentAttendance>();
 
             var filter = CreateDuplicateCheckInFilter( true, recentAttendance );
-            var scheduleOpportunity = CreateScheduleOpportunity( scheduleGuid );
+            var scheduleOpportunity = CreateScheduleOpportunity( scheduleId );
 
             var isIncluded = filter.IsScheduleValid( scheduleOpportunity );
 
@@ -115,18 +116,18 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
         [TestMethod]
         public void DuplicateCheckInFilter_WithDuplicateAttendanceAndTemplateNotPrevented_IncludesSchedule()
         {
-            var scheduleGuid = new Guid( "6ecc6067-6464-4c4c-a297-533b47e76254" );
+            var scheduleId = "6ecc6067-6464-4c4c-a297-533b47e76254";
             var recentAttendance = new List<RecentAttendance>
             {
                 new RecentAttendance
                 {
                     StartDateTime = RockDateTime.Now,
-                    ScheduleGuid = scheduleGuid
+                    ScheduleId = scheduleId
                 }
             };
 
             var filter = CreateDuplicateCheckInFilter( false, recentAttendance );
-            var scheduleOpportunity = CreateScheduleOpportunity( scheduleGuid );
+            var scheduleOpportunity = CreateScheduleOpportunity( scheduleId );
 
             var isIncluded = filter.IsScheduleValid( scheduleOpportunity );
 
@@ -169,13 +170,13 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
         /// <summary>
         /// Creates a schedule opportunity.
         /// </summary>
-        /// <param name="scheduleGuid">The unique identifier of the schedule.</param>
+        /// <param name="scheduleId">The identifier of the schedule.</param>
         /// <returns>A new instance of <see cref="ScheduleOpportunity"/>.</returns>
-        private ScheduleOpportunity CreateScheduleOpportunity( Guid scheduleGuid )
+        private ScheduleOpportunity CreateScheduleOpportunity( string scheduleId )
         {
             return new ScheduleOpportunity
             {
-                Guid = scheduleGuid
+                Id = scheduleId
             };
         }
 

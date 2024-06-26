@@ -21,27 +21,25 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
-
 /** Defines a single group that can be used during check-in. */
 export type GroupOpportunityBag = {
     /**
-     * Gets or sets the ability level unique identifier required to
+     * Gets or sets the ability level identifier required to
      * attend this group.
      */
-    abilityLevelGuid?: Guid | null;
+    abilityLevelId?: string | null;
 
-    /** Gets or sets the area unique identifier that this group belongs to. */
-    areaGuid: Guid;
+    /** Gets or sets the area identifier that this group belongs to. */
+    areaId?: string | null;
 
-    /** Gets or sets the unique identifier of this item. */
-    guid: Guid;
+    /** Gets or sets the identifier of this item. */
+    id?: string | null;
 
     /**
-     * Gets or sets the location unique identifiers. These are in proper
-     * order of location priority.
+     * Gets or sets the location identifiers. These are in proper order
+     * of location priority.
      */
-    locationGuids?: Guid[] | null;
+    locationIds?: string[] | null;
 
     /** Gets or sets the display name of this item. */
     name?: string | null;

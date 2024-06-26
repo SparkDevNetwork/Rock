@@ -22,7 +22,6 @@
 //
 
 import { CheckInStatus } from "@Obsidian/Enums/Event/checkInStatus";
-import { Guid } from "@Obsidian/Types";
 import { CheckInItemBag } from "@Obsidian/ViewModels/CheckIn/checkInItemBag";
 import { PersonBag } from "@Obsidian/ViewModels/CheckIn/personBag";
 
@@ -34,8 +33,8 @@ export type AttendanceBag = {
     /** Gets or sets the group for this attendance record. */
     group?: CheckInItemBag | null;
 
-    /** Gets or sets the attendance unique identifier. */
-    guid: Guid;
+    /** Gets or sets the attendance identifier. */
+    id?: string | null;
 
     /** Gets or sets the location for this attendance record. */
     location?: CheckInItemBag | null;

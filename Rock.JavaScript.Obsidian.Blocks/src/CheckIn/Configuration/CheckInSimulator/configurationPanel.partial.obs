@@ -7,7 +7,7 @@
         <div class="row">
             <div class="col-md-6">
                 <DropDownList label="Template"
-                              v-model="templateGuid"
+                              v-model="templateId"
                               :disabled="disableUpdates"
                               :items="templateItems"
 
@@ -16,7 +16,7 @@
 
             <div class="col-md-6">
                 <DropDownList label="Kiosk"
-                              v-model="kioskGuid"
+                              v-model="kioskId"
                               :disabled="disableUpdates"
                               :items="blockConfig.kiosks ?? []"
                               rules="required" />
@@ -26,7 +26,7 @@
         <div class="row">
             <div class="col-md-6">
                 <CheckBoxList label="Primary Areas"
-                              v-model="primaryAreaGuids"
+                              v-model="primaryAreaIds"
                               :items="primaryAreas"
                               :disabled="disableUpdates"
                               horizontal
@@ -35,7 +35,7 @@
 
             <div class="col-md-6">
                 <CheckBoxList label="Secondary Areas"
-                              v-model="secondaryAreaGuids"
+                              v-model="secondaryAreaIds"
                               :items="secondaryAreas"
                               :disabled="disableUpdates"
                               horizontal
@@ -85,7 +85,6 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { PropType, ref, watch } from "vue";
     import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
-    import { toGuidOrNull } from "@Obsidian/Utility/guid";
     import { useHttp } from "@Obsidian/Utility/http";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
 
@@ -109,16 +108,16 @@
     const http = useHttp();
 
     const templateItems: ListItemBag[] = props.blockConfig.templates?.map(c => ({
-        value: c.guid,
+        value: c.id,
         text: c.name
     })) ?? [];
 
     let disableUpdates = false;
 
-    const templateGuid = ref(props.config.templateGuid ?? "");
-    const kioskGuid = ref(props.config.kioskGuid ?? "");
-    const primaryAreaGuids = ref(props.config.primaryAreaGuids ?? []);
-    const secondaryAreaGuids = ref(props.config.secondaryAreaGuids ?? []);
+    const templateId = ref(props.config.templateId ?? "");
+    const kioskId = ref(props.config.kioskId ?? "");
+    const primaryAreaIds = ref(props.config.primaryAreaIds ?? []);
+    const secondaryAreaIds = ref(props.config.secondaryAreaIds ?? []);
     const benchmarkIterations = ref(props.config.benchmarkIterations);
     const benchmarkDuration = ref(props.config.benchmarkDuration);
 
@@ -130,29 +129,29 @@
      * to only those which are still valid.
      */
     async function updateAreaItems(): Promise<void> {
-        if (!kioskGuid.value) {
-            primaryAreaGuids.value = [];
+        if (!kioskId.value) {
+            primaryAreaIds.value = [];
             primaryAreas.value = [];
-            secondaryAreaGuids.value = [];
+            secondaryAreaIds.value = [];
             secondaryAreas.value = [];
 
             return;
         }
 
         const request: ConfigurationOptionsBag = {
-            kioskGuid: kioskGuid.value
+            kioskId: kioskId.value
         };
 
         const response = await http.post<ConfigurationResponseBag>("/api/v2/checkin/Configuration", undefined, request);
 
         if (response.isSuccess && response.data?.areas) {
             primaryAreas.value = response.data.areas
-                .filter(a => (a.primaryTemplateGuids ?? []).includes(props.config.templateGuid ?? ""))
-                .map(a => ({ value: a.guid, text: a.name }));
+                .filter(a => (a.primaryTemplateIds ?? []).includes(props.config.templateId ?? ""))
+                .map(a => ({ value: a.id, text: a.name }));
 
             secondaryAreas.value = response.data.areas
-                .filter(a => !(a.primaryTemplateGuids ?? []).includes(props.config.templateGuid ?? ""))
-                .map(a => ({ value: a.guid, text: a.name }));
+                .filter(a => !(a.primaryTemplateIds ?? []).includes(props.config.templateId ?? ""))
+                .map(a => ({ value: a.id, text: a.name }));
         }
     }
 
@@ -161,10 +160,10 @@
      */
     function emitConfig(): void {
         emit("update:config", {
-            templateGuid: toGuidOrNull(templateGuid.value) ?? undefined,
-            kioskGuid: toGuidOrNull(kioskGuid.value) ?? undefined,
-            primaryAreaGuids: primaryAreaGuids.value,
-            secondaryAreaGuids: secondaryAreaGuids.value,
+            templateId: templateId.value || undefined,
+            kioskId: kioskId.value || undefined,
+            primaryAreaIds: primaryAreaIds.value,
+            secondaryAreaIds: secondaryAreaIds.value,
             benchmarkIterations: benchmarkIterations.value,
             benchmarkDuration: benchmarkDuration.value
         });
@@ -179,22 +178,22 @@
         disableUpdates = true;
 
         try {
-            templateGuid.value = originalUrl.searchParams.get("template") ?? "";
-            kioskGuid.value = originalUrl.searchParams.get("kiosk") ?? "";
+            templateId.value = originalUrl.searchParams.get("template") ?? "";
+            kioskId.value = originalUrl.searchParams.get("kiosk") ?? "";
 
             benchmarkIterations.value = toNumberOrNull(originalUrl.searchParams.get("cfgBenchIter")) ?? undefined;
             benchmarkDuration.value = toNumberOrNull(originalUrl.searchParams.get("cfgBenchDur")) ?? undefined;
 
-            if (!templateGuid.value || !kioskGuid.value) {
+            if (!templateId.value || !kioskId.value) {
                 return;
             }
 
             // Update the list of allowed items, otherwise setting the area
-            // guids will be overwritten.
+            // ids will be overwritten.
             await updateAreaItems();
 
-            primaryAreaGuids.value = originalUrl.searchParams.get("primaryAreas")?.split(",") ?? [];
-            secondaryAreaGuids.value = originalUrl.searchParams.get("secondaryAreas")?.split(",") ?? [];
+            primaryAreaIds.value = originalUrl.searchParams.get("primaryAreas")?.split(",") ?? [];
+            secondaryAreaIds.value = originalUrl.searchParams.get("secondaryAreas")?.split(",") ?? [];
         }
         finally {
             disableUpdates = false;
@@ -209,29 +208,29 @@
     function saveState(): void {
         const url = new URL(location.href);
 
-        if (templateGuid.value) {
-            url.searchParams.set("template", templateGuid.value);
+        if (templateId.value) {
+            url.searchParams.set("template", templateId.value);
         }
         else {
             url.searchParams.delete("template");
         }
 
-        if (kioskGuid.value) {
-            url.searchParams.set("kiosk", kioskGuid.value);
+        if (kioskId.value) {
+            url.searchParams.set("kiosk", kioskId.value);
         }
         else {
             url.searchParams.delete("kiosk");
         }
 
-        if (primaryAreaGuids.value && primaryAreaGuids.value.length > 0) {
-            url.searchParams.set("primaryAreas", primaryAreaGuids.value.join(","));
+        if (primaryAreaIds.value && primaryAreaIds.value.length > 0) {
+            url.searchParams.set("primaryAreas", primaryAreaIds.value.join(","));
         }
         else {
             url.searchParams.delete("primaryAreas");
         }
 
-        if (secondaryAreaGuids.value && secondaryAreaGuids.value.length > 0) {
-            url.searchParams.set("secondaryAreas", secondaryAreaGuids.value.join(","));
+        if (secondaryAreaIds.value && secondaryAreaIds.value.length > 0) {
+            url.searchParams.set("secondaryAreas", secondaryAreaIds.value.join(","));
         }
         else {
             url.searchParams.delete("secondaryAreas");
@@ -271,15 +270,15 @@
     }
 
     watch(() => props.config, () => {
-        templateGuid.value = props.config.templateGuid ?? "";
-        kioskGuid.value = props.config.kioskGuid ?? "";
-        primaryAreaGuids.value = props.config.primaryAreaGuids ?? [];
-        secondaryAreaGuids.value = props.config.secondaryAreaGuids ?? [];
+        templateId.value = props.config.templateId ?? "";
+        kioskId.value = props.config.kioskId ?? "";
+        primaryAreaIds.value = props.config.primaryAreaIds ?? [];
+        secondaryAreaIds.value = props.config.secondaryAreaIds ?? [];
         benchmarkIterations.value = props.config.benchmarkIterations;
         benchmarkDuration.value = props.config.benchmarkDuration;
     });
 
-    watch([templateGuid, kioskGuid, primaryAreaGuids, secondaryAreaGuids, benchmarkIterations, benchmarkDuration], () => {
+    watch([templateId, kioskId, primaryAreaIds, secondaryAreaIds, benchmarkIterations, benchmarkDuration], () => {
         if (disableUpdates) {
             return;
         }
@@ -288,9 +287,9 @@
         emitConfig();
     });
 
-    watch(kioskGuid, () => updateAreaItems());
+    watch(kioskId, () => updateAreaItems());
 
-    if (props.config.kioskGuid) {
+    if (props.config.kioskId) {
         updateAreaItems();
     }
 

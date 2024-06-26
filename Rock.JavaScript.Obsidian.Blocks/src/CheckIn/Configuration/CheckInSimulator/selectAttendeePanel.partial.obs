@@ -15,7 +15,7 @@
                     <li v-if="attendee.opportunities.abilityLevels && attendee.opportunities.abilityLevels.length > 0">
                         Ability Levels
                         <ol>
-                            <li v-for="item in attendee.opportunities.abilityLevels" :key="item.guid!">
+                            <li v-for="item in attendee.opportunities.abilityLevels" :key="item.id!">
                                 {{ item.name }}
                             </li>
                         </ol>
@@ -24,7 +24,7 @@
                     <li v-if="attendee.opportunities.areas && attendee.opportunities.areas.length > 0">
                         Areas
                         <ol>
-                            <li v-for="item in attendee.opportunities.areas" :key="item.guid!">
+                            <li v-for="item in attendee.opportunities.areas" :key="item.id!">
                                 {{ item.name }}
                             </li>
                         </ol>
@@ -33,7 +33,7 @@
                     <li v-if="attendee.opportunities.groups && attendee.opportunities.groups.length > 0">
                         Groups
                         <ol>
-                            <li v-for="item in attendee.opportunities.groups" :key="item.guid!">
+                            <li v-for="item in attendee.opportunities.groups" :key="item.id!">
                                 {{ item.name }}
                             </li>
                         </ol>
@@ -42,7 +42,7 @@
                     <li v-if="attendee.opportunities.locations && attendee.opportunities.locations.length > 0">
                         Locations
                         <ol>
-                            <li v-for="item in attendee.opportunities.locations" :key="item.guid!">
+                            <li v-for="item in attendee.opportunities.locations" :key="item.id!">
                                 {{ item.name }}
                             </li>
                         </ol>
@@ -51,7 +51,7 @@
                     <li v-if="attendee.opportunities.schedules && attendee.opportunities.schedules.length > 0">
                         Schedules
                         <ol>
-                            <li v-for="item in attendee.opportunities.schedules" :key="item.guid!">
+                            <li v-for="item in attendee.opportunities.schedules" :key="item.id!">
                                 {{ item.name }}
                             </li>
                         </ol>

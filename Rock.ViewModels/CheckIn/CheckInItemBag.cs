@@ -14,8 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-
 namespace Rock.ViewModels.CheckIn
 {
     /// <summary>
@@ -24,10 +22,10 @@ namespace Rock.ViewModels.CheckIn
     public class CheckInItemBag
     {
         /// <summary>
-        /// Gets or sets the unique identifier of this item.
+        /// Gets or sets the identifier of this item.
         /// </summary>
-        /// <value>The unique identifier.</value>
-        public Guid Guid { get; set; }
+        /// <value>The identifier.</value>
+        public string Id { get; set; }
 
         /// <summary>
         /// Gets or sets the display name of this item.

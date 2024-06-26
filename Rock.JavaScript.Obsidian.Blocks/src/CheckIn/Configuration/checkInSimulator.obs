@@ -107,10 +107,10 @@
     /**
      * All selected area unique identifiers.
      */
-    const areaGuids = computed((): Guid[] => {
+    const areaIds = computed((): string[] => {
         return [
-            ...configuration.value.primaryAreaGuids ?? [],
-            ...configuration.value.secondaryAreaGuids ?? []
+            ...configuration.value.primaryAreaIds ?? [],
+            ...configuration.value.secondaryAreaIds ?? []
         ];
     });
 
@@ -119,7 +119,7 @@
      * any step to function.
      */
     const isConfigurationReady = computed((): boolean => {
-        return !!configuration.value.templateGuid && !!configuration.value.kioskGuid;
+        return !!configuration.value.templateId && !!configuration.value.kioskId;
     });
 
     /**
@@ -299,13 +299,13 @@
      * Executes the family search process.
      */
     async function executeFamilySearchStep(): Promise<void> {
-        if (!configuration.value.templateGuid || !configuration.value.kioskGuid) {
+        if (!configuration.value.templateId || !configuration.value.kioskId) {
             throw new Error("Invalid configuration data.");
         }
 
         const request: SearchForFamiliesOptionsBag = {
-            configurationTemplateGuid: configuration.value.templateGuid,
-            kioskGuid: configuration.value.kioskGuid,
+            configurationTemplateId: configuration.value.templateId,
+            kioskId: configuration.value.kioskId,
             prioritizeKioskCampus: false,
             searchTerm: familySearchTerm.value,
             searchType: <FamilySearchMode>toNumber(familySearchType.value)
@@ -335,7 +335,7 @@
      * Executes the select family process.
      */
     async function executeSelectFamilyStep(): Promise<void> {
-        if (!configuration.value.templateGuid || !configuration.value.kioskGuid) {
+        if (!configuration.value.templateId || !configuration.value.kioskId) {
             throw new Error("Invalid configuration data.");
         }
 
@@ -348,16 +348,16 @@
         }
 
         const request: FamilyMembersOptionsBag = {
-            configurationTemplateGuid: configuration.value.templateGuid,
-            kioskGuid: configuration.value.kioskGuid,
-            areaGuids: areaGuids.value,
-            familyGuid: familySearchData.value[selectFamilyNumber.value - 1].guid
+            configurationTemplateId: configuration.value.templateId,
+            kioskId: configuration.value.kioskId,
+            areaIds: areaIds.value,
+            familyId: familySearchData.value[selectFamilyNumber.value - 1].id
         };
 
         const response = await http.post<FamilyMembersResponseBag>("/api/v2/checkin/FamilyMembers", undefined, request);
 
         if (response.isSuccess && response.data) {
-            if (!selectFamilyData.value || selectFamilyData.value.familyGuid !== response.data.familyGuid) {
+            if (!selectFamilyData.value || selectFamilyData.value.familyId !== response.data.familyId) {
                 sessionGuid = newGuid();
             }
 
@@ -382,7 +382,7 @@
      * Executes the select attendee process.
      */
     async function executeSelectAttendeeStep(): Promise<void> {
-        if (!configuration.value.templateGuid || !configuration.value.kioskGuid) {
+        if (!configuration.value.templateId || !configuration.value.kioskId) {
             throw new Error("Invalid configuration data.");
         }
 
@@ -395,11 +395,11 @@
         }
 
         const request: AttendeeOpportunitiesOptionsBag = {
-            configurationTemplateGuid: configuration.value.templateGuid,
-            kioskGuid: configuration.value.kioskGuid,
-            areaGuids: areaGuids.value,
-            familyGuid: selectFamilyData.value.familyGuid,
-            personGuid: selectFamilyData.value.people[selectAttendeeNumber.value - 1].person?.guid ?? ""
+            configurationTemplateId: configuration.value.templateId,
+            kioskId: configuration.value.kioskId,
+            areaIds: areaIds.value,
+            familyId: selectFamilyData.value.familyId,
+            personId: selectFamilyData.value.people[selectAttendeeNumber.value - 1].person?.id ?? ""
         };
 
         const response = await http.post<AttendeeOpportunitiesResponseBag>("/api/v2/checkin/AttendeeOpportunities", undefined, request);
@@ -431,7 +431,7 @@
      * Executes the save attendance process.
      */
     async function executeSaveAttendanceStep(): Promise<void> {
-        if (!configuration.value.templateGuid || !configuration.value.kioskGuid) {
+        if (!configuration.value.templateId || !configuration.value.kioskId) {
             throw new Error("Invalid configuration data.");
         }
 
@@ -474,38 +474,38 @@
 
         const selection: OpportunitySelectionBag = {
             area: {
-                guid: selectAttendeeData.value.opportunities.areas[saveAttendanceAreaNumber.value - 1].guid
+                id: selectAttendeeData.value.opportunities.areas[saveAttendanceAreaNumber.value - 1].id
             },
             group: {
-                guid: selectAttendeeData.value.opportunities.groups[saveAttendanceGroupNumber.value - 1].guid
+                id: selectAttendeeData.value.opportunities.groups[saveAttendanceGroupNumber.value - 1].id
             },
             location: {
-                guid: selectAttendeeData.value.opportunities.locations[saveAttendanceLocationNumber.value - 1].guid
+                id: selectAttendeeData.value.opportunities.locations[saveAttendanceLocationNumber.value - 1].id
             },
             schedule: {
-                guid: selectAttendeeData.value.opportunities.schedules[saveAttendanceScheduleNumber.value - 1].guid
+                id: selectAttendeeData.value.opportunities.schedules[saveAttendanceScheduleNumber.value - 1].id
             }
         };
 
         if (saveAttendanceAbilityLevelNumber.value > 0) {
             selection.abilityLevel = {
-                guid: selectAttendeeData.value.opportunities.abilityLevels[saveAttendanceAbilityLevelNumber.value - 1].guid
+                id: selectAttendeeData.value.opportunities.abilityLevels[saveAttendanceAbilityLevelNumber.value - 1].id
             };
         }
 
         const request: SaveAttendanceOptionsBag = {
-            templateGuid: configuration.value.templateGuid,
-            kioskGuid: configuration.value.kioskGuid,
+            templateId: configuration.value.templateId,
+            kioskId: configuration.value.kioskId,
             session: {
                 guid: sessionGuid,
-                familyGuid: selectFamilyData.value.familyGuid,
+                familyId: selectFamilyData.value.familyId,
                 isPending: saveAttendanceIsPending.value,
                 searchMode: <FamilySearchMode>toNumber(familySearchType.value),
                 searchTerm: familySearchTerm.value
             },
             requests: [
                 {
-                    personGuid: selectFamilyData.value.people[selectAttendeeNumber.value - 1].person?.guid ?? "",
+                    personId: selectFamilyData.value.people[selectAttendeeNumber.value - 1].person?.id ?? "",
                     selection,
                     note: benchmarkNoteKey !== null
                         ? `${SimulatorNoteKey} ${benchmarkNoteKey}`
@@ -537,12 +537,12 @@
      * Executes the save attendance process.
      */
     async function executeConfirmAttendanceStep(): Promise<void> {
-        if (!configuration.value.templateGuid) {
+        if (!configuration.value.templateId) {
             throw new Error("Invalid configuration data.");
         }
 
         const request: ConfirmAttendanceOptionsBag = {
-            templateGuid: configuration.value.templateGuid,
+            templateId: configuration.value.templateId,
             sessionGuid: sessionGuid
         };
 

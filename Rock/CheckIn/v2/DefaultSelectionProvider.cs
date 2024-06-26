@@ -75,7 +75,7 @@ namespace Rock.CheckIn.v2
 
             var orderedRecentAttendance = person.RecentAttendances
                 .Where( a => a.StartDateTime.Date == person.LastCheckIn.Value.Date )
-                .OrderBy( a => NamedScheduleCache.Get( a.ScheduleGuid )?.StartTimeOfDay )
+                .OrderBy( a => NamedScheduleCache.GetByIdKey( a.ScheduleId, Session.RockContext )?.StartTimeOfDay )
                 .ThenByDescending( a => a.StartDateTime );
 
             var previousCheckIns = new List<RecentAttendance>();
@@ -85,7 +85,7 @@ namespace Rock.CheckIn.v2
             // take precedence over older attendances.
             foreach ( var attendance in orderedRecentAttendance )
             {
-                if ( !previousCheckIns.Any( i => i.ScheduleGuid == attendance.ScheduleGuid ) )
+                if ( !previousCheckIns.Any( i => i.ScheduleId == attendance.ScheduleId ) )
                 {
                     previousCheckIns.Add( attendance );
                 }
@@ -140,15 +140,15 @@ namespace Rock.CheckIn.v2
             selectedOpportunities = null;
 
             var group = person.Opportunities.Groups
-                .FirstOrDefault( g => g.Guid == previousCheckIn.GroupGuid );
+                .FirstOrDefault( g => g.Id == previousCheckIn.GroupId );
 
-            if ( group == null || !group.LocationGuids.Contains( previousCheckIn.LocationGuid ) )
+            if ( group == null || !group.LocationIds.Contains( previousCheckIn.LocationId ) )
             {
                 return false;
             }
 
             var area = person.Opportunities.Areas
-                .FirstOrDefault( a => a.Guid == group.AreaGuid );
+                .FirstOrDefault( a => a.Id == group.AreaId );
 
             if ( area == null )
             {
@@ -156,15 +156,15 @@ namespace Rock.CheckIn.v2
             }
 
             var location = person.Opportunities.Locations
-                .FirstOrDefault( l => l.Guid == previousCheckIn.LocationGuid );
+                .FirstOrDefault( l => l.Id == previousCheckIn.LocationId );
 
-            if ( location == null || !location.ScheduleGuids.Contains( previousCheckIn.ScheduleGuid ) )
+            if ( location == null || !location.ScheduleIds.Contains( previousCheckIn.ScheduleId ) )
             {
                 return false;
             }
 
             var schedule = person.Opportunities.Schedules
-                .FirstOrDefault( s => s.Guid == previousCheckIn.ScheduleGuid );
+                .FirstOrDefault( s => s.Id == previousCheckIn.ScheduleId );
 
             if ( schedule == null )
             {
@@ -190,7 +190,7 @@ namespace Rock.CheckIn.v2
             selectedOpportunities = null;
 
             var group = person.Opportunities.Groups
-                .FirstOrDefault( g => g.Guid == previousCheckIn.GroupGuid );
+                .FirstOrDefault( g => g.Id == previousCheckIn.GroupId );
 
             if ( group == null )
             {
@@ -198,7 +198,7 @@ namespace Rock.CheckIn.v2
             }
 
             var area = person.Opportunities.Areas
-                .FirstOrDefault( a => a.Guid == group.AreaGuid );
+                .FirstOrDefault( a => a.Id == group.AreaId );
 
             if ( area == null )
             {
@@ -226,7 +226,7 @@ namespace Rock.CheckIn.v2
             foreach ( var group in person.Opportunities.Groups )
             {
                 var area = person.Opportunities.Areas
-                    .FirstOrDefault( a => a.Guid == group.AreaGuid );
+                    .FirstOrDefault( a => a.Id == group.AreaId );
 
                 if ( area == null )
                 {
@@ -255,20 +255,20 @@ namespace Rock.CheckIn.v2
         /// <returns><c>true</c> if a match was found and <paramref name="selectedOpportunities"/> is valid, <c>false</c> otherwise.</returns>
         protected virtual bool TryGetFirstValidSelectionForGroup( AreaOpportunity area, GroupOpportunity group, Attendee person, out OpportunitySelectionBag selectedOpportunities )
         {
-            foreach ( var locationGuid in group.LocationGuids )
+            foreach ( var locationId in group.LocationIds )
             {
                 var location = person.Opportunities.Locations
-                    .FirstOrDefault( l => l.Guid == locationGuid );
+                    .FirstOrDefault( l => l.Id == locationId );
 
                 if ( location == null )
                 {
                     continue;
                 }
 
-                foreach ( var scheduleGuid in location.ScheduleGuids )
+                foreach ( var scheduleId in location.ScheduleIds )
                 {
                     var schedule = person.Opportunities.Schedules
-                        .FirstOrDefault( s => s.Guid == scheduleGuid );
+                        .FirstOrDefault( s => s.Id == scheduleId );
 
                     if ( schedule == null )
                     {
@@ -301,22 +301,22 @@ namespace Rock.CheckIn.v2
             {
                 Area = new CheckInItemBag
                 {
-                    Guid = area.Guid,
+                    Id = area.Id,
                     Name = area.Name
                 },
                 Group = new CheckInItemBag
                 {
-                    Guid = group.Guid,
+                    Id = group.Id,
                     Name = group.Name
                 },
                 Location = new CheckInItemBag
                 {
-                    Guid = location.Guid,
+                    Id = location.Id,
                     Name = location.Name
                 },
                 Schedule = new CheckInItemBag
                 {
-                    Guid = schedule.Guid,
+                    Id = schedule.Id,
                     Name = schedule.Name
                 }
             };
