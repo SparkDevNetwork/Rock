@@ -24,7 +24,7 @@ export const enum PreferenceKey {
 
     FilterPublicName = "filter-public-name",
 
-    FilterIsActive = "filter-active-status"
+    FilterActiveStatus = "filter-active-status"
 }
 
 export type GridSettingsOptions = {

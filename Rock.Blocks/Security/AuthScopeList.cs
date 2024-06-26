@@ -142,25 +142,32 @@ namespace Rock.Blocks.Security
         protected override IQueryable<AuthScope> GetListQueryable( RockContext rockContext )
         {
             var authClientService = new AuthScopeService( rockContext );
-            var authClientQuery = authClientService.Queryable().AsNoTracking();
+            var authScopeQuery = authClientService.Queryable().AsNoTracking();
 
             if ( FilterName.IsNotNullOrWhiteSpace() )
             {
-                authClientQuery = authClientQuery.Where( s => s.Name.Contains( FilterName ) );
+                authScopeQuery = authScopeQuery.Where( s => s.Name.Contains( FilterName ) );
             }
 
             if ( FilterPublicName.IsNotNullOrWhiteSpace() )
             {
-                authClientQuery = authClientQuery.Where( s => s.PublicName.Contains( FilterPublicName ) );
+                authScopeQuery = authScopeQuery.Where( s => s.PublicName.Contains( FilterPublicName ) );
             }
 
             if ( FilterActiveStatus.IsNotNullOrWhiteSpace() )
             {
-                var activeStatus = FilterActiveStatus.AsBoolean();
-                authClientQuery = authClientQuery.Where( a => a.IsActive == activeStatus );
+                switch ( FilterActiveStatus )
+                {
+                    case "active":
+                        authScopeQuery = authScopeQuery.Where( s => s.IsActive );
+                        break;
+                    case "inactive":
+                        authScopeQuery = authScopeQuery.Where( s => !s.IsActive );
+                        break;
+                }
             }
 
-            return authClientQuery;
+            return authScopeQuery;
         }
 
         /// <inheritdoc/>

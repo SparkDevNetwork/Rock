@@ -31,7 +31,8 @@
                     title="Name"
                     field="name"
                     :filter="textValueFilter"
-                    visiblePriority="xs" />
+                    visiblePriority="xs"
+                    width="35%" />
 
         <PersonColumn name="initiator"
                       title="Initiated By"
@@ -42,14 +43,15 @@
                       :filter="pickExistingValueFilter"
                       :filterValue="getInitiatorFilterValue"
                       :quickFilterValue="getInitiatorFilterValue"
-                      visiblePriority="xs" />
+                      visiblePriority="md" />
 
         <Column name="activities"
                 title="Activities"
                 field="activities"
                 :filterValue="getActivitiesRowFilterValue"
                 :quickFilterValue="getActivitiesRowFilterValue"
-                :filter="textValueFilter">
+                :filter="textValueFilter"
+                visiblePriority="md">
             <template #format="{ row }">
                 <div class="text-lg">
                     <div v-for="activity in row.activities">
@@ -70,7 +72,7 @@
                         title="Created"
                         field="createdDateTime"
                         :filter="dateValueFilter"
-                        visiblePriority="xs"
+                        visiblePriority="md"
                         itemClass="grid-item-pull-left"
                         width="150">
             <template #format="{ row }">
@@ -83,7 +85,8 @@
                 field="status"
                 :filterValue="getStatusRowFilterValue"
                 :quickFilterValue="getStatusRowFilterValue"
-                :filter="pickExistingValueFilter">
+                :filter="pickExistingValueFilter"
+                visiblePriority="xs">
             <template #format="{ row }">
                 <div class="text-lg">
                     <span class='label label-info'>{{ row.status }}</span>
@@ -100,7 +103,8 @@
                 field="isCompleted"
                 :filterValue="getStateRowFilterValue"
                 :quickFilterValue="getStateRowFilterValue"
-                :filter="pickExistingValueFilter">
+                :filter="pickExistingValueFilter"
+                visiblePriority="md">
             <template #format="{ row }">
                 <div class="text-lg">
                     <span v-if="row.isCompleted" class='label label-default'>Completed</span>
@@ -116,7 +120,8 @@
         <Column v-if="config.options?.canView"
                 name="view"
                 itemClass="grid-columncommand"
-                width="52">
+                width="52"
+                visiblePriority="md">
             <template #format="{ row }">
                 <RockButton @click="onSelectItem(row)" :btnType="BtnType.Default" :btnSize="BtnSize.Small">
                     <i class="fa fa-file-text-o"></i>

@@ -23,7 +23,7 @@ export const enum NavigationUrlKey {
 export const enum PreferenceKey {
     FilterName = "filter-name",
 
-    FilterIsActive = "filter-active-status"
+    FilterActiveStatus = "filter-active-status"
 }
 
 export type GridSettingsOptions = {

@@ -67,11 +67,11 @@
         },
         {
             text: "Active",
-            value: "true"
+            value: "active"
         },
         {
             text: "Inactive",
-            value: "false"
+            value: "inactive"
         }
     ] as ListItemBag[];
 
