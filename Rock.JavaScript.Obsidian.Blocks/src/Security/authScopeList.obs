@@ -3,7 +3,8 @@
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
-          itemTerm="OpenID Connect Scopes"
+          title="OpenID Connect Scopes"
+          itemTerm="Scope"
           :entityTypeGuid="EntityType.AuthScope"
           :showLaunchWorkflow="false"
           stickyHeader
@@ -24,7 +25,7 @@
                     title="Public Name"
                     field="publicName"
                     :filter="textValueFilter"
-                    visiblePriority="xs"
+                    visiblePriority="md"
                     width="35%" />
 
         <BooleanColumn name="isActive"
@@ -38,7 +39,7 @@
                        title="System"
                        field="isSystem"
                        :filter="booleanValueFilter"
-                       visiblePriority="xs"
+                       visiblePriority="md"
                        width="120" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
@@ -73,7 +74,7 @@
     const isGridSettingsVisible = ref(false);
     const gridSettings = ref<GridSettingsOptions>({
         name: preferences.getValue(PreferenceKey.FilterName),
-        isActive: preferences.getValue(PreferenceKey.FilterIsActive),
+        isActive: preferences.getValue(PreferenceKey.FilterActiveStatus),
     });
 
     // #endregion
@@ -165,7 +166,7 @@
     watch(gridSettings, async () => {
         preferences.setValue(PreferenceKey.FilterName, gridSettings.value.name ?? "");
         preferences.setValue(PreferenceKey.FilterPublicName, gridSettings.value.publicName ?? "");
-        preferences.setValue(PreferenceKey.FilterIsActive, gridSettings.value.isActive ?? "");
+        preferences.setValue(PreferenceKey.FilterActiveStatus, gridSettings.value.isActive ?? "");
 
         await preferences.save();
 

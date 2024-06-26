@@ -156,8 +156,15 @@ namespace Rock.Blocks.Security
 
             if ( FilterActiveStatus.IsNotNullOrWhiteSpace() )
             {
-                var activeStatus = FilterActiveStatus.AsBoolean();
-                authClientQuery = authClientQuery.Where( a => a.IsActive == activeStatus );
+                switch ( FilterActiveStatus )
+                {
+                    case "active":
+                        authClientQuery = authClientQuery.Where( s => s.IsActive );
+                        break;
+                    case "inactive":
+                        authClientQuery = authClientQuery.Where( s => !s.IsActive );
+                        break;
+                }
             }
 
             return authClientQuery;
