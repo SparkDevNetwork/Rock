@@ -266,7 +266,7 @@ namespace Rock.CheckIn.v2
         /// <param name="attendanceGuids">The attendance records to checkout.</param>
         /// <param name="kiosk">The kiosk that is performing this checkout or <c>null</c>.</param>
         /// <returns>An instance of <see cref="CheckoutResultBag"/> that contains the result of the operation.</returns>
-        public CheckoutResultBag Checkout( AttendanceSessionRequest sessionRequest, IReadOnlyCollection<Guid> attendanceGuids, DeviceCache kiosk )
+        public CheckoutResultBag Checkout( AttendanceSessionRequest sessionRequest, IReadOnlyList<Guid> attendanceGuids, DeviceCache kiosk )
         {
             var attendanceService = new AttendanceService( Session.RockContext );
             var result = new CheckoutResultBag
@@ -275,11 +275,13 @@ namespace Rock.CheckIn.v2
                 Attendances = new List<AttendanceBag>()
             };
 
-            var attendances = attendanceService.Queryable()
+            var attendancesQry = attendanceService.Queryable()
                 .Include( a => a.Occurrence )
-                .Include( a => a.PersonAlias.Person )
-                .Where( a => attendanceGuids.Contains( a.Guid ) )
-                .ToList();
+                .Include( a => a.PersonAlias.Person );
+
+            attendancesQry = CheckInDirector.WhereContains( attendancesQry, attendanceGuids, a => a.Guid );
+
+            var attendances = attendancesQry.ToList();
 
             if ( attendances.Count == 0 )
             {

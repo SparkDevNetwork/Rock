@@ -520,7 +520,7 @@ namespace Rock.CheckIn.v2
         /// <param name="kiosk">The kiosk that is performing this check-in or <c>null</c>.</param>
         /// <exception cref="System.ArgumentNullException"><paramref name="sessionRequest"/> is <c>null</c>.</exception>
         /// <exception cref="System.ArgumentNullException"><paramref name="attendanceGuids"/> is <c>null</c>.</exception>
-        public CheckoutResultBag Checkout( AttendanceSessionRequest sessionRequest, IReadOnlyCollection<Guid> attendanceGuids, DeviceCache kiosk )
+        public CheckoutResultBag Checkout( AttendanceSessionRequest sessionRequest, IReadOnlyList<Guid> attendanceGuids, DeviceCache kiosk )
         {
             if ( sessionRequest == null )
             {
