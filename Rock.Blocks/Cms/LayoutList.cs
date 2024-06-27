@@ -131,16 +131,16 @@ namespace Rock.Blocks.Cms
 
             if ( siteId.HasValue )
             {
-                var site = new SiteService(rockContext).Get( siteId.Value );
+                var site = new SiteService( rockContext ).Get( siteId.Value );
 
-                if (site != null )
+                if ( site != null )
                 {
                     var layouts = new LayoutService( rockContext )
                         .Queryable()
                         .Include( l => l.Site )
                         .Where( l => l.SiteId == siteId );
 
-                return layouts;
+                    return layouts;
 
                 }
             }
@@ -154,7 +154,7 @@ namespace Rock.Blocks.Cms
             var layouts = queryable.ToList();
             foreach ( var layout in layouts )
             {
-                if (layout.Site != null && layout.FileName != null )
+                if ( layout.Site != null && layout.FileName != null )
                 {
                     layout.FileName = $"~/Themes/{layout.Site.Theme}/Layouts/{layout.FileName}.aspx";
                 }
@@ -174,6 +174,17 @@ namespace Rock.Blocks.Cms
                 .AddTextField( "fileName", a => a.FileName )
                 .AddTextField( "description", a => a.Description )
                 .AddField( "isSystem", a => a.IsSystem )
+                .AddField( "siteId", a => a.SiteId )
+                .AddTextField( "layoutMobilePhone", a => a.LayoutMobilePhone )
+                .AddTextField( "layoutMobileTablet", a => a.LayoutMobileTablet )
+                .AddDateTimeField( "createdDateTime", a => a.CreatedDateTime )
+                .AddDateTimeField( "modifiedDateTime", a => a.ModifiedDateTime )
+                .AddField( "createdByPersonAliasId", a => a.CreatedByPersonAliasId )
+                .AddField( "modifiedByPersonAliasId", a => a.ModifiedByPersonAliasId )
+                .AddField( "guid", a => a.Guid )
+                .AddField( "foreignId", a => a.ForeignId )
+                .AddField( "foreignGuid", a => a.ForeignGuid )
+                .AddTextField( "foreignKey", a => a.ForeignKey )
                 .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) );
         }
 

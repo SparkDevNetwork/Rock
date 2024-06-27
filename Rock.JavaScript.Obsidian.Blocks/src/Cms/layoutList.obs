@@ -42,6 +42,72 @@
         <SecurityColumn />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+
+        <!-- The columns below will only be shown in the exported file -->
+        <Column name="siteId"
+                title="Site Id"
+                field="siteId"
+                :hideOnScreen="true" />
+
+        <Column name="layoutMobilePhone"
+                title="Layout Mobile Phone"
+                field="layoutMobilePhone"
+                :hideOnScreen="true" />
+
+        <Column name="layoutMobileTablet"
+                title="Layout Mobile Tablet"
+                field="layoutMobileTablet"
+                :hideOnScreen="true" />
+
+        <DateTimeColumn name="createdDateTime"
+                        title="Created Date Time"
+                        field="createdDateTime"
+                        :hideOnScreen="true" />
+
+        <DateTimeColumn name="modifiedDateTime"
+                        title="Modified Date Time"
+                        field="modifiedDateTime"
+                        :hideOnScreen="true" />
+
+        <Column name="createdByPersonAliasId"
+                title="Created By Person Alias Id"
+                field="createdByPersonAliasId"
+                :hideOnScreen="true" />
+
+        <Column name="modifiedByPersonAliasId"
+                title="Modified By Person Alias Id"
+                field="modifiedByPersonAliasId"
+                :hideOnScreen="true" />
+
+        <Column name="id"
+                title="Id"
+                field="id"
+                :hideOnScreen="true" />
+
+        <Column name="idKey"
+                title="Id Key"
+                field="idKey"
+                :hideOnScreen="true" />
+
+        <Column name="guid"
+                title="Guid"
+                field="guid"
+                :hideOnScreen="true" />
+
+        <Column name="foreignId"
+                title="Foreign Id"
+                field="foreignId"
+                :hideOnScreen="true" />
+
+        <Column name="foreignGuid"
+                title="Foreign Guid"
+                field="foreignGuid"
+                :hideOnScreen="true" />
+
+        <Column name="foreignKey"
+                title="Foreign Key"
+                field="foreignKey"
+                :hideOnScreen="true" />
     </Grid>
 
     <!-- Informational Note -->
@@ -58,7 +124,7 @@
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, BooleanColumn, TextColumn, textValueFilter, DeleteColumn, SecurityColumn } from "@Obsidian/Controls/grid";
+    import Grid, { Column, BooleanColumn, TextColumn, textValueFilter, DeleteColumn, SecurityColumn, DateTimeColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { LayoutListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/LayoutList/layoutListOptionsBag";
