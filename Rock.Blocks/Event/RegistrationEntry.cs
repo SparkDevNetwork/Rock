@@ -1620,21 +1620,17 @@ namespace Rock.Blocks.Event
                 }
                 else if ( eventOccurrenceId.HasValue && registrationInstanceId.HasValue )
                 {
-                    var eventItemOccurrence = new EventItemOccurrenceService( rockContext )
+                    var linkageGroupId = new EventItemOccurrenceService( rockContext )
                         .Queryable()
                         .Where( o => o.Id == eventOccurrenceId.Value )
+                        .SelectMany( o => o.Linkages )
+                        .Where( l => l.RegistrationInstanceId == registrationInstanceId.Value )
+                        .Select( l => l.GroupId )
                         .FirstOrDefault();
 
-                    if ( eventItemOccurrence != null )
+                    if ( linkageGroupId.HasValue )
                     {
-                        var linkage = eventItemOccurrence.Linkages
-                            .Where( l => l.RegistrationInstanceId == registrationInstanceId.Value )
-                            .FirstOrDefault();
-
-                        if ( linkage != null )
-                        {
-                            groupId = linkage.GroupId;
-                        }
+                        groupId = linkageGroupId.Value;
                     }
                 }
             }
