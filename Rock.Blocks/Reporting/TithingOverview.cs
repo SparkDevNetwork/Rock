@@ -103,7 +103,6 @@ namespace Rock.Blocks.Reporting
         private TithingOverviewInitializationBox GetInitializationBox( RockContext rockContext, string chartType )
         {
             var json = GetChartData( rockContext, chartType );
-            var toolTipData = GetToolTipData( rockContext, chartType );
             var metricValues = GetTithingOverviewMetricValues( rockContext, chartType );
 
             var box = new TithingOverviewInitializationBox
@@ -111,7 +110,7 @@ namespace Rock.Blocks.Reporting
                 ChartDataJson = json,
                 ChartType = chartType,
                 ToolTipData = GetToolTipData( rockContext, chartType ),
-                LegendData = GetLegendLabelColors( toolTipData ),
+                LegendData = GetLegendLabelColors(),
                 HasData = metricValues.Count > 0,
             };
 
@@ -507,42 +506,46 @@ namespace Rock.Blocks.Reporting
         {
             var campusAge = GetCampusAge( campus );
 
-            var campusColorAttribute = campus.GetAttributeTextValue( "core_CampusColor" );
-
-            if ( !string.IsNullOrWhiteSpace( campusColorAttribute ) )
-            {
-                return campusColorAttribute;
-            }
-
             if ( chartType == ChartTypeKey.LineChart )
             {
-                return FillColorSource().Skip( campus.Id ).FirstOrDefault();
-            }
+                var campusColorAttribute = campus.GetAttributeTextValue( "core_CampusColor" );
 
-            if ( !campusAge.HasValue )
-            {
-                return "#A3A3A3";
-            }
-
-            if ( campusAge >= 0 && campusAge <= 2 )
-            {
-                return "#BAE6FD";
-            }
-            else if ( campusAge >= 3 && campusAge <= 6 )
-            {
-                return "#38BDF8";
-            }
-            else if ( campusAge >= 7 && campusAge <= 11 )
-            {
-                return "#0284C7";
-            }
-            else if ( campusAge >= 11 )
-            {
-                return "#075985";
+                if ( !string.IsNullOrWhiteSpace( campusColorAttribute ) )
+                {
+                    return campusColorAttribute;
+                }
+                else
+                {
+                    return FillColorSource().Skip( campus.Id ).FirstOrDefault();
+                }
             }
             else
             {
-                return "A3A3A3";
+                if ( !campusAge.HasValue )
+                {
+                    return "#A3A3A3";
+                }
+
+                if ( campusAge >= 0 && campusAge <= 2 )
+                {
+                    return "#BAE6FD";
+                }
+                else if ( campusAge >= 3 && campusAge <= 6 )
+                {
+                    return "#38BDF8";
+                }
+                else if ( campusAge >= 7 && campusAge <= 11 )
+                {
+                    return "#0284C7";
+                }
+                else if ( campusAge >= 11 )
+                {
+                    return "#075985";
+                }
+                else
+                {
+                    return "A3A3A3";
+                }
             }
         }
 
@@ -629,36 +632,17 @@ namespace Rock.Blocks.Reporting
         /// <summary>
         /// Gets the legend label colors.
         /// </summary>
-        /// <param name="toolTipData">The tool tip data.</param>
         /// <returns></returns>
-        private Dictionary<string, string> GetLegendLabelColors( Dictionary<string, TithingOverviewToolTipBag> toolTipData )
+        private Dictionary<string, string> GetLegendLabelColors()
         {
-            var campusIds = toolTipData.Select( d => d.Value.CampusId ).ToList();
-            var includeDefaultLegend = false;
-            var legendLabelColorMap = new Dictionary<string, string>();
-
-            foreach ( var campus in CampusCache.GetMany( campusIds ).ToList() )
+            var legendLabelColorMap = new Dictionary<string, string>
             {
-                var color = campus.GetAttributeTextValue( "core_CampusColor" );
-                if ( !string.IsNullOrWhiteSpace( color ) )
-                {
-                    var campusKey = string.IsNullOrWhiteSpace( campus.ShortCode ) ? campus.Name : campus.ShortCode;
-                    legendLabelColorMap.AddOrReplace( campusKey, color );
-                }
-                else
-                {
-                    includeDefaultLegend = true;
-                }
-            }
-
-            if ( includeDefaultLegend )
-            {
-                legendLabelColorMap.Add( "0-2 yrs", "#BAE6FD" );
-                legendLabelColorMap.Add( "3-6 yrs", "#38BDF8" );
-                legendLabelColorMap.Add( "7-11 yrs", "#0284C7" );
-                legendLabelColorMap.Add( "11+", "#075985" );
-                legendLabelColorMap.Add( "Unknown", "#A3A3A3" );
-            }
+                { "0-2 yrs", "#BAE6FD" },
+                { "3-6 yrs", "#38BDF8" },
+                { "7-11 yrs", "#0284C7" },
+                { "11+", "#075985" },
+                { "Unknown", "#A3A3A3" }
+            };
 
             return legendLabelColorMap;
         }

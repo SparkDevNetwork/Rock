@@ -25,9 +25,9 @@
     </div>
 </template>
 <style scoped>
-    .tithing-overview :deep(.panel-heading) {
-        background-color: var(--theme-white)
-    }
+.tithing-overview :deep(.panel-heading) {
+    background-color: var(--theme-white)
+}
 </style>
 <script setup lang="ts">
     import { computed, onMounted, ref, shallowRef } from "vue";
@@ -77,7 +77,7 @@
                 categoryPercentage: 0.8
             },
             line: {
-                fill: false
+                fill: false,
             }
         },
         animation: {
@@ -88,6 +88,15 @@
                 position: "bottom",
                 align: "start",
                 display: true,
+                title: {
+                    display: true,
+                    color: "black",
+                    text: "Campus Age",
+                    position: "start",
+                    font: {
+                        size: 14
+                    }
+                },
                 labels: {
                     generateLabels: generateLegendLabels
                 },
@@ -106,7 +115,8 @@
                         borderDashOffset: 0,
                         borderWidth: 3,
                         scaleID: "y",
-                        value: (ctx) => average(ctx)
+                        value: (ctx) => average(ctx),
+                        drawTime: "beforeDatasetsDraw"
                     }
                 }
             }
@@ -278,7 +288,8 @@
             for (const label in legendLabelColorMap.value) {
                 let legendItem = {
                     text: label,
-                    fillStyle: legendLabelColorMap.value[label]
+                    fillStyle: legendLabelColorMap.value[label],
+                    lineWidth: 0
                 } as LegendItem;
 
                 legendItems.push(legendItem);
@@ -291,7 +302,8 @@
                 let legendItem = {
                     text: dataset.label,
                     fillStyle: dataset.borderColor,
-                    datasetIndex: datasets.indexOf(dataset)
+                    datasetIndex: datasets.indexOf(dataset),
+                    lineWidth: 0
                 } as LegendItem;
 
                 legendItems.push(legendItem);
@@ -409,6 +421,10 @@
     * @returns The chart configuration data that can be passed to Chart.JS.
     */
     function getChartConfig(): ChartConfiguration<keyof ChartTypeRegistry, number[]> {
+
+        if (options.value.plugins?.legend?.title) {
+            options.value.plugins.legend.title.text = chartType.value == ChartTypeKey.BarChart ? "Campus Age" : "Campus";
+        }
 
         const config: ChartConfiguration<keyof ChartTypeRegistry, number[]> = {
             type: chartType.value,
