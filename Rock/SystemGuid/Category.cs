@@ -171,6 +171,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string SCHEDULE_PERSISTED_DATAVIEWS = "EEC7A935-BEF2-4450-9CBF-B85CEC6F7FEA";
 
+        /// <summary>
+        /// Gets the DataView Persisted Schedule category guid
+        /// </summary>
+        public const string SCHEDULE_PERSISTED_DATASETS = "7D152006-C47D-47E6-BF0B-09C3C2D0AE84";
+
         #endregion
 
         #region Person Attributes
