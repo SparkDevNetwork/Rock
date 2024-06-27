@@ -311,6 +311,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Cms\ContentCollectionView\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\LavaShortcodeDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\LayoutDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Cms\LayoutList\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\LibraryViewer\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\MediaAccountDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Cms\MediaFolderDetail\" />
@@ -794,6 +795,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\LavaShortcodeDetail\lavaShortcodeDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\LayoutDetail\layoutBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\LayoutDetail\layoutDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\LayoutList\layoutListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\LibraryViewer\libraryViewerDownloadItemBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\LibraryViewer\libraryViewerInitializationBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Cms\LibraryViewer\libraryViewerItemBag.d.ts" />

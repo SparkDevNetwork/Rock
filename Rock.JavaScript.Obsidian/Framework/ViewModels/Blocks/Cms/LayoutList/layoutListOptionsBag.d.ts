@@ -21,6 +21,5 @@
 // </copyright>
 //
 
-/** The additional configuration options for the Layout List block. */
 export type LayoutListOptionsBag = {
 };
