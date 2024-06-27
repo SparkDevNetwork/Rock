@@ -185,9 +185,34 @@ namespace Rock.CheckIn.v2.Labels.Renderers
             }
 
             var fontSize = GetFontDotSize( config.FontSize );
+            var horizontalFontSize = fontSize;
             var lineCount = Math.Max( 1, ( int ) Math.Round( ToDots( height ) / ( double ) fontSize ) );
+            var alignment = "L";
 
-            writer.WriteLine( $"^FB{ToDots( width )},{lineCount}^A0,{fontSize},{fontSize}^FD{textValue}^FS" );
+            if ( config.HorizontalAlignment == HorizontalTextAlignment.Center )
+            {
+                alignment = "C";
+            }
+            else if ( config.HorizontalAlignment == HorizontalTextAlignment.Right )
+            {
+                alignment = "R";
+            }
+
+            if ( config.IsBold )
+            {
+                horizontalFontSize = ( int ) Math.Floor( fontSize * 1.15 );
+            }
+            else if ( config.IsCondensed )
+            {
+                horizontalFontSize = ( int ) Math.Floor( fontSize * 0.8 );
+            }
+
+            if ( config.MaxLength > 0 )
+            {
+                textValue = textValue.Truncate( config.MaxLength );
+            }
+
+            writer.WriteLine( $"^FB{ToDots( width )},{lineCount},0,{alignment}^A0,{horizontalFontSize},{fontSize}^FD{textValue}^FS" );
         }
 
         /// <summary>

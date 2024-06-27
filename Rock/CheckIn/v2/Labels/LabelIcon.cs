@@ -72,8 +72,11 @@ namespace Rock.CheckIn.v2.Labels
         {
             return new List<LabelIcon>
             {
-                new LabelIcon( "birthday_cake", "Birthday Cake", "\uF1FD", true ),
-                new LabelIcon( "star","Star", "\uF005", true )
+                new LabelIcon( "birthday-cake", "Birthday Cake", "\uF1FD", true ),
+                new LabelIcon( "briefcase-medical", "Briefcase Medical", "\uF469", true ),
+                new LabelIcon( "gift", "Gift", "\uF06B", true),
+                new LabelIcon( "star","Star", "\uF005", true ),
+                new LabelIcon( "star-of-life", "Star of Life", "\uF621", true )
             };
         }
     }

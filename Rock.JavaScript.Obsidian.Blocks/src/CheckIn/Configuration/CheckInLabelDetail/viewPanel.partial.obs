@@ -16,6 +16,12 @@
                 <img v-if="previewImageSource"
                      class="img-responsive preview-image"
                      :src="previewImageSource" />
+
+                <div class="mt-3 text-right">
+                    <RockButton @click="onDesignerClick">
+                        <i class="fa fa-palette"></i> Label Designer
+                    </RockButton>
+                </div>
             </div>
         </div>
 
@@ -36,6 +42,7 @@
     import { computed, PropType, ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
     import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
     import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
@@ -45,6 +52,9 @@
     import { getFilterGroupTitleHtml, getFilterRuleDescription } from "@Obsidian/Core/Reporting/fieldFilter";
     import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
     import { escapeHtml } from "@Obsidian/Utility/stringUtils";
+    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { NavigationUrlKey } from "./types.partial";
 
     const props = defineProps({
         modelValue: {
@@ -57,6 +67,8 @@
             required: true
         }
     });
+
+    const config = useConfigurationValues<DetailBlockBox<CheckInLabelBag, CheckInLabelDetailOptionsBag>>();
 
     // #region Values
 
@@ -160,5 +172,11 @@
 
     // #region Event Handlers
 
-    // #endregion
+    function onDesignerClick(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DesignerPage] && props.modelValue?.idKey) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DesignerPage].replace("((Key))", props.modelValue.idKey);
+        }
+    }
+
+            // #endregion
 </script>

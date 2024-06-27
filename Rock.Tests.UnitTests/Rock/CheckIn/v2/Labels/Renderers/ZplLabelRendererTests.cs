@@ -403,6 +403,266 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Labels.Renderers
             Assert.That.Contains( zpl, expectedFourthValue );
         }
 
+        [TestMethod]
+        public void WriteTextField_WithLeftAlignment_IncludesLeftAlignmentToken()
+        {
+            var expectedAlignment = "L";
+            var expectedPattern = new Regex( $@"\^FB[0-9]+,[0-9]+,[0-9]+,{expectedAlignment}" );
+
+            var renderer = new ZplLabelRenderer();
+            var request = new PrintLabelRequest
+            {
+                Label = new DesignedLabelBag(),
+                Capabilities = new PrinterCapabilities()
+            };
+
+            var field = new Mock<LabelField>( MockBehavior.Strict, new LabelFieldBag() );
+            field.Setup( f => f.GetConfiguration<TextFieldConfiguration>() )
+                .Returns( new TextFieldConfiguration
+                {
+                    HorizontalAlignment = HorizontalTextAlignment.Left
+                } );
+            field.Setup( f => f.GetFormattedValues( request ) )
+                .Returns( () => new List<string> { "Test Value" } );
+
+            var zpl = GetTextFromStream( stream =>
+            {
+                renderer.BeginLabel( stream, request );
+                stream.SetLength( 0 );
+
+                renderer.WriteField( field.Object );
+                renderer.Dispose();
+            } );
+
+            Assert.That.Matches( zpl, expectedPattern );
+        }
+
+        [TestMethod]
+        public void WriteTextField_WithCenterAlignment_IncludesCenterAlignmentToken()
+        {
+            var expectedAlignment = "C";
+            var expectedPattern = new Regex( $@"\^FB[0-9]+,[0-9]+,[0-9]+,{expectedAlignment}" );
+
+            var renderer = new ZplLabelRenderer();
+            var request = new PrintLabelRequest
+            {
+                Label = new DesignedLabelBag(),
+                Capabilities = new PrinterCapabilities()
+            };
+
+            var field = new Mock<LabelField>( MockBehavior.Strict, new LabelFieldBag() );
+            field.Setup( f => f.GetConfiguration<TextFieldConfiguration>() )
+                .Returns( new TextFieldConfiguration
+                {
+                    HorizontalAlignment = HorizontalTextAlignment.Center
+                } );
+            field.Setup( f => f.GetFormattedValues( request ) )
+                .Returns( () => new List<string> { "Test Value" } );
+
+            var zpl = GetTextFromStream( stream =>
+            {
+                renderer.BeginLabel( stream, request );
+                stream.SetLength( 0 );
+
+                renderer.WriteField( field.Object );
+                renderer.Dispose();
+            } );
+
+            Assert.That.Matches( zpl, expectedPattern );
+        }
+
+        [TestMethod]
+        public void WriteTextField_WithRightAlignment_IncludesRightAlignmentToken()
+        {
+            var expectedAlignment = "R";
+            var expectedPattern = new Regex( $@"\^FB[0-9]+,[0-9]+,[0-9]+,{expectedAlignment}" );
+
+            var renderer = new ZplLabelRenderer();
+            var request = new PrintLabelRequest
+            {
+                Label = new DesignedLabelBag(),
+                Capabilities = new PrinterCapabilities()
+            };
+
+            var field = new Mock<LabelField>( MockBehavior.Strict, new LabelFieldBag() );
+            field.Setup( f => f.GetConfiguration<TextFieldConfiguration>() )
+                .Returns( new TextFieldConfiguration
+                {
+                    HorizontalAlignment = HorizontalTextAlignment.Right
+                } );
+            field.Setup( f => f.GetFormattedValues( request ) )
+                .Returns( () => new List<string> { "Test Value" } );
+
+            var zpl = GetTextFromStream( stream =>
+            {
+                renderer.BeginLabel( stream, request );
+                stream.SetLength( 0 );
+
+                renderer.WriteField( field.Object );
+                renderer.Dispose();
+            } );
+
+            Assert.That.Matches( zpl, expectedPattern );
+        }
+
+        [TestMethod]
+        public void WriteTextField_WithRegularText_MakesTextSquare()
+        {
+            var expectedPattern = new Regex( $@"\^A0,([0-9]+),([0-9]+)" );
+
+            var renderer = new ZplLabelRenderer();
+            var request = new PrintLabelRequest
+            {
+                Label = new DesignedLabelBag(),
+                Capabilities = new PrinterCapabilities()
+            };
+
+            var field = new Mock<LabelField>( MockBehavior.Strict, new LabelFieldBag() );
+            field.Setup( f => f.GetConfiguration<TextFieldConfiguration>() )
+                .Returns( new TextFieldConfiguration
+                {
+                    IsBold = false,
+                    IsCondensed = false
+                } );
+            field.Setup( f => f.GetFormattedValues( request ) )
+                .Returns( () => new List<string> { "Test Value" } );
+
+            var zpl = GetTextFromStream( stream =>
+            {
+                renderer.BeginLabel( stream, request );
+                stream.SetLength( 0 );
+
+                renderer.WriteField( field.Object );
+                renderer.Dispose();
+            } );
+
+            var match = expectedPattern.Match( zpl );
+
+            Assert.That.IsTrue( match.Success );
+
+            var isSquare = match.Groups[1].Value.AsInteger() == match.Groups[2].Value.AsInteger();
+
+            Assert.That.IsTrue( isSquare, $"Expected '{match.Groups[1].Value.AsInteger()}' to be equal to '{match.Groups[2].Value.AsInteger()}'." );
+        }
+
+        [TestMethod]
+        public void WriteTextField_WithBoldText_MakesTextWider()
+        {
+            var expectedPattern = new Regex( $@"\^A0,([0-9]+),([0-9]+)" );
+
+            var renderer = new ZplLabelRenderer();
+            var request = new PrintLabelRequest
+            {
+                Label = new DesignedLabelBag(),
+                Capabilities = new PrinterCapabilities()
+            };
+
+            var field = new Mock<LabelField>( MockBehavior.Strict, new LabelFieldBag() );
+            field.Setup( f => f.GetConfiguration<TextFieldConfiguration>() )
+                .Returns( new TextFieldConfiguration
+                {
+                    IsBold = true
+                } );
+            field.Setup( f => f.GetFormattedValues( request ) )
+                .Returns( () => new List<string> { "Test Value" } );
+
+            var zpl = GetTextFromStream( stream =>
+            {
+                renderer.BeginLabel( stream, request );
+                stream.SetLength( 0 );
+
+                renderer.WriteField( field.Object );
+                renderer.Dispose();
+            } );
+
+            var match = expectedPattern.Match( zpl );
+
+            Assert.That.IsTrue( match.Success );
+
+            var isWider = match.Groups[1].Value.AsInteger() > match.Groups[2].Value.AsInteger();
+
+            Assert.That.IsTrue( isWider, $"Expected '{match.Groups[1].Value.AsInteger()}' to be greater than '{match.Groups[1].Value.AsInteger()}'." );
+        }
+
+        [TestMethod]
+        public void WriteTextField_WithCondensedText_MakesTextNarrower()
+        {
+            var expectedPattern = new Regex( $@"\^A0,([0-9]+),([0-9]+)" );
+
+            var renderer = new ZplLabelRenderer();
+            var request = new PrintLabelRequest
+            {
+                Label = new DesignedLabelBag(),
+                Capabilities = new PrinterCapabilities()
+            };
+
+            var field = new Mock<LabelField>( MockBehavior.Strict, new LabelFieldBag() );
+            field.Setup( f => f.GetConfiguration<TextFieldConfiguration>() )
+                .Returns( new TextFieldConfiguration
+                {
+                    IsCondensed = true
+                } );
+            field.Setup( f => f.GetFormattedValues( request ) )
+                .Returns( () => new List<string> { "Test Value" } );
+
+            var zpl = GetTextFromStream( stream =>
+            {
+                renderer.BeginLabel( stream, request );
+                stream.SetLength( 0 );
+
+                renderer.WriteField( field.Object );
+                renderer.Dispose();
+            } );
+
+            var match = expectedPattern.Match( zpl );
+
+            Assert.That.IsTrue( match.Success );
+
+            var isNarrower = match.Groups[1].Value.AsInteger() < match.Groups[2].Value.AsInteger();
+
+            Assert.That.IsTrue( isNarrower, $"Expected '{match.Groups[1].Value.AsInteger()}' to be less than '{match.Groups[1].Value.AsInteger()}'." );
+        }
+
+        [TestMethod]
+        public void WriteTextField_WithBoldAndCondensedText_MakesTextWider()
+        {
+            var expectedPattern = new Regex( $@"\^A0,([0-9]+),([0-9]+)" );
+
+            var renderer = new ZplLabelRenderer();
+            var request = new PrintLabelRequest
+            {
+                Label = new DesignedLabelBag(),
+                Capabilities = new PrinterCapabilities()
+            };
+
+            var field = new Mock<LabelField>( MockBehavior.Strict, new LabelFieldBag() );
+            field.Setup( f => f.GetConfiguration<TextFieldConfiguration>() )
+                .Returns( new TextFieldConfiguration
+                {
+                    IsBold = true,
+                    IsCondensed = true
+                } );
+            field.Setup( f => f.GetFormattedValues( request ) )
+                .Returns( () => new List<string> { "Test Value" } );
+
+            var zpl = GetTextFromStream( stream =>
+            {
+                renderer.BeginLabel( stream, request );
+                stream.SetLength( 0 );
+
+                renderer.WriteField( field.Object );
+                renderer.Dispose();
+            } );
+
+            var match = expectedPattern.Match( zpl );
+
+            Assert.That.IsTrue( match.Success );
+
+            var isWider = match.Groups[1].Value.AsInteger() > match.Groups[2].Value.AsInteger();
+
+            Assert.That.IsTrue( isWider, $"Expected '{match.Groups[1].Value.AsInteger()}' to be greater than '{match.Groups[1].Value.AsInteger()}'." );
+        }
+
         #endregion
 
         #region WriteLineField

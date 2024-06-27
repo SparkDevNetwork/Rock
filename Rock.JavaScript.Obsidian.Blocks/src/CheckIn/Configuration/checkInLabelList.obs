@@ -13,11 +13,12 @@
           @selectItem="onSelectItem">
         <SelectColumn />
 
-        <TextColumn name="name"
-                    title="Name"
-                    field="name"
-                    :filter="textValueFilter"
-                    visiblePriority="xs" />
+        <HighlightDetailColumn name="name"
+                               title="Name"
+                               field="name"
+                               detailField="description"
+                               :filter="textValueFilter"
+                               visiblePriority="xs" />
 
         <LabelColumn name="labelType"
                      title="Label Type"
@@ -65,7 +66,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, BooleanColumn, Column, LabelColumn, TextColumn, textValueFilter, DeleteColumn, SelectColumn } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, BooleanColumn, Column, HighlightDetailColumn, LabelColumn, TextColumn, textValueFilter, DeleteColumn, SelectColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { CheckInLabelListOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInLabelList/checkInLabelListOptionsBag";

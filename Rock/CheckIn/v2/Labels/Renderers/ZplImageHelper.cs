@@ -58,20 +58,23 @@ namespace Rock.CheckIn.v2.Labels.Renderers
         #endregion
 
         /// <summary>
-        /// 
+        /// Creates a new image from the original image. The original image
+        /// will be scaled to fit fully inside the specified with and height
+        /// and then centered.
         /// </summary>
-        /// <param name="imageStream"></param>
+        /// <param name="imageStream">The original image.</param>
         /// <param name="options">The options that describe the conversion operation.</param>
-        /// <returns></returns>
+        /// <returns>The data for the new image.</returns>
         public static ZplImageCache CreateImage( Stream imageStream, ZplImageOptions options )
         {
-            var newImage = Image.Load<RgbaVector>( imageStream );
+            var image = Image.Load<RgbaVector>( imageStream );
+            var newImage = new Image<RgbaVector>( options.Width, options.Height, new RgbaVector( 1, 1, 1, 1 ) );
 
-            newImage.Mutate( img =>
+            image.Mutate( img =>
             {
-                if ( options.Width != newImage.Width || options.Height != newImage.Height )
+                if ( options.Width != image.Width || options.Height != image.Height )
                 {
-                    ResizeAndCrop( img, options.Width, options.Height );
+                    Resize( img, options.Width, options.Height );
                 }
 
                 if ( options.Brightness != 1 )
@@ -82,6 +85,13 @@ namespace Rock.CheckIn.v2.Labels.Renderers
                 img.Grayscale( GrayscaleMode.Bt601 );
 
                 Dither( img, options.Dithering );
+            } );
+
+            newImage.Mutate( img =>
+            {
+                var location = new Point( ( options.Width - image.Width ) / 2, ( options.Height - image.Height ) / 2 );
+
+                img.DrawImage( image, location, 1 );
             } );
 
             using ( var outputStream = SaveToGrf( newImage ) )
@@ -159,31 +169,28 @@ namespace Rock.CheckIn.v2.Labels.Renderers
         }
 
         /// <summary>
-        /// Resize the image and crop it to fit. This is essentially a "cover"
-        /// crop operation.
+        /// Resize the image to fit within the specified maximum width and height.
         /// </summary>
         /// <param name="image">The image to be resized.</param>
-        /// <param name="width">The new image width.</param>
-        /// <param name="height">The new image height.</param>
-        private static void ResizeAndCrop( IImageProcessingContext image, int width, int height )
+        /// <param name="maxWidth">The new image width.</param>
+        /// <param name="maxHeight">The new image height.</param>
+        private static void Resize( IImageProcessingContext image, int maxWidth, int maxHeight )
         {
             var size = image.GetCurrentSize();
-            var widthRatio = width / ( double ) size.Width;
-            var heightRatio = height / ( double ) size.Height;
+            var widthRatio = maxWidth / ( double ) size.Width;
+            var heightRatio = maxHeight / ( double ) size.Height;
 
-            if ( widthRatio >= heightRatio )
+            if ( widthRatio <= heightRatio )
             {
                 var newHeight = ( int ) Math.Round( size.Height * widthRatio );
 
-                image.Resize( width, newHeight );
-                image.Crop( new Rectangle( 0, ( int ) Math.Round( ( newHeight - height ) / 2.0 ), width, height ) );
+                image.Resize( maxWidth, newHeight );
             }
             else
             {
                 var newWidth = ( int ) Math.Round( size.Width * heightRatio );
 
-                image.Resize( newWidth, height );
-                image.Crop( new Rectangle( ( int ) Math.Round( ( newWidth - width ) / 2.0 ), 0, width, height ) );
+                image.Resize( newWidth, maxHeight );
             }
         }
 

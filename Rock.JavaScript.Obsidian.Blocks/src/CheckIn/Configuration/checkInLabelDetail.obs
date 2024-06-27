@@ -122,15 +122,6 @@
     const footerActions = computed((): PanelAction[] => {
         const actions: PanelAction[] = [];
 
-        if (isEditable.value) {
-            actions.push({
-                type: "link",
-                title: "Designer",
-                iconCssClass: "fa fa-magic",
-                handler: onDesignerClick
-            });
-        }
-
         return actions;
     });
 
@@ -234,12 +225,6 @@
         errorMessage.value = result.errorMessage ?? "Unknown error while trying to save check in label.";
 
         return false;
-    }
-
-    function onDesignerClick(): void {
-        if (config.navigationUrls?.[NavigationUrlKey.DesignerPage] && checkInLabelViewBag.value?.idKey) {
-            window.location.href = config.navigationUrls[NavigationUrlKey.DesignerPage].replace("((Key))", checkInLabelViewBag.value.idKey);
-        }
     }
 
     // #endregion
