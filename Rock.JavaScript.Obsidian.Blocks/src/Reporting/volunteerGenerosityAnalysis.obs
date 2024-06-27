@@ -111,7 +111,7 @@
                     title="Giving Months"
                     field="givingMonths"
                     itemClass="giving-trends"
-                    :sortField="'false'"
+                    :disableSort="true"
                     width="30%">
                 <template #format="{ row }">
                     <div class="trend-chart">

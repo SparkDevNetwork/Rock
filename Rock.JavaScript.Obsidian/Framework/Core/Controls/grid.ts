@@ -194,7 +194,12 @@ export const standardColumnProps: StandardColumnProps = {
     width: {
         type: String as PropType<string>,
         required: false
-    }
+    },
+
+    disableSort: {
+        type: Boolean as PropType<boolean>,
+        default: false
+    },
 };
 
 /** The standard properties available on header cells. */
@@ -878,6 +883,7 @@ function buildAttributeColumns(columns: ColumnDefinition[], node: VNode): void {
                 value: 10,
                 unitType: "%"
             },
+            disableSort: false,
             props: {},
             slots: {},
             data: {}
@@ -971,6 +977,7 @@ function insertCustomColumns(columns: ColumnDefinition[], customColumns: CustomC
                 value: 10,
                 unitType: "%"
             },
+            disableSort: false,
             props: {},
             slots: {},
             data: {}
@@ -1017,6 +1024,7 @@ function buildColumn(name: string, node: VNode): ColumnDefinition {
     const excludeFromExport = getVNodeProp<boolean>(node, "excludeFromExport") === true || getVNodeProp<string>(node, "excludeFromExport") === "";
     const visiblePriority = getVNodeProp<"xs" | "sm" | "md" | "lg" | "xl">(node, "visiblePriority") || "xs";
     const width = getVNodeProp<string>(node, "width");
+    const disableSort = getVNodeProp<boolean>(node, "disableSort") || false;
     const filterPrependComponent = node.children?.["filterPrepend"] as Component | undefined;
 
     // Get the function that will provide the sort value.
@@ -1156,6 +1164,7 @@ function buildColumn(name: string, node: VNode): ColumnDefinition {
         filterPrependComponent,
         filter,
         sortValue,
+        disableSort,
         filterValue,
         quickFilterValue,
         exportValue,
