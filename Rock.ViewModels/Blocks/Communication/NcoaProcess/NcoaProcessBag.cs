@@ -66,12 +66,12 @@ namespace Rock.ViewModels.Blocks.Communication.NcoaProcess
         public ListItemBag NcoaFileUploadReference { get; set; }
 
         /// <summary>
-        /// Gets or sets the addresses that will be exported into the file used in the NCOA process.
+        /// Gets or sets the list of addresses that will be exported into the file used in the NCOA process.
         /// </summary>
         /// <value>
-        /// A dictionary that contains the specific addresses that will be used in the NCOA process.
+        /// A list that contains the specific addresses that will be used in the NCOA process.
         /// </value>
-        public Dictionary<int, NcoaProcessPersonAddressBag> Addresses { get; set; }
+        public List<NcoaProcessPersonAddressBag> Addresses { get; set; }
 
         /// <summary>
         /// Gets or sets the success message.

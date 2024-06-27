@@ -28,7 +28,7 @@
                         <RockButton
                             :btnSize="BtnSize.Default"
                             :btnType="BtnType.Primary"
-                            :disabled="isLoading"
+                            :disabled="isStep1Loading"
                             type="submit" >
                             Export File
                         </RockButton>
@@ -51,7 +51,7 @@
                                 <NumberBox
                                     v-model="minMoveDistance"
                                     label="Minimum Move Distance to Inactivate"
-                                    help="Minimum move distance that a person moved before marking the person's account to inactivate. Leaving the value blank disables this feature."
+                                    help="Minimum move distance that a person moved before marking the person's account to inactivate."
                                     rules="required"
                                     placeholder="200" >
                                     <template #inputGroupAppend>
@@ -79,6 +79,7 @@
                         <RockButton
                             :btnSize="BtnSize.Default"
                             :btnType="BtnType.Primary"
+                            :disabled="isStep2Loading"
                             type="submit" >
                             Import File
                         </RockButton>
@@ -130,12 +131,13 @@ import { NcoaProcessPersonAddressBag } from "@Obsidian/ViewModels/Blocks/Communi
     const importedFile = ref(box.uploadFileReference ?? null);
     const successMessage = ref("");
     const errorMessage = ref("");
-    const isLoading = ref(false);
+    const isStep1Loading = ref(false);
+    const isStep2Loading = ref(false);
 
     const exportFile = async (): Promise<void> => {
         successMessage.value = "";
         errorMessage.value = "";
-        isLoading.value = true;
+        isStep1Loading.value = true;
         const result = await invokeBlockAction<NcoaProcessBag>("PrepareExportFile", { dataViewValue: selectedPersonDataView.value?.value});
         // Generate Excel file and download
         if (result.isSuccess && result.data?.addresses != null) {
@@ -147,12 +149,13 @@ import { NcoaProcessPersonAddressBag } from "@Obsidian/ViewModels/Blocks/Communi
         else {
             errorMessage.value = result.errorMessage || "Error";
         }
-        isLoading.value = false;
+        isStep1Loading.value = false;
     };
 
     const processImportFile = async ():Promise<void> => {
         successMessage.value = "";
         errorMessage.value = "";
+        isStep2Loading.value = true;
 
         const bag = <NcoaProcessBag> {
             inactiveReason: selectedInactiveReason.value,
@@ -169,10 +172,11 @@ import { NcoaProcessPersonAddressBag } from "@Obsidian/ViewModels/Blocks/Communi
         else {
             errorMessage.value = result.errorMessage || "Error";
         }
+        isStep2Loading.value = false;
     };
 
     // Generates the Workbook and converts the data passed in from a dictionary to an array so that the file is properly formatted.
-    function generateDataForFile(data: Record<number, NcoaProcessPersonAddressBag>): Workbook {
+    function generateDataForFile(data: NcoaProcessPersonAddressBag[]): Workbook {
         const workbook = new Workbook();
         const worksheet = workbook.addWorksheet();
 
