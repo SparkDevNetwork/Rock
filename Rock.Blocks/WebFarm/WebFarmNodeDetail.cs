@@ -104,7 +104,6 @@ namespace Rock.Blocks.WebFarm
 
             box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions( box.IsEditable );
-            box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<WebFarmNode>();
 
             return box;
         }
@@ -180,6 +179,8 @@ namespace Rock.Blocks.WebFarm
                     box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( WebFarmNode.FriendlyTypeName );
                 }
             }
+
+            PrepareDetailBox( box, entity );
         }
 
         /// <summary>
@@ -400,12 +401,7 @@ namespace Rock.Blocks.WebFarm
         /// <returns></returns>
         private List<string> GetValidProperties()
         {
-            return new List<string>
-            {
-                nameof(WebFarmNodeBag.NodeName),
-                nameof(WebFarmNodeBag.IsActive),
-                nameof(WebFarmNodeBag.IsLeader)
-            };
+            return typeof( WebFarmNodeBag ).GetProperties().Select( p => p.Name ).ToList();
         }
 
         #endregion Methods

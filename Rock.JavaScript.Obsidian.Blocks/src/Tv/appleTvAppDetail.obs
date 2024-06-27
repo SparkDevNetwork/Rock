@@ -109,6 +109,21 @@
             return undefined;
         }
 
+        if (appleTvAppViewBag.value?.isActive === true) {
+            labels.push({
+                iconCssClass: "fa fa-lightbulb",
+                title: "Active",
+                type: "success"
+            });
+        }
+        else {
+            labels.push({
+                iconCssClass: "far fa-lightbulb",
+                title: "Inactive",
+                type: "danger"
+            });
+        }
+
         return labels;
     });
 
