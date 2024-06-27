@@ -44,7 +44,7 @@
     import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
     import RockAttributeFilter from "./rockAttributeFilter.obs";
     import { FieldFilterSourceType } from "@Obsidian/Enums/Reporting/fieldFilterSourceType";
-    import { FieldFilterPropertyBag } from "@Obsidian/ViewModels/Reporting/fieldFilterPropertyBag";
+    import { FieldFilterPublicPropertyBag } from "@Obsidian/ViewModels/Reporting/fieldFilterPublicPropertyBag";
     import { FilterMode } from "@Obsidian/Core/Reporting/filterMode";
     import { getFieldType } from "@Obsidian/Utility/fieldTypes";
 
@@ -132,7 +132,7 @@
     });
 
     /** The currently selected property, if any. */
-    const currentProperty = computed((): FieldFilterPropertyBag | undefined => {
+    const currentProperty = computed((): FieldFilterPublicPropertyBag | undefined => {
         return currentPropertySource.value?.property ?? undefined;
     });
 

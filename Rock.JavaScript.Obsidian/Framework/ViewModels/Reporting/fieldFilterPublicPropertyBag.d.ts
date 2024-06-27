@@ -27,10 +27,11 @@ import { Guid } from "@Obsidian/Types";
  * Identifies a single property that can be used to filter an object. This
  * is most often used when displaying the filter editor UI.
  */
-export type FieldFilterPropertyBag = {
+export type FieldFilterPublicPropertyBag = {
     /**
      * The configuration values that will be passed to the field to allow
-     * it to render the UI control correctly.
+     * it to render the UI control correctly. These must be already encoded
+     * as public configuration values from the field type.
      */
     configurationValues?: Record<string, string> | null;
 

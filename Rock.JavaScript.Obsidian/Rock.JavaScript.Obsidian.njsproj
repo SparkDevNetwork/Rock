@@ -1326,7 +1326,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Prayer\PrayerRequestEntry\prayerRequestEntrySaveRequestBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Prayer\PrayerRequestEntry\prayerRequestEntrySaveResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Reporting\fieldFilterGroupBag.d.ts" />
-    <TypeScriptCompile Include="Framework\ViewModels\Reporting\fieldFilterPropertyBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Reporting\fieldFilterPublicPropertyBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Reporting\fieldFilterRuleBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Reporting\fieldFilterSourceBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Rest\CheckIn\attendeeOpportunitiesOptionsBag.d.ts" />

@@ -510,7 +510,7 @@
     <Compile Include="Communication\ConversationMessageBag.cs" />
     <Compile Include="Controls\PhoneNumberBoxWithSmsControlBag.cs" />
     <Compile Include="Controls\NoteMentionItemBag.cs" />
-    <Compile Include="Reporting\FieldFilterPropertyBag.cs" />
+    <Compile Include="Reporting\FieldFilterPublicPropertyBag.cs" />
     <Compile Include="Rest\CheckIn\CheckoutOptionsBag.cs" />
     <Compile Include="Rest\CheckIn\CheckoutResponseBag.cs" />
     <Compile Include="Rest\CheckIn\ConfigurationOptionsBag.cs" />

@@ -16,7 +16,6 @@
 //
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -1085,7 +1084,7 @@ namespace Rock.CheckIn.v2.Labels
                         Type = FieldFilterSourceType.Property,
                         Path = filterPath,
                         Category = "Person Properties",
-                        Property = new FieldFilterPropertyBag
+                        Property = new FieldFilterPublicPropertyBag
                         {
                             Title = entityField.Title,
                             Name = entityField.Name,
@@ -1188,7 +1187,7 @@ namespace Rock.CheckIn.v2.Labels
                 Type = FieldFilterSourceType.Property,
                 Path = path,
                 Category = category,
-                Property = new FieldFilterPropertyBag
+                Property = new FieldFilterPublicPropertyBag
                 {
                     Title = title ?? propertyName.SplitCase(),
                     Name = propertyName,
@@ -1214,7 +1213,7 @@ namespace Rock.CheckIn.v2.Labels
                 Type = FieldFilterSourceType.Property,
                 Path = path,
                 Category = category,
-                Property = new FieldFilterPropertyBag
+                Property = new FieldFilterPublicPropertyBag
                 {
                     Title = title ?? propertyName.SplitCase(),
                     Name = propertyName,
@@ -1240,7 +1239,7 @@ namespace Rock.CheckIn.v2.Labels
                 Type = FieldFilterSourceType.Property,
                 Path = path,
                 Category = category,
-                Property = new FieldFilterPropertyBag
+                Property = new FieldFilterPublicPropertyBag
                 {
                     Title = title ?? propertyName.SplitCase(),
                     Name = propertyName,
@@ -1266,7 +1265,7 @@ namespace Rock.CheckIn.v2.Labels
                 Type = FieldFilterSourceType.Property,
                 Path = path,
                 Category = category,
-                Property = new FieldFilterPropertyBag
+                Property = new FieldFilterPublicPropertyBag
                 {
                     Title = title ?? propertyName.SplitCase(),
                     Name = propertyName,
@@ -1292,7 +1291,7 @@ namespace Rock.CheckIn.v2.Labels
                 Type = FieldFilterSourceType.Property,
                 Path = path,
                 Category = category,
-                Property = new FieldFilterPropertyBag
+                Property = new FieldFilterPublicPropertyBag
                 {
                     Title = title ?? propertyName.SplitCase(),
                     Name = propertyName,

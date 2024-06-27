@@ -66,6 +66,6 @@ namespace Rock.ViewModels.Reporting
         /// Gets or sets the property if the source type is Property.
         /// </summary>
         /// <value>The property if the source type is Property.</value>
-        public FieldFilterPropertyBag Property { get; set; }
+        public FieldFilterPublicPropertyBag Property { get; set; }
     }
 }
