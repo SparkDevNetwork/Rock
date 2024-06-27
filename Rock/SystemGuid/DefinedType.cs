@@ -515,6 +515,19 @@ namespace Rock.SystemGuid
         /// Clarifies what the metrics are measuring, enabling the system to utilize these metrics for analytics.
         /// </summary>
         public const string MEASUREMENT_CLASSIFICATION = "A9897479-110E-4E50-8F60-160CEFE4CF7B";
+        /// List of different sources from which website traffic may originate.
+        /// </summary>
+        public const string UTM_SOURCE = "3CFE43A9-5D0C-4BE4-B1EC-AFA06BBB7C32";
+
+        /// <summary>
+        /// List of different marketing or advertising mediums that may initiate website traffic.
+        /// </summary>
+        public const string UTM_MEDIUM = "31693856-8553-4321-A302-B84CF1D22BAB";
+
+        /// <summary>
+        /// List of different campaigns that may generate website traffic.
+        /// </summary>
+        public const string UTM_CAMPAIGN = "A2F452BB-39E8-40F8-9DAD-74DBD920FD2F";
 
         /// <summary>
         /// The statement generator lava template (Legacy)

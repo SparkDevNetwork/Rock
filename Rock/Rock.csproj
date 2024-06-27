@@ -854,6 +854,8 @@
     <Compile Include="Cms\ContentCollection\Search\SearchResults.cs" />
     <Compile Include="Cms\ContentCollection\Search\SearchSortOrder.cs" />
     <Compile Include="Cms\ContentCollection\Search\SearchTerm.cs" />
+    <Compile Include="Cms\Utm\UtmHelper.cs" />
+    <Compile Include="Cms\Utm\UtmCookieData.cs" />
     <Compile Include="Cms\StructuredContent\BlockTypes\ChecklistRenderer.cs" />
     <Compile Include="Cms\StructuredContent\BlockTypes\ChecklistData.cs" />
     <Compile Include="Cms\StructuredContent\BlockTypes\ChecklistDataItem.cs" />
@@ -1179,6 +1181,7 @@
     <Compile Include="Model\Core\AttributeReferencedEntity\AttributeReferencedEntity.cs" />
     <Compile Include="Model\Core\AttributeValueReferencedEntity\AttributeValueReferencedEntity.cs" />
     <Compile Include="Model\Core\EntitySet\Options\AddEntitySetActionOptions.cs" />
+    <Compile Include="Model\Core\Interaction\Interaction.Logic.cs" />
     <Compile Include="Model\Core\NoteType\NoteType.SaveHook.cs" />
     <Compile Include="Model\Core\NotificationMessageType\NotificationMessageType.cs" />
     <Compile Include="Model\Core\NotificationMessageType\NotificationMessageType.Logic.cs" />
