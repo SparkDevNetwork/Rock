@@ -42,6 +42,7 @@
     <Content Include="src\Cms\lavaShortcodeDetail.obs" />
     <Content Include="src\Cms\LavaShortcodeDetail\editPanel.partial.obs" />
     <Content Include="src\Cms\LavaShortcodeDetail\viewPanel.partial.obs" />
+    <Content Include="src\Cms\layoutList.obs" />
     <Content Include="src\Cms\libraryViewer.obs" />
     <Content Include="src\Cms\LibraryViewer\itemBadgeList.partial.obs" />
     <Content Include="src\Cms\LibraryViewer\itemDownloadsLabel.partial.obs" />
@@ -313,6 +314,7 @@
     <Folder Include="src\Cms\ContentCollectionView\" />
     <Folder Include="src\Cms\LavaShortcodeDetail\" />
     <Folder Include="src\Cms\LayoutDetail\" />
+    <Folder Include="src\Cms\LayoutList\" />
     <Folder Include="src\Cms\LibraryViewer\" />
     <Folder Include="src\Cms\MediaAccountDetail\" />
     <Folder Include="src\Cms\MediaFolderDetail\" />
@@ -456,6 +458,7 @@
     <TypeScriptCompile Include="src\Cms\LayoutDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Cms\LayoutDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\LayoutDetail\viewPanel.partial.ts" />
+    <TypeScriptCompile Include="src\Cms\LayoutList\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\LibraryViewer\utils.partial.ts" />
     <TypeScriptCompile Include="src\Cms\mediaAccountDetail.ts" />
     <TypeScriptCompile Include="src\Cms\MediaAccountDetail\editPanel.partial.ts" />

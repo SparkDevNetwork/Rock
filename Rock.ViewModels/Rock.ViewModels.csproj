@@ -53,6 +53,7 @@
     <Compile Include="Blocks\Cms\AdaptiveMessageDetail\AdaptiveMessageBag.cs" />
     <Compile Include="Blocks\Cms\AdaptiveMessageDetail\AdaptiveMessageDetailOptionsBag.cs" />
     <Compile Include="Blocks\Cms\AdaptiveMessageList\AdaptiveMessageListOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\LayoutList\LayoutListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageRouteList\PageRouteListOptionsBag.cs" />
     <Compile Include="Blocks\Communication\NcoaProcess\NcoaProcessBag.cs" />
     <Compile Include="Blocks\Communication\NcoaProcess\NcoaProcessSavedSettingsBag.cs" />

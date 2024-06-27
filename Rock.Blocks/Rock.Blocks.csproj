@@ -63,6 +63,7 @@
     <Compile Include="Cms\AdaptiveMessageAdaptationDetail.cs" />
     <Compile Include="Cms\AdaptiveMessageDetail.cs" />
     <Compile Include="Cms\AdaptiveMessageList.cs" />
+    <Compile Include="Cms\LayoutList.cs" />
     <Compile Include="Cms\PageRouteList.cs" />
     <Compile Include="Communication\NcoaProcess.cs" />
     <Compile Include="Security\AuthScopeList.cs" />
