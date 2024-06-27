@@ -19,7 +19,7 @@
         </div>
 
         <RockButton v-if="showAdaptiveFontSize"
-                    btnType="default"
+                    :btnType="adaptiveFontSize.length > 0 ? 'primary' : 'default'"
                     btnSize="sm"
                     @click="onAdaptiveFontSizeClick">
             <i class="fa fa-text-width"></i>

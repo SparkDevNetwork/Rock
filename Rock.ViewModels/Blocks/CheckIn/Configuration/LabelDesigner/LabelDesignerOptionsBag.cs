@@ -63,5 +63,10 @@ namespace Rock.ViewModels.Blocks.CheckIn.Configuration.LabelDesigner
         /// icon field.
         /// </summary>
         public List<IconItemBag> Icons { get; set; }
+
+        /// <summary>
+        /// The URL to return to when the cancel button is clicked.
+        /// </summary>
+        public string ReturnUrl { get; set; }
     }
 }

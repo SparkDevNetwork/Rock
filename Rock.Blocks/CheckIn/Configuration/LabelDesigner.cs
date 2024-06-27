@@ -87,6 +87,11 @@ namespace Rock.Blocks.CheckIn.Configuration
                 .ThenBy( s => s.Property?.Title ?? s.Attribute?.Name )
                 .ToList();
 
+            var returnUrl = this.GetParentPageUrl( new Dictionary<string, string>
+            {
+                [PageParameterKey.CheckInLabelId] = label.IdKey
+            } );
+
             return new LabelDesignerOptionsBag
             {
                 IdKey = label.IdKey,
@@ -95,7 +100,8 @@ namespace Rock.Blocks.CheckIn.Configuration
                 LabelType = label.LabelType,
                 DataSources = dataSources,
                 FilterSources = filterSources,
-                Icons = GetIconList()
+                Icons = GetIconList(),
+                ReturnUrl = returnUrl
             };
         }
 
@@ -211,9 +217,7 @@ namespace Rock.Blocks.CheckIn.Configuration
                 }
             }
 
-            // This should become a merge just in case something weird happens in Obsidian.
             checkInLabel.Content = label.LabelData.ToJson();
-
             checkInLabel.SetConditionalPrintCriteria( converter.ToPrivateBag( label.ConditionalVisibility ?? new FieldFilterGroupBag() ) );
 
             if ( previewData.IsNotNullOrWhiteSpace() )
@@ -322,7 +326,6 @@ namespace Rock.Blocks.CheckIn.Configuration
             }
             else
             {
-                // This should become a merge just in case something weird happens in Obsidian.
                 checkInLabel.Content = label.LabelData.ToJson();
 
                 var attendance = new AttendanceService( RockContext ).Get( attendanceId.AsInteger() );

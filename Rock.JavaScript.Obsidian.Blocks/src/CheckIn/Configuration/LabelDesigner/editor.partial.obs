@@ -17,10 +17,6 @@
             </div>
 
             <div class="right-actions">
-                <RockButton @click="onConditionalSettingsClick">
-                    <i class="fa fa-filter"></i>
-                </RockButton>
-
                 <RockButton :disabled="isDeleteFieldDisabled"
                             @click="onDeleteFieldClick">
                     <i class="fa fa-trash"></i>
@@ -43,16 +39,6 @@
             </div>
         </div>
     </div>
-
-    <Modal v-model="isConditionalSettingsVisible" title="Conditional Settings" saveText="Save" @save="onConditionalSettingsSave">
-        <div style="min-height: 290px;">
-            <FieldFilterEditor v-model="editVisibilityRule"
-                               title="Label"
-                               :sources="blockConfig.filterSources ?? []"
-                               enhanceForLongSourceLists
-                               groupSources />
-        </div>
-    </Modal>
 </template>
 
 <style scoped>
@@ -116,17 +102,11 @@
 </style>
 
 <script setup lang="ts">
-    import FieldFilterEditor from "@Obsidian/Controls/fieldFilterEditor.obs";
-    import Modal from "@Obsidian/Controls/modal.obs";
     import Switch from "@Obsidian/Controls/switch.obs";
     import Worksurface from "./worksurface.partial.obs";
     import { computed, PropType, ref } from "vue";
     import { LabelUndoManager } from "./undoManager.partial";
-    import { createEmptyRuleset } from "./utils.partial";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import { useConfigurationValues } from "@Obsidian/Utility/block";
-    import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterGroupBag";
-    import { LabelDesignerOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/LabelDesigner/labelDesignerOptionsBag";
 
     const props = defineProps({
         labelManager: {
@@ -139,14 +119,9 @@
         savePreview
     });
 
-    const blockConfig = useConfigurationValues<LabelDesignerOptionsBag>();
-
     const isGridVisible = ref(false);
     const isGridLocked = ref(false);
     const worksurface = ref<InstanceType<typeof Worksurface>>();
-
-    const editVisibilityRule = ref<FieldFilterGroupBag>(createEmptyRuleset());
-    const isConditionalSettingsVisible = ref(false);
 
     const isDeleteFieldDisabled = computed((): boolean => {
         return !props.labelManager.selectedField.value;
@@ -163,34 +138,6 @@
         }
 
         return worksurface.value.savePreview();
-    }
-
-    /**
-     * Event handler for the click to open the conditional settings modal and
-     * start editing the field fules.
-     */
-    function onConditionalSettingsClick(): void {
-        if (props.labelManager.current.value.conditionalVisibility) {
-            editVisibilityRule.value = {
-                ...props.labelManager.current.value.conditionalVisibility
-            };
-        }
-        else {
-            editVisibilityRule.value = createEmptyRuleset();
-        }
-
-        isConditionalSettingsVisible.value = true;
-    }
-
-    /**
-     * Event handler for saving the conditional rules and closing the modal.
-     */
-    function onConditionalSettingsSave(): void {
-        props.labelManager.mutate(label => {
-            label.conditionalVisibility = editVisibilityRule.value;
-        });
-
-        isConditionalSettingsVisible.value = false;
     }
 
     /**

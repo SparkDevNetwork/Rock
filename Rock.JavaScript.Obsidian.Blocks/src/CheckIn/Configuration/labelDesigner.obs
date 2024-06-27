@@ -28,6 +28,10 @@
 
                 <RockButton btnType="link"
                             autoDisable
+                            @click="onCancel">Cancel</RockButton>
+
+                <RockButton btnType="link"
+                            autoDisable
                             @click="onPreviewClick">Preview</RockButton>
             </div>
         </div>
@@ -103,7 +107,7 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
-    import { computed, ref } from "vue";
+    import { computed, ref, watch } from "vue";
     import { LabelDetail, PreviewResultBag, Size } from "./LabelDesigner/types.partial";
     import { LabelUndoManager } from "./LabelDesigner/undoManager.partial";
     import { alert } from "@Obsidian/Utility/dialogs";
@@ -113,6 +117,8 @@
 
     const config = useConfigurationValues<LabelDesignerOptionsBag>();
     const invokeBlockAction = useInvokeBlockAction();
+
+    const labelManager = new LabelUndoManager(getInitialLabelDetail());
 
     const editor = ref<InstanceType<typeof Editor>>();
     const isPreviewOpen = ref(false);
@@ -133,6 +139,10 @@
                 label.labelData.height = value.height;
             });
         }
+    });
+
+    const isDirty = computed((): boolean => {
+        return labelManager.canUndo.value;
     });
 
     const checkInLabelType = computed((): string => {
@@ -231,11 +241,23 @@
         });
 
         if (result.isSuccess && result.data) {
+            // Force off the event listener so we can navigate away.
+            window.removeEventListener("beforeunload", onBeforeUnload);
             window.location.href = result.data;
             return;
         }
 
         await alert(result.errorMessage ?? "Unknown error while trying to save check-in label.");
+    }
+
+    /**
+     * Event handler for the panel's Cancel event. Go back to the previous
+     * page.
+     */
+    function onCancel(): void {
+        if (config.returnUrl) {
+            window.location.href = config.returnUrl;
+        }
     }
 
     /**
@@ -260,5 +282,24 @@
         await updatePreview();
     }
 
-    const labelManager = new LabelUndoManager(getInitialLabelDetail());
+    /**
+     * Event handler called before the page unloads. This handler is
+     * added whenever the label is dirty and needs to be saved.
+     *
+     * @param event The event that was raised.
+     */
+    function onBeforeUnload(event: BeforeUnloadEvent): void {
+        event.preventDefault();
+        event.returnValue = "";
+    }
+
+    // Watch for changes in the dirty state and remove/install our handler
+    // to prevent accidentally navigating away from the page.
+    watch(isDirty, () => {
+        window.removeEventListener("beforeunload", onBeforeUnload);
+
+        if (isDirty.value) {
+            window.addEventListener("beforeunload", onBeforeUnload);
+        }
+    });
 </script>

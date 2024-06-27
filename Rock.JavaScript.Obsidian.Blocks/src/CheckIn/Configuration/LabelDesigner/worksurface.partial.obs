@@ -4,8 +4,7 @@
         <div ref="fontLoaderElement"
              class="font-loader"></div>
         <div ref="containerElement"
-             class="worksurface"
-             tabindex="-1">
+             class="worksurface">
         </div>
 
         <div ref="menuElement"
@@ -163,6 +162,8 @@
     let stage: Konva.Stage | undefined;
     let transformHelper: TransformHelper | undefined;
     let lineTransformer: LineTransformer | undefined;
+    const backgroundLayer = new Konva.Layer();
+    const backgroundRectangle = new Konva.Rect({ fill: "white" });
     const nodeLayer = new Konva.Layer();
     const gridLayer = new Konva.Layer();
     const resizeObserver = window.ResizeObserver ? new ResizeObserver(onContainerResize) : undefined;
@@ -243,6 +244,32 @@
                     continue;
                 }
 
+                const origCreateDragElement = shape._createDragElement;
+                shape._createDragElement = (evt: KonvaEventObject<Event>) => {
+                    var selectedNodes = transformHelper?.transformer.nodes() ?? [];
+
+                    // If nothing selected or this shape is selected then
+                    // just continue.
+                    if (selectedNodes.length === 0 || selectedNodes[0]._id == shape?._id) {
+                        return origCreateDragElement.apply(shape, [evt]);
+                    }
+
+                    // There is a selection and it isn't this shape. If the
+                    // selected shape is not a possible drag target, then we
+                    // can continue the drag.
+                    const dragNodes = stage?.getAllIntersections(stage.getPointerPosition()) ?? [];
+                    const selectedDragNode = dragNodes.find(n =>
+                        n._id === selectedNodes[0]._id
+                        || selectedNodes[0].isAncestorOf(n));
+
+                    if (selectedDragNode) {
+                        selectedNodes[0]._createDragElement(evt);
+                    }
+                    else {
+                        origCreateDragElement.apply(shape, [evt]);
+                    }
+                };
+
                 shape.setAttrs({
                     id: field.guid,
                     draggable: true,
@@ -272,7 +299,7 @@
         const node = nodeLayer.children.find(n => areEqual(n.id(), props.labelManager.selectedField.value?.guid));
 
         if (node) {
-            selectNode(node, undefined);
+            selectNode(node, props.labelManager.selectedField.value);
         }
         else {
             deselectAllNodes();
@@ -445,11 +472,12 @@
             transformHelper?.transformer.nodes([]);
         }
         else {
+            transformHelper?.transformer.rotateEnabled(field?.fieldType === LabelFieldType.Text);
             transformHelper?.transformer.nodes([node]);
             lineTransformer?.node(undefined);
         }
 
-        if (field) {
+        if (field && props.labelManager.selectedField.value?.guid !== field.guid) {
             props.labelManager.selectField(field.guid);
         }
     }
@@ -617,8 +645,8 @@
         menuFieldActionElement.value.appendChild(titleButton);
 
         menuFieldActionElement.value.appendChild(createContextMenuButton(
-            "Send Backward",
-            () => sendBackward(field)
+            "Bring to Front",
+            () => bringToFront(field)
         ));
 
         menuFieldActionElement.value.appendChild(createContextMenuButton(
@@ -627,13 +655,13 @@
         ));
 
         menuFieldActionElement.value.appendChild(createContextMenuButton(
-            "Send to Back",
-            () => sendToBack(field)
+            "Send Backward",
+            () => sendBackward(field)
         ));
 
         menuFieldActionElement.value.appendChild(createContextMenuButton(
-            "Bring to Front",
-            () => bringToFront(field)
+            "Send to Back",
+            () => sendToBack(field)
         ));
 
         menuFieldActionElement.value.appendChild(document.createElement("hr"));
@@ -800,7 +828,48 @@
 
         stage.width(sceneWidth * scale);
         stage.height(sceneHeight * scale);
+        backgroundRectangle.width(stage.width());
+        backgroundRectangle.height(stage.height());
+
         surface.scale = scale;
+    }
+
+    /**
+     * Determines if the keyboard event represents a request to undo an action.
+     *
+     * @param e The keyboard event.
+     */
+    function isUndoKey(e: KeyboardEvent): boolean {
+        // On windows we use CTRL+Z
+        if (e.key === "z" && e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
+            return true;
+        }
+
+        // On mac we use CMD+Z
+        if (e.key === "z" && e.metaKey && !e.ctrlKey && !e.altKey && !e.shiftKey) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Determines if the keyboard event represents a request to redo an action.
+     *
+     * @param e The keyboard event.
+     */
+    function isRedoKey(e: KeyboardEvent): boolean {
+        // On windows we use CTRL+Y
+        if (e.key === "y" && e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
+            return true;
+        }
+
+        // On mac we use CMD+SHIFT+Z
+        if (e.key === "z" && e.metaKey && e.shiftKey && !e.ctrlKey && !e.altKey) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -816,7 +885,7 @@
         }
 
         // If they clicked on the background, deselect everything.
-        if (!e.target || e.target === stage) {
+        if (!e.target || e.target === stage || e.target === backgroundRectangle) {
             deselectAllNodes();
 
             return;
@@ -825,7 +894,7 @@
         const field = findFieldForNode(e.target);
 
         if (!field) {
-            console.error(`Could not find field '${e.target.id()}'.`);
+            console.error(`Could not find field '${e.target.id()}'.`, e.target);
 
             deselectAllNodes();
 
@@ -928,21 +997,33 @@
     }
 
     /**
-     * Event handler for when a key is pressed down while the container has
-     * the focus.
+     * Event handler for when a key is pressed down.
      *
      * @param e The event that triggered this action.
      */
-    function onContainerKeyDown(e: KeyboardEvent): void {
+    function onWindowKeyDown(e: KeyboardEvent): void {
+        if (e.target !== document.body) {
+            return;
+        }
+
         if (e.key === "Delete") {
             if (props.labelManager.selectedField.value) {
                 deleteField(props.labelManager.selectedField.value);
             }
+
+            return;
         }
 
-        const validKeys = ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"];
+        if (isUndoKey(e)) {
+            return props.labelManager.undo();
+        }
+        else if (isRedoKey(e)) {
+            return props.labelManager.redo();
+        }
 
-        if (!stage || !validKeys.includes(e.key)) {
+        const validMovementKeys = ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"];
+
+        if (!stage || !validMovementKeys.includes(e.key)) {
             return;
         }
 
@@ -1056,7 +1137,7 @@
             resizeObserver.observe(worksurfaceContainerElement.value);
         }
 
-        containerElement.value.addEventListener("keydown", onContainerKeyDown);
+        window.addEventListener("keydown", onWindowKeyDown);
 
         // Wait up to 2.5 seconds for fonts to load.
         await waitForFonts(2500);
@@ -1064,12 +1145,15 @@
         stage = new Konva.Stage({
             container: containerElement.value,
             width: props.labelManager.current.value.labelData.width * pixelsPerInch,
-            height: props.labelManager.current.value.labelData.height * pixelsPerInch,
+            height: props.labelManager.current.value.labelData.height * pixelsPerInch
         });
         surface.stage = stage;
 
+        stage.add(backgroundLayer);
         stage.add(nodeLayer);
         stage.add(gridLayer);
+
+        backgroundLayer.add(backgroundRectangle);
 
         const transformerLayer = new Konva.Layer();
         stage.add(transformerLayer);
@@ -1101,7 +1185,7 @@
         transformHelper?.destroy();
         transformHelper = undefined;
 
-        containerElement.value?.removeEventListener("keydown", onContainerKeyDown);
+        window.removeEventListener("keydown", onWindowKeyDown);
         window.removeEventListener("click", onWindowClick);
 
         if (resizeObserver) {

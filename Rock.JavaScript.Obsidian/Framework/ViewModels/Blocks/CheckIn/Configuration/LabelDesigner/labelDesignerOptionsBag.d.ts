@@ -58,4 +58,7 @@ export type LabelDesignerOptionsBag = {
 
     /** The type of label being designed. */
     labelType: LabelType;
+
+    /** The URL to return to when the cancel button is clicked. */
+    returnUrl?: string | null;
 };

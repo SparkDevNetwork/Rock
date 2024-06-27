@@ -28,7 +28,7 @@ export class Surface {
     public scale: number = 1;
 
     /* Grid size in 1/n fractions of an inch. */
-    public gridSnapFraction: number = 4;
+    public gridSnapFraction: number = 8;
 
     /** `true` if snapping to the grid is enabled. */
     public snapToGrid: boolean = false;
