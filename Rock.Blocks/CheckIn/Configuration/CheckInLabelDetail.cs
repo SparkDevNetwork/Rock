@@ -24,10 +24,12 @@ using Rock.Attribute;
 using Rock.CheckIn.v2.Labels;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Enums.CheckIn.Labels;
 using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.CheckIn.Configuration.CheckInLabelDetail;
+using Rock.ViewModels.CheckIn.Labels;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
@@ -255,6 +257,19 @@ namespace Rock.Blocks.CheckIn.Configuration
 
                 box.IfValidProperty( nameof( box.Bag.LabelType ),
                     () => entity.LabelType = box.Bag.LabelType );
+
+                // If this is a new designed label, then set some defaults.
+                if ( entity.LabelFormat == LabelFormat.Designed )
+                {
+                    var designedBag = new DesignedLabelBag
+                    {
+                        Width = 4,
+                        Height = 2,
+                        Fields = new List<LabelFieldBag>()
+                    };
+
+                    entity.Content = designedBag.ToJson();
+                }
             }
 
             box.IfValidProperty( nameof( box.Bag.Name ),
