@@ -3465,6 +3465,7 @@ namespace Rock.Blocks.Event
             var currencyInfo = new RockCurrencyCodeInfo();
             var viewModel = new RegistrationEntryInitializationBox
             {
+                FamilyTerm = GetAttributeValue( AttributeKey.FamilyTerm ),
                 RegistrationAttributesStart = beforeAttributes,
                 RegistrationAttributesEnd = afterAttributes,
                 RegistrationAttributeTitleStart = registrationAttributeTitleStart,

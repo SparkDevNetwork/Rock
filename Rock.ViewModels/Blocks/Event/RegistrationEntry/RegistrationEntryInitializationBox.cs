@@ -482,5 +482,10 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// The currency information.
         /// </value>
         public CurrencyInfoBag CurrencyInfo { get; set; }
+
+        /// <summary>
+        /// Gets or sets the term for specifying which household or family a person is a member of.
+        /// </summary>
+        public string FamilyTerm { get; set; }
     }
 }
