@@ -7,7 +7,7 @@
             <strong>
                 {{ formattedName }}
             </strong>
-            <div v-if="showDetailField && detailText" class="text-muted">{{ detailText }}</div>
+            <div v-if="detailText" class="text-muted">{{ detailText }}</div>
         </div>
     </div>
 </template>
@@ -53,14 +53,9 @@
         return `${value.nickName ?? ""} ${value.lastName ?? ""}`;
     });
 
-    /** Determines whether to show the detail field */
-    const showDetailField = computed((): boolean => {
-        return props.column.props.detailField !== false;
-    });
-
     /** Contains the detail text to display */
     const detailText = computed((): string => {
-        if (!props.column.field || !showDetailField.value) {
+        if (!props.column.field) {
             return "";
         }
 
@@ -72,13 +67,19 @@
 
         const detailField = props.column.props.detailField;
 
+        if (detailField === false) {
+            return "";
+        }
+
+        if (!detailField) {
+            return value.connectionStatus ?? "";
+        }
+
         if (typeof detailField === "string") {
-            if (detailField === "connectionStatus") {
-                return value.connectionStatus ?? "";
-            }
- else {
-                // Treat detailField as a custom string value
-                return detailField;
+            const detailValue = props.row[detailField];
+
+            if (typeof detailValue === "string") {
+                return detailValue;
             }
         }
 

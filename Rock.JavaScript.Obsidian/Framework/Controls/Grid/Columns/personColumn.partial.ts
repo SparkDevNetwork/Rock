@@ -93,8 +93,8 @@ export default defineComponent({
         },
 
         detailField: {
-            type: [String, Boolean] as PropType<string | boolean>,
-            default: "connectionStatus"
+            type: [String, Boolean] as PropType<string | false>,
+            required: false
         }
     }
 });

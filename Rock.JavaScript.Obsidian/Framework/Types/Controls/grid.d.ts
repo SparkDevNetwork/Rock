@@ -468,6 +468,14 @@ type StandardColumnProps = {
         type: PropType<string>,
         required: false
     }
+
+    /**
+     * If 'true', disables sorting for this column.
+     */
+    disableSort: {
+        type: PropType<boolean>,
+        default: false
+    },
 };
 
 /** The standard properties available on header cells. */
@@ -771,6 +779,11 @@ export type ColumnDefinition = {
 
     /** Custom data that the column and cells can use any way they desire. */
     data: Record<string, unknown>;
+
+    /**
+     * If 'true', disables sorting for this column.
+     */
+    disableSort: boolean;
 };
 
 /**
