@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -237,46 +238,246 @@ namespace Rock.Model
             }
 
             /*
-                1/2/2024 - JPH
+                6/25/2024 - JPH
 
-                We were previously loading these entities into memory and calling DeleteRange() on the
-                collection, which was causing a separate DELETE statement to be run for each entity.
-                By instead calling BulkDelete(), we can run the delete operation outside of EF context,
-                bypassing quite a bit of unnecessary overhead.
+                These delete operations were previously accomplished with EF-generated queries that made use of CROSS APPLY
+                and complex, nested SELECTs, occasionally resulting in timeouts. The alternative, custom queries below that
+                make use of table variables are much more performant - and prevent timeouts - in local testing.
 
-                Reason: Communications with a large number of recipients time out and don't send.
-                https://github.com/SparkDevNetwork/Rock/issues/5651
-            */
+                Note that the goal is leave the first recipient for each duplicate contact number/email while deleting
+                the remaining duplicates for each.
 
-            using ( var activity = ObservabilityHelper.StartActivity( "COMMUNICATION: Prepare Recipient List > Remove Recipients With Duplicate Address" ) )
-            {
-                var communicationRecipientService = new CommunicationRecipientService( rockContext );
+                Here's what the EF queries previously were (so we're not tempted to replace the custom SQL with
+                similarly-problematic EF queries in the future):
 
-                var recipientsQry = GetRecipientsQry( rockContext );
-
-                int? smsMediumEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );
-                if ( smsMediumEntityTypeId.HasValue )
-                {
-                    IQueryable<CommunicationRecipient> duplicateSMSRecipientsQuery = recipientsQry.Where( a => a.MediumEntityTypeId == smsMediumEntityTypeId.Value )
+                Delete Duplicate SMS Recipients:
+                --------------------------------
+                IQueryable<CommunicationRecipient> duplicateSMSRecipientsQuery = recipientsQry.Where( a => a.MediumEntityTypeId == smsMediumEntityTypeId.Value )
                         .Where( a => a.PersonAlias.Person.PhoneNumbers.Where( pn => pn.IsMessagingEnabled ).Any() )
                         .GroupBy( a => a.PersonAlias.Person.PhoneNumbers.Where( pn => pn.IsMessagingEnabled ).FirstOrDefault().Number )
                         .Where( a => a.Count() > 1 )
                         .Select( a => a.OrderBy( x => x.Id ).Skip( 1 ).ToList() )
                         .SelectMany( a => a );
 
-                    rockContext.BulkDelete<CommunicationRecipient>( duplicateSMSRecipientsQuery );
-                }
+                rockContext.BulkDelete<CommunicationRecipient>( duplicateSMSRecipientsQuery );
 
-                int? emailMediumEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
-                if ( emailMediumEntityTypeId.HasValue )
-                {
-                    IQueryable<CommunicationRecipient> duplicateEmailRecipientsQry = recipientsQry.Where( a => a.MediumEntityTypeId == emailMediumEntityTypeId.Value )
+                Delete Duplicate Email Recipients:
+                ----------------------------------
+                IQueryable<CommunicationRecipient> duplicateEmailRecipientsQry = recipientsQry.Where( a => a.MediumEntityTypeId == emailMediumEntityTypeId.Value )
                         .GroupBy( a => a.PersonAlias.Person.Email )
                         .Where( a => a.Count() > 1 )
                         .Select( a => a.OrderBy( x => x.Id ).Skip( 1 ).ToList() )
                         .SelectMany( a => a );
 
-                    rockContext.BulkDelete<CommunicationRecipient>( duplicateEmailRecipientsQry );
+                rockContext.BulkDelete<CommunicationRecipient>( duplicateEmailRecipientsQry );
+
+                Reason: Communications with a large number of recipients time out and don't send.
+                https://github.com/SparkDevNetwork/Rock/issues/5651
+             */
+
+            using ( var activity = ObservabilityHelper.StartActivity( "COMMUNICATION: Prepare Recipient List > Remove Recipients With Duplicate Address" ) )
+            {
+                int? smsMediumEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );
+                if ( smsMediumEntityTypeId.HasValue )
+                {
+                    var deleteDuplicateSmsRecipientsSql = @"
+/******************************************************************************
+* 1. Get the first SMS-enabled phone number for each recipient of the
+*    specified communication.
+*/
+
+DECLARE @SmsNumbers TABLE
+(
+    [CommunicationRecipientId] [int] NOT NULL
+    , [Number] [nvarchar](100) NULL
+);
+
+INSERT INTO @SmsNumbers
+SELECT cr.[Id]
+    , (
+        SELECT TOP 1 [Number]
+        FROM [PhoneNumber]
+        WHERE [PersonId] = p.[Id]
+            AND [IsMessagingEnabled] = 1
+    )
+FROM [CommunicationRecipient] cr
+INNER JOIN [PersonAlias] pa
+    ON pa.[Id] = cr.[PersonAliasId]
+INNER JOIN [Person] p
+    ON p.[Id] = pa.[PersonId]
+WHERE cr.[CommunicationId] = @CommunicationId
+    AND cr.[MediumEntityTypeId] = @MediumEntityTypeId;
+
+/******************************************************************************
+* 2. Get duplicate SMS numbers for the specified communication.
+*/
+
+DECLARE @DuplicateNumbers TABLE
+(
+    [Number] [varchar](100) NOT NULL
+);
+
+INSERT INTO @DuplicateNumbers
+SELECT [Number]
+FROM @SmsNumbers
+WHERE [Number] IS NOT NULL
+    AND [Number] <> ''
+GROUP BY [Number]
+HAVING COUNT(1) > 1;
+
+/******************************************************************************
+* 3. Get recipients of these duplicate SMS numbers.
+*/
+
+DECLARE @DuplicateRecipients TABLE
+(
+    [Number] [varchar](100) NOT NULL
+    , [CommunicationRecipientId] [int] NOT NULL
+);
+
+INSERT INTO @DuplicateRecipients
+SELECT sn.[Number]
+    , sn.[CommunicationRecipientId]
+FROM @SmsNumbers sn
+INNER JOIN @DuplicateNumbers dn
+    ON dn.[Number] = sn.[Number];
+
+/******************************************************************************
+* 4. Get the first recipient for each duplicate SMS number.
+*/
+
+DECLARE @FirstRecipients TABLE
+(
+    [CommunicationRecipientId] [int] NOT NULL
+);
+
+INSERT INTO @FirstRecipients
+SELECT MIN([CommunicationRecipientId])
+FROM @DuplicateRecipients
+GROUP BY [Number];
+
+/******************************************************************************
+* 5. Delete the first recipient for each duplicate SMS number from the
+*    @DuplicateRecipients table. These are the recipients we'll end up
+*    KEEPING in the final recipients list.
+*/
+
+DELETE dr
+FROM @DuplicateRecipients dr
+INNER JOIN @FirstRecipients fr
+    ON fr.[CommunicationRecipientId] = dr.[CommunicationRecipientId];
+
+/******************************************************************************
+* 6. Finally, delete the duplicate [CommunicationRecipient] records that are
+*    joined to those IDs that remain in the @DuplicateRecipients table.
+*/
+
+DELETE cr
+FROM [CommunicationRecipient] cr
+INNER JOIN @DuplicateRecipients dr
+    ON dr.[CommunicationRecipientId] = cr.[Id];";
+
+                    var parameters = new List<object>
+                    {
+                        new SqlParameter( "@CommunicationId", this.Id ),
+                        new SqlParameter( "@MediumEntityTypeId", smsMediumEntityTypeId.Value )
+                    };
+
+                    rockContext.Database.ExecuteSqlCommand( deleteDuplicateSmsRecipientsSql, parameters.ToArray() );
+                }
+
+                int? emailMediumEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
+                if ( emailMediumEntityTypeId.HasValue )
+                {
+                    var deleteDuplicateEmailRecipientsSql = @"
+/******************************************************************************
+* 1. Get duplicate email addresses for the specified communication.
+*/
+
+DECLARE @DuplicateEmails TABLE
+(
+    [Email] [varchar](100) NOT NULL
+);
+
+INSERT INTO @DuplicateEmails
+SELECT p.[Email]
+FROM [CommunicationRecipient] cr
+INNER JOIN [PersonAlias] pa
+    ON pa.[Id] = cr.[PersonAliasId]
+INNER JOIN [Person] p
+    ON p.[Id] = pa.[PersonId]
+WHERE cr.[CommunicationId] = @CommunicationId
+    AND cr.[MediumEntityTypeId] = @MediumEntityTypeId
+    AND p.[Email] IS NOT NULL
+    AND p.[Email] <> ''
+GROUP BY p.[Email]
+HAVING COUNT(1) > 1;
+
+/******************************************************************************
+* 2. Get recipients of these duplicate email addresses.
+*/
+
+DECLARE @DuplicateRecipients TABLE
+(
+    [Email] [varchar](100) NOT NULL
+    , [CommunicationRecipientId] [int] NOT NULL
+);
+
+INSERT INTO @DuplicateRecipients
+SELECT p.[Email]
+    , cr.[Id]
+FROM [CommunicationRecipient] cr
+INNER JOIN [PersonAlias] pa
+    ON pa.[Id] = cr.[PersonAliasId]
+INNER JOIN [Person] p
+    ON p.[Id] = pa.[PersonId]
+INNER JOIN @DuplicateEmails de
+    ON de.[Email] = p.[Email]
+WHERE cr.[CommunicationId] = @CommunicationId
+    AND cr.[MediumEntityTypeId] = @MediumEntityTypeId;
+
+/******************************************************************************
+* 3. Get the first recipient for each duplicate email address.
+*/
+
+DECLARE @FirstRecipients TABLE
+(
+    [CommunicationRecipientId] [int] NOT NULL
+);
+
+INSERT INTO @FirstRecipients
+SELECT MIN([CommunicationRecipientId])
+FROM @DuplicateRecipients
+GROUP BY [Email];
+
+/******************************************************************************
+* 4. Delete the first recipient for each duplicate email address from the
+*    @DuplicateRecipients table. These are the recipients we'll end up
+*    KEEPING in the final recipients list.
+*/
+
+DELETE dr
+FROM @DuplicateRecipients dr
+INNER JOIN @FirstRecipients fr
+    ON fr.[CommunicationRecipientId] = dr.[CommunicationRecipientId];
+
+/******************************************************************************
+* 5. Finally, delete the duplicate [CommunicationRecipient] records that are
+*    joined to those IDs that remain in the @DuplicateRecipients table.
+*/
+
+DELETE cr
+FROM [CommunicationRecipient] cr
+INNER JOIN @DuplicateRecipients dr
+    ON dr.[CommunicationRecipientId] = cr.[Id];";
+
+                    var parameters = new List<object>
+                    {
+                        new SqlParameter( "@CommunicationId", this.Id ),
+                        new SqlParameter( "@MediumEntityTypeId", emailMediumEntityTypeId.Value )
+                    };
+
+                    rockContext.Database.ExecuteSqlCommand( deleteDuplicateEmailRecipientsSql, parameters.ToArray() );
                 }
             }
         }
@@ -319,8 +520,11 @@ namespace Rock.Model
                 int? smsMediumEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );
                 if ( smsMediumEntityTypeId.HasValue )
                 {
-                    IQueryable<CommunicationRecipient> duplicateSMSRecipientsQuery = recipientsQry.Where( a => a.MediumEntityTypeId == smsMediumEntityTypeId.Value )
-                        .Where( a => a.PersonAlias.PersonId != a.PersonAlias.AliasPersonId ); // Only non-primary aliases.
+                    var duplicateSMSRecipientsQuery = recipientsQry
+                        .Where( a =>
+                            a.MediumEntityTypeId == smsMediumEntityTypeId.Value
+                            && a.PersonAlias.PersonId != a.PersonAlias.AliasPersonId
+                        );
 
                     rockContext.BulkDelete<CommunicationRecipient>( duplicateSMSRecipientsQuery );
                 }
@@ -328,8 +532,11 @@ namespace Rock.Model
                 int? emailMediumEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
                 if ( emailMediumEntityTypeId.HasValue )
                 {
-                    IQueryable<CommunicationRecipient> duplicateEmailRecipientsQry = recipientsQry.Where( a => a.MediumEntityTypeId == emailMediumEntityTypeId.Value )
-                        .Where( a => a.PersonAlias.PersonId != a.PersonAlias.AliasPersonId ); // Only non-primary aliases.
+                    var duplicateEmailRecipientsQry = recipientsQry
+                        .Where( a =>
+                            a.MediumEntityTypeId == emailMediumEntityTypeId.Value
+                            && a.PersonAlias.PersonId != a.PersonAlias.AliasPersonId
+                        );
 
                     rockContext.BulkDelete<CommunicationRecipient>( duplicateEmailRecipientsQry );
                 }
@@ -355,39 +562,75 @@ namespace Rock.Model
 
                 var qryCommunicationListMembers = GetCommunicationListMembers( rockContext, ListGroupId, this.SegmentCriteria, segmentDataViewIds );
 
-                // NOTE: If this is scheduled communication, don't include Members that were added after the scheduled FutureSendDateTime.
+                // NOTE: If this is a scheduled communication, don't include Members that were added after the scheduled FutureSendDateTime.
                 // However, don't exclude if the date added can't be determined or they will never be sent a scheduled communication.
                 if ( this.FutureSendDateTime.HasValue )
                 {
                     var memberAddedCutoffDate = this.FutureSendDateTime;
 
-                    qryCommunicationListMembers = qryCommunicationListMembers.Where( a => ( a.DateTimeAdded.HasValue && a.DateTimeAdded.Value < memberAddedCutoffDate )
-                                                                                            || ( a.CreatedDateTime.HasValue && a.CreatedDateTime.Value < memberAddedCutoffDate )
-                                                                                            || ( !a.DateTimeAdded.HasValue && !a.CreatedDateTime.HasValue ) );
+                    qryCommunicationListMembers = qryCommunicationListMembers.Where( a =>
+                        ( a.DateTimeAdded.HasValue && a.DateTimeAdded.Value < memberAddedCutoffDate )
+                        || ( a.CreatedDateTime.HasValue && a.CreatedDateTime.Value < memberAddedCutoffDate )
+                        || ( !a.DateTimeAdded.HasValue && !a.CreatedDateTime.HasValue )
+                    );
                 }
-
-                var communicationRecipientService = new CommunicationRecipientService( rockContext );
 
                 var recipientsQry = GetRecipientsQry( rockContext );
 
                 using ( var bulkInsertActivity = ObservabilityHelper.StartActivity( "COMMUNICATION: Prepare Recipient List > Refresh Communication Recipient List > Bulk Insert New Members" ) )
                 {
-                    // Get all the List member which is not part of communication recipients yet
-                    var newMemberInList = qryCommunicationListMembers
-                        .Include( c => c.Person )
-                        .Where( a => !recipientsQry.Any( r => r.PersonAlias.PersonId == a.PersonId ) )
-                        .AsNoTracking()
+                    /*
+                        6/25/2024 - JPH
+
+                        Using LINQ query syntax for the following query allows us to easily force
+                        LEFT OUTER JOINs and purposefully handle NULL join scenarios. We're also
+                        cherry-picking the specific entity fields we need instead of materializing
+                        entire entities.
+
+                        Reason: Communications with a large number of recipients time out and don't send.
+                        https://github.com/SparkDevNetwork/Rock/issues/5651
+                     */
+
+                    // Note that we're not actually getting all person alias records here.
+                    // We're simply creating this query to be used when joining against
+                    // primary aliases below.
+                    var personAliases = new PersonAliasService( rockContext ).Queryable();
+
+                    var listMembersToAdd =
+                        (
+                            // Start with all current communication list members.
+                            from listMember in qryCommunicationListMembers
+
+                            // Get list members who don't yet have a communication recipient record.
+                            join recipient in recipientsQry on listMember.PersonId equals recipient.PersonAlias.PersonId into existingRecipientsLeftJoin
+                            from existingRecipient in existingRecipientsLeftJoin.DefaultIfEmpty()
+                            where existingRecipient == null
+
+                            // For those list members who need recipient records to be added, get each person's primary alias.
+                            join personAlias in personAliases on listMember.PersonId equals personAlias.AliasPersonId into primaryAliasesLeftJoin
+                            from primaryAlias in primaryAliasesLeftJoin.DefaultIfEmpty()
+                            where primaryAlias != null
+
+                            // Cherry-pick the following info for each new recipient record to be added below.
+                            select new
+                            {
+                                PrimaryAliasId = primaryAlias.Id,
+                                MemberCommunicationPreference = listMember.CommunicationPreference,
+                                PersonCommunicationPreference = listMember.Person.CommunicationPreference
+                            }
+                        )
                         .ToList();
 
-                    bulkInsertActivity?.AddTag( "rock.communication.recipients_to_add_count", newMemberInList.Count );
+                    bulkInsertActivity?.AddTag( "rock.communication.recipients_to_add_count", listMembersToAdd.Count );
 
                     var emailMediumEntityType = EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
                     var smsMediumEntityType = EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );
                     var pushMediumEntityType = EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_PUSH_NOTIFICATION.AsGuid() );
 
-                    var recipientsToAdd = newMemberInList.Select( m => new CommunicationRecipient
+                    // Create and add the new communication recipient records.
+                    var recipientsToAdd = listMembersToAdd.Select( a => new CommunicationRecipient
                     {
-                        PersonAliasId = m.Person.PrimaryAliasId.Value,
+                        PersonAliasId = a.PrimaryAliasId,
                         Status = CommunicationRecipientStatus.Pending,
                         CommunicationId = Id,
                         MediumEntityTypeId = DetermineMediumEntityTypeId(
@@ -395,8 +638,8 @@ namespace Rock.Model
                             smsMediumEntityType.Id,
                             pushMediumEntityType.Id,
                             CommunicationType,
-                            m.CommunicationPreference,
-                            m.Person.CommunicationPreference )
+                            a.MemberCommunicationPreference,
+                            a.PersonCommunicationPreference )
                     } );
 
                     rockContext.BulkInsert<CommunicationRecipient>( recipientsToAdd );
@@ -404,9 +647,12 @@ namespace Rock.Model
 
                 using ( var bulkDeleteActivity = ObservabilityHelper.StartActivity( "COMMUNICATION: Prepare Recipient List > Refresh Communication Recipient List > Bulk Delete Old Members" ) )
                 {
-                    // Get all pending communication recipients that are no longer part of the group list member, then delete them from the Recipients
-                    var missingMemberInList = recipientsQry.Where( a => a.Status == CommunicationRecipientStatus.Pending )
-                        .Where( a => !qryCommunicationListMembers.Any( r => r.PersonId == a.PersonAlias.PersonId ) );
+                    // Get all pending communication recipients that are no longer in the list of group members and delete them from the recipients.
+                    var missingMemberInList = recipientsQry
+                        .Where( a =>
+                            a.Status == CommunicationRecipientStatus.Pending
+                            && !qryCommunicationListMembers.Any( r => r.PersonId == a.PersonAlias.PersonId )
+                        );
 
                     /*
                         1/2/2024 - JPH
