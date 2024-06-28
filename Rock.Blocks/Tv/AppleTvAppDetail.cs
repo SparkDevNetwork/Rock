@@ -253,7 +253,7 @@ namespace Rock.Blocks.Tv
 
             if ( entity.Id == 0 )
             {
-                var stream = typeof( RockBlockType ).Assembly.GetManifestResourceStream( "Rock.Blocks.DefaultTvApplication.js" );
+                var stream = GetType().Assembly.GetManifestResourceStream( "Rock.Blocks.DefaultTvApplication.js" );
 
                 if ( stream != null )
                 {
