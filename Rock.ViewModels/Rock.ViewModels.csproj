@@ -602,7 +602,6 @@
     <Compile Include="Blocks\Group\LandingPageContentBag.cs" />
     <Compile Include="Blocks\Reporting\MergeTemplateDetail\MergeTemplateBag.cs" />
     <Compile Include="Blocks\Reporting\MergeTemplateDetail\MergeTemplateDetailOptionsBag.cs" />
-    <Compile Include="Blocks\Reporting\VolunteerGenerosityAnalysis\VolunteerGenerosityAnalysisBag.cs" />
     <Compile Include="Blocks\WebFarm\WebFarmNodeDetail\WebFarmMetricBag.cs" />
     <Compile Include="Blocks\WebFarm\WebFarmNodeDetail\WebFarmNodeBag.cs" />
     <Compile Include="Blocks\WebFarm\WebFarmNodeDetail\WebFarmNodeDetailOptionsBag.cs" />
