@@ -526,6 +526,7 @@
     <TypeScriptCompile Include="Framework\Enums\CheckIn\familySearchMode.ts" />
     <TypeScriptCompile Include="Framework\Enums\CheckIn\kioskCheckInMode.ts" />
     <TypeScriptCompile Include="Framework\Enums\CheckIn\Labels\barcodeFormat.ts" />
+    <TypeScriptCompile Include="Framework\Enums\CheckIn\Labels\ditherMode.ts" />
     <TypeScriptCompile Include="Framework\Enums\CheckIn\Labels\horizontalTextAlignment.ts" />
     <TypeScriptCompile Include="Framework\Enums\CheckIn\Labels\labelFieldType.ts" />
     <TypeScriptCompile Include="Framework\Enums\CheckIn\Labels\labelFormat.ts" />
