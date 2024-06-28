@@ -79,9 +79,5 @@
 
     // #endregion
 
-    // #region Event Handlers
-
-    // #endregion
-
     gridDataSource.value = loadGridData();
 </script>
