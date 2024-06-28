@@ -369,6 +369,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Engagement\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\AchievementAttemptDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\AchievementTypeList\" />
+    <Folder Include="Framework\ViewModels\Blocks\Engagement\CampaignList\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\ConnectionTypeList\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\SignUp\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpAttendanceDetail\" />
@@ -523,6 +524,7 @@
     <TypeScriptCompile Include="Framework\Enums\CheckIn\familySearchMode.ts" />
     <TypeScriptCompile Include="Framework\Enums\CheckIn\kioskCheckInMode.ts" />
     <TypeScriptCompile Include="Framework\Enums\CheckIn\Labels\barcodeFormat.ts" />
+    <TypeScriptCompile Include="Framework\Enums\CheckIn\Labels\ditherMode.ts" />
     <TypeScriptCompile Include="Framework\Enums\CheckIn\Labels\horizontalTextAlignment.ts" />
     <TypeScriptCompile Include="Framework\Enums\CheckIn\Labels\labelFieldType.ts" />
     <TypeScriptCompile Include="Framework\Enums\CheckIn\Labels\labelFormat.ts" />
@@ -957,6 +959,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\AchievementAttemptDetail\achievementAttemptBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\AchievementAttemptDetail\achievementAttemptDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\AchievementTypeList\achievementTypeListOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\CampaignList\campaignListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\ConnectionTypeList\connectionTypeListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpAttendanceDetail\signUpAttendanceBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpAttendanceDetail\signUpAttendanceDetailInitializationBox.d.ts" />

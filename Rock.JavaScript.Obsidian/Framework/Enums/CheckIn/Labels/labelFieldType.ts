@@ -26,7 +26,12 @@ export const LabelFieldType = {
     /** A text field, the sub type specifies the exact text field type. */
     Text: 0,
 
-    /** A field that displays a line between two points. */
+    /**
+     * A field that displays a line between two points. The left and top
+     * position of the field designate the first point. The relative offset
+     * of the field's width and height designate the second point. Meaning
+     * width and height can be negative.
+     */
     Line: 1,
 
     /** A field that displays a rectangle. */

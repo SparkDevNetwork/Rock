@@ -142,6 +142,7 @@
     <Compile Include="Core\PersonSignalList.cs" />
     <Compile Include="CheckIn\Configuration\CheckInLabelDetail.cs" />
     <Compile Include="CheckIn\Configuration\CheckInLabelList.cs" />
+    <Compile Include="Engagement\CampaignList.cs" />
     <Compile Include="Security\RestKeyList.cs" />
     <Compile Include="Crm\PersonMergeRequestList.cs" />
     <Compile Include="Event\RegistrationInstanceLinkageList.cs" />
