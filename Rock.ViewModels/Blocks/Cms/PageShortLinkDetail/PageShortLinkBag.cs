@@ -26,6 +26,11 @@ namespace Rock.ViewModels.Blocks.CMS.PageShortLinkDetail
     public class PageShortLinkBag : EntityBagBase
     {
         /// <summary>
+        /// Get the Default Domain URL of the site to be passed to the front end.
+        /// </summary>
+        public string DefaultDomainURL { get; set; }
+
+        /// <summary>
         /// Gets or sets the Rock.Model.Site that is associated with this PageShortLink.
         /// </summary>
         public ListItemBag Site { get; set; }
