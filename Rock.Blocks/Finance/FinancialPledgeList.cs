@@ -353,9 +353,9 @@ namespace Rock.Blocks.Finance
 
                 if ( accountGuids != null && accountGuids.Any() )
                 {
-                    var accountIds = new FinancialAccountService(rockContext)
-                        .GetListByGuids(accountGuids)
-                        .Select(a => a.Id)
+                    var accountIds = new FinancialAccountService( rockContext )
+                        .GetListByGuids( accountGuids )
+                        .Select( a => a.Id )
                         .ToList();
 
                     filteredPledges = filteredPledges.Where( p => p.AccountId.HasValue && accountIds.Contains( p.AccountId.Value ) );
@@ -418,8 +418,8 @@ namespace Rock.Blocks.Finance
                         Group = p.Group != null ? p.Group.Name : "",
                         p.TotalAmount,
                         PledgeFrequency = p.PledgeFrequencyValue != null ? p.PledgeFrequencyValue.Value : null,
-                        p.StartDate,
-                        p.EndDate,
+                        StartDate = p.StartDate.Year == 1 ? ( DateTime? ) null : p.StartDate,
+                        EndDate = p.EndDate.Year == 9999 ? ( DateTime? ) null : p.EndDate,
                         ModifiedDate = p.ModifiedDateTime
                     } )
                     .ToList();
