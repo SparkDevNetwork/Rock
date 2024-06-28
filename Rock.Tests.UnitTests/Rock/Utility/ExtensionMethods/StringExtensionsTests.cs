@@ -1,5 +1,5 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Tests.Shared;
 
 namespace Rock.Tests.Utility.ExtensionMethods
@@ -269,5 +269,35 @@ namespace Rock.Tests.Utility.ExtensionMethods
         }
 
         #endregion RedirectUrlContainsXss
+
+        #region Truncate
+
+        [TestMethod]
+        [DataRow( 3, "thi" )]
+        [DataRow( 2, "th" )]
+        [DataRow( 1, "t" )]
+        public void Truncate_WithMaxLengthLessThanFour_DoesNotAddEllipsis( int maxLength, string expectedString )
+        {
+            var testString = "this is a test";
+
+            var actualString = testString.Truncate( maxLength, true );
+
+            Assert.That.AreEqual( expectedString, actualString );
+        }
+
+        [TestMethod]
+        [DataRow( 4, "t..." )]
+        [DataRow( 5, "th..." )]
+        [DataRow( 6, "thi..." )]
+        public void Truncate_WithMaxLengthGreaterThanThree_DoesAddEllipsis( int maxLength, string expectedString )
+        {
+            var testString = "this is a test";
+
+            var actualString = testString.Truncate( maxLength, true );
+
+            Assert.That.AreEqual( expectedString, actualString );
+        }
+
+        #endregion
     }
 }

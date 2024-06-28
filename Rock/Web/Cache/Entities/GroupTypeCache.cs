@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
 
+using Rock.CheckIn.v2;
 using Rock.Data;
 using Rock.Enums.Group;
 using Rock.Model;
@@ -33,6 +34,9 @@ namespace Rock.Web.Cache
     [DataContract]
     public class GroupTypeCache : ModelCache<GroupTypeCache, GroupType>
     {
+        private TemplateConfigurationData _checkInConfiguration;
+
+        private AreaConfigurationData _checkInAreaData;
 
         #region Properties
 
@@ -679,9 +683,11 @@ namespace Rock.Web.Cache
                             .ToList();
                     }
                 }
+
                 return _groupScheduleExclusions;
             }
         }
+
         private List<DateRange> _groupScheduleExclusions;
 
         /// <summary>
@@ -912,6 +918,56 @@ namespace Rock.Web.Cache
             }
 
             return groupTypeIds;
+        }
+
+        /// <summary>
+        /// Gets the check-in configuration that represents all the attribute
+        /// values of this group type. If this group type is not a check-in
+        /// configuration group type then <c>null</c> will be returned.
+        /// </summary>
+        /// <param name="rockContext">The context to use if access to the database is required.</param>
+        /// <returns>An instance of <see cref="TemplateConfigurationData"/> or <c>null</c>.</returns>
+        internal TemplateConfigurationData GetCheckInConfiguration( RockContext rockContext )
+        {
+            if ( rockContext == null )
+            {
+                throw new ArgumentNullException( nameof( rockContext ) );
+            }
+
+            if ( _checkInConfiguration == null )
+            {
+                var checkinTemplateTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid(), rockContext )?.Id;
+
+                if ( GroupTypePurposeValueId != checkinTemplateTypeId )
+                {
+                    return null;
+                }
+
+                _checkInConfiguration = new TemplateConfigurationData( this, rockContext );
+            }
+
+            return _checkInConfiguration;
+        }
+
+        /// <summary>
+        /// Gets the check-in data that represents all the attribute
+        /// values of this area group type.
+        /// </summary>
+        /// <param name="rockContext">The context to use if access to the database is required.</param>
+        /// <returns>An instance of <see cref="AreaConfigurationData"/>.</returns>
+        internal AreaConfigurationData GetCheckInAreaData( RockContext rockContext )
+        {
+            if ( rockContext == null )
+            {
+                throw new ArgumentNullException( nameof( rockContext ) );
+            }
+
+            if ( _checkInAreaData == null )
+            {
+                _checkInAreaData = new AreaConfigurationData( this, rockContext );
+            }
+
+            return _checkInAreaData;
         }
 
         /// <summary>

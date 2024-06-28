@@ -88,6 +88,10 @@
     </Compile>
     <Compile Include="Bus\ConsumerList.cs" />
     <Compile Include="Bus\QueueList.cs" />
+    <Compile Include="CheckIn\CheckInKiosk.cs" />
+    <Compile Include="CheckIn\CheckInKioskSetup.cs" />
+    <Compile Include="CheckIn\Configuration\CheckInSimulator.cs" />
+    <Compile Include="CheckIn\Configuration\LabelDesigner.cs" />
     <Compile Include="Cms\AdaptiveMessageAdaptationDetail.cs" />
     <Compile Include="Cms\AdaptiveMessageDetail.cs" />
     <Compile Include="Cms\AdaptiveMessageList.cs" />
@@ -136,6 +140,8 @@
     <Compile Include="Security\AuthScopeList.cs" />
     <Compile Include="Security\AuthClientList.cs" />
     <Compile Include="Core\PersonSignalList.cs" />
+    <Compile Include="CheckIn\Configuration\CheckInLabelDetail.cs" />
+    <Compile Include="CheckIn\Configuration\CheckInLabelList.cs" />
     <Compile Include="Security\RestKeyList.cs" />
     <Compile Include="Crm\PersonMergeRequestList.cs" />
     <Compile Include="Event\RegistrationInstanceLinkageList.cs" />

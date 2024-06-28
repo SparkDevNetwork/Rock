@@ -1,0 +1,312 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div ref="screenElement" class="person-select-screen">
+        <MainPanel :title="title"
+                   :subtitle="subtitle">
+            <div class="button-list">
+                <RockButton v-for="attendee in attendees"
+                            btnType="primary"
+                            class="attendee-button"
+                            :disabled="attendee.isUnavailable"
+                            @click="onAttendeeClick(attendee)">
+                    <span v-if="isFamilyMode" class="selection">
+                        <i v-if="isAttendeeSelected(attendee)" class="fa fa-check-square"></i>
+                        <i v-else class="fa fa-square-o"></i>
+                    </span>
+
+                    <span class="avatar" :style="getStyleForAttendee(attendee)"></span>
+
+                    <span class="title">
+                        <span class="name">{{ attendee.person?.fullName }}</span>
+
+                        <span v-if="isFamilyMode"
+                              v-for="opportunity in getAttendeeSelections(attendee)"
+                              class="opportunity">
+                            <span class="group label label-info">{{ opportunity.group?.name }}</span>
+                            <span class="location label label-info">{{ opportunity.location?.name }}</span>
+                            <span class="schedule label label-info">{{ opportunity.schedule?.name }}</span>
+                        </span>
+                    </span>
+
+                    <span v-if="attendee.isUnavailable" class="message">
+                        {{ attendee.unavailableMessage }}
+                    </span>
+
+                    <span v-if="isAutoSelectMode && attendee.selectedOpportunities && attendee.selectedOpportunities.length > 0 && attendee.isMultipleSelectionsAvailable"
+                          class="btn btn-info change-selection-button"
+                          @click.stop="onChangeSelection(attendee)">
+                        Change
+                    </span>
+                </RockButton>
+            </div>
+        </MainPanel>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import MainPanel from "./mainPanel.partial.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { computed, CSSProperties, PropType, ref, watch } from "vue";
+    import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { CheckInSession } from "./checkInSession.partial";
+    import { UnexpectedErrorMessage } from "./utils.partial";
+    import { AttendeeBag } from "@Obsidian/ViewModels/CheckIn/attendeeBag";
+    import { Guid } from "@Obsidian/Types";
+    import { KioskCheckInMode } from "@Obsidian/Enums/CheckIn/kioskCheckInMode";
+    import { KioskButton } from "./types.partial";
+    import { OpportunitySelectionBag } from "@Obsidian/ViewModels/CheckIn/opportunitySelectionBag";
+
+    // This screen supports 3 distinct modes of operation depending on various
+    // settings:
+    //
+    // 1. Family Check-in w/o auto-select
+    //    This mode displays just the attendees, no change button and no
+    //    selected values. You don't return to this screen after leaving it. The
+    //    flow is to select the people you want to check-in and then loop
+    //    through the various opportunity selection screens until we have handled
+    //    every attendee. Then it moves to the success screen.
+    //
+    // 2. Family Check-in w/ auto-select
+    //    This mode displays the attendees as well as the current opportunity
+    //    selection(s). If other options are available then a Change button is
+    //    displayed which allows proceeding through the opportunity screens to
+    //    pick other options, after which you are returned to the person select
+    //    screen. Clicking the Next button on this screen then moves to the
+    //    success screen.
+    //
+    // 3. Individual Check-in
+    //    In this mode no check-box is displayed on the person select screen.
+    //    Also any currently selected opportunities (there should be none) are
+    //    not displayed and the Change button is not displayed either. Tapping
+    //    a name instantly moves through the process of checking in that one
+    //    person with an option at the end to return to the person select
+    //    screen.
+    const props = defineProps({
+        configuration: {
+            type: Object as PropType<KioskConfigurationBag>,
+            required: true
+        },
+
+        session: {
+            type: Object as PropType<CheckInSession>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (event: "next", session: CheckInSession): void;
+        (event: "updateActions", actions: KioskButton[]): void;
+    }>();
+
+    // #region Values
+
+    const selections = ref<Guid[]>(getInitialSelections());
+
+    // #endregion
+
+    // #region Computed Values
+
+    const title = computed((): string => {
+        return props.session.getCurrentFamily()?.name ?? "";
+    });
+
+    const subtitle = computed((): string => {
+        if (isFamilyMode.value) {
+            return "Select the individuals to check-in";
+        }
+        else {
+            return "Select the individual to check-in";
+        }
+    });
+
+    const isFamilyMode = computed((): boolean => {
+        return props.configuration.template?.kioskCheckInType === KioskCheckInMode.Family;
+    });
+
+    const isAutoSelectMode = computed((): boolean => {
+        return props.configuration.template?.isAutoSelect === true;
+    });
+
+    const attendees = computed((): AttendeeBag[] => {
+        if (!props.session.attendees) {
+            return [];
+        }
+
+        // Put unavailable items at the end, otherwise keep the existing
+        // sort order.
+        return [
+            ...props.session.attendees.filter(a => !a.isUnavailable),
+            ...props.session.attendees.filter(a => a.isUnavailable)
+        ];
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Gets the initially selected attendees when the screen loads.
+     */
+    function getInitialSelections(): string[] {
+        // If we have previously selected attendees then use those again.
+        if (props.session.selectedAttendeeIds) {
+            return props.session.selectedAttendeeIds;
+        }
+
+        // Otherwise we need to check what the default selections from the
+        // server should be.
+        if (!props.session.attendees) {
+            return [];
+        }
+
+        return props.session.attendees
+            .filter(a => a.isPreSelected && !!a.person?.id)
+            .map(a => a.person?.id as string);
+    }
+
+    /**
+     * Gets the selections for the specified attendee.
+     *
+     * @param attendee The attendee whose selections we want.
+     *
+     * @returns A colleciton of opportunity selections.
+     */
+    function getAttendeeSelections(attendee: AttendeeBag): OpportunitySelectionBag[] {
+        if (!attendee.person?.id) {
+            return [];
+        }
+
+        const selections = props.session.getAttendeeSelections(attendee.person.id);
+
+        return selections;
+    }
+
+    /**
+     * Update the actions supported by this screen.
+     */
+    function updateActions(): void {
+        const actions: KioskButton[] = [];
+
+        if (props.configuration.kiosk?.isRegistrationModeEnabled) {
+            actions.push({
+                type: "default",
+                title: "Edit Family",
+                key: "edit-family",
+                class: "edit-family-button",
+                disabled: false
+            });
+        }
+
+        if (isFamilyMode.value) {
+            actions.push({
+                type: "primary",
+                title: "Next",
+                key: "next",
+                class: "next-button",
+                disabled: selections.value.length === 0,
+                handler: onNextClick
+            });
+        }
+
+        emit("updateActions", actions);
+    }
+
+    /**
+     * Determines if the attendee is currently selected.
+     *
+     * @param attendee The attendee.
+     *
+     * @returns true if the attendee is currently selected.
+     */
+    function isAttendeeSelected(attendee: AttendeeBag): boolean {
+        return selections.value.some(s => s === attendee.person?.id);
+    }
+
+    /**
+     * Gets the custom style information for the attendee that should be
+     * applied to the button.
+     *
+     * @param attendee The attendee.
+     *
+     * @returns A collection of CSS property values.
+     */
+    function getStyleForAttendee(attendee: AttendeeBag): CSSProperties {
+        const properties: CSSProperties = {
+            backgroundImage: `url("${attendee.person?.photoUrl}")`
+        };
+
+        return properties;
+    }
+
+    /**
+     * Handles the click event for a family button.
+     *
+     * @param family The family that was selected.
+     */
+    async function onAttendeeClick(attendee: AttendeeBag): Promise<void> {
+        if (isFamilyMode.value) {
+            if (isAttendeeSelected(attendee)) {
+                selections.value = selections.value.filter(s => s !== attendee.person?.id);
+            }
+            else if (attendee.person?.id) {
+                selections.value = [attendee.person?.id, ...selections.value];
+            }
+        }
+        else {
+            if (attendee.person?.id) {
+                try {
+                    let newSession = props.session.withSelectedAttendees([attendee.person.id]);
+
+                    newSession = await newSession.withAttendee(attendee.person.id);
+
+                    emit("next", await newSession.withNextScreen());
+                }
+                catch (error) {
+                    await alert(error instanceof Error ? error.message : UnexpectedErrorMessage);
+                }
+            }
+        }
+    }
+
+    async function onChangeSelection(attendee: AttendeeBag): Promise<void> {
+        if (!attendee.person?.id) {
+            return;
+        }
+
+        try {
+            let newSession = props.session.withSelectedAttendees(selections.value);
+
+            newSession = await newSession.withAttendee(attendee.person?.id);
+
+            emit("next", await newSession.withNextScreen());
+        }
+        catch (error) {
+            await alert(error instanceof Error ? error.message : UnexpectedErrorMessage);
+        }
+    }
+
+    async function onNextClick(): Promise<void> {
+        try {
+            if (props.session.configuration.template?.isAutoSelect) {
+                emit("next", await props.session.withNextScreen());
+            }
+            else {
+                let newSession = props.session.withSelectedAttendees(selections.value);
+
+                emit("next", await newSession.withNextScreen());
+            }
+        }
+        catch (error) {
+            await alert(error instanceof Error ? error.message : UnexpectedErrorMessage);
+        }
+    }
+
+    // #endregion
+
+    watch([selections, isFamilyMode], () => {
+        updateActions();
+    });
+
+    updateActions();
+</script>

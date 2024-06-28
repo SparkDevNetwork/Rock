@@ -1,0 +1,305 @@
+<template>
+    <Panel :title="labelName"
+           type="block"
+           hasFullscreen
+           class="label-designer">
+        <template #headerActions>
+            <div style="display: flex; gap: 6px;">
+                <span class="label label-default">
+                    {{ checkInLabelType }}
+                </span>
+
+                <LabelDimensionsButton v-model="labelSize" />
+            </div>
+        </template>
+
+        <div class="panel-flex-fill-body">
+            <div style="display: flex; flex-grow: 1; overflow: hidden">
+                <Menu :labelManager="labelManager" />
+
+                <Editor ref="editor"
+                        :labelManager="labelManager" />
+            </div>
+
+            <div class="actions">
+                <RockButton btnType="primary"
+                            autoDisable
+                            @click="onSave">Save</RockButton>
+
+                <RockButton btnType="link"
+                            autoDisable
+                            @click="onCancel">Cancel</RockButton>
+
+                <RockButton btnType="link"
+                            autoDisable
+                            @click="onPreviewClick">Preview</RockButton>
+            </div>
+        </div>
+    </Panel>
+
+    <Modal v-model="isPreviewOpen"
+           title="Preview"
+           cancelText="Close">
+        <TextBox label="Attendance Id"
+                 v-model="previewAttendanceId"
+                 help="To generate a preview of what this label looks like with an actual attendance record you can enter an identifier here." />
+
+        <RockButton btnType="default"
+                    autoDisable
+                    @click="onPreviewRefreshClick">
+            Refresh
+        </RockButton>
+
+        <div class="text-right mb-2">
+            <span class="label label-info">{{ previewDuration }}ms</span>
+        </div>
+
+        <img class="preview-image"
+             :src="previewSource" />
+    </Modal>
+</template>
+
+<style scoped>
+* :deep(.label-designer) {
+    --menu-bar-height: 37px;
+}
+
+* :deep(.panel.label-designer > .panel-body) {
+    display: flex;
+    flex-direction: column;
+}
+
+.panel-flex-fill-body .actions:last-of-type {
+    margin: 0;
+}
+
+.panel-body-fill {
+    margin-left: calc(var(--panel-body-padding) * -1);
+    margin-top: calc(var(--panel-body-padding) * -1);
+    margin-right: calc(var(--panel-body-padding) * -1);
+    flex-grow: 1;
+}
+
+.container {
+    max-width: 720px;
+}
+
+.container > :deep(.konvajs-content) {
+    border: 1px solid black;
+    background-color: white;
+}
+
+.preview-image {
+    border-radius: 12px;
+    border: 1px solid var(--theme-light);
+    box-shadow: 2px 2px 6px rgba(0, 0, 0, .1);
+    display: block;
+    margin: auto;
+}
+</style>
+
+<script setup lang="ts">
+    import Editor from "./LabelDesigner/editor.partial.obs";
+    import LabelDimensionsButton from "./LabelDesigner/labelDimensionsButton.partial.obs";
+    import Menu from "./LabelDesigner/menu.partial.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { computed, ref, watch } from "vue";
+    import { LabelDetail, PreviewResultBag, Size } from "./LabelDesigner/types.partial";
+    import { LabelUndoManager } from "./LabelDesigner/undoManager.partial";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { blobToBase64 } from "./LabelDesigner/utils.partial";
+    import { LabelTypeDescription } from "@Obsidian/Enums/CheckIn/Labels/labelType";
+    import { LabelDesignerOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/LabelDesigner/labelDesignerOptionsBag";
+
+    const config = useConfigurationValues<LabelDesignerOptionsBag>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const labelManager = new LabelUndoManager(getInitialLabelDetail());
+
+    const editor = ref<InstanceType<typeof Editor>>();
+    const isPreviewOpen = ref(false);
+    const previewSource = ref<string | undefined>();
+    const previewDuration = ref(0);
+    const previewAttendanceId = ref("");
+
+    const labelSize = computed<Size>({
+        get() {
+            return {
+                width: labelManager.current.value.labelData.width,
+                height: labelManager.current.value.labelData.height
+            };
+        },
+        set(value) {
+            labelManager.mutate(label => {
+                label.labelData.width = value.width;
+                label.labelData.height = value.height;
+            });
+        }
+    });
+
+    const isDirty = computed((): boolean => {
+        return labelManager.canUndo.value;
+    });
+
+    const checkInLabelType = computed((): string => {
+        return LabelTypeDescription[config.labelType] + " Label";
+    });
+
+    const labelName = computed((): string => {
+        return config.labelName ?? "Label Designer";
+    });
+
+    /**
+     * Gets the initial label data from the block configuration. This also
+     * does minor conversion to ensure that all the required fields are set.
+     */
+    function getInitialLabelDetail(): LabelDetail {
+        const label: LabelDetail = <LabelDetail>{
+            ...config.label
+        };
+
+        if (!label.labelData) {
+            label.labelData = {
+                width: 4,
+                height: 2,
+                fields: []
+            };
+        }
+
+        if (!label.labelData.fields) {
+            label.labelData.fields = [];
+        }
+
+        return label;
+    }
+
+    /**
+     * Updates the preview data from selections made in the preview modal.
+     */
+    async function updatePreview(): Promise<boolean> {
+        const result = await invokeBlockAction<PreviewResultBag>("Preview", {
+            key: config.idKey,
+            attendanceId: previewAttendanceId.value,
+            label: labelManager.current.value
+        });
+
+        if (!result.isSuccess || !result.data?.content) {
+            await alert(result.errorMessage ?? "Unknown error while trying to preview check-in label.");
+
+            return false;
+        }
+
+        const labelSize = `${labelManager.current.value.labelData.width}x${labelManager.current.value.labelData.height}`;
+        // Can't use our normal http post function because it does something
+        // weird to the response data that corrupts the binary data.
+        const labelaryResult = await fetch(`https://api.labelary.com/v1/printers/8dpmm/labels/${labelSize}/0`, {
+            method: "POST",
+            body: result.data.content,
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            }
+        });
+
+        if (!labelaryResult.ok) {
+            await alert("Unknown error while trying to render preview image.");
+
+            return false;
+        }
+
+        const blob = await labelaryResult.blob();
+        const image64 = await blobToBase64(blob);
+
+        previewSource.value = `data:image/png;base64,${image64}`;
+        previewDuration.value = result.data.duration;
+
+        return true;
+    }
+
+    /**
+     * Event handler for the panel's Save event. Send the data to the server
+     * to be saved and then redirect to target page.
+     */
+    async function onSave(): Promise<void> {
+        let previewData: string = "";
+
+        if (editor.value) {
+            const preview = await editor.value.savePreview();
+
+            if (preview) {
+                previewData = await blobToBase64(preview) ?? "";
+            }
+        }
+
+        const result = await invokeBlockAction<string>("Save", {
+            key: config.idKey,
+            label: labelManager.current.value,
+            previewData
+        });
+
+        if (result.isSuccess && result.data) {
+            // Force off the event listener so we can navigate away.
+            window.removeEventListener("beforeunload", onBeforeUnload);
+            window.location.href = result.data;
+            return;
+        }
+
+        await alert(result.errorMessage ?? "Unknown error while trying to save check-in label.");
+    }
+
+    /**
+     * Event handler for the panel's Cancel event. Go back to the previous
+     * page.
+     */
+    function onCancel(): void {
+        if (config.returnUrl) {
+            window.location.href = config.returnUrl;
+        }
+    }
+
+    /**
+     * Event handler for the preview button being clicked. Render the ZPL from
+     * the server and then call Labelary to render a preview image.
+     */
+    async function onPreviewClick(): Promise<void> {
+        if (await updatePreview()) {
+            isPreviewOpen.value = true;
+        }
+        else {
+            // Just in case this is the problem.
+            previewAttendanceId.value = "";
+        }
+    }
+
+    /**
+     * Event handler for the refresh button being clicked. Update the rendered
+     * preview.
+     */
+    async function onPreviewRefreshClick(): Promise<void> {
+        await updatePreview();
+    }
+
+    /**
+     * Event handler called before the page unloads. This handler is
+     * added whenever the label is dirty and needs to be saved.
+     *
+     * @param event The event that was raised.
+     */
+    function onBeforeUnload(event: BeforeUnloadEvent): void {
+        event.preventDefault();
+        event.returnValue = "";
+    }
+
+    // Watch for changes in the dirty state and remove/install our handler
+    // to prevent accidentally navigating away from the page.
+    watch(isDirty, () => {
+        window.removeEventListener("beforeunload", onBeforeUnload);
+
+        if (isDirty.value) {
+            window.addEventListener("beforeunload", onBeforeUnload);
+        }
+    });
+</script>
