@@ -336,6 +336,8 @@
     <Folder Include="Framework\ViewModels\Blocks\Core\RestControllerList\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\ScheduleDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\ScheduledJobList\" />
+    <Folder Include="Framework\ViewModels\Blocks\Core\SignatureDocumentDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Core\SignatureDocumentList\" />
     <Folder Include="Framework\ViewModels\Blocks\Core\SuggestionDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\AssessmentList\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\DocumentTypeDetail\" />
@@ -349,6 +351,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Crm\FamilyPreRegistration\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\PersonDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\PersonDetail\Badges\" />
+    <Folder Include="Framework\ViewModels\Blocks\Crm\PersonDuplicateList\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\PersonMergeRequestList\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\PhotoOptOut\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\" />
@@ -843,6 +846,9 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\InteractionChannelDetail\interactionChannelBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\InteractionChannelDetail\interactionChannelDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\ScheduledJobList\scheduledJobListOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\SignatureDocumentDetail\signatureDocumentBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\SignatureDocumentDetail\signatureDocumentDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\SignatureDocumentList\signatureDocumentListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\SuggestionDetail\suggestionDetailBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\SuggestionDetail\suggestionDetailBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\ScheduleDetail\scheduleBag.d.ts" />
@@ -873,6 +879,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\FamilyPreRegistration\familyPreRegistrationSaveResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\FamilyPreRegistration\familyPreRegistrationScheduleDateBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\PersonDetail\Badges\badgesConfigurationBox.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\PersonDuplicateList\personDuplicateListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\PersonMergeRequestList\personMergeRequestListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\PhotoOptOut\photoOptOutBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\detailBlockBox.d.ts" />

@@ -318,6 +318,9 @@
     <Folder Include="src\Core\CampusDetail\" />
     <Folder Include="src\Core\CategoryDetail\" />
     <Folder Include="src\Core\DefinedValueList\" />
+    <Folder Include="src\Core\SignatureDocumentDetail\" />
+    <Folder Include="src\Core\SignatureDocumentList\" />
+    <Folder Include="src\Crm\PersonDuplicateList\" />
     <Folder Include="src\Crm\PersonMergeRequestList\" />
     <Folder Include="src\Core\FollowingEventTypeDetail\" />
     <Folder Include="src\Core\InteractionChannelDetail\" />
@@ -476,6 +479,9 @@
     <TypeScriptCompile Include="src\Core\CampusDetail\viewPanel.partial.ts" />
     <TypeScriptCompile Include="src\Core\CategoryDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\DefinedValueList\types.partial.ts" />
+    <TypeScriptCompile Include="src\Core\SignatureDocumentDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Core\SignatureDocumentList\types.partial.ts" />
+    <TypeScriptCompile Include="src\Crm\PersonDuplicateList\types.partial.ts" />
     <TypeScriptCompile Include="src\Crm\PersonMergeRequestList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\FollowingEventTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\InteractionChannelDetail\types.partial.ts" />
@@ -596,6 +602,11 @@
     <Compile Include="src\Cms\adaptiveMessageDetail.obs" />
     <Compile Include="src\Cms\AdaptiveMessageDetail\editPanel.partial.obs" />
     <Compile Include="src\Cms\AdaptiveMessageDetail\viewPanel.partial.obs" />
+    <Compile Include="src\Core\signatureDocumentDetail.obs" />
+    <Compile Include="src\Core\SignatureDocumentDetail\editPanel.partial.obs" />
+    <Compile Include="src\Core\SignatureDocumentDetail\viewPanel.partial.obs" />
+    <Compile Include="src\Core\signatureDocumentList.obs" />
+    <Compile Include="src\Crm\personDuplicateList.obs" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsToolsV2.targets" />
   <Target Name="InstallNodePackages" AfterTargets="BeforeCompile;BeforeClean" Inputs="package.json" Outputs="node_modules/.install-stamp">
