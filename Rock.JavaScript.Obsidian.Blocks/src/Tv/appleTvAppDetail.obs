@@ -71,8 +71,7 @@
         "description",
         "isActive",
         "loginPage",
-        "enablePageViews",
-        "enablePageViewGeoTracking"
+        "enablePageViews"
     ];
 
     const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(appleTvAppEditBag, validProperties, invokeBlockAction), undefined, true);

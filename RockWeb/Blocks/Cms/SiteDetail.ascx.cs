@@ -462,7 +462,6 @@ namespace RockWeb.Blocks.Cms
                 site.IsIndexEnabled = cbEnableIndexing.Checked;
                 site.IndexStartingLocation = tbIndexStartingLocation.Text;
                 site.EnableExclusiveRoutes = cbEnableExclusiveRoutes.Checked;
-                site.EnablePageViewGeoTracking = cbEnablePageViewGeoTracking.Checked;
                 site.DisablePredictableIds = cbDisablePredictableIds.Checked;
 
                 site.PageHeaderContent = cePageHeaderContent.Text;
@@ -928,7 +927,6 @@ namespace RockWeb.Blocks.Cms
             cbEnableIndexing.Checked = site.IsIndexEnabled;
             tbIndexStartingLocation.Text = site.IndexStartingLocation;
             cbEnableExclusiveRoutes.Checked = site.EnableExclusiveRoutes;
-            cbEnablePageViewGeoTracking.Checked = site.EnablePageViewGeoTracking;
             cbDisablePredictableIds.Checked = site.DisablePredictableIds;
 
             // disable the indexing features if indexing on site is disabled

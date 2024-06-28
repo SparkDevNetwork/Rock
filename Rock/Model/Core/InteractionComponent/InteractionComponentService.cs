@@ -102,6 +102,8 @@ namespace Rock.Model
         /// Returns a queryable of Interaction Components that are tied to Rock Sites with Geo Tracking enabled.
         /// </summary>
         /// <returns></returns>
+        [RockObsolete( "1.17" )]
+        [Obsolete( "Geolocation lookups are now performed on all interactions, regardless of a Site's EnablePageViewGeoTracking setting." )]
         public IQueryable<InteractionComponent> QueryByPagesOnSitesWithGeoTracking()
         {
             var rockContext = this.Context as Rock.Data.RockContext;

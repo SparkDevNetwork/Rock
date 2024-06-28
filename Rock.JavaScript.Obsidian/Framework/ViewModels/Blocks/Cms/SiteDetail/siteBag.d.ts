@@ -83,9 +83,6 @@ export type SiteBag = {
     /** Gets or sets a value indicating whether [enable mobile redirect]. */
     enableMobileRedirect: boolean;
 
-    /** Gets or sets a value indicating whether geo-location lookups should be performed on interactions. */
-    enablePageViewGeoTracking: boolean;
-
     /** Gets or sets a value indicating whether to log Page Views into the Interaction tables for pages in this site */
     enablePageViews: boolean;
 

@@ -206,7 +206,6 @@ namespace Rock.Blocks.Cms
                 EnabledForShortening = entity.EnabledForShortening,
                 EnableExclusiveRoutes = entity.EnableExclusiveRoutes,
                 EnableMobileRedirect = entity.EnableMobileRedirect,
-                EnablePageViewGeoTracking = entity.EnablePageViewGeoTracking,
                 EnablePageViews = entity.EnablePageViews,
                 EnablePersonalization = entity.EnablePersonalization,
                 EnableVisitorTracking = entity.EnableVisitorTracking,
@@ -325,9 +324,6 @@ namespace Rock.Blocks.Cms
 
             box.IfValidProperty( nameof( box.Bag.EnableMobileRedirect ),
                 () => entity.EnableMobileRedirect = box.Bag.EnableMobileRedirect );
-
-            box.IfValidProperty( nameof( box.Bag.EnablePageViewGeoTracking ),
-                () => entity.EnablePageViewGeoTracking = box.Bag.EnablePageViewGeoTracking );
 
             box.IfValidProperty( nameof( box.Bag.EnablePageViews ),
                 () => entity.EnablePageViews = box.Bag.EnablePageViews );

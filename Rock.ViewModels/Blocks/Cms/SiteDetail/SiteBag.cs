@@ -95,11 +95,6 @@ namespace Rock.ViewModels.Blocks.Cms.SiteDetail
         public bool EnableMobileRedirect { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether geo-location lookups should be performed on interactions.
-        /// </summary>
-        public bool EnablePageViewGeoTracking { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether to log Page Views into the Interaction tables for pages in this site
         /// </summary>
         public bool EnablePageViews { get; set; }
