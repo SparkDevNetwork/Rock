@@ -16,6 +16,7 @@
 //
 
 using System.Data.Entity;
+
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -35,6 +36,7 @@ namespace Rock.Model
         public void UpdateCache( EntityState entityState, Data.DbContext dbContext )
         {
             Rock.CheckIn.KioskDevice.FlushItem( this.Id );
+            DeviceCache.FlushItem( Id );
         }
 
         /// <summary>
@@ -43,8 +45,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IEntityCache GetCacheObject()
         {
-            // doesn't apply
-            return null;
+            return DeviceCache.Get( Id );
         }
 
         #endregion ICacheable

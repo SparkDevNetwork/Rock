@@ -191,6 +191,23 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Gets a cached item using an IdKey.
+        /// </summary>
+        /// <param name="idKey">The IdKey.</param>
+        /// <param name="rockContext">The context to use when database access is required.</param>
+        /// <returns>T.</returns>
+        public static T GetByIdKey( string idKey, RockContext rockContext )
+        {
+            var idFromIdKey = Rock.Utility.IdHasher.Instance.GetId( idKey );
+            if ( !idFromIdKey.HasValue )
+            {
+                return default( T );
+            }
+
+            return Get( idFromIdKey.Value, rockContext );
+        }
+
+        /// <summary>
         /// Gets the Id for the cache object, or NULL if it doesn't exist
         /// </summary>
         /// <param name="guid">The unique identifier.</param>
@@ -342,7 +359,7 @@ namespace Rock.Web.Cache
                 return new List<T>();
             }
 
-            var cachedItems = new List<T>();
+            var cachedItems = new List<T>( ids.Count );
             var idsToLoad = new List<int>( ids.Count );
 
             // Try to get items that already exist in cache.

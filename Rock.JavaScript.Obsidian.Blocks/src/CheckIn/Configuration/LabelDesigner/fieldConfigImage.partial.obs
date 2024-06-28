@@ -1,0 +1,68 @@
+<template>
+    <ImageUploader label="Custom Image"
+                   v-model="image" />
+
+    <RangeSlider label="Brightness"
+                 v-model="brightness"
+                 :min="0"
+                 :max="2"
+                 :step="0.01"
+                 showValueBar />
+
+    <CheckBox label="Invert Colors"
+              v-model="isColorInverted" />
+</template>
+
+<script setup lang="ts">
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import ImageUploader from "./imageUploader.partial.obs";
+    import RangeSlider from "@Obsidian/Controls/rangeSlider.obs";
+    import { PropType, ref, watch } from "vue";
+    import { ImageFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/imageFieldConfigurationBag";
+    import { LabelUndoManager } from "./undoManager.partial";
+    import { asBoolean, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+
+    const props = defineProps({
+        labelManager: {
+            type: Object as PropType<LabelUndoManager>,
+            required: true
+        }
+    });
+
+    const image = ref<string | undefined | null>();
+    const isColorInverted = ref(false);
+    const brightness = ref(1);
+
+    /**
+     * Set the internal values to match those from the selected field.
+     */
+    function setInternalValues(): void {
+        const configuration = (props.labelManager.selectedField.value
+            ?.configurationValues ?? {}) as ImageFieldConfigurationBag;
+
+        image.value = configuration.imageData;
+        isColorInverted.value = asBoolean(configuration.isColorInverted);
+        brightness.value = toNumberOrNull(configuration.brightness) ?? 1;
+    }
+
+    // Watch for changes in the UI that require an update to the label.
+    watch([image, isColorInverted, brightness], () => {
+        props.labelManager.mutateSelectedField(field => {
+            field.configurationValues = field.configurationValues ?? {};
+
+            const fieldConfig = field.configurationValues as ImageFieldConfigurationBag;
+
+            fieldConfig.imageData = image.value;
+            fieldConfig.isColorInverted = asTrueFalseOrNull(isColorInverted.value);
+            fieldConfig.brightness = `${brightness.value}`;
+        });
+    });
+
+    // Watch for changes on the label that need to be reflected in the UI.
+    watch(props.labelManager.selectedField, () => {
+        setInternalValues();
+    });
+
+    setInternalValues();
+</script>

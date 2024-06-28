@@ -156,6 +156,7 @@
     <Compile Include="Controllers\CodeGenerated\BenevolenceTypesController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\BenevolenceWorkflowsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\CampusTopicsController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\CheckInLabelsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\ConnectionStatusAutomationsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\ContentCollectionsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\ContentCollectionSourcesController.CodeGenerated.cs" />
@@ -191,6 +192,7 @@
     <Compile Include="HttpRequestMessageWrapper.cs" />
     <Compile Include="ProducesResponseTypeAttribute.cs" />
     <Compile Include="Utility\RockMessageResponseContext.cs" />
+    <Compile Include="v2\CheckInController.cs" />
     <Compile Include="v2\ControlsController.cs" />
     <Compile Include="v2\TvController.cs" />
     <Compile Include="Utility\ApiModelMapper.cs" />

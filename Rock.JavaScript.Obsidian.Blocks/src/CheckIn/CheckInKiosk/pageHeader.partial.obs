@@ -1,0 +1,66 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <header class="check-in-panel page-header">
+        <div class="title">{{ props.title }}</div>
+
+        <RockButton v-if="!hideNavigation"
+                    btnType="default"
+                    class="back-button"
+                    :disabled="!hasBack"
+                    @click="onBack">
+            <i class="fa fa-chevron-left"></i>
+        </RockButton>
+
+        <RockButton v-if="!hideNavigation"
+                    btnType="default"
+                    btnSize="sm"
+                    class="home-button"
+                    @click="onHome">
+            Home
+        </RockButton>
+    </header>
+</template>
+
+<script setup lang="ts">
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { PropType } from "vue";
+
+    const props = defineProps({
+        /** The title to display in the header. */
+        title: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        /** True if the back button is valid. */
+        hasBack: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        /** True if the navigation buttons should be hidden. */
+        hideNavigation: {
+            type: Boolean as PropType<boolean>,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (event: "back"): void;
+        (event: "home"): void;
+    }>();
+
+    /**
+     * Event handler for when the back button is pressed.
+     */
+    function onBack(): void {
+        emit("back");
+    }
+
+    /**
+     * Event handler for when the home button is pressed.
+     */
+    function onHome(): void {
+        emit("home");
+    }
+</script>

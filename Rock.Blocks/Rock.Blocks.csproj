@@ -60,6 +60,10 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>Properties\AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="CheckIn\CheckInKiosk.cs" />
+    <Compile Include="CheckIn\CheckInKioskSetup.cs" />
+    <Compile Include="CheckIn\Configuration\CheckInSimulator.cs" />
+    <Compile Include="CheckIn\Configuration\LabelDesigner.cs" />
     <Compile Include="Cms\AdaptiveMessageAdaptationDetail.cs" />
     <Compile Include="Cms\AdaptiveMessageDetail.cs" />
     <Compile Include="Cms\AdaptiveMessageList.cs" />
@@ -69,6 +73,8 @@
     <Compile Include="Security\AuthScopeList.cs" />
     <Compile Include="Security\AuthClientList.cs" />
     <Compile Include="Core\PersonSignalList.cs" />
+    <Compile Include="CheckIn\Configuration\CheckInLabelDetail.cs" />
+    <Compile Include="CheckIn\Configuration\CheckInLabelList.cs" />
     <Compile Include="Crm\PersonDetail\GivingConfiguration.cs" />
     <Compile Include="Finance\FinancialPledgeList.cs" />
     <Compile Include="Security\RestKeyList.cs" />
