@@ -242,7 +242,7 @@
     <Compile Include="Reporting\DynamicData.cs" />
     <Compile Include="Reporting\MergeTemplateList.cs" />
     <Compile Include="Reporting\ReportList.cs" />
-    <Compile Include="Reporting\VolunteerGenerosityAnalysis.cs" />
+    <Compile Include="Finance\VolunteerGenerosityAnalysis.cs" />
     <Compile Include="RockEntityDetailBlockType.cs" />
     <Compile Include="Tv\AppleTvPageDetail.cs" />
     <Compile Include="Engagement\StepTypeDetail.cs" />

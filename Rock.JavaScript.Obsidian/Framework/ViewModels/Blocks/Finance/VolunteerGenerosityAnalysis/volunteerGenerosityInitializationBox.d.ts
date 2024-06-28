@@ -21,7 +21,7 @@
 // </copyright>
 //
 
-import { VolunteerGenerosityDataBag } from "@Obsidian/ViewModels/Blocks/Reporting/VolunteerGenerosityAnalysis/volunteerGenerosityDataBag";
+import { VolunteerGenerosityDataBag } from "@Obsidian/ViewModels/Blocks/Finance/VolunteerGenerosityAnalysis/volunteerGenerosityDataBag";
 
 /** A bag that contains all data for the Volunteer Generosity Analysis block. */
 export type VolunteerGenerosityInitializationBox = {

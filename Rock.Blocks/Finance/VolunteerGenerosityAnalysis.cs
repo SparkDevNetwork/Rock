@@ -6,14 +6,14 @@ using System;
 using System.Linq;
 using System.ComponentModel;
 using System.Collections.Generic;
-using Rock.ViewModels.Blocks.Reporting.VolunteerGenerosityAnalysis;
+using Rock.ViewModels.Blocks.Finance.VolunteerGenerosityAnalysis;
 using Rock.Obsidian.UI;
 
-namespace Rock.Blocks.Reporting
+namespace Rock.Blocks.Finance
 {
     [DisplayName( "Volunteer Generosity Analysis" )]
-    [Category( "Reporting" )]
-    [Description( "Displays an analysis of volunteer generosity based on persisted dataset 'VolunteerGenerosity'." )]
+    [Category( "Finance" )]
+    [Description( "Displays an analysis of volunteer generosity based on the system persisted dataset 'VolunteerGenerosity'." )]
     [Rock.SystemGuid.BlockTypeGuid( "586A26F1-8A9C-4AB4-B788-9B44895B9D40" )]
     [Rock.SystemGuid.EntityTypeGuid( "4C55BFE1-7E97-4CFB-BCB7-2015AA25D9B9" )]
 

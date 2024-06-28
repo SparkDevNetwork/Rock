@@ -648,6 +648,7 @@
     <Compile Include="Rest\Controls\AttributeMatrixEditorNormalizeEditValueResultsBag.cs" />
     <Compile Include="Rest\Controls\AttributeMatrixEditorNormalizeEditValueOptionsBag.cs" />
     <Compile Include="Reporting\FieldFilterPropertyBag.cs" />
+    <Compile Include="Blocks\Finance\VolunteerGenerosityAnalysis\VolunteerGenerosityAnalysisBag.cs" />
     <Compile Include="Controls\UniversalItemSearchPickerItemBag.cs" />
     <Compile Include="Core\Grid\DynamicFieldDefinitionBag.cs" />
     <Compile Include="Rest\Controls\CurrencyBoxGetCurrencyInfoResultsBag.cs" />

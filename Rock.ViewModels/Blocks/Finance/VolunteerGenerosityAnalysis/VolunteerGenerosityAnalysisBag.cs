@@ -17,9 +17,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 
-namespace Rock.ViewModels.Blocks.Reporting.VolunteerGenerosityAnalysis
+namespace Rock.ViewModels.Blocks.Finance.VolunteerGenerosityAnalysis
 {
     /// <summary>
     /// Bag for person-related data in the Volunteer Generosity Analysis block.

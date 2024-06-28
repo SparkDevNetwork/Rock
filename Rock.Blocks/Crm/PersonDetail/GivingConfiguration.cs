@@ -128,7 +128,6 @@ namespace Rock.Blocks.Crm.PersonDetail
 
         protected bool IsVisible { get; set; }
 
-        private List<FinancialPersonSavedAccountBag> _savedAccounts = null;
         private string personActionIdentifierTransaction = string.Empty;
         private string personActionIdentifierContribution = string.Empty;
         private string personActionIdentifierPledge = string.Empty;

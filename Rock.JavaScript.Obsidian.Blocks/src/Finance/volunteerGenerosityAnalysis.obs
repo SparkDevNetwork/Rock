@@ -218,10 +218,10 @@
 <script setup lang="ts">
     import { ref, reactive, watch, nextTick } from "vue";
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
-    import { VolunteerGenerosityDataBag } from "@Obsidian/ViewModels/Blocks/Reporting/VolunteerGenerosityAnalysis/volunteerGenerosityDataBag";
-    import { VolunteerGenerosityInitializationBox } from "@Obsidian/ViewModels/Blocks/Reporting/VolunteerGenerosityAnalysis/volunteerGenerosityInitializationBox";
+    import { VolunteerGenerosityDataBag } from "@Obsidian/ViewModels/Blocks/Finance/VolunteerGenerosityAnalysis/volunteerGenerosityDataBag";
+    import { VolunteerGenerosityInitializationBox } from "@Obsidian/ViewModels/Blocks/Finance/VolunteerGenerosityAnalysis/volunteerGenerosityInitializationBox";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
-    import Grid, { TextColumn, textValueFilter, Column, dateValueFilter, DateColumn, PersonColumn } from "@Obsidian/Controls/grid";
+    import Grid, { TextColumn, Column, dateValueFilter, DateColumn, PersonColumn } from "@Obsidian/Controls/grid";
     import StandardFilterDaysBack from "@Obsidian/Controls/standardFilterDaysBack.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
@@ -270,7 +270,7 @@
      * @param lastUpdatedString The last updated date
      * @returns A string representing the time difference
      */
-     const calculateTimeDifference = (lastUpdatedString: string): string => {
+    const calculateTimeDifference = (lastUpdatedString: string): string => {
         const lastUpdatedDate = RockDateTime.parseISO(lastUpdatedString);
         const now = RockDateTime.now();
 
@@ -289,21 +289,21 @@
         if (diffInSeconds < 60) {
             timeDiffStr += `${diffInSeconds} seconds ago`;
         }
-    else if (diffInSeconds < 3600) { // Less than 1 hour
+        else if (diffInSeconds < 3600) { // Less than 1 hour
             const minutes = Math.floor(diffInSeconds / 60);
             timeDiffStr += `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
         }
-    else if (diffInSeconds < 86400) { // Less than 1 day
+        else if (diffInSeconds < 86400) { // Less than 1 day
             const hours = Math.floor(diffInSeconds / 3600);
             timeDiffStr += `${hours} hour${hours > 1 ? "s" : ""} ago`;
         }
-    else {
+        else {
             const days = Math.floor(diffInSeconds / 86400);
             timeDiffStr += `${days} day${days > 1 ? "s" : ""} ago`;
         }
 
         return timeDiffStr;
-};
+    };
 
 
     /**
@@ -366,7 +366,7 @@
      * @param lastUpdated The last updated date
      * @returns A formatted string representing the last updated date
      */
-     const formatLastUpdated = (lastUpdated): string => {
+    const formatLastUpdated = (lastUpdated): string => {
         const lastUpdatedDate = RockDateTime.parseISO(lastUpdated);
 
         if (!lastUpdatedDate) {

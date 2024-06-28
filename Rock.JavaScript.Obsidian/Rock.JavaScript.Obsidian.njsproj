@@ -398,6 +398,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Fundraising\" />
     <Folder Include="Framework\ViewModels\Blocks\Fundraising\FundraisingDonationList\" />
     <Folder Include="Framework\ViewModels\Blocks\Finance\SavedAccountList\" />
+    <Folder Include="Framework\ViewModels\Blocks\Finance\VolunteerGenerosityAnalysis\" />
     <Folder Include="Framework\ViewModels\Blocks\Fundraising\" />
     <Folder Include="Framework\ViewModels\Blocks\Fundraising\FundraisingDonationList\" />
     <Folder Include="Framework\ViewModels\Blocks\Groups\" />
@@ -1009,6 +1010,9 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\FinancialPledgeList\financialPledgeListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Fundraising\FundraisingDonationList\fundraisingDonationListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\SavedAccountList\savedAccountListOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\VolunteerGenerosityAnalysis\volunteerGenerosityDataBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\VolunteerGenerosityAnalysis\volunteerGenerosityInitializationBox.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Finance\VolunteerGenerosityAnalysis\volunteerGenerosityPersonBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Fundraising\FundraisingDonationList\fundraisingDonationListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Groups\GroupRegistration\groupRegistrationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Groups\GroupRegistration\groupRegistrationBlockBox.d.ts" />
