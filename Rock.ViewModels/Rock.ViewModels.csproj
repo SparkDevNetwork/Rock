@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -79,6 +79,7 @@
     <Compile Include="Blocks\Finance\FinancialPledgeList\FinancialPledgeListBag.cs" />
     <Compile Include="Blocks\Finance\FinancialPledgeList\FinancialPledgeListOptionsBag.cs" />
     <Compile Include="Blocks\Group\Scheduling\GroupScheduler\GroupSchedulerGroupLocationScheduleNamesBag.cs" />
+    <Compile Include="Blocks\Engagement\CampaignList\CampaignListOptionsBag.cs" />
     <Compile Include="Blocks\Security\RestKeyList\RestKeyListOptionsBag.cs" />
     <Compile Include="Blocks\Crm\PersonMergeRequestList\PersonMergeRequestListOptionsBag.cs" />
     <Compile Include="Blocks\Event\RegistrationInstanceLinkageList\RegistrationInstanceLinkageListOptionsBag.cs" />
