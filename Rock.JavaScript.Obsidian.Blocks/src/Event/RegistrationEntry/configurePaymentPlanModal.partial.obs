@@ -1,5 +1,4 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
-
 <template>
     <Modal v-model="internalIsShown"
            :isSaveButtonDisabled="!wipPaymentPlanConfiguration?.endDate"
@@ -30,7 +29,7 @@
                 </div>
             </div>
 
-            <div :class="['row', !isPaymentPlanFrequencySelected ? 'invisible' : '']">
+            <div :class="['row', !areAmountFieldsShown ? 'invisible' : '']">
                 <div class="col-sm-6">
                     <CurrencyBox :modelValue="amountToPayTodayPlusAdjustmentCurrency?.number ?? 0"
                                  @update:modelValue="onUpdateAmountToPayToday"
@@ -44,7 +43,7 @@
                     </CurrencyBox>
                 </div>
 
-                <div class="col-sm-6" v-if="numberOfPaymentsItems.length">
+                <div class="col-sm-6">
                     <DropDownList :modelValue="numberOfPayments + ''"
                                   @update:modelValue="onUpdateNumberOfPaymentsStringOrEmpty"
                                   :items="numberOfPaymentsItems"
@@ -54,13 +53,13 @@
                 </div>
             </div>
 
-            <div :class="['row', !isPaymentPlanFrequencySelected ? 'invisible' : '']">
+            <div :class="['row', !areAmountFieldsShown ? 'invisible' : '']">
                 <div class="col">
                     <RockLabel label="Plan Summary">Plan Summary</RockLabel>
                 </div>
             </div>
 
-            <div :class="['row', !isPaymentPlanFrequencySelected ? 'invisible' : '']">
+            <div :class="['row', !areAmountFieldsShown ? 'invisible' : '']">
                 <div class="col-sm-6">
                     <div>Amount Due Today</div>
                     <div>
@@ -69,7 +68,7 @@
                     </div>
                 </div>
 
-                <div class="col-sm-6" v-if="numberOfPaymentsItems.length && wipPaymentPlanConfiguration.amountPerPayment.isGreaterThan(0)">
+                <div class="col-sm-6" v-if="wipPaymentPlanConfiguration.amountPerPayment.isGreaterThan(0)">
                     <div>{{ wipPaymentPlanConfiguration.paymentPlanFrequency.listItemBag.text }} Payment Amount</div>
                     <div>{{ paymentAmountMessage }}</div>
                 </div>
@@ -129,6 +128,7 @@
     const amountToPayTodayAdjustmentCurrency = ref<RockCurrency | null | undefined>();
     const amountToPayTodayPlusAdjustmentCurrency = ref<RockCurrency | null | undefined>();
     const numberOfPayments = ref<number>(0);
+    const areAmountFieldsShown = ref<boolean>(false);
 
     //#endregion
 
@@ -139,10 +139,6 @@
      */
     const paymentPlanFrequencyItems = computed<ListItemBag[]>(() => {
         return wipPaymentPlanConfiguration.value?.paymentPlanFrequencies.map(frequency => frequency.listItemBag) ?? [];
-    });
-
-    const isPaymentPlanFrequencySelected = computed<boolean>(() => {
-        return !!wipPaymentPlanConfiguration.value?.paymentPlanFrequency.transactionFrequency.definedValueGuid;
     });
 
     const paymentAmountMessage = computed<string>(() => {
@@ -260,7 +256,7 @@
 
     function validateAmountToPayTodayLessThanRemaining(_value: unknown, _params?: unknown[]): ValidationResult {
         if (wipPaymentPlanConfiguration.value?.balanceDue.isLessThan(amountToPayToday.value ?? 0)) {
-            return "must be less than the minimum amount";
+            return "must be less than or equal to the total amount";
         }
         else {
             return true;
@@ -385,6 +381,11 @@
     watch(wipPaymentPlanConfiguration, (config) => {
         if (config) {
             updateModal(config);
+
+            // Show the amount fields once a payment frequency has been selected.
+            if (config.paymentPlanFrequency.transactionFrequency.definedValueGuid) {
+                areAmountFieldsShown.value = true;
+            }
         }
     }, {
         immediate: true
@@ -393,6 +394,10 @@
     watch(() => props.modelValue, (isShown) => {
         if (isShown && !wipPaymentPlanConfiguration.value) {
             initializeWorkInProgress();
+        }
+        else if (!isShown) {
+            // Hide the amount fields once the modal is closed.
+            areAmountFieldsShown.value = false;
         }
     }, {
         immediate: true
