@@ -118,8 +118,9 @@ describe("formatAspDate Suite", () => {
     });
 
     it("Elapsed Months less than one past the date produces singular noun", () => {
-        const date = RockDateTime.now().addMonths(-1);
-        assert.strictEqual(RockDateTime.fromParts(date.year, date.month, 1).toElapsedString(), "1 Month Ago");
+        const nowDate = RockDateTime.fromParts(2024, 6, 30);
+        const date = RockDateTime.fromParts(2024,5,14);
+        assert.strictEqual(date.toElapsedString(nowDate), "1 Month Ago");
     });
 
     it("Elapsed Months greater than one past the date produces plural noun", () => {
