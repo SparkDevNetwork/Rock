@@ -5,7 +5,10 @@
 // Table of Content           
 //  + Base Style
 //  + Alternative Style
-//  + ...
+//  + Responsive Table
+//  + Table Grid
+//  + Table States
+//  + Print Style (Obsidian)
 // =============================================================
 
 
@@ -14,7 +17,6 @@ table {
   background-color: transparent;
   margin-bottom: 0;
 
-  // Table cell sizing
   col[class*="col-"] {
     position: static; // Prevent border hiding in Firefox and IE9-11 (see https://github.com/twbs/bootstrap/issues/11623)
     display: table-column;
@@ -32,17 +34,16 @@ table {
 }
 
 caption {
-  padding-top: var(--spacing-small);
+  padding-top:    var(--spacing-small);
   padding-bottom: var(--spacing-small);
-  color: var(--color-interface-soft);
-  text-align: left;
+  color:          var(--color-interface-soft);
+  text-align:     left;
 }
 
 // th {
 //   // text-align: left; //TODO commented out for the tr to be center 
 // }
 
-// Baseline styles
 .table {
   width:          100%;
   max-width:      100%;
@@ -55,20 +56,20 @@ caption {
     > tr {
       > th,
       > td {
-        padding: var(--spacing-small);
-        line-height: var(--line-height-normal);
+        padding:        var(--spacing-small);
+        line-height:    var(--line-height-normal);
         vertical-align: top;
-        border-top: 1px solid var(--color-interface-soft);
+        border-top:     1px solid var(--color-interface-soft);
       }
     }
   }
 
   thead {
     th.required::after{
-      margin-left:  4px;
+      margin-left:  var(--spacing-tiny);
       font-family:  'FontAwesome';
       font-size:    6px;
-      font-weight:  900;
+      font-weight:  var(--font-weight-black);
       color:      #eca9a7;
       vertical-align: super;
       content:        "\f111";
@@ -93,7 +94,7 @@ caption {
       color:    var(--color-interface-stronger);
       &::after {
         display:      inline-block;
-        padding-left: 5px;
+        padding-left: var(--spacing-tiny);
         margin-right: -14px;
         font-family:  'FontAwesome';
         font-weight:  var(--font-weight-bold);
@@ -289,7 +290,7 @@ td.wrap-contents {
 .table-padded {
   td,
   th {
-    padding:  12px !important;
+    padding:  var(--spacing-medium) !important;
   }
 }
 
@@ -417,13 +418,75 @@ td.wrap-contents {
     background-color: var(--color-danger-soft); //TODO Darken by 5%
   }
 }
+
+tr.row-highlight {
+  td {
+    color:            var(--color-interface-stronger) !important;
+    background-color: var(--color-interface-soft) !important;
+  }
+}
+
 // ===================== END ALTERNATIVE STYLE =====================
 
 
 // ======================= RESPONSIVE TABLES =======================
 .table-responsive {
-  min-height: .01%; // Workaround for IE9 bug (see https://github.com/twbs/bootstrap/issues/14837)
-  overflow-x: auto;
+  min-height:   .01%; // Workaround for IE9 bug (see https://github.com/twbs/bootstrap/issues/14837)
+  width:        100%;
+  overflow-x:   auto;
+  overflow-y:   hidden;
+  -webkit-overflow-scrolling: touch;
+  -ms-overflow-style: -ms-autohiding-scrollbar;
+
+  .grid & {
+    margin-bottom:  0;
+    border:         0;
+  }
+
+  th[data-priority],
+  td[data-priority] {
+    display: none;
+  }
+
+  th[data-priority="1"],
+  td[data-priority="1"] {
+    display: table-cell;
+  }
+
+  @media screen and (min-width: 480px) {
+    th[data-priority="2"],
+    td[data-priority="2"] {
+      display: table-cell;
+    }
+  }
+
+  @media screen and (min-width: 640px) {
+    th[data-priority="3"],
+    td[data-priority="3"] {
+      display: table-cell;
+    }
+  }
+
+  @media screen and (min-width: 800px) {
+    th[data-priority="4"],
+    td[data-priority="4"] {
+      display: table-cell;
+    }
+  }
+
+  @media screen and (min-width: 960px) {
+    th[data-priority="5"],
+    td[data-priority="5"] {
+      display: table-cell;
+    }
+  }
+
+  @media screen and (min-width: 1120px) {
+    th[data-priority="6"],
+    td[data-priority="6"] {
+      display: table-cell;
+    }
+  }
 
   @media screen and (max-width: $screen-small) {
     width:              100%;
@@ -432,11 +495,8 @@ td.wrap-contents {
     -ms-overflow-style: -ms-autohiding-scrollbar;
     border:             1px solid var(--color-interface-soft);
 
-    // Tighten up spacing
     > .table {
       margin-bottom: 0;
-
-      // Ensure the content doesn't wrap
       > thead,
       > tbody,
       > tfoot {
@@ -449,11 +509,9 @@ td.wrap-contents {
       }
     }
 
-    // Special overrides for the bordered tables
     > .table-bordered {
       border: 0;
 
-      // Nuke the appropriate borders so that the parent can handle them
       > thead,
       > tbody,
       > tfoot {
@@ -469,9 +527,6 @@ td.wrap-contents {
         }
       }
 
-      // Only nuke the last row's bottom-border in `tbody` and `tfoot` since
-      // chances are there will be only one `tr` in a `thead` and that would
-      // remove the border altogether.
       > tbody,
       > tfoot {
         > tr:last-child {
@@ -517,7 +572,7 @@ td.wrap-contents {
 
   tfoot > tr:last-child {
     td:first-child {
-      border-bottom-left-radius:  var(--rounded-small);
+      border-bottom-left-radius:    var(--rounded-small);
     }
 
     td:last-child {
@@ -528,16 +583,16 @@ td.wrap-contents {
 
 .grid-columncommand {
   .btn {
-    width: 34px;
-    padding: var(--spacing-small) 0;
+    width:    34px;
+    padding:  var(--spacing-small) 0;
   }
 
   .btn-default,
   .btn-security,
   .btn-danger {
     background-color: transparent;
-    border-color: transparent;
-    box-shadow: none;
+    border-color:     transparent;
+    box-shadow:       none;
   }
 
   .btn-default,
@@ -553,8 +608,8 @@ td.wrap-contents {
     background: transparent;
     &:active,
     &:hover {
-      color: var(--color-danger-strong);
-      background: var(--color-danger-soft); //TODO fade by 10%
+      color:        var(--color-danger-strong);
+      background:   var(--color-danger-soft); //TODO fade by 10%
       border-color: transparent;
     }
 
@@ -578,8 +633,6 @@ td.wrap-contents {
   position: static; // the default for this is relative, but this causes the scrollbar to always show until you resize the window, then it goes away
 }
 
-
-// Filter
 .grid-filter {
   padding:            0;
   color:              var(--color-interface-stronger);
@@ -595,7 +648,7 @@ td.wrap-contents {
 
     h3 {
       display:      inline;
-      margin:       0 2px 0 6px;
+      margin:       0 var(--spacing-tiny) 0 var(--spacing-small);
       font-size:    var(--font-size-small);
       font-weight:  var(--font-weight-light);
       line-height:  16px;
@@ -622,22 +675,20 @@ td.wrap-contents {
   h4 {
     margin:       0;
     font-size:    var(--font-size-h5);
-    font-weight:  400;
+    font-weight:  var(--font-weight-regular);
   }
 
   .grid-filter-entry,
   .grid-filter-overview fieldset {
     padding:        var(--spacing-medium);
-    padding-top:    37px;
+    padding-top:    37px;   //TODO this is harded coded 
     border-bottom:  1px solid var(--color-interface-softer); //TODO darken softer by 10%
   }
 
-  // adjust the background color of pickers in the filters
   .picker .picker-label {
     color: var(--color-interface-stronger);
   }
 }
-
 
 .grid-filter-entry legend + .control-group {
   margin-top: 0;
@@ -645,7 +696,7 @@ td.wrap-contents {
 
 // pagination
 .grid-paging {
-  padding: 5px 0;
+  padding: var(--spacing-tiny) 0;
 
   .grid-pager {
     float:          right;
@@ -655,12 +706,12 @@ td.wrap-contents {
     li {
       > a {
         min-width:  23px;
-        padding:    5px 12px;
-        margin:     0 8px 0 0;
+        padding:    var(--spacing-tiny) var(--spacing-medium);
+        margin:     0 var(--spacing-small) 0 0;
         color:      var(--color-interface-stronger);
         text-align: center;
         background-color: transparent;
-        border-color: transparent;
+        border-color:     transparent;
       }
 
       &.disabled > a {
@@ -687,30 +738,28 @@ td.wrap-contents {
 
   .grid-itemcount {
     float:        left;
-    margin-top:   7px;
+    margin-top:   var(--spacing-small);
     margin-left:  10px;
     font-size:    var(--font-size-small);
   }
 }
 
-// columns
 td.grid-col-actions {
   text-align: right;
 }
 
-// actions
 .grid-actions {
-  padding:    5px 7px;
-  margin:     0 0 0 2px;
-  font-size:  var(--font-size-regular);
-  border:     0;
-  box-shadow: none;
-  transition: color 250ms;
-  text-align: right;
+  padding:          var(--spacing-tiny) var(--spacing-small);
+  margin:           0 0 0 2px;
+  font-size:        var(--font-size-regular);
+  border:           0;
+  box-shadow:       none;
+  transition:       color 250ms;
+  text-align:       right;
   background-color: var(--color-interface-softest);
 
   .btn {
-    margin-left: 8px;
+    margin-left: var(--spacing-small);
   }
   
   &:hover {
@@ -787,41 +836,41 @@ td.grid-actions {
   > tbody > tr > th,
   > thead > tr > td,
   > thead > tr > th {
-    padding: var(--spacing-medium) 16px var(--spacing-medium) 12px;
-    border-width: 0;
+    padding:          var(--spacing-medium) var(--spacing-medium) var(--spacing-medium) 12px;
+    border-width:     0;
     border-top-width: 1px;
   }
   > thead > tr > td,
   > thead > tr > th {
-    padding: var(--spacing-medium) 0 var(--spacing-medium) 12px;
+    padding:        var(--spacing-medium) 0 var(--spacing-medium) 12px;
     vertical-align: middle;
 
     // Remove padding offset on right
     &[align="right"] {
-      padding-right: 17px;
+      padding-right: var(--spacing-medium);
     }
 
     // Remove padding offset on center
     &[align="center"] {
-      padding: var(--spacing-medium) 6px;
+      padding: var(--spacing-medium) var(--spacing-small);
     }
   }
   > thead > tr.grid-header-bold > th {
-    padding: var(--spacing-medium) 17px var(--spacing-medium) 12px;
+    padding: var(--spacing-medium) var(--spacing-medium) var(--spacing-medium) 12px;
   }
 
   > tbody > tr > td {
     &.grid-columnreorder {
-      padding-top: 18px;
+      padding-top: var(--spacing-medium);
     }
     &.grid-row-header {
-      font-weight: 700;
+      font-weight:  var(--font-weight-bold);
       border-right: 1px solid var(--color-interface-softer);
     }
 
     &.grid-columncommand {
-      width: 34px;
-      min-width: 34px;
+      width:      34px; //TODO Harded coded sizing
+      min-width:  34px;
       vertical-align: middle;
     }
 
@@ -838,9 +887,9 @@ td.grid-actions {
 
     > tr > td,
     > tr > th {
-      color: var(--color-interface-stronger);
-      background: var(--color-interface-softest);
-      border-top: 1px solid var(--color-interface-softest);
+      color:          var(--color-interface-stronger);
+      background:     var(--color-interface-softest);
+      border-top:     1px solid var(--color-interface-softest);
     }
   }
 
@@ -862,14 +911,14 @@ td.grid-actions {
   }
 
   > tbody > tr > td.grid-columncommand {
-    padding: 6px;
+    padding: var(--spacing-small);
   }
 }
 
 .table{
 
   .grid-icon img {
-    width: 100%;
+    width:     100%;
     max-width: 120px;
   }
 
@@ -884,13 +933,13 @@ td.grid-actions {
 
   > tbody > tr.grid-row-bold {
     td {
-      color: var(--color-interface-stronger);;
-      vertical-align: top !important;
+      color:            var(--color-interface-stronger);;
+      vertical-align:   top !important;
       background-color: var(--color-interface-softest);;
     }
 
     &:hover td {
-      color: var(--color-interface-stronger) !important;
+      color:            var(--color-interface-stronger) !important;
       background-color: var(--color-interface-softest); //TODO lightne ui softest by 10%
     }
   }
@@ -918,9 +967,9 @@ td.grid-actions {
 
 .grid-select-cell {
   .photo-icon {
-    display:  inline-block;
-    width:    var(--spacing-large);
-    height:   var(--spacing-large);
+    display:        inline-block;
+    width:          var(--spacing-large);
+    height:         var(--spacing-large);
     vertical-align: top;
   }
 
@@ -931,14 +980,7 @@ td.grid-actions {
 // ===================== END TABLE GRID =====================
 
 
-tr.row-highlight {
-  td {
-    color:            var(--color-interface-stronger) !important;
-    background-color: var(--color-interface-soft) !important;
-  }
-}
-
-// inactive row
+// ======================= TABLE STATES =====================
 .table > tbody > tr.is-inactive {
   > td {
     color: var(--color-interface-medium); //TODO lightent ui medium by 30%
@@ -956,70 +998,7 @@ tr.row-highlight {
     color: var(--color-danger-strong);
   }
 }
-
-// Responsive Columns
-// unlike Bootstrap's original .table-responsive, this is applied for all widths. (i.e. NOT only applied <768px)
-.table-responsive {
-  //position: relative;  // commented out to get pop-ups from being trimmed JME 10/8/2015
-  width:        100%;
-  overflow-x:   auto;
-  overflow-y:   hidden;
-  -webkit-overflow-scrolling: touch;
-  -ms-overflow-style: -ms-autohiding-scrollbar;
-
-  // If .table-responsive is inside of a grid assume that the block will style correctly
-  .grid & {
-    margin-bottom:  0;
-    border:         0;
-  }
-
-  // classes to show and hide columns based on their priority
-  th[data-priority],
-  td[data-priority] {
-    display: none;
-  }
-
-  th[data-priority="1"],
-  td[data-priority="1"] {
-    display: table-cell;
-  }
-
-  @media screen and (min-width: 480px) {
-    th[data-priority="2"],
-    td[data-priority="2"] {
-      display: table-cell;
-    }
-  }
-
-  @media screen and (min-width: 640px) {
-    th[data-priority="3"],
-    td[data-priority="3"] {
-      display: table-cell;
-    }
-  }
-
-  @media screen and (min-width: 800px) {
-    th[data-priority="4"],
-    td[data-priority="4"] {
-      display: table-cell;
-    }
-  }
-
-  @media screen and (min-width: 960px) {
-    th[data-priority="5"],
-    td[data-priority="5"] {
-      display: table-cell;
-    }
-  }
-
-  @media screen and (min-width: 1120px) {
-    th[data-priority="6"],
-    td[data-priority="6"] {
-      display: table-cell;
-    }
-  }
-}
-
+// ===================== END TABLE STATES =====================
 
 // ======================= PRINT STYLES (OBSIDIAN) =======================
 @media print {

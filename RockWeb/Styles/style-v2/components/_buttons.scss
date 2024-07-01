@@ -45,8 +45,8 @@
   &.active {
     &:focus,
     &.focus {
-      outline:          5px auto -webkit-focus-ring-color; // outline: 5px auto -webkit-focus-ring-color;
-      outline-offset:   -2px; //-2px
+      outline:          5px auto -webkit-focus-ring-color;
+      outline-offset:   -2px;
     }
   }
 
@@ -377,7 +377,7 @@
 }
 
 .btn-square {
-  width: 38px;
+  width: 38px; // TODO Hard coded width
   padding: var(--spacing-small) 0;
 
   &.btn-xs {
@@ -389,12 +389,12 @@
   &.btn-sm {
     width: 34px;
     height: 34px;
-    padding: (@padding-small-vertical - 2) 0;
+    padding: calc(var(--spacing-small) - 2) 0;
   }
 
   i.fa {
     width: auto;
-    line-height: @line-height-base;
+    line-height: var(--line-height-normal);
     text-align: center;
   }
 }
@@ -425,6 +425,13 @@
     border-color:     var(--color-danger-strong);
   }
 }
+
+.btn-label {
+  padding:      5px 5px 4px; //TODO Doesn't use variable 
+  margin-top:   -1px;
+  font-size:    var(--font-size-xsmall);
+  line-height:  var(--line-height-tight);
+}
 // ======================== END ALTERNAVTIVE BUTTON ========================
  
 
@@ -445,16 +452,16 @@
 
 .btn-xs{
   padding:        1px 5px;
-  font-size:      12px;
+  font-size:      var(--font-size-xsmall);
   line-height:    var(--line-height-normal);
-  border-radius:  5px;
+  border-radius:  var(--rounded-small);
 }
 // ======================== END BUTTON SIZE ========================
 
 
 // Make a button look and behave like a link
 .btn-link {
-  font-weight:    400;
+  font-weight:    var(--font-weight-regular);
   color:          var(--color-link);
   border-radius:  0;
 
@@ -495,7 +502,7 @@
 
 // Vertically space out multiple block buttons
 .btn-block + .btn-block {
-  margin-top: 5px;
+  margin-top: var(--spacing-tiny);
 }
 
 // Specificity overrides

@@ -68,8 +68,8 @@
 }
 
 .config-bar {
-  font-size:    16px;
-  line-height:  1.5;
+  font-size:    var(--font-size-regular);
+  line-height:  var(--line-height-normal);
 
   &,
   a {
@@ -130,7 +130,7 @@
   z-index:      $zindex-modal - 1;
   width:        100%;
   height:       36px;
-  padding:      8px 12px 0;
+  padding:      var(--spacing-small) 12px 0;
   margin-right: 0;
   color:      #fff;
   background:   var(--color-interface-stronger);
@@ -146,7 +146,7 @@
   > span {
     display:        none;
     margin-top:     3px;
-    margin-bottom:  4px;
+    margin-bottom:  var(--spacing-tiny);
     font-size:      12px;
     text-align:     center;
   }
@@ -158,7 +158,7 @@
   > span.cms-admin-footer-property {
     padding:          0 6px;
     background-color: var(--adminbar-bg); /*TODO lightening this by 10% when css mix() is available*/
-    border-radius:    2px;
+    border-radius:    var(--rounded-tiny);
   }
 
   a {
@@ -171,7 +171,7 @@
   }
 
   .button-bar {
-    margin-top:   -8px;
+    margin-top:   calc(var(--spacing-small) * -1);
     margin-left:  12px;
     text-align:   center;
   }

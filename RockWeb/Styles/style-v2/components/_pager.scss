@@ -1,0 +1,72 @@
+
+
+// LABELS STYLE
+
+
+// =============================================================
+// Table of Content           
+//  + Base Style              
+// =============================================================
+
+
+// ===================== BASE STYLE =====================
+.pager {
+  padding-left: 0;
+  margin:       var(--spacing-large) 0;
+  text-align:   center;
+  list-style:   none;
+  &:before,
+  &:after {
+    display: table; // 2
+    content: " "; // 1
+  }
+  &:after {
+    clear:    both;
+  }
+  li {
+    display:  inline;
+    > a,
+    > span {
+      display:            inline-block;
+      padding:            var(--spacing-tiny) var(--spacing-medium);
+      background-color:   var(--color-interface-softest);
+      border:             1px solid var(--color-interface-soft);
+      border-radius:      var(--rounded-xlarge);
+    }
+
+    > a:hover,
+    > a:focus {
+      text-decoration: none;
+      background-color: var(--color-interface-soft);
+    }
+  }
+
+  .next {
+    > a,
+    > span {
+      float: right;
+    }
+  }
+
+  .previous {
+    > a,
+    > span {
+      float: left;
+    }
+  }
+
+  .disabled {
+    > a,
+    > a:hover,
+    > a:focus,
+    > span {
+      color:              var(--color-interface-medium);
+      cursor:             not-allowed;
+      background-color:   var(--color-interface-softest);
+    }
+  }
+}
+//=================== END BASE STYLE ===================
+
+
+

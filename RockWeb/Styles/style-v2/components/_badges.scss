@@ -70,6 +70,19 @@
   .nav-pills > li > a > & {
     margin-left: 3px;
   }
+  
+  .fa-square::before,
+  .fa-circle::before {
+    display: block;
+    width: 1em;
+    height: 1em;
+    content: " ";
+    background: currentColor;
+  }
+
+  .fa-circle::before {
+    border-radius: 50%;
+  }
 }
 // ======================== END BASE STYLE ========================
 
@@ -108,18 +121,3 @@
 }
 
 
-//TODO don't know what this does
-// .badge {
-//   .fa-square::before,
-//   .fa-circle::before {
-//     display: block;
-//     width: 1em;
-//     height: 1em;
-//     content: " ";
-//     background: currentColor;
-//   }
-
-//   .fa-circle::before {
-//     border-radius: 50%;
-//   }
-// }

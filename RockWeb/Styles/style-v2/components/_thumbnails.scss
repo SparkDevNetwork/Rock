@@ -1,0 +1,44 @@
+
+// THUMBNAIL STYLE
+
+
+// =============================================================
+// Table of Content           
+//  + Base Style              
+// =============================================================
+
+
+// ===================== BASE STYLE =====================
+.thumbnail {
+  display:          block;
+  padding:          var(--spacing-tiny);
+  margin-bottom:    var(--spacing-large);
+  line-height:      var(--line-height-normal);
+  background-color: var(--color-interface-softest);
+  border:           1px solid var(--color-interface-soft);
+  border-radius:    var(--rounded-small);
+  transition:       border .2s ease-in-out;
+
+  > img,
+  a > img {
+    display:      block;
+    max-width:    100%; 
+    height:       auto;
+    margin-right: auto;
+    margin-left:  auto;
+  }
+
+  // Add a hover state for linked versions only
+  a &:hover,
+  a &:focus,
+  a &.active {
+    border-color: var(--color-link);
+  }
+
+  // Image captions
+  .caption {
+    padding:  var(--spacing-small);
+    color:    var(--color-interface-stronger);
+  }
+}
+// =================== END BASE STYLE ===================

@@ -1,0 +1,141 @@
+
+
+// THUMBNAIL STYLE
+
+
+// =============================================================
+// Table of Content           
+//  + Base Style        
+//  + Screen reader      
+// =============================================================
+
+
+* {
+  box-sizing: border-box;
+}
+*:before,
+*:after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size:                      0.875rem;
+  -webkit-tap-highlight-color:  rgba(0, 0, 0, 0);
+}
+
+body {
+  font-family:        var(--font-family-sans);
+  font-size:          var(--font-size-regular);
+  line-height:        var(--line-height-normal);
+  color:              var(--color-interface-stronger);
+  background-color:   var(--color-interface-softest);
+}
+
+input,
+button,
+select,
+textarea {
+  font-family:  inherit;
+  font-size:    inherit;
+  line-height:  inherit;
+}
+
+a {
+  color:            var(--color-link);
+  text-decoration:  none;
+
+  &:hover,
+  &:focus {
+    color:            var(--color-link-hover);
+    text-decoration:  none;
+  }
+
+  &:focus {
+    outline:          5px auto -webkit-focus-ring-color;
+    outline-offset:   -2px;
+  }
+}
+
+// Figures
+figure {
+  margin: 0;
+}
+
+// Images
+img {
+  vertical-align:   middle;
+}
+
+// Horizontal rules
+hr {
+  margin-top:       var(--spacing-large);
+  margin-bottom:    var(--spacing-large);
+  border:           0;
+  border-top:       1px solid var(--color-interface-soft);
+}
+
+
+// ===================== BASE STYLE =====================
+.img-fluid,
+.img-responsive {
+  display:          block;
+  max-width:        100%; 
+  height:           auto;
+}
+
+// Rounded corners
+.img-rounded {
+  border-radius:    var(--rounded-small);
+}
+
+// Image thumbnails
+.img-thumbnail {
+  padding:          var(--spacing-small);
+  line-height:      var(--line-height-normal);
+  background-color: var(--color-interface-softest);
+  border:           1px solid var(--color-interface-stronger);
+  border-radius:    var(--rounded-small);
+  transition:       all .2s ease-in-out;
+
+  // Keep them at most 100% wide
+  display:          inline-block;
+  max-width:        100%; 
+  height:           auto;
+}
+
+// Perfect circle
+.img-circle {
+  border-radius: 50%; 
+}
+// =================== END BASE STYLE ===================
+
+
+// ===================== SCREEN READER =====================
+.sr-only {
+  position: absolute;
+  width:    1px;
+  height:   1px;
+  padding:  0;
+  margin:   -1px;
+  overflow: hidden;
+  clip:     rect(0, 0, 0, 0);
+  border:   0;
+}
+
+.sr-only-focusable {
+  &:active,
+  &:focus {
+    position: static;
+    width:    auto;
+    height:   auto;
+    margin:   0;
+    overflow: visible;
+    clip:     auto;
+  }
+}
+// =================== END SCREEN READER ===================
+
+// iOS "clickable elements" fix for role="button"
+[role="button"] {
+  cursor: pointer;
+}

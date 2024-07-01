@@ -1,0 +1,81 @@
+
+
+//  MEDIA STYLE
+
+
+// =============================================================
+// Table of Content           
+//  + Base Style              
+//  + Positioning       
+// =============================================================
+
+
+// ======================== BASE STYLE ========================
+.media {
+  // Proper spacing between instances of .media
+  margin-top: var(--spacing-medium);
+
+  &:first-child {
+    margin-top: 0;
+  }
+}
+
+.media-object {
+  display: block;
+
+  // Fix collapse in webkit from max-width: 100% and display: table-cell.
+  &.img-thumbnail {
+    max-width: none;
+  }
+}
+
+.media,
+.media-body {
+  overflow: hidden;
+  zoom: 1;
+}
+
+.media-body {
+  width: 10000px;
+}
+
+.media-heading {
+  margin-top: 0;
+  margin-bottom: var(--spacing-tiny);
+}
+// ====================== END BASE STYLE ======================
+
+
+// ======================== POSITIONING ========================
+.media-right,
+.media > .pull-right {
+  padding-left: var(--spacing-small);
+}
+
+.media-left,
+.media > .pull-left {
+  padding-right: var(--spacing-small);
+}
+
+.media-left,
+.media-right,
+.media-body {
+  display: table-cell;
+  vertical-align: top;
+}
+
+.media-middle {
+  vertical-align: middle;
+}
+
+.media-bottom {
+  vertical-align: bottom;
+}
+// ====================== END POSITIONING ======================
+
+
+// Media list variation
+.media-list {
+  padding-left: 0;
+  list-style: none;
+}

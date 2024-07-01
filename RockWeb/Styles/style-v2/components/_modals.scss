@@ -64,7 +64,7 @@ body.modal-open,
 .modal-dialog {
   position: relative;
   width:    auto;
-  margin:   10px;
+  margin:   var(--spacing-small);
 }
 
 .modal-content {
@@ -111,7 +111,7 @@ body.modal-open,
   // Properly space out buttons
   .btn + .btn {
     margin-bottom:  0;
-    margin-left:    5px;
+    margin-left:    var(--spacing-tiny);
   }
 
   // but override that for button groups
@@ -136,8 +136,8 @@ body.modal-open,
 	bottom:   0;
 	left:     0;
 	right:    0;
-	background: #fff;
-	border-radius: 6px;
+	background:     var(--color-interface-softest);
+	border-radius:  var(--rounded-small);
 }
 // ===================== END BASE STYLE =====================
 
@@ -152,7 +152,7 @@ body.modal-open,
   -webkit-overflow-scrolling:   touch;
 }
 
-@media (max-width: 979px) {
+@media (max-width: $screen-medium) {
 	.modal-open.page-overflow .page-container .navbar-fixed-top,
 	.modal-open.page-overflow .page-container .navbar-fixed-bottom  {
 		overflow-y: visible;
@@ -220,7 +220,7 @@ body.modal-open,
 .modal-backdrop.fade.in{
 	opacity:      0.7;
 	filter:       alpha(opacity=70);
-	background: #fff;
+	background:   var(--color-interface-softest);
 }
 
 /* Modal Overflow */
@@ -244,7 +244,7 @@ body.modal-open,
 	position: absolute;
 	top:      50%;
 	left:     50%;
-	margin:   -12px 0 0 -12px;
+	margin:   calc(var(--rounded-large) * -1) 0 0 calc(var(--rounded-large) * -1);
 }
 
 .animated {
@@ -337,8 +337,8 @@ body.rock-modal {
     }
 
     .close {
-      margin-top: -2px;
-      padding:          6px;
+      margin-top:       -2px;
+      padding:          var(--spacing-small);
       text-decoration:  none;
       color:            var(--color-interface-strongest);
       text-shadow:      none;
@@ -398,7 +398,7 @@ body.rock-modal {
 .rock-modal {
   .modal-footer .btn {
     float:        right;
-    margin-left:  5px;
+    margin-left:  var(--spacing-tiny);
   }
 }
 
@@ -454,8 +454,7 @@ body.rock-modal {
 	}
 }
 
-// TODO should change to $screen-medium
-@media (max-width: 979px) {
+@media (max-width: $screen-medium) {
 	.modal,
 	.modal.container,
 	.modal.modal-overflow 	{
@@ -491,3 +490,5 @@ body.rock-modal {
 	}
 }
 // ===================== END MEDIA QUERY =====================
+
+

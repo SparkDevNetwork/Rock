@@ -1,0 +1,61 @@
+
+// JUMBOTRON STYLE
+
+
+// =============================================================
+// Table of Content           
+//  + Base Style              
+// =============================================================
+
+
+// ======================== BASE STYLE ========================
+.jumbotron {
+  padding-top:      var(--spacing-large);
+  padding-bottom:   var(--spacing-large);
+  margin-bottom:    var(--spacing-large);
+  color:            inherit;
+  background-color: var(--color-interface-softer);
+
+  h1,
+  .h1 {
+    color: inherit;
+  }
+
+  p {
+    margin-bottom:  calc(var(--spacing-large) * 0.5);
+    font-size:      calc(var(--font-size-h6) * 1.5);
+    font-weight:    200;
+  }
+
+  > hr {
+    border-top-color: var(--color-interface-softer); //TODO darken by 10% when available
+  }
+
+  .container &,
+  .container-fluid & {
+    padding-right:  calc($grid-gutter-width * 0.5);
+    padding-left:   calc($grid-gutter-width * 0.5);
+    border-radius:  var(--rounded-small); // Only round corners at higher resolutions if contained in a container
+  }
+
+  .container {
+    max-width: 100%;
+  }
+
+  @media screen and (min-width: $screen-small) {
+    padding-top:    calc(var(--spacing-large) * 1.6);
+    padding-bottom: calc(var(--spacing-large) * 1.6);
+
+    .container &,
+    .container-fluid & {
+      padding-right:  calc(var(--spacing-large) * 2);
+      padding-left:   calc(var(--spacing-large) * 2);
+    }
+
+    h1,
+    .h1 {
+      font-size: calc(var(--font-size-h6) * 4.5);
+    }
+  }
+}
+// ====================== END BASE STYLE ======================
