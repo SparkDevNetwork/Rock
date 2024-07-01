@@ -24,6 +24,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Lms;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
@@ -748,15 +749,16 @@ namespace Rock.Blocks.Lms
                     .ToList()
                     .OrderBy( a => a.LearningActivity.Order );
 
+                var components = LearningActivityContainer.Instance.Components;
+
                 // Return all activities for the course.
-                // TODO: Update Component selections once those classes are defined.
                 var gridBuilder = new GridBuilder<LearningActivityCompletion>()
                     .AddTextField( "idKey", a => a.IdKey )
                     .AddTextField( "name", a => a.LearningActivity.Name )
                     .AddField( "type", a => a.LearningActivity.ActivityComponentId )
-                    .AddField( "componentIconCssClass", a => "fa fa-list" )
-                    .AddField( "componentHighlightColor", a => "#735f95" )
-                    .AddField( "componentName", a => "Check-Off" )
+                    .AddField( "componentIconCssClass", a => components.FirstOrDefault( c => c.Value.Value.EntityType.Id == a.LearningActivity.ActivityComponentId ).Value.Value.IconCssClass )
+                    .AddField( "componentHighlightColor", a => components.FirstOrDefault( c => c.Value.Value.EntityType.Id == a.LearningActivity.ActivityComponentId ).Value.Value.HighlightColor )
+                    .AddField( "componentName", a => components.FirstOrDefault( c => c.Value.Value.EntityType.Id == a.LearningActivity.ActivityComponentId ).Value.Value.Name )
                     .AddField( "dateCompleted", a => a.CompletedDateTime )
                     .AddField( "dateAvailable", a => a.AvailableDateTime )
                     .AddField( "dueDate", a => a.DueDate )

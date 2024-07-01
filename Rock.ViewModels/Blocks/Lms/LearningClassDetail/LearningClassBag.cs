@@ -103,6 +103,12 @@ namespace Rock.ViewModels.Blocks.Lms.LearningClassDetail
     public class LearningClassFacilitatorBag: EntityBagBase
     {
         /// <summary>
+        /// Gets or sets the email for the facilitator.
+        /// </summary>
+
+        public string FacilitatorEmail { get; set; }
+
+        /// <summary>
         /// Gets or sets the facilitator name.
         /// </summary>
         public string FacilitatorName { get; set; }

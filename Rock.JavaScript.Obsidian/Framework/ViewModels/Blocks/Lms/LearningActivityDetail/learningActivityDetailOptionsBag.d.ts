@@ -31,4 +31,7 @@ export type LearningActivityDetailOptionsBag = {
 
     /** Gets or sets the list of available activity types. */
     activityTypes?: LearningActivityComponentBag[] | null;
+
+    /** Gets or sets whether any students have completed this activity yet. */
+    hasCompletions: boolean;
 };

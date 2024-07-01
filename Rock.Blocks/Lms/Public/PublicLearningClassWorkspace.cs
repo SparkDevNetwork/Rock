@@ -21,6 +21,8 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 
+using DotLiquid.Util;
+
 using Rock.Attribute;
 using Rock.Cms.StructuredContent;
 using Rock.Data;
@@ -30,6 +32,8 @@ using Rock.Utility;
 using Rock.ViewModels.Blocks.Lms.LearningActivityCompletionDetail;
 using Rock.ViewModels.Blocks.Lms.LearningActivityComponent;
 using Rock.ViewModels.Blocks.Lms.LearningActivityDetail;
+using Rock.ViewModels.Blocks.Lms.LearningClassAnnouncementDetail;
+using Rock.ViewModels.Blocks.Lms.LearningClassContentPageDetail;
 using Rock.ViewModels.Blocks.Lms.LearningClassDetail;
 using Rock.ViewModels.Blocks.Lms.PublicLearningClassWorkspace;
 using Rock.ViewModels.Utility;
@@ -53,9 +57,9 @@ namespace Rock.Blocks.Lms
         Key = AttributeKey.FacilitatorPortalPage,
         Order = 1 )]
 
-    [CodeEditorField( "Header Template",
+    [CodeEditorField( "Lava Header Template",
         Key = AttributeKey.HeaderTemplate,
-        Description = "The lava template showing the program list. Merge fields include: Course, Activities, Facilitators and other Common Merge Fields. <span class='tip tip-lava'></span>",
+        Description = "The lava template to use to render the header on the page. Merge fields include: Course, Activities, Announcements, Facilitators, Content Pages and other Common Merge Fields. <span class='tip tip-lava'></span>",
         EditorMode = CodeEditorMode.Lava,
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
@@ -78,7 +82,6 @@ namespace Rock.Blocks.Lms
         IsRequired = true,
         DefaultValue = "Show",
         Order = 4 )]
-
 
     #endregion
 
@@ -146,7 +149,7 @@ namespace Rock.Blocks.Lms
 	</div>
 </div>
 ";
-    }
+        }
 
         private static class AttributeKey
         {
@@ -175,73 +178,38 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            var classIdKey = PageParameter( PageParameterKey.LearningClassId );
-            var courseIdKey = PageParameter( PageParameterKey.LearningCourseId );
-            var courseId = IdHasher.Instance.GetId( courseIdKey );
-            var classId = IdHasher.Instance.GetId( classIdKey ).ToIntSafe();
-
-            var course = new LearningCourseService( RockContext ).Queryable()
-                .AsNoTracking()
-                .Include( c => c.ImageBinaryFile )
-                .Include( c => c.LearningProgram )
-                .FirstOrDefault( c => c.Id == courseId );
-
-            // Initialize the box with the course properties.
-            var box =
-                course == null ?
-                new PublicLearningClassWorkspaceBox() :
-                new PublicLearningClassWorkspaceBox
-            {
-                ClassIdKey = classIdKey,
-                CourseIdKey = courseIdKey,
-                CourseImageGuid = course.ImageBinaryFile?.Guid,
-                CourseName = course.PublicName,
-                CourseSummary = course.Summary,
-                ProgamConfigurationMode = course.LearningProgram.ConfigurationMode
-            };
-
-            if ( box.CourseName.IsNullOrWhiteSpace() )
-            {
-                box.ErrorMessage = $"The {LearningCourse.FriendlyTypeName} was not found.";
-                return new PublicLearningClassWorkspaceBox();
-            }
-
-            if ( classId == 0 )
-            {
-                box.ErrorMessage = $"The Class was not found.";
-                return box;
-            }
-
-            box.NavigationUrls = GetBoxNavigationUrls();
-
-            // Get the student and current persons bags.
-            var currentPerson = GetCurrentPerson();
-
-            box.Activities = GetStudentActivities( currentPerson, classId );
-            box.Facilitators = new LearningParticipantService( RockContext )
-                .GetFacilitatorBags( classId )
-                .ToList()
-                .Select( f => new LearningClassFacilitatorBag
-                {
-                    FacilitatorName = f.Name,
-                    FacilitatorRole = f.RoleName,
-                    Facilitator = new ListItemBag
-                    {
-                        Value = f.Guid.ToString(),
-                        Text = f.Name
-                    }
-                } )
-                .ToList();
+            var box = GetPublicLearningClassWorkspaceBox( out var course );
 
             var mergeFields = this.RequestContext.GetCommonMergeFields();
             mergeFields.Add( "Course", course );
-            mergeFields.Add( "Activities",  box.Activities);
+            mergeFields.Add( "Activities", box.Activities );
+            mergeFields.Add( "Announcements", box.Announcements );
+            mergeFields.Add( "ContentPages", box.ContentPages );
             mergeFields.Add( "Facilitators", box.Facilitators );
 
             var template = GetAttributeValue( AttributeKey.HeaderTemplate ) ?? string.Empty;
             box.HeaderHtml = template.ResolveMergeFields( mergeFields );
 
             return box;
+        }
+
+        /// <summary>
+        /// Provide html to the block for it's initial rendering.
+        /// </summary>
+        /// <returns>The HTML content to initially render.</returns>
+        protected override string GetInitialHtmlContent()
+        {
+            var box = GetPublicLearningClassWorkspaceBox( out var course );
+
+            var mergeFields = this.RequestContext.GetCommonMergeFields();
+            mergeFields.Add( "Course", course );
+            mergeFields.Add( "Activities", box.Activities );
+            mergeFields.Add( "Announcements", box.Announcements );
+            mergeFields.Add( "ContentPages", box.ContentPages );
+            mergeFields.Add( "Facilitators", box.Facilitators );
+
+            var template = GetAttributeValue( AttributeKey.HeaderTemplate ) ?? string.Empty;
+            return template.ResolveMergeFields( mergeFields );
         }
 
         private List<LearningActivityCompletionBag> GetStudentActivities( Person currentPerson, int classId )
@@ -265,7 +233,7 @@ namespace Rock.Blocks.Lms
             var activityCompletionService = new LearningActivityCompletionService( rockContext );
 
             var activities = activityCompletionService.GetClassActivities( currentPerson.Id, classId )
-                .Where(a => a.LearningActivity.AssignTo == Enums.Lms.AssignTo.Student)
+                .Where( a => a.LearningActivity.AssignTo == Enums.Lms.AssignTo.Student )
                 .ToList()
                 .OrderBy( a => a.LearningActivity.Order );
 
@@ -290,7 +258,7 @@ namespace Rock.Blocks.Lms
                     activity.IsStudentCompleted ?
                     activity.LearningActivity.ActivityComponentSettingsJson :
                     activityComponent.StudentScrubbedConfiguration( activity.LearningActivity.ActivityComponentSettingsJson );
-                
+
                 var activityComponentBag = new LearningActivityComponentBag
                 {
                     Name = activityComponent?.Name,
@@ -350,6 +318,125 @@ namespace Rock.Blocks.Lms
             return studentActivities;
         }
 
+        private PublicLearningClassWorkspaceBox GetPublicLearningClassWorkspaceBox( out LearningCourse course )
+        {
+            var classIdKey = PageParameter( PageParameterKey.LearningClassId );
+            var courseIdKey = PageParameter( PageParameterKey.LearningCourseId );
+            var courseId = IdHasher.Instance.GetId( courseIdKey );
+            var classId = IdHasher.Instance.GetId( classIdKey ).ToIntSafe();
+
+            course = new LearningCourseService( RockContext ).Queryable()
+                .AsNoTracking()
+                .Include( c => c.ImageBinaryFile )
+                .Include( c => c.LearningProgram )
+                .FirstOrDefault( c => c.Id == courseId );
+
+            // Initialize the box with the course properties.
+            var box =
+                course == null ?
+                new PublicLearningClassWorkspaceBox() :
+                new PublicLearningClassWorkspaceBox
+                {
+                    ClassIdKey = classIdKey,
+                    CourseIdKey = courseIdKey,
+                    CourseImageGuid = course.ImageBinaryFile?.Guid,
+                    CourseName = course.PublicName,
+                    CourseSummary = course.Summary,
+                    ProgramConfigurationMode = course.LearningProgram.ConfigurationMode,
+                    NumberOfNotificationsToShow = GetAttributeValue( AttributeKey.NumberOfNotificationsToShow ).ToIntSafe(),
+                    ShowGrades = ShowGrades()
+                };
+
+            if ( box.CourseName.IsNullOrWhiteSpace() )
+            {
+                box.ErrorMessage = $"The {LearningCourse.FriendlyTypeName} was not found.";
+                return new PublicLearningClassWorkspaceBox();
+            }
+
+            if ( classId == 0 )
+            {
+                box.ErrorMessage = $"The Class was not found.";
+                return box;
+            }
+
+            box.ContentPages = new LearningClassContentPageService( RockContext ).Queryable()
+                .Where( c => c.LearningClassId == classId )
+                .Select( c => new
+                {
+                    c.Id,
+                    c.LearningClassId,
+                    c.Title,
+                    c.StartDateTime,
+                    c.Content
+                } )
+                .ToList()
+                .Select( c => new LearningClassContentPageBag
+                {
+                    Content = new StructuredContentHelper( c.Content ).Render(),
+                    IdKey = IdHasher.Instance.GetHash( c.Id ),
+                    LearningClassId = c.LearningClassId,
+                    StartDateTime = c.StartDateTime,
+                    Title = c.Title
+                } )
+                .ToList();
+
+            box.NavigationUrls = GetBoxNavigationUrls();
+
+            // Get the student and current persons bags.
+            var currentPerson = GetCurrentPerson();
+
+            var participantService = new LearningParticipantService( RockContext );
+
+            box.Activities = GetStudentActivities( currentPerson, classId );
+            box.Facilitators = participantService.GetFacilitatorBags( classId )
+                .ToList()
+                .Select( f => new LearningClassFacilitatorBag
+                {
+                    FacilitatorEmail = f.Email,
+                    FacilitatorName = f.Name,
+                    FacilitatorRole = f.RoleName,
+                    Facilitator = new ListItemBag
+                    {
+                        Value = f.Guid.ToString(),
+                        Text = f.Name
+                    }
+                } )
+                .ToList();
+
+            var currentPersonGuid = currentPerson.Guid.ToString();
+
+            box.IsCurrentPersonFacilitator = box.Facilitators.Any( f => f.Facilitator.Value == currentPersonGuid );
+
+            var participantIdKey = box.Activities.Select( a => a.Student.IdKey ).FirstOrDefault();
+            var participant = participantService.GetInclude( participantIdKey, p => p.LearningGradingSystemScale );
+
+            if ( box.ShowGrades && participant.LearningGradingSystemScale != null )
+            {
+                box.CurrentGrade = new ViewModels.Blocks.Lms.LearningGradingSystemScaleDetail.LearningGradingSystemScaleBag
+                {
+                    Name = participant.LearningGradingSystemScale.Name,
+                    IsPassing = participant.LearningGradingSystemScale.IsPassing,
+                    Description = participant.LearningGradingSystemScale.Description
+                };
+            }
+
+            box.Announcements = new LearningClassAnnouncementService( RockContext ).GetForClass( classId ).ToList()
+                .Select( a => new LearningClassAnnouncementBag
+                {
+                    CommunicationMode = a.CommunicationMode,
+                    CommunicationSent = a.CommunicationSent,
+                    Description = new StructuredContentHelper( a.Description ).Render(),
+                    PublishDateTime = a.PublishDateTime,
+                    Title = a.Title
+                } )
+                .OrderByDescending( a => a.PublishDateTime )
+                .ToList();
+
+            SetNotifications( box );
+
+            return box;
+        }
+
         /// <summary>
         /// Gets the box navigation URLs required for the page to operate.
         /// </summary>
@@ -397,7 +484,7 @@ namespace Rock.Blocks.Lms
                 activity.StudentComment = activityCompletionBag.StudentComment;
 
                 // Only allow student updating completion and points if this hasn't yet been completed by the facilitator.
-                if (!activity.IsFacilitatorCompleted)
+                if ( !activity.IsFacilitatorCompleted )
                 {
                     var components = LearningActivityContainer.Instance.Components;
                     var activityComponent = components.FirstOrDefault( c => c.Value.Value.EntityType.Id == activity.LearningActivity.ActivityComponentId ).Value.Value;
@@ -433,6 +520,65 @@ namespace Rock.Blocks.Lms
             }
         }
 
+        private void SetNotifications( PublicLearningClassWorkspaceBox box )
+        {
+            // Get the available activities that the student hasn't yet completed.
+            box.Notifications = box.Activities
+                .Where( a => ( a.IsAvailable && !a.IsStudentCompleted ) )
+                .Select( a => new PublicLearningClassWorkspaceNotificationBag
+                {
+                    Content = a.IsDueSoon ? $"Due on {a.DueDate.ToShortDateString()}" : $"Available on {a.AvailableDate.ToShortDateString()}",
+                    LabelText = a.IsDueSoon ? "Due Soon" : "Available",
+                    LabelType = a.IsDueSoon ? "warning" : "default",
+                    NotificationDateTime = a.DueDate ?? DateTime.MaxValue,
+                    Title = a.ActivityBag.Name
+                } )
+                .ToList();
+
+            var nextAvailableActivity = box.Activities.OrderBy( a => a.AvailableDate )
+                    .FirstOrDefault( a => !a.IsStudentCompleted && !a.IsAvailable );
+
+            // If there's no available activities that the student hasn't completed.
+            // Then show them their next avaiable activity.
+            if ( !box.Notifications.Any() && nextAvailableActivity != null )
+            {
+                box.Notifications.Add( new PublicLearningClassWorkspaceNotificationBag
+                {
+                    Content = nextAvailableActivity.ActivityBag.Name,
+                    LabelText = "Available Soon",
+                    LabelType = "default",
+                    NotificationDateTime = nextAvailableActivity.AvailableDate ?? DateTime.MaxValue,
+                    Title = nextAvailableActivity.ActivityBag.Name
+                } );
+            }
+
+            // Get any activities that have facilitator comments.
+            var activityNotifications = box.Activities
+                .Where( a => a.IsFacilitatorCompleted && a.FacilitatorComment.IsNotNullOrWhiteSpace() )
+                .Select( a => new PublicLearningClassWorkspaceNotificationBag
+                {
+                    Content = $"A facilitator commented on {a.ActivityBag.ActivityComponent.Name}: {a.ActivityBag.Name}.",
+                    LabelText = "Notification",
+                    LabelType = a.IsDueSoon ? "warning" : "default",
+                    NotificationDateTime = a.CompletedDate ?? DateTime.MaxValue,
+                    Title = "Facilitator Comment"
+                } )
+                .ToList();
+
+            box.Notifications.AddRange( activityNotifications.OrderBy( a => a.NotificationDateTime ).ToList());
+        }
+
+        /// <summary>
+        /// Determines whether the ShowGrades attribute is configured to show grades.
+        /// </summary>
+        /// <returns><c>true</c> if grades should be shown; otherwise <c>false</c></returns>
+        private bool ShowGrades()
+        {
+            return GetAttributeValue( AttributeKey.ShowGrades ) == "Show";
+        }
+
         #endregion
+
+
     }
 }

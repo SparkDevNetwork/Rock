@@ -3,19 +3,108 @@
     <div class="workspace-page-container">
         <div v-html="headerHtml"></div>
 
-        <div class="workspace-notification">
+        <div class="workspace-block-error-notification">
             <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
 
             <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
         </div>
 
         <div class="workspace-block-container">
-            <div class="workspace-header-bar" v-if="isAcademicCalendarMode">
-                <TabbedBar v-model="selectedTab"
-                   class="schedule-toolbox-group-tabs"
-                   :tabs="tabs" />
+            <div class="workspace-tab-bar panel-toolbar panel-toolbar-shadow" v-if="isAcademicCalendarMode">
+                <ul class="nav nav-pills nav-sm">
+                    <li v-for="tab in tabs" role="presentation" :class="{ 'active': tab === selectedTab }">
+                        <a href="#" @click.preventDefault="onSelectTab(tab)">{{ tab }}</a>
+                    </li>
+                </ul>
+
+                <div class="pull-right" v-if="isFacilitator">
+                    <a :href="facilitatorPortalUrl">Facilitator Portal</a>
+                </div>
             </div>
-            <div class="workspace-block-content">
+
+            <div class="content-page-section" v-if="selectedContentTab">
+                <div class="content-page-container">
+                    <div class="content-page-title h3">
+                        {{ selectedContentTab.title }}
+                    </div>
+                    <div class="content-page-content">
+                        <span v-html="selectedContentTab.content"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="workspace-class-overview" v-if="selectedTab === overviewTab">
+                <div class="main-content">
+                    <div class="notifications-header h3">
+                        Notifications
+                    </div>
+                    <div class="notifications-section">
+                        <template v-for="notification in notifications">
+                            <div class="notification-container">
+                                <div class="notification-badge">
+                                    <span :class="'badge badge-' + notification.labelType">
+                                        {{ notification.labelText }}
+                                    </span>
+                                </div>
+                                <div class="notification-title">
+                                    {{ notification.title }}
+                                </div>
+                                <div class="notification-content">
+                                    {{ notification.content }}
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <div class="announcements-section">
+                        <div class="announcements-header h3">
+                            Announcements
+                        </div>
+                        <template v-for="announcement in announcements">
+                            <div class="announcement-container">
+                                <div class="announcement-date">
+                                    {{ formattedDate(announcement.publishDateTime) }}
+                                </div>
+                                <div class="announcement-title">
+                                    {{ announcement.title }}
+                                </div>
+                                <div class="announcement-content">
+                                    <span v-html="announcement.description"></span>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+                <div class="side-content">
+                    <div class="class-progress-section">
+                        <div class="facilitators-label h4">
+                            {{ facilitatorsLabel }}
+                        </div>
+                        <div class="facilitators-list">
+                            <span v-html="facilitatorsHtml"></span>
+                        </div>
+
+                        <div class="class-progress-label h4 mt-4">
+                            Class Progress
+                        </div>
+                        <div class="class-progress-bar">
+                            <ProgressBar :percent="percentComplete" />
+                        </div>
+                        <div class="class-progress-tasks">
+                            {{ completedActivitiesCount }} out of {{ activities.length }} tasks completed
+                        </div>
+
+                        <div class="current-grade-label h4 mt-4" v-if="showGrades">
+                            Current Grade
+                        </div>
+                        <div class="current-grade" v-if="showGrades">
+                            <span v-html="currentGradeHtml"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="workspace-block-content" v-if="selectedTab === activitiesTab">
                 <div class="workspace-navigation-pane">
                     <div class="activity-navigation-item-container"
                          @click="selectActivity(activity)"
@@ -52,7 +141,7 @@
                     <div class="h1">
                         {{ viewingCompletionBag.activityBag?.name ?? "" }}
                     </div>
-                    <div class="text-muted">
+                    <div class="activity-time">
                         {{ getActivityTimeText(viewingCompletionBag) }}
                     </div>
                     <activityTypeComponent
@@ -66,14 +155,100 @@
     </div>
 </template>
 <style scoped>
-.workspace-page-container > .workspace-notification {
+
+.workspace-page-container {
+    background-color: #F5F9FA;
+
+}
+
+.workspace-block-error-notification {
     margin-top: 3.5em;
+}
+
+.workspace-tab-bar, .workspace-main-content, .main-content, .side-content {
+    background-color: #FFF;
+    padding: 16px;
+    border-radius: 12px;
+}
+
+/* muted-text */
+.announcement-date, .announcement-content, .notification-content, .class-progress-tasks, .activity-time {
+    opacity: 0.8;
+}
+
+.workspace-class-overview {
+    display: flex;
+    margin-top: 24px;
+
+    .main-content {
+        flex-grow: 1;
+    }
+
+    .side-content {
+        flex-shrink: 1;
+        margin-left: 24px;
+    }
+}
+
+.class-progress-tasks {
+    margin-top: -8px;
+}
+
+.notifications-section {
+    display: flex;
+    margin-bottom: 24px;
+
+    .notification-container {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        max-width: 300px;
+        border: 1px solid #D9EDF2;
+        border-radius: 12px;
+        padding: 16px;
+        margin-right: 8px;
+
+        .notification-badge {
+            margin-bottom: 8px;
+        }
+
+        .notification-title {
+            font-weight: bold;
+            width: fit-content;
+        }
+    }
+}
+
+.announcements-section {
+    display: flex;
+    flex-direction: column;
+
+    .announcement-title {
+        font-weight: bold;
+        margin-bottom: 8px;
+    }
+
+    .announcement-container {
+        background-color: #F5F9FA;
+        padding: 16px;
+    }
+
+    .announcement-date {
+        font-weight: bold;
+        margin-bottom: 8px;
+    }
+}
+
+.class-workspace-tabs {
+    > ul li.active > span {
+        background-color: var(--color-primary);
+        color: #fff;
+    }
 }
 
 .workspace-block-container {
     display: flex;
     flex-direction: column;
-    background-color: #fff;
     padding-top: 1em;
     padding-bottom: 1em;
     padding-left: 3em;
@@ -228,13 +403,14 @@ span.icon-stack-container i.icon {
 <script setup lang="ts">
     import { Component, computed, defineAsyncComponent, onMounted, ref, toValue } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import TabbedBar from "@Obsidian/Controls/tabbedBar.obs";
+    import ProgressBar from "@Obsidian/Controls/progressBar.obs";
     import { useConfigurationValues, useInvokeBlockAction, useReloadBlock, onConfigurationValuesChanged } from "@Obsidian/Utility/block";
     import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
     import { PublicLearningClassWorkspaceBox } from "@Obsidian/ViewModels/Blocks/Lms/PublicLearningClassWorkspace/publicLearningClassWorkspaceBox";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { ComponentScreen } from "@Obsidian/Controls/Internal/LearningActivity/learningActivity";
     import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
+    import { NavigationUrlKey } from "./PublicLearningClassWorkspace/types.partial";
 
     const config = useConfigurationValues<PublicLearningClassWorkspaceBox>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -259,18 +435,60 @@ span.icon-stack-container i.icon {
             config.activities?.find(a => a.isAvailable)
     ) ?? {} as LearningActivityCompletionBag);
 
+    const announcements = ref(config.announcements ?? []);
     const isAcademicCalendarMode = ref(config.programConfigurationMode === ConfigurationMode.AcademicCalendar);
+    const isFacilitator = ref(config.isCurrentPersonFacilitator ?? false);
+    const facilitatorPortalUrl = ref(config.navigationUrls == null ? "" : config.navigationUrls[NavigationUrlKey.FacilitatorPortalPage]);
+    const facilitators = ref(config.facilitators ?? []);
+    const notificationsToShow = ref(config.numberOfNotificationsToShow);
+    const notifications = ref(config.notifications?.filter((a, i) => i < notificationsToShow.value) ?? []);
+    const showGrades = ref(config.showGrades);
+    const currentGrade = ref(config.currentGrade);
 
-    const tabs = ["Class Overview", "Activities / Assignments"];
-    const selectedTab = "Class Overview";
+    const overviewTab = ref("Class Overview");
+    const activitiesTab = ref("Activities / Assignments");
+    const contentTabs = ref(config.contentPages ?? []);
+
+    const activityTypeComponent = ref<Component | null>(null);
 
     // #endregion
 
     // #region Computed Values
 
+    const completedActivitiesCount = computed(() => activities.value.filter(a => a.isStudentCompleted).length);
+
     const componentUrl = computed(() => viewingCompletionBag.value?.activityBag?.activityComponent?.componentUrl ?? "");
 
-    const activityTypeComponent = ref<Component | null>(null);
+    const currentGradeHtml = computed(() => {
+        if (showGrades.value === true) {
+            const labelType = currentGrade.value?.isPassing === true ? "success" : "warning";
+
+            return `<span class="label label-${labelType}">${currentGrade.value?.name ?? ""}</span>`;
+        }
+        else {
+            return "";
+        }
+    });
+
+    const facilitatorsHtml = computed(() =>
+        facilitators.value.map(f => {
+            return (f.facilitatorEmail ?? "").length > 0 ?
+                `${f.facilitatorName} <a href="mailto:${f.facilitatorEmail ?? ""}">${f.facilitatorEmail ?? ""}</a>"` :
+                f.facilitatorName;
+        }).join("<br />")
+    );
+
+    const facilitatorsLabel = computed(() => facilitators.value.length > 1 ? "Facilitators" : "Facilitator");
+
+    const percentComplete = computed(() => activities.value.length > 0 ? (completedActivitiesCount.value / activities.value.length * 100) : 0);
+
+    const selectedContentTab = computed(() => contentTabs.value.find(t => t.title?.toLowerCase() === selectedTab.value?.toLowerCase()));
+
+    const tabs = computed(() =>
+        [overviewTab.value, activitiesTab.value]
+            .concat(contentTabs.value.map(t => t.title ?? "")
+                .filter(t => t.length > 0))
+    );
 
     // #endregion
 
@@ -338,6 +556,10 @@ span.icon-stack-container i.icon {
         }
 
         return "";
+    }
+
+    function formattedDate(date: string | null | undefined): string {
+        return RockDateTime.parseISO(date ?? "")?.localDateTime?.toASPString("MMMM d, yyyy") ?? "";
     }
 
     /** The time elapsed since the specified date in a human-readable format. */
@@ -433,6 +655,13 @@ span.icon-stack-container i.icon {
         return false;
     }
 
+    function onSelectTab(tabName: string): void {
+        const queryParams = new URLSearchParams(window.location.search);
+        queryParams.set("tab", tabName ?? "");
+        history.pushState(null, "", "?" + queryParams.toString());
+        selectedTab.value = tabName;
+    }
+
     // #endregion
 
     // Handle any initial error conditions or the need to go into edit mode.
@@ -445,4 +674,9 @@ span.icon-stack-container i.icon {
             activityTypeComponent.value = defineAsyncComponent(() => import(componentUrl.value));
         }
     });
+
+    const queryParams = new URLSearchParams(window.location.search);
+    const tab = queryParams.has("tab") ? queryParams.get("tab") : "";
+    const selectedTab = ref(tabs.value.find(t => t.toLowerCase() === tab?.toLowerCase()) ?? overviewTab.value);
+
 </script>

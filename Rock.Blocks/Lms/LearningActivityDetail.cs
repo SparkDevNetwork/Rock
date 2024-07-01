@@ -118,7 +118,15 @@ namespace Rock.Blocks.Lms
                 Text = a.Name
             } ).ToList();
 
+            options.HasCompletions = ActivityHasCompletions();
+
             return options;
+        }
+
+        private bool ActivityHasCompletions()
+        {
+            var activityId = RequestContext.PageParameterAsId( PageParameterKey.LearningActivityId );
+            return new LearningActivityCompletionService( RockContext ).Queryable().Any( c => c.LearningActivityId == activityId );
         }
 
         /// <summary>
@@ -306,7 +314,17 @@ namespace Rock.Blocks.Lms
                 return false;
             }
 
-            box.IfValidProperty( nameof( box.Bag.ActivityComponent ),
+            box.IfValidProperty( nameof( box.Bag.Name ),
+                () => entity.Name = box.Bag.Name );
+
+            box.IfValidProperty( nameof( box.Bag.Description ),
+                () => entity.Description = box.Bag.Description );
+
+            // Don't allow edits to these properties once an activity has been completed.
+            // Doing so could cause unexpected behavior because configuration is done in JSON.
+            if ( !ActivityHasCompletions() )
+            {
+                box.IfValidProperty( nameof( box.Bag.ActivityComponent ),
                 () =>
                 {
                     var componentEntityTypeId = Rock.Utility.IdHasher.Instance.GetId( box.Bag?.ActivityComponent?.IdKey );
@@ -314,61 +332,57 @@ namespace Rock.Blocks.Lms
                         entity.ActivityComponentId = componentEntityTypeId.Value;
                 } );
 
-            box.IfValidProperty( nameof( box.Bag.ActivityComponentSettingsJson ),
-                () => entity.ActivityComponentSettingsJson = box.Bag.ActivityComponentSettingsJson );
+                box.IfValidProperty( nameof( box.Bag.ActivityComponentSettingsJson ),
+                    () => entity.ActivityComponentSettingsJson = box.Bag.ActivityComponentSettingsJson );
 
-            box.IfValidProperty( nameof( box.Bag.AssignTo ),
-                () => entity.AssignTo = box.Bag.AssignTo );
+                box.IfValidProperty( nameof( box.Bag.AssignTo ),
+                    () => entity.AssignTo = box.Bag.AssignTo );
 
-            box.IfValidProperty( nameof( box.Bag.AvailableDateCalculationMethod ),
-                () => entity.AvailableDateCalculationMethod = box.Bag.AvailableDateCalculationMethod );
+                box.IfValidProperty( nameof( box.Bag.AvailableDateCalculationMethod ),
+                    () => entity.AvailableDateCalculationMethod = box.Bag.AvailableDateCalculationMethod );
 
-            box.IfValidProperty( nameof( box.Bag.AvailableDateDefault ),
-                () => entity.AvailableDateDefault = box.Bag.AvailableDateDefault );
+                box.IfValidProperty( nameof( box.Bag.AvailableDateDefault ),
+                    () => entity.AvailableDateDefault = box.Bag.AvailableDateDefault );
 
-            box.IfValidProperty( nameof( box.Bag.AvailableDateOffset ),
-                () => entity.AvailableDateOffset = box.Bag.AvailableDateOffset );
+                box.IfValidProperty( nameof( box.Bag.AvailableDateOffset ),
+                    () => entity.AvailableDateOffset = box.Bag.AvailableDateOffset );
 
-            box.IfValidProperty( nameof( box.Bag.Description ),
-                () => entity.Description = box.Bag.Description );
+                box.IfValidProperty( nameof( box.Bag.DueDateCalculationMethod ),
+                    () => entity.DueDateCalculationMethod = box.Bag.DueDateCalculationMethod );
 
-            box.IfValidProperty( nameof( box.Bag.DueDateCalculationMethod ),
-                () => entity.DueDateCalculationMethod = box.Bag.DueDateCalculationMethod );
+                box.IfValidProperty( nameof( box.Bag.DueDateDefault ),
+                    () => entity.DueDateDefault = box.Bag.DueDateDefault );
 
-            box.IfValidProperty( nameof( box.Bag.DueDateDefault ),
-                () => entity.DueDateDefault = box.Bag.DueDateDefault );
+                box.IfValidProperty( nameof( box.Bag.DueDateOffset ),
+                    () => entity.DueDateOffset = box.Bag.DueDateOffset );
 
-            box.IfValidProperty( nameof( box.Bag.DueDateOffset ),
-                () => entity.DueDateOffset = box.Bag.DueDateOffset );
+                box.IfValidProperty( nameof( box.Bag.IsStudentCommentingEnabled ),
+                    () => entity.IsStudentCommentingEnabled = box.Bag.IsStudentCommentingEnabled );
 
-            box.IfValidProperty( nameof( box.Bag.IsStudentCommentingEnabled ),
-                () => entity.IsStudentCommentingEnabled = box.Bag.IsStudentCommentingEnabled );
+                box.IfValidProperty( nameof( box.Bag.Order ),
+                    () => entity.Order = box.Bag.Order );
 
-            box.IfValidProperty( nameof( box.Bag.Name ),
-                () => entity.Name = box.Bag.Name );
+                box.IfValidProperty( nameof( box.Bag.Points ),
+                    () => entity.Points = box.Bag.Points );
 
-            box.IfValidProperty( nameof( box.Bag.Order ),
-                () => entity.Order = box.Bag.Order );
+                box.IfValidProperty( nameof( box.Bag.SendNotificationCommunication ),
+                    () => entity.SendNotificationCommunication = box.Bag.SendNotificationCommunication );
 
-            box.IfValidProperty( nameof( box.Bag.Points ),
-                () => entity.Points = box.Bag.Points );
+                box.IfValidProperty( nameof( box.Bag.CompletionWorkflowType ),
+                    () => entity.CompletionWorkflowTypeId = box.Bag.CompletionWorkflowType.GetEntityId<WorkflowType>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Bag.SendNotificationCommunication ),
-                () => entity.SendNotificationCommunication = box.Bag.SendNotificationCommunication );
+                box.IfValidProperty( nameof( box.Bag.TaskBinaryFile ),
+                    () => entity.TaskBinaryFileId = box.Bag.TaskBinaryFile.GetEntityId<BinaryFile>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Bag.CompletionWorkflowType ),
-                () => entity.CompletionWorkflowTypeId = box.Bag.CompletionWorkflowType.GetEntityId<WorkflowType>( RockContext ) );
+                box.IfValidProperty( nameof( box.Bag.AttributeValues ),
+                    () =>
+                    {
+                        entity.LoadAttributes( RockContext );
 
-            box.IfValidProperty( nameof( box.Bag.TaskBinaryFile ),
-                () => entity.TaskBinaryFileId = box.Bag.TaskBinaryFile.GetEntityId<BinaryFile>( RockContext ) );
+                        entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson );
+                    } );
 
-            box.IfValidProperty( nameof( box.Bag.AttributeValues ),
-                () =>
-                {
-                    entity.LoadAttributes( RockContext );
-
-                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson );
-                } );
+            }
 
             return true;
         }

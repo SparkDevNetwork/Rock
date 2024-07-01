@@ -21,22 +21,19 @@
 // </copyright>
 //
 
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+export type PublicLearningClassWorkspaceNotificationBag = {
+    /*  Gets or sets the main content text that should be shown for this notification. */
+    content: string;
 
-/** The facilitator details for the Learning Class Detail block. */
-export type LearningClassFacilitatorBag = {
-    /** Gets or sets the identifier key of this entity. */
-    idKey: string;
+    /*  Gets or sets the label text that should be used for this notification. */
+    labelText: string;
 
-    /** Gets or sets the email for the facilitator. */
-    facilitatorEmail: string | null;
+    /*  Gets or sets the label type that should be used for this notification. */
+    labelType: string;
 
-    /** Gets or sets the facilitator list item. */
-    facilitator?: ListItemBag | null;
+    /** Gets or sets the DateTime of the notification. */
+    notificationDateTime: string;
 
-    /** Gets or sets the facilitator name. */
-    facilitatorName?: string | null;
-
-    /** Gets or sets the facilitator role. */
-    facilitatorRole?: string | null;
+    /*  Gets or sets the title that should be used for this notification. */
+    title: string;
 };

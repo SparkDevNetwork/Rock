@@ -4,6 +4,7 @@
           :data="gridDataSource"
           keyField="idKey"
           :isTitleHidden="true"
+          :hideFilterHeaderRow="true"
           :isSearchVisible="false"
           :isCountMessageVisible="false"
           :showMergeTemplate="false"
@@ -16,7 +17,7 @@
           @onSelect="onRowClicked"
           :onAddItem="isAddEnabled ? onAddItemClicked : undefined">
 
-          <template #customHeaderRow>
+          <template #gridHeaderPrepend>
             <div class="grid-title-heading">
                 <div class="grid-title">
                     {{ entityName }}

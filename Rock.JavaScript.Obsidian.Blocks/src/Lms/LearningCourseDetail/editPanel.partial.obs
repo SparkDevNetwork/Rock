@@ -198,7 +198,9 @@
     const imageFileTypeGuid = BinaryFiletype.Default;
     const showAddCourseRequirementModal = ref(false);
 
-    const requirementTypes = enumToListItemBag(RequirementTypeDescription);
+    // Manually exclude 'Corequisite'. This functionality will be added at a later time.
+    const requirementTypes = enumToListItemBag(RequirementTypeDescription).filter(l => l.text !== "Corequisite");
+
     const addRequirementType = ref<string>();
     const requiredCourse = ref<string>("");
     const courseOptions = ref<ListItemBag[]>([]);

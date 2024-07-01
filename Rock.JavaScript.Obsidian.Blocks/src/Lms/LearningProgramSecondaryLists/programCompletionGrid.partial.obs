@@ -8,6 +8,7 @@
           :isTitleHidden="true"
           :isCountMessageVisible="false"
           :isSearchVisible="false"
+          :hideFilterHeaderRow="true"
           :showMergeTemplate="false"
           :showLaunchWorkflow="false"
           :showExport="false"
@@ -15,7 +16,7 @@
           liveUpdates
           @selectItem="onSelectItem">
 
-        <template #customHeaderRow>
+        <template #gridHeaderPrepend>
             <div class="grid-title-heading">
                 <div class="grid-title">
                     {{ entityName }}

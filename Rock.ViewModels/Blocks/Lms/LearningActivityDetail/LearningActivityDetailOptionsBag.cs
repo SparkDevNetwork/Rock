@@ -36,5 +36,10 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityDetail
         /// Gets or sets the list of available activity types.
         /// </summary>
         public List<LearningActivityComponentBag> ActivityTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether any students have completed this activity yet.
+        /// </summary>
+        public bool HasCompletions { get; set; }
     }
 }

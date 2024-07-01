@@ -370,14 +370,8 @@ namespace Rock.Blocks.Lms
             box.IfValidProperty( nameof( box.Entity.Category ),
                 () => entity.CategoryId = box.Entity.Category.GetEntityId<Category>( rockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.CategoryId ),
-                () => entity.CategoryId = box.Entity.CategoryId );
-
             box.IfValidProperty( nameof( box.Entity.CompletionWorkflowType ),
                 () => entity.CompletionWorkflowTypeId = box.Entity.CompletionWorkflowType.GetEntityId<WorkflowType>( rockContext ) );
-
-            box.IfValidProperty( nameof( box.Entity.CompletionWorkflowTypeId ),
-                () => entity.CompletionWorkflowTypeId = box.Entity.CompletionWorkflowTypeId );
 
             var isMovingToOnDemandMode =
                 box.Entity.ConfigurationMode != entity.ConfigurationMode &&
@@ -403,9 +397,6 @@ namespace Rock.Blocks.Lms
 
             box.IfValidProperty( nameof( box.Entity.ImageBinaryFile ),
                 () => entity.ImageBinaryFileId = box.Entity.ImageBinaryFile.GetEntityId<BinaryFile>( rockContext ) );
-
-            box.IfValidProperty( nameof( box.Entity.ImageBinaryFileId ),
-                () => entity.ImageBinaryFileId = box.Entity.ImageBinaryFileId );
 
             box.IfValidProperty( nameof( box.Entity.IsActive ),
                 () => entity.IsActive = box.Entity.IsActive );
@@ -510,7 +501,7 @@ namespace Rock.Blocks.Lms
         /// <returns><c>true</c> if the entity was loaded and passed security checks.</returns>
         private bool TryGetEntityForEditAction( string idKey, RockContext rockContext, out LearningProgram entity, out BlockActionResult error )
         {
-            var entityService = new LearningProgramService( RockContext );
+            var entityService = new LearningProgramService( rockContext );
             error = null;
 
             // Determine if we are editing an existing entity or creating a new one.

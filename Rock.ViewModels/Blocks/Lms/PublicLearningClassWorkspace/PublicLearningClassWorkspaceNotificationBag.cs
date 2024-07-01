@@ -14,35 +14,37 @@
 // limitations under the License.
 // </copyright>
 //
-
 using System;
 
-using Rock.ViewModels.Utility;
-
-namespace Rock.ViewModels.Blocks.Lms.LearningClassContentPageDetail
+namespace Rock.ViewModels.Blocks.Lms.PublicLearningClassWorkspace
 {
     /// <summary>
-    /// The item details for the Learning Class Announcement Detail block.
+    /// Gets or sets the information required to render the notifications content within a Public Learning Class Workspace block.
     /// </summary>
-    public class LearningClassContentPageBag : EntityBagBase
+    public class PublicLearningClassWorkspaceNotificationBag
     {
         /// <summary>
-        /// Gets or sets the main content of the page.
+        /// Gets or sets the main content text that should be shown for this notification.
         /// </summary>
         public string Content { get; set; }
 
         /// <summary>
-        /// Gets or sets the LearningClassId that this content relates to.
+        /// Gets or sets the label text that should be used for this notification.
         /// </summary>
-        public int LearningClassId { get; set; }
+        public string LabelText { get; set; }
 
         /// <summary>
-        /// Gets or sets the date and time the page will be available.
+        /// Gets or sets the label type that should be used for this notification.
         /// </summary>
-        public DateTime? StartDateTime {get; set;}
+        public string LabelType { get; set; }
 
         /// <summary>
-        /// Gets or sets the title of the page.
+        /// Gets or sets the DateTime of the notification.
+        /// </summary>
+        public DateTime NotificationDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the title that should be used for this notification.
         /// </summary>
         public string Title { get; set; }
     }

@@ -184,9 +184,18 @@ namespace Rock.Model
             }
 
             return baseQuery
-                .Select( p => new { p.Id, IsFacilitator = p.GroupRole.IsLeader, p.Person.NickName, p.Person.LastName, p.Person.SuffixValueId, RoleName = p.GroupRole.Name, p.Guid } )
+                .Select( p => new {
+                    p.Id,
+                    p.Person.Email,
+                    IsFacilitator = p.GroupRole.IsLeader,
+                    p.Person.NickName,
+                    p.Person.LastName,
+                    p.Person.SuffixValueId,
+                    RoleName = p.GroupRole.Name, p.Guid
+                } )
                 .ToList().Select( p => new LearningActivityParticipantBag
                 {
+                    Email = p.Email,
                     Guid = p.Guid,
                     IdKey = Utility.IdHasher.Instance.GetHash( p.Id ),
                     IsFacilitator = p.IsFacilitator,

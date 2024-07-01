@@ -119,7 +119,7 @@
         if (campusName.length > 0) {
             labels.push({
                 title: campusName,
-                type: "link"
+                type: "campus"
             });
         }
 
@@ -160,7 +160,7 @@
 
         if (learningClassViewBag.value?.takesAttendance === true) {
             secondaryActions.push({
-                iconCssClass: "fa fa-check-square",
+                iconCssClass: "fa fa-check-square-o",
                 title: "Take Attendance",
                 type: "default",
                 handler: async () => {
