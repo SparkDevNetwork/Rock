@@ -88,9 +88,9 @@
                                @updateActions="onUpdateActions($event, Screen.Success)" />
 
                 <CheckoutSuccessScreen v-if="currentScreen === Screen.CheckoutSuccess"
-                               :configuration="configuration"
-                               :session="currentSession"
-                               @updateActions="onUpdateActions($event, Screen.CheckoutSuccess)" />
+                                       :configuration="configuration"
+                                       :session="currentSession"
+                                       @updateActions="onUpdateActions($event, Screen.CheckoutSuccess)" />
             </ContentTransition>
         </section>
 
@@ -117,7 +117,7 @@
     import SuccessScreen from "./CheckInKiosk/successScreen.partial.obs";
     import WelcomeScreen from "./CheckInKiosk/welcomeScreen.partial.obs";
     import ContentTransition from "./CheckInKiosk/contentTransition.partial.obs";
-    import { computed, ref, shallowRef } from "vue";
+    import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from "vue";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { provideKioskState } from "./CheckInKiosk/utils.partial";
     import { AdminScreen, KioskButton, Screen } from "./CheckInKiosk/types.partial";
@@ -138,13 +138,21 @@
     const currentScreen = ref<Screen | AdminScreen>(Screen.None);
     const currentScreenActions = ref<KioskButton[]>([]);
     const currentSession = shallowRef<CheckInSession>(new CheckInSession(configuration.value, http));
+    const previousScreens = shallowRef<CheckInSession[]>([]);
+    let lastActivity: number = Date.now();
+    let idleTimer: number | undefined;
+    const activityEvents = ["mousemove", "mousedown", "touchmove", "touchstart", "keydown"];
 
     const hasNavigation = computed((): boolean => {
         return currentScreen.value !== Screen.Welcome;
     });
 
     const hasBackButton = computed((): boolean => {
-        return currentScreen.value !== Screen.Welcome;
+
+        return currentScreen.value !== Screen.Welcome
+            && currentScreen.value !== Screen.Success
+            && currentScreen.value !== Screen.CheckoutSuccess
+            && previousScreens.value.length > 0;
     });
 
     const footerStatusText = computed((): string => {
@@ -202,6 +210,7 @@
 
         if (!preserveSession && screen === Screen.Welcome) {
             currentSession.value = new CheckInSession(configuration.value, http);
+            previousScreens.value = [];
         }
         else if (screen === Screen.Success) {
             // TODO: Do stuff here?
@@ -215,6 +224,8 @@
     }
 
     function onNextScreen(session: CheckInSession): void {
+        previousScreens.value = [...previousScreens.value, currentSession.value];
+
         currentSession.value = session;
 
         navigateToScreen(session.currentScreen);
@@ -225,9 +236,57 @@
     }
 
     function onBack(): void {
-        //primaryContent.value = !primaryContent.value;
+        currentSession.value = previousScreens.value[previousScreens.value.length - 1];
+
+        var newPreviousScreens: CheckInSession[] = [...previousScreens.value];
+        newPreviousScreens.splice(newPreviousScreens.length - 1, 1);
+
+        previousScreens.value = newPreviousScreens;
+        currentScreenActions.value = [];
+        currentScreen.value = currentSession.value.currentScreen;
+    }
+
+    /**
+     * Called when one of the activity producing events happens in the UI.
+     * This will reset the last activity to now, which resets the idle timeout.
+     */
+    function onWindowActivity(): void {
+        lastActivity = Date.now();
+    }
+
+    /**
+     * Called on every tick of the idle timer to check if we need to redirect
+     * back to the welcome screen.
+     */
+    function onIdleTimerCheck(): void {
+        if (currentScreen.value === Screen.Welcome) {
+            return;
+        }
+
+        if (Date.now() - lastActivity > 10000) {
+            navigateToScreen(Screen.Welcome);
+        }
     }
 
     // Read our check-in configuration and then start up.
     readConfigurationFromLocalStorage();
+
+    onMounted(() => {
+        activityEvents.forEach(ev => {
+            window.addEventListener(ev, onWindowActivity);
+        });
+
+        idleTimer = window.setInterval(onIdleTimerCheck, 1000);
+    });
+
+    onBeforeUnmount(() => {
+        activityEvents.forEach(ev => {
+            window.removeEventListener(ev, onWindowActivity);
+        });
+
+        if (idleTimer !== undefined) {
+            window.clearInterval(idleTimer);
+            idleTimer = undefined;
+        }
+    });
 </script>
