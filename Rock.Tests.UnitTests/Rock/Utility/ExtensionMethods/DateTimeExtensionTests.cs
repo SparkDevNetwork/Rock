@@ -214,8 +214,9 @@ namespace Rock.Tests.Rock.Utility.ExtensionMethods
         [TestMethod]
         public void ToElapsedString_LessThanTwoMonthsPastGivesSingularNoun()
         {
-            var date = RockDateTime.Now.AddMonths( -1 );
-            Assert.That.Equal( RockDateTime.New( date.Year, date.Month, 1 ).ToElapsedString(), "1 Month Ago" );
+            var nowDate = RockDateTime.New( 2024, 6, 30 ).Value;
+            var date = RockDateTime.New( 2024, 5, 14 ).Value;
+            Assert.That.Equal( "1 Month Ago", DateTimeExtensions.ToElapsedString( date, nowDate ) );
         }
 
         [TestMethod]
