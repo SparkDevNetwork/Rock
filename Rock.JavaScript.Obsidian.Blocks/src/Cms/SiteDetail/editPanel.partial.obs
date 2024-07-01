@@ -219,19 +219,16 @@
                               help="Enabling this feature will prevent other sites from using this sites routes and prevent routes from other sites from working on this site.
                       This means the domain in the URL used with the route must match the site's configured Domain(s). If the route is configured as 'Is Global' then this setting is ignored." />
 
-                    <CheckBox v-model="enablePageViewGeoTracking"
-                              label="Enable Page View Geo Tracking"
-                              help="Enabling this feature will allow the PopulateInteractionSessionData job to begin performing geolocation lookup on the IP addresses in the Interaction Session data. This also requires setting up a IP Address Location Service found under System Settings." />
-
                     <CheckBox v-model="disablePredictableIds"
                               label="Disable Predictable Ids"
                               help="This should be disabled only with the knowledge that the site was created/built to handle this (rare)." />
 
                 </div>
 
-                <CodeEditor v-model="pageHeaderContent" label="Page Header Content" theme="rock" mode="text" :editorHeight="200" help="The content provided here will be added to each page's head section." />
-
             </div>
+
+            <CodeEditor v-model="pageHeaderContent" label="Page Header Content" theme="rock" mode="text" :editorHeight="200" help="The content provided here will be added to each page's head section." />
+
         </Panel>
 
         <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
@@ -306,7 +303,6 @@
     const allowIndexing = propertyRef(props.modelValue?.bag?.allowIndexing ?? false, "AllowIndexing");
     const indexStartingLocation = propertyRef(props.modelValue?.bag?.indexStartingLocation ?? "", "IndexStartingLocation");
     const enableExclusiveRoutes = propertyRef(props.modelValue?.bag?.enableExclusiveRoutes ?? false, "EnableExclusiveRoutes");
-    const enablePageViewGeoTracking = propertyRef(props.modelValue?.bag?.enablePageViewGeoTracking ?? false, "EnablePageViewGeoTracking");
     const disablePredictableIds = propertyRef(props.modelValue?.bag?.disablePredictableIds ?? false, "DisablePredictableIds");
     const pageHeaderContent = propertyRef(props.modelValue?.bag?.pageHeaderContent ?? "", "PageHeaderContent");
     const siteAttributes = ref(props.modelValue?.bag?.siteAttributes ?? []);
@@ -342,7 +338,7 @@
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
     const propRefs = [description, isActive, name, theme, googleAnalyticsCode, requiresEncryption, enabledForShortening, enableVisitorTracking, enablePersonalization, favIconBinaryFile, enablePageViews,
-        siteLogoBinaryFile, enableMobileRedirect, allowedFrameDomains, allowIndexing, indexStartingLocation, enableExclusiveRoutes, enablePageViewGeoTracking, disablePredictableIds, pageHeaderContent, errorPage];
+        siteLogoBinaryFile, enableMobileRedirect, allowedFrameDomains, allowIndexing, indexStartingLocation, enableExclusiveRoutes, disablePredictableIds, pageHeaderContent, errorPage];
 
     // #endregion
 
@@ -478,7 +474,6 @@
         updateRefValue(allowIndexing, props.modelValue?.bag?.allowIndexing ?? false);
         updateRefValue(indexStartingLocation, props.modelValue?.bag?.indexStartingLocation ?? "");
         updateRefValue(enableExclusiveRoutes, props.modelValue?.bag?.enableExclusiveRoutes ?? false);
-        updateRefValue(enablePageViewGeoTracking, props.modelValue?.bag?.enablePageViewGeoTracking ?? false);
         updateRefValue(disablePredictableIds, props.modelValue?.bag?.disablePredictableIds ?? false);
         updateRefValue(pageHeaderContent, props.modelValue?.bag?.pageHeaderContent ?? "");
         updateRefValue(siteAttributes, props.modelValue?.bag?.siteAttributes ?? []);
@@ -511,38 +506,37 @@
             bag: { ...props.modelValue } as SiteBag
         };
 
-        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value),
-        setPropertiesBoxValue(newValue, "description", description.value),
-        setPropertiesBoxValue(newValue, "isActive", isActive.value),
-        setPropertiesBoxValue(newValue, "name", name.value),
-        setPropertiesBoxValue(newValue, "theme", theme.value),
-        setPropertiesBoxValue(newValue, "defaultPage", defaultPage.value?.page),
-        setPropertiesBoxValue(newValue, "loginPage", loginPage.value?.page),
-        setPropertiesBoxValue(newValue, "changePasswordPage", changePasswordPage.value?.page),
-        setPropertiesBoxValue(newValue, "communicationPage", communicationPage.value?.page),
-        setPropertiesBoxValue(newValue, "registrationPage", registrationPage.value?.page),
-        setPropertiesBoxValue(newValue, "pageNotFoundPage", pageNotFoundPage.value?.page),
-        setPropertiesBoxValue(newValue, "siteDomains", siteDomains.value),
-        setPropertiesBoxValue(newValue, "errorPage", errorPage.value),
-        setPropertiesBoxValue(newValue, "googleAnalyticsCode", googleAnalyticsCode.value),
-        setPropertiesBoxValue(newValue, "requiresEncryption", requiresEncryption.value),
-        setPropertiesBoxValue(newValue, "enabledForShortening", enabledForShortening.value),
-        setPropertiesBoxValue(newValue, "enableVisitorTracking", enableVisitorTracking.value),
-        setPropertiesBoxValue(newValue, "enablePersonalization", enablePersonalization.value),
-        setPropertiesBoxValue(newValue, "favIconBinaryFile", favIconBinaryFile.value),
-        setPropertiesBoxValue(newValue, "siteLogoBinaryFile", siteLogoBinaryFile.value),
-        setPropertiesBoxValue(newValue, "enableMobileRedirect", enableMobileRedirect.value),
-        setPropertiesBoxValue(newValue, "enablePageViews", enablePageViews.value),
-        setPropertiesBoxValue(newValue, "retentionDuration", retentionDuration.value),
-        setPropertiesBoxValue(newValue, "allowedFrameDomains", allowedFrameDomains.value),
-        setPropertiesBoxValue(newValue, "allowIndexing", allowIndexing.value),
-        setPropertiesBoxValue(newValue, "indexStartingLocation", indexStartingLocation.value),
-        setPropertiesBoxValue(newValue, "enableExclusiveRoutes", enableExclusiveRoutes.value),
-        setPropertiesBoxValue(newValue, "enablePageViewGeoTracking", enablePageViewGeoTracking.value),
-        setPropertiesBoxValue(newValue, "disablePredictableIds", disablePredictableIds.value),
-        setPropertiesBoxValue(newValue, "pageHeaderContent", pageHeaderContent.value),
-        setPropertiesBoxValue(newValue, "siteAttributes", siteAttributes.value),
-        setPropertiesBoxValue(newValue, "binaryFileTypeGuid", binaryFileTypeGuid.value),
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "isActive", isActive.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "theme", theme.value);
+        setPropertiesBoxValue(newValue, "defaultPage", defaultPage.value?.page);
+        setPropertiesBoxValue(newValue, "loginPage", loginPage.value?.page);
+        setPropertiesBoxValue(newValue, "changePasswordPage", changePasswordPage.value?.page);
+        setPropertiesBoxValue(newValue, "communicationPage", communicationPage.value?.page);
+        setPropertiesBoxValue(newValue, "registrationPage", registrationPage.value?.page);
+        setPropertiesBoxValue(newValue, "pageNotFoundPage", pageNotFoundPage.value?.page);
+        setPropertiesBoxValue(newValue, "siteDomains", siteDomains.value);
+        setPropertiesBoxValue(newValue, "errorPage", errorPage.value);
+        setPropertiesBoxValue(newValue, "googleAnalyticsCode", googleAnalyticsCode.value);
+        setPropertiesBoxValue(newValue, "requiresEncryption", requiresEncryption.value);
+        setPropertiesBoxValue(newValue, "enabledForShortening", enabledForShortening.value);
+        setPropertiesBoxValue(newValue, "enableVisitorTracking", enableVisitorTracking.value);
+        setPropertiesBoxValue(newValue, "enablePersonalization", enablePersonalization.value);
+        setPropertiesBoxValue(newValue, "favIconBinaryFile", favIconBinaryFile.value);
+        setPropertiesBoxValue(newValue, "siteLogoBinaryFile", siteLogoBinaryFile.value);
+        setPropertiesBoxValue(newValue, "enableMobileRedirect", enableMobileRedirect.value);
+        setPropertiesBoxValue(newValue, "enablePageViews", enablePageViews.value);
+        setPropertiesBoxValue(newValue, "retentionDuration", retentionDuration.value);
+        setPropertiesBoxValue(newValue, "allowedFrameDomains", allowedFrameDomains.value);
+        setPropertiesBoxValue(newValue, "allowIndexing", allowIndexing.value);
+        setPropertiesBoxValue(newValue, "indexStartingLocation", indexStartingLocation.value);
+        setPropertiesBoxValue(newValue, "enableExclusiveRoutes", enableExclusiveRoutes.value);
+        setPropertiesBoxValue(newValue, "disablePredictableIds", disablePredictableIds.value);
+        setPropertiesBoxValue(newValue, "pageHeaderContent", pageHeaderContent.value);
+        setPropertiesBoxValue(newValue, "siteAttributes", siteAttributes.value);
+        setPropertiesBoxValue(newValue, "binaryFileTypeGuid", binaryFileTypeGuid.value);
 
         emit("update:modelValue", newValue);
     });

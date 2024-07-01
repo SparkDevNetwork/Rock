@@ -1026,6 +1026,15 @@ namespace Rock
                 return str;
             }
 
+            // Since we include the ellipsis in the number of max characters
+            // we need to disable ellipsis if they told us to have a max
+            // length of 3 or less - which is the number of periods that
+            // would be added.
+            if ( maxLength <= 3 )
+            {
+                addEllipsis = false;
+            }
+
             // If adding an ellipsis then reduce the maxlength by three to allow for the additional characters
             maxLength = addEllipsis ? maxLength - 3 : maxLength;
 

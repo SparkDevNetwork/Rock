@@ -25,19 +25,23 @@
                       :hideAvatar="true"
                       :filter="pickExistingValueFilter"
                       :filterValue="getPersonRowValue"
-                      visiblePriority="xs" />
+                      visiblePriority="xs"
+                      width="20%"/>
 
         <DateColumn name="lastPromotedDateTime"
                     title="Last Suggested"
                     field="lastPromotedDateTime"
                     :filter="dateValueFilter"
-                    visiblePriority="md" />
+                    visiblePriority="md"
+                    itemClass="grid-item-pull-left"
+                    width="170" />
 
         <TextColumn name="reasonNote"
                     title="Reason"
                     field="reasonNote"
                     :filter="textValueFilter"
-                    visiblePriority="xs" />
+                    visiblePriority="xs"
+                    width="5%"/>
 
         <Column name="status"
                 title="Status"
@@ -56,7 +60,9 @@
                         title="Status Changed"
                         field="statusChangedDateTime"
                         :filter="dateValueFilter"
-                        visiblePriority="md" />
+                        visiblePriority="md"
+                        itemClass="grid-item-pull-left"
+                        width="200"/>
 
         <template #gridFooterAppend>
             <div class="d-flex" style="padding: var(--table-cell-padding-y) 52px var(--table-cell-padding-y) var(--table-cell-padding-x);">
@@ -74,6 +80,13 @@
     <GridSettingsModal v-model="gridSettings"
                        v-model:visible="isGridSettingsVisible" />
 </template>
+
+<style>
+.grid-item-pull-left {
+    flex-direction: column;
+    align-items: end;
+}
+</style>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";

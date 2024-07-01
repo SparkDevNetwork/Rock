@@ -176,6 +176,7 @@ namespace Rock.Blocks.Event
             public const string Slug = "Slug";
             public const string GroupId = "GroupId";
             public const string StartAtBeginning = "StartAtBeginning";
+            public const string EventOccurrenceId = "EventOccurrenceId";
         }
 
         /// <summary>
@@ -197,6 +198,11 @@ namespace Rock.Blocks.Event
         /// Gets the registration identifier page parameter.
         /// </summary>
         public int? RegistrationIdPageParameter => PageParameter( PageParameterKey.RegistrationId ).AsIntegerOrNull();
+
+        /// <summary>
+        /// Gets the event occurrence identifier page parameter.
+        /// </summary>
+        public int? EventOccurrenceIdPageParameter => PageParameter( PageParameterKey.EventOccurrenceId ).AsIntegerOrNull();
 
         #endregion Properties
 
@@ -357,7 +363,7 @@ namespace Rock.Blocks.Event
 
                 if ( PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull() == null )
                 {
-                    var groupId = GetRegistrationGroupId( rockContext );
+                    var groupId = GetRegistrationGroupId( rockContext, context?.Registration?.RegistrationInstanceId );
                     if ( groupId.HasValue )
                     {
                         RequestContext.PageParameters.Add( PageParameterKey.GroupId, groupId.ToString() );
@@ -641,7 +647,7 @@ namespace Rock.Blocks.Event
 
                 // Process the GroupMember so we have data for the Lava merge.
                 GroupMember groupMember = null;
-                var groupId = GetRegistrationGroupId( rockContext );
+                var groupId = GetRegistrationGroupId( rockContext, context.Registration.RegistrationInstanceId );
 
                 if ( groupId.HasValue )
                 {
@@ -1300,7 +1306,7 @@ namespace Rock.Blocks.Event
             }
 
             // If the Registration Instance linkage specified a group, load it now
-            var groupId = GetRegistrationGroupId( rockContext );
+            var groupId = GetRegistrationGroupId( rockContext, context.Registration.RegistrationInstanceId );
 
             Rock.Model.Group group = null;
 
@@ -1613,30 +1619,50 @@ namespace Rock.Blocks.Event
         /// Gets the registration group identifier.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
+        /// <param name="registrationInstanceId">The registration instance identifier.</param>
         /// <returns>The <see cref="Group"/> identifier or <c>null</c> if one is not available.</returns>
-        private int? GetRegistrationGroupId( RockContext rockContext )
+        private int? GetRegistrationGroupId( RockContext rockContext, int? registrationInstanceId )
         {
             var groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
             var registrationSlug = PageParameter( PageParameterKey.Slug );
+            var eventOccurrenceId = this.EventOccurrenceIdPageParameter;
 
-            if ( !groupId.HasValue && !registrationSlug.IsNullOrWhiteSpace() )
+            if ( !groupId.HasValue )
             {
-                var dateTime = RockDateTime.Now;
-                var linkage = new EventItemOccurrenceGroupMapService( rockContext )
-                    .Queryable().AsNoTracking()
-                    .Where( l =>
-                        l.UrlSlug == registrationSlug &&
-                        l.RegistrationInstance != null &&
-                        l.RegistrationInstance.IsActive &&
-                        l.RegistrationInstance.RegistrationTemplate != null &&
-                        l.RegistrationInstance.RegistrationTemplate.IsActive &&
-                        ( !l.RegistrationInstance.StartDateTime.HasValue || l.RegistrationInstance.StartDateTime <= dateTime ) &&
-                        ( !l.RegistrationInstance.EndDateTime.HasValue || l.RegistrationInstance.EndDateTime > dateTime ) )
-                    .FirstOrDefault();
-
-                if ( linkage != null )
+                if ( !registrationSlug.IsNullOrWhiteSpace() )
                 {
-                    groupId = linkage.GroupId;
+                    var dateTime = RockDateTime.Now;
+                    var linkage = new EventItemOccurrenceGroupMapService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( l =>
+                            l.UrlSlug == registrationSlug &&
+                            l.RegistrationInstance != null &&
+                            l.RegistrationInstance.IsActive &&
+                            l.RegistrationInstance.RegistrationTemplate != null &&
+                            l.RegistrationInstance.RegistrationTemplate.IsActive &&
+                            ( !l.RegistrationInstance.StartDateTime.HasValue || l.RegistrationInstance.StartDateTime <= dateTime ) &&
+                            ( !l.RegistrationInstance.EndDateTime.HasValue || l.RegistrationInstance.EndDateTime > dateTime ) )
+                        .FirstOrDefault();
+
+                    if ( linkage != null )
+                    {
+                        groupId = linkage.GroupId;
+                    }
+                }
+                else if ( eventOccurrenceId.HasValue && registrationInstanceId.HasValue )
+                {
+                    var linkageGroupId = new EventItemOccurrenceService( rockContext )
+                        .Queryable()
+                        .Where( o => o.Id == eventOccurrenceId.Value )
+                        .SelectMany( o => o.Linkages )
+                        .Where( l => l.RegistrationInstanceId == registrationInstanceId.Value )
+                        .Select( l => l.GroupId )
+                        .FirstOrDefault();
+
+                    if ( linkageGroupId.HasValue )
+                    {
+                        groupId = linkageGroupId.Value;
+                    }
                 }
             }
 
@@ -3470,6 +3496,7 @@ namespace Rock.Blocks.Event
             var currencyInfo = new RockCurrencyCodeInfo();
             var viewModel = new RegistrationEntryInitializationBox
             {
+                FamilyTerm = GetAttributeValue( AttributeKey.FamilyTerm ),
                 RegistrationAttributesStart = beforeAttributes,
                 RegistrationAttributesEnd = afterAttributes,
                 RegistrationAttributeTitleStart = registrationAttributeTitleStart,

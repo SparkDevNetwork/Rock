@@ -25,14 +25,15 @@
                     title="Description"
                     field="description"
                     :filter="textValueFilter"
-                    visiblePriority="md" />
+                    visiblePriority="md"
+                    width="45%" />
 
         <Column name="cacheControlHeaderSettings"
                 title="Cache Settings"
                 visiblePriority="md">
             <template #format="{ row }">
                 <div class="text">
-                    {{ rockCacheabilityType[row.rockCacheablityType] }}
+                    {{ rockCacheabilityType[row.rockCacheabilityType] }}
                     <span v-if="row.cacheMaxAge" class="label label-default mr-1">
                         Max Age: {{ row.cacheMaxAge / 60 }}m
                     </span>
@@ -47,7 +48,8 @@
                        title="Display In Nav"
                        field="displayInNav"
                        :filter="booleanValueFilter"
-                       visiblePriority="xs" />
+                       visiblePriority="xs"
+                       width="200" />
 
         <SecurityColumn />
 

@@ -33,7 +33,8 @@
         <BooleanColumn name="isActive"
                        title="Active"
                        field="isActive"
-                       headerClass=""
+                       width="140"
+                       :filter="booleanValueFilter"
                        visiblePriority="xs" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" disableConfirmation @click="onDeleteClick" />
@@ -48,7 +49,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { BooleanColumn, TextColumn, textValueFilter, DeleteColumn, ReorderColumn } from "@Obsidian/Controls/grid";
+    import Grid, { BooleanColumn, TextColumn, textValueFilter, booleanValueFilter, DeleteColumn, ReorderColumn } from "@Obsidian/Controls/grid";
     import { alert, confirm } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { ScheduleListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/ScheduleList/scheduleListOptionsBag";

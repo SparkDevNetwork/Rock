@@ -17,9 +17,6 @@
 
 namespace Rock.ViewModels.Blocks.Cms.LayoutList
 {
-    /// <summary>
-    /// The additional configuration options for the Layout List block.
-    /// </summary>
     public class LayoutListOptionsBag
     {
     }

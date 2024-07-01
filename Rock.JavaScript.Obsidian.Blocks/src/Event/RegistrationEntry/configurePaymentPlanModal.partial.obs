@@ -25,7 +25,8 @@
                     <DatePicker :modelValue="startDateIsoString"
                                 @update:modelValue="onUpdateStartDateIsoString"
                                 label="Start Date"
-                                :disallowPastDateSelection="true" />
+                                :disallowPastDateSelection="true"
+                                :rules="validateStartDate" />
                 </div>
             </div>
 
@@ -92,7 +93,7 @@
     import { PaymentPlanConfiguration, PaymentPlanFrequency } from "./types.partial";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { Guid } from "@Obsidian/Types";
-    import { ValidationResult } from "@Obsidian/ValidationRules";
+    import { ValidationResult, ValidationRuleFunction } from "@Obsidian/ValidationRules";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { RockCurrency } from "@Obsidian/Utility/rockCurrency";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
@@ -137,7 +138,7 @@
      * The allowed payment plan frequencies.
      */
     const paymentPlanFrequencyItems = computed<ListItemBag[]>(() => {
-        return paymentPlanFrequencies.value.map(frequency => frequency.listItemBag) ?? [];
+        return wipPaymentPlanConfiguration.value?.paymentPlanFrequencies.map(frequency => frequency.listItemBag) ?? [];
     });
 
     const isPaymentPlanFrequencySelected = computed<boolean>(() => {
@@ -196,6 +197,57 @@
     //#endregion
 
     //#region Functions
+
+    const validateStartDate: ValidationRuleFunction = (value: unknown, _params: unknown[] | undefined): ValidationResult => {
+        if (!value || typeof value !== "string" || !paymentPlanFrequencies.value.length) {
+            return true;
+        }
+
+        let date = RockDateTime.parseISO(value);
+
+        if (!date) {
+            return true;
+        }
+
+        /**
+         * Checks if a start date is valid for any of the payment plan frequencies.
+         */
+        function isDateValid(startDate: RockDateTime): boolean {
+            for (const paymentPlanFrequency of paymentPlanFrequencies.value) {
+                const transDate1 = paymentPlanFrequency.getValidTransactionDate(startDate);
+                if (transDate1) {
+                    if (paymentPlanFrequency.getNextTransactionDate(transDate1)) {
+                        // Two transactions can occur for the given start date with this frequency.
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        const earliestDate = wipPaymentPlanConfiguration.value?.startDate ?? RockDateTime.now();
+
+        // Check if the start date is valid for any of the payment plan frequencies.
+        if (isDateValid(date)) {
+            return true;
+        }
+        else {
+            date = date.addDays(-1);
+
+            while (!date.isEarlierThan(earliestDate)) {
+                if (isDateValid(date)) {
+                    return `must be no later than ${date.toLocaleString({ year: "numeric", month: "numeric", day: "numeric" })}`;
+                }
+                else {
+                    date = date.addDays(-1);
+                }
+            }
+        }
+
+        // This shouldn't happen but return a generic error just in case.
+        return `is invalid`;
+    };
 
     function validateAmountToPayTodayRule(_value: unknown, _params?: unknown[]): ValidationResult {
         if (wipPaymentPlanConfiguration.value?.minAmountToPayToday?.isGreaterThan(amountToPayToday.value ?? 0)) {

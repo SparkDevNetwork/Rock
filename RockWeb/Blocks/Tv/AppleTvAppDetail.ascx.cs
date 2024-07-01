@@ -224,8 +224,6 @@ namespace RockWeb.Blocks.Tv
             interactionChannelForSite.RetentionDuration = nbPageViewRetentionPeriodDays.Text.AsIntegerOrNull();
             interactionChannelForSite.ComponentEntityTypeId = EntityTypeCache.Get<Rock.Model.Page>().Id;
 
-            site.EnablePageViewGeoTracking = cbEnablePageViewGeoTracking.Checked;
-
             rockContext.SaveChanges();
 
             // If this is a new site then we also need to add a layout record and a 'default page'
@@ -408,7 +406,6 @@ namespace RockWeb.Blocks.Tv
                 tbDescription.Text = site.Description;
 
                 cbIsActive.Checked = site.IsActive;
-                cbEnablePageViewGeoTracking.Checked = site.EnablePageViewGeoTracking;
 
                 var additionalSettings = JsonConvert.DeserializeObject<AppleTvApplicationSettings>( site.AdditionalSettings );
 
@@ -450,7 +447,7 @@ namespace RockWeb.Blocks.Tv
             }
             else
             {
-                var stream = typeof( Rock.Blocks.RockBlockType ).Assembly.GetManifestResourceStream( "Rock.Blocks.DefaultTvApplication.js" );
+                var stream = typeof( Rock.Blocks.Tv.AppleTvAppDetail ).Assembly.GetManifestResourceStream( "Rock.Blocks.DefaultTvApplication.js" );
                 
                 if ( stream != null )
                 {

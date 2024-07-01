@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\EntityFramework.6.4.4\build\EntityFramework.props" Condition="Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -88,6 +88,10 @@
     </Compile>
     <Compile Include="Bus\ConsumerList.cs" />
     <Compile Include="Bus\QueueList.cs" />
+    <Compile Include="CheckIn\CheckInKiosk.cs" />
+    <Compile Include="CheckIn\CheckInKioskSetup.cs" />
+    <Compile Include="CheckIn\Configuration\CheckInSimulator.cs" />
+    <Compile Include="CheckIn\Configuration\LabelDesigner.cs" />
     <Compile Include="Cms\AdaptiveMessageAdaptationDetail.cs" />
     <Compile Include="Cms\AdaptiveMessageDetail.cs" />
     <Compile Include="Cms\AdaptiveMessageList.cs" />
@@ -133,7 +137,12 @@
     <Compile Include="Cms\PageRouteList.cs" />
     <Compile Include="Core\PersonFollowingList.cs" />
     <Compile Include="Communication\NcoaProcess.cs" />
+    <Compile Include="Security\AuthScopeList.cs" />
+    <Compile Include="Security\AuthClientList.cs" />
     <Compile Include="Core\PersonSignalList.cs" />
+    <Compile Include="CheckIn\Configuration\CheckInLabelDetail.cs" />
+    <Compile Include="CheckIn\Configuration\CheckInLabelList.cs" />
+    <Compile Include="Engagement\CampaignList.cs" />
     <Compile Include="Security\RestKeyList.cs" />
     <Compile Include="Crm\PersonMergeRequestList.cs" />
     <Compile Include="Event\RegistrationInstanceLinkageList.cs" />
@@ -240,7 +249,7 @@
     <Compile Include="Reporting\DynamicData.cs" />
     <Compile Include="Reporting\MergeTemplateList.cs" />
     <Compile Include="Reporting\ReportList.cs" />
-    <Compile Include="Reporting\VolunteerGenerosityAnalysis.cs" />
+    <Compile Include="Finance\VolunteerGenerosityAnalysis.cs" />
     <Compile Include="RockEntityDetailBlockType.cs" />
     <Compile Include="Tv\AppleTvPageDetail.cs" />
     <Compile Include="Engagement\StepTypeDetail.cs" />

@@ -82,6 +82,7 @@ namespace Rock
         /// <summary>
         /// Gets the deserialized settings object matching the provided <typeparamref name="TSettings"/> <see cref="System.Type"/> from
         /// <see cref="IHasReadOnlyAdditionalSettings.AdditionalSettingsJson"/>.
+        /// </summary>
         /// <typeparam name="TSettings">
         /// The <see cref="System.Type"/> of category settings object into which the underlying JSON string should be deserialized.
         /// </typeparam>

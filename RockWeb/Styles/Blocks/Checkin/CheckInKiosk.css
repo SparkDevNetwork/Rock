@@ -1,0 +1,581 @@
+﻿/* These are default styles to be moved to the theme or something. */
+.check-in-page {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: var(--tones-lightest);
+    display: flex;
+    flex-direction: column;
+    gap: var(--item-spacing);
+    padding: var(--unit-md) var(--unit-lg);
+    font-size: var(--font-size-body);
+    font-weight: 400;
+
+    --item-spacing: var(--unit-lg);
+
+    --tones-darkest: #425466;
+    --tones-dark: #77889a;
+    --tones-medium: #d8ddec;
+    --tones-light: #edf0f6;
+    --tones-lightest: #f5f7fc;
+
+    --unit-xs: calc(var(--unit-md) * 0.25);
+    --unit-sm: calc(var(--unit-md) * 0.5);
+    --unit-md: 8px;
+    --unit-lg: calc(var(--unit-md) * 2);
+    --unit-xl: calc(var(--unit-md) * 3);
+
+    --font-size-h1: calc(var(--font-size-body) * 1.75);
+    --font-size-h2: calc(var(--font-size-body) * 1.25);
+    --font-size-body: 14px;
+    --font-size-small: calc(var(--font-size-body) * 0.85);
+    --font-size-btn-primary: calc(var(--font-size-body) * 1.6);
+    --font-size-btn-secondary: var(--font-size-body);
+    --font-size-btn-small: var(--font-size-body);
+}
+
+.check-in-page .check-in-panel {
+    background-color: #fff;
+    border-radius: var(--unit-lg) var(--unit-lg) var(--unit-lg) var(--unit-lg);
+    padding: var(--unit-md) var(--unit-lg);
+    display: flex;
+    flex-direction: column;
+}
+
+.check-in-page .btn-default {
+    background-color: var(--tones-lightest);
+    color: var(--tones-dark);
+    border: 0;
+}
+
+.check-in-page .button-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--item-spacing);
+}
+
+.check-in-page .button-list .btn {
+    display: flex;
+    padding: var(--unit-xl);
+    gap: var(--item-spacing);
+    align-items: center;
+}
+
+.check-in-page .button-list .subtitle {
+    font-size: var(--font-size-btn-secondary);
+    font-weight: 400;
+}
+
+.check-in-page .page-body .notice {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.check-in-page .avatar {
+    width: 50px;
+    height: 50px;
+    border: 3px solid #fff;
+    border-radius: 50%;
+    background-size: cover;
+}
+
+.check-in-page .attendee-banner {
+    background-color: var(--tones-light);
+    border-radius: var(--unit-sm);
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--item-spacing) * 0.5);
+    padding: var(--unit-md);
+    align-items: center;
+}
+
+/*
+ * Styles for the page header.
+ */
+.check-in-page .page-header {
+    border-radius: var(--unit-lg) var(--unit-lg) 0 0;
+    align-items: center;
+    flex-direction: row;
+    flex-shrink: 0;
+    gap: var(--item-spacing);
+    min-height: 56px;
+
+    /* Overrides from bootstrap. */
+    margin: 0;
+    border: 0;
+}
+
+.check-in-page .page-header .title {
+    flex-grow: 1;
+}
+
+.check-in-page .page-header .back-button {
+    background-color: transparent;
+    border: 1px solid var(--tones-medium);
+}
+
+/*
+ * Styles for the page body.
+ */
+.check-in-page .page-body {
+    flex-grow: 1;
+    overflow: auto;
+}
+
+.check-in-page .page-body .check-in-panel {
+    padding: var(--unit-xl);
+    gap: var(--unit-lg);
+}
+
+.check-in-page h1 {
+    color: var(--tones-darkest);
+    font-size: var(--font-size-h1);
+    font-weight: 600;
+    margin: 0 0 var(--unit-sm) 0;
+}
+
+.check-in-page h2 {
+    color: var(--tones-dark);
+    font-size: var(--font-size-h2);
+    font-weight: 600;
+    margin: 0 0 var(--unit-sm) 0;
+}
+
+.check-in-page .panel-header .title {
+    text-align: center;
+}
+
+.check-in-page .panel-header .subtitle {
+    text-align: center;
+}
+
+.check-in-page .btn-primary {
+    font-size: var(--font-size-btn-primary);
+    font-weight: 600;
+}
+
+.check-in-page .btn-default {
+    font-size: var(--font-size-btn-secondary);
+    font-weight: 400;
+}
+
+.check-in-page .btn-default.btn-sm {
+    font-size: var(--font-size-btn-small);
+    font-weight: 600;
+}
+
+/*
+ * Styles for the pager footer.
+ */
+.check-in-page .page-footer {
+    border-radius: 0 0 var(--unit-lg) var(--unit-lg);
+    align-items: center;
+    flex-direction: row;
+    flex-shrink: 0;
+    gap: var(--item-spacing);
+    min-height: 64px;
+    color: var(--tones-dark);
+}
+
+.check-in-page .page-footer .actions {
+    flex-grow: 1;
+    display: flex;
+    justify-content: end;
+    gap: var(--item-spacing);
+}
+
+.check-in-page .page-footer .configure-button {
+    padding: var(--unit-xs) var(--unit-md);
+    font-size: 28px;
+    color: var(--tones-medium);
+}
+
+/*
+ * Configuration Screen.
+ */
+.check-in-page .configuration-screen {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.check-in-page .configuration-screen .saved-configurations {
+    display: flex;
+    flex-direction: column;
+    gap: var(--item-spacing);
+}
+
+.check-in-page .configuration-screen .saved-configurations .header,
+.check-in-page .configuration-screen .custom-configuration .header {
+    display: flex;
+    align-items: center;
+    gap: var(--item-spacing);
+}
+
+.check-in-page .configuration-screen .saved-configurations .header h2,
+.check-in-page .configuration-screen .custom-configuration .header h2 {
+    flex-grow: 1;
+}
+
+.check-in-page .configuration-screen .actions {
+    display: flex;
+    flex-grow: 1;
+    align-items: end;
+    justify-content: end;
+}
+
+/*
+ * Welcome Screen
+ */
+.check-in-page .welcome-screen {
+    display: grid;
+    height: 100%;
+    grid-template-rows: 1fr 1fr;
+    grid-template-columns: 2fr 1fr;
+    gap: var(--item-spacing);
+}
+
+.check-in-page .welcome-screen .promotions {
+    background: #e5dcd1;
+    grid-row: 1/3;
+    grid-column: 1/2;
+    border-radius: var(--unit-lg);
+    position: relative;
+}
+
+.check-in-page .welcome-screen .promotion {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-position: center;
+    background-size: cover;
+}
+
+.check-in-page .welcome-screen .promotion-enter-active,
+.check-in-page .welcome-screen .promotion-leave-active {
+    transition: opacity 0.4s ease;
+}
+
+.check-in-page .welcome-screen .promotion-enter-from,
+.check-in-page .welcome-screen .promotion-leave-to {
+    opacity: 0;
+}
+
+.check-in-page .welcome-screen .start-button {
+    grid-row: 1/2;
+    grid-column: 2/3;
+}
+
+.check-in-page .welcome-screen .start-button {
+    width: 100%;
+    height: 100%;
+    font-size: 64px;
+    font-weight: 600;
+}
+
+.check-in-page .welcome-screen .scan-barcode-button {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    grid-row: 2/3;
+    grid-column: 2/3;
+}
+
+.check-in-page .welcome-screen .scan-barcode-button {
+    width: 100%;
+    height: 100%;
+    background-color: var(--tones-light);
+    padding: 0;
+}
+
+.check-in-page .welcome-screen .scan-barcode-button .title {
+    font-size: 64px;
+}
+
+.check-in-page .welcome-screen.kiosk-closed,
+.check-in-page .welcome-screen.kiosk-not-open,
+.check-in-page .welcome-screen.kiosk-not-open-yet {
+    grid-template-rows: 100%;
+    grid-template-columns: 100%;
+}
+
+.check-in-page .welcome-screen.kiosk-closed .promotions,
+.check-in-page .welcome-screen.kiosk-not-open .promotions,
+.check-in-page .welcome-screen.kiosk-not-open-yet .promotions {
+    grid-row: 1/2;
+}
+
+/*
+ * Search Screen.
+ */
+.check-in-page .search-screen {
+    display: flex;
+    min-height: 100%;
+    justify-content: center;
+    align-items: center;
+}
+
+.check-in-page .search-screen .body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--item-spacing);
+}
+
+.check-in-page .search-screen input.search-term {
+    height: 64px;
+    font-size: 36px;
+    width: 0;
+    min-width: 100%;
+}
+
+.check-in-page .search-screen .number-pad {
+    display: grid;
+    margin: auto;
+    grid-template-columns: 130px 130px 130px;
+    grid-template-rows: 56px 56px 56px 56px;
+    gap: var(--item-spacing);
+}
+
+.check-in-page .search-screen .number-pad .btn {
+    color: var(--tones-darkest);
+    background-color: var(--tones-light);
+    font-size: var(--font-size-btn-primary);
+    font-weight: 600;
+}
+
+.check-in-page .search-screen .search-button {
+    height: 56px;
+    min-width: 400px;
+}
+
+/**
+ * Family Select Screen.
+ */
+.check-in-page .family-select-screen .button-list .btn {
+    justify-content: center;
+}
+
+
+/**
+ * Person Select Screen.
+ */
+.check-in-page .attendee-button.btn {
+    justify-content: initial;
+    padding: 0;
+    border: 0;
+}
+
+.check-in-page .attendee-button .selection {
+    font-size: 50px;
+    line-height: 1;
+    margin: var(--unit-lg) 0 var(--unit-xl) var(--unit-lg);
+}
+
+.check-in-page .attendee-button > * {
+    margin: var(--unit-lg) 0;
+}
+
+.check-in-page .attendee-button > *:first-child {
+    margin-left: var(--unit-xl);
+}
+
+.check-in-page .attendee-button > *:last-child {
+    margin-right: var(--unit-xl);
+}
+
+.check-in-page .attendee-button .title {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    align-items: start;
+}
+
+.check-in-page .attendee-button .opportunity {
+    display: flex;
+    gap: calc(var(--item-spacing) * 0.5);
+    font-size: var(--font-size-btn-secondary);
+}
+
+.check-in-page .attendee-button .opportunity + .opportunity {
+    margin-top: calc(var(--item-spacing) * 0.25);
+}
+
+.check-in-page .attendee-button .message {
+    font-size: var(--font-size-btn-secondary);
+}
+
+.check-in-page .attendee-button .change-selection-button {
+    margin: 0;
+    align-self: stretch;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    padding: 0 var(--unit-xl);
+}
+
+
+/**
+ * Schedule Select Screen
+ */
+.check-in-page .schedule-select-screen .button-list {
+    flex-direction: row;
+    justify-content: center;
+}
+
+.check-in-page .schedule-select-screen .schedule-button {
+    background-color: var(--tones-lightest);
+    border-color: var(--tones-medium);
+    color: var(--tones-dark);
+}
+
+.check-in-page .schedule-select-screen .schedule-button.checked {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--theme-white);
+}
+
+.check-in-page .schedule-select-screen .schedule-button .selection {
+    font-size: 50px;
+    line-height: 1;
+    margin-top: calc(var(--unit-md) * -1);
+    margin-bottom: calc(var(--unit-md) * -1);
+}
+
+
+/**
+ * Success Screen
+ */
+.check-in-page .completed-achievements {
+    justify-content: center;
+    display: flex;
+    flex-wrap: wrap;
+    padding-bottom: var(--unit-md);
+}
+
+.check-in-page .achievement-card {
+    border-radius: var(--unit-sm);
+    background-color: white;
+    border: 1px solid var(--tones-light);
+    padding: var(--unit-md) var(--unit-lg);
+    display: grid;
+    line-height: 1.3em;
+}
+
+.check-in-page .achievement-card svg {
+    grid-row: 1 / span 2;
+    margin-right: var(--unit-lg);
+}
+
+.check-in-page .achievement-card .title {
+    grid-column: 2;
+    align-content: end;
+    font-weight: 600;
+}
+
+.check-in-page .achievement-card .subtitle {
+    grid-column: 2;
+    grid-row: 2;
+    justify-content: start;
+}
+
+.check-in-page .attendance-cards {
+    display: flex;
+    gap: var(--item-spacing);
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.check-in-page .attendance-card {
+    width: calc(33.33% - calc(var(--item-spacing) * 2 / 3));
+    display: flex;
+    flex-direction: column;
+    gap: var(--unit-md);
+    border-radius: var(--unit-sm);
+    background-color: var(--tones-light);
+    border: var(--tones-medium);
+    padding: var(--unit-lg) var(--unit-lg);
+}
+
+.check-in-page .attendance-card .header {
+    display: flex;
+    gap: var(--item-spacing);
+    justify-content: center;
+    align-items: center;
+}
+
+.check-in-page .attendance-card .attendance-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--unit-sm);
+}
+
+.check-in-page .attendance-card label {
+    margin-bottom: 0;
+}
+
+.check-in-page .attendance-card .attendance-detail {
+    border-radius: var(--unit-md);
+    background-color: var(--color-primary);
+    color: var(--theme-white);
+    padding: var(--unit-sm) var(--unit-md);
+    display: flex;
+    justify-content: space-between;
+}
+
+.check-in-page .attendance-card .attendance-detail .title {
+    font-weight: 600;
+}
+
+.check-in-page .attendance-card .achievement-list {
+    flex-grow: 1;
+    align-content: end;
+    padding-top: var(--unit-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--unit-lg);
+    justify-content: end;
+}
+
+.check-in-page .attendance-card .achievement {
+    display: flex;
+    flex-direction: column;
+    gap: var(--unit-sm);
+}
+
+.check-in-page .attendance-card .achievement .header {
+    display: flex;
+    justify-content: space-between;
+}
+
+.check-in-page .attendance-card .achievement .title {
+    font-weight: 600;
+}
+
+.check-in-page .attendance-card .achievement .completion-progress {
+    display: flex;
+    gap: var(--unit-sm);
+    flex-wrap: wrap;
+}
+
+.check-in-page .attendance-card .achievement .completion-item-full,
+.check-in-page .attendance-card .achievement .completion-item-half {
+    color: #fd9215;
+}
+
+.check-in-page .attendance-card .achievement .completion-item-empty {
+    color: var(--tones-dark);
+}
+
+.check-in-page .attendance-card .achievement:first-of-type {
+    margin-top: calc(var(--unit-md) * -1);
+}
+
+.check-in-page .attendance-card .achievement + .achievement {
+    padding-top: var(--unit-md);
+    border-top: 1px solid var(--tones-medium);
+}

@@ -242,6 +242,11 @@ namespace Rock.Transactions
             foreach ( var info in interactionTransactionInfos.Where( a => a.InteractionComponentId.HasValue ) )
             {
                 var interaction = interactionService.CreateInteraction( new InteractionInfo( info ) );
+
+                interaction.SetUtmSource( interaction.Source.IsNotNullOrWhiteSpace() ? interaction.Source : info.InteractionSource );
+                interaction.SetUtmMedium( interaction.Medium.IsNotNullOrWhiteSpace() ? interaction.Medium : info.InteractionMedium );
+                interaction.SetUtmCampaign( interaction.Campaign.IsNotNullOrWhiteSpace() ? interaction.Campaign : info.InteractionCampaign );
+
                 interactionsToInsert.Add( interaction );
             }
 

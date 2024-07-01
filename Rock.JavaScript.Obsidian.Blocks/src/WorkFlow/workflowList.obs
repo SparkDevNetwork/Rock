@@ -31,7 +31,8 @@
                     title="Name"
                     field="name"
                     :filter="textValueFilter"
-                    visiblePriority="xs" />
+                    visiblePriority="xs"
+                    width="35%" />
 
         <PersonColumn name="initiator"
                       title="Initiated By"
@@ -42,14 +43,15 @@
                       :filter="pickExistingValueFilter"
                       :filterValue="getInitiatorFilterValue"
                       :quickFilterValue="getInitiatorFilterValue"
-                      visiblePriority="xs" />
+                      visiblePriority="md" />
 
         <Column name="activities"
                 title="Activities"
                 field="activities"
                 :filterValue="getActivitiesRowFilterValue"
                 :quickFilterValue="getActivitiesRowFilterValue"
-                :filter="textValueFilter">
+                :filter="textValueFilter"
+                visiblePriority="md">
             <template #format="{ row }">
                 <div class="text-lg">
                     <div v-for="activity in row.activities">
@@ -66,20 +68,25 @@
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []"
                           visiblePriority="md" />
 
-        <TextColumn name="createdDateTime"
-                    title="Created"
-                    field="createdDateTime"
-                    :filter="textValueFilter"
-                    visiblePriority="xs"
-                    itemClass="grid-item-pull-left"
-                    width="150" />
+        <DateTimeColumn name="createdDateTime"
+                        title="Created"
+                        field="createdDateTime"
+                        :filter="dateValueFilter"
+                        visiblePriority="md"
+                        itemClass="grid-item-pull-left"
+                        width="150">
+            <template #format="{ row }">
+                <span>{{ getElapsed(row.createdDateTime) }}</span>
+            </template>
+        </DateTimeColumn>
 
         <Column name="status"
                 title="Status"
                 field="status"
                 :filterValue="getStatusRowFilterValue"
                 :quickFilterValue="getStatusRowFilterValue"
-                :filter="pickExistingValueFilter">
+                :filter="pickExistingValueFilter"
+                visiblePriority="xs">
             <template #format="{ row }">
                 <div class="text-lg">
                     <span class='label label-info'>{{ row.status }}</span>
@@ -96,7 +103,8 @@
                 field="isCompleted"
                 :filterValue="getStateRowFilterValue"
                 :quickFilterValue="getStateRowFilterValue"
-                :filter="pickExistingValueFilter">
+                :filter="pickExistingValueFilter"
+                visiblePriority="md">
             <template #format="{ row }">
                 <div class="text-lg">
                     <span v-if="row.isCompleted" class='label label-default'>Completed</span>
@@ -112,7 +120,8 @@
         <Column v-if="config.options?.canView"
                 name="view"
                 itemClass="grid-columncommand"
-                width="52">
+                width="52"
+                visiblePriority="md">
             <template #format="{ row }">
                 <RockButton @click="onSelectItem(row)" :btnType="BtnType.Default" :btnSize="BtnSize.Small">
                     <i class="fa fa-file-text-o"></i>
@@ -124,7 +133,7 @@
 
         <template #gridFooterAppend>
             <div v-if="isDeleteButtonVisible" class="d-flex" style="padding: var(--table-cell-padding-y) 52px var(--table-cell-padding-y) var(--table-cell-padding-x);">
-                <RockButton @click="onDeleteButtonClick" :btnType="BtnType.Default" :btnSize="BtnSize.Small" class="mr-2">
+                <RockButton @click="onDeleteButtonClick" :btnType="BtnType.Default" :btnSize="BtnSize.ExtraSmall" class="mr-2">
                     Delete
                 </RockButton>
             </div>
@@ -149,7 +158,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, PersonColumn, TextColumn, DeleteColumn, SelectColumn, Column, pickExistingValueFilter, textValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, PersonColumn, TextColumn, DeleteColumn, SelectColumn, Column, DateTimeColumn, pickExistingValueFilter, textValueFilter, dateValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { WorkflowListOptionsBag } from "@Obsidian/ViewModels/Blocks/Workflow/WorkflowList/workflowListOptionsBag";
@@ -165,6 +174,7 @@
     import { Guid } from "@Obsidian/Types";
     import Modal from "@Obsidian/Controls/modal.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
     const config = useConfigurationValues<ListBlockBox<WorkflowListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -281,6 +291,10 @@
             return `${config.options?.workflowTypeIdKey}-${key}`;
         }
         return key;
+    }
+
+    function getElapsed(date: string): string {
+        return RockDateTime.parseISO(date)?.localDateTime.humanizeElapsed() ?? "";
     }
 
     // #endregion

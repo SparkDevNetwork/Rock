@@ -13,7 +13,7 @@
             <div class="d-flex flex-row justify-content-around flex-wrap">
                 <RockForm class="well col-md-5 col-sm-10 col-xs-12 d-flex flex-column justify-content-between" style="height: 650px;" @submit="exportFile" :hideErrors="true">
                     <div>
-                        <h3>Step 1: NCOA Export Tool</h3>
+                        <h3>STEP 1: NCOA Export Tool</h3>
                         <div class="ml-2">
                             <p class="text-muted text-wrap">Select a data vew to filter your export.</p>
                             <div class="col-lg-9 col-md-11 col-sm-8 col-xs-12 p-0">
@@ -28,7 +28,7 @@
                         <RockButton
                             :btnSize="BtnSize.Default"
                             :btnType="BtnType.Primary"
-                            :disabled="isLoading"
+                            :disabled="isStep1Loading"
                             type="submit" >
                             Export File
                         </RockButton>
@@ -51,7 +51,7 @@
                                 <NumberBox
                                     v-model="minMoveDistance"
                                     label="Minimum Move Distance to Inactivate"
-                                    help="Minimum move distance that a person moved before marking the person's account to inactivate. Leaving the value blank disables this feature."
+                                    help="Minimum move distance that a person moved before marking the person's account to inactivate."
                                     rules="required"
                                     placeholder="200" >
                                     <template #inputGroupAppend>
@@ -61,7 +61,7 @@
                             </div>
                             <CheckBox v-model="isMark48Month"
                                 label="Mark 48 Month Move as Previous Address"
-                                help="Mark moves in the 19-48 month catagory as a previous address." />
+                                help="Mark moves in the 19-48 month category as a previous address." />
                             <CheckBox v-model="isMarkInvalidAddresses"
                                 label="Mark Invalid Addresses as Previous Address"
                                 help="Mark Invalid Addresses as Previous Addresses" />
@@ -79,6 +79,7 @@
                         <RockButton
                             :btnSize="BtnSize.Default"
                             :btnType="BtnType.Primary"
+                            :disabled="isStep2Loading"
                             type="submit" >
                             Import File
                         </RockButton>
@@ -130,12 +131,13 @@ import { NcoaProcessPersonAddressBag } from "@Obsidian/ViewModels/Blocks/Communi
     const importedFile = ref(box.uploadFileReference ?? null);
     const successMessage = ref("");
     const errorMessage = ref("");
-    const isLoading = ref(false);
+    const isStep1Loading = ref(false);
+    const isStep2Loading = ref(false);
 
     const exportFile = async (): Promise<void> => {
         successMessage.value = "";
         errorMessage.value = "";
-        isLoading.value = true;
+        isStep1Loading.value = true;
         const result = await invokeBlockAction<NcoaProcessBag>("PrepareExportFile", { dataViewValue: selectedPersonDataView.value?.value});
         // Generate Excel file and download
         if (result.isSuccess && result.data?.addresses != null) {
@@ -147,12 +149,13 @@ import { NcoaProcessPersonAddressBag } from "@Obsidian/ViewModels/Blocks/Communi
         else {
             errorMessage.value = result.errorMessage || "Error";
         }
-        isLoading.value = false;
+        isStep1Loading.value = false;
     };
 
     const processImportFile = async ():Promise<void> => {
         successMessage.value = "";
         errorMessage.value = "";
+        isStep2Loading.value = true;
 
         const bag = <NcoaProcessBag> {
             inactiveReason: selectedInactiveReason.value,
@@ -169,10 +172,11 @@ import { NcoaProcessPersonAddressBag } from "@Obsidian/ViewModels/Blocks/Communi
         else {
             errorMessage.value = result.errorMessage || "Error";
         }
+        isStep2Loading.value = false;
     };
 
     // Generates the Workbook and converts the data passed in from a dictionary to an array so that the file is properly formatted.
-    function generateDataForFile(data: Record<number, NcoaProcessPersonAddressBag>): Workbook {
+    function generateDataForFile(data: NcoaProcessPersonAddressBag[]): Workbook {
         const workbook = new Workbook();
         const worksheet = workbook.addWorksheet();
 

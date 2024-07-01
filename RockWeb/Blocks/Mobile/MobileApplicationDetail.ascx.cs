@@ -528,8 +528,6 @@ namespace RockWeb.Blocks.Mobile
                 nbPageViewRetentionPeriodDays.Text = interactionChannelForSite.RetentionDuration.ToString();
             }
 
-            cbEnablePageViewGeoTracking.Checked = site.EnablePageViewGeoTracking;
-
             //
             // Set the API Key.
             //
@@ -1035,8 +1033,6 @@ namespace RockWeb.Blocks.Mobile
             {
                 binaryFileService.Get( site.ThumbnailBinaryFileId.Value ).IsTemporary = false;
             }
-
-            site.EnablePageViewGeoTracking = cbEnablePageViewGeoTracking.Checked;
 
             // This is a new site.
             if ( site.Id == 0 )

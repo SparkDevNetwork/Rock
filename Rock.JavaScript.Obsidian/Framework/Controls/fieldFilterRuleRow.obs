@@ -44,7 +44,7 @@
     import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
     import RockAttributeFilter from "./rockAttributeFilter.obs";
     import { FieldFilterSourceType } from "@Obsidian/Enums/Reporting/fieldFilterSourceType";
-    import { FieldFilterPropertyBag } from "@Obsidian/ViewModels/Reporting/fieldFilterPropertyBag";
+    import { FieldFilterPublicPropertyBag } from "@Obsidian/ViewModels/Reporting/fieldFilterPublicPropertyBag";
     import { FilterMode } from "@Obsidian/Core/Reporting/filterMode";
     import { getFieldType } from "@Obsidian/Utility/fieldTypes";
 
@@ -78,44 +78,62 @@
 
     let internalUpdate = false;
 
-    const selectedFieldKey = ref(props.modelValue.attributeGuid ?? props.modelValue.propertyName ?? "");
+    const selectedFieldKey = ref(`${props.modelValue.path ?? ""}::${props.modelValue.attributeGuid ?? props.modelValue.propertyName ?? ""}`);
     const comparisonValue = ref<ComparisonValue>({
         comparisonType: props.modelValue.comparisonType,
         value: props.modelValue.value ?? ""
     });
 
-    /** The currently selected attribute, if any. */
-    const currentAttribute = computed((): PublicAttributeBag | undefined => {
-        // Force get the value so the computed tracks it even if we don't
-        // have any sources just yet.
-        const key = selectedFieldKey.value;
-
-        const source = props.sources.find(source => {
-            return areEqual(key, source.attribute?.attributeGuid ?? "");
-        });
-
-        if (!source || source.type !== FieldFilterSourceType.Attribute || !source.attribute) {
+    /** The currently selected source property or undefined. */
+    const currentPropertySource = computed((): FieldFilterSourceBag | undefined => {
+        if (!selectedFieldKey.value.includes("::")) {
             return undefined;
         }
 
-        return source.attribute;
-    });
-
-    /** The currently selected property, if any. */
-    const currentProperty = computed((): FieldFilterPropertyBag | undefined => {
-        // Force get the value so the computed tracks it even if we don't
-        // have any sources just yet.
-        const key = selectedFieldKey.value;
+        const key = selectedFieldKey.value.split("::")[1];
+        const path = selectedFieldKey.value.split("::")[0];
 
         const source = props.sources.find(source => {
-            return key === source.property?.name;
+            return key === source.property?.name
+                && isPathEqual(path, source.path);
         });
 
         if (!source || source.type !== FieldFilterSourceType.Property || !source.property) {
             return undefined;
         }
 
-        return source.property;
+        return source;
+    });
+
+    /** The currently selected source attribute or undefined. */
+    const currentAttributeSource = computed((): FieldFilterSourceBag | undefined => {
+        if (!selectedFieldKey.value.includes("::")) {
+            return undefined;
+        }
+
+        const path = selectedFieldKey.value.split("::")[0];
+        const key = selectedFieldKey.value.split("::")[1];
+
+        const source = props.sources.find(source => {
+            return areEqual(key, source.attribute?.attributeGuid ?? "")
+                && isPathEqual(path, source.path);
+        });
+
+        if (!source || source.type !== FieldFilterSourceType.Attribute || !source.attribute) {
+            return undefined;
+        }
+
+        return source;
+    });
+
+    /** The currently selected attribute, if any. */
+    const currentAttribute = computed((): PublicAttributeBag | undefined => {
+        return currentAttributeSource.value?.attribute ?? undefined;
+    });
+
+    /** The currently selected property, if any. */
+    const currentProperty = computed((): FieldFilterPublicPropertyBag | undefined => {
+        return currentPropertySource.value?.property ?? undefined;
     });
 
     /** The filter component to use to display and edit the property value. */
@@ -132,13 +150,32 @@
     // Convert the list of sources into the options you can choose from the
     const fieldList = computed((): ListItemBag[] => {
         return props.sources.map(source => {
+            const nameOrGuid = source.attribute?.attributeGuid ?? source.property?.name;
             return {
                 text: source.attribute?.name ?? source.property?.title,
-                value: source.attribute?.attributeGuid ?? source.property?.name,
+                value: `${source.path ?? ""}::${nameOrGuid}`,
                 category: source.category
             };
         });
     });
+
+    /**
+     * Determines if the two path values are the same. Equality is determined
+     * by either both being "falsy" (that is, null, undefined or empty string)
+     * or by both being exactly the same value.
+     *
+     * @param a The first path value.
+     * @param b The second path value.
+     *
+     * @returns `true` if the paths are considered equal; otherwise `false`.
+     */
+    function isPathEqual(a: string | undefined | null, b: string | undefined | null): boolean {
+        if (!a && !b) {
+            return true;
+        }
+
+        return a === b;
+    }
 
     function onRemoveRuleClick(): void {
         emit("removeRule", props.modelValue);
@@ -149,7 +186,7 @@
         // Prevent a value reset.
         internalUpdate = true;
 
-        updateRefValue(selectedFieldKey, props.modelValue.attributeGuid ?? props.modelValue.propertyName ?? "");
+        updateRefValue(selectedFieldKey, `${props.modelValue.path ?? ""}::${props.modelValue.attributeGuid ?? props.modelValue.propertyName ?? ""}`);
         updateRefValue(comparisonValue, {
             comparisonType: props.modelValue.comparisonType,
             value: props.modelValue.value ?? ""
@@ -160,13 +197,25 @@
 
     // Watch for changes to our internal values and update the model value.
     watch([selectedFieldKey, comparisonValue], () => {
-        const isAttribute = props.sources.some(s => areEqual(s.attribute?.attributeGuid, selectedFieldKey.value));
+        const isAttribute = !!currentAttributeSource.value;
+        let key: string;
+        let path: string;
+
+        if (!selectedFieldKey.value.includes("::")) {
+            path = "";
+            key = "";
+        }
+        else {
+            path = selectedFieldKey.value.split("::")[0];
+            key = selectedFieldKey.value.split("::")[1];
+        }
 
         const newValue: FieldFilterRuleBag = {
             ...props.modelValue,
-            attributeGuid: isAttribute ? toGuidOrNull(selectedFieldKey.value) : null,
-            propertyName: !isAttribute ? selectedFieldKey.value : null,
+            attributeGuid: isAttribute ? toGuidOrNull(key) : null,
+            propertyName: !isAttribute ? key : null,
             sourceType: isAttribute ? FieldFilterSourceType.Attribute : FieldFilterSourceType.Property,
+            path: path,
             comparisonType: comparisonValue.value.comparisonType ?? 0,
             value: comparisonValue.value.value
         };

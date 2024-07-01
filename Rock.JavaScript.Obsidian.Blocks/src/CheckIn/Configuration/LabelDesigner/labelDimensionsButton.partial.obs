@@ -1,0 +1,84 @@
+<template>
+    <DropDownContent v-model="isDropDownOpen">
+        <template #anchor>
+            <RockButton btnType="default"
+                        btnSize="xs"
+                        class="label-dimensions-button mr-3">
+                Label Dimensions ({{ modelValue.width }}x{{ modelValue.height }})
+            </RockButton>
+        </template>
+
+        <RockForm @submit="onSubmit">
+            <div class="p-3" style="min-width: 240px;">
+                <NumberBox label="Width"
+                           v-model="editWidth"
+                           rules="required"
+                           :minimumValue="0.05"
+                           :maximumValue="16" />
+
+                <NumberBox label="Height"
+                           v-model="editHeight"
+                           rules="required"
+                           :minimumValue="0.05"
+                           :maximumValue="16" />
+            </div>
+
+            <div class="actions pl-3 pr-3 pt-2 pb-2" style="border-top: 1px solid var(--theme-light);">
+                <RockButton btnType="primary"
+                            type="submit"
+                            btnSize="xs">Update</RockButton>
+
+                <RockButton btnType="link"
+                            btnSize="xs"
+                            @click="onCancelClick">Cancel</RockButton>
+            </div>
+        </RockForm>
+    </DropDownContent>
+</template>
+
+<script setup lang="ts">
+    import DropDownContent from "@Obsidian/Controls/dropDownContent.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import { PropType, ref, watch } from "vue";
+    import { Size } from "./types.partial";
+
+    const props = defineProps({
+        /** The configured size of the label. */
+        modelValue: {
+            type: Object as PropType<Size>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Size): void;
+    }>();
+
+    const isDropDownOpen = ref(false);
+    const editWidth = ref(0);
+    const editHeight = ref(0);
+
+    /** Event handler for when the new size form is validated and submitted. */
+    function onSubmit(): void {
+        emit("update:modelValue", {
+            width: editWidth.value,
+            height: editHeight.value
+        });
+
+        isDropDownOpen.value = false;
+    }
+
+    /** Event handler for when the cancel button is clicked. */
+    function onCancelClick(): void {
+        isDropDownOpen.value = false;
+    }
+
+    watch(isDropDownOpen, () => {
+        if (isDropDownOpen.value) {
+            editWidth.value = props.modelValue.width;
+            editHeight.value = props.modelValue.height;
+        }
+    });
+</script>

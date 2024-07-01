@@ -634,7 +634,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="interactionInfo"></param>
         /// <param name="immediate"></param>
-        internal void RegisterPageInteraction( PageInteractionInfo interactionInfo, bool immediate = false )
+        internal static void RegisterPageInteraction( RegisterPageInteractionActionInfo interactionInfo, bool immediate = false )
         {
             // Get the Page.
             var page = PageCache.Get( interactionInfo.PageId );
@@ -692,7 +692,12 @@ namespace Rock.Model
                 CountryValueId = interactionInfo.CountryValueId,
                 PostalCode = interactionInfo.PostalCode,
                 Latitude = interactionInfo.Latitude,
-                Longitude = interactionInfo.Longitude
+                Longitude = interactionInfo.Longitude,
+                InteractionSource = interactionInfo.InteractionSource,
+                InteractionMedium = interactionInfo.InteractionMedium,
+                InteractionCampaign = interactionInfo.InteractionCampaign,
+                InteractionContent = interactionInfo.InteractionContent,
+                InteractionTerm = interactionInfo.InteractionTerm
             };
 
             var pageViewTransaction = new InteractionTransaction( dvWebsiteChannelType,
@@ -1257,6 +1262,153 @@ namespace Rock.Model
         /// The unique identifier of the user initiating this interaction.
         /// </summary>
         public string UserIdKey { get; set; }
+
+        #region InteractionSessionLocation Properties
+
+        /// <inheritdoc cref="IpGeolocation.IpAddress"/>
+        public string GeolocationIpAddress { get; set; }
+
+        /// <inheritdoc cref="InteractionSessionLocation.LookupDateTime"/>
+        public DateTime? GeolocationLookupDateTime { get; set; }
+
+        /// <inheritdoc cref="IpGeolocation.City"/>
+        public string City { get; set; }
+
+        /// <inheritdoc cref="IpGeolocation.RegionName"/>
+        public string RegionName { get; set; }
+
+        /// <inheritdoc cref="InteractionSessionLocation.RegionCode"/>
+        public string RegionCode { get; set; }
+
+        /// <inheritdoc cref="InteractionSessionLocation.RegionValueId"/>
+        public int? RegionValueId { get; set; }
+
+        /// <inheritdoc cref="InteractionSessionLocation.CountryCode"/>
+        public string CountryCode { get; set; }
+
+        /// <inheritdoc cref="InteractionSessionLocation.CountryValueId"/>
+        public int? CountryValueId { get; set; }
+
+        /// <inheritdoc cref="InteractionSessionLocation.PostalCode"/>
+        public string PostalCode { get; set; }
+
+        /// <inheritdoc cref="IpGeolocation.Latitude"/>
+        public double? Latitude { get; set; }
+
+        /// <inheritdoc cref="IpGeolocation.Longitude"/>
+        public double? Longitude { get; set; }
+
+        #endregion InteractionSessionLocation Properties
+    }
+
+    /// <summary>
+    /// Describes a processing request to register a page interaction.
+    /// </summary>
+    internal class RegisterPageInteractionActionInfo
+    {
+        /// <summary>
+        /// Create a new instance from a PageInteractionInfo object.
+        /// </summary>
+        /// <param name="interactionInfo"></param>
+        /// <returns></returns>
+        public static RegisterPageInteractionActionInfo FromPageInteraction( PageInteractionInfo interactionInfo )
+        {
+            var actionInfo = new RegisterPageInteractionActionInfo()
+            {
+                PageId = interactionInfo.PageId,
+                UserIdKey = interactionInfo.UserIdKey,
+                PageRequestUrl = interactionInfo.PageRequestUrl,
+                PageRequestTimeToServe = interactionInfo.PageRequestTimeToServe,
+                UrlReferrerHostAddress = interactionInfo.UrlReferrerHostAddress,
+                UrlReferrerSearchTerms = interactionInfo.UrlReferrerSearchTerms,
+                UserAgent = interactionInfo.UserAgent,
+                UserHostAddress = interactionInfo.UserHostAddress,
+                BrowserSessionGuid = interactionInfo.BrowserSessionGuid,
+                GeolocationIpAddress = interactionInfo.GeolocationIpAddress,
+                GeolocationLookupDateTime = interactionInfo.GeolocationLookupDateTime,
+                City = interactionInfo.City,
+                RegionName = interactionInfo.RegionName,
+                RegionCode = interactionInfo.RegionCode,
+                RegionValueId = interactionInfo.RegionValueId,
+                CountryCode = interactionInfo.CountryCode,
+                CountryValueId = interactionInfo.CountryValueId,
+                PostalCode = interactionInfo.PostalCode,
+                Latitude = interactionInfo.Latitude,
+                Longitude = interactionInfo.Longitude
+            };
+
+            return actionInfo;
+        }
+
+        /// <summary>
+        /// The unique identifier of the page.
+        /// </summary>
+        public int PageId { get; set; }
+
+        /// <summary>
+        /// The name of the action being registered.
+        /// </summary>
+        public string ActionName { get; set; } = "View";
+
+        /// <summary>
+        /// The unique identifier for the browser session.
+        /// </summary>
+        public Guid BrowserSessionGuid { get; set; }
+
+        /// <summary>
+        /// The URL requested by the client browser.
+        /// </summary>
+        public string PageRequestUrl { get; set; }
+
+        /// <summary>
+        /// The server date and time on which the page was requested.
+        /// </summary>
+        public DateTime PageRequestDateTime { get; set; }
+
+        /// <summary>
+        /// The time in seconds required to serve the initial page request.
+        /// </summary>
+        public double? PageRequestTimeToServe { get; set; }
+
+        /// <summary>
+        /// Gets the raw user agent string of the client browser.
+        /// </summary>
+        public string UserAgent { get; set; }
+
+        /// <summary>
+        /// Gets the IP host address of the remote client.
+        /// </summary>
+        public string UserHostAddress { get; set; }
+
+        /// <summary>
+        /// Gets the DNS host name or IP address of the client's previous request that linked to the current URL.
+        /// </summary>
+        public string UrlReferrerHostAddress { get; set; }
+
+        /// <summary>
+        /// Gets the query search terms of the client's previous request that linked to the current URL.
+        /// </summary>
+        public string UrlReferrerSearchTerms { get; set; }
+
+        /// <summary>
+        /// The unique identifier of the user initiating this interaction.
+        /// </summary>
+        public string UserIdKey { get; set; }
+
+        /// <inheritdoc cref="Interaction.Source"/>
+        public string InteractionSource { get; set; }
+
+        /// <inheritdoc cref="Interaction.Medium"/>
+        public string InteractionMedium { get; set; }
+
+        /// <inheritdoc cref="Interaction.Campaign"/>
+        public string InteractionCampaign { get; set; }
+
+        /// <inheritdoc cref="Interaction.Content"/>
+        public string InteractionContent { get; set; }
+
+        /// <inheritdoc cref="Interaction.Term"/>
+        public string InteractionTerm { get; set; }
 
         #region InteractionSessionLocation Properties
 

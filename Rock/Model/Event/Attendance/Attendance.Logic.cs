@@ -88,7 +88,47 @@ namespace Rock.Model
             // Person is currently checked in, if the schedule for this attendance is still active.
             return schedule.WasScheduleOrCheckInActive( currentDateTime );
         }
-        
+
+        /// <summary>
+        /// Calculates if an attendance would be considered checked-in based on specified parameters
+        /// </summary>
+        /// <param name="startDateTime">The start date time.</param>
+        /// <param name="endDateTime">The end date time.</param>
+        /// <param name="campus">The campus the attendance record is for.</param>
+        /// <param name="schedule">The schedule the attendance record is for.</param>
+        /// <returns><c>true</c> if the attendance record should be considered as currently checked in; <c>false</c> otherwise.</returns>
+        public static bool CalculateIsCurrentlyCheckedIn( DateTime? startDateTime, DateTime? endDateTime, CampusCache campus, NamedScheduleCache schedule )
+        {
+            if ( schedule == null )
+            {
+                return false;
+            }
+
+            // If person has checked-out, they are obviously not still checked in.
+            if ( endDateTime.HasValue )
+            {
+                return false;
+            }
+
+            // We'll check start time against timezone next, but don't even bother if start date was more than 2 days ago.
+            if ( startDateTime < RockDateTime.Now.AddDays( -2 ) )
+            {
+                return false;
+            }
+
+            // Get the current time (and adjust for a campus timezone).
+            var currentDateTime = campus?.CurrentDateTime ?? RockDateTime.Now;
+
+            // Now that we know the correct time, make sure that the attendance is for today and previous to current time.
+            if ( startDateTime < currentDateTime.Date || startDateTime > currentDateTime )
+            {
+                return false;
+            }
+
+            // Person is currently checked in, if the schedule for this attendance is still active.
+            return schedule.WasScheduleOrCheckInActive( currentDateTime );
+        }
+
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>

@@ -96,7 +96,7 @@ namespace Rock.Blocks.Tv
             var options = new AppleTvPageListOptionsBag()
             {
                 DefaultPageIdKey = GetDefaultPageIdKey(),
-                IsBlockVisible = GetSiteId().HasValue,
+                IsBlockVisible = GetSiteId() > 0,
             };
 
             return options;
@@ -149,7 +149,7 @@ namespace Rock.Blocks.Tv
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddTextField( "name", a => a.InternalName )
                 .AddTextField( "description", a => a.Description )
-                .AddField( "rockCacheablityType", a => a.CacheControlHeader?.RockCacheablityType )
+                .AddField( "rockCacheabilityType", a => a.CacheControlHeader?.RockCacheablityType )
                 .AddField( "cacheSharedMaxAge", a => a.CacheControlHeader?.SharedMaxAge?.ToSeconds() )
                 .AddField( "cacheMaxAge", a => a.CacheControlHeader?.MaxAge?.ToSeconds() )
                 .AddField( "displayInNav", a => a.DisplayInNavWhen != DisplayInNavWhen.Never )

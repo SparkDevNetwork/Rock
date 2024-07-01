@@ -5,7 +5,7 @@
             <template v-if="isDataForm">
                 <template v-if="currentFormIndex === 0">
                     <div v-if="familyOptions.length > 1" class="well">
-                        <RadioButtonList :label="(firstName || uppercaseRegistrantTerm) + ' is in the same immediate family as'" rules="required" :modelValue="currentRegistrant.familyGuid ?? undefined" @update:modelValue="onSetFamilyGuid" :items="familyOptions" validationTitle="Family" />
+                        <RadioButtonList :label="`${firstName || uppercaseRegistrantTerm} is in the same ${viewModel.familyTerm || 'immediate family'} as`" rules="required" :modelValue="currentRegistrant.familyGuid ?? undefined" @update:modelValue="onSetFamilyGuid" :items="familyOptions" validationTitle="Family" />
                     </div>
                     <div v-if="familyMemberOptions.length" class="row">
                         <div class="col-md-6">

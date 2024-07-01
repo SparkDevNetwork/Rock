@@ -4,8 +4,8 @@
 
     <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
 
-    <RockForm v-model:submit="submitForm" @submit="onSave" :formResetKey="resetKey">
-        <Panel type="block" :title="panelName">
+    <Panel type="block" :title="panelName">
+        <RockForm v-model:submit="submitForm" @submit="onSave" :formResetKey="resetKey">
             <template #default>
                 <ViewPanel v-if="panelMode == DetailPanelMode.View"
                            :modelValue="webFarmNodeViewBag"
@@ -13,24 +13,32 @@
                 <EditPanel v-if="panelMode === DetailPanelMode.Add || panelMode === DetailPanelMode.Edit"
                            v-model="webFarmNodeEditBag"
                            :options="options"
-                           @propertyChanged="onPropertyChanged" />
+                           @propertyChanged="baseBlock.onPropertyChanged" />
             </template>
-            <template v-if="panelMode === DetailPanelMode.Edit || panelMode === DetailPanelMode.Add" #footerActions>
-                <div>
-                    <RockButton :btnSize="BtnSize.Default"
-                                :btnType="BtnType.Primary"
-                                @click="onStartSubmitForm">
-                        Save
-                    </RockButton>
-                    <RockButton :btnSize="BtnSize.Default"
-                                :btnType="BtnType.Link"
-                                @click="onCancelEdit">
-                        Cancel
-                    </RockButton>
-                </div>
-            </template>
-        </Panel>
-    </RockForm>
+
+        </RockForm>
+        <template #footerActions>
+            <!-- <div v-if="panelMode === DetailPanelMode.View">
+                <RockButton :btnSize="BtnSize.Default"
+                            :btnType="BtnType.Primary"
+                            @click="onEdit">
+                    Edit
+                </RockButton>
+            </div> -->
+            <div v-if="panelMode === DetailPanelMode.Add || panelMode === DetailPanelMode.Edit">
+                <RockButton :btnSize="BtnSize.Default"
+                            :btnType="BtnType.Primary"
+                            @click="onSubmit">
+                    Save
+                </RockButton>
+                <RockButton :btnSize="BtnSize.Default"
+                            :btnType="BtnType.Link"
+                            @click="onCancelEdit">
+                    Cancel
+                </RockButton>
+            </div>
+        </template>
+    </Panel>
 </template>
 
 <script setup lang="ts">
@@ -43,16 +51,15 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
-    import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
-    import { debounce } from "@Obsidian/Utility/util";
+    import { useConfigurationValues, useInvokeBlockAction, useEntityDetailBlock } from "@Obsidian/Utility/block";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { WebFarmNodeBag } from "@Obsidian/ViewModels/Blocks/WebFarm/WebFarmNodeDetail/webFarmNodeBag";
     import { WebFarmNodeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/WebFarm/WebFarmNodeDetail/webFarmNodeDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const config = useConfigurationValues<DetailBlockBox<WebFarmNodeBag, WebFarmNodeDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const securityGrant = getSecurityGrant(config.securityGrantToken);
 
     // #region Values
 
@@ -60,22 +67,18 @@
     const errorMessage = ref("");
 
     const webFarmNodeViewBag = ref(config.entity);
-    const webFarmNodeEditBag = ref<WebFarmNodeBag>({} as WebFarmNodeBag);
+    const webFarmNodeEditBag = ref<ValidPropertiesBox<WebFarmNodeBag>>({
+        bag: {} as WebFarmNodeBag
+    });
     const submitForm = ref(false);
     const resetKey = ref("");
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
-    // The properties that are being edited in the UI. This is used to
-    // inform the server which incoming values have valid data in them.
-    const validProperties = [
-        "attributeValues",
-        "isActive",
-        "isLeader",
-        "nodeName"
-    ];
-
-    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(webFarmNodeEditBag, validProperties, invokeBlockAction), undefined, true);
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: webFarmNodeEditBag
+    });
 
     // #endregion
 
@@ -94,9 +97,6 @@
 
     // #endregion
 
-    // #region Functions
-
-    // #endregion
 
     // #region Event Handlers
 
@@ -117,36 +117,18 @@
      *
      * @returns true if the panel should enter edit mode; otherwise false.
      */
-    async function onEdit(): Promise<boolean> {
-        const result = await invokeBlockAction<DetailBlockBox<WebFarmNodeBag, WebFarmNodeDetailOptionsBag>>("Edit", {
+    async function onEdit(): Promise<void> {
+        const result = await invokeBlockAction<ValidPropertiesBox<WebFarmNodeBag>>("Edit", {
             key: webFarmNodeViewBag.value?.idKey
         });
 
-        if (result.isSuccess && result.data && result.data.entity) {
-            webFarmNodeEditBag.value = result.data.entity;
-
-            return true;
+        if (result.isSuccess && result.data && result.data.bag) {
+            webFarmNodeEditBag.value = {
+                bag: result.data.bag,
+                validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
+            };
+            panelMode.value = DetailPanelMode.Edit;
         }
-        else {
-            return false;
-        }
-    }
-
-    /**
-     * Event handler for when a value has changed that has an associated
-     * C# property name. This is used to detect changes to values that
-     * might cause qualified attributes to either show up or not show up.
-     *
-     * @param propertyName The name of the C# property that was changed.
-     */
-    function onPropertyChanged(propertyName: string): void {
-        // If we don't have any qualified attribute properties or this property
-        // is not one of them then do nothing.
-        if (!config.qualifiedAttributeProperties || !config.qualifiedAttributeProperties.some(n => n.toLowerCase() === propertyName.toLowerCase())) {
-            return;
-        }
-
-        refreshAttributesDebounce();
     }
 
     /**
@@ -158,33 +140,27 @@
     async function onSave(): Promise<void> {
         errorMessage.value = "";
 
-        const data: DetailBlockBox<WebFarmNodeBag, WebFarmNodeDetailOptionsBag> = {
-            entity: webFarmNodeEditBag.value,
-            isEditable: true,
-            validProperties: validProperties
-        };
-
-        const result = await invokeBlockAction<WebFarmNodeBag | string>("Save", {
-            box: data
+        const result = await invokeBlockAction<ValidPropertiesBox<WebFarmNodeBag> | string>("Save", {
+            box: webFarmNodeEditBag.value
         });
 
         if (result.isSuccess && result.data) {
             if (typeof result.data === "object") {
-                webFarmNodeViewBag.value = result.data;
+                webFarmNodeViewBag.value = result.data.bag;
+                panelMode.value = DetailPanelMode.View;
             }
-        }else{
+        }
+        else {
             errorMessage.value = result.errorMessage ?? "Unknown error while trying to save web farm node.";
         }
 
     }
 
-    const onStartSubmitForm = (): void => {
+    async function onSubmit(): Promise<void> {
         submitForm.value = true;
-    };
+    }
 
     // #endregion
-
-    provideSecurityGrant(securityGrant);
 
     // Handle any initial error conditions or the need to go into edit mode.
     if (config.errorMessage) {
@@ -194,7 +170,7 @@
         blockError.value = "The specified web farm node could not be viewed.";
     }
     else if (!config.entity.idKey) {
-        webFarmNodeEditBag.value = config.entity;
+        webFarmNodeEditBag.value = { bag: config.entity };
         panelMode.value = DetailPanelMode.Add;
     }
 </script>

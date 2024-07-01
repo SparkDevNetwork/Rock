@@ -1,0 +1,109 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="area-select-screen">
+        <MainPanel :title="title"
+                   :subtitle="subtitle"
+                   :person="session.getCurrentAttendee()?.person">
+            <div class="button-list">
+                <RockButton v-for="area in areas"
+                            btnType="primary"
+                            class="area-button"
+                            @click="onAreaClick(area)">
+                    <span class="title">{{ area.name }}</span>
+                </RockButton>
+            </div>
+        </MainPanel>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import MainPanel from "./mainPanel.partial.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { computed, PropType } from "vue";
+    import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { CheckInSession } from "./checkInSession.partial";
+    import { UnexpectedErrorMessage } from "./utils.partial";
+    import { KioskButton } from "./types.partial";
+    import { AreaOpportunityBag } from "@Obsidian/ViewModels/CheckIn/areaOpportunityBag";
+
+    const props = defineProps({
+        configuration: {
+            type: Object as PropType<KioskConfigurationBag>,
+            required: true
+        },
+
+        session: {
+            type: Object as PropType<CheckInSession>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (event: "next", session: CheckInSession): void;
+        (event: "updateActions", actions: KioskButton[]): void;
+    }>();
+
+    // #region Values
+
+    let isSelectingValue = false;
+
+    // #endregion
+
+    // #region Computed Values
+
+    const title = computed((): string => {
+        return props.session.appendScheduleName("Area");
+    });
+
+    const subtitle = computed((): string => {
+        return `Select the area you would like to check ${props.session.getCurrentAttendee()?.person?.nickName} into`;
+    });
+
+    const areas = computed((): AreaOpportunityBag[] => {
+        return props.session.getAvailableAreas();
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Update the actions supported by this screen.
+     */
+    function updateActions(): void {
+        const actions: KioskButton[] = [];
+
+        emit("updateActions", actions);
+    }
+
+    /**
+     * Handles the click event for an area button.
+     *
+     * @param area The area that was selected.
+     */
+    async function onAreaClick(area: AreaOpportunityBag): Promise<void> {
+        // Prevent tapping two different buttons.
+        if (isSelectingValue || !area.id) {
+            return;
+        }
+
+        try {
+            isSelectingValue = true;
+
+            const newSession = props.session.withSelectedArea(area.id);
+
+            emit("next", await newSession.withNextScreen());
+        }
+        catch (error) {
+            await alert(error instanceof Error ? error.message : UnexpectedErrorMessage);
+        }
+        finally {
+            isSelectingValue = false;
+        }
+    }
+
+    // #endregion
+
+    updateActions();
+</script>

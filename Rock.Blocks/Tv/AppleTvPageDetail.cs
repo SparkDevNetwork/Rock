@@ -29,8 +29,7 @@ using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Tv.AppleTvAppDetail;
 using Rock.ViewModels.Blocks.Tv.AppleTvPageDetail;
-using Rock.ViewModels.Controls;
-using Rock.ViewModels.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Tv
@@ -51,7 +50,7 @@ namespace Rock.Blocks.Tv
 
     [Rock.SystemGuid.EntityTypeGuid( "d8419b3c-eda1-46fc-9810-b1d81fb37cb3" )]
     [Rock.SystemGuid.BlockTypeGuid( "adbf3377-a491-4016-9375-346496a25fb4" )]
-    public class AppleTvPageDetail : RockDetailBlockType
+    public class AppleTvPageDetail : RockDetailBlockType, IBreadCrumbBlock
     {
         #region Keys
 
@@ -346,6 +345,38 @@ namespace Rock.Blocks.Tv
             return true;
         }
 
+        /// <inheritdoc
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var key = pageReference.GetPageParameter( PageParameterKey.SitePageId );
+                var breadCrumbs = new List<IBreadCrumb>();
+
+                if ( key.IsNotNullOrWhiteSpace() )
+                {
+                    var pageParameters = new Dictionary<string, string>();
+                    var detailBreadCrumb = pageReference.BreadCrumbs.Find( x => x.Name == "Application Screen Detail" );
+                    if ( detailBreadCrumb != null )
+                    {
+                        pageReference.BreadCrumbs.Remove( detailBreadCrumb );
+                    }
+
+                    var page = PageCache.Get( key, true );
+
+                    var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageParameters );
+                    var breadCrumb = new BreadCrumbLink( page?.InternalName ?? "New Page", breadCrumbPageRef );
+
+                    breadCrumbs.Add( breadCrumb );
+                }
+
+                return new BreadCrumbResult
+                {
+                    BreadCrumbs = breadCrumbs
+                };
+            }
+        }
+
         #endregion
 
         #region Block Actions
@@ -357,66 +388,66 @@ namespace Rock.Blocks.Tv
         /// <returns>A new entity bag to be used when returning to view mode, or the URL to redirect to after creating a new entity.</returns>
         [BlockAction]
         public BlockActionResult Save( DetailBlockBox<AppleTvPageBag, AppleTvPageDetailOptionsBag> box )
-        {
-            using ( var rockContext = new RockContext() )
             {
-                var applicationId = PageParameter( PageParameterKey.SiteId ).AsInteger();
-                var entityService = new PageService( rockContext );
-                var site = SiteCache.Get( applicationId );
-
-                if ( site == null )
+                using ( var rockContext = new RockContext() )
                 {
-                    return ActionBadRequest( "Please provide the Apple Application this page belongs to." );
-                }
+                    var applicationId = PageParameter( PageParameterKey.SiteId );
+                    var entityService = new PageService( rockContext );
+                    var site = SiteCache.Get( applicationId, !PageCache.Layout.Site.DisablePredictableIds );
 
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
+                    if ( site == null )
+                    {
+                        return ActionBadRequest( "Please provide the Apple Application this page belongs to." );
+                    }
 
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
+                    if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
+                    {
+                        return actionError;
+                    }
 
-                // Ensure everything is valid before saving.
-                if ( !ValidatePage( entity, rockContext, out var validationMessage ) )
-                {
-                    return ActionBadRequest( validationMessage );
-                }
+                    // Update the entity instance from the information in the bag.
+                    if ( !UpdateEntityFromBox( entity, box, rockContext ) )
+                    {
+                        return ActionBadRequest( "Invalid data." );
+                    }
 
-                var isNew = entity.Id == 0;
+                    // Ensure everything is valid before saving.
+                    if ( !ValidatePage( entity, rockContext, out var validationMessage ) )
+                    {
+                        return ActionBadRequest( validationMessage );
+                    }
 
-                if ( isNew )
-                {
-                    entity.ParentPageId = site.DefaultPageId;
-                    entity.LayoutId = site.DefaultPage.LayoutId;
+                    var isNew = entity.Id == 0;
 
-                    // Set the order of the new page to be the last one
-                    var currentMaxOrder = entityService.GetByParentPageId( site.DefaultPageId )
-                        .OrderByDescending( p => p.Order )
-                        .Select( p => p.Order )
-                        .FirstOrDefault();
-                    entity.Order = currentMaxOrder + 1;
-                }
+                    if ( isNew )
+                    {
+                        entity.ParentPageId = site.DefaultPageId;
+                        entity.LayoutId = site.DefaultPage.LayoutId;
 
-                rockContext.WrapTransaction( () =>
-                {
+                        // Set the order of the new page to be the last one
+                        var currentMaxOrder = entityService.GetByParentPageId( site.DefaultPageId )
+                            .OrderByDescending( p => p.Order )
+                            .Select( p => p.Order )
+                            .FirstOrDefault();
+                        entity.Order = currentMaxOrder + 1;
+                    }
+
+                    rockContext.WrapTransaction( () =>
+                    {
+                        rockContext.SaveChanges();
+                        entity.SaveAttributeValues( rockContext );
+
+                        rockContext.SaveChanges();
+                    } );
+
                     rockContext.SaveChanges();
-                    entity.SaveAttributeValues( rockContext );
 
-                    rockContext.SaveChanges();
-                } );
-
-                rockContext.SaveChanges();
-
-                return ActionContent( System.Net.HttpStatusCode.Created, this.GetParentPageUrl( new Dictionary<string, string>
-                {
-                    [PageParameterKey.SiteId] = PageParameter( PageParameterKey.SiteId ),
-                } ) );
+                    return ActionContent( System.Net.HttpStatusCode.Created, this.GetParentPageUrl( new Dictionary<string, string>
+                    {
+                        [PageParameterKey.SiteId] = PageParameter( PageParameterKey.SiteId ),
+                    } ) );
+                }
             }
-        }
 
         /// <summary>
         /// Refreshes the list of attributes that can be displayed for editing
@@ -426,51 +457,51 @@ namespace Rock.Blocks.Tv
         /// <returns>A box that contains the entity and attribute information.</returns>
         [BlockAction]
         public BlockActionResult RefreshAttributes( DetailBlockBox<AppleTvPageBag, AppleTvPageDetailOptionsBag> box )
-        {
-            using ( var rockContext = new RockContext() )
             {
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
+                using ( var rockContext = new RockContext() )
                 {
-                    return actionError;
-                }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                // Reload attributes based on the new property values.
-                entity.LoadAttributes( rockContext );
-
-                var refreshedBox = new DetailBlockBox<AppleTvPageBag, AppleTvAppDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity )
-                };
-
-                var oldAttributeGuids = box.Entity.Attributes.Values.Select( a => a.AttributeGuid ).ToList();
-                var newAttributeGuids = refreshedBox.Entity.Attributes.Values.Select( a => a.AttributeGuid );
-
-                // If the attributes haven't changed then return a 204 status code.
-                if ( oldAttributeGuids.SequenceEqual( newAttributeGuids ) )
-                {
-                    return ActionStatusCode( System.Net.HttpStatusCode.NoContent );
-                }
-
-                // Replace any values for attributes that haven't changed with
-                // the value sent by the client. This ensures any unsaved attribute
-                // value changes are not lost.
-                foreach ( var kvp in refreshedBox.Entity.Attributes )
-                {
-                    if ( oldAttributeGuids.Contains( kvp.Value.AttributeGuid ) )
+                    if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
                     {
-                        refreshedBox.Entity.AttributeValues[kvp.Key] = box.Entity.AttributeValues[kvp.Key];
+                        return actionError;
                     }
-                }
 
-                return ActionOk( refreshedBox );
+                    // Update the entity instance from the information in the bag.
+                    if ( !UpdateEntityFromBox( entity, box, rockContext ) )
+                    {
+                        return ActionBadRequest( "Invalid data." );
+                    }
+
+                    // Reload attributes based on the new property values.
+                    entity.LoadAttributes( rockContext );
+
+                    var refreshedBox = new DetailBlockBox<AppleTvPageBag, AppleTvAppDetailOptionsBag>
+                    {
+                        Entity = GetEntityBagForEdit( entity )
+                    };
+
+                    var oldAttributeGuids = box.Entity.Attributes.Values.Select( a => a.AttributeGuid ).ToList();
+                    var newAttributeGuids = refreshedBox.Entity.Attributes.Values.Select( a => a.AttributeGuid );
+
+                    // If the attributes haven't changed then return a 204 status code.
+                    if ( oldAttributeGuids.SequenceEqual( newAttributeGuids ) )
+                    {
+                        return ActionStatusCode( System.Net.HttpStatusCode.NoContent );
+                    }
+
+                    // Replace any values for attributes that haven't changed with
+                    // the value sent by the client. This ensures any unsaved attribute
+                    // value changes are not lost.
+                    foreach ( var kvp in refreshedBox.Entity.Attributes )
+                    {
+                        if ( oldAttributeGuids.Contains( kvp.Value.AttributeGuid ) )
+                        {
+                            refreshedBox.Entity.AttributeValues[kvp.Key] = box.Entity.AttributeValues[kvp.Key];
+                        }
+                    }
+
+                    return ActionOk( refreshedBox );
+                }
             }
-        }
 
         #endregion
     }

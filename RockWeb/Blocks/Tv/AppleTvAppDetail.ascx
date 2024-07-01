@@ -56,7 +56,6 @@
                         </div>
                         <div class="col-md-6">
                             <Rock:RockTextBox ID="txtApiKey" runat="server" Label="API Key" Required="True" Help="The API key that will be used to secure your TV application." />
-                            <Rock:RockCheckBox ID="cbEnablePageViewGeoTracking" runat="server" Label="Enable Page View Geo Tracking" Help="Enabling this feature will allow the PopulateInteractionSessionData job to begin performing geolocation lookup on the IP addresses in the Interaction Session data. This also requires setting up a IP Address Location Service found under System Settings." />                                                                                                
                         </div>
                     </div>
 

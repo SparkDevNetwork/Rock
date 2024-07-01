@@ -70,6 +70,9 @@ export type RegistrationEntryInitializationBox = {
     /** Gets or sets the family members. */
     familyMembers?: RegistrationEntryFamilyMemberBag[] | null;
 
+    /** Gets or sets the term for specifying which household or family a person is a member of. */
+    familyTerm?: string | null;
+
     /** Gets or sets the fees. */
     fees?: RegistrationEntryFeeBag[] | null;
 

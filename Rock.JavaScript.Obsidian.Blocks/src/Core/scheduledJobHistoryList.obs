@@ -6,7 +6,8 @@
           :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
-          :itemTerm="itemTerm"
+          :title="itemTerm"
+          itemTerm="Service Job History"
           :entityTypeGuid="EntityType.ServiceJobHistory"
           :showLaunchWorkflow="false"
           stickyHeader
@@ -27,16 +28,18 @@
         <TextColumn name="runDuration"
                     title="Run Duration"
                     field="runDuration"
-                    :filter="textValueFilter"
+                    :filter="numberValueFilter"
+                    :filterValue="getRunDurationRowFilterValue"
                     visiblePriority="xs" />
 
         <Column name="status"
                 title="Status"
+                field="status"
                 visiblePriority="md"
-                :filter="textValueFilter"
+                :filter="pickExistingValueFilter"
                 :filterValue="getStatusRowFilterValue">
             <template #format="{ row }">
-                <span :class='getStatusClass(row)'>{{ row.status === "Exception" ? "Failed" : row.status }}</span>
+                <span :class='getStatusClass(row)'>{{ row.status }}</span>
             </template>
 
             <template #skeleton>
@@ -44,12 +47,14 @@
             </template>
         </Column>
 
-        <Column name="statusMessage"
+        <Column name="statusMessageHtml"
                 title="Status Message"
-                width="25%"
-                visiblePriority="md">
+                field="statusMessageHtml"
+                width="55%"
+                visiblePriority="md"
+                :filterValue="getStatusMessageFilterValue">
             <template #format="{ row }">
-                <span v-html="row.statusMessage"></span>
+                <span v-html="row.statusMessageHtml"></span>
             </template>
 
             <template #skeleton>
@@ -63,7 +68,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { TextColumn, textValueFilter, dateValueFilter, DateTimeColumn, Column } from "@Obsidian/Controls/grid";
+    import Grid, { TextColumn, numberValueFilter, dateValueFilter, pickExistingValueFilter, DateTimeColumn, Column } from "@Obsidian/Controls/grid";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { ScheduledJobHistoryListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/ScheduledJobHistoryList/scheduledJobHistoryListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
@@ -150,7 +155,7 @@
                 return "label label-success";
             case "Running":
                 return "label label-info";
-            case "Exception":
+            case "Failed":
                 return "label label-danger";
             case "Warning":
                 return "label label-warning";
@@ -167,7 +172,26 @@
     * @param row The row to be filtered.
     */
     function getStatusRowFilterValue(row: Record<string, unknown>): string {
-        return row.status as string ?? "";
+        return row.status as string;
+    }
+
+    /**
+    * Gets the filter value to use for the status message column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getStatusMessageFilterValue(row: Record<string, unknown>): string {
+        return row.statusMessage as string ?? "";
+    }
+
+    /**
+    * Gets the filter value to use for the run duration column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getRunDurationRowFilterValue(row: Record<string, unknown>): string {
+        const durationSeconds = row.durationSeconds as string;
+        return row.durationSeconds as string ?? "";
     }
 
     // #endregion
