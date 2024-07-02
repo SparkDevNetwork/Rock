@@ -18,17 +18,13 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using Rock.Attribute;
-using Rock.Bus;
 using Rock.Bus.Queue;
-using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Bus.QueueList;
-using System.Data.Entity;
 using System.Linq;
 using Rock.Obsidian.UI;
-using Rock.Web.Cache;
 
 namespace Rock.Blocks.Bus
 {
@@ -49,7 +45,6 @@ namespace Rock.Blocks.Bus
 
     [Rock.SystemGuid.BlockTypeGuid( "8a5785fc-3094-4c2c-929a-3fd6d21da7f8" )]
 
-    [Rock.SystemGuid.EntityTypeGuid( "4DB8DFAC-7D32-4D94-8F56-E547D1CAB37F")]
     public class QueueList : RockListBlockType<QueueListBag>
     {
         #region Keys

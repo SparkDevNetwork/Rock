@@ -59,6 +59,8 @@
     <Compile Include="Blocks\CheckIn\Config\CheckinTypeDetail\CheckInRegistrationSettingsBag.cs" />
     <Compile Include="Blocks\CheckIn\Config\CheckinTypeDetail\CheckInSearchSettingsBag.cs" />
     <Compile Include="Blocks\BlockActionContextBag.cs" />
+    <Compile Include="Blocks\Bus\QueueList\QueueListBag.cs" />
+    <Compile Include="Blocks\Bus\QueueList\QueueListOptionsBag.cs" />
     <Compile Include="Blocks\CheckIn\CheckInKiosk\KioskConfigurationBag.cs" />
     <Compile Include="Blocks\CheckIn\CheckInKiosk\PromotionBag.cs" />
     <Compile Include="Blocks\CheckIn\CheckInKiosk\SavedKioskConfigurationBag.cs" />
