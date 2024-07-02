@@ -217,6 +217,69 @@ export async function initializeBlock(config: ObsidianBlockConfigBag): Promise<A
 }
 
 /**
+* This is an internal method which would be changed in future. This was created for the Short Link Modal and would be made more generic in future.
+* @param url
+*/
+export function showShortLink(url: string): void {
+
+    // create an iframe
+    // set width and height = 400
+    // set postiion to abs
+    // set the src attribute
+
+    const rootElement = document.createElement("div");
+    const modalPopup = document.createElement("div");
+    const modalPopupContentPanel = document.createElement("div");
+    const iframe = document.createElement("iframe");
+
+    rootElement.className = "modal-scrollable";
+    rootElement.id = "shortlink-modal-popup";
+    rootElement.style.zIndex = "1060";
+    rootElement.appendChild(modalPopup);
+
+    modalPopup.id = "shortlink-modal-popup";
+    modalPopup.className = "modal container modal-content rock-modal rock-modal-frame modal-overflow in";
+    modalPopup.style.opacity = "1";
+    modalPopup.style.display = "block";
+    modalPopup.style.marginTop = "0px";
+    modalPopup.style.position = "absolute";
+    modalPopup.style.top = "30px";
+    modalPopup.appendChild(modalPopupContentPanel);
+
+    modalPopupContentPanel.className = "iframe";
+    modalPopupContentPanel.id = "shortlink-modal-popup_contentPanel";
+    modalPopupContentPanel.appendChild(iframe);
+
+    document.body.appendChild(rootElement);
+
+    const modalBackDroping = document.createElement("div");
+    modalBackDroping.id = "shortlink-modal-popup_backDrop";
+    modalBackDroping.className = "modal-backdrop in";
+    modalBackDroping.style.zIndex = "1050";
+    document.body.appendChild(modalBackDroping);
+
+
+    iframe.id = "shortlink-modal-popup_iframe";
+    iframe.src = url;
+    iframe.style.display = "block";
+    iframe.style.width = "100%";
+    iframe.style.borderRadius = "6px";
+    iframe.scrolling = "no";
+    iframe.style.overflowY = "clip";
+    const iframeResizer = new ResizeObserver((event) => {
+        const iframeBody = event[0].target;
+        iframe.style.height = (iframeBody.scrollHeight?.toString() + "px") ?? "25vh";
+    });
+    iframe.onload = () => {
+        if(!iframe?.contentWindow?.document?.documentElement) {
+            return;
+        }
+        iframe.style.height = (iframe.contentWindow.document.body.scrollHeight?.toString() + "px") ?? "25vh";
+        iframeResizer.observe(iframe.contentWindow.document.body);
+    };
+}
+
+/**
  * Loads and shows a custom block action. This is a special purpose function
  * designed to be used only by the WebForms PageZoneBlocksEditor.ascx.cs control.
  * It will be removed once WebForms blocks are no longer supported.
@@ -339,3 +402,10 @@ export async function initializePageTimings(config: DebugTimingConfig): Promise<
     });
     app.mount(rootElement);
 }
+
+/**
+* This is an internal type which would be changed in future. This was created for the Short Link Modal and would be made more generic in future.
+*/
+export type ShortLinkEmitter = {
+    closeModal: string
+};

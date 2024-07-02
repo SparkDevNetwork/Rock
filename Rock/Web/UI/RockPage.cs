@@ -1241,6 +1241,12 @@ namespace Rock.Web.UI
 
                     Page.Trace.Warn( "Checking if user can administer" );
                     canAdministratePage = _pageCache.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+
+                    // The Short Link Modal in the System Dialogs need the page to have obsidian.
+                    if ( canAdministratePage )
+                    {
+                        _pageNeedsObsidian = true;
+                    }
                     canEditPage = _pageCache.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
                     // If the current person isn't allowed to edit or administrate the page, check to see if they are being impersonated by someone who
@@ -1703,6 +1709,26 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                             HtmlGenericControl iShortLink = new HtmlGenericControl( "i" );
                             aShortLink.Controls.Add( iShortLink );
                             iShortLink.Attributes.Add( "class", "fa fa-link" );
+
+                            // Obsidian ShortLink Properties - TO BE UNCOMMENTED IN v17
+/*
+                            var administratorShortlinkScript = $@"Obsidian.onReady(() => {{
+    System.import('@Obsidian/Templates/rockPage.js').then(module => {{
+        module.showShortLink('{ResolveUrl( string.Format( "~/ShortLink/{0}?t=Shortened Link&Url={1}", _pageCache.Id, Server.UrlEncode( HttpContext.Current.Request.UrlProxySafe().AbsoluteUri.ToString() ) ) )}');
+    }});
+}});";
+                            HtmlGenericControl aObsidianShortLink = new HtmlGenericControl( "a" );
+                            buttonBar.Controls.Add( aObsidianShortLink );
+                            aObsidianShortLink.ID = "aObsidianShortLink";
+                            aObsidianShortLink.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+                            aObsidianShortLink.Attributes.Add( "class", "btn properties" );
+                            aObsidianShortLink.Attributes.Add( "href", "#" );
+                            aObsidianShortLink.Attributes.Add( "onclick", $"event.preventDefault(); {administratorShortlinkScript}" );
+                            aObsidianShortLink.Attributes.Add( "Title", "Add Obsidian Short Link" );
+                            HtmlGenericControl iObsidianShortLink = new HtmlGenericControl( "i" );
+                            aObsidianShortLink.Controls.Add( iObsidianShortLink );
+                            iObsidianShortLink.Attributes.Add( "class", "fa fa-link" );
+*/
 
                             // System Info
                             HtmlGenericControl aSystemInfo = new HtmlGenericControl( "a" );
