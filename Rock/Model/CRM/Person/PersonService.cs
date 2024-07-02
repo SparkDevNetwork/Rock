@@ -4708,7 +4708,6 @@ FROM (
                excluding children, based on the highest security level within each family */
             var personIdsInFamilyWithMediumSecurity = personService
                 .Queryable()
-                .Where( p => p.AgeClassification != AgeClassification.Child )
                 .Where( p => p.PrimaryFamilyId != null )
                 .GroupBy( p => p.PrimaryFamilyId )
                 .Where( group =>
@@ -4724,7 +4723,6 @@ FROM (
 
             var personIdsInFamilyWithHighSecurity = personService
                .Queryable()
-               .Where( p => p.AgeClassification != AgeClassification.Child )
                .Where( p => p.PrimaryFamilyId != null )
                .GroupBy( p => p.PrimaryFamilyId )
                .Where( group =>
@@ -4739,7 +4737,6 @@ FROM (
 
             var personIdsInFamilyWithExtremeSecurity = personService
                .Queryable()
-               .Where( p => p.AgeClassification != AgeClassification.Child )
                .Where( p => p.PrimaryFamilyId != null )
                .GroupBy( p => p.PrimaryFamilyId )
                .Where( group =>

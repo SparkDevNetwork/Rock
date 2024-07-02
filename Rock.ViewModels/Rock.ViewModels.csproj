@@ -147,6 +147,9 @@
     <Compile Include="Blocks\Finance\FinancialPledgeList\FinancialPledgeListOptionsBag.cs" />
     <Compile Include="Blocks\Group\Scheduling\GroupScheduler\GroupSchedulerGroupLocationScheduleNamesBag.cs" />
     <Compile Include="Blocks\Engagement\CampaignList\CampaignListOptionsBag.cs" />
+    <Compile Include="Blocks\Security\UserLoginList\AuthenticationComponentBag.cs" />
+    <Compile Include="Blocks\Security\UserLoginList\UserLoginBag.cs" />
+    <Compile Include="Blocks\Security\UserLoginList\UserLoginListOptionsBag.cs" />
     <Compile Include="Blocks\Security\RestKeyList\RestKeyListOptionsBag.cs" />
     <Compile Include="Blocks\Crm\PersonMergeRequestList\PersonMergeRequestListOptionsBag.cs" />
     <Compile Include="Blocks\Event\RegistrationInstanceLinkageList\RegistrationInstanceLinkageListOptionsBag.cs" />
