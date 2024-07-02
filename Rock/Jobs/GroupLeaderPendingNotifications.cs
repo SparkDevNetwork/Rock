@@ -70,7 +70,7 @@ namespace Rock.Jobs
                 Guid? groupRoleFilterGuid = GetAttributeValue( "GroupRoleFilter" ).AsGuidOrNull();
                 int? pendingAge = GetAttributeValue( "PendingAge" ).AsIntegerOrNull();
 
-                bool includePreviouslyNotificed = GetAttributeValue( "IncludePreviouslyNotified" ).AsBoolean();
+                bool includePreviouslyNotified = GetAttributeValue( "IncludePreviouslyNotified" ).AsBoolean();
 
                 // get system email
                 var emailService = new SystemCommunicationService( rockContext );
@@ -95,7 +95,7 @@ namespace Rock.Jobs
                                             .Where( m => m.Group.GroupType.Guid == groupTypeGuid.Value
                                                 && m.GroupMemberStatus == GroupMemberStatus.Pending );
 
-                if ( !includePreviouslyNotificed )
+                if ( !includePreviouslyNotified )
                 {
                     qry = qry.Where( m => m.IsNotified == false );
                 }
@@ -113,32 +113,14 @@ namespace Rock.Jobs
 
                 var pendingGroupMembers = qry.ToList();
 
-                var groups = pendingGroupMembers.GroupBy( m => m.Group );
+                var uniqueGroupIds = pendingGroupMembers.Select( g => g.GroupId ).Distinct();
 
                 var errorList = new List<string>();
-                foreach ( var groupKey in groups )
+                foreach ( var groupId in uniqueGroupIds )
                 {
-                    var group = groupKey.Key;
+                    var groupMembers = pendingGroupMembers.Where( m => m.GroupId == groupId ).ToList();
 
-                    // get list of pending people
-                    var qryPendingIndividuals = group.Members.Where( m => m.GroupMemberStatus == GroupMemberStatus.Pending );
-
-                    if ( !includePreviouslyNotificed )
-                    {
-                        qryPendingIndividuals = qryPendingIndividuals.Where( m => m.IsNotified == false );
-                    }
-
-                    if ( groupRoleFilterGuid.HasValue )
-                    {
-                        qryPendingIndividuals = qryPendingIndividuals.Where( m => m.GroupRole.Guid == groupRoleFilterGuid.Value );
-                    }
-
-                    var pendingIndividuals = qryPendingIndividuals.Select( m => m.Person ).ToList();
-
-                    if ( !pendingIndividuals.Any() )
-                    {
-                        continue;
-                    }
+                    var group = groupMembers.FirstOrDefault().Group;
 
                     // get list of leaders
                     var groupLeaders = group.Members
@@ -146,7 +128,7 @@ namespace Rock.Jobs
                             m.Person != null &&
                             m.Person.Email != null &&
                             m.Person.Email != string.Empty &&
-                            m.GroupMemberStatus == GroupMemberStatus.Active );
+                            m.GroupMemberStatus == GroupMemberStatus.Active ).ToList();
 
                     if ( !groupLeaders.Any() )
                     {
@@ -159,7 +141,7 @@ namespace Rock.Jobs
                     {
                         // create merge object
                         var mergeFields = new Dictionary<string, object>();
-                        mergeFields.Add( "PendingIndividuals", pendingIndividuals );
+                        mergeFields.Add( "PendingIndividuals", groupMembers.Select( m => m.Person) );
                         mergeFields.Add( "Group", group );
                         mergeFields.Add( "ParentGroup", group.ParentGroup );
                         mergeFields.Add( "Person", leader.Person );
@@ -167,7 +149,7 @@ namespace Rock.Jobs
                     }
 
                     var errorMessages = new List<string>();
-                    var emailMessage = new RockEmailMessage( systemEmail.Guid );
+                    var emailMessage = new RockEmailMessage( systemEmail );
                     emailMessage.SetRecipients( recipients );
                     var sendSuccess = emailMessage.Send( out errorMessages );
 
@@ -182,8 +164,8 @@ namespace Rock.Jobs
 
                     notificationsSent += recipients.Count();
                     // mark pending members as notified as we go in case the job fails
-                    var notifiedPersonIds = pendingIndividuals.Select( p => p.Id );
-                    foreach ( var pendingGroupMember in pendingGroupMembers.Where( m => m.IsNotified == false && m.GroupId == group.Id && notifiedPersonIds.Contains( m.PersonId ) ) )
+                    var notifiedPersonIds = groupMembers.Select( m => m.Person.Id );
+                    foreach ( var pendingGroupMember in pendingGroupMembers.Where( m => m.IsNotified == false && m.GroupId == groupId && notifiedPersonIds.Contains( m.PersonId ) ) )
                     {
                         pendingGroupMember.IsNotified = true;
                         pendingMembersCount++;
