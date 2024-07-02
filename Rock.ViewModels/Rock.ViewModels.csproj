@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -48,6 +48,8 @@
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
     <Compile Include="Blocks\BlockActionContextBag.cs" />
+    <Compile Include="Blocks\Bus\QueueList\QueueListBag.cs" />
+    <Compile Include="Blocks\Bus\QueueList\QueueListOptionsBag.cs" />
     <Compile Include="Blocks\CheckIn\CheckInKiosk\KioskConfigurationBag.cs" />
     <Compile Include="Blocks\CheckIn\CheckInKiosk\PromotionBag.cs" />
     <Compile Include="Blocks\CheckIn\CheckInKiosk\SavedKioskConfigurationBag.cs" />
