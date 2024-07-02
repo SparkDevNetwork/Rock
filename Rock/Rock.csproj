@@ -51,14 +51,14 @@
     <Reference Include="AWSSDK.S3, Version=3.3.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604, processorArchitecture=MSIL">
       <HintPath>..\packages\AWSSDK.S3.3.3.21.1\lib\net45\AWSSDK.S3.dll</HintPath>
     </Reference>
-    <Reference Include="Azure.Core, Version=1.15.0.0, Culture=neutral, PublicKeyToken=92742159e12e44c8, processorArchitecture=MSIL">
-      <HintPath>..\packages\Azure.Core.1.15.0\lib\net461\Azure.Core.dll</HintPath>
+    <Reference Include="Azure.Core, Version=1.39.0.0, Culture=neutral, PublicKeyToken=92742159e12e44c8, processorArchitecture=MSIL">
+      <HintPath>..\packages\Azure.Core.1.39.0\lib\net472\Azure.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Azure.Storage.Blobs, Version=12.9.0.0, Culture=neutral, PublicKeyToken=92742159e12e44c8, processorArchitecture=MSIL">
-      <HintPath>..\packages\Azure.Storage.Blobs.12.9.0\lib\netstandard2.0\Azure.Storage.Blobs.dll</HintPath>
+    <Reference Include="Azure.Storage.Blobs, Version=12.20.0.0, Culture=neutral, PublicKeyToken=92742159e12e44c8, processorArchitecture=MSIL">
+      <HintPath>..\packages\Azure.Storage.Blobs.12.20.0\lib\netstandard2.0\Azure.Storage.Blobs.dll</HintPath>
     </Reference>
-    <Reference Include="Azure.Storage.Common, Version=12.8.0.0, Culture=neutral, PublicKeyToken=92742159e12e44c8, processorArchitecture=MSIL">
-      <HintPath>..\packages\Azure.Storage.Common.12.8.0\lib\netstandard2.0\Azure.Storage.Common.dll</HintPath>
+    <Reference Include="Azure.Storage.Common, Version=12.19.0.0, Culture=neutral, PublicKeyToken=92742159e12e44c8, processorArchitecture=MSIL">
+      <HintPath>..\packages\Azure.Storage.Common.12.19.0\lib\netstandard2.0\Azure.Storage.Common.dll</HintPath>
     </Reference>
     <Reference Include="BCrypt.Net, Version=0.1.5073.29922, Culture=neutral, PublicKeyToken=6bcd409ee6bc9292, processorArchitecture=MSIL">
       <HintPath>..\packages\BCrypt-Official.0.1.109\lib\BCrypt.Net.dll</HintPath>
@@ -208,8 +208,8 @@
     <Reference Include="MaxMind.GeoIP2, Version=4.0.0.0, Culture=neutral, PublicKeyToken=66afa4cc5ae853ac, processorArchitecture=MSIL">
       <HintPath>..\packages\MaxMind.GeoIP2.4.1.0\lib\net461\MaxMind.GeoIP2.dll</HintPath>
     </Reference>
-    <Reference Include="MessagePack, Version=1.7.3.4, Culture=neutral, PublicKeyToken=b4a0369545f0a1be, processorArchitecture=MSIL">
-      <HintPath>..\packages\MessagePack.1.7.3.4\lib\net47\MessagePack.dll</HintPath>
+    <Reference Include="MessagePack, Version=1.9.0.0, Culture=neutral, PublicKeyToken=b4a0369545f0a1be, processorArchitecture=MSIL">
+      <HintPath>..\packages\MessagePack.1.9.11\lib\net47\MessagePack.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNet.SignalR.Core, Version=2.4.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.SignalR.Core.2.4.3\lib\net45\Microsoft.AspNet.SignalR.Core.dll</HintPath>
@@ -301,11 +301,11 @@
     <Reference Include="Microsoft.IdentityModel.Clients.ActiveDirectory.WindowsForms, Version=2.21.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.IdentityModel.Clients.ActiveDirectory.2.21.301221612\lib\net45\Microsoft.IdentityModel.Clients.ActiveDirectory.WindowsForms.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.IdentityModel.JsonWebTokens, Version=5.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.IdentityModel.JsonWebTokens.5.5.0\lib\net461\Microsoft.IdentityModel.JsonWebTokens.dll</HintPath>
+    <Reference Include="Microsoft.IdentityModel.JsonWebTokens, Version=5.7.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.IdentityModel.JsonWebTokens.5.7.0\lib\net461\Microsoft.IdentityModel.JsonWebTokens.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.IdentityModel.Logging, Version=5.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.IdentityModel.Logging.5.5.0\lib\net461\Microsoft.IdentityModel.Logging.dll</HintPath>
+    <Reference Include="Microsoft.IdentityModel.Logging, Version=5.7.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.IdentityModel.Logging.5.7.0\lib\net461\Microsoft.IdentityModel.Logging.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.IdentityModel.Protocols, Version=5.2.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.IdentityModel.Protocols.5.2.1\lib\net451\Microsoft.IdentityModel.Protocols.dll</HintPath>
@@ -313,14 +313,14 @@
     <Reference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect, Version=5.2.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.IdentityModel.Protocols.OpenIdConnect.5.2.1\lib\net451\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.IdentityModel.Tokens, Version=5.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.IdentityModel.Tokens.5.5.0\lib\net461\Microsoft.IdentityModel.Tokens.dll</HintPath>
+    <Reference Include="Microsoft.IdentityModel.Tokens, Version=5.7.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.IdentityModel.Tokens.5.7.0\lib\net461\Microsoft.IdentityModel.Tokens.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Net.Http.Headers, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Net.Http.Headers.2.2.0\lib\netstandard2.0\Microsoft.Net.Http.Headers.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Owin, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Owin.4.0.0\lib\net451\Microsoft.Owin.dll</HintPath>
+    <Reference Include="Microsoft.Owin, Version=4.2.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.4.2.2\lib\net45\Microsoft.Owin.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Owin.Host.SystemWeb, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Owin.Host.SystemWeb.3.0.1\lib\net45\Microsoft.Owin.Host.SystemWeb.dll</HintPath>
@@ -434,7 +434,7 @@
       <HintPath>..\packages\SixLabors.Fonts.1.0.0-beta18\lib\netstandard2.0\SixLabors.Fonts.dll</HintPath>
     </Reference>
     <Reference Include="SixLabors.ImageSharp, Version=2.0.0.0, Culture=neutral, PublicKeyToken=d998eea7b14cab13, processorArchitecture=MSIL">
-      <HintPath>..\packages\SixLabors.ImageSharp.2.1.3\lib\net472\SixLabors.ImageSharp.dll</HintPath>
+      <HintPath>..\packages\SixLabors.ImageSharp.2.1.8\lib\net472\SixLabors.ImageSharp.dll</HintPath>
     </Reference>
     <Reference Include="SixLabors.ImageSharp.Drawing, Version=1.0.0.0, Culture=neutral, PublicKeyToken=d998eea7b14cab13, processorArchitecture=MSIL">
       <HintPath>..\packages\SixLabors.ImageSharp.Drawing.1.0.0-beta15\lib\net472\SixLabors.ImageSharp.Drawing.dll</HintPath>
@@ -442,6 +442,9 @@
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ClientModel, Version=1.0.0.0, Culture=neutral, PublicKeyToken=92742159e12e44c8, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ClientModel.1.0.0\lib\netstandard2.0\System.ClientModel.dll</HintPath>
     </Reference>
     <Reference Include="System.ComponentModel.Annotations, Version=4.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.ComponentModel.Annotations.4.7.0\lib\net461\System.ComponentModel.Annotations.dll</HintPath>
@@ -462,8 +465,8 @@
     <Reference Include="System.DirectoryServices.AccountManagement" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.IdentityModel" />
-    <Reference Include="System.IdentityModel.Tokens.Jwt, Version=5.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.IdentityModel.Tokens.Jwt.5.5.0\lib\net461\System.IdentityModel.Tokens.Jwt.dll</HintPath>
+    <Reference Include="System.IdentityModel.Tokens.Jwt, Version=5.7.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IdentityModel.Tokens.Jwt.5.7.0\lib\net461\System.IdentityModel.Tokens.Jwt.dll</HintPath>
     </Reference>
     <Reference Include="System.Interactive.Async, Version=3.2.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Interactive.Async.3.2.0\lib\net46\System.Interactive.Async.dll</HintPath>
@@ -475,17 +478,20 @@
     <Reference Include="System.IO.FileSystem.Primitives, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.IO.FileSystem.Primitives.4.3.0\lib\net46\System.IO.FileSystem.Primitives.dll</HintPath>
     </Reference>
+    <Reference Include="System.IO.Hashing, Version=6.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IO.Hashing.6.0.0\lib\net461\System.IO.Hashing.dll</HintPath>
+    </Reference>
     <Reference Include="System.IO.Packaging, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\OpenXMLSDK-MOT.2.6.0.0\lib\System.IO.Packaging.dll</HintPath>
     </Reference>
-    <Reference Include="System.IO.Pipelines, Version=4.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.IO.Pipelines.4.5.0\lib\netstandard2.0\System.IO.Pipelines.dll</HintPath>
+    <Reference Include="System.IO.Pipelines, Version=4.0.2.4, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IO.Pipelines.4.7.5\lib\net461\System.IO.Pipelines.dll</HintPath>
     </Reference>
     <Reference Include="System.IO.UnmanagedMemoryStream, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.IO.UnmanagedMemoryStream.4.3.0\lib\net46\System.IO.UnmanagedMemoryStream.dll</HintPath>
     </Reference>
-    <Reference Include="System.Linq.Dynamic.Core, Version=1.2.9.0, Culture=neutral, PublicKeyToken=0f07ec44de6ac832, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Linq.Dynamic.Core.1.2.9\lib\net46\System.Linq.Dynamic.Core.dll</HintPath>
+    <Reference Include="System.Linq.Dynamic.Core, Version=1.4.2.0, Culture=neutral, PublicKeyToken=0f07ec44de6ac832, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Linq.Dynamic.Core.1.4.2\lib\net46\System.Linq.Dynamic.Core.dll</HintPath>
     </Reference>
     <Reference Include="System.Management" />
     <Reference Include="System.Management.Automation, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -514,6 +520,11 @@
       <HintPath>..\packages\System.Runtime.InteropServices.RuntimeInformation.4.3.0\lib\net45\System.Runtime.InteropServices.RuntimeInformation.dll</HintPath>
     </Reference>
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Runtime.Serialization.Primitives, Version=4.1.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.Serialization.Primitives.4.3.0\lib\net46\System.Runtime.Serialization.Primitives.dll</HintPath>
+      <Private>True</Private>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Security" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.ServiceModel.Web" />
