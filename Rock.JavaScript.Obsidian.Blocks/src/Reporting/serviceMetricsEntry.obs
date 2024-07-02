@@ -30,9 +30,15 @@
                                             :items="campuses"
                                             label="Campus"
                                             @update:modelValue="onCampusUpdated" />
-                        <div v-if="showCampusLabel" class="form-group row d-flex align-items-center justify-content-center">
-                            <span>{{ campuses[0].text }}</span>
+
+                      <div v-if="showCampusLabel" class="form-group">
+                        <label class="control-label">
+                          Campus
+                        </label>
+                        <div class="mt-4 ml-3">
+                          <span>{{ campuses[0].text }}</span>
                         </div>
+                      </div>
                         <ButtonDropDownList v-model="weekendDateOrEmptyString"
                                             :disabled="isLoadingWeekendDates"
                                             :items="weekendDates"
