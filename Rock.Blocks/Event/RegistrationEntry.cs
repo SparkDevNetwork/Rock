@@ -1833,9 +1833,38 @@ namespace Rock.Blocks.Event
 
                 case RegistrationFieldSource.RegistrantAttribute:
                     return GetEntityCurrentClientAttributeValue( rockContext, registrant, field );
+
+                case RegistrationFieldSource.GroupMemberAttribute:
+                    return GetGroupMemberCurrentAttributeValue( rockContext, person, field, registrationContext );
             }
 
             return null;
+        }
+
+        private object GetGroupMemberCurrentAttributeValue( RockContext rockContext, Person person, RegistrationTemplateFormField field, RegistrationContext registrationContext )
+        {
+            if ( person == null )
+            {
+                return null;
+            }
+
+            var groupId = GetRegistrationGroupId( rockContext, registrationContext?.RegistrationSettings?.RegistrationInstanceId );
+
+            if ( !groupId.HasValue )
+            {
+                return null;
+            }
+
+            var groupMember = new GroupMemberService( rockContext )
+                .GetByGroupIdAndPersonId( groupId.Value, person.Id )
+                .FirstOrDefault();
+
+            if ( groupMember == null )
+            {
+                return null;
+            }
+
+            return GetEntityCurrentClientAttributeValue( rockContext, groupMember, field );
         }
 
         /// <summary>
@@ -3465,6 +3494,7 @@ namespace Rock.Blocks.Event
             var currencyInfo = new RockCurrencyCodeInfo();
             var viewModel = new RegistrationEntryInitializationBox
             {
+                AreCurrentFamilyMembersShown = context.RegistrationSettings.AreCurrentFamilyMembersShown,
                 FamilyTerm = GetAttributeValue( AttributeKey.FamilyTerm ),
                 RegistrationAttributesStart = beforeAttributes,
                 RegistrationAttributesEnd = afterAttributes,
