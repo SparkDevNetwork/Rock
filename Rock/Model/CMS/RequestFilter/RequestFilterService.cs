@@ -178,6 +178,19 @@ namespace Rock.Model
                 return false;
             }
 
+            // Check against geolocation
+            bool geolocationFiltersMatch = false;
+            foreach ( var geolocationRequestFilter in requestFilterConfiguration.GeolocationRequestFilters )
+            {
+                var isMatch = geolocationRequestFilter.IsMatch( request );
+                geolocationFiltersMatch = geolocationFiltersMatch || isMatch;
+            }
+
+            if ( requestFilterConfiguration.GeolocationRequestFilters.Any() && !geolocationFiltersMatch )
+            {
+                return false;
+            }
+
             // Check against Environment
             var environmentRequestFilter = requestFilterConfiguration.EnvironmentRequestFilter;
             if ( !environmentRequestFilter.IsMatch( request ) )
