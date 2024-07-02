@@ -64,21 +64,34 @@ namespace RockWeb.Blocks.Reporting
         DefaultIntegerValue = 0,
         Order = 2 )]
 
+    [BooleanField(
+        "Default to Current Week",
+        Key = AttributeKey.DefaultToCurrentWeek,
+        Description = "When enabled, the block will bypass the step to select a week from a list and will instead skip right to the entry page with the current week selected.",
+        DefaultBooleanValue = false,
+        Order = 3 )]
+
     [MetricCategoriesField(
         "Metric Categories",
         Key = AttributeKey.MetricCategories,
         Description = "Select the metric categories to display (note: only metrics in those categories with a campus and schedule partition will displayed).",
         IsRequired = true,
-        Order = 3 )]
+        Order = 4 )]
 
-    [CampusesField( "Campuses", "Select the campuses you want to limit this block to.", false, "", "", 4, AttributeKey.Campuses )]
+    [CampusesField( "Campuses",
+        description: "Select the campuses you want to limit this block to.",
+        required: false,
+        defaultCampusGuids: "",
+        category: "",
+        order: 5,
+        key: AttributeKey.Campuses )]
 
     [BooleanField(
         "Insert 0 for Blank Items",
         Key = AttributeKey.DefaultToZero,
         Description = "If enabled, a zero will be added to any metrics that are left empty when entering data.",
         DefaultValue = "false",
-        Order = 5 )]
+        Order = 6 )]
 
     [CustomDropdownListField(
         "Metric Date Determined By",
@@ -86,14 +99,14 @@ namespace RockWeb.Blocks.Reporting
         Description = "This setting determines what date to use when entering the metric. 'Sunday Date' would use the selected Sunday date. 'Day from Schedule' will use the first day configured from the selected schedule.",
         DefaultValue = "0",
         ListSource = "0^Sunday Date,1^Day from Schedule",
-        Order = 6 )]
+        Order = 7 )]
 
     [BooleanField(
         "Limit Campus Selection to Campus Team Membership",
         Key = AttributeKey.LimitCampusByCampusTeam,
         Description = "When enabled, this would limit the campuses shown to only those where the individual was on the Campus Team.",
         DefaultBooleanValue = false,
-        Order = 7 )]
+        Order = 8 )]
 
     [DefinedValueField(
         "Campus Types",
@@ -102,7 +115,7 @@ namespace RockWeb.Blocks.Reporting
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_TYPE,
         AllowMultiple = true,
         IsRequired = false,
-        Order = 8 )]
+        Order = 9 )]
 
     [DefinedValueField(
         "Campus Status",
@@ -111,14 +124,14 @@ namespace RockWeb.Blocks.Reporting
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_STATUS,
         AllowMultiple = true,
         IsRequired = false,
-        Order = 9 )]
+        Order = 10 )]
 
     [BooleanField(
         "Filter Schedules by Campus",
         Key = AttributeKey.FilterByCampus,
         Description = "When enabled, only schedules that are included in the Campus Schedules will be included.",
         DefaultBooleanValue = false,
-        Order = 10 )]
+        Order = 11 )]
 
     #endregion Block Attributes
 
@@ -140,6 +153,7 @@ namespace RockWeb.Blocks.Reporting
             public const string CampusTypes = "CampusTypes";
             public const string CampusStatus = "CampusStatus";
             public const string FilterByCampus = "FilterByCampus";
+            public const string DefaultToCurrentWeek = "DefaultToCurrentWeek";
         }
 
         #endregion Attribute Keys
@@ -497,7 +511,8 @@ namespace RockWeb.Blocks.Reporting
                 }
             }
 
-            if ( !options.Any() && !_selectedWeekend.HasValue )
+            var defaultToCurrentWeek = GetAttributeValue( AttributeKey.DefaultToCurrentWeek ).AsBoolean();
+            if ( !options.Any() && !_selectedWeekend.HasValue && !defaultToCurrentWeek )
             {
                 lSelection.Text = "Select Week of:";
                 foreach ( var weekend in GetWeekendDates( 1, 0 ) )
@@ -574,20 +589,58 @@ namespace RockWeb.Blocks.Reporting
                 nbWarning.Text = "The campus associated with request is not valid.";
             }
 
-            foreach ( var campus in campuses.Where( a => !campusId.HasValue || isCampusInvalid || a.Id == campusId.Value ) )
+            var filteredCampuses = campuses.Where( a => !campusId.HasValue || isCampusInvalid || a.Id == campusId.Value ).ToList();
+            var activeCampuses = CampusCache.All( false );
+            var availableCampuses = new List<CampusCache>();
+
+            // If we have more than one campus bind the dropdown list.
+            if ( filteredCampuses.Count > 1 )
+            {
+                bddlCampus.Visible = true;
+                lCampus.Visible = false;
+
+                availableCampuses = filteredCampuses;
+            }
+            else if ( filteredCampuses.Count == 1 && activeCampuses.Count > 1 )
+            {
+                bddlCampus.Visible = false;
+                lCampus.Visible = true;
+
+                lCampus.Text = filteredCampuses[0].Name;
+                _selectedCampusId = filteredCampuses[0].Id;
+                availableCampuses = filteredCampuses;
+            }
+            else if ( activeCampuses.Count == 1 )
+            {
+                bddlCampus.Visible = false;
+                lCampus.Visible = false;
+
+                _selectedCampusId = activeCampuses[0].Id;
+                availableCampuses = activeCampuses;
+            }
+
+            foreach ( var campus in availableCampuses )
             {
                 bddlCampus.Items.Add( new ListItem( campus.Name, campus.Id.ToString() ) );
             }
-
             bddlCampus.SetValue( _selectedCampusId );
 
             // Load Weeks
             var weeksBack = GetAttributeValue( AttributeKey.WeeksBack ).AsInteger();
             var weeksAhead = GetAttributeValue( AttributeKey.WeeksAhead ).AsInteger();
-            foreach ( var date in GetWeekendDates( weeksBack, weeksAhead ) )
+            var weekEndDates = GetWeekendDates( weeksBack, weeksAhead );
+
+            foreach ( var date in weekEndDates )
             {
                 bddlWeekend.Items.Add( new ListItem( "Sunday " + date.ToShortDateString(), date.ToString( "o" ) ) );
             }
+
+            var defaultToCurrentWeek = GetAttributeValue( AttributeKey.DefaultToCurrentWeek ).AsBoolean();
+            if ( defaultToCurrentWeek )
+            {
+                _selectedWeekend = RockDateTime.Today.SundayDate();
+            }
+
             bddlWeekend.SetValue( _selectedWeekend.HasValue ? _selectedWeekend.Value.ToString( "o" ) : null );
             LoadServicesDropDown();
         }
