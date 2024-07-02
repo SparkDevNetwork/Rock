@@ -826,6 +826,7 @@ namespace RockWeb.Blocks.Reporting
                 var preferences = GetBlockPersonPreferences();
                 preferences.SetValue( UserPreferenceKey.CampusId, campusId.HasValue ? campusId.Value.ToString() : "" );
                 preferences.SetValue( UserPreferenceKey.ScheduleId, scheduleId.HasValue ? scheduleId.Value.ToString() : "" );
+                preferences.Save();
 
                 var metricCategories = MetricCategoriesFieldAttribute.GetValueAsGuidPairs( GetAttributeValue( AttributeKey.MetricCategories ) );
                 var metricGuids = metricCategories.Select( a => a.MetricGuid ).ToList();
