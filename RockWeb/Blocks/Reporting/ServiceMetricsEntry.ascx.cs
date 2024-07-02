@@ -597,14 +597,14 @@ namespace RockWeb.Blocks.Reporting
             if ( filteredCampuses.Count > 1 )
             {
                 bddlCampus.Visible = true;
-                lCampus.Visible = false;
+                divCampusLabel.Visible = false;
 
                 availableCampuses = filteredCampuses;
             }
             else if ( filteredCampuses.Count == 1 && activeCampuses.Count > 1 )
             {
                 bddlCampus.Visible = false;
-                lCampus.Visible = true;
+                divCampusLabel.Visible = true;
 
                 lCampus.Text = filteredCampuses[0].Name;
                 _selectedCampusId = filteredCampuses[0].Id;
@@ -613,7 +613,7 @@ namespace RockWeb.Blocks.Reporting
             else if ( activeCampuses.Count == 1 )
             {
                 bddlCampus.Visible = false;
-                lCampus.Visible = false;
+                divCampusLabel.Visible = false;
 
                 _selectedCampusId = activeCampuses[0].Id;
                 availableCampuses = activeCampuses;

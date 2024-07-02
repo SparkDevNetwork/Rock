@@ -1,0 +1,197 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="rock-modal modal-content shortlink-modal-popup_iframe">
+            <div class="modal-header">
+                <button @click="closeModal" class="close" aria-hidden="true" type="button">&times;</button>
+                <h3 class="modal-title">Shortened Link</h3>
+            </div>
+            <div class="modal-body">
+                <NotificationBox v-if="errorMessage"
+                    v-text="errorMessage"
+                    alertType="danger" />
+                <div class="row">
+                    <div class="col">
+                        <div class="clearfix">
+                            <a class="pull-right clickable text-info"
+                                data-toggle="tooltip"
+                                data-placement="bottom"
+                                data-trigger="hover"
+                                data-delay="250"
+                                title="Copy to Clipboard" @click="onClick">
+                                    {{linkText}}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <DropDownList v-model="siteGuid"
+                                    :showBlankItem="false"
+                                    label="Shortening Link Site"
+                                    rules="required"
+                                    help="The site to use for the short link."
+                                    :items="siteOptions" />
+                    </div>
+                    <div class="col-sm-6">
+                        <TextBox v-model="token"
+                                label="Token"
+                                rules="required"
+                                help="The token to use for the short link. Must be unique." />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <TextBox v-model="url"
+                                label="URL"
+                                rules="required"
+                                help="The URL that short link will direct users to." />
+                    </div>
+                </div>
+                <Panel title="Advanced Settings" hasCollapse>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <DefinedValuePicker
+                                v-model="utmSourceValue"
+                                label="UTM Source"
+                                :definedTypeGuid="DefinedType.UtmSource"
+                                help="The UTM source parameter identifies the origin of your traffic, like a search engine, newsletter, or specific website, helping to pinpoint which platforms are directing visitors to your site."
+                                showBlankItem
+                                allowAdd />
+                            <DefinedValuePicker
+                                v-model="utmCampaignValue"
+                                label="UTM Campaign"
+                                :definedTypeGuid="DefinedType.UtmCampaign"
+                                help="The UTM campaign parameter tags your traffic with specific campaign names, enabling you to measure the performance of individual marketing campaigns and understand their impact on your traffic."
+                                showBlankItem
+                                allowAdd />
+                        </div>
+
+                        <div class="col-md-6">
+                            <DefinedValuePicker
+                                v-model="utmMediumValue"
+                                label="UTM Medium"
+                                :definedTypeGuid="DefinedType.UtmMedium"
+                                help='The UTM medium parameter is used to identify the marketing or advertising medium that directed a user to your site. Examples include "email", "social", "cpc" (cost per click), or "organic" for non-paid search engine traffic.'
+                                showBlankItem
+                                allowAdd />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <TextBox
+                                v-model="utmTerm"
+                                label="UTM Term"
+                                help="The UTM term parameter is used to track the keywords or terms in a paid search campaign, providing insights into which specific words or phrases are most effective in driving traffic to your website."/>
+                        </div>
+                        <div class="col-md-6">
+                            <TextBox
+                                v-model="utmContent"
+                                label="UTM Content"
+                                help="The UTM content parameter helps differentiate between links that point to the same URL within the same ad or campaign, allowing you to test the effectiveness of various content elements, like text or images, in your marketing efforts."/>
+                        </div>
+                    </div>
+                </Panel>
+            </div>
+            <div class="modal-footer">
+                <RockButton btnType="link" @click="closeModal">Cancel</RockButton>
+                <RockButton btnType="primary" @click="onSave">Save</RockButton>
+            </div>
+        </div>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import { propertyRef } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { setPropertiesBoxValue, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { PageShortLinkBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkDetail/pageShortLinkBag";
+    import { PageShortLinkDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkDetail/pageShortLinkDetailOptionsBag";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+
+    const invokeBlockAction = useInvokeBlockAction();
+    const config = useConfigurationValues<DetailBlockBox<PageShortLinkBag, PageShortLinkDetailOptionsBag>>();
+
+    // #region Values
+
+    const siteGuid = propertyRef(config?.entity?.site?.value ?? "", "SiteId");
+    const defaultDomainURL = propertyRef(config?.entity?.defaultDomainURL ?? "", "SiteId");
+    const url = propertyRef(config?.entity?.url ?? "", "Url");
+    const token = propertyRef(config?.entity?.token ?? "", "Token");
+    const utmSourceValue = propertyRef(config?.entity?.utmSourceValue ?? {}, "AdditionalSettingsJSON");
+    const utmMediumValue = propertyRef(config?.entity?.utmMediumValue ?? {}, "AdditionalSettingsJSON");
+    const utmCampaignValue = propertyRef(config?.entity?.utmCampaignValue ?? {}, "AdditionalSettingsJSON");
+    const utmTerm = propertyRef(config?.entity?.utmTerm ?? "", "AdditionalSettingsJSON");
+    const utmContent = propertyRef(config?.entity?.utmContent ?? "", "AdditionalSettingsJSON");
+    const errorMessage = ref("");
+
+    // #region Computed Values
+
+    const linkText = computed((): string => defaultDomainURL.value + token.value);
+
+    const siteOptions = computed((): ListItemBag[] => {
+        return config?.options?.siteOptions ?? [];
+    });
+
+    const selectedSite = computed((): ListItemBag => {
+        if(!siteGuid) {
+            return {};
+        }
+        return config?.options?.siteOptions?.find(s => s.value === siteGuid.value) ?? {};
+    });
+    // #endregion
+
+    const onClick = (event: Event): void => {
+        navigator.clipboard.writeText(linkText.value);
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const jquery = <any>window[<any>"$"];
+        const jEl = jquery(event.target).tooltip();
+        jEl.attr("data-original-title", "Copied");
+    };
+
+    const closeModal = (): void => {
+        window.parent.document.getElementById("shortlink-modal-popup_backDrop")?.remove();
+        window.parent.document.getElementById("shortlink-modal-popup")?.remove();
+    };
+
+    /**
+     * Event handler for the Delete button being clicked. Sends the
+     * delete request to the server and then redirects to the target page.
+     *
+     * @returns false if it should stay on the page; or a string containing a redirect URL.
+     */
+     const onSave = async (): Promise<void> => {
+        const box: ValidPropertiesBox<PageShortLinkBag> = {
+            bag: { ...config.entity } as PageShortLinkBag
+        };
+        setPropertiesBoxValue(box, "site", selectedSite.value);
+        setPropertiesBoxValue(box, "token", token.value);
+        setPropertiesBoxValue(box, "url",url.value);
+        setPropertiesBoxValue(box, "utmSourceValue", utmSourceValue.value);
+        setPropertiesBoxValue(box, "utmMediumValue", utmMediumValue.value);
+        setPropertiesBoxValue(box, "utmCampaignValue", utmCampaignValue.value);
+        setPropertiesBoxValue(box, "utmTerm", utmTerm.value);
+        setPropertiesBoxValue(box, "utmContent", utmContent.value);
+
+        const result = await invokeBlockAction<string>("Save", {
+            box
+        });
+
+        if (result.isSuccess) {
+            closeModal();
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "Failed";
+        }
+    };
+</script>

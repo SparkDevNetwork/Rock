@@ -39,6 +39,7 @@ namespace Rock.Migrations.RockStartup
         /// </summary>
         public static List<Guid> startupRunOnceJobGuids = new List<Guid>
         {
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_170_CHOP_SHORTENED_LINKS_BLOCK.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_120_UPDATE_INTERACTION_INDEXES.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_120_ADD_COMMUNICATIONRECIPIENT_INDEX.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_120_ADD_COMMUNICATION_GET_QUEUED_INDEX.AsGuid(),

@@ -35,7 +35,12 @@
 
                     <div class="panel-settings-group margin-b-lg">
                         <Rock:ButtonDropDownList ID="bddlCampus" runat="server" Label="Campus" FormGroupCssClass="m-0" OnSelectionChanged="bddl_SelectionChanged" />
-                        <asp:Label ID="lCampus" runat="server" CssClass="form-group m-0 row d-flex align-items-center justify-content-center" />
+                        <div id="divCampusLabel" runat="server" class="form-group button-drop-down-list m-0">
+                            <label class="control-label">Campus</label>
+                            <div class="mt-4 ml-3">
+                              <span><asp:Literal ID="lCampus" runat="server"></asp:Literal></span>
+                            </div>
+                        </div>
                         <Rock:ButtonDropDownList ID="bddlWeekend" runat="server" Label="Week of" FormGroupCssClass="m-0" OnSelectionChanged="bddl_SelectionChanged" />
                         <asp:Panel ID="pnlNoServices" CssClass="btn" runat="server">
                             No Services Available
