@@ -8,29 +8,41 @@
 
         <div class="row">
             <div class="col-md-4">
-                <TextBox label="Username" v-model="username" />
+                <TextBox label="Username"
+                         v-model="username" />
             </div>
 
             <div class="col-md-4">
-                <ComponentPicker label="Authentication Provider" v-model="authenticationProvider" />
+                <ComponentPicker label="Authentication Provider"
+                                 v-model="authenticationProvider"
+                                 containerType="Rock.Security.AuthenticationContainer"
+                                 :showBlankItem="true" />
             </div>
 
             <div class="col-md-4">
-                <DateRangePicker label="Created" v-model="createdDate" />
+                <DateRangePicker label="Created"
+                                 v-model="createdDate" />
             </div>
         </div>
 
         <div class="row">
             <div class="col-md-4">
-                <DateRangePicker label="Last Login" v-model="lastLoginDate" />
+                <DateRangePicker label="Last Login"
+                                 v-model="lastLoginDate" />
             </div>
 
             <div class="col-md-4">
-                <DropDownList label="Is Confirmed" v-model="isConfirmed" :items="yesNoOptions" :showBlankItem="true" />
+                <DropDownList label="Is Confirmed"
+                              v-model="isConfirmed"
+                              :items="yesNoOptions"
+                              :showBlankItem="true" />
             </div>
 
             <div class="col-md-4">
-                <DropDownList label="Is Locked Out" v-model="isLockedOut" :items="yesNoOptions" :showBlankItem="true" />
+                <DropDownList label="Is Locked Out"
+                              v-model="isLockedOut"
+                              :items="yesNoOptions"
+                              :showBlankItem="true" />
             </div>
         </div>
     </Modal>
@@ -48,7 +60,7 @@
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { deepEqual } from "@Obsidian/Utility/util";
     import { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
         modelValue: {

@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 using Rock.Attribute;
 using Rock.Data;
@@ -25,8 +26,8 @@ using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
-using Rock.ViewModels.Blocks.Core.DefinedValueList;
 using Rock.ViewModels.Blocks.Security.UserLoginList;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -50,16 +51,6 @@ namespace Rock.Blocks.Security
     {
         #region Keys
 
-        private static class AttributeKey
-        {
-            public const string DetailPage = "DetailPage";
-        }
-
-        private static class NavigationUrlKey
-        {
-            public const string DetailPage = "DetailPage";
-        }
-
         private static class PreferenceKey
         {
             public const string FilterUsername = "filter-username";
@@ -74,12 +65,6 @@ namespace Rock.Blocks.Security
 
         #endregion Keys
 
-        #region Fields
-
-        private Person _person;
-
-        #endregion
-
         #region Properties
 
         protected string FilterUsername => GetBlockPersonPreferences()
@@ -87,7 +72,7 @@ namespace Rock.Blocks.Security
 
         protected Guid? FilterAuthenticationProvider => GetBlockPersonPreferences()
             .GetValue( PreferenceKey.FilterAuthenticationProvider )
-            .AsGuidOrNull();
+            .FromJsonOrNull<ListItemBag>()?.Value?.AsGuidOrNull();
 
         protected DateTime? FilterDateCreatedUpperValue => GetBlockPersonPreferences()
             .GetValue( PreferenceKey.FilterDateCreatedUpperValue )
@@ -105,11 +90,13 @@ namespace Rock.Blocks.Security
             .GetValue( PreferenceKey.FilterLastLoginDateLowerValue )
             .AsDateTime();
 
-        protected string FilterIsConfirmed => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterIsConfirmed );
+        protected bool? FilterIsConfirmed => GetBlockPersonPreferences()
+            .GetValue( PreferenceKey.FilterIsConfirmed )
+            .AsBooleanOrNull();
 
-        protected string FilterIsLockedOut => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterIsLockedOut );
+        protected bool? FilterIsLockedOut => GetBlockPersonPreferences()
+            .GetValue( PreferenceKey.FilterIsLockedOut )
+            .AsBooleanOrNull();
 
         #endregion
 
@@ -125,7 +112,6 @@ namespace Rock.Blocks.Security
             box.IsAddEnabled = isAddDeleteEnabled;
             box.IsDeleteEnabled = isAddDeleteEnabled;
             box.ExpectedRowCount = null;
-            box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions();
             box.GridDefinition = builder.BuildDefinition();
 
@@ -152,28 +138,16 @@ namespace Rock.Blocks.Security
             return BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
         }
 
-        /// <summary>
-        /// Gets the box navigation URLs required for the page to operate.
-        /// </summary>
-        /// <returns>A dictionary of key names and URL values.</returns>
-        private Dictionary<string, string> GetBoxNavigationUrls()
-        {
-            return new Dictionary<string, string>
-            {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "UserLoginId", "((Key))" )
-            };
-        }
-
         /// <inheritdoc/>
         protected override IQueryable<UserLogin> GetListQueryable( RockContext rockContext )
         {
-            int personEntityTypeId = EntityTypeCache.Get<Rock.Model.Person>().Id;
+            var personEntityTypeId = EntityTypeCache.Get<Rock.Model.Person>().Id;
             if ( BlockCache.ContextTypesRequired.Exists( e => e.Id == personEntityTypeId ) && RequestContext.GetContextEntity<Person>() == null )
             {
                 return new List<UserLogin>().AsQueryable();
             }
 
-            var personId = GetPerson()?.Id;
+            var personId = RequestContext.GetContextEntity<Person>()?.Id;
             var queryable = new UserLoginService( rockContext ).Queryable()
                 .Where( l => !personId.HasValue || l.PersonId == personId.Value );
 
@@ -192,37 +166,37 @@ namespace Rock.Blocks.Security
             // created filter
             if ( FilterDateCreatedLowerValue.HasValue )
             {
-                queryable = queryable.Where( l => l.CreatedDateTime.HasValue && l.CreatedDateTime.Value >= FilterDateCreatedLowerValue.Value );
+                queryable = queryable.Where( l => l.CreatedDateTime.HasValue && DbFunctions.TruncateTime( l.CreatedDateTime ).Value >= DbFunctions.TruncateTime( FilterDateCreatedLowerValue.Value ) );
             }
 
             if ( FilterDateCreatedUpperValue.HasValue )
             {
-                DateTime upperDate = FilterDateCreatedUpperValue.Value.Date.AddDays( 1 );
-                queryable = queryable.Where( l => l.CreatedDateTime.HasValue && l.CreatedDateTime < upperDate );
+                var upperDate = FilterDateCreatedUpperValue.Value.Date.AddDays( 1 );
+                queryable = queryable.Where( l => l.CreatedDateTime.HasValue && DbFunctions.TruncateTime( l.CreatedDateTime ) < upperDate );
             }
 
             // last login filter
             if ( FilterLastLoginDateLowerValue.HasValue )
             {
-                queryable = queryable.Where( l => l.LastLoginDateTime >= FilterLastLoginDateLowerValue.Value );
+                queryable = queryable.Where( l => DbFunctions.TruncateTime( l.LastLoginDateTime ) >= DbFunctions.TruncateTime( FilterLastLoginDateLowerValue.Value ) );
             }
 
             if ( FilterLastLoginDateUpperValue.HasValue )
             {
-                DateTime upperDate = FilterLastLoginDateUpperValue.Value.Date.AddDays( 1 );
-                queryable = queryable.Where( l => l.LastLoginDateTime < upperDate );
+                var upperDate = FilterLastLoginDateUpperValue.Value.Date.AddDays( 1 );
+                queryable = queryable.Where( l => DbFunctions.TruncateTime( l.LastLoginDateTime ) < upperDate );
             }
 
             // is Confirmed filter
-            if ( bool.TryParse( FilterIsConfirmed, out var isConfirmed ) )
+            if ( FilterIsConfirmed.HasValue )
             {
-                queryable = queryable.Where( l => l.IsConfirmed == isConfirmed || ( !isConfirmed && l.IsConfirmed == null ) );
+                queryable = queryable.Where( l => l.IsConfirmed == FilterIsConfirmed.Value || ( !FilterIsConfirmed.Value && l.IsConfirmed == null ) );
             }
 
             // is locked out filter
-            if ( bool.TryParse( FilterIsLockedOut, out var isLockedOut ) )
+            if ( FilterIsLockedOut.HasValue )
             {
-                queryable = queryable.Where( l => l.IsLockedOut == isLockedOut || ( !isLockedOut && l.IsLockedOut == null ) );
+                queryable = queryable.Where( l => l.IsLockedOut == FilterIsLockedOut.Value || ( !FilterIsLockedOut.Value && l.IsLockedOut == null ) );
             }
 
             return queryable;
@@ -258,15 +232,6 @@ namespace Rock.Blocks.Security
         private EntityTypeCache GetProvider( int? entityTypeId )
         {
             return entityTypeId.HasValue ? EntityTypeCache.Get( entityTypeId.Value ) : null;
-        }
-
-        /// <summary>
-        /// Gets the person Context Entity if one is available.
-        /// </summary>
-        /// <returns></returns>
-        private Person GetPerson()
-        {
-            return _person ?? ( _person = RequestContext.GetContextEntity<Person>() );
         }
 
         /// <summary>
@@ -381,7 +346,7 @@ namespace Rock.Blocks.Security
 
             if ( entity == null )
             {
-                var person = GetPerson();
+                var person = RequestContext.GetContextEntity<Person>();
 
                 entity = new UserLogin
                 {
@@ -418,8 +383,8 @@ namespace Rock.Blocks.Security
             if ( ( entity == null || ( entity.UserName != newUserName ) ) && entityService.GetByUserName( newUserName ) != null )
             {
                 // keep looking until we find the next available one 
-                int numericSuffix = 1;
-                string nextAvailableUserName = newUserName + numericSuffix.ToString();
+                var numericSuffix = 1;
+                var nextAvailableUserName = newUserName + numericSuffix.ToString();
                 while ( entityService.GetByUserName( nextAvailableUserName ) != null )
                 {
                     numericSuffix++;
@@ -431,7 +396,7 @@ namespace Rock.Blocks.Security
 
             if ( entity == null )
             {
-                var person = GetPerson();
+                var person = RequestContext.GetContextEntity<Person>();
                 entity = new UserLogin();
 
                 if ( person != null )
@@ -442,11 +407,12 @@ namespace Rock.Blocks.Security
                 {
                     var personAliasGuid = bag.PersonAlias.Value.AsGuid();
                     var personAlias = new PersonAliasService( RockContext ).Get( personAliasGuid );
-                    entity.PersonId = personAlias.PersonId;
+                    entity.PersonId = personAlias?.PersonId;
                 }
-                else
+
+                if ( !entity.PersonId.HasValue )
                 {
-                    return ActionBadRequest( "No person selected, or the person you are editing has no person Id." );
+                    return ActionBadRequest("No person selected, or the person you are editing has no person Id.");
                 }
 
                 entityService.Add( entity );

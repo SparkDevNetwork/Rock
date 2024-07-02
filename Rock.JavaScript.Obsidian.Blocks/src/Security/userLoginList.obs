@@ -6,7 +6,8 @@
           :gridSettingsActive="hasSettingsFilters"
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           keyField="idKey"
-          itemTerm="User Account"
+          title="User Account List"
+          itemTerm="Login"
           stickyHeader
           liveUpdates
           gridSettings
@@ -17,6 +18,7 @@
                     title="User Name"
                     field="userName"
                     :filter="textValueFilter"
+                    width="25%"
                     visiblePriority="xs" />
 
         <PersonColumn name="person"
@@ -26,46 +28,53 @@
                       :hideAvatar="true"
                       :showAsLink="true"
                       :filter="pickExistingValueFilter"
+                      :filterValue="getPersonFilterValue"
+                      :quickFilterValue="getPersonFilterValue"
                       visiblePriority="xs" />
 
         <TextColumn name="provider"
                     title="Provider"
                     field="provider"
-                    width="18%"
-                    :filter="textValueFilter"
-                    visiblePriority="xs" />
+                    width="15%"
+                    :filter="pickExistingValueFilter"
+                    visiblePriority="md"/>
 
         <DateColumn name="dateCreated"
                     title="Created"
                     field="dateCreated"
                     :filter="dateValueFilter"
-                    visiblePriority="xs"
+                    visiblePriority="md"
                     width="150"
-                    itemClass="grid-item-pull-left"/>
+                    itemClass="grid-item-pull-left" />
 
 
         <DateColumn name="lastLogin"
                     title="Last Login"
                     field="lastLogin"
                     :filter="dateValueFilter"
-                    visiblePriority="xs"
+                    visiblePriority="md"
                     width="150"
                     itemClass="grid-item-pull-left" />
 
         <BooleanColumn name="isConfirmed"
                        title="Confirmed"
                        field="isConfirmed"
-                       visiblePriority="xs" />
+                       visiblePriority="md"
+                       :filter="booleanValueFilter"
+                       width="120" />
 
         <BooleanColumn name="isLockedOut"
                        title="Locked Out"
                        field="isLockedOut"
-                       visiblePriority="xs" />
+                       visiblePriority="md"
+                       :filter="booleanValueFilter"
+                       width="120" />
 
         <BooleanColumn name="isPasswordChangeRequired"
                        title="Password Change Required"
                        field="isPasswordChangeRequired"
-                       visiblePriority="xs" />
+                       :filter="booleanValueFilter"
+                       visiblePriority="md" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
@@ -116,13 +125,11 @@
                     <TextBox v-model="password"
                              label="Password"
                              type="password"
-                             :rules="passwordRules"
-                             :enabled="false" />
+                             :rules="passwordRules" />
                     <TextBox v-model="confirmPassword"
                              label="Confirm"
                              type="password"
-                             :rules="confirmPasswordRules"
-                             :enabled="false" />
+                             :rules="confirmPasswordRules" />
                 </div>
             </div>
         </div>
@@ -139,7 +146,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { BooleanColumn, TextColumn, textValueFilter, DeleteColumn, PersonColumn, DateColumn, dateValueFilter, pickExistingValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { BooleanColumn, TextColumn, textValueFilter, DeleteColumn, PersonColumn, DateColumn, dateValueFilter, pickExistingValueFilter, booleanValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
@@ -156,6 +163,7 @@
     import GridSettingsModal from "./UserLoginList/gridSettingsModal.partial.obs";
     import { reactive, ref, computed, watch } from "vue";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
 
     const config = useConfigurationValues<ListBlockBox<UserLoginListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -253,8 +261,7 @@
         });
 
         if (result.isSuccess && result.data) {
-            intitializeModalValues(result.data);
-
+            initializeModalValues(result.data);
             isCreateEditModalOpen.value = true;
         }
         else {
@@ -289,7 +296,7 @@
      * Called when the Add button has been clicked by the indivual.
      */
     function onAddItem(): void {
-        intitializeModalValues(null);
+        initializeModalValues(null);
         isCreateEditModalOpen.value = true;
     }
 
@@ -344,7 +351,7 @@
     /**
     * Initializes the User Login Modal values.
     */
-    function intitializeModalValues(userLogin: UserLoginBag | null): void {
+    function initializeModalValues(userLogin: UserLoginBag | null): void {
         idKey.value = userLogin?.idKey ?? "";
         username.value = userLogin?.userName ?? "";
         authenticationProvider.value = userLogin?.authenticationProvider;
@@ -356,6 +363,16 @@
         confirmPassword.value = "";
 
         isPersonPickerVisible.value = !userLogin?.personAlias?.value;
+    }
+
+    /**
+    * Gets the filter value text to use for the person column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getPersonFilterValue(row: Record<string, unknown>): string {
+        const person = row["person"] as PersonFieldBag;
+        return !person ? "" : `${person.nickName} ${person.lastName}`;
     }
 
     // #endregion
