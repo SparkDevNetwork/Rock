@@ -366,6 +366,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Crm\PersonDetail\GivingConfiguration\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\PersonMergeRequestList\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\PhotoOptOut\" />
+    <Folder Include="Framework\ViewModels\Blocks\Security\UserLoginList\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\AchievementAttemptDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\AchievementTypeList\" />
@@ -956,6 +957,9 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\PersonDetail\GivingConfiguration\textToGiveSettingsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\PersonMergeRequestList\personMergeRequestListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\PhotoOptOut\photoOptOutBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\UserLoginList\authenticationComponentBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\UserLoginList\userLoginBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Security\UserLoginList\userLoginListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\detailBlockBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\AchievementAttemptDetail\achievementAttemptBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\AchievementAttemptDetail\achievementAttemptDetailOptionsBag.d.ts" />
