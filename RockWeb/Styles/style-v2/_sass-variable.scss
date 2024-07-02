@@ -1,34 +1,39 @@
-$zindex-modal:  1050;
-$modal-small:   300px;
-$modal-medium:  600px;
-$modal-large:   900px;
+$zindex-modal:              1050;
+$modal-small:               300px;
+$modal-medium:              600px;
+$modal-large:               900px;
 $zindex-modal-background:   1040;
 $modal-backdrop-opacity:    0.5;
 $modal-title-padding:       15px;
 $modal-shadow:              0 12px 24px 0 rgba(0,0,0,.1);
 
 // Dropdown
-$caret-width-base:      4px;
-$zindex-dropdown:       1000;
-$dropdown-min-width:    160px;
+$caret-width-base:          4px;
+$zindex-dropdown:           1000;
+$dropdown-min-width:        160px;
 
 // Screen Sizes
-$screen-small:  768px;
-$screen-medium: 992px;
-$screen-large:  1200px;
+$screen-xsmall:             480px;
+$screen-small:              768px;
+$screen-medium:             992px;
+$screen-large:              1200px;
 
 // Grid Container Sizes
-$container-small:   720px;
-$container-medium:  960px;
-$container-large:   1140px;
+$container-small:           720px;
+$container-medium:          960px;
+$container-large:           1140px;
 
 // Grid
-$grid-gutter-width: 30px;
-$grid-columns:      12;
+$grid-gutter-width:         30px;
+$grid-columns:              12;
 
 // Breadcrumb
-$font-face: "FontAwesome";
-$theme-weight: 900;
+$font-face:                 "FontAwesome";
+$theme-weight:              900;
+
+// Panel
+$panel-options-button-padding:      9px 12px 10px;
+$panel-toolbar-shadow-color:        rgba(21, 27, 38, .15);
 
 // Carousel
 $carousel-control-width:        15%;
@@ -36,3 +41,21 @@ $carousel-control-font-size:    20px;
 $carousel-text-shadow:          0 1px 2px rgba(0, 0, 0, .6);
 $carousel-control-opacity:      .5;
 $carousel-text-shadow:          0 1px 2px rgba(0,0,0,.6);
+
+// Popover
+$zindex-popover:                1060;
+$popover-max-width:             276px;
+$popover-arrow-outer-width:     10px;
+
+// Tooltip
+$zindex-tooltip:                1070;
+$tooltip-max-width:             200px;
+
+// Nav
+$nav-link-padding:  10px 15px;
+
+// Navbar
+$zindex-navbar-fixed:           1030;
+$zindex-navbar:                 1000;
+$navbar-height:                 50px;
+$navbar-collapse-max-height:    340px;

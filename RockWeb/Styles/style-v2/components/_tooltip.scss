@@ -1,0 +1,122 @@
+
+
+// TOOLTIP STYLE
+
+
+// =============================================================
+// Table of Content           
+//  + Base Style              
+//  + Inner & arrow
+// =============================================================
+
+
+// ======================== BASE STYLE ========================
+.tooltip {
+  position:   absolute;
+  z-index:    $zindex-tooltip;
+  display:    block;
+  // .reset-text(); // TODO uncomment if text style broke
+  font-size:  var(--font-size-xsmall);
+  opacity:    0;
+
+  &.in { opacity: 1; }
+  &.top {
+    padding:      var(--spacing-tiny) 0;
+    margin-top:   -var(--spacing-tiny);
+  }
+  &.right {
+    padding:      0 var(--spacing-tiny);
+    margin-left:  var(--spacing-tiny);
+  }
+  &.bottom {
+    padding:      var(--spacing-tiny) 0;
+    margin-top:   var(--spacing-tiny);
+  }
+  &.left {
+    padding:      0 var(--spacing-tiny);
+    margin-left:  -var(--spacing-tiny);
+  }
+
+  // Note: Deprecated .top-left, .top-right, .bottom-left, and .bottom-right as of v3.3.1
+  &.top .tooltip-arrow {
+    bottom:               0;
+    left:                 50%;
+    margin-left:          -var(--spacing-tiny);
+    border-width:         var(--spacing-tiny) var(--spacing-tiny) 0;
+    border-top-color:     var(--color-interface-strongest);
+  }
+  &.top-left .tooltip-arrow {
+    right:                var(--spacing-tiny);
+    bottom:               0;
+    margin-bottom:        -var(--spacing-tiny);
+    border-width:         var(--spacing-tiny) var(--spacing-tiny) 0;
+    border-top-color:     var(--color-interface-strongest);
+  }
+  &.top-right .tooltip-arrow {
+    bottom:               0;
+    left:                 var(--spacing-tiny);
+    margin-bottom:        -var(--spacing-tiny);
+    border-width:         var(--spacing-tiny) var(--spacing-tiny) 0;
+    border-top-color:     var(--color-interface-strongest);
+  }
+  &.right .tooltip-arrow {
+    top:                  50%;
+    left:                 0;
+    margin-top:           -var(--spacing-tiny);
+    border-width:         var(--spacing-tiny) var(--spacing-tiny) var(--spacing-tiny) 0;
+    border-right-color:   var(--color-interface-strongest);
+  }
+  &.left .tooltip-arrow {
+    top:                  50%;
+    right:                0;
+    margin-top:           -var(--spacing-tiny);
+    border-width:         var(--spacing-tiny) 0 var(--spacing-tiny) var(--spacing-tiny);
+    border-left-color:    var(--color-interface-strongest);
+  }
+  &.bottom .tooltip-arrow {
+    top:                  0;
+    left:                 50%;
+    margin-left:          -var(--spacing-tiny);
+    border-width:         0 var(--spacing-tiny) var(--spacing-tiny);
+    border-bottom-color:  var(--color-interface-strongest);
+  }
+  &.bottom-left .tooltip-arrow {
+    top:                  0;
+    right:                var(--spacing-tiny);
+    margin-top:           -var(--spacing-tiny);
+    border-width:         0 var(--spacing-tiny) var(--spacing-tiny);
+    border-bottom-color:  var(--color-interface-strongest);
+  }
+  &.bottom-right .tooltip-arrow {
+    top:                  0;
+    left:                 var(--spacing-tiny);
+    margin-top:           -var(--spacing-tiny);
+    border-width:         0 var(--spacing-tiny) var(--spacing-tiny);
+    border-bottom-color:  var(--color-interface-strongest);
+  }
+}
+// ====================== END BASE STYLE ======================
+
+
+// ======================== INNER & ARROW ========================
+.tooltip-inner {
+  max-width:        $tooltip-max-width;
+  padding:          var(--spacing-tiny) var(--spacing-small);
+  color:            var(--color-interface-softest);
+  text-align:       center;
+  background-color: var(--color-interface-stronger);
+  border-radius:    var(--rounded-small);
+}
+
+// Arrows
+.tooltip-arrow {
+  position:     absolute;
+  width:        0;
+  height:       0;
+  border-color: transparent;
+  border-style: solid;
+}
+// ====================== END INNER & ARROW ======================
+
+
+

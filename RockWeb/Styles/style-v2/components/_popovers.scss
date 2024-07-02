@@ -1,0 +1,252 @@
+
+
+//  POPOVER STYLE
+
+
+// =============================================================
+// Table of Content           
+//  + Base Style              
+//  + Title
+//  + Content  
+//  + Rock popover
+// =============================================================
+
+
+// ======================== BASE STYLE ========================
+.popover {
+  position:           absolute;
+  top:                0;
+  left:               0;
+  z-index:            $zindex-popover;
+  display:            none;
+  max-width:          $popover-max-width;
+  padding:            1px;
+  font-style:         normal;
+  font-weight:        var(--font-weight-regular);
+  line-height:        var(--line-height-normal);
+  line-break:         auto;
+  text-align:         left; // Fallback for where `start` is not supported
+  text-align:         start;
+  text-decoration:    none;
+  text-shadow:        none;
+  text-transform:     none;
+  letter-spacing:     normal;
+  word-break:         normal;
+  word-spacing:       normal;
+  word-wrap:          normal;
+  white-space:        normal;
+
+  font-size:          var(--font-size-regular);
+  background-color:   var(--color-interface-softest);
+  background-clip:    padding-box;
+  border:             1px solid rgba(0,0,0,.2);;
+  border-radius:      var(--rounded-small);
+  box-shadow:         0 5px 10px rgba(0, 0, 0, .2);
+
+  // Offset the popover to account for the popover arrow
+  &.top     { margin-top:     calc(var(--spacing-small) * -1); }
+  &.right   { margin-left:    var(--spacing-small); }
+  &.bottom  { margin-top:     var(--spacing-small); }
+  &.left    { margin-left:    calc(var(--spacing-small) * -1); }
+
+  // Arrows
+  > .arrow {
+    border-width: $popover-arrow-outer-width;
+
+    &,
+    &:after {
+      position:       absolute;
+      display:        block;
+      width:          0;
+      height:         0;
+      border-color:   transparent;
+      border-style:   solid;
+    }
+
+    &:after {
+      content: "";
+      border-width:   var(--spacing-small);
+    }
+  }
+
+  &.top > .arrow {
+    bottom:                 calc($popover-arrow-outer-width * -1);
+    left:                   50%;
+    margin-left:            calc($popover-arrow-outer-width * -1);
+    border-top-color:       var(--color-interface-strong); // IE8 fallback
+    border-top-color:     rgba(0,0,0,.25);
+    border-bottom-width:    0;
+    &:after {
+      bottom:               1px;
+      margin-left:          calc(var(--spacing-small) * -1);
+      content: " ";
+      border-top-color:     var(--color-interface-softest);
+      border-bottom-width:  0;
+    }
+  }
+  &.right > .arrow {
+    top:                    50%;
+    left:                   calc($popover-arrow-outer-width * -1);
+    margin-top:             calc($popover-arrow-outer-width * -1);
+    border-right-color:     var(--color-interface-strong); // IE8 fallback
+    border-right-color:   rgba(0,0,0,.25);
+    border-left-width:      0;
+    &:after {
+      bottom:               calc(var(--spacing-small) * -1);
+      left:                 1px;
+      content: " ";
+      border-right-color:   var(--color-interface-softest);
+      border-left-width:    0;
+    }
+  }
+  &.bottom > .arrow {
+    top:                    calc($popover-arrow-outer-width * -1);
+    left:                   50%;
+    margin-left:            calc($popover-arrow-outer-width * -1);
+    border-top-width:       0;
+    border-bottom-color:    var(--color-interface-strong); // IE8 fallback
+    border-bottom-color:  rgba(0,0,0,.25);
+    &:after {
+      top: 1px;
+      margin-left:          calc(var(--spacing-small) * -1);
+      content: " ";
+      border-top-width:     0;
+      border-bottom-color:  var(--color-interface-softest);
+    }
+  }
+
+  &.left > .arrow {
+    top:                    50%;
+    right:                  calc($popover-arrow-outer-width * -1);
+    margin-top:             calc($popover-arrow-outer-width * -1);
+    border-right-width:     0;
+    border-left-color:      var(--color-interface-strong); // IE8 fallback
+    border-left-color:    rgba(0,0,0,.25);
+    &:after {
+      right:                1px;
+      bottom:               calc(var(--spacing-small) * -1);
+      content: " ";
+      border-right-width:   0;
+      border-left-color:    var(--color-interface-softest);
+    }
+  }
+}
+// ====================== END BASE STYLE ======================
+
+
+// ======================== TITLE ========================
+.popover-title {
+  padding:            var(--spacing-small) var(--spacing-medium);
+  margin:             0;
+  font-size:          var(--font-size-regular);
+  background-color:   var(--color-interface-softest);
+  border-bottom:      1px solid var(--color-interface-softer);
+  border-radius:      calc(var(--rounded-small) - 1) calc(var(--rounded-small) - 1) 0 0;
+}
+// ====================== END TITLE ======================
+
+
+// ======================== CONTENT ========================
+.popover-content {
+  padding:            var(--spacing-small) var(--spacing-medium);
+  overflow:           hidden;
+
+  header {
+    padding:          var(--spacing-small) var(--spacing-medium);
+    margin:           -9px -14px var(--spacing-small);
+    font-size:        var(--font-size-regular);
+    font-weight:      var(--font-weight-regular);
+    line-height:      18px;
+    background-color: var(--color-interface-softest);
+    border-bottom:    1px solid var(--color-interface-softest);
+    border-radius:    5px 5px 0 0;
+
+    &:before,
+    &:after {
+      display: table;
+      content: " "; 
+    }
+    &:after {
+      clear: both;
+    }
+
+    img {
+      float:        left;
+      width:        32px;
+      margin-right: var(--spacing-small);
+    }
+
+    h3 {
+      float:        left;
+      margin:       0 0 0 6px;
+      font-size:    var(--font-size-h5);
+      font-weight:  var(--font-weight-regular);
+
+      small {
+        display: block;
+      }
+    }
+  }
+
+  .body div {
+    margin-bottom: 2px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+// ====================== END CONTENT ======================
+
+
+// ======================== ROCK POPOVER ========================
+.rock-popover {
+  display:        flex;
+  z-index:        $zindex-modal;
+  flex-wrap:      wrap;
+  width:          500px;
+  max-width:      100%;
+  font-size:      var(--font-size-small);
+  border-radius:  var(--rounded-small);
+  color:          var(--color-interface-stronger);
+
+  @media (min-width: 480px) {
+    flex-wrap: nowrap;
+    max-height: 383px;
+  }
+
+  .popover-title {
+    display:        flex;
+    align-items:    center;
+    min-height:     40px;
+    padding-right:  var(--spacing-small);
+  }
+
+  .dropdown-menu a {
+    font-size:    var(--font-size-small);
+    line-height:  24px;
+  }
+
+  > .popover-panel + .popover-panel {
+    border-left: 1px solid var(--color-interface-soft);
+  }
+
+  .popover-panel {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+
+    @media (min-width: 480px) {
+      width: 50%;
+    }
+
+    .popover-content {
+      min-height: 100px;
+      overflow: auto;
+    }
+  }
+}
+// ====================== END ROCK POPOVER ======================
+
+
+

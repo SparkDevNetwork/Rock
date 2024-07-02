@@ -1,0 +1,1077 @@
+
+
+// PANEL STYLE
+
+
+// =============================================================
+// Table of Content           
+//  + Base Style
+//  + Panel list group
+//  + Table panel
+//  + Accordion panel
+//  + Alternative style
+//  + Panel setting
+//  + Panel toolbar
+//  + Panel widget
+//  + Panel persondetails
+//  + Penel block
+//  + Panel waterfall
+//  + Panel columns
+//  + Panel analytics
+//  + Panel drawer
+//  + Panel subheader
+//  + Panel badges
+// =============================================================
+
+
+// ===================== BASE STYLE =====================
+.panel {
+  margin-bottom:      var(--spacing-large);
+  background-color:   var(--color-interface-softest);
+  border:             1px solid transparent;
+  border-radius:      var(--rounded-small);
+  box-shadow:         0 1px 1px rgba(0, 0, 0, .05);
+}
+
+
+// PANEL BODY
+.panel-body {
+  padding: var(--spacing-medium);
+  &:before,
+  &:after {
+    display: table; 
+    content: " "; 
+  }
+  &:after {
+    clear: both;
+  }
+}
+
+// PANEL HEADING
+.panel-heading {
+  padding:                  14px 18px; //TODO hard coded value need to change;
+  border-bottom:            1px solid transparent;
+  border-top-left-radius:   calc(4px - 1px);  //TODO Hard coded value need to change;
+  border-top-right-radius:  calc(4px - 1px);
+  > .dropdown .dropdown-toggle {
+    color: inherit;
+  }
+}
+
+// PANEL TITLE 
+.panel-title {
+  margin-top:     0;
+  margin-bottom:  0;
+  font-size:      calc(var(--font-size-regular) * 1.125);
+  color:          inherit;
+
+  > a,
+  > small,
+  > .small,
+  > small > a,
+  > .small > a {
+    color:        inherit;
+  }
+}
+
+// PANEL FOOTER
+.panel-footer {
+  padding:                      var(--spacing-small) var(--spacing-medium);
+  border-top:                   1px solid var(--color-interface-soft);
+  border-bottom-right-radius:   calc(4px - 1px);  //TODO Hard coded value need to change;
+  border-bottom-left-radius:    calc(4px - 1px);
+  color:              var(--color-interface-stronger);
+  background-color:   var(--color-interface-softer);
+}
+// =================== END BASE STYLE ===================
+
+
+// ===================== PANEL LIST GROUPS =====================
+.panel {
+  > .list-group,
+  > .panel-collapse > .list-group {
+    margin-bottom: 0;
+
+    .list-group-item {
+      border-width:   1px 0;
+      border-radius:  0;
+    }
+
+    // Add border top radius for first one
+    &:first-child {
+      .list-group-item:first-child {
+        border-top:               0;
+        border-top-left-radius:   calc(4px - 1px);  //TODO Hard coded value need to change;
+        border-top-right-radius:  calc(4px - 1px);
+      }
+    }
+
+    // Add border bottom radius for last one
+    &:last-child {
+      .list-group-item:last-child {
+        border-bottom:              0;
+        border-bottom-right-radius: calc(4px - 1px);  //TODO Hard coded value need to change;
+        border-bottom-left-radius:  calc(4px - 1px);
+      }
+    }
+  }
+  > .panel-heading + .panel-collapse > .list-group {
+    .list-group-item:first-child {
+      border-top-left-radius:   0;
+      border-top-right-radius:  0;
+    }
+  }
+}
+
+.panel-heading + .list-group {
+  .list-group-item:first-child {
+    border-top-width: 0;
+  }
+}
+
+.list-group + .panel-footer {
+  border-top-width:   0;
+}
+// =================== END PANEL LIST GROUP ===================
+
+
+// ===================== TABLES PANEL =====================
+.panel {
+  > .table,
+  > .table-responsive > .table,
+  > .panel-collapse > .table {
+    margin-bottom: 0;
+
+    caption {
+      padding-right:  var(--spacing-medium);
+      padding-left:   var(--spacing-medium);
+    }
+  }
+
+  // Add border top radius for first one
+  > .table:first-child,
+  > .table-responsive:first-child > .table:first-child {
+      border-top-left-radius:       calc(4px - 1px);  //TODO Hard coded value need to change;
+      border-top-right-radius:      calc(4px - 1px);
+
+    > thead:first-child,
+    > tbody:first-child {
+      > tr:first-child {
+        border-top-left-radius:     calc(4px - 1px);  //TODO Hard coded value need to change;
+        border-top-right-radius:    calc(4px - 1px);
+
+        td:first-child,
+        th:first-child {
+          border-top-left-radius:   calc(4px - 1px);  //TODO Hard coded value need to change;
+        }
+        td:last-child,
+        th:last-child {
+          border-top-right-radius:  calc(4px - 1px); //TODO Hard coded value need to change;
+        }
+      }
+    }
+  }
+
+  // Add border bottom radius for last one
+  > .table:last-child,
+  > .table-responsive:last-child > .table:last-child {
+    border-bottom-right-radius:       calc(4px - 1px);  //TODO Hard coded value need to change;
+    border-bottom-left-radius:        calc(4px - 1px);
+
+    > tbody:last-child,
+    > tfoot:last-child {
+      > tr:last-child {
+        border-bottom-right-radius:   calc(4px - 1px); //TODO Hard coded value need to change;
+        border-bottom-left-radius:    calc(4px - 1px);
+
+        td:first-child,
+        th:first-child {
+          border-bottom-left-radius:  calc(4px - 1px); //TODO Hard coded value need to change;
+        }
+        td:last-child,
+        th:last-child {
+          border-bottom-right-radius: calc(4px - 1px); //TODO Hard coded value need to change;
+        }
+      }
+    }
+  }
+
+  > .panel-body + .table,
+  > .panel-body + .table-responsive,
+  > .table + .panel-body,
+  > .table-responsive + .panel-body {
+    border-top:     1px solid var(--color-interface-softer);
+  }
+  > .table > tbody:first-child > tr:first-child th,
+  > .table > tbody:first-child > tr:first-child td {
+    border-top:     0;
+  }
+  > .table-bordered,
+  > .table-responsive > .table-bordered {
+    border: 0;
+    > thead,
+    > tbody,
+    > tfoot {
+      > tr {
+        > th:first-child,
+        > td:first-child {
+          border-left:  0;
+        }
+        > th:last-child,
+        > td:last-child {
+          border-right: 0;
+        }
+      }
+    }
+    > thead,
+    > tbody {
+      > tr:first-child {
+        > td,
+        > th {
+          border-bottom: 0;
+        }
+      }
+    }
+    > tbody,
+    > tfoot {
+      > tr:last-child {
+        > td,
+        > th {
+          border-bottom: 0;
+        }
+      }
+    }
+  }
+  > .table-responsive {
+    margin-bottom:  0;
+    border:         0;
+  }
+}
+// =================== END TABLE PANEL ===================
+
+
+// ===================== ACCORDION PANEL =====================
+.panel-group {
+  margin-bottom:        var(--spacing-large);
+
+  // Tighten up margin so it's only between panels
+  .panel {
+    margin-bottom:      0;
+    border-radius:      calc(4px - 1px);
+
+    + .panel {
+      margin-top:       5px;
+    }
+  }
+
+  .panel-heading {
+    border-bottom: 0;
+
+    + .panel-collapse > .panel-body,
+    + .panel-collapse > .list-group {
+      border-top:       1px solid var(color-interface-soft);
+    }
+  }
+
+  .panel-footer {
+    border-top: 0;
+    + .panel-collapse .panel-body {
+      border-bottom:    1px solid var(color-interface-soft);
+    }
+  }
+}
+// =================== END ACCORDION PANEL ===================
+
+
+// ===================== ALTERNATIVE STYLE =====================
+.panel-default {
+  border-color:         var(--color-interface-soft);
+
+& > .panel-heading {
+  color:                var(--color-interface-stronger);
+  background-color:     var(--color-interface-softer);
+  border-color:         var(--color-interface-soft);
+
+  + .panel-collapse > .panel-body {
+    border-top-color:   var(--color-interface-soft);
+  }
+  .badge {
+    color:              var(--color-interface-softer);
+    background-color:   var(--color-interface-stronger);
+  }
+}
+& > .panel-footer {
+  + .panel-collapse > .panel-body {
+    border-bottom-color: var(--color-interface-soft);
+  }
+}
+}
+
+.panel-primary {
+  border-color:         var(--color-primary);
+
+  & > .panel-heading {
+    color:              var(--color-interface-softest);
+    background-color:   var(--color-primary);
+    border-color:       var(--color-primary);
+
+    + .panel-collapse > .panel-body {
+      border-top-color: var(--color-primary);
+    }
+    .badge {
+      color:            var(--color-primary);
+      background-color: var(--color-interface-softest);
+    }
+  }
+  & > .panel-footer {
+    + .panel-collapse > .panel-body {
+      border-bottom-color: var(--color-primary);
+    }
+  }
+}
+
+.panel-success {          //TODO Color is hard coded needs to change
+  border-color:         #cce0c1;    
+
+  & > .panel-heading {
+    color:              var(--color-success-strong);
+    background-color:   var(--color-success-soft);
+    border-color:       #cce0c1;
+
+    + .panel-collapse > .panel-body {
+      border-top-color: #cce0c1;
+    }
+    .badge {
+      color:            var(--color-success-soft);
+      background-color: var(--color-success-strong);
+    }
+  }
+  & > .panel-footer {
+    + .panel-collapse > .panel-body {
+      border-bottom-color: #cce0c1;
+    }
+  }
+}
+
+.panel-info {             //TODO Color is hard coded needs to change
+  border-color:         #c2e0ec;
+
+  & > .panel-heading {
+    color:                var(--color-info-strong);
+    background-color:     var(--color-info-soft);
+    border-color:       #c2e0ec;
+
+    + .panel-collapse > .panel-body {
+      border-top-color: #c2e0ec;
+    }
+    .badge {
+      color: var(--color-info-soft);
+      background-color:   var(--color-info-strong);
+    }
+  }
+  & > .panel-footer {
+    + .panel-collapse > .panel-body {
+      border-bottom-color:#c2e0ec;
+    }
+  }
+}
+
+.panel-warning {          //TODO Color is hard coded needs to change
+  border-color: #f6eec2;
+
+& > .panel-heading {
+  color: var(--color-warning-storng);
+  background-color: var(--color-warning-soft);
+  border-color: #f6eec2;
+
+  + .panel-collapse > .panel-body {
+    border-top-color: #f6eec2;
+  }
+  .badge {
+    color: var(--color-warning-soft);
+    background-color: var(--color-warning-storng);
+  }
+}
+& > .panel-footer {
+  + .panel-collapse > .panel-body {
+    border-bottom-color: #f6eec2;
+  }
+}
+}
+
+.panel-danger {           //TODO Color is hard coded needs to change
+  // .panel-variant(@panel-danger-border; @panel-danger-text; @panel-danger-heading-bg; @panel-danger-border);
+  border-color:       #e9c9c8;
+
+& > .panel-heading {
+  color:                var(--color-danger-strong);
+  background-color:     var(--color-danger-soft);
+  border-color:       #e9c9c8;
+
+  + .panel-collapse > .panel-body {
+    border-top-color: #e9c9c8;
+  }
+  .badge {
+    color: var(--color-danger-soft);
+    background-color:   var(--color-danger-strong);
+  }
+}
+& > .panel-footer {
+  + .panel-collapse > .panel-body {
+    border-bottom-color: #e9c9c8;
+  }
+}
+}
+// =================== END ALTERNATIVE STYLE ===================
+
+
+// ===================== PANEL SETTING =====================
+.panel-settings {
+  padding: var(--spacing-medium);
+  margin: -(var(--spacing-medium));
+  border-bottom: 1px solid var(--color-danger-soft);
+}
+
+.panel-settings-group {
+  display: flex;
+  flex-wrap: wrap;
+  margin: -(var(--spacing-medium));
+
+  > .form-group {
+    flex: 1 1 100%;
+    border-bottom: 1px solid var(--color-interface-soft);
+
+    &:first-child {
+      border-left: 0;
+    }
+
+    @media (min-width: $screen-small) {
+      flex: 1 1 auto;
+      border-left: 1px solid var(--color-interface-soft);
+    }
+  }
+
+  .control-label {
+    position: absolute;
+    z-index: 30;
+    padding: var(--spacing-small) var(--spacing-medium);
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--color-interface-strong);
+    pointer-events: none;
+  }
+
+  .btn,
+  .btn-group,
+  .dropdown-menu {
+    width: 100%;
+  }
+
+  .btn {
+    display: flex;
+    justify-content: space-between;
+    padding-top: calc((var(--spacing-small) * 2) + 14px);
+    text-align: left;
+    background: transparent;
+    border: 0;
+    border-radius: 0 !important;
+  }
+}
+// =================== END PANEL SETTING ===================
+
+
+// ======================= PANEL TOOLBAR =======================
+.panel-toolbar {
+  padding: var(--spacing-small) var(--spacing-medium);
+  font-size: var(--font-size-xsmall);
+  border-bottom: 1px solid #dbdbdb;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+
+  @media (min-width: $screen-small) {
+    flex-wrap: nowrap;
+  }
+
+  .btn-tool,
+  .picker .picker-label {
+    padding: 1px var(--spacing-tiny);
+    color: var(--color-interface-medium);
+    font-size: var(--font-size-xsmall);
+    font-weight: var(--font-weight-semibold);
+    line-height: 24px;
+    color: var(--color-interface-medium);
+    background: transparent;
+    border: 1px solid transparent;
+
+    &:focus,
+    &:hover,
+    &:active,
+    &.active {
+      background: var(--color-interface-soft);
+    }
+  }
+
+  .picker-select-none {
+    margin: 1px 0 0 2px;
+  }
+
+  .nav-pills {
+    margin: 6px var(--spacing-small);
+
+    > li {
+      margin-top: 6px;
+      margin-bottom: 6px;
+    }
+  }
+
+  .slidingdaterange-select,
+  .slidingdaterange-number,
+  .slidingdaterange-daterange .input-group {
+    margin-bottom: 0;
+  }
+
+  &.panel-toolbar-right {
+    justify-content: flex-end;
+    gap: var(--spacing-tiny) 30px;
+  }
+}
+
+.panel-toolbar-border {
+  border-bottom: 1px solid #dbdbdb;
+
+  .btn {
+    box-shadow: none;
+    border: 0;
+    background: transparent;
+
+    i {
+      font-size: 75%;
+    }
+  }
+}
+
+.panel-toolbar-shadow {
+  box-shadow: 0 1px 3px 0 $panel-toolbar-shadow-color;
+  z-index: 10;
+}
+// ===================== END PANEL TOOL BAR =====================
+
+
+// ======================= PANEL WIDGET =======================
+.panel-widget {
+  // .panel-variant(@panel-widget-border; @panel-widget-text; @panel-widget-heading-bg; @panel-widget-heading-border;);
+  border-color: var(--color-info-soft);
+
+  & > .panel-heading {
+    color: var(--color-info-strong);
+    background-color: var(--color-info-soft);
+    border-color:  var(--color-info-soft);
+
+    + .panel-collapse > .panel-body {
+      border-top-color: var(--color-info-soft);
+    }
+    .badge {
+      color: var(--color-info-soft);
+      background-color: var(--color-info-strong);
+    }
+  }
+  & > .panel-footer {
+    + .panel-collapse > .panel-body {
+      border-bottom-color: var(--color-info-soft);
+    }
+  }
+  &.collapsed {
+    overflow: hidden;
+  }
+
+  .panel-heading {
+    border: 0;
+
+    .checkbox {
+      display: inline;
+      float: left;
+      margin-top: 0 !important;
+      margin-bottom: 0 !important;
+    }
+
+    .actions {
+      a {
+        margin-left: 4px;
+      }
+    }
+
+    small {
+      color: var(--color-info-soft);
+    }
+  }
+
+  > .panel-body {
+    border-top: 1px solid var(--color-info-strong);
+  }
+}
+// ===================== END PANEL WIDGET =====================
+
+
+// ======================= PANEL PERSONDETAILS =====================
+.panel-persondetails {
+  // .panel-variant(@panel-border; @panel-heading-text-color; var(--color-interface-softer); @panel-heading-border;);
+  border-color:             var(--color-interface-softer);
+
+  & > .panel-heading {
+    color:                  var(--color-info-strong);
+    background-color:       var(--color-interface-softer);
+    border-color:           var(--color-interface-softer);
+
+    + .panel-collapse > .panel-body {
+      border-top-color:     var(--color-interface-softer);
+    }
+    .badge {
+      color:                var(--color-interface-softer);
+      background-color:     var(--color-info-strong);
+    }
+  }
+  & > .panel-footer {
+    + .panel-collapse > .panel-body {
+      border-bottom-color:  var(--color-interface-softer);
+    }
+  }
+    background-color:       var(--color-interface-softest);
+
+  .panel-title i {
+    display: none;
+  }
+
+  .panel-heading {
+    display:      flex;
+    align-items:  center;
+    flex-wrap:    wrap;
+    .actions {
+      margin:     -var(--spacing-tiny) 0 -var(--spacing-tiny) auto;
+      a {
+        margin-left: var(--spacing-tiny);
+      }
+    }
+  }
+
+  .panel-body {
+    padding: 13px 18px 15px;
+
+    .form-group {
+      &.static-control {
+        line-height: 1.25;
+        margin-bottom: 16px;
+
+        .control-wrapper {
+          .form-control-static {
+            margin:         0;
+            padding:        0;
+            min-height:     0;
+            line-height:    1.5;
+            // force long words to wrap
+            overflow-wrap: break-word;
+
+            // force link attributes to clamp to one line with ellipsis without using block
+            > a {
+              display:        inline-block;
+              max-width:      100%;
+              overflow:       hidden;
+              text-overflow:  ellipsis;
+              white-space:    nowrap;
+            }
+          }
+        }
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+
+        label {
+          margin-bottom: 3px;
+        }
+
+      }
+    }
+
+    h4 {
+      padding:      var(--spacing-small) var(--spacing-medium);
+      margin:       -13px -18px 12px;
+      font-size:    var(--font-size-small);
+      font-weight:  var(--font-weight-semibold);
+      color:        var(--color-interface-strong);
+      background:   var(--color-interface-soft);
+    }
+
+    .form-group + h4 {
+      margin-top: 24px;
+    }
+
+    // styles for matrix attributes
+    .form-group.static-control.matrix-attribute label {
+      width: 100%;
+      text-align: left;
+    }
+
+    .form-group.static-control.matrix-attribute .form-control-static {
+      width: 100%;
+    }
+
+    i.fa.fa-bars {
+      cursor: pointer;
+    }
+  }
+
+  .attribute-values + .attribute-values {
+    margin-top: 24px;
+  }
+}
+// ===================== END PANEL PERSONDETAILS =====================
+
+
+// ======================= PANEL BLOCK =======================
+.panel-block {
+  border-top-color: var(--color-interface-soft);
+
+  // .panel-variant(@panel-border; @panel-heading-text-color; var(--color-interface-softer); @panel-heading-border;);
+  & > .panel-heading {
+    color:                  var(--color-info-strong);
+    background-color:       var(--color-interface-softer);
+    border-color:           var(--color-interface-softer);
+
+    + .panel-collapse > .panel-body {
+      border-top-color:     var(--color-interface-softer);
+    }
+    .badge {
+      color:                var(--color-interface-softer);
+      background-color:     var(--color-info-strong);
+    }
+  }
+  & > .panel-footer {
+    + .panel-collapse > .panel-body {
+      border-bottom-color:  var(--color-interface-softer);
+    }
+  }
+    background-color:       var(--color-interface-softest);
+
+  > .panel-heading {
+    &:before,
+    &:after {
+      display: table; 
+      content: " ";
+    }
+    &:after {
+      clear: both;
+    }
+
+    .panel-title {
+      float: left;
+
+      i {
+        color:    var(--color-interface-strong);
+        display:  none;
+      }
+    }
+  }
+
+  .list-group-item {
+    background-color: transparent;
+  }
+
+  .panel-body {
+    .panel-fullwidth,
+    .grid.grid-panel {
+      margin:           0 -var(--spacing-medium);
+      // TODO: WAS NEEDED FOR BORDER RADIUS TRIM
+      // overflow: hidden;
+
+      &:first-child {
+        margin-top:     -var(--spacing-medium);
+      }
+
+      &:last-child {
+        margin-bottom:  -var(--spacing-medium);
+        // TODO: This doesn't work without overflow hidden
+        // border-radius: 0 0 @border-radius-base @border-radius-base;
+      }
+
+      .table-bordered {
+        border-width: 1px 0 0 0;
+
+        & > tfoot > tr > td {
+          border:     0;
+        }
+      }
+    }
+  }
+
+  .panel-inline-heading {
+    background:     var(--color-interface-softer);
+    border-bottom:  1px solid var(--color-interface-softer);
+  }
+
+  .panel-sidebar {
+    border-right:   1px solid var(--color-interface-softer);
+  }
+}
+// ===================== END PANEL BLOCK =====================
+
+
+// ======================= PANEL WATERFALL =======================
+.panel-waterfall {
+  border-color:             var(--color-interface-softer);
+
+  & > .panel-heading {
+    color:                  var(--color-info-strong);
+    background-color:       transparent;
+    border-color:           transparent;
+
+    + .panel-collapse > .panel-body {
+      border-top-color:     var(--color-interface-softer);
+    }
+    .badge {
+      color:                transparent;
+      background-color:     var(--color-info-strong);
+    }
+  }
+  & > .panel-footer {
+    + .panel-collapse > .panel-body {
+      border-bottom-color:  var(--color-interface-softer);
+    }
+  }
+    background-color:       var(--color-interface-softest);
+
+  box-shadow: none !important;
+  overflow: hidden;
+
+  .panel-heading {
+    padding-bottom: 8px;
+
+    + .panel-body {
+      border-top:   1px solid var(--color-interface-soft);
+    }
+  }
+
+  .panel-body {
+    padding:      0 var(--spacing-medium);
+
+    > .row {
+      display:    flex;
+      flex-wrap:  wrap;
+      // Add right border to all but last column
+      > [class*="col-"] {
+        padding-top:      var(--spacing-medium);
+        padding-bottom:   var(--spacing-medium);
+        &:not(:last-child),
+        &.show-divider {
+          border-bottom:  1px solid var(--color-interface-soft);
+
+          @media (min-width: $screen-medium) {
+            border-bottom-width: 0;
+            border-right: 1px solid var(--color-interface-soft);
+          }
+        }
+      }
+    }
+  }
+
+  .panel-footer {
+    padding: 0;
+  }
+}
+// ===================== END PANEL WATERFALL =====================
+
+
+// ======================= PANEL COLUMNS =======================
+.panel-body-columns {
+  padding: 0;
+  margin: -var(--spacing-medium);
+
+  > [class*="col-"] {
+    padding: var(--spacing-medium);
+  }
+
+  .sidebar {
+    background-color: var(--color-interface-softest);
+    border-bottom: 1px solid var(--color-interface-soft);
+
+    &:last-child {
+      border-top: 1px solid var(--color-interface-soft);
+    }
+
+    @media (min-width: $screen-medium) {
+      border-bottom: 0;
+      border-right: 1px solid var(--color-interface-soft);
+
+      &:last-child {
+        border-top: 0;
+        border-left: 1px solid var(--color-interface-soft);
+      }
+    }
+  }
+}
+// ===================== END PANEL COLUMNS =====================
+
+
+// ======================= PANEL ANALYTICS =======================
+.panel-analytics {
+  .panel-body {
+    padding: 0 calc(var(--gutter-x) * 0.5);
+
+    // & > .row > [class*="col-"]:first-child {
+    //   padding-top: 15px;
+    //   padding-bottom: 15px;
+    // }
+
+    .grid.grid-panel {
+      margin-bottom: 0;
+    }
+  }
+
+  .analytics-details {
+    > .grid-filter {
+      padding:    var(--spacing-medium);
+      margin:     -var(--spacing-medium) -var(--spacing-medium) var(--spacing-medium) -var(--spacing-medium);
+    }
+  }
+
+  .filter-options,
+  .analysis-types {
+    padding-top:      15px;
+    padding-bottom:   15px;
+    background-color: var(--color-interface-softest);
+  }
+
+  .filter-options {
+    border-right:               1px solid var(--color-interface-soft);
+    border-bottom-left-radius:  var(--rounded-small);
+  }
+
+  .analysis-types {
+    margin-bottom:  calc($grid-gutter-width * 0.5);
+    border-bottom:  1px solid var(--color-interface-soft);
+  }
+}
+// ===================== END PANEL ANALYTICS =====================
+
+
+.panel-dashboard {
+  height: 220px;
+  margin: var(--spacing-large) 0 0;
+}
+
+
+// ======================= PANEL DRAWER =======================
+.panel-drawer {
+  width:            100%;
+  background-color: var(--color-interface-softest);
+}
+
+.panel-drawer.open > .drawer-content {
+  display:          block;
+}
+// ===================== END PANEL DRAWER =====================
+
+
+// ======================= PANEL SUBHEADER =======================
+.panel-sub-header {
+  display:          flex;
+  min-height:       38px;
+  align-items:      center;
+  padding:          var(--spacing-tiny) var(--spacing-large);
+  border-bottom:    1px solid var(--color-interface-soft);
+  background-color: var(--color-interface-softest);
+}
+// ===================== END PANEL SUBHEADER =====================
+
+
+// ======================= PANEL BADGES =======================
+.panel-badges {
+  display:          -ms-flexbox;
+  display:          flex;
+  -ms-flex-align:   center;
+  -ms-flex-pack:    end;
+  align-items:      center;
+  justify-content:  flex-end;
+  height:           38px;
+  padding:          0 var(--spacing-large);
+  border-bottom:    1px solid var(--color-interface-soft);
+  background-color: var(--color-interface-softest);
+
+  &:empty {
+    display:        none;
+  }
+
+  .badge {
+    background-color: inherit;
+  }
+}
+// ===================== END PANEL BADGES =====================
+
+
+.paneleditor-label {
+  float: left;
+}
+
+.paneleditor-input {
+  float:        left;
+  margin-top:   -6px;
+  margin-right: var(--spacing-tiny);
+  margin-left:  var(--spacing-tiny);
+}
+
+// copy from _rock_core.less, some of the nested class I join with the bootstrap panel class.
+.panel { 
+  .panel-heading {
+    .panel-title {
+      small {
+        opacity: .5;
+      }
+    }
+
+    .panel-toggle {
+      margin-top:     -2px;
+      margin-bottom:  -2px;
+    }
+
+    .panel-options {
+      float:  right;
+      margin: -10px -15px -10px 10px;
+
+      button {
+        padding:        $panel-options-button-padding;
+        border:         0;
+        border-radius:  0 var(--rounded-small) 0 0;
+      }
+    }
+
+    .checkbox {
+      // Important to override fancy checkbox important
+      margin: 0 !important;
+    }
+
+    .panel-labels {
+      float:          right;
+      margin-top:     -calc(round(var(--font-size-regular) * .3125, 1));
+      margin-bottom:  -calc(round(var(--font-size-regular) * .3125, 1));
+
+      .panel-text {
+        float:      left;
+        margin-top: var(--spacing-tiny);
+        font-size:  var(--font-size-xsmall);
+      }
+    }
+
+    .panel-actions {
+      margin-top:     4px;
+    }
+
+    .form-group {
+      margin-bottom:  0;
+    }
+  }
+}
+
+.panel-headerimage {
+  margin: -15px -15px 15px -15px;
+}
