@@ -47,14 +47,29 @@
         <ButtonColumn name="refresh"
                       title="Refresh"
                       iconClass="fa fa-sync-alt"
+                      :excludeFromExport="true"
                       @click="onRefreshClick" />
 
         <ButtonColumn name="preview"
                       title="Preview"
                       iconClass="fa fa-search"
+                      :excludeFromExport="true"
                       @click="onPreviewClick" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+
+        <!-- The following columns will only appear in the Excel/CSV Export -->
+
+        <Column name="id"
+                    title="Id"
+                    field="id"
+                    :hideOnScreen="true" />
+
+        <BooleanColumn name="allowManualRefresh"
+                      title="Allow Manual Refresh"
+                      field="allowManualRefresh"
+                      :hideOnScreen="true" />
+
     </Grid>
 
     <GridPreviewModal :modelValue="previewModalData" />
@@ -63,13 +78,14 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { NumberColumn, numberValueFilter, TextColumn, textValueFilter, DeleteColumn, DateTimeColumn, ButtonColumn } from "@Obsidian/Controls/grid";
+    import Grid, { Column, NumberColumn, BooleanColumn, numberValueFilter, TextColumn, textValueFilter, DeleteColumn, DateTimeColumn, ButtonColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { PersistedDatasetListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PersistedDatasetList/persistedDatasetListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./PersistedDatasetList/types.partial";
     import { reactive, ref } from "vue";
+    import { asBoolean } from "@Obsidian/Utility/booleanUtils";
     import GridPreviewModal from "./PersistedDatasetList/gridPreviewModal.partial.obs";
 
     const config = useConfigurationValues<ListBlockBox<PersistedDatasetListOptionsBag>>();
