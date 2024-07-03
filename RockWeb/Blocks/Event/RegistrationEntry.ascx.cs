@@ -956,7 +956,7 @@ namespace RockWeb.Blocks.Event
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? registrationInstanceId = GetRegistrationInstanceIdFromURL();
+            int? registrationInstanceId = GetRegistrationInstanceIdFromURL( false );
 
             string pageTitle;
             if ( registrationInstanceId.HasValue )
@@ -977,8 +977,9 @@ namespace RockWeb.Blocks.Event
         /// <summary>
         /// Gets the registration instance identifier from URL.
         /// </summary>
+        /// <param name="applyDateFilter">if set to [true] only a matching registration that has not yet started or ended is returned.</param>
         /// <returns></returns>
-        private int? GetRegistrationInstanceIdFromURL()
+        private int? GetRegistrationInstanceIdFromURL( bool applyDateFilter = true )
         {
             string registrationSlug = PageParameter( SLUG_PARAM_NAME );
             int? registrationInstanceId = PageParameter( REGISTRATION_INSTANCE_ID_PARAM_NAME ).AsIntegerOrNull();
@@ -987,17 +988,23 @@ namespace RockWeb.Blocks.Event
             if ( registrationInstanceId == null && registrationSlug.IsNotNullOrWhiteSpace() )
             {
                 var dateTime = RockDateTime.Now;
-                registrationInstanceId = new EventItemOccurrenceGroupMapService( new RockContext() )
+                var query = new EventItemOccurrenceGroupMapService(new RockContext())
                     .Queryable()
                     .AsNoTracking()
-                    .Where( l => l.UrlSlug == registrationSlug )
-                    .Where( l => l.RegistrationInstance != null )
-                    .Where( l => l.RegistrationInstance.IsActive )
-                    .Where( l => l.RegistrationInstance.RegistrationTemplate != null )
-                    .Where( l => l.RegistrationInstance.RegistrationTemplate.IsActive )
-                    .Where( l => ( !l.RegistrationInstance.StartDateTime.HasValue || l.RegistrationInstance.StartDateTime <= dateTime ) )
-                    .Where( l => ( !l.RegistrationInstance.EndDateTime.HasValue || l.RegistrationInstance.EndDateTime > dateTime ) )
-                    .Select( a => a.RegistrationInstanceId ).FirstOrDefault();
+                    .Where(l => l.UrlSlug == registrationSlug)
+                    .Where(l => l.RegistrationInstance != null)
+                    .Where(l => l.RegistrationInstance.IsActive)
+                    .Where(l => l.RegistrationInstance.RegistrationTemplate != null)
+                    .Where(l => l.RegistrationInstance.RegistrationTemplate.IsActive);
+
+                if ( applyDateFilter )
+                {
+                    query = query
+                        .Where( l => ( !l.RegistrationInstance.StartDateTime.HasValue || l.RegistrationInstance.StartDateTime <= dateTime ) )
+                        .Where( l => ( !l.RegistrationInstance.EndDateTime.HasValue || l.RegistrationInstance.EndDateTime > dateTime ) );
+                }
+
+                registrationInstanceId = query.Select( a => a.RegistrationInstanceId ).FirstOrDefault();
             }
             else if ( registrationId.HasValue )
             {

@@ -213,7 +213,8 @@ namespace Rock.Blocks.Event
                 var box = GetInitializationBox( rockContext );
                 var instanceName = box.InstanceName;
 
-                if ( instanceName.IsNullOrWhiteSpace() && box.RegistrationInstanceNotFoundMessage?.Contains( " closed on " ) == true )
+                if ( instanceName.IsNullOrWhiteSpace() && ( box.RegistrationInstanceNotFoundMessage?.Contains( " closed on " ) == true
+                    || box.RegistrationInstanceNotFoundMessage?.Contains(" does not open ") == true ) )
                 {
                     // The view model did not have a name filled in even though
                     // we found the registration instance. Get the instance name
