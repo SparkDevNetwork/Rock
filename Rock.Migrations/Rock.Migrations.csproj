@@ -164,6 +164,10 @@
     <Compile Include="Migrations\202407032103552_AddProxyDeviceIdToDeviceModel.Designer.cs">
       <DependentUpon>202407032103552_AddProxyDeviceIdToDeviceModel.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202407032356002_AddEntityIntentModel.cs" />
+    <Compile Include="Migrations\202407032356002_AddEntityIntentModel.Designer.cs">
+      <DependentUpon>202407032356002_AddEntityIntentModel.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.5\202404071458052_AddTheme.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.5\202404071458052_AddTheme.designer.cs">
       <DependentUpon>202404071458052_AddTheme.cs</DependentUpon>
@@ -2196,6 +2200,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202407032103552_AddProxyDeviceIdToDeviceModel.resx">
       <DependentUpon>202407032103552_AddProxyDeviceIdToDeviceModel.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202407032356002_AddEntityIntentModel.resx">
+      <DependentUpon>202407032356002_AddEntityIntentModel.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.5\202404071458052_AddTheme.resx">
       <DependentUpon>202404071458052_AddTheme.cs</DependentUpon>
