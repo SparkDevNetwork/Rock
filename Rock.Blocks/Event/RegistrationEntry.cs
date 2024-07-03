@@ -2387,7 +2387,7 @@ namespace Rock.Blocks.Event
                  or other identifying information.
             */
             var currentPerson = GetCurrentPerson();
-            if ( person == null && currentPerson != null && registrar.PrimaryAliasId != currentPerson.PrimaryAliasId )
+            if ( person == null && currentPerson != null && registrar?.PrimaryAliasId != currentPerson.PrimaryAliasId )
             {
                 var familyMembers = currentPerson.GetFamilyMembers( true, rockContext )
                     .Where( m => ( m.Person.FirstName == firstName || m.Person.NickName == firstName ) && m.Person.LastName == lastName )
