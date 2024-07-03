@@ -15,12 +15,12 @@
 // </copyright>
 //
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Web;
-
 using Rock.Model;
-using Rock.Utility.Settings;
 using Rock.Web;
 using Rock.Web.Cache;
 
@@ -391,5 +391,30 @@ namespace Rock.Utility
 
             return persistedCookieExpiration;
         }
+
+        /// <summary>
+        /// Set the culture of the current thread using information from the current HttpRequest.
+        /// </summary>
+        /// <param name="request"></param>
+        public static void SetThreadCultureFromRequest( HttpRequest request )
+        {
+            // If the request does not specify a preferred language, exit.
+            if ( request?.UserLanguages == null || !request.UserLanguages.Any() )
+            {
+                return;
+            }
+
+            var cultureName = request.UserLanguages.First();
+            try
+            {
+                Thread.CurrentThread.CurrentCulture = new CultureInfo( cultureName );
+                Thread.CurrentThread.CurrentUICulture = new CultureInfo( cultureName );
+            }
+            catch
+            {
+                // If the culture can't be created, ignore it.
+            }
+        }
+
     }
 }

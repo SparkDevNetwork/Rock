@@ -475,6 +475,8 @@ namespace RockWeb
         protected void Application_BeginRequest( object sender, EventArgs e )
         {
             Context.AddOrReplaceItem( "Request_Start_Time", RockDateTime.Now );
+
+            WebRequestHelper.SetThreadCultureFromRequest( HttpContext.Current?.Request );
         }
 
         /// <summary>
