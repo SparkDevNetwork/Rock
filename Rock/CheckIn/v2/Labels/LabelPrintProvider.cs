@@ -99,38 +99,61 @@ namespace Rock.CheckIn.v2.Labels
         /// </summary>
         /// <param name="printerDevice">The printer device to print the labels to.</param>
         /// <param name="labels">The labels to print to the device.</param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <param name="cancellationToken">A token to indicate if the operation should be aborted.</param>
+        /// <returns>A list of error messages resulting from the print attempt.</returns>
         private async Task<List<string>> PrintDeviceLabelsAsync( DeviceCache printerDevice, List<RenderedLabel> labels, CancellationToken cancellationToken )
         {
+            var messages = new List<string>();
             var printerHasCutter = printerDevice.GetAttributeValue( SystemKey.DeviceAttributeKey.DEVICE_HAS_CUTTER ).AsBoolean();
 
-            try
+            for ( int labelIndex = 0; labelIndex < labels.Count; labelIndex++ )
             {
-                using ( var socket = await OpenSocketAsync( printerDevice.IPAddress, cancellationToken ) )
+                try
                 {
-                    using ( var ns = new NetworkStream( socket ) )
+                    var labelContent = labels[labelIndex].Data;
+
+                    if ( printerHasCutter )
                     {
-                        for ( int labelIndex = 0; labelIndex < labels.Count; labelIndex++ )
+                        labelContent = AmendWithCutCommands( labelContent, labelIndex == labels.Count - 1 );
+                    }
+
+                    if ( printerDevice.ProxyDeviceId.HasValue )
+                    {
+                        var proxy = PrinterProxySocket.GetBestProxyForDevice( printerDevice.ProxyDeviceId.Value );
+
+                        if ( proxy != null )
                         {
-                            var labelContent = labels[labelIndex].Data;
+                            var message = await proxy.PrintAsync( printerDevice, labelContent, cancellationToken );
 
-                            if ( printerHasCutter )
+                            if ( message.IsNotNullOrWhiteSpace() )
                             {
-                                labelContent = AmendWithCutCommands( labelContent, labelIndex == labels.Count - 1 );
+                                messages.Add( message );
                             }
-
-                            await ns.WriteAsync( labelContent, 0, labelContent.Length, cancellationToken );
+                        }
+                        else
+                        {
+                            // TODO: Print over bus.
+                            messages.Add( "Unable to print label without proxy." );
+                        }
+                    }
+                    else
+                    {
+                        using ( var socket = await OpenSocketAsync( printerDevice.IPAddress, cancellationToken ) )
+                        {
+                            using ( var ns = new NetworkStream( socket ) )
+                            {
+                                await ns.WriteAsync( labelContent, 0, labelContent.Length, cancellationToken );
+                            }
                         }
                     }
                 }
+                catch
+                {
+                    return new List<string> { "Unable to print label" };
+                }
+            }
 
-                return new List<string>();
-            }
-            catch
-            {
-                return new List<string> { "Unable to print label" };
-            }
+            return messages;
         }
 
         /// <summary>
@@ -145,7 +168,7 @@ namespace Rock.CheckIn.v2.Labels
             var index = Array.LastIndexOf( labelContent, ( byte ) '^' );
 
             // Ensure we have the expected last command.
-            if ( index == -1 || index >= labelContent.Length - 3 || labelContent[index+1] != 'X' || labelContent[index+2] != 'Z' )
+            if ( index == -1 || index >= labelContent.Length - 3 || labelContent[index + 1] != 'X' || labelContent[index + 2] != 'Z' )
             {
                 return labelContent;
             }

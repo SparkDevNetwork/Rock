@@ -92,6 +92,16 @@ namespace Rock.Web.Cache
         public int? PrinterDeviceId { get; private set; }
 
         /// <summary>
+        /// Gets the Id of the device that will handle proxying commands
+        /// to this device. Currently this means a printer proxy.
+        /// </summary>
+        /// <value>
+        /// A <see cref="int"/> representing the DeviceId.
+        /// </value>
+        [DataMember]
+        public int? ProxyDeviceId { get; private set; }
+
+        /// <summary>
         /// Gets  where print jobs for this device originates from.
         /// </summary>
         /// <value>
@@ -194,6 +204,7 @@ namespace Rock.Web.Cache
             PrinterDeviceId = device.PrinterDeviceId;
             PrintFrom = device.PrintFrom;
             PrintToOverride = device.PrintToOverride;
+            ProxyDeviceId = device.ProxyDeviceId;
             IsActive = device.IsActive;
             HasCamera = device.HasCamera;
             CameraBarcodeConfigurationType = device.CameraBarcodeConfigurationType;

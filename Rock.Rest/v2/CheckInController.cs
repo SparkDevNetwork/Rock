@@ -15,9 +15,11 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -34,6 +36,8 @@ using Rock.Web.Cache;
 
 #if WEBFORMS
 using FromBodyAttribute = System.Web.Http.FromBodyAttribute;
+using FromQueryAttribute = System.Web.Http.FromUriAttribute;
+using HttpGetAttribute = System.Web.Http.HttpGetAttribute;
 using HttpPostAttribute = System.Web.Http.HttpPostAttribute;
 using IActionResult = System.Web.Http.IHttpActionResult;
 using RouteAttribute = System.Web.Http.RouteAttribute;
@@ -459,6 +463,51 @@ namespace Rock.Rest.v2
             {
                 return BadRequest( ex.Message );
             }
+        }
+
+        /// <summary>
+        /// Establishes a connection from the printer proxy service to this
+        /// Rock instance.
+        /// </summary>
+        /// <param name="deviceId">The identifier of the proxy Device in Rock as either a Guid or an IdKey.</param>
+        /// <param name="name">The name of the proxy for UI presentation.</param>
+        /// <param name="priority">The priority for this proxy when choosing between multiple proxies.</param>
+        /// <returns>The result of the operation.</returns>
+        [HttpGet]
+        [Route( "PrinterProxy/{deviceId}" )]
+        [ProducesResponseType( HttpStatusCode.SwitchingProtocols )]
+        [SystemGuid.RestActionGuid( "1b4b1d0d-a872-40f7-a49d-666092cf8816" )]
+        public IActionResult GetPrinterProxy( string deviceId, [FromQuery] string name = null, [FromQuery] int priority = 1 )
+        {
+            if ( !System.Web.HttpContext.Current.IsWebSocketRequest )
+            {
+                return BadRequest( "This API may only be used with websocket connections." );
+            }
+
+            DeviceCache device = null;
+
+            if ( IdHasher.Instance.TryGetId( deviceId, out var deviceIdNumber ) )
+            {
+                device = DeviceCache.Get( deviceIdNumber, _rockContext );
+            }
+            else if ( Guid.TryParse( deviceId, out var deviceGuid ) )
+            {
+                device = DeviceCache.Get( deviceGuid, _rockContext );
+            }
+
+            if ( device == null )
+            {
+                return BadRequest( "Device not found." );
+            }
+
+            System.Web.HttpContext.Current.AcceptWebSocketRequest( ctx =>
+            {
+                var proxy = new PrinterProxySocket( ctx.WebSocket, device.Id, name ?? device.Name, priority );
+
+                return proxy.RunAsync( CancellationToken.None );
+            } );
+
+            return ResponseMessage( Request.CreateResponse( HttpStatusCode.SwitchingProtocols ) );
         }
     }
 }
