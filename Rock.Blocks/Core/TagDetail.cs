@@ -163,7 +163,6 @@ namespace Rock.Blocks.Core
                 {
                     box.Entity = GetEntityBagForView( entity );
                     box.SecurityGrantToken = GetSecurityGrantToken( entity );
-                    box.Entity.CanAdministrate = IsAuthorized( entity, Rock.Security.Authorization.ADMINISTRATE );
                 }
                 else
                 {
@@ -226,7 +225,8 @@ namespace Rock.Blocks.Core
                 IconCssClass = entity.IconCssClass,
                 IsActive = entity.IsActive,
                 Name = entity.Name,
-                OwnerPersonAlias = entity.Id == 0 ? GetCurrentPerson().PrimaryAlias.ToListItemBag() : entity.OwnerPersonAlias.ToListItemBag()
+                OwnerPersonAlias = entity.Id == 0 ? GetCurrentPerson().PrimaryAlias.ToListItemBag() : entity.OwnerPersonAlias.ToListItemBag(),
+                CanAdministrate = IsAuthorized( entity, Rock.Security.Authorization.ADMINISTRATE )
             };
         }
 
