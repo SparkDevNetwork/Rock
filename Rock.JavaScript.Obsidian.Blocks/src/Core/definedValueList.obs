@@ -4,7 +4,8 @@
           :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
-          :itemTerm="itemTerm"
+          :title="itemTerm"
+          itemTerm="Defined Value"
           :entityTypeGuid="EntityType.DefinedValue"
           stickyHeader
           liveUpdates
@@ -18,6 +19,7 @@
                     title="Value"
                     field="value"
                     :filter="textValueFilter"
+                    width="5%"
                     visiblePriority="xs" />
 
         <TextColumn v-if="config.options?.isCategorizedValuesEnabled"
@@ -37,6 +39,7 @@
         <BooleanColumn name="isActive"
                        title="Active"
                        field="isActive"
+                       width="120"
                        visiblePriority="xs" />
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
@@ -119,7 +122,7 @@
     //# region Computed Values
 
     const itemTerm = computed((): string => {
-        return config.options?.definedTypeName ? `${config.options?.definedTypeName} Defined Value` : "Defined Value";
+        return config.options?.definedTypeName ? config.options?.definedTypeName : "Defined Value";
     });
 
     const modalTitle = computed((): string => {
