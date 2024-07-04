@@ -1000,6 +1000,16 @@ namespace Rock.Tests.Shared.Lava
             }
         }
 
+        public void AssertTextMatch( string expected, string actual, bool ignoreWhitespace = false, bool ignoreCase = false )
+        {
+            var isMatch = GetSimpleTextMatchResult( expected, actual, ignoreWhitespace, ignoreCase, out string message );
+
+            if ( !isMatch )
+            {
+                Assert.That.Fail( message );
+            }
+        }
+
         private bool GetSimpleTextMatchResult( string expected, string actual, bool ignoreWhitespace, bool ignoreCase, out string message )
         {
             message = string.Empty;
@@ -1083,15 +1093,48 @@ namespace Rock.Tests.Shared.Lava
         {
             const int showCharacterBufferMax = 50;
 
+            // Get the position indicators for the match failure.
             var matchedText = actual.Substring( 0, indexActual );
             var line = matchedText.Where( c => c == '\n' )
                 .Count() + 1;
-            var column = indexActual - matchedText.LastIndexOf( '\n' ) + 1;
+            var column = indexActual;
+            var lastCrIndex = matchedText.LastIndexOf( '\n' );
+            if ( lastCrIndex > 0 )
+            {
+                column = column - lastCrIndex;
+            }
 
-            var expectedText = expected.Substring( indexExpected, showCharacterBufferMax + 1 )
-                .Truncate( showCharacterBufferMax );
-            var actualText = actual.Substring( indexActual, showCharacterBufferMax + 1 )
-                .Truncate( showCharacterBufferMax );
+            // Get the expected text snippet, including the last matched character for context.
+            var expectedText = string.Empty;
+            if ( indexExpected < expected.Length )
+            {
+                var startIndex = indexExpected > 0 ? indexExpected - 1 : 0;
+                if ( showCharacterBufferMax > expected.Length - startIndex )
+                {
+                    expectedText = expected.Substring( startIndex );
+                }
+                else
+                {
+                    expectedText = expected.Substring( startIndex, showCharacterBufferMax + 1 )
+                        .Truncate( showCharacterBufferMax );
+                }
+            }
+
+            // Get the actual text snippet, including the last matched character for context.
+            var actualText = string.Empty;
+            if ( indexActual < actual.Length )
+            {
+                var startIndex = indexActual > 0 ? indexActual - 1 : 0;
+                if ( showCharacterBufferMax > actual.Length - startIndex )
+                {
+                    actualText = actual.Substring( startIndex );
+                }
+                else
+                {
+                    actualText = actual.Substring( startIndex, showCharacterBufferMax + 1 )
+                        .Truncate( showCharacterBufferMax );
+                }
+            }
 
             return $"Match failed (Line={line}, Column={column}, Offset={indexExpected}, Expected={expectedText}, Actual={actualText}).\n-->Expected: {expectedText}\n---->Actual: {actualText}";
         }
