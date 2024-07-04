@@ -8,7 +8,6 @@
                  v-model:mode="panelMode"
                  :name="panelName"
                  :title="panelName"
-                 :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
                  entityTypeName="DefinedType"
@@ -102,34 +101,6 @@
      */
     const entityKey = computed((): string => {
         return definedTypeViewBag.value?.idKey ?? "";
-    });
-
-    /**
-     * Additional labels to display in the block panel.
-     */
-    const blockLabels = computed((): PanelAction[] | undefined => {
-        const labels: PanelAction[] = [];
-
-        if (panelMode.value !== DetailPanelMode.View) {
-            return undefined;
-        }
-
-        if (definedTypeViewBag.value?.isActive === true) {
-            labels.push({
-                iconCssClass: "fa fa-lightbulb",
-                title: "Active",
-                type: "success"
-            });
-        }
-        else {
-            labels.push({
-                iconCssClass: "far fa-lightbulb",
-                title: "Inactive",
-                type: "danger"
-            });
-        }
-
-        return labels;
     });
 
     const isEditable = computed((): boolean => {
