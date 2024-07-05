@@ -21,19 +21,20 @@
 // </copyright>
 //
 
+/** Gets or sets the information required to render the notifications content within a Public Learning Class Workspace block. */
 export type PublicLearningClassWorkspaceNotificationBag = {
-    /*  Gets or sets the main content text that should be shown for this notification. */
-    content: string;
+    /** Gets or sets the main content text that should be shown for this notification. */
+    content?: string | null;
 
-    /*  Gets or sets the label text that should be used for this notification. */
-    labelText: string;
+    /** Gets or sets the label text that should be used for this notification. */
+    labelText?: string | null;
 
-    /*  Gets or sets the label type that should be used for this notification. */
-    labelType: string;
+    /** Gets or sets the label type that should be used for this notification. */
+    labelType?: string | null;
 
     /** Gets or sets the DateTime of the notification. */
-    notificationDateTime: string;
+    notificationDateTime?: string | null;
 
-    /*  Gets or sets the title that should be used for this notification. */
-    title: string;
+    /** Gets or sets the title that should be used for this notification. */
+    title?: string | null;
 };

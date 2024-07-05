@@ -128,6 +128,10 @@ export const ServiceJob = {
     DataMigrations166UpdateAchievementtypeTargetcountColumn: "ab4d7fa7-8e07-48d3-8225-bdecc63b71f5",
     /** The Job to run Post v17.0 Data Migrations to chop Shortened Link Block. */
     DataMigrations170ChopShortenedLinksBlock: "8899363A-C52B-4D82-88C2-CA199D73E95C",
+    /** The post update data migration job to remove the legacy Communication Recipient List Webforms block. */
+    DataMigrations170RemoveCommunicationRecipientListBlock: "54CCFFFD-83A8-4BB6-A699-DDE34310BFE6",
+    /** The post update data migration job to remove the legacy Communication Recipient List Webforms block. */
+    DataMigrations170RemoveDiscBlock: "795AE7B0-8B61-4577-B50A-350907CA0C65",
     /** The post update data migration job to remove legacy preference attributes. */
     DataMigrations170RemoveLegacyPreferences: "46d98280-7611-4588-831d-6924e2be9da6",
     /**

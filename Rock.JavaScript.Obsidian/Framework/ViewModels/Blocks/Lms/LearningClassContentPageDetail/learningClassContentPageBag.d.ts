@@ -37,6 +37,9 @@ export type LearningClassContentPageBag = {
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
 
+    /** Gets or sets the LearningClassId that this content relates to. */
+    learningClassId: number;
+
     /** Gets or sets the date and time the page will be available. */
     startDateTime?: string | null;
 

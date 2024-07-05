@@ -26,5 +26,5 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 /** The additional configuration options for the Learning Activity Completion List block. */
 export type LearningActivityCompletionListOptionsBag = {
     /** Gets or sets a list of students for the class being viewed. */
-    students: ListItemBag[] | null;
+    students?: ListItemBag[] | null;
 };

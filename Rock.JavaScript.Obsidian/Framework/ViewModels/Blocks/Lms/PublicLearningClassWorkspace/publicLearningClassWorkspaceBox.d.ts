@@ -24,13 +24,14 @@
 import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
 import { Guid } from "@Obsidian/Types";
 import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
+import { LearningClassAnnouncementBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassAnnouncementDetail/learningClassAnnouncementBag";
+import { LearningClassContentPageBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassContentPageDetail/learningClassContentPageBag";
 import { LearningClassFacilitatorBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassDetail/learningClassFacilitatorBag";
+import { LearningGradingSystemScaleBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningGradingSystemScaleDetail/learningGradingSystemScaleBag";
 import { LearningParticipantBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningParticipantDetail/learningParticipantBag";
 import { PublicLearningClassWorkspaceNotificationBag } from "@Obsidian/ViewModels/Blocks/Lms/PublicLearningClassWorkspace/publicLearningClassWorkspaceNotificationBag";
-import { LearningClassContentPageBag } from "../LearningClassContentPageDetail/learningClassContentPageBag";
-import { LearningClassAnnouncementBag } from "../LearningClassAnnouncementDetail/learningClassAnnouncementBag";
-import { LearningGradingSystemScaleBag } from "../LearningGradingSystemScaleDetail/learningGradingSystemScaleBag";
 
+/** Gets or sets the information required to render the Public Learning Class Workspace block. */
 export type PublicLearningClassWorkspaceBox = {
     /** Gets or sets the list of activities for this learning class. */
     activities?: LearningActivityCompletionBag[] | null;
@@ -59,9 +60,6 @@ export type PublicLearningClassWorkspaceBox = {
     /** Gets or sets the current Grade scale that the student has achieved in the class (if configured to show grades). */
     currentGrade?: LearningGradingSystemScaleBag | null;
 
-    /** Gets or sets whether the person currently viewing the page is a facilitator. */
-    isCurrentPersonFacilitator: boolean;
-
     /**
      * Gets or sets the error message. A non-empty value indicates that
      * an error is preventing the block from being displayed.
@@ -74,11 +72,14 @@ export type PublicLearningClassWorkspaceBox = {
     /** Gets or sets the HTML to be rendered for the class workspace header content. */
     headerHtml?: string | null;
 
+    /** Gets or sets whether the person currently viewing the page is a facilitator. */
+    isCurrentPersonFacilitator: boolean;
+
     /** Gets or sets the navigation urls. */
     navigationUrls?: Record<string, string> | null;
 
     /** Gets or sets the notifications for the class workspace. */
-    notifications: PublicLearningClassWorkspaceNotificationBag[];
+    notifications?: PublicLearningClassWorkspaceNotificationBag[] | null;
 
     /** Gets or sets the number of notifications to show on the class overview page. */
     numberOfNotificationsToShow: number;

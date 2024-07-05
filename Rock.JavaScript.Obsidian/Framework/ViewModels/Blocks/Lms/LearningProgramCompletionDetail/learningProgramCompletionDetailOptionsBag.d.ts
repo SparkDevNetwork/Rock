@@ -21,10 +21,6 @@
 // </copyright>
 //
 
-import { LearningGradingSystemScaleBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningGradingSystemScaleDetail/learningGradingSystemScaleBag";
-
-/** The additional configuration options for the Learning Activity Completion Detail block. */
-export type LearningActivityCompletionDetailOptionsBag = {
-    /** Gets or sets the grading scales for the Learning Class. */
-    gradingScales?: LearningGradingSystemScaleBag[] | null;
+/** The additional configuration options for the Learning Program Completion Detail block. */
+export type LearningProgramCompletionDetailOptionsBag = {
 };

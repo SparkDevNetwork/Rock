@@ -47,6 +47,8 @@ export const Category = {
     HistoryGroup: "180C5767-8769-4C51-865F-FEE29AEF80A0",
     /** History of group changes */
     HistoryGroupChanges: "089EB47D-D0EF-493E-B867-DC51BCDEF319",
+    /** History of learning activity completion changes. */
+    HistoryLearningActivityCompletion: "40A49BFF-5AE5-487B-B4AA-95DE435209FE",
     /** History of location changes */
     HistoryLocation: "67E8F6D1-2F20-43FD-BAEC-144E70428AC3",
     /** History changes for person */
@@ -75,6 +77,8 @@ export const Category = {
     LavaShortcodeAi: "125FB37E-5540-48A6-4A74-A49D1C1324F8",
     /** Marketing Category Guid */
     Marketing: "FE0AE3EB-B648-4264-A222-96CEA3A25E20",
+    /** The metric Category Guid */
+    Metric: "67DA5B5A-E5CF-4F1A-B76A-D8460BAF5F8C",
     /** Hosting Metrics Metric Category Guid */
     MetricHostingMetrics: "370FBBD8-7766-4B3F-81A9-F13EE819A832",
     /** The category for the Check-in Manager Roster Alert Icons */

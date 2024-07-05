@@ -21,29 +21,29 @@
 // </copyright>
 //
 
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { CompletionStatus } from "@Obsidian/Enums/Lms/completionStatus";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
-/** The facilitator details for the Learning Class Detail block. */
-export type LearningClassFacilitatorBag = {
+/** The item details for the Learning Program Completion Detail block. */
+export type LearningProgramCompletionBag = {
     /** Gets or sets the attributes. */
     attributes?: Record<string, PublicAttributeBag> | null;
 
     /** Gets or sets the attribute values. */
     attributeValues?: Record<string, string> | null;
 
-    /** Gets or sets the facilitator list item. */
-    facilitator?: ListItemBag | null;
+    /** Gets or sets the student's completion status for the program. */
+    completionStatus: CompletionStatus;
 
-    /** Gets or sets the email for the facilitator. */
-    facilitatorEmail?: string | null;
-
-    /** Gets or sets the facilitator name. */
-    facilitatorName?: string | null;
-
-    /** Gets or sets the facilitator role. */
-    facilitatorRole?: string | null;
+    /** Gets or sets the date the student completed the Rock.Model.LearningProgram. */
+    endDate?: string | null;
 
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
+
+    /** Gets or sets the name of the related person. */
+    personName?: string | null;
+
+    /** Gets or sets the date the student started the Rock.Model.LearningProgram. */
+    startDate?: string | null;
 };
