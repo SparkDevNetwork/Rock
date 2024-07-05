@@ -26,6 +26,7 @@ using Rock.Model;
 using Rock.Net;
 using Rock.Net.Geolocation;
 using Rock.Utility;
+using Rock.Web.HttpModules;
 
 namespace Rock.Personalization
 {
@@ -67,13 +68,12 @@ namespace Rock.Personalization
         /// <inheritdoc/>
         public override bool IsMatch( HttpRequest httpRequest )
         {
-            var ipAddress = WebRequestHelper.GetClientIpAddress( new HttpRequestWrapper( httpRequest ) );
-            if ( ipAddress.IsNullOrWhiteSpace() )
+            IpGeolocation geolocation = null;
+            if ( httpRequest.RequestContext.HttpContext.Items[RockGateway.GeolocationContextKey] is IpGeolocation location )
             {
-                return false;
+                geolocation = location;
             }
 
-            var geolocation = IpGeoLookup.Instance.GetGeolocation( ipAddress );
             if ( geolocation == null )
             {
                 return false;
