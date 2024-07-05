@@ -41,7 +41,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays a list of page routes." )]
     [IconCssClass( "fa fa-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the page route details.",

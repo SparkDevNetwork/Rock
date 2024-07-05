@@ -25,6 +25,9 @@ import { Guid } from "@Obsidian/Types";
 
 /** A bag that contains the information required to render the Obsidian Service Metrics Entry block. */
 export type ServiceMetricsEntryInitializationBox = {
+    /** Gets or sets the number of active campuses. */
+    activeCampusesCount: number;
+
     /** Gets or sets a value indicating whether duplicate metrics are included in category subtotals. */
     areDuplicateMetricsIncludedInCategorySubtotals: boolean;
 

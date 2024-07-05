@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -846,7 +846,11 @@ namespace RockWeb.Blocks.Finance
                     int? firstImageId = _imageBinaryFileIdLookupByTransactionId[txn.Id].FirstOrDefault();
                     if ( firstImageId != null )
                     {
-                        var imageSrc = string.Format( "~/GetImage.ashx?id={0}&height={1}", firstImageId, _imageHeight );
+                        var options = new GetImageUrlOptions
+                        {
+                            Height = _imageHeight
+                        };
+                        string imageSrc = FileUrlHelper.GetImageUrl( firstImageId.Value, options );
                         lTransactionImage.Text = string.Format( "<image src='{0}' />", this.ResolveUrl( imageSrc ) );
                     }
                 }

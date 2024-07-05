@@ -30,6 +30,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Tasks;
+using Rock.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -808,7 +809,7 @@ namespace RockWeb.Blocks.Event
             string imgTag = GetImageTag( eventItem.PhotoId, 300, 300, false, true );
             if ( eventItem.PhotoId.HasValue )
             {
-                string imageUrl = ResolveRockUrl( string.Format( "~/GetImage.ashx?id={0}", eventItem.PhotoId.Value ) );
+                string imageUrl = FileUrlHelper.GetImageUrl( eventItem.PhotoId.Value );
                 lImage.Text = string.Format( "<a href='{0}'>{1}</a>", imageUrl, imgTag );
                 divImage.Visible = true;
             }

@@ -2,14 +2,16 @@
 <template>
     <Grid :data="gridDataSource"
           keyField="idKey"
-          itemTerm="Announcement"
+          title="Announcements"
           :entityTypeGuid="EntityType.LearningClassAnnouncement"
           :expectedRowCount="3"
+          :isCountMessageVisible="false"
           tooltipField="title"
           stickyHeader
           liveUpdates
           :onSelectItem="onRowClicked"
           :onAddItem="isAddEnabled ? onAddItemClicked : undefined">
+        <SelectColumn />
 
         <TextColumn name="title"
                     title="Title"
@@ -50,7 +52,7 @@
 <script setup lang="ts">
     import { PropType, reactive, ref } from "vue";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { Column, BooleanColumn, DateColumn, TextColumn, booleanValueFilter, dateValueFilter, textValueFilter, DeleteColumn } from "@Obsidian/Controls/grid";
+    import Grid, { Column, BooleanColumn, DateColumn, TextColumn, booleanValueFilter, dateValueFilter, textValueFilter, DeleteColumn, SelectColumn } from "@Obsidian/Controls/grid";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { CommunicationMode, CommunicationModeDescription } from "@Obsidian/Enums/Lms/communicationMode";

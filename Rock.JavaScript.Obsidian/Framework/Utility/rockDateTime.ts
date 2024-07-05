@@ -608,7 +608,7 @@ export class RockDateTime {
      *
      * @returns A string that represents the amount of time that has elapsed.
      */
-    public toElapsedString(): string {
+    public toElapsedString(currentDateTime?: RockDateTime): string {
         const msPerSecond = 1000;
         const msPerMinute= 1000 * 60;
         const msPerHour = 1000 * 60 * 60;
@@ -616,7 +616,7 @@ export class RockDateTime {
         const daysPerYear = 365;
 
         let start = new RockDateTime(this.dateTime);
-        let end = RockDateTime.now();
+        let end = currentDateTime ?? RockDateTime.now();
         let direction = "Ago";
         let totalMs = end.toMilliseconds() - start.toMilliseconds();
 

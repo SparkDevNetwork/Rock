@@ -24,11 +24,21 @@
                                          @loadWeekendDates="onLoadWeekendDates" />
                 <div v-else>
                     <div class="panel-settings-group mb-3">
-                        <ButtonDropDownList v-model="campusGuidOrEmptyString"
+                        <ButtonDropDownList v-if="showCampusPicker"
+                                            v-model="campusGuidOrEmptyString"
                                             :disabled="isLoadingCampuses"
                                             :items="campuses"
                                             label="Campus"
                                             @update:modelValue="onCampusUpdated" />
+
+                      <div v-if="showCampusLabel" class="form-group">
+                        <label class="control-label">
+                          Campus
+                        </label>
+                        <div class="mt-4 ml-3">
+                          <span>{{ campuses[0].text }}</span>
+                        </div>
+                      </div>
                         <ButtonDropDownList v-model="weekendDateOrEmptyString"
                                             :disabled="isLoadingWeekendDates"
                                             :items="weekendDates"
@@ -182,6 +192,19 @@
         // There are no service times if service times have been loaded
         // and if the service times array is empty.
         return areServiceTimesLoaded.value && !serviceTimes.value?.length;
+    });
+
+    const showCampusPicker = computed<boolean>(() => {
+        // If we have more than one campus available after applying the block settings
+        // and the organization has more than one active campus show available campuses
+        // in dropdown.
+        return campuses.value.length > 1 && config.activeCampusesCount > 1;
+    });
+
+    const showCampusLabel = computed<boolean>(() => {
+        // If we have just one campus available after applying the block settings and the
+        // organization has more than one active campus show the only available campus as a label.
+        return campuses.value.length === 1 && config.activeCampusesCount > 1;
     });
 
     //#region

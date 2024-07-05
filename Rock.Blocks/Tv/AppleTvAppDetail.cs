@@ -188,8 +188,7 @@ namespace Rock.Blocks.Tv
                 {
                     Page = entity.LoginPage.ToListItemBag(),
                     Route = entity.LoginPageRoute.ToListItemBag(),
-                },
-                EnablePageViewGeoTracking = entity.EnablePageViewGeoTracking
+                }
             };
 
             var additionalSettings = entity.AdditionalSettings.FromJsonOrNull<AppleTvApplicationSettings>() ?? new AppleTvApplicationSettings();
@@ -253,7 +252,7 @@ namespace Rock.Blocks.Tv
 
             if ( entity.Id == 0 )
             {
-                var stream = typeof( RockBlockType ).Assembly.GetManifestResourceStream( "Rock.Blocks.DefaultTvApplication.js" );
+                var stream = GetType().Assembly.GetManifestResourceStream( "Rock.Blocks.DefaultTvApplication.js" );
 
                 if ( stream != null )
                 {
@@ -292,9 +291,6 @@ namespace Rock.Blocks.Tv
 
             box.IfValidProperty( nameof( box.Entity.EnablePageViews ),
                 () => entity.EnablePageViews = box.Entity.EnablePageViews );
-
-            box.IfValidProperty( nameof( box.Entity.EnablePageViewGeoTracking ),
-                () => entity.EnablePageViewGeoTracking = box.Entity.EnablePageViewGeoTracking );
 
             box.IfValidProperty( nameof( box.Entity.LoginPage ),
                 () =>

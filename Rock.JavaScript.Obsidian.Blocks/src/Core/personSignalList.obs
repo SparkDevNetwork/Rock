@@ -45,15 +45,18 @@
     import { PersonSignalListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/PersonSignalList/personSignalListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { reactive, ref, computed } from "vue";
+    import { useStore } from "@Obsidian/PageState";
     import Modal from "@Obsidian/Controls/modal.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import SignalEditor from "./PersonSignalList/signalEditor.partial.obs";
     import { PersonSignalBag } from "@Obsidian/ViewModels/Blocks/Core/PersonSignalList/PersonSignalBag";
-import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
 
     const config = useConfigurationValues<ListBlockBox<PersonSignalListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
+    const store = useStore();
 
     // #region Values
 
@@ -82,6 +85,10 @@ import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validProperties
 
     const options = computed((): PersonSignalListOptionsBag => {
         return config.options ?? {};
+    });
+
+    const currentPerson = computed((): CurrentPersonBag | null => {
+        return store.state.currentPerson;
     });
 
     const gridDataSource = ref<Promise<GridDataBag>>();
@@ -181,6 +188,12 @@ import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validProperties
      * Called when the Add button has been clicked by the indivual.
      */
     function onAddItem(): void {
+        personSignalEditBag.value.bag = {
+            owner: {
+                text: currentPerson.value?.fullName,
+                value: currentPerson.value?.primaryAliasGuid
+            }
+        };
         showEditPersonSignalModal.value = true;
     }
 

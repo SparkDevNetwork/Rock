@@ -3,13 +3,16 @@
     <Panel v-if="screenToShow !== ComponentScreen.Completion" :title="panelTitle" :hasFullscreen="true" :class="containerClasses">
         <div v-if="screenToShow === ComponentScreen.Configuration">
             <div class="instructions-section">
-                <StructuredContentEditor label="Instructions" v-model="instructions" />
+                <StructuredContentEditor label="Instructions" v-model="instructions" :disabled="disabled" />
+            </div>
+            <div class="rubric-section">
+                <StructuredContentEditor label="Grading Rubric" v-model="rubric" :disabled="disabled" />
             </div>
         </div>
 
         <div v-if="screenToShow === ComponentScreen.Scoring">
             <div class="scoring-section">
-                <StructuredContentEditor :disabled="true" label="Instructions" v-model="instructions" />
+                <StructuredContentEditor v-model="rubric" disabled />
             </div>
         </div>
 
@@ -22,9 +25,15 @@
             </NotificationBox>
         </div>
     </Panel>
+
+    <div v-if="screenToShow === ComponentScreen.Completion">
+        <div :class="containerClasses">
+            <StructuredContentEditor label="Instructions" v-model="instructions" :disabled="true" />
+        </div>
+    </div>
 </template>
 <script setup lang="ts">
-    import { computed, toRef, toValue, watch, } from "vue";
+    import { computed, ref, toRef, toValue, watch, } from "vue";
     import { debounce } from "@Obsidian/Utility/util";
     import Panel from "@Obsidian/Controls/panel.obs";
     import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
@@ -49,6 +58,7 @@
         containerClasses,
         defaultAssigneeDescription,
         instructions,
+        rubric,
         panelTitle
     } = useLearningComponent<PointAssessmentActivityConfiguration, PointAssessmentActivityCompletion>(
         activityBag,
@@ -57,6 +67,7 @@
         new PointAssessmentActivityDefaults()
     );
 
+    const disabled = ref(props.disabled ?? false);
     const hasScore = computed(() => completionBag.value?.pointsEarned != null);
 
     /** Watch for modified component settings. */
@@ -66,12 +77,13 @@
             } as LearningActivityBag;
 
             updatedActivityBag.activityComponentSettingsJson = JSON.stringify({
-                instructions: instructions.value
+                instructions: instructions.value,
+                rubric: rubric.value
             }) ?? "{}";
 
             emits("update:activityBag", updatedActivityBag);
     });
-    watch(instructions, () => {
+    watch([instructions, rubric], () => {
         debouncedActivityBagEmits();
     }, { deep: true });
 </script>

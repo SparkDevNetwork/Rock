@@ -53,6 +53,7 @@
                         </div>
                     </div>
                 </div>
+                <div class="my-3"><strong>Note:</strong> The highest protection profile among the adult family will determine which level the adults have.</div>
                 <hr />
                 <Rock:NotificationBox
                     runat="server"
@@ -77,6 +78,15 @@
                             Help="This disables duplication protection checks for individuals with the selected Account Protection Profiles. People with these checked values will always create duplicates (i.e., they will not match existing records.) We highly recommend enabling this for all but the low profile."
                             RepeatDirection="Horizontal"
                             CssClass="js-ignored-protection-profile" />
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <Rock:RockCheckBox
+                            ID="cbDisablePredictableIds"
+                            runat="server"
+                            Label="Disable Predictable IDs"
+                            Help="When checked, the GetFile, GetImage and GetAvatar endpoints will use IdKeys and GUID values instead of predictable IDs." />
                     </div>
                 </div>
                 <div class="row mt-3">

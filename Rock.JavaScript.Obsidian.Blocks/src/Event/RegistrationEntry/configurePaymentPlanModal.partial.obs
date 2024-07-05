@@ -1,5 +1,4 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
-
 <template>
     <Modal v-model="internalIsShown"
            :isSaveButtonDisabled="!wipPaymentPlanConfiguration?.endDate"
@@ -25,11 +24,12 @@
                     <DatePicker :modelValue="startDateIsoString"
                                 @update:modelValue="onUpdateStartDateIsoString"
                                 label="Start Date"
-                                :disallowPastDateSelection="true" />
+                                :disallowPastDateSelection="true"
+                                :rules="validateStartDate" />
                 </div>
             </div>
 
-            <div :class="['row', !isPaymentPlanFrequencySelected ? 'invisible' : '']">
+            <div :class="['row', !areAmountFieldsShown ? 'invisible' : '']">
                 <div class="col-sm-6">
                     <CurrencyBox :modelValue="amountToPayTodayPlusAdjustmentCurrency?.number ?? 0"
                                  @update:modelValue="onUpdateAmountToPayToday"
@@ -43,7 +43,7 @@
                     </CurrencyBox>
                 </div>
 
-                <div class="col-sm-6" v-if="numberOfPaymentsItems.length">
+                <div class="col-sm-6">
                     <DropDownList :modelValue="numberOfPayments + ''"
                                   @update:modelValue="onUpdateNumberOfPaymentsStringOrEmpty"
                                   :items="numberOfPaymentsItems"
@@ -53,13 +53,13 @@
                 </div>
             </div>
 
-            <div :class="['row', !isPaymentPlanFrequencySelected ? 'invisible' : '']">
+            <div :class="['row', !areAmountFieldsShown ? 'invisible' : '']">
                 <div class="col">
                     <RockLabel label="Plan Summary">Plan Summary</RockLabel>
                 </div>
             </div>
 
-            <div :class="['row', !isPaymentPlanFrequencySelected ? 'invisible' : '']">
+            <div :class="['row', !areAmountFieldsShown ? 'invisible' : '']">
                 <div class="col-sm-6">
                     <div>Amount Due Today</div>
                     <div>
@@ -68,7 +68,7 @@
                     </div>
                 </div>
 
-                <div class="col-sm-6" v-if="numberOfPaymentsItems.length && wipPaymentPlanConfiguration.amountPerPayment.isGreaterThan(0)">
+                <div class="col-sm-6" v-if="wipPaymentPlanConfiguration.amountPerPayment.isGreaterThan(0)">
                     <div>{{ wipPaymentPlanConfiguration.paymentPlanFrequency.listItemBag.text }} Payment Amount</div>
                     <div>{{ paymentAmountMessage }}</div>
                 </div>
@@ -92,7 +92,7 @@
     import { PaymentPlanConfiguration, PaymentPlanFrequency } from "./types.partial";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { Guid } from "@Obsidian/Types";
-    import { ValidationResult } from "@Obsidian/ValidationRules";
+    import { ValidationResult, ValidationRuleFunction } from "@Obsidian/ValidationRules";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { RockCurrency } from "@Obsidian/Utility/rockCurrency";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
@@ -128,6 +128,7 @@
     const amountToPayTodayAdjustmentCurrency = ref<RockCurrency | null | undefined>();
     const amountToPayTodayPlusAdjustmentCurrency = ref<RockCurrency | null | undefined>();
     const numberOfPayments = ref<number>(0);
+    const areAmountFieldsShown = ref<boolean>(false);
 
     //#endregion
 
@@ -137,11 +138,7 @@
      * The allowed payment plan frequencies.
      */
     const paymentPlanFrequencyItems = computed<ListItemBag[]>(() => {
-        return paymentPlanFrequencies.value.map(frequency => frequency.listItemBag) ?? [];
-    });
-
-    const isPaymentPlanFrequencySelected = computed<boolean>(() => {
-        return !!wipPaymentPlanConfiguration.value?.paymentPlanFrequency.transactionFrequency.definedValueGuid;
+        return wipPaymentPlanConfiguration.value?.paymentPlanFrequencies.map(frequency => frequency.listItemBag) ?? [];
     });
 
     const paymentAmountMessage = computed<string>(() => {
@@ -197,6 +194,57 @@
 
     //#region Functions
 
+    const validateStartDate: ValidationRuleFunction = (value: unknown, _params: unknown[] | undefined): ValidationResult => {
+        if (!value || typeof value !== "string" || !paymentPlanFrequencies.value.length) {
+            return true;
+        }
+
+        let date = RockDateTime.parseISO(value);
+
+        if (!date) {
+            return true;
+        }
+
+        /**
+         * Checks if a start date is valid for any of the payment plan frequencies.
+         */
+        function isDateValid(startDate: RockDateTime): boolean {
+            for (const paymentPlanFrequency of paymentPlanFrequencies.value) {
+                const transDate1 = paymentPlanFrequency.getValidTransactionDate(startDate);
+                if (transDate1) {
+                    if (paymentPlanFrequency.getNextTransactionDate(transDate1)) {
+                        // Two transactions can occur for the given start date with this frequency.
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        const earliestDate = wipPaymentPlanConfiguration.value?.startDate ?? RockDateTime.now();
+
+        // Check if the start date is valid for any of the payment plan frequencies.
+        if (isDateValid(date)) {
+            return true;
+        }
+        else {
+            date = date.addDays(-1);
+
+            while (!date.isEarlierThan(earliestDate)) {
+                if (isDateValid(date)) {
+                    return `must be no later than ${date.toLocaleString({ year: "numeric", month: "numeric", day: "numeric" })}`;
+                }
+                else {
+                    date = date.addDays(-1);
+                }
+            }
+        }
+
+        // This shouldn't happen but return a generic error just in case.
+        return `is invalid`;
+    };
+
     function validateAmountToPayTodayRule(_value: unknown, _params?: unknown[]): ValidationResult {
         if (wipPaymentPlanConfiguration.value?.minAmountToPayToday?.isGreaterThan(amountToPayToday.value ?? 0)) {
             return "must be greater than or equal to the minimum amount";
@@ -208,7 +256,7 @@
 
     function validateAmountToPayTodayLessThanRemaining(_value: unknown, _params?: unknown[]): ValidationResult {
         if (wipPaymentPlanConfiguration.value?.balanceDue.isLessThan(amountToPayToday.value ?? 0)) {
-            return "must be less than the minimum amount";
+            return "must be less than or equal to the total amount";
         }
         else {
             return true;
@@ -333,6 +381,11 @@
     watch(wipPaymentPlanConfiguration, (config) => {
         if (config) {
             updateModal(config);
+
+            // Show the amount fields once a payment frequency has been selected.
+            if (config.paymentPlanFrequency.transactionFrequency.definedValueGuid) {
+                areAmountFieldsShown.value = true;
+            }
         }
     }, {
         immediate: true
@@ -341,6 +394,10 @@
     watch(() => props.modelValue, (isShown) => {
         if (isShown && !wipPaymentPlanConfiguration.value) {
             initializeWorkInProgress();
+        }
+        else if (!isShown) {
+            // Hide the amount fields once the modal is closed.
+            areAmountFieldsShown.value = false;
         }
     }, {
         immediate: true

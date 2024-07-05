@@ -5,9 +5,9 @@
             <template v-if="isDataForm">
                 <template v-if="currentFormIndex === 0">
                     <div v-if="familyOptions.length > 1" class="well">
-                        <RadioButtonList :label="(firstName || uppercaseRegistrantTerm) + ' is in the same immediate family as'" rules="required" :modelValue="currentRegistrant.familyGuid ?? undefined" @update:modelValue="onSetFamilyGuid" :items="familyOptions" validationTitle="Family" />
+                        <RadioButtonList :label="`${firstName || uppercaseRegistrantTerm} is in the same ${viewModel.familyTerm || 'immediate family'} as`" rules="required" :modelValue="currentRegistrant.familyGuid ?? undefined" @update:modelValue="onSetFamilyGuid" :items="familyOptions" validationTitle="Family" />
                     </div>
-                    <div v-if="familyMemberOptions.length" class="row">
+                    <div v-if="isFamilyMembersDropDownVisible" class="row">
                         <div class="col-md-6">
                             <DropDownList :modelValue="currentRegistrant.personGuid ?? ''" @update:modelValue="onSetPersonGuid" :items="familyMemberOptions" label="Family Member to Register" />
                         </div>
@@ -332,6 +332,35 @@
         return options;
     });
 
+    const isFamilyMembersDropDownVisible = computed<boolean>(() => {
+        // Should it ever be shown?
+        if (viewModel.value.registrantsSameFamily === RegistrantsSameFamily.No) {
+            return false;
+        }
+
+        // Don't show if show family members option in the template is false.
+        if (!viewModel.value.areCurrentFamilyMembersShown) {
+            return false;
+        }
+
+        // Don't show if this is an existing (saved) registration.
+        if (registrationEntryState.viewModel.isExistingRegistration) {
+            return false;
+        }
+
+        // Are there family members to choose from?
+        if (!familyMemberOptions.value.length) {
+            return false;
+        }
+
+        // Don't show if no same family selection is made.
+        if (viewModel.value.registrantsSameFamily === RegistrantsSameFamily.Ask && !props.currentRegistrant.familyGuid) {
+            return false;
+        }
+
+        return true;
+    });
+
     /** The people that can be picked from because they are members of the same family. */
     const familyMemberOptions = computed<ListItemBag[]>(() => {
 
@@ -634,10 +663,15 @@
         }
     }
 
-    /** Copy the values that are to have current values used */
-    function copyValuesFromFamilyMember(): void {
-        if (!familyMember.value || registrationEntryState.navBack || registrationEntryState.viewModel.isExistingRegistration) {
-            // Nothing to copy
+    /**
+     *
+     * Copies form field values from the selected family member to the current registrant.
+     *
+     * @param clearRegistrantFieldWhenFamilyMemberFieldEmpty When `true`, clears a registrant form field if the selected family member does not have a value for that field; otherwise, leaves the registrant form field alone if `false`.
+     */
+    function copyValuesFromFamilyMember(clearRegistrantFieldWhenFamilyMemberFieldEmpty: boolean): void {
+        if (!familyMember.value || registrationEntryState.viewModel.isExistingRegistration) {
+            // Don't copy values if a family member is not selected or if this is an existing registration.
             return;
         }
 
@@ -646,42 +680,46 @@
             ...(props.currentRegistrant.fieldValues ?? {})
         };
 
-        for (const form of viewModel.value.registrantForms ?? []) {
-            for (const field of form.fields ?? []) {
-                if (!field.guid) {
+        if (familyMember.value.fieldValues && viewModel.value.registrantForms) {
+            for (const form of viewModel.value.registrantForms) {
+                if (!form.fields) {
+                    // The form doesn't have fields so skip to the next form.
                     continue;
                 }
 
-                // Do not set common fields if they are of type
-                // Registrant Attribute since there is no value to set.
-                // Fixes issue #5610.
-                if (field.fieldSource === RegistrationFieldSource.RegistrantAttribute) {
-                    continue;
-                }
+                for (const field of form.fields) {
+                    if (!field.guid) {
+                        // The field is missing a unique identifier so skip to the next form field.
+                        continue;
+                    }
 
-                if (!familyMember.value.fieldValues) {
-                    continue;
-                }
+                    // Do not set common fields if they are of type
+                    // Registrant Attribute since there is no value to set.
+                    // Fixes issue #5610.
+                    if (field.fieldSource === RegistrationFieldSource.RegistrantAttribute) {
+                        continue;
+                    }
 
-                if (field.guid in familyMember.value.fieldValues) {
-                    const familyMemberValue = familyMember.value.fieldValues[field.guid];
+                    if (field.guid in familyMember.value.fieldValues) {
+                        const familyMemberValue = familyMember.value.fieldValues[field.guid];
 
-                    if (!familyMemberValue) {
-                        // There is no field value for the selected family member,
+                        if (!familyMemberValue) {
+                            if (clearRegistrantFieldWhenFamilyMemberFieldEmpty) {
+                                newFieldValues[field.guid] = undefined;
+                            }
+                        }
+                        else if (typeof familyMemberValue === "object") {
+                            newFieldValues[field.guid] = { ...familyMemberValue };
+                        }
+                        else {
+                            newFieldValues[field.guid] = familyMemberValue;
+                        }
+                    }
+                    else {
+                        // Current registrant doesn't have a record of this field value yet,
                         // so add a blank field value.
                         newFieldValues[field.guid] = undefined;
                     }
-                    else if (typeof familyMemberValue === "object") {
-                        newFieldValues[field.guid] = { ...familyMemberValue };
-                    }
-                    else {
-                        newFieldValues[field.guid] = familyMemberValue;
-                    }
-                }
-                else {
-                    // Current registrant doesn't have a record of this field value yet,
-                    // so add a blank field value.
-                    newFieldValues[field.guid] = undefined;
                 }
             }
         }
@@ -773,7 +811,7 @@
 
     // #region Watchers
 
-    watch(familyMember, () => {
+    watch(familyMember, (newValue, oldValue) => {
         if (!familyMember.value) {
             // If the family member selection is cleared then clear all form fields
             if (viewModel.value.registrantForms) {
@@ -804,8 +842,11 @@
             }
         }
         else {
+            // Only clear when the family member is changed.
+            const clearRegistrantFieldWhenFamilyFieldEmpty = newValue !== oldValue;
+
             // If the family member selection is made then set all form fields where use existing value is enabled
-            copyValuesFromFamilyMember();
+            copyValuesFromFamilyMember(clearRegistrantFieldWhenFamilyFieldEmpty);
         }
     });
 
@@ -817,5 +858,5 @@
 
     // Last-minute setup.
     getFieldValues();
-    copyValuesFromFamilyMember();
+    copyValuesFromFamilyMember(false);
 </script>

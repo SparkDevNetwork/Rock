@@ -128,7 +128,6 @@ namespace Rock.Blocks.Crm.PersonDetail
 
         protected bool IsVisible { get; set; }
 
-        private List<FinancialPersonSavedAccountBag> _savedAccounts = null;
         private string personActionIdentifierTransaction = string.Empty;
         private string personActionIdentifierContribution = string.Empty;
         private string personActionIdentifierPledge = string.Empty;
@@ -161,7 +160,7 @@ namespace Rock.Blocks.Crm.PersonDetail
             return box;
         }
 
-        public List<FinancialPersonSavedAccountBag> GetSavedAccounts( int? personId )
+        private List<FinancialPersonSavedAccountBag> GetSavedAccounts( int? personId )
         {
             if ( !personId.HasValue )
             {
@@ -174,66 +173,62 @@ namespace Rock.Blocks.Crm.PersonDetail
                 return new List<FinancialPersonSavedAccountBag>();
             }
 
-            using ( var rockContext = new RockContext() )
+            var service = new FinancialPersonSavedAccountService( RockContext );
+
+            var savedAccounts = service
+                .GetByPersonId( personId.Value )
+                .Include( sa => sa.FinancialPaymentDetail )
+                .AsNoTracking()
+                .Where( sa =>
+                    sa.FinancialGatewayId.HasValue &&
+                    supportedGatewayIds.Contains( sa.FinancialGatewayId.Value ) )
+                .OrderBy( sa => sa.IsDefault )
+                .ThenByDescending( sa => sa.CreatedDateTime )
+                .ToList();
+
+            return savedAccounts.Select( sa => new FinancialPersonSavedAccountBag
             {
-                var service = new FinancialPersonSavedAccountService( rockContext );
-
-                var savedAccounts = service
-                    .GetByPersonId( personId.Value )
-                    .Include( sa => sa.FinancialPaymentDetail )
-                    .AsNoTracking()
-                    .Where( sa =>
-                        sa.FinancialGatewayId.HasValue &&
-                        supportedGatewayIds.Contains( sa.FinancialGatewayId.Value ) )
-                    .OrderBy( sa => sa.IsDefault )
-                    .ThenByDescending( sa => sa.CreatedDateTime )
-                    .ToList();
-
-                return savedAccounts.Select( sa => new FinancialPersonSavedAccountBag
+                Id = sa.Id,
+                Guid = sa.Guid,
+                Name = sa.Name,
+                IsDefault = sa.IsDefault,
+                IsExpired = sa.FinancialPaymentDetail?.CardExpirationDate.HasValue == true && sa.FinancialPaymentDetail.CardExpirationDate.Value < RockDateTime.Now,
+                FinancialPaymentDetail = new FinancialPaymentDetailBag
                 {
-                    Id = sa.Id,
-                    Guid = sa.Guid,
-                    Name = sa.Name,
-                    IsDefault = sa.IsDefault,
-                    FinancialPaymentDetail = new FinancialPaymentDetailBag
-                    {
-                        CurrencyType = sa.FinancialPaymentDetail?.CurrencyTypeValue?.Value,
-                        CreditCardType = sa.FinancialPaymentDetail?.CreditCardTypeValue?.Value,
-                        AccountNumberMasked = sa.FinancialPaymentDetail?.AccountNumberMasked,
-                        ExpirationDate = sa.FinancialPaymentDetail?.ExpirationDate
-                    }
-                } ).ToList();
-            }
+                    CurrencyType = sa.FinancialPaymentDetail?.CurrencyTypeValue?.Value,
+                    CreditCardType = sa.FinancialPaymentDetail?.CreditCardTypeValue?.Value,
+                    AccountNumberMasked = sa.FinancialPaymentDetail?.AccountNumberMasked,
+                    ExpirationDate = sa.FinancialPaymentDetail?.ExpirationDate,
+                    CardExpirationDate = sa.FinancialPaymentDetail?.CardExpirationDate
+                }
+            } ).ToList();
         }
 
-        public FinancialPersonSavedAccountBag GetDefaultSavedAccount( int? personId )
+        private FinancialPersonSavedAccountBag GetDefaultSavedAccount( int? personId )
         {
             var savedAccounts = GetSavedAccounts( personId );
             return savedAccounts?.FirstOrDefault( sa => sa.IsDefault );
         }
 
-        public FinancialAccountBag GetDefaultFinancialAccount( int? personId )
+        private FinancialAccountBag GetDefaultFinancialAccount( int? personId )
         {
             if ( !personId.HasValue )
             {
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
+            var financialAccount = new PersonService( RockContext ).Get( personId.Value )?.ContributionFinancialAccount;
+
+            if ( financialAccount != null )
             {
-                var financialAccount = new PersonService( rockContext ).Get( personId.Value )?.ContributionFinancialAccount;
-
-                if ( financialAccount != null )
+                return new FinancialAccountBag
                 {
-                    return new FinancialAccountBag
-                    {
-                        Id = financialAccount.Id,
-                        PublicName = financialAccount.PublicName
-                    };
-                }
-
-                return null;
+                    Id = financialAccount.Id,
+                    PublicName = financialAccount.PublicName
+                };
             }
+
+            return null;
         }
 
         #endregion
@@ -247,15 +242,12 @@ namespace Rock.Blocks.Crm.PersonDetail
 
             if ( personId.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                var person = new PersonService( RockContext ).Get( personId.Value );
+                if ( person != null )
                 {
-                    var person = new PersonService( rockContext ).Get( personId.Value );
-                    if ( person != null )
-                    {
-                        personActionIdentifierTransaction = person.GetPersonActionIdentifier( "transaction" );
-                        personActionIdentifierContribution = person.GetPersonActionIdentifier( "contribution-statement" );
-                        personActionIdentifierPledge = person.GetPersonActionIdentifier( "pledge" );
-                    }
+                    personActionIdentifierTransaction = person.GetPersonActionIdentifier( "transaction" );
+                    personActionIdentifierContribution = person.GetPersonActionIdentifier( "contribution-statement" );
+                    personActionIdentifierPledge = person.GetPersonActionIdentifier( "pledge" );
                 }
             }
 
@@ -289,28 +281,25 @@ namespace Rock.Blocks.Crm.PersonDetail
 
         private List<int> GetSupportedGatewayIds()
         {
-            using ( var rockContext = new RockContext() )
+            var gatewayService = new FinancialGatewayService( RockContext );
+            var activeGatewayEntityTypes = gatewayService.Queryable( "EntityType" )
+                .AsNoTracking()
+                .Where( fg => fg.IsActive )
+                .GroupBy( fg => fg.EntityType )
+                .ToList();
+
+            var supportedTypes = Rock.Reflection.FindTypes( typeof( IAutomatedGatewayComponent ) );
+            var supportedGatewayIds = new List<int>();
+
+            foreach ( var entityType in activeGatewayEntityTypes )
             {
-                var gatewayService = new FinancialGatewayService( rockContext );
-                var activeGatewayEntityTypes = gatewayService.Queryable( "EntityType" )
-                    .AsNoTracking()
-                    .Where( fg => fg.IsActive )
-                    .GroupBy( fg => fg.EntityType )
-                    .ToList();
-
-                var supportedTypes = Rock.Reflection.FindTypes( typeof( IAutomatedGatewayComponent ) );
-                var supportedGatewayIds = new List<int>();
-
-                foreach ( var entityType in activeGatewayEntityTypes )
+                if ( supportedTypes.Any( t => t.Value.FullName == entityType.Key.Name ) )
                 {
-                    if ( supportedTypes.Any( t => t.Value.FullName == entityType.Key.Name ) )
-                    {
-                        supportedGatewayIds.AddRange( entityType.Select( fg => fg.Id ) );
-                    }
+                    supportedGatewayIds.AddRange( entityType.Select( fg => fg.Id ) );
                 }
-
-                return supportedGatewayIds;
             }
+
+            return supportedGatewayIds;
         }
 
         private string GetSavedAccountName( FinancialPersonSavedAccountBag savedAccount )
@@ -365,31 +354,32 @@ namespace Rock.Blocks.Crm.PersonDetail
 
             if ( personId.HasValue )
             {
-                using ( var rockContext = new RockContext() )
+                var personService = new PersonService( RockContext );
+                var financialAccountService = new FinancialAccountService( RockContext );
+
+                int? savedAccountId = null;
+                Guid? financialAccountGuid = null;
+                int? financialAccountId = null;
+
+                if ( !string.IsNullOrEmpty( settings.SelectedSavedAccountId ) )
                 {
-                    var personService = new PersonService( rockContext );
-                    var financialAccountService = new FinancialAccountService( rockContext );
-
-                    int? savedAccountId = null;
-                    Guid? financialAccountGuid = null;
-                    int? financialAccountId = null;
-
-                    if ( !string.IsNullOrEmpty( settings.SelectedSavedAccountId ) )
-                    {
-                        savedAccountId = settings.SelectedSavedAccountId.AsIntegerOrNull();
-                    }
-
-                    if ( !string.IsNullOrEmpty( settings.SelectedFinancialAccountId ) )
-                    {
-                        financialAccountGuid = settings.SelectedFinancialAccountId.AsGuidOrNull();
-
-                        financialAccountId = financialAccountService.GetId( ( Guid ) financialAccountGuid );
-                    }
-
-                    personService.ConfigureTextToGive( ( int ) personId, financialAccountId, savedAccountId, out _ );
-
-                    rockContext.SaveChanges();
+                    savedAccountId = settings.SelectedSavedAccountId.AsIntegerOrNull();
                 }
+
+                if ( !string.IsNullOrEmpty( settings.SelectedFinancialAccountId ) )
+                {
+                    financialAccountGuid = settings.SelectedFinancialAccountId.AsGuidOrNull();
+
+                    if ( financialAccountGuid.HasValue )
+                    {
+                        financialAccountId = financialAccountService.GetId( financialAccountGuid.Value );
+                    }
+
+                }
+
+                personService.ConfigureTextToGive( personId.Value, financialAccountId, savedAccountId, out _ );
+
+                RockContext.SaveChanges();
             }
 
             return ActionOk();
@@ -406,21 +396,20 @@ namespace Rock.Blocks.Crm.PersonDetail
 
             var defaultSavedAccount = GetDefaultSavedAccount( personId );
 
-            using ( var rockContext = new RockContext() )
+            var personService = new PersonService( RockContext );
+            var person = personService.Get( personId.Value );
+
+            var defaultFinancialAccount = person.ContributionFinancialAccount;
+
+            var details = new
             {
-                var personService = new PersonService( rockContext );
-                var person = personService.Get( personId.Value );
+                DefaultAccountName = defaultFinancialAccount?.PublicName ?? "None",
+                SavedAccountName = defaultSavedAccount != null ? GetSavedAccountName( defaultSavedAccount ) : "None",
+                DefaultFinancialAccountGuid = defaultFinancialAccount?.Guid.ToString(),
+                SavedAccountId = defaultSavedAccount?.Id.ToString()
+            };
 
-                var defaultFinancialAccount = person.ContributionFinancialAccount;
-
-                var details = new
-                {
-                    DefaultAccountName = defaultFinancialAccount?.PublicName ?? "None",
-                    SavedAccountName = GetSavedAccountName( defaultSavedAccount ) ?? "None"
-                };
-
-                return ActionOk( details );
-            }
+            return ActionOk( details );
         }
 
         [BlockAction]
@@ -430,120 +419,131 @@ namespace Rock.Blocks.Crm.PersonDetail
 
             if ( !personId.HasValue )
             {
-                return ActionOk( new List<FinancialScheduledTransactionBag>() );
+                return ActionOk( new { Transactions = new List<FinancialScheduledTransactionBag>(), HasInactiveTransactions = false } );
             }
 
-            using ( var rockContext = new RockContext() )
+            var personService = new PersonService( RockContext );
+            var person = personService.Get( personId.Value );
+            var givingGroupId = person.GivingGroupId;
+
+            var financialScheduledTransactionService = new FinancialScheduledTransactionService( RockContext );
+            var qry = financialScheduledTransactionService
+                .Queryable( "ScheduledTransactionDetails,FinancialPaymentDetail.CurrencyTypeValue,FinancialPaymentDetail.CreditCardTypeValue" )
+                .AsNoTracking();
+
+            var accountGuids = GetAttributeValue( AttributeKey.Accounts ).SplitDelimitedValues().AsGuidList();
+            if ( accountGuids.Any() )
             {
-                var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
-                var qry = financialScheduledTransactionService
-                    .Queryable( "ScheduledTransactionDetails,FinancialPaymentDetail.CurrencyTypeValue,FinancialPaymentDetail.CreditCardTypeValue" )
-                    .AsNoTracking();
-
-                var accountGuids = GetAttributeValue( AttributeKey.Accounts ).SplitDelimitedValues().AsGuidList();
-                if ( accountGuids.Any() )
-                {
-                    qry = qry.Where( t => t.ScheduledTransactionDetails.Any( d => accountGuids.Contains( d.Account.Guid ) ) );
-                }
-
-                qry = qry.Where( t => t.AuthorizedPersonAlias.PersonId == personId.Value );
-
-                if ( !includeInactive )
-                {
-                    qry = qry.Where( t => t.IsActive );
-                }
-
-                qry = qry
-                    .OrderBy( t => t.AuthorizedPersonAlias.Person.LastName )
-                    .ThenBy( t => t.AuthorizedPersonAlias.Person.NickName )
-                    .ThenByDescending( t => t.IsActive )
-                    .ThenByDescending( t => t.StartDate );
-
-                var scheduledTransactions = qry.ToList();
-                financialScheduledTransactionService.GetStatus( scheduledTransactions, true );
-
-                return ActionOk( scheduledTransactions.Select( st => new FinancialScheduledTransactionBag
-                {
-                    Id = st.Id,
-                    Guid = st.Guid,
-                    IsActive = st.IsActive,
-                    StartDate = st.StartDate,
-                    AuthorizedPersonAlias = new PersonAliasBag
-                    {
-                        Id = st.AuthorizedPersonAlias.Id,
-                        PersonId = st.AuthorizedPersonAlias.PersonId,
-                        Person = new PersonBag
-                        {
-                            Id = st.AuthorizedPersonAlias.Person.Id,
-                            LastName = st.AuthorizedPersonAlias.Person.LastName,
-                            NickName = st.AuthorizedPersonAlias.Person.NickName
-                        }
-                    },
-                    ScheduledTransactionDetails = st.ScheduledTransactionDetails.Select( std => new FinancialScheduledTransactionDetailBag
-                    {
-                        Account = new FinancialAccountBag
-                        {
-                            Id = std.Account.Id,
-                            PublicName = std.Account.PublicName
-                        }
-                    } ).ToList(),
-                    AccountSummary = st.ScheduledTransactionDetails
-                        .Select( d => new AccountSummaryBag
-                        {
-                            IsOther = accountGuids.Any() && !accountGuids.Contains( d.Account.Guid ),
-                            Order = d.Account.Order,
-                            Name = d.Account.Name
-                        } )
-                        .OrderBy( d => d.IsOther )
-                        .ThenBy( d => d.Order )
-                        .Select( d => d.IsOther ? "Other" : d.Name )
-                        .ToList(),
-                    NextPaymentDate = st.NextPaymentDate,
-                    TotalAmount = st.TotalAmount,
-                    ForeignCurrencyCodeValueId = st.ForeignCurrencyCodeValueId,
-                    FrequencyText = st.TransactionFrequencyValue?.Value,
-                    FinancialPaymentDetail = new FinancialPaymentDetailBag
-                    {
-                        CurrencyType = st.FinancialPaymentDetail?.CurrencyTypeValue?.Value,
-                        CreditCardType = st.FinancialPaymentDetail?.CreditCardTypeValue?.Value,
-                        AccountNumberMasked = st.FinancialPaymentDetail?.AccountNumberMasked,
-                        ExpirationDate = st.FinancialPaymentDetail?.ExpirationDate
-                    },
-                    SavedAccountName = st.FinancialPaymentDetail?.FinancialPersonSavedAccount?.Name
-                } ).ToList() );
+                qry = qry.Where( t => t.ScheduledTransactionDetails.Any( d => accountGuids.Contains( d.Account.Guid ) ) );
             }
+
+            if ( givingGroupId.HasValue )
+            {
+                // Person contributes with family
+                qry = qry.Where( t => t.AuthorizedPersonAlias.Person.GivingGroupId == givingGroupId );
+            }
+            else
+            {
+                // Person contributes individually
+                qry = qry.Where( t => t.AuthorizedPersonAlias.PersonId == personId.Value );
+            }
+
+            var hasInactiveTransactions = qry.Any( t => !t.IsActive );
+
+            if ( !includeInactive )
+            {
+                qry = qry.Where( t => t.IsActive );
+            }
+
+            qry = qry
+                .OrderBy( t => t.AuthorizedPersonAlias.Person.LastName )
+                .ThenBy( t => t.AuthorizedPersonAlias.Person.NickName )
+                .ThenByDescending( t => t.IsActive )
+                .ThenByDescending( t => t.StartDate );
+
+            var scheduledTransactions = qry.ToList();
+            financialScheduledTransactionService.GetStatus( scheduledTransactions, true );
+
+            var transactionBags = scheduledTransactions.Select( st => new FinancialScheduledTransactionBag
+            {
+                Id = st.Id,
+                Guid = st.Guid,
+                IsActive = st.IsActive,
+                StartDate = st.StartDate,
+                AuthorizedPersonAlias = new PersonAliasBag
+                {
+                    Id = st.AuthorizedPersonAlias.Id,
+                    PersonId = st.AuthorizedPersonAlias.PersonId,
+                    Person = new PersonBag
+                    {
+                        Id = st.AuthorizedPersonAlias.Person.Id,
+                        LastName = st.AuthorizedPersonAlias.Person.LastName,
+                        NickName = st.AuthorizedPersonAlias.Person.NickName
+                    }
+                },
+                ScheduledTransactionDetails = st.ScheduledTransactionDetails.Select( std => new FinancialScheduledTransactionDetailBag
+                {
+                    Account = new FinancialAccountBag
+                    {
+                        Id = std.Account.Id,
+                        PublicName = std.Account.PublicName
+                    }
+                } ).ToList(),
+                AccountSummary = st.ScheduledTransactionDetails
+            .Select( d => new AccountSummaryBag
+            {
+                IsOther = accountGuids.Any() && !accountGuids.Contains( d.Account.Guid ),
+                Order = d.Account.Order,
+                Name = d.Account.Name
+            } )
+            .OrderBy( d => d.IsOther )
+            .ThenBy( d => d.Order )
+            .Select( d => d.IsOther ? "Other" : d.Name )
+            .ToList(),
+                NextPaymentDate = st.NextPaymentDate,
+                TotalAmount = st.TotalAmount,
+                ForeignCurrencyCodeValueId = st.ForeignCurrencyCodeValueId,
+                FrequencyText = st.TransactionFrequencyValue?.Value,
+                FinancialPaymentDetail = new FinancialPaymentDetailBag
+                {
+                    CurrencyType = st.FinancialPaymentDetail?.CurrencyTypeValue?.Value,
+                    CreditCardType = st.FinancialPaymentDetail?.CreditCardTypeValue?.Value,
+                    AccountNumberMasked = st.FinancialPaymentDetail?.AccountNumberMasked,
+                    ExpirationDate = st.FinancialPaymentDetail?.ExpirationDate
+                },
+                SavedAccountName = st.FinancialPaymentDetail?.FinancialPersonSavedAccount?.Name
+            } ).ToList();
+
+            return ActionOk( new { Transactions = transactionBags, HasInactiveTransactions = hasInactiveTransactions } );
         }
 
         [BlockAction]
         public BlockActionResult InactivateScheduledTransaction( Guid scheduledTransactionGuid )
         {
-            using ( var rockContext = new RockContext() )
+            var financialScheduledTransactionService = new FinancialScheduledTransactionService( RockContext );
+            var financialScheduledTransaction = financialScheduledTransactionService.Get( scheduledTransactionGuid );
+
+            if ( financialScheduledTransaction?.FinancialGateway == null )
             {
-                var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
-                var financialScheduledTransaction = financialScheduledTransactionService.Get( scheduledTransactionGuid );
-
-                if ( financialScheduledTransaction?.FinancialGateway == null )
-                {
-                    return ActionBadRequest( "Scheduled transaction not found or invalid." );
-                }
-
-                string errorMessage;
-                if ( !financialScheduledTransactionService.Cancel( financialScheduledTransaction, out errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                try
-                {
-                    financialScheduledTransactionService.GetStatus( financialScheduledTransaction, out errorMessage );
-                }
-                catch
-                {
-                    // Ignore
-                }
-
-                rockContext.SaveChanges();
+                return ActionBadRequest( "Scheduled transaction not found or invalid." );
             }
+
+            string errorMessage;
+            if ( !financialScheduledTransactionService.Cancel( financialScheduledTransaction, out errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            try
+            {
+                financialScheduledTransactionService.GetStatus( financialScheduledTransaction, out errorMessage );
+            }
+            catch
+            {
+                // Ignore
+            }
+
+            RockContext.SaveChanges();
 
             return ActionOk();
         }
@@ -558,82 +558,76 @@ namespace Rock.Blocks.Crm.PersonDetail
                 return ActionOk( new List<FinancialPledge>() );
             }
 
-            using ( var rockContext = new RockContext() )
+            var pledgeService = new FinancialPledgeService( RockContext );
+            var pledgesQry = pledgeService.Queryable( "Account, PersonAlias.Person" );
+
+            if ( pledgesQry == null )
             {
-                var pledgeService = new FinancialPledgeService( rockContext );
-                var pledgesQry = pledgeService.Queryable( "Account, PersonAlias.Person" );
-
-                if ( pledgesQry == null )
-                {
-                    return ActionBadRequest( "Pledges query returned null" );
-                }
-
-                pledgesQry = pledgesQry.Where( p => p.PersonAlias.PersonId == personId.Value );
-
-                var accountGuids = GetAttributeValue( AttributeKey.Accounts ).SplitDelimitedValues().AsGuidList();
-                if ( accountGuids.Any() )
-                {
-                    pledgesQry = pledgesQry.Where( p => accountGuids.Contains( p.Account.Guid ) );
-                }
-
-                var pledges = pledgesQry.ToList();
-
-                if ( pledges == null )
-                {
-                    return ActionBadRequest( "Pledges list returned null." );
-                }
-
-                return ActionOk( pledges.Select( p => new FinancialPledgeBag
-                {
-                    Guid = p.Guid,
-                    Id = p.Id,
-                    TotalAmount = p.TotalAmount,
-                    Account = new FinancialAccountBag
-                    {
-                        Id = p.Account.Id,
-                        PublicName = p.Account.PublicName,
-                    },
-                    PersonAlias = new PersonAliasBag
-                    {
-                        Id = p.PersonAlias.Id,
-                        PersonId = p.PersonAlias.PersonId,
-                        Person = new PersonBag
-                        {
-                            Id = p.PersonAlias.Person.Id,
-                            LastName = p.PersonAlias.Person.LastName,
-                            NickName = p.PersonAlias.Person.NickName
-                        }
-                    },
-                    StartDate = p.StartDate,
-                    EndDate = p.EndDate,
-                    PledgeFrequencyValueId = p.PledgeFrequencyValueId,
-                    PledgeFrequencyValue = p.PledgeFrequencyValue?.Value
-                } ).ToList() );
+                return ActionBadRequest( "Pledges query returned null" );
             }
+
+            pledgesQry = pledgesQry.Where( p => p.PersonAlias.PersonId == personId.Value );
+
+            var accountGuids = GetAttributeValue( AttributeKey.Accounts ).SplitDelimitedValues().AsGuidList();
+            if ( accountGuids.Any() )
+            {
+                pledgesQry = pledgesQry.Where( p => accountGuids.Contains( p.Account.Guid ) );
+            }
+
+            var pledges = pledgesQry.ToList();
+
+            if ( pledges == null )
+            {
+                return ActionBadRequest( "Pledges list returned null." );
+            }
+
+            return ActionOk( pledges.Select( p => new FinancialPledgeBag
+            {
+                Guid = p.Guid,
+                Id = p.Id,
+                TotalAmount = p.TotalAmount,
+                Account = new FinancialAccountBag
+                {
+                    Id = p.Account.Id,
+                    PublicName = p.Account.PublicName,
+                },
+                PersonAlias = new PersonAliasBag
+                {
+                    Id = p.PersonAlias.Id,
+                    PersonId = p.PersonAlias.PersonId,
+                    Person = new PersonBag
+                    {
+                        Id = p.PersonAlias.Person.Id,
+                        LastName = p.PersonAlias.Person.LastName,
+                        NickName = p.PersonAlias.Person.NickName
+                    }
+                },
+                StartDate = p.StartDate == DateTime.MinValue ? ( DateTime? ) null : p.StartDate,
+                EndDate = p.EndDate == DateTime.MaxValue ? ( DateTime? ) null : p.EndDate,
+                PledgeFrequencyValueId = p.PledgeFrequencyValueId,
+                PledgeFrequencyValue = p.PledgeFrequencyValue?.Value
+            } ).ToList() );
         }
 
         [BlockAction]
         public BlockActionResult DeletePledge( Guid pledgeGuid )
         {
-            using ( var rockContext = new RockContext() )
+            var pledgeService = new FinancialPledgeService( RockContext );
+            var pledge = pledgeService.Get( pledgeGuid );
+
+            if ( pledge == null )
             {
-                var pledgeService = new FinancialPledgeService( rockContext );
-                var pledge = pledgeService.Get( pledgeGuid );
-
-                if ( pledge == null )
-                {
-                    return ActionBadRequest( "Pledge not found." );
-                }
-
-                string errorMessage;
-                if ( !pledgeService.CanDelete( pledge, out errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                pledgeService.Delete( pledge );
-                rockContext.SaveChanges();
+                return ActionBadRequest( "Pledge not found." );
             }
+
+            string errorMessage;
+            if ( !pledgeService.CanDelete( pledge, out errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            pledgeService.Delete( pledge );
+            RockContext.SaveChanges();
 
             return ActionOk();
         }
@@ -650,64 +644,58 @@ namespace Rock.Blocks.Crm.PersonDetail
 
             var numberOfYears = GetAttributeValue( AttributeKey.MaxYearsToDisplay ).AsInteger();
 
-            using ( var rockContext = new RockContext() )
+            var financialTransactionDetailService = new FinancialTransactionDetailService( RockContext );
+            var personAliasIds = new PersonAliasService( RockContext )
+                .Queryable()
+                .Where( a => a.PersonId == personId.Value )
+                .Select( a => a.Id )
+                .ToList();
+
+            var qry = financialTransactionDetailService.Queryable().AsNoTracking()
+                .Where( t =>
+                    t.Transaction.AuthorizedPersonAliasId.HasValue &&
+                    personAliasIds.Contains( t.Transaction.AuthorizedPersonAliasId.Value ) &&
+                    t.Transaction.TransactionDateTime.HasValue );
+
+            if ( string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.Accounts ) ) )
             {
-                var financialTransactionDetailService = new FinancialTransactionDetailService( rockContext );
-                var personAliasIds = new PersonAliasService( rockContext )
-                    .Queryable()
-                    .Where( a => a.PersonId == personId.Value )
-                    .Select( a => a.Id )
-                    .ToList();
-
-                var qry = financialTransactionDetailService.Queryable().AsNoTracking()
-                    .Where( t =>
-                        t.Transaction.AuthorizedPersonAliasId.HasValue &&
-                        personAliasIds.Contains( t.Transaction.AuthorizedPersonAliasId.Value ) &&
-                        t.Transaction.TransactionDateTime.HasValue );
-
-                if ( string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.Accounts ) ) )
-                {
-                    qry = qry.Where( t => t.Account.IsTaxDeductible );
-                }
-                else
-                {
-                    var accountGuids = GetAttributeValue( AttributeKey.Accounts ).Split( ',' ).Select( Guid.Parse ).ToList();
-                    qry = qry.Where( t => accountGuids.Contains( t.Account.Guid ) );
-                }
-
-                var yearQry = qry.GroupBy( t => t.Transaction.TransactionDateTime.Value.Year )
-                    .Select( g => g.Key )
-                    .OrderByDescending( y => y );
-
-                var statementYears = yearQry.Take( numberOfYears ).ToList();
-
-                return ActionOk( statementYears.Select( year => new ContributionStatementBag
-                {
-                    Year = year,
-                    IsCurrentYear = year == RockDateTime.Now.Year
-                } ).ToList() );
+                qry = qry.Where( t => t.Account.IsTaxDeductible );
             }
+            else
+            {
+                var accountGuids = GetAttributeValue( AttributeKey.Accounts ).Split( ',' ).Select( Guid.Parse ).ToList();
+                qry = qry.Where( t => accountGuids.Contains( t.Account.Guid ) );
+            }
+
+            var yearQry = qry.GroupBy( t => t.Transaction.TransactionDateTime.Value.Year )
+                .Select( g => g.Key )
+                .OrderByDescending( y => y );
+
+            var statementYears = yearQry.Take( numberOfYears ).ToList();
+
+            return ActionOk( statementYears.Select( year => new ContributionStatementBag
+            {
+                Year = year,
+                IsCurrentYear = year == RockDateTime.Now.Year
+            } ).ToList() );
         }
 
         [BlockAction]
         public BlockActionResult DeleteSavedAccount( Guid savedAccountGuid )
         {
-            using ( var rockContext = new RockContext() )
+            var financialPersonSavedAccountService = new FinancialPersonSavedAccountService( RockContext );
+            var financialPersonSavedAccount = financialPersonSavedAccountService.Get( savedAccountGuid );
+
+            if ( financialPersonSavedAccount != null )
             {
-                var financialPersonSavedAccountService = new FinancialPersonSavedAccountService( rockContext );
-                var financialPersonSavedAccount = financialPersonSavedAccountService.Get( savedAccountGuid );
-
-                if ( financialPersonSavedAccount != null )
+                string errorMessage;
+                if ( !financialPersonSavedAccountService.CanDelete( financialPersonSavedAccount, out errorMessage ) )
                 {
-                    string errorMessage;
-                    if ( !financialPersonSavedAccountService.CanDelete( financialPersonSavedAccount, out errorMessage ) )
-                    {
-                        return ActionBadRequest( errorMessage );
-                    }
-
-                    financialPersonSavedAccountService.Delete( financialPersonSavedAccount );
-                    rockContext.SaveChanges();
+                    return ActionBadRequest( errorMessage );
                 }
+
+                financialPersonSavedAccountService.Delete( financialPersonSavedAccount );
+                RockContext.SaveChanges();
             }
 
             return ActionOk();

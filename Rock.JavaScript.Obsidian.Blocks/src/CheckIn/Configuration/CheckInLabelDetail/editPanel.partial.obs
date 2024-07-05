@@ -1,0 +1,192 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+            </div>
+
+            <div class="col-md-6">
+                <CheckBox v-model="isActive"
+                          label="Active" />
+            </div>
+        </div>
+
+        <TextBox v-model="description"
+                 label="Description"
+                 textMode="multiline" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <DropDownList v-model="labelType"
+                              label="Label Type"
+                              :items="labelTypeItems"
+                              rules="required"
+                              :disabled="!!modelValue.bag?.idKey"
+                              :showBlankItem="false" />
+            </div>
+
+            <div class="col-md-6">
+                <DropDownList v-model="labelFormat"
+                              label="Label Format"
+                              :items="labelFormatItems"
+                              rules="required"
+                              :disabled="!!modelValue.bag?.idKey"
+                              :showBlankItem="false" />
+            </div>
+        </div>
+
+        <div class="form-group">
+            <RockLabel>Conditional Print Criteria</RockLabel>
+
+            <div class="control-wrapper">
+                <FieldFilterEditor v-model="conditionalPrintCriteria"
+                                   :sources="filterSources"
+                                   title="label"
+                                   groupSources
+                                   enhanceForLongSourceLists />
+            </div>
+        </div>
+
+        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import FieldFilterEditor from "@Obsidian/Controls/fieldFilterEditor.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { CheckInLabelBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInLabelDetail/checkInLabelBag";
+    import { CheckInLabelDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInLabelDetail/checkInLabelDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterGroupBag";
+    import { FilterExpressionType } from "@Obsidian/Enums/Reporting/filterExpressionType";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
+    import { LabelType, LabelTypeDescription } from "@Obsidian/Enums/CheckIn/Labels/labelType";
+    import { LabelFormat, LabelFormatDescription } from "@Obsidian/Enums/CheckIn/Labels/labelFormat";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<CheckInLabelBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<CheckInLabelDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<CheckInLabelBag>): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue.bag?.attributeValues ?? {});
+    const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue.bag?.isActive ?? false, "IsActive");
+    const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
+    const labelType = propertyRef(props.modelValue.bag?.labelType.toString() ?? LabelType.Family.toString(), "LabelType");
+    const labelFormat = propertyRef(props.modelValue.bag?.labelFormat.toString() ?? LabelFormat.Designed.toString(), "LabelFormat");
+    const conditionalPrintCriteria = ref<FieldFilterGroupBag>(props.modelValue.bag?.conditionalPrintCriteria ?? createEmptyFilter());
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [description, isActive, name, labelType, labelFormat];
+
+    const labelTypeItems = enumToListItemBag(LabelTypeDescription);
+    const labelFormatItems = enumToListItemBag(LabelFormatDescription);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const filterSources = computed((): FieldFilterSourceBag[] => {
+        if (labelType.value === LabelType.Family.toString()) {
+            return props.options.familyLabelFilterSources ?? [];
+        }
+        else if (labelType.value === LabelType.Person.toString()) {
+            return props.options.personLabelFilterSources ?? [];
+        }
+        else if (labelType.value === LabelType.Attendance.toString()) {
+            return props.options.attendanceLabelFilterSources ?? [];
+        }
+        else if (labelType.value === LabelType.Checkout.toString()) {
+            return props.options.checkoutLabelFilterSources ?? [];
+        }
+        else {
+            return [];
+        }
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    function createEmptyFilter(): FieldFilterGroupBag {
+        return {
+            guid: newGuid(),
+            expressionType: FilterExpressionType.GroupAll,
+            rules: []
+        };
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // Any time the label type changes, erase the filter rules.
+    watch(labelType, () => {
+        conditionalPrintCriteria.value = createEmptyFilter();
+    });
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.bag?.attributeValues ?? {});
+        updateRefValue(description, props.modelValue.bag?.description ?? "");
+        updateRefValue(isActive, props.modelValue.bag?.isActive ?? false);
+        updateRefValue(name, props.modelValue.bag?.name ?? "");
+        updateRefValue(labelType, props.modelValue.bag?.labelType.toString() ?? LabelType.Family.toString());
+        updateRefValue(labelFormat, props.modelValue.bag?.labelFormat.toString() ?? LabelFormat.Designed.toString());
+        updateRefValue(conditionalPrintCriteria, props.modelValue.bag?.conditionalPrintCriteria ?? createEmptyFilter());
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, conditionalPrintCriteria, ...propRefs], () => {
+        const newValue: ValidPropertiesBox<CheckInLabelBag> = {
+            bag: { ...props.modelValue.bag } as CheckInLabelBag
+        };
+
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "isActive", isActive.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "labelType", toNumber(labelType.value) as LabelType);
+        setPropertiesBoxValue(newValue, "labelFormat", toNumber(labelFormat.value) as LabelFormat);
+        setPropertiesBoxValue(newValue, "conditionalPrintCriteria", conditionalPrintCriteria.value);
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

@@ -273,7 +273,8 @@ namespace RockWeb.Blocks.Cms
                 KnownIndividualsCount = a.IsDirty ? "Loading..." :
                      personAliasPersonalizationsSegmentsQry
                          .Where( p => p.PersonalizationEntityId == a.Id && p.PersonAlias.PersonId != anonymousVisitorPersonId ).Count().ToString(),
-                Guid = a.Guid
+                Guid = a.Guid,
+                TimeToUpdateDurationMilliseconds = a.TimeToUpdateDurationMilliseconds
             } );
 
             // sort the query based on the column that was selected to be sorted
@@ -302,6 +303,7 @@ namespace RockWeb.Blocks.Cms
             public string AnonymousIndividualsCount { get; set; }
             public string KnownIndividualsCount { get; set; }
             public Guid Guid { get; set; }
+            public double? TimeToUpdateDurationMilliseconds { get; set; }
         }
     }
 }

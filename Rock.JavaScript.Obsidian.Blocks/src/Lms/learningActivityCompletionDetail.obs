@@ -8,6 +8,7 @@
                  v-model:mode="panelMode"
                  :name="panelName"
                  :labels="blockLabels"
+                 :alwaysShowLabels="true"
                  :entityKey="entityKey"
                  :isAuditHidden="false"
                  :isBadgesVisible="false"
@@ -66,6 +67,8 @@
         entity: learningActivityCompletionEditBag
     });
 
+    const gradingScales = ref(config.options?.gradingScales.sort((a,b) => b.thresholdPercentage - a.thresholdPercentage));
+
     // #endregion
 
     // #region Computed Values
@@ -93,6 +96,26 @@
      */
     const blockLabels = computed((): PanelAction[] | undefined => {
         const labels: PanelAction[] = [];
+
+        if (panelMode.value === DetailPanelMode.Add) {
+            return labels;
+        }
+
+        const pointsEarned = learningActivityCompletionEditBag.value?.bag?.pointsEarned ?? 0;
+        const pointsPossible = learningActivityCompletionViewBag.value?.activityBag?.points ?? 0;
+        const percentEarned = pointsPossible > 0 ? pointsEarned / pointsPossible * 100 : 0;
+        const grade = gradingScales.value?.find(s => percentEarned >= s.thresholdPercentage);
+        const hasGradeScale = grade != null;
+        const isGradePassing = hasGradeScale ? grade.isPassing : false;
+
+        const gradeText = hasGradeScale ? `${grade.name} (${percentEarned}%)` : `${percentEarned}%`;
+
+        if (gradeText.length > 0) {
+            labels.push({
+                title: gradeText,
+                type: isGradePassing ? "success" : "warning"
+            });
+        }
 
         if (!learningActivityCompletionViewBag.value?.wasCompletedOnTime) {
             labels.push({

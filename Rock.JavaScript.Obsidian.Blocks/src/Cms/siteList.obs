@@ -14,8 +14,8 @@
          <Column name="name"
                 title="Name"
                 :filter="textValueFilter"
-                filterValue="{{ row.name }}"
-                quickFilterValue="{{ row.name }}">
+                filterValue="{{ row.name }} {{  row.description }}"
+                quickFilterValue="{{ row.name }} {{  row.description }}">
             <template #format="{ row }">
                 <div class="d-flex flex-fill align-items-center">
                     <div class="mr-2 flex-shrink-0"

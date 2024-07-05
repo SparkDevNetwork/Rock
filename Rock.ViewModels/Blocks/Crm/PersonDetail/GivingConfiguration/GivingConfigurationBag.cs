@@ -228,12 +228,12 @@ namespace Rock.ViewModels.Blocks.Crm.PersonDetail.GivingConfiguration
         /// Gets or sets the start date of the financial pledge.
         /// </summary>
         /// <value>The start date of the financial pledge.</value>
-        public DateTime StartDate { get; set; }
+        public DateTime? StartDate { get; set; }
         /// <summary>
         /// Gets or sets the end date of the financial pledge.
         /// </summary>
         /// <value>The end date of the financial pledge.</value>
-        public DateTime EndDate { get; set; }
+        public DateTime? EndDate { get; set; }
         /// <summary>
         /// Gets or sets the frequency value identifier of the financial pledge.
         /// </summary>
@@ -306,6 +306,11 @@ namespace Rock.ViewModels.Blocks.Crm.PersonDetail.GivingConfiguration
         /// </summary>
         /// <value>The Expiration Year.</value>
         public string ExpirationYear { get; set; }
+        /// <summary>
+        /// Gets or sets the card expiration date.
+        /// </summary>
+        /// <value>The card expiration date.</value>
+        public DateTime? CardExpirationDate { get; set; }
     }
 
     /// <summary>
@@ -342,12 +347,17 @@ namespace Rock.ViewModels.Blocks.Crm.PersonDetail.GivingConfiguration
         /// Gets or sets the last error code date time of the financial person saved account.
         /// </summary>
         /// <value>The last error code date time of the financial person saved account.</value>
-        public DateTime LastErrorCodeDateTime { get; set; }
+        public DateTime? LastErrorCodeDateTime { get; set; }
         /// <summary>
         /// Gets or sets the saved account financial payment detail.
         /// </summary>
         /// <value>The saved account financial payment detail.</value>
         public FinancialPaymentDetailBag FinancialPaymentDetail { get; set; }
+        /// <summary>
+        /// Gets or sets the is expired status of the financial person saved account.
+        /// </summary>
+        /// <value>The is expired status of the financial person saved account.</value>
+        public bool IsExpired { get; set; }
     }
 
     /// <summary>

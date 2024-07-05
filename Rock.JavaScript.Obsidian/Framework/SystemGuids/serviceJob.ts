@@ -119,11 +119,15 @@ export const ServiceJob = {
     DataMigrations166AddCommunicationRecipientIndex: "48070B65-FC20-401F-B25F-8F4D13BA5F36",
     /** The Job to run Post v16.6 Data Migrations to an index to the CreatedDateTime column on the Interaction table. */
     DataMigrations166AddInteractionCreatedDateTimeIndex: "2B2E2C6F-0184-4797-9D39-E8FC700D9887",
+    /** The Job to run Post v17.0 Data Migrations to chop 6 blocks Block. */
+    DataMigrations166ChopObsidianBlocks: "4B8A66B3-1D92-480C-B473-D066B64E72AD",
     /**
      * The Job to run Post v16.6 Data Migrations to update the newly
      * created TargetCount column on AchievementType.
      */
     DataMigrations166UpdateAchievementtypeTargetcountColumn: "ab4d7fa7-8e07-48d3-8225-bdecc63b71f5",
+    /** The Job to run Post v17.0 Data Migrations to chop Shortened Link Block. */
+    DataMigrations170ChopShortenedLinksBlock: "8899363A-C52B-4D82-88C2-CA199D73E95C",
     /** The post update data migration job to remove the legacy Communication Recipient List Webforms block. */
     DataMigrations170RemoveCommunicationRecipientListBlock: "54CCFFFD-83A8-4BB6-A699-DDE34310BFE6",
     /** The post update data migration job to remove the legacy Communication Recipient List Webforms block. */

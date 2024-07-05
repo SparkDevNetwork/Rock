@@ -3,7 +3,7 @@
         <li class="navbar-logo">
         {%- if CurrentPage.Layout.Site.SiteLogoBinaryFileId != null -%}
             <a href="{{ '~' | ResolveRockUrl }}" title="Rock RMS" class="navbar-brand-side has-logo">
-                <img src="{{ '~' | ResolveRockUrl }}GetImage.ashx?id={{ CurrentPage.Layout.Site.SiteLogoBinaryFileId }}&w=48&h=48" alt="{{ 'Global' | Attribute:'OrganizationName' }}" class="logo">
+                <img src="{{ CurrentPage.Layout.Site.SiteLogoBinaryFileId | ImageUrl }}&w=48&h=48" alt="{{ 'Global' | Attribute:'OrganizationName' }}" class="logo">
             </a>
         {%- else -%}
             <a href="{{ '~' | ResolveRockUrl }}" title="Rock RMS" class="navbar-brand-side no-logo"></a>

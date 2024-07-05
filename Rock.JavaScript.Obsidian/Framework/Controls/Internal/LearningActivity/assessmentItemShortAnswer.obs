@@ -5,17 +5,20 @@
             <div class="assessment-item-short-answer-configuration-container">
                 <div class="configuration-field-question">
                     <TextBox v-model="question"
+                             :disabled="disabled"
                              label="Question"
                              rules="required" />
                 </div>
                 <div class="configuration-field-help-text">
                     <TextBox v-model="helpText"
+                             :disabled="disabled"
                              textMode="multiline"
                              label="Help Text" />
 
                 </div>
                 <div class="configuration-field-question-weight">
                     <NumberBox v-model="questionWeight"
+                               :disabled="disabled"
                                label="Question Weight"
                                rules="required"
                                :help="configurationWeightHelpText" />
@@ -23,12 +26,14 @@
                 </div>
                 <div class="configuration-field-answer-box-rows">
                     <NumberBox v-model="answerBoxRows"
+                               :disabled="disabled"
                                label="Answer Box Rows"
                                help="Determines the height of the answer box that is shown for this answer." />
 
                 </div>
                 <div class="configuration-field-max-character-count">
                     <NumberBox v-model="maxCharacterCount"
+                               :disabled="disabled"
                                label="Max Character Count"
                                help="Optionally limits the number of characters that can be provided in the answer." />
                 </div>
@@ -133,6 +138,11 @@
     import { AssessmentItem, ShortAnswerItem } from "./assessmentLearningActivity.partial";
 
     const props = defineProps({
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
         /** The assessment item's configuration. */
         modelValue: {
             type: Object as PropType<ShortAnswerItem | AssessmentItem>,
@@ -154,6 +164,7 @@
         (event: "update:modelValue", value: ShortAnswerItem): void
     }>();
 
+    const disabled = ref(props.disabled ?? false);
     const internalModelValue = toRef(() => props.modelValue as ShortAnswerItem);
 
     const screenToShow = ref(props.screenToShow);

@@ -23,8 +23,8 @@
                                title="Name"
                                field="name"
                                :filter="textValueFilter"
-                               :filterValuex="getRowNameFilterValue"
-                               :quickFilterValuex="getRowNameFilterValue"
+                               :filterValue="getRowNameFilterValue"
+                               :quickFilterValue="getRowNameFilterValue"
                                visiblePriority="xs"
                                :hideOnScreen="false"
                                :excludeFromExport="true">

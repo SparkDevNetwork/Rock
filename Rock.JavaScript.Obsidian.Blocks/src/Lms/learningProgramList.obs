@@ -3,7 +3,12 @@
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
+          title="Programs"
           itemTerm="Learning Program"
+          :isCountMessageVisible="false"
+          :showMergeTemplate="false"
+          :showLaunchWorkflow="false"
+          :showExport="false"
           :entityTypeGuid="EntityType.LearningProgram"
           :expectedRowCount="config.expectedRowCount ?? undefined"
           tooltipField="publicName"
@@ -12,8 +17,10 @@
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           @selectItem="onSelectItem">
 
-        <Column name="program"
+        <Column name="name"
                 title="Program"
+                field="name"
+                :filter="textValueFilter"
                 width="50%"
                 visiblePriority="xs">
             <template #format="{ row }">
@@ -32,9 +39,7 @@
         </Column>
         <Column name="category"
                 title="Category"
-                :filter="textValueFilter"
-                filterValue="category"
-                quickFilterValue="category"
+                :filter="pickExistingValueFilter"
                 width="15%"
                 visiblePriority="lg">
             <template #format="{ row }">
@@ -46,12 +51,14 @@
         <BooleanColumn name="isPublic"
                        title="Public"
                        field="isPublic"
+                       :filter="booleanValueFilter"
                        width="5%"
                        visiblePriority="xs" />
 
         <BooleanColumn name="isActive"
                        title="Active"
                        field="isActive"
+                       :filter="booleanValueFilter"
                        width="5%"
                        visiblePriority="xs" />
 
@@ -83,7 +90,7 @@
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { textValueFilter, BooleanColumn, Column, DeleteColumn, SecurityColumn } from "@Obsidian/Controls/grid";
+    import Grid, { textValueFilter, BooleanColumn, Column, DeleteColumn, SecurityColumn, booleanValueFilter, pickExistingValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { LearningProgramListOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningProgramList/learningProgramListOptionsBag";

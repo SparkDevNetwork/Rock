@@ -192,11 +192,11 @@ namespace Rock.Utility
         /// Builds an expression for an attribute field
         /// </summary>
         /// <param name="rockContext">The database context.</param>
-        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="entityExpression">The expression to the object instance that contains the attributes.</param>
         /// <param name="entityField">The entity field.</param>
         /// <param name="values">The filter parameter values: FieldName, <see cref="ComparisonType">Comparison Type</see>, (optional) Comparison Value(s)</param>
         /// <returns></returns>
-        internal static Expression GetAttributeExpression( RockContext rockContext, ParameterExpression parameterExpression, EntityField entityField, List<string> values )
+        internal static Expression GetAttributeExpression( RockContext rockContext, Expression entityExpression, EntityField entityField, List<string> values )
         {
             if ( !values.Any() )
             {
@@ -287,7 +287,7 @@ namespace Rock.Utility
 
             IQueryable<int> ids = attributeValues.Select( v => v.EntityId.Value );
 
-            MemberExpression propertyExpression = Expression.Property( parameterExpression, "Id" );
+            MemberExpression propertyExpression = Expression.Property( entityExpression, "Id" );
             ConstantExpression idsExpression = Expression.Constant( ids.AsQueryable(), typeof( IQueryable<int> ) );
             Expression expression = Expression.Call( typeof( Queryable ), "Contains", new Type[] { typeof( int ) }, idsExpression, propertyExpression );
 
@@ -310,30 +310,30 @@ namespace Rock.Utility
                 if ( attributeCache.EntityTypeQualifierColumn.IsNotNullOrWhiteSpace() && attributeCache.EntityTypeQualifierValue.IsNotNullOrWhiteSpace() )
                 {
                     Expression qualifierParameterExpression = null;
-                    PropertyInfo qualifierColumnProperty = parameterExpression.Type.GetProperty( attributeCache.EntityTypeQualifierColumn );
+                    PropertyInfo qualifierColumnProperty = entityExpression.Type.GetProperty( attributeCache.EntityTypeQualifierColumn );
 
                     // make sure the QualifierColumn is an actual mapped property on the Entity
                     if ( qualifierColumnProperty != null && qualifierColumnProperty.GetCustomAttribute<NotMappedAttribute>() == null )
                     {
-                        qualifierParameterExpression = parameterExpression;
+                        qualifierParameterExpression = entityExpression;
                     }
                     else
                     {
-                        if ( attributeCache.EntityTypeQualifierColumn == "GroupTypeId" && parameterExpression.Type == typeof( Rock.Model.GroupMember ) )
+                        if ( attributeCache.EntityTypeQualifierColumn == "GroupTypeId" && entityExpression.Type == typeof( Rock.Model.GroupMember ) )
                         {
                             // Special Case for GroupMember with Qualifier of 'GroupTypeId' (which is really Group.GroupTypeId)
-                            qualifierParameterExpression = Expression.Property( parameterExpression, "Group" );
+                            qualifierParameterExpression = Expression.Property( entityExpression, "Group" );
                         }
-                        else if ( attributeCache.EntityTypeQualifierColumn == "RegistrationTemplateId" && parameterExpression.Type == typeof( Rock.Model.RegistrationRegistrant ) )
+                        else if ( attributeCache.EntityTypeQualifierColumn == "RegistrationTemplateId" && entityExpression.Type == typeof( Rock.Model.RegistrationRegistrant ) )
                         {
                             // Special Case for RegistrationRegistrant with Qualifier of 'RegistrationTemplateId' (which is really Registration.RegistrationInstance.RegistrationTemplateId)
-                            qualifierParameterExpression = Expression.Property( parameterExpression, "Registration" );
+                            qualifierParameterExpression = Expression.Property( entityExpression, "Registration" );
                             qualifierParameterExpression = Expression.Property( qualifierParameterExpression, "RegistrationInstance" );
                         }
                         else
                         {
                             // Unable to determine how the EntityTypeQualiferColumn relates to the Entity. Probably will be OK, but spit out a debug message
-                            System.Diagnostics.Debug.WriteLine( $"Unable to determine how the EntityTypeQualiferColumn {attributeCache.EntityTypeQualifierColumn} relates to entity {parameterExpression.Type} on attribute {attributeCache.Name}:{attributeCache.Guid}" );
+                            System.Diagnostics.Debug.WriteLine( $"Unable to determine how the EntityTypeQualiferColumn {attributeCache.EntityTypeQualifierColumn} relates to entity {entityExpression.Type} on attribute {attributeCache.Name}:{attributeCache.Guid}" );
                         }
                     }
 
@@ -389,13 +389,12 @@ namespace Rock.Utility
         /// in-memory object. This expression cannot be used in a LINQ to SQL
         /// statement as it will generate an exception.
         /// </summary>
-        /// <param name="parameterExpression">The expression that identifies the entity object.</param>
+        /// <param name="entityExpression">The expression that identifies the entity object.</param>
         /// <param name="comparedToAttribute">The attribute that will be used to get the entity value.</param>
         /// <param name="values">The values defined on the filter.</param>
         /// <returns>An expression that compares the attribute value of an entity.</returns>
-        internal static Expression GetAttributeMemoryExpression( ParameterExpression parameterExpression, AttributeCache comparedToAttribute, List<string> values )
+        internal static Expression GetAttributeMemoryExpression( Expression entityExpression, AttributeCache comparedToAttribute, List<string> values )
         {
-            // All this negation 
             // Determine the appropriate comparison type to use for this Expression.
             // Attribute Value records only exist for Entities that have a value specified for the Attribute.
             // Therefore, if the specified comparison works by excluding certain values we must invert our filter logic:
@@ -464,7 +463,7 @@ namespace Rock.Utility
             var filterFunc = conditionLambda.Compile();
             var method = typeof( ExpressionHelper ).GetMethod( nameof( CompareToInMemoryAttribute ), BindingFlags.NonPublic | BindingFlags.Static );
 
-            var expression = Expression.Call( method, parameterExpression, Expression.Constant( comparedToAttribute ), Expression.Constant( filterFunc ) );
+            var expression = Expression.Call( method, entityExpression, Expression.Constant( comparedToAttribute ), Expression.Constant( filterFunc ) );
 
             // If we have used an inverted comparison type for the evaluation,
             // invert the Expression so that it excludes the matching Entities.

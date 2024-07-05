@@ -3,17 +3,20 @@
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
-          itemTerm="Activity"
+          title="Learning Plan Completion Status"
           :entityTypeGuid="EntityType.LearningActivityCompletion"
+          :isCountMessageVisible="false"
           stickyHeader
           liveUpdates
+          :onAddItem="config.isAddEnabled ? onAddCompletionClick : undefined"
           @selectItem="onSelectItem">
         <SelectColumn />
 
         <PersonColumn name="student"
                       title="Student"
                       field="student"
-                      :filter="textValueFilter"
+                      :filter="pickExistingValueFilter"
+                      :filterValue="getPersonNameFilterValue"
                       width="15%"
                       visiblePriority="xs">
         </PersonColumn>
@@ -58,7 +61,6 @@
                 width="15%"
                 :filter="textValueFilter"
                 :filterValue="getRowStatusesFilterValue"
-                :quickFilterValue="getRowStatusesFilterValue"
                 visiblePriority="xs">
             <template #format="{ row }">
                 <div v-html="getRowStatusLabels(row)"></div>
@@ -71,34 +73,66 @@
                 width="10%"
                 :filter="textValueFilter"
                 :filterValue="getRowCommentsFilterValue"
-                :quickFilterValue="getRowCommentsFilterValue"
                 visiblePriority="xs">
             <template #format="{ row }">
                 <div v-html="getRowCommentLabels(row)"></div>
             </template>
         </Column>
     </Grid>
+
+    <Modal v-model="isAddCompletionModalVisible"
+           title="Add Activity"
+           @save="onSaveCompletionClick"
+           saveText="Add"
+           cancelText="Cancel"
+           @close="onCloseCompletionModal">
+
+        <DropDownList v-model="studentGuidToAdd"
+                      :items="studentsWithoutActivity"
+                      label="For Student"
+                      help="Select the student to add the activity for." />
+
+    </Modal>
 </template>
 
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { numberValueFilter, dateValueFilter, textValueFilter, Column, DateColumn, DateTimeColumn, PersonColumn, SelectColumn } from "@Obsidian/Controls/grid";
+    import Grid, { numberValueFilter, dateValueFilter, textValueFilter, Column, DateColumn, DateTimeColumn, PersonColumn, SelectColumn, pickExistingValueFilter } from "@Obsidian/Controls/grid";
+    import Modal from "@Obsidian/Controls/modal.obs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { LearningActivityCompletionListOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionList/learningActivityCompletionListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./LearningActivityCompletionList/types.partial";
-    import { reactive, ref } from "vue";
+    import { computed, reactive, ref } from "vue";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 
     const config = useConfigurationValues<ListBlockBox<LearningActivityCompletionListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    onConfigurationValuesChanged(useReloadBlock());
+    const reloadBlock = useReloadBlock();
+    onConfigurationValuesChanged(reloadBlock);
 
     // #region Values
 
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
+
+    const isAddCompletionModalVisible = ref(false);
+
+    const allStudents = ref(config.options?.students ?? []);
+    const studentGuidToAdd = ref<string>("");
+
+    // #endregion
+
+    // #region Computed Functions
+
+    const studentsWithoutActivity = computed(() =>
+        allStudents.value.filter(s =>
+            !gridData?.rows?.find(r => s.value === r["studentGuid"])
+        )
+    );
 
     // #endregion
 
@@ -115,6 +149,16 @@
      */
     function getGradePercentFilterValue(row: Record<string, unknown>): number {
         return row.isCompleted ? (row.gradePercent as number) : -1;
+    }
+
+    /**
+    * Gets the filter value text to use for the name column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getPersonNameFilterValue(row: Record<string, unknown>): string {
+        const person = row["individual"] as PersonFieldBag;
+        return !person ? "" : `${person.nickName} ${person.lastName}`;
     }
 
     /**
@@ -190,6 +234,7 @@
 
         if (result.isSuccess && result.data) {
             gridData = reactive(result.data);
+
             return gridData;
         }
         else {
@@ -200,6 +245,37 @@
     // #endregion
 
     // #region Event Handlers
+
+    /**
+     * Called when the Add button has been clicked by the individual.
+     */
+    function onAddCompletionClick(): void {
+        isAddCompletionModalVisible.value = true;
+    }
+
+    /**
+     * Called when the Add button has been clicked in the Add Student modal.
+     */
+    async function onSaveCompletionClick(): Promise<void> {
+        const result = await invokeBlockAction<GridDataBag>("AddStudent", {
+            participantGuid: studentGuidToAdd.value
+        });
+
+        if (result.isSuccess) {
+            isAddCompletionModalVisible.value = false;
+            reloadBlock();
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to add student.");
+        }
+    }
+
+    /**
+     * Called when the Cancel button of the Add Completion modal has been clicked by the individual.
+     */
+    function onCloseCompletionModal(): void {
+        isAddCompletionModalVisible.value = true;
+    }
 
     /**
      * Called when a row has been selected by the individual.

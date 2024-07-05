@@ -149,6 +149,8 @@ export const EntityType = {
     CampusTopic: "0FFDCB0B-B435-4E66-9085-2750534E706A",
     /** The EntityType Guid for Rock.Model.Category  */
     Category: "1D68154E-EC76-44C8-9813-7736B27AECF9",
+    /** The EntityType Guid for Rock.Model.CheckInLabel  */
+    CheckInLabel: "8B651EB1-492F-46D0-821B-CA7355C6E6E7",
     /** The checkr provider */
     CheckrProvider: "8D9DE88A-C649-47B2-BA5C-92A24F60AE61",
     /** The EntityType Guid for Rock.Model.Communication  */
@@ -231,6 +233,8 @@ export const EntityType = {
     DocumentType: "18CF366F-46B6-49CA-B557-BCABD6BBD175",
     /** The EntityType Guid for Rock.Model.EntityCampusFilter  */
     EntityCampusFilter: "A736A9FB-F2A5-4458-B126-FAD6BD3F3B78",
+    /** The EntityType Guid for Rock.Model.EntityIntent  */
+    EntityIntent: "15CE39A3-193F-44E5-80C7-DE47DA3EAF97",
     /** The EntityType Guid for Rock.Model.EntitySet  */
     EntitySet: "50E3F9C8-4010-41AF-8F61-08308DC44640",
     /** The EntityType Guid for Rock.Model.EntitySetItem  */

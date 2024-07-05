@@ -26,7 +26,7 @@
         </template>
 
         <template #edit>
-            <EditPanel v-model="noteWatchEditBag" :options="options" @propertyChanged="onPropertyChanged" />
+            <EditPanel v-model="noteWatchEditBag" :options="options" @propertyChanged="onPropertyChanged" :errorDetails="noteWatchErrorDetails" />
         </template>
     </DetailBlock>
 </template>
@@ -57,6 +57,7 @@
     const errorMessage = ref("");
 
     const noteWatchViewBag = ref(config.entity);
+    const noteWatchErrorDetails = ref("");
     const noteWatchEditBag = ref<NoteWatchBag>({} as NoteWatchBag);
 
     const entityTypeGuid = EntityType.NoteWatch;
@@ -76,6 +77,13 @@
         "watcherPersonAlias",
         "entityId"
     ];
+
+    const anticipatedErrors = [
+        "WatcherMustBeSelected",
+        "WatchFilterMustBeSelected",
+        "UnableToOverride",
+        "NoteTypeDoesNotAllowWatch"
+    ]
 
     const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(noteWatchEditBag, validProperties, invokeBlockAction), undefined, true);
 
@@ -229,7 +237,13 @@
             }
         }
 
-        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save note watch.";
+        if (result.errorMessage) {
+            if (!anticipatedErrors.includes(result.errorMessage)) {
+                errorMessage.value = result.errorMessage ?? "Unknown error while trying to save note watch.";
+            } else {
+                noteWatchErrorDetails.value = result.errorMessage
+            }
+        }
 
         return false;
     }

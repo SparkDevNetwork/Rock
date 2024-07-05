@@ -24,11 +24,14 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Enums.Lms;
 using Rock.Model;
+using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Lms.LearningProgramDetail;
 using Rock.ViewModels.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Lms
@@ -71,30 +74,24 @@ namespace Rock.Blocks.Lms
         Description = "The page that will show the courses for the learning program.",
         Key = AttributeKey.CoursesPage, IsRequired = false, Order = 4 )]
 
-    [LinkedPage( "Completions Page",
-        Description = "The page that will show the course completions for the learning program.",
-        Key = AttributeKey.CompletionsPage, IsRequired = false, Order = 5 )]
-
-    [LinkedPage( "Semesters Page",
-        Description = "The page that will show the semesters for the learning program.",
-        Key = AttributeKey.SemestersPage, IsRequired = false, Order = 6 )]
-
+    [LinkedPage( "Completion Detail Page",
+        Description = "The page that will show the program completion detail.",
+        Key = AttributeKey.CompletionDetailPage, IsRequired = false, Order = 5 )]
 
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "41351a30-3b4f-44da-b413-49d7c997fbb5" )]
     [Rock.SystemGuid.BlockTypeGuid( "796c87e7-678f-4a38-8c04-a401a4f7ac21" )]
-    public class LearningProgramDetail : RockDetailBlockType
+    public class LearningProgramDetail : RockDetailBlockType, IBreadCrumbBlock
     {
         #region Keys
 
         private static class AttributeKey
         {
             public const string Category = "Category";
-            public const string CompletionsPage = "CompletionsPage";
+            public const string CompletionDetailPage = "CompletionDetailPage";
             public const string CoursesPage = "CoursesPage";
             public const string DisplayMode = "DisplayMode";
-            public const string SemestersPage = "SemestersPage";
             public const string ShowKPIs = "ShowKPIs";
         }
 
@@ -107,14 +104,14 @@ namespace Rock.Blocks.Lms
         private static class PageParameterKey
         {
             public const string LearningProgramId = "LearningProgramId";
+            public const string LearningProgramCompletionId = "LearningProgramCompletionId";
         }
 
         private static class NavigationUrlKey
         {
             public const string ParentPage = "ParentPage";
             public const string CoursesPage = "CoursesPage";
-            public const string CompletionsPage = "CompletionsPage";
-            public const string SemestersPage = "SemestersPage";
+            public const string CompletionDetailPage = "CompletionDetailPage";
         }
 
         #endregion Keys
@@ -367,14 +364,8 @@ namespace Rock.Blocks.Lms
             box.IfValidProperty( nameof( box.Entity.Category ),
                 () => entity.CategoryId = box.Entity.Category.GetEntityId<Category>( rockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.CategoryId ),
-                () => entity.CategoryId = box.Entity.CategoryId );
-
             box.IfValidProperty( nameof( box.Entity.CompletionWorkflowType ),
                 () => entity.CompletionWorkflowTypeId = box.Entity.CompletionWorkflowType.GetEntityId<WorkflowType>( rockContext ) );
-
-            box.IfValidProperty( nameof( box.Entity.CompletionWorkflowTypeId ),
-                () => entity.CompletionWorkflowTypeId = box.Entity.CompletionWorkflowTypeId );
 
             var isMovingToOnDemandMode =
                 box.Entity.ConfigurationMode != entity.ConfigurationMode &&
@@ -400,9 +391,6 @@ namespace Rock.Blocks.Lms
 
             box.IfValidProperty( nameof( box.Entity.ImageBinaryFile ),
                 () => entity.ImageBinaryFileId = box.Entity.ImageBinaryFile.GetEntityId<BinaryFile>( rockContext ) );
-
-            box.IfValidProperty( nameof( box.Entity.ImageBinaryFileId ),
-                () => entity.ImageBinaryFileId = box.Entity.ImageBinaryFileId );
 
             box.IfValidProperty( nameof( box.Entity.IsActive ),
                 () => entity.IsActive = box.Entity.IsActive );
@@ -458,12 +446,17 @@ namespace Rock.Blocks.Lms
                 [PageParameterKey.LearningProgramId] = idKey
             };
 
+            var completionDetailPageParams = new Dictionary<string, string>()
+            {
+                [PageParameterKey.LearningProgramId] = idKey,
+                [PageParameterKey.LearningProgramCompletionId] = "((Key))"
+            };
+
             return new Dictionary<string, string>
             {
                 [NavigationUrlKey.ParentPage] = this.GetParentPageUrl(),
                 [NavigationUrlKey.CoursesPage] = this.GetLinkedPageUrl( AttributeKey.CoursesPage, queryParams ),
-                [NavigationUrlKey.CompletionsPage] = this.GetLinkedPageUrl( AttributeKey.CompletionsPage, queryParams ),
-                [NavigationUrlKey.SemestersPage] = this.GetLinkedPageUrl( AttributeKey.SemestersPage, queryParams )
+                [NavigationUrlKey.CompletionDetailPage] = this.GetLinkedPageUrl( AttributeKey.CompletionDetailPage, completionDetailPageParams ),
             };
         }
 
@@ -537,6 +530,27 @@ namespace Rock.Blocks.Lms
             }
 
             return true;
+        }
+
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var entityKey = pageReference.GetPageParameter( PageParameterKey.LearningProgramId ) ?? "";
+
+                var entityName = entityKey.Length > 0 ? new LearningProgramService( rockContext ).GetSelect( entityKey, p => p.Name ) : "New Program";
+                var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, pageReference.Parameters );
+                var breadCrumb = new BreadCrumbLink( entityName ?? "New Program", breadCrumbPageRef );
+
+                return new BreadCrumbResult
+                {
+                    BreadCrumbs = new List<IBreadCrumb>
+                {
+                    breadCrumb
+                }
+                };
+            }
         }
 
         #endregion
@@ -676,6 +690,94 @@ namespace Rock.Blocks.Lms
         }
 
         /// <summary>
+        /// Deletes the specified entity.
+        /// </summary>
+        /// <param name="key">The identifier of the entity to be deleted.</param>
+        /// <returns>An empty result that indicates if the operation succeeded.</returns>
+        [BlockAction]
+        public BlockActionResult DeleteSemester( string key )
+        {
+            var entityService = new LearningSemesterService( RockContext );
+            var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( entity == null )
+            {
+                return ActionBadRequest( $"{LearningSemester.FriendlyTypeName} not found." );
+            }
+
+            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to delete ${LearningSemester.FriendlyTypeName}." );
+            }
+
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
+
+            return ActionOk();
+        }
+
+        /// <summary>
+        /// Gets a Grid of the <see cref="LearningProgramCompletion"/> records for the LearningProgram specified in the PageParameters.
+        /// If no LearningProgramId page parameter exists an empty list is returned.
+        /// </summary>
+        /// <returns>The GridDataBag of LearningProgramCompletion records.</returns>
+        [BlockAction]
+        public BlockActionResult GetCompletions()
+        {
+            var entityKey = PageParameter( PageParameterKey.LearningProgramId );
+            var program = new LearningProgramService( RockContext ).GetSelect( entityKey, p => new { p.ConfigurationMode, p.Id } );
+
+            var queryable = program == null ? new List<LearningProgramCompletion>().AsQueryable() : GetCompletionListQueryable( program.Id );
+
+            var grid = new GridBuilder<LearningProgramCompletion>()
+                 .WithBlock( this )
+                 .AddTextField( "idKey", a => a.IdKey )
+                 .AddPersonField( "individual", a => a.PersonAlias?.Person )
+                 .AddTextField( "campus", a => a.CampusId.HasValue ? CampusCache.Get( a.CampusId.Value )?.Name : null )
+                 .AddDateTimeField( "startDate", a => a.StartDate )
+                 .AddDateTimeField( "endDate", a => a.EndDate )
+                 .AddField( "status", a => a.CompletionStatus );
+
+            if ( program.ConfigurationMode == ConfigurationMode.AcademicCalendar )
+            {
+                grid.AddTextField( "semester", a => a.LearningProgram.LearningSemesters?
+                    .FirstOrDefault( s =>
+                        s.StartDate >= a.StartDate &&
+                        s.EndDate <= a.EndDate
+                    )?.Name
+                );
+            }
+
+            return ActionOk( grid.Build( queryable ) );
+        }
+
+        /// <summary>
+        /// Gets a Grid of the <see cref="LearningSemester"/> records for the LearningProgram specified in the PageParameters.
+        /// If no LearningProgramId page parameter exists an empty list is returned.
+        /// </summary>
+        /// <returns>The GridDataBag of LearningSemester records.</returns>
+        [BlockAction]
+        public BlockActionResult GetSemesters()
+        {
+            var gridBuilder = new GridBuilder<LearningSemester>()
+                .WithBlock( this )
+                .AddTextField( "idKey", a => a.IdKey )
+                .AddTextField( "name", a => a.Name )
+                .AddDateTimeField( "startDate", a => a.StartDate )
+                .AddDateTimeField( "endDate", a => a.EndDate )
+                .AddDateTimeField( "closeDate", a => a.EnrollmentCloseDate )
+                .AddField( "classCount", a => a.LearningClasses.Count() );
+
+            var semestersQueryable = GetSemesterListQueryable();
+            return ActionOk( gridBuilder.Build( semestersQueryable ) );
+        }
+
+        /// <summary>
         /// Refreshes the list of attributes that can be displayed for editing
         /// purposes based on any modified values on the entity.
         /// </summary>
@@ -727,6 +829,42 @@ namespace Rock.Blocks.Lms
 
                 return ActionOk( refreshedBox );
             }
+        }
+
+        /// <summary>
+        /// Gets the Learning Program Completion Queryable for completions grid.
+        /// </summary>
+        /// <returns>A Queryable of LearningProgramCompletions.</returns>
+        private IQueryable<LearningProgramCompletion> GetCompletionListQueryable( int learningProgramId )
+        {
+            var queryable = new LearningProgramCompletionService( RockContext )
+                .Queryable()
+                .Include( a => a.PersonAlias )
+                .Include( a => a.PersonAlias.Person )
+                .Include( a => a.LearningProgram )
+                .Where( a => a.LearningProgramId == learningProgramId );
+
+            return queryable;
+        }
+
+        /// <summary>
+        /// Gets the Learning Smester Queryable for semesters grid.
+        /// </summary>
+        /// <returns>A Queryable of LearningSemester.</returns>
+        private IQueryable<LearningSemester> GetSemesterListQueryable()
+        {
+            var entityId = RequestContext.PageParameterAsId( PageParameterKey.LearningProgramId );
+
+            // If a Learning Program has been specified then get the semesters for that.
+            if ( entityId > 0 )
+            {
+                return new LearningSemesterService( RockContext )
+                    .Queryable()
+                    .Include( a => a.LearningClasses )
+                    .Where( a => a.LearningProgramId == entityId );
+            }
+
+            return new List<LearningSemester>().AsQueryable();
         }
 
         #endregion

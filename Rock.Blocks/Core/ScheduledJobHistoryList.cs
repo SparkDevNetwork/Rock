@@ -128,8 +128,10 @@ namespace Rock.Blocks.Core
                 .AddDateTimeField( "startDateTime", a => a.StartDateTime )
                 .AddDateTimeField( "stopDateTime", a => a.StopDateTime )
                 .AddTextField( "runDuration", a => FormatDuration( a.DurationSeconds ) )
-                .AddTextField( "status", a => a.Status )
-                .AddTextField( "statusMessage", a => a.StatusMessageAsHtml );
+                .AddField( "durationSeconds", a => a.DurationSeconds )
+                .AddTextField( "status", a => a.Status == "Exception" ? "Failed" : a.Status )
+                .AddTextField( "statusMessage", a => a.StatusMessage )
+                .AddTextField( "statusMessageHtml", a => a.StatusMessageAsHtml );
         }
 
         /// <summary>

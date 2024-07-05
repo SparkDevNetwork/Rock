@@ -1,0 +1,292 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="check-in-page">
+        <PageHeader title="Rock Solid"
+                    :hasBack="hasBackButton"
+                    :hideNavigation="!hasNavigation"
+                    @back="onBack"
+                    @home="onHome" />
+
+        <section class="page-body">
+            <ContentTransition>
+                <WelcomeScreen v-if="currentScreen === Screen.Welcome"
+                               :configuration="configuration"
+                               :session="currentSession"
+                               @start="onNextScreen"
+                               @updateActions="onUpdateActions($event, Screen.Welcome)">
+                </WelcomeScreen>
+
+                <SearchScreen v-if="currentScreen === Screen.Search"
+                              :configuration="configuration"
+                              :session="currentSession"
+                              @next="onNextScreen"
+                              @updateActions="onUpdateActions($event, Screen.Search)" />
+
+                <FamilySelectScreen v-if="currentScreen === Screen.FamilySelect"
+                                    :configuration="configuration"
+                                    :session="currentSession"
+                                    @next="onNextScreen"
+                                    @updateActions="onUpdateActions($event, Screen.FamilySelect)" />
+
+                <ActionSelectScreen v-if="currentScreen === Screen.ActionSelect"
+                                    :configuration="configuration"
+                                    :session="currentSession"
+                                    @next="onNextScreen"
+                                    @updateActions="onUpdateActions($event, Screen.ActionSelect)" />
+
+                <CheckoutSelectScreen v-if="currentScreen === Screen.CheckoutSelect"
+                                      :configuration="configuration"
+                                      :session="currentSession"
+                                      @next="onNextScreen"
+                                      @updateActions="onUpdateActions($event, Screen.CheckoutSelect)" />
+
+                <PersonSelectScreen v-if="currentScreen === Screen.PersonSelect"
+                                    :configuration="configuration"
+                                    :session="currentSession"
+                                    @next="onNextScreen"
+                                    @updateActions="onUpdateActions($event, Screen.PersonSelect)" />
+
+                <AutoModeOpportunitySelectScreen v-if="currentScreen === Screen.AutoModeOpportunitySelect"
+                                                 :configuration="configuration"
+                                                 :session="currentSession"
+                                                 @next="onNextScreen"
+                                                 @updateActions="onUpdateActions($event, Screen.AutoModeOpportunitySelect)" />
+
+                <AbilityLevelSelectScreen v-if="currentScreen === Screen.AbilityLevelSelect"
+                                          :configuration="configuration"
+                                          :session="currentSession"
+                                          @next="onNextScreen"
+                                          @updateActions="onUpdateActions($event, Screen.AbilityLevelSelect)" />
+
+                <AreaSelectScreen v-if="currentScreen === Screen.AreaSelect"
+                                  :configuration="configuration"
+                                  :session="currentSession"
+                                  @next="onNextScreen"
+                                  @updateActions="onUpdateActions($event, Screen.AreaSelect)" />
+
+                <GroupSelectScreen v-if="currentScreen === Screen.GroupSelect"
+                                   :configuration="configuration"
+                                   :session="currentSession"
+                                   @next="onNextScreen"
+                                   @updateActions="onUpdateActions($event, Screen.GroupSelect)" />
+
+                <LocationSelectScreen v-if="currentScreen === Screen.LocationSelect"
+                                      :configuration="configuration"
+                                      :session="currentSession"
+                                      @next="onNextScreen"
+                                      @updateActions="onUpdateActions($event, Screen.LocationSelect)" />
+
+                <ScheduleSelectScreen v-if="currentScreen === Screen.ScheduleSelect"
+                                      :configuration="configuration"
+                                      :session="currentSession"
+                                      @next="onNextScreen"
+                                      @updateActions="onUpdateActions($event, Screen.ScheduleSelect)" />
+
+                <SuccessScreen v-if="currentScreen === Screen.Success"
+                               :configuration="configuration"
+                               :session="currentSession"
+                               @updateActions="onUpdateActions($event, Screen.Success)" />
+
+                <CheckoutSuccessScreen v-if="currentScreen === Screen.CheckoutSuccess"
+                                       :configuration="configuration"
+                                       :session="currentSession"
+                                       @updateActions="onUpdateActions($event, Screen.CheckoutSuccess)" />
+            </ContentTransition>
+        </section>
+
+        <PageFooter :title="footerStatusText"
+                    :actions="currentScreenActions" />
+    </div>
+</template>
+
+<script setup lang="ts">
+    import AbilityLevelSelectScreen from "./CheckInKiosk/abilityLevelSelectScreen.partial.obs";
+    import ActionSelectScreen from "./CheckInKiosk/actionSelectScreen.partial.obs";
+    import AreaSelectScreen from "./CheckInKiosk/areaSelectScreen.partial.obs";
+    import CheckoutSelectScreen from "./CheckInKiosk/checkoutSelectScreen.partial.obs";
+    import CheckoutSuccessScreen from "./CheckInKiosk/checkoutSuccessScreen.partial.obs";
+    import FamilySelectScreen from "./CheckInKiosk/familySelectScreen.partial.obs";
+    import GroupSelectScreen from "./CheckInKiosk/groupSelectScreen.partial.obs";
+    import LocationSelectScreen from "./CheckInKiosk/locationSelectScreen.partial.obs";
+    import AutoModeOpportunitySelectScreen from "./CheckInKiosk/autoModeOpportunitySelectScreen.partial.obs";
+    import PageFooter from "./CheckInKiosk/pageFooter.partial.obs";
+    import PageHeader from "./CheckInKiosk/pageHeader.partial.obs";
+    import PersonSelectScreen from "./CheckInKiosk/personSelectScreen.partial.obs";
+    import ScheduleSelectScreen from "./CheckInKiosk/scheduleSelectScreen.partial.obs";
+    import SearchScreen from "./CheckInKiosk/searchScreen.partial.obs";
+    import SuccessScreen from "./CheckInKiosk/successScreen.partial.obs";
+    import WelcomeScreen from "./CheckInKiosk/welcomeScreen.partial.obs";
+    import ContentTransition from "./CheckInKiosk/contentTransition.partial.obs";
+    import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from "vue";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { provideKioskState } from "./CheckInKiosk/utils.partial";
+    import { AdminScreen, KioskButton, Screen } from "./CheckInKiosk/types.partial";
+    import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
+    import { CheckInSession } from "./CheckInKiosk/checkInSession.partial";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { SavedKioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/savedKioskConfigurationBag";
+
+    const blockConfiguration = useConfigurationValues<Record<string, unknown>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const http = useHttp();
+
+    const kioskState: Record<string, unknown> = {};
+
+    provideKioskState(kioskState);
+
+    const configuration = ref<KioskConfigurationBag>({});
+    const currentScreen = ref<Screen | AdminScreen>(Screen.None);
+    const currentScreenActions = ref<KioskButton[]>([]);
+    const currentSession = shallowRef<CheckInSession>(new CheckInSession(configuration.value, http));
+    const previousScreens = shallowRef<CheckInSession[]>([]);
+    let lastActivity: number = Date.now();
+    let idleTimer: number | undefined;
+    const activityEvents = ["mousemove", "mousedown", "touchmove", "touchstart", "keydown"];
+
+    const hasNavigation = computed((): boolean => {
+        return currentScreen.value !== Screen.Welcome;
+    });
+
+    const hasBackButton = computed((): boolean => {
+
+        return currentScreen.value !== Screen.Welcome
+            && currentScreen.value !== Screen.Success
+            && currentScreen.value !== Screen.CheckoutSuccess
+            && previousScreens.value.length > 0;
+    });
+
+    const footerStatusText = computed((): string => {
+        if (!configuration.value.kiosk || !configuration.value.template) {
+            return "";
+        }
+
+        return `${configuration.value.kiosk.name} · ${configuration.value.template.name}`;
+    });
+
+    /**
+     * Reads configuration from local storage. This is set by the setup block
+     * before redirecting to us. If everything is valid then show the welcome
+     * screen. Otherwise redirect to the setup page.
+     */
+    async function readConfigurationFromLocalStorage(): Promise<void> {
+        const json = localStorage.getItem("Rock.CheckIn.CheckInKiosk.Configuration");
+
+        if (!json) {
+            return redirectToSetupPage();
+        }
+
+        try {
+            const savedConfig = JSON.parse(json) as SavedKioskConfigurationBag;
+            const data = {
+                savedConfiguration: savedConfig
+            };
+
+            const result = await invokeBlockAction<KioskConfigurationBag>("GetKioskConfiguration", data);
+
+            if (result.isSuccess && result.data) {
+                configuration.value = result.data;
+                navigateToScreen(Screen.Welcome);
+            }
+            else {
+                redirectToSetupPage();
+            }
+        }
+        catch {
+            redirectToSetupPage();
+        }
+    }
+
+    function redirectToSetupPage(): void {
+        if (!blockConfiguration.setupPageRoute) {
+            throw new Error("Kiosk Setup is required but setup page has not been configured.");
+        }
+
+        window.location.href = blockConfiguration.setupPageRoute as string;
+    }
+
+    function navigateToScreen(screen: Screen, preserveSession: boolean = false): void {
+        currentScreenActions.value = [];
+        currentScreen.value = screen;
+
+        if (!preserveSession && screen === Screen.Welcome) {
+            currentSession.value = new CheckInSession(configuration.value, http);
+            previousScreens.value = [];
+        }
+        else if (screen === Screen.Success) {
+            // TODO: Do stuff here?
+        }
+    }
+
+    function onUpdateActions(actions: KioskButton[], source: Screen | AdminScreen): void {
+        if (currentScreen.value === source) {
+            currentScreenActions.value = actions;
+        }
+    }
+
+    function onNextScreen(session: CheckInSession): void {
+        previousScreens.value = [...previousScreens.value, currentSession.value];
+
+        currentSession.value = session;
+
+        navigateToScreen(session.currentScreen);
+    }
+
+    function onHome(): void {
+        navigateToScreen(Screen.Welcome);
+    }
+
+    function onBack(): void {
+        currentSession.value = previousScreens.value[previousScreens.value.length - 1];
+
+        var newPreviousScreens: CheckInSession[] = [...previousScreens.value];
+        newPreviousScreens.splice(newPreviousScreens.length - 1, 1);
+
+        previousScreens.value = newPreviousScreens;
+        currentScreenActions.value = [];
+        currentScreen.value = currentSession.value.currentScreen;
+    }
+
+    /**
+     * Called when one of the activity producing events happens in the UI.
+     * This will reset the last activity to now, which resets the idle timeout.
+     */
+    function onWindowActivity(): void {
+        lastActivity = Date.now();
+    }
+
+    /**
+     * Called on every tick of the idle timer to check if we need to redirect
+     * back to the welcome screen.
+     */
+    function onIdleTimerCheck(): void {
+        if (currentScreen.value === Screen.Welcome) {
+            return;
+        }
+
+        if (Date.now() - lastActivity > 10000) {
+            navigateToScreen(Screen.Welcome);
+        }
+    }
+
+    // Read our check-in configuration and then start up.
+    readConfigurationFromLocalStorage();
+
+    onMounted(() => {
+        activityEvents.forEach(ev => {
+            window.addEventListener(ev, onWindowActivity);
+        });
+
+        idleTimer = window.setInterval(onIdleTimerCheck, 1000);
+    });
+
+    onBeforeUnmount(() => {
+        activityEvents.forEach(ev => {
+            window.removeEventListener(ev, onWindowActivity);
+        });
+
+        if (idleTimer !== undefined) {
+            window.clearInterval(idleTimer);
+            idleTimer = undefined;
+        }
+    });
+</script>

@@ -24,6 +24,85 @@ using Rock.Data;
 namespace Rock.Tests.Integration
 {
     /// <summary>
+    /// Provides lookup services to easily locate entities in a test environment. 
+    /// </summary>
+    public static class EntityLookup
+    {
+        /// <summary>
+        /// Get an Entity from a repository by matching the specified identifier, either an ID, a Guid value or a Name.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="service"></param>
+        /// <param name="identifier"></param>
+        /// <returns></returns>
+        public static T GetByIdentifier<T>( object identifier, RockContext rockContext = null )
+            where T : Rock.Data.Entity<T>, new()
+        {
+            rockContext = rockContext ?? new RockContext();
+
+            var service = Reflection.GetServiceForEntityType( typeof( T ), rockContext ) as Service<T>; 
+
+            var entity = service.Queryable().GetByIdentifier( identifier );
+            return entity;
+        }
+
+        /// <summary>
+        /// Get an Entity from a repository by matching the specified identifier, either an ID, a Guid value or a Name.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="service"></param>
+        /// <param name="identifier"></param>
+        /// <returns></returns>
+        public static T GetByIdentifierOrThrow<T>( object identifier, RockContext rockContext = null )
+            where T : Rock.Data.Entity<T>, new()
+        {
+            rockContext = rockContext ?? new RockContext();
+
+            var service = Reflection.GetServiceForEntityType( typeof( T ), rockContext ) as Service<T>;
+
+            var entity = service.Queryable().GetByIdentifierOrThrow( identifier );
+            return entity;
+        }
+
+        /// <summary>
+        /// Get an Entity from a repository by matching the specified Name.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="service"></param>
+        /// <param name="identifier"></param>
+        /// <returns></returns>
+        public static T GetByName<T>( object identifier, string nameProperty = "Name", RockContext rockContext = null )
+            where T : Rock.Data.Entity<T>, new()
+        {
+            rockContext = rockContext ?? new RockContext();
+
+            var service = Reflection.GetServiceForEntityType( typeof( T ), rockContext ) as Service<T>;
+
+            var entity = service.Queryable().GetByName( identifier, nameProperty );
+            return entity;
+        }
+
+        /// <summary>
+        /// Get an Entity from a repository by matching the specified Name.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="service"></param>
+        /// <param name="identifier"></param>
+        /// <returns></returns>
+        public static T GetByNameOrThrow<T>( object identifier, string nameProperty = "Name", RockContext rockContext = null )
+            where T : Rock.Data.Entity<T>, new()
+        {
+            rockContext = rockContext ?? new RockContext();
+
+            var service = Reflection.GetServiceForEntityType( typeof( T ), rockContext ) as Service<T>;
+
+            var entity = service.Queryable().GetByNameOrThrow( identifier, nameProperty );
+            return entity;
+        }
+
+    }
+
+    /// <summary>
     /// A set of extension methods intended to simplify the process of locating records for testing purposes.
     /// </summary>
     public static class TestExtensionMethods
@@ -202,6 +281,19 @@ namespace Rock.Tests.Integration
 
             var predicate = expLambda.Compile() as System.Func<T, bool>;
             result = entities.FirstOrDefault( predicate );
+
+            return result;
+        }
+
+        /// <inheritdoc cref="TestExtensionMethods.GetByName{T}(IQueryable{T}, object, string)" />
+        public static T GetByNameOrThrow<T>( this IQueryable<T> entities, object identifier, string nameProperty = "Name" )
+            where T : IEntity
+        {
+            var result = GetByName( entities, identifier, nameProperty );
+            if ( result == null )
+            {
+                throw new Exception( $"Invalid Entity Name. [EntityType={typeof( T ).Name}, Name={identifier}, Property={nameProperty}]" );
+            }
 
             return result;
         }

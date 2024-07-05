@@ -300,6 +300,10 @@ namespace RockWeb.Blocks.Tv
                     };
                 }
             }
+            else
+            {
+                btnCopyToClipboard.Visible = false;
+            }
         }
 
         #endregion

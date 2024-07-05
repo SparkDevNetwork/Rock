@@ -4,8 +4,13 @@
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Course"
+          title="Courses"
           :entityTypeGuid="EntityType.LearningCourse"
           :expectedRowCount="config.expectedRowCount ?? undefined"
+          :isCountMessageVisible="false"
+          :showMergeTemplate="false"
+          :showLaunchWorkflow="false"
+          :showExport="false"
           tooltipField="publicName"
           stickyHeader
           liveUpdates
@@ -15,30 +20,26 @@
         <ReorderColumn @orderChanged="onOrderChanged" />
 
         <Column name="course"
-                title=""
-                width="60px"
-                visiblePriority="xs">
-            <template #format="{ row }">
-                <i :style="'color: ' + row.categoryColor" :class="'fa-2x fw ' + (row.categoryIconCssClass ?? '')"></i>
-            </template>
-        </Column>
-        <Column name="course"
                 title="Course"
-                width="25%"
+                field="course"
+                width="30%"
+                :filter="textValueFilter"
                 visiblePriority="xs">
-            <template #format="{ row }">
-                <div clas="row">
-                    <span class="text-semibold">{{ row.course }}</span>
-                    <div class="text-muted text-sm">{{ row.summary }}</div>
+            <template #format="{ row }" >
+                <div class="d-flex flex-fill align-items-center">
+                    <i :style="'color: ' + row.categoryColor" :class="'mr-2 flex-shrink-0 fa-2x fw ' + (row.categoryIconCssClass ?? '')"></i>
+                    <div class="flex-grow-1">
+                        <span class="text-semibold">{{ row.course }}</span>
+                        <div class="text-muted text-sm">{{ row.summary }}</div>
+                    </div>
                 </div>
             </template>
         </Column>
 
         <Column name="category"
                 title="Category"
-                :filter="textValueFilter"
-                filterValue="category"
-                quickFilterValue="category"
+                field="category"
+                :filter="pickExistingValueFilter"
                 width="15%"
                 visiblePriority="lg">
             <template #format="{ row }">
@@ -52,6 +53,7 @@
                        title="Public"
                        field="isPublic"
                        width="5%"
+                       :filter="booleanValueFilter"
                        visiblePriority="xs" />
 
         <TextColumn name="code"
@@ -63,6 +65,7 @@
                        title="Active"
                        field="isActive"
                        width="5%"
+                       :filter="booleanValueFilter"
                        visiblePriority="xs" />
 
         <SecurityColumn />
@@ -74,7 +77,7 @@
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { textValueFilter, Column, BooleanColumn, TextColumn, ReorderColumn, DeleteColumn, SecurityColumn } from "@Obsidian/Controls/grid";
+    import Grid, { textValueFilter, Column, BooleanColumn, TextColumn, ReorderColumn, DeleteColumn, SecurityColumn, booleanValueFilter, pickExistingValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { LearningCourseListOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningCourseList/learningCourseListOptionsBag";

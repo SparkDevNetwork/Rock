@@ -44,6 +44,7 @@ namespace RockWeb.Blocks.Event
     [DisplayName( "Registration Detail" )]
     [Category( "Event" )]
     [Description( "Displays the details of a given registration." )]
+    [SecurityAction( SecurityActionKey.EditPaymentPlan, "The roles and/or users that can edit the payment plan for the selected persons." )]
 
     [LinkedPage( "Registrant Page", "The page for viewing details about a registrant", true, "", "", 0 )]
     [LinkedPage( "Transaction Page", "The page for viewing transaction details", true, "", "", 1 )]
@@ -64,6 +65,18 @@ namespace RockWeb.Blocks.Event
         }
 
         #endregion ViewState Keys
+
+        #region Security Actions
+
+        /// <summary>
+        /// Keys to use for Security Actions
+        /// </summary>
+        private static class SecurityActionKey
+        {
+            public const string EditPaymentPlan = "EditPaymentPlan";
+        }
+
+        #endregion Security Actions
 
         #region Fields
 
@@ -87,6 +100,8 @@ namespace RockWeb.Blocks.Event
         private Registration _registration = null;
 
         private Control _hostedPaymentInfoControl;
+
+        bool _canEditPaymentPlan = true;
 
         #endregion Fields
 
@@ -300,6 +315,8 @@ namespace RockWeb.Blocks.Event
             gPayments.DataKeyNames = new string[] { "Id" };
             gPayments.Actions.ShowAdd = false;
             gPayments.GridRebind += gPayments_GridRebind;
+
+            _canEditPaymentPlan = IsUserAuthorized( SecurityActionKey.EditPaymentPlan );
 
             var qryParam = new Dictionary<string, string>();
             qryParam.Add( "TransactionId", "PLACEHOLDER" );
@@ -2429,6 +2446,8 @@ namespace RockWeb.Blocks.Event
 
             lFrequencyPaymentAmount.Label = lFrequencyPaymentAmount.Label = $"{registration.PaymentPlanFinancialScheduledTransaction.TransactionFrequencyValue} Payment Amount";
             lFrequencyPaymentAmount.Text = $"{registration.PaymentPlanFinancialScheduledTransaction.TotalAmount.FormatAsCurrency()} × {registration.PaymentPlanFinancialScheduledTransaction.NumberOfPayments}";
+            spanChangeButtonWrapper.Visible = _canEditPaymentPlan;
+            lbDeletePaymentPlan.Visible = _canEditPaymentPlan;
 
             var paymentPlanFinancialScheduledTransactionId = registration.PaymentPlanFinancialScheduledTransactionId.Value;
             var lastTransactionDate = new FinancialTransactionService( new RockContext() )
@@ -2762,7 +2781,7 @@ namespace RockWeb.Blocks.Event
                     links = string.Format(
                         @"<a href='{0}' target='_blank' rel='noopener noreferrer'>Signed on {1}</a>
                         <small>Signed by {2}</small>",
-                        ResolveRockUrl( string.Format( "~/GetFile.ashx?id={0}", registrant.SignatureDocumentId ?? 0 ) ),
+                        FileUrlHelper.GetFileUrl( registrant.SignatureDocumentId.Value ),
                         registrant.SignatureDocumentSignedDateTime?.ToString( "dddd, MMMM dd, yyyy" ),
                         registrant.SignatureDocumentSignedName );
 
@@ -3450,21 +3469,32 @@ namespace RockWeb.Blocks.Event
 
         protected void lbChangePaymentPlan_Click( object sender, EventArgs e )
         {
-            lUpdatePaymentPlanMessage.Text = $"<p>The amount remaining for this registration is { this.Registration.BalanceDue.FormatAsCurrency() }.</p>";
+            if ( _canEditPaymentPlan )
+            {
+                lUpdatePaymentPlanMessage.Text = $"<p>The amount remaining for this registration is { this.Registration.BalanceDue.FormatAsCurrency() }.</p>";
 
-            var paymentPlanConfiguration = GetPaymentPlanConfigurationForRegistration();
-            SetUpdatePaymentPlanModalConfiguration( paymentPlanConfiguration );
+                var paymentPlanConfiguration = GetPaymentPlanConfigurationForRegistration();
+                SetUpdatePaymentPlanModalConfiguration( paymentPlanConfiguration );
 
-            mdUpdatePaymentPlan.Show();
+                mdUpdatePaymentPlan.Show();
+            }
         }
 
         protected void lbDeletePaymentPlan_Click( object sender, EventArgs e )
         {
-            mdDeletePaymentPlan.Show();
+            if ( _canEditPaymentPlan )
+            {
+                mdDeletePaymentPlan.Show();
+            }
         }
 
         protected void mdDeletePaymentPlan_SaveClick( object sender, EventArgs e )
         {
+            if ( !_canEditPaymentPlan )
+            {
+                return;
+            }
+
             nbPaneAccountError.Visible = false;
             nbPaneAccountWarning.Visible = false;
 
@@ -3497,6 +3527,11 @@ namespace RockWeb.Blocks.Event
 
         protected void mdUpdatePaymentPlan_SaveClick( object sender, EventArgs e )
         {
+            if ( !_canEditPaymentPlan )
+            {
+                return;
+            }
+
             nbUpdatePaymentPlanError.Visible = false;
             nbUpdatePaymentPlanWarning.Visible = false;
 

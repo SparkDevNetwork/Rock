@@ -87,6 +87,10 @@ namespace RockWeb.Blocks.Cms
             gQueryStringFilter.DataKeyNames = new string[] { "Guid" };
             gQueryStringFilter.Actions.ShowAdd = true;
             gQueryStringFilter.Actions.AddClick += gQueryStringFilter_AddClick;
+
+            gGeoLocations.DataKeyNames = new string[] { "Guid" };
+            gGeoLocations.Actions.ShowAdd = true;
+            gGeoLocations.Actions.AddClick += gGeoLocations_AddClick;
         }
 
         /// <summary>
@@ -195,6 +199,7 @@ namespace RockWeb.Blocks.Cms
             BindCookieFilterToGrid();
             BindBrowserFilterToGrid();
             BindIPAddressFilterToGrid();
+            BindGeoLocationFilterToGrid();
         }
 
         #endregion Methods
@@ -702,5 +707,109 @@ namespace RockWeb.Blocks.Cms
         }
 
         #endregion IP Address Filter
+
+        #region Geolocation Filter
+
+        /// <summary>
+        /// Handles the Add Click event of the gGeoLocations control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
+        private void gGeoLocations_AddClick( object sender, EventArgs e )
+        {
+            ShowGeoLocationDialog( null );
+        }
+
+        /// <summary>
+        /// Handles the Edit Click event of the gGeoLocations control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
+        protected void gGeoLocations_EditClick( object sender, Rock.Web.UI.Controls.RowEventArgs e )
+        {
+            var geolocationFilterGuid = ( Guid ) e.RowKeyValue;
+            var geolocationFilter = this.AdditionalFilterConfiguration.GeolocationRequestFilters
+                .Where( a => a.Guid == geolocationFilterGuid )
+                .FirstOrDefault();
+
+            ShowGeoLocationDialog( geolocationFilter );
+        }
+
+
+        /// <summary>
+        /// Handles the Delete Click event of the gGeoLocations control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
+        protected void gGeoLocations_DeleteClick( object sender, Rock.Web.UI.Controls.RowEventArgs e )
+        {
+            var geoLocationsFilterGuid = ( Guid ) e.RowKeyValue;
+            var geoLocationsFilter = this.AdditionalFilterConfiguration.GeolocationRequestFilters
+                .FirstOrDefault( a => a.Guid == geoLocationsFilterGuid );
+            if ( geoLocationsFilter != null )
+            {
+                this.AdditionalFilterConfiguration.GeolocationRequestFilters.Remove( geoLocationsFilter );
+            }
+
+            BindGeoLocationFilterToGrid();
+        }
+
+        private void BindGeoLocationFilterToGrid()
+        {
+            var geolocationRequestFilters = this.AdditionalFilterConfiguration.GeolocationRequestFilters;
+            gGeoLocations.DataSource = geolocationRequestFilters;
+            gGeoLocations.DataBind();
+        }
+
+        protected void mdGeolocation_SaveClick( object sender, EventArgs e )
+        {
+            var geolocationFilterGuid = hfGeolocationFilterGuid.Value.AsGuid();
+            var geolocationFilter = this.AdditionalFilterConfiguration.GeolocationRequestFilters
+                .Where( a => a.Guid == geolocationFilterGuid )
+                .FirstOrDefault();
+
+            if ( geolocationFilter == null )
+            {
+                geolocationFilter = new Rock.Personalization.GeolocationRequestFilter();
+                geolocationFilter.Guid = hfGeolocationFilterGuid.Value.AsGuid();
+                this.AdditionalFilterConfiguration.GeolocationRequestFilters.Add( geolocationFilter );
+            }
+
+            geolocationFilter.Value = tbValue.Text;
+            geolocationFilter.LocationComponent = ddlGeolocationWhere.SelectedValue.ConvertToEnum<GeolocationRequestFilter.LocationComponentEnum>();
+            geolocationFilter.ComparisonType = ddlComparisionType.SelectedValue.ConvertToEnum<ComparisonType>();
+
+            mdGeolocation.Hide();
+            BindGeoLocationFilterToGrid();
+        }
+
+        /// <summary>
+        /// Shows the Geo Location Filter dialog.
+        /// </summary>
+        /// <param name="ipAddressRequestFilter">The IP Address filter.</param>
+        private void ShowGeoLocationDialog( Rock.Personalization.GeolocationRequestFilter geolocationRequestFilter )
+        {
+            if ( geolocationRequestFilter == null )
+            {
+                geolocationRequestFilter = new Rock.Personalization.GeolocationRequestFilter();
+                geolocationRequestFilter.Guid = Guid.NewGuid();
+                mdIPAddress.Title = "Add Geolocation Filter";
+            }
+            else
+            {
+                mdIPAddress.Title = "Edit Geolocation Filter";
+            }
+
+            // populate the modal
+            ddlGeolocationWhere.BindToEnum<GeolocationRequestFilter.LocationComponentEnum>();
+            ComparisonHelper.PopulateComparisonControl( ddlComparisionType, ComparisonHelper.StringFilterComparisonTypesRequired, true );
+            hfGeolocationFilterGuid.Value = geolocationRequestFilter.Guid.ToString();
+            ddlComparisionType.SetValue( geolocationRequestFilter.ComparisonType.ConvertToInt() );
+            ddlGeolocationWhere.SetValue( geolocationRequestFilter.LocationComponent.ConvertToInt() );
+            tbValue.Text = geolocationRequestFilter.Value;
+            mdGeolocation.Show();
+        }
+
+        #endregion
     }
 }

@@ -43,6 +43,9 @@ export type RegistrationEntryInitializationBox = {
     /** Gets or sets the amount due today. */
     amountDueToday?: number | null;
 
+    /** Gets or sets a value indicating whether current family members are shown. */
+    areCurrentFamilyMembersShown: boolean;
+
     /** Gets or sets the campuses available for the user to select. */
     campuses?: ListItemBag[] | null;
 
@@ -69,6 +72,9 @@ export type RegistrationEntryInitializationBox = {
 
     /** Gets or sets the family members. */
     familyMembers?: RegistrationEntryFamilyMemberBag[] | null;
+
+    /** Gets or sets the term for specifying which household or family a person is a member of. */
+    familyTerm?: string | null;
 
     /** Gets or sets the fees. */
     fees?: RegistrationEntryFeeBag[] | null;

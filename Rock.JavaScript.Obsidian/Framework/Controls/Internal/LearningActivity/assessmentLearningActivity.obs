@@ -4,19 +4,21 @@
         <div v-if="screenToShow === ComponentScreen.Configuration">
             <div class="assessment-term-section">
                 <TextBox v-model="assessmentTerm"
+                         :disabled="disabled"
                          label="Assessment Term"
                          help="How we should refer to this assessment." />
             </div>
             <div class="header-content-section">
-                <StructuredContentEditor label="Header" v-model="header" />
+                <StructuredContentEditor label="Header" v-model="header" :disabled="disabled" />
             </div>
             <div class="minor-fields-section">
                 <div class="additional-settings-section">
                     <NumberBox v-model="multipleChoiceWeight"
                                :decimalCount="0"
+                               :disabled="disabled"
                                :min="0"
                                label="Multiple Choice Weight"
-                               :rules="'sumsto:100,' + allWeights"
+                               :rules="weightsSumTo100"
                                :help="multipleChoiceWeightHelpText"
                                inputGroupClasses="input-width-md">
                         <template #inputGroupAppend>
@@ -26,18 +28,22 @@
                 </div>
 
                 <div class="show-results-on-completion-section">
-                    <CheckBox v-model="showResultsOnCompletion" label="Show Results On Completion" />
+                    <CheckBox v-model="showResultsOnCompletion" label="Show Results On Completion" :disabled="disabled" />
                 </div>
 
                 <div class="show-missed-questions-on-results-section">
-                    <CheckBox v-model="showMissedQuestionsOnResults" label="Show Missed Questions On Results" />
+                    <CheckBox v-model="showMissedQuestionsOnResults" label="Show Missed Questions On Results" :disabled="disabled" />
                 </div>
             </div>
             <div class="assessment-items-section">
                 <div class="assessment-items-title-bar">
                     <h4 class="assessment-items-header">Assessment Items</h4>
 
-                    <button aria-label="Add an assessment item" class="btn btn-default btn-small add-assessment-item-button text-muted" @click.prevent="addAssessmentItem(0)">
+                    <button
+                            aria-label="Add an assessment item"
+                            :disabled="disabled"
+                            class="btn btn-default btn-small add-assessment-item-button text-muted"
+                            @click.prevent="addAssessmentItem(0)">
                         <i class="fa fa-plus" aria-hidden="true"></i> Add Item
                     </button>
                 </div>
@@ -48,23 +54,30 @@
                         <div class="assessment-item assessment-item-reorder-section">
                             <i class="fa fa-bars reorder-handle" :style="reorderIconStyle"></i>
 
-                            <button aria-label="Remove this item" class="btn btn-default btn-square remove-item-button" @click.prevent="items.splice(index, 1)">
+                            <button aria-label="Remove this item"
+                                    :disabled="disabled"
+                                    class="btn btn-default btn-square remove-item-button"
+                                    @click.prevent="items.splice(index, 1)">
                                 <i class="fa fa-times" aria-hidden="true"></i>
                             </button>
                         </div>
                         <div class="assessment-item assessment-item-type-section">
-                            <DropDownList v-model="item.typeName" :items="itemTypes" label="Type" :show-blank-item="false" />
+                            <DropDownList v-model="item.typeName"
+                                          :disabled="disabled"
+                                          :items="itemTypes"
+                                          label="Type"
+                                          :show-blank-item="false" />
                         </div>
                         <div class="assessment-item assessment-item-configuration-section">
-                            <AssessmentItemMultipleChoice v-if="item.typeName === 'Multiple Choice'" v-model="items[index]" :screenToShow="screenToShow" rules="required" />
-                            <AssessmentItemSection v-if="item.typeName === 'Section'" v-model="items[index]" :screenToShow="screenToShow" />
-                            <AssessmentItemShortAnswer v-if="item.typeName === 'Short Answer'" v-model="items[index]" :screenToShow="screenToShow" rules="required" :totalActivityPoints="activityBag.points" />
+                            <AssessmentItemMultipleChoice v-if="item.typeName === 'Multiple Choice'" v-model="items[index]" :disabled="disabled" :screenToShow="screenToShow" rules="required" />
+                            <AssessmentItemSection v-if="item.typeName === 'Section'" v-model="items[index]" :screenToShow="screenToShow" :disabled="disabled" />
+                            <AssessmentItemShortAnswer v-if="item.typeName === 'Short Answer'" v-model="items[index]" :disabled="disabled" :screenToShow="screenToShow" rules="required" :totalActivityPoints="activityBag.points" />
                         </div>
                     </div>
                 </div>
 
                 <div class="configuration-footer-buttons">
-                    <button v-if="items.length > 0" aria-label="Add an assessment item" class="btn btn-default btn-small add-assessment-item-button text-muted" @click.prevent="addAssessmentItem(items.length - 1)">
+                    <button v-if="items.length > 0" aria-label="Add an assessment item" :disabled="disabled" class="btn btn-default btn-small add-assessment-item-button text-muted" @click.prevent="addAssessmentItem(items.length - 1)">
                         <i class="fa fa-plus" aria-hidden="true"></i> Add Item
                     </button>
                 </div>
@@ -77,6 +90,10 @@
                     <AssessmentItemShortAnswer v-model="completedItems[index]" :screenToShow="screenToShow" :totalActivityPoints="activityBag.points" />
                 </div>
             </div>
+
+            <div class="footer-content-section mt-3">
+                <RockButton :btnType="BtnType.Primary" @click="emit('completed', true)">Complete</RockButton>
+            </div>
         </div>
 
         <div v-if="screenToShow === ComponentScreen.Summary">
@@ -86,7 +103,7 @@
                 <div class="assessment-item" v-for="(item, index) in completedItems">
                     <div class="well well-sm assessment-item-container" v-if="typeNamesWithSummaryScreen.includes(item.typeName)">
                         <AssessmentItemMultipleChoice v-if="item.typeName === 'Multiple Choice'" v-model="completedItems[index]" :screenToShow="screenToShow" />
-                        <AssessmentItemShortAnswer v-if="item.typeName === 'Short Answer'" v-model="completedItems[index]" :screenToShow="screenToShow" />
+                        <AssessmentItemShortAnswer v-if="item.typeName === 'Short Answer'" v-model="completedItems[index]" :screenToShow="screenToShow" :totalActivityPoints="activityBag.points" />
                     </div>
                 </div>
             </div>
@@ -279,6 +296,8 @@ div.summary-sub-title {
 
     // #region Values
 
+    const disabled = ref(props.disabled ?? false);
+
     // Get the bags directly from the props when needed (to support the useLearningComponent computedRefs).
     const activityBag = toRef(() => props.activityBag);
     const completionBag = toRef(() => props.completionBag ?? {} as LearningActivityCompletionBag);
@@ -450,8 +469,8 @@ div.summary-sub-title {
 
     const allWeights = computed(() =>
         items.value.filter(i => i.typeName === AssessmentItemType.ShortAnswer)
-        .map(i => (i as ShortAnswerItem).questionWeight)
-        .concat(multipleChoiceWeight.value)
+            .map(i => (i as ShortAnswerItem).questionWeight)
+            .concat(multipleChoiceWeight.value)
     );
 
     const multipleChoiceSummaryText = computed(() => {
@@ -467,12 +486,13 @@ div.summary-sub-title {
 
     /** Contains the custom style values to apply to the icon. */
     const reorderIconStyle = computed((): Record<string, string> => {
-        const disabled = !(items.value?.length > 1);
+        const onlyOneItem = !(items.value?.length > 1);
+        const disableReordering = disabled.value === true || onlyOneItem;
 
-        // Make the handles look disabled if there's only one item.
+        // Use a not-allowed cursor to indicate to the user when reordering is disabled.
         return {
-            cursor: disabled ? "not-allowed" : "grab",
-            opacity: disabled ? "0.25" : "1"
+            cursor: disableReordering ? "not-allowed" : "grab",
+            opacity: disableReordering ? "0.25" : "1"
         };
     });
 
@@ -481,6 +501,23 @@ div.summary-sub-title {
     const unansweredQuestions = computed(() =>
         (completedItems.value ?? []).some(i => assessmentItemTypesRequiringResponse.includes(i.typeName) && (i.response ?? "").length === 0)
     );
+
+    /** Validation rule for ensuring that all weights add up to 100 for the assessment item. */
+    function weightsSumTo100(): string | boolean {
+        // If there are no weights configured return true.
+        if (!Array.isArray(allWeights.value) || allWeights.value.length === 0) {
+            return true;
+        }
+
+        const sum = allWeights.value.reduce((prev, cur) => prev + cur);
+
+        // Sum matches Sum To, should pass.
+        if (sum === 100) {
+            return true;
+        }
+
+        return `All weights must add up to 100`;
+    }
 
     // #endregion
 

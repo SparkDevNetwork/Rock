@@ -134,7 +134,12 @@
             defaultValue = options.value[0].value ?? "";
         }
 
-        internalValues.value.push({ value: defaultValue });
+        internalValues.value = [
+            ...internalValues.value,
+            {
+                value: defaultValue
+            }
+        ];
     };
 
     async function loadDefinedValues(): Promise<void> {
@@ -155,6 +160,8 @@
     }
 
     const onRemoveClick = (index: number): void => {
-        internalValues.value.splice(index, 1);
+        const newValues = [...internalValues.value];
+        newValues.splice(index, 1);
+        internalValues.value = newValues;
     };
 </script>

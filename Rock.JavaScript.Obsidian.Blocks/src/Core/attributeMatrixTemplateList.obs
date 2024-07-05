@@ -15,11 +15,13 @@
                     title="Name"
                     field="name"
                     :filter="textValueFilter"
+                    width="5%"
                     visiblePriority="xs" />
 
         <TextColumn name="description"
                     title="Description"
                     field="description"
+                    width="75%"
                     :filter="textValueFilter"
                     visiblePriority="md" />
 
@@ -27,6 +29,7 @@
                        title="Active"
                        field="isActive"
                        :filter="booleanValueFilter"
+                       width="150"
                        visiblePriority="xs" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />

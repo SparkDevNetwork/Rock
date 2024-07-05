@@ -139,6 +139,19 @@ namespace Rock.Model
                 return false;
             }
 
+            // Check against geolocation
+            bool geolocationFiltersMatch = false;
+            foreach ( var geolocationRequestFilter in requestFilterConfiguration.GeolocationRequestFilters )
+            {
+                var isMatch = geolocationRequestFilter.IsMatch( request );
+                geolocationFiltersMatch = geolocationFiltersMatch || isMatch;
+            }
+
+            if ( requestFilterConfiguration.GeolocationRequestFilters.Any() && !geolocationFiltersMatch )
+            {
+                return false;
+            }
+
             // if none of the filters return false, then return true;
             return true;
         }

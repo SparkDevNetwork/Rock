@@ -32,6 +32,11 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityComponent
         public Guid Guid { get; set; }
 
         /// <summary>
+        /// Gets or sets the email of the participant.
+        /// </summary>
+        public string Email { get; set; }
+
+        /// <summary>
         /// Gets or sets the name of the related participant.
         /// </summary>
         public string Name { get; set; }

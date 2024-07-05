@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -28,7 +28,7 @@ namespace Rock.ViewModels.Blocks.Bus.QueueList
         /// Gets or sets the IdKey.
         /// </summary>
         /// <value>
-        /// The Queue Type Full Name
+        /// The Queue Type IdKey.
         /// </value>
         public string IdKey { get; set; }
 

@@ -3,16 +3,16 @@
     <Panel :title="panelTitle" :hasFullscreen="true" :class="containerClasses">
         <div v-if="screenToShow === ComponentScreen.Configuration">
             <div class="instructions-section">
-                <StructuredContentEditor label="Instructions" v-model="instructions" />
+                <StructuredContentEditor label="Instructions" v-model="instructions" :disabled="disabled" />
             </div>
             <div class="rubric-section">
-                <StructuredContentEditor label="Grading Rubric" v-model="rubric" />
+                <StructuredContentEditor label="Grading Rubric" v-model="rubric" :disabled="disabled" />
             </div>
             <div class="show-rubric-on-upload-section">
-                <CheckBox v-model="showRubricOnUpload" label="Show Rubric on Upload" />
+                <CheckBox v-model="showRubricOnUpload" label="Show Rubric on Upload" :disabled="disabled" />
             </div>
             <div class="show-rubric-on-scoring-section">
-                <CheckBox v-model="showRubricOnScoring" label="Show Rubric on Scoring" />
+                <CheckBox v-model="showRubricOnScoring" label="Show Rubric on Scoring" :disabled="disabled" />
             </div>
         </div>
 
@@ -137,11 +137,13 @@
     import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
     import { learningActivityEmits, learningActivityProps, ComponentScreen, useLearningComponent } from "./learningActivity";
     import { FileUploadActivityCompletion, FileUploadActivityConfiguration, FileUploadActivityDefaults } from "./fileUploadLearningActivity.partial";
-import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
     // Get the required props and emits for learning activity components.
     const props = defineProps({ ...learningActivityProps });
     const emits = defineEmits({ ...learningActivityEmits });
+
+    const disabled = ref(props.disabled ?? false);
 
     // Get the bags directly from the props when needed (to support the useLearningComponent computedRefs).
     const activityBag = toRef(() => props.activityBag);
@@ -169,8 +171,8 @@ import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
     const dueDate =
         (completionBag.value.dueDate ?? "").length === 0 ?
-        null :
-        RockDateTime.parseHTTP(completionBag.value.dueDate ?? "");
+            null :
+            RockDateTime.parseHTTP(completionBag.value.dueDate ?? "");
 
     const dueDateHasPassed = ref(dueDate != null && dueDate < RockDateTime.now());
     const isFacilitatorCompleted = ref(completionBag.value.isFacilitatorCompleted);

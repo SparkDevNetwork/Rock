@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -1265,6 +1265,11 @@ namespace Rock.SystemGuid
         public const string ENTITY_CAMPUS_FILTER = "A736A9FB-F2A5-4458-B126-FAD6BD3F3B78";
 
         /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.EntityIntent"/> 
+        /// </summary>
+        public const string ENTITY_INTENT = "15CE39A3-193F-44E5-80C7-DE47DA3EAF97";
+
+        /// <summary>
         /// The EntityType Guid for <see cref="Rock.Model.EntitySet"/> 
         /// </summary>
         public const string ENTITY_SET = "50E3F9C8-4010-41AF-8F61-08308DC44640";
@@ -1965,5 +1970,10 @@ namespace Rock.SystemGuid
         /// The EntityType Guid for <see cref="Rock.Model.AdaptiveMessageAdaptationSegment"/> 
         /// </summary>
         public const string ADAPTIVE_MESSAGE_ADAPTATION_SEGMENT = "40EDF82B-EFF5-4253-A129-965F7BC90033";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.CheckInLabel"/> 
+        /// </summary>
+        public const string CHECK_IN_LABEL = "8B651EB1-492F-46D0-821B-CA7355C6E6E7";
     }
 }

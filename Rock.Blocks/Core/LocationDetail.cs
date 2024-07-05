@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity.Spatial;
@@ -24,6 +25,8 @@ using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
+using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Core.LocationDetail;
 using Rock.ViewModels.Controls;
@@ -230,6 +233,7 @@ namespace Rock.Blocks.Core
                 ParentLocation = entity.ParentLocation.ToListItemBag(),
                 PrinterDevice = entity.PrinterDevice.ToListItemBag(),
                 SoftRoomThreshold = entity.SoftRoomThreshold,
+                Guid = entity.Guid,
                 AddressFields = new AddressControlBag
                 {
                     Street1 = entity.Street1 ?? string.Empty,
@@ -532,6 +536,24 @@ namespace Rock.Blocks.Core
             }
 
             return true;
+        }
+
+        private string GetImageIdOrHash( int? imageId )
+        {
+            if ( !imageId.HasValue )
+            {
+                return null;
+            }
+
+            var securityService = new SecuritySettingsService();
+            var securitySettings = securityService.SecuritySettings;
+
+            if ( securitySettings.DisablePredictableIds )
+            {
+                return IdHasher.Instance.GetHash( imageId.Value );
+            }
+
+            return imageId.Value.ToString();
         }
 
         #endregion

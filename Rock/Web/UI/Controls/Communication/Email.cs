@@ -23,6 +23,7 @@ using System.Web.UI.WebControls;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
+using Rock.Utility;
 
 namespace Rock.Web.UI.Controls.Communication
 {
@@ -326,7 +327,7 @@ namespace Rock.Web.UI.Controls.Communication
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Target, "_blank" );
                 writer.AddAttribute( HtmlTextWriterAttribute.Href,
-                    string.Format( "{0}GetFile.ashx?id={1}", System.Web.VirtualPathUtility.ToAbsolute( "~" ), attachment.Key ) );
+                    FileUrlHelper.GetFileUrl( attachment.Key ) );
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
                 writer.Write( attachment.Value );
                 writer.RenderEndTag();

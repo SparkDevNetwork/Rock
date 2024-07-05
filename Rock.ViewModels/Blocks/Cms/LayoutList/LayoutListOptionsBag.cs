@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,7 +18,7 @@
 namespace Rock.ViewModels.Blocks.Cms.LayoutList
 {
     /// <summary>
-    /// The additional configuration options for the Layout List block.
+    /// The configuration options for the Layout List block.
     /// </summary>
     public class LayoutListOptionsBag
     {

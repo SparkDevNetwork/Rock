@@ -61,7 +61,7 @@
 
         <DateColumn name="endDate"
                     title="Ends"
-                    field="endDate"
+                    field="startDate"
                     :headerClass="'text-right'"
                     :itemClass="'justify-content-end text-end'"
                     :filter="dateValueFilter"
@@ -77,6 +77,7 @@
                     visiblePriority="sm" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+
         <!-- Total Amount Footer Section -->
         <template #gridFooterAppend v-if="showAccountSummary">
             <div v-if="accountSummaries.length > 0 || total || pledgeCount" class="d-flex" style="background-color: #faf7f5; padding: var(--table-cell-padding-y) 52px var(--table-cell-padding-y) var(--table-cell-padding-x);">
@@ -113,234 +114,234 @@
 </template>
 
 <script setup lang="ts">
-import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
-import { EntityType } from "@Obsidian/SystemGuids/entityType";
-import Grid, { DateColumn, numberValueFilter, PersonColumn, TextColumn, textValueFilter, DeleteColumn, CurrencyColumn, dateValueFilter } from "@Obsidian/Controls/grid";
-import { alert } from "@Obsidian/Utility/dialogs";
-import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
-import { FinancialPledgeListOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialPledgeList/financialPledgeListOptionsBag";
-import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-import { NavigationUrlKey, PreferenceKey } from "./FinancialPledgeList/types.partial";
-import { computed, reactive, watch, ref } from "vue";
-import { AccountSummary } from "./FinancialBatchList/types.partial";
-import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
-import GridSettingsModal from "./FinancialPledgeList/gridSettingsModal.partial.obs";
-import { GridSettingsOptions } from "./FinancialPledgeList/types.partial";
-import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
-import RockButton from "@Obsidian/Controls/rockButton.obs";
-import { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { DateColumn, numberValueFilter, PersonColumn, TextColumn, textValueFilter, DeleteColumn, CurrencyColumn, dateValueFilter } from "@Obsidian/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { FinancialPledgeListOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialPledgeList/financialPledgeListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { NavigationUrlKey, PreferenceKey } from "./FinancialPledgeList/types.partial";
+    import { computed, reactive, watch, ref } from "vue";
+    import { AccountSummary } from "./FinancialBatchList/types.partial";
+    import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
+    import GridSettingsModal from "./FinancialPledgeList/gridSettingsModal.partial.obs";
+    import { GridSettingsOptions } from "./FinancialPledgeList/types.partial";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";
 
-const config = useConfigurationValues<ListBlockBox<FinancialPledgeListOptionsBag>>();
-const invokeBlockAction = useInvokeBlockAction();
+    const config = useConfigurationValues<ListBlockBox<FinancialPledgeListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
 
-// #region Values
+    // #region Values
 
-const gridDataSource = ref<Promise<GridDataBag>>();
-let gridData: GridDataBag | undefined;
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
 
-const preferences = usePersonPreferences().blockPreferences;
-const isGridSettingsVisible = ref(false);
-const gridSettings = ref<GridSettingsOptions>({
-    activeOnly: preferences.getValue(PreferenceKey.FilterActiveOnly) === "true",
-    dateRange: preferences.getValue(PreferenceKey.FilterDateRange) ? JSON.parse(preferences.getValue(PreferenceKey.FilterDateRange)) : undefined,
-    lastModified: preferences.getValue(PreferenceKey.FilterLastModified) ? JSON.parse(preferences.getValue(PreferenceKey.FilterLastModified)) : undefined,
-    person: preferences.getValue(PreferenceKey.FilterPerson) ? JSON.parse(preferences.getValue(PreferenceKey.FilterPerson)) : undefined,
-    accounts: preferences.getValue(PreferenceKey.FilterAccounts) ? JSON.parse(preferences.getValue(PreferenceKey.FilterAccounts)) : []
-});
+    const preferences = usePersonPreferences().blockPreferences;
+    const isGridSettingsVisible = ref(false);
+    const gridSettings = ref<GridSettingsOptions>({
+        activeOnly: preferences.getValue(PreferenceKey.FilterActiveOnly) === "true",
+        dateRange: preferences.getValue(PreferenceKey.FilterDateRange) ? JSON.parse(preferences.getValue(PreferenceKey.FilterDateRange)) : undefined,
+        lastModified: preferences.getValue(PreferenceKey.FilterLastModified) ? JSON.parse(preferences.getValue(PreferenceKey.FilterLastModified)) : undefined,
+        person: preferences.getValue(PreferenceKey.FilterPerson) ? JSON.parse(preferences.getValue(PreferenceKey.FilterPerson)) : undefined,
+        accounts: preferences.getValue(PreferenceKey.FilterAccounts) ? JSON.parse(preferences.getValue(PreferenceKey.FilterAccounts)) : []
+    });
 
-const showAllSummaryAccounts = ref(false);
-const accountSummaries = ref<AccountSummary[]>([]);
-const accountTotals = ref<{ [accountName: string]: number }>({});
-const pledgeCount = ref<number>(0);
+    const showAllSummaryAccounts = ref(false);
+    const accountSummaries = ref<AccountSummary[]>([]);
+    const accountTotals = ref<{ [accountName: string]: number }>({});
+    const pledgeCount = ref<number>(0);
 
-// #endregion
+    // #endregion
 
-// #region Computed Values
+    // #region Computed Values
 
-const showAccountColumn = computed(() => config.options?.showAccountColumn ?? true);
-const showGroupColumn = computed(() => config.options?.showGroupColumn ?? true);
-const showLastModifiedDateColumn = computed(() => config.options?.showLastModifiedDateColumn ?? true);
-const hideAmount = computed(() => config.options?.hideAmount ?? false);
-const showAccountSummary = computed(() => config.options?.showAccountSummary ?? true);
+    const showAccountColumn = computed(() => config.options?.showAccountColumn ?? true);
+    const showGroupColumn = computed(() => config.options?.showGroupColumn ?? true);
+    const showLastModifiedDateColumn = computed(() => config.options?.showLastModifiedDateColumn ?? true);
+    const hideAmount = computed(() => config.options?.hideAmount ?? false);
+    const showAccountSummary = computed(() => config.options?.showAccountSummary ?? true);
 
-const hasSettingsFilters = computed((): boolean => {
-    return config.options?.showPersonFilter !== false
-        || config.options?.showAccountFilter !== false
-        || config.options?.showDateRangeFilter !== false
-        || config.options?.showLastModifiedFilter !== false;
-});
+    const hasSettingsFilters = computed((): boolean => {
+        return config.options?.showPersonFilter !== false
+            || config.options?.showAccountFilter !== false
+            || config.options?.showDateRangeFilter !== false
+            || config.options?.showLastModifiedFilter !== false;
+    });
 
-const visibleAccountSummaries = computed((): AccountSummary[] => {
-    if (showAllSummaryAccounts.value) {
-        return accountSummaries.value;
+    const visibleAccountSummaries = computed((): AccountSummary[] => {
+        if (showAllSummaryAccounts.value) {
+            return accountSummaries.value;
+        }
+
+        const summaries: AccountSummary[] = [];
+        let otherAccountTotal = 0;
+
+        for (let i = 0; i < accountSummaries.value.length; i++) {
+            if (i < 5) {
+                summaries.push(accountSummaries.value[i]);
+            }
+            else {
+                otherAccountTotal += accountSummaries.value[i].amount;
+            }
+        }
+
+        if (otherAccountTotal > 0) {
+            summaries.push({
+                idKey: "",
+                name: "Other",
+                amount: otherAccountTotal,
+                isOtherAccount: true
+            });
+        }
+
+        return summaries;
+    });
+
+    const total = computed(() => {
+        let total = 0;
+        for (const accountName in accountTotals.value) {
+            total += accountTotals.value[accountName];
+        }
+        return total;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    function calculateAccountTotalsAndSummaries(): void {
+        accountTotals.value = {};
+
+        gridData?.rows?.forEach(row => {
+            if (row["account"]) {
+                const accountName = row["account"] as string;
+                const amount = row["totalAmount"] as number;
+                if (accountTotals.value[accountName]) {
+                    accountTotals.value[accountName] += amount;
+                }
+                else {
+                    accountTotals.value[accountName] = amount;
+                }
+            }
+        });
+
+        const summaries: AccountSummary[] = [];
+        for (const accountName in accountTotals.value) {
+            summaries.push({
+                idKey: "",
+                name: accountName,
+                amount: accountTotals.value[accountName],
+                isOtherAccount: false
+            });
+        }
+
+        summaries.sort((a, b) => b.amount - a.amount);
+        accountSummaries.value = summaries;
     }
 
-    const summaries: AccountSummary[] = [];
-    let otherAccountTotal = 0;
+    async function applyFilter(): Promise<void> {
+        const result = await invokeBlockAction<GridDataBag>("ApplyFilter", {
+            dateRange: formatRange(gridSettings.value.dateRange),
+            lastModified: formatRange(gridSettings.value.lastModified),
+            personGuid: gridSettings.value.person?.value ?? null,
+            accountGuids: Array.isArray(gridSettings.value.accounts) ? gridSettings.value.accounts.map(a => a.value) : [],
+            activeOnly: gridSettings.value.activeOnly,
+            attributeFiltersJson: JSON.stringify({})
+        });
 
-    for (let i = 0; i < accountSummaries.value.length; i++) {
-        if (i < 5) {
-            summaries.push(accountSummaries.value[i]);
+        if (result.isSuccess && result.data) {
+            gridData = result.data;
+            gridDataSource.value = Promise.resolve(gridData);
+            calculateAccountTotalsAndSummaries();
         }
         else {
-            otherAccountTotal += accountSummaries.value[i].amount;
+            await alert(result.errorMessage ?? "Unknown error while applying filters.");
         }
     }
 
-    if (otherAccountTotal > 0) {
-        summaries.push({
-            idKey: "",
-            name: "Other",
-            amount: otherAccountTotal,
-            isOtherAccount: true
-        });
+    function formatRange(range: DateRangeParts | undefined): string {
+        if (!range) {
+            return "1||4||"; // Default value for empty range
+        }
+        const { lowerValue, upperValue } = range;
+        return `DateRange|0|Day|${lowerValue ?? ""}|${upperValue ?? ""}`;
     }
 
-    return summaries;
-});
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
 
-const total = computed(() => {
-    let total = 0;
-    for (const accountName in accountTotals.value) {
-        total += accountTotals.value[accountName];
-    }
-    return total;
-});
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
 
-// #endregion
-
-// #region Functions
-
-function calculateAccountTotalsAndSummaries(): void {
-    accountTotals.value = {};
-
-    gridData?.rows?.forEach(row => {
-        if (row["account"]) {
-            const accountName = row["account"] as string;
-            const amount = row["totalAmount"] as number;
-            if (accountTotals.value[accountName]) {
-                accountTotals.value[accountName] += amount;
+            if (hasSettingsFilters.value) {
+                await applyFilter();
             }
- else {
-                accountTotals.value[accountName] = amount;
+
+            calculateAccountTotalsAndSummaries();
+
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    // #region Event Handlers
+
+    const onGridSettingsClick = (): void => {
+        isGridSettingsVisible.value = true;
+    };
+
+    function onSelectItem(key: string): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+        }
+    }
+
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", { key });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
             }
+
+            loadGridData();
         }
-    });
-
-    const summaries: AccountSummary[] = [];
-    for (const accountName in accountTotals.value) {
-        summaries.push({
-            idKey: "",
-            name: accountName,
-            amount: accountTotals.value[accountName],
-            isOtherAccount: false
-        });
-    }
-
-    summaries.sort((a, b) => b.amount - a.amount);
-    accountSummaries.value = summaries;
-}
-
-async function applyFilter(): Promise<void> {
-    const result = await invokeBlockAction<GridDataBag>("ApplyFilter", {
-        dateRange: formatRange(gridSettings.value.dateRange),
-        lastModified: formatRange(gridSettings.value.lastModified),
-        personGuid: gridSettings.value.person?.value ?? null,
-        accountGuids: Array.isArray(gridSettings.value.accounts) ? gridSettings.value.accounts.map(a => a.value) : [],
-        activeOnly: gridSettings.value.activeOnly,
-        attributeFiltersJson: JSON.stringify({})
-    });
-
-    if (result.isSuccess && result.data) {
-        gridData = result.data;
-        gridDataSource.value = Promise.resolve(gridData);
-        calculateAccountTotalsAndSummaries();
-    }
-    else {
-        await alert(result.errorMessage ?? "Unknown error while applying filters.");
-    }
-}
-
-function formatRange(range: DateRangeParts | undefined): string {
-    if (!range) {
-        return "1||4||"; // Default value for empty range
-    }
-    const { lowerValue, upperValue } = range;
-    return `DateRange|0|Day|${lowerValue ?? ""}|${upperValue ?? ""}`;
-}
-
-async function loadGridData(): Promise<GridDataBag> {
-    const result = await invokeBlockAction<GridDataBag>("GetGridData");
-
-    if (result.isSuccess && result.data) {
-        gridData = reactive(result.data);
-
-        if (hasSettingsFilters.value) {
-            await applyFilter();
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete financial pledge.");
         }
-
-        calculateAccountTotalsAndSummaries();
-
-        return gridData;
     }
-    else {
-        throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
-    }
-}
 
-// #region Event Handlers
-
-const onGridSettingsClick = (): void => {
-    isGridSettingsVisible.value = true;
-};
-
-function onSelectItem(key: string): void {
-    if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
-        window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
-    }
-}
-
-async function onDeleteClick(key: string): Promise<void> {
-    const result = await invokeBlockAction<string>("Delete", { key });
-
-    if (result.isSuccess) {
-        if (gridData && gridData.rows) {
-            const index = gridData.rows.findIndex(r => r["idKey"] === key);
-
-            if (index !== -1) {
-                gridData.rows?.splice(index, 1);
-            }
+    function onAddItem(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
         }
-
-        loadGridData();
     }
-    else {
-        await alert(result.errorMessage ?? "Unknown error while trying to delete financial pledge.");
-    }
-}
-
-function onAddItem(): void {
-    if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
-        window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
-    }
-}
 
 
-// region Watchers
+    // region Watchers
 
-watch(gridSettings, async () => {
-    preferences.setValue(PreferenceKey.FilterDateRange, JSON.stringify(gridSettings.value.dateRange ?? {}));
-    preferences.setValue(PreferenceKey.FilterLastModified, JSON.stringify(gridSettings.value.lastModified ?? {}));
-    preferences.setValue(PreferenceKey.FilterPerson, JSON.stringify(gridSettings.value.person ?? {}));
-    preferences.setValue(PreferenceKey.FilterAccounts, JSON.stringify(gridSettings.value.accounts));
-    preferences.setValue(PreferenceKey.FilterActiveOnly, gridSettings.value.activeOnly ? "true" : "");
+    watch(gridSettings, async () => {
+        preferences.setValue(PreferenceKey.FilterDateRange, JSON.stringify(gridSettings.value.dateRange ?? {}));
+        preferences.setValue(PreferenceKey.FilterLastModified, JSON.stringify(gridSettings.value.lastModified ?? {}));
+        preferences.setValue(PreferenceKey.FilterPerson, JSON.stringify(gridSettings.value.person ?? {}));
+        preferences.setValue(PreferenceKey.FilterAccounts, JSON.stringify(gridSettings.value.accounts));
+        preferences.setValue(PreferenceKey.FilterActiveOnly, gridSettings.value.activeOnly ? "true" : "");
 
-    await preferences.save();
+        await preferences.save();
 
-    await applyFilter();
-}, { deep: true });
+        await applyFilter();
+    }, { deep: true });
 
-// endregion
+    // endregion
 
-gridDataSource.value = loadGridData();
+    gridDataSource.value = loadGridData();
 </script>

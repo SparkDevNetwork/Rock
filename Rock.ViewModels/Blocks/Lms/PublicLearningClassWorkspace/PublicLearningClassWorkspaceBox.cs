@@ -19,13 +19,16 @@ using System.Collections.Generic;
 
 using Rock.Enums.Lms;
 using Rock.ViewModels.Blocks.Lms.LearningActivityCompletionDetail;
+using Rock.ViewModels.Blocks.Lms.LearningClassAnnouncementDetail;
+using Rock.ViewModels.Blocks.Lms.LearningClassContentPageDetail;
 using Rock.ViewModels.Blocks.Lms.LearningClassDetail;
+using Rock.ViewModels.Blocks.Lms.LearningGradingSystemScaleDetail;
 using Rock.ViewModels.Blocks.Lms.LearningParticipantDetail;
 
 namespace Rock.ViewModels.Blocks.Lms.PublicLearningClassWorkspace
 {
     /// <summary>
-    /// 
+    /// Gets or sets the information required to render the Public Learning Class Workspace block.
     /// </summary>
     public class PublicLearningClassWorkspaceBox : BlockBox
     {
@@ -35,9 +38,19 @@ namespace Rock.ViewModels.Blocks.Lms.PublicLearningClassWorkspace
         public List<LearningActivityCompletionBag> Activities { get; set; }
 
         /// <summary>
+        /// Gets or sets the announcements specific to this class and student.
+        /// </summary>
+        public List<LearningClassAnnouncementBag> Announcements { get; set; }
+
+        /// <summary>
         /// Gets or sets the id for the class.
         /// </summary>
         public string ClassIdKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the custom content pages for the class.
+        /// </summary>
+        public List<LearningClassContentPageBag> ContentPages { get; set; }
 
         /// <summary>
         /// Gets or sets the id for the course.
@@ -60,6 +73,11 @@ namespace Rock.ViewModels.Blocks.Lms.PublicLearningClassWorkspace
         public string CourseSummary { get; set; }
 
         /// <summary>
+        /// Gets or sets the current Grade scale that the student has achieved in the class (if configured to show grades).
+        /// </summary>
+        public LearningGradingSystemScaleBag CurrentGrade {  get; set; }
+
+        /// <summary>
         /// Gets or sets the list of facilitators for the learning class.
         /// </summary>
         public List<LearningClassFacilitatorBag> Facilitators { get; set; }
@@ -68,6 +86,16 @@ namespace Rock.ViewModels.Blocks.Lms.PublicLearningClassWorkspace
         /// Gets or sets the HTML to be rendered for the class workspace header content.
         /// </summary>
         public string HeaderHtml { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the person currently viewing the page is a facilitator.
+        /// </summary>
+        public bool IsCurrentPersonFacilitator { get; set; }
+
+        /// <summary>
+        /// Gets or sets the notifications for the class workspace.
+        /// </summary>
+        public List<PublicLearningClassWorkspaceNotificationBag> Notifications { get; set; }
 
         /// <summary>
         /// Gets or sets the number of notifications to show on the class overview page.
@@ -82,7 +110,7 @@ namespace Rock.ViewModels.Blocks.Lms.PublicLearningClassWorkspace
         /// <summary>
         /// Gets or sets the Learning Program's configuration mode.
         /// </summary>
-        public ConfigurationMode ProgamConfigurationMode { get; set; }
+        public ConfigurationMode ProgramConfigurationMode { get; set; }
 
         /// <summary>
         /// Whether to show grades on the class overview page.

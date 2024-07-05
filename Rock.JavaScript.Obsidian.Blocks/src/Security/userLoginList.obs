@@ -1,0 +1,432 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          :entityTypeGuid="EntityType.UserLogin"
+          :gridSettingsActive="hasSettingsFilters"
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          keyField="idKey"
+          title="User Account List"
+          itemTerm="Login"
+          stickyHeader
+          liveUpdates
+          gridSettings
+          @gridSettingsClick="isGridSettingsVisible = true"
+          @selectItem="onSelectItem">
+
+        <TextColumn name="userName"
+                    title="User Name"
+                    field="userName"
+                    :filter="textValueFilter"
+                    width="25%"
+                    visiblePriority="xs" />
+
+        <PersonColumn name="person"
+                      title="Person"
+                      field="person"
+                      width="18%"
+                      :hideAvatar="true"
+                      :showAsLink="true"
+                      :filter="pickExistingValueFilter"
+                      :filterValue="getPersonFilterValue"
+                      :quickFilterValue="getPersonFilterValue"
+                      visiblePriority="xs" />
+
+        <TextColumn name="provider"
+                    title="Provider"
+                    field="provider"
+                    width="15%"
+                    :filter="pickExistingValueFilter"
+                    visiblePriority="md"/>
+
+        <DateColumn name="dateCreated"
+                    title="Created"
+                    field="dateCreated"
+                    :filter="dateValueFilter"
+                    visiblePriority="md"
+                    width="150"
+                    itemClass="grid-item-pull-left" />
+
+
+        <DateColumn name="lastLogin"
+                    title="Last Login"
+                    field="lastLogin"
+                    :filter="dateValueFilter"
+                    visiblePriority="md"
+                    width="150"
+                    itemClass="grid-item-pull-left" />
+
+        <BooleanColumn name="isConfirmed"
+                       title="Confirmed"
+                       field="isConfirmed"
+                       visiblePriority="md"
+                       :filter="booleanValueFilter"
+                       width="120" />
+
+        <BooleanColumn name="isLockedOut"
+                       title="Locked Out"
+                       field="isLockedOut"
+                       visiblePriority="md"
+                       :filter="booleanValueFilter"
+                       width="120" />
+
+        <BooleanColumn name="isPasswordChangeRequired"
+                       title="Password Change Required"
+                       field="isPasswordChangeRequired"
+                       :filter="booleanValueFilter"
+                       visiblePriority="md" />
+
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+    </Grid>
+
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible" />
+
+    <Modal v-model="isCreateEditModalOpen" title="Login" saveText="Save" @save="onSaveUserLogin">
+        <div v-if="isPersonPickerVisible" class="row">
+            <div class="col-md-6">
+                <PersonPicker v-model="person"
+                              label="Person"
+                              rules="required" />
+            </div>
+            <div class="col-md-6">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="username"
+                         label="User Name"
+                         rules="required" />
+
+                <CheckBox v-model="isConfirmed"
+                          label="Confirmed"
+                          text="Yes"
+                          help="Has the user confirmed this login?" />
+
+                <CheckBox v-model="isLockedOut"
+                          label="Locked Out"
+                          text="Yes"
+                          help="Has the user been locked out of using this login?" />
+
+                <CheckBox v-if="isChangePasswordVisible"
+                          v-model="isPasswordChangeRequired"
+                          label="Require Password Change"
+                          text="Yes"
+                          help="Require the user to change the password on next log in." />
+            </div>
+            <div class="col-md-6">
+                <ComponentPicker v-model="authenticationProvider"
+                                 label="Authentication Provider"
+                                 containerType="Rock.Security.AuthenticationContainer"
+                                 rules="required" />
+
+                <div v-if="isPasswordControlsVisible">
+                    <RockLabel>Set Password</RockLabel>
+                    <TextBox v-model="password"
+                             label="Password"
+                             type="password"
+                             :rules="passwordRules" />
+                    <TextBox v-model="confirmPassword"
+                             label="Confirm"
+                             type="password"
+                             :rules="confirmPasswordRules" />
+                </div>
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<style>
+.grid-item-pull-left {
+    flex-direction: column;
+    align-items: end;
+}
+</style>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { BooleanColumn, TextColumn, textValueFilter, DeleteColumn, PersonColumn, DateColumn, dateValueFilter, pickExistingValueFilter, booleanValueFilter } from "@Obsidian/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import ComponentPicker from "@Obsidian/Controls/componentPicker.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { UserLoginListOptionsBag } from "@Obsidian/ViewModels/Blocks/Security/UserLoginList/userLoginListOptionsBag";
+    import { UserLoginBag } from "@Obsidian/ViewModels/Blocks/Security/UserLoginList/userLoginBag";
+    import { AuthenticationComponentBag } from "@Obsidian/ViewModels/Blocks/Security/UserLoginList/authenticationComponentBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { PreferenceKey, GridSettingsOptions } from "./UserLoginList/types.partial";
+    import GridSettingsModal from "./UserLoginList/gridSettingsModal.partial.obs";
+    import { reactive, ref, computed, watch } from "vue";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+
+    const config = useConfigurationValues<ListBlockBox<UserLoginListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const isCreateEditModalOpen = ref(false);
+    const idKey = ref("");
+    const username = ref("");
+    const authenticationProvider = ref<ListItemBag | null | undefined>(undefined);
+    const isConfirmed = ref(false);
+    const isLockedOut = ref(false);
+    const isPasswordChangeRequired = ref(false);
+    const password = ref("");
+    const confirmPassword = ref("");
+    const person = ref<ListItemBag | undefined>(undefined);
+
+    const isPersonPickerVisible = ref(true);
+    const isChangePasswordVisible = ref(false);
+    const isUserNameVisible = ref(true);
+    const isPasswordControlsVisible = ref(false);
+    const isPasswordRequired = ref(true);
+
+    const isGridSettingsVisible = ref(false);
+    const gridSettings = ref<GridSettingsOptions>({
+        username: preferences.getValue(PreferenceKey.FilterUsername),
+        authenticationProvider: JSON.parse(preferences.getValue(PreferenceKey.FilterAuthenticationProvider) || "{}"),
+        dateCreatedLowerValue: preferences.getValue(PreferenceKey.FilterDateCreatedLowerValue),
+        dateCreatedUpperValue: preferences.getValue(PreferenceKey.FilterDateCreatedUpperValue),
+        lastLoginDateLowerValue: preferences.getValue(PreferenceKey.FilterLastLoginDateLowerValue),
+        lastLoginDateUpperValue: preferences.getValue(PreferenceKey.FilterLastLoginDateUpperValue),
+        isConfirmed: preferences.getValue(PreferenceKey.FilterIsConfirmed),
+        isLockedOut: preferences.getValue(PreferenceKey.FilterIsLockedOut),
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** `true` if the grid settings is performing any filtering. */
+    const hasSettingsFilters = computed((): boolean => {
+        return !!gridSettings.value.username
+            || !!gridSettings.value.authenticationProvider?.value
+            || !!gridSettings.value.dateCreatedLowerValue
+            || !!gridSettings.value.dateCreatedUpperValue
+            || !!gridSettings.value.lastLoginDateLowerValue
+            || !!gridSettings.value.lastLoginDateUpperValue
+            || !!gridSettings.value.isConfirmed
+            || !!gridSettings.value.isLockedOut;
+    });
+
+    const passwordRules = computed((): string => {
+        return isPasswordRequired.value ? "required" : "";
+    });
+
+    const confirmPasswordRules = computed<string>(() => {
+        return isPasswordRequired.value ? `required|equalsfield:must match Password,${password.value}` : `equalsfield:must match Password,${password.value}`;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    async function onSelectItem(key: string): Promise<void> {
+        const result = await invokeBlockAction<UserLoginBag>("Edit", {
+            key
+        });
+
+        if (result.isSuccess && result.data) {
+            initializeModalValues(result.data);
+            isCreateEditModalOpen.value = true;
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to edit defined value.");
+        }
+    }
+
+    /**
+     * Called when a row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete user login.");
+        }
+    }
+
+    /**
+     * Called when the Add button has been clicked by the indivual.
+     */
+    function onAddItem(): void {
+        initializeModalValues(null);
+        isCreateEditModalOpen.value = true;
+    }
+
+    /**
+    * Sends a request to the server the save the User Login.
+    */
+    async function onSaveUserLogin(): Promise<void> {
+        const bag: UserLoginBag = {
+            userName: username.value,
+            authenticationProvider: authenticationProvider.value,
+            isConfirmed: isConfirmed.value,
+            isLockedOut: isLockedOut.value,
+            isPasswordChangeRequired: isPasswordChangeRequired.value,
+            password: password.value,
+            confirmPassword: confirmPassword.value,
+            personAlias: person.value,
+            idKey: idKey.value
+        };
+
+        const result = await invokeBlockAction<string>("Save", {
+            bag
+        });
+
+        if (result.isSuccess) {
+            gridDataSource.value = loadGridData();
+            isCreateEditModalOpen.value = false;
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to save Defined Value.");
+        }
+    }
+
+    /**
+    * Resets the User Login Modal values.
+    */
+    function resetModal(): void {
+        username.value = "";
+        authenticationProvider.value = undefined;
+        isConfirmed.value = false;
+        isLockedOut.value = false;
+        isPasswordChangeRequired.value = false;
+        password.value = "";
+        confirmPassword.value = "";
+
+        isPersonPickerVisible.value = true;
+        isChangePasswordVisible.value = false;
+        isUserNameVisible.value = true;
+        isPasswordControlsVisible.value = false;
+        isPasswordRequired.value = true;
+    }
+
+    /**
+    * Initializes the User Login Modal values.
+    */
+    function initializeModalValues(userLogin: UserLoginBag | null): void {
+        idKey.value = userLogin?.idKey ?? "";
+        username.value = userLogin?.userName ?? "";
+        authenticationProvider.value = userLogin?.authenticationProvider;
+        isConfirmed.value = userLogin?.isConfirmed ?? true;
+        isLockedOut.value = userLogin?.isLockedOut ?? false;
+        isPasswordChangeRequired.value = userLogin?.isPasswordChangeRequired ?? false;
+        person.value = userLogin?.personAlias ?? undefined;
+        password.value = "";
+        confirmPassword.value = "";
+
+        isPersonPickerVisible.value = !userLogin?.personAlias?.value;
+    }
+
+    /**
+    * Gets the filter value text to use for the person column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getPersonFilterValue(row: Record<string, unknown>): string {
+        const person = row["person"] as PersonFieldBag;
+        return !person ? "" : `${person.nickName} ${person.lastName}`;
+    }
+
+    // #endregion
+
+    watch(gridSettings, async () => {
+        preferences.setValue(PreferenceKey.FilterUsername, gridSettings.value.username ?? "");
+        preferences.setValue(PreferenceKey.FilterAuthenticationProvider, JSON.stringify(gridSettings.value.authenticationProvider));
+        preferences.setValue(PreferenceKey.FilterDateCreatedLowerValue, gridSettings.value.dateCreatedLowerValue ?? "");
+        preferences.setValue(PreferenceKey.FilterDateCreatedUpperValue, gridSettings.value.dateCreatedUpperValue ?? "");
+        preferences.setValue(PreferenceKey.FilterLastLoginDateLowerValue, gridSettings.value.lastLoginDateLowerValue ?? "");
+        preferences.setValue(PreferenceKey.FilterLastLoginDateUpperValue, gridSettings.value.lastLoginDateUpperValue ?? "");
+        preferences.setValue(PreferenceKey.FilterIsConfirmed, gridSettings.value.isConfirmed ?? "");
+        preferences.setValue(PreferenceKey.FilterIsLockedOut, gridSettings.value.isLockedOut ?? "");
+
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
+    });
+
+    watch(isCreateEditModalOpen, () => {
+        if (!isCreateEditModalOpen.value) {
+            resetModal();
+        }
+    });
+
+    watch(authenticationProvider, async () => {
+        if (authenticationProvider.value?.value) {
+            const result = await invokeBlockAction<AuthenticationComponentBag>("GetComponent", {
+                entityTypeGuid: authenticationProvider.value.value
+            });
+
+            if (result.isSuccess && result.data) {
+                isChangePasswordVisible.value = result.data.supportsChangePassword;
+                if (!result.data.supportsChangePassword) {
+                    isPasswordChangeRequired.value = false;
+                }
+
+                isPasswordControlsVisible.value = result.data.promptForPassword;
+                isUserNameVisible.value = true;
+
+                if (result.data.promptForPassword) {
+                    isPasswordRequired.value = !idKey.value;
+                }
+            }
+            else {
+                await alert(result.errorMessage ?? "Unknown error while trying to get component.");
+            }
+        }
+        else {
+            isUserNameVisible.value = true;
+            isPasswordControlsVisible.value = false;
+            isPasswordRequired.value = false;
+        }
+    });
+
+    gridDataSource.value = loadGridData();
+</script>

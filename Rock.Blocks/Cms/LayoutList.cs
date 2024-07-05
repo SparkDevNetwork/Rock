@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -65,6 +65,11 @@ namespace Rock.Blocks.Cms
             public const string DetailPage = "DetailPage";
         }
 
+        private static class PageParameterKey
+        {
+            public const string SiteId = "SiteId";
+        }
+
         #endregion Keys
 
         #region Methods
@@ -115,35 +120,44 @@ namespace Rock.Blocks.Cms
         {
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl(AttributeKey.DetailPage, "LayoutId", "((Key))")
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "LayoutId", "((Key))" )
             };
         }
 
         /// <inheritdoc/>
         protected override IQueryable<Layout> GetListQueryable( RockContext rockContext )
         {
-            int siteId = int.Parse(RequestContext.PageParameters["siteId"]);
-            var site = new SiteService(rockContext).Get(siteId);
+            var siteId = PageParameter( PageParameterKey.SiteId ).AsIntegerOrNull();
 
-            if (site != null)
+            if ( siteId.HasValue )
             {
-                var layouts = new LayoutService(rockContext)
-                    .Queryable()
-                    .Include(l => l.Site)
-                    .Where(l => l.SiteId == siteId);
+                var site = new SiteService( rockContext ).Get( siteId.Value );
 
-                return layouts;
+                if ( site != null )
+                {
+                    var layouts = new LayoutService( rockContext )
+                        .Queryable()
+                        .Include( l => l.Site )
+                        .Where( l => l.SiteId == siteId );
+
+                    return layouts;
+
+                }
             }
 
-            return base.GetListQueryable( rockContext );
+            // Return an empty queryable if no valid siteId is provided or site doesn't exist
+            return new LayoutService( rockContext ).Queryable().Where( l => false );
         }
 
-        protected override List<Layout> GetListItems(IQueryable<Layout> queryable, RockContext rockContext)
+        protected override List<Layout> GetListItems( IQueryable<Layout> queryable, RockContext rockContext )
         {
             var layouts = queryable.ToList();
-            foreach (var layout in layouts)
+            foreach ( var layout in layouts )
             {
-                layout.FileName = $"~/Themes/{layout.Site.Theme}/Layouts/{layout.FileName}.aspx";
+                if ( layout.Site != null && layout.FileName != null )
+                {
+                    layout.FileName = $"~/Themes/{layout.Site.Theme}/Layouts/{layout.FileName}.aspx";
+                }
             }
             return layouts;
         }
@@ -160,8 +174,18 @@ namespace Rock.Blocks.Cms
                 .AddTextField( "fileName", a => a.FileName )
                 .AddTextField( "description", a => a.Description )
                 .AddField( "isSystem", a => a.IsSystem )
-                .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
-                .AddAttributeFields( GetGridAttributes() );
+                .AddField( "siteId", a => a.SiteId )
+                .AddTextField( "layoutMobilePhone", a => a.LayoutMobilePhone )
+                .AddTextField( "layoutMobileTablet", a => a.LayoutMobileTablet )
+                .AddDateTimeField( "createdDateTime", a => a.CreatedDateTime )
+                .AddDateTimeField( "modifiedDateTime", a => a.ModifiedDateTime )
+                .AddField( "createdByPersonAliasId", a => a.CreatedByPersonAliasId )
+                .AddField( "modifiedByPersonAliasId", a => a.ModifiedByPersonAliasId )
+                .AddField( "guid", a => a.Guid )
+                .AddField( "foreignId", a => a.ForeignId )
+                .AddField( "foreignGuid", a => a.ForeignGuid )
+                .AddTextField( "foreignKey", a => a.ForeignKey )
+                .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) );
         }
 
         #endregion
@@ -188,7 +212,7 @@ namespace Rock.Blocks.Cms
 
                 if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
-                    return ActionBadRequest( $"Not authorized to delete {Layout.FriendlyTypeName}." );
+                    return ActionBadRequest( $"Not authorized to delete ${Layout.FriendlyTypeName}." );
                 }
 
                 if ( !entityService.CanDelete( entity, out var errorMessage ) )

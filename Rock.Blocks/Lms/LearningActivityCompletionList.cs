@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
@@ -28,6 +29,7 @@ using Rock.Security;
 using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Lms.LearningActivityCompletionList;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Lms
@@ -102,6 +104,15 @@ namespace Rock.Blocks.Lms
         {
             var options = new LearningActivityCompletionListOptionsBag();
 
+            var classId = RequestContext.PageParameterAsId( PageParameterKey.LearningClassId );
+            options.Students = new LearningParticipantService( RockContext ).GetParticipantBags( classId )
+                .Where( p => !p.IsFacilitator )
+                .Select( p => new ListItemBag
+                {
+                    Text = p.Name,
+                    Value = p.Guid.ToString()
+                } ).ToList();
+
             return options;
         }
 
@@ -157,6 +168,7 @@ namespace Rock.Blocks.Lms
                 .WithBlock( this )
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddPersonField( "student", a => a.Student?.Person )
+                .AddField( "studentGuid", a => a.Student.Guid )
                 .AddField( "completionDate", a => a.CompletedDateTime )
                 .AddField( "dueDate", a => a.DueDate )
                 .AddField( "pointsEarned", a => a.PointsEarned )
@@ -167,7 +179,7 @@ namespace Rock.Blocks.Lms
                 .AddField( "isFacilitatorCompleted", a => a.IsFacilitatorCompleted )
                 .AddField( "wasCompletedOnTime", a => a.WasCompletedOnTime )
                 .AddField( "isCompleted", a => a.CompletedDateTime.HasValue )
-                .AddField( "hadExtension", a => a.DueDate != a.LearningActivity.DueDateCalculated )
+                .AddField( "hadExtension", a => a.LearningActivity.DueDateCalculated != null && a.DueDate != a.LearningActivity.DueDateCalculated )
                 .AddField( "dueDateCalculated", a => a.LearningActivity.DueDateCalculated )
                 .AddTextField( "facilitatorComment", a => a.FacilitatorComment )
                 .AddTextField( "studentComment", a => a.StudentComment );
@@ -176,6 +188,57 @@ namespace Rock.Blocks.Lms
         #endregion
 
         #region Block Actions
+
+        /// <summary>
+        /// Adds a <see cref="LearningActivityCompletion"/> record for the participant with the matching Guid.
+        /// </summary>
+        /// <param name="participantGuid">The Guid of the participant to add the completion activity for.</param>
+        /// <returns>An empty result that indicates if the operation succeeded.</returns>
+        [BlockAction]
+        public BlockActionResult AddStudent( Guid participantGuid )
+        {
+            if ( !GetIsAddEnabled() )
+            {
+                return ActionBadRequest( $"Not authorized to edit {LearningActivity.FriendlyTypeName}." );
+            }
+
+            var activity = new LearningActivityService( RockContext ).GetInclude( PageParameter( PageParameterKey.LearningActivityId ), a => a.LearningClass.LearningSemester );
+
+            if ( activity == null )
+            {
+                return ActionBadRequest( $"The required {LearningActivity.FriendlyTypeName} was not found." );
+            }
+
+            var participant = new LearningParticipantService( RockContext ).GetParticipant( participantGuid, activity.LearningClassId )
+                .Select( p => new
+                {
+                    p.Id,
+                    EnrollmentDate = p.CreatedDateTime
+                } )
+                .FirstOrDefault();
+
+            if ( participant == null )
+            {
+                return ActionBadRequest( $"The required {LearningParticipant.FriendlyTypeName} was not found." );
+            }
+
+            var completionService = new LearningActivityCompletionService( RockContext );
+
+            var hasCompletion = completionService.Queryable().Any( c => c.Student.Id == participant.Id && c.LearningActivityId == activity.Id );
+
+            if ( hasCompletion )
+            {
+                return ActionBadRequest( $"The {LearningActivityCompletion.FriendlyTypeName} already exists." );
+            }
+
+            var programCommunicationId = new LearningProgramService( RockContext ).GetSelect( PageParameter( PageParameterKey.LearningProgramId ), p => p.SystemCommunicationId );
+            var completion = completionService.GetNew( activity, participant.Id, participant.EnrollmentDate, programCommunicationId );
+            completionService.Add( completion );
+
+            RockContext.SaveChanges();
+
+            return ActionOk();
+        }
 
         #endregion
     }
