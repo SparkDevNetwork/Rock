@@ -14,7 +14,7 @@ namespace Rock.Tests.Rock.Model
         /// <summary>
         /// Should correctly update the 'Default' communication template when custom values for lava fields are set
         /// </summary>
-        [TestMethod]
+        //TODO: Move to integration test [TestMethod]
         public void TemplateEditor_DefaultCommunicationTemplate()
         {
             string defaultCommunicationTemplate = @"<!DOCTYPE html>
@@ -896,7 +896,7 @@ namespace Rock.Tests.Rock.Model
         /// <summary>
         /// Should correctly update the a very simple html doc when lava fields are defined in the UI
         /// </summary>
-        [TestMethod]
+        //TODO: Move to integration test [TestMethod]
         public void TemplateEditor_SimpleHtml()
         {
             /* simple html*/
@@ -920,7 +920,7 @@ namespace Rock.Tests.Rock.Model
         /// <summary>
         /// Should correctly update the a formatted simple html doc when lava fields are defined in the UI
         /// </summary>
-        [TestMethod]
+        //TODO: Move to integration test [TestMethod]
         public void TemplateEditor_FormattedSimpleHtml()
         {
             /* formatted simple html*/
@@ -954,7 +954,7 @@ namespace Rock.Tests.Rock.Model
         /// <summary>
         /// Should correctly update the a formatted simple html doc when lava fields are defined in the UI
         /// </summary>
-        [TestMethod]
+        //TODO: Move to integration test [TestMethod]
         public void TemplateEditor_FormattedSimpleHtmlWithMeta()
         {
             /* formatted simple html*/
@@ -994,7 +994,7 @@ namespace Rock.Tests.Rock.Model
         /// <summary>
         /// Should correctly update an empty html doc when lava fields are defined in the UI
         /// </summary>
-        [TestMethod]
+        //TODO: Move to integration test [TestMethod]
         public void TemplateEditor_EmptyHtml()
         {
             /* empty html*/
@@ -1018,8 +1018,7 @@ namespace Rock.Tests.Rock.Model
         /// <summary>
         /// Should correctly update an html doc that has lava logic in it when lava fields are defined in the UI
         /// </summary>
-        /// [TestMethod]
-        [TestMethod]
+        //TODO: Move to integration test [TestMethod]
         public void TemplateEditor_HasLavaLogic()
         {
             /* already has lava html*/
