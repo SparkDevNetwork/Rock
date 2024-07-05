@@ -8,11 +8,11 @@
             <div class="control-wrapper">
                 <div class="toggle-container">
                     <div :class="getButtonGroupClass">
-                        <JavaScriptAnchor :class="modelValue ? onButtonSelectedClasses : unselectedClasses" @click="onClick(true)">
-                            <slot name="on">{{ trueText }}</slot>
-                        </JavaScriptAnchor>
                         <JavaScriptAnchor :class="modelValue ? unselectedClasses : offButtonSelectedClasses" @click="onClick(false)">
                             <slot name="off">{{ falseText }}</slot>
+                        </JavaScriptAnchor>
+                        <JavaScriptAnchor :class="modelValue ? onButtonSelectedClasses : unselectedClasses" @click="onClick(true)">
+                            <slot name="on">{{ trueText }}</slot>
                         </JavaScriptAnchor>
                     </div>
                 </div>
