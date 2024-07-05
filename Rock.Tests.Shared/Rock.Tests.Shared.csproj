@@ -203,7 +203,6 @@
     <Compile Include="Utility\HttpSimulator.cs" />
     <Compile Include="Utility\TestConfigurationHelper.cs" />
     <Compile Include="Utility\RandomizerExtensions.cs" />
-    <Compile Include="Utility\SampleData.cs" />
     <Compile Include="Utility\ReflectionHelper.cs" />
     <Compile Include="Utility\SimulatedHttpRequest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -158,7 +158,7 @@ namespace Rock.Communication
             return createMessageResult;
         }
 
-        private static CreateMessageResult CreateEmailMessage( Person person, Dictionary<string, object> mergeObjects, SystemCommunication systemCommunication, ILogger logger )
+        internal static CreateMessageResult CreateEmailMessage( Person person, Dictionary<string, object> mergeObjects, SystemCommunication systemCommunication, ILogger logger )
         {
             var createMessageResult = new CreateMessageResult();
 
