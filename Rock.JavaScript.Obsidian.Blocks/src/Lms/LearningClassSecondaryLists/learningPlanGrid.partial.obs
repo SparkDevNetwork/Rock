@@ -2,9 +2,10 @@
 <template>
     <Grid :data="gridDataSource"
           keyField="idKey"
-          itemTerm="Learning Activity"
+          title="Learning Plan"
           :entityTypeGuid="EntityType.LearningActivity"
           :expectedRowCount="5"
+          :isCountMessageVisible="false"
           tooltipField="name"
           stickyHeader
           liveUpdates
@@ -22,9 +23,8 @@
         <Column
                 name="assignTo"
                 title="Assign To"
-                :filter="textValueFilter"
-                filterValue="assignTo"
-                quickFilterValue="assignTo"
+                field="assignTo"
+                :filter="pickExistingValueFilter"
                 visiblePriority="xs">
             <template #format="{ row }">
                 <span :class="assignToIcons[row.assignTo] + ' fa-2x ml-4'" :style="'color: ' + assignToColors[row.assignTo]"></span>
@@ -34,9 +34,8 @@
         <Column
                 name="componentName"
                 title="Type"
-                :filter="textValueFilter"
-                filterValue="componentName"
-                quickFilterValue="componentName"
+                field="componentName"
+                :filter="pickExistingValueFilter"
                 visiblePriority="xs">
             <template #format="{ row }">
                 <span class="label label-default component-label" :style="'background-color: oklch(from ' + row.componentHighlightColor + ' calc(l + .60) c h);'">
@@ -48,9 +47,8 @@
         <Column
                 name="dates"
                 title="Dates"
+                field="dates"
                 :filter="textValueFilter"
-                filterValue="dates"
-                quickFilterValue="dates"
                 visiblePriority="sm">
             <template #format="{ row }">
                 <span :class="row.isPastDue ? 'text-warning' : ''">{{ row.dates }}</span>
@@ -60,9 +58,9 @@
         <Column
                 name="completions"
                 title="Completions"
+                field="completions"
                 :filter="numberValueFilter"
-                filterValue="completions"
-                quickFilterValue="completions"
+                :filterValue="getCompletionsRowValue"
                 visiblePriority="sm">
             <template #format="{ row }">
                 <span v-html="getCompletionsHtml(row)"></span>
@@ -78,9 +76,6 @@
         <Column
                 name="badges"
                 title=""
-                :filter="textValueFilter"
-                filterValue="badges"
-                quickFilterValue="badges"
                 visiblePriority="md">
             <template #format="{ row }">
                 <span v-if="row.isAttentionNeeded" class="fa-stack mr-3">
@@ -99,7 +94,7 @@
 <script setup lang="ts">
     import { PropType, reactive, ref } from "vue";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { Column, NumberColumn, numberValueFilter, TextColumn, textValueFilter, DeleteColumn, ReorderColumn } from "@Obsidian/Controls/grid";
+    import Grid, { Column, NumberColumn, numberValueFilter, TextColumn, textValueFilter, DeleteColumn, ReorderColumn, pickExistingValueFilter } from "@Obsidian/Controls/grid";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
 
@@ -172,17 +167,25 @@
         }
 
         const percentComplete = Math.round(completedCount / count * 100);
-
-        switch (true) {
-            case percentComplete > 90:
-                return `<span class="label label-success">${percentComplete}%</span>`;
-            case percentComplete > 80:
-                return `<span class="label label-warning">${percentComplete}%</span>`;
-            case percentComplete <= 80:
-                return `<span class="label label-danger">${percentComplete}%</span>`;
-            default:
-                return "<span class=\"label label-default\">0%</span>";
+        if (completedCount === 0) {
+            return "";
         }
+
+        const labelType = percentComplete === 100 ? "success" : "warning";
+        return `<span class="label label-${labelType}">${percentComplete}%</span>`;
+    }
+
+    function getCompletionsRowValue(row: Record<string, unknown>): number {
+        const completedCount = row?.completedCount as number;
+        const count = row?.count as number;
+
+        // If there are no completions don't show a label.
+        if (!count || !completedCount || completedCount === 0) {
+            return 0;
+        }
+
+        const percentComplete = Math.round(completedCount / count * 100);
+        return percentComplete;
     }
 
     /**

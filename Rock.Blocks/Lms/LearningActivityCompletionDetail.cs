@@ -31,7 +31,9 @@ using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Lms.LearningActivityCompletionDetail;
 using Rock.ViewModels.Blocks.Lms.LearningActivityComponent;
 using Rock.ViewModels.Blocks.Lms.LearningActivityDetail;
+using Rock.ViewModels.Blocks.Lms.LearningGradingSystemScaleDetail;
 using Rock.ViewModels.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Lms
@@ -52,7 +54,7 @@ namespace Rock.Blocks.Lms
 
     [Rock.SystemGuid.EntityTypeGuid( "19474eb0-eeda-4fcb-b1ea-a35e23e6f691" )]
     [Rock.SystemGuid.BlockTypeGuid( "4569f28d-1efb-4b95-a506-0d9043c24775" )]
-    public class LearningActivityCompletionDetail : RockEntityDetailBlockType<LearningActivityCompletion, LearningActivityCompletionBag>
+    public class LearningActivityCompletionDetail : RockEntityDetailBlockType<LearningActivityCompletion, LearningActivityCompletionBag>, IBreadCrumbBlock
     {
         #region Keys
 
@@ -96,6 +98,19 @@ namespace Rock.Blocks.Lms
         private LearningActivityCompletionDetailOptionsBag GetBoxOptions( bool isEditable )
         {
             var options = new LearningActivityCompletionDetailOptionsBag();
+
+
+            var scales = new LearningClassService( RockContext )
+                .GetClassScales( RequestContext.PageParameterAsId( PageParameterKey.LearningClassId ) )
+                .Select( s => new LearningGradingSystemScaleBag
+                {
+                    Description = s.Description,
+                    IsPassing = s.IsPassing,
+                    Name = s.Name,
+                    ThresholdPercentage = s.ThresholdPercentage ?? 0
+                } ).ToList();
+
+            options.GradingScales = scales;
 
             return options;
         }
@@ -226,6 +241,7 @@ namespace Rock.Blocks.Lms
                 FacilitatorComment = entity.FacilitatorComment,
                 GradeText = entity.GradeText( scales ),
                 IsGradePassing = entity.Grade().IsPassing,
+
                 IsFacilitatorCompleted = entity.IsFacilitatorCompleted,
                 IsStudentCompleted = entity.IsStudentCompleted,
                 PointsEarned = entity.PointsEarned,
@@ -314,7 +330,7 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         protected override LearningActivityCompletion GetInitialEntity()
         {
-            var completionId = PageParameterAsId( PageParameterKey.LearningActivityCompletionId );
+            var completionId = RequestContext.PageParameterAsId( PageParameterKey.LearningActivityCompletionId );
             if ( completionId > 0 )
             {
                 return new LearningActivityCompletionService( RockContext )
@@ -388,6 +404,41 @@ namespace Rock.Blocks.Lms
             }
 
             return true;
+        }
+
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var entityKey = pageReference.GetPageParameter( PageParameterKey.LearningActivityCompletionId ) ?? "";
+                var entityDetail =
+                        entityKey.IsNullOrWhiteSpace() ?
+                        null :
+                        new Service<LearningActivityCompletion>( rockContext )
+                            .GetSelect( entityKey, p => new { p.Student.Person.NickName, p.Student.Person.LastName, p.Student.Person.SuffixValueId } );
+
+                // This page doesn't support adding records so if there's no valid key then we should return early.
+                if ( entityDetail == null )
+                {
+                    return new BreadCrumbResult
+                    {
+                        BreadCrumbs = new List<IBreadCrumb>()
+                    };
+                }
+
+                var entityName = Rock.Model.Person.FormatFullName( entityDetail.NickName, entityDetail.LastName, entityDetail.SuffixValueId );
+                var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, pageReference.Parameters );
+                var breadCrumb = new BreadCrumbLink( entityName, breadCrumbPageRef );
+
+                return new BreadCrumbResult
+                {
+                    BreadCrumbs = new List<IBreadCrumb>
+                    {
+                        breadCrumb
+                    }
+                };
+            }
         }
 
         #endregion

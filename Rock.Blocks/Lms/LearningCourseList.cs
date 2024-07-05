@@ -129,7 +129,7 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         protected override IQueryable<LearningCourse> GetListQueryable( RockContext rockContext )
         {
-            var programId = PageParameterAsId( PageParameterKey.LearningProgramId );
+            var programId = RequestContext.PageParameterAsId( PageParameterKey.LearningProgramId );
 
             return programId > 0 ?
                 base.GetListQueryable( rockContext ).Where( c => c.LearningProgramId == programId ) :

@@ -152,6 +152,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string HISTORY_LOCATION = "67E8F6D1-2F20-43FD-BAEC-144E70428AC3";
 
+        /// <summary>
+        /// History of learning activity completion changes.
+        /// </summary>
+        public const string HISTORY_LEARNING_ACTIVITY_COMPLETION = "40A49BFF-5AE5-487B-B4AA-95DE435209FE";
+
         #endregion
 
         #region Schedule Categories

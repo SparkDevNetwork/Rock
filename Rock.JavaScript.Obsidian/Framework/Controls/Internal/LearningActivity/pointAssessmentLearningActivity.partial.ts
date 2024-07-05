@@ -19,6 +19,7 @@ import { LearningComponentBaseDefaults } from "./learningActivity";
 
 export type PointAssessmentActivityConfiguration = {
     instructions: string;
+    rubric: string;
 };
 
 export type PointAssessmentActivityCompletion = Record<string, never>;
@@ -30,6 +31,7 @@ export class PointAssessmentActivityDefaults
         super();
         this.defaultConfig = {
             instructions: "",
+            rubric: "",
         };
     }
 }

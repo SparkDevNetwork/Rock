@@ -17,7 +17,6 @@
                 width="40%"
                 :filter="textValueFilter"
                 :filterValue="getRowScaleFilterValue"
-                :quickFilterValue="getRowScaleFilterValue"
                 visiblePriority="xs">
             <template #format="{ row }">
                 <div class="d-flex flex-column text-muted">
@@ -32,7 +31,6 @@
                       title="Threshold %"
                       field="threshold"
                       :filter="numberValueFilter"
-                      quickFilterValue="threshold"
                       width="15%"
                       visiblePriority="xs" />
 

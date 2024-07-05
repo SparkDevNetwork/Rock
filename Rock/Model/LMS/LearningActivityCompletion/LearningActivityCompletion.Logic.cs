@@ -61,6 +61,11 @@ namespace Rock.Model
                 scales = Student?.LearningClass?.LearningGradingSystem?.LearningGradingSystemScales.OrderByDescending( s => s.ThresholdPercentage );
             }
 
+            if (scales == null)
+            {
+                return null;
+            }
+
             var gradePercent = GradePercent;
             return scales.FirstOrDefault( s => gradePercent >= s.ThresholdPercentage );
         }

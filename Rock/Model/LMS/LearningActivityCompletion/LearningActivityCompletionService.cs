@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
@@ -64,6 +65,42 @@ namespace Rock.Model
                 .Include( c => c.Student )
                 .Where( c => c.Student.LearningClassId == classId )
                 .Where( c => c.Student.PersonId == personId );
+        }
+
+        /// <summary>
+        /// Gets a new instance of a <see cref="LearningActivityCompletion"/> whose initialized values
+        /// are based on the provided parameters.
+        /// </summary>
+        /// <remarks>
+        ///     Available and Due Date calculations are performed.
+        /// </remarks>
+        /// <param name="activity">The <see cref="LearningActivity"/> the completion record is for.</param>
+        /// <param name="participantId">The identifier of the <see cref="LearningParticipant"/> the completion record is for.</param>
+        /// <param name="enrollmentDate">The date the participant enrolled in the <see cref="LearningClass"/>.</param>
+        /// <param name="progamCommuncationId">The SystemCommunicationId of the <see cref="LearningProgram"/> the completion record is for.</param>
+        /// <returns>A new untracked <see cref="LearningActivityCompletion"/>.</returns>
+        public LearningActivityCompletion GetNew( LearningActivity activity, int participantId, DateTime? enrollmentDate, int? progamCommuncationId )
+        {
+            var semesterStartDate = activity.LearningClass.LearningSemester.StartDate;
+
+            return new LearningActivityCompletion
+            {
+                StudentId = participantId,
+                LearningActivityId = activity.Id,
+                AvailableDateTime = LearningActivity.CalculateAvailableDate(
+                          activity.AvailableDateCalculationMethod,
+                          activity.AvailableDateDefault,
+                          activity.AvailableDateOffset,
+                          semesterStartDate,
+                          enrollmentDate ),
+                DueDate = LearningActivity.CalculateDueDate(
+                    activity.DueDateCalculationMethod,
+                    activity.DueDateDefault,
+                    activity.DueDateOffset,
+                    semesterStartDate,
+                    enrollmentDate ),
+                NotificationCommunicationId = activity.SendNotificationCommunication ? progamCommuncationId : null
+            };
         }
     }
 }

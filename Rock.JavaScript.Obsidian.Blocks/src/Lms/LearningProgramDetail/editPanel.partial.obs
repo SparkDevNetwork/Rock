@@ -58,7 +58,7 @@
 
                             <ColorPicker
                                          v-model="highlightColor"
-                                         label="Color"
+                                         label="Highlight Color"
                                          help="The color to use to differentiate from other learning programs." />
 
                             <TextBox
@@ -148,7 +148,7 @@
     const completionWorkflowType = propertyRef(props.modelValue.completionWorkflowType ?? {}, "CompletionWorkflowType");
     const description = propertyRef(props.modelValue.description ?? "", "Description");
     const summary = propertyRef(props.modelValue.summary ?? "", "Summary");
-    const configurationMode = propertyRef(props.modelValue.configurationMode.toString(), "ConfigurationMode");
+    const configurationMode = propertyRef(props.modelValue.configurationMode?.toString(), "ConfigurationMode");
     const highlightColor = propertyRef(props.modelValue.highlightColor ?? "", "HighlightColor");
     const iconCssClass = propertyRef(props.modelValue.iconCssClass ?? "", "IconCssClass");
     const isCompletionStatusTracked = propertyRef(props.modelValue.isCompletionStatusTracked ?? false, "TrackProgramStatus");

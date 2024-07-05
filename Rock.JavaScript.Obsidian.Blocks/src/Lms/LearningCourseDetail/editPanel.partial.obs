@@ -14,21 +14,24 @@
                                      label="Public Name" />
 
                             <TextBox v-model="courseCode"
+                                     class="input-width-md"
                                      label="Course Code"
                                      rules="required" />
 
                             <NumberBox v-model="credits"
+                                       class="input-width-sm"
                                        label="Credits"
                                        rules="required" />
 
                             <NumberBox v-model="maxStudents"
+                                       class="input-width-sm"
                                        label="Maximum Students"
                                        help="The maximum number of students a class can have." />
 
                             <WorkflowTypePicker
-                                                v-model="completionWorkflowType"
-                                                label="Completion Workflow Type"
-                                                help="The workflow to launch when an individual completes the course." />
+                                       v-model="completionWorkflowType"
+                                       label="Completion Workflow Type"
+                                       help="The workflow to launch when an individual completes the course." />
 
                             <CheckBox
                                       v-model="allowHistoricalAccess"
@@ -61,7 +64,6 @@
                             <TextBox
                                      v-model="summary"
                                      label="Summary"
-                                     help="Short summary of the course to be used on public sites and lists."
                                      textMode="multiline" />
 
                             <div class="course-requirements-container">
@@ -196,7 +198,9 @@
     const imageFileTypeGuid = BinaryFiletype.Default;
     const showAddCourseRequirementModal = ref(false);
 
-    const requirementTypes = enumToListItemBag(RequirementTypeDescription);
+    // Manually exclude 'Corequisite'. This functionality will be added at a later time.
+    const requirementTypes = enumToListItemBag(RequirementTypeDescription).filter(l => l.text !== "Corequisite");
+
     const addRequirementType = ref<string>();
     const requiredCourse = ref<string>("");
     const courseOptions = ref<ListItemBag[]>([]);
@@ -263,6 +267,7 @@
 
             if (courseListItemsResult.isSuccess && courseListItemsResult.data) {
                 courseOptions.value = courseListItemsResult.data;
+                courseOptions.value.unshift({value: null, text: ""});
                 showAddCourseRequirementModal.value = true;
             }
         }

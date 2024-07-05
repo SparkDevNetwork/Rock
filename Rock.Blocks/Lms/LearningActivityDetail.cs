@@ -32,6 +32,7 @@ using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Lms.LearningActivityComponent;
 using Rock.ViewModels.Blocks.Lms.LearningActivityDetail;
 using Rock.ViewModels.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Lms
@@ -52,7 +53,7 @@ namespace Rock.Blocks.Lms
 
     [Rock.SystemGuid.EntityTypeGuid( "fe13bfef-6266-4667-b51f-01af8e6c5b89" )]
     [Rock.SystemGuid.BlockTypeGuid( "4b18bf0d-d91b-4934-ac2d-a7188b15b893" )]
-    public class LearningActivityDetail : RockEntityDetailBlockType<LearningActivity, LearningActivityBag>
+    public class LearningActivityDetail : RockEntityDetailBlockType<LearningActivity, LearningActivityBag>, IBreadCrumbBlock
     {
         #region Keys
 
@@ -63,6 +64,8 @@ namespace Rock.Blocks.Lms
             public const string LearningCourseId = "LearningCourseId";
             public const string LearningClassId = "LearningClassId";
             public const string CloneId = "CloneId";
+            public const string AutoEdit = "autoEdit";
+            public const string ReturnUrl = "returnUrl";
         }
 
         private static class NavigationUrlKey
@@ -117,7 +120,15 @@ namespace Rock.Blocks.Lms
                 Text = a.Name
             } ).ToList();
 
+            options.HasCompletions = ActivityHasCompletions();
+
             return options;
+        }
+
+        private bool ActivityHasCompletions()
+        {
+            var activityId = RequestContext.PageParameterAsId( PageParameterKey.LearningActivityId );
+            return new LearningActivityCompletionService( RockContext ).Queryable().Any( c => c.LearningActivityId == activityId );
         }
 
         /// <summary>
@@ -245,6 +256,7 @@ namespace Rock.Blocks.Lms
                 AvailableDateOffset = entity.AvailableDateOffset,
                 AverageGrade = completionStatistics.AverageGrade?.Name,
                 AverageGradePercent = completionStatistics.AverageGradePercent,
+                AverageGradeIsPassing = completionStatistics.AverageGrade?.IsPassing ?? false,
                 CompleteCount = completionStatistics.Complete,
                 CompletionWorkflowType = entity.CompletionWorkflowType.ToListItemBag(),
                 CurrentPerson = currentPersonBag,
@@ -304,7 +316,17 @@ namespace Rock.Blocks.Lms
                 return false;
             }
 
-            box.IfValidProperty( nameof( box.Bag.ActivityComponent ),
+            box.IfValidProperty( nameof( box.Bag.Name ),
+                () => entity.Name = box.Bag.Name );
+
+            box.IfValidProperty( nameof( box.Bag.Description ),
+                () => entity.Description = box.Bag.Description );
+
+            // Don't allow edits to these properties once an activity has been completed.
+            // Doing so could cause unexpected behavior because configuration is done in JSON.
+            if ( !ActivityHasCompletions() )
+            {
+                box.IfValidProperty( nameof( box.Bag.ActivityComponent ),
                 () =>
                 {
                     var componentEntityTypeId = Rock.Utility.IdHasher.Instance.GetId( box.Bag?.ActivityComponent?.IdKey );
@@ -312,61 +334,57 @@ namespace Rock.Blocks.Lms
                         entity.ActivityComponentId = componentEntityTypeId.Value;
                 } );
 
-            box.IfValidProperty( nameof( box.Bag.ActivityComponentSettingsJson ),
-                () => entity.ActivityComponentSettingsJson = box.Bag.ActivityComponentSettingsJson );
+                box.IfValidProperty( nameof( box.Bag.ActivityComponentSettingsJson ),
+                    () => entity.ActivityComponentSettingsJson = box.Bag.ActivityComponentSettingsJson );
 
-            box.IfValidProperty( nameof( box.Bag.AssignTo ),
-                () => entity.AssignTo = box.Bag.AssignTo );
+                box.IfValidProperty( nameof( box.Bag.AssignTo ),
+                    () => entity.AssignTo = box.Bag.AssignTo );
 
-            box.IfValidProperty( nameof( box.Bag.AvailableDateCalculationMethod ),
-                () => entity.AvailableDateCalculationMethod = box.Bag.AvailableDateCalculationMethod );
+                box.IfValidProperty( nameof( box.Bag.AvailableDateCalculationMethod ),
+                    () => entity.AvailableDateCalculationMethod = box.Bag.AvailableDateCalculationMethod );
 
-            box.IfValidProperty( nameof( box.Bag.AvailableDateDefault ),
-                () => entity.AvailableDateDefault = box.Bag.AvailableDateDefault );
+                box.IfValidProperty( nameof( box.Bag.AvailableDateDefault ),
+                    () => entity.AvailableDateDefault = box.Bag.AvailableDateDefault );
 
-            box.IfValidProperty( nameof( box.Bag.AvailableDateOffset ),
-                () => entity.AvailableDateOffset = box.Bag.AvailableDateOffset );
+                box.IfValidProperty( nameof( box.Bag.AvailableDateOffset ),
+                    () => entity.AvailableDateOffset = box.Bag.AvailableDateOffset );
 
-            box.IfValidProperty( nameof( box.Bag.Description ),
-                () => entity.Description = box.Bag.Description );
+                box.IfValidProperty( nameof( box.Bag.DueDateCalculationMethod ),
+                    () => entity.DueDateCalculationMethod = box.Bag.DueDateCalculationMethod );
 
-            box.IfValidProperty( nameof( box.Bag.DueDateCalculationMethod ),
-                () => entity.DueDateCalculationMethod = box.Bag.DueDateCalculationMethod );
+                box.IfValidProperty( nameof( box.Bag.DueDateDefault ),
+                    () => entity.DueDateDefault = box.Bag.DueDateDefault );
 
-            box.IfValidProperty( nameof( box.Bag.DueDateDefault ),
-                () => entity.DueDateDefault = box.Bag.DueDateDefault );
+                box.IfValidProperty( nameof( box.Bag.DueDateOffset ),
+                    () => entity.DueDateOffset = box.Bag.DueDateOffset );
 
-            box.IfValidProperty( nameof( box.Bag.DueDateOffset ),
-                () => entity.DueDateOffset = box.Bag.DueDateOffset );
+                box.IfValidProperty( nameof( box.Bag.IsStudentCommentingEnabled ),
+                    () => entity.IsStudentCommentingEnabled = box.Bag.IsStudentCommentingEnabled );
 
-            box.IfValidProperty( nameof( box.Bag.IsStudentCommentingEnabled ),
-                () => entity.IsStudentCommentingEnabled = box.Bag.IsStudentCommentingEnabled );
+                box.IfValidProperty( nameof( box.Bag.Order ),
+                    () => entity.Order = box.Bag.Order );
 
-            box.IfValidProperty( nameof( box.Bag.Name ),
-                () => entity.Name = box.Bag.Name );
+                box.IfValidProperty( nameof( box.Bag.Points ),
+                    () => entity.Points = box.Bag.Points );
 
-            box.IfValidProperty( nameof( box.Bag.Order ),
-                () => entity.Order = box.Bag.Order );
+                box.IfValidProperty( nameof( box.Bag.SendNotificationCommunication ),
+                    () => entity.SendNotificationCommunication = box.Bag.SendNotificationCommunication );
 
-            box.IfValidProperty( nameof( box.Bag.Points ),
-                () => entity.Points = box.Bag.Points );
+                box.IfValidProperty( nameof( box.Bag.CompletionWorkflowType ),
+                    () => entity.CompletionWorkflowTypeId = box.Bag.CompletionWorkflowType.GetEntityId<WorkflowType>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Bag.SendNotificationCommunication ),
-                () => entity.SendNotificationCommunication = box.Bag.SendNotificationCommunication );
+                box.IfValidProperty( nameof( box.Bag.TaskBinaryFile ),
+                    () => entity.TaskBinaryFileId = box.Bag.TaskBinaryFile.GetEntityId<BinaryFile>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Bag.CompletionWorkflowType ),
-                () => entity.CompletionWorkflowTypeId = box.Bag.CompletionWorkflowType.GetEntityId<WorkflowType>( RockContext ) );
+                box.IfValidProperty( nameof( box.Bag.AttributeValues ),
+                    () =>
+                    {
+                        entity.LoadAttributes( RockContext );
 
-            box.IfValidProperty( nameof( box.Bag.TaskBinaryFile ),
-                () => entity.TaskBinaryFileId = box.Bag.TaskBinaryFile.GetEntityId<BinaryFile>( RockContext ) );
+                        entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson );
+                    } );
 
-            box.IfValidProperty( nameof( box.Bag.AttributeValues ),
-                () =>
-                {
-                    entity.LoadAttributes( RockContext );
-
-                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson );
-                } );
+            }
 
             return true;
         }
@@ -374,8 +392,8 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         protected override LearningActivity GetInitialEntity()
         {
-            var entityId = PageParameterAsId( PageParameterKey.LearningActivityId );
-
+            var entityId = RequestContext.PageParameterAsId( PageParameterKey.LearningActivityId );
+            
             // If a zero identifier is specified then create a new entity.
             if ( entityId == 0 )
             {
@@ -451,6 +469,27 @@ namespace Rock.Blocks.Lms
             return true;
         }
 
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var entityKey = pageReference.GetPageParameter( PageParameterKey.LearningActivityId ) ?? "";
+
+                var entityName = entityKey.Length > 0 ? new Service<LearningActivity>( rockContext ).GetSelect( entityKey, p => p.Name ) : "New Activity";
+                var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, pageReference.Parameters );
+                var breadCrumb = new BreadCrumbLink( entityName ?? "New Activity", breadCrumbPageRef );
+
+                return new BreadCrumbResult
+                {
+                    BreadCrumbs = new List<IBreadCrumb>
+                    {
+                        breadCrumb
+                    }
+                };
+            }
+        }
+
         #endregion
 
         #region Block Actions
@@ -510,7 +549,7 @@ namespace Rock.Blocks.Lms
             var isNew = entity.Id == 0;
             if ( isNew )
             {
-                entity.LearningClassId = PageParameterAsId( PageParameterKey.LearningClassId );
+                entity.LearningClassId = RequestContext.PageParameterAsId( PageParameterKey.LearningClassId );
             }
 
             RockContext.WrapTransaction( () =>
@@ -525,6 +564,12 @@ namespace Rock.Blocks.Lms
                 {
                     [PageParameterKey.LearningActivityId] = entity.IdKey
                 } ) );
+            }
+
+            var returnPageUrl = PageParameter( PageParameterKey.ReturnUrl ) ?? string.Empty;
+            if ( returnPageUrl.Length > 0 )
+            {
+                return ActionOk( returnPageUrl );
             }
 
             // Ensure navigation properties will work now.

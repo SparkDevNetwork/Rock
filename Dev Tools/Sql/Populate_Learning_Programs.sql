@@ -172,10 +172,14 @@ DECLARE
     @assessment1Settings NVARCHAR(MAX) = '{"items":[{"uniqueId":"B6D5C8A6-3C4E-4F5F-9ADA-C092BDF8BC3F","typeName":"Multiple Choice","question":"How many apostles are there?","helpText":"","answers":["7","12","20"],"correctAnswer":"12","response":"","order":1},{"uniqueId":"D1524351-462B-49DC-9330-F11C8C31619B","typeName":"Section","title":"Short Answer Section","summary":"Please answer with as much detail as you can.","response":"","order":4},{"uniqueId":"F62B3AA3-A126-4A4B-8DE6-26E817EB13CF","answerBoxRows":5,"helpText":"","maxCharacterCount":120,"pointsEarned":0,"question":"Are there any other numbers in the Bible that match the number of apostles?","questionWeight":20,"response":"","typeName":"Short Answer","order":5},{"answerBoxRows":2,"helpText":"Possibly one of the Gospels?","maxCharacterCount":50,"pointsEarned":0,"question":"Which apostle was the one Jesus loved?","questionWeight":30,"response":"","typeName":"Short Answer","order":6,"uniqueId":"B5658589-B322-4193-85B5-F71767ACD7AB"},{"uniqueId":"ae4fe271-abd2-4779-9ebf-c9481c209d46","typeName":"Multiple Choice","question":"Who was sold into slavery in Egypt?","helpText":"","answers":["Joseph","Jonathan","Johab","Jorge"],"correctAnswer":"Joseph","response":"","order":2},{"uniqueId":"64a74114-92fa-4099-8dea-9e010c912d48","typeName":"Multiple Choice","question":"Who led the Israelites after Moses died?","helpText":"","answers":["Joshua","Johab","Jonah","Lot"],"correctAnswer":"Joshua","order":3}],"assessmentTerm":"Assessment","header":"{\"time\":1716326144116,\"blocks\":[{\"id\":\"-SQIQa_9xh\",\"type\":\"paragraph\",\"data\":{\"text\":\"Please complete to the best of your ability.\"}}],\"version\":\"2.28.0\"}","multipleChoiceWeight":50,"showMissedQuestionsOnResults":true,"showResultsOnCompletion":true}',
     @pointAssessmentComponentId INT = (SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = 'A6E91C3C-4A4C-4FC2-816A-A6B1E6422381'),
     @presentationDescription NVARCHAR(MAX) = '',
-    @presentationSettings NVARCHAR(MAX) = '{"instructions":"{\"time\":1715703275889,\"blocks\":[{\"id\":\"D2cSRK74X8\",\"type\":\"paragraph\",\"data\":{\"text\":\"Grading Rubric:\"}},{\"id\":\"qZ7h7XNvN2\",\"type\":\"table\",\"data\":{\"withHeadings\":true,\"content\":[[\"Item\",\"Score\"],[\"Eye Contact\",\"5\"],[\"Speaking Quality\",\"5\"],[\"Content\",\"20\"],[\"Slides\",\"20\"]]}}],\"version\":\"2.28.0\"}"}',
+    @presentationSettings NVARCHAR(MAX) = '{"instructions":"{\"time\":1719941564985,\"blocks\":[{\"id\":\"uiHbfAQlzA\",\"type\":\"paragraph\",\"data\":{\"text\":\"Be sure to speak loud enough for all to hear and remember to make eye contact with people in the audience.\"}}],\"version\":\"2.28.0\"}","rubric":"{\"time\":1715703275889,\"blocks\":[{\"id\":\"D2cSRK74X8\",\"type\":\"paragraph\",\"data\":{\"text\":\"Grading Rubric:\"}},{\"id\":\"qZ7h7XNvN2\",\"type\":\"table\",\"data\":{\"withHeadings\":true,\"content\":[[\"Item\",\"Score\"],[\"Eye Contact\",\"5\"],[\"Speaking Quality\",\"5\"],[\"Content\",\"20\"],[\"Slides\",\"20\"]]}}],\"version\":\"2.28.0\"}"}',
     @checkOffComponentId INT = (SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = '7FAE61A2-5F08-4FD9-8BB7-FF7FAB410AC5'),
     @checkOffDescription NVARCHAR(MAX) = '',
-    @checkOffSettings NVARCHAR(MAX) = '{"content":"","confirmationText":"I Certify that I have prepared my final assessment on my own without any significant contributions from others.","isConfirmationRequired":true}';
+    @checkOffSettings NVARCHAR(MAX) = '{"content":"","confirmationText":"I Certify that I have prepared my final assessment on my own without any significant contributions from others.","isConfirmationRequired":true}',
+    @fileUploadComponentId INT = (SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = 'DEB298FE-383B-46BD-A974-AFD92C09843A'),
+    @fileUploadDescription NVARCHAR(MAX) = '{"time":1719854012944,"blocks":[{"id":"XD223JYWoi","type":"paragraph", "data": {"text":"Please upload your mid term paper. Changes will be accepted up until the due date."}}]}',
+    @fileUploadSettings NVARCHAR(MAX) = '';
+    
 
 /* Get a list of random sized classes for each course. */
 SELECT 
@@ -212,6 +216,21 @@ SELECT c.CourseId,c.GradingSystemId, c.SemesterId, g.Id
 FROM #classes c
 JOIN [Group] g ON g.[Guid] = c.ClassGuid;
 
+
+/* Add a syllabus ContentPage to all created classes. */ 
+DECLARE @contentPageContent NVARCHAR(MAX) = '{"time":1719854012944,"blocks":[{"id":"XF223JYWoi","type":"header","data":{"text":"Course Overview:","level":3}},{"id":"HgLH4Gl6Fu","type":"paragraph","data":{"text":"&nbsp;\"Introduction to the New Testament\" offers students an immersive journey into the sacred Christian scriptures. This course will explore the historical, literary, and theological dimensions of the New Testament, spanning from the Gospels'' accounts of Jesus Christ to the visionary writings in Revelation."}},{"id":"CmjigRceFH","type":"header","data":{"text":"Course Objectives:","level":3}},{"id":"OzQA9hniFU","type":"list","data":{"style":"unordered","items":[{"content":"Understand the historical context of the New Testament texts.","items":[]},{"content":"Analyze key passages for their theological and literary significance.","items":[]},{"content":"Recognize the various genres and writing styles within the New Testament.","items":[]},{"content":"Discuss the impact of the New Testament on Christian theology and practices.","items":[]}]}},{"id":"DzcbG7ZJu7","type":"header","data":{"text":"&nbsp;Course Outline:","level":3}},{"id":"6BUqLsXVIi","type":"list","data":{"style":"ordered","items":[{"content":"Introduction and Background","items":[{"content":"The historical and cultural world of the New Testament","items":[]},{"content":"Canonization:  How the New Testament came to be","items":[]}]},{"content":"The Gospels","items":[{"content":"Synoptic Gospels: Matthew, Mark, and Luke","items":[]},{"content":"The Gospel of John: A unique perspective","items":[]}]},{"content":"Acts of the Apostles","items":[{"content":"The early Christian community and missionary journeys","items":[]}]},{"content":"Pauline Epistles","items":[{"content":"The theology and context of Paul''s letters","items":[]}]},{"content":"General Epistles","items":[{"content":"From Hebrews to Jude: Diverse voices in early Christianity","items":[]}]},{"content":"Revelation and Apocalyptic Literature","items":[{"content":"Symbols, prophecy, and the end times","items":[]}]}]}},{"id":"D2VZID577K","type":"header","data":{"text":"Assessment Methods:","level":3}},{"id":"vQR2ojuKof","type":"list","data":{"style":"unordered","items":[{"content":"Class Participation: 10%","items":[]},{"content":"Quizzes: 20%","items":[]},{"content":"Midterm Exam: 25%","items":[]},{"content":"Research Paper (8-10 pages): 20%","items":[]},{"content":"Final Exam: 25%","items":[]}]}},{"id":"yfICZbb2kJ","type":"header","data":{"text":"Required Texts:","level":3}},{"id":"7zAgNkxyqw","type":"list","data":{"style":"unordered","items":[{"content":"\"The New Oxford Annotated Bible: New Revised Standard Version with the Apocrypha.\" Oxford University Press.","items":[]},{"content":"Ehrman, Bart D. \"The New Testament: A Historical Introduction to the Early Christian Writings.\" Oxford University Press.","items":[]}]}},{"id":"QN-4zlZCdB","type":"header","data":{"text":"Academic Integrity:","level":3}},{"id":"dyYzZMyyFq","type":"paragraph","data":{"text":"Plagiarism and any form of academic dishonesty will not be tolerated. Students found in violation will face disciplinary actions as per institutional policies."}},{"id":"7FjzGXVR0r","type":"header","data":{"text":"Note:&nbsp;","level":3}},{"id":"NyiUxJs3OD","type":"paragraph","data":{"text":"The instructor reserves the right to make changes to the syllabus as necessary. Any changes will be communicated in a timely manner.&nbsp;&nbsp;"}}],"version":"2.28.0"}';
+
+INSERT [LearningClassContentPage] ([LearningClassId], [Title], [Content], [Guid])
+SELECT g.Id, 'Syllabus', @contentPageContent, NEWID()
+FROM #classes c
+JOIN [Group] g ON g.[Guid] = c.[ClassGuid]
+WHERE NOT EXISTS (
+    SELECT *
+    FROM [dbo].[LearningClassContentPage] [ex]
+    WHERE [ex].[Title] = 'Syllabus'
+        AND [ex].LearningClassId = g.Id
+)
+
 /* Create the activity templates */
  DECLARE @activities TABLE (
     Name NVARCHAR(200),
@@ -243,7 +262,8 @@ SELECT g.[Id], seed.[Name], seed.[Order], [ActivityComponentId], [AssignTo], [Du
 FROM (
     SELECT 'Assessment 1' [Name], 1 [Order], @assessmentComponentId [ActivityComponentId], 0 [AssignTo], @classStartOffset [DueCalculationMethod], NULL [DueDateDefault], 2 [DueDateOffset], @alwaysAvailable [AvailableCalculationMethod], NULL [AvailableDateDefault], NULL AvailableDateOffset, 10 [Points], 1 [IsStudentCommentingEnabled], 0 [SendNotificationCommunication], @assessment1Description [Description], @assessment1Settings [SettingsJson]
     UNION SELECT 'Check Off' [Name], 2 [Order], @checkOffComponentId [ActivityComponentId], 0 [AssignTo], @neverDue [DueCalculationMethod], NULL [DueDateDefault], NULL [DueDateOffset], @alwaysAvailable [AvailableCalculationMethod], NULL [AvailableDateDefault], NULL AvailableDateOffset, 0 [Points], 0 [IsStudentCommentingEnabled], 0 [SendNotificationCommunication], @checkOffDescription, @checkOffSettings
-    UNION SELECT 'Final Project' [Name], 3 [Order], @pointAssessmentComponentId [ActivityComponentId], 1 [AssignTo], @classStartOffset [DueCalculationMethod], NULL [DueDateDefault], 12 [DueDateOffset], @availableAfterPreviousComplete [AvailableCalculationMethod], NULL [AvailableDateDefault], NULL AvailableDateOffset, 50 [Points], 0 [IsStudentCommentingEnabled], 0 [SendNotificationCommunication], @presentationDescription, @presentationSettings
+    UNION SELECT 'Mid Term' [Name], 3 [Order], @fileUploadComponentId [ActivityComponentId], 0 [AssignTo], @classStartOffset [DueCalculationMethod], NULL [DueDateDefault], 12 [DueDateOffset], @availableAfterPreviousComplete [AvailableCalculationMethod], NULL [AvailableDateDefault], NULL AvailableDateOffset, 30 [Points], 1 [IsStudentCommentingEnabled], 0 [SendNotificationCommunication], @fileUploadDescription, @fileUploadSettings
+    UNION SELECT 'Final Project' [Name], 4 [Order], @pointAssessmentComponentId [ActivityComponentId], 1 [AssignTo], @classStartOffset [DueCalculationMethod], NULL [DueDateDefault], 24 [DueDateOffset], @availableAfterPreviousComplete [AvailableCalculationMethod], NULL [AvailableDateDefault], NULL AvailableDateOffset, 50 [Points], 0 [IsStudentCommentingEnabled], 0 [SendNotificationCommunication], @presentationDescription, @presentationSettings
 ) seed
 JOIN [Group] g ON 1 = 1
 JOIN #classes c ON g.[Guid] = c.[ClassGuid];
@@ -439,6 +459,13 @@ ORDER BY p.Name, c.[Order]
     FROM LearningClass lc
     JOIN LearningCourse c on c.Id = lc.LearningCourseId
     JOIN LearningActivity la ON la.LearningClassId = lc.Id
+    WHERE c.LearningProgramId IN (SELECT TRIM(value) FROM string_split(@pipeDelimitedProgramIds, '|'))
+    
+    DELETE lcp
+    FROM LearningClass lc
+    JOIN LearningClassContentPage lcp ON lcp.LearningClassId = lc.Id
+    JOIN LearningCourse c on c.Id = lc.LearningCourseId
+    JOIN LearningSemester s on s.Id = lc.LearningSemesterId
     WHERE c.LearningProgramId IN (SELECT TRIM(value) FROM string_split(@pipeDelimitedProgramIds, '|'))
 
     DELETE lc

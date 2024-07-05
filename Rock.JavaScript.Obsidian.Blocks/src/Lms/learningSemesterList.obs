@@ -3,46 +3,43 @@
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
-          itemTerm="Semester"
+          :isTitleHidden="true"
+          :isSearchVisible="false"
+          :isCountMessageVisible="false"
+          :showMergeTemplate="false"
+          :showLaunchWorkflow="false"
+          :showExport="false"
           :entityTypeGuid="EntityType.LearningSemester"
           :expectedRowCount="config.expectedRowCount ?? undefined"
           tooltipField="name"
           stickyHeader
           liveUpdates
-          :hasFullscreen="false"
-          :showMergeTemplate="false"
-          :showLaunchWorkflow="false"
           @selectItem="onSelectItem"
           :onAddItem="config.isAddEnabled ? onAddItem : undefined">
 
         <TextColumn name="name"
                     title="Name"
                     field="name"
-                    :filter="textValueFilter"
                     visiblePriority="xs" />
 
         <DateColumn name="startDate"
                     title="Start Date"
                     field="startDate"
-                    :filter="dateValueFilter"
                     visiblePriority="xs" />
 
         <DateColumn name="endDate"
                     title="End Date"
                     field="endDate"
-                    :filter="dateValueFilter"
                     visiblePriority="xs" />
 
         <DateColumn name="closeDate"
                     title="Close Date"
                     field="closeDate"
-                    :filter="dateValueFilter"
                     visiblePriority="xs" />
 
         <NumberColumn name="classCount"
                       title="Class Count"
                       field="classCount"
-                      :filter="numberValueFilter"
                       visiblePriority="xs" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" :rowDisabled="onDeleteRowDisabled" />
@@ -52,7 +49,7 @@
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { numberValueFilter, NumberColumn, dateValueFilter, TextColumn, DateColumn, textValueFilter, DeleteColumn } from "@Obsidian/Controls/grid";
+    import Grid, { NumberColumn, TextColumn, DateColumn, DeleteColumn } from "@Obsidian/Controls/grid";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { LearningSemesterListOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningSemesterList/learningSemesterListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";

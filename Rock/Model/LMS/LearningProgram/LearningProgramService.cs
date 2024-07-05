@@ -72,14 +72,10 @@ namespace Rock.Model
         {
             var context = ( RockContext ) Context;
             var now = RockDateTime.Now;
-            context.SqlLogging( true );
 
             // Get the class and student data in aggregate together.
             var classAndStudentData = new LearningClassService( context )
                 .Queryable()
-                //.Include( c => c.LearningCourse )
-                //.Include( c => c.LearningSemester )
-                //.Include( c => c.LearningParticipants )
                 .AsNoTracking()
                 .Where( c => c.IsActive )
                 .Where( c => c.LearningCourse.LearningProgramId == learningProgramId )
@@ -108,34 +104,56 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets a list of active, public programs with the completion status for the person specified.
+        /// Gets a list of active, public programs, optionally filtered to the specified categoryIds and optionally with completion status for the specified person.
         /// </summary>
-        /// <param name="forPersonId">The identifier of the <see cref="Person"/> to include completion status for.</param>
+        /// <param name="includeCompletionsForPersonId">The identifier of the <see cref="Person"/> to include completion status for.</param>
+        /// <param name="categoryGuids">The optional list of category Guids to filter for.</param>
         /// <returns>An enumerable of PublicLearningProgramBag.</returns>
-        public List<PublicLearningProgramBag> GetPublicPrograms( int forPersonId )
+        public IQueryable<PublicLearningProgramBag> GetPublicPrograms( int includeCompletionsForPersonId = 0, params Guid[] categoryGuids )
         {
-            var personCompletions = new LearningProgramCompletionService( ( RockContext ) Context )
+            var baseQuery = Queryable()
+                    .AsNoTracking()
+                    .Include( p => p.ImageBinaryFile )
+                    .Include( p => p.Category )
+                    .Where( p => p.IsActive && p.IsPublic );
+
+            if ( categoryGuids.Any() )
+            {
+                baseQuery = baseQuery.Where( p => p.Category != null && categoryGuids.Contains( p.Category.Guid ) );
+            }
+
+            if ( includeCompletionsForPersonId > 0 )
+            {
+                // If we should include completion status then get those values first and return the program bag queryable.
+                var personCompletions = new LearningProgramCompletionService( ( RockContext ) Context )
                 .Queryable()
                 .AsNoTracking()
                 .Include( c => c.PersonAlias )
-                .Where( c => c.PersonAlias.PersonId == forPersonId );
+                .Where( c => c.PersonAlias.PersonId == includeCompletionsForPersonId );
 
-            return Queryable()
-                .AsNoTracking()
-                .Include( p => p.ImageBinaryFile )
-                .Include( p => p.Category )
-                .Where( p => p.IsActive && p.IsPublic )
-                .Select( p => new PublicLearningProgramBag
+                return baseQuery
+                    .Select( p => new PublicLearningProgramBag
+                    {
+                        Entity = p,
+                        Category = p.Category.Name,
+                        CategoryColor = p.Category.HighlightColor,
+                        CompletionStatus = personCompletions
+                            .FirstOrDefault( c => c.LearningProgramId == p.Id )
+                            .CompletionStatus,
+                        ImageFileGuid = p.ImageBinaryFile.Guid
+                    } );
+            }
+            else
+            {
+                // If we don't need to include completion status return the program bag queryable.
+                return baseQuery.Select( p => new PublicLearningProgramBag
                 {
                     Entity = p,
                     Category = p.Category.Name,
                     CategoryColor = p.Category.HighlightColor,
-                    CompletionStatus = personCompletions
-                        .FirstOrDefault( c => c.LearningProgramId == p.Id )
-                        .CompletionStatus,
                     ImageFileGuid = p.ImageBinaryFile.Guid
-                } )
-                .ToList();
+                } );
+            }
         }
 
         /// <summary>

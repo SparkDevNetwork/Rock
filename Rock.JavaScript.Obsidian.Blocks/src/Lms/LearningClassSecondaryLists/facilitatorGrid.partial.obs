@@ -2,10 +2,10 @@
 <template>
     <Grid :data="gridDataSource"
           keyField="idKey"
-          itemTerm="Facilitator"
+          title="Facilitators"
           :entityTypeGuid="EntityType.LearningParticipant"
+          :isCountMessageVisible="false"
           :expectedRowCount="3"
-          tooltipField="name"
           stickyHeader
           liveUpdates
           :selectItem="onSelectItem"
@@ -15,7 +15,8 @@
         <PersonColumn name="name"
                       title="Name"
                       field="name"
-                      :filter="textValueFilter"
+                      :filter="pickExistingValueFilter"
+                      :filterValue="getPersonNameFilterValue"
                       visiblePriority="xs" />
 
         <DeleteColumn v-if="isDeleteEnabled" @click="(r) => $emit('deleteClick', r, gridData)" />
@@ -25,9 +26,10 @@
 <script setup lang="ts">
     import { PropType, reactive, ref } from "vue";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { PersonColumn, textValueFilter, DeleteColumn, SelectColumn } from "@Obsidian/Controls/grid";
+    import Grid, { PersonColumn, DeleteColumn, SelectColumn, pickExistingValueFilter } from "@Obsidian/Controls/grid";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -63,17 +65,18 @@
     // #region Functions
 
     /**
-     * Called when a row has been selected by the individual.
-     *
-     * @param key The key of the row that was selected.
-     */
-    function onSelectItem(key: string): void {
-        emit("rowClick", key, gridData);
+    * Gets the filter value text to use for the name column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getPersonNameFilterValue(row: Record<string, unknown>): string {
+        const person = row["individual"] as PersonFieldBag;
+        return !person ? "" : `${person.nickName} ${person.lastName}`;
     }
 
-    function onAddItemClicked(): void {
-        emit("addClick");
-    }
+    // #endregion
+
+    // #region Event Handlers
 
     /**
      * Called when the grid is requesting the row data be loaded.
@@ -91,9 +94,18 @@
         }
     }
 
-    // #endregion
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        emit("rowClick", key, gridData);
+    }
 
-    // #region Event Handlers
+    function onAddItemClicked(): void {
+        emit("addClick");
+    }
 
     // #endregion
 

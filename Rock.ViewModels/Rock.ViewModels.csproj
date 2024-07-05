@@ -114,8 +114,11 @@
     <Compile Include="Blocks\Lms\LearningGradingSystemScaleDetail\LearningGradingSystemScaleBag.cs" />
     <Compile Include="Blocks\Lms\LearningGradingSystemScaleDetail\LearningGradingSystemScaleDetailOptionsBag.cs" />
     <Compile Include="Blocks\Lms\LearningGradingSystemScaleList\LearningGradingSystemScaleListOptionsBag.cs" />
+    <Compile Include="Blocks\Lms\LearningProgramCompletionDetail\LearningProgramCompletionBag.cs" />
+    <Compile Include="Blocks\Lms\LearningProgramCompletionDetail\LearningProgramCompletionDetailOptionsBag.cs" />
     <Compile Include="Blocks\Lms\LearningSemesterDetail\LearningSemesterBag.cs" />
     <Compile Include="Blocks\Lms\LearningSemesterDetail\LearningSemesterDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Lms\PublicLearningClassWorkspace\PublicLearningClassWorkspaceNotificationBag.cs" />
     <Compile Include="Blocks\Lms\PublicLearningClassWorkspace\PublicLearningClassWorkspaceBox.cs" />
     <Compile Include="Blocks\Lms\PublicLearningCourseDetail\PublicLearningCourseDetailBox.cs" />
     <Compile Include="Blocks\Lms\PublicLearningProgramList\PublicLearningProgramListBox.cs" />

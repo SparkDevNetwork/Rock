@@ -3,55 +3,80 @@
     <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
 
     <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
-    <div v-if="showKpis" class="row d-flex mb-3">
-        <Kpi :value="activeClasses" label="Active Classes" iconCssClass="fa fa-chalkboard-teacher" color="blue" :isCard="true" tooltip="The number of active classes for courses in this program." />
-        <Kpi :value="activeStudents" label="Active Students" iconCssClass="fa fa-users" color="red" :isCard="true" tooltip="The total number of students enrolled in courses for this program." />
-        <Kpi :value="completions" label="Completions" iconCssClass="fa fa-check-square" color="green" :isCard="true" tooltip="The total number of students who've completed this program." />
-    </div>
 
-    <DetailBlock
-                 v-if="!blockError"
-                 v-model:mode="panelMode"
-                 :alwaysShowLabels="true"
-                 :isFullScreenVisible="false"
-                 :isAuditHidden="false"
-                 :name="panelName"
-                 :labels="blockLabels"
-                 :entityKey="entityKey"
-                 :entityTypeGuid="entityTypeGuid"
-                 entityTypeName="LearningProgram"
-                 :isBadgesVisible="false"
-                 :isSecurityHidden="false"
-                 :footerSecondaryActions="footerSecondaryActions"
-                 :onDelete="onDelete"
-                 @cancelEdit="onCancelEdit"
-                 @save="onSave">
-        <template #sidebar v-if="panelMode === DetailPanelMode.View">
-            <ImageWithIcon :imageFileGuid="imageGuid"
-                           :highlightColor="highlightColor"
-                           :iconCssClass="iconCssClass" />
-        </template>
-        <template #view>
-            <ViewPanel :modelValue="learningProgramViewBag" :options="options" :hasFullScreen="false" />
+    <template v-if="isCompletionsTabSelected">
+        <ProgramCompletionGrid
+                               :tabs="tabs"
+                               :entityName="programName"
+                               :labels="blockLabels"
+                               :showSemesterColumn="isAcademicConfigurationMode"
+                               @tabChange="onSelectTab"
+                               @rowClick="onCompletionClick" />
+    </template>
+    <template v-else-if="isSemestersTabSelected">
+        <SemesterGrid
+                      :tabs="tabs"
+                      :entityName="programName"
+                      :labels="blockLabels"
+                      :isAddEnabled="isEditable"
+                      :isDeleteEnabled="isEditable"
+                      @tabChange="onSelectTab"
+                      @deleteClick="onDeleteSemesterClick" />
+    </template>
 
-            <div>
-                <RockButton v-for="action in footerActions" :btnType="action.type" @click="action.handler" class="mr-3">
-                    {{ action.title }}
-                </RockButton>
-            </div>
-            <Modal v-model="showDetailsModal" title="Additional Details">
-                <AdditionalDetailsModal :modelValue="learningProgramAdditionalDetailsBag" />
-            </Modal>
-        </template>
-        <template #edit>
-            <EditPanel v-model="learningProgramEditBag" :options="options" @propertyChanged="onPropertyChanged" :hasFullScreen="false" />
-        </template>
-    </DetailBlock>
+    <template v-if="!isCompletionsTabSelected && !isSemestersTabSelected">
+        <div v-if="showKpis" class="row d-flex mb-3">
+            <Kpi :value="activeClasses" label="Active Classes" iconCssClass="fa fa-chalkboard-teacher" color="blue" :isCard="true" tooltip="The number of active classes for courses in this program." />
+            <Kpi :value="activeStudents" label="Active Students" iconCssClass="fa fa-users" color="red" :isCard="true" tooltip="The total number of students enrolled in courses for this program." />
+            <Kpi :value="completions" label="Completions" iconCssClass="fa fa-check-square" color="green" :isCard="true" tooltip="The total number of students who've completed this program." />
+        </div>
+
+        <DetailBlock
+                     v-if="!blockError"
+                     v-model:mode="panelMode"
+                     :alwaysShowLabels="true"
+                     :isFullScreenVisible="false"
+                     :isAuditHidden="true"
+                     :name="panelName"
+                     :labels="blockLabels"
+                     :entityKey="entityKey"
+                     :entityTypeGuid="entityTypeGuid"
+                     entityTypeName="LearningProgram"
+                     :isBadgesVisible="false"
+                     :isSecurityHidden="false"
+                     :footerSecondaryActions="footerSecondaryActions"
+                     :onDelete="onDelete"
+                     @cancelEdit="onCancelEdit"
+                     @save="onSave">
+            <template #sidebar v-if="panelMode === DetailPanelMode.View">
+                <ImageWithIcon :imageFileGuid="imageGuid"
+                               :highlightColor="highlightColor"
+                               :iconCssClass="iconCssClass" />
+            </template>
+            <template #view>
+                <ViewPanel :modelValue="learningProgramViewBag" :options="options" :hasFullScreen="false" />
+
+                <div>
+                    <RockButton v-for="action in footerActions" :btnType="action.type" @click.preventDefault="action.handler" class="mr-3">
+                        {{ action.title }}
+                    </RockButton>
+                </div>
+                <Modal v-model="showDetailsModal" title="Additional Details">
+                    <AdditionalDetailsModal :modelValue="learningProgramAdditionalDetailsBag" />
+                </Modal>
+            </template>
+            <template #edit>
+                <EditPanel v-model="learningProgramEditBag" :options="options" @propertyChanged="onPropertyChanged" :hasFullScreen="false" />
+            </template>
+        </DetailBlock>
+    </template>
 </template>
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import ProgramCompletionGrid from "./LearningProgramSecondaryLists/programCompletionGrid.partial.obs";
+    import SemesterGrid from "./LearningProgramSecondaryLists/semesterGrid.partial.obs";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import DetailBlock from "@Obsidian/Templates/detailBlock";
     import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
@@ -79,6 +104,10 @@
 
     // #region Values
 
+    const tabs = ref(["Overview", "Description", "Completions", "Semesters"]);
+
+    const selectedTabIndex = ref(0);
+
     const blockError = ref("");
     const errorMessage = ref("");
     const showDetailsModal = ref(false);
@@ -99,6 +128,9 @@
     const activeStudents = ref(learningProgramViewBag.value?.activeStudents);
     const completions = ref(learningProgramViewBag.value?.completions);
     const showKpis = ref(learningProgramViewBag.value?.showKpis);
+
+    const programName = ref(learningProgramViewBag.value?.publicName ?? "");
+    const isAcademicConfigurationMode = learningProgramViewBag.value?.configurationMode === ConfigurationMode.AcademicCalendar;
 
     // The properties that are being edited in the UI. This is used to
     // inform the server which incoming values have valid data in them.
@@ -217,22 +249,20 @@
             });
         }
 
-        if (config.navigationUrls?.[NavigationUrlKey.CompletionsPage]) {
-            footerActionsPanelActions.push({
-                title: "Completions",
-                type: "default",
-                handler: () => {
-                    window.location.href = makeUrlRedirectSafe(config.navigationUrls?.[NavigationUrlKey.CompletionsPage] ?? "");
-                }
-            });
-        }
+        footerActionsPanelActions.push({
+            title: "Completions",
+            type: "default",
+            handler: () => {
+                onSelectTab(tabs.value.findIndex(t => t === "Completions"));
+            }
+        });
 
-        if (learningProgramViewBag.value?.configurationMode === ConfigurationMode.AcademicCalendar && config.navigationUrls?.[NavigationUrlKey.SemestersPage]) {
+        if (learningProgramViewBag.value?.configurationMode === ConfigurationMode.AcademicCalendar) {
             footerActionsPanelActions.push({
                 title: "Semesters",
                 type: "default",
                 handler: () => {
-                    window.location.href = makeUrlRedirectSafe(config.navigationUrls?.[NavigationUrlKey.SemestersPage] ?? "");
+                    onSelectTab(tabs.value.findIndex(t => t === "Semesters"));
                 }
             });
         }
@@ -275,9 +305,11 @@
         return secondaryActions;
     });
 
-    const isEditable = computed((): boolean => {
-        return config.isEditable === true;
-    });
+    const isEditable = computed((): boolean => config.isEditable === true);
+
+    const isCompletionsTabSelected = computed((): boolean => selectedTabIndex.value === 2);
+    const isDescriptionTabSelected = computed((): boolean => selectedTabIndex.value === 1);
+    const isSemestersTabSelected = computed((): boolean => selectedTabIndex.value === 3);
 
     const options = computed((): LearningProgramDetailOptionsBag => {
         return config.options ?? {};
@@ -310,6 +342,18 @@
     }
 
     /**
+     * Event handler for a program completion row click.
+     *
+     * @returns false if it should stay on the page; or a string containing a redirect URL.
+     */
+    function onCompletionClick(idKey: string): void {
+        const url = (config.navigationUrls && config.navigationUrls[NavigationUrlKey.CompletionDetailPage]) ?? "";
+        if (url.length > 0) {
+            window.location.href = url.replace("((Key))", idKey + "?autoEdit=True&returnUrl=" + window.location);
+        }
+    }
+
+    /**
      * Event handler for the Delete button being clicked. Sends the
      * delete request to the server and then redirects to the target page.
      *
@@ -327,6 +371,29 @@
         }
         else {
             errorMessage.value = result.errorMessage ?? "Unknown error while trying to delete learning program.";
+
+            return false;
+        }
+    }
+
+    /**
+     * Event handler for the Semester Delete button being clicked. Sends the
+     * delete request to the server and then redirects to the target page.
+     *
+     * @returns false if it should stay on the page; or a string containing a redirect URL.
+     */
+    async function onDeleteSemesterClick(): Promise<false | string> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<string>("DeleteSemester", {
+            key: learningProgramViewBag.value?.idKey
+        });
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to delete learning semester.";
 
             return false;
         }
@@ -405,6 +472,24 @@
         return false;
     }
 
+    function onSelectTab(tabIndex: number): void {
+
+        if (selectedTabIndex.value === tabIndex) {
+            return;
+        }
+
+        const newTabName = tabIndex >= 0 && tabIndex < tabs.value.length ? tabs.value[tabIndex] : 0;
+
+        const queryParams = new URLSearchParams(window.location.search);
+        queryParams.set("tab", newTabName.toString() ?? "");
+        history.pushState(null, "", "?" + queryParams.toString());
+        selectedTabIndex.value = tabIndex;
+
+        if (isDescriptionTabSelected.value === true && isEditable.value === true) {
+            onEdit();
+        }
+    }
+
     /**
      * Event handler for the Additional Details Modal button being clicked.
      * Request all attribute details from the server and then show the modal.
@@ -445,4 +530,23 @@
         learningProgramEditBag.value = config.entity;
         panelMode.value = DetailPanelMode.Add;
     }
+
+    // Set initially selected tab.
+    const queryString = new URLSearchParams(window.location.search.toLowerCase());
+    let tabIndex = 0;
+    if (queryString.has("tab")) {
+        const tab = queryString.get("tab")?.toLowerCase() ?? "";
+
+        if (tab === "description") {
+            tabIndex = 1;
+        }
+        else if (tab === "completions") {
+            tabIndex = 2;
+        }
+        else if (tab === "semesters") {
+            tabIndex = 3;
+        }
+    }
+
+    selectedTabIndex.value = tabIndex;
 </script>

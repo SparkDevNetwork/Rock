@@ -4,16 +4,16 @@
         <div v-if="screenToShow === ComponentScreen.Configuration" class="learning-activity-video-file-configuration-container">
             <div class="header-content-section">
                 <RockLabel>Header Content</RockLabel>
-                <StructuredContentEditor
-                                         v-model="headerContent" />
+                <StructuredContentEditor v-model="headerContent" :disabled="disabled" />
             </div>
             <div class="video-file-media-section">
                 <div class="media-account-field">
                     <RockLabel>Video File</RockLabel>
-                    <MediaElementPicker v-model="video" media-element-label="Video" />
+                    <MediaElementPicker v-model="video" media-element-label="Video" :disabled="disabled" />
                 </div>
                 <div class="completion-threshold-field">
                     <NumberBox v-model="completionThresholdForView"
+                               :disabled="disabled"
                                :decimalCount="0"
                                :minimumValue="0"
                                :maximumValue="100"
@@ -30,7 +30,8 @@
             <div class="footer-content-section">
                 <RockLabel>Footer Content</RockLabel>
                 <StructuredContentEditor
-                                         v-model="footerContent" />
+                                         v-model="footerContent"
+                                         :disabled="disabled" />
             </div>
         </div>
 
@@ -57,7 +58,7 @@
             <div class="footer-buttons">
                 <RockButton :btnType="BtnType.Primary" :disabled="!hasPassedThreshold || isStudentCompleted"
                             @click="emits('completed', true)">
-                    {{isStudentCompleted ? 'Completed' : 'Complete'}}
+                    {{ isStudentCompleted ? 'Completed' : 'Complete' }}
                 </RockButton>
             </div>
         </fieldset>
@@ -83,6 +84,8 @@
     // Get the required props and emits for learning activity components.
     const props = defineProps({ ...learningActivityProps });
     const emits = defineEmits({ ...learningActivityEmits });
+
+    const disabled = ref(props.disabled ?? false);
 
     // Get the bags directly from the props when needed (to support the useLearningComponent computedRefs).
     const activityBag = toRef(() => props.activityBag);

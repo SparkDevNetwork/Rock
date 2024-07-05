@@ -17,6 +17,7 @@
 
             <div class="col-md-6">
                 <RadioButtonList v-model="assignTo"
+                                 :disabled="options.hasCompletions"
                                  label="Completed By"
                                  horizontal
                                  rules="required"
@@ -26,12 +27,14 @@
 
             <div class="col-md-6">
                 <CheckBox v-model="isStudentCommentingEnabled"
+                          :disabled="options.hasCompletions"
                           label="Enable Student Commenting"
                           help="Allow students to comment on this assignment." />
             </div>
             <div class="col-md-6">
                 <DropDownList
                               v-model="availableDateCalculationMethod"
+                              :disabled="options.hasCompletions"
                               :grouped="false"
                               :items="availableDateCalculationMethods"
                               rules="required"
@@ -43,6 +46,7 @@
             <div class="col-md-6">
                 <template v-if="availableDateCalculationMethod == AvailableDateCalculationMethod.Specific.toString()">
                     <DatePicker v-model="availableDateDefault"
+                                :disabled="options.hasCompletions"
                                 rules="required"
                                 label="Available Date" />
                 </template>
@@ -53,6 +57,7 @@
                 ].includes(availableDateCalculationMethod)">
 
                     <NumberBox v-model="availableDateOffset"
+                               :disabled="options.hasCompletions"
                                label="Available Date Offset"
                                rules="required"
                                help="The number of days from the calculation reference to add before the assignment is available."
@@ -66,6 +71,7 @@
             <div class="col-md-6">
                 <DropDownList
                               v-model="dueDateCalculationMethod"
+                              :disabled="options.hasCompletions"
                               :grouped="false"
                               :items="dueDateCalculationMethods"
                               rules="required"
@@ -78,6 +84,7 @@
             <div class="col-md-6">
                 <template v-if="dueDateCalculationMethod == DueDateCalculationMethod.Specific.toString()">
                     <DatePicker v-model="dueDateDefault" rules="required"
+                                :disabled="options.hasCompletions"
                                 label="Due Date" />
                 </template>
 
@@ -87,6 +94,7 @@
                 ].includes(dueDateCalculationMethod)">
 
                     <NumberBox v-model="dueDateOffset"
+                               :disabled="options.hasCompletions"
                                label="Due Date Offset"
                                rules="required"
                                help="The number of days from the calculation reference to add before the assignment is due."
@@ -99,24 +107,19 @@
             </div>
             <div class="col-md-6">
                 <CheckBox v-model="sendNotificationCommunication"
+                          :disabled="options.hasCompletions"
                           label="Send Notification Communication"
                           help="Determines if a notification should be sent when this activity is available." />
             </div>
             <div class="col-md-6">
-                <WorkflowTypePicker
-                                    v-model="completionWorkflowType"
+                <WorkflowTypePicker v-model="completionWorkflowType"
+                                    :disabled="options.hasCompletions"
                                     label="Completion Workflow Type"
                                     help="The workflow to launch when an individual completes the activity." />
             </div>
             <div class="col-md-6">
-                <!-- <FileUploader v-model="taskBinaryFile"
-                              label="Task File"
-                              :binaryFileTypeGuid="lmsFileTypeGuid"
-                              uploadButtonText="Upload"
-                              :showDeleteButton="true" /> -->
-            </div>
-            <div class="col-md-6">
                 <NumberBox v-model="points"
+                           :disabled="options.hasCompletions"
                            label="Points"
                            help="This is the total number of points available for this activity. Some activities will allow you to distribute these points across a weighted percentage of the activity's sub-items."
                            inputGroupClasses="input-width-md">
@@ -124,8 +127,8 @@
             </div>
             <div class="col-md-6">
 
-                <DropDownList
-                              v-model="activityComponentValue"
+                <DropDownList v-model="activityComponentValue"
+                              :disabled="options.hasCompletions"
                               :grouped="false"
                               :items="activityComponentListItems"
                               rules="required"
@@ -136,8 +139,8 @@
         </div>
 
         <!-- Pass the configuration and completion json values to the component. -->
-        <activityTypeComponent
-                               v-model:activityBag="activityBag"
+        <activityTypeComponent v-model:activityBag="activityBag"
+                               :disabled="options.hasCompletions"
                                :screenToShow="ComponentScreen.Configuration" />
     </fieldset>
 </template>
@@ -152,7 +155,6 @@
     import DatePicker from "@Obsidian/Controls/datePicker.obs";
     import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
     import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
-    import FileUploader from "@Obsidian/Controls/fileUploader.obs";
     import { ComponentScreen } from "@Obsidian/Controls/Internal/LearningActivity/learningActivity";
     import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
@@ -160,14 +162,11 @@
     import { LearningActivityDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityDetailOptionsBag";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import { LearningActivityComponentBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityComponent/learningActivityComponentBag";
-    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
     import { AssignTo, AssignToDescription } from "@Obsidian/Enums/Lms/assignTo";
     import { AvailableDateCalculationMethodDescription, AvailableDateCalculationMethod } from "@Obsidian/Enums/Lms/availableDateCalculationMethod";
     import { DueDateCalculationMethodDescription, DueDateCalculationMethod } from "@Obsidian/Enums/Lms/dueDateCalculationMethod";
-
-    const lmsFileTypeGuid = BinaryFiletype.LearningManagementSystem;
 
     const props = defineProps({
         modelValue: {
@@ -196,8 +195,6 @@
     const activityComponentListItems = ref<ListItemBag[]>(props.options?.activityTypeListItems ?? []);
     const activityComponents = ref<LearningActivityComponentBag[]>(props.options.activityTypes ?? []);
     const activityBag = ref(props.modelValue.bag ?? {} as LearningActivityBag);
-
-    const taskBinaryFile = propertyRef(activityBag.value?.taskBinaryFile ?? null, "TaskBinaryFile");
 
     const attributes = ref(activityBag.value?.attributes ?? {});
     const attributeValues = ref(activityBag.value?.attributeValues ?? {});

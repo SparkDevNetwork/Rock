@@ -26,13 +26,23 @@ import { Guid } from "@Obsidian/Types";
 import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
 import { LearningClassFacilitatorBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassDetail/learningClassFacilitatorBag";
 import { LearningParticipantBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningParticipantDetail/learningParticipantBag";
+import { PublicLearningClassWorkspaceNotificationBag } from "@Obsidian/ViewModels/Blocks/Lms/PublicLearningClassWorkspace/publicLearningClassWorkspaceNotificationBag";
+import { LearningClassContentPageBag } from "../LearningClassContentPageDetail/learningClassContentPageBag";
+import { LearningClassAnnouncementBag } from "../LearningClassAnnouncementDetail/learningClassAnnouncementBag";
+import { LearningGradingSystemScaleBag } from "../LearningGradingSystemScaleDetail/learningGradingSystemScaleBag";
 
 export type PublicLearningClassWorkspaceBox = {
     /** Gets or sets the list of activities for this learning class. */
     activities?: LearningActivityCompletionBag[] | null;
 
+    /** Gets or sets the announcements specific to this class and student. */
+    announcements?: LearningClassAnnouncementBag[] | null;
+
     /** Gets or sets the id for the class. */
     classIdKey?: string | null;
+
+    /** Gets or sets the custom content pages for the class. */
+    contentPages?: LearningClassContentPageBag[] | null;
 
     /** Gets or sets the id for the course. */
     courseIdKey?: string | null;
@@ -45,6 +55,12 @@ export type PublicLearningClassWorkspaceBox = {
 
     /** Gets or sets the summary of the course. */
     courseSummary?: string | null;
+
+    /** Gets or sets the current Grade scale that the student has achieved in the class (if configured to show grades). */
+    currentGrade?: LearningGradingSystemScaleBag | null;
+
+    /** Gets or sets whether the person currently viewing the page is a facilitator. */
+    isCurrentPersonFacilitator: boolean;
 
     /**
      * Gets or sets the error message. A non-empty value indicates that
@@ -61,6 +77,9 @@ export type PublicLearningClassWorkspaceBox = {
     /** Gets or sets the navigation urls. */
     navigationUrls?: Record<string, string> | null;
 
+    /** Gets or sets the notifications for the class workspace. */
+    notifications: PublicLearningClassWorkspaceNotificationBag[];
+
     /** Gets or sets the number of notifications to show on the class overview page. */
     numberOfNotificationsToShow: number;
 
@@ -68,7 +87,7 @@ export type PublicLearningClassWorkspaceBox = {
     participantBag?: LearningParticipantBag | null;
 
     /** Gets or sets the Learning Program's configuration mode. */
-    progamConfigurationMode: ConfigurationMode;
+    programConfigurationMode: ConfigurationMode;
 
     /** Gets or sets the security grant token. */
     securityGrantToken?: string | null;
