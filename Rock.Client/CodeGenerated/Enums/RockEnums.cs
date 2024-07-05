@@ -1327,6 +1327,15 @@ namespace Rock.Client.Enums.CheckIn.Labels
 
     /// <summary>
     /// </summary>
+    public enum DitherMode
+    {
+        None = 0x0,
+        Fast = 0x1,
+        Quality = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
     public enum HorizontalTextAlignment
     {
         Left = 0x0,

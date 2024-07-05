@@ -21,5 +21,6 @@
 // </copyright>
 //
 
+/** The configuration options for the Check-in Label List block. */
 export type CheckInLabelListOptionsBag = {
 };

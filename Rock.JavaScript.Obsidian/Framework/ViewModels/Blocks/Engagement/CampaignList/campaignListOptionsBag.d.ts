@@ -21,5 +21,6 @@
 // </copyright>
 //
 
+/** The configuration options for the Campaign List block. */
 export type CampaignListOptionsBag = {
 };

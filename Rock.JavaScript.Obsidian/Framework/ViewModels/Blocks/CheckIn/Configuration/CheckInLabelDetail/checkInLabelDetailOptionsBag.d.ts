@@ -23,6 +23,7 @@
 
 import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
 
+/** The configuration options for the Check-in Label Detail block. */
 export type CheckInLabelDetailOptionsBag = {
     /** The filter sources available when editing an attendance label. */
     attendanceLabelFilterSources?: FieldFilterSourceBag[] | null;

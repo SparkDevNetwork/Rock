@@ -29,7 +29,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// LearningActivityCompletions REST API
     /// </summary>
-    [RestControllerGuid( "4586B174-8834-46C0-B4F2-A5D9BBE2414D" )]
+    [RestControllerGuid( "4BF5EDF0-DB1C-413F-BD6E-0A86B2B70B16" )]
     public partial class LearningActivityCompletionsController : Rock.Rest.ApiController<Rock.Model.LearningActivityCompletion>
     {
         /// <summary>
