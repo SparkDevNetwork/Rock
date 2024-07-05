@@ -243,6 +243,7 @@
     <Compile Include="Blocks\Engagement\StepProgramDetail\StepStatusBag.cs" />
     <Compile Include="Blocks\Engagement\StepProgramDetail\StepProgramWorkflowTriggerBag.cs" />
     <Compile Include="Blocks\Finance\FinancialAccountList\FinancialAccountListOptionsBag.cs" />
+	<Compile Include="Blocks\Event\EventItemOccurrenceList\EventItemOccurrenceListOptionsBag.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\ExtensionMethods.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockArgs.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockSession.cs" />
