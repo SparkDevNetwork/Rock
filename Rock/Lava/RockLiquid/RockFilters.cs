@@ -5414,21 +5414,20 @@ namespace Rock.Lava
 
             if ( useGetImageHandler )
             {
-                string prefix = prependAppRootUrl ? GlobalAttributesCache.Value( "PublicApplicationRoot" ).TrimEnd( '/' ) + "/" : "/";
+                string prefix = prependAppRootUrl ? GlobalAttributesCache.Value( "PublicApplicationRoot" ).TrimEnd( '/' ) : string.Empty;
 
                 if ( queryStringKey == "Id" )
                 {
-                    url = FileUrlHelper.GetImageUrl( inputString.ToIntSafe(), new GetImageUrlOptions { PublicAppRoot = prefix } );
+                    url = prefix + FileUrlHelper.GetImageUrl( inputString.ToIntSafe(), new GetImageUrlOptions() );
                 }
                 else
                 {
-                    url = FileUrlHelper.GetImageUrl( inputString.AsGuid(), new GetImageUrlOptions { PublicAppRoot = prefix } );
+                    url = prefix + FileUrlHelper.GetImageUrl( inputString.AsGuid(), new GetImageUrlOptions() );
                 }
             }
 
             return url ?? fallbackUrl ?? string.Empty;
         }
-
         /// <summary>
         /// Returns a named configuration setting for the current Rock instance.
         /// </summary>

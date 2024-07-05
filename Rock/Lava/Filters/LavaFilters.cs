@@ -4043,7 +4043,7 @@ namespace Rock.Lava
                 useGetImageHandler = true;
                 prependAppRootUrl = true;
             }
-            else if (rootUrlAsBool.HasValue || rootUrl == null )
+            else if ( rootUrlAsBool.HasValue || rootUrl == null )
             {
                 useGetImageHandler = true;
                 prependAppRootUrl = rootUrlAsBool ?? false;
@@ -4053,15 +4053,15 @@ namespace Rock.Lava
 
             if ( useGetImageHandler )
             {
-                string prefix = prependAppRootUrl ? GlobalAttributesCache.Value( "PublicApplicationRoot" ).TrimEnd( '/' ) + "/" : "/";
+                string prefix = prependAppRootUrl ? GlobalAttributesCache.Value( "PublicApplicationRoot" ).TrimEnd( '/' ) : string.Empty;
 
                 if ( queryStringKey == "Id" )
                 {
-                    url = FileUrlHelper.GetImageUrl( inputString.ToIntSafe(), new GetImageUrlOptions { PublicAppRoot = prefix } );
+                    url = prefix + FileUrlHelper.GetImageUrl( inputString.ToIntSafe(), new GetImageUrlOptions() );
                 }
                 else
                 {
-                    url = FileUrlHelper.GetImageUrl( inputString.AsGuid(), new GetImageUrlOptions { PublicAppRoot = prefix } );
+                    url = prefix + FileUrlHelper.GetImageUrl( inputString.AsGuid(), new GetImageUrlOptions() );
                 }
             }
 
