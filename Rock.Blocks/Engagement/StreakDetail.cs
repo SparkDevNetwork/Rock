@@ -471,7 +471,7 @@ namespace Rock.Blocks.Engagement
                     var personId = new PersonAliasService( rockContext ).GetPersonId( box.Entity.PersonAlias.Value.AsGuid() ).ToIntSafe();
                     var streakTypeCache = StreakTypeCache.Get( box.Entity.StreakType.Value.AsGuid() );
                     var streakTypeService = new StreakTypeService( rockContext );
-                    entity = streakTypeService.Enroll( streakTypeCache, personId, out errorMessage, entity.EnrollmentDate, entity.LocationId );
+                    entity = streakTypeService.Enroll( streakTypeCache, personId, out errorMessage, box.Entity.EnrollmentDate, box.Entity.Location.GetEntityId<Location>( rockContext ).ToIntSafe() );
                     if ( entity == null )
                     {
                         return ActionBadRequest( errorMessage );
