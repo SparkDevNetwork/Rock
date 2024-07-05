@@ -124,6 +124,7 @@
     <Content Include="src\Event\eventItemDetail.obs" />
     <Content Include="src\Event\EventItemDetail\editPanel.partial.obs" />
     <Content Include="src\Event\EventItemDetail\viewPanel.partial.obs" />
+    <Content Include="src\Event\eventItemOccurrenceList.obs" />
     <Content Include="src\Event\registrationInstanceLinkageList.obs" />
     <Content Include="src\Event\registrationEntry.obs" />
     <Content Include="src\Event\RegistrationEntry\costSummary.partial.obs" />
@@ -374,6 +375,7 @@
     <Folder Include="src\Event\AttendanceList\" />
     <Folder Include="src\Event\EventCalendarDetail\" />
     <Folder Include="src\Event\EventItemDetail\" />
+    <Folder Include="src\Event\EventItemOccurrenceList\" />
     <Folder Include="src\Event\RegistrationInstanceLinkageList\" />
     <Folder Include="src\Event\RegistrationInstanceFeeList\" />
     <Folder Include="src\Finance\BenevolenceRequestList\" />
@@ -554,6 +556,7 @@
     <TypeScriptCompile Include="src\Event\AttendanceList\types.partial.ts" />
     <TypeScriptCompile Include="src\Event\EventCalendarDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Event\EventItemDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Event\EventItemOccurrenceList\types.partial.ts" />
     <TypeScriptCompile Include="src\Event\RegistrationInstanceLinkageList\types.partial.ts" />
     <TypeScriptCompile Include="src\Event\RegistrationInstanceFeeList\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\BenevolenceRequestList\types.partial.ts" />

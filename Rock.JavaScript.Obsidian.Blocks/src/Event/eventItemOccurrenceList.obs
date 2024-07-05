@@ -1,0 +1,356 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid v-if="config.options?.isBlockVisible"
+          :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          title="Event Occurrence"
+          itemTerm="Event Occurrence"
+          :entityTypeGuid="EntityType.EventItemOccurrence"
+          stickyHeader
+          liveUpdates
+          gridSettings
+          :gridSettingsActive="hasSettingsFilters"
+          @gridSettingsClick="onGridSettingsClick"
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          @selectItem="onSelectItem">
+
+        <TextColumn name="campus"
+                    title="Campus"
+                    field="campus"
+                    :filter="pickExistingValueFilter"
+                    visiblePriority="xs"
+                    width="5%" />
+
+        <TextColumn name="date"
+                    :title="nextDateColumnTitle"
+                    field="date"
+                    :filter="dateValueFilter"
+                    visiblePriority="xs"
+                    width="5%" />
+
+        <TextColumn name="location"
+                    title="Location"
+                    field="location"
+                    :filter="textValueFilter"
+                    visiblePriority="md"
+                    width="7%" />
+
+        <Column name="registration"
+                title="Registration"
+                field="registration"
+                :filter="pickExistingValueFilter"
+                :filterValue="getRegistrationColumnFilterValue"
+                :quickFilterValue="getRegistrationColumnFilterValue"
+                visiblePriority="md"
+                width="10%">
+            <template #format="{ row }">
+                <a v-if="row.registration" :href="`${config.options?.registrationInstancePageUrl}?RegistrationInstanceId=${row.registrationInstanceId}`">{{ row.registration }}</a>
+            </template>
+
+            <template #skeleton>
+                <div class="skeleton skeleton-text skeleton-rounded" />
+            </template>
+        </Column>
+
+        <Column name="group"
+                title="Group"
+                field="group"
+                :filter="pickExistingValueFilter"
+                :filterValue="getGroupColumnFilterValue"
+                :quickFilterValue="getGroupColumnFilterValue"
+                visiblePriority="md"
+                width="5%">
+            <template #format="{ row }">
+                <a v-if="row.group" :href="`${config.options?.groupDetailPageUrl}?GroupId=${row.groupId}`">{{ row.group }}</a>
+            </template>
+
+            <template #skeleton>
+                <div class="skeleton skeleton-text skeleton-rounded" />
+            </template>
+        </Column>
+
+        <Column name="contentItems"
+                title="Content Items"
+                :filter="textValueFilter"
+                :filterValue="getContentItemsColumnFilterValue"
+                :quickFilterValue="getContentItemsColumnFilterValue"
+                visiblePriority="md"
+                width="15%">
+            <template #format="{ row }">
+                <div class="text">
+                    <div v-for="contentItem in getContentChannelItems(row.contentItems)">
+                        <a :href='contentItem.url'>{{ contentItem.title }}</a> ({{ contentItem.name }})
+                    </div>
+                </div>
+            </template>
+
+            <template #skeleton>
+                <div class="skeleton skeleton-text skeleton-rounded" />
+            </template>
+        </Column>
+
+        <PersonColumn name="contact"
+                      title="Contact"
+                      field="contact"
+                      :filterValue="getContactColumnFilterValue"
+                      :filter="pickExistingValueFilter"
+                      visiblePriority="md"
+                      :hideAvatar="true"
+                      width="5%" />
+
+        <TextColumn name="contactPhone"
+                    title="Phone"
+                    field="contactPhone"
+                    :filter="textValueFilter"
+                    visiblePriority="md"
+                    width="5%" />
+
+        <TextColumn name="contactEmail"
+                    title="Email"
+                    field="contactEmail"
+                    :filter="textValueFilter"
+                    visiblePriority="md" />
+
+        <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
+
+        <ButtonColumn name="copy"
+                      title="Copy"
+                      iconClass="fa fa-clone"
+                      visiblePriority="xs"
+                      @click="onCopyClick" />
+
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+    </Grid>
+
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible"
+                       :campusItems="config.options?.campusItems ?? []" />
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { PersonColumn, pickExistingValueFilter, dateValueFilter, TextColumn, textValueFilter, DeleteColumn, ButtonColumn, AttributeColumns, Column } from "@Obsidian/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { EventItemOccurrenceListOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/EventItemOccurrenceList/eventItemOccurrenceListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { NavigationUrlKey, GridSettingsOptions, PreferenceKey } from "./EventItemOccurrenceList/types.partial";
+    import { computed, reactive, ref, watch } from "vue";
+    import GridSettingsModal from "./EventItemOccurrenceList/gridSettingsModal.partial.obs";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+
+    const config = useConfigurationValues<ListBlockBox<EventItemOccurrenceListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const isGridSettingsVisible = ref(false);
+    const gridSettings = ref<GridSettingsOptions>({
+        startDate: preferences.getValue(PreferenceKey.FilterStartDate),
+        endDate: preferences.getValue(PreferenceKey.FilterEndDate),
+        contact: preferences.getValue(PreferenceKey.FilterContact),
+        campuses: JSON.parse(preferences.getValue(PreferenceKey.FilterCampus) || "[]"),
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    const nextDateColumnTitle = computed((): string => {
+        return !!gridSettings.value.startDate || !!gridSettings.value.endDate ? "Next Date In Range" : "Next Start Date";
+    });
+
+    /** `true` if the grid settings is performing any filtering. */
+    const hasSettingsFilters = computed((): boolean => {
+        return !!gridSettings.value.startDate
+            || !!gridSettings.value.endDate
+            || !!gridSettings.value.contact
+            || gridSettings.value.campuses.length > 0;
+    });
+
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    /**
+    * Gets the filter value text to use for the calendars column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getContentItemsColumnFilterValue(row: Record<string, unknown>): string {
+        let filterValue = "";
+        const contentItems = row.contentItems as string[];
+        for (const contentItem of contentItems) {
+            filterValue += contentItem;
+        }
+
+        return filterValue;
+    }
+
+    /**
+    * Gets the filter value text to use for the registration column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getRegistrationColumnFilterValue(row: Record<string, unknown>): string {
+        return row.registration as string;
+    }
+
+    /**
+    * Gets the filter value text to use for the group column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getGroupColumnFilterValue(row: Record<string, unknown>): string {
+        return row.group as string;
+    }
+
+    /**
+    * Gets the filter value text to use for the contact column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getContactColumnFilterValue(row: Record<string, unknown>): string {
+        const contact = row.contact as PersonFieldBag;
+        return !contact ? "" : `${contact.nickName} ${contact.lastName}`;
+    }
+
+    /**
+     * Converts the formatted content channel strings into a readble object to be used for the construction of anchor tags in the grid.
+     * @param value The formatted content channel strings.
+     */
+    function getContentChannelItems(value: string): Record<string, string>[] {
+        const contentItems = [] as Record<string, string>[];
+
+        if (value) {
+            const formattedContentItems = value.split(",");
+            for (const formattedContentItem of formattedContentItems) {
+                const contentItem = {} as Record<string, string>;
+                const contentItemDetails = formattedContentItem.split("|");
+
+                if (contentItemDetails.length > 0) {
+                    contentItem.url = contentItemDetails[0];
+                    contentItem.title = contentItemDetails[1];
+                    contentItem.name = contentItemDetails[2];
+                }
+
+                contentItems.push(contentItem);
+            }
+        }
+
+        return contentItems;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+        }
+    }
+
+    /**
+     * Called when a row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete event item occurrence.");
+        }
+    }
+
+    /**
+     * Called when the Add button has been clicked by the indivual.
+     */
+    function onAddItem(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
+        }
+    }
+
+    /**
+    * Called when a row's copy button has been clicked by the individual.
+    * This sends a request to the server to create a new EventItemOccurrence
+    * based on the clicked entity and redirects the user to the specified
+    * detail page with the EventItemOccurrence Id.
+    */
+    async function onCopyClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Copy", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (result.data) {
+                window.location.href = result.data;
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to copy Event Item Occurrence.");
+        }
+    }
+
+    /**
+    * Called when the grid setting icon is clicked, displays the block filters.
+    *
+    */
+    function onGridSettingsClick(): void {
+        isGridSettingsVisible.value = true;
+    }
+
+    // #endregion
+
+    watch(gridSettings, async () => {
+        preferences.setValue(PreferenceKey.FilterStartDate, gridSettings.value.startDate ?? "");
+        preferences.setValue(PreferenceKey.FilterEndDate, gridSettings.value.endDate ?? "");
+        preferences.setValue(PreferenceKey.FilterContact, gridSettings.value.contact ?? "");
+        preferences.setValue(PreferenceKey.FilterCampus, JSON.stringify(gridSettings.value.campuses));
+
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
+    });
+
+    gridDataSource.value = loadGridData();
+</script>
