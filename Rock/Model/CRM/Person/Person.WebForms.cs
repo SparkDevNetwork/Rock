@@ -21,6 +21,8 @@ using System.Text;
 using System.Web;
 using DocumentFormat.OpenXml.Drawing.Charts;
 using Rock.Data;
+using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -173,14 +175,12 @@ namespace Rock.Model
         /// <returns></returns>
         public static string GetPersonPhotoUrl( string initials, int? photoId, int? age, Gender gender, int? recordTypeValueId, AgeClassification? ageClassification, int? size = null )
         {
-            string virtualPath = string.Empty;
+            var virtualPath = string.Empty;
 
             // If there are no initials provided we'll change the style of the avatar to be an icon
             var stylingOverride = string.Empty;
-            if ( initials.IsNullOrWhiteSpace() )
-            {
-                stylingOverride = "&Style=icon";
-            }
+
+            SecuritySettingsService securitySettingsService = new SecuritySettingsService();
 
             // Determine if we need to provide a size
             var sizeParamter = string.Empty;
@@ -190,7 +190,22 @@ namespace Rock.Model
                 sizeParamter = $"&Size={size}";
             }
 
-            virtualPath = $"~/GetAvatar.ashx?PhotoId={photoId}&AgeClassification={ageClassification}&Gender={gender}&RecordTypeId={recordTypeValueId}&Text={initials}{stylingOverride}{sizeParamter}";
+            if ( initials.IsNullOrWhiteSpace() )
+            {
+                stylingOverride = "&Style=icon";
+            }
+
+            var disablePredictableIds = securitySettingsService.SecuritySettings.DisablePredictableIds;
+
+            if ( disablePredictableIds && photoId.HasValue )
+            {
+                var photoIdHash = IdHasher.Instance.GetHash( photoId.Value );
+                virtualPath = $"~/GetAvatar.ashx?fileIdKey={photoIdHash}&AgeClassification={ageClassification}&Gender={gender}&RecordTypeId={recordTypeValueId}&Text={initials}{stylingOverride}{sizeParamter}";
+            }
+            else
+            {
+                virtualPath = $"~/GetAvatar.ashx?PhotoId={photoId}&AgeClassification={ageClassification}&Gender={gender}&RecordTypeId={recordTypeValueId}&Text={initials}{stylingOverride}{sizeParamter}";
+            }
 
             if ( System.Web.HttpContext.Current == null )
             {
@@ -291,7 +306,6 @@ namespace Rock.Model
         {
             var photoUrl = new StringBuilder();
 
-            photoUrl.Append( VirtualPathUtility.ToAbsolute( "~/" ) );
             string altText = personPhotoImageTagArgs.AltText;
             string className = personPhotoImageTagArgs.ClassName;
             int? photoId = personPhotoImageTagArgs.PhotoId;
@@ -311,7 +325,7 @@ namespace Rock.Model
 
             if ( photoId.HasValue )
             {
-                photoUrl.AppendFormat( "GetImage.ashx?id={0}", photoId );
+                photoUrl.Append( FileUrlHelper.GetImageUrl( photoId.Value ) );
                 if ( maxWidth.HasValue )
                 {
                     photoUrl.AppendFormat( "&maxwidth={0}", maxWidth.Value );

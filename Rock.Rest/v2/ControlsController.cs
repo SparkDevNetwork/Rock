@@ -921,7 +921,8 @@ namespace Rock.Rest.v2
                 {
                     if ( item.GetAttributeValue( "TemplateBlock" ).AsGuid() == blockTemplateDefinedValue.Guid )
                     {
-                        var imageUrl = string.Format( "~/GetImage.ashx?guid={0}", item.GetAttributeValue( "Icon" ).AsGuid() );
+                        var iconGuid = item.GetAttributeValue( "Icon" ).AsGuid();
+                        var imageUrl = FileUrlHelper.GetImageUrl( iconGuid );
 
                         items.Add( new BlockTemplatePickerGetBlockTemplatesResultsBag { Guid = item.Guid, Name = item.Value, IconUrl = RockRequestContext.ResolveRockUrl( imageUrl ), Template = item.Description } );
                     }

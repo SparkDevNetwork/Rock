@@ -19,6 +19,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -400,7 +401,7 @@ namespace RockWeb.Blocks.Crm
             var viewDocumentField = gFileList.ColumnsOfType<HyperLinkField>().FirstOrDefault();
             var viewDocumentFieldIndex = gFileList.Columns.IndexOf( viewDocumentField );
             var viewDocumentHyperLink = ( HyperLink ) e.Row.Cells[viewDocumentFieldIndex].Controls[0];
-            viewDocumentHyperLink.NavigateUrl = $"~/GetFile.ashx?id={document.BinaryFile.Id}";
+            viewDocumentHyperLink.NavigateUrl = FileUrlHelper.GetFileUrl( document.BinaryFile.Id );
             var viewableExtensions = new string[] { ".PDF", ".GIF", ".JPG", ".PNG"  };
             var fileExtension = System.IO.Path.GetExtension( document.BinaryFile.FileName ).ToUpper();
             viewDocumentHyperLink.Visible = viewableExtensions.Contains( fileExtension );
