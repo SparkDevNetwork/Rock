@@ -250,6 +250,11 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_170_CHOP_SHORTENED_LINKS_BLOCK = "8899363A-C52B-4D82-88C2-CA199D73E95C";
 
         /// <summary>
+        /// The Job to run Post v17.0 Data Migrations to chop 6 blocks Block.
+        /// </summary>
+        public const string DATA_MIGRATIONS_166_CHOP_OBSIDIAN_BLOCKS = "4B8A66B3-1D92-480C-B473-D066B64E72AD";
+
+        /// <summary>
         /// The Job to get NCOA
         /// </summary>
         public const string GET_NCOA = "D2D6EA6C-F94A-39A0-481B-A23D08B887D6";

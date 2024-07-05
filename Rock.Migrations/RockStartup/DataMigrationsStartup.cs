@@ -88,7 +88,8 @@ namespace Rock.Migrations.RockStartup
             SystemGuid.ServiceJob.DATA_MIGRATIONS_162_CHOP_EMAIL_PREFERENCE_ENTRY.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_166_UPDATE_ACHIEVEMENTTYPE_TARGETCOUNT_COLUMN.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_166_ADD_INTERACTION_CREATED_DATE_TIME_INDEX.AsGuid(),
-            SystemGuid.ServiceJob.DATA_MIGRATIONS_166_ADD_COMMUNICATION_RECIPIENT_INDEX.AsGuid()
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_166_ADD_COMMUNICATION_RECIPIENT_INDEX.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_166_CHOP_OBSIDIAN_BLOCKS.AsGuid()
         };
 
 
