@@ -5954,7 +5954,8 @@ namespace RockWeb.Blocks.Event
                     var costSummary = new RegistrationCostSummaryInfo
                     {
                         Type = RegistrationCostSummaryType.Cost,
-                        Description = string.Format( "{0} {1}", registrant.GetFirstName( RegistrationTemplate ), registrant.GetLastName( RegistrationTemplate ) )
+                        Description = string.Format( "{0} {1}", registrant.GetFirstName( RegistrationTemplate ), registrant.GetLastName( RegistrationTemplate ) ),
+                        RegistrationRegistrantGuid = registrant.Guid
                     };
 
                     // If the registrant is on the waitlist then set costs to 0 and add a waitlist indicator to the name for the payment summary grid
@@ -6028,6 +6029,7 @@ namespace RockWeb.Blocks.Event
                                 {
                                     Type = RegistrationCostSummaryType.Fee,
                                     Description = desc,
+                                    RegistrationRegistrantGuid = registrant.Guid,
                                     Cost = feeInfo.Quantity * cost,
 
                                     // Default the DiscountedCost to be the same as the Cost
@@ -6099,6 +6101,9 @@ namespace RockWeb.Blocks.Event
                         Description = "Total",
                         Cost = costs.Sum( c => c.Cost ),
                         DiscountedCost = RegistrationState.DiscountedCost,
+
+                        // The total isn't associated with a particular registrant, so set the registrant guid to null.
+                        RegistrationRegistrantGuid = null
                     } );
 
                     rptFeeSummary.DataSource = costs;

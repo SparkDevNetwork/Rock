@@ -1253,7 +1253,11 @@
     <Compile Include="Model\Finance\FinancialPledge\FinancialPledge.SaveHook.cs" />
     <Compile Include="Model\Finance\FinancialScheduledTransaction\FinancialScheduledTransactionExtensionMethods.cs" />
     <Compile Include="Model\Finance\FinancialScheduledTransaction\FinancialScheduledTransactionPaymentPlanPair.cs" />
+    <Compile Include="Model\Finance\FinancialScheduledTransaction\PaymentFrequencyConfiguration.cs" />
     <Compile Include="Model\Finance\FinancialScheduledTransaction\PaymentPlan.cs" />
+    <Compile Include="Model\Finance\FinancialScheduledTransaction\PaymentPlanConfiguration.cs" />
+    <Compile Include="Model\Finance\FinancialScheduledTransaction\PaymentPlanConfigurationOptions.cs" />
+    <Compile Include="Model\Finance\FinancialScheduledTransaction\PaymentPlanConfigurationService.cs" />
     <Compile Include="Model\Group\GroupLocationHistoricalSchedule\GroupLocationHistoricalScheduleService.cs" />
     <Compile Include="Model\Event\RegistrationTemplateFormField\RegistrationTemplateFormFieldException.cs" />
     <Compile Include="Model\Event\RegistrationTemplateForm\RegistrationTemplateFormService.cs" />
