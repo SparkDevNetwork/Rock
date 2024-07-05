@@ -37,7 +37,7 @@ namespace Rock.Blocks.Cms
     [DisplayName( "Shortened Links" )]
     [Category( "Administration" )]
     [Description( "Displays a dialog for adding a short link to the current page." )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 

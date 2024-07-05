@@ -1705,21 +1705,6 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                             iPageSecurity.Attributes.Add( "class", "fa fa-lock" );
 
                             // ShortLink Properties
-                            HtmlGenericControl aShortLink = new HtmlGenericControl( "a" );
-                            buttonBar.Controls.Add( aShortLink );
-                            aShortLink.ID = "aShortLink";
-                            aShortLink.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                            aShortLink.Attributes.Add( "class", "btn properties" );
-                            aShortLink.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" +
-                                ResolveUrl( string.Format( "~/ShortLink/{0}?t=Shortened Link&Url={1}", _pageCache.Id, Server.UrlEncode( HttpContext.Current.Request.UrlProxySafe().AbsoluteUri.ToString() ) ) )
-                                + "')" );
-                            aShortLink.Attributes.Add( "Title", "Add Short Link" );
-                            HtmlGenericControl iShortLink = new HtmlGenericControl( "i" );
-                            aShortLink.Controls.Add( iShortLink );
-                            iShortLink.Attributes.Add( "class", "fa fa-link" );
-
-                            // Obsidian ShortLink Properties - TO BE UNCOMMENTED IN v17
-/*
                             var administratorShortlinkScript = $@"Obsidian.onReady(() => {{
     System.import('@Obsidian/Templates/rockPage.js').then(module => {{
         module.showShortLink('{ResolveUrl( string.Format( "~/ShortLink/{0}?t=Shortened Link&Url={1}", _pageCache.Id, Server.UrlEncode( HttpContext.Current.Request.UrlProxySafe().AbsoluteUri.ToString() ) ) )}');
@@ -1736,7 +1721,6 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                             HtmlGenericControl iObsidianShortLink = new HtmlGenericControl( "i" );
                             aObsidianShortLink.Controls.Add( iObsidianShortLink );
                             iObsidianShortLink.Attributes.Add( "class", "fa fa-link" );
-*/
 
                             // System Info
                             HtmlGenericControl aSystemInfo = new HtmlGenericControl( "a" );

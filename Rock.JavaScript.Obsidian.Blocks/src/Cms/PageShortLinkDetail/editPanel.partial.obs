@@ -23,8 +23,7 @@
                  help="The URL that short link will direct users to." />
         <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
 
-        <!-- The Advanced Settings Panel would be toggled on in v17-->
-        <Panel v-show="false" title="Advanced Settings" hasCollapse>
+        <Panel title="Advanced Settings" hasCollapse>
             <div class="row">
                 <div class="col-md-6">
                     <DefinedValuePicker
