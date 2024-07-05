@@ -21,6 +21,9 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.CheckIn.Configuration.CheckInLabelDetail
 {
+    /// <summary>
+    /// A bag that contains the required information to render a check in label.
+    /// </summary>
     public class CheckInLabelBag : EntityBagBase
     {
         /// <summary>

@@ -26,6 +26,7 @@ import { LabelType } from "@Obsidian/Enums/CheckIn/Labels/labelType";
 import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterGroupBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
+/** A bag that contains the required information to render a check in label. */
 export type CheckInLabelBag = {
     /** Gets or sets the attributes. */
     attributes?: Record<string, PublicAttributeBag> | null;

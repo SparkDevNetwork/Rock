@@ -24,6 +24,7 @@ using System.Threading.Tasks;
 using Rock.Common.Mobile.Enums;
 using Rock.Data;
 using Rock.Mobile;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -242,7 +243,7 @@ namespace Rock.Model
             // FileSystem provider currently returns a bad URL.
             if ( file.BinaryFileType.StorageEntityType.Name == "Rock.Storage.Provider.FileSystem" )
             {
-                url = $"/GetFile.ashx?Id={file.Id}";
+                url = FileUrlHelper.GetFileUrl( file.Id );
                 var uri = new Uri( GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ) );
 
                 url = uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + url;

@@ -248,6 +248,17 @@
     <Compile Include="Controllers\CodeGenerated\IdentityVerificationCodesController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\IdentityVerificationsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\LavaShortcodesController.CodeGenerated.cs" />
+	<Compile Include="Controllers\CodeGenerated\LearningActivitiesController.CodeGenerated.cs" />
+	<Compile Include="Controllers\CodeGenerated\LearningActivityCompletionsController.CodeGenerated.cs" />
+	<Compile Include="Controllers\CodeGenerated\LearningClassAnnouncementsController.CodeGenerated.cs" />
+	<Compile Include="Controllers\CodeGenerated\LearningClassContentPagesController.CodeGenerated.cs" />
+	<Compile Include="Controllers\CodeGenerated\LearningCourseRequirementsController.CodeGenerated.cs" />
+	<Compile Include="Controllers\CodeGenerated\LearningCoursesController.CodeGenerated.cs" />
+	<Compile Include="Controllers\CodeGenerated\LearningGradingSystemScalesController.CodeGenerated.cs" />
+	<Compile Include="Controllers\CodeGenerated\LearningGradingSystemsController.CodeGenerated.cs" />
+	<Compile Include="Controllers\CodeGenerated\LearningProgramCompletionsController.CodeGenerated.cs" />
+	<Compile Include="Controllers\CodeGenerated\LearningProgramsController.CodeGenerated.cs" />
+	<Compile Include="Controllers\CodeGenerated\LearningSemestersController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\MediaAccountsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\MediaElementsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\MediaFoldersController.CodeGenerated.cs" />

@@ -30,7 +30,7 @@ using Rock.Data;
 using Rock.DownhillCss;
 using Rock.Model;
 using Rock.Security;
-
+using Rock.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -337,7 +337,7 @@ namespace RockWeb.Blocks.Mobile
 
 
             // Set the UI fields for the preview thumbnail.
-            imgAppPreview.ImageUrl = string.Format( "~/GetImage.ashx?Id={0}", site.ThumbnailBinaryFileId );
+            imgAppPreview.ImageUrl = FileUrlHelper.GetImageUrl( site.ThumbnailBinaryFileId );
             pnlPreviewImage.Visible = site.ThumbnailBinaryFileId.HasValue;
 
             //

@@ -1261,7 +1261,16 @@ namespace Rock.Client.Enums.Controls
 
     /// <summary>
     /// </summary>
-    public enum DayOfWeek
+    public enum DitherMode
+    {
+        None = 0x0,
+        Fast = 0x1,
+        Quality = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum HorizontalTextAlignment
     {
         Sunday = 0x0,
         Monday = 0x1,
