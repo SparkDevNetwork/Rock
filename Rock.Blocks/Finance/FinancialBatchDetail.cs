@@ -658,9 +658,8 @@ namespace Rock.Blocks.Finance
 
                 entity.LoadAttributes( rockContext );
 
-                var contextEntity = RequestContext.GetContextEntity<FinancialBatch>();
-                contextEntity.CopyPropertiesFrom( entity );
-
+                // Ensure navigation properties will work now.
+                entity = entityService.Get( entity.Id );
                 return ActionOk( GetEntityBagForView( entity ) );
             }
         }
