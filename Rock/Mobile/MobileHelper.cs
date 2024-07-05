@@ -30,6 +30,7 @@ using Rock.DownhillCss;
 using Rock.Mobile.JsonFields;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 using Authorization = Rock.Security.Authorization;
@@ -432,7 +433,7 @@ namespace Rock.Mobile
 
             if ( site.FavIconBinaryFileId.HasValue )
             {
-                package.AppearanceSettings.LogoUrl = $"{applicationRoot}/GetImage.ashx?Id={site.FavIconBinaryFileId.Value}";
+                package.AppearanceSettings.LogoUrl = FileUrlHelper.GetImageUrl( site.FavIconBinaryFileId.Value );
             }
 
             //
@@ -600,7 +601,7 @@ namespace Rock.Mobile
                     PageGuid = page.Guid,
                     Order = page.Order,
                     ParentPageGuid = page.ParentPage?.Guid,
-                    IconUrl = page.IconBinaryFileId.HasValue ? $"{applicationRoot}GetImage.ashx?Id={page.IconBinaryFileId.Value}" : null,
+                    IconUrl = page.IconBinaryFileId.HasValue ? FileUrlHelper.GetImageUrl( page.IconBinaryFileId.Value ) : null,
                     LavaEventHandler = additionalPageSettings.LavaEventHandler,
                     DepthLevel = depth,
                     CssClasses = page.BodyCssClass,

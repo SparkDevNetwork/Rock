@@ -196,7 +196,7 @@ namespace Rock.Blocks.CheckIn
             var promotions = promotionItems
                 .Select( item => new PromotionBag
                 {
-                    Url = $"/GetImage.ashx?Guid={item.GetAttributeValue( "Image" )}",
+                    Url = $"/GetImage.ashx?guid={item.GetAttributeValue( "Image" )}",
                     Duration = item.GetAttributeValue( "DisplayDuration" ).AsIntegerOrNull() ?? 15
                 } )
                 .ToList();

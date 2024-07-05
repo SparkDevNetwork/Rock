@@ -26,6 +26,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.Utility;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -113,8 +114,8 @@ namespace Rock.Field.Types
                 }
                 else
                 {
-                    var filePath = System.Web.VirtualPathUtility.ToAbsolute( "~/GetFile.ashx" );
-                    return string.Format( "<a href='{0}?guid={1}' title='{2}' class='btn btn-xs btn-default'>View</a>", filePath, binaryFileInfo.Guid, System.Web.HttpUtility.HtmlEncode( binaryFileInfo.FileName ) );
+                    var filePath = FileUrlHelper.GetFileUrl( binaryFileInfo.Guid );
+                    return string.Format( "<a href='{0}' title='{1}' class='btn btn-xs btn-default'>View</a>", filePath, System.Web.HttpUtility.HtmlEncode( binaryFileInfo.FileName ) );
                 }
             }
         }

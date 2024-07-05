@@ -5360,8 +5360,8 @@ namespace Rock.Lava
         public static string ImageUrl( object input, string fallbackUrl = null, object rootUrl = null )
         {
             string inputString = input?.ToString();
-            var queryStringKey = "Id";
             var useFallbackUrl = false;
+            var queryStringKey = "Id";
 
             if ( !inputString.AsIntegerOrNull().HasValue )
             {
@@ -5414,12 +5414,19 @@ namespace Rock.Lava
 
             if ( useGetImageHandler )
             {
-                string prefix = prependAppRootUrl ? GlobalAttributesCache.Value( "PublicApplicationRoot" ) : "/";
+                string prefix = prependAppRootUrl ? GlobalAttributesCache.Value( "PublicApplicationRoot" ).TrimEnd( '/' ) + "/" : "/";
 
-                url = $"{prefix}GetImage.ashx?{queryStringKey}={inputString}";
+                if ( queryStringKey == "Id" )
+                {
+                    url = FileUrlHelper.GetImageUrl( inputString.ToIntSafe(), new GetImageUrlOptions { PublicAppRoot = prefix } );
+                }
+                else
+                {
+                    url = FileUrlHelper.GetImageUrl( inputString.AsGuid(), new GetImageUrlOptions { PublicAppRoot = prefix } );
+                }
             }
 
-            return url;
+            return url ?? fallbackUrl ?? string.Empty;
         }
 
         /// <summary>

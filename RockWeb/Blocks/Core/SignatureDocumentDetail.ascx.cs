@@ -26,6 +26,7 @@ using Rock.Data;
 using Rock.ElectronicSignature;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -162,7 +163,7 @@ namespace RockWeb.Blocks.Core
 
             if ( signatureDocument.BinaryFile != null )
             {
-                var getFileUrl = string.Format( "{0}GetFile.ashx?guid={1}", System.Web.VirtualPathUtility.ToAbsolute( "~" ), signatureDocument.BinaryFile.Guid );
+                var getFileUrl = FileUrlHelper.GetFileUrl( signatureDocument.BinaryFile.Guid );
 
                 var usesLegacyDocumentProvider = signatureDocument.UsesLegacyDocumentProvider();
 

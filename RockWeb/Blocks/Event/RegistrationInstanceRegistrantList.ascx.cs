@@ -29,6 +29,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -75,7 +76,7 @@ namespace RockWeb.Blocks.Event
     {
         #region Properties
 
-        private const string SIGNATURE_LINK_TEMPLATE = @"<a href='{0}?id={1}' target='_blank' rel='noopener noreferrer' style='color: black;'><i class='fa fa-file-signature'></i></a>";
+        private const string SIGNATURE_LINK_TEMPLATE = @"<a href='{0}' target='_blank' rel='noopener noreferrer' style='color: black;'><i class='fa fa-file-signature'></i></a>";
         private const string SIGNATURE_NOT_SIGNED_INDICATOR = @"<i class='fa fa-edit text-danger' data-toggle='tooltip' data-original-title='{0}'></i>";
 
         #endregion
@@ -791,7 +792,7 @@ namespace RockWeb.Blocks.Event
                     var document = _signatureDocuments[registrant.PersonId.Value];
                     if ( document.Status == SignatureDocumentStatus.Signed )
                     {
-                        lSignedDocument.Text = string.Format( SIGNATURE_LINK_TEMPLATE, ResolveRockUrl( "~/GetFile.ashx" ), document.BinaryFileId );
+                        lSignedDocument.Text = string.Format( SIGNATURE_LINK_TEMPLATE, FileUrlHelper.GetFileUrl( document.BinaryFileId ) );
                     }
                     else
                     {

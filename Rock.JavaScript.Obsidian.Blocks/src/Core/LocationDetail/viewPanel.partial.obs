@@ -71,9 +71,9 @@
             return valueBuilder.build();
         }
 
-        if (props.modelValue.imageId) {
-            valueBuilder.addHtmlValue("", `<img src='/GetImage.ashx?id=${props.modelValue.imageId}&maxwidth=150&maxheight=150'>`);
-
+        if (props.modelValue.imageUrlParam) {
+            const idParam = isNaN(Number(props.modelValue.imageUrlParam)) ? "fileIdKey" : "id";
+            valueBuilder.addHtmlValue("", `<img src='/GetImage.ashx?${idParam}=${props.modelValue.imageUrlParam}&maxwidth=150&maxheight=150'>`);
         }
         else {
             valueBuilder.addHtmlValue("", "<img src='/Assets/Images/no-picture.svg?' style='max-width:150px; max-height:150px;'>");
