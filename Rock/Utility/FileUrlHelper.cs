@@ -78,7 +78,15 @@ namespace Rock.Utility
             options = options ?? new GetFileUrlOptions();
             var urlBuilder = new System.Text.StringBuilder();
 
-            urlBuilder.Append( $"{System.Web.VirtualPathUtility.ToAbsolute( "~" )}GetFile.ashx?{fileIdentifierParameter}" );
+            if ( System.Web.Hosting.HostingEnvironment.VirtualPathProvider != null )
+            {
+                urlBuilder.Append( $"{System.Web.VirtualPathUtility.ToAbsolute( "~" )}GetFile.ashx?{fileIdentifierParameter}" );
+            }
+            else
+            {
+                // The hosting environment is not configured to resolve the file path.
+                urlBuilder.Append( $"~/GetFile.ashx?{fileIdentifierParameter}" );
+            }
 
             if ( options.FileName.IsNotNullOrWhiteSpace() )
             {
@@ -140,8 +148,16 @@ namespace Rock.Utility
             options = options ?? new GetImageUrlOptions();
             var urlBuilder = new System.Text.StringBuilder();
 
-            urlBuilder.Append( $"{System.Web.VirtualPathUtility.ToAbsolute( "~" )}GetImage.ashx?{fileIdentifierParameter}" );
-
+            if ( System.Web.Hosting.HostingEnvironment.VirtualPathProvider != null )
+            {
+                urlBuilder.Append( $"{System.Web.VirtualPathUtility.ToAbsolute( "~" )}GetImage.ashx?{fileIdentifierParameter}" );
+            }
+            else
+            {
+                // The hosting environment is not configured to resolve the file path.
+                urlBuilder.Append( $"~/GetImage.ashx?{fileIdentifierParameter}" );
+            }
+            
             if ( options.FileName.IsNotNullOrWhiteSpace() )
             {
                 urlBuilder.Append( $"&fileName={options.FileName}" );
