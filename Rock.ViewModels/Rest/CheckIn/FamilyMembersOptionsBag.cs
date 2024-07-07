@@ -38,13 +38,6 @@ namespace Rock.ViewModels.Rest.CheckIn
         public List<string> AreaIds { get; set; }
 
         /// <summary>
-        /// Gets or sets the location identifiers that will be used to determine
-        /// the available options for each family member.
-        /// </summary>
-        /// <value>The check-in location identifiers.</value>
-        public List<string> LocationIds { get; set; }
-
-        /// <summary>
         /// Gets or sets the kiosk identifier.
         /// </summary>
         /// <value>The kiosk identifier.</value>

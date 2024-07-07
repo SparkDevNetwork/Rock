@@ -1,20 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 using Rock.Attribute;
 using Rock.CheckIn.v2;
 using Rock.CheckIn.v2.Labels;
-using Rock.Net;
 using Rock.ViewModels.Rest.CheckIn;
-using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
-namespace Rock.Blocks.Types.Mobile.CheckIn
+namespace Rock.Blocks.Mobile.CheckIn
 {
     /// <summary>
     /// Allows the user to log in on a mobile application.
@@ -43,7 +39,7 @@ namespace Rock.Blocks.Types.Mobile.CheckIn
         /// <param name="options">The configuration to receive the family members.</param>
         /// <returns></returns>
         [BlockAction]
-        public BlockActionResult GetFamilyMembers( FamilyMembersOptionsBag options )
+        public BlockActionResult GetFamilyMembers( MobileFamilyMembersOptionsBag options )
         {
             if ( RequestContext.CurrentPerson == null )
             {
@@ -86,7 +82,7 @@ namespace Rock.Blocks.Types.Mobile.CheckIn
         /// <param name="options">The options used to configure the request.</param>
         /// <returns></returns>
         [BlockAction]
-        public BlockActionResult GetAttendeeOpportunities( AttendeeOpportunitiesOptionsBag options )
+        public BlockActionResult GetAttendeeOpportunities( MobileAttendeeOpportunitiesOptionsBag options )
         {
             var configuration = GroupTypeCache.GetByIdKey( options.ConfigurationTemplateId, RockContext )?.GetCheckInConfiguration( RockContext );
             var areas = options.AreaIds.Select( id => GroupTypeCache.GetByIdKey( id, RockContext ) ).ToList();
@@ -121,9 +117,9 @@ namespace Rock.Blocks.Types.Mobile.CheckIn
         }
 
         /// <summary>
-        /// Saves an attendance.
+        /// Saves an attendance, and optionally confirms it or marks it as pending.
         /// </summary>
-        /// <param name="options"></param>
+        /// <param name="options">The configuration for saving an attendance.</param>
         /// <returns></returns>
         [BlockAction]
         public async Task<BlockActionResult> SaveAttendance( SaveAttendanceOptionsBag options )
@@ -161,6 +157,11 @@ namespace Rock.Blocks.Types.Mobile.CheckIn
             }
         }
 
+        /// <summary>
+        /// Confirms all of the attendances for a session (should be previously marked as pending).
+        /// </summary>
+        /// <param name="options">The configuration for confirming the session.</param>
+        /// <returns>A bag containing information about the confirmed attendances.</returns>
         [BlockAction]
         public async Task<BlockActionResult> ConfirmAttendance( ConfirmAttendanceOptionsBag options )
         {
@@ -191,6 +192,38 @@ namespace Rock.Blocks.Types.Mobile.CheckIn
             {
                 return ActionBadRequest( ex.Message );
             }
+        }
+
+        #endregion
+
+        #region Helper Classes
+
+        /// <summary>
+        /// A helper class for the options used to get attendance information.
+        /// We wrap this here because any property we add to the options will not be
+        /// supported in the REST call.
+        /// </summary>
+        public class MobileAttendeeOpportunitiesOptionsBag : AttendeeOpportunitiesOptionsBag
+        {
+            /// <summary>
+            /// Gets or sets the location identifiers that will be used to determine
+            /// which options are available for each family member.
+            /// </summary>
+            public List<string> LocationIds { get; set; }
+        }
+
+        /// <summary>
+        /// A helper class for the options used to get family members.
+        /// We wrap this here because any property we add to the options will not be
+        /// supported in the REST call.
+        /// </summary>
+        public class MobileFamilyMembersOptionsBag : FamilyMembersOptionsBag
+        {
+            /// <summary>
+            /// Gets or sets the location identifiers that will be used to determine
+            /// which options are available for each family member.
+            /// </summary>
+            public List<string> LocationIds { get; set; }
         }
 
         #endregion
