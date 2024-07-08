@@ -317,10 +317,10 @@ namespace Rock.Blocks.Types.Mobile.Groups
         {
             return $@"<StackLayout Orientation=""Horizontal"" Spacing=""20"">
     <StackLayout Spacing=""0"" HorizontalOptions=""FillAndExpand"">
-        <Label Text=""{ group.Name.EncodeXml( true ) } Attendance"" StyleClass=""h2"" />
-        <Label Text=""{ group.Members.Count } members"" />
+        <Label Text=""{ group.Name.EncodeXml( true ) } Attendance"" StyleClass=""h2, title1, bold, text-interface-strongest"" />
+        <Label Text=""{ group.Members.Count } members"" StyleClass=""body, text-interface-strong"" />
     </StackLayout>
-    <Rock:Icon IconClass=""user-check"" FontSize=""24"" />
+    <Rock:Icon VerticalOptions=""Center"" IconClass=""user-check"" FontSize=""28"" StyleClass=""text-interface-strongest"" />
 </StackLayout>";
         }
 

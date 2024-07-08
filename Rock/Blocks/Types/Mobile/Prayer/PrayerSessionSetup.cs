@@ -198,27 +198,29 @@ namespace Rock.Blocks.Types.Mobile.Events
             // Create control
             if ( this.TitleText.IsNotNullOrWhiteSpace() )
             {
-                title = $@"<Label StyleClass=""h2,title-text"" Text=""{this.TitleText}"" />";
+                title = $@"<Label StyleClass=""h2, title-text, title1, bold, text-interface-strongest"" Text=""{this.TitleText}"" />";
             }
 
             // Create instructions
             if ( this.InstructionText.IsNotNullOrWhiteSpace() )
             {
-                instructions = $@"<Rock:ParagraphText StyleClass=""instruction-text"">{this.InstructionText}</Rock:ParagraphText>";
+                instructions = $@"<Rock:ParagraphText StyleClass=""instruction-text"" LabelCssClass=""instruction-text,body,text-interface-strong"">{this.InstructionText}</Rock:ParagraphText>";
             }
 
             if ( ShowCampusFilter && ( RequestContext.CurrentPerson?.PrimaryCampusId.HasValue ?? false ) )
             {
-                campusPicker = @"<Rock:SegmentPicker x:Name=""pCampus"" Margin=""0,12,0,0"">
+                campusPicker = @"<Rock:SegmentPicker x:Name=""pCampus"">
         <Rock:PickerItem Text=""My Campus"" Value=""True"" />
         <Rock:PickerItem Text=""All Campuses"" Value=""False"" />
     </Rock:SegmentPicker>";
                 campusValue = "{Binding Path=SelectedValue, Source={x:Reference pCampus}}";
             }
 
-            sb.Append( $@"<StackLayout>
-    {title}
-    {instructions}
+            sb.Append( $@"<StackLayout StyleClass=""spacing-16"">
+    <StackLayout>
+        {title}
+        {instructions}
+    </StackLayout>
     <Rock:FieldContainer>
         <Rock:Picker x:Name=""pCategory"" IsRequired=""True"" SelectedValue="""">
             <Rock:PickerItem Value=""{ParentCategory}"" Text=""All Requests"" />
@@ -226,7 +228,7 @@ namespace Rock.Blocks.Types.Mobile.Events
         </Rock:Picker>
     </Rock:FieldContainer>
     {campusPicker}
-    <Button Text=""Start Praying"" StyleClass=""btn, btn-primary"" Margin=""0,12,0,0"" Command=""{{Binding PushPage}}"">
+    <Button Text=""Start Praying"" StyleClass=""btn, btn-primary"" Command=""{{Binding PushPage}}"">
         <Button.CommandParameter>
             <Rock:PushPageParameters PageGuid=""{PrayerPage}"">
                 <Rock:Parameter Name=""Category""
