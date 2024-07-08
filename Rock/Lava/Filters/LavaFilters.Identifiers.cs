@@ -87,16 +87,23 @@ namespace Rock.Lava
                 {
                     entityTypeCache = EntityTypeCache.Get( entityTypeGuid.Value, rockContext );
                 }
-                else
+                else if ( entityType.IsNotNullOrWhiteSpace() )
                 {
-                    // Parse input as Name.
+                    // Parse input as Name (or FriendlyName).
                     var inputName = entityType.Trim();
-                    if ( !inputName.Contains( "." ) )
+                    if ( inputName.Contains( "." ) )
                     {
-                        // If the name is not qualified, add the default namespace.
-                        inputName = $"Rock.Model.{inputName}";
+                        // Assume the provided name is the fully qualified domain name.
+                        entityTypeCache = EntityTypeCache.Get( inputName, false, rockContext );
                     }
-                    entityTypeCache = EntityTypeCache.Get( inputName, false, rockContext );
+                    else
+                    {
+                        // Assume the provided name is the friendly name.
+                        var inputNameLower = inputName.RemoveSpaces().ToLower();
+                        entityTypeCache = EntityTypeCache.All()
+                            .Where( et => et.IsEntity )
+                            .FirstOrDefault( et => et.FriendlyName.RemoveSpaces().ToLower() == inputNameLower );
+                    }
                 }
             }
 
