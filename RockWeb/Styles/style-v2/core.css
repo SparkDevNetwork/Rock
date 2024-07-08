@@ -9828,6 +9828,82 @@ hr {
   }
 }
 
+.navbar-brand {
+  float: left;
+  height: 50px;
+  padding: 15px 15px;
+  font-size: var(--font-size-h5);
+  line-height: 20px;
+}
+.navbar-brand:hover, .navbar-brand:focus {
+  text-decoration: none;
+}
+.navbar-brand > img {
+  display: block;
+}
+@media (min-width: 768px) {
+  .navbar > .container .navbar-brand, .navbar > .container-fluid .navbar-brand {
+    margin-left: -15px;
+  }
+}
+
+.navbar-text {
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+@media (min-width: 768px) {
+  .navbar-text {
+    float: left;
+    margin-right: 15px;
+    margin-left: 15px;
+  }
+}
+
+.navbar-fixed-top,
+.navbar-fixed-bottom {
+  position: fixed;
+  right: 0;
+  left: 0;
+  z-index: 1030;
+}
+.navbar-fixed-top .navbar-collapse,
+.navbar-fixed-bottom .navbar-collapse {
+  max-height: 340px;
+}
+@media (max-device-width: 480px) and (orientation: landscape) {
+  .navbar-fixed-top .navbar-collapse,
+  .navbar-fixed-bottom .navbar-collapse {
+    max-height: 200px;
+  }
+}
+@media (min-width: 768px) {
+  .navbar-fixed-top,
+  .navbar-fixed-bottom {
+    border-radius: 0;
+  }
+}
+
+.navbar-fixed-top {
+  top: 0;
+  border-width: 0 0 1px;
+}
+
+.navbar-fixed-bottom {
+  bottom: 0;
+  margin-bottom: 0;
+  border-width: 1px 0 0;
+}
+
+.navbar-static-top {
+  z-index: 1000;
+  border-width: 0 0 1px;
+}
+@media (min-width: 768px) {
+  .navbar-static-top {
+    border-radius: 0;
+  }
+}
+
 .navbar-collapse {
   padding-right: 15px;
   padding-left: 15px;
@@ -9867,47 +9943,12 @@ hr {
   }
 }
 
-.navbar-fixed-top,
-.navbar-fixed-bottom {
-  position: fixed;
-  right: 0;
-  left: 0;
-  z-index: 1030;
-}
-.navbar-fixed-top .navbar-collapse,
-.navbar-fixed-bottom .navbar-collapse {
-  max-height: 340px;
-}
-@media (max-device-width: 480px) and (orientation: landscape) {
-  .navbar-fixed-top .navbar-collapse,
-  .navbar-fixed-bottom .navbar-collapse {
-    max-height: 200px;
-  }
-}
-@media (min-width: 768px) {
-  .navbar-fixed-top,
-  .navbar-fixed-bottom {
-    border-radius: 0;
-  }
-}
-
-.navbar-fixed-top {
-  top: 0;
-  border-width: 0 0 1px;
-}
-
-.navbar-fixed-bottom {
-  bottom: 0;
-  margin-bottom: 0;
-  border-width: 1px 0 0;
-}
-
 .container > .navbar-header,
 .container > .navbar-collapse,
 .container-fluid > .navbar-header,
 .container-fluid > .navbar-collapse {
-  margin-right: -calc(15px);
-  margin-left: -calc(15px);
+  margin-right: -15px;
+  margin-left: -15px;
 }
 @media (min-width: 768px) {
   .container > .navbar-header,
@@ -9916,35 +9957,6 @@ hr {
   .container-fluid > .navbar-collapse {
     margin-right: 0;
     margin-left: 0;
-  }
-}
-
-.navbar-static-top {
-  z-index: 1000;
-  border-width: 0 0 1px;
-}
-@media (min-width: 768px) {
-  .navbar-static-top {
-    border-radius: 0;
-  }
-}
-
-.navbar-brand {
-  float: left;
-  height: 50px;
-  padding: calc((50px - 20pxpx) * 0.5) 15px;
-  font-size: var(--font-size-h5);
-  line-height: 20px;
-}
-.navbar-brand:hover, .navbar-brand:focus {
-  text-decoration: none;
-}
-.navbar-brand > img {
-  display: block;
-}
-@media (min-width: 768px) {
-  .navbar > .container .navbar-brand, .navbar > .container-fluid .navbar-brand {
-    margin-left: -calc(15px);
   }
 }
 
@@ -9979,11 +9991,11 @@ hr {
 }
 
 .navbar-nav {
-  margin: calc((50px - 20pxpx) * 0.5)/2 -calc(15px);
+  margin: 7.5px -15px;
 }
 .navbar-nav > li > a {
-  padding-top: 10px;
-  padding-bottom: 10px;
+  padding-top: var(--spacing-small);
+  padding-bottom: var(--spacing-small);
   line-height: 20px;
 }
 @media (max-width: 768px) {
@@ -9991,10 +10003,10 @@ hr {
     position: static;
     float: none;
     width: auto;
-    margin-top: 0;
     background-color: transparent;
-    border: 0;
     box-shadow: none;
+    margin-top: 0;
+    border: 0;
   }
   .navbar-nav .open .dropdown-menu > li > a,
   .navbar-nav .open .dropdown-menu .dropdown-header {
@@ -10021,10 +10033,23 @@ hr {
   }
 }
 
+.navbar-btn {
+  margin-top: 2px;
+  margin-bottom: 2px;
+}
+.navbar-btn.btn-sm {
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+.navbar-btn.btn-xs {
+  margin-top: 14px;
+  margin-bottom: 14px;
+}
+
 .navbar-form {
   padding: 10px 15px;
-  margin-right: -calc(15px);
-  margin-left: -calc(15px);
+  margin-right: -15px;
+  margin-left: -15px;
   border-top: 1px solid transparent;
   border-bottom: 1px solid transparent;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 1px 0 rgba(255, 255, 255, 0.1);
@@ -10083,7 +10108,7 @@ hr {
 }
 @media (max-width: 768px) {
   .navbar-form .form-group {
-    margin-bottom: 5px;
+    margin-bottom: var(--spacing-tiny);
   }
   .navbar-form .form-group:last-child {
     margin-bottom: 0;
@@ -10109,35 +10134,10 @@ hr {
 
 .navbar-fixed-bottom .navbar-nav > li > .dropdown-menu {
   margin-bottom: 0;
-  border-top-left-radius: var(--rounded-small);
-  border-top-right-radius: var(--rounded-small);
   border-bottom-right-radius: 0;
   border-bottom-left-radius: 0;
-}
-
-.navbar-btn {
-  margin-top: 2px;
-  margin-bottom: 2px;
-}
-.navbar-btn.btn-sm {
-  margin-top: 8px;
-  margin-bottom: 8px;
-}
-.navbar-btn.btn-xs {
-  margin-top: 14px;
-  margin-bottom: 14px;
-}
-
-.navbar-text {
-  margin-top: 15px;
-  margin-bottom: 15px;
-}
-@media (min-width: 768px) {
-  .navbar-text {
-    float: left;
-    margin-right: 15px;
-    margin-left: 15px;
-  }
+  border-top-left-radius: var(--rounded-small);
+  border-top-right-radius: var(--rounded-small);
 }
 
 @media (min-width: 768px) {
@@ -10146,7 +10146,7 @@ hr {
   }
   .navbar-right {
     float: right !important;
-    margin-right: -calc(15px);
+    margin-right: -15px;
   }
   .navbar-right ~ .navbar-right {
     margin-right: 0;
@@ -10174,8 +10174,8 @@ hr {
   background-color: transparent;
 }
 .navbar-default .navbar-nav > .active > a, .navbar-default .navbar-nav > .active > a:hover, .navbar-default .navbar-nav > .active > a:focus {
-  color: var(--color-interface-strong);
-  background-color: var(--color-interface-stronger);
+  color: var(--color-interface-stronger);
+  background-color: var(--color-interface-medium);
 }
 .navbar-default .navbar-nav > .disabled > a, .navbar-default .navbar-nav > .disabled > a:hover, .navbar-default .navbar-nav > .disabled > a:focus {
   color: var(--color-interface-softer);

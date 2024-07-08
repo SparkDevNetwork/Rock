@@ -1,0 +1,49 @@
+
+//  FOLLOW STYLE (ROCK COMPONENT)
+
+
+// =============================================================
+// Table of Content           
+//  + Base Style                
+// =============================================================
+
+
+// ======================== BASE STYLE ========================
+
+.panel .panel-heading.panel-follow {
+  position: relative;
+  padding-right: var(--spacing-xlarge);
+}
+
+.panel .panel-heading.panel-follow-fullscreen {
+  position:       relative;
+  padding-right:  110px;
+}
+
+.panel-follow-status {
+  position:     absolute;
+  top:          0;
+  right:        0;
+  bottom:       0;
+  width:        $panel-follow-status-width;
+  padding-top:  var(--spacing-small);
+  color:        var(--color-interface-stronger);
+  text-align:   center;
+  cursor:       pointer;
+  border-left:  1px solid $panel-border;
+  opacity:      .4;
+  transition:   color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+
+  &::before {
+    font-family:  $font-face;
+    content:      "\f005"; //TODO hard coded fa
+  }
+
+  &.following {
+    color:            var(--color-interface-softest);
+    background-color: $panel-border;
+    opacity:          1;
+  }
+}
+// ====================== END BASE STYLE ========================
+

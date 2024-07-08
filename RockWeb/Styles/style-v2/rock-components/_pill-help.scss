@@ -1,0 +1,26 @@
+
+// PILL HELP (ROCK COMPONENT) (used in security dialog)
+
+
+// =============================================================
+// Table of Content           
+//  + Base Style  
+// =============================================================
+
+
+// ======================== BASE STYLE ========================
+.nav > li.pill-help {
+  a {
+    color: var(--color-link);
+
+    &:hover,
+    &:focus {
+      color: var(--color-link);
+      background-color: transparent;
+    }
+  }
+}
+// ====================== END BASE STYLE ======================
+
+
+

@@ -1,0 +1,23 @@
+
+// PHOTO FRAME (ROCK COMPONENT)
+
+
+// =============================================================
+// Table of Content           
+//  + Base Style  
+// =============================================================
+
+
+// ======================== BASE STYLE ========================
+
+.photoframe {
+  display: inline-block;
+  border: 4px solid $photo-border;
+
+  &.photoframe-sm {
+    border-width: 2px;
+  }
+}
+// ====================== END BASE STYLE ======================
+
+

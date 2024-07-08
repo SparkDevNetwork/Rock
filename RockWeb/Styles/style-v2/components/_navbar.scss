@@ -1,0 +1,720 @@
+
+
+// NAVBAR STYLE
+
+
+// =============================================================
+// Table of Content           
+//  + Base Style
+//  + Nav fixed & static
+//  + Collapse
+//  + Toggle
+//  + Link & btn
+//  + Nav form
+//  + Nav dropdown
+//  + Alternate Style     
+//  + Inverse nav   
+// =============================================================
+
+
+// ===================== BASE STYLE =====================
+.navbar {
+  position:       relative;
+  min-height:     $navbar-height; // Ensure a navbar always shows (e.g., without a .navbar-brand in collapsed mode)
+  margin-bottom:  var(--spacing-large);
+  border:         1px solid transparent;
+
+  // Prevent floats from breaking the navbar
+  &:before,
+  &:after {
+    display: table;
+    content: " ";
+  }
+  &:after {
+    clear: both;
+  }
+
+  @media (min-width: $screen-small) {
+    border-radius: var(--rounded-small);
+  }
+}
+
+// Navbar heading
+.navbar-header {
+  &:before,
+  &:after {
+    display: table;
+    content: " ";
+  }
+  &:after {
+    clear: both;
+  }
+
+  @media (min-width: $screen-small) {
+    float: left;
+  }
+}
+
+// Brand/project name
+.navbar-brand {
+  float:          left;
+  height:         $navbar-height;
+  padding:        calc(($navbar-height - 20px) * 0.5) calc($grid-gutter-width * 0.5);
+  font-size:      var(--font-size-h5);
+  line-height:    20px;
+
+  &:hover,
+  &:focus {
+    text-decoration:  none;
+  }
+
+  > img {
+    display:          block;
+  }
+
+  @media (min-width: $screen-small) {
+    .navbar > .container &,
+    .navbar > .container-fluid & {
+      margin-left:    calc($grid-gutter-width * -0.5);
+    }
+  }
+}
+
+// Align all property vertically within the navbars.
+.navbar-text {
+  margin-top:     calc(calc($navbar-height - 20px) * 0.5);
+  margin-bottom:  calc(calc($navbar-height - 20px) * 0.5);
+
+  @media (min-width: $screen-small) {
+    float:        left;
+    margin-right: calc($grid-gutter-width * 0.5);
+    margin-left:  calc($grid-gutter-width * 0.5);
+  }
+}
+// =================== END BASE STYLE ===================
+
+
+// ===================== NAV FIXED & STATIC =====================
+.navbar-fixed-top,
+.navbar-fixed-bottom {
+  .navbar-collapse {
+    max-height:     $navbar-collapse-max-height;
+
+    @media (max-device-width: $screen-xsmall) and (orientation: landscape) {
+      max-height:   200px;
+    }
+  }
+
+  // Fix the top/bottom navbars when screen real estate supports it
+  position: fixed;
+  right:    0;
+  left:     0;
+  z-index:  $zindex-navbar-fixed;
+
+  // Undo the rounded corners
+  @media (min-width: $screen-small) {
+    border-radius: 0;
+  }
+}
+
+.navbar-fixed-top {
+  top:            0;
+  border-width:   0 0 1px;
+}
+
+.navbar-fixed-bottom {
+  bottom:         0;
+  margin-bottom:  0; // override .navbar defaults
+  border-width:   1px 0 0;
+}
+
+// Navbar alignment options
+.navbar-static-top {
+  z-index:        $zindex-navbar;
+  border-width:   0 0 1px;
+
+  @media (min-width: $screen-small) {
+    border-radius: 0;
+  }
+}
+// =================== END NAV FIXED & STATIC ===================
+
+
+// ===================== COLLAPSE =====================
+// Navbar collapse (body)
+.navbar-collapse {
+  padding-right:      calc($grid-gutter-width * 0.5);
+  padding-left:       calc($grid-gutter-width * 0.5);
+  overflow-x:         visible;
+  border-top:         1px solid transparent;
+  box-shadow:         inset 0 1px 0 rgba(255, 255, 255, .1);
+  &:before,
+  &:after {
+    display:          table;
+    content: " ";
+  }
+  &:after {
+    clear: both;
+  }
+  -webkit-overflow-scrolling: touch;
+
+  &.in {
+    overflow-y: auto;
+  }
+
+  @media (min-width: $screen-small) {
+    width:            auto;
+    border-top:       0;
+    box-shadow:       none;
+
+    &.collapse {
+      display:        block !important;
+      height:         auto !important;
+      padding-bottom: 0; // Override default setting
+      overflow:       visible !important;
+    }
+
+    &.in {
+      overflow-y:     visible;
+    }
+
+    // Undo the collapse side padding for navbars with containers to ensure
+    // alignment of right-aligned contents.
+    .navbar-fixed-top &,
+    .navbar-static-top &,
+    .navbar-fixed-bottom & {
+      padding-right:  0;
+      padding-left:   0;
+    }
+  }
+}
+
+// When a container is present, change the behavior of the header and collapse.
+.container,
+.container-fluid {
+  > .navbar-header,
+  > .navbar-collapse {
+    margin-right:     calc($grid-gutter-width * -0.5);
+    margin-left:      calc($grid-gutter-width * -0.5);
+
+    @media (min-width: $screen-small) {
+      margin-right:   0;
+      margin-left:    0;
+    }
+  }
+}
+// =================== END COLLAPSE ===================
+
+
+// ===================== TOGGLE =====================
+.navbar-toggle { //TODO harded coded padding
+  position:                   relative;
+  float:                      right;
+  padding:                    9px 10px;
+  margin-right:               calc($grid-gutter-width * 0.5);
+  margin-top:                 calc(calc($navbar-height - 34px) * 0.5);
+  margin-bottom:              calc(calc($navbar-height - 34px) * 0.5);
+  background-color:           transparent;
+  background-image:           none; // Reset unusual Firefox-on-Android default style; see https://github.com/necolas/normalize.css/issues/214
+  border:                     1px solid transparent;
+  border-radius:              var(--rounded-small);
+
+  // We remove the `outline` here, but later compensate by attaching `:hover`
+  &:focus {
+    outline: 0;
+  }
+
+  // Bars
+  .icon-bar {
+    display:        block;
+    width:          22px;
+    height:         2px;
+    border-radius:  1px;
+  }
+  .icon-bar + .icon-bar {
+    margin-top:     4px;
+  }
+
+  @media (min-width: $screen-small) {
+    display:        none;
+  }
+}
+// =================== END TOGGLE ===================
+
+
+// ===================== NAV LINK & BTN =====================
+// Navbar nav links
+.navbar-nav {
+  margin: calc(calc(($navbar-height - 20px) * 0.5) * 0.5) calc($grid-gutter-width * -0.5);
+
+  > li > a {
+    padding-top:      var(--spacing-small);
+    padding-bottom:   var(--spacing-small);
+    line-height:      20px;
+  }
+
+  @media (max-width: $screen-small) {
+    // Dropdowns get custom display when collapsed
+    .open .dropdown-menu {
+      position:           static;
+      float:              none;
+      width:              auto;
+      background-color:   transparent;
+      box-shadow:         none;
+      margin-top:         0;
+      border:             0;
+      > li > a,
+      .dropdown-header {
+        padding:          5px 15px 5px 25px;
+      }
+      > li > a {
+        line-height:      20px;
+        &:hover,
+        &:focus {
+          background-image: none;
+        }
+      }
+    }
+  }
+
+  // Uncollapse the nav
+  @media (min-width: $screen-small) {
+    float:    left;
+    margin:   0;
+
+    > li {
+      float:  left;
+      > a {
+        padding-top:      calc(calc($navbar-height - 20px) * 0.5);
+        padding-bottom:   calc(calc($navbar-height - 20px) * 0.5);
+      }
+    }
+  }
+}
+
+.navbar-btn {
+  margin-top:       calc(calc($navbar-height - 46px) * .5);
+  margin-bottom:    calc(calc($navbar-height - 46px) * .5);
+
+  &.btn-sm {
+    margin-top:     calc(calc($navbar-height - 34px) * 0.5);
+    margin-bottom:  calc(calc($navbar-height - 34px) * 0.5);
+  }
+
+  &.btn-xs {
+    margin-top:     calc(calc($navbar-height - 22px) * 0.5);
+    margin-bottom:  calc(calc($navbar-height - 22px) * 0.5);
+  }
+}
+// =================== END NAV LINK & BTN ===================
+
+
+// ===================== NAV FORM =====================
+// Extension of the `.form-inline` with some extra flavor for optimum display in our navbar
+.navbar-form {
+  padding:          10px calc($grid-gutter-width * 0.5);
+  margin-right:     calc($grid-gutter-width * -0.5);
+  margin-left:      calc($grid-gutter-width * -0.5);
+  border-top:       1px solid transparent;
+  border-bottom:    1px solid transparent;
+  box-shadow:       inset 0 1px 0 rgba(255, 255, 255, .1), 0 1px 0 rgba(255, 255, 255, .1);;
+
+  @media (min-width: $screen-small) {
+    // Inline-block all the things for "inline"
+    .form-group {
+      display:        inline-block;
+      margin-bottom:  0;
+      vertical-align: middle;
+    }
+
+    // In navbar-form, allow folks to *not* use `.form-group`
+    .form-control {
+      display:        inline-block;
+      width:          auto; // Prevent labels from stacking above inputs in `.form-group`
+      vertical-align: middle;
+    }
+
+    // Make static controls behave like regular ones
+    .form-control-static {
+      display:        inline-block;
+    }
+
+    .input-group {
+      display:        inline-table;
+      vertical-align: middle;
+
+      .input-group-addon,
+      .input-group-btn,
+      .form-control {
+        width:        auto;
+      }
+    }
+
+    // Input groups need that 100% width though
+    .input-group > .form-control {
+      width:          100%;
+    }
+
+    .control-label {
+      margin-bottom:  0;
+      vertical-align: middle;
+    }
+
+    // Remove default margin on radios/checkboxes that were used for stacking, and
+    // then undo the floating of radios and checkboxes to match.
+    .radio,
+    .checkbox {
+      display:        inline-block;
+      margin-top:     0;
+      margin-bottom:  0;
+      vertical-align: middle;
+
+      label {
+        padding-left: 0;
+      }
+    }
+    .radio input[type="radio"],
+    .checkbox input[type="checkbox"] {
+      position:       relative;
+      margin-left:    0;
+    }
+
+    // Re-override the feedback icon.
+    .has-feedback .form-control-feedback {
+      top:            0;
+    }
+  }
+
+  .form-group {
+    @media (max-width: $screen-small) {
+      margin-bottom:    var(--spacing-tiny);
+
+      &:last-child {
+        margin-bottom:  0;
+      }
+    }
+  }
+
+  // Vertically center in expanded, horizontal navbar
+  margin-top:         calc(calc($navbar-height - 46px) * 0.5);
+  margin-bottom:      calc(calc($navbar-height - 46px) * 0.5);
+
+  // Undo 100% width for pull classes
+  @media (min-width: $screen-small) {
+    width:            auto;
+    padding-top:      0;
+    padding-bottom:   0;
+    margin-right:     0;
+    margin-left:      0;
+    border:           0;
+    box-shadow:       none;
+  }
+}
+// =================== END NAV FORM ===================
+
+
+// ===================== DROPDOWN MENU =====================
+.navbar-nav > li > .dropdown-menu {
+  margin-top:               0;
+  border-top-left-radius:   0;
+  border-top-right-radius:  0;
+}
+
+// Menu position and menu caret support for dropups via extra dropup class
+.navbar-fixed-bottom .navbar-nav > li > .dropdown-menu {
+  margin-bottom:              0;
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius:  0;
+  border-top-left-radius:     var(--rounded-small);
+  border-top-right-radius:    var(--rounded-small);
+}
+// =================== END DROPDOWN MENU ===================
+
+
+// Component alignment
+// Declared after the navbar components to ensure more specificity on the margins.
+@media (min-width: $screen-small) {
+  .navbar-left  {   float: left !important; }
+  .navbar-right {
+    float:          right !important;
+    margin-right:   calc($grid-gutter-width * -0.5);
+
+    ~ .navbar-right {
+      margin-right: 0;
+    }
+  }
+}
+
+
+// ===================== ALTERNATE STYLE =====================
+.navbar-default {
+  background-color:         var(--color-interface-softer);
+  border-color:             var(--color-interface-softer);
+
+  .navbar-brand {
+    color:                  var(--color-interface-strong);
+    &:hover,
+    &:focus {
+      color:                var(--color-interface-stronger);
+      background-color:     transparent;
+    }
+  }
+
+  .navbar-text {
+    color:                  var(--color-interface-strong);
+  }
+
+  .navbar-nav {
+    > li > a {
+      color:                var(--color-interface-strong);
+
+      &:hover,
+      &:focus {
+        color:              var(--color-interface-stronger);
+        background-color:   transparent;
+      }
+    }
+    > .active > a {
+      &,
+      &:hover,
+      &:focus {
+        color:              var(--color-interface-stronger);
+        background-color:   var(--color-interface-medium);
+      }
+    }
+    > .disabled > a {
+      &,
+      &:hover,
+      &:focus {
+        color:              var(--color-interface-softer);
+        background-color:   transparent;
+      }
+    }
+
+    // Dropdown menu items
+    // Remove background color from open dropdown
+    > .open > a {
+      &,
+      &:hover,
+      &:focus {
+        color:              var(--color-interface-strong);
+        background-color:   var(--color-interface-stronger);
+      }
+    }
+
+    @media (max-width: $screen-small) {
+      // Dropdowns get custom display when collapsed
+      .open .dropdown-menu {
+        > li > a {
+          color:              var(--color-interface-strong);
+          &:hover,
+          &:focus {
+            color:            var(--color-interface-stronger);
+            background-color: transparent;
+          }
+        }
+        > .active > a {
+          &,
+          &:hover,
+          &:focus {
+            color:            var(--color-interface-strong);
+            background-color: var(--color-interface-stronger);
+          }
+        }
+        > .disabled > a {
+          &,
+          &:hover,
+          &:focus {
+            color:            var(--color-interface-softer);
+            background-color: transparent;
+          }
+        }
+      }
+    }
+  }
+
+  .navbar-toggle {
+    border-color:         var(--color-interface-softer);
+    &:hover,
+    &:focus {
+      background-color:   var(--color-interface-softer);
+    }
+    .icon-bar {
+      background-color:   var(--color-interface-softer);
+    }
+  }
+
+  .navbar-collapse,
+  .navbar-form {
+    border-color:         var(--color-interface-stronger);
+  }
+
+  // Links in navbars
+  // Ensure links outside the navbar nav are colored correctly.
+  .navbar-link {
+    color:    var(--color-interface-strong);
+    &:hover {
+      color:  var(--color-interface-stronger);
+    }
+  }
+
+  .btn-link {
+    color:    var(--color-interface-strong);
+    &:hover,
+    &:focus {
+      color:  var(--color-interface-stronger);
+    }
+
+    &[disabled],
+    fieldset[disabled] & {
+      &:hover,
+      &:focus {
+        color:    var(--color-interface-softer);
+      }
+    }
+  }
+}
+// =================== END ALTERNATE STYLE ===================
+
+
+// ===================== INVERSE NAV =====================
+.navbar-inverse {
+  background-color:       var(--color-interface-strongest);
+  border-color:           var(--color-interface-strongest);
+
+  .navbar-brand {
+    color:                var(--color-interface-softer);
+    &:hover,
+    &:focus {
+      color:              var(--color-interface-softest);
+      background-color:   transparent;
+    }
+  }
+
+  .navbar-text {
+    color:          var(--color-interface-softer);
+  }
+
+  .navbar-nav {
+    > li > a {
+      color:        var(--color-interface-softer);
+      &:hover,
+      &:focus {
+        color:              var(--color-interface-softest);
+        background-color:   transparent;
+      }
+    }
+
+    > .active > a {
+      &,
+      &:hover,
+      &:focus {
+        color:              var(--color-interface-softest);
+        background-color:   var(--color-interface-softer);
+      }
+    }
+
+    > .disabled > a {
+      &,
+      &:hover,
+      &:focus {
+        color:              var(--color-interface-strong);
+        background-color:   transparent;
+      }
+    }
+
+    // Dropdowns
+    > .open > a {
+      &,
+      &:hover,
+      &:focus {
+        color:              var(--color-interface-softest);
+        background-color:   var(--color-interface-softer);
+      }
+    }
+
+    @media (max-width: $screen-small) {
+      // Dropdowns get custom display
+      .open .dropdown-menu {
+        > .dropdown-header {
+          border-color:         var(--color-interface-strongest);
+        }
+
+        .divider {
+          background-color:     var(--color-interface-strongest);
+        }
+
+        > li > a {
+          color:                var(--color-interface-strong);
+          &:hover,
+          &:focus {
+            color:              var(--color-interface-softest);
+            background-color:   transparent;
+          }
+        }
+
+        > .active > a {
+          &,
+          &:hover,
+          &:focus {
+            color:              var(--color-interface-softest);
+            background-color:   var(--color-interface-softer);
+          }
+        }
+
+        > .disabled > a {
+          &,
+          &:hover,
+          &:focus {
+            color:              var(--color-interface-strong);
+            background-color:   transparent;
+          }
+        }
+      }
+    }
+  }
+
+  // Darken the responsive nav toggle
+  .navbar-toggle {
+    border-color:         var(--color-interface-stronger);
+    &:hover,
+    &:focus {
+      background-color:   var(--color-interface-stronger);
+    }
+    .icon-bar {
+      background-color:   var(--color-interface-softest);
+    }
+  }
+
+  .navbar-collapse,
+  .navbar-form {
+    border-color:         var(--color-interface-strongest);
+  }
+
+  .navbar-link {
+    color:                var(--color-interface-strong);
+    &:hover {
+      color:              var(--color-interface-softest);
+    }
+  }
+
+  .btn-link {
+    color:                var(--color-interface-strong);
+    &:hover,
+    &:focus {
+      color:              var(--color-interface-softest);
+    }
+
+    &[disabled],
+    fieldset[disabled] & {
+      &:hover,
+      &:focus {
+        color:            var(--color-interface-strong);
+      }
+    }
+  }
+}
+// =================== END INVERSE NAV ===================
+
+
+

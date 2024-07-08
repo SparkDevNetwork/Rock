@@ -1,0 +1,64 @@
+
+
+//  ROCK LIST (ROCK COMPONENT) 
+
+
+// =============================================================
+// Table of Content           
+//  + Base Style
+// =============================================================
+
+
+// ======================== BASE STYLE ========================
+ul.rocklist {
+  padding: 0;
+  list-style-type: none;
+
+  .rocklist-item {
+    position: relative;
+    float:    left;
+    width:    140px;
+    padding:  var(--spacing-small);
+    margin:   0 var(--spacing-medium) var(--spacing-medium) 0;
+    text-align:     center;
+    white-space:    nowrap;
+    border-radius:  var(--rounded-small);
+
+    .actions {
+      position: absolute;
+      top:      0;
+      right:    var(--spacing-tiny);
+    }
+
+    .action {
+      display:        block;
+      margin-bottom:  2px;
+    }
+
+    // i {
+    //   padding: 4px;
+    //   cursor: pointer;
+    // }
+
+    .file-name {
+      display:        block;
+      overflow:       hidden;
+      text-overflow:  ellipsis;
+      white-space:    nowrap;
+      cursor:         pointer;
+    }
+
+    &:hover {
+      color:        var(--color-interface-softest);
+      background:   var(--color-interface-soft);
+    }
+
+    &.selected {
+      color:        var(--color-interface-softest);
+      background:   var(--color-interface-medium);
+    }
+  }
+}
+// ====================== END BASE STYLE ======================
+
+

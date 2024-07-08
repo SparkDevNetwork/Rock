@@ -1,0 +1,204 @@
+
+
+//  TAG (ROCK COMPONENT) (component that allows you to tag entities)
+
+
+// =============================================================
+// Table of Content           
+//  + Base Style
+//  + Tag input
+//  + Tag list
+//  + Not valid
+// =============================================================
+
+
+// ======================== BASE STYLE ========================
+.tag-wrap {
+  display:      flex;
+  flex-wrap:    wrap;
+  align-items:  center;
+  gap:          var(--spacing-tiny) var(--spacing-small);
+
+  .ui-autocomplete {
+    position:           absolute;
+    top:                4px;
+    left:               0;
+    z-index:            9999 !important;
+    min-width:          200px;
+    padding:            var(--spacing-medium);
+    list-style:         none;
+    background-color:   $ui-autocomplete-bg;
+    border:             1px solid $ui-autocomplete-border;
+    border-radius:      0 0 var(--rounded-small) var(--rounded-small);
+    box-shadow:         0 5px 10px rgba(0,0,0,.2);
+
+    li {
+      margin-bottom:    var(--spacing-tiny);
+
+      &:last-child {
+        margin-bottom:  0;
+      }
+
+      a {
+        display:    block;
+        padding:    var(--spacing-tiny);
+        color:      var(--color-danger-strong);
+        cursor:     pointer;
+        text-decoration: none;
+
+        &:hover {
+          background:     var(--color-interface-softest);
+          border-radius:  var(--rounded-small);
+        }
+      }
+    }
+  }
+}
+// ====================== END BASE STYLE ======================
+
+
+// ======================== TAG INPUT ========================
+.tagsInput,
+.tagsinput {
+  display:      flex;
+  flex-wrap:    wrap;
+  align-items:  flex-start;
+
+  input {
+    display:    block;
+    width:      80px;
+    padding:    2px;
+    margin:     0 auto;
+    clear:      both;
+    font-size:  var(--font-size-xsmall);
+    color:      var(--color-interface-medium) !important; /* needed as script adds element value */
+    background: transparent;
+    border:     1px solid transparent;
+    border-radius:  var(--rounded-small);
+    outline:        0;
+    box-shadow:     none;
+
+    @media (min-width: $screen-small) {
+      margin: 0;
+    }
+
+    &:hover,
+    &:focus {
+      background-color: rgba(0,0,0,.05);
+    }
+
+    div {
+      display:  block;
+      float:    left;
+    }
+  }
+
+  .tags_clear {
+    width:  100%;
+    height: 0;
+    clear:  both;
+  }
+}
+// ====================== END TAG INPUT ======================
+
+
+// ======================== TAG LIST ========================
+.taglist {
+  display:    flex;
+  flex-wrap:  wrap;
+  gap:        calc($grid-gutter-width * .25) var(--spacing-small);
+
+  .tag {
+    position:           relative;
+    display:            inline-flex;
+    height:             22px;
+    padding:            1px 12px 0;
+    font-size:          var(--font-size-xsmall);
+    line-height:        18px;
+    color:              var(--color-interface-stronger);
+    background:         var(--color-interface-medium);
+    border-radius:      var(--rounded-small);
+    text-decoration:    none;
+    transition:         margin-right .25s ease-out 1s, padding .25s ease-out 1s;
+    -moz-transition:    margin-right .25s ease-out 1s, padding .25s ease-out 1s;
+    -webkit-transition: margin-right .25s ease-out 1s, padding .25s ease-out 1s;
+
+    .tag-icon {
+      display:        block;
+      margin-right:   var(--spacing-tiny);
+    }
+
+    span {
+      display:        block;
+      max-width:      120px;
+      overflow:       hidden;
+      text-overflow:  ellipsis;
+      white-space:    nowrap;
+      cursor:         default;
+    }
+
+    a {
+      position:           absolute;
+      right:              0;
+      padding:            0 var(--spacing-tiny);
+      color:              currentColor;
+      opacity:            0;
+      text-decoration:    none;
+      -webkit-transition: opacity .25s ease-out 1s;
+      -moz-transition:    opacity .25s ease-out 1s;
+      transition:         opacity .25s ease-out 1s;
+    }
+
+    small {
+      font-size:          var(--font-size-xsmall);
+    }
+
+    &:hover {
+      span {
+        max-width: 1000px;
+      }
+
+      a {
+        visibility:           visible;
+        opacity:              1;
+        transition-delay:     0s;
+      }
+    }
+  }
+
+  // Transition padding on tags inside a control.
+  .tag-wrap .tag:hover {
+    padding-right:      20px;
+    transition-delay:   0s;
+  }
+
+  .add-new-tags {
+    float:        none !important;
+    color:        var(--color-interface-medium) !important;
+    &:hover {
+      color:      var(--color-interface-stronger) !important;
+    }
+  }
+}
+
+.tag-letterlist {
+  color:              var(--color-danger-strong);
+
+  li {
+    margin-right:     var(--spacing-medium);
+    cursor:           default;
+  }
+
+  a {
+    font-weight:      var(--font-weight-semibold);
+  }
+}
+// ====================== END TAG LIST ======================
+
+
+// ======================== NOT VALID ========================
+.not_valid {
+  color:          var(--color-danger-strong) !important;
+  background:     var(--color-danger-soft) !important;
+}
+// ====================== END NOT VALID ======================

@@ -24,7 +24,7 @@
 @import 'css-variable';                     // Fully Polish.
 
 /* ===================== LEGACY  =================== */
-@import 'legacy/carousel';                  // Fully Polish. There are Some hard coded value.
+@import 'legacy/carousel';                  // Fully Polish. **It is not working**. There are Some hard coded value. 
 @import 'legacy/jumbotron';                 // Fully Polish. When color-mix() use, go in the file there's TODO comments at where it is need ot be use.
 @import 'legacy/media';                     // Fully Polish. 
 
@@ -37,17 +37,17 @@
 
 /* ======================= CORE  ======================*/
 @import 'core/page-admin';                  // Fully Polish. There are Some hard coded value.
-@import 'core/layout-grid';                 // Fully Polish. Most of the value is hard coded because we are not using mixin
+@import 'core/layout-grid';                 // Fully Polish. Most of the value is hard coded because we are not using mixin.
 @import 'core/print';                       // Fully Polish.
 
 /* ==================== COMPONENTS ==================== */
 @import 'components/alerts';                // Fully Polish. (but if we decided to add more color variable, go in and change the color.)
 @import 'components/buttons';               // Fully Polish. There are Some hard coded value.
-@import 'components/button-groups';         // Fully Polish. Rely Heavily on _buttons.scss
+@import 'components/button-groups';         // Fully Polish. Rely Heavily on _buttons.scss.
 @import 'components/badges';                // Fully Polish. There are some stuff that have !important on it?
 @import 'components/labels';                // Fully Polish. When color-mix() use, go in the file there's TODO comments at where it is need ot be use.
 @import 'components/wells';                 // Fully Polish. When color-mix() use, go in the file there's TODO comments at where it is need ot be use.
-@import 'components/code';                  // Fully Polish. The naming is hard to understand
+@import 'components/code';                  // Fully Polish. The naming is hard to understand.
 @import 'components/dropdowns';             // Fully Polish. There are Some hard coded value.
 @import 'components/close';                 // Fully Polish.
 @import 'components/list-group';            // Fully Polish. When color-mix() use, go in the file there's TODO comments at where it is need ot be use.
@@ -56,16 +56,16 @@
 @import 'components/pager';                 // Fully Polish.
 @import 'components/forms';                 // Fully Polish. When color-mix() use, go in the file there's TODO comments at where it is need ot be use.
 @import 'components/tables';                // Fully Polish. Really hard to read. Have to be under forms.scss to override checkbox positioning.
-@import 'components/input-groups';          // Fully Polish. Need to move the pickers to the appropriat file
-@import 'components/breadcrumbs';           // Fully Polish. Don't know what @breadcrumb-separator does 
+@import 'components/input-groups';          // Fully Polish. Need to move the pickers to the appropriat file.
+@import 'components/breadcrumbs';           // Fully Polish. Don't know what @breadcrumb-separator does.
 @import 'components/thumbnails';            // Fully Polish.
 @import 'components/scaffolding';           // Fully Polish.
-@import 'components/panels';                // Fully Polish. There are Some hard coded value
+@import 'components/panels';                // Fully Polish. There are Some hard coded value.
 @import 'components/popovers';              // Fully Polish. 
-@import 'components/progress-bars';         // Fully Polish. There are Some hard coded value
+@import 'components/progress-bars';         // Fully Polish. There are Some hard coded value.
 @import 'components/tooltip';               // Fully Polish.
 @import 'components/navs';                  // Fully polish.
-@import 'components/navbar';
+@import 'components/navbar';                // Fully Polish. There are Some hard coded value.
 
 /* ======================= ANIMATION ======================*/
 @import 'components/component-animations';  //Fully Polish
