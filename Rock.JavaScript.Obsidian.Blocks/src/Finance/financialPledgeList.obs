@@ -84,7 +84,7 @@
                 <div class="flex-grow-1"></div>
                 <div>
                     <SectionHeader title="Total Results">
-                        <template #actions>
+                        <template #actions v-if="accountSummaries.length > 5">
                             <RockButton btnType="link"
                                         btnSize="xs"
                                         @click="showAllSummaryAccounts = !showAllSummaryAccounts">
@@ -172,7 +172,7 @@
     });
 
     const visibleAccountSummaries = computed((): AccountSummary[] => {
-        if (showAllSummaryAccounts.value) {
+        if (showAllSummaryAccounts.value && accountSummaries.value.length > 5) {
             return accountSummaries.value;
         }
 

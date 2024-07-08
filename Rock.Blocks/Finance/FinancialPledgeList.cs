@@ -79,7 +79,7 @@ namespace Rock.Blocks.Finance
     [BooleanField( "Show Account Summary",
         Key = AttributeKey.ShowAccountSummary,
         Description = "Should the account summary be displayed at the bottom of the list?",
-        DefaultBooleanValue = false,
+        DefaultBooleanValue = true,
         Order = 5 )]
 
     [AccountsField( "Accounts",
@@ -155,7 +155,7 @@ namespace Rock.Blocks.Finance
             public const string DetailPage = "DetailPage";
         }
 
-        private static class UserPreferenceKey
+        private static class PreferenceKey
         {
             public const string DateRange = "Date Range";
             public const string LastModified = "Last Modified";
@@ -252,6 +252,13 @@ namespace Rock.Blocks.Finance
             if ( accountGuids.Any() )
             {
                 query = query.Where( p => accountGuids.Contains( p.Account.Guid ) );
+            }
+
+            // Filter by "Active Only" user preference
+            var activeOnly = this.GetBlockPersonPreferences().GetValue( PreferenceKey.ActiveOnly ).AsBoolean();
+            if ( activeOnly )
+            {
+                query = query.Where( p => p.StartDate <= RockDateTime.Now && p.EndDate >= RockDateTime.Now );
             }
 
             return query;
