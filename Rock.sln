@@ -127,6 +127,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.Tests.UnitTests.Perfor
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.NCOA", "Rock.NCOA\Rock.NCOA.csproj", "{6FC5781E-C9FC-41E9-87FB-2A9CA8AA2088}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Rock.PrinterProxy.Shared.Common", "Applications\PrinterProxy\Rock.PrinterProxy.Shared.Common\Rock.PrinterProxy.Shared.Common.shproj", "{6519C205-3304-4D09-86BC-16BE8A0D9C41}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -316,8 +318,13 @@ Global
 		{205F439A-2CCC-42C1-B1AB-09E1B629D88C} = {7A0E1B93-44CB-4EB4-BF4D-433253A29D52}
 		{BAB8BF5E-6457-4668-ADF1-B917100BA7CD} = {7A0E1B93-44CB-4EB4-BF4D-433253A29D52}
 		{6FC5781E-C9FC-41E9-87FB-2A9CA8AA2088} = {7A0E1B93-44CB-4EB4-BF4D-433253A29D52}
+		{6519C205-3304-4D09-86BC-16BE8A0D9C41} = {7A0E1B93-44CB-4EB4-BF4D-433253A29D52}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {53C930BD-2ECB-48B7-BDE0-7F5BBDF7A427}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Applications\PrinterProxy\Rock.PrinterProxy.Shared.Common\Rock.PrinterProxy.Shared.Common.projitems*{185a31d7-3037-4dae-8797-0459849a84bd}*SharedItemsImports = 4
+		Applications\PrinterProxy\Rock.PrinterProxy.Shared.Common\Rock.PrinterProxy.Shared.Common.projitems*{6519c205-3304-4d09-86bc-16be8a0d9c41}*SharedItemsImports = 13
 	EndGlobalSection
 EndGlobal

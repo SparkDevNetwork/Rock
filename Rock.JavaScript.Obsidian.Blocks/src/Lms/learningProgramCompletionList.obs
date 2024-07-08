@@ -3,7 +3,12 @@
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
-          itemTerm="Program Completion"
+          :isSearchVisible="false"
+          :isTitleHidden="true"
+          :isCountMessageVisible="false"
+          :showMergeTemplate="false"
+          :showLaunchWorkflow="false"
+          :showExport="false"
           :entityTypeGuid="EntityType.LearningProgramCompletion"
           stickyHeader
           liveUpdates
@@ -14,8 +19,8 @@
                       name="individual"
                       title="Individual"
                       field="individual"
-                      :showAsLink="true"
                       :filter="pickExistingValueFilter"
+                      :filterValue="getPersonNameFilterValue"
                       visiblePriority="sm" />
 
         <TextColumn
@@ -50,9 +55,8 @@
         <Column
                 name="status"
                 title="Status"
-                :filter="textValueFilter"
-                filterValue="status"
-                quickFilterValue="status"
+                field="status"
+                :filter="pickExistingValueFilter"
                 width="10%"
                 visiblePriority="sm">
             <template #format="{ row }">
@@ -61,19 +65,30 @@
                 </span>
             </template>
         </Column>
+
+        <Column
+                name="profile"
+                title=""
+                width="48px"
+                visiblePriority="md">
+            <template #format="{ row }">
+                <i class="fa fa-user pr-3" @click="onPersonProfileClick(row.individual?.idKey)"></i>
+            </template>
+        </Column>
     </Grid>
 </template>
 
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { textValueFilter, dateValueFilter, pickExistingValueFilter, Column, TextColumn, DateColumn, PersonColumn, SecurityColumn, SelectColumn } from "@Obsidian/Controls/grid";
+    import Grid, { textValueFilter, dateValueFilter, pickExistingValueFilter, Column, TextColumn, DateColumn, PersonColumn, SelectColumn } from "@Obsidian/Controls/grid";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { LearningProgramCompletionListOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningProgramCompletionList/learningProgramCompletionListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./LearningProgramCompletionList/types.partial";
     import { reactive, ref } from "vue";
     import { CompletionStatusDescription } from "@Obsidian/Enums/Lms/completionStatus";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
 
     const config = useConfigurationValues<ListBlockBox<LearningProgramCompletionListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -89,6 +104,16 @@
     // #endregion
 
     // #region Functions
+
+    /**
+    * Gets the filter value text to use for the name column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getPersonNameFilterValue(row: Record<string, unknown>): string {
+        const person = row["individual"] as PersonFieldBag;
+        return !person ? "" : `${person.nickName} ${person.lastName}`;
+    }
 
     /**
      * Called when the grid is requesting the row data be loaded.
@@ -108,6 +133,12 @@
     // #endregion
 
     // #region Event Handlers
+
+    function onPersonProfileClick(idKey: string): void {
+        if (idKey?.length > 0) {
+            window.location.href = `/person/${idKey}`;
+        }
+    }
 
     /**
      * Called when a row has been selected by the individual.

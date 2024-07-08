@@ -17,6 +17,9 @@
 
 namespace Rock.ViewModels.Blocks.Engagement.CampaignList
 {
+    /// <summary>
+    /// The configuration options for the Campaign List block.
+    /// </summary>
     public class CampaignListOptionsBag
     {
     }

@@ -302,6 +302,7 @@
     <Folder Include="Framework\ViewModels\Blocks\" />
     <Folder Include="Framework\ViewModels\Blocks\Bus\" />
     <Folder Include="Framework\ViewModels\Blocks\Bus\QueueDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Bus\QueueList\" />
     <Folder Include="Framework\ViewModels\Blocks\CheckIn\" />
     <Folder Include="Framework\ViewModels\Blocks\CheckIn\AttendanceList\" />
     <Folder Include="Framework\ViewModels\Blocks\CheckIn\CheckInKiosk\" />
@@ -384,6 +385,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Event\" />
     <Folder Include="Framework\ViewModels\Blocks\Event\EventCalendarDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Event\EventItemDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Event\EventItemOccurrenceList\" />
     <Folder Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\" />
     <Folder Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\ExperienceManagerOccurrences\" />
     <Folder Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\ExperienceManager\" />
@@ -793,6 +795,8 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\blockBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Bus\QueueDetail\queueBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Bus\QueueDetail\queueDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Bus\QueueList\queueListBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Bus\QueueList\queueListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\AttendanceList\attendanceListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\CheckInKiosk\promotionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\CheckInKiosk\savedKioskConfigurationBag.d.ts" />
@@ -997,6 +1001,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\EventItemDetail\eventItemBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\EventItemDetail\eventItemDetailOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\EventItemDetail\eventItemOccurenceAttributeBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\EventItemOccurrenceList\eventItemOccurrenceListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\ExperienceManagerOccurrences\experienceManagerOccurrencesInitializationBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\ExperienceManager\experienceManagerInitializationBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Event\InteractiveExperiences\ExperienceVisualizer\experienceVisualizerInitializationBox.d.ts" />

@@ -44,9 +44,10 @@ namespace RockWeb.Blocks.Event
     [BooleanField("Use Campus Context", "Determine if the campus should be read from the campus context of the page.", order: 3)]
     [SlidingDateRangeField("Date Range", "Optional date range to filter the occurrences on.", false, enabledSlidingDateRangeTypes: "Next,Upcoming,Current", order:4)]
     [IntegerField("Max Occurrences", "The maximum number of occurrences to show.", false, 100, order: 5)]
-    [LinkedPage( "Event Detail Page", "The page to use for showing event details.", order: 6 )]
-    [LinkedPage( "Registration Page", "The page to use for registrations.", order: 7 )]
-    [CodeEditorField( "Lava Template", "The lava template to use for the results", CodeEditorMode.Lava, CodeEditorTheme.Rock, defaultValue: "{% include '~~/Assets/Lava/EventItemOccurrenceListByAudience.lava' %}", order: 8 )]
+    [IntegerField( "Max Occurrences Per Event Item", "The maximum number of occurrences to show per Event Item. Set to 0 to show all occurrences for each Event Item.", false, 0, order: 6 )]
+    [LinkedPage( "Event Detail Page", "The page to use for showing event details.", order: 7 )]
+    [LinkedPage( "Registration Page", "The page to use for registrations.", order: 8 )]
+    [CodeEditorField( "Lava Template", "The lava template to use for the results", CodeEditorMode.Lava, CodeEditorTheme.Rock, defaultValue: "{% include '~~/Assets/Lava/EventItemOccurrenceListByAudience.lava' %}", order: 9 )]
     [Rock.SystemGuid.BlockTypeGuid( "E4703964-7717-4C93-BD40-7DFF85EAC5FD" )]
     public partial class EventItemOccurrenceListByAudienceLava : Rock.Web.UI.RockBlock
     {
@@ -200,9 +201,14 @@ namespace RockWeb.Blocks.Event
                 }
 
                 // limit results
+                int maxOccurrencesPerEventItem = GetAttributeValue( "MaxOccurrencesPerEventItem" ).AsInteger();
                 int maxItems = GetAttributeValue( "MaxOccurrences" ).AsInteger();
+                if ( maxOccurrencesPerEventItem > 0 )
+                {
+                    itemOccurrences = itemOccurrences.OrderBy( i => i.NextStartDateTime ).GroupBy( io => io.EventItemId ).SelectMany( group => group.Take( maxOccurrencesPerEventItem ) ).ToList();
+                }
                 itemOccurrences = itemOccurrences.OrderBy( i => i.NextStartDateTime ).Take( maxItems ).ToList();
-                
+
                 // make lava merge fields
                 var mergeFields = new Dictionary<string, object>();
 

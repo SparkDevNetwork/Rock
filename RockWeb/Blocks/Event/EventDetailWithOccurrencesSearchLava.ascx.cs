@@ -42,7 +42,7 @@ namespace RockWeb.Blocks.Event
 <p>{{ Event.Description }}</p>
 {% if Event.Photo.Guid %}
     <center>
-      <img src='/GetImage.ashx?Guid={{ Event.Photo.Guid }}' class='title-image img-responsive'></img>
+      <img src='/GetImage.ashx?guid={{ Event.Photo.Guid }}' class='title-image img-responsive'></img>
     </center>
 {% endif %}
 " )]

@@ -32,6 +32,11 @@ namespace Rock.ViewModels.Blocks.Lms.LearningClassContentPageDetail
         public string Content { get; set; }
 
         /// <summary>
+        /// Gets or sets the LearningClassId that this content relates to.
+        /// </summary>
+        public int LearningClassId { get; set; }
+
+        /// <summary>
         /// Gets or sets the date and time the page will be available.
         /// </summary>
         public DateTime? StartDateTime {get; set;}
@@ -40,6 +45,5 @@ namespace Rock.ViewModels.Blocks.Lms.LearningClassContentPageDetail
         /// Gets or sets the title of the page.
         /// </summary>
         public string Title { get; set; }
-
     }
 }

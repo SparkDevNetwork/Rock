@@ -495,5 +495,10 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// Gets or sets the term for specifying which household or family a person is a member of.
         /// </summary>
         public string FamilyTerm { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether current family members are shown.
+        /// </summary>
+        public bool AreCurrentFamilyMembersShown { get; set; }
     }
 }

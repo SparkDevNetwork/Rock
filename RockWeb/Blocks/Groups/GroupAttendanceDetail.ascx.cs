@@ -29,6 +29,7 @@ using Rock.Data;
 using Rock.MergeTemplates;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -465,8 +466,7 @@ namespace RockWeb.Blocks.Groups
                 }
             }
 
-            var baseUrl = ResolveRockUrl( "~/GetFile.ashx" );
-            var getFileUrl = $"{baseUrl}?Guid={outputBinaryFileDoc.Guid}&attachment=true";
+            var getFileUrl = FileUrlHelper.GetFileUrl( outputBinaryFileDoc.Guid ) + "&attachment=true";
             Response.Redirect( getFileUrl, false );
             Context.ApplicationInstance.CompleteRequest();
         }

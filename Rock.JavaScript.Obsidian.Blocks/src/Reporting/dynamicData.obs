@@ -21,7 +21,6 @@
                   :liveUpdates="true"
                   :stickyHeader="stickyHeader"
                   :entityTypeGuid="entityTypeGuid"
-                  itemTerm="Result"
                   :mergeTemplateAsPerson="mergeTemplateAsPerson"
                   :showBulkUpdate="showBulkUpdate"
                   :showPersonMerge="showPersonMerge"

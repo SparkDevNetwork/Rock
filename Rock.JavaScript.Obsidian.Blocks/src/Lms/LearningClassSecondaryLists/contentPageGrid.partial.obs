@@ -2,14 +2,16 @@
 <template>
     <Grid :data="gridDataSource"
           keyField="idKey"
-          itemTerm="Content Page"
+          title="Content Pages"
           :entityTypeGuid="EntityType.LearningClassContentPage"
           :expectedRowCount="10"
+          :isCountMessageVisible="false"
           tooltipField="title"
           stickyHeader
           liveUpdates
           :onSelectItem="onRowClicked"
           :onAddItem="isAddEnabled ? onAddItemClicked : undefined">
+        <SelectColumn />
 
         <TextColumn name="title"
                     title="Page Name"
@@ -33,7 +35,7 @@
 <script setup lang="ts">
     import { PropType, reactive, ref } from "vue";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { DateColumn, TextColumn, textValueFilter, dateValueFilter, DeleteColumn } from "@Obsidian/Controls/grid";
+    import Grid, { DateColumn, TextColumn, textValueFilter, dateValueFilter, DeleteColumn, SelectColumn } from "@Obsidian/Controls/grid";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
 

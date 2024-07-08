@@ -31,30 +31,46 @@ namespace Rock.Blocks.Lms
     /// <summary>
     /// Displays a list of public learning courses.
     /// </summary>
-
     [DisplayName( "Public Learning Course List" )]
     [Category( "LMS" )]
     [Description( "Displays a list of public learning courses." )]
     [IconCssClass( "fa fa-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
-    [LinkedPage( "Detail Page",
-        Description = "The page that will show the course details.",
-        Key = AttributeKey.DetailPage )]
-
     [LinkedPage( "Enrollment Page",
         Description = "The page that will enroll the student in the course.",
         Key = AttributeKey.CourseEnrollmentPage )]
 
-    [CodeEditorField( "Course List Template",
-        Key = AttributeKey.CourseListTemplate,
-        Description = "The lava template showing the courses list. Merge fields include: Program, Courses, CurrentPerson and other Common Merge Fields. <span class='tip tip-lava'></span>",
+    [CodeEditorField( "Lava Template",
+        Key = AttributeKey.LavaTemplate,
+        Description = "The lava template to use to render the page. Merge fields include: Program, Courses, CurrentPerson and other Common Merge Fields. <span class='tip tip-lava'></span>",
         EditorMode = CodeEditorMode.Lava,
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
         IsRequired = true,
         DefaultValue = AttributeDefault.CourseListTemplate,
         Order = 1 )]
+
+    [LinkedPage( "Detail Page",
+        Description = "Page to link to when the individual would like more details.",
+        Key = AttributeKey.DetailPage,
+        Order = 2)]
+
+    [CustomDropdownListField(
+        "Show Completion Status",
+        Key = AttributeKey.ShowCompletionStatus,
+        Description = "Determines if the individual's completion status should be shown.",
+        ListSource = "Show,Hide",
+        IsRequired = true,
+        DefaultValue = "Show",
+        Order = 3 )]
+
+    [SlidingDateRangeField( "Next Session Date Range",
+        Description = "Filter to limit the display of upcming sessions.",
+        Order = 4,
+        IsRequired = false,
+        Key = AttributeKey.NextSessionDateRange )]
+
     [Rock.SystemGuid.EntityTypeGuid( "4356febe-5efd-421a-bfc4-05942b6bd910" )]
     [Rock.SystemGuid.BlockTypeGuid( "5d6ba94f-342a-4ec1-b024-fc5046ffe14d" )]
     public class PublicLearningCourseList : RockBlockType
@@ -64,8 +80,10 @@ namespace Rock.Blocks.Lms
         private static class AttributeKey
         {
             public const string CourseEnrollmentPage = "CourseEnrollmentPage";
-            public const string CourseListTemplate = "CourseListTemplate";
+            public const string LavaTemplate = "LavaTemplate";
             public const string DetailPage = "DetailPage";
+            public const string NextSessionDateRange = "NextSessionDateRange";
+            public const string ShowCompletionStatus = "ShowCompletionStatus";
         }
 
         private static class PageParameterKey
@@ -178,16 +196,18 @@ namespace Rock.Blocks.Lms
                 
                 <div class=""d-flex justify-content-between"">
     				<a class=""btn btn-default"" href=""{{ course.CourseDetailsLink }}"">Learn More</a>
-    				
-    				{% if course.LearningCompletionStatus == 'Pass' %}
-    					<span class=""badge badge-success p-2"" style=""line-height: normal;"">Completed</span>
-    				{% elseif course.LearningCompletionStatus == 'Incomplete' %}
-    					<span class=""badge badge-info p-2"" style=""line-height: normal;"">Enrolled</span>
-    				{% elseif course.UnmetPrerequisites != empty %}
-                        <a class=""text-muted"" href=""{{ course.PrerequisiteEnrollmentLink }}"">Prerequisites Not Met</a>
-                    {% else %}
-                        <a class=""text-bold ml-3"" href=""{{ course.CourseEnrollmentLink }}"">Enroll</a>
-    				{% endif %}
+
+                    {% if ShowCompletionStatus %}
+    				    {% if course.LearningCompletionStatus == 'Pass' %}
+    					    <span class=""badge badge-success p-2"" style=""line-height: normal;"">Completed</span>
+    				    {% elseif course.LearningCompletionStatus == 'Incomplete' %}
+    					    <span class=""badge badge-info p-2"" style=""line-height: normal;"">Enrolled</span>
+    				    {% elseif course.UnmetPrerequisites != empty %}
+                            <a class=""text-muted"" href=""{{ course.PrerequisiteEnrollmentLink }}"">Prerequisites Not Met</a>
+                        {% else %}
+                            <a class=""text-bold ml-3"" href=""{{ course.CourseEnrollmentLink }}"">Enroll</a>
+    				    {% endif %}
+                    {% endif %}
 			    </div>
 			</div>
 		</div>
@@ -218,14 +238,14 @@ namespace Rock.Blocks.Lms
         /// <param name="rockContext">The rock context.</param>
         private void SetBoxInitialEntityState( PublicLearningCourseListBlockBox box )
         {
-            var programId = PageParameterAsId( PageParameterKey.LearningProgramId );
+            var programId = RequestContext.PageParameterAsId( PageParameterKey.LearningProgramId );
             var rockContext = new RockContext();
             var program = new LearningProgramService( rockContext )
                 .Queryable()
                 .Include( p => p.ImageBinaryFile )
                 .FirstOrDefault( p => p.Id == programId );
 
-            var courses = new LearningCourseService( rockContext ).GetPublicCourses( programId, GetCurrentPerson().Id );
+            var courses = GetCourses( programId, rockContext );
 
             var queryParams = new Dictionary<string, string>
             {
@@ -248,9 +268,64 @@ namespace Rock.Blocks.Lms
             var mergeFields = this.RequestContext.GetCommonMergeFields();
             mergeFields.Add( "Program", program );
             mergeFields.Add( "Courses", courses );
+            mergeFields.Add( "ShowCompletionStatus", ShowCompletionStatus() );
 
-            var template = GetAttributeValue( AttributeKey.CourseListTemplate ) ?? string.Empty;
+            var template = GetAttributeValue( AttributeKey.LavaTemplate ) ?? string.Empty;
             box.CoursesHtml = template.ResolveMergeFields( mergeFields );
+        }
+
+        /// <summary>
+        /// Provide html to the block for it's initial rendering.
+        /// </summary>
+        /// <returns>The HTML content to initially render.</returns>
+        protected override string GetInitialHtmlContent()
+        {
+            var programId = RequestContext.PageParameterAsId( PageParameterKey.LearningProgramId );
+            var rockContext = new RockContext();
+            var program = new LearningProgramService( rockContext )
+                .Queryable()
+                .Include( p => p.ImageBinaryFile )
+                .FirstOrDefault( p => p.Id == programId );
+
+            var courses = GetCourses( programId, rockContext );
+
+            var queryParams = new Dictionary<string, string>
+            {
+                [PageParameterKey.LearningProgramId] = PageParameter( PageParameterKey.LearningProgramId ),
+                ["LearningCourseId"] = "((Key))"
+            };
+
+            var courseDetailUrlTemplate = this.GetLinkedPageUrl( AttributeKey.DetailPage, queryParams );
+            var courseEnrollmentUrlTemplate = this.GetLinkedPageUrl( AttributeKey.CourseEnrollmentPage, queryParams );
+
+            foreach ( var course in courses )
+            {
+                // If there are unmet requirements include the link for enrollment to that course.
+                var prerequisiteCourseIdKey = course.UnmetPrerequisites?.FirstOrDefault()?.IdKey ?? string.Empty;
+                course.CourseDetailsLink = courseDetailUrlTemplate.Replace( "((Key))", course.Entity.IdKey );
+                course.PrerequisiteEnrollmentLink = courseEnrollmentUrlTemplate.Replace( "((Key))", prerequisiteCourseIdKey );
+                course.CourseEnrollmentLink = courseEnrollmentUrlTemplate.Replace( "((Key))", course.Entity.IdKey );
+            }
+
+            var mergeFields = this.RequestContext.GetCommonMergeFields();
+            mergeFields.Add( "Program", program );
+            mergeFields.Add( "Courses", courses );
+            mergeFields.Add( "ShowCompletionStatus", ShowCompletionStatus() );
+
+            var template = GetAttributeValue( AttributeKey.LavaTemplate ) ?? string.Empty;
+            return template.ResolveMergeFields( mergeFields );
+        }
+
+        private bool ShowCompletionStatus()
+        {
+            return GetAttributeValue( AttributeKey.ShowCompletionStatus ) == "Show";
+        }
+
+        private List<Rock.Model.LearningCourseService.PublicLearningCourseBag> GetCourses( int programId, RockContext rockContext )
+        {
+            var semesterDates = RockDateTimeHelper.CalculateDateRangeFromDelimitedValues( GetAttributeValue( AttributeKey.NextSessionDateRange ), RockDateTime.Now );
+
+            return new LearningCourseService( rockContext ).GetPublicCourses( programId, GetCurrentPerson().Id, semesterDates.Start, semesterDates.End );
         }
 
         #endregion

@@ -1265,6 +1265,11 @@ namespace Rock.SystemGuid
         public const string ENTITY_CAMPUS_FILTER = "A736A9FB-F2A5-4458-B126-FAD6BD3F3B78";
 
         /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.EntityIntent"/> 
+        /// </summary>
+        public const string ENTITY_INTENT = "15CE39A3-193F-44E5-80C7-DE47DA3EAF97";
+
+        /// <summary>
         /// The EntityType Guid for <see cref="Rock.Model.EntitySet"/> 
         /// </summary>
         public const string ENTITY_SET = "50E3F9C8-4010-41AF-8F61-08308DC44640";

@@ -34,6 +34,7 @@ using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Lms.LearningCourseDetail;
 using Rock.ViewModels.Blocks.Lms.LearningCourseRequirement;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Lms
@@ -78,7 +79,7 @@ namespace Rock.Blocks.Lms
 
     [Rock.SystemGuid.EntityTypeGuid( "cb48c60a-e518-42e8-aa52-6a549a1a4152" )]
     [Rock.SystemGuid.BlockTypeGuid( "94c4cb0b-5617-4f46-b902-6e6dd4a447b8" )]
-    public class LearningCourseDetail : RockDetailBlockType
+    public class LearningCourseDetail : RockDetailBlockType, IBreadCrumbBlock
     {
         #region Keys
 
@@ -382,14 +383,14 @@ namespace Rock.Blocks.Lms
         /// <returns>The <see cref="LearningCourse"/> to be viewed or edited on the page.</returns>
         private LearningCourse GetInitialEntity( RockContext rockContext )
         {
-            var entityId = PageParameterAsId( PageParameterKey.LearningCourseId );
+            var entityId = RequestContext.PageParameterAsId( PageParameterKey.LearningCourseId );
 
             // If a zero identifier is specified then create a new entity.
             if ( entityId == 0 )
             {
                 return new LearningCourse
                 {
-                    LearningProgramId = PageParameterAsId( PageParameterKey.LearningProgramId ),
+                    LearningProgramId = RequestContext.PageParameterAsId( PageParameterKey.LearningProgramId ),
                     Id = 0,
                     Guid = Guid.Empty
                 };
@@ -439,6 +440,28 @@ namespace Rock.Blocks.Lms
                 [NavigationUrlKey.ContentPageDetailPage] = this.GetLinkedPageUrl( AttributeKey.ContentPageDetailPage, contentPageParams ),
                 [NavigationUrlKey.AnnouncementDetailPage] = this.GetLinkedPageUrl( AttributeKey.AnnouncementDetailPage, announcementParams )
             };
+        }
+
+
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var entityKey = pageReference.GetPageParameter( PageParameterKey.LearningCourseId ) ?? "";
+
+                var entityName = entityKey.Length > 0 ? new LearningCourseService( rockContext ).GetSelect( entityKey, p => p.Name ) : "New Course";
+                var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, pageReference.Parameters );
+                var breadCrumb = new BreadCrumbLink( entityName ?? "New Course", breadCrumbPageRef );
+
+                return new BreadCrumbResult
+                {
+                    BreadCrumbs = new List<IBreadCrumb>
+                {
+                    breadCrumb
+                }
+                };
+            }
         }
 
         /// <inheritdoc/>
@@ -580,7 +603,7 @@ namespace Rock.Blocks.Lms
                 if ( isNew )
                 {
                     // Need to ensure the program is tied to the Course when creating a new Course.
-                    entity.LearningProgramId = PageParameterAsId( PageParameterKey.LearningProgramId );
+                    entity.LearningProgramId = RequestContext.PageParameterAsId( PageParameterKey.LearningProgramId );
                 }
 
                 entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
@@ -766,7 +789,7 @@ namespace Rock.Blocks.Lms
 
                 if ( requiredCourse == null )
                 {
-                    return ActionBadRequest( $"The required {LearningCourse.FriendlyTypeName} was found." );
+                    return ActionBadRequest( $"The required {LearningCourse.FriendlyTypeName} was not found." );
                 }
 
                 var newCourseRequirement = new LearningCourseRequirement
@@ -1207,7 +1230,7 @@ namespace Rock.Blocks.Lms
 
         private IQueryable<LearningActivity> GetOrderedLearningPlan( RockContext rockContext )
         {
-            var classId = PageParameterAsId( PageParameterKey.LearningClassId );
+            var classId = RequestContext.PageParameterAsId( PageParameterKey.LearningClassId );
 
             if ( classId > 0 )
             {
@@ -1217,7 +1240,7 @@ namespace Rock.Blocks.Lms
             }
 
             // Get the page parameter value (either IdKey or Id).
-            var courseId = PageParameterAsId( PageParameterKey.LearningCourseId );
+            var courseId = RequestContext.PageParameterAsId( PageParameterKey.LearningCourseId );
 
             if ( courseId > 0 )
             {

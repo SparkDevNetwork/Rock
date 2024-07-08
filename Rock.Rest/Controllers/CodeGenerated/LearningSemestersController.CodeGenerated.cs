@@ -29,7 +29,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// LearningSemesters REST API
     /// </summary>
-    [RestControllerGuid( "9986C083-9E69-4979-8237-86DF6EB5C008" )]
+    [RestControllerGuid( "36513943-0132-4FBA-8857-185FB90C90BC" )]
     public partial class LearningSemestersController : Rock.Rest.ApiController<Rock.Model.LearningSemester>
     {
         /// <summary>

@@ -34,16 +34,25 @@ export enum ComponentScreen {
  * The basic properties that all learning activity components must support.
  */
 type LearningActivityComponentBaseProps = {
+    /** The LearningActivityBag for saving any activity configuration data. */
     activityBag: {
         type: PropType<LearningActivityBag>;
         required: true;
     };
 
+    /** The LearningActivityCompletionBag for saving any completion data. */
     completionBag: {
         type: PropType<LearningActivityCompletionBag>;
         required: false;
     };
 
+    /** Whether or not configuration changes that affect existing responses should be disabled. */
+    disabled: {
+        type: PropType<boolean>,
+        default: false
+    };
+
+    /** The screen that should be presented to the current user (e.g. 'Completion' screen for a student). */
     screenToShow: {
         type: PropType<ComponentScreen>,
         default: ComponentScreen.Summary
@@ -81,6 +90,11 @@ export const learningActivityProps: LearningActivityComponentBaseProps = {
     completionBag: {
         type: Object as PropType<LearningActivityCompletionBag>,
         required: false,
+    },
+
+    disabled: {
+        type: Boolean as PropType<boolean>,
+        default: false
     },
 
     screenToShow: {
@@ -155,8 +169,6 @@ export function useLearningComponent<TConfig extends object, TCompletion extends
         configuration = JSON.parse(toValue(activityBag)?.activityComponentSettingsJson ?? "") as TConfig;
     }
     catch (error) {
-        // It's expected that this will happen with new instances so don't log it as an error.
-        console.debug(error, toValue(activityBag)?.activityComponentSettingsJson);
         configuration = defaults.defaultConfig;
     }
 
@@ -165,8 +177,6 @@ export function useLearningComponent<TConfig extends object, TCompletion extends
         completion = JSON.parse(toValue(completionBag)?.activityComponentCompletionJson ?? "") as TCompletion;
     }
     catch (error) {
-        // It's expected that this will happen with new instances so don't log it as an error.
-        console.debug(error, toValue(completionBag)?.activityComponentCompletionJson);
         completion = defaults.defaultCompletion;
     }
 

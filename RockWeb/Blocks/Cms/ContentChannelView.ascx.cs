@@ -841,14 +841,22 @@ $(document).ready(function() {
                     {
                         var proxySafeUri = Request.UrlProxySafe();
 
+                        var imageUrl = FileUrlHelper.GetImageUrl(
+                            attributeValue.AsGuid(),
+                            new GetImageUrlOptions
+                            {
+                                PublicAppRoot = $"{proxySafeUri.Scheme}://{proxySafeUri.Authority}/"
+                            }
+                        );
+
                         HtmlMeta metaDescription = new HtmlMeta();
                         metaDescription.Name = "og:image";
-                        metaDescription.Content = $"{proxySafeUri.Scheme}://{proxySafeUri.Authority}/GetImage.ashx?guid={attributeValue}";
+                        metaDescription.Content = imageUrl;
                         RockPage.Header.Controls.Add( metaDescription );
 
                         HtmlLink imageLink = new HtmlLink();
                         imageLink.Attributes.Add( "rel", "image_src" );
-                        imageLink.Attributes.Add( "href", $"{proxySafeUri.Scheme}://{proxySafeUri.Authority}/GetImage.ashx?guid={attributeValue}" );
+                        imageLink.Attributes.Add( "href", imageUrl );
                         RockPage.Header.Controls.Add( imageLink );
                     }
                 }

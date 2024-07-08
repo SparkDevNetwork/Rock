@@ -75,11 +75,11 @@
         }
 
         const facilitatorsText = props.modelValue.facilitators?.map(f => {
-            return `<li><a href="">${f.facilitatorName}</a><span class="ml-1 text-muted">${f.facilitatorRole}</span></li>`;
+            return `<li><a href="/person/${f.idKey}">${f.facilitatorName}</a><span class="ml-1 text-muted">${f.facilitatorRole}</span></li>`;
         }).join("") ?? "";
 
         if (facilitatorsText.length > 0) {
-            valueBuilder.addHtmlValue("", `<ul>${facilitatorsText}</ul>`);
+            valueBuilder.addHtmlValue("", `<h4>Facilitators</h4><ul>${facilitatorsText}</ul>`);
         }
         return valueBuilder.build();
     });

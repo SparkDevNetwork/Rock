@@ -23,39 +23,44 @@
                     visiblePriority="xs" />
 
         <Column name="timeToLiveSeconds"
-                title="TTL (Seconds)"
-                field="timeToLiveSeconds"
-                :filter="textValueFilter"
-                visiblePriority="xs" />
-
-        <TextColumn name="ratePerMinute"
-                    title="Consumed Last Minute"
-                    field="ratePerMinute"
-                    :filter="textValueFilter"
-                    visiblePriority="xs"
-                    width="5%" />
-
-        <TextColumn name="ratePerHour"
-                    title="Consumed Last Hour"
-                    field="ratePerHour"
-                    :filter="textValueFilter"
-                    visiblePriority="xs"
-                    width="5%" />
-
-        <TextColumn name="ratePerDay"
-                    title="Consumed Last Day"
-                    field="ratePerDay"
-                    :filter="textValueFilter"
+                    title="TTL (Seconds)"
+                    field="timeToLiveSeconds"
+                    :filter="numberValueFilter"
                     visiblePriority="xs" />
 
-        <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
+        <Column name="ratePerMinute"
+                    title="Consumed Last Minute"
+                    field="ratePerMinute"
+                    :filter="numberValueFilter"
+                    visiblePriority="xs"
+                    width="5%" />
 
+        <Column name="ratePerHour"
+                    title="Consumed Last Hour"
+                    field="ratePerHour"
+                    :filter="numberValueFilter"
+                    visiblePriority="xs"
+                    width="5%" />
+
+        <Column name="ratePerDay"
+                    title="Consumed Last Day"
+                    field="ratePerDay"
+                    :filter="numberValueFilter"
+                    visiblePriority="xs" />
+
+        <!-- Will only appear in the Excel/CSV Export -->
+
+        <Column name="idKey"
+                    title="Queue Type Name"
+                    field="idKey"
+                    :hideOnScreen="true"
+                    visiblePriority="xs" />
     </Grid>
 </template>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
-    import Grid, { AttributeColumns, TextColumn, textValueFilter, Column } from "@Obsidian/Controls/grid";
+    import Grid, { TextColumn, textValueFilter, numberValueFilter, Column, NumberColumn } from "@Obsidian/Controls/grid";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { QueueListOptionsBag } from "@Obsidian/ViewModels/Blocks/Bus/QueueList/queueListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";

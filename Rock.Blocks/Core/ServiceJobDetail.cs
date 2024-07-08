@@ -41,7 +41,7 @@ namespace Rock.Blocks.Core
     [Category( "Core" )]
     [Description( "Displays the details of a particular service job." )]
     [IconCssClass( "fa fa-question" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -119,7 +119,7 @@ namespace Rock.Blocks.Core
                 var fieldInfo = value.GetType().GetField( name );
                 var description = fieldInfo.GetCustomAttribute<DescriptionAttribute>()?.Description ?? name.SplitCase();
 
-                options.Add(new ListItemBag() { Text = description, Value = name });
+                options.Add( new ListItemBag() { Text = description, Value = name } );
             }
 
             return options;
@@ -162,36 +162,19 @@ namespace Rock.Blocks.Core
                 return;
             }
 
-            var isViewable = entity.IsAuthorized(Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson );
-            box.IsEditable = entity.IsAuthorized(Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson );
+            var isViewable = entity.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson );
+            box.IsEditable = entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson );
 
             entity.LoadAttributes( rockContext );
 
-            if ( entity.Id != 0 )
+            if ( box.IsEditable )
             {
-                // Existing entity was found, prepare for view mode by default.
-                if ( isViewable )
-                {
-                    box.Entity = GetEntityBagForView( entity );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
-                }
-                else
-                {
-                    box.ErrorMessage = EditModeMessage.NotAuthorizedToView( ServiceJob.FriendlyTypeName );
-                }
+                box.Entity = GetEntityBagForEdit( entity );
+                box.SecurityGrantToken = GetSecurityGrantToken( entity );
             }
             else
             {
-                // New entity is being created, prepare for edit mode by default.
-                if ( box.IsEditable )
-                {
-                    box.Entity = GetEntityBagForEdit( entity );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
-                }
-                else
-                {
-                    box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( ServiceJob.FriendlyTypeName );
-                }
+                box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( ServiceJob.FriendlyTypeName );
             }
         }
 
@@ -285,11 +268,15 @@ namespace Rock.Blocks.Core
                 return false;
             }
 
-            box.IfValidProperty( nameof( box.Entity.Assembly ),
-                () => entity.Assembly = box.Entity.Assembly );
-
             box.IfValidProperty( nameof( box.Entity.Class ),
-                () => entity.Class = box.Entity.Class );
+                () =>
+                {
+                    if(box.Entity.Class != entity.Class)
+                    {
+                        entity.Assembly = null;
+                    }
+                    entity.Class = box.Entity.Class;
+                } );
 
             box.IfValidProperty( nameof( box.Entity.CronExpression ),
                 () => entity.CronExpression = box.Entity.CronExpression );
@@ -305,12 +292,6 @@ namespace Rock.Blocks.Core
 
             box.IfValidProperty( nameof( box.Entity.IsActive ),
                 () => entity.IsActive = box.Entity.IsActive );
-
-            box.IfValidProperty( nameof( box.Entity.IsSystem ),
-                () => entity.IsSystem = box.Entity.IsSystem );
-
-            box.IfValidProperty( nameof( box.Entity.LastStatusMessage ),
-                () => entity.LastStatusMessage = box.Entity.LastStatusMessage );
 
             box.IfValidProperty( nameof( box.Entity.Name ),
                 () => entity.Name = box.Entity.Name );
@@ -418,7 +399,7 @@ namespace Rock.Blocks.Core
                 return false;
             }
 
-            if ( !entity.IsAuthorized(Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 error = ActionBadRequest( $"Not authorized to edit ${ServiceJob.FriendlyTypeName}." );
                 return false;
@@ -495,19 +476,7 @@ namespace Rock.Blocks.Core
                     entity.SaveAttributeValues( rockContext );
                 } );
 
-                if ( isNew )
-                {
-                    return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
-                    {
-                        [PageParameterKey.ServiceJobId] = entity.IdKey
-                    } ) );
-                }
-
-                // Ensure navigation properties will work now.
-                entity = entityService.Get( entity.Id );
-                entity.LoadAttributes( rockContext );
-
-                return ActionOk( GetEntityBagForView( entity ) );
+                return ActionContent( System.Net.HttpStatusCode.Created, this.GetParentPageUrl() );
             }
         }
 

@@ -59,6 +59,8 @@
     <Compile Include="Blocks\CheckIn\Config\CheckinTypeDetail\CheckInRegistrationSettingsBag.cs" />
     <Compile Include="Blocks\CheckIn\Config\CheckinTypeDetail\CheckInSearchSettingsBag.cs" />
     <Compile Include="Blocks\BlockActionContextBag.cs" />
+    <Compile Include="Blocks\Bus\QueueList\QueueListBag.cs" />
+    <Compile Include="Blocks\Bus\QueueList\QueueListOptionsBag.cs" />
     <Compile Include="Blocks\CheckIn\CheckInKiosk\KioskConfigurationBag.cs" />
     <Compile Include="Blocks\CheckIn\CheckInKiosk\PromotionBag.cs" />
     <Compile Include="Blocks\CheckIn\CheckInKiosk\SavedKioskConfigurationBag.cs" />
@@ -112,8 +114,11 @@
     <Compile Include="Blocks\Lms\LearningGradingSystemScaleDetail\LearningGradingSystemScaleBag.cs" />
     <Compile Include="Blocks\Lms\LearningGradingSystemScaleDetail\LearningGradingSystemScaleDetailOptionsBag.cs" />
     <Compile Include="Blocks\Lms\LearningGradingSystemScaleList\LearningGradingSystemScaleListOptionsBag.cs" />
+    <Compile Include="Blocks\Lms\LearningProgramCompletionDetail\LearningProgramCompletionBag.cs" />
+    <Compile Include="Blocks\Lms\LearningProgramCompletionDetail\LearningProgramCompletionDetailOptionsBag.cs" />
     <Compile Include="Blocks\Lms\LearningSemesterDetail\LearningSemesterBag.cs" />
     <Compile Include="Blocks\Lms\LearningSemesterDetail\LearningSemesterDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Lms\PublicLearningClassWorkspace\PublicLearningClassWorkspaceNotificationBag.cs" />
     <Compile Include="Blocks\Lms\PublicLearningClassWorkspace\PublicLearningClassWorkspaceBox.cs" />
     <Compile Include="Blocks\Lms\PublicLearningCourseDetail\PublicLearningCourseDetailBox.cs" />
     <Compile Include="Blocks\Lms\PublicLearningProgramList\PublicLearningProgramListBox.cs" />
@@ -147,6 +152,9 @@
     <Compile Include="Blocks\Finance\FinancialPledgeList\FinancialPledgeListOptionsBag.cs" />
     <Compile Include="Blocks\Group\Scheduling\GroupScheduler\GroupSchedulerGroupLocationScheduleNamesBag.cs" />
     <Compile Include="Blocks\Engagement\CampaignList\CampaignListOptionsBag.cs" />
+    <Compile Include="Blocks\Security\UserLoginList\AuthenticationComponentBag.cs" />
+    <Compile Include="Blocks\Security\UserLoginList\UserLoginBag.cs" />
+    <Compile Include="Blocks\Security\UserLoginList\UserLoginListOptionsBag.cs" />
     <Compile Include="Blocks\Security\RestKeyList\RestKeyListOptionsBag.cs" />
     <Compile Include="Blocks\Crm\PersonMergeRequestList\PersonMergeRequestListOptionsBag.cs" />
     <Compile Include="Blocks\Event\RegistrationInstanceLinkageList\RegistrationInstanceLinkageListOptionsBag.cs" />
@@ -235,6 +243,7 @@
     <Compile Include="Blocks\Engagement\StepProgramDetail\StepStatusBag.cs" />
     <Compile Include="Blocks\Engagement\StepProgramDetail\StepProgramWorkflowTriggerBag.cs" />
     <Compile Include="Blocks\Finance\FinancialAccountList\FinancialAccountListOptionsBag.cs" />
+	<Compile Include="Blocks\Event\EventItemOccurrenceList\EventItemOccurrenceListOptionsBag.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\ExtensionMethods.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockArgs.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockSession.cs" />

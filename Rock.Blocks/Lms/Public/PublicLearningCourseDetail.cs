@@ -39,23 +39,41 @@ namespace Rock.Blocks.Lms
     [IconCssClass( "fa fa-question" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
-    [LinkedPage( "Class Workspace Page",
-        Description = "The page that will show the class workspace.",
-        Key = AttributeKey.ClassWorkspacePage )]
 
-    [LinkedPage( "Enrollment Page",
-        Description = "The page that will enroll the student in the course.",
-        Key = AttributeKey.CourseEnrollmentPage )]
-
-    [CodeEditorField( "Course Detail Template",
+    [CodeEditorField( "Lava Template",
         Key = AttributeKey.CourseDetailTemplate,
-        Description = "The lava template showing the course detail. Merge fields include: Course, CurrentPerson and other Common Merge Fields. <span class='tip tip-lava'></span>",
+        Description = "The lava template to use to render the page. Merge fields include: Course, CurrentPerson and other Common Merge Fields. <span class='tip tip-lava'></span>",
         EditorMode = CodeEditorMode.Lava,
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
         IsRequired = true,
         DefaultValue = AttributeDefault.CourseDetailTemplate,
         Order = 1 )]
+
+    [LinkedPage( "Workspace Page",
+        Description = "Page to link to when the individual would like more details.",
+        Key = AttributeKey.ClassWorkspacePage,
+        Order = 2 )]
+
+    [CustomDropdownListField(
+        "Show Completion Status",
+        Key = AttributeKey.ShowCompletionStatus,
+        Description = "Determines if the individual's completion status should be shown.",
+        ListSource = "Show,Hide",
+        IsRequired = true,
+        DefaultValue = "Show",
+        Order = 3 )]
+
+    [SlidingDateRangeField( "Next Session Date Range",
+        Description = "Filter to limit the display of upcming sessions.",
+        Order = 4,
+        IsRequired = false,
+        Key = AttributeKey.NextSessionDateRange )]
+
+    [LinkedPage( "Enrollment Page",
+        Description = "The page that will enroll the student in the course.",
+        Key = AttributeKey.CourseEnrollmentPage,
+        Order = 5 )]
 
     [Rock.SystemGuid.EntityTypeGuid( "c5d5a151-038e-4295-a03c-63196883f68e" )]
     [Rock.SystemGuid.BlockTypeGuid( "b0dce130-0c91-4aa0-8161-57e8fa523392" )]
@@ -68,6 +86,8 @@ namespace Rock.Blocks.Lms
             public const string CourseEnrollmentPage = "CourseEnrollmentPage";
             public const string CourseDetailTemplate = "CourseListTemplate";
             public const string ClassWorkspacePage = "DetailPage";
+            public const string NextSessionDateRange = "NextSessionDateRange";
+            public const string ShowCompletionStatus = "ShowCompletionStatus";
         }
 
         private static class PageParameterKey
@@ -266,7 +286,7 @@ namespace Rock.Blocks.Lms
         /// <param name="rockContext">The rock context.</param>
         private void SetBoxInitialEntityState( PublicLearningCourseDetailBlockBox box )
         {
-            var courseId = PageParameterAsId( PageParameterKey.LearningCourseId );
+            var courseId = RequestContext.PageParameterAsId( PageParameterKey.LearningCourseId );
             var currentPerson = GetCurrentPerson();
             var rockContext = new RockContext();
             var course = new LearningCourseService( rockContext ).GetPublicCourseDetails( courseId, currentPerson.Id );
@@ -288,9 +308,49 @@ namespace Rock.Blocks.Lms
 
             var mergeFields = this.RequestContext.GetCommonMergeFields( currentPerson );
             mergeFields.Add( "Course", course );
+            mergeFields.Add( "ShowCompletionStatus", ShowCompletionStatus() );
 
             var template = GetAttributeValue( AttributeKey.CourseDetailTemplate ) ?? string.Empty;
             box.CourseHtml = template.ResolveMergeFields( mergeFields );
+        }
+
+        /// <summary>
+        /// Provide html to the block for it's initial rendering.
+        /// </summary>
+        /// <returns>The HTML content to initially render.</returns>
+        protected override string GetInitialHtmlContent()
+        {
+            var courseId = RequestContext.PageParameterAsId( PageParameterKey.LearningCourseId );
+            var currentPerson = GetCurrentPerson();
+            var rockContext = new RockContext();
+            var semesterDates = RockDateTimeHelper.CalculateDateRangeFromDelimitedValues( GetAttributeValue( AttributeKey.NextSessionDateRange ), RockDateTime.Now );
+            var course = new LearningCourseService( rockContext ).GetPublicCourseDetails( courseId, currentPerson.Id, semesterDates.Start, semesterDates.End );
+
+            course.DescriptionAsHtml = new StructuredContentHelper( course.Entity?.Description ?? string.Empty ).Render();
+
+            var enrolledClassIdKey = course.MostRecentParticipation?.LearningClassId > 0 ?
+                IdHasher.Instance.GetHash( course.MostRecentParticipation.LearningClassId ) :
+                course.NextSemester?.LearningClasses?.FirstOrDefault()?.IdKey;
+            var queryParams = new Dictionary<string, string>
+            {
+                [PageParameterKey.LearningProgramId] = PageParameter( PageParameterKey.LearningProgramId ),
+                [PageParameterKey.LearningCourseId] = course.Entity.IdKey,
+                ["LearningClassId"] = enrolledClassIdKey
+            };
+
+            course.ClassWorkspaceLink = this.GetLinkedPageUrl( AttributeKey.ClassWorkspacePage, queryParams );
+            course.CourseEnrollmentLink = this.GetLinkedPageUrl( AttributeKey.CourseEnrollmentPage, queryParams );
+
+            var mergeFields = this.RequestContext.GetCommonMergeFields( currentPerson );
+            mergeFields.Add( "Course", course );
+            mergeFields.Add( "ShowCompletionStatus", ShowCompletionStatus() );
+
+            var template = GetAttributeValue( AttributeKey.CourseDetailTemplate ) ?? string.Empty;
+            return template.ResolveMergeFields( mergeFields );
+        }
+        private bool ShowCompletionStatus()
+        {
+            return GetAttributeValue( AttributeKey.ShowCompletionStatus ) == "Show";
         }
 
         #endregion

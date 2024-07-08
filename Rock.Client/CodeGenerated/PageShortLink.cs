@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public string AdditionalSettingsJson { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -87,6 +90,7 @@ namespace Rock.Client
         public void CopyPropertiesFrom( PageShortLink source )
         {
             this.Id = source.Id;
+            this.AdditionalSettingsJson = source.AdditionalSettingsJson;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;

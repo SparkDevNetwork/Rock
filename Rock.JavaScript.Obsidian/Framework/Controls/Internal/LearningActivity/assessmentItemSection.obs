@@ -4,10 +4,12 @@
         <div v-if="screenToShow === ComponentScreen.Configuration">
             <TextBox v-model="title"
                      label="Title"
+                     :disabled="disabled"
                      inputClasses="form-control"
                      rules="required" />
 
             <TextBox v-model="summary"
+                     :disabled="disabled"
                      textMode="multiline"
                      inputClasses="form-control" />
         </div>
@@ -26,6 +28,11 @@
     import { AssessmentItem, SectionItem } from "./assessmentLearningActivity.partial";
 
     const props = defineProps({
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
         /** The assessment item's configuration. */
         modelValue: {
             type: Object as PropType<SectionItem | AssessmentItem>,
@@ -42,6 +49,7 @@
         (event: "update:modelValue", value: SectionItem): void
     }>();
 
+    const disabled = ref(props.disabled ?? false);
     const internalModelValue = props.modelValue as SectionItem;
 
     const screenToShow = ref(props.screenToShow);

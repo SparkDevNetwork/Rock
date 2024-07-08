@@ -15,7 +15,9 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
@@ -35,19 +37,38 @@ namespace Rock.Blocks.Lms
     [IconCssClass( "fa fa-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
-    [LinkedPage( "Detail Page",
-        Description = "The page that will show the courses for the program.",
-        Key = AttributeKey.DetailPage )]
-
-    [CodeEditorField( "Program List Template",
-        Key = AttributeKey.ProgramListTemplate,
-        Description = "The lava template showing the program list. Merge fields include: Programs, CurrentPerson and other Common Merge Fields. <span class='tip tip-lava'></span>",
+    [CodeEditorField( "Lava Template",
+        Key = AttributeKey.LavaTemplate,
+        Description = "The lava template to use to render the page. Merge fields include: Programs, ShowCompletionStatus, CurrentPerson and other Common Merge Fields. <span class='tip tip-lava'></span>",
         EditorMode = CodeEditorMode.Lava,
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
         IsRequired = true,
         DefaultValue = AttributeDefault.ProgramListTemplate,
         Order = 1 )]
+
+    [LinkedPage( "Detail Page",
+        Description = "Page to link to when the individual would like more details.",
+        Key = AttributeKey.DetailPage,
+        Order = 2 )]
+
+    [CategoryField( "Program Categories",
+        Description = "The categories to filter the programs by.",
+        EntityTypeName = "Rock.Model.LearningProgram",
+        AllowMultiple = true,
+        IsRequired = false,
+        Key = AttributeKey.ProgramCategories,
+        Order = 3)]
+
+    [CustomDropdownListField(
+        "Show Completion Status",
+        Key = AttributeKey.ShowCompletionStatus,
+        Description = "Determines if the individual's completion status should be shown.",
+        ListSource = "Show,Hide",
+        IsRequired = true,
+        DefaultValue = "Show",
+        Order = 4 )]
+
     [Rock.SystemGuid.EntityTypeGuid( "59d82730-e4a7-4aaf-bb1e-bec4b7aa8624" )]
     [Rock.SystemGuid.BlockTypeGuid( "2fc656da-7f5d-41b3-ad18-bfe692cfca57" )]
     public class PublicLearningProgramList : RockBlockType
@@ -57,7 +78,9 @@ namespace Rock.Blocks.Lms
         private static class AttributeKey
         {
             public const string DetailPage = "DetailPage";
-            public const string ProgramListTemplate = "ProgramListTemplate";
+            public const string LavaTemplate = "LavaTemplate";
+            public const string ProgramCategories = "ProgramCategories";
+            public const string ShowCompletionStatus = "ShowCompletionStatus";
         }
 
         private static class AttributeDefault
@@ -159,17 +182,24 @@ namespace Rock.Blocks.Lms
 			
 			<div class=""program-item-footer d-flex justify-content-between mt-4 p-3"">
 				<a class=""btn btn-default"" href=""{{ program.CoursesLink }}"">Learn More</a>
-				
-				{% if program.CompletionStatus == 'Completed' %}
-					<span class=""badge badge-success p-2"" style=""line-height: normal;"">Completed</span>
-				{% elseif program.CompletionStatus == 'Pending' %}
-					<span class=""badge badge-info p-2"" style=""line-height: normal;"">Enrolled</span>
-				{% endif %}
+
+                {% if ShowCompletionStatus == True %} 
+				    {% if program.CompletionStatus == 'Completed' %}
+					    <span class=""badge badge-success p-2"" style=""line-height: normal;"">Completed</span>
+				    {% elseif program.CompletionStatus == 'Pending' %}
+					    <span class=""badge badge-info p-2"" style=""line-height: normal;"">Enrolled</span>
+				    {% endif %}
+                {% endif %}
 			</div>
 		</div>
 		{% endfor %}
 	</div>
 </div>";
+        }
+
+        private static class PageParameterKey
+        {
+            public const string CategoryId = "CategoryId";
         }
 
         #endregion Keys
@@ -194,7 +224,7 @@ namespace Rock.Blocks.Lms
         /// <param name="rockContext">The rock context.</param>
         private void SetBoxInitialEntityState( PublicLearningProgramListBlockBox box )
         {
-            var programs = new LearningProgramService( new RockContext() ).GetPublicPrograms( GetCurrentPerson().Id );
+            var programs = GetPrograms();
 
             var courseDetailUrlTemplate = this.GetLinkedPageUrl( AttributeKey.DetailPage, "LearningProgramId", "((Key))" );
 
@@ -205,9 +235,56 @@ namespace Rock.Blocks.Lms
 
             var mergeFields = this.RequestContext.GetCommonMergeFields();
             mergeFields.Add( "Programs", programs );
+            mergeFields.Add( "ShowCompletionStatus", ShowCompletionStatus() );
 
-            var template = GetAttributeValue( AttributeKey.ProgramListTemplate ) ?? string.Empty;
+            var template = GetAttributeValue( AttributeKey.LavaTemplate ) ?? string.Empty;
             box.ProgramsHtml = template.ResolveMergeFields( mergeFields );
+        }
+
+        /// <summary>
+        /// Provide html to the block for it's initial rendering.
+        /// </summary>
+        /// <returns>The HTML content to initially render.</returns>
+        protected override string GetInitialHtmlContent()
+        {
+            var programs = GetPrograms();
+
+            var courseDetailUrlTemplate = this.GetLinkedPageUrl( AttributeKey.DetailPage, "LearningProgramId", "((Key))" );
+
+            foreach ( var program in programs )
+            {
+                program.CoursesLink = courseDetailUrlTemplate.Replace( "((Key))", program.Entity.IdKey );
+            }
+
+            var mergeFields = this.RequestContext.GetCommonMergeFields();
+            mergeFields.Add( "Programs", programs );
+            mergeFields.Add( "ShowCompletionStatus", ShowCompletionStatus() );
+
+            var template = GetAttributeValue( AttributeKey.LavaTemplate ) ?? string.Empty;
+            return template.ResolveMergeFields( mergeFields );
+        }
+
+        private bool ShowCompletionStatus()
+        {
+            return GetAttributeValue( AttributeKey.ShowCompletionStatus) == "Show" ;
+        }
+
+        private List<Rock.Model.LearningProgramService.PublicLearningProgramBag> GetPrograms()
+        {
+            var categoryGuids = GetAttributeValue( AttributeKey.ProgramCategories ).SplitDelimitedValues().AsGuidList().ToArray();
+
+            var pageLevelCategoryFilter = PageParameter( PageParameterKey.CategoryId );
+            if ( pageLevelCategoryFilter.Any() )
+            {
+                var onlyCategoryGuid = new CategoryService( RockContext ).GetSelect( pageLevelCategoryFilter, c => c.Guid );
+
+                if (categoryGuids.Contains( onlyCategoryGuid ) )
+                {
+                    return new LearningProgramService( RockContext ).GetPublicPrograms( GetCurrentPerson().Id, onlyCategoryGuid ).ToList();
+                }
+            }
+
+            return new LearningProgramService( RockContext ).GetPublicPrograms( GetCurrentPerson().Id, categoryGuids ).ToList();
         }
 
         #endregion

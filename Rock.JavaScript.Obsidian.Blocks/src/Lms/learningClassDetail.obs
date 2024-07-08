@@ -33,7 +33,7 @@
     <LearningClassSecondaryLists v-if="panelMode === DetailPanelMode.View"
                                  :isEditable="isEditable"
                                  :navigationUrls="config.navigationUrls"
-                                 :takesAttendance="options.takesAttendance"
+                                 :showAbsences="takesAttendance"
                                  v-model="learningClassViewBag" />
 </template>
 
@@ -75,6 +75,8 @@
         entity: learningClassEditBag
     });
 
+    const takesAttendance = ref(learningClassViewBag.value?.takesAttendance);
+
     // #endregion
 
     // #region Computed Values
@@ -103,6 +105,10 @@
     const blockLabels = computed((): PanelAction[] | undefined => {
         const labels: PanelAction[] = [];
 
+        if (panelMode.value === DetailPanelMode.Add) {
+            return labels;
+        }
+
         labels.push({
             iconCssClass: "fa fa-users",
             title: `Students: ${learningClassViewBag.value?.studentCount ?? 0}`,
@@ -113,7 +119,7 @@
         if (campusName.length > 0) {
             labels.push({
                 title: campusName,
-                type: "link"
+                type: "campus"
             });
         }
 
@@ -154,7 +160,7 @@
 
         if (learningClassViewBag.value?.takesAttendance === true) {
             secondaryActions.push({
-                iconCssClass: "fa fa-check-square",
+                iconCssClass: "fa fa-check-square-o",
                 title: "Take Attendance",
                 type: "default",
                 handler: async () => {
@@ -175,7 +181,7 @@
     });
 
     const options = computed((): LearningClassDetailOptionsBag => {
-        return config.options ?? { takesAttendance: false };
+        return config.options ?? { };
     });
 
     // #endregion

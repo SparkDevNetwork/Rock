@@ -24,12 +24,14 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Lms;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Lms.LearningParticipantDetail;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Lms
@@ -49,7 +51,7 @@ namespace Rock.Blocks.Lms
 
     [Rock.SystemGuid.EntityTypeGuid( "7f3752ef-7a4a-4f96-bd5c-e6609f0bfac6" )]
     [Rock.SystemGuid.BlockTypeGuid( "f1179439-31a1-4897-ab2e-b991d60455aa" )]
-    public class LearningParticipantDetail : RockDetailBlockType
+    public class LearningParticipantDetail : RockDetailBlockType, IBreadCrumbBlock
     {
         #region Keys
 
@@ -256,7 +258,7 @@ namespace Rock.Blocks.Lms
                 entity.PersonId = person.PersonId;
             }
 
-            var classId = PageParameterAsId( PageParameterKey.LearningClassId );
+            var classId = RequestContext.PageParameterAsId( PageParameterKey.LearningClassId );
 
             if ( classId > 0 && Guid.TryParse( box.Entity.ParticipantRole.Value, out var roleGuid ) )
             {
@@ -285,7 +287,7 @@ namespace Rock.Blocks.Lms
         /// <returns>The <see cref="LearningParticipant"/> to be viewed or edited on the page.</returns>
         private LearningParticipant GetInitialEntity( RockContext rockContext )
         {
-            var partipicantId = PageParameterAsId( PageParameterKey.LearningParticipantId );
+            var partipicantId = RequestContext.PageParameterAsId( PageParameterKey.LearningParticipantId );
 
             if ( partipicantId == 0 )
             {
@@ -519,6 +521,33 @@ namespace Rock.Blocks.Lms
             return true;
         }
 
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var entityKey = pageReference.GetPageParameter( PageParameterKey.LearningParticipantId ) ?? "";
+
+                var entityDetail =
+                        entityKey.Length == 0 ?
+                        null :
+                        new Service<LearningParticipant>( rockContext )
+                            .GetSelect( entityKey, p => new { p.Person.NickName, p.Person.LastName, p.Person.SuffixValueId } );
+
+                var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, pageReference.Parameters );
+                var entityName = entityDetail == null ? null : Rock.Model.Person.FormatFullName( entityDetail.NickName, entityDetail.LastName, entityDetail.SuffixValueId );
+                var breadCrumb = new BreadCrumbLink( entityName ?? "New Participant", breadCrumbPageRef );
+
+                return new BreadCrumbResult
+                {
+                    BreadCrumbs = new List<IBreadCrumb>
+                    {
+                        breadCrumb
+                    }
+                };
+            }
+        }
+
         #endregion
 
         #region Block Actions
@@ -720,15 +749,16 @@ namespace Rock.Blocks.Lms
                     .ToList()
                     .OrderBy( a => a.LearningActivity.Order );
 
+                var components = LearningActivityContainer.Instance.Components;
+
                 // Return all activities for the course.
-                // TODO: Update Component selections once those classes are defined.
                 var gridBuilder = new GridBuilder<LearningActivityCompletion>()
                     .AddTextField( "idKey", a => a.IdKey )
                     .AddTextField( "name", a => a.LearningActivity.Name )
                     .AddField( "type", a => a.LearningActivity.ActivityComponentId )
-                    .AddField( "componentIconCssClass", a => "fa fa-list" )
-                    .AddField( "componentHighlightColor", a => "#735f95" )
-                    .AddField( "componentName", a => "Check-Off" )
+                    .AddField( "componentIconCssClass", a => components.FirstOrDefault( c => c.Value.Value.EntityType.Id == a.LearningActivity.ActivityComponentId ).Value.Value.IconCssClass )
+                    .AddField( "componentHighlightColor", a => components.FirstOrDefault( c => c.Value.Value.EntityType.Id == a.LearningActivity.ActivityComponentId ).Value.Value.HighlightColor )
+                    .AddField( "componentName", a => components.FirstOrDefault( c => c.Value.Value.EntityType.Id == a.LearningActivity.ActivityComponentId ).Value.Value.Name )
                     .AddField( "dateCompleted", a => a.CompletedDateTime )
                     .AddField( "dateAvailable", a => a.AvailableDateTime )
                     .AddField( "dueDate", a => a.DueDate )

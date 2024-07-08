@@ -49,7 +49,7 @@
       <HintPath>..\packages\AWSSDK.S3.3.3.21.1\lib\net45\AWSSDK.S3.dll</HintPath>
     </Reference>
     <Reference Include="BouncyCastle.Cryptography, Version=2.0.0.0, Culture=neutral, PublicKeyToken=072edcf4a5328938, processorArchitecture=MSIL">
-      <HintPath>..\packages\BouncyCastle.Cryptography.2.2.1\lib\net461\BouncyCastle.Cryptography.dll</HintPath>
+      <HintPath>..\packages\BouncyCastle.Cryptography.2.4.0\lib\net461\BouncyCastle.Cryptography.dll</HintPath>
     </Reference>
     <Reference Include="Castle.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=407dd0808d44fbdc, processorArchitecture=MSIL">
       <HintPath>..\packages\Castle.Core.4.4.0\lib\net45\Castle.Core.dll</HintPath>
@@ -203,7 +203,6 @@
     <Compile Include="Utility\HttpSimulator.cs" />
     <Compile Include="Utility\TestConfigurationHelper.cs" />
     <Compile Include="Utility\RandomizerExtensions.cs" />
-    <Compile Include="Utility\SampleData.cs" />
     <Compile Include="Utility\ReflectionHelper.cs" />
     <Compile Include="Utility\SimulatedHttpRequest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

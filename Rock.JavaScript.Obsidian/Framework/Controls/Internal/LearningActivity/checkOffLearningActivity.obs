@@ -3,14 +3,15 @@
     <Panel v-if="[ComponentScreen.Configuration, ComponentScreen.Summary].includes(screenToShow)" :title="panelTitle" :hasFullscreen="false" :class="containerClasses">
         <div v-if="screenToShow === ComponentScreen.Configuration">
             <div class="header-content-section">
-                <StructuredContentEditor label="Content" v-model="content" />
+                <StructuredContentEditor label="Content" v-model="content" :disabled="disabled" />
             </div>
             <div class="is-required-section">
-                <CheckBox v-model="isConfirmationRequired" label="Confirmation Required" />
+                <CheckBox v-model="isConfirmationRequired" label="Confirmation Required" :disabled="disabled" />
             </div>
 
             <div class="footer-content-section">
                 <TextBox v-model="confirmationText"
+                         :disabled="disabled"
                          label="Confirmation Text"
                          textMode="multiline"
                          help="Enter a brief statement individuals will agree to by checking off." />
@@ -46,7 +47,7 @@
 </template>
 
 <script setup lang="ts">
-    import { toRef, toValue, watch, } from "vue";
+    import { ref, toRef, toValue, watch, } from "vue";
     import { debounce } from "@Obsidian/Utility/util";
     import Panel from "@Obsidian/Controls/panel.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -63,6 +64,8 @@
     // Get the required props and emits for learning activity components.
     const props = defineProps({ ...learningActivityProps });
     const emits = defineEmits({ ...learningActivityEmits });
+
+    const disabled = ref(props.disabled ?? false);
 
     // Get the bags directly from the props when needed (to support the useLearningComponent computedRefs).
     const activityBag = toRef(() => props.activityBag);

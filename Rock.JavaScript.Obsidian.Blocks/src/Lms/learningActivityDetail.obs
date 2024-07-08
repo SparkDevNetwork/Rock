@@ -10,6 +10,7 @@
                  :isFullScreenVisible="false"
                  :isAuditHidden="false"
                  :name="panelName"
+                 :alwaysShowLabels="true"
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
@@ -82,8 +83,8 @@
     const blockLabels = computed((): PanelAction[] | undefined => {
         const labels: PanelAction[] = [];
 
-        if (panelMode.value !== DetailPanelMode.View) {
-            return undefined;
+        if (panelMode.value === DetailPanelMode.Add) {
+            return labels;
         }
 
         labels.push({
@@ -107,7 +108,7 @@
     });
 
     const options = computed((): LearningActivityDetailOptionsBag => {
-        return config.options ?? {};
+        return config.options ?? { hasCompletions: false };
     });
 
     /**
@@ -176,6 +177,7 @@
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
     async function onCancelEdit(): Promise<boolean | string> {
+
         if (!learningActivityEditBag.value?.bag?.idKey) {
             if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
                 return config.navigationUrls[NavigationUrlKey.ParentPage];

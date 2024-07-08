@@ -471,9 +471,9 @@ namespace RockWeb.Blocks.Finance
 
             if ( account.ImageBinaryFileId.HasValue )
             {
-                string imageUrl = ResolveRockUrl( string.Format( "~/GetImage.ashx?id={0}", account.ImageBinaryFileId.Value ) );
+                string imageUrl = FileUrlHelper.GetImageUrl( account.ImageBinaryFileId.Value );
                 string imgTag = GetImageTag( account.ImageBinaryFileId, 150, 150, false, true );
-                leftDescription.Add( "Image", $"<a href='{imageUrl}'>{imgTag}</a>" );
+                leftDescription.Add( "Image", $"<a href='{ResolveRockUrl(imageUrl)}'>{imgTag}</a>" );
             }
 
             lLeftDetails.Text = leftDescription.Html;

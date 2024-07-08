@@ -168,7 +168,7 @@ namespace Rock.Communication.Transport
             };
         }
 
-        private MailMessage GetMailMessageFromRockEmailMessage( RockEmailMessage rockEmailMessage )
+        internal MailMessage GetMailMessageFromRockEmailMessage( RockEmailMessage rockEmailMessage )
         {
             var mailMessage = new MailMessage
             {

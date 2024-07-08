@@ -27,6 +27,7 @@ using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Lms.LearningSemesterDetail;
 using Rock.ViewModels.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Lms
@@ -46,7 +47,7 @@ namespace Rock.Blocks.Lms
 
     [Rock.SystemGuid.EntityTypeGuid( "78bcf0d7-b5ac-4429-8055-b436652083a7" )]
     [Rock.SystemGuid.BlockTypeGuid( "97b2e57f-3a03-490d-834f-cd3640c7ff1e" )]
-    public class LearningSemesterDetail : RockEntityDetailBlockType<LearningSemester, LearningSemesterBag>
+    public class LearningSemesterDetail : RockEntityDetailBlockType<LearningSemester, LearningSemesterBag>, IBreadCrumbBlock
     {
         #region Keys
 
@@ -278,6 +279,27 @@ namespace Rock.Blocks.Lms
             return true;
         }
 
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var entityKey = pageReference.GetPageParameter( PageParameterKey.LearningSemesterId ) ?? "";
+
+                var entityName = entityKey.Length > 0 ? new Service<LearningSemester>( rockContext ).GetSelect( entityKey, p => p.Name ) : "New Semester";
+                var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, pageReference.Parameters );
+                var breadCrumb = new BreadCrumbLink( entityName ?? "New Semester", breadCrumbPageRef );
+
+                return new BreadCrumbResult
+                {
+                    BreadCrumbs = new List<IBreadCrumb>
+                    {
+                        breadCrumb
+                    }
+                };
+            }
+        }
+
         #endregion
 
         #region Block Actions
@@ -323,7 +345,7 @@ namespace Rock.Blocks.Lms
             // Set the LearningProgramId from the page parameter if the entity doesn't yet have one.
             if ( entity.LearningProgramId == 0 )
             {
-                entity.LearningProgramId = PageParameterAsId( PageParameterKey.LearningProgramId );
+                entity.LearningProgramId = RequestContext.PageParameterAsId( PageParameterKey.LearningProgramId );
             }
 
             // Update the entity instance from the information in the bag.

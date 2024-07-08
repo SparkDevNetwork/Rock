@@ -21,6 +21,9 @@ using Rock.ViewModels.Reporting;
 
 namespace Rock.ViewModels.Blocks.CheckIn.Configuration.CheckInLabelDetail
 {
+    /// <summary>
+    /// The configuration options for the Check-in Label Detail block.
+    /// </summary>
     public class CheckInLabelDetailOptionsBag
     {
         /// <summary>

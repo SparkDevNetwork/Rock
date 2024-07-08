@@ -2,7 +2,7 @@
 <template>
     <div class="grid-obsidian" :class="{ 'grid-sticky': isStickyHeader, 'grid-light': light, 'grid-bordered': !light, 'grid-striped': !light, 'grid-hover': !light }">
         <div class="grid-heading">
-            <FilterHeaderRow v-if="!light"
+            <FilterHeaderRow v-if="!light && !hideFilterHeaderRow"
                              v-model:quickFilterValue="quickFilterValue"
                              :grid="gridState"
                              :title="title"
@@ -631,6 +631,15 @@
         liveUpdates: {
             type: Boolean as PropType<boolean>,
             required: false
+        },
+
+        /**
+         * If true, the filter header row containing the row counts,
+         * quick filters and other grid data will be hidden. Defaults to false.
+         * */
+        hideFilterHeaderRow: {
+            type: Boolean as PropType<boolean>,
+            default: false
         },
 
         /** If enabled then the grid will have a sticky header. */

@@ -16,8 +16,7 @@
 //
 
 export const enum NavigationUrlKey {
-    CompletionsPage = "CompletionsPage",
+    CompletionDetailPage = "CompletionDetailPage",
     CoursesPage = "CoursesPage",
     ParentPage = "ParentPage",
-    SemestersPage = "SemestersPage"
 }

@@ -71,6 +71,8 @@ namespace RockWeb.Blocks.Event
 
     [CustomRadioListField( "Approval Status Filter", "Allows filtering events by their approval status.", "1^Approved, 2^Unapproved, 3^All", true, "1", key: "ApprovalStatusFilter", order: 22 )]
 
+    [BooleanField( "Show Only Events With Registrations", "Determines whether the events shown must have registrations.", false, order: 23 )]
+
     [Rock.SystemGuid.BlockTypeGuid( "8760D668-8ADF-48C8-9D90-09461FB75B88" )]
     public partial class CalendarLava : Rock.Web.UI.RockBlock
     {
@@ -353,6 +355,12 @@ namespace RockWeb.Blocks.Event
             else if (approvalFilterSettings == 2 )
             {
                 qry = qry.Where( m => m.EventItem.IsApproved == false );
+            }
+            
+            // Filter by registrations
+            if ( GetAttributeValue( "ShowOnlyEventsWithRegistrations" ).AsBoolean() )
+            {
+                qry = qry.Where( m => m.Linkages.Any( l => l.RegistrationInstance.Registrations.Any() ) );
             }
 
             // Filter by campus

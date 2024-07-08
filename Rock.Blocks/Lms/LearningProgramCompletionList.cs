@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System.CodeDom;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
@@ -29,7 +30,6 @@ using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Lms.LearningProgramCompletionList;
 using Rock.Web.Cache;
-using Rock.Web.UI;
 
 namespace Rock.Blocks.Lms
 {
@@ -41,7 +41,6 @@ namespace Rock.Blocks.Lms
     [Description( "Displays a list of learning program completions." )]
     [IconCssClass( "fa fa-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
-    [ContextAware( typeof( LearningProgram ) )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the learning program completion details.",
@@ -62,6 +61,11 @@ namespace Rock.Blocks.Lms
         private static class NavigationUrlKey
         {
             public const string DetailPage = "DetailPage";
+        }
+
+        private static class PageParameterKey
+        {
+            public const string LearningProgramId = "LearningProgramId";
         }
 
         #endregion Keys
@@ -90,9 +94,9 @@ namespace Rock.Blocks.Lms
         {
             var options = new LearningProgramCompletionListOptionsBag();
 
-            var learningProgramIsAcademicMode = RequestContext.GetContextEntity<LearningProgram>()?.ConfigurationMode == ConfigurationMode.AcademicCalendar;
+            var configurationMode = new LearningProgramService( RockContext ).GetSelect( PageParameter( PageParameterKey.LearningProgramId ), p => p.ConfigurationMode );
 
-            options.ShowSemesterColumn = learningProgramIsAcademicMode;
+            options.ShowSemesterColumn = configurationMode == ConfigurationMode.AcademicCalendar;
 
             return options;
         }

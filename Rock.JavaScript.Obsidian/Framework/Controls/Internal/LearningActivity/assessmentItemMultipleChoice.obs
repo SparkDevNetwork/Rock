@@ -3,30 +3,37 @@
     <div v-if="screenToShow !== ComponentScreen.Scoring" :class="containerClasses">
         <div v-if="screenToShow === ComponentScreen.Configuration">
             <TextBox v-model="question"
+                     :disabled="disabled"
                      label="Question"
                      rules="required" />
 
             <TextBox v-model="helpText"
+                     :disabled="disabled"
                      textMode="multiline"
                      label="Help Text" />
 
             <div class="answers-list">
                 <span v-for="(_, index) in answers" :class="'answer-row answer-row-' + index">
                     <TextBox v-model="answers[index]"
+                             :disabled="disabled"
                              :inputClasses="'answer-text-box-' + index"
                              :label="index === 0 ? 'Answers' : ''"
                              rules="required" />
 
-                    <button aria-label="Remove this answer" class="btn btn-default btn-square remove-answer-button" @click.prevent="answers.splice(index, 1)">
+                    <button
+                            aria-label="Remove this answer"
+                            :disabled="disabled"
+                            class="btn btn-default btn-square remove-answer-button"
+                            @click.prevent="answers.splice(index, 1)">
                         <i class="fa fa-times" aria-hidden="true"></i>
                     </button>
                 </span>
             </div>
-            <div class="add-answer-button">
+            <div class="add-answer-button" v-if="!disabled">
                 <i class="fa fa-plus-circle" @click.prevent="answers.push('')"></i>
             </div>
             <div class="correct-answer-field">
-                <DropDownList v-model="correctAnswer" :items="answersAsListItems" label="Correct Answer" :show-blank-item="false" />
+                <DropDownList v-model="correctAnswer" :disabled="disabled" :items="answersAsListItems" label="Correct Answer" :show-blank-item="false" />
             </div>
         </div>
 
@@ -141,6 +148,11 @@
     import { AssessmentItem, MultipleChoiceItem } from "./assessmentLearningActivity.partial";
 
     const props = defineProps({
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
         /** The assessment item's configuration. */
         modelValue: {
             type: Object as PropType<MultipleChoiceItem | AssessmentItem>,
@@ -157,6 +169,7 @@
         (event: "update:modelValue", value: MultipleChoiceItem | AssessmentItem): void
     }>();
 
+    const disabled = ref(props.disabled ?? false);
     const modelValue = toRef(() => props.modelValue as MultipleChoiceItem);
 
     const question = ref(modelValue.value?.question ?? "");

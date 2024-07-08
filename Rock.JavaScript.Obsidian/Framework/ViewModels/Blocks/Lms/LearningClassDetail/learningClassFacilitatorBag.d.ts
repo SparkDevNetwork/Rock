@@ -22,15 +22,28 @@
 //
 
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 /** The facilitator details for the Learning Class Detail block. */
 export type LearningClassFacilitatorBag = {
+    /** Gets or sets the attributes. */
+    attributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the attribute values. */
+    attributeValues?: Record<string, string> | null;
+
     /** Gets or sets the facilitator list item. */
     facilitator?: ListItemBag | null;
+
+    /** Gets or sets the email for the facilitator. */
+    facilitatorEmail?: string | null;
 
     /** Gets or sets the facilitator name. */
     facilitatorName?: string | null;
 
     /** Gets or sets the facilitator role. */
     facilitatorRole?: string | null;
+
+    /** Gets or sets the identifier key of this entity. */
+    idKey?: string | null;
 };

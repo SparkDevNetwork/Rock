@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Utility;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
@@ -147,14 +148,14 @@ namespace Rock.Field.Types
 
                 if ( binaryFileInfo != null )
                 {
-                    var filePath = System.Web.VirtualPathUtility.ToAbsolute( "~/GetFile.ashx" );
+                    var filePath = FileUrlHelper.GetFileUrl( binaryFileInfo.Guid );
 
                     // NOTE: Flash and Silverlight might crash if we don't set width and height. However, that makes responsive stuff not work
                     string htmlFormat = @"
 <video 
-    src='{0}?guid={1}'
+    src='{0}}'
     class='js-media-video'
-    type='{2}'
+    type='{1}'
     controls='controls'
     style='width:100%;height:100%;'
     width='100%'
@@ -167,7 +168,7 @@ namespace Rock.Field.Types
     Rock.controls.mediaPlayer.initialize();
 </script>
 ";
-                    return string.Format( htmlFormat, filePath, binaryFileInfo.Guid, binaryFileInfo.MimeType );
+                    return string.Format( htmlFormat, filePath, binaryFileInfo.MimeType );
                 }
             }
 
@@ -194,7 +195,7 @@ namespace Rock.Field.Types
                     return string.Empty;
                 }
 
-                return $"<a href=\"/GetFile.ashx?guid={binaryFileGuid.Value}\">{binaryFileName.EncodeHtml()}</a>";
+                return $"<a href=\"{FileUrlHelper.GetFileUrl( binaryFileGuid.Value )}\">{binaryFileName.EncodeHtml()}</a>";
             }
         }
 

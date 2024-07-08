@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
@@ -144,10 +145,22 @@ namespace Rock.Model
 
             return includePerson ? baseQuery.Include( c => c.Person ) : baseQuery;
         }
+        /// <summary>
+        /// Gets the participant in the specified class matching the provided <see cref="LearningParticipant"/> Guid.
+        /// </summary>
+        /// <param name="participantGuid">The <see cref="Person"/> of the participant to retrieve.</param>
+        /// <param name="classId">The identifier of the <see cref="LearningClass"/> within which to search for the participant.</param>
+        /// <returns></returns>
+        public IQueryable<LearningParticipant> GetParticipant( Guid participantGuid, int classId )
+        {
+            return Queryable()
+                .Include( a => a.Person )
+                .Include( a => a.GroupRole )
+                .Where( p => p.LearningClassId == classId && p.Guid == participantGuid );
+        }
 
         /// <summary>
-        /// Gets the participantId of the participant in the specified class matching the provided <see cref="Person"/>
-        /// identifier or <c>0</c> if not found.
+        /// Gets the participant in the specified class matching the provided <see cref="Person"/> identifier.
         /// </summary>
         /// <param name="personId">The <see cref="Person"/> identifier of the participant to retrieve.</param>
         /// <param name="classId">The identifier of the <see cref="LearningClass"/> within which to search for the participant.</param>
@@ -184,9 +197,19 @@ namespace Rock.Model
             }
 
             return baseQuery
-                .Select( p => new { p.Id, IsFacilitator = p.GroupRole.IsLeader, p.Person.NickName, p.Person.LastName, p.Person.SuffixValueId, RoleName = p.GroupRole.Name, p.Guid } )
+                .Select( p => new {
+                    p.Id,
+                    p.Person.Email,
+                    IsFacilitator = p.GroupRole.IsLeader,
+                    p.Person.NickName,
+                    p.Person.LastName,
+                    p.Person.SuffixValueId,
+                    RoleName = p.GroupRole.Name,
+                    p.Guid
+                } )
                 .ToList().Select( p => new LearningActivityParticipantBag
                 {
+                    Email = p.Email,
                     Guid = p.Guid,
                     IdKey = Utility.IdHasher.Instance.GetHash( p.Id ),
                     IsFacilitator = p.IsFacilitator,

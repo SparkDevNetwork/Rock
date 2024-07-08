@@ -17,6 +17,7 @@
 
 using System;
 
+using Rock.Enums.Lms;
 using Rock.ViewModels.Blocks.Lms.LearningActivityComponent;
 using Rock.ViewModels.Blocks.Lms.LearningActivityDetail;
 using Rock.ViewModels.Utility;
@@ -72,7 +73,7 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityCompletionDetail
         /// <summary>
         /// Indicates whether or not the activity is currently available.
         /// </summary>
-        public bool IsAvailable => !AvailableDate.HasValue || AvailableDate.Value <= DateTime.Now;
+        public bool IsAvailable { get; set; }
 
         /// <summary>
         /// Indicates whether or not the activity is due within a week.

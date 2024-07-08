@@ -35,8 +35,10 @@ namespace Rock.Model
         /// </summary>
         /// <param name="courseId">The identifier of the course to get.</param>
         /// <param name="personId">The identifier of the <see cref="Person"/> to include completion status for.</param>
+        /// <param name="semesterStartFrom">Optional filter for the next session Semester Start. Only Start Dates greater than this date will be included.</param>
+        /// <param name="semesterStartTo">Optional filter for the next session Semester Start. Only Start Dates less than this date will be included.</param>
         /// <returns>A <see cref="PublicLearningCourseDetailBag"/> containing the data necessary for rendering the details.</returns>
-        public PublicLearningCourseDetailBag GetPublicCourseDetails( int courseId, int personId )
+        public PublicLearningCourseDetailBag GetPublicCourseDetails( int courseId, int personId, DateTime? semesterStartFrom = null, DateTime? semesterStartTo = null )
         {
             var rockContext = ( RockContext ) Context;
             var participantService = new LearningParticipantService( rockContext );
@@ -70,6 +72,8 @@ namespace Rock.Model
                         .FirstOrDefault( s =>
                             ( s.EnrollmentCloseDate == null || s.EnrollmentCloseDate >= now ) &&
                             s.StartDate >= now &&
+                            ( !semesterStartFrom.HasValue || s.StartDate >= semesterStartFrom.Value ) &&
+                            ( !semesterStartTo.HasValue || s.StartDate <= semesterStartTo.Value ) &&
                             s.LearningClasses.Any( sc => sc.LearningCourseId == c.Id )
                         )
                 } )
@@ -128,8 +132,10 @@ namespace Rock.Model
         /// </summary>
         /// <param name="programId">The identifier of the <see cref="LearningProgram"/> for which to return courses.</param>
         /// <param name="personId">The identifier of the <see cref="Person"/> to include completion status for.</param>
+        /// <param name="semesterStartFrom">Optional filter for the next session Semester Start. Only Start Dates greater than this date will be included.</param>
+        /// /// <param name="semesterStartTo">Optional filter for the next session Semester Start. Only Start Dates less than this date will be included.</param>
         /// <returns>An enumerable of PublicLearningCourseBag.</returns>
-        public List<PublicLearningCourseBag> GetPublicCourses( int programId, int personId )
+        public List<PublicLearningCourseBag> GetPublicCourses( int programId, int personId, DateTime? semesterStartFrom = null, DateTime? semesterStartTo = null )
         {
             var rockContext = ( RockContext ) Context;
             var orderedPersonCompletions = new LearningParticipantService( rockContext )
@@ -170,10 +176,12 @@ namespace Rock.Model
                         .FirstOrDefault( p => p.LearningClass.LearningCourseId == c.Id )
                         .LearningCompletionStatus,
 
-                    // Get the earliest semester with open enrollment and a future start date for this course.
+                    // Get the earliest semester with open enrollment and a start date within the specified dates for this course.
                     NextSemester = semesters.FirstOrDefault( s =>
                         ( s.EnrollmentCloseDate == null || s.EnrollmentCloseDate >= now ) &&
-                        s.StartDate >= now &&
+                        s.StartDate >= now && 
+                        ( !semesterStartFrom.HasValue || s.StartDate >= semesterStartFrom.Value ) &&
+                        ( !semesterStartTo.HasValue || s.StartDate <= semesterStartTo.Value ) &&
                         s.LearningClasses.Any( sc => sc.LearningCourseId == c.Id )
                         ),
 

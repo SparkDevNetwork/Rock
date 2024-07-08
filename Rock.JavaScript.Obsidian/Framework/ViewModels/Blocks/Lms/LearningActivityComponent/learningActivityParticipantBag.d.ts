@@ -32,6 +32,9 @@ export type LearningActivityParticipantBag = {
     /** Gets or sets the attribute values. */
     attributeValues?: Record<string, string> | null;
 
+    /** Gets or sets the email of the participant. */
+    email?: string | null;
+
     /** Gets or sets the Guid of the related participant (GroupMember.Guid). */
     guid: Guid;
 

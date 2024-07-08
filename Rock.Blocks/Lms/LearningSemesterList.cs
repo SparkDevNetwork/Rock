@@ -28,7 +28,6 @@ using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Lms.LearningSemesterList;
 using Rock.Web.Cache;
-using Rock.Web.UI;
 
 namespace Rock.Blocks.Lms
 {
@@ -40,7 +39,6 @@ namespace Rock.Blocks.Lms
     [Description( "Displays a list of learning semesters." )]
     [IconCssClass( "fa fa-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
-    [ContextAware( typeof( LearningProgram ) )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the learning semester details.",
@@ -97,12 +95,14 @@ namespace Rock.Blocks.Lms
         {
             var options = new LearningSemesterListOptionsBag();
 
-            var contextEntity = RequestContext.GetContextEntity<LearningProgram>();
-            if ( contextEntity != null )
+            var progamInfo = new LearningProgramService(RockContext).GetSelect(PageParameter(PageParameterKey.LearningProgramId), p => new
             {
-                options.LearningProgramIdKey = contextEntity.IdKey;
-                options.LearningProgramName = contextEntity.Name;
-            }
+                p.IdKey,
+                p.Name
+            } );
+
+            options.LearningProgramIdKey = progamInfo?.IdKey;
+            options.LearningProgramName = progamInfo?.Name;
 
             return options;
         }
@@ -136,7 +136,7 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         protected override IQueryable<LearningSemester> GetListQueryable( RockContext rockContext )
         {
-            var entityId = PageParameterAsId( PageParameterKey.LearningProgramId );
+            var entityId = RequestContext.PageParameterAsId( PageParameterKey.LearningProgramId );
 
             // If the PageParameter has a value then use that
             // otherwise try to get the Id for filtering from the ContextEntity.

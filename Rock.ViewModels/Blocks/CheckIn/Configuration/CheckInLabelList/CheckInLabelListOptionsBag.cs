@@ -17,6 +17,9 @@
 
 namespace Rock.ViewModels.Blocks.CheckIn.Configuration.CheckInLabelList
 {
+    /// <summary>
+    /// The configuration options for the Check-in Label List block.
+    /// </summary>
     public class CheckInLabelListOptionsBag
     {
     }

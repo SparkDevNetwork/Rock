@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,10 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
+
+using Rock.ViewModels.Utility;
+
 namespace Rock.ViewModels.Blocks.Lms.LearningActivityCompletionList
 {
     /// <summary>
@@ -22,5 +26,9 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityCompletionList
     /// </summary>
     public class LearningActivityCompletionListOptionsBag
     {
+        /// <summary>
+        /// Gets or sets a list of students for the class being viewed.
+        /// </summary>
+        public List<ListItemBag> Students { get; set; }
     }
 }
