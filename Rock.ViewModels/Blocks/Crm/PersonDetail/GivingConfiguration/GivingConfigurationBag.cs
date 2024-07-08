@@ -228,12 +228,12 @@ namespace Rock.ViewModels.Blocks.Crm.PersonDetail.GivingConfiguration
         /// Gets or sets the start date of the financial pledge.
         /// </summary>
         /// <value>The start date of the financial pledge.</value>
-        public DateTime? StartDate { get; set; }
+        public DateTimeOffset? StartDate { get; set; }
         /// <summary>
         /// Gets or sets the end date of the financial pledge.
         /// </summary>
         /// <value>The end date of the financial pledge.</value>
-        public DateTime? EndDate { get; set; }
+        public DateTimeOffset? EndDate { get; set; }
         /// <summary>
         /// Gets or sets the frequency value identifier of the financial pledge.
         /// </summary>
