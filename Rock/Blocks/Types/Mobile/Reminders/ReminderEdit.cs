@@ -97,77 +97,78 @@ namespace Rock.Blocks.Types.Mobile.Reminders
         /// <summary>
         /// The default header XAML.
         /// </summary>
-        private const string _defaultHeaderXaml = @"<StackLayout>
-    <StackLayout.Resources>
-        <Rock:AllTrueMultiValueConverter x:Key=""AllTrueConverter"" /> 
-    </StackLayout.Resources>
-
-    <!-- If this is a person entity and no entity is selected -->
-    <Grid RowDefinitions=""*""
-        ColumnDefinitions=""64, *"">
-        <Grid.IsVisible>
-            <MultiBinding Converter=""{StaticResource AllTrueConverter}"">
-                <Binding Path=""Reminder.IsPersonEntityType"" />
-                <Binding Path=""Reminder.IsEntitySelected""
-                    Converter=""{Rock:InverseBooleanConverter}"" />
-            </MultiBinding>
-        </Grid.IsVisible>
-
-        <!-- The add icon -->
-        <Frame WidthRequest=""64""
-            HeightRequest=""64""
-            CornerRadius=""32""
-            HasShadow=""false""
-            StyleClass=""bg-light, p-0""
-            Grid.Column=""0"">
-            <Rock:Icon IconClass=""fa-plus""
-                IconFamily=""FontAwesomeSolid""
-                FontSize=""24""
-                VerticalTextAlignment=""Center""
-                HorizontalTextAlignment=""Center"" />
-        </Frame>
-
-        <!-- Our select individual label -->
-        <Label Text=""Select Individual""
-            Grid.Column=""1""
-            VerticalOptions=""Center""
-            StyleClass=""title"" />
-
-        <Grid.GestureRecognizers>
-            <TapGestureRecognizer Command=""{Binding ShowPersonSearch}"" />
-        </Grid.GestureRecognizers>
-    </Grid>
-
-    <!-- If an entity is selected -->
-    <Grid RowDefinitions=""*""
-        ColumnDefinitions=""64, *""
-        IsVisible=""{Binding Reminder.IsEntitySelected}"">
-
-        <!-- The bell icon -->
-        <Frame WidthRequest=""64""
-            HeightRequest=""64""
-            CornerRadius=""32""
-            HasShadow=""false""
-            StyleClass=""bg-light, p-0""
-            Grid.Column=""0"">
-            <Rock:Icon IconClass=""fa-bell""
-                IconFamily=""FontAwesomeSolid""
-                FontSize=""24""
-                VerticalTextAlignment=""Center""
-                HorizontalTextAlignment=""Center"" />
-        </Frame>
-
-        <!-- The person information -->
-        <StackLayout Grid.Column=""1"" 
-            Spacing=""0""
-            VerticalOptions=""Center"">
-            <Label Text=""New Reminder""
-                StyleClass=""text-gray-600, text-sm"" />
-            <Label Text=""{Binding Reminder.Name}""
-                StyleClass=""title"" />
-        </StackLayout>
-    </Grid>
-</StackLayout>";
+        private const string _defaultHeaderXaml = @"<Rock:StyledBorder StyleClass=""p-16, rounded, border, border-interface-soft, bg-interface-softest"">
+    <StackLayout>
+        <StackLayout.Resources>
+            <Rock:AllTrueMultiValueConverter x:Key=""AllTrueConverter"" /> 
+        </StackLayout.Resources>
+    
+        <!-- If this is a person entity and no entity is selected -->
+        <Grid RowDefinitions=""*""
+            ColumnDefinitions=""64, *"">
+            <Grid.IsVisible>
+                <MultiBinding Converter=""{StaticResource AllTrueConverter}"">
+                    <Binding Path=""Reminder.IsPersonEntityType"" />
+                    <Binding Path=""Reminder.IsEntitySelected""
+                        Converter=""{Rock:InverseBooleanConverter}"" />
+                </MultiBinding>
+            </Grid.IsVisible>
+    
+            <!-- The add icon -->
+            <Rock:StyledBorder WidthRequest=""48""
+                HeightRequest=""48""
+                CornerRadius=""24""
+                StyleClass=""bg-light, bg-primary-soft""
+                Grid.Column=""0"">
+                <Rock:Icon IconClass=""fa-plus""
+                    IconFamily=""FontAwesomeSolid""
+                    FontSize=""24""
+                    StyleClass=""text-primary-strong""
+                    VerticalTextAlignment=""Center""
+                    HorizontalTextAlignment=""Center"" />
+            </Rock:StyledBorder>
+    
+            <!-- Our select individual label -->
+            <Label Text=""Select Individual""
+                Grid.Column=""1""
+                VerticalOptions=""Center""
+                StyleClass=""title, text-interface-stronger, body, bold"" />
+    
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Command=""{Binding ShowPersonSearch}"" />
+            </Grid.GestureRecognizers>
+        </Grid>
+    
+        <!-- If an entity is selected -->
+        <Grid RowDefinitions=""*""
+            ColumnDefinitions=""64, *""
+            IsVisible=""{Binding Reminder.IsEntitySelected}"">
+    
+            <!-- The bell icon -->
+            <Rock:StyledBorder WidthRequest=""48""
+                HeightRequest=""48""
+                CornerRadius=""24""
+                StyleClass=""bg-light, bg-primary-soft""
+                Grid.Column=""0"">
+                <Rock:Icon IconClass=""fa-bell""
+                    IconFamily=""FontAwesomeSolid""
+                    FontSize=""24""
+                    StyleClass=""text-primary-strong""
+                    VerticalTextAlignment=""Center""
+                    HorizontalTextAlignment=""Center"" />
+            </Rock:StyledBorder>
+    
+            <!-- The person information -->
+            <StackLayout Grid.Column=""1"" 
+                VerticalOptions=""Center"">
+                <Label Text=""New Reminder""
+                    StyleClass=""text-gray-600, text-sm, text-interface-strong, callout"" />
+                <Label Text=""{Binding Reminder.Name}""
+                    StyleClass=""title, text-interface-stronger, body, bold"" />
+            </StackLayout>
+        </Grid>
+    </StackLayout>
+</Rock:StyledBorder>";
 
         #endregion
 
@@ -222,9 +223,7 @@ namespace Rock.Blocks.Types.Mobile.Reminders
                 return;
             }
 
-            //
             // Create a new reminder.
-            //
             var reminder = new Reminder
             {
                 EntityId = entityId.Value,

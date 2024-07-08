@@ -55,7 +55,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
     [BlockTemplateField( "Template",
         Description = "The template for how to display the prayer request.",
         TemplateBlockValueGuid = SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_MY_PRAYER_REQUESTS,
-        DefaultValue = "DED26289-4746-4233-A5BD-D4095248023D",
+        DefaultValue = "2E867AB7-700D-41A7-85D0-7FA1E6FD4662",
         IsRequired = true,
         Key = AttributeKeys.Template,
         Order = 2 )]

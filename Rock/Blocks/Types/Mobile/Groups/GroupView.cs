@@ -57,7 +57,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "The template to use when rendering the content.",
         TemplateBlockValueGuid = SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_GROUP_VIEW,
         IsRequired = true,
-        DefaultValue = "",
+        DefaultValue = "95FF4A7D-6512-4C5F-9A01-523E42CA10D6",
         Key = AttributeKeys.Template,
         Order = 2 )]
 

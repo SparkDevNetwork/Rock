@@ -176,6 +176,10 @@
     <Compile Include="Migrations\202407051800282_CodeGenerated_20240705.Designer.cs">
       <DependentUpon>202407051800282_CodeGenerated_20240705.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202407082121550_Mobile_StyleGuide.cs" />
+    <Compile Include="Migrations\202407082121550_Mobile_StyleGuide.Designer.cs">
+      <DependentUpon>202407082121550_Mobile_StyleGuide.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.5\202404071458052_AddTheme.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.5\202404071458052_AddTheme.designer.cs">
       <DependentUpon>202404071458052_AddTheme.cs</DependentUpon>
@@ -2217,6 +2221,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202407051800282_CodeGenerated_20240705.resx">
       <DependentUpon>202407051800282_CodeGenerated_20240705.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202407082121550_Mobile_StyleGuide.resx">
+      <DependentUpon>202407082121550_Mobile_StyleGuide.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.5\202404071458052_AddTheme.resx">
       <DependentUpon>202404071458052_AddTheme.cs</DependentUpon>

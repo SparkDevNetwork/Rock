@@ -345,7 +345,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
                 // Get the header content to send down.
                 string headerContent = ShowHeader
-                    ? "<StackLayout><Label StyleClass=\"h2\" Text=\"Group Member Edit\" /><Rock:Divider /></StackLayout>"
+                    ? @"<StackLayout><Label StyleClass=""h2, title1, text-interface-strongest, bold"" Text=""Group Member Edit"" /></StackLayout>"
                     : string.Empty;
 
                 // Get all the attribute fields.

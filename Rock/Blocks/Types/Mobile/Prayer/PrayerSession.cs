@@ -80,7 +80,7 @@ namespace Rock.Blocks.Types.Mobile.Events
         Description = "The template to use when rendering prayer requests.",
         TemplateBlockValueGuid = SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_PRAYER_SESSION,
         IsRequired = true,
-        DefaultValue = "",
+        DefaultValue = "C0FCA573-D341-4B33-B097-3FB7028B3816",
         Key = AttributeKeys.Template,
         Order = 5 )]
 

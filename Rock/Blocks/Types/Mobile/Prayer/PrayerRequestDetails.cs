@@ -561,10 +561,12 @@ namespace Rock.Blocks.Types.Mobile.Prayer
                 }
 
                 content = $@"
-<StackLayout StyleClass=""prayerdetail"">
+<StackLayout StyleClass=""prayerdetail, spacing-8"">
     ##HEADER##
 
-    ##FIELDS##
+    <StackLayout StyleClass=""spacing-24"">
+        ##FIELDS##
+    </StackLayout>
     
     <Rock:Validator x:Name=""vForm"">
         ##VALIDATORS##
@@ -572,7 +574,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
     
     <Rock:NotificationBox x:Name=""nbError"" NotificationType=""Error"" />
     
-    <Button StyleClass=""btn,btn-primary"" Text=""Save"" Margin=""24 0 0 0"" Command=""{{Binding Callback}}"">
+    <Button StyleClass=""btn,btn-primary"" Text=""Save"" Margin=""16 0 0 0"" Command=""{{Binding Callback}}"">
         <Button.CommandParameter>
             <Rock:CallbackParameters Name=""Save"" Validator=""{{x:Reference vForm}}"" Notification=""{{x:Reference nbError}}"">
                 ##PARAMETERS##
@@ -585,8 +587,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
 
                 if ( ShowHeader )
                 {
-                    content = content.Replace( "##HEADER##", $@"<Label StyleClass=""h2"" Text=""{( request == null ? "Add" : "Edit" )} Prayer Request"" />
-    <Rock:Divider />" );
+                    content = content.Replace( "##HEADER##", $@"<Label StyleClass=""h2, title1, bold, text-interface-strongest"" Text=""{( request == null ? "Add" : "Edit" )} Prayer Request"" />" );
                 }
                 else
                 {
