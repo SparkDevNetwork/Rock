@@ -3382,6 +3382,10 @@ namespace Rock.Blocks.Event
             registrantTerm = registrantTerm.ToLower();
             var pluralRegistrantTerm = registrantTerm.Pluralize();
 
+            // Get the discount code term
+            var discountCodeTerm = context.RegistrationSettings.DiscountCodeTerm.ToLower();
+            var pluralDiscountCodeTerm = discountCodeTerm.Pluralize();
+
             // Get the fees
             var feeModels = context.RegistrationSettings.Fees?.Where( f => f.IsActive ).OrderBy( f => f.Order ).ToList() ?? new List<RegistrationTemplateFee>();
             var fees = new List<RegistrationEntryFeeBag>();
@@ -3673,8 +3677,11 @@ namespace Rock.Blocks.Event
                 InstructionsHtml = instructions,
                 RegistrantTerm = registrantTerm,
                 PluralRegistrantTerm = pluralRegistrantTerm,
+                FeeTerm = feeTerm,
                 PluralFeeTerm = pluralFeeTerm,
                 RegistrationTerm = registrationTerm,
+                DiscountCodeTerm = discountCodeTerm,
+                PluralDiscountCodeTerm = pluralDiscountCodeTerm,
                 RegistrantForms = formViewModels,
                 Fees = fees,
                 HideProgressBar = !GetAttributeValue( AttributeKey.DisplayProgressBar ).AsBoolean(),

@@ -12,7 +12,7 @@
             </div>
 
             <div v-else class="margin-b-md">
-                <p>The following {{ registrantTerm }} will be registered for {{ instanceName }}:</p>
+                <p>The following {{ registrantOrRegistrantsTermLowerCase }} will be registered for {{ instanceName }}:</p>
                 <ul>
                     <li v-for="r in registrantInfos" :key="r.guid">
                         <strong>{{ r.firstName }} {{ r.lastName }}</strong>
@@ -140,8 +140,18 @@
     });
 
     /** The registrant term - plural if there are more than 1 */
-    const registrantTerm = computed<string>(() => {
-        return (registrantInfos.value.length === 1 ? viewModel.value.registrantTerm : viewModel.value.pluralRegistrantTerm) ?? "";
+    const registrantOrRegistrantsTermLowerCase = computed<string>(() => {
+        return registrantInfos.value.length === 1 ? registrantTermLowerCase.value : registrantsTermLowerCase.value;
+    });
+
+    /** The registrant term (singular) (lower case). */
+    const registrantTermLowerCase = computed<string>(() => {
+        return registrationEntryState.viewModel.registrantTerm?.toLowerCase() || "registrant";
+    });
+
+    /** The registrants term (plural) (lower case). */
+    const registrantsTermLowerCase = computed<string>(() => {
+        return registrationEntryState.viewModel.pluralRegistrantTerm?.toLowerCase() || "registrants";
     });
 
     /** The name of this registration instance */
