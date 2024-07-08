@@ -138,7 +138,8 @@ namespace Rock.Model
                 // and then by class name. We can't use just name because
                 // those are no longer unique.
                 var controller = discoveredControllers
-                    .Where( c => c.ReflectedGuid == controllerRockGuid || c.ClassName == fullClassName )
+                    .Where( c => c.ClassName == fullClassName
+                        || ( controllerRockGuid.HasValue && c.ReflectedGuid == controllerRockGuid ) )
                     .OrderByDescending( c => c.ReflectedGuid == controllerRockGuid )
                     .FirstOrDefault();
 
@@ -223,7 +224,7 @@ namespace Rock.Model
                     // that happens to have web.config configured in debug mode.
                     if ( Debugger.IsAttached )
                     {
-                        throw new DuplicateSystemGuidException( $"Detected duplicate controller guid '{duplicateController.Key}': {duplicateNames}" );
+                        ExceptionLogService.LogException( new DuplicateSystemGuidException( $"Detected duplicate controller guid '{duplicateController.Key}': {duplicateNames}" ) );
                     }
                 }
 
@@ -246,7 +247,7 @@ namespace Rock.Model
                     // that happens to have web.config configured in debug mode.
                     if ( Debugger.IsAttached )
                     {
-                        throw new DuplicateSystemGuidException( $"Detected duplicate action guid '{duplicateAction.Key}': {duplicateNames}" );
+                        ExceptionLogService.LogException( new DuplicateSystemGuidException( $"Detected duplicate action guid '{duplicateAction.Key}': {duplicateNames}" ) );
                     }
                 }
             }
@@ -258,7 +259,7 @@ namespace Rock.Model
             {
                 var controller = allDatabaseControllers
                     .Where( c => c.ClassName == discoveredController.ClassName
-                        || c.Guid == discoveredController.ReflectedGuid )
+                        || ( discoveredController.ReflectedGuid.HasValue && c.Guid == discoveredController.ReflectedGuid ) )
                     .OrderByDescending( c => c.Guid == discoveredController.ReflectedGuid )
                     .FirstOrDefault();
 
@@ -312,7 +313,7 @@ namespace Rock.Model
 
                 var controller = allDatabaseControllers
                     .Where( c => c.ClassName == discoveredController.ClassName
-                        || c.Guid == discoveredController.ReflectedGuid )
+                        || ( discoveredController.ReflectedGuid.HasValue && c.Guid == discoveredController.ReflectedGuid ) )
                     .OrderByDescending( c => c.Guid == discoveredController.ReflectedGuid )
                     .FirstOrDefault();
 
