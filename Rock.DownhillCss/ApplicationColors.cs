@@ -131,37 +131,37 @@ namespace Rock.DownhillCss
         /// <summary>
         /// The strongest interface color.
         /// </summary>
-        public string InterfaceStrongest { get; set; } = "#181a1c";
+        public string InterfaceStrongest { get; set; } = "#000000";
 
         /// <summary>
         /// A stronger interface color.
         /// </summary>
-        public string InterfaceStronger { get; set; } = "#3b3136";
+        public string InterfaceStronger { get; set; } = "#1C1C1E";
 
         /// <summary>
         /// A strong interface color.
         /// </summary>
-        public string InterfaceStrong { get; set; } = "#67717a";
+        public string InterfaceStrong { get; set; } = "#5D5D6F";
 
         /// <summary>
         /// A medium interface color.
         /// </summary>
-        public string InterfaceMedium { get; set; } = "#9aa7b3";
+        public string InterfaceMedium { get; set; } = "#8B8BA7";
 
         /// <summary>
         /// A soft interface color.
         /// </summary>
-        public string InterfaceSoft { get; set; } = "#e4e8eb";
+        public string InterfaceSoft { get; set; } = "#D9D9E3";
 
         /// <summary>
         /// A softer interface color.
         /// </summary>
-        public string InterfaceSofter { get; set; } = "#f6f7f9";
+        public string InterfaceSofter { get; set; } = "#F2F2F7";
 
         /// <summary>
         /// The softest interface color.
         /// </summary>
-        public string InterfaceSoftest { get; set; } = "#ffffff";
+        public string InterfaceSoftest { get; set; } = "#FFFFFF";
 
         #endregion
 
@@ -170,32 +170,32 @@ namespace Rock.DownhillCss
         /// <summary>
         /// The strong variant of the primary color.
         /// </summary>
-        public string PrimaryStrong { get; set; } = "#ee7625";
+        public string PrimaryStrong { get; set; } = "#EE7725";
 
         /// <summary>
         /// The soft variant of the primary color.
         /// </summary>
-        public string PrimarySoft { get; set; } = "#fedec8";
+        public string PrimarySoft { get; set; } = "#FAD9C2";
 
         /// <summary>
         /// The strong variant of the secondary color.
         /// </summary>
-        public string SecondaryStrong { get; set; } = "#53b1fd";
+        public string SecondaryStrong { get; set; } = "#53B1FD";
 
         /// <summary>
         /// The soft variant of the secondary color.
         /// </summary>
-        public string SecondarySoft { get; set; } = "#eff8ff";
+        public string SecondarySoft { get; set; } = "#EFF8FF";
 
         /// <summary>
         /// The strong variant of the brand color.
         /// </summary>
-        public string BrandStrong { get; set; } = "#ee7625";
+        public string BrandStrong { get; set; } = "#EE7725";
 
         /// <summary>
         /// The soft variant of the brand color.
         /// </summary>
-        public string BrandSoft { get; set; } = "#fedec8";
+        public string BrandSoft { get; set; } = "#FAD9C2";
 
         #endregion
 
@@ -204,42 +204,42 @@ namespace Rock.DownhillCss
         /// <summary>
         /// The strong variant of the success color.
         /// </summary>
-        public string SuccessStrong { get; set; } = "#047857";
+        public string SuccessStrong { get; set; } = "#248A3D";
 
         /// <summary>
         /// The soft variant of the success color.
         /// </summary>
-        public string SuccessSoft { get; set; } = "#d1fae5";
+        public string SuccessSoft { get; set; } = "#D7F4DE";
 
         /// <summary>
         /// The strong variant of the info color.
         /// </summary>
-        public string InfoStrong { get; set; } = "#0369a1";
+        public string InfoStrong { get; set; } = "#007AFF";
 
         /// <summary>
         /// The soft variant of the info color.
         /// </summary>
-        public string InfoSoft { get; set; } = "#e0f2fe";
+        public string InfoSoft { get; set; } = "#D6EAFF";
 
         /// <summary>
         /// The strong variant of the danger color.
         /// </summary>
-        public string DangerStrong { get; set; } = "#b91c1c";
+        public string DangerStrong { get; set; } = "#D70015";
 
         /// <summary>
         /// The soft variant of the danger color.
         /// </summary>
-        public string DangerSoft { get; set; } = "#fee2e2";
+        public string DangerSoft { get; set; } = "#FFCCD1";
 
         /// <summary>
         /// The strong variant of the warning color.
         /// </summary>
-        public string WarningStrong { get; set; } = "#b45309";
+        public string WarningStrong { get; set; } = "#E58600";
 
         /// <summary>
         /// The soft variant of the warning color.
         /// </summary>
-        public string WarningSoft { get; set; } = "#fef3c7";
+        public string WarningSoft { get; set; } = "#FFECD1";
 
         #endregion
     }

@@ -615,14 +615,17 @@ namespace Rock.DownhillCss
                     SecondarySoft = colors.SecondaryStrong,
                     SecondaryStrong = colors.SecondarySoft,
 
-                    // Strongest = Softest etc.
                     InterfaceStrongest = colors.InterfaceSoftest,
                     InterfaceStronger = colors.InterfaceSofter,
                     InterfaceStrong = colors.InterfaceSoft,
                     InterfaceMedium = colors.InterfaceMedium,
                     InterfaceSoft = colors.InterfaceStrong,
-                    InterfaceSofter = colors.InterfaceStronger,
-                    InterfaceSoftest = colors.InterfaceStrongest
+
+                    // These two are an exception
+                    // to the traditional swap, we want
+                    // the background to be pure black on dark mode.
+                    InterfaceSofter = colors.InterfaceStrongest,
+                    InterfaceSoftest = colors.InterfaceStronger
                 };
 
                 return flippedColors;
