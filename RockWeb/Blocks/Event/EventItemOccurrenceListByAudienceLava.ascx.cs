@@ -205,7 +205,7 @@ namespace RockWeb.Blocks.Event
                 int maxItems = GetAttributeValue( "MaxOccurrences" ).AsInteger();
                 if ( maxOccurrencesPerEventItem > 0 )
                 {
-                    itemOccurrences = itemOccurrences.OrderBy( i => i.NextStartDateTime ).GroupBy( io => io.EventItemId ).SelectMany( group => group.Take( maxOccurencesPerEventItem ) ).ToList();
+                    itemOccurrences = itemOccurrences.OrderBy( i => i.NextStartDateTime ).GroupBy( io => io.EventItemId ).SelectMany( group => group.Take( maxOccurrencesPerEventItem ) ).ToList();
                 }
                 itemOccurrences = itemOccurrences.OrderBy( i => i.NextStartDateTime ).Take( maxItems ).ToList();
 
