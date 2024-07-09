@@ -21,7 +21,6 @@ using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Web;
-
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
@@ -41,6 +40,29 @@ namespace Rock.Jobs
     public class SendNoteNotifications : RockJob
     {
         /// <summary>
+        /// Configuration settings for the SendNoteNotifications Job.
+        /// </summary>
+        public class SendNoteNotificationsJobSettings
+        {
+            /// <summary>
+            /// The identifier of the system communication template to use for the notification.
+            /// </summary>
+            public Guid? SystemCommunicationTemplateGuid;
+
+            /// <summary>
+            /// The number of days after which a notification should not be sent.
+            /// </summary>
+            public int? NotificationIgnoreAfterDays;
+            /// <summary>
+            /// The date on which the job is deemed to be executed.
+            /// If not specified, the current date is effective.
+            /// </summary>
+            public DateTime? EffectiveDate;
+        }
+
+        #region Constructors
+
+        /// <summary>
         /// Empty constructor for job initialization
         /// <para>
         /// Jobs require a public empty constructor so that the
@@ -51,6 +73,15 @@ namespace Rock.Jobs
         {
             //
         }
+
+        #endregion
+
+
+        /// <summary>
+        /// Gets or sets the Email Transport to use for sending notifications.
+        /// If not set, the default Email Transport will be used.
+        /// </summary>
+        public TransportComponent EmailTransport { get; set; }
 
         /// <summary>
         /// 
@@ -141,11 +172,26 @@ namespace Rock.Jobs
         /// <inheritdoc cref="RockJob.Execute()"/>
         public override void Execute()
         {
-            // get the job dataMap
-            int oldestDaysOld = GetAttributeValue( "CutoffDays" ).AsIntegerOrNull() ?? 7;
-            _cutoffNoteEditDateTime = RockDateTime.Now.AddDays( -oldestDaysOld );
+            var config = new SendNoteNotificationsJobSettings
+            {
+                NotificationIgnoreAfterDays = GetAttributeValue( "CutoffDays" ).AsIntegerOrNull(),
+                SystemCommunicationTemplateGuid = GetAttributeValue( "NoteWatchNotificationEmail" ).AsGuidOrNull()
+            };
+
+            ExecuteInternal( config );
+        }
+
+        /// <summary>
+        /// Execute the job with the specified configuration settings.
+        /// </summary>
+        /// <param name="config"></param>
+        internal void ExecuteInternal( SendNoteNotificationsJobSettings config )
+        {
+            int oldestDaysOld = config.NotificationIgnoreAfterDays ?? 7;
+            var effectiveDate = config.EffectiveDate ?? RockDateTime.Now;
+            _cutoffNoteEditDateTime = effectiveDate.AddDays( -oldestDaysOld );
             _defaultMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, null, new Lava.CommonMergeFieldsOptions() );
-            _noteWatchNotificationEmailGuid = GetAttributeValue( "NoteWatchNotificationEmail" ).AsGuidOrNull();
+            _noteWatchNotificationEmailGuid = config.SystemCommunicationTemplateGuid;
             var errors = new List<string>();
 
             errors.AddRange( SendNoteWatchNotifications() );
@@ -240,7 +286,24 @@ namespace Rock.Jobs
                         {
                             var emailMessage = new RockEmailMessage( _noteWatchNotificationEmailGuid.Value );
                             emailMessage.SetRecipients( recipients );
-                            emailMessage.Send( out errors );
+
+                            if ( this.EmailTransport == null )
+                            {
+                                // Send notifications using the default email transport.
+                                emailMessage.Send( out errors );
+                            }
+                            else
+                            {
+                                // Send the messages using the specified email transport.
+                                var mediumEntityTypeGuid = SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid();
+                                var mediumEntityType = EntityTypeCache.Get( mediumEntityTypeGuid );
+
+                                this.EmailTransport.Send( emailMessage,
+                                    mediumEntityType.Id,
+                                    new Dictionary<string, string>(),
+                                    out errors );
+                            }
+                            
                             _noteWatchNotificationsSent += recipients.Count();
                         }
                     }
@@ -286,11 +349,12 @@ namespace Rock.Jobs
 
             var noteWatchService = new Rock.Model.NoteWatchService( rockContext );
 
-            // narrow it down to NoteWatches for the same EntityType as the Note
+            // If the NoteWatch specifies an EntityType, make sure it matches the Note.
             var noteWatchesQuery = noteWatchService.Queryable()
                 .Where( a =>
                     ( a.EntityTypeId.HasValue && a.EntityTypeId.Value == noteEntityTypeId.Value )
-                    || ( a.NoteTypeId.HasValue && a.NoteType.EntityTypeId == noteEntityTypeId ) );
+                    || ( a.NoteTypeId.HasValue && a.NoteType.EntityTypeId == noteEntityTypeId )
+                    || ( !a.EntityTypeId.HasValue && !a.NoteTypeId.HasValue ) );
 
             // narrow it down to either note watches on..
             // 1) specific Entity
@@ -303,10 +367,10 @@ namespace Rock.Jobs
                 ( a.EntityId == null )
                 || ( note.EntityId.HasValue && a.EntityId.Value == note.EntityId.Value ) );
 
-            // or specifically for this Note's ParentNote (a reply to the Note)
+            // or specifically for this Note, or for its Parent (a reply to the Note)
             noteWatchesQuery = noteWatchesQuery.Where( a =>
                 ( a.NoteId == null )
-                || ( note.ParentNoteId.HasValue && a.NoteId.Value == note.ParentNoteId ) );
+                || ( a.NoteId.HasValue && ( a.NoteId.Value == note.Id || a.NoteId.Value == note.ParentNoteId ) ) );
 
             // or specifically for this note's note type
             noteWatchesQuery = noteWatchesQuery.Where( a =>

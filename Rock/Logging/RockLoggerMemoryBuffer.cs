@@ -16,6 +16,9 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 using Microsoft.Extensions.Logging;
 
@@ -38,6 +41,16 @@ namespace Rock.Logging
         private readonly LogLevel _logLevel;
 
         private readonly string _category = "Rock.Logging.RockLoggerMemoryBuffer";
+
+        /// <summary>
+        /// Gets the current buffer of log events.
+        /// </summary>
+        /// <returns></returns>
+        public ReadOnlyCollection<RockLogEvent> GetLogEvents()
+        {
+            var list = new ReadOnlyCollection<RockLogEvent>( _logEvents.ToList() );
+            return list;
+        }
 
         #region Events
 
