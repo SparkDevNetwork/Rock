@@ -127,6 +127,7 @@
     <Compile Include="Lms\Public\PublicLearningCourseDetail.cs" />
     <Compile Include="Lms\Public\PublicLearningCourseList.cs" />
     <Compile Include="Lms\Public\PublicLearningProgramList.cs" />
+    <Compile Include="Mobile\CheckIn\CheckIn.cs" />
     <Compile Include="Tv\AppleTvPageList.cs" />
     <Compile Include="Cms\PageShortLinkClickList.cs" />
     <Compile Include="Cms\PageShortLinkList.cs" />
@@ -214,7 +215,7 @@
     <Compile Include="Finance\FinancialAccountList.cs" />
     <Compile Include="Event\RegistrationEntry\ExtensionMethods.cs" />
     <Compile Include="Finance\BenevolenceRequestList.cs" />
-	<Compile Include="Event\EventItemOccurrenceList.cs" />
+    <Compile Include="Event\EventItemOccurrenceList.cs" />
     <Compile Include="Finance\FinancialBatchList.cs" />
     <Compile Include="Engagement\StepProgramDetail.cs" />
     <Compile Include="Finance\FinancialGatewayDetail.cs" />

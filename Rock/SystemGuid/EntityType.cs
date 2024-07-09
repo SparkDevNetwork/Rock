@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -668,6 +668,11 @@ namespace Rock.SystemGuid
         /// The GUID for the entity <see cref="Rock.Blocks.Types.Mobile.Crm.GroupMembers"/>.
         /// </summary>
         public const string MOBILE_CRM_GROUP_MEMBERS = "592242ED-7536-49EA-94DE-7B4EBA7E87A6";
+
+        /// <summary>
+        /// The GUID for the mobile check-in block
+        /// </summary>
+        public const string MOBILE_CHECKIN_CHECKIN = "BC0A4B6C-9F6D-4D39-8FFE-B6F9FA4B2F49";
 
         /// <summary>
         /// The obsidian event registration entry
