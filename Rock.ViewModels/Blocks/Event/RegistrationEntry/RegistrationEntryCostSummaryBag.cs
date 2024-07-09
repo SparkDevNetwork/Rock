@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using Rock.Model;
 
 namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
@@ -70,5 +71,10 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// The default payment.
         /// </value>
         public decimal? DefaultPaymentAmount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the registrant unique identifier if this cost is associated with a registrant.
+        /// </summary>
+        public Guid? RegistrationRegistrantGuid { get; set; }
     }
 }
