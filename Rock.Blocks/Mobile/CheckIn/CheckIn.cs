@@ -185,6 +185,18 @@ namespace Rock.Blocks.Mobile.CheckIn
                 return ActionBadRequest( "Configuration was not found." );
             }
 
+            DeviceCache kiosk = null;
+
+            if ( options.KioskId.IsNotNullOrWhiteSpace() )
+            {
+                kiosk = DeviceCache.GetByIdKey( options.KioskId, RockContext );
+            }
+
+            if ( kiosk == null )
+            {
+                return ActionBadRequest( "Kiosk was not found." );
+            }
+
             try
             {
                 var director = new CheckInDirector( RockContext );
@@ -193,7 +205,7 @@ namespace Rock.Blocks.Mobile.CheckIn
                 var result = session.ConfirmAttendance( options.SessionGuid );
 
                 var cts = new CancellationTokenSource( 5000 );
-                await director.LabelProvider.RenderAndPrintCheckInLabelsAsync( result, null, new LabelPrintProvider(), cts.Token );
+                await director.LabelProvider.RenderAndPrintCheckInLabelsAsync( result, kiosk, new LabelPrintProvider(), cts.Token );
 
                 return ActionOk( new ConfirmAttendanceResponseBag
                 {
