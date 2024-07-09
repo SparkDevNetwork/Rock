@@ -492,6 +492,7 @@ namespace Rock.Model
             AttributeTitleEnd = template.RegistrationAttributeTitleEnd.IsNullOrWhiteSpace() ? "Registration Information" : template.RegistrationAttributeTitleEnd;
             RegistrationTerm = template.RegistrationTerm.IsNullOrWhiteSpace() ? "Registration" : template.RegistrationTerm;
             Name = instance.Name.IsNullOrWhiteSpace() ? template.Name : instance.Name;
+            DiscountCodeTerm = template.DiscountCodeTerm.IsNullOrWhiteSpace() ? "Discount Code" : template.DiscountCodeTerm;
 
             // Gateway related
             FinancialGatewayId = template.FinancialGatewayId;
@@ -742,6 +743,14 @@ namespace Rock.Model
         /// The registration term.
         /// </value>
         public string RegistrationTerm { get; private set; }
+        
+        /// <summary>
+        /// Gets the discount code term.
+        /// </summary>
+        /// <value>
+        /// The discount code term.
+        /// </value>
+        public string DiscountCodeTerm { get; private set; }
 
         /// <summary>
         /// Gets or sets the name.

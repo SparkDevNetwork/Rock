@@ -196,7 +196,8 @@ namespace Rock.Model
                 var costSummary = new RegistrationCostSummaryInfo
                 {
                     Type = RegistrationCostSummaryType.Cost,
-                    Description = string.Format( "{0} {1}", firstName, lastName )
+                    Description = string.Format( "{0} {1}", firstName, lastName ),
+                    RegistrationRegistrantGuid = registrant.Guid
                 };
 
                 // If the registrant is on the waitlist then set costs to 0 and add a waitlist indicator to the name for the payment summary grid
@@ -273,6 +274,7 @@ namespace Rock.Model
                     {
                         Type = RegistrationCostSummaryType.Fee,
                         Description = desc,
+                        RegistrationRegistrantGuid = registrant.Guid,
                         Cost = quantity * cost,
 
                         // Default the DiscountedCost to be the same as the Cost
