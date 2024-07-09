@@ -314,6 +314,21 @@ namespace Rock.Utility
         /// Gets or sets the height.
         /// </summary>
         public int? Height { get; set; }
+
+        /// <summary>
+        /// Gets or sets the age classification.
+        /// </summary>
+        public AgeClassification? AgeClassification { get; set; }
+
+        /// <summary>
+        /// Gets or sets the gender.
+        /// </summary>
+        public Gender? Gender { get; set; }
+
+        /// <summary>
+        /// Gets or sets the text.
+        /// </summary>
+        public string Text { get; set; }
     }
 
     #endregion
