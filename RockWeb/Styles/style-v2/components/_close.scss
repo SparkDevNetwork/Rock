@@ -2,14 +2,14 @@
 
 // ============================ BASE STYLE ============================
 .close {
-  float:        right;
-  font-size:    calc(var(--font-size-regular) * 1.5);
-  font-weight:  var(--font-weight-bold);
-  line-height:  var(--line-height-compact);
-  color:        var(--color-interface-strongest);
-  text-shadow:  0 1px 0 #fff;
-  filter:       alpha(opacity=#{calc(.2 * 100)});
-  opacity:      .2;
+  float:          right;
+  font-size:      calc(var(--font-size-regular) * 1.5);
+  font-weight:    var(--font-weight-bold);
+  line-height:    var(--line-height-compact);
+  color:          var(--color-interface-strongest);
+  filter:         alpha(opacity=#{calc(.2 * 100)});
+  text-shadow:    0 1px 0 var(--color-interface-softest);
+  opacity:        .2;
 
   &:hover,
   &:focus {
@@ -32,11 +32,11 @@
 
 }
 button.close {
-  padding:    0;
-  cursor:     pointer;
-  background: transparent;
-  border:     0;
-  -webkit-appearance: none;
-  appearance:         none;
+  padding:              0;
+  cursor:               pointer;
+  background:           transparent;
+  border:               0;
+  -webkit-appearance:   none;
+  appearance:           none;
 }
 // ========================== END BASE STYLE ==========================

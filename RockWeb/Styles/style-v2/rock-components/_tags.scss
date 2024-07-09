@@ -21,7 +21,7 @@
 
   .ui-autocomplete {
     position:           absolute;
-    top:                4px;
+    top:                var(--spacing-tiny);
     left:               0;
     z-index:            9999 !important;
     min-width:          200px;
@@ -40,11 +40,11 @@
       }
 
       a {
-        display:    block;
-        padding:    var(--spacing-tiny);
-        color:      var(--color-danger-strong);
-        cursor:     pointer;
-        text-decoration: none;
+        display:          block;
+        padding:          var(--spacing-tiny);
+        color:            var(--color-danger-strong);
+        cursor:           pointer;
+        text-decoration:  none;
 
         &:hover {
           background:     var(--color-interface-softest);
@@ -65,18 +65,18 @@
   align-items:  flex-start;
 
   input {
-    display:    block;
-    width:      80px;
-    padding:    2px;
-    margin:     0 auto;
-    clear:      both;
-    font-size:  var(--font-size-xsmall);
-    color:      var(--color-interface-medium) !important; /* needed as script adds element value */
-    background: transparent;
-    border:     1px solid transparent;
-    border-radius:  var(--rounded-small);
-    outline:        0;
-    box-shadow:     none;
+    display:          block;
+    width:            80px;
+    padding:          2px;
+    margin:           0 auto;
+    clear:            both;
+    font-size:        var(--font-size-xsmall);
+    color:            var(--color-interface-medium) !important; /* needed as script adds element value */
+    border-radius:    var(--rounded-small);
+    border:           1px solid transparent;
+    background:       transparent;
+    outline:          0;
+    box-shadow:       none;
 
     @media (min-width: $screen-small) {
       margin: 0;
@@ -112,7 +112,7 @@
     position:           relative;
     display:            inline-flex;
     height:             22px;
-    padding:            1px 12px 0;
+    padding:            1px var(--spacing-medium) 0;
     font-size:          var(--font-size-xsmall);
     line-height:        18px;
     color:              var(--color-interface-stronger);

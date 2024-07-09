@@ -24,14 +24,17 @@
     padding:      var(--spacing-tiny) 0;
     margin-top:   -var(--spacing-tiny);
   }
+
   &.right {
     padding:      0 var(--spacing-tiny);
     margin-left:  var(--spacing-tiny);
   }
+
   &.bottom {
     padding:      var(--spacing-tiny) 0;
     margin-top:   var(--spacing-tiny);
   }
+
   &.left {
     padding:      0 var(--spacing-tiny);
     margin-left:  -var(--spacing-tiny);
@@ -45,6 +48,7 @@
     border-width:         var(--spacing-tiny) var(--spacing-tiny) 0;
     border-top-color:     var(--color-interface-strongest);
   }
+
   &.top-left .tooltip-arrow {
     right:                var(--spacing-tiny);
     bottom:               0;
@@ -52,6 +56,7 @@
     border-width:         var(--spacing-tiny) var(--spacing-tiny) 0;
     border-top-color:     var(--color-interface-strongest);
   }
+
   &.top-right .tooltip-arrow {
     bottom:               0;
     left:                 var(--spacing-tiny);
@@ -59,6 +64,7 @@
     border-width:         var(--spacing-tiny) var(--spacing-tiny) 0;
     border-top-color:     var(--color-interface-strongest);
   }
+
   &.right .tooltip-arrow {
     top:                  50%;
     left:                 0;
@@ -66,6 +72,7 @@
     border-width:         var(--spacing-tiny) var(--spacing-tiny) var(--spacing-tiny) 0;
     border-right-color:   var(--color-interface-strongest);
   }
+
   &.left .tooltip-arrow {
     top:                  50%;
     right:                0;
@@ -73,6 +80,7 @@
     border-width:         var(--spacing-tiny) 0 var(--spacing-tiny) var(--spacing-tiny);
     border-left-color:    var(--color-interface-strongest);
   }
+
   &.bottom .tooltip-arrow {
     top:                  0;
     left:                 50%;
@@ -80,6 +88,7 @@
     border-width:         0 var(--spacing-tiny) var(--spacing-tiny);
     border-bottom-color:  var(--color-interface-strongest);
   }
+  
   &.bottom-left .tooltip-arrow {
     top:                  0;
     right:                var(--spacing-tiny);
@@ -87,6 +96,7 @@
     border-width:         0 var(--spacing-tiny) var(--spacing-tiny);
     border-bottom-color:  var(--color-interface-strongest);
   }
+  
   &.bottom-right .tooltip-arrow {
     top:                  0;
     left:                 var(--spacing-tiny);

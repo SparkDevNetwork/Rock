@@ -1,12 +1,12 @@
 
 
-//  TIME PICKER (ROCK COMPONENT) 
+//  TIME PICKER (ROCK COMPONENT)  (There is some harded coded height, width, padding)
 
 
 // =============================================================
 // Table of Content           
 //  + Base Style
-//  + WIDGET
+//  + Widget
 // =============================================================
 
 
@@ -26,7 +26,7 @@
     float: left;
   }
 
-  & i.fa-times {
+  i.fa-times {
     float:                left;
     padding:              var(--spacing-small);
     margin-top:           var(--spacing-tiny);
@@ -86,42 +86,42 @@
   }
 
   a.btn {
-    border-radius: 4px;
+    border-radius: var(--rounded-small);
   }
 
   table {
-    width: 100%;
-    margin: 0;
-    background-color: transparent;
+    width:                100%;
+    margin:               0;
+    background-color:     transparent;
 
     td {
-      height: 30px;
-      padding: 2px;
-      margin: 0;
-      text-align: center;
+      height:       30px;
+      padding:      2px;
+      margin:       0;
+      text-align:   center;
 
       &:not(.separator) {
-        min-width: 30px;
+        min-width:  30px;
       }
 
       span {
-        width: 100%;
+        width:      100%;
       }
 
       a {
-        display: inline-block;
-        width: 100%;
-        padding: 8px 0;
-        margin: 0;
-        color: #333;
-        border: 1px transparent solid;
-        outline: 0;
+        display:    inline-block;
+        width:      100%;
+        padding:    var(--spacing-small) 0;
+        margin:     0;
+        color:      var(--color-interface-stronger);
+        border:     1px transparent solid;
+        outline:    0;
 
         &:hover {
-          text-decoration: none;
-          background-color: #eee;
-          border-color: #ddd;
-          border-radius: 4px;
+          text-decoration:    none;
+          background-color:   var(--color-interface-softer);
+          border-color:       var(--color-interface-soft);
+          border-radius:      var(--rounded-small);
         }
 
         i {
@@ -156,8 +156,8 @@
 
 @media (min-width: $screen-small) {
   .bootstrap-timepicker-widget.modal {
-    width: 200px;
-    margin-left: -100px;
+    width:        200px;
+    margin-left:  -100px;
   }
 }
 

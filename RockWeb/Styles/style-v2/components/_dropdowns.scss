@@ -121,8 +121,8 @@
     outline:            0;
   }
   .dropdown-right & {
-    right:  0;
-    left:   auto;
+    right:      0;
+    left:       auto;
   }
 }
 
@@ -136,7 +136,7 @@
   &,
   &:hover,
   &:focus {
-    color: var(--color-interface-strong);
+    color:              var(--color-interface-strong);
   }
 
   // Nuke hover/focus effects
@@ -165,50 +165,50 @@
 
 // ========================= DIVIDER =========================
 .divider {
-  height:           1px;
-  margin:           var(--spacing-tiny) 0;
-  overflow:         hidden;
-  background-color: var(--color-interface-soft);
+  height:             1px;
+  margin:             var(--spacing-tiny) 0;
+  overflow:           hidden;
+  background-color:   var(--color-interface-soft);
 }
 // ======================= END DIVERDER =======================
 
 
 // ========================= Menu positioning =========================
 .dropdown-menu-right {
-  right: 0;
-  left: auto;
+  right:  0;
+  left:   auto;
 }
 .dropdown-menu-left {
-  right: auto;
-  left: 0;
+  right:  auto;
+  left:   0;
 }
 // ======================= END Menu Positioning =======================
 
 
 // Dropdown section headers
 .dropdown-header {
-  display: block;
-  padding:      var(--spacing-tiny) var(--spacing-large);
-  font-size:    var(--font-size-small);
-  line-height:  var(--line-height-normal);
-  color:        var(--color-interface-strong);
-  white-space:  nowrap; 
+  display:        block;
+  padding:        var(--spacing-tiny) var(--spacing-large);
+  font-size:      var(--font-size-small);
+  line-height:    var(--line-height-normal);
+  color:          var(--color-interface-strong);
+  white-space:    nowrap; 
 }
 
 // Backdrop to catch body clicks on mobile, etc.
 .dropdown-backdrop {
-  position: fixed;
-  top:      0;
-  right:    0;
-  bottom:   0;
-  left:     0;
-  z-index: ($zindex-dropdown - 10);
+  position:   fixed;
+  top:        0;
+  right:      0;
+  bottom:     0;
+  left:       0;
+  z-index:    ($zindex-dropdown - 10);
 }
 
 // Right aligned dropdowns
 .pull-right > .dropdown-menu {
-  right:  0;
-  left:   auto;
+  right:    0;
+  left:     auto;
 }
 
 .dropup,
@@ -231,13 +231,13 @@
 @media (min-width: $screen-small) {
   .navbar-right {
     .dropdown-menu {
-      right:  0;
-      left:   auto;
+      right:    0;
+      left:     auto;
     }
 
     .dropdown-menu-left {
-      right:  auto;
-      left:   0;
+      right:    auto;
+      left:     0;
     }
   }
 }

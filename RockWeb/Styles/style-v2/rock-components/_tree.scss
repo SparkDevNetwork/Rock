@@ -1,0 +1,255 @@
+
+// PANEL HELPER (ROCK COMPONENT)
+
+
+// =============================================================
+// Table of Content           
+//  + Base Style  
+//  + Panel sidebar              
+// =============================================================
+
+
+// ======================== BASE STYLE ========================
+.group-tree-view,
+.group-tree-view > .block-content,
+.h-100 > .zone-content {
+  height: 100%;
+}
+
+.h-100 > .panel-block {
+  height:         calc(100% - 24px);
+  margin-bottom:  var(--spacing-large);
+}
+
+.treeview-search-parent {
+  position:       relative;
+  min-height:     300px;
+
+  .search-results {
+    position: absolute;
+    top:      0;
+    right:    0;
+    bottom:   0;
+    left:     0;
+    height:   100%;
+    padding:  var(--spacing-tiny) var(--spacing-medium);
+    overflow: auto;
+  }
+}
+
+.treeview {
+  margin-bottom:  calc($grid-gutter-width * .5);
+
+  .panel-body {
+    padding:    0;
+    margin:     0;
+
+    .treeview-scroll {
+      padding: var(--spacing-small) 0;
+
+      .overview {
+        min-width: 100%;
+      }
+    }
+  }
+
+  .treeview-frame {
+    padding-left: 0;
+  }
+
+  .treeview-actions {
+    margin-bottom:    var(--spacing-small);
+
+    .btn {
+      margin-bottom:  var(--spacing-tiny);
+    }
+  }
+}
+// ====================== END BASE STYLE ======================
+
+
+// ======================== ROCK TREE ========================
+.rocktree-drawer {
+  padding:        12px 18px;
+  margin:         0;
+  background:     var(--color-interface-softer);
+  border-bottom:  1px solid var(--color-interface-soft);
+  //box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.rocktree-loading {
+  display:          flex;
+  align-items:      center;
+  justify-content:  center;
+  height:           100px;
+  font-size:        var(--font-size-h3);
+  opacity:          .25;
+
+  .rocktree-item & {
+    justify-content:  flex-start;
+    width:            100%;
+    height:           30px;
+    margin-left:      30px;
+  }
+}
+
+ul.rocktree,
+ul.rocktree-children {
+  padding:          0;
+  margin-bottom:    $grid-gutter-width;
+  font-size:        var(--font-size-xsmall);
+  line-height:      30px;
+  list-style-type:  none;
+}
+
+ul.rocktree-children {
+  width: 100%;
+  margin: 0 0 0 26px;
+}
+
+.rocktree {
+  .rocktree-item {
+    display:      flex;
+    flex-wrap:    wrap;
+    align-items:  center;
+    color:        var(--color-interface-strong);
+    white-space:  nowrap;
+
+    // Only lighten the name, not the children of the item.
+    &.is-inactive {
+      opacity: 1;
+
+      > .rocktree-name {
+        opacity: 0.6;
+      }
+    }
+
+    .select-children {
+      display: none;
+      opacity: .8;
+    }
+
+    &:hover {
+      .select-children {
+        display: inline;
+      }
+    }
+  }
+
+  .rocktree-icon {
+    display:          inline-flex;
+    align-items:      center;
+    justify-content:  center;
+    width:            30px;
+    height:           30px;
+    padding:          var(--spacing-tiny);
+    font-size:        var(--font-size-xsmall);
+    cursor: pointer;
+
+    &:hover,
+    &:active,
+    &:focus {
+      color: var(--color-link);
+    }
+  }
+
+  li {
+    margin: 0;
+  }
+
+  .rocktree-name {
+    position:       relative;
+    display:        inline-block;
+    flex-grow:      1;
+    width:          calc(100% - 48px);
+    padding:        0 var(--spacing-medium) 0 0;
+    line-height:    30px;
+    cursor:         pointer;
+    border-radius:  var(--border-radius-base, 3px);
+
+    i {
+      margin-right: 2px;
+    }
+
+    &:hover {
+      color: var(--color-interface-softest);
+    }
+
+    &::before {
+      position:       absolute;
+      top:            0;
+      bottom:         0;
+      left:           -5px;
+      z-index:        -1;
+      width:          100vw;
+      content:        "";
+      border-radius:  var(--rounded-small) 0 0 var(--rounded-small);
+    }
+
+    &:hover::before {
+      background: var(--color-interface-medium);
+    }
+  }
+
+  .selected {
+    color:          var(--color-interface-softest);
+
+    &::before {
+      background:   var(--color-interface-medium) !important;
+    }
+  }
+
+  .disabled {
+    cursor:     default;
+
+    &:hover {
+      color:        var(--color-interface-stronger);
+      background:   inherit;
+    }
+  }
+
+  .rocktree-loading {
+    font-size: var(--font-size-xsmall);
+  }
+
+  .rocktree-leaf {
+    padding-left: 30px; //TODO need to use variable
+  }
+
+  .label-tree {
+    display:          inline-block;
+    margin-left:      var(--spacing-small);
+    font-size:        var(--font-size-xsmall);
+    background-color: var(--color-interface-softest);
+    border-radius:    var(--rounded-tiny);
+  }
+}
+// ====================== END ROCK TREE ======================
+
+
+// ======================== PREVIEW TREE ========================
+.preview-item {
+  padding:        var(--spacing-small) 6px;
+  line-height:    var(--line-height-tight);
+  border-radius:  var(--rounded-small);
+  cursor:         default;
+
+  &:hover {
+    background:   var(--color-interface-medium);
+  }
+
+  .title,
+  .subtitle {
+    display:  block;
+    color:    var(--color-interface-stronger);
+  }
+
+  .subtitle {
+    font-size:  var(--font-size-xsmall);
+    color:      var(--color-interface-soft);
+  }
+}
+// ====================== END PREVIEW TREE ======================
+
+
+

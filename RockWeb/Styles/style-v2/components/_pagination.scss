@@ -61,9 +61,9 @@
     &:focus {
       z-index: 3;
       color:            var(--color-interface-strong);
-      cursor:           default;
       background-color: var(--color-interface-soft);
       border-color:     var(--color-interface-soft);
+      cursor:           default;
     }
   }
 
@@ -75,9 +75,9 @@
     > a:hover,
     > a:focus {
       color:            var(--color-interface-soft);
-      cursor:           not-allowed;
       background-color: var(--color-interface-softest);
       border-color:     transparent;
+      cursor:           not-allowed;
     }
   }
 }
@@ -97,15 +97,15 @@
     &:first-child {
       > a,
       > span {
-        border-top-left-radius: var(--rounded-small);
-        border-bottom-left-radius: var(--rounded-small);
+        border-top-left-radius:     var(--rounded-small);
+        border-bottom-left-radius:  var(--rounded-small);
       }
     }
     &:last-child {
       > a,
       > span {
-        border-top-left-radius: var(--rounded-small);
-        border-bottom-left-radius: var(--rounded-small);
+        border-top-left-radius:     var(--rounded-small);
+        border-bottom-left-radius:  var(--rounded-small);
       }
     }
   }
@@ -123,15 +123,15 @@
     &:first-child {
       > a,
       > span {
-        border-top-left-radius: var(--rounded-tiny);
-        border-bottom-left-radius: var(--rounded-tiny);
+        border-top-left-radius:     var(--rounded-tiny);
+        border-bottom-left-radius:  var(--rounded-tiny);
       }
     }
     &:last-child {
       > a,
       > span {
-        border-top-left-radius: var(--rounded-tiny);
-        border-bottom-left-radius: var(--rounded-tiny);
+        border-top-left-radius:     var(--rounded-tiny);
+        border-bottom-left-radius:  var(--rounded-tiny);
       }
     }
   }

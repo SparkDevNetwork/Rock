@@ -22,7 +22,7 @@
     + li:before {
       padding:  0 var(--spacing-tiny);
       color:    var(--color-interface-medium);
-      content:  "@{breadcrumb-separator}\00a0"; // Unicode space added since inline-block means non-collapsing white-space
+      content:  "/\00a0"; // Unicode space added since inline-block means non-collapsing white-space
     }
   }
 
@@ -52,7 +52,7 @@
         font-family:  $font-face;
         font-size:    80%;
         font-weight:  $theme-weight;
-        content:      "@{breadcrumb-separator}";
+        content:      "/";
       }
   }
 }

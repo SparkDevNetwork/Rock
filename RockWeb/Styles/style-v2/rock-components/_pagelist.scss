@@ -1,0 +1,175 @@
+
+
+// PANEL HELPER (ROCK COMPONENT) (currently used in admin screens, list child page) (Hard coded value exist here)
+
+
+// =============================================================
+// Table of Content
+//  + Base Style
+//  + Panel sidebar
+// =============================================================
+
+
+// ======================== BASE STYLE ========================
+.block-title {
+  margin: 0 0 6.7px;
+}
+
+.list-as-blocks {
+  h3 {
+    display:      inline-block;
+    width:        100%;
+    margin:       0 0 var(--spacing-small);
+    font-size:    var(--font-size-xsmall);
+    font-weight:  var(--font-weight-regular);
+    word-wrap:    break-word;
+  }
+
+  ul {
+    display:          -ms-flexbox;
+    display:          flex;
+    -ms-flex-wrap:    wrap;
+    flex-wrap:        wrap;
+    padding:          0;
+    margin:           calc($grid-gutter-width * 0.5) calc($grid-gutter-width * -.25) calc($grid-gutter-width * -.5);
+    list-style:       none;
+
+    li {
+      position:       relative;
+      -ms-flex:       0 0 50%;
+      flex:           0 0 50%;
+      max-width:      50%;
+      padding-right:  calc($grid-gutter-width / 4);
+      padding-left:   calc($grid-gutter-width / 4);
+      margin-bottom:  calc($grid-gutter-width / 2);
+
+      @media (min-width: $screen-small) {
+        -ms-flex:   0 0 33.3333%;
+        flex:       0 0 33.3333%;
+        max-width:  33.3333%;
+      }
+
+      @media (min-width: $screen-medium) {
+        -ms-flex:   0 0 25%;
+        flex:       0 0 25%;
+        max-width:  25%;
+      }
+
+      @media (min-width: $screen-large) {
+        -ms-flex:   0 0 20%;
+        flex:       0 0 20%;
+        max-width:  20%;
+      }
+
+      a {
+        position:               relative;
+        display:                -ms-flexbox;
+        display:                flex;
+        -ms-flex-direction:     column;
+        flex-direction:         column;
+        align-content:          center;
+        align-items:            center;
+        justify-content:        center;
+        min-width:                0;
+        min-height:              90px;
+        height:                 100%;
+        padding:                var(--spacing-small);
+        color:                  var(--color-link);
+        text-align:             center;
+        word-wrap:              break-word;
+        background-color:       var(--color-interface-soft);
+        background-clip:        border-box;
+        border:                 1px solid var(--color-link);
+        border-radius:          var(--rounded-small);
+        -webkit-transition:     background-color 200ms linear, border-color 200ms linear;
+        -moz-transition:        background-color 200ms linear, border-color 200ms linear;
+        -ms-transition:         background-color 200ms linear, border-color 200ms linear;
+        transition:             background-color 200ms linear, border-color 200ms linear;
+
+        i {
+          margin:     var(--spacing-small) 0;
+          font-size:  var(--font-size-h3);
+          color:      var(--color-link);
+        }
+
+        &:hover {
+          color:              var(--color-interface-softest);
+          text-decoration:    none;
+          background-color:   var(--color-interface-medium);
+          border-color:       var(--color-interface-strong);
+
+          i {
+            color:            var(--color-interface-softest);
+          }
+        }
+
+        .notification {
+          position:   absolute;
+          top:        -10px;
+          right:      -6px;
+
+          .label {
+            padding:        2px 8px;
+            color:          var(--color-interface-softest);
+            background:     var(--color-danger-soft);
+            border-radius:  36px;
+          }
+        }
+      }
+
+      &.active,
+      &.selected {
+        a {
+          color:              var(--color-interface-softest);
+          background-color:   var(--color-interface-medium);
+          border-color:       var(--color-interface-strong);
+
+          i {
+            color: var(--color-interface-softest);
+          }
+        }
+      }
+
+      &.inactive-item {
+        opacity: .5;
+      }
+    }
+  }
+
+  &.has-count {
+
+    a {
+      position: relative;
+    }
+
+    a::before {
+      position:       absolute;
+      top:            0;
+      right:          0;
+      content:        "";
+      border-right:   45px solid var(--color-link);
+      border-bottom:  45px solid transparent;
+    }
+
+    .item-count {
+      position:   absolute;
+      top:        5px;
+      right:      1px;
+      display:    block;
+      width:      25px;
+      font-size:  var(--font-size-xsmall);
+      color:      var(--color-interface-softest);
+      text-align: center;
+    }
+  }
+
+  .block-status a {
+    min-height:   105px;
+    padding:      var(--spacing-small) var(--spacing-medium);
+
+    .status-list {
+      margin-top: auto;
+    }
+  }
+}
+// ====================== END BASE STYLE ======================

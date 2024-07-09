@@ -51,8 +51,8 @@
 .panel-heading {
   padding:                  14px 18px; //TODO hard coded value need to change;
   border-bottom:            1px solid transparent;
-  border-top-left-radius:   calc(4px - 1px);  //TODO Hard coded value need to change;
-  border-top-right-radius:  calc(4px - 1px);
+  border-top-left-radius:   3px;  //TODO Hard coded value need to change;
+  border-top-right-radius:  3px;
   > .dropdown .dropdown-toggle {
     color: inherit;
   }
@@ -78,8 +78,8 @@
 .panel-footer {
   padding:                      var(--spacing-small) var(--spacing-medium);
   border-top:                   1px solid var(--color-interface-soft);
-  border-bottom-right-radius:   calc(4px - 1px);  //TODO Hard coded value need to change;
-  border-bottom-left-radius:    calc(4px - 1px);
+  border-bottom-right-radius:   3px;  //TODO Hard coded value need to change;
+  border-bottom-left-radius:    3px;
   color:              var(--color-interface-stronger);
   background-color:   var(--color-interface-softer);
 }
@@ -101,8 +101,8 @@
     &:first-child {
       .list-group-item:first-child {
         border-top:               0;
-        border-top-left-radius:   calc(4px - 1px);  //TODO Hard coded value need to change;
-        border-top-right-radius:  calc(4px - 1px);
+        border-top-left-radius:   3px;  //TODO Hard coded value need to change;
+        border-top-right-radius:  3px;
       }
     }
 
@@ -110,8 +110,8 @@
     &:last-child {
       .list-group-item:last-child {
         border-bottom:              0;
-        border-bottom-right-radius: calc(4px - 1px);  //TODO Hard coded value need to change;
-        border-bottom-left-radius:  calc(4px - 1px);
+        border-bottom-right-radius: 3px;  //TODO Hard coded value need to change;
+        border-bottom-left-radius:  3px;
       }
     }
   }
@@ -151,22 +151,22 @@
   // Add border top radius for first one
   > .table:first-child,
   > .table-responsive:first-child > .table:first-child {
-      border-top-left-radius:       calc(4px - 1px);  //TODO Hard coded value need to change;
-      border-top-right-radius:      calc(4px - 1px);
+      border-top-left-radius:       3px;  //TODO Hard coded value need to change;
+      border-top-right-radius:      3px;
 
     > thead:first-child,
     > tbody:first-child {
       > tr:first-child {
-        border-top-left-radius:     calc(4px - 1px);  //TODO Hard coded value need to change;
-        border-top-right-radius:    calc(4px - 1px);
+        border-top-left-radius:     3px;  //TODO Hard coded value need to change;
+        border-top-right-radius:    3px;
 
         td:first-child,
         th:first-child {
-          border-top-left-radius:   calc(4px - 1px);  //TODO Hard coded value need to change;
+          border-top-left-radius:   3px;  //TODO Hard coded value need to change;
         }
         td:last-child,
         th:last-child {
-          border-top-right-radius:  calc(4px - 1px); //TODO Hard coded value need to change;
+          border-top-right-radius:  3px; //TODO Hard coded value need to change;
         }
       }
     }
@@ -175,22 +175,22 @@
   // Add border bottom radius for last one
   > .table:last-child,
   > .table-responsive:last-child > .table:last-child {
-    border-bottom-right-radius:       calc(4px - 1px);  //TODO Hard coded value need to change;
-    border-bottom-left-radius:        calc(4px - 1px);
+    border-bottom-right-radius:       3px;  //TODO Hard coded value need to change;
+    border-bottom-left-radius:        3px;
 
     > tbody:last-child,
     > tfoot:last-child {
       > tr:last-child {
-        border-bottom-right-radius:   calc(4px - 1px); //TODO Hard coded value need to change;
-        border-bottom-left-radius:    calc(4px - 1px);
+        border-bottom-right-radius:   3px; //TODO Hard coded value need to change;
+        border-bottom-left-radius:    3px;
 
         td:first-child,
         th:first-child {
-          border-bottom-left-radius:  calc(4px - 1px); //TODO Hard coded value need to change;
+          border-bottom-left-radius:  3px; //TODO Hard coded value need to change;
         }
         td:last-child,
         th:last-child {
-          border-bottom-right-radius: calc(4px - 1px); //TODO Hard coded value need to change;
+          border-bottom-right-radius: 3px; //TODO Hard coded value need to change;
         }
       }
     }
@@ -257,10 +257,10 @@
   // Tighten up margin so it's only between panels
   .panel {
     margin-bottom:      0;
-    border-radius:      calc(4px - 1px);
+    border-radius:      var(--rounded-tiny);
 
     + .panel {
-      margin-top:       5px;
+      margin-top:       var(--spacing-tiny);
     }
   }
 

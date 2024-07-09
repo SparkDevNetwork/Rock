@@ -10,7 +10,7 @@
 // fields in IE7-8. Source: https://github.com/twbs/bootstrap/pull/3552.
 
 .fade {
-  opacity: 0;
+  opacity:    0;
   transition: opacity .15s linear;
 
   &.in {
@@ -21,9 +21,9 @@
 .collapse {
   display: none;
 
-  &.in      { display: block; }
-  tr &.in    { display: table-row; }
-  tbody &.in { display: table-row-group; }
+  &.in        { display: block; }
+  tr &.in     { display: table-row; }
+  tbody &.in  { display: table-row-group; }
 }
 
 .collapsing {

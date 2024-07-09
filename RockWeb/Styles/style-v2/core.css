@@ -239,9 +239,9 @@ th {
   --color-warning-soft: #FEF3C7;
   --color-warning-strong: #B45309;
   --color-primary: #EE7725;
+  --color-campus: #83758f;
   --color-link: #006DCC;
   --color-link-hover: #003766;
-  --color-secondary: #83758F;
   --color-categorical-1: #000BFF;
   --color-categorical-2: #DE3D82;
   --color-categorical-3: #949494;
@@ -2411,8 +2411,8 @@ h6.condensed {
   color: var(--color-primary);
 }
 
-.color-secondary {
-  color: var(--color-secondary);
+.color-campus {
+  color: var(--color-campus);
 }
 
 .color-categorical-1 {
@@ -5097,7 +5097,7 @@ input[type=button].btn-block {
 }
 
 .btn-toolbar {
-  margin-left: -5px;
+  margin-left: -var(--spacing-tiny);
 }
 .btn-toolbar:before, .btn-toolbar:after {
   display: table;
@@ -5497,7 +5497,7 @@ samp {
 }
 
 code {
-  padding: 2px 4px;
+  padding: calc(var(--spacing-small) / 2) var(--spacing-small);
   font-size: 90%;
   color: var(--code-color);
   background-color: var(--color-code-bg);
@@ -5505,7 +5505,7 @@ code {
 }
 
 kbd {
-  padding: 2px 4px;
+  padding: calc(var(--spacing-small) / 2) var(--spacing-small);
   font-size: 90%;
   color: var(--color-interface-softest);
   background-color: var(--color-interface-strong);
@@ -5522,7 +5522,7 @@ kbd kbd {
 pre {
   display: block;
   padding: 9.5;
-  margin: 0 0 10;
+  margin: 0 0 var(--spacing-small);
   font-size: calc(var(--font-size-regular) - 1);
   line-height: var(--line-height-normal);
   color: var(--color-interface-stronger);
@@ -5731,8 +5731,8 @@ pre code {
   font-weight: var(--font-weight-bold);
   line-height: var(--line-height-compact);
   color: var(--color-interface-strongest);
-  text-shadow: 0 1px 0 #fff;
   filter: alpha(opacity=20);
+  text-shadow: 0 1px 0 var(--color-interface-softest);
   opacity: 0.2;
 }
 .close:hover, .close:focus {
@@ -5890,7 +5890,7 @@ a .list-group-item-warning:hover, a .list-group-item-warning:focus, button .list
   background-color: var(--color-warning-soft);
 }
 a .list-group-item-warning.active, a .list-group-item-warning.active:hover, a .list-group-item-warning.active:focus, button .list-group-item-warning.active, button .list-group-item-warning.active:hover, button .list-group-item-warning.active:focus {
-  color: #fff;
+  color: var(--color-interface-softest);
   background-color: var(--color-warning-strong);
   border-color: var(--color-warning-strong);
 }
@@ -5910,7 +5910,7 @@ a .list-group-item-danger:hover, a .list-group-item-danger:focus, button .list-g
   background-color: var(--color-danger-soft);
 }
 a .list-group-item-danger.active, a .list-group-item-danger.active:hover, a .list-group-item-danger.active:focus, button .list-group-item-danger.active, button .list-group-item-danger.active:hover, button .list-group-item-danger.active:focus {
-  color: #fff;
+  color: var(--color-interface-softest);
   background-color: var(--color-danger-strong);
   border-color: var(--color-danger-strong);
 }
@@ -6428,9 +6428,9 @@ body.rock-modal .modal-content {
 .pagination > .active > span:focus {
   z-index: 3;
   color: var(--color-interface-strong);
-  cursor: default;
   background-color: var(--color-interface-soft);
   border-color: var(--color-interface-soft);
+  cursor: default;
 }
 .pagination > .disabled > span,
 .pagination > .disabled > span:hover,
@@ -6439,9 +6439,9 @@ body.rock-modal .modal-content {
 .pagination > .disabled > a:hover,
 .pagination > .disabled > a:focus {
   color: var(--color-interface-soft);
-  cursor: not-allowed;
   background-color: var(--color-interface-softest);
   border-color: transparent;
+  cursor: not-allowed;
 }
 
 .pagination-lg > li > a,
@@ -8167,7 +8167,7 @@ td.grid-actions {
 .breadcrumb > li + li:before {
   padding: 0 var(--spacing-tiny);
   color: var(--color-interface-medium);
-  content: "@{breadcrumb-separator} ";
+  content: "/ ";
 }
 .breadcrumb > .active {
   color: var(--color-interface-stronger);
@@ -8188,7 +8188,7 @@ td.grid-actions {
   font-family: "FontAwesome";
   font-size: 80%;
   font-weight: 900;
-  content: "@{breadcrumb-separator}";
+  content: "/";
 }
 
 .thumbnail {
@@ -8560,10 +8560,10 @@ hr {
 }
 .panel-group .panel {
   margin-bottom: 0;
-  border-radius: 3px;
+  border-radius: var(--rounded-tiny);
 }
 .panel-group .panel + .panel {
-  margin-top: 5px;
+  margin-top: var(--spacing-tiny);
 }
 .panel-group .panel-heading {
   border-bottom: 0;

@@ -210,7 +210,7 @@
   border-radius:  var(--rounded-small);
   color:          var(--color-interface-stronger);
 
-  @media (min-width: 480px) {
+  @media (min-width: $screen-xsmall) {
     flex-wrap: nowrap;
     max-height: 383px;
   }
@@ -236,7 +236,7 @@
     flex-direction: column;
     width: 100%;
 
-    @media (min-width: 480px) {
+    @media (min-width: $screen-xsmall) {
       width: 50%;
     }
 

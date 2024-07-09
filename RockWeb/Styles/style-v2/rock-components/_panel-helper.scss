@@ -13,7 +13,7 @@
 // the .panel-parent class allow you to wrap a child panel removing the child's heading.
 .panel-parent {
 
-  & > .panel-body {
+  > .panel-body {
     padding: 0;
   }
 
@@ -40,6 +40,7 @@
   border-radius:            var(--rounded-small);
   box-shadow:               0 0 1px 0 rgba(0,0,0,0.03), 0 1px 3px 0 rgba(0,0,0,0.08);
   border:                   1px solid var(--color-interface-soft);
+
   /* The sidebar panel content spans 1 of the 4 columns of the 1st row. */
   > .panel-sidebar-content {
     grid-column:          1;
@@ -48,6 +49,7 @@
     margin-top:           var(--spacing-medium);
     left:                 var(--spacing-medium);
   }
+
   /* The main panel content spans 3 of the 4 columns of the 1st row. */
   > .panel {
     grid-column:  2 e("/") span 3;
@@ -55,6 +57,7 @@
     border:       0;
     box-shadow:   none;
   }
+
   /* Remove background and borders for main panel headers. */
   .panel-block {
     > .panel-heading, > .panel-sub-header {
@@ -62,10 +65,12 @@
       background-color:   var(--color-interface-softest);
     }
   }
+  
   /* The footer spans all 4 columns of the 2nd row. */
   .sidebar-footer {
     grid-column:      1 e("/") span 4;
     grid-row:         2;
+
     /* The actions footer items uses a sub grid with a single row and 2 columns. */
     > div.actions {
       display:                  grid;
@@ -80,6 +85,7 @@
           margin-right: var(--spacing-small);
         }
       }
+
       /* justify the secondary footer actions to the right-hand side (end) of the grid. */
       div.footer-secondary-actions {
         grid-column:    2;
