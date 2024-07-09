@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Rock.Attribute;
 using Rock.CheckIn.v2;
 using Rock.CheckIn.v2.Labels;
+using Rock.Data;
 using Rock.ViewModels.Rest.CheckIn;
 using Rock.Web.Cache;
 
@@ -131,13 +132,25 @@ namespace Rock.Blocks.Mobile.CheckIn
                 return ActionBadRequest( "Configuration was not found." );
             }
 
+            DeviceCache kiosk = null;
+
+            if ( options.KioskId.IsNotNullOrWhiteSpace() )
+            {
+                kiosk = DeviceCache.GetByIdKey( options.KioskId, RockContext );
+            }
+
+            if ( kiosk == null )
+            {
+                return ActionBadRequest( "Kiosk was not found." );
+            }
+
             try
             {
                 var director = new CheckInDirector( RockContext );
                 var session = director.CreateSession( configuration );
                 var sessionRequest = new AttendanceSessionRequest( options.Session );
 
-                var result = session.SaveAttendance( sessionRequest, options.Requests, null, RequestContext.ClientInformation.IpAddress );
+                var result = session.SaveAttendance( sessionRequest, options.Requests, kiosk, RequestContext.ClientInformation.IpAddress );
 
                 if ( !options.Session.IsPending )
                 {
@@ -187,6 +200,51 @@ namespace Rock.Blocks.Mobile.CheckIn
                     Messages = result.Messages,
                     Attendances = result.Attendances
                 } );
+            }
+            catch ( CheckInMessageException ex )
+            {
+                return ActionBadRequest( ex.Message );
+            }
+        }
+
+        /// <summary>
+        /// Checks out the specified attendances.
+        /// </summary>
+        /// <param name="options">The configuration for checkout.</param>
+        /// <returns>A bag containing information about the checkout.</returns>
+        [BlockAction]
+        public async Task<BlockActionResult> Checkout( CheckoutOptionsBag options )
+        {
+            var configuration = GroupTypeCache.GetByIdKey( options.TemplateId, RockContext )?.GetCheckInConfiguration( RockContext );
+            DeviceCache kiosk = null;
+
+            if ( configuration == null )
+            {
+                return ActionBadRequest( "Configuration was not found." );
+            }
+
+            if ( options.KioskId.IsNotNullOrWhiteSpace() )
+            {
+                kiosk = DeviceCache.GetByIdKey( options.KioskId, RockContext );
+            }
+
+            if ( kiosk == null )
+            {
+                return ActionBadRequest( "Kiosk was not found." );
+            }
+
+            try
+            {
+                var director = new CheckInDirector( RockContext );
+                var session = director.CreateSession( configuration );
+                var sessionRequest = new AttendanceSessionRequest( options.Session );
+
+                var result = session.Checkout( sessionRequest, options.AttendanceIds, kiosk );
+
+                var cts = new CancellationTokenSource( 5000 );
+                await director.LabelProvider.RenderAndPrintCheckoutLabelsAsync( result, kiosk, new LabelPrintProvider(), cts.Token );
+
+                return ActionOk( result );
             }
             catch ( CheckInMessageException ex )
             {
