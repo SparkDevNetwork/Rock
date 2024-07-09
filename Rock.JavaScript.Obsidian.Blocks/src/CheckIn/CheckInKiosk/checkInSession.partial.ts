@@ -48,6 +48,7 @@ import { AttendanceRequestBag } from "@Obsidian/ViewModels/CheckIn/attendanceReq
 import { RecordedAttendanceBag } from "@Obsidian/ViewModels/CheckIn/recordedAttendanceBag";
 import { OpportunitySelectionBag } from "@Obsidian/ViewModels/CheckIn/opportunitySelectionBag";
 import { CheckInItemBag } from "@Obsidian/ViewModels/CheckIn/checkInItemBag";
+import { AbilityLevelDeterminationMode } from "@Obsidian/Enums/CheckIn/abilityLevelDeterminationMode";
 
 type Mutable<T> = { -readonly [P in keyof T]: T[P] };
 
@@ -1393,6 +1394,10 @@ export class CheckInSession {
             }
         }
 
+        if (this.configuration.template?.abilityLevelDetermination === AbilityLevelDeterminationMode.DoNotAsk) {
+            return newSession.withNextScreenFromAbilityLevelSelect();
+        }
+
         // If we have more than 1 ability level to pick from then show the
         // ability level screen.
         if (abilityLevels.length > 1) {
@@ -1577,6 +1582,10 @@ export class CheckInSession {
                 return familySession.withNextScreenFromAbilityLevelSelect();
             }
 
+            if (this.configuration.template.abilityLevelDetermination === AbilityLevelDeterminationMode.DoNotAsk) {
+                return familySession.withNextScreenFromAbilityLevelSelect();
+            }
+
             return familySession.withScreen(Screen.AbilityLevelSelect);
         }
 
@@ -1584,7 +1593,18 @@ export class CheckInSession {
             return this.withScreen(Screen.ScheduleSelect);
         }
 
-        return this.withNextScreenFromScheduleSelect();
+        if (!this.attendeeOpportunities?.schedules || this.attendeeOpportunities.schedules.length === 0) {
+            throw new InvalidCheckInStateError("No schedules available.");
+        }
+
+        if (!this.attendeeOpportunities.schedules[0].id) {
+            throw new InvalidCheckInStateError("Invalid schedule.");
+        }
+
+        const scheduleIds = [this.attendeeOpportunities.schedules[0].id];
+        const individualSession = await this.withSelectedSchedules(scheduleIds);
+
+        return await individualSession.withNextScreenFromScheduleSelect();
     }
 
     /**
@@ -1613,6 +1633,10 @@ export class CheckInSession {
                 ?.filter(g => !!g.abilityLevelId) ?? [];
 
             if (groupsWithAbilityLevels.length === 0) {
+                return familySession.withNextScreenFromAbilityLevelSelect();
+            }
+
+            if (this.configuration.template.abilityLevelDetermination === AbilityLevelDeterminationMode.DoNotAsk) {
                 return familySession.withNextScreenFromAbilityLevelSelect();
             }
 
