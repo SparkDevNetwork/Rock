@@ -16,7 +16,10 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using System.Text.RegularExpressions;
+using Nest;
 using Rock.Attribute;
 
 namespace Rock.Logging
@@ -35,6 +38,16 @@ namespace Rock.Logging
         private const string DEFAULT_DOMAIN = "OTHER";
         private HashSet<string> _domains;
         private Queue<RockLogEvent> _logEvents = new Queue<RockLogEvent>( 10000 );
+
+        /// <summary>
+        /// Gets the current buffer of log events.
+        /// </summary>
+        /// <returns></returns>
+        public ReadOnlyCollection<RockLogEvent> GetLogEvents()
+        {
+            var list = new ReadOnlyCollection<RockLogEvent>( _logEvents.ToList() );
+            return list;
+        }
 
         #region Events
 
