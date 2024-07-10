@@ -392,7 +392,8 @@ namespace Rock.CheckIn.v2
             return new AbilityLevelOpportunityBag
             {
                 Id = abilityLevel.Id,
-                Name = abilityLevel.Name
+                Name = abilityLevel.Name,
+                IsDisabled = abilityLevel.IsDisabled
             };
         }
 

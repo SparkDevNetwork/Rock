@@ -283,6 +283,7 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
+    align-items: center;
     grid-row: 2/3;
     grid-column: 2/3;
 }
@@ -440,6 +441,17 @@
 }
 
 .check-in-page .schedule-select-screen .schedule-button .selection {
+    font-size: 50px;
+    line-height: 1;
+    margin-top: calc(var(--unit-md) * -1);
+    margin-bottom: calc(var(--unit-md) * -1);
+}
+
+
+/**
+ * Ability Level Select Screen
+*/
+.check-in-page .ability-level-button .selection {
     font-size: 50px;
     line-height: 1;
     margin-top: calc(var(--unit-md) * -1);
