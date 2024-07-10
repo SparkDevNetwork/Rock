@@ -32,13 +32,15 @@ public class Program
             options.ServiceName = "Rock Printer Proxy Service";
         } );
 
-        if ( OperatingSystem.IsWindows() )
+        // If we are running as a Windows Service then log to Event Viewer.
+        if ( WindowsServiceHelpers.IsWindowsService() )
         {
             LoggerProviderOptions.RegisterProviderOptions<EventLogSettings, EventLogLoggerProvider>( builder.Services );
         }
 
         builder.Services.Configure<PrinterProxyOptions>( builder.Configuration );
         builder.Services.AddHostedService<ProxyWorker>();
+        builder.Services.AddHostedService<NamedPipeService>();
 
         var host = builder.Build();
 
