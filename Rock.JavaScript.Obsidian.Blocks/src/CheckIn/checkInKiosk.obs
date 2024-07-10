@@ -139,6 +139,7 @@
     const currentScreenActions = ref<KioskButton[]>([]);
     const currentSession = shallowRef<CheckInSession>(new CheckInSession(configuration.value, http));
     const previousScreens = shallowRef<CheckInSession[]>([]);
+    let currentAttendeeId: string | undefined | null;
     let lastActivity: number = Date.now();
     let idleTimer: number | undefined;
     const activityEvents = ["mousemove", "mousedown", "touchmove", "touchstart", "keydown"];
@@ -148,7 +149,6 @@
     });
 
     const hasBackButton = computed((): boolean => {
-
         return currentScreen.value !== Screen.Welcome
             && currentScreen.value !== Screen.Success
             && currentScreen.value !== Screen.CheckoutSuccess
@@ -204,16 +204,13 @@
         window.location.href = blockConfiguration.setupPageRoute as string;
     }
 
-    function navigateToScreen(screen: Screen, preserveSession: boolean = false): void {
+    function navigateToScreen(screen: Screen): void {
         currentScreenActions.value = [];
         currentScreen.value = screen;
 
-        if (!preserveSession && screen === Screen.Welcome) {
+        if (screen === Screen.Welcome) {
             currentSession.value = new CheckInSession(configuration.value, http);
             previousScreens.value = [];
-        }
-        else if (screen === Screen.Success) {
-            // TODO: Do stuff here?
         }
     }
 
@@ -226,6 +223,13 @@
     function onNextScreen(session: CheckInSession): void {
         previousScreens.value = [...previousScreens.value, currentSession.value];
 
+        // Prevent moving back to a previous attendees options since we have
+        // already created the pending attendance record.
+        if (currentAttendeeId && currentAttendeeId !== session.getCurrentAttendee()?.person?.id) {
+            previousScreens.value = [];
+        }
+
+        currentAttendeeId = session.getCurrentAttendee()?.person?.id;
         currentSession.value = session;
 
         navigateToScreen(session.currentScreen);

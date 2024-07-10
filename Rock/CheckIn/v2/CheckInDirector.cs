@@ -370,6 +370,7 @@ namespace Rock.CheckIn.v2
                 .Select( a => new
                 {
                     AttendanceId = a.Id,
+                    AttendanceGuid = a.Guid,
                     Status = a.CheckInStatus,
                     a.StartDateTime,
                     a.EndDateTime,
@@ -383,6 +384,7 @@ namespace Rock.CheckIn.v2
                 .ToList()
                 .Select( a => new RecentAttendance
                 {
+                    AttendanceGuid = a.AttendanceGuid,
                     AttendanceId = IdHasher.Instance.GetHash( a.AttendanceId ),
                     Status = a.Status,
                     StartDateTime = a.StartDateTime,
@@ -428,6 +430,7 @@ namespace Rock.CheckIn.v2
                 .Select( a => new
                 {
                     AttendanceId = a.Id,
+                    AttendanceGuid = a.Guid,
                     Status = a.CheckInStatus,
                     a.StartDateTime,
                     a.EndDateTime,
@@ -441,6 +444,7 @@ namespace Rock.CheckIn.v2
                 .ToList()
                 .Select( a => new RecentAttendance
                 {
+                    AttendanceGuid = a.AttendanceGuid,
                     AttendanceId = IdHasher.Instance.GetHash( a.AttendanceId ),
                     Status = a.Status,
                     StartDateTime = a.StartDateTime,

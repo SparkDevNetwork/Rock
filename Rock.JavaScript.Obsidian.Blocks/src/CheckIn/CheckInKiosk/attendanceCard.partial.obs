@@ -17,7 +17,7 @@
             </div>
         </div>
 
-        <div v-if="attendance.inProgressAchievements"
+        <div v-if="attendance.inProgressAchievements && attendance.inProgressAchievements.length > 0"
              class="achievement-list">
             <label>Current Achievement Status</label>
 

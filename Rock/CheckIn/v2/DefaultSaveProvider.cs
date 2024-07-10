@@ -156,7 +156,7 @@ namespace Rock.CheckIn.v2
                 var newAttendance = new RecentAttendance
                 {
                     AttendanceGuid = attendance.Guid,
-                    AttendanceId = null,
+                    AttendanceId = attendance.Id != 0 ? attendance.IdKey : null,
                     CampusId = attendance.CampusId.HasValue
                         ? CampusCache.Get( attendance.CampusId.Value, Session.RockContext )?.IdKey
                         : null,
