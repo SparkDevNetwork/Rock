@@ -18,12 +18,10 @@ using System.Net.WebSockets;
 
 using Microsoft.Extensions.Options;
 
+using Polly;
 using Polly.Retry;
 
-using Polly;
-
 namespace Rock.PrinterProxy.Service;
-
 /// <summary>
 /// This is the main background worker for the printer proxy. It is in charge
 /// of making sure the proxy stays connected and reconnects when the options
@@ -193,52 +191,61 @@ class ProxyWorker : BackgroundService
     /// <returns>An instance of <see cref="ClientWebSocket"/> in a connected state.</returns>
     private async ValueTask<ClientWebSocket> ConnectOnceAsync( CancellationToken cancellationToken )
     {
-        var options = _optionsMonitor.CurrentValue;
-        var baseUrl = options.Url;
-        var name = options.Name;
-
-        if ( string.IsNullOrWhiteSpace( baseUrl ) || string.IsNullOrWhiteSpace( options.Id ) )
-        {
-            _logger.LogError( "Missing required configuration values." );
-            throw new Exception( "Missing required configuration values." );
-        }
-
-        _logger.LogInformation( "Connecting to server {server}.", baseUrl );
-
-        if ( !baseUrl.Contains( "://" ) )
-        {
-            baseUrl = "wss://" + baseUrl;
-        }
-        else
-        {
-            baseUrl = baseUrl
-                .Replace( "https://", "wss://" )
-                .Replace( "http://", "ws://" );
-        }
-
-        if ( string.IsNullOrWhiteSpace( name ) )
-        {
-            name = Environment.MachineName;
-        }
-
-        var uri = new Uri( baseUrl );
-        uri = new Uri( uri, $"api/v2/checkin/printerproxy/{options.Id}?name={name}&priority={options.Priority}" );
-
-        var ws = new ClientWebSocket();
-
         try
         {
-            await ws.ConnectAsync( uri, cancellationToken ).ConfigureAwait( false );
+            var options = _optionsMonitor.CurrentValue;
+            var baseUrl = options.Url;
+            var name = options.Name;
+
+            if ( string.IsNullOrWhiteSpace( baseUrl ) || string.IsNullOrWhiteSpace( options.Id ) )
+            {
+                _logger.LogError( "Missing required configuration values." );
+                throw new Exception( "Missing required configuration values." );
+            }
+
+            _logger.LogInformation( "Connecting to server {server}.", baseUrl );
+
+            if ( !baseUrl.Contains( "://" ) )
+            {
+                baseUrl = "wss://" + baseUrl;
+            }
+            else
+            {
+                baseUrl = baseUrl
+                    .Replace( "https://", "wss://" )
+                    .Replace( "http://", "ws://" );
+            }
+
+            if ( string.IsNullOrWhiteSpace( name ) )
+            {
+                name = Environment.MachineName;
+            }
+
+            var uri = new Uri( baseUrl );
+            uri = new Uri( uri, $"api/v2/checkin/printerproxy/{options.Id}?name={name}&priority={options.Priority}" );
+
+            var ws = new ClientWebSocket();
+
+            try
+            {
+                await ws.ConnectAsync( uri, cancellationToken ).ConfigureAwait( false );
+            }
+            catch ( Exception ex )
+            {
+                _logger.LogError( ex, "Unable to connect to server {server}.", baseUrl );
+                throw;
+            }
+
+            _logger.LogInformation( "Established connection to server {server}.", baseUrl );
+
+            return ws;
         }
         catch ( Exception ex )
         {
-            _logger.LogError( ex, "Unable to connect to server {server}.", baseUrl );
+            _logger.LogError( ex, "Unable to process connection request." );
             throw;
         }
 
-        _logger.LogInformation( "Established connection to server {server}.", baseUrl );
-
-        return ws;
     }
 
     /// <summary>
