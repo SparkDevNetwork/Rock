@@ -273,6 +273,7 @@
     <Compile Include="TestData\Cms\PersonalizationDataManager.cs" />
     <Compile Include="TestData\Cms\WebsiteDataManager.cs" />
     <Compile Include="TestData\Communications\CommunicationsDataManager.cs" />
+    <Compile Include="TestData\Cms\Shortcodes\ShortcodeDataManager.cs" />
     <Compile Include="TestData\Communications\TestDataHelper.Communications.cs" />
     <Compile Include="TestData\Core\PersistedDatasetDataManager.cs" />
     <Compile Include="TestData\Core\SecurityDataManager.cs" />
