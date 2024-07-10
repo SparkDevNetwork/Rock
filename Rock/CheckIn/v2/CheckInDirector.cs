@@ -370,6 +370,7 @@ namespace Rock.CheckIn.v2
                 .Select( a => new
                 {
                     AttendanceId = a.Id,
+                    AttendanceGuid = a.Guid,
                     Status = a.CheckInStatus,
                     a.StartDateTime,
                     a.EndDateTime,
@@ -383,6 +384,7 @@ namespace Rock.CheckIn.v2
                 .ToList()
                 .Select( a => new RecentAttendance
                 {
+                    AttendanceGuid = a.AttendanceGuid,
                     AttendanceId = IdHasher.Instance.GetHash( a.AttendanceId ),
                     Status = a.Status,
                     StartDateTime = a.StartDateTime,
@@ -428,6 +430,7 @@ namespace Rock.CheckIn.v2
                 .Select( a => new
                 {
                     AttendanceId = a.Id,
+                    AttendanceGuid = a.Guid,
                     Status = a.CheckInStatus,
                     a.StartDateTime,
                     a.EndDateTime,
@@ -441,6 +444,7 @@ namespace Rock.CheckIn.v2
                 .ToList()
                 .Select( a => new RecentAttendance
                 {
+                    AttendanceGuid = a.AttendanceGuid,
                     AttendanceId = IdHasher.Instance.GetHash( a.AttendanceId ),
                     Status = a.Status,
                     StartDateTime = a.StartDateTime,
@@ -541,6 +545,28 @@ namespace Rock.CheckIn.v2
                 MinimumPhoneNumberLength = configuration.MinimumPhoneNumberLength,
                 PhoneSearchType = configuration.PhoneSearchType
             };
+        }
+
+        /// <summary>
+        /// Deletes the pending attendance records for the specified session.
+        /// </summary>
+        /// <param name="sessionGuid">The session's unique identifier.</param>
+        public void DeletePendingAttendance( Guid sessionGuid )
+        {
+            var attendanceService = new AttendanceService( RockContext );
+            var attendanceItems = attendanceService.Queryable()
+                .Where( a => a.AttendanceCheckInSession.Guid == sessionGuid
+                    && a.CheckInStatus == Enums.Event.CheckInStatus.Pending )
+                .ToList();
+
+            if ( !attendanceItems.Any() )
+            {
+                return;
+            }
+
+            attendanceService.DeleteRange( attendanceItems );
+
+            RockContext.SaveChanges();
         }
 
         #endregion

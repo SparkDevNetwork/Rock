@@ -39,6 +39,7 @@ using FromBodyAttribute = System.Web.Http.FromBodyAttribute;
 using FromQueryAttribute = System.Web.Http.FromUriAttribute;
 using HttpGetAttribute = System.Web.Http.HttpGetAttribute;
 using HttpPostAttribute = System.Web.Http.HttpPostAttribute;
+using HttpDeleteAttribute = System.Web.Http.HttpDeleteAttribute;
 using IActionResult = System.Web.Http.IHttpActionResult;
 using RouteAttribute = System.Web.Http.RouteAttribute;
 using RoutePrefixAttribute = System.Web.Http.RoutePrefixAttribute;
@@ -458,6 +459,33 @@ namespace Rock.Rest.v2
                 await director.LabelProvider.RenderAndPrintCheckoutLabelsAsync( result, kiosk, new LabelPrintProvider(), cts.Token );
 
                 return Ok( result );
+            }
+            catch ( CheckInMessageException ex )
+            {
+                return BadRequest( ex.Message );
+            }
+        }
+
+        /// <summary>
+        /// Deletes the pending attendance records for a session.
+        /// </summary>
+        /// <param name="sessionGuid">The unique identifier of the session to delete attendance records for.</param>
+        /// <returns>The results from the delete operation.</returns>
+        [HttpDelete]
+        [Authenticate]
+        [Secured]
+        [Route( "PendingAttendance/{sessionGuid}" )]
+        [ProducesResponseType( HttpStatusCode.OK )]
+        [SystemGuid.RestActionGuid( "f914ffc3-8587-493b-9c8a-ae196b5fe028" )]
+        public IActionResult DeletePendingAttendance( Guid sessionGuid )
+        {
+            try
+            {
+                var director = new CheckInDirector( _rockContext );
+
+                director.DeletePendingAttendance( sessionGuid );
+
+                return Ok();
             }
             catch ( CheckInMessageException ex )
             {
