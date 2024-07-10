@@ -263,7 +263,7 @@
             return;
         }
 
-        if (Date.now() - lastActivity > 10000) {
+        if (Date.now() - lastActivity > 20000) {
             navigateToScreen(Screen.Welcome);
         }
     }

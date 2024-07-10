@@ -21,5 +21,12 @@ namespace Rock.ViewModels.CheckIn
     /// </summary>
     public class AbilityLevelOpportunityBag : CheckInItemBag
     {
+        /// <summary>
+        /// Determines if this ability level is unavailable for selection during
+        /// a self-serve check-in. This may be overridden when assisted by a
+        /// staff member. If every ability level is disabled then the entire
+        /// screen should be skipped.
+        /// </summary>
+        public bool IsDisabled { get; set; }
     }
 }

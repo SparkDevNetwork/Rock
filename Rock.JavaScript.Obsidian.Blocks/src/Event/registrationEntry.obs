@@ -64,7 +64,7 @@
     import RegistrationEntrySuccess from "./RegistrationEntry/success.partial.obs";
     import RegistrationEntrySummary from "./RegistrationEntry/summary.partial.obs";
     import { PaymentPlanConfiguration, RegistrationCostSummaryInfo, RegistrationEntryState, Step } from "./RegistrationEntry/types.partial";
-    import { CurrentRegistrationEntryState, PersistSession, GetPersistSessionArgs, getDefaultRegistrantInfo, getForcedFamilyGuid, scrollToTopAfterNextRender, RegistrationCostSummary, getRegistrantBasicInfo, OriginalFormFieldValues, ConfigurePaymentPlan } from "./RegistrationEntry/utils.partial";
+    import { CurrentRegistrationEntryState, PersistSession, GetPersistSessionArgs, getDefaultRegistrantInfo, getForcedFamilyGuid, scrollToTopAfterNextRender, RegistrationCostSummary, getRegistrantBasicInfo, OriginalFormFieldValues, ConfigurePaymentPlan, RegistrationEntryTerms } from "./RegistrationEntry/utils.partial";
     import CountdownTimer from "@Obsidian/Controls/countdownTimer.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import ProgressTracker from "@Obsidian/Controls/progressTracker.obs";
@@ -593,6 +593,20 @@
         finalPaymentPlanConfiguration,
     });
     provide(OriginalFormFieldValues, ref<Record<string, Record<string, unknown>>>({}));
+
+    provide(RegistrationEntryTerms, computed(() => ({
+        registrantsTermLowerCase: registrationEntryState.value.viewModel.pluralRegistrantTerm?.toLowerCase() || "registrants",
+        registrantTermTitleCase: toTitleCase(registrationEntryState.value.viewModel.registrantTerm ?? null) || "Registrant",
+        registrantTermLowerCase: registrationEntryState.value.viewModel.registrantTerm?.toLowerCase() || "registrant",
+        registrationsTermLowerCase: registrationEntryState.value.viewModel.pluralRegistrationTerm?.toLowerCase() || "registrations",
+        registrationTermLowerCase: registrationEntryState.value.viewModel.registrationTerm?.toLowerCase() || "registration",
+        registrationTermTitleCase: toTitleCase(registrationEntryState.value.viewModel.registrationTerm ?? null) || "Registration",
+        discountCodeTermTitleCase: toTitleCase(registrationEntryState.value.viewModel.discountCodeTerm ?? null) || "Discount Code",
+        discountCodeTermLowerCase: registrationEntryState.value.viewModel.discountCodeTerm?.toLowerCase() ?? "discount code",
+        feeTermLowerCase: registrationEntryState.value.viewModel.feeTerm?.toLowerCase() || "fee",
+        feesTermTitleCase: toTitleCase(registrationEntryState.value.viewModel.pluralFeeTerm ?? null) || "Fees",
+        signatureDocumentTermTitleCase: toTitleCase(registrationEntryState.value.viewModel.signatureDocumentTerm ?? null) || "Release",
+    })));
 
     onMounted(() => {
         if (config.loginRequiredToRegister && !currentPerson.value) {

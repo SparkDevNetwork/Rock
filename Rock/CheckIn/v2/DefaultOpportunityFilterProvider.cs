@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Rock.CheckIn.v2.Filters;
+using Rock.Enums.CheckIn;
 
 namespace Rock.CheckIn.v2
 {
@@ -136,6 +137,8 @@ namespace Rock.CheckIn.v2
 
             // Run schedule filters.
             scheduleFilters.ForEach( f => f.FilterSchedules( person.Opportunities ) );
+
+            UpdateAbilityLevels( person );
         }
 
         /// <summary>
@@ -147,6 +150,41 @@ namespace Rock.CheckIn.v2
         public virtual void RemoveEmptyOpportunities( Attendee person )
         {
             person.Opportunities.RemoveEmptyOpportunities();
+        }
+
+        /// <summary>
+        /// Updates the ability levels for the attendee. This handles checking
+        /// if the ability levels should be skipped entirely as well as if just
+        /// a few should be skipped.
+        /// </summary>
+        /// <param name="attendee">The attendee whose ability levels should be updated.</param>
+        protected virtual void UpdateAbilityLevels( Attendee attendee )
+        {
+            // Skip the ability level selection if the configuration tells us
+            // to never ask, or if we only ask if they have no ability level but
+            // they already do, or if no groups require ability level for check-in.
+            var skipAbilityLevels =
+                Session.TemplateConfiguration.AbilityLevelDetermination == AbilityLevelDeterminationMode.DoNotAsk
+                || ( Session.TemplateConfiguration.AbilityLevelDetermination == AbilityLevelDeterminationMode.DoNotAskIfThereIsNoAbilityLevel && attendee.Person.AbilityLevel != null )
+                || !attendee.Opportunities.Groups.Any( g => g.AbilityLevelId.IsNotNullOrWhiteSpace() );
+
+            if ( skipAbilityLevels )
+            {
+                attendee.Opportunities.AbilityLevels.ForEach( abilityLevel => abilityLevel.IsDisabled = true );
+            }
+            else if ( attendee.Person.AbilityLevel != null )
+            {
+                // Disable any ability level that is lower than the current level.
+                foreach ( var abilityLevel in attendee.Opportunities.AbilityLevels )
+                {
+                    if ( abilityLevel.Id == attendee.Person.AbilityLevel.Id )
+                    {
+                        break;
+                    }
+
+                    abilityLevel.IsDisabled = true;
+                }
+            }
         }
 
         /// <summary>

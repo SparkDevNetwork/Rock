@@ -2,35 +2,35 @@
 <template>
     <div class="registrationentry-intro">
         <NotificationBox v-if="isFull && numberToAddToWaitlist !== numberOfRegistrants" class="text-left" alertType="warning">
-            <strong>{{ registrationTermTitleCase }} Full</strong>
+            <strong>{{ registrationEntryTerms.registrationTermTitleCase }} Full</strong>
             <p>
-                There are not any more {{ registrationsTermLowerCase }} available for {{ config.instanceName }}.
+                There are not any more {{ registrationEntryTerms.registrationsTermLowerCase }} available for {{ config.instanceName }}.
             </p>
         </NotificationBox>
         <NotificationBox v-if="showRemainingCapacity" class="text-left" alertType="warning">
-            <strong>{{ registrationTermTitleCase }} Full</strong>
+            <strong>{{ registrationEntryTerms.registrationTermTitleCase }} Full</strong>
             <p>
-                This {{ registrationTermLowerCase }} only has capacity for {{ remainingCapacityPhrase }}.
+                This {{ registrationEntryTerms.registrationTermLowerCase }} only has capacity for {{ remainingCapacityPhrase }}.
             </p>
         </NotificationBox>
         <div class="text-left" v-html="config.instructionsHtml">
         </div>
         <div v-if="config.maxRegistrants > 1" class="registrationentry-intro mb-3">
-            <h1>How many {{ registrantsTermLowerCase }} will you be registering?</h1>
+            <h1>How many {{ registrationEntryTerms.registrantsTermLowerCase }} will you be registering?</h1>
             <NumberUpDown v-model="numberOfRegistrants" class="margin-t-sm" numberIncrementClasses="input-lg" :max="config.maxRegistrants" />
         </div>
         <NotificationBox v-if="config.timeoutMinutes" alertType="info" class="text-left">
-            Due to a high-volume of expected interest, your {{ registrationTermLowerCase }} session will expire after
+            Due to a high-volume of expected interest, your {{ registrationEntryTerms.registrationTermLowerCase }} session will expire after
             {{ pluralConditional(config.timeoutMinutes, 'a minute', config.timeoutMinutes + ' minutes') }}
             of inactivity.
         </NotificationBox>
         <NotificationBox v-if="numberToAddToWaitlist === numberOfRegistrants" class="text-left" alertType="warning">
-            This {{ registrationTermLowerCase }} has reached its capacity. Complete the {{ registrationTermLowerCase }} to be added to the waitlist.
+            This {{ registrationEntryTerms.registrationTermLowerCase }} has reached its capacity. Complete the {{ registrationEntryTerms.registrationTermLowerCase }} to be added to the waitlist.
         </NotificationBox>
         <NotificationBox v-else-if="numberToAddToWaitlist" class="text-left" alertType="warning">
-            This {{ registrationTermLowerCase }} only has capacity for {{ remainingCapacityPhrase }}.
-            The first {{ pluralConditional(config.spotsRemaining ?? 0, registrantTermLowerCase, config.spotsRemaining + ' ' + registrantsTermLowerCase) }} you add will be registered for {{ config.instanceName }}.
-            The remaining {{ pluralConditional(numberToAddToWaitlist, registrantTermLowerCase, numberToAddToWaitlist + ' ' + registrantsTermLowerCase) }} will be added to the waitlist.
+            This {{ registrationEntryTerms.registrationTermLowerCase }} only has capacity for {{ remainingCapacityPhrase }}.
+            The first {{ pluralConditional(config.spotsRemaining ?? 0, registrationEntryTerms.registrantTermLowerCase, config.spotsRemaining + ' ' + registrationEntryTerms.registrantsTermLowerCase) }} you add will be registered for {{ config.instanceName }}.
+            The remaining {{ pluralConditional(numberToAddToWaitlist, registrationEntryTerms.registrantTermLowerCase, numberToAddToWaitlist + ' ' + registrationEntryTerms.registrantsTermLowerCase) }} will be added to the waitlist.
         </NotificationBox>
 
         <div v-if="canContinue" class="actions text-right">
@@ -42,13 +42,13 @@
 </template>
 <script setup lang="ts">
     import { computed, nextTick, ref, watch } from "vue";
-    import { CurrentRegistrationEntryState, getDefaultRegistrantInfo, getForcedFamilyGuid, use } from "./utils.partial";
+    import { CurrentRegistrationEntryState, getDefaultRegistrantInfo, getForcedFamilyGuid, RegistrationEntryTerms, use } from "./utils.partial";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { useStore } from "@Obsidian/PageState";
     import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
-    import { toTitleCase, pluralConditional } from "@Obsidian/Utility/stringUtils";
+    import { pluralConditional } from "@Obsidian/Utility/stringUtils";
     import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
 
     const emit = defineEmits<{
@@ -59,6 +59,7 @@
 
     /** The shared state among all the components that make up this block */
     const registrationEntryState = use(CurrentRegistrationEntryState);
+    const registrationEntryTerms = use(RegistrationEntryTerms);
 
     // #region Values
 
@@ -108,7 +109,7 @@
             return "";
         }
 
-        return pluralConditional(spotsRemaining.value, `1 more ${registrantTermLowerCase.value}`, `${spotsRemaining.value} more ${registrantsTermLowerCase.value}`);
+        return pluralConditional(spotsRemaining.value, `1 more ${registrationEntryTerms.value.registrantTermLowerCase}`, `${spotsRemaining.value} more ${registrationEntryTerms.value.registrantsTermLowerCase}`);
     });
 
     /** Is this instance full and no one else can register? */
@@ -123,31 +124,6 @@
     /** True if the user is allowed to move on to the next screen. */
     const canContinue = computed<boolean>(() => {
         return !(isFull.value && numberToAddToWaitlist.value !== numberOfRegistrants.value);
-    });
-
-    /** The registrant term (singular) (lower case). */
-    const registrantTermLowerCase = computed<string>(() => {
-        return registrationEntryState.viewModel.registrantTerm?.toLowerCase() || "registrant";
-    });
-
-    /** The registrants term (plural) (lower case). */
-    const registrantsTermLowerCase = computed<string>(() => {
-        return registrationEntryState.viewModel.pluralRegistrantTerm?.toLowerCase() || "registrants";
-    });
-
-    /** The registration term (singular) (lower case). */
-    const registrationTermLowerCase = computed<string>(() => {
-        return registrationEntryState.viewModel.registrationTerm?.toLowerCase() || "registration";
-    });
-
-    /** The registrations term (plural) (lower case). */
-    const registrationsTermLowerCase = computed<string>(() => {
-        return registrationEntryState.viewModel.pluralRegistrationTerm?.toLowerCase() || "registrations";
-    });
-
-    /** The registration term (singular) (title case). */
-    const registrationTermTitleCase = computed<string>(() => {
-        return toTitleCase(registrationEntryState.viewModel.registrationTerm ?? null) || "Registration";
     });
 
     // #endregion

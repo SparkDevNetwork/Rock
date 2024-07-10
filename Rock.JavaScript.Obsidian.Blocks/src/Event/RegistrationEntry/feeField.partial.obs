@@ -5,13 +5,13 @@
         <NumberUpDown v-else-if="isNumberUpDown" :validationTitle="props.fee.name ?? undefined" :label="label" :min="0" :max="maxValue" v-model="quantityValue" :rules="rules" />
         <DropDownList v-else-if="isDropDown" :label="label" :items="dropDownListOptions" v-model="dropDownValue" :rules="rules" formControlClasses="input-width-md" />
         <NumberUpDownGroup v-else-if="isNumberUpDownGroup" :label="label" :options="numberUpDownGroupOptions" v-model="numberGroupValue" :rules="rules" />
-        <NotificationBox v-else alertType="danger">This {{ feeTermLowerCase }} configuration is not supported</NotificationBox>
+        <NotificationBox v-else alertType="danger">This {{ registrationEntryTerms.feeTermLowerCase }} configuration is not supported</NotificationBox>
     </template>
 </template>
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
-    import { CurrentRegistrationEntryState, use } from "./utils.partial";
+    import { RegistrationEntryTerms, use } from "./utils.partial";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -41,7 +41,7 @@
         (e: "update:modelValue", value: Record<string, number>): void;
     }>();
 
-    const registrationEntryState = use(CurrentRegistrationEntryState);
+    const registrationEntryTerms = use(RegistrationEntryTerms);
 
     // #region Values
 
@@ -231,11 +231,6 @@
         }
 
         return undefined;
-    });
-
-    /** The fee term (singular) (lower case). */
-    const feeTermLowerCase = computed<string>(() => {
-        return registrationEntryState.viewModel.feeTerm?.toLowerCase() || "fee";
     });
 
     // #endregion

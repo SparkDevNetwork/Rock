@@ -48,7 +48,6 @@ import { AttendanceRequestBag } from "@Obsidian/ViewModels/CheckIn/attendanceReq
 import { RecordedAttendanceBag } from "@Obsidian/ViewModels/CheckIn/recordedAttendanceBag";
 import { OpportunitySelectionBag } from "@Obsidian/ViewModels/CheckIn/opportunitySelectionBag";
 import { CheckInItemBag } from "@Obsidian/ViewModels/CheckIn/checkInItemBag";
-import { AbilityLevelDeterminationMode } from "@Obsidian/Enums/CheckIn/abilityLevelDeterminationMode";
 
 type Mutable<T> = { -readonly [P in keyof T]: T[P] };
 
@@ -948,7 +947,8 @@ export class CheckInSession {
             return [];
         }
 
-        return this.attendeeOpportunities.abilityLevels;
+        return this.attendeeOpportunities.abilityLevels
+            .filter(a => !a.isDisabled);
     }
 
     /**
@@ -998,12 +998,13 @@ export class CheckInSession {
             return [];
         }
 
+        const attendeeGroups = this.attendeeOpportunities.groups
+            .filter(g => !g.abilityLevelId || g.abilityLevelId === this.selectedAbilityLevel?.id);
+
         if (this.configuration.template?.kioskCheckInType === KioskCheckInMode.Individual) {
             // In individual mode we need to filter the groups by the selected
             // area.
-            return this.attendeeOpportunities
-                .groups
-                .filter(g => g.areaId === this.selectedArea?.id);
+            return attendeeGroups.filter(g => g.areaId === this.selectedArea?.id);
         }
 
         // In family mode we need to filter the areas by the selected schedule
@@ -1016,8 +1017,7 @@ export class CheckInSession {
             .map(l => l.id as string) ?? [];
 
         // Now find all groups for those locations and the selected area.
-        return this.attendeeOpportunities
-            .groups
+        return attendeeGroups
             .filter(g => isAnyIdInList(validLocationIds, g.locationIds))
             .filter(g => g.areaId === this.selectedArea?.id);
     }
@@ -1394,10 +1394,6 @@ export class CheckInSession {
             }
         }
 
-        if (this.configuration.template?.abilityLevelDetermination === AbilityLevelDeterminationMode.DoNotAsk) {
-            return newSession.withNextScreenFromAbilityLevelSelect();
-        }
-
         // If we have more than 1 ability level to pick from then show the
         // ability level screen.
         if (abilityLevels.length > 1) {
@@ -1582,10 +1578,6 @@ export class CheckInSession {
                 return familySession.withNextScreenFromAbilityLevelSelect();
             }
 
-            if (this.configuration.template.abilityLevelDetermination === AbilityLevelDeterminationMode.DoNotAsk) {
-                return familySession.withNextScreenFromAbilityLevelSelect();
-            }
-
             return familySession.withScreen(Screen.AbilityLevelSelect);
         }
 
@@ -1633,10 +1625,6 @@ export class CheckInSession {
                 ?.filter(g => !!g.abilityLevelId) ?? [];
 
             if (groupsWithAbilityLevels.length === 0) {
-                return familySession.withNextScreenFromAbilityLevelSelect();
-            }
-
-            if (this.configuration.template.abilityLevelDetermination === AbilityLevelDeterminationMode.DoNotAsk) {
                 return familySession.withNextScreenFromAbilityLevelSelect();
             }
 

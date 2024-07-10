@@ -4419,7 +4419,10 @@ namespace Rock.Blocks.Event
                 TitleHtml = "Congratulations",
                 MessageHtml = "You have successfully completed this registration.",
                 TransactionCode = transactionCode,
-                GatewayPersonIdentifier = gatewayPersonIdentifier
+                GatewayPersonIdentifier = gatewayPersonIdentifier,
+                SpotsRemaining = 0,
+                RegisteredCount = 0,
+                WaitListedCount = 0,
             };
 
             try
@@ -4462,6 +4465,19 @@ namespace Rock.Blocks.Event
                     {
                         viewModel.MessageHtml = "You have successfully completed this " + template.RegistrationTerm.ToLower();
                     }
+                    
+                    if ( registration.RegistrationInstance.MaxAttendees.HasValue )
+                    {
+                        var context = GetContext( rockContext, out var errorMessage );
+
+                        if ( context != null )
+                        {
+                            viewModel.SpotsRemaining = context.SpotsRemaining;
+                        }
+                    }
+
+                    viewModel.RegisteredCount = registration.Registrants.Count( r => !r.OnWaitList );
+                    viewModel.WaitListedCount = registration.Registrants.Count( r => r.OnWaitList );
                 }
             }
             catch ( Exception ex )
