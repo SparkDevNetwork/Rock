@@ -547,6 +547,28 @@ namespace Rock.CheckIn.v2
             };
         }
 
+        /// <summary>
+        /// Deletes the pending attendance records for the specified session.
+        /// </summary>
+        /// <param name="sessionGuid">The session's unique identifier.</param>
+        public void DeletePendingAttendance( Guid sessionGuid )
+        {
+            var attendanceService = new AttendanceService( RockContext );
+            var attendanceItems = attendanceService.Queryable()
+                .Where( a => a.AttendanceCheckInSession.Guid == sessionGuid
+                    && a.CheckInStatus == Enums.Event.CheckInStatus.Pending )
+                .ToList();
+
+            if ( !attendanceItems.Any() )
+            {
+                return;
+            }
+
+            attendanceService.DeleteRange( attendanceItems );
+
+            RockContext.SaveChanges();
+        }
+
         #endregion
 
         #region Internal Methods

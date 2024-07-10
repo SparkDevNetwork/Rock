@@ -208,7 +208,16 @@
         currentScreenActions.value = [];
         currentScreen.value = screen;
 
+        // Delete any pending attendance records created, this should be moved
+        // to the session object.
         if (screen === Screen.Welcome) {
+            try {
+                http.doApiCall("DELETE", `/api/v2/checkin/pendingAttendance/${currentSession.value.sessionGuid}`);
+            }
+            catch {
+                // Intentionally ignoring errors.
+            }
+
             currentSession.value = new CheckInSession(configuration.value, http);
             previousScreens.value = [];
         }
@@ -223,9 +232,9 @@
     function onNextScreen(session: CheckInSession): void {
         previousScreens.value = [...previousScreens.value, currentSession.value];
 
-        // Prevent moving back to a previous attendees options since we have
-        // already created the pending attendance record.
-        if (currentAttendeeId && currentAttendeeId !== session.getCurrentAttendee()?.person?.id) {
+        // Prevent moving back to a previous attendee if we have any attendance
+        // records created.
+        if (session.attendances.length > 0 && currentAttendeeId !== session.getCurrentAttendee()?.person?.id) {
             previousScreens.value = [];
         }
 
