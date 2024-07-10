@@ -1,7 +1,7 @@
 ﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div v-if="isRegistrarPanelShown" class="well">
-        <h4>This {{ registrationTermTitleCase }} Was Completed By</h4>
+        <h4>This {{ registrationEntryTerms.registrationTermTitleCase }} Was Completed By</h4>
         <template v-if="useLoggedInPersonForRegistrar">
             <div class="row">
                 <div class="col-md-6 col-sm-6">
@@ -34,7 +34,7 @@
                 <div class="col-md-6 col-sm-6">
                     <RadioButtonList
                                      v-if="familyOptions.length"
-                                     :label="`${registrar.nickName || registrantTermTitleCase} is in the same ${viewModel.familyTerm || 'immediate family'} as`"
+                                     :label="`${registrar.nickName || registrationEntryTerms.registrantTermTitleCase} is in the same ${viewModel.familyTerm || 'immediate family'} as`"
                                      rules='required:{"allowEmptyString": true}'
                                      :modelValue="registrar.familyGuid ?? undefined"
                                      @update:modelValue="onUpdateFamilyGuid"
@@ -47,7 +47,7 @@
 </template>
 <script setup lang="ts">
     import { computed, ref, watch } from "vue";
-    import { CurrentRegistrationEntryState, getRegistrantBasicInfo, use } from "./utils.partial";
+    import { CurrentRegistrationEntryState, getRegistrantBasicInfo, RegistrationEntryTerms, use } from "./utils.partial";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
@@ -57,7 +57,6 @@
     import { RegistrarOption } from "@Obsidian/Enums/Event/registrarOption";
     import { useStore } from "@Obsidian/PageState";
     import { Guid } from "@Obsidian/Types";
-    import { toTitleCase } from "@Obsidian/Utility/stringUtils";
     import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrantBag";
     import { RegistrarBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrarBag";
     import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
@@ -66,6 +65,7 @@
 
     const store = useStore();
     const registrationEntryState = use(CurrentRegistrationEntryState);
+    const registrationEntryTerms = use(RegistrationEntryTerms);
 
     // #region Values
 
@@ -75,16 +75,6 @@
     // #endregion
 
     // #region Computed Values
-
-    /** The registrant term (singular) (title case). */
-    const registrantTermTitleCase = computed<string>(() => {
-        return toTitleCase(registrationEntryState.viewModel.registrantTerm ?? null) || "Registrant";
-    });
-
-    /** The registration term (singular) (title case). */
-    const registrationTermTitleCase = computed<string>(() => {
-        return toTitleCase(registrationEntryState.viewModel.registrationTerm ?? null) || "Registration";
-    });
 
     /** Is the registrar option set to UseLoggedInPerson */
     const useLoggedInPersonForRegistrar = computed<boolean>(() => {

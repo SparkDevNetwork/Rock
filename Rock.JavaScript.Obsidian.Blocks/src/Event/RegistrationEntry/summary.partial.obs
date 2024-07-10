@@ -43,6 +43,7 @@
         CurrentRegistrationEntryState,
         GetPersistSessionArgs,
         PersistSession,
+        RegistrationEntryTerms,
         getRegistrantBasicInfo, use
     } from "./utils.partial";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -57,6 +58,7 @@
     const invokeBlockAction = useInvokeBlockAction();
     const registrationEntryState = use(CurrentRegistrationEntryState);
     const persistSession = use(PersistSession);
+    const registrationEntryTerms = use(RegistrationEntryTerms);
 
     const emit = defineEmits<{
         (e: "next"): void,
@@ -141,17 +143,7 @@
 
     /** The registrant term - plural if there are more than 1 */
     const registrantOrRegistrantsTermLowerCase = computed<string>(() => {
-        return registrantInfos.value.length === 1 ? registrantTermLowerCase.value : registrantsTermLowerCase.value;
-    });
-
-    /** The registrant term (singular) (lower case). */
-    const registrantTermLowerCase = computed<string>(() => {
-        return registrationEntryState.viewModel.registrantTerm?.toLowerCase() || "registrant";
-    });
-
-    /** The registrants term (plural) (lower case). */
-    const registrantsTermLowerCase = computed<string>(() => {
-        return registrationEntryState.viewModel.pluralRegistrantTerm?.toLowerCase() || "registrants";
+        return registrantInfos.value.length === 1 ? registrationEntryTerms.value.registrantTermLowerCase : registrationEntryTerms.value.registrantsTermLowerCase;
     });
 
     /** The name of this registration instance */

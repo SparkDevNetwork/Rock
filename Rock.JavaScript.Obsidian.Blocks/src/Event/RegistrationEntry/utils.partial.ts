@@ -27,7 +27,7 @@ import {
     FormFieldGuid,
     FormFieldValue
 } from "./types.partial";
-import { InjectionKey, Ref, inject, nextTick } from "vue";
+import { ComputedRef, InjectionKey, Ref, inject, nextTick } from "vue";
 import { smoothScrollToTop } from "@Obsidian/Utility/page";
 import { PublicComparisonValueBag } from "@Obsidian/ViewModels/Utility/publicComparisonValueBag";
 import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
@@ -150,6 +150,23 @@ export const ConfigurePaymentPlan: InjectionKey<{
     wipPaymentPlanConfiguration: Ref<PaymentPlanConfiguration | null | undefined>;
     finalPaymentPlanConfiguration: Ref<PaymentPlanConfiguration | null | undefined>;
 }> = Symbol("registration-configure-payment-plan");
+
+/**
+ * An injection key to provide the registration entry terms.
+ */
+export const RegistrationEntryTerms: InjectionKey<ComputedRef<{
+    registrantTermLowerCase: string;
+    registrantsTermLowerCase: string;
+    registrationTermLowerCase: string;
+    registrationsTermLowerCase: string;
+    registrationTermTitleCase: string;
+    discountCodeTermTitleCase: string;
+    discountCodeTermLowerCase: string;
+    feeTermLowerCase: string;
+    feesTermTitleCase: string;
+    registrantTermTitleCase: string;
+    signatureDocumentTermTitleCase: string;
+}>> = Symbol("registration-entry-terms");
 
 /** An injection key to provide the original field values for each registrant. */
 export const OriginalFormFieldValues: InjectionKey<Ref<Record<PersonGuid, Record<FormFieldGuid, FormFieldValue>>>> = Symbol("original-field-values");
