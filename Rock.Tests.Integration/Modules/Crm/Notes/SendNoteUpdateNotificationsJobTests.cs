@@ -76,7 +76,7 @@ namespace Rock.Tests.Integration.Modules.Crm.Notes
             ExecuteSendNoteNotificationsJob( settings, out var sendResults, out var events );
 
             // Verify that the error message is as expected.
-            var message = events.FirstOrDefault( m => m.Level <= RockLogLevel.Warning );
+            var message = events.FirstOrDefault( m => m.LogLevel <= Microsoft.Extensions.Logging.LogLevel.Warning );
 
             Assert.IsFalse( sendResults.Any(), "Processing messages found but not expected." );
         }
