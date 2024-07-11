@@ -24,6 +24,7 @@ import { SavedCheckInConfigurationBag } from "@Obsidian/ViewModels/CheckIn/saved
 import { AchievementBag } from "@Obsidian/ViewModels/CheckIn/achievementBag";
 import { AttendanceBag } from "@Obsidian/ViewModels/CheckIn/attendanceBag";
 import { PersonBag } from "@Obsidian/ViewModels/CheckIn/personBag";
+import { GetCurrentAttendanceResponseBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/getCurrentAttendanceResponseBag";
 
 // #region Temporary Types
 
@@ -162,6 +163,10 @@ export enum AdminScreen {
      * The screen that will be displayed when an administrator wants to login.
      */
     Login = 100,
+
+    Actions,
+
+    Reprint,
 }
 
 /**
@@ -225,3 +230,19 @@ export interface IRockCheckInNative {
     StartCamera?(isPassive: boolean): void;
 }
 /* eslint-enable @typescript-eslint/naming-convention */
+
+export type AdminScreenData = {
+    pinCode: string;
+
+    counts?: GetCurrentAttendanceResponseBag;
+};
+
+export type AttendanceCountGroup = {
+    id: string;
+
+    name: string;
+
+    count: number;
+
+    children: AttendanceCountGroup[];
+};

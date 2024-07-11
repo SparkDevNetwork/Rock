@@ -1,0 +1,174 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="admin-action-screen">
+        <MainPanel title="Locations"
+                   subtitle="Tap locations to open or close">
+            <div class="button-list">
+                <RockButton v-for="location in locations"
+                            :key="location.id"
+                            class="location-button"
+                            btnType="primary"
+                            autoDisable
+                            @click="onLocationClick(location)">
+                    <span v-if="location.isOpen" class="label label-success">Open</span>
+                    <span v-else class="label label-danger">Closed</span>
+                    <span class="title">{{ location.name }}</span>
+                    <span class="count">{{ location.currentCount }}</span>
+                </RockButton>
+            </div>
+        </MainPanel>
+
+        <MainPanel title="Administrator Actions"
+                   subtitle="Select an action from the list below"
+                   class="flex-grow-1">
+            <RockButton class="repring-labels-button"
+                        btnType="primary"
+                        @click="onReprintLabelsClick">
+                Reprint Labels
+            </RockButton>
+
+            <RockButton class="repring-labels-button"
+                        btnType="primary"
+                        disabled
+                        @click="onOverrideClick">
+                Override
+            </RockButton>
+
+            <RockButton class="repring-labels-button"
+                        btnType="primary"
+                        disabled
+                        @click="onScheduleLocationsClick">
+                Schedule Locations
+            </RockButton>
+        </MainPanel>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import MainPanel from "./mainPanel.partial.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { computed, PropType, watch } from "vue";
+    import { GetCurrentAttendanceResponseBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/getCurrentAttendanceResponseBag";
+    import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { AdminScreen, AdminScreenData, KioskButton } from "./types.partial";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+
+    type LocationData = {
+        id: string;
+        name: string;
+        isOpen: boolean;
+        currentCount: number;
+    };
+
+    const props = defineProps({
+        configuration: {
+            type: Object as PropType<KioskConfigurationBag>,
+            required: true
+        },
+
+        adminData: {
+            type: Object as PropType<AdminScreenData>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (event: "updateActions", actions: KioskButton[]): void;
+        (event: "adminScreen", screen: AdminScreen): void;
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    // #endregion
+
+    // #region Computed Values
+
+    const locations = computed((): LocationData[] => {
+        if (!props.adminData.counts?.locations) {
+            return [];
+        }
+
+        const locs: LocationData[] = [];
+
+        for (const location of props.adminData.counts.locations) {
+            const isLocationValid = props.adminData.counts
+                .groups
+                ?.some(g => g.locationIds?.includes(location.id ?? ""));
+
+            if (!location.id || !location.name || !isLocationValid) {
+                continue;
+            }
+
+            locs.push({
+                id: location.id,
+                name: location.name,
+                isOpen: location.isOpen,
+                currentCount: props.adminData.counts.attendance
+                    ?.filter(a => a.locationId === location.id)
+                    .length ?? 0
+            });
+        }
+
+        locs.sort((a, b) => a.name.localeCompare(b.name));
+
+        return locs;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Update the actions supported by this screen.
+     */
+    function updateActions(): void {
+        const actions: KioskButton[] = [];
+
+        emit("updateActions", actions);
+    }
+
+    async function onLocationClick(location: LocationData): Promise<void> {
+        const data = {
+            pinCode: props.adminData.pinCode,
+            locationId: location.id,
+            isOpen: !location.isOpen
+        };
+
+        const response = await invokeBlockAction("SetLocationStatus", data);
+
+        if (!response.isSuccess) {
+            return await alert(response.errorMessage || "Unable to change room status.");
+        }
+
+        const newCounts = JSON.parse(JSON.stringify(props.adminData.counts)) as GetCurrentAttendanceResponseBag;
+        const newLocation = newCounts.locations?.find(l => l.id === location.id);
+
+        if (newLocation) {
+            newLocation.isOpen = data.isOpen;
+            props.adminData.counts = newCounts;
+        }
+    }
+
+    function onReprintLabelsClick(): void {
+        emit("adminScreen", AdminScreen.Reprint);
+    }
+
+    function onOverrideClick(): void {
+        // TODO: Do this.
+    }
+
+    function onScheduleLocationsClick(): void {
+        // TODO: Do this.
+    }
+
+    // #endregion
+
+    updateActions();
+
+    watch(() => props.adminData.counts, () => {
+        console.log("counts changed", props.adminData.counts);
+    });
+</script>

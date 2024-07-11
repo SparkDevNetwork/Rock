@@ -402,18 +402,17 @@ namespace Rock.CheckIn.v2
         }
 
         /// <summary>
-        /// Gets the current attendance for a set of locations. This includes
-        /// pending attendance records.
+        /// Gets the current attendance query for the date specified. This
+        /// includes pending attendance records.
         /// </summary>
         /// <param name="startDateTime">Attendance records must start on this date.</param>
-        /// <param name="locationIds">The location identifiers to load attendance data for.</param>
         /// <param name="rockContext">The database context to execute the query on.</param>
-        /// <returns>A collection of <see cref="RecentAttendance"/> records.</returns>
-        public static List<RecentAttendance> GetCurrentAttendance( DateTime startDateTime, IReadOnlyList<int> locationIds, RockContext rockContext )
+        /// <returns>A queryable of <see cref="Attendance"/> records.</returns>
+        public static IQueryable<Attendance> GetCurrentAttendanceQuery( DateTime startDateTime, RockContext rockContext )
         {
             var attendanceService = new AttendanceService( rockContext );
 
-            var personAttendanceQuery = attendanceService.Queryable()
+            return attendanceService.Queryable()
                 .Where( a =>
                     a.Occurrence.OccurrenceDate == startDateTime.Date
                     && a.Occurrence.LocationId.HasValue
@@ -423,6 +422,19 @@ namespace Rock.CheckIn.v2
                     && a.DidAttend.HasValue
                     && a.DidAttend.Value == true
                     && !a.EndDateTime.HasValue );
+        }
+
+        /// <summary>
+        /// Gets the current attendance for a set of locations. This includes
+        /// pending attendance records.
+        /// </summary>
+        /// <param name="startDateTime">Attendance records must start on this date.</param>
+        /// <param name="locationIds">The location identifiers to load attendance data for.</param>
+        /// <param name="rockContext">The database context to execute the query on.</param>
+        /// <returns>A collection of <see cref="RecentAttendance"/> records.</returns>
+        public static List<RecentAttendance> GetCurrentAttendance( DateTime startDateTime, IReadOnlyList<int> locationIds, RockContext rockContext )
+        {
+            var personAttendanceQuery = GetCurrentAttendanceQuery( startDateTime, rockContext );
 
             personAttendanceQuery = WhereContains( personAttendanceQuery, locationIds, a => a.Occurrence.Location.Id );
 
