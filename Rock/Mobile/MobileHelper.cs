@@ -433,7 +433,10 @@ namespace Rock.Mobile
 
             if ( site.FavIconBinaryFileId.HasValue )
             {
-                package.AppearanceSettings.LogoUrl = FileUrlHelper.GetImageUrl( site.FavIconBinaryFileId.Value );
+                package.AppearanceSettings.LogoUrl = FileUrlHelper.GetImageUrl( site.FavIconBinaryFileId.Value, new GetImageUrlOptions
+                {
+                    PublicAppRoot = applicationRoot
+                } );
             }
 
             //
