@@ -339,7 +339,7 @@ namespace Rock.Blocks.CheckIn.Configuration
                 var director = new CheckInDirector( RockContext );
 
                 var sw = System.Diagnostics.Stopwatch.StartNew();
-                var data = director.LabelProvider.RenderLabel( checkInLabel,
+                var data = director.LabelProvider.RenderLabelUnconditionally( checkInLabel,
                     attendanceLabel,
                     new List<AttendanceLabel> { attendanceLabel },
                     attendance.SearchResultGroup,

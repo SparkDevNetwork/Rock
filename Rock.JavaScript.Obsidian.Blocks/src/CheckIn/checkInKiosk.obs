@@ -115,6 +115,7 @@
     import ActionSelectScreen from "./CheckInKiosk/actionSelectScreen.partial.obs";
     import AdminActionsScreen from "./CheckInKiosk/adminActionsScreen.partial.obs";
     import AdminLoginScreen from "./CheckInKiosk/adminLoginScreen.partial.obs";
+    import AdminReprintScreen from "./CheckInKiosk/adminReprintScreen.partial.obs";
     import AreaSelectScreen from "./CheckInKiosk/areaSelectScreen.partial.obs";
     import CheckoutSelectScreen from "./CheckInKiosk/checkoutSelectScreen.partial.obs";
     import CheckoutSuccessScreen from "./CheckInKiosk/checkoutSuccessScreen.partial.obs";
@@ -166,6 +167,10 @@
         {
             screen: AdminScreen.Actions,
             component: AdminActionsScreen
+        },
+        {
+            screen: AdminScreen.Reprint,
+            component: AdminReprintScreen
         }
     ]);
 

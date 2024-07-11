@@ -23,7 +23,6 @@
                    class="flex-grow-1">
             <RockButton class="repring-labels-button"
                         btnType="primary"
-                        disabled
                         @click="onReprintLabelsClick">
                 Reprint Labels
             </RockButton>
@@ -49,9 +48,10 @@
     import MainPanel from "./mainPanel.partial.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { computed, PropType, watch } from "vue";
+    import { GetCurrentAttendanceResponseBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/getCurrentAttendanceResponseBag";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
     import { alert } from "@Obsidian/Utility/dialogs";
-    import { AdminScreenData, GetCurrentAttendanceResponseBag, KioskButton } from "./types.partial";
+    import { AdminScreen, AdminScreenData, KioskButton } from "./types.partial";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
 
     type LocationData = {
@@ -75,6 +75,7 @@
 
     const emit = defineEmits<{
         (event: "updateActions", actions: KioskButton[]): void;
+        (event: "adminScreen", screen: AdminScreen): void;
     }>();
 
     const invokeBlockAction = useInvokeBlockAction();
@@ -152,7 +153,7 @@
     }
 
     function onReprintLabelsClick(): void {
-        // TODO: Do this.
+        emit("adminScreen", AdminScreen.Reprint);
     }
 
     function onOverrideClick(): void {

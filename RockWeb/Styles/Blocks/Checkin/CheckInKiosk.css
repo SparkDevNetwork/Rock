@@ -642,3 +642,34 @@
 .admin-action-screen .location-button .count {
     margin-left: auto;
 }
+
+
+/**
+ * Admin Reprint Screen
+*/
+
+.admin-reprint-screen .attendance-button .btn {
+    justify-content: initial;
+    border: 0;
+}
+
+.admin-reprint-screen .attendance-button .title {
+    display: flex;
+    flex-grow: 1;
+    align-items: center;
+}
+
+.admin-reprint-screen .attendance-button .details {
+    display: flex;
+    gap: calc(var(--item-spacing) * 0.5);
+    margin-left: auto;
+    font-size: var(--font-size-h2);
+}
+
+.admin-reprint-screen input.search-term {
+    height: 64px;
+    font-size: 36px;
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+}

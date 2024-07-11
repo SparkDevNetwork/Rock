@@ -24,9 +24,7 @@ import { SavedCheckInConfigurationBag } from "@Obsidian/ViewModels/CheckIn/saved
 import { AchievementBag } from "@Obsidian/ViewModels/CheckIn/achievementBag";
 import { AttendanceBag } from "@Obsidian/ViewModels/CheckIn/attendanceBag";
 import { PersonBag } from "@Obsidian/ViewModels/CheckIn/personBag";
-import { CheckInStatus } from "@Obsidian/Enums/Event/checkInStatus";
-import { GroupOpportunityBag } from "@Obsidian/ViewModels/CheckIn/groupOpportunityBag";
-import { LocationStatusItemBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/locationStatusItemBag";
+import { GetCurrentAttendanceResponseBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/getCurrentAttendanceResponseBag";
 
 // #region Temporary Types
 
@@ -167,6 +165,8 @@ export enum AdminScreen {
     Login = 100,
 
     Actions,
+
+    Reprint,
 }
 
 /**
@@ -231,32 +231,10 @@ export interface IRockCheckInNative {
 }
 /* eslint-enable @typescript-eslint/naming-convention */
 
-export type ActiveAttendanceBag = {
-    id?: string | null;
-
-    areaId?: string | null;
-
-    groupId?: string | null;
-
-    locationId?: string | null;
-
-    status: CheckInStatus;
-};
-
 export type AdminScreenData = {
     pinCode: string;
 
     counts?: GetCurrentAttendanceResponseBag;
-};
-
-export type GetCurrentAttendanceResponseBag = {
-    attendance?: ActiveAttendanceBag[] | null;
-
-    areas?: CheckInItemBag[] | null;
-
-    groups?: GroupOpportunityBag[] | null;
-
-    locations?: LocationStatusItemBag[] | null;
 };
 
 export type AttendanceCountGroup = {

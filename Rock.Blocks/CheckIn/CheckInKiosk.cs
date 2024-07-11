@@ -20,9 +20,12 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 using Rock.Attribute;
 using Rock.CheckIn.v2;
+using Rock.CheckIn.v2.Labels;
 using Rock.Model;
 using Rock.Security;
 using Rock.Utility;
@@ -128,10 +131,10 @@ namespace Rock.Blocks.CheckIn
                 Kiosk = CheckInKioskSetup.GetKioskBag( kiosk ),
                 Areas = areas.Where( a => savedConfiguration.AreaIds.Contains( a.IdKey ) )
                     .Select( a => new CheckInItemBag
-                {
-                    Id = a.IdKey,
-                    Name = a.Name
-                } ).ToList(),
+                    {
+                        Id = a.IdKey,
+                        Name = a.Name
+                    } ).ToList(),
                 Template = template
             };
         }
@@ -186,6 +189,28 @@ namespace Rock.Blocks.CheckIn
                 errorMessage = string.Empty;
                 return true;
             }
+        }
+
+        /// <summary>
+        /// Gets the printer device that the kiosk is configured to use.
+        /// </summary>
+        /// <param name="kioskId">The encrypted identifier of the kiosk.</param>
+        /// <returns>An instance of <see cref="DeviceCache"/> that represents the printer device or <c>null</c></returns>
+        private DeviceCache GetKioskPrinter( string kioskId )
+        {
+            var kiosk = DeviceCache.GetByIdKey( kioskId, RockContext );
+
+            if ( kiosk == null )
+            {
+                return null;
+            }
+
+            if ( !kiosk.PrinterDeviceId.HasValue )
+            {
+                return null;
+            }
+
+            return DeviceCache.Get( kiosk.PrinterDeviceId.Value, RockContext );
         }
 
         #endregion
@@ -261,7 +286,7 @@ namespace Rock.Blocks.CheckIn
             }
 
             // Filter items by kiosk campus.
-            promotionItems=  promotionItems
+            promotionItems = promotionItems
                 .Where( item => item.GetAttributeValue( "Campuses" ).IsNullOrWhiteSpace()
                     || item.GetAttributeValue( "Campuses" ).SplitDelimitedValues().AsGuidList().Contains( campusGuid ) );
 
@@ -323,12 +348,12 @@ namespace Rock.Blocks.CheckIn
             var groups = new GroupService( RockContext )
                 .Queryable()
                 .Where( g => areaIdNumbers.Contains( g.GroupTypeId ) )
-                .GroupJoin( groupLocationQry, g => g.Id, gl => gl.GroupId, (g, gl) => new
+                .GroupJoin( groupLocationQry, g => g.Id, gl => gl.GroupId, ( g, gl ) => new
                 {
                     Group = g,
                     GroupLocation = gl
-                })
-                .SelectMany( a => a.GroupLocation.DefaultIfEmpty(), (g, gl) => new
+                } )
+                .SelectMany( a => a.GroupLocation.DefaultIfEmpty(), ( g, gl ) => new
                 {
                     g.Group.Id,
                     g.Group.Name,
@@ -440,6 +465,204 @@ namespace Rock.Blocks.CheckIn
             Rock.CheckIn.KioskDevice.Clear();
 
             return ActionOk();
+        }
+
+        /// <summary>
+        /// Gets the attendance list for use when displaying the list of attendance
+        /// records that can be reprinted.
+        /// </summary>
+        /// <param name="pinCode">The PIN code to authorize the request.</param>
+        /// <param name="kioskId">The encrypted identifier of the kiosk.</param>
+        /// <param name="searchValue">An optional search value to limit the results.</param>
+        /// <returns>A list of attendance records.</returns>
+        [BlockAction]
+        public BlockActionResult GetReprintAttendanceList( string pinCode, string kioskId, string searchValue )
+        {
+            if ( !TryAuthenticatePin( pinCode, out var errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            var kiosk = DeviceCache.GetByIdKey( kioskId, RockContext );
+
+            if ( kiosk == null )
+            {
+                return ActionBadRequest( "Kiosk was not found." );
+            }
+
+            var campusId = kiosk.GetCampusId();
+            var now = RockDateTime.Now;
+
+            if ( campusId.HasValue )
+            {
+                var campus = CampusCache.Get( campusId.Value );
+
+                if ( campus != null )
+                {
+                    now = campus.CurrentDateTime;
+                }
+            }
+
+            var attendanceQry = CheckInDirector.GetCurrentAttendanceQuery( now, RockContext );
+
+            if ( campusId.HasValue )
+            {
+                attendanceQry = attendanceQry.Where( a => a.CampusId.HasValue && a.CampusId.Value == campusId.Value );
+            }
+
+            var items = attendanceQry
+                .Select( a => new
+                {
+                    a.Id,
+                    a.StartDateTime,
+                    a.PersonAlias.Person.NickName,
+                    a.PersonAlias.Person.LastName,
+                    a.AttendanceCode.Code,
+                    GroupId = a.Occurrence.GroupId.Value,
+                    LocationId = a.Occurrence.LocationId.Value,
+                    ScheduleId = a.Occurrence.ScheduleId.Value
+                } )
+                .ToList();
+
+            var groupIds = items.Select( a => a.GroupId ).Distinct().ToList();
+            var locationIds = items.Select( a => a.LocationId ).Distinct().ToList();
+            var scheduleIds = items.Select( a => a.ScheduleId ).Distinct().ToList();
+
+            // Get all the groups, locations and schedules from cache in bulk.
+            // This improves performance because it is very likely that otherwise
+            // we would be requesting the same cached object repeatedly.
+            var groups = GroupCache.GetMany( groupIds, RockContext )
+                .Select( g => new
+                {
+                    g.Id,
+                    Bag = new CheckInItemBag
+                    {
+                        Id = g.IdKey,
+                        Name = g.Name
+                    }
+                } )
+                .ToList();
+            var locations = NamedLocationCache.GetMany( locationIds, RockContext )
+                .Select( l => new
+                {
+                    l.Id,
+                    Bag = new CheckInItemBag
+                    {
+                        Id = l.IdKey,
+                        Name = l.Name
+                    }
+                } )
+                .ToList();
+            var schedules = NamedScheduleCache.GetMany( scheduleIds, RockContext )
+                .Select( s => new
+                {
+                    s.Id,
+                    Bag = new CheckInItemBag
+                    {
+                        Id = s.IdKey,
+                        Name = s.Name
+                    }
+                } )
+                .ToList();
+
+            var data = items
+                .Select( a =>
+                {
+                    var group = groups.FirstOrDefault( g => g.Id == a.GroupId );
+                    var location = locations.FirstOrDefault( l => l.Id == a.LocationId );
+                    var schedule = schedules.FirstOrDefault( s => s.Id == a.ScheduleId );
+
+                    if ( group == null || location == null || schedule == null )
+                    {
+                        return null;
+                    }
+
+                    return new ReprintAttendanceBag
+                    {
+                        Id = IdHasher.Instance.GetHash( a.Id ),
+                        StartDateTime = a.StartDateTime.ToRockDateTimeOffset(),
+                        NickName = a.NickName,
+                        LastName = a.LastName,
+                        SecurityCode = a.Code,
+                        Group = group.Bag,
+                        Location = location.Bag,
+                        Schedule = schedule.Bag
+                    };
+                } )
+                .Where( a => a != null )
+                .ToList();
+
+            return ActionOk( data );
+        }
+
+        /// <summary>
+        /// Request to print labels for a single attendance record that already
+        /// exists in the database. This is used to re-print lost labels.
+        /// </summary>
+        /// <param name="pinCode">The PIN code to authorize the request.</param>
+        /// <param name="kioskId">The encrypted identifier of the kiosk.</param>
+        /// <param name="attendanceId">The encrypted identifier of the attendance to print labels for.</param>
+        /// <returns>A 200-OK response that indicates if any errors occurred during printing.</returns>
+        [BlockAction]
+        public async Task<BlockActionResult> PrintLabels( string pinCode, string kioskId, string attendanceId )
+        {
+            if ( !TryAuthenticatePin( pinCode, out var errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            var printer = GetKioskPrinter( kioskId );
+
+            if ( printer == null )
+            {
+                return ActionBadRequest( "This kiosk does not have a printer defined." );
+            }
+
+            var attendanceIdNumber = IdHasher.Instance.GetId( attendanceId );
+
+            if ( !attendanceIdNumber.HasValue )
+            {
+                return ActionBadRequest( "Invalid attendance." );
+            }
+
+            var director = new CheckInDirector( RockContext );
+            var labels = director.LabelProvider.RenderLabels( new List<int> { attendanceIdNumber.Value }, null, false );
+
+            var errorMessages = labels.Where( l => l.Error.IsNotNullOrWhiteSpace() )
+                .Select( l => l.Error )
+                .ToList();
+
+            if ( !labels.Any() )
+            {
+                errorMessages.Add( "No labels to print." );
+            }
+
+            labels = labels.Where( l => l.Error.IsNullOrWhiteSpace() ).ToList();
+            foreach ( var label in labels )
+            {
+                label.PrintTo = printer;
+                label.PrintFrom = PrintFrom.Server;
+            }
+
+            // Print the labels with a 5 second timeout.
+            var cts = new CancellationTokenSource( 5_000 );
+            var printProvider = new LabelPrintProvider();
+
+            try
+            {
+                var printerErrors = await printProvider.PrintLabelsAsync( labels, cts.Token );
+
+                errorMessages.AddRange( printerErrors );
+            }
+            catch ( TaskCanceledException ) when ( cts.IsCancellationRequested )
+            {
+                errorMessages.Add( "Timeout waiting for labels to print." );
+            }
+
+            return ActionOk( new
+            {
+                ErrorMessages = errorMessages
+            } );
         }
 
         #endregion

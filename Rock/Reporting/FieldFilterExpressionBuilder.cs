@@ -94,6 +94,42 @@ namespace Rock.Reporting
 
         /// <summary>
         /// <para>
+        /// Creates a new expression that represents the rules in this group
+        /// and returns a function that represents the expression. This function
+        /// can be called multiple times against different object instances and
+        /// will return a value that determines if the object matches the rules.
+        /// </para>
+        /// <para>
+        /// If the object passed to the match function cannot be cast to
+        /// <paramref name="entityType"/> then <c>false</c> will be returned by
+        /// the function.
+        /// </para>
+        /// <para>
+        /// If any attribute value rules exist, it is expected that
+        /// LoadAttributes() would have already been called on each instance
+        /// passed to the function.
+        /// </para>
+        /// </summary>
+        /// <param name="filter">The object that contains the filter data.</param>
+        /// <param name="entityType">The type of the instance that is expected to be passed to the function.</param>
+        /// <returns>A function that takes an instance of type <paramref name="entityType"/> and returns <c>true</c> if it matches the rules.</returns>
+        public Func<object, bool> GetIsMatchFunction( FieldFilterGroupBag filter, Type entityType )
+        {
+            var parameterExpression = Expression.Parameter( typeof( object ), "p" );
+            var castedParameterExpression = Expression.TypeAs( parameterExpression, entityType );
+            var expression = GetGroupExpression( castedParameterExpression, filter, null );
+
+            // return (p as entitType) == null ? false : expression(p)
+            var nullCheckExpression = Expression.Equal( castedParameterExpression, Expression.Constant( null ) );
+            var ifNullExpression = Expression.Condition( nullCheckExpression, Expression.Constant( false ), expression );
+
+            var lambda = Expression.Lambda<Func<object, bool>>( ifNullExpression, parameterExpression );
+
+            return lambda.Compile();
+        }
+
+        /// <summary>
+        /// <para>
         /// Gets a LINQ expression that can be used to evaluate objects
         /// to see if they match the defined rules.
         /// </para>

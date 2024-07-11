@@ -36,9 +36,10 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { computed, PropType, ref, watch } from "vue";
+    import { GetCurrentAttendanceResponseBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/getCurrentAttendanceResponseBag";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
     import { alert } from "@Obsidian/Utility/dialogs";
-    import { AdminScreen, AdminScreenData, AttendanceCountGroup, GetCurrentAttendanceResponseBag, KioskButton } from "./types.partial";
+    import { AdminScreen, AdminScreenData, AttendanceCountGroup, KioskButton } from "./types.partial";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
 
     const props = defineProps({
