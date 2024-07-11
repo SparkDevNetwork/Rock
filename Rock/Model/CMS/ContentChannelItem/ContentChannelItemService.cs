@@ -552,29 +552,5 @@ namespace Rock.Model
         }
 
         #endregion
-
-        #region IHasAdditionalSettings Models
-
-        /// <summary>
-        /// Content channel item intent settings.
-        /// </summary>
-        /// <remarks>
-        ///     <para>
-        ///         <strong>This is an internal API</strong> that supports the Rock
-        ///         infrastructure and not subject to the same compatibility standards
-        ///         as public APIs. It may be changed or removed without notice in any
-        ///         release and should therefore not be directly used in any plug-ins.
-        ///     </para>
-        /// </remarks>
-        [RockInternal( "1.16.4" )]
-        public class IntentSettings
-        {
-            /// <summary>
-            /// Interaction intent defined value identifiers.
-            /// </summary>
-            public List<int> InteractionIntentValueIds { get; set; }
-        }
-
-        #endregion IHasAdditionalSettings Models
     }
 }

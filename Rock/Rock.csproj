@@ -1107,6 +1107,7 @@
     <Compile Include="Jobs\IndexContentCollections.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostUpdateJob.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV161RemoveObsidianGroupScheduleToolboxBackButtons.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV167PopulateEntityIntentsFromAdditionalSettingsJson.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV166AddCommunicationRecipientIndex.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV166UpdateAchievementTypeTargetCount.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV16UpdateInteractionSessionStartDateKey.cs" />
@@ -1191,6 +1192,7 @@
     <Compile Include="Model\CMS\RequestFilter\RequestFilter.WebForms.cs" />
     <Compile Include="Model\CodeGenerated\ContentTopicDomainService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\ContentTopicService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\EntityIntentService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\InteractiveExperienceActionService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\InteractiveExperienceAnswerService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\InteractiveExperienceOccurrenceService.CodeGenerated.cs" />
@@ -1222,6 +1224,8 @@
     <Compile Include="Model\Core\AttributeReferencedEntity\AttributeReferencedEntity.cs" />
     <Compile Include="Model\Core\AttributeValueReferencedEntity\AttributeValueReferencedEntity.cs" />
     <Compile Include="Model\Core\EntityIntent\EntityIntent.cs" />
+    <Compile Include="Model\Core\EntityIntent\EntityIntent.Logic.cs" />
+    <Compile Include="Model\Core\EntityIntent\EntityIntentService.cs" />
     <Compile Include="Model\Core\EntitySet\Options\AddEntitySetActionOptions.cs" />
     <Compile Include="Model\Core\Interaction\Interaction.Logic.cs" />
     <Compile Include="Model\Core\NoteType\NoteType.SaveHook.cs" />
@@ -2303,6 +2307,7 @@
     <Compile Include="Web\Cache\Entities\AdaptiveMessageCache.cs" />
     <Compile Include="Web\Cache\Entities\AssetStorageProviderCache.cs" />
     <Compile Include="Web\Cache\Entities\BinaryFileTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\EntityIntentCache.cs" />
     <Compile Include="Web\Cache\Entities\GroupCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentTopicDomainCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentTopicCache.cs" />
