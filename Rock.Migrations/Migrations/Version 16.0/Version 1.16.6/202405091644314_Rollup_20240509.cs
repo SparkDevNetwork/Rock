@@ -614,11 +614,12 @@ END
         RockMigrationHelper.AddOrUpdateBlockTypeAttribute( PublicProfileEditBlockTypeGuid, Rock.SystemGuid.FieldType.SINGLE_SELECT, "Gender", "Gender", "Gender", "How should Gender be displayed?", 26, "Required", GenderBlockTypeAttributeGuid );
 
             string qry = $@"
+DECLARE @BlockEntityTypeId int = (SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.Block')
 DECLARE @BlockTypeId INT = (SELECT [Id] FROM [BlockType] WHERE Guid = '{PublicProfileEditBlockTypeGuid}')
 DECLARE @BlockId INT = (SELECT [Id] FROM [Block] WHERE BlockTypeId = @BlockTypeId AND PageId = (SELECT Id FROM Page WHERE Guid = '{MyAccountPageGuid}'))
-DECLARE @GenderAttributeId INT = (SELECT [Id] FROM [Attribute] WHERE [KEY] = 'Gender' AND [EntityTypeQualifierValue] = @BlockTypeId)
-DECLARE @RequireGenderAttributeId INT = (SELECT [Id] FROM [Attribute] WHERE [KEY] = 'RequireGender' AND [EntityTypeQualifierValue] = @BlockTypeId)
-DECLARE @ShowGenderAttributeId INT = (SELECT [Id] FROM [Attribute] WHERE [KEY] = 'ShowGender' AND [EntityTypeQualifierValue] = @BlockTypeId)
+DECLARE @GenderAttributeId INT = (SELECT [Id] FROM [Attribute] WHERE [KEY] = 'Gender' AND [EntityTypeId] = @BlockEntityTypeId AND [EntityTypeQualifierColumn] = 'BlockTypeId' AND [EntityTypeQualifierValue] = @BlockTypeId)
+DECLARE @RequireGenderAttributeId INT = (SELECT [Id] FROM [Attribute] WHERE [KEY] = 'RequireGender' AND [EntityTypeId] = @BlockEntityTypeId AND [EntityTypeQualifierColumn] = 'BlockTypeId' AND [EntityTypeQualifierValue] = @BlockTypeId)
+DECLARE @ShowGenderAttributeId INT = (SELECT [Id] FROM [Attribute] WHERE [KEY] = 'ShowGender' AND [EntityTypeId] = @BlockEntityTypeId AND [EntityTypeQualifierColumn] = 'BlockTypeId' AND [EntityTypeQualifierValue] = @BlockTypeId)
 DECLARE @RequireGender VARCHAR(50) = (SELECT [Value] FROM [AttributeValue] WHERE [EntityId] = @BlockId AND [AttributeId] = @RequireGenderAttributeId)
 DECLARE @ShowGender VARCHAR(50) = (SELECT [Value] FROM [AttributeValue] WHERE [EntityId] = @BlockId AND [AttributeId] = @ShowGenderAttributeId)
 DECLARE @TheValue VARCHAR(50) = CASE
@@ -627,6 +628,11 @@ DECLARE @TheValue VARCHAR(50) = CASE
 	WHEN @RequireGender = 'False' AND @ShowGender = 'False' THEN 'Hide'
 	WHEN @RequireGender = 'False' AND @ShowGender = 'True' THEN 'Optional'
 	ELSE 'Required'
+END
+
+IF(@BlockId IS NULL)
+BEGIN
+    RETURN;
 END
 
 IF EXISTS (SELECT 1 FROM [AttributeValue] WHERE [EntityId] = @BlockId AND [AttributeId] = @GenderAttributeId)  
