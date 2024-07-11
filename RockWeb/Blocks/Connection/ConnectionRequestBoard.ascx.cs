@@ -891,70 +891,71 @@ namespace RockWeb.Blocks.Connection
                 return;
             }
 
+            var oldStatusId = request.ConnectionStatusId;
+            var oldIndex = request.Order;
+
             // Update the dragged request to the new status
             request.ConnectionStatusId = newStatusId;
+            request.Order = newIndex;
             rockContext.SaveChanges();
 
             // Reordering is only allowed when the cards are sorted by order
             if ( CurrentSortProperty == ConnectionRequestViewModelSortProperty.Order )
             {
+                // Not sure when this would be false (see above). 
                 if ( request.ConnectionStatusId == newStatusId )
                 {
                     var requestsOfStatus = service.Queryable()
-                    .Where( r =>
-                        r.ConnectionStatusId == newStatusId &&
-                        r.ConnectionOpportunityId == request.ConnectionOpportunityId )
-                    .ToList()
-                    .OrderBy( r => r.Order )
-                    .ThenBy( r => r.Id )
-                    .ToList();
+                        .Where( r =>
+                            r.ConnectionStatusId == newStatusId &&
+                            r.ConnectionOpportunityId == request.ConnectionOpportunityId &&
+                            r.Id != ConnectionRequestId.Value );
 
-                    // There may be filters applied so we do not want to change what might have
-                    // been 4, 9, 12 to 1, 2, 3.  Instead we want to keep 4, 9, 12, and reapply
-                    // those order values to the requests in their new order. There could be a problem
-                    // if some of the orders match (like initially they are all 0). So, we do a
-                    // slight adjustment top ensure uniqueness in this set.
-                    var orderValues = requestsOfStatus.Select( r => r.Order ).ToList();
-                    var previousValue = -1;
-
-                    for ( var i = 0; i < orderValues.Count; i++ )
+                    if ( oldStatusId != newStatusId)
                     {
-                        if ( orderValues[i] <= previousValue )
+                        var requestsOfOldStatus = service.Queryable()
+                            .Where( r =>
+                                r.ConnectionStatusId == oldStatusId &&
+                                r.ConnectionOpportunityId == request.ConnectionOpportunityId &&
+                                r.Order > oldIndex );
+
+                        rockContext.BulkUpdate( requestsOfOldStatus, r => new ConnectionRequest { Order = r.Order - 1 } );
+
+                        IncrementRequestOrder( requestsOfStatus, service, newIndex, rockContext );
+                    }
+                    else
+                    {
+                        if (newIndex < oldIndex)
                         {
-                            orderValues[i] = previousValue + 1;
+                            IncrementRequestOrder( requestsOfStatus, service, newIndex, rockContext );
                         }
+                        else
+                        {
+                            requestsOfStatus = service.Queryable().Where( r => r.Order > oldIndex && r.Order <= newIndex );
 
-                        previousValue = orderValues[i];
+                            rockContext.BulkUpdate( requestsOfStatus, r => new ConnectionRequest { Order = r.Order - 1 } );
+                        }
                     }
-
-                    requestsOfStatus.Remove( request );
-                    requestsOfStatus.Insert( newIndex, request );
-
-                    for ( var i = 0; i < orderValues.Count; i++ )
-                    {
-                        requestsOfStatus[i].Order = orderValues[i];
-                    }
-
-                    if ( orderValues.Count < requestsOfStatus.Count )
-                    {
-                        // This happens if the card came from another column. The remove did nothing, but
-                        // we added the new request. Therefore we need to set the last request to the
-                        // last order value + 1.
-                        requestsOfStatus.Last().Order = previousValue + 1;
-                    }
-
-                    /*
-                     SK - 03/29/2023
-                     Presave Changes is disabled in case of reordering as it updates Modified DateTime of many other connection requests
-                     where slight adjustment is done.
-                     */
-                    rockContext.SaveChanges( true );
                 }
                 else
                 {
                     RefreshRequestCard();
                 }
             }
+        }
+
+        /// <summary>
+        /// Increments the order of selected connection requests from a status.
+        /// </summary>
+        /// <param name="requestsOfStatus">The selected connection requests from a status.</param>
+        /// <param name="service">The Connection Request Service.</param>
+        /// <param name="newIndex">The new index of the dropped connection request.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void IncrementRequestOrder(IQueryable<ConnectionRequest> requestsOfStatus, ConnectionRequestService service, int newIndex, RockContext rockContext)
+        {
+            requestsOfStatus = service.Queryable().Where( r => r.Order >= newIndex );
+
+            rockContext.BulkUpdate( requestsOfStatus, r => new ConnectionRequest { Order = r.Order + 1 } );
         }
 
         /// <summary>
