@@ -46,16 +46,22 @@ namespace Rock.Blocks.CheckIn
     #region Block Attributes
 
     [LinkedPage( "Setup Page",
-        Key = AttributeKey.SetupPage,
         Description = "The page to use when kiosk setup is required.",
+        Key = AttributeKey.SetupPage,
         IsRequired = true,
         Order = 0 )]
 
     [BooleanField( "Show Counts By Location",
         Description = "When displaying attendance counts on the admin login screen this will group the counts by location first instead of area first.",
         DefaultBooleanValue = false,
-        Order = 1,
-        Key = AttributeKey.ShowCountsByLocation )]
+        Key = AttributeKey.ShowCountsByLocation,
+        Order = 1 )]
+
+    [ContentChannelField( "Promotions Content Channel",
+        Description = "The content channel to use for displaying promotions on the kiosk welcome screen.",
+        Key = AttributeKey.PromotionsContentChannel,
+        IsRequired = false,
+        Order = 2 )]
 
     #endregion
 
@@ -69,6 +75,7 @@ namespace Rock.Blocks.CheckIn
         {
             public const string SetupPage = "SetupPage";
             public const string ShowCountsByLocation = "ShowCountsByLocation";
+            public const string PromotionsContentChannel = "PromotionsContentChannel";
         }
 
         private static class PageParameterKey
@@ -214,12 +221,19 @@ namespace Rock.Blocks.CheckIn
         [BlockAction]
         public BlockActionResult GetPromotionList( string templateId, string kioskId )
         {
+            var promotionContentChannelGuid = GetAttributeValue( AttributeKey.PromotionsContentChannel ).AsGuidOrNull();
+
+            if ( !promotionContentChannelGuid.HasValue )
+            {
+                return ActionOk( new List<PromotionBag>() );
+            }
+
             var kiosk = DeviceCache.GetByIdKey( kioskId, RockContext );
             var contentChannel = new ContentChannelService( RockContext )
                 .Queryable()
                 .AsNoTracking()
                 .Include( cc => cc.Items )
-                .Where( cc => cc.Id == 8 )
+                .Where( cc => cc.Guid == promotionContentChannelGuid.Value )
                 .FirstOrDefault();
 
             if ( kiosk == null || contentChannel == null )
