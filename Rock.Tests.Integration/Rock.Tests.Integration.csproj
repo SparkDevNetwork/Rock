@@ -358,7 +358,10 @@
     <Compile Include="Modules\Core\Model\RegistrationTests.cs" />
     <Compile Include="Modules\Core\Model\StepTests.cs" />
     <Compile Include="Modules\Core\Model\DeviceTests.cs" />
+    <Compile Include="TestData\Tests\TestPlugInMigration.cs" />
+    <Compile Include="TestData\Tests\LocalDbTestActions.cs" />
     <Compile Include="TestData\Tests\SampleDataTests.cs" />
+    <Compile Include="TestData\Tests\UtilityTestActionsBase.cs" />
     <Compile Include="TestExtensionMethods.cs" />
     <Compile Include="Modules\Core\Logging\RockLogConfigurationTest.cs" />
     <Compile Include="Modules\Core\Logging\RockLoggerTests.cs" />

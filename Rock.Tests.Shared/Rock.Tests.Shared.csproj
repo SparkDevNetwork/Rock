@@ -186,11 +186,16 @@
     <Compile Include="Mocks\IpRegistryMock.cs" />
     <Compile Include="Rock\Core\Schedules\ScheduleTestHelper.cs" />
     <Compile Include="TestFramework\DatabaseContainerImageBuilder.cs" />
+    <Compile Include="TestFramework\Database\Initializer\BasicDataset.cs" />
+    <Compile Include="TestFramework\Database\LocalDatabaseManager.cs" />
     <Compile Include="TestFramework\DatabaseTestsBase.cs" />
     <Compile Include="TestFramework\IsolatedTestDatabaseAttribute.cs" />
     <Compile Include="Lava\LavaIntegrationTestHelper.cs" />
     <Compile Include="TestFramework\MockDatabaseHelper.cs" />
     <Compile Include="TestFramework\MockDatabaseTestsBase.cs" />
+    <Compile Include="TestFramework\Database\ITestDatabaseContainer.cs" />
+    <Compile Include="TestFramework\Database\ITestDatabaseInitializer.cs" />
+    <Compile Include="TestFramework\Database\LocalDatabaseContainer.cs" />
     <Compile Include="TestFramework\NumericAssertExtensions.cs" />
     <Compile Include="TestFramework\DateTimeAssertExtensions.cs" />
     <Compile Include="TestFramework\AssertExtensions.cs" />
@@ -198,6 +203,7 @@
     <Compile Include="TestFramework\FileAssertExtensions.cs" />
     <Compile Include="TestFramework\TestDatabaseContainer.cs" />
     <Compile Include="TestFramework\MockTestExtensions.cs" />
+    <Compile Include="TestFramework\Database\Initializer\SampleDataset.cs" />
     <Compile Include="TestFramework\TestHelper.cs" />
     <Compile Include="TestFramework\xUnitAssertExtensions.cs" />
     <Compile Include="Utility\DateTimeTestHelper.cs" />
