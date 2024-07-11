@@ -24,6 +24,8 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.CheckIn.v2;
 using Rock.Model;
+using Rock.Security;
+using Rock.Utility;
 using Rock.Utility.ExtensionMethods;
 using Rock.ViewModels.Blocks.CheckIn.CheckInKiosk;
 using Rock.ViewModels.CheckIn;
@@ -49,6 +51,12 @@ namespace Rock.Blocks.CheckIn
         IsRequired = true,
         Order = 0 )]
 
+    [BooleanField( "Show Counts By Location",
+        Description = "When displaying attendance counts on the admin login screen this will group the counts by location first instead of area first.",
+        DefaultBooleanValue = false,
+        Order = 1,
+        Key = AttributeKey.ShowCountsByLocation )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "b208cafe-2194-4308-aa52-a920c516805a" )]
@@ -60,6 +68,7 @@ namespace Rock.Blocks.CheckIn
         private static class AttributeKey
         {
             public const string SetupPage = "SetupPage";
+            public const string ShowCountsByLocation = "ShowCountsByLocation";
         }
 
         private static class PageParameterKey
@@ -78,7 +87,8 @@ namespace Rock.Blocks.CheckIn
             return new
             {
                 CurrentTheme = PageCache.Layout?.Site?.Theme?.ToLower(),
-                SetupPageRoute = this.GetLinkedPageUrl( AttributeKey.SetupPage )
+                SetupPageRoute = this.GetLinkedPageUrl( AttributeKey.SetupPage ),
+                ShowCountsByLocation = GetAttributeValue( AttributeKey.ShowCountsByLocation ).AsBoolean()
             };
         }
 
@@ -109,13 +119,66 @@ namespace Rock.Blocks.CheckIn
             return new KioskConfigurationBag
             {
                 Kiosk = CheckInKioskSetup.GetKioskBag( kiosk ),
-                Areas = areas.Select( a => new CheckInItemBag
+                Areas = areas.Where( a => savedConfiguration.AreaIds.Contains( a.IdKey ) )
+                    .Select( a => new CheckInItemBag
                 {
                     Id = a.IdKey,
                     Name = a.Name
                 } ).ToList(),
                 Template = template
             };
+        }
+
+        /// <summary>
+        /// Tries to authenticate the PIN code provided.
+        /// </summary>
+        /// <param name="pinCode">The PIN code to be authenticated.</param>
+        /// <param name="errorMessage">On return contains any error message that should be displayed.</param>
+        /// <returns><c>true</c> if the PIN code was valid and trusted; otherwise <c>false</c>.</returns>
+        private bool TryAuthenticatePin( string pinCode, out string errorMessage )
+        {
+            var pinAuth = AuthenticationContainer.GetComponent( typeof( Rock.Security.Authentication.PINAuthentication ).FullName );
+
+            // Make sure PIN authentication is enabled.
+            if ( pinAuth == null || !pinAuth.IsActive )
+            {
+                errorMessage = "Sorry, we couldn't find an account matching that PIN.";
+                return false;
+            }
+
+            var userLoginService = new UserLoginService( RockContext );
+            var userLogin = userLoginService.GetByUserName( pinCode );
+
+            // Make sure this is a PIN auth user login.
+            if ( userLogin == null || !userLogin.EntityTypeId.HasValue || userLogin.EntityTypeId.Value != pinAuth.TypeId )
+            {
+                errorMessage = "Sorry, we couldn't find an account matching that PIN.";
+                return false;
+            }
+
+            // This should always return true, but just in case something changes
+            // in the future.
+            if ( !pinAuth.Authenticate( userLogin, null ) )
+            {
+                errorMessage = "Sorry, we couldn't find an account matching that PIN.";
+                return false;
+            }
+
+            if ( !( userLogin.IsConfirmed ?? true ) )
+            {
+                errorMessage = "Sorry, account needs to be confirmed.";
+                return false;
+            }
+            else if ( userLogin.IsLockedOut ?? false )
+            {
+                errorMessage = "Sorry, account is locked-out.";
+                return false;
+            }
+            else
+            {
+                errorMessage = string.Empty;
+                return true;
+            }
         }
 
         #endregion
@@ -202,6 +265,167 @@ namespace Rock.Blocks.CheckIn
                 .ToList();
 
             return ActionOk( promotions );
+        }
+
+        /// <summary>
+        /// Gets the current attendance counts for this kiosk. This will return
+        /// all attendance records that match the kiosk's configured locations
+        /// and the specified area list.
+        /// </summary>
+        /// <param name="kioskId">The encrypted kiosk identifier.</param>
+        /// <param name="areaIds">The list of encrypted area identifiers.</param>
+        /// <returns>An object that contains all the information to display the counts.</returns>
+        [BlockAction]
+        public BlockActionResult GetCurrentAttendance( string kioskId, List<string> areaIds )
+        {
+            var kiosk = DeviceCache.GetByIdKey( kioskId, RockContext );
+
+            if ( kiosk == null )
+            {
+                return ActionBadRequest( "Kiosk not found." );
+            }
+
+            var kioskLocations = kiosk.GetAllLocations().ToList();
+            var kioskLocationIds = kioskLocations.Select( l => l.Id ).ToList();
+
+            var attendance = CheckInDirector.GetCurrentAttendance( RockDateTime.Now, kioskLocationIds, RockContext )
+                .Select( a => new
+                {
+                    Id = a.AttendanceId,
+                    AreaId = a.GroupTypeId,
+                    GroupId = a.GroupId,
+                    LocationId = a.LocationId,
+                    Status = a.Status
+                } )
+                .ToList();
+
+            var areaIdNumbers = areaIds.Select( id => IdHasher.Instance.GetId( id ) ).Where( id => id.HasValue ).Select( id => id.Value ).ToList();
+            var groupLocationQry = new GroupLocationService( RockContext ).Queryable()
+                .Select( gl => new
+                {
+                    gl.LocationId,
+                    gl.GroupId
+                } );
+            var groups = new GroupService( RockContext )
+                .Queryable()
+                .Where( g => areaIdNumbers.Contains( g.GroupTypeId ) )
+                .GroupJoin( groupLocationQry, g => g.Id, gl => gl.GroupId, (g, gl) => new
+                {
+                    Group = g,
+                    GroupLocation = gl
+                })
+                .SelectMany( a => a.GroupLocation.DefaultIfEmpty(), (g, gl) => new
+                {
+                    g.Group.Id,
+                    g.Group.Name,
+                    g.Group.GroupTypeId,
+                    gl.LocationId
+                } )
+                .ToList()
+                .GroupBy( a => new { a.Id, a.Name, a.GroupTypeId } )
+                .Select( g => new GroupOpportunityBag
+                {
+                    Id = IdHasher.Instance.GetHash( g.Key.Id ),
+                    Name = g.Key.Name,
+                    AreaId = IdHasher.Instance.GetHash( g.Key.GroupTypeId ),
+                    LocationIds = g.Select( l => IdHasher.Instance.GetHash( l.LocationId ) ).ToList()
+                } )
+                .ToList();
+
+            var locations = kioskLocations
+                .Select( l => new LocationStatusItemBag
+                {
+                    Id = l.IdKey,
+                    Name = l.Name,
+                    IsOpen = l.IsActive
+                } )
+                .ToList();
+
+            foreach ( var att in attendance )
+            {
+                //if ( groups.FirstOrDefault( a => a.Id == att.GroupId ) == null )
+                //{
+                //    var group = GroupCache.GetByIdKey( att.GroupId, RockContext );
+
+                //    if ( group != null )
+                //    {
+                //        groups.Add( new CheckInItemBag
+                //        {
+                //            Id = group.IdKey,
+                //            Name = group.Name
+                //        } );
+                //    }
+                //}
+
+                //if ( locations.FirstOrDefault( a => a.Id == att.LocationId ) == null )
+                //{
+                //    var location = NamedLocationCache.GetByIdKey( att.LocationId, RockContext );
+
+                //    if ( location != null )
+                //    {
+                //        locations.Add( new CheckInItemBag
+                //        {
+                //            Id = location.IdKey,
+                //            Name = location.Name
+                //        } );
+                //    }
+                //}
+            }
+
+            return ActionOk( new
+            {
+                Attendance = attendance,
+                Groups = groups,
+                Locations = locations
+            } );
+        }
+
+        /// <summary>
+        /// Verifies that the PIN code is valid and can be used. This is used
+        /// by the UI to perform the initial login step to the admins creen.
+        /// </summary>
+        /// <param name="pinCode">The PIN code to validate.</param>
+        /// <returns>A 200-OK status if the PIN code was valid.</returns>
+        [BlockAction]
+        public BlockActionResult ValidatePinCode( string pinCode )
+        {
+            if ( !TryAuthenticatePin( pinCode, out var errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            return ActionOk();
+        }
+
+        /// <summary>
+        /// Sets the open/closed status of a location.
+        /// </summary>
+        /// <param name="pinCode">The PIN code to authenticate the person as.</param>
+        /// <param name="locationId">The encrypted identifier of the location.</param>
+        /// <param name="isOpen"><c>true</c> if the location should be opened; otherwise <c>false</c>.</param>
+        /// <returns>A 200-OK status if the location's status was updated.</returns>
+        [BlockAction]
+        public BlockActionResult SetLocationStatus( string pinCode, string locationId, bool isOpen )
+        {
+            if ( !TryAuthenticatePin( pinCode, out var errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            var location = new LocationService( RockContext ).Get( locationId, false );
+
+            if ( location == null )
+            {
+                return ActionBadRequest( "Location not found." );
+            }
+
+            location.IsActive = isOpen;
+            RockContext.SaveChanges();
+
+            // Clear the old v1 cache to match functionality.
+            Rock.CheckIn.KioskDevice.Clear();
+
+            return ActionOk();
         }
 
         #endregion

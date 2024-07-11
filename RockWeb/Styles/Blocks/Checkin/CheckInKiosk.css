@@ -93,6 +93,28 @@
     align-items: center;
 }
 
+.check-in-page .number-pad {
+    display: grid;
+    margin: auto;
+    grid-template-columns: 130px 130px 130px;
+    grid-template-rows: 56px 56px 56px 56px;
+    gap: var(--item-spacing);
+}
+
+.check-in-page .number-pad .btn {
+    color: var(--tones-darkest);
+    background-color: var(--tones-light);
+    font-size: var(--font-size-btn-primary);
+    font-weight: 600;
+}
+
+.check-in-page .body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--item-spacing);
+}
+
+
 /*
  * Styles for the page header.
  */
@@ -322,32 +344,11 @@
     align-items: center;
 }
 
-.check-in-page .search-screen .body {
-    display: flex;
-    flex-direction: column;
-    gap: var(--item-spacing);
-}
-
 .check-in-page .search-screen input.search-term {
     height: 64px;
     font-size: 36px;
     width: 0;
     min-width: 100%;
-}
-
-.check-in-page .search-screen .number-pad {
-    display: grid;
-    margin: auto;
-    grid-template-columns: 130px 130px 130px;
-    grid-template-rows: 56px 56px 56px 56px;
-    gap: var(--item-spacing);
-}
-
-.check-in-page .search-screen .number-pad .btn {
-    color: var(--tones-darkest);
-    background-color: var(--tones-light);
-    font-size: var(--font-size-btn-primary);
-    font-weight: 600;
 }
 
 .check-in-page .search-screen .search-button {
@@ -590,4 +591,54 @@
 .check-in-page .attendance-card .achievement + .achievement {
     padding-top: var(--unit-md);
     border-top: 1px solid var(--tones-medium);
+}
+
+
+/**
+ * Admin Login Screen
+*/
+.admin-login-screen {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--item-spacing);
+    align-items: start;
+}
+
+.admin-login-screen input.pin-code {
+    height: 64px;
+    font-size: 36px;
+    width: 0;
+    min-width: 100%;
+}
+
+.admin-login-screen .current-counts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: calc(var(--item-spacing) * 2);
+    font-size: var(--font-size-h2)
+}
+
+.admin-login-screen .current-counts .count-row {
+    display: flex;
+    gap: var(--item-spacing);
+}
+
+.admin-login-screen .current-counts .title {
+    flex-grow: 1;
+}
+
+
+/**
+ * Admin Action Screen
+*/
+
+.admin-action-screen {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    column-gap: var(--item-spacing);
+    align-items: start;
+}
+
+.admin-action-screen .location-button .count {
+    margin-left: auto;
 }

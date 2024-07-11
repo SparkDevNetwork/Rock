@@ -802,6 +802,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Bus\QueueList\queueListBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Bus\QueueList\queueListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\AttendanceList\attendanceListOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\CheckInKiosk\locationStatusItemBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\CheckInKiosk\promotionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\CheckInKiosk\savedKioskConfigurationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\CheckInKiosk\webKioskBag.d.ts" />
