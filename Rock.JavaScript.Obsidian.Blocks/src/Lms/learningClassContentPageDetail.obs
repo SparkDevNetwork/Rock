@@ -19,7 +19,7 @@
                  @edit="onEdit"
                  @save="onSave">
         <template #edit>
-            <EditPanel v-model="learningClassContentPageEditBag" :options="options" />
+            <EditPanel v-model="learningClassContentPageEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
         </template>
     </DetailBlock>
 </template>

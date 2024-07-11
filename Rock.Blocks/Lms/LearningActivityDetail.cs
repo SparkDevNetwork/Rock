@@ -169,8 +169,8 @@ namespace Rock.Blocks.Lms
                 return;
             }
 
-            var isViewable = BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
-            box.IsEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
+            box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
             entity.LoadAttributes( RockContext );
 
@@ -393,7 +393,7 @@ namespace Rock.Blocks.Lms
         protected override LearningActivity GetInitialEntity()
         {
             var entityId = RequestContext.PageParameterAsId( PageParameterKey.LearningActivityId );
-            
+
             // If a zero identifier is specified then create a new entity.
             if ( entityId == 0 )
             {
@@ -460,7 +460,7 @@ namespace Rock.Blocks.Lms
                 return false;
             }
 
-            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 error = ActionBadRequest( $"Not authorized to edit ${LearningActivity.FriendlyTypeName}." );
                 return false;
@@ -552,11 +552,7 @@ namespace Rock.Blocks.Lms
                 entity.LearningClassId = RequestContext.PageParameterAsId( PageParameterKey.LearningClassId );
             }
 
-            RockContext.WrapTransaction( () =>
-            {
-                RockContext.SaveChanges();
-                entity.SaveAttributeValues( RockContext );
-            } );
+            RockContext.SaveChanges();
 
             if ( isNew )
             {
@@ -617,11 +613,6 @@ namespace Rock.Blocks.Lms
         [BlockAction]
         public BlockActionResult Copy( string key )
         {
-            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-            {
-                return ActionForbidden( $"Not authorized to copy {LearningActivity.FriendlyTypeName}." );
-            }
-
             if ( key.IsNullOrWhiteSpace() )
             {
                 return ActionNotFound();

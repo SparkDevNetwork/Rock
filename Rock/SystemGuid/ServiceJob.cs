@@ -397,5 +397,10 @@ namespace Rock.SystemGuid
         /// The job for sending available learning activity notifications. <see cref="Rock.Jobs.SendLearningActivityNotifications"/>.
         /// </summary>
         public const string SEND_LEARNING_ACTIVITY_NOTIFICATIONS = "0075859b-8dc3-4e95-9075-89198886fcb4";
+
+        /// <summary>
+        /// The job for updating learning program completions. <see cref="Rock.Jobs.UpdateProgramCompletions"/>.
+        /// </summary>
+        public const string UPDATE_PROGRAM_COMPLETIONS = "4E805A88-C031-4BA0-BAD6-0A706E647870";
     }
 }

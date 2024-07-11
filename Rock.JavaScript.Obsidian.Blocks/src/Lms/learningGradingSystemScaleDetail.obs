@@ -14,6 +14,7 @@
                  :isEditVisible="true"
                  :isFollowVisible="false"
                  :isSecurityHidden="false"
+                 :entityTypeGuid="entityTypeGuid"
                  :isFullScreenVisible="false"
                  @cancelEdit="onCancelEdit"
                  @save="onSave">
@@ -29,6 +30,7 @@
     import DetailBlock from "@Obsidian/Templates/detailBlock";
     import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
     import EditPanel from "./LearningGradingSystemScaleDetail/editPanel.partial.obs";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { onConfigurationValuesChanged, useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./LearningGradingSystemScaleDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
@@ -42,6 +44,7 @@
 
     // #region Values
 
+    const entityTypeGuid = EntityType.LearningGradingSystemScale;
     const blockError = ref("");
     const errorMessage = ref("");
 

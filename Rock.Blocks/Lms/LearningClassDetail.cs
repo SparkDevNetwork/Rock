@@ -545,11 +545,6 @@ namespace Rock.Blocks.Lms
         [BlockAction]
         public BlockActionResult Copy( string key )
         {
-            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-            {
-                return ActionForbidden( $"Not authorized to copy {LearningClass.FriendlyTypeName}." );
-            }
-
             if ( key.IsNullOrWhiteSpace() )
             {
                 return ActionNotFound();
@@ -619,10 +614,7 @@ namespace Rock.Blocks.Lms
 
             var isNew = entity.Id == 0;
 
-            RockContext.WrapTransaction( () =>
-            {
-                RockContext.SaveChanges();
-            } );
+            RockContext.SaveChanges();
 
             if ( isNew )
             {
@@ -672,7 +664,6 @@ namespace Rock.Blocks.Lms
 
         #endregion
 
-
         /*
             2024/04/04 - JSC
 
@@ -696,31 +687,28 @@ namespace Rock.Blocks.Lms
         [BlockAction]
         public BlockActionResult DeleteActivity( string key )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new LearningActivityService( RockContext );
+            var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( entity == null )
             {
-                var entityService = new LearningActivityService( rockContext );
-                var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
-
-                if ( entity == null )
-                {
-                    return ActionBadRequest( $"{LearningActivity.FriendlyTypeName} not found." );
-                }
-
-                if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-                {
-                    return ActionBadRequest( $"Not authorized to delete ${LearningActivity.FriendlyTypeName}." );
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                return ActionOk();
+                return ActionBadRequest( $"{LearningActivity.FriendlyTypeName} not found." );
             }
+
+            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to delete ${LearningActivity.FriendlyTypeName}." );
+            }
+
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
+
+            return ActionOk();
         }
 
         /// <summary>
@@ -739,7 +727,7 @@ namespace Rock.Blocks.Lms
                 return ActionBadRequest( $"{LearningClassAnnouncement.FriendlyTypeName} not found." );
             }
 
-            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 return ActionBadRequest( $"Not authorized to delete ${LearningClassAnnouncement.FriendlyTypeName}." );
             }
@@ -771,7 +759,7 @@ namespace Rock.Blocks.Lms
                 return ActionBadRequest( $"{LearningClassContentPage.FriendlyTypeName} not found." );
             }
 
-            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 return ActionBadRequest( $"Not authorized to delete ${LearningClassContentPage.FriendlyTypeName}." );
             }
@@ -803,7 +791,7 @@ namespace Rock.Blocks.Lms
                 return ActionBadRequest( $"{LearningParticipant.FriendlyTypeName} not found." );
             }
 
-            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 return ActionBadRequest( $"Not authorized to delete ${LearningParticipant.FriendlyTypeName}." );
             }
