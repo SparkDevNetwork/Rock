@@ -32,6 +32,7 @@ using Rock.Utility;
 using Rock.Utility.ExtensionMethods;
 using Rock.ViewModels.Blocks.CheckIn.CheckInKiosk;
 using Rock.ViewModels.CheckIn;
+using Rock.ViewModels.CheckIn.Labels;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.CheckIn
@@ -625,6 +626,35 @@ namespace Rock.Blocks.CheckIn
                 return ActionBadRequest( "Invalid attendance." );
             }
 
+            // If the attendance record has legacy labels then use those for
+            // re-printing instead of the new label format.
+            if ( RockContext.Set<AttendanceData>().Any( a => a.Id == attendanceIdNumber.Value ) )
+            {
+                var attendance = new AttendanceService( RockContext ).Get( attendanceIdNumber.Value );
+                var attendanceIds = new List<int> { attendance.Id };
+                var possibleLabels = ZebraPrint.GetLabelTypesForPerson( attendance.PersonAlias.PersonId, attendanceIds );
+                var fileGuids = possibleLabels.Select( pl => pl.FileGuid ).ToList();
+
+                var (legacyMessages, legacyClientLabels) = ZebraPrint.ReprintZebraLabels( fileGuids, attendance.PersonAlias.PersonId, attendanceIds, null );
+
+                var clientLabels = legacyClientLabels
+                    .Select( label => new LegacyClientLabelBag
+                    {
+                        LabelFile = RequestContext.RootUrlPath + label.LabelFile,
+                        LabelKey = label.LabelKey,
+                        MergeFields = label.MergeFields,
+                        PrinterAddress = label.PrinterAddress
+                    } )
+                    .ToList();
+
+                return ActionOk( new
+                {
+                    ErrorMessages = legacyMessages,
+                    LegacyLabels = clientLabels
+                } );
+            }
+
+            // Use the new label format for re-printing.
             var director = new CheckInDirector( RockContext );
             var labels = director.LabelProvider.RenderLabels( new List<int> { attendanceIdNumber.Value }, null, false );
 

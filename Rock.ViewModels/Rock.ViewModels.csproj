@@ -503,6 +503,7 @@
     <Compile Include="CheckIn\Labels\IconFieldConfigurationBag.cs" />
     <Compile Include="CheckIn\Labels\ImageFieldConfigurationBag.cs" />
     <Compile Include="CheckIn\Labels\LabelFieldBag.cs" />
+    <Compile Include="CheckIn\Labels\LegacyClientLabelBag.cs" />
     <Compile Include="CheckIn\Labels\LineFieldConfigurationBag.cs" />
     <Compile Include="CheckIn\Labels\RectangleFieldConfigurationBag.cs" />
     <Compile Include="CheckIn\Labels\TextFieldConfigurationBag.cs" />

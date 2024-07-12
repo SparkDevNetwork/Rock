@@ -38,6 +38,7 @@
     import { computed, PropType, ref, shallowRef } from "vue";
     import { AdminScreen, AdminScreenData, KioskButton } from "./types.partial";
     import { CheckInItemBag } from "@Obsidian/ViewModels/CheckIn/checkInItemBag";
+    import { printLegacyLabels } from "./utils.partial";
 
     type ReprintAttendanceBag = {
         id?: string | null;
@@ -142,11 +143,21 @@
             attendanceId: id
         };
 
-        const response = await invokeBlockAction<{ errorMessages?: string[] | null }>("PrintLabels", data);
+        const response = await invokeBlockAction<{ errorMessages?: string[] | null, legacyLabels: Record<string, unknown>[] }>("PrintLabels", data);
 
         if (response.isSuccess) {
+            const errors: string[] = [];
+
+            if (response.data?.legacyLabels) {
+                errors.push(...await printLegacyLabels(response.data.legacyLabels));
+            }
+
             if (response.data?.errorMessages && response.data.errorMessages.length > 0) {
-                await alert(response.data.errorMessages.join("\n"));
+                errors.push(...response.data.errorMessages);
+            }
+
+            if (errors.length > 0) {
+                await alert(errors.join("\n"));
             }
             else {
                 await alert("Labels printed.");
