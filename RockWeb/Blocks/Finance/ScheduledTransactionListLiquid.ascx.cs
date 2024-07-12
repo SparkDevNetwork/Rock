@@ -495,15 +495,17 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 // Filter by transaction type.
-                schedules = schedules.Where( s => s.TransactionTypeValueId.HasValue && TransactionTypesFilter.Contains( s.TransactionTypeValue.Guid ) );
+                schedules = schedules.Where( s => !s.TransactionTypeValueId.HasValue || TransactionTypesFilter.Contains( s.TransactionTypeValue.Guid ) );
 
                 // Refresh the active transactions
                 transactionService.GetStatus( schedules, true );
 
-                rptScheduledTransactions.DataSource = schedules.ToList();
+                var scheduleList = schedules.ToList();
+
+                rptScheduledTransactions.DataSource = scheduleList;
                 rptScheduledTransactions.DataBind();
 
-                if ( schedules.Count() == 0 )
+                if ( scheduleList.Count() == 0 )
                 {
                     pnlNoScheduledTransactions.Visible = true;
                     lNoScheduledTransactionsMessage.Text = string.Format( "No {0} currently exist.", GetAttributeValue( AttributeKey.TransactionLabel ).Pluralize().ToLower() );
