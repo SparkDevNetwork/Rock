@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Enums.CheckIn.Labels;
+using Rock.Lava;
 using Rock.Reporting;
 using Rock.ViewModels.CheckIn.Labels;
 
@@ -97,7 +98,10 @@ namespace Rock.CheckIn.v2.Labels
             {
                 if ( config.IsDynamicText )
                 {
-                    return new List<string>( new[] { config.DynamicTextTemplate ?? string.Empty } );
+                    var mergeFields = printRequest.GetMergeFields();
+                    var text = config.DynamicTextTemplate.ResolveMergeFields( mergeFields );
+
+                    return new List<string>( new[] { text } );
                 }
                 else
                 {

@@ -20,11 +20,13 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 using Rock.CheckIn.v2.Labels;
 using Rock.CheckIn.v2.Labels.Renderers;
+using Rock.Cms.StructuredContent.BlockTypes;
 using Rock.Data;
 using Rock.Enums.CheckIn.Labels;
 using Rock.Model;
@@ -477,10 +479,19 @@ namespace Rock.CheckIn.v2
         {
             if ( label.LabelFormat == LabelFormat.Zpl )
             {
-                // TODO: Render this.
+                var mergeFields = new Dictionary<string, object>();
+
+                foreach ( var prop in labelData.GetType().GetProperties() )
+                {
+                    mergeFields.Add( prop.Name, prop.GetValue( labelData ) );
+                }
+
+                var zpl = label.Content.ResolveMergeFields( mergeFields );
+
                 return new RenderedLabel
                 {
-                    Data = new byte[0]
+                    Data = Encoding.UTF8.GetBytes( zpl ),
+                    PrintTo = printer
                 };
             }
 
