@@ -59,8 +59,6 @@
     <Compile Include="Blocks\CheckIn\Config\CheckinTypeDetail\CheckInRegistrationSettingsBag.cs" />
     <Compile Include="Blocks\CheckIn\Config\CheckinTypeDetail\CheckInSearchSettingsBag.cs" />
     <Compile Include="Blocks\BlockActionContextBag.cs" />
-    <Compile Include="Blocks\Bus\QueueList\QueueListBag.cs" />
-    <Compile Include="Blocks\Bus\QueueList\QueueListOptionsBag.cs" />
     <Compile Include="Blocks\CheckIn\CheckInKiosk\ActiveAttendanceBag.cs" />
     <Compile Include="Blocks\CheckIn\CheckInKiosk\GetCurrentAttendanceResponseBag.cs" />
     <Compile Include="Blocks\CheckIn\CheckInKiosk\KioskConfigurationBag.cs" />
@@ -247,7 +245,6 @@
     <Compile Include="Blocks\Engagement\StepProgramDetail\StepStatusBag.cs" />
     <Compile Include="Blocks\Engagement\StepProgramDetail\StepProgramWorkflowTriggerBag.cs" />
     <Compile Include="Blocks\Finance\FinancialAccountList\FinancialAccountListOptionsBag.cs" />
-	<Compile Include="Blocks\Event\EventItemOccurrenceList\EventItemOccurrenceListOptionsBag.cs" />
     <Compile Include="Blocks\Event\EventItemOccurrenceList\EventItemOccurrenceListOptionsBag.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\ExtensionMethods.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryBlockArgs.cs" />

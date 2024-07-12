@@ -393,6 +393,7 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string DATA_MIGRATIONS_167_POPULATE_ENTITY_INTENTS_FROM_ADDITIONAL_SETTINGS_JSON = "155C2051-1513-4BB3-83AD-8D37EBBC3F59";
 
+        /// <summary>
         /// The post update data migration job to remove the legacy Communication Recipient List Webforms block.
         /// </summary>
         public const string DATA_MIGRATIONS_170_REMOVE_DISC_BLOCK = "795AE7B0-8B61-4577-B50A-350907CA0C65";
