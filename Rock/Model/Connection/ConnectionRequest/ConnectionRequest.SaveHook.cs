@@ -173,6 +173,33 @@ namespace Rock.Model
                     rockContext.SaveChanges();
                 }
 
+                switch ( State )
+                {
+                    case EntityContextState.Added:
+                        {
+                            var connectionRequestService = new ConnectionRequestService( rockContext );
+                            var requestsOfStatus = connectionRequestService.Queryable()
+                            .Where( r =>
+                                r.ConnectionStatusId == connectionRequest.ConnectionStatusId &&
+                                r.ConnectionOpportunityId == connectionRequest.ConnectionOpportunityId &&
+                                r.Id != connectionRequest.Id );
+                            rockContext.BulkUpdate( requestsOfStatus, r => new ConnectionRequest { Order = r.Order + 1, ModifiedDateTime = r.ModifiedDateTime } );
+                            break;
+                        }
+                    case EntityContextState.Deleted:
+                        {
+                            var connectionRequestService = new ConnectionRequestService( rockContext );
+                            var requestsOfStatus = connectionRequestService.Queryable()
+                            .Where( r =>
+                                r.ConnectionStatusId == connectionRequest.ConnectionStatusId &&
+                                r.ConnectionOpportunityId == connectionRequest.ConnectionOpportunityId &&
+                                r.Order > connectionRequest.Order &&
+                                r.Id != connectionRequest.Id );
+                            rockContext.BulkUpdate( requestsOfStatus, r => new ConnectionRequest { Order = r.Order - 1, ModifiedDateTime = r.ModifiedDateTime } );
+                            break;
+                        }
+                }
+
                 var connectionStatusAutomationsQuery = new ConnectionStatusAutomationService( rockContext ).Queryable().Where( a => a.SourceStatusId == Entity.ConnectionStatusId );
 
                 if ( this.Entity._runAutomationsInPostSaveChanges && connectionStatusAutomationsQuery.Any() )
