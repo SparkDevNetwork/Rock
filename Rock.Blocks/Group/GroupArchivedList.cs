@@ -173,8 +173,8 @@ namespace Rock.Blocks.Group
                 .AddTextField( "groupType", a => a.GroupType.Name )
                 .AddTextField( "name", a => a.Name )
                 .AddTextField( "description", a => a.Description )
-                .AddDateTimeField( "createdDate", a => a.CreatedDateTime )
-                .AddDateTimeField( "archivedDate", a => a.ArchivedDateTime )
+                .AddDateTimeField( "createdDate", a => a.CreatedDateTime?.Date )
+                .AddDateTimeField( "archivedDate", a => a.ArchivedDateTime?.Date )
                 .AddPersonField( "archivedBy", a => a.ArchivedByPersonAlias?.Person )
                 .AddField( "isSystem", a => a.IsSystem );
         }
