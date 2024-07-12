@@ -199,6 +199,15 @@ namespace RockWeb.Blocks.Event
         DefaultBooleanValue = false,
         Order = 16 )]
 
+    [BooleanField(
+        "Require URL Slug",
+        Key = AttributeKey.RequireURLSlug,
+        Description = "If set to \"Yes\", you will be required to input a URL Slug.",
+        Category = "",
+        IsRequired = false,
+        DefaultBooleanValue = false,
+        Order = 17 )]
+
     #region Advanced Block Attribute Settings 
 
     [MemoField(
@@ -290,6 +299,7 @@ namespace RockWeb.Blocks.Event
             public const string DisplayEventDetailsLink = "DisplayEventDetailsLink";
             public const string EventDetailsPage = "EventDetailsPage";
             public const string EnableExistingGroupSelection = "EnableExistingGroupSelection ";
+            public const string RequireURLSlug = "RequireURLSlug ";
 
             public const string LavaInstruction_InitiateWizard = "LavaInstruction_InitiateWizard";
             public const string LavaInstruction_Registration = "LavaInstruction_Registration";
@@ -363,6 +373,42 @@ namespace RockWeb.Blocks.Event
         }
 
         /// <summary>
+        /// Handles the selection process for a given Registration Template.
+        /// </summary>
+        /// <param name="selectedTemplateId">The Id of the selected Registration Template</param>
+        private void HandleRegistrationTemplateSelection( int? selectedTemplateId )
+        {
+            if ( selectedTemplateId == null )
+            {
+                pnlCosts.Visible = true;
+                pnlDefaultPayment.Visible = true;
+                return;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var registrationTemplateService = new RegistrationTemplateService( rockContext );
+                var registrationTemplate = registrationTemplateService.Get( selectedTemplateId.Value );
+                SaveSelectedTemplate( registrationTemplate );
+                pnlCosts.Visible = registrationTemplate.SetCostOnInstance ?? false;
+                pnlDefaultPayment.Visible = registrationTemplate.SetCostOnInstance ?? false;
+                if ( !registrationTemplate.GroupTypeId.HasValue )
+                {
+                    tbGroupName.Text = string.Empty;
+                    pnlCheckinOptions.Visible = false;
+                }
+                else
+                {
+                    pnlCheckinOptions.Visible = GroupTypeIsCheckinGroup( registrationTemplate.GroupTypeId.Value, rockContext );
+                }
+
+                lTemplateDescription.Text = registrationTemplate.Description;
+                dpPaymentDeadline.Required = registrationTemplate.IsPaymentPlanAllowed == true;
+                dpPaymentDeadline.Visible = registrationTemplate.IsPaymentPlanAllowed == true;
+            }
+        }
+
+        /// <summary>
         /// Shows the item attributes.
         /// </summary>
         private void ShowItemAttributes()
@@ -422,7 +468,7 @@ namespace RockWeb.Blocks.Event
             string itemTemplate = "<p><ul><li><strong>{0}</strong> {1}</li></ul></p>";
 
             // Registration Summary
-            string registrationDescription = "\"" + tbRegistrationName.Text + "\"" + " will be created from the \"" + ddlTemplate.SelectedItem.Text + "\" " + "template.";
+            string registrationDescription = "\"" + tbRegistrationName.Text + "\"" + " will be created from the \"" + GetSelectedTemplate().Name + "\" " + "template.";
 
             if ( !dtpRegistrationStarts.SelectedDateTimeIsBlank )
             {
@@ -570,7 +616,7 @@ namespace RockWeb.Blocks.Event
                 ContactEmail = tbContactEmail.Text,
                 Name = tbRegistrationName.Text,
                 RegistrationInstructions = htmlRegistrationInstructions.Text,
-                RegistrationTemplateId = ddlTemplate.SelectedValueAsInt().Value,
+                RegistrationTemplateId = GetSelectedTemplate().Id,
                 SendReminderDateTime = dtpReminderDate.SelectedDateTime,
                 StartDateTime = dtpRegistrationStarts.SelectedDateTime,
                 EndDateTime = dtpRegistrationEnds.SelectedDateTime,
@@ -923,8 +969,7 @@ namespace RockWeb.Blocks.Event
                 }
                 else
                 {
-                    var registrationTemplateService = new RegistrationTemplateService( rockContext );
-                    var registrationTemplate = registrationTemplateService.Get( ddlTemplate.SelectedValueAsInt().Value );
+                    var registrationTemplate = GetSelectedTemplate();
                     var groupTypeService = new GroupTypeService( rockContext );
                     var templateGroupType = groupTypeService.Get( registrationTemplate.GroupTypeId.Value );
                     var parentGroupType = groupTypeService.Get( parentGroup.GroupTypeId );
@@ -987,13 +1032,14 @@ namespace RockWeb.Blocks.Event
                 using ( var rockContext = new RockContext() )
                 {
                     Init_SetContact();
-                    Init_SetRegistrationTemplateValues( rockContext );
+                    Init_SetRegistrationTemplateSelector( rockContext );
                     Init_SetCampusAndEventSelectionOption();
                     Init_SetDefaultAccount( rockContext );
                     Init_SetDefaultCalendar( rockContext );
                     Init_SetRootGroup( rockContext );
                     Init_SetGroupRequired();
                     Init_SetCalendarEventRequired();
+                    Init_SetURLSlugRequired();
                 }
             }
 
@@ -1153,6 +1199,30 @@ namespace RockWeb.Blocks.Event
             {
                 eipSelectedEvent.Help = "If you do not select an event item, no event occurrence will be created.";
             }
+        }
+        private void Init_SetURLSlugRequired()
+        {
+            bool slugRequired = GetAttributeValue( AttributeKey.RequireURLSlug ).AsBoolean();
+            this.tbSlug.Required = slugRequired;
+            if ( !slugRequired )
+            {
+                tbSlug.Help = "If you do not enter a URL Slug, no registration will be created.";
+            }
+        }
+        private void Init_SetRegistrationTemplateSelector( RockContext rockContext )
+        {
+            bool groupRequired = GetAttributeValue( AttributeKey.RequireGroup ).AsBoolean();
+            List<string> selectedRegistrationTemplates = GetAttributeValues( AttributeKey.AvailableRegistrationTemplates );
+
+            if ( groupRequired || selectedRegistrationTemplates.Count > 0 )
+            {
+                rtpRegistrationTemplate.Visible = false;
+                ddlTemplate.Visible = true;
+                Init_SetRegistrationTemplateValues( rockContext );
+                return;
+            }
+            rtpRegistrationTemplate.Visible = true;
+            ddlTemplate.Visible = false;
         }
 
         #endregion Control Initialization
@@ -1621,37 +1691,19 @@ namespace RockWeb.Blocks.Event
             }
         }
 
+        /// <summary>
+        /// Handles the SelectItem event of the rtpRegistrationTemplate control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void rtpRegistrationTemplate_SelectItem( object sender, EventArgs e )
+        {
+            HandleRegistrationTemplateSelection( rtpRegistrationTemplate.SelectedValueAsId() );
+        }
+
         protected void ddlTemplate_SelectedIndexChanged( object sender, EventArgs e )
         {
-            var selectedTemplateId = ddlTemplate.SelectedValue.AsIntegerOrNull();
-            if ( selectedTemplateId == null )
-            {
-                pnlCosts.Visible = true;
-                pnlDefaultPayment.Visible = true;
-                return;
-            }
-
-            using ( var rockContext = new RockContext() )
-            {
-                var registrationTemplateService = new RegistrationTemplateService( rockContext );
-                var registrationTemplate = registrationTemplateService.Get( selectedTemplateId.Value );
-                SaveSelectedTemplate( registrationTemplate );
-                pnlCosts.Visible = registrationTemplate.SetCostOnInstance ?? false;
-                pnlDefaultPayment.Visible = registrationTemplate.SetCostOnInstance ?? false;
-                if ( !registrationTemplate.GroupTypeId.HasValue )
-                {
-                    tbGroupName.Text = string.Empty;
-                    pnlCheckinOptions.Visible = false;
-                }
-                else
-                {
-                    pnlCheckinOptions.Visible = GroupTypeIsCheckinGroup( registrationTemplate.GroupTypeId.Value, rockContext );
-                }
-
-                lTemplateDescription.Text = registrationTemplate.Description;
-                dpPaymentDeadline.Required = registrationTemplate.IsPaymentPlanAllowed == true;
-                dpPaymentDeadline.Visible = registrationTemplate.IsPaymentPlanAllowed == true;
-            }
+            HandleRegistrationTemplateSelection( ddlTemplate.SelectedValue.AsIntegerOrNull() );
         }
 
         protected void tglEventSelection_CheckedChanged( object sender, EventArgs e )
