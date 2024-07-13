@@ -36,6 +36,7 @@ namespace Rock.Tests.Integration.Modules.Core.Lava
     /// These tests require the standard Rock sample data set to be present in the target database.
     /// </remarks>
     [TestClass]
+    [TestCategory("Core.Events.CalendarFeed")]
     public class CalendarEventsCommandTests : LavaIntegrationTestBase
     {
         private static string LavaTemplateCalendarEvents = @"
