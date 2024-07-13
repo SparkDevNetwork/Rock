@@ -37,6 +37,7 @@ namespace Rock.Tests.Integration.Modules.Core.Lava
     /// These tests require the standard Rock sample data set to be present in the target database.
     /// </remarks>
     [TestClass]
+    [TestCategory("Core.Events.CalendarFeed")]
     public class EventScheduledInstanceCommandTests : LavaIntegrationTestBase
     {
         private static string StaffMeetingEventGuidString = "93104654-DAFA-489B-A175-5F2AB3A846F1";
