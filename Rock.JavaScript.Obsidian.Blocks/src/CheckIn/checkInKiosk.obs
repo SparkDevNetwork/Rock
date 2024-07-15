@@ -92,15 +92,15 @@
                                        :session="currentSession"
                                        @updateActions="onUpdateActions($event, Screen.CheckoutSuccess)" />
 
-                <template v-for="adminScreen in adminScreens">
-                    <component v-if="adminScreen.screen === currentScreen"
-                               :key="adminScreen.screen"
-                               :is="adminScreen.component"
+                <template v-for="supervisorScreen in supervisorScreens">
+                    <component v-if="supervisorScreen.screen === currentScreen"
+                               :key="supervisorScreen.screen"
+                               :is="supervisorScreen.component"
                                :configuration="configuration"
-                               :adminData="adminData"
-                               @updateActions="onUpdateActions($event, adminScreen.screen)"
-                               @adminScreen="onAdminScreen"
-                               @closeAdmin="onCloseAdmin" />
+                               :supervisorData="supervisorData"
+                               @updateActions="onUpdateActions($event, supervisorScreen.screen)"
+                               @supervisorScreen="onSupervisorScreen"
+                               @closeSupervisor="onCloseSupervisor" />
                 </template>
             </ContentTransition>
         </section>
@@ -114,10 +114,10 @@
 <script setup lang="ts">
     import AbilityLevelSelectScreen from "./CheckInKiosk/abilityLevelSelectScreen.partial.obs";
     import ActionSelectScreen from "./CheckInKiosk/actionSelectScreen.partial.obs";
-    import AdminActionsScreen from "./CheckInKiosk/adminActionsScreen.partial.obs";
-    import AdminLoginScreen from "./CheckInKiosk/adminLoginScreen.partial.obs";
-    import AdminReprintScreen from "./CheckInKiosk/adminReprintScreen.partial.obs";
-    import AdminScheduleLocationsScreen from "./CheckInKiosk/adminScheduleLocationsScreen.partial.obs";
+    import SupervisorActionsScreen from "./CheckInKiosk/supervisorActionsScreen.partial.obs";
+    import SupervisorLoginScreen from "./CheckInKiosk/supervisorLoginScreen.partial.obs";
+    import SupervisorReprintScreen from "./CheckInKiosk/supervisorReprintScreen.partial.obs";
+    import SupervisorScheduleLocationsScreen from "./CheckInKiosk/supervisorScheduleLocationsScreen.partial.obs";
     import AreaSelectScreen from "./CheckInKiosk/areaSelectScreen.partial.obs";
     import CheckoutSelectScreen from "./CheckInKiosk/checkoutSelectScreen.partial.obs";
     import CheckoutSuccessScreen from "./CheckInKiosk/checkoutSuccessScreen.partial.obs";
@@ -136,7 +136,7 @@
     import { Component as VueComponent, computed, onBeforeUnmount, onMounted, ref, shallowRef } from "vue";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { provideKioskState } from "./CheckInKiosk/utils.partial";
-    import { AdminScreen, AdminScreenData, KioskButton, Screen } from "./CheckInKiosk/types.partial";
+    import { SupervisorScreen, SupervisorScreenData, KioskButton, Screen } from "./CheckInKiosk/types.partial";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
     import { CheckInSession } from "./CheckInKiosk/checkInSession.partial";
     import { useHttp } from "@Obsidian/Utility/http";
@@ -151,7 +151,7 @@
     provideKioskState(kioskState);
 
     const configuration = ref<KioskConfigurationBag>({});
-    const currentScreen = ref<Screen | AdminScreen>(Screen.None);
+    const currentScreen = ref<Screen | SupervisorScreen>(Screen.None);
     const currentScreenActions = ref<KioskButton[]>([]);
     const currentSession = shallowRef<CheckInSession>(new CheckInSession(configuration.value, http));
     const previousScreens = shallowRef<CheckInSession[]>([]);
@@ -160,23 +160,23 @@
     let idleTimer: number | undefined;
     const activityEvents = ["mousemove", "mousedown", "touchmove", "touchstart", "keydown"];
 
-    const adminData = ref<AdminScreenData>({ pinCode: "" });
-    const adminScreens = ref<{ screen: AdminScreen, component: VueComponent }[]>([
+    const supervisorData = ref<SupervisorScreenData>({ pinCode: "" });
+    const supervisorScreens = ref<{ screen: SupervisorScreen, component: VueComponent }[]>([
         {
-            screen: AdminScreen.Login,
-            component: AdminLoginScreen
+            screen: SupervisorScreen.Login,
+            component: SupervisorLoginScreen
         },
         {
-            screen: AdminScreen.Actions,
-            component: AdminActionsScreen
+            screen: SupervisorScreen.Actions,
+            component: SupervisorActionsScreen
         },
         {
-            screen: AdminScreen.Reprint,
-            component: AdminReprintScreen
+            screen: SupervisorScreen.Reprint,
+            component: SupervisorReprintScreen
         },
         {
-            screen: AdminScreen.ScheduleLocations,
-            component: AdminScheduleLocationsScreen
+            screen: SupervisorScreen.ScheduleLocations,
+            component: SupervisorScheduleLocationsScreen
         }
     ]);
 
@@ -259,7 +259,7 @@
         }
     }
 
-    function onUpdateActions(actions: KioskButton[], source: Screen | AdminScreen): void {
+    function onUpdateActions(actions: KioskButton[], source: Screen | SupervisorScreen): void {
         if (currentScreen.value === source) {
             currentScreenActions.value = actions;
         }
@@ -308,7 +308,7 @@
      * back to the welcome screen.
      */
     function onIdleTimerCheck(): void {
-        if (currentScreen.value === Screen.Welcome || currentScreen.value >= AdminScreen.Login) {
+        if (currentScreen.value === Screen.Welcome || currentScreen.value >= SupervisorScreen.Login) {
             return;
         }
 
@@ -318,23 +318,23 @@
     }
 
     /**
-     * Called when the configure button is clicked. Show the admin login
+     * Called when the configure button is clicked. Show the supervisor login
      * screen to allow to kiosk administration.
      */
     function onConfigureClick(): void {
         previousScreens.value = [];
-        currentScreen.value = AdminScreen.Login;
+        currentScreen.value = SupervisorScreen.Login;
     }
 
-    function onAdminScreen(screen: AdminScreen): void {
+    function onSupervisorScreen(screen: SupervisorScreen): void {
         currentScreen.value = screen;
     }
 
     /**
-     * Called when the admin screen should be closed. This will return to
+     * Called when the supervisor screen should be closed. This will return to
      * the welcome screen.
      */
-    function onCloseAdmin(): void {
+    function onCloseSupervisor(): void {
         navigateToScreen(Screen.Welcome);
     }
 

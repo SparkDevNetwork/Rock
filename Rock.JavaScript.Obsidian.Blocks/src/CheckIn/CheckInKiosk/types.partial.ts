@@ -58,7 +58,7 @@ export type CheckInKioskOptionsBag = {
 
 /**
  * Identifies each and every screen that can possibly be displayed in the
- * check-in kiosk. This does not include the administration screens.
+ * check-in kiosk. This does not include the supervisor screens.
  */
 export enum Screen {
     /**
@@ -154,20 +154,30 @@ export enum Screen {
 }
 
 /**
- * Identifies each of the administration screens that can be displayed in the
+ * Identifies each of the supervisor screens that can be displayed in the
  * check-in kiosk. This does not include the screens that are part of a normal
  * check-in flow.
  */
-export enum AdminScreen {
+export enum SupervisorScreen {
     /**
-     * The screen that will be displayed when an administrator wants to login.
+     * The screen that will be displayed when a supervisor wants to login.
      */
     Login = 100,
 
+    /**
+     * The screen that displays the list of available actions to the supervisor.
+     */
     Actions,
 
+    /**
+     * The screen that allows a reprint of existing check-in labels.
+     */
     Reprint,
 
+    /**
+     * The screen that allows configuring which locations are scheduled to
+     * be open.
+     */
     ScheduleLocations,
 }
 
@@ -233,7 +243,7 @@ export interface IRockCheckInNative {
 }
 /* eslint-enable @typescript-eslint/naming-convention */
 
-export type AdminScreenData = {
+export type SupervisorScreenData = {
     pinCode: string;
 
     counts?: GetCurrentAttendanceResponseBag;
