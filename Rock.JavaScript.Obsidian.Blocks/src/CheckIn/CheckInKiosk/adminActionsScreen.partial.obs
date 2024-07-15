@@ -36,7 +36,6 @@
 
             <RockButton class="repring-labels-button"
                         btnType="primary"
-                        disabled
                         @click="onScheduleLocationsClick">
                 Schedule Locations
             </RockButton>
@@ -161,7 +160,7 @@
     }
 
     function onScheduleLocationsClick(): void {
-        // TODO: Do this.
+        emit("adminScreen", AdminScreen.ScheduleLocations);
     }
 
     // #endregion
