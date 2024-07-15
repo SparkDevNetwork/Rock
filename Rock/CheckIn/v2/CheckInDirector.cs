@@ -549,6 +549,7 @@ namespace Rock.CheckIn.v2
                 FamilySearchType = configuration.FamilySearchType,
                 IsAutoSelect = configuration.KioskCheckInType == Enums.CheckIn.KioskCheckInMode.Family
                     && configuration.AutoSelect == Enums.CheckIn.AutoSelectMode.PeopleAndAreaGroupLocation,
+                IsCheckoutAtKioskAllowed = configuration.IsCheckoutAtKioskAllowed,
                 IsLocationCountDisplayed = configuration.IsLocationCountDisplayed,
                 IsOverrideAvailable = configuration.IsOverrideAvailable,
                 IsPhotoHidden = configuration.IsPhotoHidden,

@@ -1276,10 +1276,14 @@ export class CheckInSession {
      * @returns A new CheckInSession object.
      */
     private withNextScreenFromFamilySelect(forceCheckin: boolean = false): Promise<CheckInSession> {
-        if (!this.getCurrentFamily() || !this.attendees) {
+        const canCheckout = this.configuration.template?.isCheckoutAtKioskAllowed === true
+            && this.currentlyCheckedIn
+            && this.currentlyCheckedIn.length > 0;
+
+            if (!this.getCurrentFamily() || !this.attendees) {
             return Promise.resolve(this.withScreen(Screen.Welcome));
         }
-        else if (!forceCheckin && this.currentlyCheckedIn && this.currentlyCheckedIn.length > 0) {
+        else if (!forceCheckin && canCheckout) {
             return Promise.resolve(this.withScreen(Screen.ActionSelect));
         }
 

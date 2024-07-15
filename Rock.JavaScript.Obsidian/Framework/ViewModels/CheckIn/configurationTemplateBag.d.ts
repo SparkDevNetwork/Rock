@@ -58,6 +58,15 @@ export type ConfigurationTemplateBag = {
     isAutoSelect: boolean;
 
     /**
+     * Gets or sets a value indicating whether to allow self-checkout on
+     * public kiosks for this configuration. When enabled, if an individual
+     * in the family is already checked in then the kiosk will prompt if
+     * they want to check-in another family member of checkout existing
+     * individuals.
+     */
+    isCheckoutAtKioskAllowed: boolean;
+
+    /**
      * Gets a value indicating whether the current location occupancy
      * counts should be displayed when selecting a location.
      */
