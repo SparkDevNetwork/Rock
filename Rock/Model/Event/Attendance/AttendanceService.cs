@@ -2659,6 +2659,7 @@ namespace Rock.Model
                 return;
             }
 
+            scheduledAttendance.ScheduledToAttend = false;
             scheduledAttendance.RSVPDateTime = RockDateTime.Now;
             scheduledAttendance.RSVP = RSVP.No;
             scheduledAttendance.DeclineReasonValueId = declineReasonValueId;
