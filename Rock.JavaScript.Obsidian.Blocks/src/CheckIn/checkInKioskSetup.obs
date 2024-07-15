@@ -164,10 +164,8 @@
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { getCameraItems, getCurrentPosition, isHtmlCameraAvailable } from "./CheckInKiosk/utils.partial";
-    import { useHttp } from "@Obsidian/Utility/http";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ConfigurationResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/configurationResponseBag";
-    import { ConfigurationOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/configurationOptionsBag";
     import { ConfigurationAreaBag } from "@Obsidian/ViewModels/CheckIn/configurationAreaBag";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
     import { onConfigurationValuesChanged, setPropertiesBoxValue, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
@@ -197,7 +195,6 @@
     };
 
     const blockConfiguration = useConfigurationValues<CheckInKioskOptionsBag>();
-    const http = useHttp();
     const invokeBlockAction = useInvokeBlockAction();
 
     const isManualSetupVisible = ref(false);
@@ -436,11 +433,11 @@
             return;
         }
 
-        const request: ConfigurationOptionsBag = {
+        const request = {
             kioskId: kioskId.value
         };
 
-        const response = await http.post<ConfigurationResponseBag>("/api/v2/checkin/Configuration", undefined, request);
+        const response = await invokeBlockAction<ConfigurationResponseBag>("GetConfiguration", request);
 
         if (!response.isSuccess || !response.data || !response.data.areas) {
             primaryAreaIds.value = [];

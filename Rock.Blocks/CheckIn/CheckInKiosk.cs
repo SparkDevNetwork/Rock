@@ -70,6 +70,13 @@ namespace Rock.Blocks.CheckIn
         IsRequired = false,
         Order = 2 )]
 
+    [CustomDropdownListField( "REST Key",
+        Description = "If your kiosk pages are configured for anonymous access then you must create a REST key with access to the check-in API endpoints and select it here.",
+        Key = AttributeKey.RestKey,
+        ListSource = RestKeyAttributeQuery,
+        IsRequired = false,
+        Order = 3)]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "b208cafe-2194-4308-aa52-a920c516805a" )]
@@ -83,6 +90,7 @@ namespace Rock.Blocks.CheckIn
             public const string SetupPage = "SetupPage";
             public const string ShowCountsByLocation = "ShowCountsByLocation";
             public const string PromotionsContentChannel = "PromotionsContentChannel";
+            public const string RestKey = "RestKey";
         }
 
         private static class PageParameterKey
@@ -91,15 +99,39 @@ namespace Rock.Blocks.CheckIn
 
         #endregion
 
+        #region Constants
+
+        private const string RestKeyAttributeQuery = @"SELECT [U].[Guid] AS [Value], [P].[LastName] AS [Text]
+FROM [UserLogin] AS [U]
+INNER JOIN [Person] AS [P] ON [P].[Id] = [U].[PersonId]
+INNER JOIN [DefinedValue] AS [RT] ON [RT].[Id] = [P].[RecordTypeValueId]
+WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "'";
+
+        #endregion
+
         #region Methods
 
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
+            var apiKey = string.Empty;
+
             RequestContext.Response.AddCssLink( RequestContext.ResolveRockUrl( "~/Styles/Blocks/Checkin/CheckInKiosk.css" ), true );
+
+            if ( RequestContext.CurrentPerson == null && GetAttributeValue( AttributeKey.RestKey ).IsNotNullOrWhiteSpace() )
+            {
+                var activeRecordStatusValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid(), RockContext ).Id;
+                var userGuid = GetAttributeValue( AttributeKey.RestKey ).AsGuid();
+
+                apiKey = new UserLoginService( RockContext ).Queryable()
+                    .Where( u => u.Guid == userGuid && u.Person.RecordStatusValueId == activeRecordStatusValueId )
+                    .Select( u => u.ApiKey )
+                    .FirstOrDefault() ?? string.Empty;
+            }
 
             return new
             {
+                ApiKey = apiKey,
                 CurrentTheme = PageCache.Layout?.Site?.Theme?.ToLower(),
                 SetupPageRoute = this.GetLinkedPageUrl( AttributeKey.SetupPage ),
                 ShowCountsByLocation = GetAttributeValue( AttributeKey.ShowCountsByLocation ).AsBoolean()

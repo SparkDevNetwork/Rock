@@ -31,6 +31,7 @@ using Rock.Model;
 using Rock.Utility.ExtensionMethods;
 using Rock.ViewModels.Blocks.CheckIn.CheckInKiosk;
 using Rock.ViewModels.CheckIn;
+using Rock.ViewModels.Rest.CheckIn;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
@@ -486,6 +487,43 @@ namespace Rock.Blocks.CheckIn
         #endregion
 
         #region Block Actions
+
+        /// <summary>
+        /// Gets the available configuration options for a kiosk. We do this as
+        /// a block instead instead of API call so that we don't have to worry
+        /// about API security. This is a fairly safe call.
+        /// </summary>
+        /// <param name="kioskId">The optional encrypted kiosk identifier.</param>
+        /// <returns>An instance of <see cref="ConfigurationResponseBag"/>.</returns>
+        [BlockAction]
+        public BlockActionResult GetConfiguration( string kioskId )
+        {
+            var director = new CheckInDirector( RockContext );
+            DeviceCache kiosk = null;
+
+            if ( kioskId.IsNotNullOrWhiteSpace() )
+            {
+                kiosk = DeviceCache.GetByIdKey( kioskId, RockContext );
+
+                if ( kiosk == null )
+                {
+                    return ActionBadRequest( "Kiosk was not found." );
+                }
+            }
+
+            try
+            {
+                return ActionOk( new ConfigurationResponseBag
+                {
+                    Templates = director.GetConfigurationTemplateBags(),
+                    Areas = director.GetCheckInAreaSummaries( kiosk, null )
+                } );
+            }
+            catch ( CheckInMessageException ex )
+            {
+                return ActionBadRequest( ex.Message );
+            }
+        }
 
         /// <summary>
         /// A request from the client to determine the kiosk configuration from
