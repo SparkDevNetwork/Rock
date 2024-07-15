@@ -588,6 +588,10 @@ namespace Rock.Mobile
             {
                 var additionalPageSettings = page.GetAdditionalSettings<AdditionalPageSettings>();
 
+                var imageUrlOptions = new GetImageUrlOptions
+                {
+                    PublicAppRoot = applicationRoot
+                };
 
                 var mobilePage = new MobilePage
                 {
@@ -604,7 +608,7 @@ namespace Rock.Mobile
                     PageGuid = page.Guid,
                     Order = page.Order,
                     ParentPageGuid = page.ParentPage?.Guid,
-                    IconUrl = page.IconBinaryFileId.HasValue ? FileUrlHelper.GetImageUrl( page.IconBinaryFileId.Value ) : null,
+                    IconUrl = page.IconBinaryFileId.HasValue ? FileUrlHelper.GetImageUrl( page.IconBinaryFileId.Value, imageUrlOptions ) : null,
                     LavaEventHandler = additionalPageSettings.LavaEventHandler,
                     DepthLevel = depth,
                     CssClasses = page.BodyCssClass,
