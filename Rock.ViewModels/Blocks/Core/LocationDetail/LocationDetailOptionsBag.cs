@@ -33,5 +33,13 @@ namespace Rock.ViewModels.Blocks.Core.LocationDetail
         /// The printer device options.
         /// </value>
         public List<ListItemBag> PrinterDeviceOptions { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the location has NamedLocationFeaturesEnabled set to true.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the location has named location features values enabled; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsPersonIdAvailable { get; set; }
     }
 }

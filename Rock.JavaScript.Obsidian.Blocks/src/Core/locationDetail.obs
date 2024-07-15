@@ -139,7 +139,9 @@
     });
 
     const options = computed((): LocationDetailOptionsBag => {
-        return config.options ?? {};
+        return config.options ?? {
+            isPersonIdAvailable: false,
+        };
     });
 
     // #endregion

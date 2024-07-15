@@ -24,6 +24,9 @@
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export type LocationDetailOptionsBag = {
+    /** Gets or sets a value indicating whether the location has NamedLocationFeaturesEnabled set to true. */
+    isPersonIdAvailable: boolean;
+
     /** Gets or sets the printer device options. */
     printerDeviceOptions?: ListItemBag[] | null;
 };

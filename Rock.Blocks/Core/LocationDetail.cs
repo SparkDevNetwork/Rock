@@ -85,6 +85,7 @@ namespace Rock.Blocks.Core
         private static class PageParameterKey
         {
             public const string LocationId = "LocationId";
+            public const string PersonId = "PersonId";
         }
 
         private static class NavigationUrlKey
@@ -128,7 +129,7 @@ namespace Rock.Blocks.Core
                 .OrderBy( d => d.Name ).ToListItemBagList();
 
             options.PrinterDeviceOptions = deviceItems;
-
+            options.IsPersonIdAvailable = PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull().HasValue;
             return options;
         }
 
