@@ -99,7 +99,8 @@
                                :configuration="configuration"
                                :adminData="adminData"
                                @updateActions="onUpdateActions($event, adminScreen.screen)"
-                               @adminScreen="onAdminScreen" />
+                               @adminScreen="onAdminScreen"
+                               @closeAdmin="onCloseAdmin" />
                 </template>
             </ContentTransition>
         </section>
@@ -327,6 +328,14 @@
 
     function onAdminScreen(screen: AdminScreen): void {
         currentScreen.value = screen;
+    }
+
+    /**
+     * Called when the admin screen should be closed. This will return to
+     * the welcome screen.
+     */
+    function onCloseAdmin(): void {
+        navigateToScreen(Screen.Welcome);
     }
 
     // Read our check-in configuration and then start up.
