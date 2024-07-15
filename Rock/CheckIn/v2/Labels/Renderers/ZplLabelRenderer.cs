@@ -199,6 +199,9 @@ namespace Rock.CheckIn.v2.Labels.Renderers
             if ( config.HorizontalAlignment == HorizontalTextAlignment.Center )
             {
                 alignment = "C";
+                // If the text does not end in a ZPL newline then the alignment
+                // doesn't work exactly as expected.
+                textValue += "\\&";
             }
             else if ( config.HorizontalAlignment == HorizontalTextAlignment.Right )
             {
