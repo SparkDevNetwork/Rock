@@ -75,7 +75,7 @@
 
     /** `true` if the grid settings is performing any filtering. */
     const hasSettingsFilters = computed((): boolean => {
-        return !!gridSettings.value.category;
+        return !!gridSettings.value.category.value;
     });
 
     /**
