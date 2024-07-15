@@ -1066,6 +1066,7 @@ namespace RockWeb.Blocks.Event
                 BindAudienceGrid();
             }
         }
+
         private void Init_SetContact()
         {
             ppContact.SetValue( CurrentPerson );
@@ -1076,6 +1077,7 @@ namespace RockWeb.Blocks.Event
                 tbContactPhone.Text = pn.NumberFormatted;
             }
         }
+
         private void Init_SetRegistrationTemplateValues( RockContext rockContext )
         {
             List<Guid> registrationTemplateGuids = new List<Guid>();
@@ -1107,6 +1109,7 @@ namespace RockWeb.Blocks.Event
             ddlTemplate.DataSource = registrationTemplates;
             ddlTemplate.DataBind();
         }
+
         private void Init_SetCampusAndEventSelectionOption()
         {
             // Hide wizard items if the block settings don't indicate that they should be used.
@@ -1133,6 +1136,7 @@ namespace RockWeb.Blocks.Event
                 pnlNewEventSelection.Visible = false;
             }
         }
+
         private void Init_SetDefaultAccount( RockContext rockContext )
         {
             Guid? acctGuid = GetAttributeValue( AttributeKey.DefaultAccount ).AsGuidOrNull();
@@ -1143,6 +1147,7 @@ namespace RockWeb.Blocks.Event
                 apAccount.SetValue( acct );
             }
         }
+
         private void Init_SetDefaultCalendar( RockContext rockContext )
         {
             int defaultCalendarId = -1;
@@ -1172,6 +1177,7 @@ namespace RockWeb.Blocks.Event
 
             Session["CurrentCalendars"] = cblCalendars.SelectedValuesAsInt;
         }
+
         private void Init_SetRootGroup( RockContext rockContext )
         {
             Guid? groupGuid = GetAttributeValue( AttributeKey.RootGroup ).AsGuidOrNull();
@@ -1182,6 +1188,7 @@ namespace RockWeb.Blocks.Event
                 gpParentGroup.RootGroupId = rootGroup.Id;
             }
         }
+
         private void Init_SetGroupRequired()
         {
             bool groupRequired = GetAttributeValue( AttributeKey.RequireGroup ).AsBoolean();
@@ -1191,6 +1198,7 @@ namespace RockWeb.Blocks.Event
                 tbGroupName.Help = "If you do not enter a group name, no group will be created.";
             }
         }
+
         private void Init_SetCalendarEventRequired()
         {
             bool requireEvent = GetAttributeValue( AttributeKey.RequireCalendarEvents ).AsBoolean();
@@ -1200,6 +1208,7 @@ namespace RockWeb.Blocks.Event
                 eipSelectedEvent.Help = "If you do not select an event item, no event occurrence will be created.";
             }
         }
+
         private void Init_SetURLSlugRequired()
         {
             bool slugRequired = GetAttributeValue( AttributeKey.RequireURLSlug ).AsBoolean();
@@ -1209,6 +1218,7 @@ namespace RockWeb.Blocks.Event
                 tbSlug.Help = "If you do not enter a URL Slug, no registration will be created.";
             }
         }
+
         private void Init_SetRegistrationTemplateSelector( RockContext rockContext )
         {
             bool groupRequired = GetAttributeValue( AttributeKey.RequireGroup ).AsBoolean();
@@ -1219,10 +1229,12 @@ namespace RockWeb.Blocks.Event
                 rtpRegistrationTemplate.Visible = false;
                 ddlTemplate.Visible = true;
                 Init_SetRegistrationTemplateValues( rockContext );
-                return;
             }
-            rtpRegistrationTemplate.Visible = true;
-            ddlTemplate.Visible = false;
+            else
+            {
+                rtpRegistrationTemplate.Visible = true;
+                ddlTemplate.Visible = false;
+            }
         }
 
         #endregion Control Initialization
