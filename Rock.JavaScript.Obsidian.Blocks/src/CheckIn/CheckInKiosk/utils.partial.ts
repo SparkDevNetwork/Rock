@@ -20,6 +20,7 @@ import { Html5Qrcode } from "@Obsidian/Libs/html5-qrcode";
 import { KioskType } from "@Obsidian/Enums/Core/kioskType";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { KioskBag } from "@Obsidian/ViewModels/CheckIn/kioskBag";
+import { LegacyClientLabelBag } from "@Obsidian/ViewModels/CheckIn/Labels/legacyClientLabelBag";
 import { inject, provide } from "vue";
 import { zeroPad } from "@Obsidian/Utility/numberUtils";
 import { IRockCheckInNative } from "./types.partial";
@@ -267,4 +268,61 @@ export class InvalidCheckInStateError extends Error {
 
         console.error(stateMessage);
     }
+}
+
+/**
+ * Prints the legacy labels by invoking the injected native handler code in
+ * the browser from the client.
+ *
+ * @param legacyLabels The legacy labels to be printed.
+ *
+ * @returns An array of error messages.
+ */
+export async function printLegacyLabels(legacyLabels: LegacyClientLabelBag[]): Promise<string[]> {
+    if (legacyLabels.length === 0) {
+        return [];
+    }
+
+    for (const label of legacyLabels) {
+        if (label.printerAddress === null) {
+            label.printerAddress = "";
+        }
+    }
+
+    if (typeof window["RockCheckinNative"] !== "undefined") {
+        // The iOS app needs PascalCase keys, so convert.
+        const labels = legacyLabels.map(l => {
+            const label: Record<string, unknown> = {};
+
+            for (const key in l) {
+                if (Object.hasOwnProperty.call(l, key)) {
+                    label[key.charAt(0).toUpperCase() + key.substring(1)] = l[key];
+                }
+            }
+
+            return label;
+        });
+
+        try {
+            await window["RockCheckinNative"].PrintLabels(JSON.stringify(labels));
+        }
+        catch (error) {
+            if (error && typeof error === "object" && typeof error["Error"] === "string") {
+                return [error["Error"]];
+            }
+            else {
+                return ["Unknown error printing labels."];
+            }
+        }
+    }
+    else if (window["chrome"] && window["chrome"].webview && typeof window["chrome"].webview.postMessage) {
+        const cmd = {
+            eventName: "PRINT_LABELS",
+            eventData: JSON.stringify(legacyLabels)
+        };
+
+        window["chrome"].webview.postMessage(cmd);
+    }
+
+    return [];
 }

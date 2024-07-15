@@ -1270,6 +1270,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\Labels\iconFieldConfigurationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\Labels\imageFieldConfigurationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\Labels\labelFieldBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\CheckIn\Labels\legacyClientLabelBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\Labels\lineFieldConfigurationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\Labels\rectangleFieldConfigurationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\Labels\textFieldConfigurationBag.d.ts" />

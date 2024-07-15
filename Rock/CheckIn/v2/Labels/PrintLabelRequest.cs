@@ -74,9 +74,12 @@ namespace Rock.CheckIn.v2.Labels
             {
                 var mergeFields = new Dictionary<string, object>();
 
-                foreach ( var prop in LabelData.GetType().GetProperties() )
+                if ( LabelData != null )
                 {
-                    mergeFields.Add( prop.Name, prop.GetValue( LabelData ) );
+                    foreach ( var prop in LabelData.GetType().GetProperties() )
+                    {
+                        mergeFields.Add( prop.Name, prop.GetValue( LabelData ) );
+                    }
                 }
 
                 _mergeFields = mergeFields;
