@@ -1,8 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="admin-login-screen">
-        <MainPanel title="Administrator Login"
-                   subtitle="Enter your PIN to login as a manager">
+    <div class="supervisor-login-screen">
+        <MainPanel title="Supervisor Login"
+                   subtitle="Enter your PIN to login as a supervisor">
             <TextBox v-model="pinCode"
                      class="pin-code"
                      @keypress.enter="onLoginClick" />
@@ -23,14 +23,14 @@
         <MainPanel title="Current Counts"
                    subtitle="Below are the current check-in counts"
                    class="flex-grow-1">
-            <AdminLoginScreenCounts :counts="counts"
-                                    :showCountsByLocation="showCountsByLocation" />
+            <SupervisorLoginScreenCounts :counts="counts"
+                                         :showCountsByLocation="showCountsByLocation" />
         </MainPanel>
     </div>
 </template>
 
 <script setup lang="ts">
-    import AdminLoginScreenCounts from "./adminLoginScreenCounts.partial.obs";
+    import SupervisorLoginScreenCounts from "./supervisorLoginScreenCounts.partial.obs";
     import MainPanel from "./mainPanel.partial.obs";
     import NumberPad from "./numberPad.partial.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
@@ -39,7 +39,7 @@
     import { GetCurrentAttendanceResponseBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/getCurrentAttendanceResponseBag";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
     import { alert } from "@Obsidian/Utility/dialogs";
-    import { AdminScreen, AdminScreenData, AttendanceCountGroup, KioskButton } from "./types.partial";
+    import { SupervisorScreen, SupervisorScreenData, AttendanceCountGroup, KioskButton } from "./types.partial";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
 
     const props = defineProps({
@@ -48,15 +48,15 @@
             required: true
         },
 
-        adminData: {
-            type: Object as PropType<AdminScreenData>,
+        supervisorData: {
+            type: Object as PropType<SupervisorScreenData>,
             required: true
         }
     });
 
     const emit = defineEmits<{
         (event: "updateActions", actions: KioskButton[]): void;
-        (event: "adminScreen", screen: AdminScreen): void;
+        (event: "supervisorScreen", screen: SupervisorScreen): void;
     }>();
 
     const blockConfiguration = useConfigurationValues<Record<string, unknown>>();
@@ -203,7 +203,7 @@
         const response = await invokeBlockAction<GetCurrentAttendanceResponseBag>("GetCurrentAttendance", data);
 
         if (response.isSuccess && response.data) {
-            props.adminData.counts = response.data;
+            props.supervisorData.counts = response.data;
         }
     }
 
@@ -218,8 +218,8 @@
             return await alert(response.errorMessage || "Unable to authenticate.");
         }
 
-        props.adminData.pinCode = pinCode.value;
-        emit("adminScreen", AdminScreen.Actions);
+        props.supervisorData.pinCode = pinCode.value;
+        emit("supervisorScreen", SupervisorScreen.Actions);
     }
 
     // #endregion
@@ -227,12 +227,12 @@
     updateActions();
     updateCounts();
 
-    watch(() => props.adminData.counts, () => {
+    watch(() => props.supervisorData.counts, () => {
         if (!showCountsByLocation.value) {
-            counts.value = getCountsByArea(props.adminData.counts ?? {});
+            counts.value = getCountsByArea(props.supervisorData.counts ?? {});
         }
         else {
-            counts.value = getCountsByLocation(props.adminData.counts ?? {});
+            counts.value = getCountsByLocation(props.supervisorData.counts ?? {});
         }
     });
 </script>

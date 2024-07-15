@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="admin-action-screen">
+    <div class="supervisor-action-screen">
         <MainPanel title="Locations"
                    subtitle="Tap locations to open or close">
             <div class="button-list">
@@ -18,7 +18,7 @@
             </div>
         </MainPanel>
 
-        <MainPanel title="Administrator Actions"
+        <MainPanel title="Supervisor Actions"
                    subtitle="Select an action from the list below"
                    class="flex-grow-1">
             <RockButton class="reprint-labels-button"
@@ -52,11 +52,11 @@
 <script setup lang="ts">
     import MainPanel from "./mainPanel.partial.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import { computed, PropType, watch } from "vue";
+    import { computed, PropType } from "vue";
     import { GetCurrentAttendanceResponseBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/getCurrentAttendanceResponseBag";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
     import { alert } from "@Obsidian/Utility/dialogs";
-    import { AdminScreen, AdminScreenData, KioskButton } from "./types.partial";
+    import { SupervisorScreen, SupervisorScreenData, KioskButton } from "./types.partial";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
 
     type LocationData = {
@@ -72,16 +72,16 @@
             required: true
         },
 
-        adminData: {
-            type: Object as PropType<AdminScreenData>,
+        supervisorData: {
+            type: Object as PropType<SupervisorScreenData>,
             required: true
         }
     });
 
     const emit = defineEmits<{
         (event: "updateActions", actions: KioskButton[]): void;
-        (event: "adminScreen", screen: AdminScreen): void;
-        (event: "closeAdmin"): void;
+        (event: "supervisorScreen", screen: SupervisorScreen): void;
+        (event: "closeSupervisor"): void;
     }>();
 
     const invokeBlockAction = useInvokeBlockAction();
@@ -93,14 +93,14 @@
     // #region Computed Values
 
     const locations = computed((): LocationData[] => {
-        if (!props.adminData.counts?.locations) {
+        if (!props.supervisorData.counts?.locations) {
             return [];
         }
 
         const locs: LocationData[] = [];
 
-        for (const location of props.adminData.counts.locations) {
-            const isLocationValid = props.adminData.counts
+        for (const location of props.supervisorData.counts.locations) {
+            const isLocationValid = props.supervisorData.counts
                 .groups
                 ?.some(g => g.locationIds?.includes(location.id ?? ""));
 
@@ -112,7 +112,7 @@
                 id: location.id,
                 name: location.name,
                 isOpen: location.isOpen,
-                currentCount: props.adminData.counts.attendance
+                currentCount: props.supervisorData.counts.attendance
                     ?.filter(a => a.locationId === location.id)
                     .length ?? 0
             });
@@ -138,7 +138,7 @@
 
     async function onLocationClick(location: LocationData): Promise<void> {
         const data = {
-            pinCode: props.adminData.pinCode,
+            pinCode: props.supervisorData.pinCode,
             locationId: location.id,
             isOpen: !location.isOpen
         };
@@ -149,17 +149,17 @@
             return await alert(response.errorMessage || "Unable to change room status.");
         }
 
-        const newCounts = JSON.parse(JSON.stringify(props.adminData.counts)) as GetCurrentAttendanceResponseBag;
+        const newCounts = JSON.parse(JSON.stringify(props.supervisorData.counts)) as GetCurrentAttendanceResponseBag;
         const newLocation = newCounts.locations?.find(l => l.id === location.id);
 
         if (newLocation) {
             newLocation.isOpen = data.isOpen;
-            props.adminData.counts = newCounts;
+            props.supervisorData.counts = newCounts;
         }
     }
 
     function onReprintLabelsClick(): void {
-        emit("adminScreen", AdminScreen.Reprint);
+        emit("supervisorScreen", SupervisorScreen.Reprint);
     }
 
     function onOverrideClick(): void {
@@ -167,18 +167,14 @@
     }
 
     function onScheduleLocationsClick(): void {
-        emit("adminScreen", AdminScreen.ScheduleLocations);
+        emit("supervisorScreen", SupervisorScreen.ScheduleLocations);
     }
 
     function onCloseClick(): void {
-        emit("closeAdmin");
+        emit("closeSupervisor");
     }
 
     // #endregion
 
     updateActions();
-
-    watch(() => props.adminData.counts, () => {
-        console.log("counts changed", props.adminData.counts);
-    });
 </script>

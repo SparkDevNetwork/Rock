@@ -149,7 +149,13 @@
     });
 
     const options = computed((): LocationDetailOptionsBag => {
-        return config.options ?? {} as LocationDetailOptionsBag;
+        return config.options ?? {
+            canAdministrate: false,
+            hasParentLocationId: false,
+            hasPersonId: false,
+            isPersonIdAvailable: false,
+            mapStyleGuid: ""
+        };
     });
 
     /**

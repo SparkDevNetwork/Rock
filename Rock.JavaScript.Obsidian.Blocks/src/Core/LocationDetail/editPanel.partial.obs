@@ -2,10 +2,9 @@
 <template>
     <fieldset>
         <div class="row">
-            <div class="col-md-6" v-if="!hasPersonId">
-
+            <div v-if="areNamedLocationFeaturesEnabled" class="col-md-6">
                 <LocationItemPicker v-model="parentLocation"
-                                    label="Parent Location" />
+                                label="Parent Location" />
 
                 <TextBox v-model="name"
                          label="Name"
@@ -90,6 +89,7 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { AddressStandardizationResultBag } from "@Obsidian/ViewModels/Blocks/Core/LocationDetail/addressStandardizationResultBag";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
+	import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
 
     const props = defineProps({
         modelValue: {
@@ -150,6 +150,10 @@
     // #region Computed Values
     const printerDeviceOptions = computed((): ListItemBag[] => {
         return props.options.printerDeviceOptions ?? [];
+    });
+
+    const areNamedLocationFeaturesEnabled = computed((): boolean => {
+        return !(props.options.isPersonIdAvailable || (props.modelValue.idKey &&  isNullOrWhiteSpace(props.modelValue.name)));
     });
 
     const standardizationResults = computed((): string => {

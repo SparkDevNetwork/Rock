@@ -1,5 +1,5 @@
 <template>
-    <div class="admin-reprint-screen">
+    <div class="supervisor-reprint-screen">
         <MainPanel title="Reprint Labels"
                    subtitle="Tap a button below to reprint labels.">
             <TextBox v-model="searchTerm"
@@ -36,7 +36,7 @@
     import { alert } from "@Obsidian/Utility/dialogs";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
     import { computed, PropType, ref, shallowRef } from "vue";
-    import { AdminScreen, AdminScreenData, KioskButton } from "./types.partial";
+    import { SupervisorScreen, SupervisorScreenData, KioskButton } from "./types.partial";
     import { CheckInItemBag } from "@Obsidian/ViewModels/CheckIn/checkInItemBag";
     import { printLegacyLabels } from "./utils.partial";
 
@@ -57,15 +57,15 @@
             required: true
         },
 
-        adminData: {
-            type: Object as PropType<AdminScreenData>,
+        supervisorData: {
+            type: Object as PropType<SupervisorScreenData>,
             required: true
         }
     });
 
     const emit = defineEmits<{
         (event: "updateActions", actions: KioskButton[]): void;
-        (event: "adminScreen", screen: AdminScreen): void;
+        (event: "supervisorScreen", screen: SupervisorScreen): void;
     }>();
 
     const invokeBlockAction = useInvokeBlockAction();
@@ -115,7 +115,7 @@
      */
     async function loadAttendance(): Promise<void> {
         const data = {
-            pinCode: props.adminData.pinCode,
+            pinCode: props.supervisorData.pinCode,
             kioskId: props.configuration.kiosk?.id,
             searchValue: searchTerm.value
         };
@@ -138,7 +138,7 @@
      */
     async function onPrintClick(id?: string | null): Promise<void> {
         const data = {
-            pinCode: props.adminData.pinCode,
+            pinCode: props.supervisorData.pinCode,
             kioskId: props.configuration.kiosk?.id,
             attendanceId: id
         };
@@ -169,10 +169,10 @@
     }
 
     /**
-     * Done button handler, return to the admin action screen.
+     * Done button handler, return to the supvisor action screen.
      */
     function onDoneClick(): void {
-        emit("adminScreen", AdminScreen.Actions);
+        emit("supervisorScreen", SupervisorScreen.Actions);
     }
 
     // #endregion

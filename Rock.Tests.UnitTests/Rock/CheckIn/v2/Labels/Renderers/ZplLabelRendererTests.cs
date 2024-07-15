@@ -472,6 +472,39 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Labels.Renderers
         }
 
         [TestMethod]
+        public void WriteTextField_WithCenterAlignment_EndsTextWithZebraNewline()
+        {
+            var expectedPattern = new Regex( $@"\^FD.*\\&\^FS" );
+
+            var renderer = new ZplLabelRenderer();
+            var request = new PrintLabelRequest
+            {
+                Label = new DesignedLabelBag(),
+                Capabilities = new PrinterCapabilities()
+            };
+
+            var field = new Mock<LabelField>( MockBehavior.Strict, new LabelFieldBag() );
+            field.Setup( f => f.GetConfiguration<TextFieldConfiguration>() )
+                .Returns( new TextFieldConfiguration
+                {
+                    HorizontalAlignment = HorizontalTextAlignment.Center
+                } );
+            field.Setup( f => f.GetFormattedValues( request ) )
+                .Returns( () => new List<string> { "Test Value" } );
+
+            var zpl = GetTextFromStream( stream =>
+            {
+                renderer.BeginLabel( stream, request );
+                stream.SetLength( 0 );
+
+                renderer.WriteField( field.Object );
+                renderer.Dispose();
+            } );
+
+            Assert.That.Matches( zpl, expectedPattern );
+        }
+
+        [TestMethod]
         public void WriteTextField_WithRightAlignment_IncludesRightAlignmentToken()
         {
             var expectedAlignment = "R";

@@ -137,6 +137,7 @@ namespace Rock.Blocks.Core
             options.HasPersonId = PageParameter( PageParameterKey.PersonId ).IsNotNullOrWhiteSpace();
             options.HasParentLocationId = PageParameter( PageParameterKey.ParentLocationId ).IsNotNullOrWhiteSpace();
             options.MapStyleGuid = GetAttributeValue( AttributeKey.MapStyle ).AsGuid();
+            options.IsPersonIdAvailable = PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull().HasValue;
 
             return options;
         }
