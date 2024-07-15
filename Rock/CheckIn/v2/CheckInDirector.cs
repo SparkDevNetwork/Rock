@@ -518,7 +518,7 @@ namespace Rock.CheckIn.v2
 
             if ( !checkinTemplateTypeId.HasValue )
             {
-                throw new Exception( "Check-in Template Purpose was not found in the database, please check your installation." );
+                throw new CheckInMessageException( "Check-in Template Purpose was not found in the database, please check your installation." );
             }
 
             return GroupTypeCache.All( RockContext )

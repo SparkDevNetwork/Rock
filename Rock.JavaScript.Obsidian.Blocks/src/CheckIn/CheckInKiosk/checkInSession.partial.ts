@@ -163,6 +163,9 @@ export class CheckInSession {
     /** The object to use when making HTTP requests to the server. */
     public readonly http: HttpFunctions;
 
+    /** The API key to use to authorize requests from this session. */
+    public readonly apiKey?: string;
+
     // #endregion
 
     // #region Constructors
@@ -191,6 +194,7 @@ export class CheckInSession {
             this.sessionGuid = configurationOrSession.sessionGuid;
             this.configuration = configurationOrSession.configuration;
             this.http = configurationOrSession.http;
+            this.apiKey = configurationOrSession.apiKey;
             this.currentScreen = configurationOrSession.currentScreen;
             this.searchTerm = configurationOrSession.searchTerm;
             this.searchType = configurationOrSession.searchType;
@@ -228,6 +232,21 @@ export class CheckInSession {
     // #endregion
 
     // #region Private Support Functions
+
+    /**
+     * Gets the URL to make an authenticated request to the API.
+     *
+     * @param baseUrl The base URL to be requested.
+     *
+     * @returns A modified URL that should be sent to the server.
+     */
+    private getApiUrl(baseUrl: string): string {
+        if (this.apiKey) {
+            return `${baseUrl}?apiKey=${this.apiKey}`;
+        }
+
+        return baseUrl;
+    }
 
     /**
      * Creates a new check-in session object that will display the specified
@@ -306,7 +325,7 @@ export class CheckInSession {
             requests: attendanceRequests
         };
 
-        const response = await this.http.post<SaveAttendanceResponseBag>("/api/v2/checkin/SaveAttendance", undefined, request);
+        const response = await this.http.post<SaveAttendanceResponseBag>(this.getApiUrl("/api/v2/checkin/SaveAttendance"), undefined, request);
 
         if (!response.isSuccess || !response.data?.attendances) {
             throw new Error(response.errorMessage || UnexpectedErrorMessage);
@@ -336,7 +355,7 @@ export class CheckInSession {
             sessionGuid: this.sessionGuid
         };
 
-        const response = await this.http.post<ConfirmAttendanceResponseBag>("/api/v2/checkin/ConfirmAttendance", undefined, request);
+        const response = await this.http.post<ConfirmAttendanceResponseBag>(this.getApiUrl("/api/v2/checkin/ConfirmAttendance"), undefined, request);
 
         if (!response.isSuccess || !response.data?.attendances) {
             throw new Error(response.errorMessage || UnexpectedErrorMessage);
@@ -403,7 +422,7 @@ export class CheckInSession {
             searchType: searchType
         };
 
-        const response = await this.http.post<SearchForFamiliesResponseBag>("/api/v2/checkin/SearchForFamilies", undefined, request);
+        const response = await this.http.post<SearchForFamiliesResponseBag>(this.getApiUrl("/api/v2/checkin/SearchForFamilies"), undefined, request);
 
         if (!response.isSuccess || !response.data?.families) {
             throw new Error(response.errorMessage || UnexpectedErrorMessage);
@@ -436,7 +455,7 @@ export class CheckInSession {
             familyId: familyId
         };
 
-        const response = await this.http.post<FamilyMembersResponseBag>("/api/v2/checkin/FamilyMembers", undefined, request);
+        const response = await this.http.post<FamilyMembersResponseBag>(this.getApiUrl("/api/v2/checkin/FamilyMembers"), undefined, request);
 
         if (!response.isSuccess || !response.data?.people) {
             throw new Error(response.errorMessage || UnexpectedErrorMessage);
@@ -497,7 +516,7 @@ export class CheckInSession {
             attendanceIds: attendanceIds
         };
 
-        const response = await this.http.post<CheckoutResponseBag>("/api/v2/checkin/Checkout", undefined, request);
+        const response = await this.http.post<CheckoutResponseBag>(this.getApiUrl("/api/v2/checkin/Checkout"), undefined, request);
 
         if (!response.isSuccess || !response.data?.attendances) {
             throw new Error(response.errorMessage || UnexpectedErrorMessage);
@@ -583,7 +602,7 @@ export class CheckInSession {
             personId: attendeeId
         };
 
-        const response = await this.http.post<AttendeeOpportunitiesResponseBag>("/api/v2/checkin/AttendeeOpportunities", undefined, request);
+        const response = await this.http.post<AttendeeOpportunitiesResponseBag>(this.getApiUrl("/api/v2/checkin/AttendeeOpportunities"), undefined, request);
 
         if (!response.isSuccess || !response.data?.opportunities) {
             throw new Error(response.errorMessage || UnexpectedErrorMessage);
@@ -1181,6 +1200,33 @@ export class CheckInSession {
         return scheduleIndex === 0;
     }
 
+    /**
+     * Cancels the check-in session and deletes any pending attendance records.
+     */
+    public async cancelSession(): Promise<void> {
+        if (this.attendances.length > 0) {
+            try {
+                await this.http.doApiCall("DELETE", this.getApiUrl(`/api/v2/checkin/pendingAttendance/${this.sessionGuid}`));
+            }
+            catch {
+                // Intentionally ignoring errors.
+            }
+        }
+    }
+
+    /**
+     * Configures a new cloned check-in session to use the API key for requests.
+     *
+     * @param apiKey The API key to use for authorizing API requests.
+     *
+     * @returns A new check-in session instance.
+     */
+    public withApiKey(apiKey: string): CheckInSession {
+        return new CheckInSession(this, {
+            apiKey: apiKey
+        });
+    }
+
     // #endregion
 
     // #region Screen Switch Functions
@@ -1280,7 +1326,7 @@ export class CheckInSession {
             && this.currentlyCheckedIn
             && this.currentlyCheckedIn.length > 0;
 
-            if (!this.getCurrentFamily() || !this.attendees) {
+        if (!this.getCurrentFamily() || !this.attendees) {
             return Promise.resolve(this.withScreen(Screen.Welcome));
         }
         else if (!forceCheckin && canCheckout) {

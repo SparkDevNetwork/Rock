@@ -153,7 +153,7 @@
     const configuration = ref<KioskConfigurationBag>({});
     const currentScreen = ref<Screen | SupervisorScreen>(Screen.None);
     const currentScreenActions = ref<KioskButton[]>([]);
-    const currentSession = shallowRef<CheckInSession>(new CheckInSession(configuration.value, http));
+    const currentSession = shallowRef<CheckInSession>(createNewSession());
     const previousScreens = shallowRef<CheckInSession[]>([]);
     let currentAttendeeId: string | undefined | null;
     let lastActivity: number = Date.now();
@@ -240,6 +240,16 @@
         window.location.href = blockConfiguration.setupPageRoute as string;
     }
 
+    function createNewSession(): CheckInSession {
+        let session = new CheckInSession(configuration.value, http);
+
+        if (blockConfiguration.apiKey) {
+            session = session.withApiKey(blockConfiguration.apiKey as string);
+        }
+
+        return session;
+    }
+
     function navigateToScreen(screen: Screen): void {
         currentScreenActions.value = [];
         currentScreen.value = screen;
@@ -247,14 +257,10 @@
         // Delete any pending attendance records created, this should be moved
         // to the session object.
         if (screen === Screen.Welcome) {
-            try {
-                http.doApiCall("DELETE", `/api/v2/checkin/pendingAttendance/${currentSession.value.sessionGuid}`);
-            }
-            catch {
-                // Intentionally ignoring errors.
-            }
+            // This is async, but we don't need to wait for it to complete.
+            currentSession.value.cancelSession();
 
-            currentSession.value = new CheckInSession(configuration.value, http);
+            currentSession.value = createNewSession();
             previousScreens.value = [];
         }
     }
