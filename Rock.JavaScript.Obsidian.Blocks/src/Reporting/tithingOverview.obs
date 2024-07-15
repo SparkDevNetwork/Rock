@@ -35,12 +35,13 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import { ChartData, ChartOptions, ChartDataset, ChartEvent, LegendElement, LegendItem, Chart, ChartType, ChartTypeRegistry, ChartConfiguration, AnnotationPluginOptions } from "@Obsidian/Libs/chart";
+    import { ChartData, ChartOptions, ChartEvent, LegendElement, LegendItem, Chart, ChartType, ChartTypeRegistry, ChartConfiguration, AnnotationPluginOptions } from "@Obsidian/Libs/chart";
     import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
     import { TithingOverviewInitializationBox } from "@Obsidian/ViewModels/Blocks/Reporting/TithingOverview/tithingOverviewInitializationBox";
     import { ChartTypeValue, ChartTypeKey, CampusAgeRangeKey } from "./TithingOverview/types.partial";
     import { TithingOverviewToolTipBag } from "@Obsidian/ViewModels/Blocks/Reporting/TithingOverview/tithingOverviewToolTipBag";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
 
     declare module "@Obsidian/Libs/chart" {
         // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-unused-vars
@@ -73,8 +74,8 @@
         maintainAspectRatio: false,
         datasets: {
             bar: {
-                barPercentage: 0.5,
-                categoryPercentage: 0.8
+                barPercentage: 0.4,
+                categoryPercentage: 1
             },
             line: {
                 fill: false,
@@ -99,8 +100,7 @@
                 },
                 labels: {
                     generateLabels: generateLegendLabels
-                },
-                onClick: legendClickHandler
+                }
             },
             tooltip: {
                 enabled: false,
@@ -116,7 +116,25 @@
                         borderWidth: 3,
                         scaleID: "y",
                         value: (ctx) => average(ctx),
-                        drawTime: "beforeDatasetsDraw"
+                        drawTime: "beforeDatasetsDraw",
+                        label: {
+                            content: (ctx, _options) => `Avg: ${average(ctx)}%`
+                        },
+                        enter({ element }, _event) {
+                            if (element?.label?.options) {
+                                element.label.options.display = true;
+                                return true;
+                            }
+
+                            return false;
+                        },
+                        leave({ element }, _event) {
+                            if (element?.label?.options) {
+                                element.label.options.display = false;
+                                return true;
+                            }
+                            return false;
+                        }
                     }
                 }
             }
@@ -125,9 +143,9 @@
             y: {
                 ticks: {
                     callback: function (label, _index, _labels) {
-                        const date = Number(label);
-                        if (date) {
-                            return Intl.NumberFormat().format(date);
+                        const number = Number(label);
+                        if (number) {
+                            return Intl.NumberFormat().format(number);
                         }
                         else {
                             return label;
@@ -240,7 +258,7 @@
         // Set Text
         if (tooltipModel.body) {
             const dataPoint = tooltipModel.dataPoints[0];
-            const label = dataPoint.dataset?.label ?? "";
+            const label = chartType.value == ChartTypeKey.BarChart ? dataPoint?.label ?? "" : dataPoint?.dataset?.label ?? "";
 
             let innerHtml = "";
             if (config.toolTipData) {
@@ -248,13 +266,14 @@
                 innerHtml += `<thead><tr><th>${toolTipInfo.campus}</th></tr></thead><tbody>`;
 
                 if (chartType.value == ChartTypeKey.BarChart) {
-                    innerHtml += `<tr><td><span style="border-width: 2px">Tithe Metric : ${toolTipInfo.titheMetric}</span></td><tr>`;
+                    const titheMetric = toolTipInfo.titheMetric ? `${toCurrencyOrNull(toolTipInfo.titheMetric, toolTipInfo.currencyInfo)}` : "N/A";
+                    innerHtml += `<tr><td><span style="border-width: 2px">Tithe Metric : ${titheMetric}</span></td><tr>`;
                     innerHtml += `<tr><td><span style="border-width: 2px">Campus Age : ${formatAge(toolTipInfo.campusOpenedDate, toolTipInfo.campusClosedDate)}</span></td><tr>`;
                     innerHtml += `<tr><td><span style="border-width: 2px">Giving Households : ${toolTipInfo.givingHouseHolds}</span></td><tr>`;
                     innerHtml += `<tr><td><span style="border-width: 2px">Tithing Households : ${toolTipInfo.tithingHouseHolds} | ${toolTipInfo.value}%</span></td><tr>`;
                 }
                 else {
-                    innerHtml += `<tr><td><span style="border-width: 2px">Tithe Metric : ${toolTipInfo.date} - ${toolTipInfo.value}%</span></td><tr>`;
+                    innerHtml += `<tr><td><span style="border-width: 2px">Tithe Metric : ${dataPoint?.label} - ${dataPoint?.formattedValue}%</span></td><tr>`;
                 }
 
                 innerHtml += "</tbody>";
@@ -321,33 +340,42 @@
      */
     function legendClickHandler(e: ChartEvent, legendItem: LegendItem, legend: LegendElement<ChartType>): void {
         const chart = legend.chart as Chart;
-        const datasets = chart.data.datasets;
+        const labels = chart.data.labels as string[];
         const legendLabel = legendItem.text as CampusAgeRangeKey;
-        const selectedDatasets: ChartDataset[] = [];
 
         if (chartType.value === ChartTypeKey.BarChart) {
             // Filter datasets based on campus age range
             for (const key in toolTipData.value) {
                 const data = toolTipData.value[key] as TithingOverviewToolTipBag;
                 const campusAge = data.campusAge;
-
+                const index = labels.findIndex(d => d === data.campus || d === data.campusShortCode);
                 // The legendLabel in bar mode is a range of ages, if the campus's age falls within the selected range
                 // select that dataset for hiding.
                 if (campusAgeInRange(campusAge, legendLabel) || data.campusShortCode === legendLabel || data.campus === legendLabel) {
-                    selectedDatasets.push(...datasets.filter(d => d.label === data.campus || d.label === data.campusShortCode));
+                    if (chart.isDatasetVisible(index)) {
+                        chart.hide(index);
+                        legendItem.hidden = true;
+                    }
+                    else {
+                        chart.show(index);
+                        legendItem.hidden = false;
+                    }
                 }
             }
         }
         else {
             // For line charts, directly filter by label
-            selectedDatasets.push(...datasets.filter(d => d.label === legendLabel));
+            const datasets = chart.data.datasets;
+            const index = datasets.findIndex(d => d.label === legendLabel);
+            if (chart.isDatasetVisible(index)) {
+                chart.hide(index);
+                legendItem.hidden = true;
+            }
+            else {
+                chart.show(index);
+                legendItem.hidden = false;
+            }
         }
-
-        // Toggle dataset visibility
-        selectedDatasets.forEach(dataset => {
-            dataset.hidden = dataset.hidden === undefined ? !dataset.hidden : undefined;
-            legendItem.hidden = true;
-        });
     }
 
     /**

@@ -17,6 +17,8 @@
 
 using System;
 
+using Rock.ViewModels.Utility;
+
 namespace Rock.ViewModels.Blocks.Reporting.TithingOverview
 {
     /// <summary>
@@ -111,5 +113,13 @@ namespace Rock.ViewModels.Blocks.Reporting.TithingOverview
         /// The campus short code.
         /// </value>
         public string CampusShortCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the currency symbol.
+        /// </summary>
+        /// <value>
+        /// The currency symbol.
+        /// </value>
+        public CurrencyInfoBag CurrencyInfo { get; set; }
     }
 }
