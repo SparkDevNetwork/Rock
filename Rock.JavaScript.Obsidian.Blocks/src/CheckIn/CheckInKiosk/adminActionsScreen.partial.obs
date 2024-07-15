@@ -21,24 +21,29 @@
         <MainPanel title="Administrator Actions"
                    subtitle="Select an action from the list below"
                    class="flex-grow-1">
-            <RockButton class="repring-labels-button"
+            <RockButton class="reprint-labels-button"
                         btnType="primary"
                         @click="onReprintLabelsClick">
                 Reprint Labels
             </RockButton>
 
-            <RockButton class="repring-labels-button"
+            <RockButton class="override-button"
                         btnType="primary"
                         disabled
                         @click="onOverrideClick">
                 Override
             </RockButton>
 
-            <RockButton class="repring-labels-button"
+            <RockButton class="schedule-locations-button"
                         btnType="primary"
-                        disabled
                         @click="onScheduleLocationsClick">
                 Schedule Locations
+            </RockButton>
+
+            <RockButton class="close-button"
+                        btnType="primary"
+                        @click="onCloseClick">
+                Close
             </RockButton>
         </MainPanel>
     </div>
@@ -76,6 +81,7 @@
     const emit = defineEmits<{
         (event: "updateActions", actions: KioskButton[]): void;
         (event: "adminScreen", screen: AdminScreen): void;
+        (event: "closeAdmin"): void;
     }>();
 
     const invokeBlockAction = useInvokeBlockAction();
@@ -161,7 +167,11 @@
     }
 
     function onScheduleLocationsClick(): void {
-        // TODO: Do this.
+        emit("adminScreen", AdminScreen.ScheduleLocations);
+    }
+
+    function onCloseClick(): void {
+        emit("closeAdmin");
     }
 
     // #endregion

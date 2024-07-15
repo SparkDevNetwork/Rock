@@ -800,10 +800,12 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\AttendanceList\attendanceListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\CheckInKiosk\activeAttendanceBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\CheckInKiosk\getCurrentAttendanceResponseBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\CheckInKiosk\getScheduledLocationsResponseBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\CheckInKiosk\locationStatusItemBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\CheckInKiosk\promotionBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\CheckInKiosk\reprintAttendanceBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\CheckInKiosk\savedKioskConfigurationBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\CheckInKiosk\scheduledLocationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\CheckInKiosk\webKioskBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\Configuration\CheckInLabelDetail\checkInLabelBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\Configuration\CheckInLabelDetail\checkInLabelDetailOptionsBag.d.ts" />

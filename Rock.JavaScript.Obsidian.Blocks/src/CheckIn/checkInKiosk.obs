@@ -99,7 +99,8 @@
                                :configuration="configuration"
                                :adminData="adminData"
                                @updateActions="onUpdateActions($event, adminScreen.screen)"
-                               @adminScreen="onAdminScreen" />
+                               @adminScreen="onAdminScreen"
+                               @closeAdmin="onCloseAdmin" />
                 </template>
             </ContentTransition>
         </section>
@@ -116,6 +117,7 @@
     import AdminActionsScreen from "./CheckInKiosk/adminActionsScreen.partial.obs";
     import AdminLoginScreen from "./CheckInKiosk/adminLoginScreen.partial.obs";
     import AdminReprintScreen from "./CheckInKiosk/adminReprintScreen.partial.obs";
+    import AdminScheduleLocationsScreen from "./CheckInKiosk/adminScheduleLocationsScreen.partial.obs";
     import AreaSelectScreen from "./CheckInKiosk/areaSelectScreen.partial.obs";
     import CheckoutSelectScreen from "./CheckInKiosk/checkoutSelectScreen.partial.obs";
     import CheckoutSuccessScreen from "./CheckInKiosk/checkoutSuccessScreen.partial.obs";
@@ -171,6 +173,10 @@
         {
             screen: AdminScreen.Reprint,
             component: AdminReprintScreen
+        },
+        {
+            screen: AdminScreen.ScheduleLocations,
+            component: AdminScheduleLocationsScreen
         }
     ]);
 
@@ -322,6 +328,14 @@
 
     function onAdminScreen(screen: AdminScreen): void {
         currentScreen.value = screen;
+    }
+
+    /**
+     * Called when the admin screen should be closed. This will return to
+     * the welcome screen.
+     */
+    function onCloseAdmin(): void {
+        navigateToScreen(Screen.Welcome);
     }
 
     // Read our check-in configuration and then start up.

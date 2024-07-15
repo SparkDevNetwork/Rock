@@ -673,3 +673,42 @@
     margin-left: auto;
     margin-right: auto;
 }
+
+
+/**
+ * Admin Schedule Locations Screen
+*/
+
+.admin-schedule-locations-screen .schedule-grid {
+    display: grid;
+    row-gap: var(--item-spacing);
+    grid-template-columns: 1fr 1fr repeat(var(--schedule-count, 0), minmax(90px, max-content));
+}
+
+.admin-schedule-locations-screen .schedule-grid > * {
+    border-bottom: 1px solid var(--tones-light);
+    padding-bottom: var(--unit-md);
+}
+
+.admin-schedule-locations-screen .schedule-grid > .header {
+    font-weight: 600;
+    font-size: var(--font-size-h2);
+    border-bottom: 1px solid var(--tones-medium);
+    padding-bottom: var(--unit-sm);
+    align-self: end;
+}
+
+.admin-schedule-locations-screen .schedule-grid .title {
+    font-weight: 600;
+    font-size: var(--font-size-h2);
+}
+
+.admin-schedule-locations-screen .schedule-grid .subtitle {
+    opacity: 0.8;
+}
+
+.admin-schedule-locations-screen .schedule-grid .checkbox .label-text::before,
+.admin-schedule-locations-screen .schedule-grid .checkbox .label-text::after {
+    width: 30px;
+    height: 30px;
+}

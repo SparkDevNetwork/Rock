@@ -18,14 +18,17 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 using Rock.Attribute;
+using Rock.CheckIn;
 using Rock.CheckIn.v2;
 using Rock.CheckIn.v2.Labels;
+using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Utility;
@@ -461,6 +464,82 @@ namespace Rock.Blocks.CheckIn
                 .ToList();
         }
 
+        /// <summary>
+        /// Gets the path to the group, including the group itself. This is
+        /// represented as a string like <c>&quot;Grand Parent &gt; Parent &gt;
+        /// Child&quot;</c>.
+        /// </summary>
+        /// <param name="groupId">The group identifier whose path is to be returned.</param>
+        /// <returns>A string representing the group path.</returns>
+        private string GetGroupPath( int groupId )
+        {
+            var names = new List<string>();
+            var group = GroupCache.Get( groupId, RockContext );
+
+            while ( group != null && !group.IsArchived )
+            {
+                names.Add( group.Name );
+                group = group.ParentGroup;
+            }
+
+            names.Reverse();
+
+            return string.Join( " > ", names );
+        }
+
+        /// <summary>
+        /// Gets the path to the group, not including the location itself. This is
+        /// represented as a string like <c>&quot;Grand Parent &gt; Parent&quot;</c>.
+        /// </summary>
+        /// <param name="locationId">The location identifier whose path is to be returned.</param>
+        /// <returns>A string representing the group path.</returns>
+        private string GetLocationAncestorPath( int locationId )
+        {
+            var names = new List<string>();
+            var location = NamedLocationCache.Get( locationId, RockContext );
+
+            while ( location != null )
+            {
+                names.Add( location.Name );
+                location = location.ParentLocation;
+            }
+
+            names.Reverse();
+
+            return string.Join( " > ", names );
+        }
+
+        /// <summary>
+        /// Gets the schedule bags that are available for use when configuring
+        /// scheduling for the group locations.
+        /// </summary>
+        /// <returns>A collection of bags that represent the schedules.</returns>
+        private List<CheckInItemBag> GetScheduleBags()
+        {
+            int scheduleCategoryId = CategoryCache.Get( Rock.SystemGuid.Category.SCHEDULE_SERVICE_TIMES.AsGuid() ).Id;
+            var scheduleService = new ScheduleService( RockContext );
+
+            // Limit Schedules to ones that have a CheckInStartOffsetMinutes
+            // and are active and in the right category.
+            return scheduleService.Queryable()
+                .Where( a => a.CheckInStartOffsetMinutes != null
+                    && a.IsActive
+                    && a.CategoryId == scheduleCategoryId )
+                .OrderBy( s => s.Name )
+                .Select( s => new
+                {
+                    s.Id,
+                    s.Name
+                } )
+                .ToList()
+                .Select( s => new CheckInItemBag
+                {
+                    Id = IdHasher.Instance.GetHash( s.Id ),
+                    Name = s.Name
+                } )
+                .ToList();
+        }
+
         #endregion
 
         #region Block Actions
@@ -731,6 +810,202 @@ namespace Rock.Blocks.CheckIn
             {
                 ErrorMessages = errorMessages
             } );
+        }
+
+        /// <summary>
+        /// Gets all the currently scheduled group locations. This is used by
+        /// the Schedule Locations screen to build the grid of locations and
+        /// schedules that are currently configured.
+        /// </summary>
+        /// <param name="pinCode">The PIN code to authorize the request.</param>
+        /// <param name="kioskId">The encrypted identifier of the kiosk.</param>
+        /// <param name="areaIds">The encrypted identifiers of the areas the kiosk is configured for.</param>
+        /// <returns>The list of schedules and locations that can be scheduled.</returns>
+        [BlockAction]
+        public BlockActionResult GetScheduledLocations( string pinCode, string kioskId, List<string> areaIds )
+        {
+            if ( !TryAuthenticatePin( pinCode, out var errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            var kiosk = DeviceCache.GetByIdKey( kioskId, RockContext );
+
+            if ( kiosk == null )
+            {
+                return ActionBadRequest( "Invalid kiosk." );
+            }
+
+            // Translate all the IdKey values to Id numbers.
+            var areaIdNumbers = areaIds.Select( id => IdHasher.Instance.GetId( id ) )
+                .Where( id => id.HasValue )
+                .Select( id => id.Value )
+                .ToList();
+
+            var director = new CheckInDirector( RockContext );
+            var groupLocationService = new GroupLocationService( RockContext );
+            var groupTypeService = new GroupTypeService( RockContext );
+            var locationIds = kiosk.GetAllLocationIds().ToList();
+
+            var templateGroupPaths = new Dictionary<int, List<CheckinAreaPath>>();
+            var currentAndDescendantGroupTypeIds = new List<int>();
+            foreach ( var groupType in GroupTypeCache.GetMany( areaIdNumbers ) )
+            {
+                foreach ( var parentGroupType in groupType.ParentGroupTypes )
+                {
+                    if ( !templateGroupPaths.ContainsKey( parentGroupType.Id ) )
+                    {
+                        templateGroupPaths.Add( parentGroupType.Id, groupTypeService.GetCheckinAreaDescendantsPath( parentGroupType.Id ).ToList() );
+                    }
+                }
+
+                currentAndDescendantGroupTypeIds.Add( groupType.Id );
+                currentAndDescendantGroupTypeIds.AddRange( groupTypeService.GetCheckinAreaDescendants( groupType.Id ).Select( a => a.Id ).ToList() );
+            }
+
+            var areaPaths = new List<CheckinAreaPath>( templateGroupPaths.Values.SelectMany( v => v ) );
+
+            var groupLocations = groupLocationService.Queryable()
+                .Where( gl => currentAndDescendantGroupTypeIds.Contains( gl.Group.GroupTypeId ) )
+                .Where( gl => locationIds.Contains( gl.LocationId ) )
+                .OrderBy( gl => gl.Group.Name )
+                .ThenBy( gl => gl.Location.Name )
+                .Select( gl => new
+                {
+                    GroupLocationId = gl.Id,
+                    LocationId = gl.Location.Id,
+                    LocationName = gl.Location.Name,
+                    gl.Location.ParentLocationId,
+                    gl.GroupId,
+                    GroupName = gl.Group.Name,
+                    ScheduleIdList = gl.Schedules.Select( s => s.Id ),
+                    gl.Group.GroupTypeId
+                } )
+                .ToList();
+
+            var locationService = new LocationService( RockContext );
+            var locationPaths = new Dictionary<int, string>();
+
+            var scheduledLocations = groupLocations
+                .Select( groupLocation =>
+                {
+                    var scheduledLocation = new ScheduledLocationBag
+                    {
+                        GroupLocationId = IdHasher.Instance.GetHash( groupLocation.GroupLocationId ),
+                        GroupPath = GetGroupPath( groupLocation.GroupId ),
+                        AreaPath = areaPaths.Where( gt => gt.GroupTypeId == groupLocation.GroupTypeId )
+                            .Select( gt => gt.Path )
+                            .FirstOrDefault(),
+                        LocationName = groupLocation.LocationName,
+                        ScheduleIds = groupLocation.ScheduleIdList
+                            .Select( id => IdHasher.Instance.GetHash( id ) )
+                            .ToList()
+                    };
+
+                    if ( groupLocation.ParentLocationId.HasValue )
+                    {
+                        if ( !locationPaths.TryGetValue( groupLocation.ParentLocationId.Value, out var locationPath ) )
+                        {
+                            locationPath = GetLocationAncestorPath( groupLocation.ParentLocationId.Value );
+
+                            locationPaths.Add( groupLocation.ParentLocationId.Value, locationPath );
+                        }
+
+                        scheduledLocation.LocationPath = locationPath;
+                    }
+
+                    return scheduledLocation;
+                } )
+                .ToList();
+
+            return ActionOk( new GetScheduledLocationsResponseBag
+            {
+                Schedules = GetScheduleBags(),
+                ScheduledLocations = scheduledLocations
+            } );
+        }
+
+        /// <summary>
+        /// Saves all the scheduled locations to match the data provided. This
+        /// will add and remove any GroupLocationSchedule that are required to
+        /// match the provided values.
+        /// </summary>
+        /// <param name="pinCode">The PIN code to authorize the request.</param>
+        /// <param name="scheduledLocations">The group locations and selected schedules.</param>
+        /// <returns>A 200-OK response that indicates everything was saved correctly.</returns>
+        [BlockAction]
+        public BlockActionResult SaveScheduledLocations( string pinCode, List<ScheduledLocationBag> scheduledLocations )
+        {
+            if ( !TryAuthenticatePin( pinCode, out var errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            // Normally we would want to validate all the data to be sure it
+            // only specified valid locations and groups. But in the case of
+            // this block we have decided that we are trusting the client by
+            // way of the pinCode.
+
+            // Load all the group locations in a single query, along with the
+            // schedule information.
+            var groupLocationIds = scheduledLocations
+                .Select( sl => IdHasher.Instance.GetId( sl.GroupLocationId ) )
+                .Where( id => id.HasValue )
+                .Select( id => id.Value )
+                .ToList();
+            var groupLocations = new GroupLocationService( RockContext )
+                .Queryable()
+                .Include( gl => gl.Schedules )
+                .Where( gl => groupLocationIds.Contains( gl.Id ) )
+                .ToList();
+
+            // Get the schedule IdKey values that are valid. This is used so we
+            // don't delete a schedule that wasn't available for selection.
+            var validScheduleIds = GetScheduleBags().Select( s => s.Id ).ToList();
+            var scheduleService = new ScheduleService( RockContext );
+
+            foreach ( var scheduledLocation in scheduledLocations )
+            {
+                var groupLocation = groupLocations.FirstOrDefault( gl => gl.IdKey == scheduledLocation.GroupLocationId );
+
+                if ( groupLocation == null )
+                {
+                    return ActionBadRequest( "Group or Location was not valid." );
+                }
+
+                // Add any schedules that are new.
+                foreach ( var scheduleIdKey in scheduledLocation.ScheduleIds )
+                {
+                    var scheduleId = IdHasher.Instance.GetId( scheduleIdKey );
+
+                    if ( !scheduleId.HasValue )
+                    {
+                        continue;
+                    }
+
+                    if ( !groupLocation.Schedules.Any( s => s.Id == scheduleId ) )
+                    {
+                        groupLocation.Schedules.Add( scheduleService.Get( scheduleId.Value ) );
+                    }
+                }
+
+                // Remove any schedules that are old.
+                foreach ( var schedule in groupLocation.Schedules.ToList() )
+                {
+                    if ( !scheduledLocation.ScheduleIds.Contains( schedule.IdKey ) && validScheduleIds.Contains( schedule.IdKey ) )
+                    {
+                        groupLocation.Schedules.Remove( schedule );
+                    }
+                }
+            }
+
+            if ( RockContext.SaveChanges() > 0 )
+            {
+                // Temporary until legacy check-in is removed.
+                KioskDevice.Clear();
+            }
+
+            return ActionOk();
         }
 
         #endregion

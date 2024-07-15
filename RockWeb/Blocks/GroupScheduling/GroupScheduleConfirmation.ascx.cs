@@ -778,7 +778,7 @@ namespace RockWeb.Blocks.GroupScheduling
                     }
 
                     // if attendance is decline (no) also send email to Schedule Cancellation Person
-                    if ( attendance.RSVP == RSVP.No )
+                    if ( attendance.RSVP == RSVP.No && attendance.Occurrence?.Group?.ScheduleCancellationPersonAlias?.Person?.Id != attendance.ScheduledByPersonAlias.Person.Id )
                     {
                         attendanceService.SendScheduledPersonDeclineEmail( attendance.Id, GetAttributeValue( AttributeKey.SchedulingResponseEmail ).AsGuid() );
                     }

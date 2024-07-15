@@ -167,6 +167,8 @@ export enum AdminScreen {
     Actions,
 
     Reprint,
+
+    ScheduleLocations,
 }
 
 /**
