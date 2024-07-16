@@ -267,8 +267,7 @@
             isAllowSearch: false,
             isAnalyticHistory: false,
             isEnableHistory: false,
-            isIndexEnabled: false,
-            isSuppressHistoryLogging: false
+            isIndexEnabled: false
         };
         showEditAttributeModal.value = true;
         entityTypeGuidForEditOrEmptyString.value = entityTypeGuid.value;
