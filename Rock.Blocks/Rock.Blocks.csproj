@@ -107,7 +107,7 @@
     <Compile Include="Engagement\ConnectionTypeList.cs" />
     <Compile Include="Event\RegistrationEntry\ExtensionMethods.cs" />
     <Compile Include="Finance\BenevolenceRequestList.cs" />
-	<Compile Include="Event\EventItemOccurrenceList.cs" />
+    <Compile Include="Event\EventItemOccurrenceList.cs" />
     <Compile Include="Finance\FinancialBatchList.cs" />
     <Compile Include="Engagement\StepProgramDetail.cs" />
     <Compile Include="Finance\FinancialGatewayDetail.cs" />
@@ -203,6 +203,7 @@
     <Compile Include="RockObsidianDetailBlockType.cs" />
     <Compile Include="Engagement\Steps\StepFlow.cs" />
     <Compile Include="WebFarm\WebFarmNodeDetail.cs" />
+    <Compile Include="WebFarm\WebFarmNodeLogList.cs" />
     <Compile Include="WebFarm\WebFarmSettings.cs" />
     <Compile Include="Security\Login.cs" />
     <Compile Include="Utility\RealTimeDebugger.cs" />
