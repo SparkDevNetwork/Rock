@@ -135,7 +135,7 @@ namespace Rock.Blocks.Cms
             public const string RootFolder = "RootFolder";
             public const string BrowseMode = "BrowseMode";
             public const string FileEditorPage = "FileEditorPage";
-            public const string EnableZipUploader = "EnableZipUploader";
+            public const string ZipUploaderEnabled = "ZipUploaderEnabled";
         }
 
         #endregion Keys
@@ -155,7 +155,7 @@ namespace Rock.Blocks.Cms
                 RootFolder = Rock.Security.Encryption.EncryptString( GetAttributeValue( AttributeKey.RootFolder ) ),
                 BrowseMode = GetAttributeValue( AttributeKey.BrowseMode ),
                 FileEditorPage = GetUrlFromLinkedPage( GetAttributeValue( AttributeKey.FileEditorPage ) ),
-                EnableZipUploader = GetAttributeValue( AttributeKey.EnableZipUploader ).AsBoolean(),
+                EnableZipUploader = GetAttributeValue( AttributeKey.ZipUploaderEnabled ).AsBoolean(),
             };
 
             return box;
