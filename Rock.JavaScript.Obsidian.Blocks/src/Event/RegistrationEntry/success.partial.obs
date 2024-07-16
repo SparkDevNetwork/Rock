@@ -2,9 +2,9 @@
 <template>
     <div>
         <NotificationBox v-if="showRegistrationFullNotification" class="text-left" alertType="warning">
-            <strong>{{ registrationEntryTerms.registrationTermTitleCase }} Full</strong>
+            <strong>{{ registrationEntryTerms.registrationSingularTitleCase }} Full</strong>
             <p>
-                No payment was processed. Due to high demand there is no longer space available for this {{ registrationEntryTerms.registrationTermLowerCase }}.
+                No payment was processed. Due to high demand there is no longer space available for this {{ registrationEntryTerms.registrationSingularLowerCase }}.
             </p>
         </NotificationBox>
         <NotificationBox v-if="showSomeRegistrantsWaitListedNotification" class="text-left" alertType="warning">
@@ -55,20 +55,20 @@
     /** The registrants wait-listed phrase: Ex: "camper was" or "2 campers were" */
     const allRegistrantsWaitListedMessage = computed<string>(() => {
         const {
-            registrantTermLowerCase,
-            registrantsTermLowerCase
+            registrantSingularLowerCase,
+            registrantPluralLowerCase
         } = registrationEntryTerms.value;
-        return `No payment was processed. Due to high demand there is no longer space available. The ${pluralConditional(waitListedCount.value, `${registrantTermLowerCase} was`, `${waitListedCount.value} ${registrantsTermLowerCase} were`)} added to the waitlist.`;
+        return `No payment was processed. Due to high demand there is no longer space available. The ${pluralConditional(waitListedCount.value, `${registrantSingularLowerCase} was`, `${waitListedCount.value} ${registrantPluralLowerCase} were`)} added to the waitlist.`;
     });
 
     const someRegistrantsWaitListedMessage = computed<string>(() => {
         const {
-            registrationTermLowerCase,
-            registrantTermLowerCase,
-            registrantsTermLowerCase
+            registrationSingularLowerCase,
+            registrantSingularLowerCase,
+            registrantPluralLowerCase
         } = registrationEntryTerms.value;
 
-        return `This ${registrationTermLowerCase} only had capacity for ${pluralConditional(registeredCount.value, `1 ${registrantTermLowerCase}`, `${registeredCount.value} ${registrantsTermLowerCase}`)}. The first ${pluralConditional(registeredCount.value, `${registrantTermLowerCase} you added was`, `${registeredCount.value} ${registrantsTermLowerCase} you added were`)} registered for ${registrationEntryState.viewModel.instanceName}. The remaining ${pluralConditional(waitListedCount.value, `${registrantTermLowerCase} was`, `${waitListedCount.value} ${registrantsTermLowerCase} were`)} added to the waitlist.`;
+        return `This ${registrationSingularLowerCase} only had capacity for ${pluralConditional(registeredCount.value, `1 ${registrantSingularLowerCase}`, `${registeredCount.value} ${registrantPluralLowerCase}`)}. The first ${pluralConditional(registeredCount.value, `${registrantSingularLowerCase} you added was`, `${registeredCount.value} ${registrantPluralLowerCase} you added were`)} registered for ${registrationEntryState.viewModel.instanceName}. The remaining ${pluralConditional(waitListedCount.value, `${registrantSingularLowerCase} was`, `${waitListedCount.value} ${registrantPluralLowerCase} were`)} added to the waitlist.`;
     });
 
     /** Should the "registration full" notification be shown? */
@@ -97,7 +97,7 @@
 
     /** The success lava markup */
     const messageHtml = computed<string>(() => {
-        return registrationEntryState.successViewModel?.messageHtml || `You have successfully completed this ${registrationEntryTerms.value.registrationTermLowerCase}`;
+        return registrationEntryState.successViewModel?.messageHtml || `You have successfully completed this ${registrationEntryTerms.value.registrationSingularLowerCase}`;
     });
 
     /** The financial gateway record's guid */

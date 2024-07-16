@@ -25,7 +25,8 @@ import {
     PaymentPlanConfiguration,
     PersonGuid,
     FormFieldGuid,
-    FormFieldValue
+    FormFieldValue,
+    RegistrationEntryTerminology
 } from "./types.partial";
 import { ComputedRef, InjectionKey, Ref, inject, nextTick } from "vue";
 import { smoothScrollToTop } from "@Obsidian/Utility/page";
@@ -154,19 +155,7 @@ export const ConfigurePaymentPlan: InjectionKey<{
 /**
  * An injection key to provide the registration entry terms.
  */
-export const RegistrationEntryTerms: InjectionKey<ComputedRef<{
-    registrantTermLowerCase: string;
-    registrantsTermLowerCase: string;
-    registrationTermLowerCase: string;
-    registrationsTermLowerCase: string;
-    registrationTermTitleCase: string;
-    discountCodeTermTitleCase: string;
-    discountCodeTermLowerCase: string;
-    feeTermLowerCase: string;
-    feesTermTitleCase: string;
-    registrantTermTitleCase: string;
-    signatureDocumentTermTitleCase: string;
-}>> = Symbol("registration-entry-terms");
+export const RegistrationEntryTerms: InjectionKey<ComputedRef<RegistrationEntryTerminology>> = Symbol("registration-entry-terms");
 
 /** An injection key to provide the original field values for each registrant. */
 export const OriginalFormFieldValues: InjectionKey<Ref<Record<PersonGuid, Record<FormFieldGuid, FormFieldValue>>>> = Symbol("original-field-values");

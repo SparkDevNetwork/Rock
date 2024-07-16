@@ -5,7 +5,7 @@
             <template v-if="isDataForm">
                 <template v-if="currentFormIndex === 0">
                     <div v-if="familyOptions.length > 1" class="well">
-                        <RadioButtonList :label="`${firstName || registrationEntryTerms.registrantTermTitleCase} is in the same ${viewModel.familyTerm || 'immediate family'} as`" rules="required" :modelValue="currentRegistrant.familyGuid ?? undefined" @update:modelValue="onSetFamilyGuid" :items="familyOptions" validationTitle="Family" />
+                        <RadioButtonList :label="`${firstName || registrationEntryTerms.registrantSingularTitleCase} is in the same ${viewModel.familyTerm || 'immediate family'} as`" rules="required" :modelValue="currentRegistrant.familyGuid ?? undefined" @update:modelValue="onSetFamilyGuid" :items="familyOptions" validationTitle="Family" />
                     </div>
                     <div v-if="isFamilyMembersDropDownVisible" class="row">
                         <div class="col-md-6">
@@ -30,7 +30,7 @@
                 </ItemsWithPreAndPostHtml>
 
                 <div v-if="!isWaitList && isLastForm && viewModel.fees?.length && viewModel.fees.some(f => !!f.items?.length)" class="well registration-additional-options">
-                    <h4>{{ registrationEntryTerms.feesTermTitleCase }}</h4>
+                    <h4>{{ registrationEntryTerms.feePluralTitleCase }}</h4>
                     <template v-for="fee in viewModel.fees" :key="fee.guid">
                         <FeeField v-if="currentRegistrant.feeItemQuantities" :modelValue="currentRegistrant.feeItemQuantities" :fee="fee" @update:modelValue="onUpdateRegistrantFee" />
                     </template>
@@ -38,13 +38,13 @@
             </template>
 
             <div v-if="isSignatureForm" class="registrant-signature-document styled-scroll">
-                <h2 class="signature-header">Please Sign the {{ registrationEntryTerms.signatureDocumentTermTitleCase }} for {{ firstName }}</h2>
+                <h2 class="signature-header">Please Sign the {{ registrationEntryTerms.signatureDocumentSingularTitleCase }} for {{ firstName }}</h2>
                 <div class="signaturedocument-container">
                     <iframe src="javascript: window.frameElement.getAttribute('srcdoc');" onload="this.style.height = this.contentWindow.document.body.scrollHeight + 'px'" class="signaturedocument-iframe" border="0" frameborder="0" :srcdoc="signatureSource"></iframe>
                 </div>
 
                 <div class="well">
-                    <ElectronicSignature v-model="signatureData" :isDrawn="isSignatureDrawn" @signed="onSigned" :documentTerm="registrationEntryTerms.signatureDocumentTermTitleCase" />
+                    <ElectronicSignature v-model="signatureData" :isDrawn="isSignatureDrawn" @signed="onSigned" :documentTerm="registrationEntryTerms.signatureDocumentSingularTitleCase" />
                 </div>
             </div>
 

@@ -143,7 +143,7 @@
 
     /** The registrant term - plural if there are more than 1 */
     const registrantOrRegistrantsTermLowerCase = computed<string>(() => {
-        return registrantInfos.value.length === 1 ? registrationEntryTerms.value.registrantTermLowerCase : registrationEntryTerms.value.registrantsTermLowerCase;
+        return registrantInfos.value.length === 1 ? registrationEntryTerms.value.registrantSingularLowerCase : registrationEntryTerms.value.registrantPluralLowerCase;
     });
 
     /** The name of this registration instance */
