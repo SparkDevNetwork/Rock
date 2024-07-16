@@ -375,6 +375,13 @@ namespace Rock.Blocks.Reporting
                     .ToList();
             }
 
+            var inactiveCampusIds = CampusCache.All().Where( c => c.IsActive == false ).Select( c => c.Id ).ToList();
+
+            if ( inactiveCampusIds.Count > 0 )
+            {
+                _tithingOverviewMetricValues = _tithingOverviewMetricValues.Where( m => !m.CampusId.HasValue || !inactiveCampusIds.Contains( m.CampusId.Value ) ).ToList();
+            }
+
             return _tithingOverviewMetricValues;
         }
 

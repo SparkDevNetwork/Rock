@@ -118,7 +118,8 @@
                         value: (ctx) => average(ctx),
                         drawTime: "beforeDatasetsDraw",
                         label: {
-                            content: (ctx, _options) => `Avg: ${average(ctx)}%`
+                            content: (ctx, _options) => `Avg: ${average(ctx)}%`,
+                            position: "start"
                         },
                         enter({ element }, _event) {
                             if (element?.label?.options) {
@@ -159,6 +160,34 @@
                 title: {
                     display: true,
                     text: "Tithing Households (%)"
+                }
+            },
+            x: {
+                ticks: {
+                    callback: function (val, _index, _labels) {
+                        const numberValue = val as number;
+                        const label = this.getLabelForValue(numberValue);
+                        if (chartType.value === ChartTypeKey.LineChart) {
+                            if (isValidDate(label)) {
+                                // If we're still in current month, do not display the label.
+                                const previousLabel = this.getLabelForValue(numberValue - 1);
+                                var currentLabelMonth = new Date(label).toLocaleString("default", { month: "short" });
+                                var previousLabelMonth = new Date(previousLabel).toLocaleString("default", { month: "short" });
+                                return currentLabelMonth === previousLabelMonth ? "" : currentLabelMonth;
+                            }
+                            else {
+                                return label;
+                            }
+                        }
+                        else {
+                            return label;
+                        }
+                    },
+                    showLabelBackdrop: true,
+                    font: {
+                        size: 16,
+                        weight: "bold"
+                    }
                 }
             }
         }
@@ -467,9 +496,19 @@
      * Calculates the average value of the charts datasets.
      * @param ctx The Chart context
      */
-    function average(ctx): number {
+    function average(ctx): string {
         const values = ctx.chart.data.datasets[0].data;
-        return values.reduce((a, b) => a + b, 0) / values.length;
+        const average = Math.round(values.reduce((a, b) => a + b, 0)) / values.length;
+        return average.toFixed(2);
+    }
+
+    /**
+     * Checks if the string is a valid date string.
+     * @param dateString the date string
+     */
+    function isValidDate(dateString: string): boolean {
+        const timestamp = Date.parse(dateString);
+        return !isNaN(timestamp);
     }
 
     // #endregion
