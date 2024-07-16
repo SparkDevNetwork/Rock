@@ -385,6 +385,12 @@ namespace RockWeb.Blocks.Utility
         /// <returns>A collection of strings representing relative path names.</returns>
         protected List<string> GetRecursiveFolders( string directoryPath, string physicalRootFolder )
         {
+            // If this is a hidden folder, don't show it.
+            if ( HiddenFolders.Any( a => directoryPath.IndexOf( a, StringComparison.OrdinalIgnoreCase ) > 0 ) )
+            {
+                return new List<string>();
+            }
+
             DirectoryInfo directoryInfo = new DirectoryInfo( directoryPath );
             string relativeFolderPath = directoryPath.Replace( physicalRootFolder, string.Empty );
 

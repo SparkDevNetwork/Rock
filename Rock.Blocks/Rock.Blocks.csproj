@@ -95,6 +95,7 @@
     <Compile Include="Cms\AdaptiveMessageAdaptationDetail.cs" />
     <Compile Include="Cms\AdaptiveMessageDetail.cs" />
     <Compile Include="Cms\AdaptiveMessageList.cs" />
+    <Compile Include="Cms\AssetManager.cs" />
     <Compile Include="Cms\BlockTypeList.cs" />
     <Compile Include="Cms\ContentChannelDetail.cs" />
     <Compile Include="Cms\ContentChannelItemList.cs" />
