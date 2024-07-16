@@ -285,6 +285,7 @@
     <Folder Include="Framework\Enums\Group\" />
     <Folder Include="Framework\Enums\Net\" />
     <Folder Include="Framework\Enums\Reporting\" />
+    <Folder Include="Framework\Enums\WebFarm\" />
     <Folder Include="Framework\Enums\Workflow\" />
     <Folder Include="Framework\FieldTypes\" />
     <Folder Include="Framework\Libs\" />
@@ -445,6 +446,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Tv\AppleTvPageDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\WebFarm\" />
     <Folder Include="Framework\ViewModels\Blocks\WebFarm\WebFarmNodeDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\WebFarm\WebFarmNodeLogList\" />
     <Folder Include="Framework\ViewModels\Blocks\WebFarm\WebFarmSettings\" />
     <Folder Include="Framework\ViewModels\Blocks\Security\AccountEntry\" />
     <Folder Include="Framework\ViewModels\Blocks\Security\Login\" />
@@ -652,6 +654,8 @@
     <TypeScriptCompile Include="Framework\Enums\Group\participationType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Group\requirementCheckType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Group\scheduleConfirmationLogic.ts" />
+    <TypeScriptCompile Include="Framework\Enums\logSeverity.ts" />
+    <TypeScriptCompile Include="Framework\Enums\logType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Net\cookieSameSiteMode.ts" />
     <TypeScriptCompile Include="Framework\Enums\Net\responseElementLocation.ts" />
     <TypeScriptCompile Include="Framework\Enums\Reporting\fieldFilterSourceType.ts" />
@@ -660,6 +664,8 @@
     <TypeScriptCompile Include="Framework\Enums\Reporting\metricValueType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Reporting\reportFieldType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Reporting\unitType.ts" />
+    <TypeScriptCompile Include="Framework\Enums\WebFarm\logSeverity.ts" />
+    <TypeScriptCompile Include="Framework\Enums\WebFarm\logType.ts" />
     <TypeScriptCompile Include="Framework\Enums\Workflow\workflowActionFormPersonEntryOption.ts" />
     <TypeScriptCompile Include="Framework\Enums\Workflow\workflowActionFormShowHideOption.ts" />
     <TypeScriptCompile Include="Framework\Enums\Workflow\workflowLoggingLevel.ts" />
@@ -814,6 +820,7 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\Configuration\LabelDesigner\iconItemBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\Configuration\LabelDesigner\labelDesignerOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\CheckIn\Configuration\LabelDesigner\labelDetailBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\WebFarm\WebFarmNodeLogList\webFarmNodeLogListOptionsBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\checkoutResultBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\Labels\attendeePhotoFieldConfigurationBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\CheckIn\Labels\barcodeFieldConfigurationBag.d.ts" />

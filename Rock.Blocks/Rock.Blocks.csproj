@@ -336,6 +336,7 @@
     <Compile Include="RockObsidianDetailBlockType.cs" />
     <Compile Include="Engagement\Steps\StepFlow.cs" />
     <Compile Include="WebFarm\WebFarmNodeDetail.cs" />
+    <Compile Include="WebFarm\WebFarmNodeLogList.cs" />
     <Compile Include="WebFarm\WebFarmSettings.cs" />
     <Compile Include="Security\Login.cs" />
     <Compile Include="Utility\RealTimeDebugger.cs" />
