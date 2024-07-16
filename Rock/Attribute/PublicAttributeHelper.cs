@@ -79,7 +79,6 @@ namespace Rock.Attribute
                 IsSystem = attribute.IsSystem,
                 IsShowInGrid = attribute.IsGridColumn,
                 IsShowOnBulk = attribute.ShowOnBulk,
-                IsSuppressHistoryLogging = attribute.IsSuppressHistoryLogging,
                 FieldTypeGuid = fieldTypeCache.ControlFieldTypeGuid,
                 RealFieldTypeGuid = fieldTypeCache.Guid,
                 Categories = attribute.Categories

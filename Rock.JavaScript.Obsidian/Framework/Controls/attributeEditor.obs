@@ -85,11 +85,6 @@
                               help="If selected, changes to the value of this attribute will be stored in attribute value history."
                               text="Yes" />
 
-                    <CheckBox label="Suppress History Logging"
-                              v-model="isSuppressHistoryLogging"
-                              help="If selected, changes to the attribute values will not be recorded into the generic History log table."
-                              text="Yes" />
-
                     <CheckBox v-if="isAllowSearchVisible"
                               label="Allow Search"
                               v-model="isAllowSearch"
@@ -205,7 +200,6 @@
     const isIndexingEnabled = ref(props.modelValue?.isIndexEnabled ?? false);
     const isAnalyticsEnabled = ref(props.modelValue?.isAnalytic ?? false);
     const isAnalyticsHistoryEnabled = ref(props.modelValue?.isAnalyticHistory ?? false);
-    const isSuppressHistoryLogging = ref(props.modelValue?.isSuppressHistoryLogging ?? false);
     const preHtml = ref(props.modelValue?.preHtml ?? "");
     const postHtml = ref(props.modelValue?.postHtml ?? "");
     const categories = ref([...(props.modelValue?.categories ?? [])]);
@@ -261,8 +255,7 @@
         preHtml,
         postHtml,
         categories,
-        fieldTypeValue,
-        isSuppressHistoryLogging],
+        fieldTypeValue],
         () => {
             const newModelValue: PublicEditableAttributeBag = {
                 ...(props.modelValue ?? { isSystem: false }),
@@ -285,8 +278,7 @@
                 categories: [...categories.value],
                 fieldTypeGuid: fieldTypeValue.value.fieldTypeGuid,
                 configurationValues: { ...fieldTypeValue.value.configurationValues },
-                defaultValue: fieldTypeValue.value.defaultValue,
-                isSuppressHistoryLogging: isSuppressHistoryLogging.value
+                defaultValue: fieldTypeValue.value.defaultValue
             };
 
             emit("update:modelValue", newModelValue);
