@@ -103,7 +103,7 @@ namespace Rock.Blocks.Cms
 
     [BooleanField(
         "Enable Zip Upload",
-        Key = AttributeKey.EnableZipUploader,
+        Key = AttributeKey.ZipUploaderEnabled,
         Description = "Set this to true to enable the Zip File uploader.",
         DefaultBooleanValue = false,
         Category = "File Manager Options",
