@@ -4,7 +4,7 @@
         <NotificationBox v-if="discountCodeWarningMessage" alertType="warning">{{ discountCodeWarningMessage }}</NotificationBox>
         <NotificationBox v-if="discountCodeSuccessMessage" alertType="success">{{ discountCodeSuccessMessage }}</NotificationBox>
         <div class="form-group pull-right">
-            <label class="control-label">{{ registrationEntryTerms.discountCodeTermTitleCase }}</label>
+            <label class="control-label">{{ registrationEntryTerms.discountCodeSingularTitleCase }}</label>
             <div class="input-group">
                 <input type="text" :disabled="loading || !isDiscountCodeAllowed" class="form-control input-width-md input-sm" v-model="discountCodeInput" />
                 <RockButton v-if="isDiscountCodeAllowed" btnSize="sm" :isLoading="loading" class="margin-l-sm" @click="tryDiscountCode(false)">
@@ -103,7 +103,7 @@
                         discountCodeWarningMessage.value = result.errorMessage;
                     }
                     else if (discountCodeInput.value != "") {
-                        discountCodeWarningMessage.value = `'${discountCodeInput.value}' is not a valid ${registrationEntryTerms.value.discountCodeTermTitleCase}.`;
+                        discountCodeWarningMessage.value = `'${discountCodeInput.value}' is not a valid ${registrationEntryTerms.value.discountCodeSingularTitleCase}.`;
                     }
                 }
             }
@@ -142,17 +142,17 @@
             `${asFormattedString(discountPercent * 100, 0)}%` :
             `$${asFormattedString(discountAmount, 2)}`;
         const {
-            registrantTermLowerCase,
-            registrantsTermLowerCase,
-            discountCodeTermLowerCase
+            registrantSingularLowerCase,
+            registrantPluralLowerCase,
+            discountCodeSingularLowerCase
         } = registrationEntryTerms.value;
 
         if (discountMaxRegistrants != 0 && registrantCount > discountMaxRegistrants) {
-            const registrantTerm = discountMaxRegistrants == 1 ? registrantTermLowerCase : registrantsTermLowerCase;
-            return `Your ${discountText} ${discountCodeTermLowerCase} was successfully applied to the maximum allowed number of ${discountMaxRegistrants} ${registrantTerm}`;
+            const registrantTerm = discountMaxRegistrants == 1 ? registrantSingularLowerCase : registrantPluralLowerCase;
+            return `Your ${discountText} ${discountCodeSingularLowerCase} was successfully applied to the maximum allowed number of ${discountMaxRegistrants} ${registrantTerm}`;
         }
 
-        return `Your ${discountText} ${discountCodeTermLowerCase} for all registrants was successfully applied.`;
+        return `Your ${discountText} ${discountCodeSingularLowerCase} for all ${registrantPluralLowerCase} was successfully applied.`;
     }
 
     // #endregion

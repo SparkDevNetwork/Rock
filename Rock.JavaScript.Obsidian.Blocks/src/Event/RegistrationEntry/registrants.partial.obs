@@ -2,10 +2,10 @@
 <template>
     <div class="registrationentry-registrant">
         <NotificationBox v-if="hasWaitlist && !isOnWaitlist" alertType="success">
-            This {{ registrationEntryTerms.registrantTermLowerCase }} will be fully registered.
+            This {{ registrationEntryTerms.registrantSingularLowerCase }} will be fully registered.
         </NotificationBox>
         <NotificationBox v-else-if="isOnWaitlist" alertType="warning">
-            This {{ registrationEntryTerms.registrantTermLowerCase }} will be on the waiting list.
+            This {{ registrationEntryTerms.registrantSingularLowerCase }} will be on the waiting list.
         </NotificationBox>
         <template v-for="(r, i) in registrants" :key="r.guid">
             <Registrant v-show="currentRegistrantIndex === i" :currentRegistrant="r" :isWaitList="isOnWaitlist" @next="onNext" @previous="onPrevious" />

@@ -5,7 +5,7 @@
         <NumberUpDown v-else-if="isNumberUpDown" :validationTitle="props.fee.name ?? undefined" :label="label" :min="0" :max="maxValue" v-model="quantityValue" :rules="rules" />
         <DropDownList v-else-if="isDropDown" :label="label" :items="dropDownListOptions" v-model="dropDownValue" :rules="rules" formControlClasses="input-width-md" />
         <NumberUpDownGroup v-else-if="isNumberUpDownGroup" :label="label" :options="numberUpDownGroupOptions" v-model="numberGroupValue" :rules="rules" />
-        <NotificationBox v-else alertType="danger">This {{ registrationEntryTerms.feeTermLowerCase }} configuration is not supported</NotificationBox>
+        <NotificationBox v-else alertType="danger">This {{ registrationEntryTerms.feeSingularLowerCase }} configuration is not supported</NotificationBox>
     </template>
 </template>
 
