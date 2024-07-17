@@ -17,6 +17,7 @@
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
                  :isSecurityHidden="true"
+                 :isFullScreenVisible="false"
                  :footerSecondaryActions="internalFooterSecondaryActions"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
