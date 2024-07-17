@@ -178,7 +178,7 @@ namespace Rock.CodeGeneration.Pages
                         var file = createdFiles[i];
                         var filename = Path.Combine( solutionPath, file.SolutionRelativePath );
 
-                        if ( filename.EndsWith( ".cs" ) || filename.EndsWith( ".ts" ) )
+                        if ( filename.EndsWith( ".cs" ) )
                         {
                             var projectName = file.SolutionRelativePath.Split( '\\' )[0];
 
