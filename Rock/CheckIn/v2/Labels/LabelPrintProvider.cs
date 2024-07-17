@@ -121,7 +121,7 @@ namespace Rock.CheckIn.v2.Labels
 
                     if ( printerDevice.ProxyDeviceId.HasValue )
                     {
-                        var proxy = PrinterProxySocket.GetBestProxyForDevice( printerDevice.ProxyDeviceId.Value );
+                        var proxy = CloudPrintSocket.GetBestProxyForDevice( printerDevice.ProxyDeviceId.Value );
 
                         if ( proxy != null )
                         {

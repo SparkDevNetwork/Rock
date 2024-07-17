@@ -122,7 +122,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.Tests.UnitTests.Perfor
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.NCOA", "Rock.NCOA\Rock.NCOA.csproj", "{6FC5781E-C9FC-41E9-87FB-2A9CA8AA2088}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Rock.PrinterProxy.Shared.Common", "Applications\PrinterProxy\Rock.PrinterProxy.Shared.Common\Rock.PrinterProxy.Shared.Common.shproj", "{6519C205-3304-4D09-86BC-16BE8A0D9C41}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Rock.CloudPrint.Shared.Common", "Applications\RockCloudPrint\Rock.CloudPrint.Shared.Common\Rock.CloudPrint.Shared.Common.shproj", "{6519C205-3304-4D09-86BC-16BE8A0D9C41}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -319,7 +319,7 @@ Global
 		SolutionGuid = {53C930BD-2ECB-48B7-BDE0-7F5BBDF7A427}
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		Applications\PrinterProxy\Rock.PrinterProxy.Shared.Common\Rock.PrinterProxy.Shared.Common.projitems*{185a31d7-3037-4dae-8797-0459849a84bd}*SharedItemsImports = 4
-		Applications\PrinterProxy\Rock.PrinterProxy.Shared.Common\Rock.PrinterProxy.Shared.Common.projitems*{6519c205-3304-4d09-86bc-16be8a0d9c41}*SharedItemsImports = 13
+		Applications\RockCloudPrint\Rock.CloudPrint.Shared.Common\Rock.CloudPrint.Shared.Common.projitems*{185a31d7-3037-4dae-8797-0459849a84bd}*SharedItemsImports = 4
+		Applications\RockCloudPrint\Rock.CloudPrint.Shared.Common\Rock.CloudPrint.Shared.Common.projitems*{6519c205-3304-4d09-86bc-16be8a0d9c41}*SharedItemsImports = 13
 	EndGlobalSection
 EndGlobal

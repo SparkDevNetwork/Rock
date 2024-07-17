@@ -1,6 +1,0 @@
-﻿<Project Sdk="WixToolset.Sdk/5.0.0">
-  <ItemGroup>
-    <ProjectReference Include="..\Rock.PrinterProxy.Desktop\Rock.PrinterProxy.Desktop.csproj" />
-    <ProjectReference Include="..\Rock.PrinterProxy.Service\Rock.PrinterProxy.Service.csproj" />
-  </ItemGroup>
-</Project>
