@@ -302,6 +302,19 @@ namespace Rock.Web.UI.Controls
 
         #endregion Properties
 
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AttributeMatrixEditor"/> class.
+        /// </summary>
+        public AttributeMatrixEditor()
+            : base()
+        {
+            RockControlHelper.Init( this );
+        }
+
+        #endregion
+
         #region Overridden Control Methods
 
         /// <summary>
