@@ -48,6 +48,7 @@ namespace Rock.Tests.Integration.Modules.Core.Model
         [ClassInitialize]
         public static void Initialize( TestContext context )
         {
+            EventsDataManager.Instance.UpdateSampleDataEventDates();
             EventsDataManager.Instance.AddDataForRockSolidFinancesClass();
         }
 
@@ -69,17 +70,17 @@ namespace Rock.Tests.Integration.Modules.Core.Model
             var eventItemService = new EventItemService( rockContext );
             var events = eventItemService.GetActiveItems();
 
-            // The Event "Warrior Youth Event" has a single occurrence scheduled in the past.
+            // This event has a single occurrence scheduled in the past.
             // It should not be returned in the list of active items.
-            var warriorEvent = events.FirstOrDefault( x => x.Name == "Warrior Youth Event" );
+            var warriorEvent = events.FirstOrDefault( x => x.Name == "Customs & Classics Car Show" );
 
             Assert.That.IsNull( warriorEvent, "Unexpected event found in result set." );
 
-            // The Event "Staff Meeting" is endlessly recurring.
-            // It should be returned in the list of active items.
+            // This event is endlessly recurring, and the scheduled start date is prior to the current date.
+            // Only instances after the current date should be returned in the list of active items.
             var staffEvent = events.FirstOrDefault( x => x.Name == "Staff Meeting" );
 
-            Assert.That.IsNotNull( staffEvent, "Expected event not found in result set." );
+            Assert.That.IsNotNull( staffEvent, "Expected event not found in result set." ); 
         }
 
         /// <summary>
@@ -88,10 +89,10 @@ namespace Rock.Tests.Integration.Modules.Core.Model
         [TestMethod]
         public void EventItemService_GetActiveEventsAtSpecificDate_ReturnsEventScheduledForSingleDateOnOrAfterSpecifiedDate()
         {
-            var rockContext = new RockContext();
+            var effectiveDate = EventsDataManager.Instance.GetDefaultEffectiveDate();
 
-            // Get an instance of Event "Warrior Youth Event", which has a single occurrence scheduled for 02-May-2018.
-            var eventOccurrenceDate = new DateTime( 2018, 5, 2 );
+            // Get an instance of Event "Warrior Youth Event", which has a single occurrence scheduled for the current month.
+            var rockContext = new RockContext();
             var eventItemService = new EventItemService( rockContext );
 
             var warriorEvent = eventItemService.Queryable().FirstOrDefault( x => x.Name == "Warrior Youth Event" );
@@ -100,19 +101,18 @@ namespace Rock.Tests.Integration.Modules.Core.Model
 
             ForceUpdateScheduleEffectiveDates( rockContext, warriorEvent );
 
-            // The "Warrior Youth Event" has a single occurrence on 02-May-2018.
-            // Verify that the filter returns the event on the date of the single occurrence.
+            // Verify that the filter returns a single event occurrence for the current month.
             var validEvents = eventItemService.Queryable()
                 .Where( x => x.Name == "Warrior Youth Event" )
-                .HasOccurrencesOnOrAfterDate( eventOccurrenceDate )
+                .HasOccurrencesOnOrAfterDate( effectiveDate )
                 .ToList();
 
             Assert.That.IsTrue( validEvents.Count() == 1, "Expected Event not found." );
 
-            // ... but not after the date of the single occurrence.
+            // ... but no event occurrences for the following month.
             var invalidEvents = eventItemService.Queryable()
                 .Where( x => x.Name == "Warrior Youth Event" )
-                .HasOccurrencesOnOrAfterDate( eventOccurrenceDate.AddDays( 1 ) )
+                .HasOccurrencesOnOrAfterDate( effectiveDate.AddMonths(1) )
                 .ToList();
 
             Assert.That.IsTrue( invalidEvents.Count() == 0, "Unexpected Event found." );
@@ -142,22 +142,22 @@ namespace Rock.Tests.Integration.Modules.Core.Model
             var rockContext = new RockContext();
             var calendarService = new EventCalendarService( rockContext );
 
-            var internalCalendar = calendarService.Queryable()
-                .FirstOrDefault( x => x.Name == "Internal" );
+            var publicCalendar = calendarService.Queryable()
+                .FirstOrDefault( x => x.Name == "Public" );
 
             var eventItemService = new EventItemService( rockContext );
-            var internalEvents = eventItemService.GetActiveItemsByCalendarId( internalCalendar.Id )
+            var publicEvents = eventItemService.GetActiveItemsByCalendarId( publicCalendar.Id )
                 .ToList();
 
-            // The Event "Staff Meeting" exists in the Internal calendar.
+            // The Event "Warrior Youth Event" exists in the Public calendar.
             // It should be returned in the list of active items.
-            var staffEvent = internalEvents.FirstOrDefault( x => x.Name == "Staff Meeting" );
+            var staffEvent = publicEvents.FirstOrDefault( x => x.Name == "Warrior Youth Event" );
 
             Assert.That.IsNotNull( staffEvent, "Expected event not found in result set." );
 
-            // The Event "Warrior Youth Event" only exists in the External calendar.
+            // The Event "Staff Meeting" only exists in the Internal calendar.
             // It should not be returned in the list of active items.
-            var warriorEvent = internalEvents.FirstOrDefault( x => x.Name == "Warrior Youth Event" );
+            var warriorEvent = publicEvents.FirstOrDefault( x => x.Name == "Staff Meeting" );
 
             Assert.That.IsNull( warriorEvent, "Unexpected event found in result set." );
         }
@@ -320,12 +320,7 @@ namespace Rock.Tests.Integration.Modules.Core.Model
 
         #region GetEventCalendarFeed Tests
 
-        private const string testScheduleGuid = "D89689A3-8F27-47BC-B035-F96B2871692E";
-        private const string testEvent1Guid = "02B9BAB6-151D-4752-AD72-9785B9145BB7";
         private const string testEventOccurrence11Guid = "C4D3D174-66BB-40D2-8BF5-5B8827C46538";
-        private const string Event1CalendarPublicGuid = "804C870D-1D38-461F-AEBA-6027A0913BF0";
-        private const string Event1CalendarInternalGuid = "938C9782-6D79-4C90-A090-72A2F6C3B6A1";
-        private const string EventCalendarTestGuid = "AD1FA999-C74E-423A-81FE-CB788A2CFA90";
 
         /// <summary>
         /// Retrieving events for a calendar feed from a Rock server having a Rock time that differs from the system local time
@@ -341,7 +336,7 @@ namespace Rock.Tests.Integration.Modules.Core.Model
             var rockContext = new RockContext();
             var calendarService = new EventCalendarService( rockContext );
 
-            // Set RockDateTime to the local timezone, assuming that this corresponds to the timezone of the event data in the current dastabase.
+            // Set RockDateTime to the local timezone, assuming that this corresponds to the timezone of the event data in the current database.
             TestConfigurationHelper.SetRockDateTimeToLocalTimezone();
 
             // Verify that the events returned in the feed are scheduled in local server time.
@@ -350,10 +345,10 @@ namespace Rock.Tests.Integration.Modules.Core.Model
 
             // Deserialize the calendar output.
             var events1 = CalendarCollection.Load( calendarString1 )?.FirstOrDefault()?.Events;
-            var financeClass1 = events1.FirstOrDefault( x => x.Summary == "Warrior Youth Event" );
+            var event1 = events1.FirstOrDefault( x => x.Summary == "Rock Solid Finances Class" );
 
             Assert.AreEqual( TimeZoneInfo.Local.BaseUtcOffset.Hours,
-                financeClass1.DtStart.AsDateTimeOffset.Offset.Hours,
+                event1.DtStart.AsDateTimeOffset.Offset.Hours,
                 "Unexpected Time Offset. The offset should match the system local time." );
 
             // Verify that the events returned in the feed are scheduled in Rock time,
@@ -364,10 +359,10 @@ namespace Rock.Tests.Integration.Modules.Core.Model
             var calendarString2 = calendarService.CreateICalendar( args );
 
             var events2 = CalendarCollection.Load( calendarString2 )?.FirstOrDefault()?.Events;
-            var financeClass2 = events2.FirstOrDefault( x => x.Summary == "Warrior Youth Event" );
+            var event2 = events2.FirstOrDefault( x => x.Summary == "Rock Solid Finances Class" );
 
             Assert.AreEqual( tzAlternate.BaseUtcOffset.Hours,
-                financeClass2.DtStart.AsDateTimeOffset.Offset.Hours,
+                event2.DtStart.AsDateTimeOffset.Offset.Hours,
                 "Unexpected Time Offset. The offset should match the Rock time." );
         }
 
@@ -692,9 +687,9 @@ namespace Rock.Tests.Integration.Modules.Core.Model
         /// This VCALENDAR configuration requires that a very specific set of rules be observed to maintain compatibility with
         /// these major calendar applications: Outlook 365, Outlook Web, Google Calendar, Apple iCalendar.
         /// </summary>
-        /// <param name="calendarString1"></param>
+        /// <param name="calendarString"></param>
         /// <param name="specificDates"></param>
-        private void ValidateCalendarFeedForSpecificDatesRecurrence( string calendarString1, List<DateTime> specificDates, TimeSpan? eventDuration )
+        private void ValidateCalendarFeedForSpecificDatesRecurrence( string calendarString, List<DateTime> specificDates, TimeSpan? eventDuration )
         {
             var day1Date = specificDates.First();
 
@@ -703,35 +698,49 @@ namespace Rock.Tests.Integration.Modules.Core.Model
             // 1. The calendar must contain an RRULE to establish the link between the event instances.
             //    The rule should specify a basic daily recurrence for the same number of days as the number of specific dates.
             //    This establishes the set of events, which will then be rescheduled to the specific dates using the RECURRENCE-ID.
-            var ruleText = "*RRULE:FREQ=DAILY;COUNT=3*";
-            Assert.That.MatchesWildcard( ruleText, calendarString1 );
+            var ruleText = $"*RRULE:FREQ=DAILY;COUNT={specificDates.Count}*";
+            Assert.That.MatchesWildcard( ruleText, calendarString );
 
             // 2. The calendar must contain a rescheduled event for each day in the recurrence pattern.
-            //    The TZID and VALUE properties must exactly match one of the scheduled events
+            //    The rescheduled events must be listed in reverse chronological order.
+            //    The RECCURRENCE-ID must exactly match the format of the DTSTART value for one of the scheduled events
             //    in the original recurrence pattern to correctly identify the event to be rescheduled.
             //    The DTSTART property of VEVENT(n) should be set to the value of specificDates(n).
-            //    An all-day event should specify the RECURRENCE-ID using the "VALUE=DATE:" format.
-            for ( int i = 0; i < specificDates.Count; i++ )
+            //    If this is an all-day event, the DTSTART property must be specified with no time component, in the following format:
+            //    RECURRENCE-ID;TZID=*;VALUE=DATE:YYYYMMDD
+
+            // Match the first event. This event is the template for the subsequent rescheduled events.
+            var matchRegex = "(.*)BEGIN:VEVENT(.*)END:VEVENT";
+
+            // Match rescheduled events in reverse chronological order.
+            for ( int i = specificDates.Count - 1; i >= 0; i-- )
             {
+                string dtStartPattern;
                 string recurrenceIdText;
-                var thisEventDate = day1Date.AddDays( i );
+                var rescheduledToDate = specificDates[i];
+                var rescheduledFromDate = day1Date.AddDays( i );
                 if ( eventDuration.HasValue )
                 {
-                    recurrenceIdText = "*RECURRENCE-ID;TZID=*:<date>*"
-                        .Replace( "<date>", thisEventDate.ToString( "yyyyMMddTHHmmss" ) );
+                    dtStartPattern = $"DTSTART;TZID=(.*):{rescheduledToDate:yyyyMMdd}";
+                    recurrenceIdText = $"RECURRENCE-ID;TZID=(.*):{rescheduledFromDate:yyyyMMddTHHmmss}";
                 }
                 else
                 {
-                    recurrenceIdText = "*RECURRENCE-ID;TZID=*;VALUE=DATE:<date>*"
-                        .Replace( "<date>", thisEventDate.ToString( "yyyyMMdd" ) );
-
+                    // An all-day event must specify DTSTART and RECURRENCE-ID using the "VALUE=DATE:YYYYMMDD" format.
+                    // If any other format is used, Outlook Web interprets the event as occurring at 12:00am with 0s duration.
+                    dtStartPattern = $"DTSTART;TZID=(.*);VALUE=DATE:{rescheduledToDate:yyyyMMdd}[^Tt0123456789]";
+                    recurrenceIdText = $"RECURRENCE-ID;TZID=(.*);VALUE=DATE:{rescheduledFromDate:yyyyMMdd}[^Tt0123456789]";
                 }
-                Assert.That.MatchesWildcard( recurrenceIdText, calendarString1 );
+
+                matchRegex += $"(.*)BEGIN:VEVENT(.*){dtStartPattern}(.*){recurrenceIdText}(.*)END:VEVENT";
             }
+
+            Assert.That.IsTrue( Regex.IsMatch( calendarString, matchRegex, RegexOptions.Singleline ),
+                $"Specific Dates are not in the required format." );
 
             // 3. The rescheduled events must have a higher SEQUENCE number than the initial event.
             //    This ensures that they will supersede the previous event definition.
-            var sequenceMatches = Regex.Matches( calendarString1, @"^SEQUENCE:(\d*)\s*$", RegexOptions.Multiline );
+            var sequenceMatches = Regex.Matches( calendarString, @"^SEQUENCE:(\d*)\s*$", RegexOptions.Multiline );
             var sequence1 = -1;
             foreach ( Match sequenceMatch in sequenceMatches )
             {
