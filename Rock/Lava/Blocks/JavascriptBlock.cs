@@ -20,6 +20,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Web;
 
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace Rock.Lava.Blocks
@@ -125,7 +126,7 @@ namespace Rock.Lava.Blocks
                 }
                 else
                 {
-                    var url = ResolveRockUrl( parms["url"] );
+                    var url = ResolveRockUrl( context, parms["url"] );
 
                     var scriptText = $"{Environment.NewLine}<script src='{url}' type='text/javascript'></script>{Environment.NewLine}";
                     if ( parms.ContainsKey( "id" ) )
@@ -171,17 +172,25 @@ namespace Rock.Lava.Blocks
         /// <summary>
         /// Resolves the rock URL.
         /// </summary>
+        /// <param name="context">The lava render context.</param>
         /// <param name="url">The URL.</param>
-        /// <returns></returns>
-        private string ResolveRockUrl(string url )
+        /// <returns>The resolved rock URL.</returns>
+        private string ResolveRockUrl( ILavaRenderContext context, string url )
         {
-            // If we are not operating in the context of a page, return the unresolved URL.
-            if ( HttpContext.Current == null )
+            // Some requests (i.e.Obsidian block action requests) won't have a RockPage,
+            // so try to resolve the URL using the RockRequestContext first.
+            var rockRequestContext = context.GetRockRequestContext();
+            if ( rockRequestContext != null )
             {
-                return url;
+                return rockRequestContext.ResolveRockUrl( url );
             }
 
-            RockPage page = HttpContext.Current.Handler as RockPage;
+            var page = HttpContext.Current?.Handler as RockPage;
+            if ( page == null )
+            {
+                // If we are not operating in the context of a page, return the unresolved URL.
+                return url;
+            }
 
             if ( url.StartsWith( "~~" ) )
             {
