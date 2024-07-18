@@ -1,4 +1,4 @@
-﻿//23
+//23
 // ^^^ This number above is the build number used by the T4 template responsible for generating this file. 
 // Do Not Remove!
 //
