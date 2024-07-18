@@ -445,6 +445,10 @@ namespace Rock.Blocks.Engagement
                     var streakTypeService = new StreakTypeService( rockContext );
                     var locationId = box.Entity.Location.GetEntityId<Location>( rockContext );
                     entity = streakTypeService.Enroll( streakTypeCache, personId, out errorMessage, box.Entity.EnrollmentDate, locationId );
+                    if ( !string.IsNullOrEmpty( errorMessage ) )
+                    {
+                        return ActionBadRequest( errorMessage );
+                    }
                 }
                 else
                 {
