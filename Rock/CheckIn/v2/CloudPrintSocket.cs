@@ -157,6 +157,27 @@ namespace Rock.CheckIn.v2
         }
 
         /// <summary>
+        /// Gets all the socket connections we know of for the specified proxy
+        /// device. This only returns connections on the current node.
+        /// </summary>
+        /// <param name="proxyDeviceId">The proxy device to find all connections for.</param>
+        /// <returns>A list of sockets or <c>null</c> if this node does not have any connections.</returns>
+        public static List<CloudPrintSocket> GetAllProxiesForDevice( int proxyDeviceId )
+        {
+            lock ( _lock )
+            {
+                if ( _proxies.TryGetValue( proxyDeviceId, out var proxies ) )
+                {
+                    return proxies.Count > 0 ? proxies : null;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
+        /// <summary>
         /// Adds the proxy to the list of known proxies that are being tracked
         /// by this Rock instance.
         /// </summary>

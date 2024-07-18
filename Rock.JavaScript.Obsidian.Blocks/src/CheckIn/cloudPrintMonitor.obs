@@ -1,0 +1,189 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr;">
+        <div v-for="proxy in proxies"
+             class="proxy"
+             :key="proxy.id">
+            <div class="header">
+                <div class="title">
+                    {{ proxy.name }}
+                </div>
+
+                <div class="status">
+                    <span :class="getProxyStatusClass(proxy)">
+                        {{ getProxyStatusText(proxy) }}
+                    </span>
+                </div>
+            </div>
+
+            <ul v-if="proxy.connections && proxy.connections.length > 0"
+                class="connections">
+                <li v-for="connection of proxy.connections">
+                    <div class="connection">
+                        <span>{{ connection.proxyName }}</span>
+                        <span class="label label-info">Priority {{ connection.priority }}</span>
+                        <span class="label label-info">via {{ connection.serverName }}</span>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.proxy {
+    padding: 18px;
+    border-radius: 6px;
+    background-color: #fff;
+    min-height: 120px;
+}
+
+.proxy .header {
+    position: relative;
+}
+
+.proxy .title {
+    text-align: center;
+    font-weight: 600;
+    font-size: 1.2em;
+}
+
+.proxy .status {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding-top: 2px;
+}
+
+.connections {
+    margin-top: 18px;
+}
+
+.connection {
+    display: flex;
+    gap: 8px;
+}
+</style>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { onBeforeUnmount, onMounted, ref } from "vue";
+
+    type ProxyConnectionBag = {
+        proxyId?: string | null;
+        proxyName?: string | null;
+        priority: number;
+        serverName?: string | null;
+    };
+
+    type Proxy = {
+        id: string;
+        name: string;
+        connections?: ProxyConnectionBag[];
+    };
+
+    const config = useConfigurationValues<{ proxies?: ListItemBag[] | null }>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const proxies = ref<Proxy[]>(config.proxies?.map(p => {
+        return {
+            id: p.value as string,
+            name: p.text as string
+        };
+    }) ?? []);
+
+    let updateTimer: number | undefined;
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Gets the class that represents the status of this proxy as a label.
+     *
+     * @param proxy The proxy device.
+     */
+    function getProxyStatusClass(proxy: Proxy): string {
+        if (!proxy.connections) {
+            return "label label-default";
+        }
+        else if (proxy.connections.length === 0) {
+            return "label label-danger";
+        }
+        else {
+            return "label label-success";
+        }
+    }
+
+    /**
+     * Gets the text that represents the status of this proxy.
+     *
+     * @param proxy The proxy device.
+     */
+    function getProxyStatusText(proxy: Proxy): string {
+        if (!proxy.connections) {
+            return "Unknown";
+        }
+        else if (proxy.connections.length === 0) {
+            return "Offline";
+        }
+        else {
+            return "Online";
+        }
+    }
+
+    /**
+     * Requests an updated list of all proxy connections from the server. This
+     * will set all the status various with the updated connection information.
+     */
+    async function updateProxyStatus(): Promise<void> {
+        const data = {
+            proxyIds: proxies.value.map(p => p.id)
+        };
+
+        const response = await invokeBlockAction<ProxyConnectionBag[]>("GetProxyConnections", data);
+
+        if (response.isSuccess && response.data) {
+            proxies.value.forEach(p => p.connections = []);
+
+            for (const conn of response.data) {
+                if (!conn.proxyId || !conn.proxyName || !conn.serverName) {
+                    continue;
+                }
+
+                const proxy = proxies.value.find(p => p.id === conn.proxyId);
+
+                if (!proxy) {
+                    continue;
+                }
+
+                (proxy.connections as ProxyConnectionBag[]).push(conn);
+            }
+        }
+        else {
+            proxies.value.forEach(p => p.connections = undefined);
+        }
+    }
+
+    // #endregion
+
+    updateProxyStatus();
+
+    onMounted(() => {
+        updateTimer = window.setInterval(updateProxyStatus, 30000);
+    });
+
+    onBeforeUnmount(() => {
+        if (updateTimer !== undefined) {
+            window.clearInterval(updateTimer);
+            updateTimer = undefined;
+        }
+    });
+</script>
