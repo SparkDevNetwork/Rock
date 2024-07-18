@@ -939,6 +939,17 @@ namespace RockWeb.Blocks.Communication
             // Get the base query, excluding items that are current being processed.
             var qryCommunications = new CommunicationService( rockContext ).Queryable().Where( c => c.Status != CommunicationStatus.Transient );
 
+            var unAuthorizedToViewSystemPhoneNumberIds = SystemPhoneNumberCache.All()
+                .Where( sp => !sp.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
+                .Select( sp => sp.Id )
+                .ToList();
+
+            // Apply Filter: SystemPhoneNumber Authorization
+            if ( unAuthorizedToViewSystemPhoneNumberIds.Count > 0 )
+            {
+                qryCommunications = qryCommunications.Where( c => !c.SmsFromSystemPhoneNumberId.HasValue || !unAuthorizedToViewSystemPhoneNumberIds.Contains( c.SmsFromSystemPhoneNumberId.Value ) );
+            }
+
             // Apply Filter: Subject
             if ( !string.IsNullOrWhiteSpace( subject ) )
             {
