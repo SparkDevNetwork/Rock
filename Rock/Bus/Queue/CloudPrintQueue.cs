@@ -15,11 +15,14 @@
 // </copyright>
 //
 
+using Rock.Attribute;
+
 namespace Rock.Bus.Queue
 {
     /// <summary>
     /// A Rock Message Bus Queue for Cloud Print commands.
     /// </summary>
+    [RockInternal( "1.16.7", true )]
     public sealed class CloudPrintQueue : SendCommandQueue
     {
         /// <summary>
