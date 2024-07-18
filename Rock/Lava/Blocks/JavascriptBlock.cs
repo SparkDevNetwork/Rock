@@ -179,7 +179,7 @@ namespace Rock.Lava.Blocks
         {
             // Some requests (i.e. Obsidian block action requests) won't have a RockPage,
             // so try to resolve the URL using the RockRequestContext first.
-            var rockRequestContext = context.GetRockRequestContext();
+            var rockRequestContext = context?.GetRockRequestContext();
             if ( rockRequestContext != null )
             {
                 return rockRequestContext.ResolveRockUrl( url );
