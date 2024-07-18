@@ -38,7 +38,7 @@
                 <DropDownList label="Job Type"
                               v-model="jobTypeClass"
                               :items="jobTypeOptions"
-                              enhanceForLongLists="true"
+                              :enhanceForLongLists="true"
                               rules="required"
                               :disabled="!isEditable || isSystem"/>
                 <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" :isEditMode="isEditable" :numberOfColumns="1" />
