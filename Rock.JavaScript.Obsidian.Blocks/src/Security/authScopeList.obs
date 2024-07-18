@@ -75,6 +75,7 @@
     const gridSettings = ref<GridSettingsOptions>({
         name: preferences.getValue(PreferenceKey.FilterName),
         isActive: preferences.getValue(PreferenceKey.FilterActiveStatus),
+        publicName: preferences.getValue(PreferenceKey.FilterPublicName)
     });
 
     // #endregion

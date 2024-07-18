@@ -25,6 +25,7 @@ using Rock.Attribute;
 using Rock.Chart;
 using Rock.Data;
 using Rock.Model;
+using Rock.Utility;
 using Rock.ViewModels.Blocks.Reporting.TithingOverview;
 using Rock.Web.Cache;
 
@@ -169,7 +170,7 @@ namespace Rock.Blocks.Reporting
                 .Distinct();
 
             var seriesNameKeyValue = new Dictionary<string, string>();
-            foreach ( var dataSeriesDataset in dataSeriesDatasets )
+            foreach ( var dataSeriesDataset in dataSeriesDatasets.Where( x => !string.IsNullOrWhiteSpace( x ) ) )
             {
                 var seriesNameValue = GetSeriesPartitionName( dataSeriesDataset );
                 seriesNameKeyValue.Add( dataSeriesDataset, seriesNameValue );
@@ -204,35 +205,6 @@ namespace Rock.Blocks.Reporting
         #endregion
 
         #region Bar Chart
-
-        /// <summary>
-        /// Gets the bar chart data arguments.
-        /// </summary>
-        /// <returns></returns>
-        private static ChartJsCategorySeriesDataFactory.GetJsonArgs GetBarChartDataArgs()
-        {
-            return new ChartJsCategorySeriesDataFactory.GetJsonArgs
-            {
-                DisplayLegend = true,
-                LineTension = 0.4m,
-                MaintainAspectRatio = false,
-                SizeToFitContainerWidth = true
-            };
-        }
-
-        /// <summary>
-        /// Gets a configured factory that creates the data required for the bar chart.
-        /// </summary>
-        public ChartJsCategorySeriesDataFactory<ChartJsCategorySeriesDataPoint> GetBarChartDataFactory( RockContext rockContext )
-        {
-            var chartFactory = new ChartJsCategorySeriesDataFactory<ChartJsCategorySeriesDataPoint>
-            {
-                Datasets = GetCategorySeriesDataset( rockContext ),
-                ChartStyle = ChartJsCategorySeriesChartStyleSpecifier.Bar,
-            };
-
-            return chartFactory;
-        }
 
         /// <summary>
         /// Gets the dataset for the bar chart.
@@ -280,6 +252,27 @@ namespace Rock.Blocks.Reporting
             }
 
             return datasets;
+        }
+
+        private string GetChartDataJson( List<ChartJsCategorySeriesDataset> datasets )
+        {
+            var jsDataset = new
+            {
+                labels = datasets.SelectMany( ds => ds.DataPoints ).Select( x => x.Category ).ToList(),
+                datasets = new List<dynamic>
+                {
+                    new
+                    {
+                        data = datasets.SelectMany( ds => ds.DataPoints.Select( dp => dp.Value ) ),
+                        backgroundColor = datasets.Select( ds => ds.FillColor ),
+                        borderColor = datasets.Select( ds => ds.BorderColor ),
+                        borderWidth = 2,
+                        lineTension = 0.4m,
+                    }
+                }
+            };
+
+            return jsDataset.ToJson();
         }
 
         #endregion
@@ -382,6 +375,13 @@ namespace Rock.Blocks.Reporting
                     .ToList();
             }
 
+            var inactiveCampusIds = CampusCache.All().Where( c => c.IsActive == false ).Select( c => c.Id ).ToList();
+
+            if ( inactiveCampusIds.Count > 0 )
+            {
+                _tithingOverviewMetricValues = _tithingOverviewMetricValues.Where( m => !m.CampusId.HasValue || !inactiveCampusIds.Contains( m.CampusId.Value ) ).ToList();
+            }
+
             return _tithingOverviewMetricValues;
         }
 
@@ -417,7 +417,7 @@ namespace Rock.Blocks.Reporting
                 }
             }
 
-            return metricValuesQry;
+            return metricValuesQry.OrderByDescending( m => m.MetricValueDateTime );
         }
 
         /// <summary>
@@ -451,7 +451,7 @@ namespace Rock.Blocks.Reporting
             switch ( chartType )
             {
                 case ChartTypeKey.BarChart:
-                    return GetBarChartDataFactory( rockContext ).GetChartDataJson( GetBarChartDataArgs() );
+                    return GetChartDataJson( GetCategorySeriesDataset( rockContext ) );
                 default:
                     return GetLineChartDataFactory( rockContext ).GetChartDataJson( GetLineChartDataArgs() );
             }
@@ -571,9 +571,10 @@ namespace Rock.Blocks.Reporting
         {
             var givingHouseHoldsDatasets = GetGivingHouseholdsMetricValues( rockContext, chartType );
             var tithingHouseHoldsDatasets = GetTithingHouseholdsMetricValues( rockContext, chartType );
-            var tithingOverviewDataset = GetTithingOverviewMetricValues( rockContext, ChartTypeKey.BarChart );
+            var tithingOverviewDataset = GetTithingOverviewMetricValues( rockContext, chartType );
 
             var toolTipData = new Dictionary<string, TithingOverviewToolTipBag>();
+            var currencyInfo = new RockCurrencyCodeInfo();
 
             foreach ( var dataset in tithingOverviewDataset )
             {
@@ -598,7 +599,13 @@ namespace Rock.Blocks.Reporting
                         Value = dataset.Value,
                         CampusClosedDate = campus.ClosedDate,
                         CampusOpenedDate = campus.OpenedDate,
-                        CampusShortCode = campus.ShortCode
+                        CampusShortCode = campus.ShortCode,
+                        CurrencyInfo = new ViewModels.Utility.CurrencyInfoBag
+                        {
+                            Symbol = currencyInfo.Symbol,
+                            DecimalPlaces = currencyInfo.DecimalPlaces,
+                            SymbolLocation = currencyInfo.SymbolLocation
+                        }
                     };
 
                     toolTipData.AddOrReplace( campusKey, toolTipInfo );

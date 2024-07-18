@@ -30,6 +30,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Utility;
+using Rock.Web.Cache.Entities;
 
 namespace Rock.Web.Cache
 {
@@ -708,9 +709,7 @@ namespace Rock.Web.Cache
             {
                 if ( _interactionIntentValueIds == null )
                 {
-                    var intentSettings = this.GetAdditionalSettings<PageService.IntentSettings>();
-
-                    _interactionIntentValueIds = intentSettings.InteractionIntentValueIds ?? new List<int>();
+                    _interactionIntentValueIds = EntityIntentCache.GetIntentValueIds<Page>( this.Id );
                 }
 
                 return _interactionIntentValueIds;

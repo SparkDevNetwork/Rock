@@ -39,6 +39,7 @@ using FromBodyAttribute = System.Web.Http.FromBodyAttribute;
 using FromQueryAttribute = System.Web.Http.FromUriAttribute;
 using HttpGetAttribute = System.Web.Http.HttpGetAttribute;
 using HttpPostAttribute = System.Web.Http.HttpPostAttribute;
+using HttpDeleteAttribute = System.Web.Http.HttpDeleteAttribute;
 using IActionResult = System.Web.Http.IHttpActionResult;
 using RouteAttribute = System.Web.Http.RouteAttribute;
 using RoutePrefixAttribute = System.Web.Http.RoutePrefixAttribute;
@@ -466,6 +467,33 @@ namespace Rock.Rest.v2
         }
 
         /// <summary>
+        /// Deletes the pending attendance records for a session.
+        /// </summary>
+        /// <param name="sessionGuid">The unique identifier of the session to delete attendance records for.</param>
+        /// <returns>The results from the delete operation.</returns>
+        [HttpDelete]
+        [Authenticate]
+        [Secured]
+        [Route( "PendingAttendance/{sessionGuid}" )]
+        [ProducesResponseType( HttpStatusCode.OK )]
+        [SystemGuid.RestActionGuid( "f914ffc3-8587-493b-9c8a-ae196b5fe028" )]
+        public IActionResult DeletePendingAttendance( Guid sessionGuid )
+        {
+            try
+            {
+                var director = new CheckInDirector( _rockContext );
+
+                director.DeletePendingAttendance( sessionGuid );
+
+                return Ok();
+            }
+            catch ( CheckInMessageException ex )
+            {
+                return BadRequest( ex.Message );
+            }
+        }
+
+        /// <summary>
         /// Establishes a connection from the printer proxy service to this
         /// Rock instance.
         /// </summary>
@@ -474,7 +502,7 @@ namespace Rock.Rest.v2
         /// <param name="priority">The priority for this proxy when choosing between multiple proxies.</param>
         /// <returns>The result of the operation.</returns>
         [HttpGet]
-        [Route( "PrinterProxy/{deviceId}" )]
+        [Route( "CloudPrint/{deviceId}" )]
         [ProducesResponseType( HttpStatusCode.SwitchingProtocols )]
         [SystemGuid.RestActionGuid( "1b4b1d0d-a872-40f7-a49d-666092cf8816" )]
         public IActionResult GetPrinterProxy( string deviceId, [FromQuery] string name = null, [FromQuery] int priority = 1 )
@@ -502,7 +530,7 @@ namespace Rock.Rest.v2
 
             System.Web.HttpContext.Current.AcceptWebSocketRequest( ctx =>
             {
-                var proxy = new PrinterProxySocket( ctx.WebSocket, device.Id, name ?? device.Name, priority );
+                var proxy = new CloudPrintSocket( ctx.WebSocket, device.Id, name ?? device.Name, priority );
 
                 return proxy.RunAsync( CancellationToken.None );
             } );

@@ -78,7 +78,15 @@ namespace Rock.Utility
             options = options ?? new GetFileUrlOptions();
             var urlBuilder = new System.Text.StringBuilder();
 
-            urlBuilder.Append( $"{System.Web.VirtualPathUtility.ToAbsolute( "~" )}GetFile.ashx?{fileIdentifierParameter}" );
+            if ( System.Web.Hosting.HostingEnvironment.VirtualPathProvider != null )
+            {
+                urlBuilder.Append( $"{System.Web.VirtualPathUtility.ToAbsolute( "~" )}GetFile.ashx?{fileIdentifierParameter}" );
+            }
+            else
+            {
+                // The hosting environment is not configured to resolve the file path.
+                urlBuilder.Append( $"~/GetFile.ashx?{fileIdentifierParameter}" );
+            }
 
             if ( options.FileName.IsNotNullOrWhiteSpace() )
             {
@@ -140,8 +148,16 @@ namespace Rock.Utility
             options = options ?? new GetImageUrlOptions();
             var urlBuilder = new System.Text.StringBuilder();
 
-            urlBuilder.Append( $"{System.Web.VirtualPathUtility.ToAbsolute( "~" )}GetImage.ashx?{fileIdentifierParameter}" );
-
+            if ( System.Web.Hosting.HostingEnvironment.VirtualPathProvider != null )
+            {
+                urlBuilder.Append( $"{System.Web.VirtualPathUtility.ToAbsolute( "~" )}GetImage.ashx?{fileIdentifierParameter}" );
+            }
+            else
+            {
+                // The hosting environment is not configured to resolve the file path.
+                urlBuilder.Append( $"~/GetImage.ashx?{fileIdentifierParameter}" );
+            }
+            
             if ( options.FileName.IsNotNullOrWhiteSpace() )
             {
                 urlBuilder.Append( $"&fileName={options.FileName}" );
@@ -314,6 +330,21 @@ namespace Rock.Utility
         /// Gets or sets the height.
         /// </summary>
         public int? Height { get; set; }
+
+        /// <summary>
+        /// Gets or sets the age classification.
+        /// </summary>
+        public AgeClassification? AgeClassification { get; set; }
+
+        /// <summary>
+        /// Gets or sets the gender.
+        /// </summary>
+        public Gender? Gender { get; set; }
+
+        /// <summary>
+        /// Gets or sets the text.
+        /// </summary>
+        public string Text { get; set; }
     }
 
     #endregion

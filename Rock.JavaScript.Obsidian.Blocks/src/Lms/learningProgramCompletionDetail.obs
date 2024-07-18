@@ -15,7 +15,7 @@
                  :isEditVisible="isEditable"
                  :isFollowVisible="true"
                  :isFullScreenVisible="false"
-                 :isSecurityHidden="false"
+                 :isSecurityHidden="true"
                  @cancelEdit="onCancelEdit"
                  @save="onSave">
         <template #edit>

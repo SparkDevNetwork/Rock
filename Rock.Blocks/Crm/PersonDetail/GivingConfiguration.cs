@@ -602,8 +602,8 @@ namespace Rock.Blocks.Crm.PersonDetail
                         NickName = p.PersonAlias.Person.NickName
                     }
                 },
-                StartDate = p.StartDate == DateTime.MinValue ? ( DateTime? ) null : p.StartDate,
-                EndDate = p.EndDate == DateTime.MaxValue ? ( DateTime? ) null : p.EndDate,
+                StartDate = p.StartDate,
+                EndDate = p.EndDate,
                 PledgeFrequencyValueId = p.PledgeFrequencyValueId,
                 PledgeFrequencyValue = p.PledgeFrequencyValue?.Value
             } ).ToList() );

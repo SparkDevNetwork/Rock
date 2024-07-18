@@ -7,8 +7,22 @@
             {{ itemName }}
             <span class="label label-tree" v-if="showChildCount && item.childCount">{{ item.childCount }}</span>
         </span>
-        <ul v-if="hasChildrenLoaded" v-show="showChildren" class="rocktree-children" v-for="child in children">
-            <treeListItem :modelValue="modelValue" @update:modelValue="onUpdateSelectedValues" @treeitem-expanded="onChildItemExpanded" :item="child" :multiple="multiple" :disableFolderSelection="disableFolderSelection" :autoExpand="autoExpand" :showChildCount="showChildCount" />
+        <ul v-if="hasChildrenLoaded" v-show="showChildren" class="rocktree-children">
+            <treeListItem v-for="child in children"
+                          :key="child.value ?? ''"
+                          @update:modelValue="onUpdateSelectedValues"
+                          @treeitem-expanded="onChildItemExpanded"
+                          @treeitem-collapsed="onChildItemCollapsed"
+                          :item="child"
+                          v-bind="{
+                              modelValue,
+                              multiple,
+                              disableFolderSelection,
+                              disableDeselect,
+                              autoExpand,
+                              showChildCount,
+                              initiallyExpanded
+                          }" />
         </ul>
     </li>
 </template>
@@ -44,6 +58,15 @@
         },
 
         /**
+         * List of items (by their `value` property) that should be expanded when the tree list is first loaded
+         * (after root is loaded).
+         */
+        initiallyExpanded: {
+            type: Array as PropType<string[]>,
+            default: []
+        },
+
+        /**
          * Automatically open to show children if a selected value is a child of this item
          */
         autoExpand: {
@@ -57,12 +80,21 @@
         showChildCount: {
             type: Boolean,
             default: false
+        },
+
+        /**
+         * When using the tree list outside of a picker,
+         */
+        disableDeselect: {
+            type: Boolean,
+            default: false
         }
     });
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: string[]): void;
         (e: "treeitem-expanded", value: TreeItemBag): void;
+        (e: "treeitem-collapsed", value: TreeItemBag): void;
     }>();
 
     /** The list of child items to this item. */
@@ -161,6 +193,9 @@
         if (showChildren.value) {
             emit("treeitem-expanded", props.item);
         }
+        else {
+            emit("treeitem-collapsed", props.item);
+        }
     }
 
     /**
@@ -183,6 +218,15 @@
     }
 
     /**
+     * Event handler for when a child item is collapsed.
+     *
+     * @param item The item that was expanded.
+     */
+    function onChildItemCollapsed(item: TreeItemBag): void {
+        emit("treeitem-collapsed", item);
+    }
+
+    /**
      * Event handler for when this item is selected or deselected.
      */
     function onSelect(): void {
@@ -196,19 +240,24 @@
             return;
         }
 
-        if (props.multiple) {
-            if (props.item.value && !props.modelValue.includes(props.item.value)) {
+        const isAlreadySelected = props.modelValue.includes(props.item.value ?? "");
+
+        if (props.disableDeselect && isAlreadySelected) {
+            return;
+        }
+        else if (props.multiple) {
+            if (props.item.value && !isAlreadySelected) {
                 emit("update:modelValue", [...props.modelValue, props.item.value]);
             }
-            else if (props.item.value && props.modelValue.includes(props.item.value)) {
+            else if (props.item.value && isAlreadySelected) {
                 emit("update:modelValue", [...props.modelValue.filter(v => v !== props.item.value)]);
             }
         }
         else {
-            if (props.item.value && !props.modelValue.includes(props.item.value)) {
+            if (props.item.value && !isAlreadySelected) {
                 emit("update:modelValue", [props.item.value]);
             }
-            else if (props.item.value && props.modelValue.includes(props.item.value)) {
+            else if (props.item.value && isAlreadySelected) {
                 emit("update:modelValue", []);
             }
         }
@@ -221,5 +270,10 @@
      */
     function onUpdateSelectedValues(values: string[]): void {
         emit("update:modelValue", values);
+    }
+
+    // Show Children on init if this item is in the initiallyExpanded list
+    if (props.initiallyExpanded.length > 0 && props.initiallyExpanded.includes(props.item.value ?? "")) {
+        showChildren.value = true;
     }
 </script>

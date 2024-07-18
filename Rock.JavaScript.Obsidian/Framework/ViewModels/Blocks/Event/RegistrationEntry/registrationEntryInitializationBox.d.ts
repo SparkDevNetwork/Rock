@@ -64,6 +64,9 @@ export type RegistrationEntryInitializationBox = {
     /** Gets or sets a value indicating whether captcha support should be disabled for this block. */
     disableCaptchaSupport: boolean;
 
+    /** Gets or sets the discount code term. */
+    discountCodeTerm?: string | null;
+
     /** Gets or sets a value indicating whether the save account option should be available. */
     enableSaveAccount: boolean;
 
@@ -78,6 +81,9 @@ export type RegistrationEntryInitializationBox = {
 
     /** Gets or sets the fees. */
     fees?: RegistrationEntryFeeBag[] | null;
+
+    /** Gets or sets the fee term. */
+    feeTerm?: string | null;
 
     /** Gets or sets a value indicating whether [force email update]. */
     forceEmailUpdate: boolean;
@@ -144,6 +150,9 @@ export type RegistrationEntryInitializationBox = {
 
     /** Gets the collection of payment plan frequencies from which a registrant can select. */
     paymentPlanFrequencies?: ListItemBag[] | null;
+
+    /** Gets or sets the plural discount code term. */
+    pluralDiscountCodeTerm?: string | null;
 
     /** Gets or sets the plural fee term. */
     pluralFeeTerm?: string | null;

@@ -55,7 +55,7 @@
     import ImageRotator from "./imageRotator.partial.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { Html5Qrcode } from "@Obsidian/Libs/html5-qrcode";
-    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
     import { PromotionBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/promotionBag";
     import { KioskStatusBag } from "@Obsidian/ViewModels/CheckIn/kioskStatusBag";
@@ -88,6 +88,7 @@
     }>();
 
     const kioskState = useKioskState();
+    const blockConfiguration = useConfigurationValues<Record<string, unknown>>();
     const invokeBlockAction = useInvokeBlockAction();
     const http = useHttp();
 
@@ -250,7 +251,13 @@
             areaIds: props.configuration.areas?.map(a => a.id ?? "") ?? []
         };
 
-        const result = await http.post<KioskStatusResponseBag>("/api/v2/checkin/KioskStatus", undefined, request);
+        let url = "/api/v2/checkin/KioskStatus";
+
+        if (blockConfiguration.apiKey) {
+            url += `?apiKey=${blockConfiguration.apiKey}`;
+        }
+
+        const result = await http.post<KioskStatusResponseBag>(url, undefined, request);
 
         if (result.isSuccess && result.data?.status) {
             kioskStatus.value = result.data.status;

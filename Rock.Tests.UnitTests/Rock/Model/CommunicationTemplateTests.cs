@@ -770,7 +770,7 @@ namespace Rock.Tests.Rock.Model
                         <tr style=""padding: 0; text-align: left; vertical-align: top;"">
                           <td style=""-moz-hyphens: auto; -webkit-hyphens: auto; Margin: 0; border-collapse: collapse !important; color: {{ textColor }}; font-family: Helvetica, Arial, sans-serif; font-size: 16px; font-weight: normal; hyphens: auto; line-height: 1.3; margin: 0; padding: 0; text-align: left; vertical-align: top; word-wrap: break-word;"">
                             <!-- LOGO -->
-                            <img id=""template-logo"" src=""/GetImage.ashx?Id=1"" width=""200"" height=""50"" data-instructions=""Provide a PNG with a transparent background."" style=""display: block;"">  
+                            <img id=""template-logo"" src=""/Content/EmailTemplates/placeholder-logo.png"" width=""200"" height=""50"" data-instructions=""Provide a PNG with a transparent background."" style=""display: block;"">  
                           </td>
                         </tr>
                       </tbody>
@@ -885,11 +885,11 @@ namespace Rock.Tests.Rock.Model
 
 
 </html>";
-            var defaultCommunicationTemplateOutput = CommunicationTemplateHelper.GetUpdatedTemplateHtml( defaultCommunicationTemplate, 1, lavaFieldsTemplateDictionaryFromControls, defaultCommunicationTemplateLavaFieldsDefaultDictionary );
+            var defaultCommunicationTemplateOutput = CommunicationTemplateHelper.GetUpdatedTemplateHtml( defaultCommunicationTemplate, null, lavaFieldsTemplateDictionaryFromControls, defaultCommunicationTemplateLavaFieldsDefaultDictionary );
             Assert.That.AreEqual( expectedDefaultCommunicationTemplateOutput.Replace( "\r\n", "\n" ), defaultCommunicationTemplateOutput.Replace( "\r\n", "\n" ) );
 
             // see if it still ok after running it again
-            defaultCommunicationTemplateOutput = CommunicationTemplateHelper.GetUpdatedTemplateHtml( defaultCommunicationTemplateOutput, 1, lavaFieldsTemplateDictionaryFromControls, defaultCommunicationTemplateLavaFieldsDefaultDictionary );
+            defaultCommunicationTemplateOutput = CommunicationTemplateHelper.GetUpdatedTemplateHtml( defaultCommunicationTemplateOutput, null, lavaFieldsTemplateDictionaryFromControls, defaultCommunicationTemplateLavaFieldsDefaultDictionary );
             Assert.That.AreEqual( expectedDefaultCommunicationTemplateOutput.Replace( "\r\n", "\n" ), defaultCommunicationTemplateOutput.Replace( "\r\n", "\n" ) );
         }
 

@@ -15,11 +15,9 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Web;
 
 using Rock.Attribute;
 using Rock.Constants;
@@ -223,7 +221,7 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         protected override LearningProgramCompletion GetInitialEntity()
         {
-           //return new LearningProgramCompletionService( RockContext ).GetInclude( PageParameterKey.LearningProgramCompletionId, a => a.PersonAlias.Person );
+            //return new LearningProgramCompletionService( RockContext ).GetInclude( PageParameterKey.LearningProgramCompletionId, a => a.PersonAlias.Person );
             return GetInitialEntity<LearningProgramCompletion, LearningProgramCompletionService>( RockContext, PageParameterKey.LearningProgramCompletionId );
         }
 
@@ -332,11 +330,7 @@ namespace Rock.Blocks.Lms
 
             var isNew = entity.Id == 0;
 
-            RockContext.WrapTransaction( () =>
-            {
-                RockContext.SaveChanges();
-                entity.SaveAttributeValues( RockContext );
-            } );
+            RockContext.SaveChanges();
 
             var returnPageUrl = PageParameter( PageParameterKey.ReturnUrl ) ?? string.Empty;
             if ( returnPageUrl.Length > 0 )
@@ -354,7 +348,6 @@ namespace Rock.Blocks.Lms
 
             // Ensure navigation properties will work now.
             entity = entityService.Get( entity.Id );
-            entity.LoadAttributes( RockContext );
 
             var bag = GetEntityBagForEdit( entity );
 

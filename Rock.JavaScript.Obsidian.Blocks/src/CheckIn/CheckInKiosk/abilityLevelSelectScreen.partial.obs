@@ -8,7 +8,12 @@
                 <RockButton v-for="abilityLevel in abilityLevels"
                             btnType="primary"
                             class="ability-level-button"
+                            :disabled="abilityLevel.isDisabled"
                             @click="onAbilityLevelClick(abilityLevel)">
+                    <span v-if="abilityLevel.id === currentAbilityLevelId"
+                          class="selection">
+                        <i class="fa fa-check-square"></i>
+                    </span>
                     <span class="title">{{ abilityLevel.name }}</span>
                 </RockButton>
             </div>
@@ -58,7 +63,11 @@
     });
 
     const abilityLevels = computed((): AbilityLevelOpportunityBag[] => {
-        return props.session.getAvailableAbilityLevels();
+        return props.session.attendeeOpportunities?.abilityLevels ?? [];
+    });
+
+    const currentAbilityLevelId = computed((): string => {
+        return props.session.getCurrentAttendee()?.person?.abilityLevel?.id ?? "";
     });
 
     // #endregion

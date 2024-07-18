@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <TabbedContent :tabs="tabs" v-model:selectedTab="selectedTab" >
+    <TabbedContent :tabs="tabs" v-model:selectedTab="selectedTab" :class="visibleCssClass" >
         <template #tabpane="{ item }">
             <div v-if="item === 'Learning Plan'">
                 <LearningPlanGrid :isAddEnabled="isEditable"
@@ -51,12 +51,27 @@
     import FacilitatorGrid from "./facilitatorGrid.partial.obs";
     import AnnouncementGrid from "./announcementGrid.partial.obs";
     import ContentPageGrid from "./contentPageGrid.partial.obs";
-    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useBlockBrowserBus, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./types.partial";
     import { PropType, ref, watch } from "vue";
+    import { BlockMessages } from "@Obsidian/Utility/browserBus";
 
     const invokeBlockAction = useInvokeBlockAction();
+
+    // Use the browser bus to listen for changes to edit mode for any blocks on the page.
+    const browserBus = useBlockBrowserBus();
+    const visibleCssClass = ref("show");
+
+    // When another block on the page begins editing hide this block.
+    browserBus.subscribe(BlockMessages.BeginEdit, () => {
+        visibleCssClass.value = "hidden";
+    });
+
+    // When another block begins editing show this block.
+    browserBus.subscribe(BlockMessages.EndEdit, () => {
+        visibleCssClass.value = "show";
+    });
 
     // #region Values
 

@@ -32,7 +32,7 @@ using Rock.Utility;
 namespace Rock.Jobs
 {
     /// <summary>
-    /// Send Group Attendance Digest
+    /// Send Learning Activity Available Notifications
     /// </summary>
     [DisplayName( "Send Learning Activity Notifications" )]
     [Description( "This job will send a single email for each student with newly available activities. The email is based on the configured System Communication template and that template should contain the following merge objects: Courses and ActivityCount." )]

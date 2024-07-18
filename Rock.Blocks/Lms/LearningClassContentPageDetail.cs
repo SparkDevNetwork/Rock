@@ -382,10 +382,7 @@ namespace Rock.Blocks.Lms
                 entity.LearningClassId = RequestContext.PageParameterAsId( PageParameterKey.LearningClassId );
             }
 
-            RockContext.WrapTransaction( () =>
-            {
-                RockContext.SaveChanges();
-            } );
+            RockContext.SaveChanges();
 
             var returnToUrl = this.PageParameter( PageParameterKey.ReturnUrl ) ?? this.GetParentPageUrl( GetCurrentPageParams() );
             return ActionContent( System.Net.HttpStatusCode.Created, returnToUrl );

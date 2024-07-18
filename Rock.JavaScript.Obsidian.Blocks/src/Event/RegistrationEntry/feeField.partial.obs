@@ -5,12 +5,13 @@
         <NumberUpDown v-else-if="isNumberUpDown" :validationTitle="props.fee.name ?? undefined" :label="label" :min="0" :max="maxValue" v-model="quantityValue" :rules="rules" />
         <DropDownList v-else-if="isDropDown" :label="label" :items="dropDownListOptions" v-model="dropDownValue" :rules="rules" formControlClasses="input-width-md" />
         <NumberUpDownGroup v-else-if="isNumberUpDownGroup" :label="label" :options="numberUpDownGroupOptions" v-model="numberGroupValue" :rules="rules" />
-        <NotificationBox v-else alertType="danger">This fee configuration is not supported</NotificationBox>
+        <NotificationBox v-else alertType="danger">This {{ registrationEntryTerms.feeSingularLowerCase }} configuration is not supported</NotificationBox>
     </template>
 </template>
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
+    import { RegistrationEntryTerms, use } from "./utils.partial";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -40,18 +41,15 @@
         (e: "update:modelValue", value: Record<string, number>): void;
     }>();
 
+    const registrationEntryTerms = use(RegistrationEntryTerms);
+
+    // #region Values
+
     const internalValue = ref({ ...props.modelValue });
 
-    function getItemLabel(item: RegistrationEntryFeeItemBag): string {
-        const formattedCost = asFormattedString(item.cost, 2);
+    // #endregion
 
-        if (item.countRemaining !== null && item.countRemaining !== undefined) {
-            const formattedRemaining = asFormattedString(item.countRemaining, 0);
-            return `${item.name} ($${formattedCost}) (${formattedRemaining} remaining)`;
-        }
-
-        return `${item.name} ($${formattedCost})`;
-    }
+    // #region Computed Values
 
     const maxValue = computed<number>((): number => {
         if (!singleItem.value || singleItem.value.countRemaining === null || singleItem.value.countRemaining === undefined) {
@@ -235,6 +233,25 @@
         return undefined;
     });
 
+    // #endregion
+
+    // #region Functions
+
+    function getItemLabel(item: RegistrationEntryFeeItemBag): string {
+        const formattedCost = asFormattedString(item.cost, 2);
+
+        if (item.countRemaining !== null && item.countRemaining !== undefined) {
+            const formattedRemaining = asFormattedString(item.countRemaining, 0);
+            return `${item.name} ($${formattedCost}) (${formattedRemaining} remaining)`;
+        }
+
+        return `${item.name} ($${formattedCost})`;
+    }
+
+    // #endregion
+
+    // #region Watchers
+
     watch(() => props.modelValue, () => {
         updateRefValue(internalValue, { ...props.modelValue });
     });
@@ -242,6 +259,8 @@
     watch(internalValue, () => {
         emit("update:modelValue", internalValue.value);
     });
+
+    // #endregion
 
     // If the fee is required see if we need to auto-select it.
     if (singleItem.value && props.fee.isRequired) {

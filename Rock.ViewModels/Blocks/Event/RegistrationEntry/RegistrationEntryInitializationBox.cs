@@ -93,12 +93,36 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         public string PluralRegistrantTerm { get; set; }
 
         /// <summary>
+        /// Gets or sets the fee term.
+        /// </summary>
+        /// <value>
+        /// The fee term.
+        /// </value>
+        public string FeeTerm { get; set; }
+
+        /// <summary>
         /// Gets or sets the plural fee term.
         /// </summary>
         /// <value>
         /// The plural fee term.
         /// </value>
         public string PluralFeeTerm { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the discount code term.
+        /// </summary>
+        /// <value>
+        /// The discount code term.
+        /// </value>
+        public string DiscountCodeTerm { get; set; }
+
+        /// <summary>
+        /// Gets or sets the plural discount code term.
+        /// </summary>
+        /// <value>
+        /// The plural discount code term.
+        /// </value>
+        public string PluralDiscountCodeTerm { get; set; }
 
         /// <summary>
         /// Gets or sets the registrant forms.

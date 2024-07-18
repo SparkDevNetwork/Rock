@@ -54,7 +54,8 @@ namespace Rock.Tests.Shared
         {
             if ( _tasks.ContainsKey( taskGuid ) )
             {
-                Log( $"<STOP> Task: { _tasks[taskGuid] }" );
+                // Indent to align with START tag.
+                Log( $" <STOP> Task: { _tasks[taskGuid] }" );
             }
         }
 

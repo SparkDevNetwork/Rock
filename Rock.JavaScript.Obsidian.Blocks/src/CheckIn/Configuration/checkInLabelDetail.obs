@@ -25,7 +25,7 @@
         </template>
 
         <template #edit>
-            <EditPanel v-model="checkInLabelEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
+            <EditPanel v-model="checkInLabelEditBag" ref="editPanelElement" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
         </template>
     </DetailBlock>
 </template>
@@ -44,6 +44,7 @@
     import { CheckInLabelBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInLabelDetail/checkInLabelBag";
     import { CheckInLabelDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInLabelDetail/checkInLabelDetailOptionsBag";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { LabelFormat } from "@Obsidian/Enums/CheckIn/Labels/labelFormat";
 
     const config = useConfigurationValues<DetailBlockBox<CheckInLabelBag, CheckInLabelDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -59,6 +60,7 @@
     });
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
+    const editPanelElement = ref<InstanceType<typeof EditPanel>>();
 
     const baseBlock = useEntityDetailBlock({
         blockConfig: config,
@@ -121,6 +123,14 @@
 
     const footerActions = computed((): PanelAction[] => {
         const actions: PanelAction[] = [];
+
+        if (panelMode.value === DetailPanelMode.Edit && checkInLabelEditBag.value.bag?.labelFormat === LabelFormat.Zpl) {
+            actions.push({
+                type: "link",
+                title: "Preview",
+                handler: () => editPanelElement.value?.showPreview()
+            });
+        }
 
         return actions;
     });

@@ -20,13 +20,18 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using System.Threading;
 using System.Web.UI;
 
 using Newtonsoft.Json;
 
+using Rock.Attribute;
 using Rock.CheckIn;
+using Rock.CheckIn.v2.Labels;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 using CheckInLabel = Rock.CheckIn.CheckInLabel;
 
@@ -157,6 +162,54 @@ namespace Rock.Utility
         #endregion
 
         /// <summary>
+        /// Attempts to re-print any next-gen labels for the specified attendance
+        /// identifiers.
+        /// </summary>
+        /// <param name="attendanceIds">The attendance identifiers to reprint.</param>
+        /// <param name="printer">The printer device for server based printing.</param>
+        /// <param name="errorMessages">On return contains any error messages.</param>
+        /// <returns><c>true</c> if any labels were found to be printed.</returns>
+        [RockInternal( "1.16.7", true )]
+        public static bool TryReprintNextGenLabels( List<int> attendanceIds, DeviceCache printer, out List<string> errorMessages )
+        {
+            var director = new CheckIn.v2.CheckInDirector( new RockContext() );
+            var labels = director.LabelProvider.RenderLabels( attendanceIds, null, false );
+
+            errorMessages = labels.Where( l => l.Error.IsNotNullOrWhiteSpace() )
+                .Select( l => l.Error )
+                .ToList();
+
+            if ( !labels.Any() )
+            {
+                return false;
+            }
+
+            labels = labels.Where( l => l.Error.IsNullOrWhiteSpace() ).ToList();
+            foreach ( var label in labels )
+            {
+                label.PrintTo = printer;
+                label.PrintFrom = PrintFrom.Server;
+            }
+
+            // Print the labels with a 5 second timeout.
+            var cts = new CancellationTokenSource( 5_000 );
+            var printProvider = new LabelPrintProvider();
+
+            try
+            {
+                var printerErrors = Task.Run( async () => await printProvider.PrintLabelsAsync( labels, cts.Token ) ).Result;
+
+                errorMessages.AddRange( printerErrors );
+            }
+            catch ( TaskCanceledException ) when ( cts.IsCancellationRequested )
+            {
+                errorMessages.Add( "Timeout waiting for labels to print." );
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Handles printing labels for the given parameters using the
         /// label data stored on the AttendanceData model.
         /// </summary>
@@ -168,6 +221,47 @@ namespace Rock.Utility
         /// <param name="reprintLabelOptions">The reprint label options.</param>
         /// <returns></returns>
         public static List<string> ReprintZebraLabels( List<Guid> fileGuids, int personId, List<int> selectedAttendanceIds, Control control, System.Web.HttpRequest request, ReprintLabelOptions reprintLabelOptions )
+        {
+            var (messages, printFromClient) = ReprintZebraLabels( fileGuids, personId, selectedAttendanceIds, reprintLabelOptions );
+
+            // Print client labels
+            if ( printFromClient.Any() )
+            {
+                var urlRoot = string.Format( "{0}://{1}", request.UrlProxySafe().Scheme, request.UrlProxySafe().Authority );
+
+                /*
+                                // This is extremely useful when debugging with ngrok and an iPad on the local network.
+                                // X-Original-Host will contain the name of your ngrok hostname, therefore the labels will
+                                // get a LabelFile url that will actually work with that iPad.
+                                if ( request.Headers["X-Original-Host"] != null )
+                                {
+                                    var scheme = request.Headers["X-Forwarded-Proto"] ?? "http";
+                                    urlRoot = string.Format( "{0}://{1}", scheme, request.Headers.GetValues( "X-Original-Host" ).First() );
+                                }
+                */
+
+                printFromClient
+                    .OrderBy( l => l.PersonId )
+                    .ThenBy( l => l.Order )
+                    .ToList()
+                    .ForEach( l => l.LabelFile = urlRoot + l.LabelFile );
+
+                AddLabelScript( printFromClient.ToJson(), control );
+            }
+
+            return messages;
+        }
+
+        /// <summary>
+        /// Handles printing labels for the given parameters using the
+        /// label data stored on the AttendanceData model.
+        /// </summary>
+        /// <param name="fileGuids">The file guids.</param>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="selectedAttendanceIds">The selected attendance ids.</param>
+        /// <param name="reprintLabelOptions">The reprint label options.</param>
+        /// <returns>A tuple that contains a list of error messages and a list of labels to be printed on the client.</returns>
+        internal static (List<string>, List<CheckInLabel>) ReprintZebraLabels( List<Guid> fileGuids, int personId, List<int> selectedAttendanceIds, ReprintLabelOptions reprintLabelOptions )
         {
             // Fetch the actual labels and print them
             var rockContext = new RockContext();
@@ -229,31 +323,6 @@ namespace Rock.Utility
                 }
             }
 
-            // Print client labels
-            if ( printFromClient.Any() )
-            {
-                var urlRoot = string.Format( "{0}://{1}", request.UrlProxySafe().Scheme, request.UrlProxySafe().Authority );
-
-                /*
-                                // This is extremely useful when debugging with ngrok and an iPad on the local network.
-                                // X-Original-Host will contain the name of your ngrok hostname, therefore the labels will
-                                // get a LabelFile url that will actually work with that iPad.
-                                if ( request.Headers["X-Original-Host"] != null )
-                                {
-                                    var scheme = request.Headers["X-Forwarded-Proto"] ?? "http";
-                                    urlRoot = string.Format( "{0}://{1}", scheme, request.Headers.GetValues( "X-Original-Host" ).First() );
-                                }
-                */
-
-                printFromClient
-                    .OrderBy( l => l.PersonId )
-                    .ThenBy( l => l.Order )
-                    .ToList()
-                    .ForEach( l => l.LabelFile = urlRoot + l.LabelFile );
-
-                AddLabelScript( printFromClient.ToJson(), control );
-            }
-
             var messages = new List<string>();
 
             // Print server labels
@@ -268,7 +337,7 @@ namespace Rock.Utility
                 messages.Add( "The labels have been printed." );
             }
 
-            return messages;
+            return (messages, printFromClient);
         }
 
         /// <summary>

@@ -56,8 +56,9 @@
     import { computed, onMounted, reactive, ref } from "vue";
     import { NavigationUrlKey } from "./DynamicData/types.partial";
     import Grid, { BooleanColumn, CurrencyColumn, DateColumn, DateTimeColumn, defaultColumnFilters, DynamicColumns, NumberColumn, PersonColumn, pickExistingValueFilter, SelectColumn, TextColumn } from "@Obsidian/Controls/grid";
-    import { getRowKey } from "@Obsidian/Core/Controls/grid";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { getRowKey } from "@Obsidian/Core/Controls/grid";
+    import { setInnerHTML } from "@Obsidian/Core/Utilities/domUtils";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { Guid } from "@Obsidian/Types";
@@ -288,15 +289,15 @@
 
     onMounted(() => {
         if (lavaTemplateResultsElement.value && lavaTemplateResultsHtml.value) {
-            lavaTemplateResultsElement.value.innerHTML = lavaTemplateResultsHtml.value;
+            setInnerHTML(lavaTemplateResultsElement.value, lavaTemplateResultsHtml.value);
         }
 
         if (gridHeaderElement.value && gridHeaderHtml.value) {
-            gridHeaderElement.value.innerHTML = gridHeaderHtml.value;
+            setInnerHTML(gridHeaderElement.value, gridHeaderHtml.value);
         }
 
         if (gridFooterElement.value && gridFooterHtml.value) {
-            gridFooterElement.value.innerHTML = gridFooterHtml.value;
+            setInnerHTML(gridFooterElement.value, gridFooterHtml.value);
         }
     });
 

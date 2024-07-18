@@ -471,25 +471,11 @@ namespace Rock.Blocks.Engagement
                     var personId = new PersonAliasService( rockContext ).GetPersonId( box.Entity.PersonAlias.Value.AsGuid() ).ToIntSafe();
                     var streakTypeCache = StreakTypeCache.Get( box.Entity.StreakType.Value.AsGuid() );
                     var streakTypeService = new StreakTypeService( rockContext );
-                    entity = streakTypeService.Enroll( streakTypeCache, personId, out errorMessage, box.Entity.EnrollmentDate, box.Entity.Location.GetEntityId<Location>( rockContext ).ToIntSafe() );
-                    if ( entity == null )
+                    var locationId = box.Entity.Location.GetEntityId<Location>( rockContext );
+                    entity = streakTypeService.Enroll( streakTypeCache, personId, out errorMessage, box.Entity.EnrollmentDate, locationId );
+                    if ( !string.IsNullOrEmpty( errorMessage ) )
                     {
                         return ActionBadRequest( errorMessage );
-                    }
-
-                    if ( !entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
-                    {
-                        entity.AllowPerson( Authorization.VIEW, RequestContext.CurrentPerson, rockContext );
-                    }
-
-                    if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-                    {
-                        entity.AllowPerson( Authorization.EDIT, RequestContext.CurrentPerson, rockContext );
-                    }
-
-                    if ( !entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
-                    {
-                        entity.AllowPerson( Authorization.ADMINISTRATE, RequestContext.CurrentPerson, rockContext );
                     }
                 }
                 else
@@ -513,6 +499,22 @@ namespace Rock.Blocks.Engagement
                     rockContext.SaveChanges();
                     entity.SaveAttributeValues( rockContext );
                 } );
+
+                // Copied over the authorization logic from webforms block.
+                if ( !entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                {
+                    entity.AllowPerson( Authorization.VIEW, RequestContext.CurrentPerson, rockContext );
+                }
+
+                if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                {
+                    entity.AllowPerson( Authorization.EDIT, RequestContext.CurrentPerson, rockContext );
+                }
+
+                if ( !entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+                {
+                    entity.AllowPerson( Authorization.ADMINISTRATE, RequestContext.CurrentPerson, rockContext );
+                }
 
                 if ( isNew )
                 {

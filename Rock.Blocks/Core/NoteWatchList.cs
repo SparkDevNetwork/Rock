@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
@@ -45,6 +46,19 @@ namespace Rock.Blocks.Core
         Description = "The page that will show the note watch details.",
         Key = AttributeKey.DetailPage )]
 
+    [EntityTypeField( "Entity Type",
+        Description = "Set an Entity Type to limit this block to Note Types and Entities for a specific entity type.",
+        IsRequired = false,
+        Order = 0,
+        Key = AttributeKey.EntityType )]
+
+    [NoteTypeField( "Note Type",
+        Description = "Set Note Type to limit this block to a specific note type",
+        AllowMultiple = false,
+        IsRequired = false,
+        Order = 1,
+        Key = AttributeKey.NoteType )]
+
     [Rock.SystemGuid.EntityTypeGuid( "8fdb4340-bdde-4797-b173-ea456a825b2a" )]
     [Rock.SystemGuid.BlockTypeGuid( "ed4cd6ae-ed86-4607-a252-f15971e4f2e3" )]
     [CustomizedGrid]
@@ -55,6 +69,8 @@ namespace Rock.Blocks.Core
         private static class AttributeKey
         {
             public const string DetailPage = "DetailPage";
+            public const string EntityType = "EntityType";
+            public const string NoteType = "NoteType";
         }
 
         private static class NavigationUrlKey
@@ -89,7 +105,8 @@ namespace Rock.Blocks.Core
         private NoteWatchListOptionsBag GetBoxOptions()
         {
             var options = new NoteWatchListOptionsBag();
-
+            options.EntityTypeGuid = GetAttributeValue( AttributeKey.EntityType ).AsGuidOrNull();
+            options.NoteTypeGuid = GetAttributeValue( AttributeKey.NoteType ).AsGuidOrNull();
             return options;
         }
 
@@ -136,11 +153,55 @@ namespace Rock.Blocks.Core
         /// <inheritdoc/>
         protected override IQueryable<NoteWatch> GetListQueryable( RockContext rockContext )
         {
-            return base.GetListQueryable( rockContext )
+            var qry = base.GetListQueryable( rockContext )
                 .Include( a => a.WatcherPersonAlias )
                 .Include( a => a.WatcherGroup )
                 .Include( a => a.NoteType )
                 .Include( a => a.EntityType );
+
+            Guid? blockEntityTypeGuid = GetAttributeValue( AttributeKey.EntityType ).AsGuidOrNull();
+            Guid? blockNoteTypeGuid = GetAttributeValue( AttributeKey.NoteType ).AsGuidOrNull();
+
+            if ( blockNoteTypeGuid.HasValue )
+            {
+                var noteType = NoteTypeCache.Get( blockNoteTypeGuid.Value );
+                if ( noteType != null )
+                {
+                    int noteTypeId = noteType.Id;
+                    qry = qry.Where( a => a.NoteTypeId.HasValue && a.NoteTypeId == noteTypeId );
+                }
+            }
+            else if ( blockEntityTypeGuid.HasValue )
+            {
+                var entityType = EntityTypeCache.Get( blockEntityTypeGuid.Value );
+                if ( entityType != null )
+                {
+                    int entityTypeId = entityType.Id;
+                    qry = qry.Where( a =>
+                        ( a.EntityTypeId.HasValue && a.EntityTypeId.Value == entityTypeId ) ||
+                        ( a.NoteTypeId.HasValue && a.NoteType.EntityTypeId == entityTypeId ) );
+                }
+            }
+
+            var contextEntity = GetContextEntity();
+            if ( contextEntity is Person contextPerson )
+            {
+                qry = qry.Where( a => a.WatcherPersonAliasId.HasValue && a.WatcherPersonAlias.PersonId == contextPerson.Id );
+            }
+            else if ( contextEntity is Model.Group contextGroup )
+            {
+                qry = qry.Where( a => a.WatcherGroupId.HasValue && a.WatcherGroupId == contextGroup.Id );
+            }
+
+            // Add null check for the data source
+            if ( qry != null )
+            {
+                return qry;
+            }
+            else
+            {
+                return Enumerable.Empty<NoteWatch>().AsQueryable();
+            }
         }
 
         /// <inheritdoc/>
@@ -171,31 +232,28 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new NoteWatchService( RockContext );
+            var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( entity == null )
             {
-                var entityService = new NoteWatchService( rockContext );
-                var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
-
-                if ( entity == null )
-                {
-                    return ActionBadRequest( $"{NoteWatch.FriendlyTypeName} not found." );
-                }
-
-                if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-                {
-                    return ActionBadRequest( $"Not authorized to delete {NoteWatch.FriendlyTypeName}." );
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                return ActionOk();
+                return ActionBadRequest( $"{NoteWatch.FriendlyTypeName} not found." );
             }
+
+            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to delete {NoteWatch.FriendlyTypeName}." );
+            }
+
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
+
+            return ActionOk();
         }
 
         #endregion

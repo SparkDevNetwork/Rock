@@ -370,6 +370,7 @@ namespace Rock.CheckIn.v2
                 .Select( a => new
                 {
                     AttendanceId = a.Id,
+                    AttendanceGuid = a.Guid,
                     Status = a.CheckInStatus,
                     a.StartDateTime,
                     a.EndDateTime,
@@ -383,6 +384,7 @@ namespace Rock.CheckIn.v2
                 .ToList()
                 .Select( a => new RecentAttendance
                 {
+                    AttendanceGuid = a.AttendanceGuid,
                     AttendanceId = IdHasher.Instance.GetHash( a.AttendanceId ),
                     Status = a.Status,
                     StartDateTime = a.StartDateTime,
@@ -400,18 +402,17 @@ namespace Rock.CheckIn.v2
         }
 
         /// <summary>
-        /// Gets the current attendance for a set of locations. This includes
-        /// pending attendance records.
+        /// Gets the current attendance query for the date specified. This
+        /// includes pending attendance records.
         /// </summary>
         /// <param name="startDateTime">Attendance records must start on this date.</param>
-        /// <param name="locationIds">The location identifiers to load attendance data for.</param>
         /// <param name="rockContext">The database context to execute the query on.</param>
-        /// <returns>A collection of <see cref="RecentAttendance"/> records.</returns>
-        public static List<RecentAttendance> GetCurrentAttendance( DateTime startDateTime, IReadOnlyList<int> locationIds, RockContext rockContext )
+        /// <returns>A queryable of <see cref="Attendance"/> records.</returns>
+        public static IQueryable<Attendance> GetCurrentAttendanceQuery( DateTime startDateTime, RockContext rockContext )
         {
             var attendanceService = new AttendanceService( rockContext );
 
-            var personAttendanceQuery = attendanceService.Queryable()
+            return attendanceService.Queryable()
                 .Where( a =>
                     a.Occurrence.OccurrenceDate == startDateTime.Date
                     && a.Occurrence.LocationId.HasValue
@@ -421,6 +422,19 @@ namespace Rock.CheckIn.v2
                     && a.DidAttend.HasValue
                     && a.DidAttend.Value == true
                     && !a.EndDateTime.HasValue );
+        }
+
+        /// <summary>
+        /// Gets the current attendance for a set of locations. This includes
+        /// pending attendance records.
+        /// </summary>
+        /// <param name="startDateTime">Attendance records must start on this date.</param>
+        /// <param name="locationIds">The location identifiers to load attendance data for.</param>
+        /// <param name="rockContext">The database context to execute the query on.</param>
+        /// <returns>A collection of <see cref="RecentAttendance"/> records.</returns>
+        public static List<RecentAttendance> GetCurrentAttendance( DateTime startDateTime, IReadOnlyList<int> locationIds, RockContext rockContext )
+        {
+            var personAttendanceQuery = GetCurrentAttendanceQuery( startDateTime, rockContext );
 
             personAttendanceQuery = WhereContains( personAttendanceQuery, locationIds, a => a.Occurrence.Location.Id );
 
@@ -428,6 +442,7 @@ namespace Rock.CheckIn.v2
                 .Select( a => new
                 {
                     AttendanceId = a.Id,
+                    AttendanceGuid = a.Guid,
                     Status = a.CheckInStatus,
                     a.StartDateTime,
                     a.EndDateTime,
@@ -441,6 +456,7 @@ namespace Rock.CheckIn.v2
                 .ToList()
                 .Select( a => new RecentAttendance
                 {
+                    AttendanceGuid = a.AttendanceGuid,
                     AttendanceId = IdHasher.Instance.GetHash( a.AttendanceId ),
                     Status = a.Status,
                     StartDateTime = a.StartDateTime,
@@ -502,7 +518,7 @@ namespace Rock.CheckIn.v2
 
             if ( !checkinTemplateTypeId.HasValue )
             {
-                throw new Exception( "Check-in Template Purpose was not found in the database, please check your installation." );
+                throw new CheckInMessageException( "Check-in Template Purpose was not found in the database, please check your installation." );
             }
 
             return GroupTypeCache.All( RockContext )
@@ -533,6 +549,7 @@ namespace Rock.CheckIn.v2
                 FamilySearchType = configuration.FamilySearchType,
                 IsAutoSelect = configuration.KioskCheckInType == Enums.CheckIn.KioskCheckInMode.Family
                     && configuration.AutoSelect == Enums.CheckIn.AutoSelectMode.PeopleAndAreaGroupLocation,
+                IsCheckoutAtKioskAllowed = configuration.IsCheckoutAtKioskAllowed,
                 IsLocationCountDisplayed = configuration.IsLocationCountDisplayed,
                 IsOverrideAvailable = configuration.IsOverrideAvailable,
                 IsPhotoHidden = configuration.IsPhotoHidden,
@@ -541,6 +558,28 @@ namespace Rock.CheckIn.v2
                 MinimumPhoneNumberLength = configuration.MinimumPhoneNumberLength,
                 PhoneSearchType = configuration.PhoneSearchType
             };
+        }
+
+        /// <summary>
+        /// Deletes the pending attendance records for the specified session.
+        /// </summary>
+        /// <param name="sessionGuid">The session's unique identifier.</param>
+        public void DeletePendingAttendance( Guid sessionGuid )
+        {
+            var attendanceService = new AttendanceService( RockContext );
+            var attendanceItems = attendanceService.Queryable()
+                .Where( a => a.AttendanceCheckInSession.Guid == sessionGuid
+                    && a.CheckInStatus == Enums.Event.CheckInStatus.Pending )
+                .ToList();
+
+            if ( !attendanceItems.Any() )
+            {
+                return;
+            }
+
+            attendanceService.DeleteRange( attendanceItems );
+
+            RockContext.SaveChanges();
         }
 
         #endregion

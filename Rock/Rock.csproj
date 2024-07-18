@@ -808,12 +808,14 @@
     <Compile Include="Bus\Consumer\RockConsumerAsync.cs" />
     <Compile Include="Bus\Exceptions\BusException.cs" />
     <Compile Include="Bus\Faults\ReceiveFaultObserver.cs" />
+    <Compile Include="Bus\Message\CloudPrintProxyStatusMessage.cs" />
     <Compile Include="Bus\Message\NewItemCacheAddedMessage.cs" />
     <Compile Include="Bus\Message\ClearReferencedEntityDependenciesMessage.cs" />
     <Compile Include="Bus\Message\CreditCardIsExpiringMessage.cs" />
     <Compile Include="Bus\Message\GiftWasGivenMessage.cs" />
     <Compile Include="Bus\Message\PageRouteWasUpdatedMessage.cs" />
     <Compile Include="Bus\Message\ScheduledGiftWasModifiedMessage.cs" />
+    <Compile Include="Bus\Queue\CloudPrintQueue.cs" />
     <Compile Include="Bus\Queue\ExpiringCardEventQueue.cs" />
     <Compile Include="Bus\Queue\PageRouteEventQueue.cs" />
     <Compile Include="Chart\ChartJs\ChartColorPaletteGenerator.cs" />
@@ -835,7 +837,8 @@
     <Compile Include="CheckIn\v2\AreaOpportunity.cs" />
     <Compile Include="CheckIn\v2\AttendanceSessionRequest.cs" />
     <Compile Include="CheckIn\v2\CheckInFieldFilterBuilder.cs" />
-    <Compile Include="CheckIn\v2\PrinterProxySocket.cs" />
+    <Compile Include="CheckIn\v2\CloudPrintProxyStatusConsumer.cs" />
+    <Compile Include="CheckIn\v2\CloudPrintSocket.cs" />
     <Compile Include="CheckIn\v2\DefaultLabelProvider.cs" />
     <Compile Include="CheckIn\v2\DefaultSaveProvider.cs" />
     <Compile Include="CheckIn\v2\Filters\BirthMonthOpportunityFilter.cs" />
@@ -1128,6 +1131,7 @@
     <Compile Include="Field\UniversalFieldTypeGuidAttribute.cs" />
     <Compile Include="Financial\IScheduledNumberOfPaymentsGateway.cs" />
     <Compile Include="Financial\ISettlementGateway.cs" />
+    <Compile Include="Jobs\UpdateProgramCompletions.cs" />
     <Compile Include="Model\LMS\LearningActivityCompletion\LearningActivityCompletion.SaveHook.cs" />
     <Compile Include="Model\LMS\LearningClassAnnouncement\LearningClassAnnouncementService.cs" />
     <Compile Include="Model\LMS\LearningGradingSystemScale\LearningGradingSystemScaleService.cs" />
@@ -1139,6 +1143,7 @@
     <Compile Include="Jobs\IndexContentCollections.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostUpdateJob.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV161RemoveObsidianGroupScheduleToolboxBackButtons.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV167PopulateEntityIntentsFromAdditionalSettingsJson.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV166AddCommunicationRecipientIndex.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV166UpdateAchievementTypeTargetCount.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV16UpdateInteractionSessionStartDateKey.cs" />
@@ -1239,6 +1244,7 @@
     <Compile Include="Model\CMS\RequestFilter\RequestFilter.WebForms.cs" />
     <Compile Include="Model\CodeGenerated\ContentTopicDomainService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\ContentTopicService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\EntityIntentService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\InteractiveExperienceActionService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\InteractiveExperienceAnswerService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\InteractiveExperienceOccurrenceService.CodeGenerated.cs" />
@@ -1270,6 +1276,8 @@
     <Compile Include="Model\Core\AttributeReferencedEntity\AttributeReferencedEntity.cs" />
     <Compile Include="Model\Core\AttributeValueReferencedEntity\AttributeValueReferencedEntity.cs" />
     <Compile Include="Model\Core\EntityIntent\EntityIntent.cs" />
+    <Compile Include="Model\Core\EntityIntent\EntityIntent.Logic.cs" />
+    <Compile Include="Model\Core\EntityIntent\EntityIntentService.cs" />
     <Compile Include="Model\Core\EntitySet\Options\AddEntitySetActionOptions.cs" />
     <Compile Include="Model\Core\Interaction\Interaction.Logic.cs" />
     <Compile Include="Model\Core\NoteType\NoteType.SaveHook.cs" />
@@ -1301,7 +1309,11 @@
     <Compile Include="Model\Finance\FinancialPledge\FinancialPledge.SaveHook.cs" />
     <Compile Include="Model\Finance\FinancialScheduledTransaction\FinancialScheduledTransactionExtensionMethods.cs" />
     <Compile Include="Model\Finance\FinancialScheduledTransaction\FinancialScheduledTransactionPaymentPlanPair.cs" />
+    <Compile Include="Model\Finance\FinancialScheduledTransaction\PaymentFrequencyConfiguration.cs" />
     <Compile Include="Model\Finance\FinancialScheduledTransaction\PaymentPlan.cs" />
+    <Compile Include="Model\Finance\FinancialScheduledTransaction\PaymentPlanConfiguration.cs" />
+    <Compile Include="Model\Finance\FinancialScheduledTransaction\PaymentPlanConfigurationOptions.cs" />
+    <Compile Include="Model\Finance\FinancialScheduledTransaction\PaymentPlanConfigurationService.cs" />
     <Compile Include="Model\Group\GroupLocationHistoricalSchedule\GroupLocationHistoricalScheduleService.cs" />
     <Compile Include="Model\Event\RegistrationTemplateFormField\RegistrationTemplateFormFieldException.cs" />
     <Compile Include="Model\Event\RegistrationTemplateForm\RegistrationTemplateFormService.cs" />
@@ -1429,6 +1441,7 @@
     <Compile Include="Plugin\HotFixes\178_FixLockedOutCaptionLoginBlockSetting.cs" />
     <Compile Include="Plugin\HotFixes\177_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge.cs" />
     <Compile Include="Plugin\HotFixes\195_MigrationRollupForV17_0_4.cs" />
+    <Compile Include="Plugin\HotFixes\204_MigrationRollupsForV17_0_11.cs" />
     <Compile Include="Plugin\HotFixes\203_MigrationRollupsForV17_0_10.cs" />
     <Compile Include="Plugin\HotFixes\202_MigrationRollupsForV17_0_9.cs" />
     <Compile Include="Plugin\HotFixes\201_MigrationRollupsForV17_0_8.cs" />
@@ -2378,6 +2391,7 @@
     <Compile Include="Web\Cache\Entities\AdaptiveMessageCache.cs" />
     <Compile Include="Web\Cache\Entities\AssetStorageProviderCache.cs" />
     <Compile Include="Web\Cache\Entities\BinaryFileTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\EntityIntentCache.cs" />
     <Compile Include="Web\Cache\Entities\GroupCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentTopicDomainCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentTopicCache.cs" />
@@ -4786,7 +4800,7 @@
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
-  <Import Project="..\Applications\PrinterProxy\Rock.PrinterProxy.Shared.Common\Rock.PrinterProxy.Shared.Common.projitems" Label="Shared" />
+  <Import Project="..\Applications\RockCloudPrint\Rock.CloudPrint.Shared.Common\Rock.CloudPrint.Shared.Common.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>REM Sets vbcscompiler.exe time to live to 10 seconds. Dev environment defaults to 600 secs which can cause issues when switching branches

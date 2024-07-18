@@ -409,7 +409,7 @@
                                                               :attributes="adult2.attributes"
                                                               columnBreakpoint="sm"
                                                               :displayWithinExistingRow="true"
-                                                              isEditMode
+                                                              :isEditMode="isAdult2Entered"
                                                               :numberOfColumns="2"
                                                               :showCategoryLabel="true" />
                                 </div>

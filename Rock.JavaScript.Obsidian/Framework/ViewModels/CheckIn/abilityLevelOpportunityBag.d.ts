@@ -26,6 +26,14 @@ export type AbilityLevelOpportunityBag = {
     /** Gets or sets the identifier of this item. */
     id?: string | null;
 
+    /**
+     * Determines if this ability level is unavailable for selection during
+     * a self-serve check-in. This may be overridden when assisted by a
+     * staff member. If every ability level is disabled then the entire
+     * screen should be skipped.
+     */
+    isDisabled: boolean;
+
     /** Gets or sets the display name of this item. */
     name?: string | null;
 };

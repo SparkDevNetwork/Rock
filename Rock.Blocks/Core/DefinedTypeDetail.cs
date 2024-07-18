@@ -30,14 +30,12 @@ using Rock.ViewModels.Blocks.Core.DefinedTypeDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
 
 namespace Rock.Blocks.Core
 {
     /// <summary>
     /// Displays the details of a particular defined type.
     /// </summary>
-
     [DisplayName( "Defined Type Detail" )]
     [Category( "Core" )]
     [Description( "Displays the details of a particular defined type." )]
@@ -53,7 +51,7 @@ namespace Rock.Blocks.Core
 
     [Rock.SystemGuid.EntityTypeGuid( "bcd79456-ebd5-4a2f-94e5-c7387b0ea4b7" )]
     [Rock.SystemGuid.BlockTypeGuid( "73fd23b4-fa3a-49ea-b271-ffb228c6a49e" )]
-    public class DefinedTypeDetail : RockDetailBlockType
+    public class DefinedTypeDetail : RockEntityDetailBlockType<DefinedType, DefinedTypeBag>
     {
         #region Keys
 
@@ -82,18 +80,14 @@ namespace Rock.Blocks.Core
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var box = new DetailBlockBox<DefinedTypeBag, DefinedTypeDetailOptionsBag>();
+            var box = new DetailBlockBox<DefinedTypeBag, DefinedTypeDetailOptionsBag>();
 
-                SetBoxInitialEntityState( box, rockContext );
+            SetBoxInitialEntityState( box );
 
-                box.NavigationUrls = GetBoxNavigationUrls();
-                box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<DefinedType>();
+            box.NavigationUrls = GetBoxNavigationUrls();
+            box.Options = GetBoxOptions( box.IsEditable );
 
-                return box;
-            }
+            return box;
         }
 
         /// <summary>
@@ -101,9 +95,8 @@ namespace Rock.Blocks.Core
         /// or edit the entity.
         /// </summary>
         /// <param name="isEditable"><c>true</c> if the entity is editable; otherwise <c>false</c>.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>The options that provide additional details to the block.</returns>
-        private DefinedTypeDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext )
+        private DefinedTypeDetailOptionsBag GetBoxOptions( bool isEditable )
         {
             var options = new DefinedTypeDetailOptionsBag();
 
@@ -115,10 +108,9 @@ namespace Rock.Blocks.Core
         /// valid after storing all the data from the client.
         /// </summary>
         /// <param name="definedType">The DefinedType to be validated.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <param name="errorMessage">On <c>false</c> return, contains the error message.</param>
         /// <returns><c>true</c> if the DefinedType is valid, <c>false</c> otherwise.</returns>
-        private bool ValidateDefinedType( DefinedType definedType, RockContext rockContext, out string errorMessage )
+        private bool ValidateDefinedType( DefinedType definedType, out string errorMessage )
         {
             errorMessage = null;
 
@@ -130,10 +122,9 @@ namespace Rock.Blocks.Core
         /// ErrorMessage properties depending on the entity and permissions.
         /// </summary>
         /// <param name="box">The box to be populated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        private void SetBoxInitialEntityState( DetailBlockBox<DefinedTypeBag, DefinedTypeDetailOptionsBag> box, RockContext rockContext )
+        private void SetBoxInitialEntityState( DetailBlockBox<DefinedTypeBag, DefinedTypeDetailOptionsBag> box )
         {
-            var entity = GetInitialEntity( rockContext );
+            var entity = GetInitialEntity();
 
             if ( entity == null )
             {
@@ -144,15 +135,14 @@ namespace Rock.Blocks.Core
             var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
             box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
-            entity.LoadAttributes( rockContext );
+            entity.LoadAttributes( RockContext );
 
             if ( entity.Id != 0 )
             {
                 // Existing entity was found, prepare for view mode by default.
                 if ( isViewable )
                 {
-                    box.Entity = GetEntityBagForView( entity, rockContext );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
+                    box.Entity = GetEntityBagForView( entity );
                 }
                 else
                 {
@@ -165,13 +155,14 @@ namespace Rock.Blocks.Core
                 if ( box.IsEditable )
                 {
                     box.Entity = GetEntityBagForEdit( entity );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
                 {
                     box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( DefinedType.FriendlyTypeName );
                 }
             }
+
+            PrepareDetailBox( box, entity );
         }
 
         /// <summary>
@@ -201,12 +192,8 @@ namespace Rock.Blocks.Core
             };
         }
 
-        /// <summary>
-        /// Gets the bag for viewing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for view purposes.</param>
-        /// <returns>A <see cref="DefinedTypeBag"/> that represents the entity.</returns>
-        private DefinedTypeBag GetEntityBagForView( DefinedType entity, RockContext rockContext )
+        /// <inheritdoc/>
+        protected override DefinedTypeBag GetEntityBagForView( DefinedType entity )
         {
             if ( entity == null )
             {
@@ -215,7 +202,7 @@ namespace Rock.Blocks.Core
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.DefinedTypeAttributes = GetAttributes( entity.Id, rockContext ).ConvertAll( a => PublicAttributeHelper.GetPublicEditableAttributeViewModel( a ) );
+            bag.DefinedTypeAttributes = GetAttributes( entity.Id, RockContext ).ConvertAll( a => PublicAttributeHelper.GetPublicEditableAttributeViewModel( a ) );
             bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
             if ( entity.CategorizedValuesEnabled == true )
             {
@@ -235,12 +222,8 @@ namespace Rock.Blocks.Core
             return bag;
         }
 
-        /// <summary>
-        /// Gets the bag for editing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for edit purposes.</param>
-        /// <returns>A <see cref="DefinedTypeBag"/> that represents the entity.</returns>
-        private DefinedTypeBag GetEntityBagForEdit( DefinedType entity )
+        /// <inheritdoc/>
+        protected override DefinedTypeBag GetEntityBagForEdit( DefinedType entity )
         {
             if ( entity == null )
             {
@@ -254,67 +237,56 @@ namespace Rock.Blocks.Core
             return bag;
         }
 
-        /// <summary>
-        /// Updates the entity from the data in the save box.
-        /// </summary>
-        /// <param name="entity">The entity to be updated.</param>
-        /// <param name="box">The box containing the information to be updated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns><c>true</c> if the box was valid and the entity was updated, <c>false</c> otherwise.</returns>
-        private bool UpdateEntityFromBox( DefinedType entity, DetailBlockBox<DefinedTypeBag, DefinedTypeDetailOptionsBag> box, RockContext rockContext )
+        /// <inheritdoc/>
+        protected override bool UpdateEntityFromBox( DefinedType entity, ValidPropertiesBox<DefinedTypeBag> box )
         {
             if ( box.ValidProperties == null )
             {
                 return false;
             }
 
-            box.IfValidProperty( nameof( box.Entity.CategorizedValuesEnabled ),
-                () => entity.CategorizedValuesEnabled = box.Entity.CategorizedValuesEnabled );
+            box.IfValidProperty( nameof( box.Bag.CategorizedValuesEnabled ),
+                () => entity.CategorizedValuesEnabled = box.Bag.CategorizedValuesEnabled );
 
-            box.IfValidProperty( nameof( box.Entity.Category ),
-                () => entity.CategoryId = box.Entity.Category.GetEntityId<Category>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.Category ),
+                () => entity.CategoryId = box.Bag.Category.GetEntityId<Category>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.Description ),
-                () => entity.Description = box.Entity.Description );
+            box.IfValidProperty( nameof( box.Bag.Description ),
+                () => entity.Description = box.Bag.Description );
 
-            box.IfValidProperty( nameof( box.Entity.EnableSecurityOnValues ),
-                () => entity.EnableSecurityOnValues = box.Entity.EnableSecurityOnValues );
+            box.IfValidProperty( nameof( box.Bag.EnableSecurityOnValues ),
+                () => entity.EnableSecurityOnValues = box.Bag.EnableSecurityOnValues );
 
-            box.IfValidProperty( nameof( box.Entity.HelpText ),
-                () => entity.HelpText = box.Entity.HelpText );
+            box.IfValidProperty( nameof( box.Bag.HelpText ),
+                () => entity.HelpText = box.Bag.HelpText );
 
-            box.IfValidProperty( nameof( box.Entity.IsActive ),
-                () => entity.IsActive = box.Entity.IsActive );
+            box.IfValidProperty( nameof( box.Bag.IsActive ),
+                () => entity.IsActive = box.Bag.IsActive );
 
-            box.IfValidProperty( nameof( box.Entity.Name ),
-                () => entity.Name = box.Entity.Name );
+            box.IfValidProperty( nameof( box.Bag.Name ),
+                () => entity.Name = box.Bag.Name );
 
-            box.IfValidProperty( nameof( box.Entity.AttributeValues ),
+            box.IfValidProperty( nameof( box.Bag.AttributeValues ),
                 () =>
                 {
-                    entity.LoadAttributes( rockContext );
+                    entity.LoadAttributes( RockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson );
                 } );
 
             return true;
         }
 
-        /// <summary>
-        /// Gets the initial entity from page parameters or creates a new entity
-        /// if page parameters requested creation.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns>The <see cref="DefinedType"/> to be viewed or edited on the page.</returns>
-        private DefinedType GetInitialEntity( RockContext rockContext )
+        /// <inheritdoc/>
+        protected override DefinedType GetInitialEntity()
         {
-            Guid? definedTypeGuid = GetAttributeValue( AttributeKey.DefinedType ).AsGuidOrNull();
+            var definedTypeGuid = GetAttributeValue( AttributeKey.DefinedType ).AsGuidOrNull();
 
             // A configured defined type takes precedence over any definedTypeId param value that is passed in.
             if ( definedTypeGuid.HasValue )
             {
                 _isStandAlone = true;
-                var definedTypeService = new DefinedTypeService( rockContext );
+                var definedTypeService = new DefinedTypeService( RockContext );
                 var definedType = definedTypeService.Get( definedTypeGuid.Value );
                 return definedType ?? new DefinedType()
                 {
@@ -324,7 +296,7 @@ namespace Rock.Blocks.Core
             }
             else
             {
-                return GetInitialEntity<DefinedType, DefinedTypeService>( rockContext, PageParameterKey.DefinedTypeId ); 
+                return GetInitialEntity<DefinedType, DefinedTypeService>( RockContext, PageParameterKey.DefinedTypeId );
             }
         }
 
@@ -341,46 +313,9 @@ namespace Rock.Blocks.Core
         }
 
         /// <inheritdoc/>
-        protected override string RenewSecurityGrantToken()
+        protected override bool TryGetEntityForEditAction( string idKey, out DefinedType entity, out BlockActionResult error )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var entity = GetInitialEntity( rockContext );
-
-                if ( entity != null )
-                {
-                    entity.LoadAttributes( rockContext );
-                }
-
-                return GetSecurityGrantToken( entity );
-            }
-        }
-
-        /// <summary>
-        /// Gets the security grant token that will be used by UI controls on
-        /// this block to ensure they have the proper permissions.
-        /// </summary>
-        /// <returns>A string that represents the security grant token.</string>
-        private string GetSecurityGrantToken( DefinedType entity )
-        {
-            var securityGrant = new Rock.Security.SecurityGrant();
-
-            securityGrant.AddRulesForAttributes( entity, RequestContext.CurrentPerson );
-
-            return securityGrant.ToToken();
-        }
-
-        /// <summary>
-        /// Attempts to load an entity to be used for an edit action.
-        /// </summary>
-        /// <param name="idKey">The identifier key of the entity to load.</param>
-        /// <param name="rockContext">The database context to load the entity from.</param>
-        /// <param name="entity">Contains the entity that was loaded when <c>true</c> is returned.</param>
-        /// <param name="error">Contains the action error result when <c>false</c> is returned.</param>
-        /// <returns><c>true</c> if the entity was loaded and passed security checks.</returns>
-        private bool TryGetEntityForEditAction( string idKey, RockContext rockContext, out DefinedType entity, out BlockActionResult error )
-        {
-            var entityService = new DefinedTypeService( rockContext );
+            var entityService = new DefinedTypeService( RockContext );
             error = null;
 
             // Determine if we are editing an existing entity or creating a new one.
@@ -428,6 +363,15 @@ namespace Rock.Blocks.Core
                 .ToList();
         }
 
+        /// <summary>
+        /// Gets the valid editable properties
+        /// </summary>
+        /// <returns></returns>
+        private List<string> GetValidProperties()
+        {
+            return typeof( DefinedTypeBag ).GetProperties().Select( p => p.Name ).ToList();
+        }
+
         #endregion
 
         #region Block Actions
@@ -441,22 +385,18 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                entity.LoadAttributes( rockContext );
-
-                var box = new DetailBlockBox<DefinedTypeBag, DefinedTypeDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity )
-                };
-
-                return ActionOk( box );
+                return actionError;
             }
+
+            entity.LoadAttributes( RockContext );
+
+            return ActionOk( new ValidPropertiesBox<DefinedTypeBag>
+            {
+                Bag = GetEntityBagForEdit( entity ),
+                ValidProperties = GetValidProperties()
+            } );
         }
 
         /// <summary>
@@ -465,51 +405,52 @@ namespace Rock.Blocks.Core
         /// <param name="box">The box that contains all the information required to save.</param>
         /// <returns>A new entity bag to be used when returning to view mode, or the URL to redirect to after creating a new entity.</returns>
         [BlockAction]
-        public BlockActionResult Save( DetailBlockBox<DefinedTypeBag, DefinedTypeDetailOptionsBag> box )
+        public BlockActionResult Save( ValidPropertiesBox<DefinedTypeBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new DefinedTypeService( RockContext );
+
+            if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )
             {
-                var entityService = new DefinedTypeService( rockContext );
-
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                // Ensure everything is valid before saving.
-                if ( !ValidateDefinedType( entity, rockContext, out var validationMessage ) )
-                {
-                    return ActionBadRequest( validationMessage );
-                }
-
-                var isNew = entity.Id == 0;
-
-                rockContext.WrapTransaction( () =>
-                {
-                    rockContext.SaveChanges();
-                    entity.SaveAttributeValues( rockContext );
-                } );
-
-                if ( isNew )
-                {
-                    return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
-                    {
-                        [PageParameterKey.DefinedTypeId] = entity.IdKey
-                    } ) );
-                }
-
-                // Ensure navigation properties will work now.
-                entity = entityService.Get( entity.Id );
-                entity.LoadAttributes( rockContext );
-
-                return ActionOk( GetEntityBagForView( entity, rockContext ) );
+                return actionError;
             }
+
+            // Update the entity instance from the information in the bag.
+            if ( !UpdateEntityFromBox( entity, box ) )
+            {
+                return ActionBadRequest( "Invalid data." );
+            }
+
+            // Ensure everything is valid before saving.
+            if ( !ValidateDefinedType( entity, out var validationMessage ) )
+            {
+                return ActionBadRequest( validationMessage );
+            }
+
+            var isNew = entity.Id == 0;
+
+            RockContext.WrapTransaction( () =>
+            {
+                RockContext.SaveChanges();
+                entity.SaveAttributeValues( RockContext );
+            } );
+
+            if ( isNew )
+            {
+                return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
+                {
+                    [PageParameterKey.DefinedTypeId] = entity.IdKey
+                } ) );
+            }
+
+            // Ensure navigation properties will work now.
+            entity = entityService.Get( entity.Id );
+            entity.LoadAttributes( RockContext );
+
+            return ActionOk( new ValidPropertiesBox<DefinedTypeBag>()
+            {
+                Bag = GetEntityBagForView( entity ),
+                ValidProperties = GetValidProperties()
+            } );
         }
 
         /// <summary>
@@ -520,79 +461,22 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new DefinedTypeService( RockContext );
+
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                var entityService = new DefinedTypeService( rockContext );
-
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                return ActionOk( this.GetParentPageUrl() );
+                return actionError;
             }
-        }
 
-        /// <summary>
-        /// Refreshes the list of attributes that can be displayed for editing
-        /// purposes based on any modified values on the entity.
-        /// </summary>
-        /// <param name="box">The box that contains all the information about the entity being edited.</param>
-        /// <returns>A box that contains the entity and attribute information.</returns>
-        [BlockAction]
-        public BlockActionResult RefreshAttributes( DetailBlockBox<DefinedTypeBag, DefinedTypeDetailOptionsBag> box )
-        {
-            using ( var rockContext = new RockContext() )
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
             {
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                // Reload attributes based on the new property values.
-                entity.LoadAttributes( rockContext );
-
-                var refreshedBox = new DetailBlockBox<DefinedTypeBag, DefinedTypeDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity )
-                };
-
-                var oldAttributeGuids = box.Entity.Attributes.Values.Select( a => a.AttributeGuid ).ToList();
-                var newAttributeGuids = refreshedBox.Entity.Attributes.Values.Select( a => a.AttributeGuid );
-
-                // If the attributes haven't changed then return a 204 status code.
-                if ( oldAttributeGuids.SequenceEqual( newAttributeGuids ) )
-                {
-                    return ActionStatusCode( System.Net.HttpStatusCode.NoContent );
-                }
-
-                // Replace any values for attributes that haven't changed with
-                // the value sent by the client. This ensures any unsaved attribute
-                // value changes are not lost.
-                foreach ( var kvp in refreshedBox.Entity.Attributes )
-                {
-                    if ( oldAttributeGuids.Contains( kvp.Value.AttributeGuid ) )
-                    {
-                        refreshedBox.Entity.AttributeValues[kvp.Key] = box.Entity.AttributeValues[kvp.Key];
-                    }
-                }
-
-                return ActionOk( refreshedBox );
+                return ActionBadRequest( errorMessage );
             }
+
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
+
+            return ActionOk( this.GetParentPageUrl() );
         }
 
         /// <summary>
@@ -604,22 +488,19 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult ReorderAttributes( string idKey, Guid guid, Guid? beforeGuid )
         {
-            using ( var rockContext = new RockContext() )
+            // Get the queryable and make sure it is ordered correctly.
+            var id = Rock.Utility.IdHasher.Instance.GetId( idKey );
+
+            var attributes = GetAttributes( id ?? 0, RockContext );
+
+            if ( !attributes.ReorderEntity( guid.ToString(), beforeGuid.ToString() ) )
             {
-                // Get the queryable and make sure it is ordered correctly.
-                var id = Rock.Utility.IdHasher.Instance.GetId( idKey );
-
-                var attributes = GetAttributes( id ?? 0, rockContext );
-
-                if ( !attributes.ReorderEntity( guid.ToString(), beforeGuid.ToString() ) )
-                {
-                    return ActionBadRequest( "Invalid reorder attempt." );
-                }
-
-                rockContext.SaveChanges();
-
-                return ActionOk();
+                return ActionBadRequest( "Invalid reorder attempt." );
             }
+
+            RockContext.SaveChanges();
+
+            return ActionOk();
         }
 
         /// <summary>
@@ -631,14 +512,11 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult SaveAttribute( string idKey, PublicEditableAttributeBag attributebag )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                string qualifierValue = Rock.Utility.IdHasher.Instance.GetId( idKey ).ToString();
-                var entityTypeIdDefinedType = EntityTypeCache.GetId<DefinedValue>();
-                var attribute = Helper.SaveAttributeEdits( attributebag, entityTypeIdDefinedType, "DefinedTypeId", qualifierValue, rockContext );
-                attributebag = PublicAttributeHelper.GetPublicEditableAttributeViewModel( attribute );
-                return ActionOk( attributebag );
-            }
+            string qualifierValue = Rock.Utility.IdHasher.Instance.GetId( idKey ).ToString();
+            var entityTypeIdDefinedType = EntityTypeCache.GetId<DefinedValue>();
+            var attribute = Helper.SaveAttributeEdits( attributebag, entityTypeIdDefinedType, "DefinedTypeId", qualifierValue, RockContext );
+            attributebag = PublicAttributeHelper.GetPublicEditableAttributeViewModel( attribute );
+            return ActionOk( attributebag );
         }
 
         /// <summary>
@@ -648,21 +526,18 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult DeleteAttribute( Guid guid )
         {
-            using ( var rockContext = new RockContext() )
+            var attributeService = new AttributeService( RockContext );
+            var attribute = attributeService.Get( guid );
+
+            if ( attribute != null && attributeService.CanDelete( attribute, out string errorMessage ) )
             {
-                AttributeService attributeService = new AttributeService( rockContext );
-                var attribute = attributeService.Get( guid );
+                attributeService.Delete( attribute );
+                RockContext.SaveChanges();
 
-                if ( attribute != null && attributeService.CanDelete( attribute, out string errorMessage ) )
-                {
-                    attributeService.Delete( attribute );
-                    rockContext.SaveChanges();
-
-                    return ActionOk( errorMessage );
-                }
-
-                return ActionBadRequest();
+                return ActionOk( errorMessage );
             }
+
+            return ActionBadRequest();
         }
 
         #endregion

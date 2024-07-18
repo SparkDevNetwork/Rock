@@ -60,11 +60,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Security.Authentication.Auth0", "Rock.Security.Authentication.Auth0\Rock.Security.Authentication.Auth0.csproj", "{5055F482-72C7-4CC9-8ED0-A77090C777DB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.WebStartup", "Rock.WebStartup\Rock.WebStartup.csproj", "{515E22E4-4B9B-4886-8477-E5B312B75EB4}"
-	ProjectSection(ProjectDependencies) = postProject
-		{11ACFF28-4199-450B-8A43-F59ADEF63A99} = {11ACFF28-4199-450B-8A43-F59ADEF63A99}
-		{A4FB4B9B-3564-4C25-938C-4350A9515B24} = {A4FB4B9B-3564-4C25-938C-4350A9515B24}
-		{DEBE3E84-BE02-4840-9699-F1AEDEF26D49} = {DEBE3E84-BE02-4840-9699-F1AEDEF26D49}
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Checkr", "Rock.Checkr\Rock.Checkr.csproj", "{94A5F880-31AE-4889-B9BE-BA1FDC258E83}"
 EndProject
@@ -100,7 +95,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Update", "Rock.Update\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.Common.NG", "Rock.Common\Rock.Common.NG.csproj", "{D722BDC5-08AF-4475-B7B8-84368F2FC88F}"
 EndProject
-Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "Rock.JavaScript.EditorJs", "Rock.JavaScript.EditorJs\Rock.JavaScript.EditorJs.njsproj", "{DEBE3E84-BE02-4840-9699-F1AEDEF26D49}"
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "Rock.JavaScript.EditorJs", "Rock.JavaScript.EditorJs\Rock.JavaScript.EditorJs.esproj", "{DEBE3E84-BE02-4840-9699-F1AEDEF26D49}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Lava.DotLiquid", "Rock.Lava.DotLiquid\Rock.Lava.DotLiquid.csproj", "{79AA470A-DC63-4CB4-B0B6-77285F60C69B}"
 EndProject
@@ -117,7 +112,7 @@ Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "Rock.JavaScript.Obsidian.Bl
 		{A4FB4B9B-3564-4C25-938C-4350A9515B24} = {A4FB4B9B-3564-4C25-938C-4350A9515B24}
 	EndProjectSection
 EndProject
-Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "Rock.JavaScript", "Rock.JavaScript\Rock.JavaScript.njsproj", "{A5935F9E-DA78-46D6-806F-39C782C6A3C5}"
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "Rock.JavaScript", "Rock.JavaScript\Rock.JavaScript.esproj", "{A5935F9E-DA78-46D6-806F-39C782C6A3C5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Tests.Integration.Performance", "Rock.Tests.Integration.Performance\Rock.Tests.Integration.Performance.csproj", "{B0DF7CC9-5300-48E7-B173-8CEE492DB2D1}"
 EndProject
@@ -127,7 +122,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.Tests.UnitTests.Perfor
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.NCOA", "Rock.NCOA\Rock.NCOA.csproj", "{6FC5781E-C9FC-41E9-87FB-2A9CA8AA2088}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Rock.PrinterProxy.Shared.Common", "Applications\PrinterProxy\Rock.PrinterProxy.Shared.Common\Rock.PrinterProxy.Shared.Common.shproj", "{6519C205-3304-4D09-86BC-16BE8A0D9C41}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Rock.CloudPrint.Shared.Common", "Applications\RockCloudPrint\Rock.CloudPrint.Shared.Common\Rock.CloudPrint.Shared.Common.shproj", "{6519C205-3304-4D09-86BC-16BE8A0D9C41}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -324,7 +319,7 @@ Global
 		SolutionGuid = {53C930BD-2ECB-48B7-BDE0-7F5BBDF7A427}
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		Applications\PrinterProxy\Rock.PrinterProxy.Shared.Common\Rock.PrinterProxy.Shared.Common.projitems*{185a31d7-3037-4dae-8797-0459849a84bd}*SharedItemsImports = 4
-		Applications\PrinterProxy\Rock.PrinterProxy.Shared.Common\Rock.PrinterProxy.Shared.Common.projitems*{6519c205-3304-4d09-86bc-16be8a0d9c41}*SharedItemsImports = 13
+		Applications\RockCloudPrint\Rock.CloudPrint.Shared.Common\Rock.CloudPrint.Shared.Common.projitems*{185a31d7-3037-4dae-8797-0459849a84bd}*SharedItemsImports = 4
+		Applications\RockCloudPrint\Rock.CloudPrint.Shared.Common\Rock.CloudPrint.Shared.Common.projitems*{6519c205-3304-4d09-86bc-16be8a0d9c41}*SharedItemsImports = 13
 	EndGlobalSection
 EndGlobal

@@ -1,6 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <Grid v-if="showBlock"
+          :class="visibleCssClass"
           :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
@@ -101,7 +102,7 @@
 </template>
 
 <script setup lang="ts">
-    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import Grid, { numberValueFilter, textValueFilter, Column, TextColumn, DeleteColumn, SecurityColumn, pickExistingValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
@@ -110,6 +111,7 @@
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./LearningClassList/types.partial";
     import { reactive, ref } from "vue";
+    import { BlockMessages } from "@Obsidian/Utility/browserBus";
 
     const config = useConfigurationValues<ListBlockBox<LearningClassListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -127,6 +129,20 @@
 
     const showBlock = ref(config.options?.showBlock || false);
     const hasValidCourse = ref(config.options?.hasValidCourse || false);
+
+    // Use the browser bus to listen for changes to edit mode for any blocks on the page.
+    const browserBus = useBlockBrowserBus();
+    const visibleCssClass = ref("show");
+
+    // When another block on the page begins editing hide this block.
+    browserBus.subscribe(BlockMessages.BeginEdit, () => {
+        visibleCssClass.value = "hidden";
+    });
+
+    // When another block begins editing show this block.
+    browserBus.subscribe(BlockMessages.EndEdit, () => {
+        visibleCssClass.value = "show";
+    });
 
     // #endregion
 

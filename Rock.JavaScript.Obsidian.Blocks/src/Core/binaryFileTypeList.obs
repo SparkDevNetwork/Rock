@@ -25,7 +25,7 @@
         <TextColumn name="storageEntityType"
                     title="Storage Type"
                     field="storageEntityType"
-                    :filter="textValueFilter"
+                    :filter="pickExistingValueFilter"
                     visiblePriority="xs" />
 
         <NumberColumn name="fileCount"
@@ -66,7 +66,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, BooleanColumn, TextColumn, textValueFilter, DeleteColumn, SecurityColumn, SelectColumn, numberValueFilter, NumberColumn } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, BooleanColumn, TextColumn, textValueFilter, pickExistingValueFilter, DeleteColumn, SecurityColumn, SelectColumn, numberValueFilter, NumberColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { BinaryFileTypeListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/BinaryFileTypeList/binaryFileTypeListOptionsBag";

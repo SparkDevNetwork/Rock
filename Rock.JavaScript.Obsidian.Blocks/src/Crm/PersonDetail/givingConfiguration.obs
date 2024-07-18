@@ -225,17 +225,19 @@
                     </div>
                 </div>
 
-                <hr class="separator" />
-
                 <!-- Contribution Statements -->
-                <div class="border-panel">
-                    <h5 class="mt-0 mb-3">
-                        Contribution Statements
-                    </h5>
-                    <div>
-                        <button v-for="statement in contributionStatements" :key="statement.year" class="btn btn-sm btn-default" @click.prevent="viewContributionStatement(statement)">
-                            {{ statement.isCurrentYear ? `${statement.year} YTD` : statement.year }}
-                        </button>
+                <div v-if="contributionStatements.length > 0">
+                    <hr class="separator" />
+
+                    <div class="border-panel">
+                        <h5 class="mt-0 mb-3">
+                            Contribution Statements
+                        </h5>
+                        <div>
+                            <button v-for="statement in contributionStatements" :key="statement.year" class="btn btn-sm btn-default mx-1" @click.prevent="viewContributionStatement(statement)">
+                                {{ statement.isCurrentYear ? `${statement.year} YTD` : statement.year }}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </template>
@@ -452,12 +454,16 @@
     }
 
     async function loadPledges(): Promise<void> {
-        const result = await invokeBlockAction<FinancialPledgeBag[]>("GetPledges");
+    const result = await invokeBlockAction<FinancialPledgeBag[]>("GetPledges");
 
         if (result.isSuccess) {
             pledges.value = (result.data || []).map(pledge => {
-                pledge.startDate = pledge.startDate === "0001-01-01T00:00:00-07:00" ? null : pledge.startDate;
-                pledge.endDate = pledge.endDate === "9999-12-31T00:00:00-07:00" ? null : pledge.endDate;
+                const defaultStartDate = "0001-01-01T00:00:00";
+                const defaultEndDate = "9999-12-31T00:00:00";
+
+                pledge.startDate = pledge.startDate?.startsWith(defaultStartDate) ? null : pledge.startDate;
+                pledge.endDate = pledge.endDate?.startsWith(defaultEndDate) ? null : pledge.endDate;
+
                 return pledge;
             });
         }

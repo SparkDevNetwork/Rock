@@ -151,6 +151,7 @@
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
     </Reference>
+    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
@@ -239,6 +240,7 @@
     <Compile Include="Modules\Core\Workflow\BackgroundCheckRequestTests.cs" />
     <Compile Include="Modules\Core\Model\DataModelEmailFieldValidationTests.cs" />
     <Compile Include="Modules\Reporting\ExpressionHelperTests.cs" />
+    <Compile Include="Modules\Crm\Notes\SendNoteUpdateNotificationsJobTests.cs" />
     <Compile Include="Modules\Security\RockSigningCredentialsTests.cs" />
     <Compile Include="Modules\Security\SecurityRoleTests.cs" />
     <Compile Include="Modules\Crm\Following\FollowingTests.cs" />
@@ -271,6 +273,7 @@
     <Compile Include="TestData\Cms\PersonalizationDataManager.cs" />
     <Compile Include="TestData\Cms\WebsiteDataManager.cs" />
     <Compile Include="TestData\Communications\CommunicationsDataManager.cs" />
+    <Compile Include="TestData\Cms\Shortcodes\ShortcodeDataManager.cs" />
     <Compile Include="TestData\Communications\TestDataHelper.Communications.cs" />
     <Compile Include="TestData\Core\PersistedDatasetDataManager.cs" />
     <Compile Include="TestData\Core\SecurityDataManager.cs" />
@@ -278,7 +281,9 @@
     <Compile Include="TestData\Core\TestDataHelper.Organization.cs" />
     <Compile Include="TestData\Core\TestDataHelper.Core.cs" />
     <Compile Include="TestData\Core\CoreModuleDataFactory.cs" />
+    <Compile Include="TestData\CreateEntityActionArgsBase.cs" />
     <Compile Include="TestData\Crm\HistoryDataFactory.cs" />
+    <Compile Include="TestData\Crm\NoteDataManager.cs" />
     <Compile Include="TestData\Crm\PersonDataManager.cs" />
     <Compile Include="TestData\Crm\TestDataHelper.Crm.SampleData.cs" />
     <Compile Include="TestData\Engagement\PrayerFeatureDataHelper.cs" />
@@ -354,7 +359,6 @@
     <Compile Include="Modules\Core\StorageTests\AzureCloudComponentTests.cs" />
     <Compile Include="Modules\Core\StorageTests\BaseStorageComponentTests.cs" />
     <Compile Include="Modules\Core\StorageTests\GoogleCloudComponentTests.cs" />
-    <Compile Include="TestData\CreateEntityActionArgsBase.cs" />
     <Compile Include="TestData\EventTestDataHelper.cs" />
     <Compile Include="TestData\Crm\TestDataHelper.Crm.cs" />
     <Compile Include="TestData\Core\TestDataHelper.Web.cs" />
@@ -373,7 +377,10 @@
     <Compile Include="Modules\Core\Model\RegistrationTests.cs" />
     <Compile Include="Modules\Core\Model\StepTests.cs" />
     <Compile Include="Modules\Core\Model\DeviceTests.cs" />
+    <Compile Include="TestData\Tests\TestPlugInMigration.cs" />
+    <Compile Include="TestData\Tests\LocalDbTestActions.cs" />
     <Compile Include="TestData\Tests\SampleDataTests.cs" />
+    <Compile Include="TestData\Tests\UtilityTestActionsBase.cs" />
     <Compile Include="TestExtensionMethods.cs" />
     <Compile Include="Modules\Core\Logging\RockSerilogReaderTests.cs" />
     <Compile Include="Modules\Rest\ControllersTests\AttendanceControllerTests.cs" />

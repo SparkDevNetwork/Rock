@@ -36,7 +36,6 @@ namespace Rock.Tests.Integration.Modules.Core.Lava
         [ClassInitialize( InheritanceBehavior.BeforeEachDerivedClass )]
         public static void LavaClassInitialize( TestContext context )
         {
-            LavaIntegrationTestHelper.Initialize( testRockLiquidEngine: true, testDotLiquidEngine: false, testFluidEngine: true, loadShortcodes: true );
             LogHelper.SetTestContext( context );
         }
     }

@@ -95,7 +95,7 @@
                             </div>
 
                             <Modal v-model="showAddCourseRequirementModal"
-                                   :title="'Add Requirement for ' + modelValue.name"
+                                   :title="'Add Requirement for ' + name"
                                    @save="onAddRequirementClicked"
                                    :isSaveButtonDisabled="!addRequirementType"
                                    saveText="Add Requirement">
@@ -164,7 +164,7 @@
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
     import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
-    import { useInvokeBlockAction, watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { setPropertiesBoxValue, useInvokeBlockAction, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { LearningCourseBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningCourseDetail/learningCourseBag";
     import { LearningCourseDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningCourseDetail/learningCourseDetailOptionsBag";
@@ -172,12 +172,13 @@
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const invokeBlockAction = useInvokeBlockAction();
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<LearningCourseBag>,
+            type: Object as PropType<ValidPropertiesBox<LearningCourseBag>>,
             required: true
         },
 
@@ -188,7 +189,7 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: LearningCourseBag): void,
+        (e: "update:modelValue", value: ValidPropertiesBox<LearningCourseBag>): void,
         (e: "propertyChanged", value: string): void
     }>();
 
@@ -205,23 +206,23 @@
     const requiredCourse = ref<string>("");
     const courseOptions = ref<ListItemBag[]>([]);
 
-    const attributes = ref(props.modelValue.attributes ?? {});
-    const attributeValues = ref(props.modelValue.attributeValues ?? {});
-    const summary = propertyRef(props.modelValue.summary ?? "", "Summary");
-    const description = propertyRef(props.modelValue.description ?? "", "Description");
-    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
-    const isPublic = propertyRef(props.modelValue.isPublic ?? false, "IsPublic");
-    const name = propertyRef(props.modelValue.name ?? "", "Name");
-    const category = propertyRef(props.modelValue.category ?? null, "Category");
-    const publicName = propertyRef(props.modelValue.publicName ?? "", "PublicName");
-    const courseCode = propertyRef(props.modelValue.courseCode ?? "", "CourseCode");
-    const credits = propertyRef(props.modelValue.credits ?? 0, "Credits");
-    const maxStudents = propertyRef(props.modelValue.maxStudents, "MaxStudents");
-    const completionWorkflowType = propertyRef(props.modelValue.completionWorkflowType ?? {}, "CompletionWorkflowType");
-    const allowHistoricalAccess = propertyRef(props.modelValue.allowHistoricalAccess ?? false, "AllowHistoricalAccess");
-    const enableAnnouncements = propertyRef(props.modelValue.enableAnnouncements ?? false, "EnableAnnouncements");
-    const imageBinaryFile = propertyRef(props.modelValue.imageBinaryFile ?? {}, "ImageBinaryFile");
-    const courseRequirements = propertyRef(props.modelValue.courseRequirements ?? [], "CourseRequirements");
+    const attributes = ref(props.modelValue.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue.bag?.attributeValues ?? {});
+    const summary = propertyRef(props.modelValue.bag?.summary ?? "", "Summary");
+    const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue.bag?.isActive ?? false, "IsActive");
+    const isPublic = propertyRef(props.modelValue.bag?.isPublic ?? false, "IsPublic");
+    const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
+    const category = propertyRef(props.modelValue.bag?.category ?? null, "Category");
+    const publicName = propertyRef(props.modelValue.bag?.publicName ?? "", "PublicName");
+    const courseCode = propertyRef(props.modelValue.bag?.courseCode ?? "", "CourseCode");
+    const credits = propertyRef(props.modelValue.bag?.credits ?? 0, "Credits");
+    const maxStudents = propertyRef(props.modelValue.bag?.maxStudents, "MaxStudents");
+    const completionWorkflowType = propertyRef(props.modelValue.bag?.completionWorkflowType ?? null, "CompletionWorkflowType");
+    const allowHistoricalAccess = propertyRef(props.modelValue.bag?.allowHistoricalAccess ?? false, "AllowHistoricalAccess");
+    const enableAnnouncements = propertyRef(props.modelValue.bag?.enableAnnouncements ?? false, "EnableAnnouncements");
+    const imageBinaryFile = propertyRef(props.modelValue.bag?.imageBinaryFile ?? null, "ImageBinaryFile");
+    const courseRequirements = propertyRef(props.modelValue.bag?.courseRequirements ?? [], "CourseRequirements");
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -262,7 +263,7 @@
         const hasCourseOptions = courseOptions.value.length > 0;
         if (!hasCourseOptions) {
             const courseListItemsResult = await invokeBlockAction<ListItemBag[]>("GetActiveCourses", {
-                key: props.modelValue.idKey
+                key: props.modelValue.bag?.idKey
             });
 
             if (courseListItemsResult.isSuccess && courseListItemsResult.data) {
@@ -279,7 +280,7 @@
 
     async function onAddRequirementClicked(): Promise<void> {
         const result = await invokeBlockAction<LearningCourseRequirementBag>("GetCourseRequirementDetail", {
-            key: props.modelValue.idKey,
+            key: props.modelValue.bag?.idKey,
             guid: requiredCourse.value,
             requirementType: addRequirementType.value
         });
@@ -290,75 +291,53 @@
         }
     }
 
-    /**
-     * Called when a requirement row's delete button has been clicked by the individual. This
-     * happens only if they have confirmed the delete action.
-     */
-    // async function onDeleteRequirementClick(key: string | null): Promise<void> {
-    //     const result = await invokeBlockAction<string>("DeleteCourseRequirement", {
-    //         key
-    //     });
-
-    //     if (result.isSuccess) {
-    //         if (courseRequirements?.value) {
-    //             const index = courseRequirements.value.findIndex(r => r["idKey"] === key);
-
-    //             if (index !== -1) {
-    //                 courseRequirements.value.splice(index, 1);
-    //             }
-    //         }
-    //     }
-    //     else {
-    //         await alert(result.errorMessage ?? "Unknown error while trying to delete learning course requirement.");
-    //     }
-    // }
-
     // #endregion
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
-        updateRefValue(attributes, props.modelValue.attributes ?? {});
-        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
-        updateRefValue(summary, props.modelValue.summary ?? "");
-        updateRefValue(description, props.modelValue.description ?? "");
-        updateRefValue(isActive, props.modelValue.isActive ?? false);
-        updateRefValue(isPublic, props.modelValue.isPublic ?? false);
-        updateRefValue(name, props.modelValue.name ?? "");
-        updateRefValue(category, props.modelValue.category ?? {});
-        updateRefValue(publicName, props.modelValue.publicName ?? "");
-        updateRefValue(courseCode, props.modelValue.courseCode ?? "");
-        updateRefValue(credits, props.modelValue.credits ?? 0);
-        updateRefValue(maxStudents, props.modelValue.maxStudents);
-        updateRefValue(completionWorkflowType, props.modelValue.completionWorkflowType ?? {});
-        updateRefValue(allowHistoricalAccess, props.modelValue.allowHistoricalAccess ?? false);
-        updateRefValue(enableAnnouncements, props.modelValue.enableAnnouncements ?? false);
-        updateRefValue(courseRequirements, props.modelValue.courseRequirements ?? []);
-        updateRefValue(imageBinaryFile, props.modelValue.imageBinaryFile ?? {});
-        updateRefValue(courseRequirements, props.modelValue.courseRequirements ?? []);
+        updateRefValue(attributes, props.modelValue.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.bag?.attributeValues ?? {});
+        updateRefValue(summary, props.modelValue.bag?.summary ?? "");
+        updateRefValue(description, props.modelValue.bag?.description ?? "");
+        updateRefValue(isActive, props.modelValue.bag?.isActive ?? false);
+        updateRefValue(isPublic, props.modelValue.bag?.isPublic ?? false);
+        updateRefValue(name, props.modelValue.bag?.name ?? "");
+        updateRefValue(category, props.modelValue.bag?.category ?? null);
+        updateRefValue(publicName, props.modelValue.bag?.publicName ?? "");
+        updateRefValue(courseCode, props.modelValue.bag?.courseCode ?? "");
+        updateRefValue(credits, props.modelValue.bag?.credits ?? 0);
+        updateRefValue(maxStudents, props.modelValue.bag?.maxStudents);
+        updateRefValue(completionWorkflowType, props.modelValue.bag?.completionWorkflowType ?? null);
+        updateRefValue(allowHistoricalAccess, props.modelValue.bag?.allowHistoricalAccess ?? false);
+        updateRefValue(enableAnnouncements, props.modelValue.bag?.enableAnnouncements ?? false);
+        updateRefValue(courseRequirements, props.modelValue.bag?.courseRequirements ?? []);
+        updateRefValue(imageBinaryFile, props.modelValue.bag?.imageBinaryFile ?? null);
+        updateRefValue(courseRequirements, props.modelValue.bag?.courseRequirements ?? []);
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
     watch([attributeValues, ...propRefs], () => {
-        const newValue: LearningCourseBag = {
-            ...props.modelValue,
-            attributeValues: attributeValues.value,
-            summary: summary.value,
-            description: description.value,
-            isActive: isActive.value,
-            isPublic: isPublic.value,
-            name: name.value,
-            category: category.value,
-            publicName: publicName.value,
-            courseCode: courseCode.value,
-            credits: credits.value,
-            maxStudents: maxStudents.value,
-            completionWorkflowType: completionWorkflowType.value,
-            allowHistoricalAccess: allowHistoricalAccess.value,
-            enableAnnouncements: enableAnnouncements.value,
-            imageBinaryFile: imageBinaryFile.value,
-            courseRequirements: courseRequirements.value ?? []
+        const newValue: ValidPropertiesBox<LearningCourseBag> = {
+            bag: { ...props.modelValue.bag } as LearningCourseBag
         };
+
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "summary", summary.value);
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "isActive", isActive.value);
+        setPropertiesBoxValue(newValue, "isPublic", isPublic.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "category", category.value);
+        setPropertiesBoxValue(newValue, "publicName", publicName.value);
+        setPropertiesBoxValue(newValue, "courseCode", courseCode.value);
+        setPropertiesBoxValue(newValue, "credits", credits.value);
+        setPropertiesBoxValue(newValue, "maxStudents", maxStudents.value);
+        setPropertiesBoxValue(newValue, "completionWorkflowType", completionWorkflowType.value);
+        setPropertiesBoxValue(newValue, "allowHistoricalAccess", allowHistoricalAccess.value);
+        setPropertiesBoxValue(newValue, "enableAnnouncements", enableAnnouncements.value);
+        setPropertiesBoxValue(newValue, "imageBinaryFile", imageBinaryFile.value);
+        setPropertiesBoxValue(newValue, "courseRequirements", courseRequirements.value);
 
         emit("update:modelValue", newValue);
     });

@@ -18,13 +18,13 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Rock.Data;
 using Rock.Lava;
 using Rock.Lava.RockLiquid;
-using Rock.Security.ExternalAuthentication;
-using Rock.Tests.Integration.TestData;
-using Rock.Tests.Shared;
+
+using Rock.Tests.Integration.Shortcode;
+
 using Rock.Tests.Shared.Lava;
-using Rock.Tests.Shared.TestFramework;
 
 namespace Rock.Tests.Integration.Modules.Core.Lava.Shortcodes
 {
@@ -32,6 +32,7 @@ namespace Rock.Tests.Integration.Modules.Core.Lava.Shortcodes
     /// Test for shortcodes that are defined and implemented as parameterized Lava templates rather than code components.
     /// </summary>
     [TestClass]
+    [TestCategory( "Core.Lava.Shortcodes" )]
     public class ShortcodeTemplateTests : LavaIntegrationTestBase
     {
         [TestMethod]
@@ -383,6 +384,78 @@ This is some literal text containing an invalid shortcode: {[ panel title:'Examp
             expectedOutput = expectedOutput.Replace( "`", @"""" );
 
             TestHelper.AssertTemplateOutput( expectedOutput, input );
+        }
+
+        private const string _testShortcodeGuid = "AD29F25D-8E7E-45DF-AC93-6CD0D0058401";
+
+        /// <summary>
+        /// A shortcode that enables a specific command should not cause that command to be enabled outside the scope of the shortcode.
+        /// </summary>
+        [DataTestMethod]
+        [DataRow( "execute", true )]
+        [DataRow( "entity,execute,sql", true )]
+        [DataRow( "all", true )]
+        [DataRow( null, false )]
+        [DataRow( "entity", false )]
+        public void ShortcodeBlock_WithEnabledCommand_EnforcesSecurityForTemplateContext( string templateEnabledCommands, bool shouldPassSecurityCheck )
+        {
+            var shortcodeTemplate = @"
+<h1>Shortcode Content</h1>
+{% execute %}
+    return ""Shortcode content."";
+{% endexecute %}
+<h1>User Content</h1>
+{{ blockContent }}
+";
+
+            // Create a new test shortcode with the "execute" command permission.
+            var shortCodeDataManager = new ShortcodeDataManager();
+            var shortcodeDefinition = shortCodeDataManager
+                .NewDynamicShortcode( _testShortcodeGuid.AsGuid(),
+                    $"Test ({_testShortcodeGuid})",
+                    "shortcode_execute",
+                     Rock.Model.TagType.Block,
+                     shortcodeTemplate )
+                .WithEnabledCommands( "execute" );
+
+            var rockContext = new RockContext();
+            shortCodeDataManager.SaveDynamicShortcode( shortcodeDefinition, rockContext );
+
+            var input = @"
+{[ shortcode_execute ]}
+{% execute %}
+    return ""** Injected execute result! **"";
+{% endexecute %}
+{[ endshortcode_execute ]}
+";
+
+            string expectedOutput;
+
+            if ( shouldPassSecurityCheck )
+            {
+                expectedOutput = @"
+<h1>Shortcode Content</h1>
+Shortcode content.
+<h1>User Content</h1>
+** Injected execute result! **
+";
+            }
+            else
+            {
+                expectedOutput = @"The Lava command 'execute' is not configured for this template.";
+            }
+
+            // Render the template with no enabled commands.
+            // The shortcode should render correctly using the enabled commands defined by its definition,
+            // but the content should show a permission error.
+            var options = new LavaTestRenderOptions { EnabledCommands = templateEnabledCommands };
+
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                shortCodeDataManager.RegisterDynamicShortcodeForLavaEngine( engine, shortcodeDefinition );
+
+                TestHelper.AssertTemplateOutput( engine, expectedOutput, input, options );
+            } );
         }
 
         #region Accordion

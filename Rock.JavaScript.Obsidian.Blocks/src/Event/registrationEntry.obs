@@ -8,20 +8,20 @@
         </NotificationBox>
         <NotificationBox v-else-if="mustLogin" alertType="warning">
             <strong>Please log in</strong>
-            <p>You must be logged in to access this registration.</p>
+            <p>You must be logged in to access this {{ terms.registrationSingularLowerCase }}.</p>
         </NotificationBox>
         <NotificationBox v-else-if="isUnauthorized" alertType="warning">
             <strong>Sorry</strong>
-            <p>You are not allowed to view or edit the selected registration since you are not the one who created the registration.</p>
+            <p>You are not allowed to view or edit the selected {{ terms.registrationSingularLowerCase }} since you are not the one who created the {{ terms.registrationSingularLowerCase }}.</p>
         </NotificationBox>
         <NotificationBox v-else-if="isInvalidGateway" alertType="warning">
             <strong>Incorrect Configuration</strong>
-            <p>This registration has costs/fees associated with it but the configured payment gateway is not supported.</p>
+            <p>This {{ terms.registrationSingularLowerCase }} has costs/{{ terms.feePluralLowerCase }} associated with it but the configured payment gateway is not supported.</p>
         </NotificationBox>
         <NotificationBox v-else-if="preventNewRegistration" class="text-left" alertType="warning">
-            <strong>{{ registrationTermTitleCase }} Full</strong>
+            <strong>{{ terms.registrationSingularTitleCase }} Full</strong>
             <p>
-                There are not any more {{ registrationTermPlural }} available for {{ config.instanceName }}.
+                There are not any more {{ terms.registrationPluralLowerCase }} available for {{ config.instanceName }}.
             </p>
         </NotificationBox>
         <template v-else>
@@ -63,8 +63,8 @@
     import SessionRenewal from "./RegistrationEntry/sessionRenewal.partial.obs";
     import RegistrationEntrySuccess from "./RegistrationEntry/success.partial.obs";
     import RegistrationEntrySummary from "./RegistrationEntry/summary.partial.obs";
-    import { PaymentPlanConfiguration, RegistrationCostSummaryInfo, RegistrationEntryState, Step } from "./RegistrationEntry/types.partial";
-    import { CurrentRegistrationEntryState, PersistSession, GetPersistSessionArgs, getDefaultRegistrantInfo, getForcedFamilyGuid, scrollToTopAfterNextRender, RegistrationCostSummary, getRegistrantBasicInfo, OriginalFormFieldValues, ConfigurePaymentPlan } from "./RegistrationEntry/utils.partial";
+    import { PaymentPlanConfiguration, RegistrationCostSummaryInfo, RegistrationEntryState, RegistrationEntryTerminology, Step } from "./RegistrationEntry/types.partial";
+    import { CurrentRegistrationEntryState, PersistSession, GetPersistSessionArgs, getDefaultRegistrantInfo, getForcedFamilyGuid, scrollToTopAfterNextRender, RegistrationCostSummary, getRegistrantBasicInfo, OriginalFormFieldValues, ConfigurePaymentPlan, RegistrationEntryTerms } from "./RegistrationEntry/utils.partial";
     import CountdownTimer from "@Obsidian/Controls/countdownTimer.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import ProgressTracker from "@Obsidian/Controls/progressTracker.obs";
@@ -75,7 +75,7 @@
     import { List } from "@Obsidian/Utility/linq";
     import NumberFilter, { toWord } from "@Obsidian/Utility/numberUtils";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-    import StringFilter, { isNullOrWhiteSpace, toTitleCase } from "@Obsidian/Utility/stringUtils";
+    import { isNullOrWhiteSpace, toTitleCase } from "@Obsidian/Utility/stringUtils";
     import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
     import { RegistrationEntryArgsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryArgsBag";
     import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
@@ -220,16 +220,14 @@
         return 0;
     });
 
-    const uppercaseRegistrantTerm = computed<string>(() => {
-        return StringFilter.toTitleCase(config.registrantTerm ?? "");
-    });
-
     const currentRegistrantTitle = computed<string>(() => {
         const ordinal = NumberFilter.toOrdinal(registrationEntryState.value.currentRegistrantIndex + 1);
-        let title = StringFilter.toTitleCase(
+        const { registrantSingularTitleCase } = terms.value;
+
+        let title = toTitleCase(
             registrationEntryState.value.registrants.length <= 1 ?
-                uppercaseRegistrantTerm.value :
-                ordinal + " " + uppercaseRegistrantTerm.value);
+                registrantSingularTitleCase :
+                ordinal + " " + registrantSingularTitleCase);
 
         if (registrationEntryState.value.currentRegistrantFormIndex > 0) {
             title += " (cont)";
@@ -265,12 +263,13 @@
     /** The items to display in the progress tracker */
     const progressTrackerItems = computed<ProgressTrackerItem[]>(() => {
         const items: ProgressTrackerItem[] = [];
+        const { registrantSingularTitleCase, registrationSingularTitleCase } = terms.value;
 
         if (registrationEntryState.value.firstStep === Step.Intro) {
             items.push({
                 key: "Start",
                 title: "Start",
-                subtitle: config.registrationTerm ?? ""
+                subtitle: registrationSingularTitleCase
             });
         }
 
@@ -278,15 +277,15 @@
             items.push({
                 key: "Pre",
                 title: config.registrationAttributeTitleStart ?? "",
-                subtitle: config.registrationTerm ?? ""
+                subtitle: registrationSingularTitleCase
             });
         }
 
         if (!registrationEntryState.value.registrants.length) {
             items.push({
                 key: "Registrant",
-                title: toTitleCase(config.registrantTerm ?? ""),
-                subtitle: config.registrationTerm ?? ""
+                title: registrantSingularTitleCase,
+                subtitle: registrationSingularTitleCase
             });
         }
 
@@ -304,7 +303,7 @@
             else {
                 items.push({
                     key: `Registrant-${registrant.guid}`,
-                    title: toTitleCase(config.registrantTerm ?? ""),
+                    title: registrantSingularTitleCase,
                     subtitle: toTitleCase(toWord(i + 1))
                 });
             }
@@ -314,14 +313,14 @@
             items.push({
                 key: "Post",
                 title: config.registrationAttributeTitleEnd ?? "",
-                subtitle: config.registrationTerm ?? ""
+                subtitle: registrationSingularTitleCase
             });
         }
 
         items.push({
             key: "Finalize",
             title: "Finalize",
-            subtitle: config.registrationTerm ?? ""
+            subtitle: registrationSingularTitleCase
         });
 
         return items;
@@ -365,16 +364,21 @@
         return isFull.value && !config.isExistingRegistration;
     });
 
-    const registrationTerm = computed<string>(() => {
-        return (config.registrationTerm || "registration").toLowerCase();
-    });
-
-    const registrationTermPlural = computed<string>(() => {
-        return (config.pluralRegistrationTerm || "registrations").toLowerCase();
-    });
-
-    const registrationTermTitleCase = computed<string>(() => {
-        return toTitleCase(registrationTerm.value);
+    const terms = computed<RegistrationEntryTerminology>(() => {
+        return {
+            discountCodeSingularLowerCase: registrationEntryState.value.viewModel.discountCodeTerm?.toLowerCase() ?? "discount code",
+            discountCodeSingularTitleCase: toTitleCase(registrationEntryState.value.viewModel.discountCodeTerm ?? null) || "Discount Code",
+            feePluralLowerCase: registrationEntryState.value.viewModel.pluralFeeTerm?.toLowerCase() || "fees",
+            feePluralTitleCase: toTitleCase(registrationEntryState.value.viewModel.pluralFeeTerm ?? null) || "Fees",
+            feeSingularLowerCase: registrationEntryState.value.viewModel.feeTerm?.toLowerCase() || "fee",
+            registrantPluralLowerCase: registrationEntryState.value.viewModel.pluralRegistrantTerm?.toLowerCase() || "registrants",
+            registrantSingularLowerCase: registrationEntryState.value.viewModel.registrantTerm?.toLowerCase() || "registrant",
+            registrantSingularTitleCase: toTitleCase(registrationEntryState.value.viewModel.registrantTerm ?? null) || "Registrant",
+            registrationPluralLowerCase: registrationEntryState.value.viewModel.pluralRegistrationTerm?.toLowerCase() || "registrations",
+            registrationSingularLowerCase: registrationEntryState.value.viewModel.registrationTerm?.toLowerCase() || "registration",
+            registrationSingularTitleCase: toTitleCase(registrationEntryState.value.viewModel.registrationTerm ?? null) || "Registration",
+            signatureDocumentSingularTitleCase: toTitleCase(registrationEntryState.value.viewModel.signatureDocumentTerm ?? null) || "Release",
+        };
     });
 
     // #endregion
@@ -562,6 +566,7 @@
     provide(CurrentRegistrationEntryState, registrationEntryState.value);
     provide(GetPersistSessionArgs, getRegistrationEntryBlockArgs);
     provide(PersistSession, persistSession);
+    provide(RegistrationEntryTerms, terms);
 
     // Provide the same dependencies with simple string keys for dependent plugins.
     provide("registrationEntryState", registrationEntryState.value);

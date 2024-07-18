@@ -21,6 +21,10 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
+
 /** The additional configuration options for the Note Type List block. */
 export type NoteTypeListOptionsBag = {
+    /** Gets or sets the entity type unique identifier. */
+    entityTypeGuid?: Guid | null;
 };

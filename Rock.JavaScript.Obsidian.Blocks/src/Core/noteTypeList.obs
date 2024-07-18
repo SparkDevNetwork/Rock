@@ -1,11 +1,11 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox :alertType="AlertType.Info" :dismissible="true">
+    <NotificationBox v-if="showNotification" :alertType="AlertType.Info" :dismissible="true" @dismiss="showNotification = false">
         Note: Select a specific entity type filter in order to reorder note types.
     </NotificationBox>
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
-          keyField="id"
+          keyField="idKey"
           itemTerm="Note Type"
           :entityTypeGuid="EntityType.NoteType"
           stickyHeader
@@ -13,6 +13,8 @@
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           :showLaunchWorkflow="false"
           @selectItem="onSelectItem">
+
+        <ReorderColumn @orderChanged="onOrderChanged" />
 
         <TextColumn name="entityType"
                     title="Entity Type"
@@ -72,7 +74,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, BooleanColumn, TextColumn, textValueFilter, DeleteColumn, SecurityColumn } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, BooleanColumn, TextColumn, textValueFilter, DeleteColumn, SecurityColumn, ReorderColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
@@ -89,6 +91,8 @@
 
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
+
+    const showNotification = ref(true);
 
     // #endregion
 
@@ -154,6 +158,23 @@
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
             window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
         }
+    }
+
+    /**
+     * Called when a row has been dragged from one position to a new position.
+     *
+     * @param item The item that was moved to a new position.
+     * @param beforeItem The item that the first item was dropped before.
+     *
+     * @returns `true` if the operation succeeded; otherwise `false`.
+     */
+     async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        const result = await invokeBlockAction<string>("ReorderItem", {
+            key: item["idKey"],
+            beforeKey: beforeItem?.["idKey"] ?? null
+        });
+
+        return result.isSuccess;
     }
 
     // #endregion

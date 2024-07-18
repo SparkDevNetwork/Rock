@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System;
+
 namespace Rock.ViewModels.Blocks.Core.NoteWatchList
 {
     /// <summary>
@@ -22,5 +24,13 @@ namespace Rock.ViewModels.Blocks.Core.NoteWatchList
     /// </summary>
     public class NoteWatchListOptionsBag
     {
+        /// <summary>
+        /// Gets or sets the Entity Type unique identifier.
+        /// </summary>
+        public Guid? EntityTypeGuid { get; set; }
+        /// <summary>
+        /// Gets or sets the Note Type unique identifier.
+        /// </summary>
+        public Guid? NoteTypeGuid { get; set; }
     }
 }

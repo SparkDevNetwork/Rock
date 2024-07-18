@@ -12,7 +12,7 @@
             </div>
 
             <div v-else class="margin-b-md">
-                <p>The following {{ registrantTerm }} will be registered for {{ instanceName }}:</p>
+                <p>The following {{ registrantOrRegistrantsTermLowerCase }} will be registered for {{ instanceName }}:</p>
                 <ul>
                     <li v-for="r in registrantInfos" :key="r.guid">
                         <strong>{{ r.firstName }} {{ r.lastName }}</strong>
@@ -45,6 +45,7 @@
         CurrentRegistrationEntryState,
         GetPersistSessionArgs,
         PersistSession,
+        RegistrationEntryTerms,
         getRegistrantBasicInfo, use
     } from "./utils.partial";
     import Captcha from "@Obsidian/Controls/captcha.obs";
@@ -63,6 +64,7 @@
     const disableCaptchaSupport = ref(registrationEntryState.viewModel.disableCaptchaSupport);
     const captchaElement = ref<InstanceType<typeof Captcha> | undefined>();
     const persistSession = use(PersistSession);
+    const registrationEntryTerms = use(RegistrationEntryTerms);
 
     const emit = defineEmits<{
         (e: "next"): void,
@@ -146,8 +148,8 @@
     });
 
     /** The registrant term - plural if there are more than 1 */
-    const registrantTerm = computed<string>(() => {
-        return (registrantInfos.value.length === 1 ? viewModel.value.registrantTerm : viewModel.value.pluralRegistrantTerm) ?? "";
+    const registrantOrRegistrantsTermLowerCase = computed<string>(() => {
+        return registrantInfos.value.length === 1 ? registrationEntryTerms.value.registrantSingularLowerCase : registrationEntryTerms.value.registrantPluralLowerCase;
     });
 
     /** The name of this registration instance */

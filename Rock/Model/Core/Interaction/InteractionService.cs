@@ -716,8 +716,7 @@ namespace Rock.Model
                 pageViewTransaction.Enqueue();
             }
 
-            var intentSettings = page.GetAdditionalSettings<PageService.IntentSettings>();
-            RegisterIntentInteractions( intentSettings.InteractionIntentValueIds, immediate: immediate );
+            RegisterIntentInteractions( page.InteractionIntentValueIds, immediate: immediate );
         }
 
         /// <summary>

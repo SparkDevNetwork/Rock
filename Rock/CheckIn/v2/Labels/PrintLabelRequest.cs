@@ -28,6 +28,12 @@ namespace Rock.CheckIn.v2.Labels
     internal class PrintLabelRequest
     {
         /// <summary>
+        /// The cached merged fields for the label. This be set dynamically when
+        /// first requested and then never modified.
+        /// </summary>
+        private Dictionary<string, object> _mergeFields;
+
+        /// <summary>
         /// The capabilities of the printer that will receive the rendered
         /// print data.
         /// </summary>
@@ -55,5 +61,31 @@ namespace Rock.CheckIn.v2.Labels
         /// The data object used by data sources and any custom Lava merge fields.
         /// </summary>
         public object LabelData { get; set; }
+
+        /// <summary>
+        /// Gets the merge fields associated with <see cref="LabelData"/>. This
+        /// takes each property from <see cref="LabelData"/> and adds the value
+        /// to the merge fields with the property name.
+        /// </summary>
+        /// <returns></returns>
+        public Dictionary<string, object> GetMergeFields()
+        {
+            if ( _mergeFields == null )
+            {
+                var mergeFields = new Dictionary<string, object>();
+
+                if ( LabelData != null )
+                {
+                    foreach ( var prop in LabelData.GetType().GetProperties() )
+                    {
+                        mergeFields.Add( prop.Name, prop.GetValue( LabelData ) );
+                    }
+                }
+
+                _mergeFields = mergeFields;
+            }
+
+            return _mergeFields;
+        }
     }
 }

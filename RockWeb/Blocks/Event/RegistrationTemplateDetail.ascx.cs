@@ -275,15 +275,13 @@ namespace RockWeb.Blocks.Event
 {% assign waitListCount = waitlist | Size %}
 {% if waitListCount > 0 %}
     <p>
-        You have successfully added the following
-        {{ RegistrationInstance.RegistrationTemplate.RegistrantTerm | PluralizeForQuantity:registrantCount | Downcase }}
-        to the waiting list for {{ RegistrationInstance.Name }}:
+        The following were added to the wait list:
     </p>
 
     <ul>
     {% for registrant in waitlist %}
         <li>
-            <strong>{{ registrant.PersonAlias.Person.FullName }}</strong>
+            <strong>{{ registrant.PersonAlias.Person.FullName }}</strong> - {{ registrant.Cost | FormatAsCurrency }}{% if registrant.Cost == 0 %} (not charged){% endif %} - <span class=""badge badge-warning"">Waiting List</span>
         </li>
     {% endfor %}
     </ul>

@@ -747,6 +747,27 @@ namespace RockWeb.Blocks.CheckIn
             }
             else
             {
+                // No legacy check-in labels were found, so attempt to print any
+                // next-gen check-in labels. If that still comes back with no
+                // labels then assume there just aren't any for this attendance.
+                var attendanceIds = hfSelectedAttendanceIds.Value.SplitDelimitedValues().AsIntegerList();
+                var printer = DeviceCache.Get( CurrentCheckInState.Kiosk.Device.PrinterDeviceId ?? 0 );
+
+                if ( printer != null && ZebraPrint.TryReprintNextGenLabels( attendanceIds, printer, out var messages ) )
+                {
+                    pnlReprintResults.Visible = true;
+                    pnlReprintSelectedPersonLabels.Visible = false;
+
+                    hfLabelFileGuids.Value = string.Empty;
+                    hfSelectedPersonId.Value = string.Empty;
+
+                    lReprintResultsHtml.Text = messages.Count == 0
+                        ? "Labels printed"
+                        : messages.JoinStrings( "<br>" );
+
+                    return;
+                }
+
                 lbReprintSelectLabelTypes.Visible = false;
                 maNoLabelsFound.Show( "No labels were found for that selection.", ModalAlertType.Alert );
             }

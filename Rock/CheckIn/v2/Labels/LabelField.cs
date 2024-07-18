@@ -21,6 +21,8 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Enums.CheckIn.Labels;
+using Rock.Lava;
+using Rock.Reporting;
 using Rock.ViewModels.CheckIn.Labels;
 
 namespace Rock.CheckIn.v2.Labels
@@ -39,6 +41,12 @@ namespace Rock.CheckIn.v2.Labels
         /// type checking and also makes us thread safe at the same time.
         /// </summary>
         private readonly ConcurrentDictionary<Type, object> _configurationCache = new ConcurrentDictionary<Type, object>();
+
+        /// <summary>
+        /// The cached function that can be called internally to determine if
+        /// this field matches the label data object.
+        /// </summary>
+        private Func<object, bool> _isMatchFunction;
 
         /// <summary>
         /// The bag that describes the details about this field.
@@ -90,7 +98,10 @@ namespace Rock.CheckIn.v2.Labels
             {
                 if ( config.IsDynamicText )
                 {
-                    return new List<string>( new[] { config.DynamicTextTemplate ?? string.Empty } );
+                    var mergeFields = printRequest.GetMergeFields();
+                    var text = config.DynamicTextTemplate.ResolveMergeFields( mergeFields );
+
+                    return new List<string>( new[] { text } );
                 }
                 else
                 {
@@ -116,6 +127,30 @@ namespace Rock.CheckIn.v2.Labels
             {
                 return values.Select( v => v.ToString() ).ToList();
             }
+        }
+
+        /// <summary>
+        /// Checks if this field conditional criteria matches the label data.
+        /// </summary>
+        /// <param name="labelData">The label data for this label.</param>
+        /// <returns><c>true</c> if this field matches; otherwise <c>false</c>.</returns>
+        public virtual bool IsMatch( object labelData )
+        {
+            if ( _isMatchFunction == null )
+            {
+                if ( Field.ConditionalVisibility == null )
+                {
+                    _isMatchFunction = _ => true;
+                }
+                else
+                {
+                    var builder = new FieldFilterExpressionBuilder();
+
+                    _isMatchFunction = builder.GetIsMatchFunction( Field.ConditionalVisibility, labelData.GetType() );
+                }
+            }
+
+            return _isMatchFunction( labelData );
         }
     }
 }
