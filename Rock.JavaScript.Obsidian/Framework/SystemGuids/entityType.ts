@@ -447,6 +447,8 @@ export const EntityType = {
     Metriccategory: "3D35C859-DF37-433F-A20A-0FFD0FCB9862",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Prayer.AnswerToPrayer. */
     MobileAnswerToPrayerBlockType: "759AFCA0-9E0B-4A22-A402-CD4499F2A457",
+    /** The GUID for the mobile check-in block */
+    MobileCheckinCheckin: "BC0A4B6C-9F6D-4D39-8FFE-B6F9FA4B2F49",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Cms.DailyChallengeEntry */
     MobileCmsDailyChallengeEntry: "E9BC058A-CFE4-498B-A7E7-DD38DC74B30E",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Cms.Hero */

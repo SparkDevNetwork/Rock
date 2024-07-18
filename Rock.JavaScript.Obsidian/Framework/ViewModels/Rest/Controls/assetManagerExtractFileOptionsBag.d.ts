@@ -22,11 +22,13 @@
 //
 
 /**
- * The options that can be passed to the DeleteFiles API action of
+ * The options that can be passed to the ExtractFile API action of
  * the AssetManager control.
  */
 export type AssetManagerExtractFileOptionsBag = {
+    /** Encrypted path to the root of where the file is located. */
     encryptedRoot?: string | null;
 
+    /** The path to the file that is to be extracted. */
     fileName?: string | null;
 };

@@ -26,7 +26,9 @@
  * the AssetManager control.
  */
 export type AssetManagerAddFolderOptionsBag = {
+    /** A key that contains all the information needed to get the full asset that is being acted upon */
     assetFolderId?: string | null;
 
+    /** Name of the folder to be added. */
     newFolderName?: string | null;
 };

@@ -23,7 +23,7 @@
 
 import { TreeItemBag } from "@Obsidian/ViewModels/Utility/treeItemBag";
 
-/** TODO */
+/** A TreeItemBag that is extended to give additional information for the AssetManager. */
 export type AssetManagerTreeItemBag = {
     /** Gets or sets the child count. Optional. */
     childCount?: number | null;
@@ -61,7 +61,7 @@ export type AssetManagerTreeItemBag = {
      */
     type?: string | null;
 
-    /** TODO */
+    /** The unencrypted path to the root directory of the asset. */
     unencryptedRoot?: string | null;
 
     /** Gets or sets the generic identifier of this item. */

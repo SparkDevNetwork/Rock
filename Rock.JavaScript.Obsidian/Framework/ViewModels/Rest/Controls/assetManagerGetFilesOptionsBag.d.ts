@@ -26,8 +26,9 @@
  * the AssetManager control.
  */
 export type AssetManagerGetFilesOptionsBag = {
+    /** A key that contains all the information needed to get the full asset that is being acted upon */
     assetFolderId?: string | null;
 
-    /** Either "image" or "doc" */
+    /** Either "image" or "doc". If "image", only return image files, otherwise all files. */
     browseMode?: string | null;
 };

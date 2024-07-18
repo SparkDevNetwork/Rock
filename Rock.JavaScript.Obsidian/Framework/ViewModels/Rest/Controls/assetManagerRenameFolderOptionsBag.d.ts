@@ -22,11 +22,13 @@
 //
 
 /**
- * The options that can be passed to the DeleteFiles API action of
+ * The options that can be passed to the RenameFolder API action of
  * the AssetManager control.
  */
 export type AssetManagerRenameFolderOptionsBag = {
+    /** A key that contains all the information needed to get the folder being renamed */
     assetFolderId?: string | null;
 
+    /** New name for the folder */
     newFolderName?: string | null;
 };

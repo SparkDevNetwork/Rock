@@ -26,6 +26,7 @@
  * the AssetManager control.
  */
 export type AssetManagerMoveFolderOptionsBag = {
+    /** A key that contains all the information needed to get the full asset that is being acted upon */
     assetFolderId?: string | null;
 
     /** The folder you want to move the selected folder into */

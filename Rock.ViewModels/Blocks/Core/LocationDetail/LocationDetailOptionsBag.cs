@@ -75,6 +75,7 @@ namespace Rock.ViewModels.Blocks.Core.LocationDetail
         /// </value>
         public bool CanAdministrate { get; set; }
 
+        /// <summary>
         /// Gets or sets a value indicating whether the location has NamedLocationFeaturesEnabled set to true.
         /// </summary>
         /// <value>

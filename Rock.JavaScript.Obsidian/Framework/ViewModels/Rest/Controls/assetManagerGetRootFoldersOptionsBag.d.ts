@@ -22,17 +22,29 @@
 //
 
 /**
- * The options that can be passed to the AddFolder API action of
+ * The options that can be passed to the GetRootFolders API action of
  * the AssetManager control.
  */
 export type AssetManagerGetRootFoldersOptionsBag = {
+    /** Whether Asset providers should be included in the result. */
     enableAssetManager: boolean;
 
+    /** Whether local file system folders should be included in the result. */
     enableFileManager: boolean;
 
+    /**
+     * A list of keys of the folders that should be expanded in the tree
+     * (include their subfolders in the results)
+     */
     expandedFolders?: string[] | null;
 
+    /** Root folder for the file manager (encrypted). */
     rootFolder?: string | null;
 
+    /**
+     * The key of the currently selected folder. In order for the client to
+     * be able to use this key, we need to have the encrypted root of this
+     * asset provider / folder match this key's encrypted root.
+     */
     selectedFolder?: string | null;
 };

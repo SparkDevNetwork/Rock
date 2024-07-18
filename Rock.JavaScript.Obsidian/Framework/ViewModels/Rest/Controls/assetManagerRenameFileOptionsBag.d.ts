@@ -22,13 +22,16 @@
 //
 
 /**
- * The options that can be passed to the DeleteFiles API action of
+ * The options that can be passed to the RenameFile API action of
  * the AssetManager control.
  */
 export type AssetManagerRenameFileOptionsBag = {
+    /** ID of the asset storage provider that this file resides on. */
     assetStorageProviderId: number;
 
+    /** The path and file name of the file that is being renamed. */
     file?: string | null;
 
+    /** The new name of the file. */
     newFileName?: string | null;
 };

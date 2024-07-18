@@ -17,6 +17,9 @@
 
 namespace Rock.ViewModels.Blocks.Cms.AssetManager
 {
+    /// <summary>
+    /// Contains extra configuration details for the Asset Manager block.
+    /// </summary>
     public class AssetManagerOptionsBag
     {
         /// <summary>

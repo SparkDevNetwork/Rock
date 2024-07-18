@@ -21,6 +21,13 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
+
 /** The additional configuration options for the Note Watch List block. */
 export type NoteWatchListOptionsBag = {
+    /** Gets or sets the Entity Type unique identifier. */
+    entityTypeGuid?: Guid | null;
+
+    /** Gets or sets the Note Type unique identifier. */
+    noteTypeGuid?: Guid | null;
 };

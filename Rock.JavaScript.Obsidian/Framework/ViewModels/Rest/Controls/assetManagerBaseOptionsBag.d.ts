@@ -21,7 +21,8 @@
 // </copyright>
 //
 
-/** The options that can be passed most actions of the AssetManager control. */
+/** The options that can be passed to many actions of the AssetManager control. */
 export type AssetManagerBaseOptionsBag = {
+    /** A key that contains all the information needed to get the full asset that is being acted upon */
     assetFolderId?: string | null;
 };

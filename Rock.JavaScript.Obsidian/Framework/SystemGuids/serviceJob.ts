@@ -182,4 +182,6 @@ export const ServiceJob = {
     UpdatePersistedDatasets: "B6D3B48A-039A-4A1C-87BE-3FC0152AB5DA",
     /** The Rock.Jobs.UpdatePersonalizationData job. */
     UpdatePersonalizationData: "67CFE1FE-7C64-4328-8576-F1A4BFD0EA8B",
+    /** The job for updating learning program completions. Rock.Jobs.UpdateProgramCompletions. */
+    UpdateProgramCompletions: "4E805A88-C031-4BA0-BAD6-0A706E647870",
 };

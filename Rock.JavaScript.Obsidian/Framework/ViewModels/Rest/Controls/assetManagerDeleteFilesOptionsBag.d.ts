@@ -26,7 +26,9 @@
  * the AssetManager control.
  */
 export type AssetManagerDeleteFilesOptionsBag = {
+    /** The ID of the asset storage provider where the files to be deleted reside. */
     assetStorageProviderId: number;
 
+    /** The list of IDs of files to be deleted */
     files?: string[] | null;
 };
