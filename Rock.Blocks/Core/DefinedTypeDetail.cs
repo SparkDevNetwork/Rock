@@ -86,7 +86,6 @@ namespace Rock.Blocks.Core
 
             box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions( box.IsEditable );
-            box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<DefinedType>();
 
             return box;
         }
