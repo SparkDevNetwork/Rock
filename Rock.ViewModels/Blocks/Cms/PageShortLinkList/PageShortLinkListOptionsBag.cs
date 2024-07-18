@@ -15,6 +15,9 @@
 // </copyright>
 //
 
+using Rock.ViewModels.Utility;
+using System.Collections.Generic;
+
 namespace Rock.ViewModels.Blocks.Cms.PageShortLinkList
 {
     /// <summary>
@@ -22,5 +25,12 @@ namespace Rock.ViewModels.Blocks.Cms.PageShortLinkList
     /// </summary>
     public class PageShortLinkListOptionsBag
     {
+        /// <summary>
+        /// Gets or sets a list of available sites for the site filter dropdown.
+        /// </summary>
+        /// <value>
+        /// The site items.
+        /// </value>
+        public List<ListItemBag> SiteItems { get; set; }
     }
 }

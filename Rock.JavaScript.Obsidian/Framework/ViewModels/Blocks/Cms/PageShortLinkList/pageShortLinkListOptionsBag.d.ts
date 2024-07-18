@@ -21,6 +21,10 @@
 // </copyright>
 //
 
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
 /** The additional configuration options for the Page Short Link List block. */
 export type PageShortLinkListOptionsBag = {
+    /** Gets or sets a list of available sites for the site filter dropdown. */
+    siteItems?: ListItemBag[] | null;
 };

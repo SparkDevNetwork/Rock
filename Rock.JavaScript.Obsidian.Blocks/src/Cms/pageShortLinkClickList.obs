@@ -1,7 +1,7 @@
 <template>
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
-          keyField="id"
+          keyField="idKey"
           itemTerm="Clicks"
           stickyHeader
           liveUpdates
@@ -11,6 +11,7 @@
                         title="Date / Time"
                         field="interactionDateTime"
                         :filter="textValueFilter"
+                        :itemClass="'align-right justify-content-end'"
                         visiblePriority="xs" />
 
         <PersonColumn name="person"
