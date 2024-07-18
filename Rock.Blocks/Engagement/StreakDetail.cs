@@ -80,7 +80,7 @@ namespace Rock.Blocks.Engagement
                 var box = new DetailBlockBox<StreakBag, StreakDetailOptionsBag>();
 
                 SetBoxInitialEntityState( box, rockContext );
-                if(box.Entity == null)
+                if ( box.Entity == null )
                 {
                     return box;
                 }
@@ -199,7 +199,7 @@ namespace Rock.Blocks.Engagement
             {
                 streakTypeId = PageParameter( PageParameterKey.StreakTypeId ).AsInteger();
             }
-            ListItemBag streakType = entity.StreakType?.ToListItemBag() ?? StreakTypeCache.Get( streakTypeId ).ToListItemBag() ?? new ListItemBag ();
+            ListItemBag streakType = entity.StreakType?.ToListItemBag() ?? StreakTypeCache.Get( streakTypeId ).ToListItemBag() ?? new ListItemBag();
             return new StreakBag
             {
                 IdKey = entity.IdKey,
@@ -443,22 +443,8 @@ namespace Rock.Blocks.Engagement
                     var personId = new PersonAliasService( rockContext ).GetPersonId( box.Entity.PersonAlias.Value.AsGuid() ).ToIntSafe();
                     var streakTypeCache = StreakTypeCache.Get( box.Entity.StreakType.Value.AsGuid() );
                     var streakTypeService = new StreakTypeService( rockContext );
-                    entity = streakTypeService.Enroll( streakTypeCache, personId, out errorMessage, entity.EnrollmentDate, entity.LocationId );
-
-                    if ( !entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
-                    {
-                        entity.AllowPerson( Authorization.VIEW, RequestContext.CurrentPerson, rockContext );
-                    }
-
-                    if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-                    {
-                        entity.AllowPerson( Authorization.EDIT, RequestContext.CurrentPerson, rockContext );
-                    }
-
-                    if ( !entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
-                    {
-                        entity.AllowPerson( Authorization.ADMINISTRATE, RequestContext.CurrentPerson, rockContext );
-                    }
+                    var locationId = box.Entity.Location.GetEntityId<Location>( rockContext );
+                    entity = streakTypeService.Enroll( streakTypeCache, personId, out errorMessage, box.Entity.EnrollmentDate, locationId );
                 }
                 else
                 {
@@ -485,6 +471,22 @@ namespace Rock.Blocks.Engagement
                     rockContext.SaveChanges();
                     entity.SaveAttributeValues( rockContext );
                 } );
+
+                // Copied over the authorization logic from webforms block.
+                if ( !entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                {
+                    entity.AllowPerson( Authorization.VIEW, RequestContext.CurrentPerson, rockContext );
+                }
+
+                if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                {
+                    entity.AllowPerson( Authorization.EDIT, RequestContext.CurrentPerson, rockContext );
+                }
+
+                if ( !entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+                {
+                    entity.AllowPerson( Authorization.ADMINISTRATE, RequestContext.CurrentPerson, rockContext );
+                }
 
                 if ( isNew )
                 {
