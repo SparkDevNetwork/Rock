@@ -27,7 +27,7 @@ import { toNumberOrNull } from "./numberUtils";
 type Prop = { [key: string]: unknown };
 type PropKey<T extends Prop> = Extract<keyof T, string>;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type EmitFn<M extends string> = (event: `update:${M}`, ...args: any[]) => void;
+type EmitFn<E extends `update:${string}`> = E extends Array<infer EE> ? (event: EE, ...args: any[]) => void : (event: E, ...args: any[]) => void;
 
 /**
  * Utility function for when you are using a component that takes a v-model
@@ -38,7 +38,7 @@ type EmitFn<M extends string> = (event: `update:${M}`, ...args: any[]) => void;
  * Ensure the related `props` and `emits` are specified to ensure there are
  * no type issues.
  */
-export function useVModelPassthrough<T extends Prop, K extends PropKey<T>>(props: T, modelName: K, emit: EmitFn<K>, options?: WatchOptions): Ref<T[K]> {
+export function useVModelPassthrough<T extends Prop, K extends PropKey<T>, E extends `update:${K}`>(props: T, modelName: K, emit: EmitFn<E>, options?: WatchOptions): Ref<T[K]> {
     const internalValue = ref(props[modelName]) as Ref<T[K]>;
 
     watch(() => props[modelName], val => updateRefValue(internalValue, val), options);
@@ -62,7 +62,7 @@ export function useVModelPassthrough<T extends Prop, K extends PropKey<T>>(props
  * Ensure the related `props` and `emits` are specified to ensure there are
  * no type issues.
  */
-export function useVModelPassthroughWithPropUpdateCheck<T extends Prop, K extends PropKey<T>>(props: T, modelName: K, emit: EmitFn<K>, options?: WatchOptions): [Ref<T[K]>, (fn: () => unknown) => void] {
+export function useVModelPassthroughWithPropUpdateCheck<T extends Prop, K extends PropKey<T>, E extends `update:${K}`>(props: T, modelName: K, emit: EmitFn<E>, options?: WatchOptions): [Ref<T[K]>, (fn: () => unknown) => void] {
     const internalValue = ref(props[modelName]) as Ref<T[K]>;
     const listeners: (() => void)[] = [];
 
