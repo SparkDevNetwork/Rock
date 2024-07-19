@@ -19,7 +19,7 @@
     </template>
 
     <template v-else>
-        <BaseAsyncPicker v-model="internalValue" v-bind="standardProps" :items="itemsSource">
+        <BaseAsyncPicker v-model="internalValue" v-bind="standardProps" :items="itemsSource" :disabled="disabled">
             <template #inputGroupAppend v-if="allowAdd">
                 <span class="input-group-btn">
                     <RockButton @click="showAddForm" :btnType="BtnType.Default" aria-label="Add Item"><i class="fa fa-plus" aria-hidden></i></RockButton>
@@ -58,6 +58,12 @@
         modelValue: {
             type: Object as PropType<ListItemBag | ListItemBag[] | null>,
             required: false
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            required: false,
+            default: false
         },
 
         definedTypeGuid: {

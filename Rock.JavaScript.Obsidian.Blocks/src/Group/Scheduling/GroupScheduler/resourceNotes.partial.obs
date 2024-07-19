@@ -40,6 +40,12 @@
             </div>
         </div>
 
+        <!-- LPC CODE -->
+        <div v-if="hasScheduleTemplate" class="resource-notes-section">
+            {{ resource.ScheduleTemplateName }}
+        </div>
+        <!-- END LPC CODE -->
+
         <div v-if="hasNote" class="resource-notes-section">
             {{ resource.Note }}
         </div>
@@ -94,6 +100,12 @@
             ?.SchedulingConflicts
             ?.filter((a: ISchedulerResourceAssignment) => a.ScheduleName) ?? [];
     });
+
+    // LPC CODE
+    const hasScheduleTemplate = computed((): boolean => {
+        return !!props.resource?.ScheduleTemplateName;
+    });
+    // LPC CODE
 
     const hasNote = computed((): boolean => {
         return !!props.resource?.Note;

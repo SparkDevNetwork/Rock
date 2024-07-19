@@ -94,7 +94,7 @@ export default defineComponent({
         class="well">
         <template #header>
             <!-- MODIFIED LPC CODE -->
-            <h3>{{ getLang() == 'es' ? 'Haga los pagos aún más fáciles' : 'Make Payments Even Easier' }}</h3>
+            <h3>{{ getLang() == 'es' ? 'Haz Los Pagos Más Fáciles' : 'Make Payments Even Easier' }}</h3>
             <!-- END MODIFIED LPC CODE -->
         </template>
     </SaveFinancialAccountForm>

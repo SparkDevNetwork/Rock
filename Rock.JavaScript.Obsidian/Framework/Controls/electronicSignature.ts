@@ -118,7 +118,7 @@ export default defineComponent({
         // #region Computed Values
 
         const signedByEmailLabel = computed((): string => {
-            return getLang() == 'es' ? 'Por favor ingresa una direcci\u00f3n de email donde podamos enviar una copia del documento.' : `Please enter an email address below where we can send a copy of the ${props.documentTerm.toLowerCase()} to.`;
+            return getLang() == 'es' ? 'Por favor ingresa un email a continuaci\u00f3n a donde podamos enviar una copia del registro.' : `Please enter an email address below where we can send a copy of the ${props.documentTerm.toLowerCase()} to.`;
         });
 
         // #endregion
@@ -288,12 +288,12 @@ export default defineComponent({
 
             <div v-else class="signature-entry-typed">
                 <TextBox v-model="signedByName"
-                    :label="getLang() == 'es' ? 'Escribe tu Nombre' : 'Type Name'"
+                    :label="getLang() == 'es' ? 'Escribir Nombre' : 'Type Name'"
                     rules="required" />
             </div>
 
             <div class="signature-entry-agreement">
-                {{getLang() == 'es' ? 'Al hacer click en el bot&oacute;n de Firmar, acepto el documento anterior y entiendo que esta es una representaci&oacute;n legal de mi firma.' : 'By clicking the sign button below, I agree to the above document and understand this is a legal representation of my signature.'}}
+                {{getLang() == 'es' ? 'Al hacer click en el bot&oacute;n de Firmar a continuaci&oacute;n, acepto el registro anterior y entiendo que es una representaci&oacute;n legal de mi firma.' : 'By clicking the sign button below, I agree to the above document and understand this is a legal representation of my signature.'}}
             </div>
 
             <div class="text-right">

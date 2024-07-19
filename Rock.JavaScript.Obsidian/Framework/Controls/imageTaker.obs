@@ -1,0 +1,498 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField
+                   v-bind="standardFieldProps"
+                   :modelValue="fileGuid"
+                   formGroupClasses="image-uploader"
+                   name="imageuploader">
+        <template #default="{ uniqueId, field }">
+            <div class="control-wrapper">
+                <NotificationBox v-if="errorMessage" alertType="warning">
+                    <strong><i class="fa fa-exclamation-triangle"></i> Warning </strong>
+                    <span>{{ errorMessage }}</span>
+                </NotificationBox>
+
+                <div :id="uniqueId"
+                     class="image-editor-group imageupload-group"
+                     @click.prevent="onSelectFileClick"
+                     @keypress.enter.prevent.stop="onSelectFileClick"
+                     @keypress.space.prevent.stop="onSelectFileClick"
+                     role="button"
+                     :tabindex="disabled ? -1 : 0"
+                     aria-label="Take a Picture"
+                     :style="{ pointerEvents: disabled ? 'none' : undefined }"
+                     v-bind="field">
+                    <div class="image-editor-photo">
+                        <div v-if="isUploading" class="text-bold text-center p-3" style="position:absolute; top:0; right: 0; bottom:0; left:0; background: rgba(255, 255, 255, .75)">
+                            <div class="js-upload-progress">
+                                <i class="fa fa-refresh fa-3x fa-spin"></i>
+                            </div>
+                            <span style="opacity: 0.75">{{ getLang() == 'es' ? 'Cargando...' : 'Uploading...' }}</span>
+                        </div>
+                        <div class="image-container" :style="thumbnailStyle"></div>
+                        <div class="options">
+                            <a @click.prevent.stop="onSelectFileClick" aria-label="Take a Picture" title="Take a Picture"><i class="fa fa-camera" aria-hidden></i></a>
+                            <a @click.prevent.stop="onRemoveFileClick" v-if="isDeleteVisible" aria-label="Clear Image" title="Clear Image"><i class="fa fa-times" aria-hidden></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </RockFormField>
+    <Modal v-model="showModal" :title="getLang() == 'es' ? 'Tomar Foto de Persona' : 'Take Person Photo'" @closeModal="hideTakePhotoModal" :cancelText="getLang() == 'es' ? 'Cancelar' : 'Cancel'">
+        <div style="margin: auto;">
+            <div class="web-camera-container" style="height: 450px;">
+                <div v-show="isLoading" class="camera-loading">
+                    <ul class="loader-circle">
+                        <li></li>
+                        <li></li>
+                        <li></li>
+                    </ul>
+                </div>
+
+                <div v-show="!isLoading" class="camera-box" :class="{ 'flash' : isShotPhoto }">
+
+                    <div class="camera-shutter" :class="{'flash' : isShotPhoto}" :style="{width: size + 'px', height: size + 'px'}"></div>
+
+                    <video v-show="!isPhotoTaken" :id="'camera-' + modalGuid" ref="camera" :width="size" :height="size" muted autoplay playsinline disablePictureInPicture></video>
+
+                    <canvas v-show="isPhotoTaken" :id="'canvas-' + modalGuid" class="photoTaken" ref="canvas" :width="size" :height="size"></canvas>
+                </div>
+
+                <div v-if="!isLoading" class="camera-shoot">
+                    <button type="button" class="btn btn-default" @click="takePhoto">
+                        <i v-if="isPhotoTaken" class="fa fa-redo"></i>
+                        <i v-else class="fa fa-camera"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <template #customButtons>
+            <RockButton v-show="isPhotoTaken" type="button" :btnType="BtnType.Primary" @click.prevent="savePhoto">{{ getLang() == 'es' ? 'Guardar' : 'Save' }}</RockButton>
+        </template>
+    </Modal>
+    <component is="style">
+        .web-camera-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .web-camera-container .camera-button {
+            margin-bottom: 2rem;
+        }
+
+        .web-camera-container .camera-box .camera-shutter {
+            opacity: 0;
+            background-color: #fff;
+            position: absolute;
+        }
+
+        .web-camera-container .camera-box .camera-shutter.flash {
+            opacity: 1;
+        }
+
+        .web-camera-container .camera-box video {
+            object-fit: cover;
+            -webkit-transform: scaleX(-1);
+            transform: scaleX(-1);
+        }
+
+        .web-camera-container .camera-shoot {
+            margin: 1rem 0;
+        }
+
+        .web-camera-container .camera-shoot button {
+            height: 60px;
+            width: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 100%;
+        }
+
+        .web-camera-container .camera-shoot button img {
+            height: 35px;
+            object-fit: cover;
+        }
+
+        .web-camera-container .camera-loading {
+            overflow: hidden;
+            height: 100%;
+            position: absolute;
+            width: 100%;
+            min-height: 150px;
+            margin: 3rem 0 0 -1.2rem;
+        }
+
+        .web-camera-container .camera-loading ul {
+            height: 100%;
+            position: absolute;
+            width: 100%;
+            z-index: 999999;
+            margin: 0;
+        }
+
+        .web-camera-container .camera-loading .loader-circle {
+            display: block;
+            height: 14px;
+            margin: 0 auto;
+            top: 50%;
+            left: 100%;
+            transform: translateY(-50%);
+            transform: translateX(-50%);
+            position: absolute;
+            width: 100%;
+            padding: 0;
+        }
+
+        .web-camera-container .camera-loading .loader-circle li {
+            display: block;
+            float: left;
+            width: 10px;
+            height: 10px;
+            line-height: 10px;
+            padding: 0;
+            position: relative;
+            margin: 0 0 0 4px;
+            background: #999;
+            animation: preload 1s infinite;
+            top: -50%;
+            border-radius: 100%;
+        }
+
+        .web-camera-container .camera-loading .loader-circle li:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .web-camera-container .camera-loading .loader-circle li:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes preload {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+    </component>
+</template>
+
+<script setup lang="ts">
+    import { Guid } from "@Obsidian/Types";
+    import { computed, getCurrentInstance, PropType, ref, watch, nextTick } from "vue";
+    import NotificationBox from "./notificationBox.obs";
+    import Modal from "./modal.obs";
+    import RockButton from "./rockButton";
+    import RockFormField from "./rockFormField.obs";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
+    import { uploadBinaryFile } from "@Obsidian/Utility/http";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import Cropper from "@Obsidian/Libs/cropper";
+    import { useStore } from "@Obsidian/PageState";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    const store = useStore();
+    /** Gets the lang parameter from the query string.
+     * Returns "en" or "es". Defaults to "en" if invalid. */
+    function getLang(): string {
+        var lang = typeof store.state.pageParameters["lang"] === 'string' ? store.state.pageParameters["lang"] : "";
+        if (lang != "es") {
+            lang = "en";
+        }
+        return lang;
+    }
+
+    const modalGuid = newGuid();
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ListItemBag | null>,
+            required: false
+        },
+
+        /** The GUID of the type of file the image will be uploaded as */
+        binaryFileTypeGuid: {
+            type: String as PropType<Guid>,
+            default: BinaryFiletype.Default
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** URL of the image to show when there is no image value */
+        noPictureUrl: {
+            type: String,
+            default: "/Assets/Images/person-no-photo-unknown.svg"
+        },
+
+        /** Whether or not to hide the delete button */
+        hideDeleteButton: {
+            type: Boolean,
+            default: false
+        },
+
+        ...standardRockFormFieldProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ListItemBag | null): void;
+    }>();
+
+    // Main Values
+    const fileGuid = ref<Guid>(props.modelValue?.value ?? "");
+    const fileName = ref(props.modelValue?.text ?? "");
+
+    // Variables related to the progress of uploading a new file.
+    const isUploading = ref(false);
+    const uploadProgressText = ref("");
+    const errorMessage = ref("");
+
+    // Element references used to interact directly with the DOM.
+    const standardFieldProps = useStandardRockFormFieldProps(props);
+
+    const showModal = ref(false);
+
+    // Image URLs
+    const localImageUrl = ref<string | null>(null);
+    const thumbnailUrl = computed(() => {
+        if (fileGuid.value) {
+            return `/GetImage.ashx?guid=${fileGuid.value}&width=150`;
+        }
+
+        if (localImageUrl.value) {
+            return localImageUrl.value;
+        }
+
+        return props.noPictureUrl;
+    });
+
+    // The CSS styles to use for the thumbnail element.
+    const thumbnailStyle = computed((): Record<string, string> => {
+        return {
+            backgroundImage: `url('${thumbnailUrl.value}')`,
+            backgroundSize: "cover",
+            backgroundPosition: "50%"
+        };
+    });
+
+    // True if the delete button should be visible.
+    const isDeleteVisible = computed((): boolean => {
+        return !props.hideDeleteButton && !!fileGuid.value;
+    });
+
+    // Variables related to the camera
+    const size = 350;
+    const isPhotoTaken = ref<boolean>(false); 
+    const isShotPhoto = ref<boolean>(false); 
+    const isLoading = ref<boolean>(false); 
+
+    /** Open the take image modal */
+    async function showTakePhotoModal(): Promise<void> {
+        console.log("Showing Photo Modal");
+        isPhotoTaken.value = false;
+        isShotPhoto.value = false;
+        isLoading.value = false;
+        showModal.value = true;
+        startCameraStream();
+    }
+
+    /** Close the take image modal */
+    async function hideTakePhotoModal(): Promise<void> {
+        console.log("Hiding Photo Modal");
+        stopCameraStream();
+        showModal.value = false;
+    }
+
+    /**
+     * Upload the specified file into Rock with the current settings.
+     *
+     * @param file The file to be uploaded.
+     */
+    async function uploadFile(file: Blob): Promise<void> {
+        // Update the UI to reflect that we are currently uploading.
+        isUploading.value = true;
+        uploadProgressText.value = "0%";
+        errorMessage.value = "";
+
+        const extension = file.type.split('/').pop();
+        const name = `taken-photo.${extension}`;
+
+        const fileToUpload = new File([file], name, { type: file.type });
+
+        console.log(fileToUpload);
+
+        try {
+            // Perform the actual file upload using the helper function.
+            const result = await uploadBinaryFile(fileToUpload, props.binaryFileTypeGuid || BinaryFiletype.Default, {
+                baseUrl: "/ImageUploader.ashx",
+                isTemporary: false,
+                progress: (progress, total, percent) => {
+                    uploadProgressText.value = `${percent}%`;
+                }
+            });
+
+            fileGuid.value = result.value ?? "";
+            fileName.value = result.text ?? "";
+
+            console.log(`Successfully uploaded photo:\nfileGuid: ${fileGuid.value}\nfileName: ${fileName.value}`);
+        }
+        catch (e) {
+            // Show any error message we got.
+            errorMessage.value = String(e);
+        }
+        finally {
+            // Clear the uploading progress whether success or failure.
+            isUploading.value = false;
+        }
+    }
+
+    /**
+     * Event handler for when the individual clicks to manually select a file
+     * to be uploaded into Rock.
+     */
+    function onSelectFileClick(e): void {
+        if (!isUploading.value) {
+            showTakePhotoModal();
+        }
+    }
+
+    /**
+     * Event handler for when the remove file button is clicked.
+     */
+    function onRemoveFileClick(): void {
+        errorMessage.value = "";
+        fileGuid.value = "";
+        fileName.value = "";
+    }
+
+    /** Start the camera stream */
+    async function startCameraStream(): Promise<void> {
+        await nextTick();
+
+        const camera = document.getElementById("camera-" + modalGuid);
+
+        isLoading.value = true;
+
+        const constraints = {
+            audio: false,
+            video: { width: size, height: size }
+        };
+
+        if (camera != null && camera instanceof HTMLVideoElement) {
+            navigator.mediaDevices
+            .getUserMedia(constraints)
+            .then(stream => {
+                isLoading.value = false;
+                camera.srcObject = stream;
+                console.log("Stream Applied Successfully");
+            })
+            .catch(error => {
+                isLoading.value = false;
+                alert(getLang() == "es" ? "Por favor permite el acceso a tu cámara. Si eso no funciona, por favor intenta en un navegador o dispositivo diferente." : "Please allow access to your camera. If that does not work, please try a different browser or a different device.");
+            });
+        }
+        else {
+            console.log("Camera Reference Was Null");
+        }
+    }
+
+    /** Stop the camera stream */
+    function stopCameraStream(): void {
+        const camera = document.getElementById("camera-" + modalGuid);
+
+        if (camera != null && camera instanceof HTMLVideoElement && camera.srcObject instanceof MediaStream) {
+            let tracks = camera.srcObject.getTracks();
+
+            tracks.forEach(track => {
+                track.stop();
+            });
+        }
+    }
+
+    /** Event handler for the take photo button */
+    function takePhoto(): void {
+        const camera = document.getElementById("camera-" + modalGuid);
+        const canvas = document.getElementById("canvas-" + modalGuid);
+
+        if (isPhotoTaken.value == false) {
+            isShotPhoto.value = true;
+
+            const FLASH_TIMEOUT = 50;
+
+            setTimeout(() => {
+                isShotPhoto.value = false;
+            }, FLASH_TIMEOUT);
+        }
+
+        isPhotoTaken.value = !isPhotoTaken.value;
+
+        if (canvas != null && canvas instanceof HTMLCanvasElement) {
+            const context = canvas?.getContext('2d');
+            if (camera != null && camera instanceof HTMLVideoElement && context != null) {
+                context.scale(-1, 1);
+                context.drawImage(camera, 0, 0, size*-1, size);
+            }
+        }
+
+        if(isPhotoTaken.value == true) {
+            stopCameraStream();
+        }
+        else {
+            startCameraStream();
+        }
+    }
+
+    /** Event handler for the save photo button */
+    async function savePhoto(): Promise<void> {
+        const canvas = document.getElementById("canvas-" + modalGuid);
+
+        if (canvas != null && canvas instanceof HTMLCanvasElement) {
+            canvas.toBlob(async (blob) => {
+                if (blob) {
+                    localImageUrl.value = URL.createObjectURL(blob);
+                    hideTakePhotoModal();
+
+                    await uploadFile(blob);
+
+                    localImageUrl.value = "";
+                    URL.revokeObjectURL(localImageUrl.value);
+                }
+            });
+        }
+    }
+
+    // Watch for changes to the model value and update our internal values.
+    watch(() => props.modelValue, () => {
+        fileGuid.value = props.modelValue?.value ?? "";
+        fileName.value = props.modelValue?.text ?? "";
+        console.log(`modelValue recieved an external update.\nfileGuid: ${fileGuid.value}\nfileName: ${fileName.value}`);
+    });
+
+    // Watch for changes to our internal values and update the model value.
+    watch([fileGuid, fileName], () => {
+        let newValue: ListItemBag | null = null;
+
+        if (fileGuid.value) {
+            newValue = {
+                value: fileGuid.value,
+                text: fileName.value
+            };
+        }
+
+        console.log(`modelValue was updated.\nfileGuid: ${fileGuid.value}\nfileName: ${fileName.value}`);
+
+        emit("update:modelValue", newValue);
+    });
+</script>

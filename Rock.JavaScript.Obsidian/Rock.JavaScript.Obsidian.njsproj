@@ -35,6 +35,8 @@
     <Content Include="Build\build-fast.js" />
     <Content Include="Framework\Controls\addressControl.obs" />
     <Content Include="Framework\Controls\groupTypeGroupPicker.obs" />
+    <Content Include="Framework\Controls\imageEditor.obs" />
+    <Content Include="Framework\Controls\modal.obs" />
     <Content Include="Framework\Controls\notificationBox.obs" />
     <Content Include="Framework\Controls\buttonGroup.obs" />
     <Content Include="Framework\Controls\cacheabilityPicker.obs" />
@@ -71,6 +73,7 @@
     <Content Include="Framework\Controls\popOver.obs" />
     <Content Include="Framework\Controls\racePicker.obs" />
     <Content Include="Framework\Controls\registryEntry.obs" />
+    <Content Include="Framework\Controls\rockFormField.obs" />
     <Content Include="Framework\Controls\rockLiteral.obs" />
     <Content Include="Framework\Controls\slidingDateRangePicker.obs" />
     <Content Include="Framework\Controls\reminderTypePicker.obs" />
@@ -117,6 +120,8 @@
     <Folder Include="Framework\Enums\Blocks\" />
     <Folder Include="Framework\Enums\Blocks\Cms\" />
     <Folder Include="Framework\Enums\Blocks\Cms\ContentCollectionView\" />
+    <Folder Include="Framework\Enums\Blocks\Crm\" />
+    <Folder Include="Framework\Enums\Blocks\Crm\FamilyPreRegistration\" />
     <Folder Include="Framework\Enums\Blocks\Engagement\" />
     <Folder Include="Framework\Enums\Blocks\Engagement\SignUp\" />
     <Folder Include="Framework\Enums\Blocks\Group\" />
@@ -165,6 +170,7 @@
     <Folder Include="Framework\ViewModels\Blocks\Core\CampusDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\AssessmentTypeDetail\" />
+    <Folder Include="Framework\ViewModels\Blocks\Crm\FamilyPreRegistration\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\PersonDetail\" />
     <Folder Include="Framework\ViewModels\Blocks\Crm\PersonDetail\Badges\" />
     <Folder Include="Framework\ViewModels\Blocks\Engagement\" />
@@ -310,6 +316,8 @@
     <TypeScriptCompile Include="Framework\Controls\urlLinkBox.ts" />
     <TypeScriptCompile Include="Framework\Directives\dragScroll.ts" />
     <TypeScriptCompile Include="Framework\Enums\Blocks\Cms\ContentCollectionView\searchOrder.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Blocks\Crm\familyPreRegistrationCommunicationPreference.ts" />
+    <TypeScriptCompile Include="Framework\Enums\Blocks\Crm\FamilyPreRegistration\communicationPreference.ts" />
     <TypeScriptCompile Include="Framework\Enums\Blocks\Engagement\SignUp\registerMode.ts" />
     <TypeScriptCompile Include="Framework\Enums\Blocks\Group\GroupAttendanceDetail\groupAttendanceDetailDateSelectionMode.ts" />
     <TypeScriptCompile Include="Framework\Enums\Blocks\Group\GroupAttendanceDetail\groupAttendanceDetailLocationSelectionMode.ts" />
@@ -631,6 +639,18 @@
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Core\CampusDetail\campusScheduleBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\AssessmentTypeDetail\assessmentTypeBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\AssessmentTypeDetail\assessmentTypeDetailOptionsBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\FamilyPreRegistration\familyPreRegistrationCreateAccountRequestBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\FamilyPreRegistration\familyPreRegistrationDateAndTimeFieldBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\FamilyPreRegistration\familyPreRegistrationDatePickerFieldBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\FamilyPreRegistration\familyPreRegistrationFieldBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\FamilyPreRegistration\familyPreRegistrationGetScheduleDatesRequestBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\FamilyPreRegistration\familyPreRegistrationGetScheduleDatesResponseBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\FamilyPreRegistration\familyPreRegistrationInitializationBox.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\FamilyPreRegistration\familyPreRegistrationPersonBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\FamilyPreRegistration\familyPreRegistrationSaveRequestBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\FamilyPreRegistration\familyPreRegistrationSaveResponseBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\FamilyPreRegistration\familyPreRegistrationScheduleDateBag.d.ts" />
+    <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\FamilyPreRegistration\familyPreRegistrationSmsOptInFieldBag.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Crm\PersonDetail\Badges\badgesConfigurationBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\detailBlockBox.d.ts" />
     <TypeScriptCompile Include="Framework\ViewModels\Blocks\Engagement\SignUp\SignUpAttendanceDetail\signUpAttendanceBag.d.ts" />

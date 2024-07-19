@@ -157,7 +157,6 @@ export default defineComponent({
                     break;
 
                 case RegistrationPersonFieldType.Gender:
-                    componentProps.label = getLang() == 'es' ? "Género" : "Gender";
                     break;
 
                 case RegistrationPersonFieldType.Birthdate:

@@ -1,0 +1,1023 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div>
+        <div v-if="errors.length" ref="errorNotificationBox">
+            <NotificationBox alertType="validation" :heading="errorTitle ?? undefined">
+                <ul>
+                    <li v-for="error in errors">{{ error }}</li>
+                </ul>
+            </NotificationBox>
+        </div>
+        <span ref="formErrorsScrollTarget"></span>
+        <RockForm @submit="onFormSubmitted"
+            @visibleValidationChanged="onVisibleValidationChanged">
+            <!-- LPC MODIFIED CODE -->
+            <Panel type="block" :title="getLang() == 'es' ? 'Registro Digital' : 'Family Pre-Registration'">
+            <!-- END LPC MODIFIED CODE -->
+                <template #default>
+                    <!-- LPC MODIFIED CODE -->
+                    <Panel
+                        v-if="config.campusField?.isShown || config.visitDateField?.isShown"
+                        :title="getLang() == 'es' ? 'Información De Visita' : config.visitInfoTitle || 'Visit Information'"
+                        v-show="isCampusPickerVisible || config.visitDateField?.isShown">
+                        <div class="row">
+                    <!-- END LPC MODIFIED CODE -->
+                            <CampusPicker
+                                v-if="config.campusField?.isShown"
+                                v-model="campusListItemBag"
+                                :campusStatusFilter="config.campusStatusesFilter || []"
+                                :campusTypeFilter="config.campusTypesFilter || []"
+                                :disabled="isSaving || isNavigating"
+                                formGroupClasses="col-md-4"
+                                label="Campus"
+                                :rules="config.campusField.isRequired ? ['required'] : []"
+                                :showBlankItem="true"
+                                @isVisible="isCampusPickerVisible = $event"
+                                 />
+                            <div v-if="config.visitDateField?.isDateShown" class="col-md-5">
+                                <!-- LPC MODIFIED CODE -->
+                                <DatePicker
+                                    v-model="plannedVisitDate"
+                                    :disabled="isSaving || isNavigating"
+                                    :disallowPastDateSelection="true"
+                                    :label="getLang() == 'es' ? 'Fecha de Visita' : 'Planned Visit Date'"
+                                    :rules="config.visitDateField.isRequired ? 'required' : ''" />
+                                <!-- END LPC MODIFIED CODE -->
+                            </div>
+                            <div v-if="config.visitDateField?.isDateAndTimeShown" class="col-md-7">
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <!-- LPC MODIFIED CODE -->
+                                        <DropDownList
+                                            v-model="plannedVisitDate"
+                                            :disabled="isSaving || isNavigating"
+                                            :items="scheduleDateItems"
+                                            :label="getLang() == 'es' ? 'Fecha de Visita' : 'Planned Visit Date'"
+                                            :rules="config.visitDateField.isRequired ? 'required' : ''"
+                                            :showBlankItem="config.visitDateField.isOptional" />
+                                        <!-- END LPC MODIFIED CODE -->
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <!-- LPC MODIFIED CODE -->
+                                        <DropDownList
+                                            v-model="scheduleGuid"
+                                            :disabled="isSaving || isNavigating"
+                                            :items="scheduleTimeItems"
+                                            :label="getLang() == 'es' ? 'Fecha de Visita' : 'Planned Visit Date'"
+                                            :rules="config.visitDateField.isRequired ? 'required' : ''"
+                                            :showBlankItem="config.visitDateField.isOptional" />
+                                        <!-- END LPC MODIFIED CODE -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </Panel>
+
+                    <!-- LPC MODIFIED CODE -->
+                    <Panel :title="getLang() == 'es' ? 'Información De Adulto' : 'Adult Information'">
+                    <!-- END LPC MODIFIED CODE -->
+                        <template #default>
+                            <!-- LPC MODIFIED CODE -->
+                            <h4 class="heading-individual">{{ getLang() == 'es' ? 'Primer Adulto' : 'First Adult' }}</h4>
+                            <!-- END LPC MODIFIED CODE -->
+
+                            <div class="row">
+                                <TextBox
+                                    v-model="fullName"
+                                    autocomplete="new-password"
+                                    class="rock-fullname"
+                                    :disabled="isSaving || isNavigating"
+                                    placeholder="Please enter name (Required)" />
+
+                                <div class="col-sm-6">
+                                    <!-- LPC MODIFIED CODE -->
+                                    <StaticFormControl
+                                        v-if="adult1.isFirstNameReadOnly"
+                                        :label="getLang() == 'es' ? 'Nombre' : 'First Name'"
+                                        :modelValue="adult1.firstName" />
+                                    <TextBox v-else
+                                        v-model="adult1.firstName"
+                                        :disabled="isSaving || isNavigating"
+                                        :label="getLang() == 'es' ? 'Nombre' : 'First Name'"
+                                        :rules="[atLeastOneAdultFirstNameRule, adult1FirstNameRule]" />
+                                    <!-- END LPC MODIFIED CODE -->
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- LPC MODIFIED CODE -->
+                                    <StaticFormControl
+                                        v-if="adult1.isLastNameReadOnly"
+                                        :label="getLang() == 'es' ? 'Apellido' : 'Last Name'"
+                                        :modelValue="adult1.lastName" />
+                                    <TextBox v-else
+                                        v-model="adult1.lastName"
+                                        :disabled="isSaving || isNavigating"
+                                        :label="getLang() == 'es' ? 'Apellido' : 'Last Name'"
+                                        :rules="[adult1LastNameRule]" />
+                                    <!-- END LPC MODIFIED CODE -->
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <!-- LPC MODIFIED CODE -->
+                                    <GenderDropDownList
+                                        v-if="config.adultGenderField?.isShown"
+                                        v-model="adult1.genderStringValue"
+                                        :disabled="isSaving || isNavigating"
+                                        :label="getLang() == 'es' ? 'Género' : 'Gender'"
+                                        :rules="config.adultGenderField.isRequired ? adult1RequiredGenderRules : ''" />
+                                    <!-- END LPC MODIFIED CODE -->
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- LPC MODIFIED CODE -->
+                                    <DefinedValuePicker
+                                        v-if="config.adultSuffixField?.isShown"
+                                        v-model="adult1.suffixListItemBag"
+                                        :definedTypeGuid="DefinedType.PersonSuffix"
+                                        :disabled="isSaving || isNavigating"
+                                        :label="getLang() == 'es' ? 'Sufijo' : 'Suffix'"
+                                        lazyMode="lazy"
+                                        :rules="config.adultSuffixField.isRequired ? adult1RequiredRules : ''"
+                                        :showBlankItem="true" />
+                                    <!-- END LPC MODIFIED CODE -->
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <!-- LPC MODIFIED CODE -->
+                                    <BirthdayPicker
+                                        v-if="config.adultBirthdayField?.isShown"
+                                        v-model="adult1.birthDate"
+                                        :disabled="isSaving || isNavigating"
+                                        :label="getLang() == 'es' ? 'Fecha de Nacimiento' : 'Birth Date'"
+                                        :rules="config.adultBirthdayField.isRequired ? [createRuleWithSuffix(monthAndDayAndYearRequiredRule, 'for First Adult'), 'required'] :
+                                                config.adultBirthdayField.isMonthAndDayRequired ? createRuleWithSuffix(monthAndDayRequiredRule, 'for First Adult') : ''" />
+                                    <!-- END LPC MODIFIED CODE -->
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- LPC MODIFIED CODE -->
+                                    <DefinedValuePicker
+                                        v-if="config.adultMaritalStatusField?.isShown"
+                                        v-model="adult1.maritalStatusListItemBag"
+                                        :definedTypeGuid="DefinedType.PersonMaritalStatus"
+                                        :disabled="isSaving || isNavigating"
+                                        :label="getLang() == 'es' ? 'Estado Civil' : 'Marital Status'"
+                                        lazyMode="lazy"
+                                        :rules="config.adultMaritalStatusField.isRequired ? adult1RequiredRules : ''"
+                                        :showBlankItem="true" />
+                                    <!-- END LPC MODIFIED CODE -->
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <!-- LPC MODIFIED CODE -->
+                                    <PhoneNumberBox
+                                        v-if="config.adultMobilePhoneField?.isShown"
+                                        v-model="adult1.mobilePhone"
+                                        v-model:countryCode="adult1.mobilePhoneCountryCode"
+                                        :disabled="isSaving || isNavigating"
+                                        :label="getLang() == 'es' ? 'Teléfono' : 'Mobile Phone'"
+                                        :rules="config.adultMobilePhoneField.isRequired ? adult1RequiredRules : ''" />
+                                    <!-- END LPC MODIFIED CODE -->
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- LPC MODIFIED CODE -->
+                                    <CheckBox
+                                        v-if="config.displaySmsOptIn?.isShowFirstAdult"
+                                        v-model="adult1.isMessagingEnabled"
+                                        label=""
+                                        :disabled="isSaving || isNavigating"
+                                        :text="getLang() == 'es' ? '¿Podemos mandar mensajes de texto?' : config.displaySmsOptIn?.smsOptInDisplayText ?? ''"/>
+                                    <!-- END LPC MODIFIED CODE -->
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <EmailBox
+                                        v-if="config.adultEmailField?.isShown"
+                                        v-model="adult1.email"
+                                        :disabled="isSaving || isNavigating"
+                                        label="Email"
+                                        :rules="config.adultEmailField.isRequired ? adult1RequiredRules : []" />
+                                </div>
+                                <div class="col-sm-6">
+                                    <!-- LPC MODIFIED CODE -->
+                                    <RadioButtonList
+                                        v-if="config.adultCommunicationPreferenceField?.isShown"
+                                        v-model="adult1.communicationPreferenceStringValue"
+                                        :disabled="isSaving || isNavigating"
+                                        :horizontal="true"
+                                        :items="[
+                                            { text: 'Email', value: CommunicationPreference.Email.toString() },
+                                            { text: getLang() == 'es' ? 'Texto' : 'SMS', value: CommunicationPreference.SMS.toString() }
+                                        ]"
+                                        :label="getLang() == 'es' ? 'Preferencia de Comunicación' : 'Communication Preference'"
+                                        :rules="config.adultCommunicationPreferenceField.isRequired ? adult1RequiredRules : ''" />
+                                    <!-- END LPC MODIFIED CODE -->
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <RacePicker
+                                        v-if="config.adultRaceField?.isShown"
+                                        v-model="adult1.raceListItemBag"
+                                        :disabled="isSaving || isNavigating"
+                                        :rules="config.adultRaceField.isRequired ? adult1RequiredRules : ''"
+                                        :showBlankItem="true" />
+                                </div>
+                                <div class="col-sm-6">
+                                    <EthnicityPicker
+                                        v-if="config.adultEthnicityField?.isShown"
+                                        v-model="adult1.ethnicityListItemBag"
+                                        :disabled="isSaving || isNavigating"
+                                        :rules="config.adultEthnicityField.isRequired ? adult1RequiredRules : ''"
+                                        :showBlankItem="true" />
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div v-if="config.adultProfilePhotoField?.isShown" class="col-sm-6">
+                                    <!-- LPC MODIFIED CODE -->
+                                    <ImageTaker
+                                        v-if="config.adultProfilePhotoFieldMode == true"
+                                        v-model="adult1.profileImageListItemBag"
+                                        :binaryFileTypeGuid="BinaryFiletype.PersonImage"
+                                        :disabled="isSaving || isNavigating"
+                                        :label="getLang() == 'es' ? 'Foto' : 'Profile Photo'"
+                                        :rules="config.adultProfilePhotoField.isRequired ? adult1RequiredRules : ''" />
+                                    <ImageEditor
+                                        v-else
+                                        v-model="adult1.profileImageListItemBag"
+                                        :binaryFileTypeGuid="BinaryFiletype.PersonImage"
+                                        :disabled="isSaving || isNavigating"
+                                        :label="getLang() == 'es' ? 'Foto' : 'Profile Photo'"
+                                        :rules="config.adultProfilePhotoField.isRequired ? adult1RequiredRules : ''" />
+                                    <!-- END LPC MODIFIED CODE -->
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <AttributeValuesContainer
+                                    v-if="adult1.attributes != null"
+                                    v-model="adult1.attributeValues"
+                                    :attributes="adult1.attributes"
+                                    columnBreakpoint="sm"
+                                    :displayWithinExistingRow="true"
+                                    isEditMode
+                                    :numberOfColumns="2"
+                                    :showCategoryLabel="true" />
+                            </div>
+
+                            <div class="row mt-3">
+                                <div class="col-md-12">
+                                    <div v-if="config.createAccountField?.isShown">
+                                        <div class="well card-createaccount">
+                                            <h4 class="heading-createaccount">{{ config.createAccountTitle }}</h4>
+                                            <p>{{ config.createAccountDescription }}</p>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <TextBox
+                                                        v-model="createAccount.username"
+                                                        :disabled="isSaving || isNavigating"
+                                                        label="Username"
+                                                        :rules="config.createAccountField.isRequired ? 'required' : ''"
+                                                        @blur="checkUsernameAvailability" />
+                                                    <dl>
+                                                        <dt></dt>
+                                                        <dd>
+                                                            <NotificationBox
+                                                                v-if="isUsernameAvailable"
+                                                                alertType="success">The selected username is available.</NotificationBox>
+                                                            <NotificationBox
+                                                                v-else-if="isUsernameAvailable === false"
+                                                                alertType="warning">The username you selected is already in use.</NotificationBox>
+                                                        </dd>
+                                                    </dl>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <TextBox
+                                                        v-model="createAccount.password"
+                                                        :disabled="isSaving || isNavigating"
+                                                        label="Password"
+                                                        :rules="config.createAccountField.isRequired ? 'required' : ''"
+                                                        type="password" />
+
+                                                    <TextBox
+                                                        v-model="confirmPassword"
+                                                        :disabled="isSaving || isNavigating"
+                                                        label="Confirm Password"
+                                                        type="password"
+                                                        :rules="`${config.createAccountField.isRequired ? 'required|' : ''}${confirmPasswordRules}`" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr />
+
+                            <!-- LPC MODIFIED CODE -->
+                            <h4 class="heading-individual">{{ getLang() == 'es' ? 'Segundo Adulto' : 'Second Adult' }}</h4>
+                            <!-- END LPC MODIFIED CODE -->
+
+                            <div class="adult-2-fields">
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <!-- LPC MODIFIED CODE -->
+                                        <StaticFormControl
+                                            v-if="adult2.isFirstNameReadOnly"
+                                            :label="getLang() == 'es' ? 'Nombre' : 'First Name'"
+                                            :modelValue="adult2.firstName" />
+                                        <TextBox v-else
+                                            v-model="adult2.firstName"
+                                            :disabled="isSaving || isNavigating"
+                                            :label="getLang() == 'es' ? 'Nombre' : 'First Name'"
+                                            :rules="[adult2FirstNameRule]" />
+                                        <!-- END LPC MODIFIED CODE -->
+                                        </div>
+                                    <div class="col-sm-6">
+                                        <!-- LPC MODIFIED CODE -->
+                                        <StaticFormControl
+                                            v-if="adult2.isLastNameReadOnly"
+                                            :label="getLang() == 'es' ? 'Apellido' : 'Last Name'"
+                                            :modelValue="adult2.lastName" />
+                                        <TextBox v-else
+                                            v-model="adult2.lastName"
+                                            :disabled="isSaving || isNavigating"
+                                            :label="getLang() == 'es' ? 'Apellido' : 'Last Name'"
+                                            :rules="[adult2LastNameRule]" />
+                                        <!-- END LPC MODIFIED CODE -->
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div v-if="config.adultGenderField?.isShown" class="col-sm-6">
+                                        <!-- LPC MODIFIED CODE -->
+                                        <GenderDropDownList
+                                            v-model="adult2.genderStringValue"
+                                            :disabled="isSaving || isNavigating"
+                                            :label="getLang() == 'es' ? 'Género' : 'Gender'"
+                                            :rules="isAdult2Entered && config.adultGenderField.isRequired ? adult2RequiredGenderRules : ''" />
+                                        <!-- END LPC MODIFIED CODE -->
+                                    </div>
+                                    <div v-if="config.adultSuffixField?.isShown" class="col-sm-6">
+                                        <!-- LPC MODIFIED CODE -->
+                                        <DefinedValuePicker
+                                            v-model="adult2.suffixListItemBag"
+                                            :definedTypeGuid="DefinedType.PersonSuffix"
+                                            :disabled="isSaving || isNavigating"
+                                            :label="getLang() == 'es' ? 'Sufijo' : 'Suffix'"
+                                            lazyMode="lazy"
+                                            :rules="isAdult2Entered && config.adultSuffixField.isRequired ? adult2RequiredRules : ''"
+                                            :showBlankItem="true" />
+                                        <!-- END LPC MODIFIED CODE -->
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div v-if="config.adultBirthdayField?.isShown" class="col-sm-6">
+                                        <!-- LPC MODIFIED CODE -->
+                                        <BirthdayPicker
+                                            v-model="adult2.birthDate"
+                                            :disabled="isSaving || isNavigating"
+                                            :label="getLang() == 'es' ? 'Fecha de Nacimiento' : 'Birth Date'"
+                                            :rules="isAdult2Entered && config.adultBirthdayField.isRequired ? [createRuleWithSuffix(monthAndDayAndYearRequiredRule, 'for Second Adult'), 'required'] :
+                                                    isAdult2Entered && config.adultBirthdayField.isMonthAndDayRequired ? createRuleWithSuffix(monthAndDayRequiredRule, 'for Second Adult') : ''" />
+                                        <!-- END LPC MODIFIED CODE -->
+                                    </div>
+                                    <div v-if="config.adultMaritalStatusField?.isShown" class="col-sm-6">
+                                        <!-- LPC MODIFIED CODE -->
+                                        <DefinedValuePicker
+                                            v-model="adult2.maritalStatusListItemBag"
+                                            :definedTypeGuid="DefinedType.PersonMaritalStatus"
+                                            :disabled="isSaving || isNavigating"
+                                            :label="getLang() == 'es' ? 'Estado Civil' : 'Marital Status'"
+                                            lazyMode="lazy"
+                                            :rules="isAdult2Entered && config.adultMaritalStatusField.isRequired ? adult2RequiredRules: ''"
+                                            :showBlankItem="true" />
+                                        <!-- END LPC MODIFIED CODE -->
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <!-- LPC MODIFIED CODE -->
+                                        <PhoneNumberBox
+                                            v-if="config.adultMobilePhoneField?.isShown"
+                                            v-model="adult2.mobilePhone"
+                                            v-model:countryCode="adult2.mobilePhoneCountryCode"
+                                            :disabled="isSaving || isNavigating"
+                                            :label="getLang() == 'es' ? 'Teléfono' : 'Mobile Phone'"
+                                            :rules="isAdult2Entered && config.adultMobilePhoneField.isRequired ? adult2RequiredRules : ''" />
+                                        <!-- END LPC MODIFIED CODE -->
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <!-- LPC MODIFIED CODE -->
+                                        <CheckBox
+                                            v-if="config.displaySmsOptIn?.isShowAllAdults"
+                                            v-model="adult2.isMessagingEnabled"
+                                            label=""
+                                            :disabled="isSaving || isNavigating"
+                                            :text="getLang() == 'es' ? '¿Podemos mandar mensajes de texto?' : config.displaySmsOptIn?.smsOptInDisplayText ?? ''"/>
+                                        <!-- END LPC MODIFIED CODE -->
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div v-if="config.adultEmailField?.isShown" class="col-sm-6">
+                                        <EmailBox
+                                            v-model="adult2.email"
+                                            :disabled="isSaving || isNavigating"
+                                            label="Email"
+                                            :rules="isAdult2Entered && config.adultEmailField.isRequired ? adult2RequiredRules : ''" />
+                                    </div>
+                                    <div v-if="config.adultCommunicationPreferenceField?.isShown" class="col-sm-6">
+                                        <!-- LPC MODIFIED CODE -->
+                                        <RadioButtonList
+                                            v-model="adult2.communicationPreferenceStringValue"
+                                            :disabled="isSaving || isNavigating"
+                                            :horizontal="true"
+                                            :items="[
+                                                { text: 'Email', value: CommunicationPreference.Email.toString() },
+                                                { text: getLang() == 'es' ? 'Texto' : 'SMS', value: CommunicationPreference.SMS.toString() }
+                                            ]"
+                                            :label="getLang() == 'es' ? 'Preferencia de Comunicación' : 'Communication Preference'"
+                                            :rules="isAdult2Entered && config.adultCommunicationPreferenceField.isRequired ? adult2RequiredRules : ''" />
+                                        <!-- END LPC MODIFIED CODE -->
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <RacePicker
+                                            v-if="config.adultRaceField?.isShown"
+                                            v-model="adult2.raceListItemBag"
+                                            :disabled="isSaving || isNavigating"
+                                            :rules="isAdult2Entered && config.adultRaceField.isRequired ? adult2RequiredRules : ''"
+                                            :showBlankItem="true" />
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <EthnicityPicker
+                                            v-if="config.adultEthnicityField?.isShown"
+                                            v-model="adult2.ethnicityListItemBag"
+                                            :disabled="isSaving || isNavigating"
+                                            :rules="isAdult2Entered && config.adultEthnicityField.isRequired ? adult2RequiredRules : ''"
+                                            :showBlankItem="true" />
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div v-if="config.adultProfilePhotoField?.isShown" class="col-sm-6">
+                                        <!-- LPC MODIFIED CODE -->
+                                        <ImageTaker
+                                            v-if="config.adultProfilePhotoFieldMode == true"
+                                            v-model="adult2.profileImageListItemBag"
+                                            :binaryFileTypeGuid="BinaryFiletype.PersonImage"
+                                            :disabled="isSaving || isNavigating"
+                                            :label="getLang() == 'es' ? 'Foto' : 'Profile Photo'"
+                                            :rules="isAdult2Entered && config.adultProfilePhotoField.isRequired ? adult2RequiredRules : ''" />
+                                        <ImageEditor
+                                            v-else
+                                            v-model="adult2.profileImageListItemBag"
+                                            :binaryFileTypeGuid="BinaryFiletype.PersonImage"
+                                            :disabled="isSaving || isNavigating"
+                                            :label="getLang() == 'es' ? 'Foto' : 'Profile Photo'"
+                                            :rules="isAdult2Entered && config.adultProfilePhotoField.isRequired ? adult2RequiredRules : ''" />
+                                        <!-- END LPC MODIFIED CODE -->
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <AttributeValuesContainer
+                                        v-if="adult2.attributes != null"
+                                        v-model="adult2.attributeValues"
+                                        :attributes="adult2.attributes"
+                                        columnBreakpoint="sm"
+                                        :displayWithinExistingRow="true"
+                                        isEditMode
+                                        :numberOfColumns="2"
+                                        :showCategoryLabel="true" />
+                                </div>
+                            </div>
+
+                            <hr />
+
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <!-- LPC MODIFIED CODE -->
+                                    <AddressControl
+                                        v-if="config.addressField?.isShown"
+                                        v-model="address"
+                                        :disabled="isSaving || isNavigating"
+                                        :disableFrontEndValidation="!config.addressField.isRequired"
+                                        :label="getLang() == 'es' ? 'Dirección' : 'Address'"
+                                        :rules="config.addressField.isRequired ? 'required' : ''"
+                                        :useCountryAbbreviation="false"
+                                     />
+                                    <!-- END LPC MODIFIED CODE -->
+                                </div>
+                                <div class="col-sm-6">
+                                    <AttributeValuesContainer
+                                        v-if="config.familyAttributes"
+                                        v-model="familyAttributeValues"
+                                        :attributes="config.familyAttributes"
+                                        columnBreakpoint="sm"
+                                        isEditMode
+                                        :numberOfColumns="2"
+                                        :showCategoryLabel="false" />
+                                </div>
+                            </div>
+                        </template>
+                    </Panel>
+
+                    <!-- LPC MODIFIED CODE -->
+                    <Panel type="default" :title="getLang() == 'es' ? 'Niño' : 'Children'">
+                    <!-- END LPC MODIFIED CODE -->
+                        <PreRegistrationChildren
+                            v-model="children"
+                            :disabled="isSaving || isNavigating"
+                            :lastName="adult1.lastName"
+                            @addChild="onAddChild"
+                            @removeChild="onRemoveChild" />
+                    </Panel>
+                </template>
+
+                <template #footerActions>
+                    <!-- LPC MODIFIED CODE -->
+                    <RockButton
+                        btnType="primary"
+                        :disabled="isSaving || isNavigating"
+                        type="submit"
+                        @click="shouldScrollToFormErrors = true">{{ getLang() == 'es' ? 'Guardar' : 'Save' }}</RockButton>
+                    <RockButton
+                        btnType="link"
+                        :disabled="isSaving || isNavigating"
+                        @click="onClearClicked">{{ getLang() == 'es' ? 'Cancelar' : 'Clear' }}</RockButton>
+                    <!-- END LPC MODIFIED CODE -->
+                </template>
+            </Panel>
+        </RockForm>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, nextTick, ref } from "vue";
+    import PreRegistrationChildren from "./FamilyPreRegistration/preRegistrationChildren.partial.obs";
+    import { ChildRequestBag, CreateAccountRequest, PersonRequestBag } from "./FamilyPreRegistration/types.partial";
+    import { convertPersonToChildRequest, convertPersonToPersonRequest, createNotEqualRule, createPersonViewModel, createRuleWithReplacement, createRuleWithSuffix, monthAndDayAndYearRequiredRule, monthAndDayRequiredRule, required, } from "./FamilyPreRegistration/utils.partial";
+    import AddressControl from "@Obsidian/Controls/addressControl.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
+    import BirthdayPicker from "@Obsidian/Controls/birthdayPicker";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import EmailBox from "@Obsidian/Controls/emailBox";
+    import EthnicityPicker from "@Obsidian/Controls/ethnicityPicker.obs";
+    import GenderDropDownList from "@Obsidian/Controls/genderDropDownList";
+    import ImageEditor from "@Obsidian/Controls/imageEditor.obs";
+    import ImageTaker from "@Obsidian/Controls/imageTaker.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel";
+    import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
+    import RacePicker from "@Obsidian/Controls/racePicker.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList";
+    import RockButton from "@Obsidian/Controls/rockButton";
+    import RockForm from "@Obsidian/Controls/rockForm";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl";
+    import TextBox from "@Obsidian/Controls/textBox";
+    import { CommunicationPreference } from "@Obsidian/Enums/Blocks/Crm/FamilyPreRegistration/communicationPreference";
+    import { Gender } from "@Obsidian/Enums/Crm/gender";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { FormError } from "@Obsidian/Utility/form";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { ValidationResult, ValidationRule } from "@Obsidian/ValidationRules";
+    import { FamilyPreRegistrationGetScheduleDatesRequestBag } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationGetScheduleDatesRequestBag";
+    import { FamilyPreRegistrationGetScheduleDatesResponseBag } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationGetScheduleDatesResponseBag";
+    import { FamilyPreRegistrationInitializationBox } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationInitializationBox";
+    import { FamilyPreRegistrationSaveRequestBag } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationSaveRequestBag";
+    import { FamilyPreRegistrationSaveResponseBag } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationSaveResponseBag";
+    import { FamilyPreRegistrationScheduleDateBag } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationScheduleDateBag";
+    import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    // LPC CODE
+    import { useStore } from "@Obsidian/PageState";
+
+    const store = useStore();
+
+    /** Gets the lang parameter from the query string.
+     * Returns "en" or "es". Defaults to "en" if invalid. */
+    function getLang(): string {
+        var lang = typeof store.state.pageParameters["lang"] === 'string' ? store.state.pageParameters["lang"] : "";
+
+        if (lang != "es") {
+            lang = "en";
+        }
+
+        return lang;
+    }
+    // END LPC CODE
+
+    const config = useConfigurationValues<FamilyPreRegistrationInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const http = useHttp();
+
+    // LPC CODE
+    // To add other attributes to the translation, uncomment the line below to log the config to the console.
+    // Then, find the path to the value you want to edit and update the value at that path following the
+    // design patterns below. Note that nodes with a name that doesn't map nicely to a JavaScript-compatible
+    // variable name, you can use ["variable-name"] (like how I did for Arena-16-384 below).
+    // console.log(config);
+
+    if (getLang() == "es") {
+        // Adult Attributes
+        if (config?.adult1?.attributes?.PreferredLanguage?.name != null) {
+            config.adult1.attributes.PreferredLanguage.name = "Lenguage Preferido";
+        }
+        if (config?.adult1?.attributes?.ServiceAttending?.name != null) {
+            config.adult1.attributes.ServiceAttending.name = "Asistir al Servicio";
+        }
+        if (config?.adult2?.attributes?.PreferredLanguage?.name != null) {
+            config.adult2.attributes.PreferredLanguage.name = "Lenguage Preferido";
+        }
+        if (config?.adult2?.attributes?.ServiceAttending?.name != null) {
+            config.adult2.attributes.ServiceAttending.name = "Asistir al Servicio";
+        }
+        // Child Attributes
+        if (config?.childAttributes?.["Arena-16-384"]?.name != null) {
+            config.childAttributes["Arena-16-384"].name = "Salida solos de su Clase";
+        }
+        if (config?.childAttributes?.["Arena-16-384"]?.configurationValues?.truetext != null) {
+            config.childAttributes["Arena-16-384"].configurationValues.truetext = "Sí";
+        }
+        if (config?.childAttributes?.SchoolRegistration?.name != null) {
+            config.childAttributes.SchoolRegistration.name = "Nombre de la Escuela";
+        }
+        // Child Relationships
+        if (config?.childRelationshipTypes != null) {
+            config.childRelationshipTypes.forEach(relationship => {
+                if (relationship.text == "Child") {
+                    relationship.text = "Niño";
+                }
+                else if (relationship.text == "Can Temporarily Check-in") {
+                    relationship.text = "Puede Registrarlo Temporalmente";
+                }
+                else if (relationship.text == "Foster Child") {
+                    relationship.text = "Niño en Cuidado Temporal";
+                }
+                else if (relationship.text == "Grandchild") {
+                    relationship.text = "Nieto";
+                }
+                else if (relationship.text == "Niece/Nephew") {
+                    relationship.text = "Sobrino";
+                }
+            });
+        }
+    }
+    // END LPC CODE
+
+    //#region Values
+
+    const errorNotificationBox = ref<Element | undefined>();
+    const formErrorsScrollTarget = ref<Element | undefined>();
+    const shouldScrollToFormErrors = ref<boolean>(false);
+    const isSaving = ref<boolean>(false);
+    const isNavigating = ref<boolean>(false);
+    const errorTitle = ref<string | null | undefined>();
+    const errors = ref<string[]>(config.errorMessage ? [config.errorMessage] : []);
+    const isCampusPickerVisible = ref(false);
+    const internalCampusListItemBag = ref<ListItemBag | null | undefined>(config.campusGuid ? { value: config.campusGuid } : undefined);
+    const plannedVisitDate = ref<string>("");
+    const scheduleGuid = ref<string>("");
+    const scheduleDateItems = ref<FamilyPreRegistrationScheduleDateBag[]>([]);
+    const isUsernameAvailable = ref<boolean | null | undefined>();
+    const confirmPassword = ref<string>("");
+    const address = ref<AddressControlBag | undefined>(config.address ?? undefined);
+    const fullName = ref<string>("");
+    const familyAttributeValues = ref<Record<string, string>>(config.familyAttributeValues || {});
+    const createAccount = ref<CreateAccountRequest>({
+        username: "",
+        password: ""
+    });
+
+    // Create the request bags that will be used to pre-register the adults and children.
+    const adult1Request = ref<PersonRequestBag>(convertPersonToPersonRequest(config.adult1));
+    const adult2Request = ref<PersonRequestBag>(convertPersonToPersonRequest(config.adult2));
+    const children = ref<ChildRequestBag[]>(config.children?.map(person => convertPersonToChildRequest(person)) ?? []);
+
+    // Create the view model bags that will be bound to components
+    // and used to modify the pre-register request bags.
+    // In other words, changes to adult1 and adult2 will affect adult1Request and adult2Request, respectively.
+    const adult1 = createPersonViewModel(adult1Request);
+    const adult2 = createPersonViewModel(adult2Request);
+
+    //#endregion
+
+    //#region Computed Values
+
+    const isAdult1Entered = computed<boolean>(() => !!adult1.firstName.trim());
+    const isAdult2Entered = computed<boolean>(() => !!adult2.firstName.trim());
+    const isAdult2FirstNameEntered = computed<boolean>(() => !!adult2.firstName.trim());
+    const isAdult2LastNameEntered = computed<boolean>(() => !!adult2.lastName.trim());
+
+    // Validation rules are executed in order and stop on the first failure.
+    // Even though the first rule is a required rule,
+    // we need to add the special "required" rule to get the required indicator to display.
+    const adult1RequiredRules = computed<ValidationRule[]>(() => [
+        createRuleWithSuffix(required, `for First Adult`),
+        "required"
+    ]);
+
+    const adult1RequiredGenderRules = computed<ValidationRule[]>(() => [
+        createRuleWithSuffix(required, `for First Adult`),
+        createRuleWithReplacement(createNotEqualRule(Gender.Unknown), "is required for First Adult"),
+        "required"
+    ]);
+
+    const adult2RequiredRules = computed<ValidationRule[]>(() => [
+        createRuleWithSuffix(required, `for Second Adult`),
+        "required"
+    ]);
+
+    const adult2RequiredGenderRules = computed<ValidationRule[]>(() => [
+        createRuleWithSuffix(required, `for Second Adult`),
+        createRuleWithReplacement(createNotEqualRule(Gender.Unknown), "is required for Second Adult"),
+        "required"
+    ]);
+
+    const campusListItemBag = computed<ListItemBag | null | undefined>({
+        get(): ListItemBag | null | undefined {
+            return internalCampusListItemBag.value;
+        },
+        set(newValue: ListItemBag | null | undefined) {
+            // Update the ddlScheduleDate and ddlScheduleTime when the campus is changed.
+            internalCampusListItemBag.value = newValue;
+            updateScheduleDateControl();
+        }
+    });
+
+    const confirmPasswordRules = computed<string>(() => {
+        return `equalsfield:and Password do not match,${createAccount.value.password}`;
+    });
+
+    const scheduleTimeItems = computed<ListItemBag[]>(() => {
+        const scheduleDateItem = scheduleDateItems.value.find(s => s.value === plannedVisitDate.value);
+
+        return scheduleDateItem?.scheduleTimes ?? [];
+    });
+
+    //#endregion
+
+    //#region Event Handlers
+
+    /**
+     * Event handler for a child being added.
+     */
+    async function onAddChild(child: ChildRequestBag): Promise<void> {
+        children.value.push(child);
+    }
+
+    /**
+     * Event handler for the clear button being clicked.
+     */
+    function onClearClicked(): void {
+        isNavigating.value = true;
+        location.reload();
+    }
+
+    /**
+     * Event handler for the form being submitted.
+     */
+    async function onFormSubmitted(): Promise<void> {
+        try {
+            isSaving.value = true;
+
+            const bag: FamilyPreRegistrationSaveRequestBag = {
+                address: address.value,
+                adult1: isAdult1Entered.value ? adult1Request.value : undefined,
+                adult2: isAdult2Entered.value ? adult2Request.value : undefined,
+                campusGuid: internalCampusListItemBag.value?.value || null,
+                children: children.value,
+                createAccount: createAccount.value,
+                familyAttributeValues: familyAttributeValues.value,
+                familyGuid: config.familyGuid,
+                fullName: fullName.value,
+                plannedVisitDate: plannedVisitDate.value,
+                scheduleGuid: scheduleGuid.value
+            };
+
+            clearErrors();
+
+            const result = await invokeBlockAction<FamilyPreRegistrationSaveResponseBag>("Save", { bag });
+
+            if (result.isSuccess && result?.data) {
+                if (result.data.errors?.length) {
+                    // LPC MODIFIED CODE
+                    setErrors(getLang() == 'es' ? "Por favor, corregir lo siguiente:" : "Please correct the following:", ...result.data.errors);
+                    // END LPC MODIFIED CODE
+                }
+
+                if (result.data.redirectUrl) {
+                    navigate(result.data.redirectUrl);
+                }
+            }
+            else {
+                setErrors("Error", result.errorMessage || "An error has occurred while processing your request. Your organization's administrators have been notified of this problem.");
+            }
+        }
+        finally {
+            isSaving.value = false;
+        }
+    }
+
+    /**
+     * Event handler for a child being removed.
+     */
+    function onRemoveChild(child: ChildRequestBag): void {
+        const index = children.value.indexOf(child);
+        if (index !== -1) {
+            children.value.splice(index, 1);
+        }
+    }
+
+    /**
+     * Event handler for the visible form validation being changed.
+     */
+    function onVisibleValidationChanged(errors: FormError[]): void {
+            // If there are any errors, then scroll them into view, if we should.
+        if (errors?.length && shouldScrollToFormErrors.value) {
+            scrollIntoView(() => formErrorsScrollTarget.value);
+
+            // Reset the "should scroll" state until we should scroll again.
+            shouldScrollToFormErrors.value = false;
+        }
+    }
+
+    //#endregion
+
+    //#region Functions
+
+    /**
+     * Validates whether adult1 has a first name and a last name.
+     */
+    function adult1FirstNameRule(): ValidationResult {
+        const adult1FirstName = adult1.firstName?.trim();
+        const adult1LastName = adult1.lastName?.trim();
+
+        if (!adult1FirstName && adult1LastName) {
+            return "is invalid. First and Last Name are required.";
+        }
+
+        return true;
+    }
+
+    /**
+     * Validates whether adult1 has a first name and a last name.
+     */
+    function adult1LastNameRule(): ValidationResult {
+        const adult1FirstName = adult1.firstName?.trim();
+        const adult1LastName = adult1.lastName?.trim();
+
+        if (adult1FirstName && !adult1LastName) {
+            return "is invalid. First and Last Name are required.";
+        }
+
+        return true;
+    }
+
+    /**
+     * Validates whether adult2 has a first name and a last name.
+     */
+    function adult2FirstNameRule(): ValidationResult {
+        const adult2FirstName = adult2.firstName?.trim();
+        const adult2LastName = adult2.lastName?.trim();
+
+        if (!adult2FirstName && adult2LastName) {
+            return "is invalid. First and Last Name are required.";
+        }
+
+        return true;
+    }
+
+    /**
+     * Validates whether adult2 has a first name and a last name.
+     */
+    function adult2LastNameRule(): ValidationResult {
+        const adult2FirstName = adult2.firstName?.trim();
+        const adult2LastName = adult2.lastName?.trim();
+
+        if (adult2FirstName && !adult2LastName) {
+            return "is invalid. First and Last Name are required.";
+        }
+
+        return true;
+    }
+
+    /**
+     * Validates whether at least one adult has a first name.
+     */
+    function atLeastOneAdultFirstNameRule(): ValidationResult {
+        const adult1FirstName = adult1.firstName?.trim();
+        const adult2FirstName = adult2.firstName?.trim();
+
+        if (!adult1FirstName && !adult2FirstName) {
+            return "is invalid. The name of at least one adult needs to be entered.";
+        }
+
+        return true;
+    }
+
+    /**
+     * Checks availability of the username.
+     */
+     async function checkUsernameAvailability(): Promise<void> {
+        const username = createAccount.value.username;
+        if (!username) {
+            isUsernameAvailable.value = null;
+        }
+        else {
+            const response = await http.get<boolean>("/api/userlogins/available", { username });
+            isUsernameAvailable.value = !!response.data;
+        }
+    }
+
+    /**
+     * Clears errors.
+     */
+    function clearErrors(): void {
+        errorTitle.value = undefined;
+        errors.value = [];
+    }
+
+    /**
+     * Navigates to a url.
+     */
+    function navigate(url: string): void {
+        isNavigating.value = true;
+        location.href = url;
+    }
+
+    /**
+     * Scrolls an element into view.
+     */
+    function scrollIntoView(elementGetter: () => (Element | undefined)): void {
+        if (!elementGetter) {
+            // Nothing to scroll to.
+            return;
+        }
+
+        // Need to wait until next tick to get the element as it may not exist yet.
+        nextTick(() => {
+            const element = elementGetter();
+            if (element && typeof element["scrollIntoView"] === "function") {
+                element.scrollIntoView();
+            }
+        });
+    }
+
+    /**
+     * Sets errors and scrolls them into view.
+     */
+    function setErrors(title: string | null, ...errorMessages: string[]): void {
+        errorTitle.value = title;
+        errors.value = errorMessages;
+
+        scrollIntoView(() => errorNotificationBox.value);
+    }
+
+    /**
+     * Updates the schedule date and time controls if they are shown.
+     */
+    async function updateScheduleDateControl(): Promise<void> {
+        scheduleDateItems.value = [];
+
+        if (!config.visitDateField?.isDateAndTimeShown || (config.campusField?.isShown && !campusListItemBag.value)) {
+            return;
+        }
+
+        const bag: FamilyPreRegistrationGetScheduleDatesRequestBag = {
+            campusGuid: campusListItemBag.value?.value
+        };
+
+        clearErrors();
+        const result = await invokeBlockAction<FamilyPreRegistrationGetScheduleDatesResponseBag>("GetScheduleDates", { bag });
+
+        if (result?.data) {
+            if (result.data.errorText) {
+                setErrors(result.data.errorTitle || null, result.data.errorText);
+            }
+
+            config.visitDateField = result.data.visitDateField;
+            scheduleDateItems.value = result.data.scheduleDates ?? [];
+        }
+        else if (result?.errorMessage) {
+            setErrors(null, result.errorMessage);
+        }
+    }
+
+    //#endregion
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    if (config.visitDateField?.isDateAndTimeShown) {
+        nextTick(() => updateScheduleDateControl());
+    }
+</script>

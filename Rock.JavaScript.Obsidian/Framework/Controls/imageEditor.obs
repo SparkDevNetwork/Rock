@@ -1,0 +1,417 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField
+                   v-bind="standardFieldProps"
+                   :modelValue="fileGuid"
+                   formGroupClasses="image-uploader"
+                   name="imageuploader">
+        <template #default="{ uniqueId, field }">
+            <div class="control-wrapper">
+                <NotificationBox v-if="errorMessage" alertType="warning">
+                    <strong><i class="fa fa-exclamation-triangle"></i> Warning </strong>
+                    <span>{{ errorMessage }}</span>
+                </NotificationBox>
+
+                <div ref="dropZoneElement"
+                     :id="uniqueId"
+                     class="image-editor-group imageupload-group"
+                     @click.prevent="onSelectFileClick"
+                     @keypress.enter.prevent.stop="onSelectFileClick"
+                     @keypress.space.prevent.stop="onSelectFileClick"
+                     role="button"
+                     :tabindex="disabled ? -1 : 0"
+                     aria-label="Select an Image File"
+                     :style="{ pointerEvents: disabled ? 'none' : undefined }"
+                     v-bind="field">
+                    <div class="image-editor-photo">
+                        <div v-if="isUploading" class="text-bold text-center p-3" style="position:absolute; top:0; right: 0; bottom:0; left:0; background: rgba(255, 255, 255, .75)">
+                            <div class="js-upload-progress">
+                                <i class="fa fa-refresh fa-3x fa-spin"></i>
+                            </div>
+                            <span style="opacity: 0.75">Uploading...</span>
+                        </div>
+                        <div class="image-container" :style="thumbnailStyle"></div>
+                        <div class="options">
+                            <a @click.prevent.stop="onSelectFileClick" aria-label="Select an Image File" title="Select an Image File"><i class="fa fa-pencil" aria-hidden></i></a>
+                            <a @click.prevent.stop="onRemoveFileClick" v-if="isDeleteVisible" aria-label="Clear Image" title="Clear Image"><i class="fa fa-times" aria-hidden></i></a>
+                        </div>
+                        <div class="image-editor-fileinput">
+                            <input ref="fileInputElement" type="file" style="display: none;" @change="onFileChange" @remove="onFileRemove" @click.stop />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </RockFormField>
+    <!-- LPC MODIFIED CODE -->
+    <Modal v-model="showModal" :title="getLang() == 'es' ? 'Crop Image - Español' : 'Crop Image'" @close="cancelCrop" :cancelText="getLang() == 'es' ? 'Cancelar' : 'Cancel'">
+    <!-- END LPC MODIFIED CODE -->
+        <div style="max-width:480px; max-height: 480px; margin:auto; aspect-ratio: 1;">
+            <img :src="selectedImageUrl ?? ''" ref="imgRef" style="display:block; max-width:100%;" />
+        </div>
+        <template #customButtons>
+            <!-- LPC MODIFIED CODE -->
+            <RockButton type="button" :btnType="BtnType.Primary" @click.prevent="cropAndUpload">{{ getLang() == 'es' ? 'Crop - Español' : 'Crop' }}</RockButton>
+            <!-- END LPC MODIFIED CODE -->
+        </template>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { Guid } from "@Obsidian/Types";
+    import { computed, PropType, ref, watch } from "vue";
+    import NotificationBox from "./notificationBox.obs";
+    import Modal from "./modal.obs";
+    import RockButton from "./rockButton";
+    import RockFormField from "./rockFormField.obs";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
+    import { uploadBinaryFile } from "@Obsidian/Utility/http";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import Cropper from "@Obsidian/Libs/cropper";
+    // LPC CODE
+    import { useStore } from "@Obsidian/PageState";
+    const store = useStore();
+    /** Gets the lang parameter from the query string.
+     * Returns "en" or "es". Defaults to "en" if invalid. */
+    function getLang(): string {
+        var lang = typeof store.state.pageParameters["lang"] === 'string' ? store.state.pageParameters["lang"] : "";
+        if (lang != "es") {
+            lang = "en";
+        }
+        return lang;
+    }
+    // END LPC CODE
+
+    const imgRef = ref<HTMLImageElement | null>(null);
+    let cropper: Cropper | undefined | null;
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ListItemBag | null>,
+            required: false
+        },
+
+        /** The GUID of the type of file the image will be uploaded as */
+        binaryFileTypeGuid: {
+            type: String as PropType<Guid>,
+            default: BinaryFiletype.Default
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** Max pixel height of the cropped image to be uploaded. Set to 0 (default) to remove limit */
+        maxImageHeight: {
+            type: Number,
+            default: 0
+        },
+
+        /** Max pixel width of the cropped image to be uploaded. Set to 0 (default) to remove limit */
+        maxImageWidth: {
+            type: Number,
+            default: 0
+        },
+
+        /** Image aspect ratio expressed as a number: width / height. E.g. for 16:9 ratio, use 16/9. Default is square (1) */
+        aspectRatio: {
+            type: Number,
+            default: 1 // square
+        },
+
+        /** URL of the image to show when there is no image value */
+        noPictureUrl: {
+            type: String,
+            default: "/Assets/Images/person-no-photo-unknown.svg"
+        },
+
+        /** Whether or not to hide the delete button */
+        hideDeleteButton: {
+            type: Boolean,
+            default: false
+        },
+
+        ...standardRockFormFieldProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ListItemBag | null): void;
+        (e: "cropped", /** The local URL of cropped image */value: string): void;
+    }>();
+
+    // Main Values
+    const fileGuid = ref<Guid>(props.modelValue?.value ?? "");
+    const fileName = ref(props.modelValue?.text ?? "");
+
+    // Variables related to the progress of uploading a new file.
+    const isUploading = ref(false);
+    const uploadProgressText = ref("");
+    const errorMessage = ref("");
+
+    // Element references used to interact directly with the DOM.
+    const fileInputElement = ref<HTMLInputElement | null>(null);
+    const dropZoneElement = ref<HTMLElement | null>(null);
+    const standardFieldProps = useStandardRockFormFieldProps(props);
+
+    const showModal = ref(false);
+
+    const selectedImageFileName = ref<string>("");
+
+    // Image URLs
+    const selectedImageUrl = ref<string | null>(null);
+    const croppedImageUrl = ref<string | null>(null);
+    const thumbnailUrl = computed(() => {
+        if (fileGuid.value) {
+            return `/GetImage.ashx?guid=${fileGuid.value}&width=150`;
+        }
+
+        if (croppedImageUrl.value) {
+            return croppedImageUrl.value;
+        }
+
+        return props.noPictureUrl;
+    });
+
+    // The CSS styles to use for the thumbnail element.
+    const thumbnailStyle = computed((): Record<string, string> => {
+        return {
+            backgroundImage: `url('${thumbnailUrl.value}')`,
+            backgroundSize: "cover",
+            backgroundPosition: "50%"
+        };
+    });
+
+    // True if the delete button should be visible.
+    const isDeleteVisible = computed((): boolean => {
+        return !props.hideDeleteButton && !!(fileGuid.value || selectedImageUrl.value);
+    });
+
+    /** Take the file chosen in the file picker and bring it up to be cropped  */
+    async function showCropperForSelectedFile(file: File): Promise<void> {
+        errorMessage.value = "";
+        selectedImageUrl.value = "";
+
+        const url = await getUrlForFile(file);
+
+        if (!url) {
+            errorMessage.value = "Error processing the file. File type may not be supported.";
+        }
+
+        selectedImageUrl.value = url;
+        selectedImageFileName.value = file.name;
+        showModal.value = true;
+    }
+
+    /** Get URL for file */
+    async function getUrlForFile(file: File): Promise<string> {
+        return new Promise((res) => {
+            if (URL) {
+                res(URL.createObjectURL(file));
+            }
+            else if (FileReader) {
+                let reader = new FileReader();
+                reader.onload = () => res(reader.result?.toString() ?? "");
+                reader.onerror = () => res("");
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    /**
+     * Upload the specified file into Rock with the current settings.
+     *
+     * @param file The file to be uploaded.
+     */
+    async function uploadFile(file: Blob): Promise<void> {
+        // Update the UI to reflect that we are currently uploading.
+        isUploading.value = true;
+        uploadProgressText.value = "0%";
+        errorMessage.value = "";
+
+        const fileToUpload = new File([file], selectedImageFileName.value, { type: file.type });
+
+        try {
+            // Perform the actual file upload using the helper function.
+            const result = await uploadBinaryFile(fileToUpload, props.binaryFileTypeGuid || BinaryFiletype.Default, {
+                baseUrl: "/ImageUploader.ashx",
+                isTemporary: false,
+                progress: (progress, total, percent) => {
+                    uploadProgressText.value = `${percent}%`;
+                }
+            });
+
+            fileGuid.value = result.value ?? "";
+            fileName.value = result.text ?? "";
+        }
+        catch (e) {
+            // Show any error message we got.
+            errorMessage.value = String(e);
+        }
+        finally {
+            // Clear the uploading progress whether success or failure.
+            isUploading.value = false;
+        }
+    }
+
+    /**
+     * Event handler for when the individual clicks to manually select a file
+     * to be uploaded into Rock.
+     */
+    function onSelectFileClick(e): void {
+        if (!isUploading.value) {
+            fileInputElement.value?.click();
+        }
+    }
+
+    /**
+     * Event handler for when the remove file button is clicked.
+     */
+    function onRemoveFileClick(): void {
+        selectedImageUrl.value = "";
+        errorMessage.value = "";
+        fileGuid.value = "";
+        fileName.value = "";
+    }
+
+    /**
+     * Event handler for when the file input has a new file selected. This
+     * is triggered for manual selection only, not drag and drop.
+     */
+    function onFileChange(): void {
+        if (isUploading.value) {
+            return;
+        }
+
+        if (fileInputElement.value && fileInputElement.value.files && fileInputElement.value.files.length > 0) {
+            showCropperForSelectedFile(fileInputElement.value.files[0]);
+            fileInputElement.value.value = "";
+        }
+    }
+
+    /**
+     * Event handler for when the file input has been cleared. This is
+     * probably not actually needed since the control is hidden but including
+     * it just in case.
+     */
+    function onFileRemove(): void {
+        if (isUploading.value) {
+            return;
+        }
+
+        fileGuid.value = "";
+        fileName.value = "";
+    }
+
+    /** Crop the image according to specifications from the cropper and then upload the cropped image */
+    function cropAndUpload(): void {
+        let { width, height } = cropper?.getData(true) ?? { width: 150, height: 150 };
+
+        // Scale down if necessary to be within max width
+        if (props.maxImageWidth && width > props.maxImageWidth) {
+            const ratio = props.maxImageWidth / width;
+            width = width * ratio;
+            height = height * ratio;
+        }
+
+        // Scale down if necessary to be within max height
+        if (props.maxImageHeight && height > props.maxImageHeight) {
+            const ratio = props.maxImageHeight / height;
+            width = width * ratio;
+            height = height * ratio;
+        }
+
+        const canvas = cropper?.getCroppedCanvas({ width, height });
+        canvas?.toBlob(async (blob) => {
+            if (blob) {
+                croppedImageUrl.value = URL.createObjectURL(blob);
+                emit("cropped", croppedImageUrl.value);
+                showModal.value = false;
+
+                await uploadFile(blob);
+
+                croppedImageUrl.value = "";
+                URL.revokeObjectURL(croppedImageUrl.value);
+                selectedImageUrl.value = "";
+                selectedImageFileName.value = "";
+            }
+        });
+    }
+
+    /** Cancel cropping */
+    function cancelCrop(): void {
+        selectedImageUrl.value = "";
+        selectedImageFileName.value = "";
+    }
+
+    // Watch for the drop zone element to become available. Once we have it
+    // register for the drag and drop events to support dropping a file onto
+    // the file uploader component.
+    watch(dropZoneElement, () => {
+        if (dropZoneElement.value) {
+            // Register the dragover event so we can indicate that we will
+            // accept a file dropped on us.
+            dropZoneElement.value.addEventListener("dragover", event => {
+                if (!isUploading.value && event.dataTransfer) {
+                    event.stopPropagation();
+                    event.preventDefault();
+
+                    if (event.dataTransfer.items.length === 1 && event.dataTransfer.items[0].kind === "file") {
+                        event.dataTransfer.dropEffect = "copy";
+                    }
+                    else {
+                        event.dataTransfer.dropEffect = "none";
+                    }
+                }
+            });
+
+            // Register the drop event so we can begin the upload for the
+            // file that was dropped on us.
+            dropZoneElement.value.addEventListener("drop", event => {
+                if (!isUploading.value && event.dataTransfer && event.dataTransfer.files.length > 0) {
+                    event.stopPropagation();
+                    event.preventDefault();
+
+                    showCropperForSelectedFile(event.dataTransfer.files[0]);
+                }
+            });
+        }
+    });
+
+    // Watch for changes to the model value and update our internal values.
+    watch(() => props.modelValue, () => {
+        fileGuid.value = props.modelValue?.value ?? "";
+        fileName.value = props.modelValue?.text ?? "";
+    });
+
+    // Watch for changes to our internal values and update the model value.
+    watch([fileGuid, fileName], () => {
+        let newValue: ListItemBag | null = null;
+
+        if (fileGuid.value) {
+            newValue = {
+                value: fileGuid.value,
+                text: fileName.value
+            };
+        }
+
+        emit("update:modelValue", newValue);
+    });
+
+    watch(imgRef, () => {
+        if (imgRef.value) {
+            // Show Image Cropper
+            cropper = new Cropper(imgRef.value, {
+                aspectRatio: props.aspectRatio,
+                viewMode: 1
+            });
+        }
+        else {
+            // Reset Image Cropper
+            cropper?.destroy();
+            cropper = null;
+        }
+    });
+</script>

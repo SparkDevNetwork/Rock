@@ -1,0 +1,384 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockButton
+        btnSize="xs"
+        btnType="danger"
+        class="pull-right"
+        :disabled="disabled"
+        :isSquare="true"
+        @click="$emit('remove', child)">
+        <i class="fa fa-times"></i>
+    </RockButton>
+
+    <h4 class="child-caption">
+        {{ caption }}
+    </h4>
+
+    <div class="row">
+        <div class="col-sm-6">
+            <!-- LPC MODIFIED CODE -->
+            <DropDownList
+                v-model="child.familyRoleGuid"
+                :disabled="disabled"
+                :items="config.childRelationshipTypes ?? undefined"
+                :label="getLang() == 'es' ? 'Relación con el Adulto' : 'Relationship to Adult'"
+                :rules="requiredRules"
+                :showBlankItem="false" />
+            <!-- END LPC MODIFIED CODE -->
+        </div>
+        <div class="col-sm-6"></div><!-- filler/blocker column -->
+    </div>
+
+    <div class="row clearfix">
+        <div class="col-sm-6">
+            <!-- LPC MODIFIED CODE -->
+            <StaticFormControl
+                v-if="child.isFirstNameReadOnly"
+                :label="getLang() == 'es' ? 'Nombre' : 'First Name'"
+                :modelValue="child.firstName" />
+            <TextBox v-else
+                v-model="child.firstName"
+                :disabled="disabled"
+                :label="getLang() == 'es' ? 'Nombre' : 'First Name'"
+                :rules="requiredRules" />
+            <!-- END LPC MODIFIED CODE -->
+        </div>
+
+        <div class="col-sm-6">
+            <!-- LPC MODIFIED CODE -->
+            <StaticFormControl
+                v-if="child.isLastNameReadOnly"
+                :label="getLang() == 'es' ? 'Apellido' : 'Last Name'"
+                :modelValue="child.lastName" />
+            <TextBox v-else
+                v-model="child.lastName"
+                :disabled="disabled"
+                :label="getLang() == 'es' ? 'Apellido' : 'Last Name'"
+                :rules="requiredRules" />
+            <!-- END LPC MODIFIED CODE -->
+        </div>
+    </div>
+    <!-- LPC MODIFIED CODE -->
+    <div class="row clearfix">
+        <div v-if="config.childSuffixField?.isShown" class="col-sm-6">
+            <DefinedValuePicker
+                v-model="child.suffixListItemBag"
+                :definedTypeGuid="DefinedType.PersonSuffix"
+                :disabled="disabled"
+                :label="getLang() == 'es' ? 'Sufijo' : 'Suffix'"
+                lazyMode="lazy"
+                :showBlankItem="true" />
+        </div>
+    </div>
+    <div class="row clearfix">
+        <div v-if="config.childGenderField?.isShown" class="col-sm-6">
+            <GenderDropDownList
+                v-model="child.genderStringValue"
+                :disabled="disabled"
+                :label="getLang() == 'es' ? 'Género' : 'Gender'"
+                :rules="config.childGenderField.isRequired ? requiredGenderRules : ''" />
+        </div>
+
+        <div v-if="config.childBirthDateField?.isShown" class="col-sm-6">
+            <BirthdayPicker
+                v-model="child.birthDate"
+                :disabled="disabled"
+                :label="getLang() == 'es' ? 'Fecha de Nacimiento' : 'Birth Date'"
+                :rules="config.childBirthDateField.isRequired ? requiredBirthdayRules : ''" />
+        </div>
+    </div>
+    <div class="row clearfix">
+        <div v-if="config.childGradeField?.isShown" class="col-sm-6">
+            <GradePicker
+                v-model="child.gradeListItemBag"
+                :disabled="disabled"
+                :label="getLang() == 'es' ? 'Grado Escolar (Deja en blanco si está en Pre-K o más abajo)' : 'Grade (Leave blank if in Pre-K or younger)'"
+                lazyMode="lazy"
+                :useGuidAsValue="true"
+                :rules="config.childGradeField.isRequired ? requiredRules : ''"
+                :showBlankItem="true"
+                :useAbbreviation="true"
+                @update:modelValue="handleSelfReleaseVisiblity" />
+        </div>
+
+        <div v-if="config.childGradeField?.isShown && config.childSelfReleaseField?.isShown && showSelfRelease" class="col-sm-6">
+            <Toggle
+                v-model="child.isSelfRelease"
+                :disabled="disabled"
+                :label="getLang() == 'es' ? 'Salida solos de su Clase' : 'Self Release'"
+                :trueText="getLang() == 'es' ? 'Sí' : 'Yes'"
+                falseText="No" />
+        </div>
+    </div>
+    <!-- END LPC MODIFIED CODE -->
+    <div class="row clearfix">
+        <div v-if="config.childMobilePhoneField?.isShown" class="col-sm-6">
+            <!-- LPC MODIFIED CODE -->
+            <PhoneNumberBox
+                v-model="child.mobilePhone"
+                v-model:countryCode="child.mobilePhoneCountryCode"
+                :disabled="disabled"
+                :label="getLang() == 'es' ? 'Teléfono' : 'Mobile Phone'"
+                :rules="config.childMobilePhoneField.isRequired ? requiredRules : ''" />
+            <!-- END LPC MODIFIED CODE -->
+        </div>
+        <div v-if="config.displaySmsOptIn?.isShowChildren" class="col-sm-6">
+            <!-- LPC MODIFIED CODE -->
+            <CheckBox
+                v-model="child.isMessagingEnabled"
+                label=""
+                :disabled="disabled"
+                :text="getLang() == 'es' ? '¿Podemos mandar mensajes de texto?' : config.displaySmsOptIn?.smsOptInDisplayText ?? ''"/>
+            <!-- END LPC MODIFIED CODE -->
+        </div>
+    </div>
+    <div class="row clearfix">
+        <div v-if="config.childEmailField?.isShown" class="col-sm-6">
+            <EmailBox
+                v-model="child.email"
+                :disabled="disabled"
+                label="Email"
+                :rules="config.childEmailField.isRequired ? requiredRules : ''" />
+        </div>
+
+        <div v-if="config.childCommunicationPreferenceField?.isShown" class="col-sm-6">
+            <!-- LPC MODIFIED CODE -->
+            <RadioButtonList
+                v-model="child.communicationPreferenceStringValue"
+                :disabled="disabled"
+                :horizontal="true"
+                :items="[
+                    { text: 'Email', value: CommunicationPreference.Email.toString() },
+                    { text: getLang() == 'es' ? 'Texto' : 'SMS', value: CommunicationPreference.SMS.toString() }
+                ]"
+                :label="getLang() == 'es' ? 'Preferencia de Comunicación' : 'Communication Preference'"
+                :rules="config.childCommunicationPreferenceField.isRequired ? requiredRules : ''" />
+            <!-- END LPC MODIFIED CODE -->
+        </div>
+    </div>
+    <div class="row clearfix">
+        <div v-if="config.childRaceField?.isShown" class="col-sm-6">
+            <RacePicker
+                v-model="child.raceListItemBag"
+                :disabled="disabled"
+                :rules="config.childRaceField.isRequired ? requiredRules : ''"
+                :showBlankItem="true" />
+        </div>
+
+        <div v-if="config.childEthnicityField?.isShown" class="col-sm-6">
+            <EthnicityPicker
+                v-model="child.ethnicityListItemBag"
+                :disabled="disabled"
+                :rules="config.childEthnicityField.isRequired ? requiredRules : ''"
+                :showBlankItem="true" />
+        </div>
+    </div>
+    <!-- LPC CODE -->
+    <div class="row clearfix">
+        <div class="col-sm-6">
+            <Toggle
+                v-model="hasAllergy"
+                :disabled="disabled"
+                :label="getLang() == 'es' ? '¿El niño padece de alergias?' : 'Does the child have an allergy?'"
+                :trueText="getLang() == 'es' ? 'Sí' : 'Yes'"
+                falseText="No"
+                @update:modelValue="emptyAllergyIfInvisible" />
+        </div>
+
+        <div v-if="hasAllergy" class="col-sm-6">
+            <TextBox
+                v-model="child.allergy"
+                :disabled="disabled"
+                :label="getLang() == 'es' ? 'Alergias' : 'Allergy'"
+                :rules="requiredRules"
+                :maxLength="38" showCountDown />
+        </div>
+    </div>
+    <!-- END LPC CODE -->
+    <div v-if="config.childProfilePhotoField?.isShown" class="row">
+        <div class="col-sm-6">
+            <!-- LPC MODIFIED CODE -->
+            <ImageTaker
+                v-if="config.childProfilePhotoFieldMode == true"
+                v-model="child.profileImageListItemBag"
+                :binaryFileTypeGuid="BinaryFiletype.PersonImage"
+                :disabled="disabled"
+                :label="getLang() == 'es' ? 'Foto' : 'Profile Photo'"
+                :rules="config.childProfilePhotoField.isRequired ? requiredRules : ''" />
+            <ImageEditor
+                v-else
+                v-model="child.profileImageListItemBag"
+                :binaryFileTypeGuid="BinaryFiletype.PersonImage"
+                :disabled="disabled"
+                :label="getLang() == 'es' ? 'Foto' : 'Profile Photo'"
+                :rules="config.childProfilePhotoField.isRequired ? requiredRules : ''" />
+            <!-- END LPC MODIFIED CODE -->
+        </div>
+        <div class="col-sm-6"></div><!-- filler/blocker column -->
+    </div>
+
+    <div class="row">
+        <AttributeValuesContainer
+            v-if="config.childAttributes != null"
+            v-model="child.attributeValues"
+            :attributes="config.childAttributes"
+            columnBreakpoint="sm"
+            :displayWithinExistingRow="true"
+            isEditMode
+            :numberOfColumns="2"
+            :showCategoryLabel="true" />
+    </div>
+</template>
+
+<style scoped>
+.child-caption {
+    text-transform: capitalize;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import { ChildRequestBag } from "./types.partial";
+    import { createNotEqualRule, createPersonViewModel, createRuleWithReplacement, createRuleWithSuffix, getNumberAsOrdinalString, monthAndDayAndYearRequiredRule, required } from "./utils.partial";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer";
+    import BirthdayPicker from "@Obsidian/Controls/birthdayPicker";
+    import CheckBox from "@Obsidian/Controls/checkBox";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList";
+    import EmailBox from "@Obsidian/Controls/emailBox";
+    import EthnicityPicker from "@Obsidian/Controls/ethnicityPicker.obs";
+    import GenderDropDownList from "@Obsidian/Controls/genderDropDownList";
+    import GradePicker from "@Obsidian/Controls/gradePicker";
+    import ImageEditor from "@Obsidian/Controls/imageEditor.obs";
+    import ImageTaker from "@Obsidian/Controls/imageTaker.obs";
+    import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
+    import RacePicker from "@Obsidian/Controls/racePicker.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList";
+    import RockButton from "@Obsidian/Controls/rockButton";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl";
+    import TextBox from "@Obsidian/Controls/textBox";
+    import { CommunicationPreference } from "@Obsidian/Enums/Blocks/Crm/FamilyPreRegistration/communicationPreference";
+    import { Gender } from "@Obsidian/Enums/Crm/gender";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { toTitleCase } from "@Obsidian/Utility/stringUtils";
+    import { ValidationRule } from "@Obsidian/ValidationRules";
+    import { FamilyPreRegistrationInitializationBox } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationInitializationBox";
+    // LPC CODE
+    import Toggle from "@Obsidian/Controls/toggle";
+    import { useStore } from "@Obsidian/PageState";
+    import { onMounted } from "vue";
+
+    const store = useStore();
+    var hasAllergy = ref(false);
+    var showSelfRelease = ref(false);
+
+    /** Gets the lang parameter from the query string.
+     * Returns "en" or "es". Defaults to "en" if invalid. */
+    function getLang(): string {
+        var lang = typeof store.state.pageParameters["lang"] === 'string' ? store.state.pageParameters["lang"] : "";
+
+        if (lang != "es") {
+            lang = "en";
+        }
+
+        return lang;
+    }
+
+    function emptyAllergyIfInvisible(): void {
+        if (hasAllergy.value == false) {
+            child.allergy = "";
+        }
+    }
+
+    function handleSelfReleaseVisiblity(): void {
+        let gradeGuid = child.gradeListItemBag.value;
+        if (gradeGuid == 'f0f98b9c-e6be-4c42-b8f4-0d8ab1a18847' || gradeGuid == '3d8cdbc8-8840-4a7e-85d0-b7c29a019ebb') {
+            // Grade is 4th or 5th
+            showSelfRelease.value = true;
+        }
+        else {
+            child.isSelfRelease = false;
+            showSelfRelease.value = false;
+        }
+    }
+
+    onMounted(() => {
+        if (child.allergy != null && child.allergy != "") {
+            hasAllergy.value = true;
+        }
+        handleSelfReleaseVisiblity();
+    });
+    // END LPC CODE
+
+    const config = useConfigurationValues<FamilyPreRegistrationInitializationBox>();
+
+    const props = defineProps({
+        childNumber: {
+            type: Number as PropType<number>,
+            required: true
+        },
+
+        child: {
+            type: Object as PropType<ChildRequestBag>,
+            required: true
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    defineEmits<{
+        (e: "remove", value: ChildRequestBag): void
+    }>();
+
+    //#region Values
+
+    const childRequest = ref<ChildRequestBag>(props.child);
+    const child = createPersonViewModel(childRequest);
+
+    //#endregion
+
+    //#region Computed Values
+
+    // LPC MODIFIED CODE
+    const caption = computed<string>(() => {
+        return toTitleCase(`${getNumberAsOrdinalString(props.childNumber)} ${getLang() == 'es' ? 'Niño' : 'Child'}`);
+    });
+    // END LPC MODIFIED CODE
+
+    /*
+       Validation rules are executed in order but only return the first error message.
+       Even though the first rule is a required rule,
+       we need to add the special "required" rule to get the required indicator to display.
+     */
+
+    const requiredRules = computed<ValidationRule[]>(() => [
+        createRuleWithSuffix(required, `for ${caption.value}`),
+        "required"
+    ]);
+
+    const requiredGenderRules = computed<ValidationRule[]>(() => [
+        createRuleWithSuffix(required, `for ${caption.value}`),
+        createRuleWithReplacement(createNotEqualRule(Gender.Unknown), `is required for ${caption.value}`),
+        "required"
+    ]);
+
+    const requiredBirthdayRules = computed<ValidationRule[]>(() => [
+        createRuleWithSuffix(monthAndDayAndYearRequiredRule, `for ${caption.value}`),
+        "required"
+    ]);
+
+    //#endregion
+
+    //#region Watchers
+
+    watch(() => props.child, () => {
+        childRequest.value = props.child;
+    });
+
+    //#endregion
+</script>

@@ -56,7 +56,8 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: ListItemBag | ListItemBag[] | null): void
+        (e: "update:modelValue", value: ListItemBag | ListItemBag[] | null): void,
+        (e: "isVisible", value: boolean): void
     }>();
 
     // #region Values
@@ -91,15 +92,19 @@
     });
 
     const isPickerVisible = computed((): boolean => {
-        if (props.forceVisible || calculatedStatusFilters.value.length > 0 || calculatedTypeFilters.value.length > 0) {
+        if (props.forceVisible) {
+            emit("isVisible", true);
             return true;
         }
 
         if (!loadedItems.value) {
+            emit("isVisible", false);
             return false;
         }
 
-        return filterAndConvertItems(loadedItems.value).length > 1;
+        const isVisible = filterAndConvertItems(loadedItems.value).length > 1;
+        emit("isVisible", isVisible);
+        return isVisible;
     });
 
     const calculatedStatusFilters = computed((): Guid[] => {
@@ -220,7 +225,7 @@
 
     // If we do not have an option set that would force us to always be
     // visible then perform some custom logic.
-    if (!props.forceVisible && calculatedStatusFilters.value.length === 0 || calculatedTypeFilters.value.length === 0) {
+    if (!props.forceVisible) {
         // At this point the base picker will be not be instantiated yet.
         // Start loading the options so we can determine if we should
         // be visible or not.
