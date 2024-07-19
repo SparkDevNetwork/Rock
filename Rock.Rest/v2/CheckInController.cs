@@ -240,6 +240,18 @@ namespace Rock.Rest.v2
                 var director = new CheckInDirector( _rockContext );
                 var session = director.CreateSession( configuration );
 
+                if ( options.OverridePinCode.IsNotNullOrWhiteSpace() )
+                {
+                    if ( director.TryAuthenticatePin( options.OverridePinCode, out var errorMessage ) )
+                    {
+                        session.IsOverrideEnabled = true;
+                    }
+                    else
+                    {
+                        return BadRequest( errorMessage );
+                    }
+                }
+
                 session.LoadAndPrepareAttendeesForFamily( options.FamilyId, areas, kiosk, null );
 
                 return Ok( new FamilyMembersResponseBag
@@ -287,6 +299,18 @@ namespace Rock.Rest.v2
             {
                 var director = new CheckInDirector( _rockContext );
                 var session = director.CreateSession( configuration );
+
+                if ( options.OverridePinCode.IsNotNullOrWhiteSpace() )
+                {
+                    if ( director.TryAuthenticatePin( options.OverridePinCode, out var errorMessage ) )
+                    {
+                        session.IsOverrideEnabled = true;
+                    }
+                    else
+                    {
+                        return BadRequest( errorMessage );
+                    }
+                }
 
                 session.LoadAndPrepareAttendeesForPerson( options.PersonId, options.FamilyId, areas, kiosk, null );
 

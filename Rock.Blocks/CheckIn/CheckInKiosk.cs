@@ -176,58 +176,6 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
         }
 
         /// <summary>
-        /// Tries to authenticate the PIN code provided.
-        /// </summary>
-        /// <param name="pinCode">The PIN code to be authenticated.</param>
-        /// <param name="errorMessage">On return contains any error message that should be displayed.</param>
-        /// <returns><c>true</c> if the PIN code was valid and trusted; otherwise <c>false</c>.</returns>
-        private bool TryAuthenticatePin( string pinCode, out string errorMessage )
-        {
-            var pinAuth = AuthenticationContainer.GetComponent( typeof( Rock.Security.Authentication.PINAuthentication ).FullName );
-
-            // Make sure PIN authentication is enabled.
-            if ( pinAuth == null || !pinAuth.IsActive )
-            {
-                errorMessage = "Sorry, we couldn't find an account matching that PIN.";
-                return false;
-            }
-
-            var userLoginService = new UserLoginService( RockContext );
-            var userLogin = userLoginService.GetByUserName( pinCode );
-
-            // Make sure this is a PIN auth user login.
-            if ( userLogin == null || !userLogin.EntityTypeId.HasValue || userLogin.EntityTypeId.Value != pinAuth.TypeId )
-            {
-                errorMessage = "Sorry, we couldn't find an account matching that PIN.";
-                return false;
-            }
-
-            // This should always return true, but just in case something changes
-            // in the future.
-            if ( !pinAuth.Authenticate( userLogin, null ) )
-            {
-                errorMessage = "Sorry, we couldn't find an account matching that PIN.";
-                return false;
-            }
-
-            if ( !( userLogin.IsConfirmed ?? true ) )
-            {
-                errorMessage = "Sorry, account needs to be confirmed.";
-                return false;
-            }
-            else if ( userLogin.IsLockedOut ?? false )
-            {
-                errorMessage = "Sorry, account is locked-out.";
-                return false;
-            }
-            else
-            {
-                errorMessage = string.Empty;
-                return true;
-            }
-        }
-
-        /// <summary>
         /// Gets the printer device that the kiosk is configured to use.
         /// </summary>
         /// <param name="kioskId">The encrypted identifier of the kiosk.</param>
@@ -680,7 +628,9 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
         [BlockAction]
         public BlockActionResult ValidatePinCode( string pinCode )
         {
-            if ( !TryAuthenticatePin( pinCode, out var errorMessage ) )
+            var director = new CheckInDirector( RockContext );
+
+            if ( !director.TryAuthenticatePin( pinCode, out var errorMessage ) )
             {
                 return ActionBadRequest( errorMessage );
             }
@@ -698,7 +648,9 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
         [BlockAction]
         public BlockActionResult SetLocationStatus( string pinCode, string locationId, bool isOpen )
         {
-            if ( !TryAuthenticatePin( pinCode, out var errorMessage ) )
+            var director = new CheckInDirector( RockContext );
+
+            if ( !director.TryAuthenticatePin( pinCode, out var errorMessage ) )
             {
                 return ActionBadRequest( errorMessage );
             }
@@ -730,7 +682,9 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
         [BlockAction]
         public BlockActionResult GetReprintAttendanceList( string pinCode, string kioskId, string searchValue )
         {
-            if ( !TryAuthenticatePin( pinCode, out var errorMessage ) )
+            var director = new CheckInDirector( RockContext );
+
+            if ( !director.TryAuthenticatePin( pinCode, out var errorMessage ) )
             {
                 return ActionBadRequest( errorMessage );
             }
@@ -756,7 +710,9 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
         [BlockAction]
         public async Task<BlockActionResult> PrintLabels( string pinCode, string kioskId, string attendanceId )
         {
-            if ( !TryAuthenticatePin( pinCode, out var errorMessage ) )
+            var director = new CheckInDirector( RockContext );
+
+            if ( !director.TryAuthenticatePin( pinCode, out var errorMessage ) )
             {
                 return ActionBadRequest( errorMessage );
             }
@@ -804,7 +760,6 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
             }
 
             // Use the new label format for re-printing.
-            var director = new CheckInDirector( RockContext );
             var labels = director.LabelProvider.RenderLabels( new List<int> { attendanceIdNumber.Value }, null, false );
 
             var errorMessages = labels.Where( l => l.Error.IsNotNullOrWhiteSpace() )
@@ -856,7 +811,9 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
         [BlockAction]
         public BlockActionResult GetScheduledLocations( string pinCode, string kioskId, List<string> areaIds )
         {
-            if ( !TryAuthenticatePin( pinCode, out var errorMessage ) )
+            var director = new CheckInDirector( RockContext );
+
+            if ( !director.TryAuthenticatePin( pinCode, out var errorMessage ) )
             {
                 return ActionBadRequest( errorMessage );
             }
@@ -874,7 +831,6 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 .Select( id => id.Value )
                 .ToList();
 
-            var director = new CheckInDirector( RockContext );
             var groupLocationService = new GroupLocationService( RockContext );
             var groupTypeService = new GroupTypeService( RockContext );
             var locationIds = kiosk.GetAllLocationIds().ToList();
@@ -968,7 +924,9 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
         [BlockAction]
         public BlockActionResult SaveScheduledLocations( string pinCode, List<ScheduledLocationBag> scheduledLocations )
         {
-            if ( !TryAuthenticatePin( pinCode, out var errorMessage ) )
+            var director = new CheckInDirector( RockContext );
+
+            if ( !director.TryAuthenticatePin( pinCode, out var errorMessage ) )
             {
                 return ActionBadRequest( errorMessage );
             }
