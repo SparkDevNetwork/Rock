@@ -29,7 +29,6 @@
 
             <RockButton class="override-button"
                         btnType="primary"
-                        disabled
                         @click="onOverrideClick">
                 Override
             </RockButton>
@@ -82,6 +81,7 @@
         (event: "updateActions", actions: KioskButton[]): void;
         (event: "supervisorScreen", screen: SupervisorScreen): void;
         (event: "closeSupervisor"): void;
+        (event: "enableOverride", pinCode: string): void;
     }>();
 
     const invokeBlockAction = useInvokeBlockAction();
@@ -163,7 +163,7 @@
     }
 
     function onOverrideClick(): void {
-        // TODO: Do this.
+        emit("enableOverride", props.supervisorData.pinCode);
     }
 
     function onScheduleLocationsClick(): void {

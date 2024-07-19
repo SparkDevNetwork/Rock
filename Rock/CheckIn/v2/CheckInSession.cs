@@ -70,6 +70,13 @@ namespace Rock.CheckIn.v2
         public IReadOnlyList<Attendee> Attendees { get; private set; }
 
         /// <summary>
+        /// Determines if this session will operate in override mode. When in
+        /// override mode no filtering is performed on attendees for the
+        /// opportunities they can attend.
+        /// </summary>
+        public bool IsOverrideEnabled { get; set; }
+
+        /// <summary>
         /// Gets the opportunity filter provider to be used with this instance.
         /// </summary>
         /// <value>The opportunity filter provider.</value>
@@ -269,6 +276,11 @@ namespace Rock.CheckIn.v2
         /// <param name="attendee">The attendee whose opportunities will be filtered.</param>
         public void FilterPersonOpportunities( Attendee attendee )
         {
+            if ( IsOverrideEnabled )
+            {
+                return;
+            }
+
             using ( var activity = ObservabilityHelper.StartActivity( $"Filter Opportunities For {attendee.Person.NickName}" ) )
             {
                 activity?.AddTag( "rock.checkin.opportunity_filter_provider", OpportunityFilterProvider.GetType().FullName );
