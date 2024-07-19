@@ -157,6 +157,7 @@ namespace RockWeb.Blocks.Finance
         {
             pnlUpdateMessage.Visible = false;
             pnlResults.Visible = true;
+            pnlSummary.Visible = true;
 
             int? accountId = apAccount.SelectedValue.AsIntegerOrNull();
             if ( !accountId.HasValue )
@@ -213,7 +214,6 @@ namespace RockWeb.Blocks.Finance
             gList.DataSource = dv;
             gList.DataBind();
 
-            pnlSummary.Visible = true;
             decimal pledgeTotal = 0;
             decimal totalGivingAmount = 0;
             foreach ( DataRow row in ds.Tables[0].Rows )
