@@ -1,0 +1,251 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+
+    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+
+    <DetailBlock v-if="!blockError"
+                 v-model:mode="panelMode"
+                 :alwaysShowLabels="true"
+                 :name="panelName"
+                 :labels="blockLabels"
+                 :entityKey="entityKey"
+                 :entityTypeGuid="entityTypeGuid"
+                 entityTypeName="Course"
+                 :isAuditHidden="true"
+                 :isBadgesVisible="false"
+                 :isDeleteVisible="false"
+                 :isEditVisible="isEditable"
+                 :isSecurityHidden="false"
+                 :isFullScreenVisible="false"
+                 @cancelEdit="onCancelEdit"
+                 @edit="onEdit"
+                 @save="onSave">
+        <template #sidebar v-if="panelMode === DetailPanelMode.View">
+            <ImageWithIcon :imageFileGuid="imageGuid"
+                           :highlightColor="highlightColor"
+                           :iconCssClass="iconCssClass" />
+        </template>
+        <template #view>
+            <ViewPanel :modelValue="learningCourseViewBag" :options="options" />
+        </template>
+
+        <template #edit>
+            <EditPanel v-model="learningCourseEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
+        </template>
+    </DetailBlock>
+
+    <LearningClassSecondaryLists v-if="!isAcademicMode && panelMode === DetailPanelMode.View"
+                                 :isEditable="isEditable"
+                                 :navigationUrls="config.navigationUrls"
+                                 v-model="learningCourseViewBag" />
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import DetailBlock from "@Obsidian/Templates/detailBlock";
+    import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import EditPanel from "./LearningCourseDetail/editPanel.partial.obs";
+    import ViewPanel from "./LearningCourseDetail/viewPanel.partial.obs";
+    import ImageWithIcon from "@Obsidian/Controls/imageWithIcon.obs";
+    import LearningClassSecondaryLists from "../Lms/LearningClassSecondaryLists/LearningClassSecondaryLists.partial.obs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { NavigationUrlKey } from "./LearningCourseDetail/types.partial";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { LearningCourseBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningCourseDetail/learningCourseBag";
+    import { LearningCourseDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningCourseDetail/learningCourseDetailOptionsBag";
+    import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+
+    const config = useConfigurationValues<DetailBlockBox<LearningCourseBag, LearningCourseDetailOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const blockError = ref("");
+    const errorMessage = ref("");
+
+    const learningCourseViewBag = ref(config.entity);
+    const learningCourseEditBag = ref<ValidPropertiesBox<LearningCourseBag>>({
+        bag: {} as LearningCourseBag
+    });
+
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: learningCourseEditBag
+    });
+
+    const entityTypeGuid = EntityType.LearningCourse;
+
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
+    const isAcademicMode = ref(config.options?.configurationMode === ConfigurationMode.AcademicCalendar);
+
+    const imageGuid = ref<string>(learningCourseViewBag.value?.imageBinaryFile?.value ?? "");
+    const iconCssClass = ref<string>(learningCourseViewBag.value?.programIconCssClass ?? "");
+    const highlightColor = ref<string>(learningCourseViewBag.value?.programHighlightColor ?? "");
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * The entity name to display in the block panel.
+     */
+    const panelName = computed((): string => {
+        return learningCourseViewBag.value?.name ?? "";
+    });
+
+    /**
+     * The identifier key value for this entity.
+     */
+    const entityKey = computed((): string => {
+        return learningCourseViewBag.value?.idKey ?? "";
+    });
+
+    /**
+     * Additional labels to display in the block panel.
+     */
+    const blockLabels = computed((): PanelAction[] | undefined => {
+        const labels: PanelAction[] = [];
+
+        if (panelMode.value === DetailPanelMode.Add) {
+            return labels;
+        }
+
+        if (learningCourseViewBag.value?.isActive === true) {
+            labels.push({
+                iconCssClass: "fa fa-lightbulb",
+                title: "Active",
+                type: "info"
+            });
+        }
+        else {
+            labels.push({
+                iconCssClass: "far fa-lightbulb",
+                title: "Inactive",
+                type: "danger"
+            });
+        }
+
+        if (learningCourseViewBag.value?.isPublic === true) {
+            labels.push({
+                title: "Public",
+                type: "success"
+            });
+        }
+        else {
+            labels.push({
+                title: "Private",
+                type: "warning"
+            });
+        }
+
+        return labels;
+    });
+
+    const isEditable = computed((): boolean => {
+        return config.isEditable === true;
+    });
+
+    const options = computed((): LearningCourseDetailOptionsBag => {
+        return config.options ?? { configurationMode: ConfigurationMode.OnDemandLearning };
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for the Cancel button being clicked while in Edit mode.
+     * Handles redirect to parent page if creating a new entity.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onCancelEdit(): Promise<boolean | string> {
+        if (!learningCourseEditBag.value?.bag?.idKey) {
+            if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+                return config.navigationUrls[NavigationUrlKey.ParentPage];
+            }
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Event handler for the Edit button being clicked. Request the edit
+     * details from the server and then enter edit mode.
+     *
+     * @returns true if the panel should enter edit mode; otherwise false.
+     */
+    async function onEdit(): Promise<boolean> {
+        const result = await invokeBlockAction<DetailBlockBox<LearningCourseBag, LearningCourseDetailOptionsBag>>("Edit", {
+            key: learningCourseViewBag.value?.idKey
+        });
+
+        if (result.isSuccess && result.data && result.data.entity) {
+            learningCourseEditBag.value.bag = result.data.entity;
+
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    /**
+     * Event handler for the panel's Save event. Send the data to the server
+     * to be saved and then leave edit mode or redirect to target page.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onSave(): Promise<boolean | string> {
+        errorMessage.value = "";
+
+        const data: ValidPropertiesBox<LearningCourseBag> = {
+            bag: learningCourseEditBag.value.bag
+        };
+
+        const result = await invokeBlockAction<ValidPropertiesBox<LearningCourseBag> | string>("Save", {
+            box: data
+        });
+
+        if (result.isSuccess && result.data) {
+            if (result.statusCode === 200 && typeof result.data === "object") {
+                learningCourseViewBag.value = result.data.bag;
+
+                return true;
+            }
+            else if (result.statusCode === 201 && typeof result.data === "string") {
+                return result.data;
+            }
+        }
+
+        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save learning course.";
+
+        return false;
+    }
+
+    // #endregion
+
+    // Handle any initial error conditions or the need to go into edit mode.
+    if (config.errorMessage) {
+        blockError.value = config.errorMessage;
+    }
+    else if (!config.entity) {
+        blockError.value = "The specified learning course could not be viewed.";
+    }
+    else if (!config.entity.idKey) {
+        learningCourseEditBag.value.bag = config.entity;
+        panelMode.value = DetailPanelMode.Add;
+    }
+</script>

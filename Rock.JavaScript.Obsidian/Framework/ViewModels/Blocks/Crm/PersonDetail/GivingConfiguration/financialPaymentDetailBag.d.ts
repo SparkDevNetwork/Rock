@@ -26,6 +26,9 @@ export type FinancialPaymentDetailBag = {
     /** Gets or sets the masked account number. */
     accountNumberMasked?: string | null;
 
+    /** Gets or sets the card expiration date. */
+    cardExpirationDate?: string | null;
+
     /** Gets or sets the credit card type. */
     creditCardType?: string | null;
 

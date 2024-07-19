@@ -88,13 +88,7 @@ namespace Rock.StatementGenerator.Rest
         /// which is typically the family.</param>
         /// <param name="year">The contribution calendar year. ie 2019.  If not specified, the
         /// current year is assumed.</param>
-        /// <param name="templateDefinedValueId">[Obsolete] The defined value ID that represents the statement
-        /// lava. This defined value should be a part of the Statement Generator Lava Template defined
-        /// type. If no ID is specified, then the default defined value for the Statement Generator Lava
-        /// Template defined type is assumed.</param>
         /// <param name="financialStatementTemplateId">The Statement Template to use. This is required (unless the obsolete templateDefinedValueId is specified).</param>
-        /// <param name="hideRefundedTransactions">if set to <c>true</c> transactions that have any
-        /// refunds will be hidden.</param>
         /// <returns>
         /// The rendered giving statement
         /// </returns>
@@ -105,26 +99,8 @@ namespace Rock.StatementGenerator.Rest
         public HttpResponseMessage RenderGivingStatement(
             int personId,
             [FromUri] int? year = null,
-            [FromUri] int? templateDefinedValueId = null,
-            [FromUri] int? financialStatementTemplateId = null,
-            [FromUri] bool hideRefundedTransactions = true )
+            [FromUri] int? financialStatementTemplateId = null)
         {
-            if ( templateDefinedValueId.HasValue )
-            {
-                // if they specified templateDefinedValueId, they are wanting the obsolete version of api/GivingStatement. So call the obsolete version of it
-#pragma warning disable CS0618
-
-                var legacyHtml = StatementGeneratorFinancialTransactionsController.GetGivingStatementHTML( personId, year, templateDefinedValueId, hideRefundedTransactions, this.GetPerson() );
-
-#pragma warning restore CS0618
-
-                // Render the statement as HTML and send back to the user
-                var legacyResponse = new HttpResponseMessage();
-                legacyResponse.Content = new StringContent( legacyHtml );
-                legacyResponse.Content.Headers.ContentType = new MediaTypeHeaderValue( "text/html" );
-                return legacyResponse;
-            }
-
             // Assume the current year if no year is specified
             var currentYear = RockDateTime.Now.Year;
             year = year ?? currentYear;

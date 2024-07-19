@@ -12,10 +12,10 @@
                     <DefinedValuePicker definedTypeGuid="B9F3D359-4365-4594-BCEE-D23FA824FB81" label="Currency" v-model="currency" />
                 </div>
                 <div class="col-md-3">
-                    <TextBox label="Minimum Value" v-model="minimumValue" help="The effect of this is no noticeable in this gallery, but it affects validation." />
+                    <TextBox label="Minimum Value" v-model="minimumValue" help="The effect of this is not noticeable in this gallery, but it affects validation." />
                 </div>
                 <div class="col-md-3">
-                    <TextBox label="Maximum Value" v-model="maximumValue" help="The effect of this is no noticeable in this gallery, but it affects validation." />
+                    <TextBox label="Maximum Value" v-model="maximumValue" help="The effect of this is not noticeable in this gallery, but it affects validation." />
                 </div>
             </div>
             <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>

@@ -606,6 +606,7 @@ namespace Rock.Lava.Fluid
         /// Parse the supplied template into a collection of tokens that are recognized by the Fluid parser.
         /// </summary>
         /// <param name="template"></param>
+        /// <param name="includeComments">If set to true, comment tokens are included in the output.</param>
         /// <returns></returns>
         public static List<string> ParseToTokens( string template, bool includeComments = false, bool includeParserTrace = false )
         {
@@ -631,7 +632,16 @@ namespace Rock.Lava.Fluid
                 lavaTokens.Add( template );
             }
 
-            return lavaTokens;
+            var lavaTokenStrings = lavaTokens.Select( x => x.ToString() ).ToList();
+
+            // If the template contains only literal text, add the entire content as a single text token.
+            if ( !lavaTokenStrings.Any()
+                 && !string.IsNullOrEmpty( template ) )
+            {
+                lavaTokenStrings.Add( template );
+            }
+
+            return lavaTokenStrings;
         }
 
         /// <summary>
@@ -735,15 +745,15 @@ namespace Rock.Lava.Fluid
         {
             if ( ElementType == LavaDocumentTokenTypeSpecifier.Output )
             {
-                return "{{ " + Content + " }}";
+                return "{{" + Content + "}}";
             }
             else if ( ElementType == LavaDocumentTokenTypeSpecifier.Tag )
             {
-                return "{% " + Content + " %}";
+                return "{%" + Content + "%}";
             }
             else if ( ElementType == LavaDocumentTokenTypeSpecifier.Shortcode )
             {
-                return "{[ " + Content + " ]}";
+                return "{[" + Content + "]}";
             }
             else if ( ElementType == LavaDocumentTokenTypeSpecifier.Comment )
             {

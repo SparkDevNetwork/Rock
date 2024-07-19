@@ -24,6 +24,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.Logging;
 using NuGet;
 
 using Rock.Attribute;
@@ -32,6 +33,7 @@ using Rock.Chart;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Enums;
+using Rock.Logging;
 using Rock.RealTime;
 using Rock.RealTime.Topics;
 using Rock.ViewModels.Event;
@@ -42,6 +44,7 @@ namespace Rock.Model
     /// <summary>
     /// Data Access/Service class for <see cref="Rock.Model.Attendance"/> entity objects
     /// </summary>
+    [RockLoggingCategory]
     public partial class AttendanceService
     {
         /// <summary>
@@ -193,34 +196,6 @@ namespace Rock.Model
             attendance.DidAttend = true;
 
             return attendance;
-        }
-
-        /// <summary>
-        /// Adds or updates an attendance record and will create the occurrence if needed
-        /// </summary>
-        /// <param name="personAliasId">The person alias identifier.</param>
-        /// <param name="checkinDateTime">The check-in date time.</param>
-        /// <param name="groupId">The group identifier.</param>
-        /// <param name="locationId">The location identifier.</param>
-        /// <param name="scheduleId">The schedule identifier.</param>
-        /// <param name="campusId">The campus identifier.</param>
-        /// <param name="deviceId">The device identifier.</param>
-        /// <param name="searchTypeValueId">The search type value identifier.</param>
-        /// <param name="searchValue">The search value.</param>
-        /// <param name="searchResultGroupId">The search result group identifier.</param>
-        /// <param name="attendanceCodeId">The attendance code identifier.</param>
-        /// <param name="checkedInByPersonAliasId">The checked in by person alias identifier.</param>
-        /// <param name="syncMatchingStreaks">Should matching <see cref="StreakType"/> models be synchronized.</param>
-        /// <returns></returns>
-        [Obsolete( "The syncMatchingStreaks param is no longer used", true )]
-        [RockObsolete( "1.10" )]
-        public Attendance AddOrUpdate( int? personAliasId, DateTime checkinDateTime,
-                int? groupId, int? locationId, int? scheduleId, int? campusId, int? deviceId,
-                int? searchTypeValueId, string searchValue, int? searchResultGroupId, int? attendanceCodeId, int? checkedInByPersonAliasId,
-                bool syncMatchingStreaks )
-        {
-            return AddOrUpdate( personAliasId, checkinDateTime, groupId, locationId, scheduleId, campusId, deviceId, searchTypeValueId,
-                searchValue, searchResultGroupId, attendanceCodeId, checkedInByPersonAliasId );
         }
 
         /// <summary>
@@ -1448,16 +1423,15 @@ namespace Rock.Model
 
             if ( schedulerResourceParameters.ResourceDataViewId.HasValue || schedulerResourceParameters.ResourceDataViewGuid.HasValue )
             {
-                DataView dataView = null;
-                var dataViewService = new DataViewService( rockContext );
+                DataViewCache dataView = null;
 
                 if ( schedulerResourceParameters.ResourceDataViewId.HasValue )
                 {
-                    dataView = dataViewService.Get( schedulerResourceParameters.ResourceDataViewId.Value );
+                    dataView = DataViewCache.Get( schedulerResourceParameters.ResourceDataViewId.Value );
                 }
                 else
                 {
-                    dataView = dataViewService.Get( schedulerResourceParameters.ResourceDataViewGuid.Value );
+                    dataView = DataViewCache.Get( schedulerResourceParameters.ResourceDataViewGuid.Value );
                 }
 
                 if ( dataView != null )
@@ -1467,7 +1441,7 @@ namespace Rock.Model
                         It's necessary to pass rockContext to dataview GetQuery method as the result is being used as part of subquery later
                         which may result in two different rockContext if not passed.
                     */
-                    var dataViewGetQueryArgs = new DataViewGetQueryArgs();
+                    var dataViewGetQueryArgs = new Reporting.GetQueryableOptions();
                     dataViewGetQueryArgs.DbContext = rockContext;
                     personQry = dataView.GetQuery( dataViewGetQueryArgs ) as IQueryable<Person>;
                 }
@@ -2659,6 +2633,7 @@ namespace Rock.Model
                 return;
             }
 
+            scheduledAttendance.ScheduledToAttend = false;
             scheduledAttendance.RSVPDateTime = RockDateTime.Now;
             scheduledAttendance.RSVP = RSVP.No;
             scheduledAttendance.DeclineReasonValueId = declineReasonValueId;
@@ -3006,19 +2981,6 @@ namespace Rock.Model
         /// Creates attendance records if they don't exist for a designated occurrence and list of person IDs.
         /// </summary>
         /// <param name="occurrenceId">The ID of the AttendanceOccurrence record.</param>
-        /// <param name="personIds">A comma-delimited list of Person IDs.</param>
-        [Obsolete( "Use the method which accepts a List<int> parameter instead.", true )]
-        [RockObsolete( "1.10.4" )]
-        public void RegisterRSVPRecipients( int occurrenceId, string personIds )
-        {
-            var personIdList = personIds.Split( ',' ).Select( int.Parse ).ToList();
-            RegisterRSVPRecipients( occurrenceId, personIdList );
-        }
-
-        /// <summary>
-        /// Creates attendance records if they don't exist for a designated occurrence and list of person IDs.
-        /// </summary>
-        /// <param name="occurrenceId">The ID of the AttendanceOccurrence record.</param>
         /// <param name="personIdList">A list of Person IDs.</param>
         public void RegisterRSVPRecipients( int occurrenceId, List<int> personIdList )
         {
@@ -3270,7 +3232,8 @@ namespace Rock.Model
                     }
                     catch ( Exception ex )
                     {
-                        Logging.RockLogger.Log.WriteToLog( Logging.RockLogLevel.Error, Logging.RockLogDomains.RealTime, ex.Message );
+                        RockLogger.LoggerFactory.CreateLogger<AttendanceService>()
+                            .LogError( ex, ex.Message );
                     }
                 }
             }
@@ -3316,7 +3279,8 @@ namespace Rock.Model
             }
             catch ( Exception ex )
             {
-                Logging.RockLogger.Log.WriteToLog( Logging.RockLogLevel.Error, Logging.RockLogDomains.RealTime, ex.Message );
+                RockLogger.LoggerFactory.CreateLogger<AttendanceService>()
+                    .LogError( ex, ex.Message );
             }
         }
 
@@ -3661,16 +3625,6 @@ namespace Rock.Model
         public int? DisplayedDaysCount { get; set; }
 
         /// <summary>
-        /// Gets or sets the number of occurrences for the selected week
-        /// </summary>
-        /// <value>
-        /// The occurrence date count.
-        /// </value>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Use DisplayedDaysCount instead" )]
-        public int OccurrenceDateCount { get; set; }
-
-        /// <summary>
         /// Gets or sets the displayed time slot count. This could be more than
         /// one if there are multiple schedules selected, or a schedule occurs more than once a week (like a Daily Schedule).
         /// We'll store this in each Scheduled Resource (person) that we show in the Resource list
@@ -3767,30 +3721,6 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
-    [RockObsolete( "1.12" )]
-    [Obsolete( "Use GroupSchedulerResourceListSourceType instead" )]
-    public enum SchedulerResourceListSourceType
-    {
-        /// <summary>
-        /// The group
-        /// </summary>
-        Group,
-
-        /// <summary>
-        /// The alternate group
-        /// </summary>
-        [Description( "Alt Group" )]
-        AlternateGroup,
-
-        /// <summary>
-        /// The data view
-        /// </summary>
-        DataView
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
     public enum GroupSchedulerResourceListSourceType
     {
         /// <summary>
@@ -3849,16 +3779,6 @@ namespace Rock.Model
         /// The attendance occurrence group identifier.
         /// </value>
         public int AttendanceOccurrenceGroupId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the attendance occurrence schedule identifier.
-        /// </summary>
-        /// <value>
-        /// The attendance occurrence schedule identifier.
-        /// </value>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Use AttendanceOccurrenceScheduleIds instead" )]
-        public int AttendanceOccurrenceScheduleId { get; set; }
 
         /// <summary>
         /// Gets or sets the attendance occurrence schedules

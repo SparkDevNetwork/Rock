@@ -23,6 +23,7 @@ import AttributeColumns from "./Grid/Columns/attributeColumns.partial";
 import BooleanColumn from "./Grid/Columns/booleanColumn.partial";
 import ButtonColumn from "./Grid/Columns/buttonColumn.partial";
 import Column from "./Grid/Columns/column.partial";
+import CopyColumn from "./Grid/Columns/copyColumn.partial";
 import CurrencyColumn from "./Grid/Columns/currencyColumn.partial";
 import DateColumn from "./Grid/Columns/dateColumn.partial";
 import DateTimeColumn from "./Grid/Columns/dateTimeColumn.partial";
@@ -35,6 +36,7 @@ import NumberBadgeColumn from "./Grid/Columns/numberBadgeColumn.partial";
 import NumberColumn from "./Grid/Columns/numberColumn.partial";
 import PersonColumn from "./Grid/Columns/personColumn.partial";
 import ReorderColumn from "./Grid/Columns/reorderColumn.partial";
+import RockFieldColumn from "./Grid/Columns/rockFieldColumn.partial";
 import SecurityColumn from "./Grid/Columns/securityColumn.partial";
 import SelectColumn from "./Grid/Columns/selectColumn.partial";
 import TextColumn from "./Grid/Columns/textColumn.partial";
@@ -42,6 +44,7 @@ import TextColumn from "./Grid/Columns/textColumn.partial";
 // Import cell components.
 import BooleanCell from "./Grid/Cells/booleanCell.partial.obs";
 import ButtonCell from "./Grid/Cells/buttonCell.partial.obs";
+import CopyCell from "./Grid/Cells/copyCell.partial.obs";
 import CurrencyCell from "./Grid/Cells/currencyCell.partial.obs";
 import DateCell from "./Grid/Cells/dateCell.partial.obs";
 import DateTimeCell from "./Grid/Cells/dateTimeCell.partial.obs";
@@ -53,6 +56,7 @@ import NumberBadgeCell from "./Grid/Cells/numberBadgeCell.partial.obs";
 import NumberCell from "./Grid/Cells/numberCell.partial.obs";
 import PersonCell from "./Grid/Cells/personCell.partial.obs";
 import ReorderCell from "./Grid/Cells/reorderCell.partial.obs";
+import RockFieldCell from "./Grid/Cells/rockFieldCell.partial.obs";
 import SecurityCell from "./Grid/Cells/securityCell.partial.obs";
 import SelectCell from "./Grid/Cells/selectCell.partial.obs";
 import SelectHeaderCell from "./Grid/Cells/selectHeaderCell.partial.obs";
@@ -85,6 +89,7 @@ export {
     BooleanColumn,
     ButtonColumn,
     Column,
+    CopyColumn,
     CurrencyColumn,
     DateColumn,
     DateTimeColumn,
@@ -97,6 +102,7 @@ export {
     NumberColumn,
     PersonColumn,
     ReorderColumn,
+    RockFieldColumn,
     SecurityColumn,
     SelectColumn,
     TextColumn
@@ -106,6 +112,7 @@ export {
 export {
     BooleanCell,
     ButtonCell,
+    CopyCell,
     CurrencyCell,
     DateCell,
     DateTimeCell,
@@ -117,6 +124,7 @@ export {
     NumberCell,
     PersonCell,
     ReorderCell,
+    RockFieldCell,
     SecurityCell,
     SelectCell,
     SelectHeaderCell,

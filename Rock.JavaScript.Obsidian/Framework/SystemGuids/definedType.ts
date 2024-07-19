@@ -148,6 +148,8 @@ export const DefinedType = {
     MapStyles: "4EF89471-C049-49ED-AB50-677F689A4E4E",
     /** Guid for Content Channel Audience Type (formally called Marketing Campaign) */
     MarketingCampaignAudienceType: "799301A3-2026-4977-994E-45DC68502559",
+    /** Clarifies what the metrics are measuring, enabling the system to utilize these metrics for analytics. */
+    MeasurementClassification: "A9897479-110E-4E50-8F60-160CEFE4CF7B",
     /** Metric Source Type */
     MetricSourceType: "D6F323FF-6EF2-4DA7-A82C-61399AC1D798",
     /** Motivator Theme Type */

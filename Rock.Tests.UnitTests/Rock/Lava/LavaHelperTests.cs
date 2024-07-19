@@ -18,7 +18,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Lava;
 using Rock.Tests.Shared;
 
-namespace Rock.Tests.Rock.Lava
+namespace Rock.Tests.UnitTests.Lava
 {
     [TestClass]
     [TestCategory( TestFeatures.Lava )]

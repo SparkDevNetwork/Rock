@@ -24,7 +24,7 @@ namespace Rock.Model
     public partial class LearningActivity
     {
         /// <summary>
-        /// A description of <see cref="Rock.Model.LearningActivity.AvailableDateCalculated"/>.
+        /// Attempts to calculate the available date or provides a textual description if unable to calculate.
         /// </summary>
         public string AvailableDateDescription
         {
@@ -39,17 +39,23 @@ namespace Rock.Model
                         }
                         break;
                     case AvailableDateCalculationMethod.ClassStartOffset:
-                        if ( !LearningClass.LearningSemester.StartDate.HasValue )
+                        if ( LearningClass?.LearningSemester?.StartDate.HasValue == true )
                         {
-                            return $"+{AvailableDateOffset ?? 0} {"day".PluralizeIf( AvailableDateOffset != 1 )} after class start.";
+                            return LearningClass.LearningSemester.StartDate.Value.AddDays( AvailableDateOffset.Value ).ToShortDateString();
                         }
-                        break;
+                        else
+                        {
+                            return $"{DateOffsetText( AvailableDateOffset )} class start.";
+                        }
                     case AvailableDateCalculationMethod.EnrollmentOffset:
-                        if ( LearningClass.CreatedDateTime.HasValue )
+                        if ( LearningClass?.CreatedDateTime.HasValue == true )
                         {
-                            return $"+{AvailableDateOffset ?? 0} {"day".PluralizeIf( AvailableDateOffset != 1 )} after class enrollment.";
+                            return LearningClass.CreatedDateTime.Value.AddDays( AvailableDateOffset.Value ).ToShortDateString();
                         }
-                        break;
+                        else
+                        {
+                            return $"{DateOffsetText( AvailableDateOffset )} class enrollment.";
+                        }
                     case AvailableDateCalculationMethod.AfterPreviousCompleted:
                         return "After Previous";
                     case AvailableDateCalculationMethod.AlwaysAvailable:
@@ -76,17 +82,23 @@ namespace Rock.Model
                         }
                         break;
                     case DueDateCalculationMethod.ClassStartOffset:
-                        if ( LearningClass.LearningSemester.StartDate.HasValue )
+                        if ( LearningClass?.LearningSemester?.StartDate.HasValue == true )
                         {
-                            return $"+{DueDateOffset ?? 0} {"day".PluralizeIf( DueDateOffset != 1 )} after class start.";
+                            return LearningClass.LearningSemester.StartDate.Value.AddDays( DueDateOffset.Value ).ToShortDateString();
                         }
-                        break;
+                        else
+                        {
+                            return $"{DateOffsetText( DueDateOffset )} class start.";
+                        }
                     case DueDateCalculationMethod.EnrollmentOffset:
                         if ( LearningClass.CreatedDateTime.HasValue )
                         {
-                            return $"+{DueDateOffset ?? 0} {"day".PluralizeIf( DueDateOffset != 1 )} after class enrollment.";
+                            return LearningClass.CreatedDateTime.Value.AddDays( DueDateOffset.Value ).ToShortDateString();
                         }
-                        break;
+                        else
+                        {
+                            return $"{DateOffsetText( DueDateOffset )} class enrollment.";
+                        }
                     case DueDateCalculationMethod.NoDate:
                         return "Optional";
                 }
@@ -196,7 +208,7 @@ namespace Rock.Model
         /// </summary>
         /// <remarks>
         /// The NoDate calculation method will return null indicating there is no due date.
-        /// When a DueDateOffset is required, but is null zero will be used for the calculation
+        /// When a DueDateOffset is required, but is null - zero will be used for the calculation
         /// </remarks>
         public DateTime? DueDateCalculated =>
                 CalculateDueDate(
@@ -228,6 +240,39 @@ namespace Rock.Model
                 return DueDateCalculated.HasValue && DueDateCalculated.Value.IsPast();
             }
         }
+
+        #region Private methods
+
+        /// <summary>
+        /// Gets the starting string for a textual representation of a calculated date (due or available).
+        /// </summary>
+        /// <param name="dateOffset">The Available or Due Date offset to use in the text.</param>
+        /// <returns>The human readable string to use for the specified offset.</returns>
+        private string DateOffsetText( int? dateOffset )
+        {
+            var unsignedOffset = Math.Abs( dateOffset ?? 0 );
+
+            if ( unsignedOffset == 0 )
+            {
+                return "At "; // e.g. 'At Class Start' or 'At class enrollment'.
+            }
+
+            // If the sign of the offset is negative use 'before' otherwise 'after'. Zero is already accounted for.
+            var beforeOrAfter = dateOffset < 0 ? "before" : "after";
+            if ( unsignedOffset == 1 )
+            {
+                return $"1 day {beforeOrAfter} ";
+            }
+
+            if ( unsignedOffset > 1 )
+            {
+                return $"{unsignedOffset} days {beforeOrAfter} ";
+            }
+
+            return string.Empty;
+        }
+
+        #endregion
     }
 
     /// <summary>

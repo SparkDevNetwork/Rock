@@ -1,32 +1,18 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <template v-if="allowAdd && isShowingAddForm">
-        <RockLabel :help="help">{{ label }}</RockLabel>
-        <Loading :isLoading="isLoading" class="well">
-            <NotificationBox v-if="fetchError" alertType="danger">Error: {{ fetchError }}</NotificationBox>
-            <NotificationBox v-else-if="saveError" alertType="danger">Error: {{ saveError }}</NotificationBox>
-
-            <RockForm v-else @submit="saveNewValue">
-                <TextBox label="Value" v-model="newValue" rules="required" />
-                <TextBox label="Description" v-model="newDescription" textMode="multiline" />
-                <AttributeValuesContainer v-if="attributes != null" v-model="attributeValues" :attributes="attributes" isEditMode :showCategoryLabel="false" />
-                <RockButton type="submit" :btnType="BtnType.Primary" :btnSize="BtnSize.ExtraSmall">Add</RockButton>
-                <RockButton :btnType="BtnType.Link" :btnSize="BtnSize.ExtraSmall" @click="hideAddForm">Cancel</RockButton>
-            </RockForm>
-
-            <RockButton v-if="fetchError || saveError" :btnType="BtnType.Link" :btnSize="BtnSize.ExtraSmall" @click="hideAddForm">Cancel</RockButton>
-        </Loading>
+        <DefinedValueEditor :definedTypeGuid="toGuidOrNull(definedTypeGuid) ?? emptyGuid" :label="label" :help="help" @save="selectNewValue" @cancel="hideAddForm" />
     </template>
 
     <template v-else>
         <BaseAsyncPicker v-model="internalValue" v-bind="standardProps" :items="itemsSource" :disabled="disabled">
             <template #inputGroupAppend v-if="allowAdd">
                 <span class="input-group-btn">
-                    <RockButton @click="showAddForm" :disabled="!isAddAllowed" :btnType="BtnType.Default" aria-label="Add Item"><i class="fa fa-plus" aria-hidden></i></RockButton>
+                    <RockButton @click="showAddForm" :btnType="BtnType.Default" aria-label="Add Item"><i class="fa fa-plus" aria-hidden></i></RockButton>
                 </span>
             </template>
             <template #append="{ isInputGroupSupported }" v-if="allowAdd">
-                <RockButton v-if="!isInputGroupSupported" @click="showAddForm" :disabled="!isAddAllowed" :btnType="BtnType.Link">Add Item</RockButton>
+                <RockButton v-if="!isInputGroupSupported" @click="showAddForm" :btnType="BtnType.Link">Add Item</RockButton>
             </template>
         </BaseAsyncPicker>
     </template>
@@ -38,21 +24,12 @@
     import { standardAsyncPickerProps, useStandardAsyncPickerProps, useVModelPassthrough } from "@Obsidian/Utility/component";
     import { useHttp } from "@Obsidian/Utility/http";
     import { DefinedValuePickerGetDefinedValuesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/definedValuePickerGetDefinedValuesOptionsBag";
-    import { DefinedValuePickerSaveNewValueOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/definedValuePickerSaveNewValueOptionsBag";
-    import { DefinedValuePickerGetAttributesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/definedValuePickerGetAttributesOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { computed, PropType, ref, watch } from "vue";
+    import { PropType, ref, watch } from "vue";
     import BaseAsyncPicker from "./baseAsyncPicker.obs";
-    import RockLabel from "./rockLabel.obs";
-    import RockForm from "./rockForm.obs";
-    import AttributeValuesContainer from "./attributeValuesContainer.obs";
-    import TextBox from "./textBox.obs";
     import RockButton from "./rockButton.obs";
-    import Loading from "./loading.obs";
-    import NotificationBox from "./notificationBox.obs";
+    import DefinedValueEditor from "./Internal/definedValueEditor.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
-    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
-    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
@@ -61,18 +38,17 @@
             required: false
         },
 
-        disabled: {
-            type: Boolean as PropType<boolean>,
-            required: false,
-            default: false
-        },
-
         definedTypeGuid: {
-            type: String as PropType<Guid | null | undefined>,
-            required: false
+            type: String as PropType<Guid>,
+            required: true
         },
 
         allowAdd: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        disabled: {
             type: Boolean as PropType<boolean>,
             default: false
         },
@@ -124,99 +100,38 @@
     // #region Add Value
 
     const isShowingAddForm = ref(false);
-    const isLoading = ref(false);
-    const fetchError = ref<false | string>(false);
-    const saveError = ref<false | string>(false);
 
-    const isAddAllowed = computed<boolean>(() => {
-        // Only allow adding if the defined type guid is valid.
-        return props.allowAdd && !!toGuidOrNull(props.definedTypeGuid);
-    });
-
-    async function showAddForm(): Promise<void> {
-        if (!isAddAllowed.value) return;
+    function showAddForm(): void {
+        if (!props.allowAdd) {
+            return;
+        }
 
         isShowingAddForm.value = true;
-
-        if (attributes.value == null) {
-            isLoading.value = true;
-            fetchError.value = false;
-            saveError.value = false;
-
-            const options: DefinedValuePickerGetAttributesOptionsBag = {
-                definedTypeGuid: toGuidOrNull(props.definedTypeGuid) ?? emptyGuid,
-                securityGrantToken: securityGrantToken.value
-            };
-            const url = "/api/v2/Controls/DefinedValuePickerGetAttributes";
-            const result = await http.post<PublicAttributeBag[]>(url, undefined, options);
-
-            if (result.isSuccess && result.data) {
-                attributes.value = result.data.reduce(function (acc, val) {
-                    acc[val.key as string] = val;
-                    return acc;
-                }, {});
-            }
-            else {
-                attributes.value = null;
-                fetchError.value = "Unable to fetch attribute data.";
-            }
-
-            isLoading.value = false;
-        }
     }
 
     function hideAddForm(): void {
         isShowingAddForm.value = false;
-        fetchError.value = false;
-        saveError.value = false;
     }
 
-    async function saveNewValue(): Promise<void> {
-        isLoading.value = true;
-        saveError.value = false;
+    function selectNewValue(newValue: ListItemBag | null): void {
+        if (!newValue) {
+            return;
+        }
 
-        const options: DefinedValuePickerSaveNewValueOptionsBag = {
-            definedTypeGuid: toGuidOrNull(props.definedTypeGuid) ?? emptyGuid,
-            securityGrantToken: securityGrantToken.value,
-            value: newValue.value,
-            description: newDescription.value,
-            attributeValues: attributeValues.value
-        };
-        const url = "/api/v2/Controls/DefinedValuePickerSaveNewValue";
-        const result = await http.post<ListItemBag>(url, undefined, options);
-
-        if (result.isSuccess && result.data) {
-            fetchValues();
-
-            if (props.multiple) {
-                if (Array.isArray(internalValue.value)) {
-                    internalValue.value.push(result.data);
-                }
-                else {
-                    internalValue.value = [result.data];
-                }
+        if (props.multiple) {
+            if (Array.isArray(internalValue.value)) {
+                internalValue.value.push(newValue);
             }
             else {
-                internalValue.value = result.data;
+                internalValue.value = [newValue];
             }
-
-            hideAddForm();
-            newValue.value = "";
-            newDescription.value = "";
-            attributeValues.value = {};
         }
         else {
-            saveError.value = "Unable to save new Defined Value.";
+            internalValue.value = newValue;
         }
 
-        isLoading.value = false;
+        hideAddForm();
     }
-
-
-    const attributes = ref<Record<string, PublicAttributeBag> | null>(null);
-    const attributeValues = ref<Record<string, string>>({});
-    const newValue = ref("");
-    const newDescription = ref("");
 
     // #endregion
 </script>

@@ -74,6 +74,10 @@
 
     // #region Computed Values
 
+    const isAuditHidden = computed((): boolean => {
+        return !financialGatewayViewBag.value?.idKey;
+    });
+
     /**
      * The entity name to display in the block panel.
      */
@@ -184,11 +188,13 @@
             key: financialGatewayViewBag.value?.idKey
         });
 
+        console.log("before: ", financialGatewayEditBag.value);
         if (result.isSuccess && result.data && result.data.bag) {
             financialGatewayEditBag.value = {
                 bag: result.data.bag,
                 validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
             };
+            console.log("after: ", financialGatewayEditBag.value);
 
             return true;
         }

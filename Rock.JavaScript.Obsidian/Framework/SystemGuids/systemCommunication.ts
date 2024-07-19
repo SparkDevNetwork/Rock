@@ -70,6 +70,8 @@ export const SystemCommunication = {
     GroupSyncWelcome: "F66D7DAE-89C1-E8BC-48F8-A0D6B849615F",
     /** Gets the template guid for  */
     KioskInfoUpdate: "BC490DD4-ABBB-7DBA-4A9E-74F07F4B5881",
+    /** Gets the template guid for the Learning Activity Notifications system communication. */
+    LearningActivityNotifications: "d40a9c32-f179-4e5e-9b0d-ce208c5d1870",
     /** Gets the template guid for a note approval notification */
     NoteApprovalNotification: "B2E3D75F-681E-430F-82C9-D0D681040FAF",
     /** Gets the template guid for a notewatch notification */

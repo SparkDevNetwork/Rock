@@ -542,7 +542,7 @@ namespace Rock.Web.Cache
         /// </returns>
         public override string ToString()
         {
-            return Name;
+            return FriendlyName;
         }
 
         #endregion

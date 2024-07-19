@@ -121,6 +121,9 @@
                     <i runat="server" id="iIcon"></i>
                     <asp:Literal ID="lTitle" runat="server" />
                 </h1>
+                <div class="panel-labels">
+                    <Rock:HighlightLabel ID="hlAssessmentDate" runat="server" LabelType="Info" />
+                </div>
             </div>
             <div class="panel-body">
 

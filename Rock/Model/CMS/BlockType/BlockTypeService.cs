@@ -23,8 +23,10 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 
-using Rock.Blocks;
+using Rock.Attribute;
 using Rock.Data;
+using Rock.Enums.Cms;
+using Rock.Observability;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -166,7 +168,9 @@ namespace Rock.Model
             using ( var rockContext = new RockContext() )
             {
                 registeredTypes = new BlockTypeService( rockContext )
-                    .Queryable().AsNoTracking()
+                    .Queryable()
+                    .Include( b => b.EntityType )
+                    .AsNoTracking()
                     .Where( b => b.EntityTypeId.HasValue && !string.IsNullOrEmpty( b.EntityType.AssemblyName ) )
                     .ToList()
                     .Select( b => Type.GetType( b.EntityType.AssemblyName, false ) )
@@ -251,9 +255,8 @@ namespace Rock.Model
         /// Registers any block types that are not currently registered in Rock.
         /// </summary>
         /// <param name="physWebAppPath">A <see cref="System.String" /> containing the physical path to Rock on the server.</param>
-        /// <param name="page">The <see cref="System.Web.UI.Page" />.</param>
         /// <param name="refreshAll">if set to <c>true</c> will refresh name, category, and description for all block types (not just the new ones)</param>
-        public static void RegisterBlockTypes( string physWebAppPath, System.Web.UI.Page page, bool refreshAll = false )
+        public static void RegisterBlockTypes( string physWebAppPath, bool refreshAll = false )
         {
             // Dictionary for block types.  Key is path, value is friendly name
             var list = new Dictionary<string, string>();
@@ -390,44 +393,43 @@ namespace Rock.Model
         /// <returns></returns>
         public static List<BlockTypeCache> BlockTypesToDisplay( SiteType siteType )
         {
-            return BlockTypeCache.All()
-                .Where( bt =>
+            // This method displays all the blocks, even the ones hidden in production, if the IsDevelopmentEnvironment flag is set to true.
+            // It was done to ensure that the develop environment displayed all the obsidian blocks for testing.
+            // This piece of logic needs to be removed once all the blocks have been migrated to obsidian.
+            return BlockTypesToDisplay( siteType, System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment );
+        }
+
+        /// <summary>
+        /// Get the list of BlockTypes that may be added to the Page Zone for the given site type
+        /// </summary>
+        /// <param name="siteType">The site type of the blocks to be added.</param>
+        /// <param name="showAllWebsitesBlocks">An optional flag to determine if all the Website blocks needs to be displayed.
+        /// This flag was added to help test the obsidian blocks in dev machines. It needs to be removed once all the Website
+        /// blocks have been migrated to obsidian.</param>
+        /// <returns></returns>
+        [RockInternal( "1.17", true )]
+        public static List<BlockTypeCache> BlockTypesToDisplay( SiteType siteType, bool showAllWebsitesBlocks = false )
+        {
+            // Convert the SiteType Enum to the one of type SiteTypeFlag. Throw an exception if the conversion fails.
+            var siteTypeFlag = siteType.ToString().ConvertToEnum<SiteTypeFlags>();
+            List<BlockTypeCache> blockTypesInSite = BlockTypeCache.All()
+                        .Where( bt => bt.SiteTypeFlags.HasFlag( siteTypeFlag ) )
+                        .ToList();
+            if ( siteType == SiteType.Web )
+            {
+                var webformsBlock = BlockTypeCache.All().Where( bt => !string.IsNullOrEmpty( bt.Path ) );
+                // So show all the obsidian block types, even the ones which are yet to be released in the development environment.
+                // The Obsidian block types which are yet to be released have the SiteTypes set to 0.
+                if ( showAllWebsitesBlocks )
                 {
-                    var type = bt.GetCompiledType();
-                    if ( siteType == SiteType.Web )
-                    {
-                        if ( typeof( RockBlock ).IsAssignableFrom( type ) )
-                        {
-                            return true;
-                        }
-
-                        if ( typeof( RockBlockType ).IsAssignableFrom( type ) )
-                        {
-                            // if no site type is specified, then it likely is an obsidian block which is yet to be released.
-                            // So show it only if it is the develop environment.
-                            if ( type.GetCustomAttribute<SupportedSiteTypesAttribute>() == null )
-                            {
-                                return System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment;
-                            }
-                            return type.GetCustomAttribute<SupportedSiteTypesAttribute>()?.SiteTypes.Contains( siteType ) == true;
-                        }
-
-                        // Failsafe for any blocks that implement this directly.
-                        return typeof( IRockObsidianBlockType ).IsAssignableFrom( type );
-                    }
-                    else if ( siteType == SiteType.Mobile )
-                    {
-                        if ( typeof( RockBlockType ).IsAssignableFrom( type ) )
-                        {
-                            return type.GetCustomAttribute<SupportedSiteTypesAttribute>()?.SiteTypes.Contains( siteType ) == true;
-                        }
-
-                        // Failsafe for any blocks that implement this directly.
-                        return typeof( IRockMobileBlockType ).IsAssignableFrom( type );
-                    }
-                    return false;
-                } )
-                .ToList();
+                    blockTypesInSite = blockTypesInSite
+                        .Concat( BlockTypeCache.All()
+                                .Where( bt => string.IsNullOrEmpty( bt.Path ) && ( bt.SiteTypeFlags == SiteTypeFlags.None ) ) )
+                        .ToList();
+                }
+                return blockTypesInSite.Concat( webformsBlock ).ToList();
+            }
+            return blockTypesInSite;
         }
 
         // Stores the list of block type files that have been processed in this application session.
@@ -509,5 +511,32 @@ namespace Rock.Model
 
             return base.Delete( item );
         }
+
+        #region Obsolete Methods
+        /*
+            11/22/2023 - JR
+
+            The RegisterBlockTypes method is being deprecated in its current form to align with the evolving architecture of our application, 
+            specifically the transition from Web Forms to a more modern, modular framework. The dependency on System.Web.UI.Page is no longer 
+            relevant in this context.
+
+            Reason: Introducing an overloaded version of RegisterBlockTypes that omits the System.Web.UI.Page parameter. This new method
+            provides the same functionality but is designed to be more straightforward and not reliant on legacy technologies.
+        */
+
+        /// <summary>
+        /// Registers any block types that are not currently registered in Rock.
+        /// </summary>
+        /// <param name="physWebAppPath">A <see cref="System.String" /> containing the physical path to Rock on the server.</param>
+        /// <param name="page">The <see cref="System.Web.UI.Page" />.</param>
+        /// <param name="refreshAll">if set to <c>true</c> will refresh name, category, and description for all block types (not just the new ones)</param>
+        [RockObsolete( "1.17.1" )]
+        [Obsolete( "This method is deprecated and will be removed in a future version. Please use the overload without the System.Web.UI.Page parameter." )]
+        public static void RegisterBlockTypes( string physWebAppPath, System.Web.UI.Page page, bool refreshAll = false )
+        {
+            RegisterBlockTypes( physWebAppPath, refreshAll );
+        }
+
+        #endregion
     }
 }

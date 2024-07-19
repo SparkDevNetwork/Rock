@@ -1,0 +1,154 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div id="pnlViewDetails" runat="server">
+            <h3 class="mt-1">
+                {{ name }} Step Type
+            </h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="description">{{ description }}</div>
+                </div>
+                <div class="col-xs-12 col-sm-6 d-flex align-items-start justify-content-end">
+                    <SlidingDateRangePicker v-model="filterDate"
+                                            :enabledSlidingDateRangeUnits="[RangeType.Previous, RangeType.Last, RangeType.Current, RangeType.DateRange]"
+                                            :enabledTimeUnits="[TimeUnit.Week, TimeUnit.Month, TimeUnit.Year]"
+                                            class="pull-right"
+                                            previewLocation="None" />
+                    <RockButton :btnSize="BtnSize.Default"
+                                :btnType="BtnType.Default"
+                                class="btn btn-default btn-square pull-right"
+                                @click="onRefresh"
+                                loadingText="..."
+                                :isLoading="isRefreshLoading">
+                        <i class="fa fa-refresh"></i>
+                    </RockButton>
+                </div>
+            </div>
+            <div v-html="kpi"></div>
+            <div>
+                <NotificationBox v-if="showChart && notificationMessage" alertType="info">{{ notificationMessage }}</NotificationBox>
+                <div v-if="showChart && !notificationMessage" style="height: 350px;" class="col-md-12">
+                    <Chart type="line" :data="chartData" :options="options" />
+                </div>
+            </div>
+        </div>
+
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref } from "vue";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import { RangeType, SlidingDateRange, TimeUnit, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Chart from "@Obsidian/Controls/chart.obs";
+    import { ChartData, ChartOptions } from "@Obsidian/Libs/chart";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { StepTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepTypeDetail/stepTypeBag";
+    import { StepTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepTypeDetail/stepTypeDetailOptionsBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<StepTypeBag | null>,
+            required: false
+        },
+
+        options: {
+            type: Object as PropType<StepTypeDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+    const name = ref(props.modelValue?.name ?? "");
+    const description = ref(props.modelValue?.description ?? "");
+    //const chartData = ref(props.modelValue?.chartData ?? "{}");
+    const chartData = ref<ChartData>(JSON.parse(props.modelValue?.chartData ?? "{}"));
+    const kpi = ref(props.modelValue?.kpi ?? "");
+    const showChart = ref(props.modelValue?.showChart);
+    const notificationMessage = ref(props.modelValue?.chartData ? "" : "There are no Steps matching the current filter.");
+    const filterDate = ref(props.modelValue?.defaultDateRange as SlidingDateRange);
+    const isRefreshLoading = ref(false);
+    const options = ref<ChartOptions>({
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: {
+            duration: 1000
+        },
+        plugins: {
+            legend: {
+                position: "bottom",
+                align: "center",
+                display: true
+            },
+            tooltip: {
+                enabled: true
+            },
+        },
+        scales: {
+            y:
+            {
+                ticks: {
+                    callback: function (label, _index, _labels) {
+                        const date = Number(label);
+                        if (date) {
+                            return Intl.NumberFormat().format(date);
+                        }
+                        else {
+                            return label;
+                        }
+                    },
+                    stepSize: 1
+                },
+                stacked: false,
+                beginAtZero: true,
+                suggestedMax: 2
+            },
+
+        }
+    });
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #endregion
+
+    // #region Event Handlers
+    /**
+     * Event handler for the Refresh button being clicked. Request new chart
+     * data from the server using the specified filter date.
+     */
+    async function onRefresh(): Promise<void> {
+
+        isRefreshLoading.value = true;
+        notificationMessage.value = "";
+
+        const result = await invokeBlockAction<StepTypeBag>("RefreshChart", {
+            dateRange: filterDate.value ? slidingDateRangeToString(filterDate.value as SlidingDateRange) : "DateRange||||"
+        });
+
+        isRefreshLoading.value = false;
+
+        if (result.isSuccess && result.data) {
+            kpi.value = result.data.kpi ?? "";
+
+            if (result.data.chartData) {
+                chartData.value = JSON.parse(result.data.chartData ?? "{}") as ChartData;
+                showChart.value = result.data.showChart;
+            }
+            else {
+                notificationMessage.value = "There are no Steps matching the current filter.";
+                showChart.value = result.data.showChart;
+            }
+        }
+        else {
+            chartData.value = {} as ChartData;
+            notificationMessage.value = result.errorMessage ?? "Unknown error while trying to refresh chart.";
+        }
+    }
+    // #endregion
+</script>

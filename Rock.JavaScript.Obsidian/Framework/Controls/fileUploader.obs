@@ -1,9 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField
-                   :modelValue="fileGuid"
-                   formGroupClasses="file-uploader"
-                   name="fileuploader">
+    <RockFormField :modelValue="fileGuid" formGroupClasses="file-uploader" name="fileuploader">
         <template #default="{ uniqueId, field }">
             <div class="control-wrapper">
                 <NotificationBox v-if="uploadErrorMessage" alertType="warning">
@@ -11,7 +8,7 @@
                     <span>{{ uploadErrorMessage }}</span>
                 </NotificationBox>
 
-                <div ref="dropZoneElement" :id="uniqueId" class="fileupload-group" @click="onSelectFileClick">
+                <div ref="dropZoneElement" :id="uniqueId" class="fileupload-group" @click="onSelectFileClick" :title="toolTip">
                     <div class="fileupload-thumbnail">
                         <a v-if="fileUrl" :class="thumbnailClass" :href="fileUrl" target="_blank" rel="noopener noreferrer" @click.stop>{{ fileName }}</a>
                         <span v-else :class="thumbnailClass"></span>
@@ -72,6 +69,26 @@
         showDeleteButton: {
             type: Boolean as PropType<boolean>,
             default: true
+        },
+
+        toolTip: {
+            type: String,
+            required: false
+        },
+
+        parentEntityTypeId: {
+            type: Number,
+            required: false
+        },
+
+        parentEntityId: {
+            type: Number,
+            required: false
+        },
+
+        uploadUrl: {
+            type: String,
+            required: false
         }
     });
 
@@ -127,7 +144,10 @@
                 isTemporary: props.uploadAsTemporary,
                 progress: (progress, total, percent) => {
                     uploadProgressText.value = `${percent}%`;
-                }
+                },
+                parentEntityTypeId: props.parentEntityTypeId,
+                parentEntityId: props.parentEntityId,
+                baseUrl: props.uploadUrl
             });
 
             fileGuid.value = toGuidOrNull(result.value);

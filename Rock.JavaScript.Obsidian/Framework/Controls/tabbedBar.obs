@@ -299,17 +299,14 @@
                 }
             }
 
-            // Usage of the `unknown` type and the multiple casts below are to make
-            // this code compatible with older versions of TypeScript, and will be
-            // improved in a later version of Rock.
-            overflowTabs.value = (props.tabs as unknown[])
+            overflowTabs.value = props.tabs
                 .filter((_, idx) => tabsToOverflow.includes(idx))
-                .map((tab: unknown) => {
+                .map((tab: string | ListItemBag) => {
                     return typeof tab === "object"
-                        ? tab as ListItemBag
+                        ? tab
                         : {
-                            text: tab as string,
-                            value: tab as string
+                            text: tab,
+                            value: tab
                         };
                 });
         }

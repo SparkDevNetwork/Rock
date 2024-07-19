@@ -25,6 +25,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
+using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.SiteList;
 using Rock.Web.Cache;
@@ -203,8 +204,10 @@ namespace Rock.Blocks.Cms
                 {
                     if ( pageService.CanDelete( page, out string deletePageErrorMessage ) )
                     {
-                        pageService.Delete( page );
+                        return ActionBadRequest( deletePageErrorMessage );
                     }
+
+                    pageService.Delete( page );
                 }
 
                 var layoutService = new LayoutService( rockContext );
@@ -239,7 +242,8 @@ namespace Rock.Blocks.Cms
             // If this is a Person, use the Person properties.
             if ( site != null && site.SiteLogoBinaryFileId.HasValue )
             {
-                path = string.Format( "/GetImage.ashx?id={0}&height=50px", site.FavIconBinaryFileId.Value );
+                var options = new GetImageUrlOptions { Height = 50 };
+                path = FileUrlHelper.GetImageUrl( site.SiteLogoBinaryFileId.Value, options );
             }
             // Otherwise, use the first letter of the entity type.
             else

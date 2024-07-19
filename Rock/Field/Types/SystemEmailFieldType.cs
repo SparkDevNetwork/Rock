@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
@@ -24,6 +25,7 @@ using System.Web.UI.WebControls;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -34,10 +36,17 @@ namespace Rock.Field.Types
     /// </summary>
     [Obsolete( "Use SystemCommunicationFieldType instead.", true )]
     [RockObsolete( "1.10" )]
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [FieldTypeUsage( FieldTypeUsage.System )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.SYSTEM_EMAIL )]
     public class SystemEmailFieldType : FieldType, IEntityReferenceFieldType
     {
+        #region Configuration
+
+        private const string CLIENT_VALUES = "values";
+
+        #endregion
+
         #region Formatting
 
         /// <inheritdoc/>
@@ -64,6 +73,38 @@ namespace Rock.Field.Types
         #endregion
 
         #region Edit Control
+
+        /// <inheritdoc />
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
+        {
+            var configurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
+
+            using ( var rockContext = new RockContext() )
+            {
+                var systemEmails = new SystemEmailService( rockContext ).Queryable()
+                    .AsNoTracking()
+                    .OrderBy( d => d.Title )
+                    .Select( sc => new ListItemBag()
+                    {
+                        Text = sc.Title,
+                        Value = sc.Guid.ToString()
+                    } ).ToList();
+
+                configurationValues[CLIENT_VALUES] = systemEmails.ToCamelCaseJson( false, true );
+            }
+
+            return configurationValues;
+        }
+
+        /// <inheritdoc />
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            var configurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
+
+            configurationValues.Remove( CLIENT_VALUES );
+
+            return configurationValues;
+        }
 
         #endregion
 

@@ -15,11 +15,14 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
+using Rock.Jobs;
 using Rock.Model;
+using Rock.Tests.Integration.Data.Interactions;
 using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Utility.Enums;
@@ -585,6 +588,112 @@ WHERE PersonId IN ( SELECT Id FROM Person WHERE [Guid] = '{TestGuids.TestPeople.
 
             // Verify that the initial search keys have been restored, less the two invalid records.
             Assert.AreEqual( initialSearchKeyCount - 2, finalSearchKeyCount, "Invalid search key count." );
+        }
+
+        #endregion
+
+        #region Cleanup Task: Cleanup Interaction Sessions
+
+        [TestMethod]
+        public void RockCleanup_CleanupInteractionSessions_RemovesSessionsWithNoInteractions()
+        {
+            var job = new Rock.Jobs.RockCleanup();
+            var rockContext = new RockContext();
+
+            // Add an Interaction Session with some associated interactions.
+            var complete1GuidString = "2D8F4B1D-2D68-4E4D-83FD-0099DEA3C599";
+            CreateEmptyInteractionSession( complete1GuidString,
+                RockDateTime.New( 2022, 3, 1, 15, 1, 0, 0 ).Value,
+                createInteractions: true,
+                rockContext );
+
+            // Add some empty Interaction Sessions.
+            var empty1GuidString = "61B0BB6D-2B8C-469C-A697-C00C158E9CD0";
+            CreateEmptyInteractionSession( empty1GuidString,
+                RockDateTime.New( 2022, 4, 1, 15, 1, 0, 0 ).Value,
+                createInteractions: false,
+                rockContext );
+            var empty2GuidString = "921EDBF9-86FD-4A2B-BF27-4CA5BF331CDB";
+            CreateEmptyInteractionSession( empty2GuidString,
+                RockDateTime.New( 2022, 4, 2, 15, 1, 0, 0 ).Value,
+                createInteractions: false,
+                rockContext );
+
+            // Add a final session, because the RockCleanup job is configured to ignore the most recently-created session.
+            var empty3GuidString = "011C6D5F-D53A-44F4-A6E6-1D06A298EC01";
+            CreateEmptyInteractionSession( empty3GuidString,
+                RockDateTime.New( 2022, 4, 3, 15, 1, 0, 0 ).Value,
+                createInteractions: true,
+                rockContext );
+
+            // Execute the cleanup job and verify that all but the most recent Interaction Session are removed.
+            var args = new RockCleanup.RockCleanupActionArgs
+            {
+                EnabledTaskKeys = new List<string> { RockCleanup.JobTaskKey.InteractionSessionCleanup }
+            };
+
+            job.Execute( args );
+
+            // Verify that all but the last Interaction Session has been removed.
+            var result = job.Result;
+            TestHelper.Log( result );
+
+            Assert.That.Contains( result, "2 Unused Interaction Sessions" );
+
+            InteractionSession interactionSession;
+            var interactionSessionService = new InteractionSessionService( rockContext );
+            interactionSession = interactionSessionService.Get( empty1GuidString );
+            Assert.IsNull( interactionSession, "Empty Interaction session not removed." );
+            interactionSession = interactionSessionService.Get( empty2GuidString );
+            Assert.IsNull( interactionSession, "Empty Interaction session not removed." );
+
+            interactionSession = interactionSessionService.Get( complete1GuidString );
+            Assert.IsNotNull( interactionSession, "Populated Interaction Session removed incorrectly." );
+        }
+
+        private int CreateEmptyInteractionSession( string browserSessionGuidString, DateTime firstInteractionDateTime, bool createInteractions, RockContext rockContext )
+        {
+            var browserSessionGuid = new Guid( browserSessionGuidString );
+
+            var args = new CreatePageViewInteractionActionArgs
+            {
+                PageIdentifier = SystemGuid.Page.EXCEPTION_LIST,
+                BrowserIpAddress = "1.2.3.4",
+                BrowserSessionGuid = browserSessionGuid,
+            };
+
+            args.ViewDateTime = firstInteractionDateTime;
+            var interaction1 = InteractionsDataManager.Instance.CreatePageViewInteraction( args );
+
+            args.ViewDateTime = firstInteractionDateTime.AddMinutes( 1 );
+            var interaction2 = InteractionsDataManager.Instance.CreatePageViewInteraction( args );
+
+            args.ViewDateTime = firstInteractionDateTime.AddMinutes( 2 );
+            var interaction3 = InteractionsDataManager.Instance.CreatePageViewInteraction( args );
+
+            var sessionId = interaction1.InteractionSessionId ?? 0;
+
+            // Verify that the Interaction session exists.
+            var interactionSessionService = new InteractionSessionService( rockContext );
+            var interactionSession = interactionSessionService.Get( sessionId );
+
+            Assert.IsNotNull( interactionSession, "Interaction session not found." );
+
+            if ( !createInteractions )
+            {
+                // The method we have used to add the interaction session also creates an interaction, so
+                // remove the interactions from the session if they are not wanted.
+                string sql;
+                sql = $@"
+DELETE FROM [Interaction]
+WHERE [InteractionSessionId] = {sessionId}
+";
+
+                var recordsAffected = DbService.ExecuteCommand( sql, System.Data.CommandType.Text );
+                Assert.AreEqual( 3, recordsAffected, "Test data is invalid." );
+            }
+
+            return sessionId;
         }
 
         #endregion

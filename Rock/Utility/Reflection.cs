@@ -150,7 +150,7 @@ namespace Rock
         /// <returns></returns>
         public static string GetDisplayName( Type type )
         {
-            return type.GetCustomAttribute<DisplayNameAttribute>( true )?.DisplayName;
+            return type?.GetCustomAttribute<DisplayNameAttribute>( true )?.DisplayName;
         }
 
         /// <summary>
@@ -160,7 +160,7 @@ namespace Rock
         /// <returns></returns>
         public static string GetCategory( Type type )
         {
-            return type.GetCustomAttribute<CategoryAttribute>( true )?.Category;
+            return type?.GetCustomAttribute<CategoryAttribute>( true )?.Category;
         }
 
         /// <summary>
@@ -170,7 +170,7 @@ namespace Rock
         /// <returns></returns>
         public static string GetDescription( Type type )
         {
-            return type.GetCustomAttribute<DescriptionAttribute>( true )?.Description;
+            return type?.GetCustomAttribute<DescriptionAttribute>( true )?.Description;
         }
 
         /// <summary>
@@ -416,8 +416,12 @@ namespace Rock
             {
                 var cacheType = Type.GetType( $"Rock.Web.Cache.{type.Name}Cache" );
 
-                // Make sure the base type inherits from ModelCache<,>
-                if ( cacheType != null && cacheType.BaseType.IsGenericType && cacheType.BaseType.GetGenericTypeDefinition() == typeof( ModelCache<,> ) )
+                // Make sure the base type inherits from ModelCache<,> or EntityCache<,>
+                var isValidCacheType = cacheType != null
+                    && cacheType.BaseType.IsGenericType
+                    && ( cacheType.BaseType.GetGenericTypeDefinition() == typeof( ModelCache<,> ) || cacheType.BaseType.GetGenericTypeDefinition() == typeof( EntityCache<,> ) );
+
+                if ( isValidCacheType )
                 {
                     // Make sure the base type is the expected type, e.g. ModelCache<CampusCache, Campus>
                     if ( cacheType.BaseType.GenericTypeArguments[1] == type )

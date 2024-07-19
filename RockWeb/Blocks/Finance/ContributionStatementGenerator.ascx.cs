@@ -34,6 +34,7 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Block for generating a Contribution Statement" )]
 
+
     [BooleanField(
         "Allow Person QueryString",
         Key = AttributeKey.AllowPersonQueryString,
@@ -46,6 +47,7 @@ namespace RockWeb.Blocks.Finance
         Key = AttributeKey.FinancialStatementTemplate,
         DefaultValue = Rock.SystemGuid.FinancialStatementTemplate.ROCK_DEFAULT,
         Order = 1 )]
+
     [Rock.SystemGuid.BlockTypeGuid( "E0A699C3-61AA-4522-9067-1FE56FA80972" )]
     public partial class ContributionStatementGenerator : RockBlock
     {
@@ -64,6 +66,7 @@ namespace RockWeb.Blocks.Finance
         private static class PageParameterKey
         {
             public const string StatementYear = "StatementYear";
+            public const string StatementEndMonth = "StatementEndMonth";
             public const string PersonActionIdentifier = "rckid";
             public const string PersonGuid = "PersonGuid";
         }
@@ -119,6 +122,7 @@ namespace RockWeb.Blocks.Finance
             RockContext rockContext = new RockContext();
                         
             var statementYear = PageParameter( PageParameterKey.StatementYear ).AsIntegerOrNull() ?? RockDateTime.Now.Year;
+            var statementEndMonth = PageParameter( PageParameterKey.StatementEndMonth ).AsIntegerOrNull() ?? 0;
             var personActionId = PageParameter( PageParameterKey.PersonActionIdentifier );
             var personGuid = PageParameter( PageParameterKey.PersonGuid ).AsGuidOrNull();
             var allowPersonQueryString = GetAttributeValue( AttributeKey.AllowPersonQueryString ).AsBoolean();
@@ -156,8 +160,10 @@ namespace RockWeb.Blocks.Finance
 
             FinancialStatementGeneratorOptions financialStatementGeneratorOptions = new FinancialStatementGeneratorOptions();
             var startDate = new DateTime( statementYear, 1, 1 );
+            // If the statementEndMonth page parameter exists and its value is between 1 and 12 use it, otherwise endDate retains the normal behavior.
+            var endDate = ( statementEndMonth > 0 && statementEndMonth < 12 ) ? ( new DateTime( statementYear, statementEndMonth, 1 ) ).AddMonths( 1 ) : startDate.AddYears( 1 );
             financialStatementGeneratorOptions.StartDate = startDate;
-            financialStatementGeneratorOptions.EndDate = startDate.AddYears( 1 );
+            financialStatementGeneratorOptions.EndDate = endDate;
             financialStatementGeneratorOptions.RenderMedium = "Html";
 
             var financialStatementTemplateGuid = this.GetAttributeValue( AttributeKey.FinancialStatementTemplate ).AsGuidOrNull() ?? Rock.SystemGuid.FinancialStatementTemplate.ROCK_DEFAULT.AsGuid();

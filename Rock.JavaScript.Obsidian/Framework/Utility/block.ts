@@ -298,7 +298,10 @@ export function dispatchBlockEvent(eventName: string, blockGuid: Guid, eventData
  * @returns true if the event is a block event.
  */
 export function isBlockEvent<TData = undefined>(event: Event): event is CustomEvent<BlockEvent<TData>> {
-    return "guid" in event && "data" in event;
+    return event instanceof CustomEvent
+        && typeof event.detail === "object"
+        && "guid" in event.detail
+        && "data" in event.detail;
 }
 
 // #region Entity Detail Blocks
@@ -486,7 +489,7 @@ export function getSecurityGrant(token: string | null | undefined): SecurityGran
 /**
  * Provides the security grant to child components to use in their API calls.
  *
- * @param grant The grant ot provide to child components.
+ * @param grant The grant to provide to child components.
  */
 export function provideSecurityGrant(grant: SecurityGrant): void {
     provide(securityGrantSymbol, grant);

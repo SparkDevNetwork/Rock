@@ -368,18 +368,6 @@ namespace RockWeb.Blocks.WorkFlow
         /// <param name="eventArgument">A <see cref="T:System.String" /> that represents an optional event argument to be passed to the event handler.</param>
         public void RaisePostBackEvent( string eventArgument )
         {
-            if ( tbRockFullName.Text.IsNotNullOrWhiteSpace() )
-            {
-                /* 03/22/2021 MDP
-                    see https://app.asana.com/0/1121505495628584/1200018171012738/f on why this is done
-                */
-
-                nbRockFullName.Visible = true;
-                nbRockFullName.NotificationBoxType = NotificationBoxType.Validation;
-                nbRockFullName.Text = "Invalid Form Value";
-                return;
-            }
-
             var disableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
             if ( !disableCaptchaSupport && cpCaptcha.IsAvailable && !IsCaptchaValid )
             {

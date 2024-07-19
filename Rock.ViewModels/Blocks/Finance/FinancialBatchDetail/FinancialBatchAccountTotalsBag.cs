@@ -31,5 +31,10 @@ namespace Rock.ViewModels.Blocks.Finance.FinancialBatchDetail
         /// Gets or sets the name of the currency to be displayed in the Accounts Total section in the view mode
         /// </summary>
         public decimal Currency { get; set; }
+
+        /// <summary>
+        /// Gets or sets the GL code for the account used in the financial batch transaction
+        /// </summary>
+        public string GlCode { get; set; }
     }
 }

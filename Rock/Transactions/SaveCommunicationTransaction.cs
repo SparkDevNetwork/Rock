@@ -30,20 +30,6 @@ namespace Rock.Transactions
     /// <seealso cref="Rock.Transactions.ITransaction" />
     public class SaveCommunicationTransaction : ITransaction
     {
-        /// <summary>
-        /// If <see cref="Recipients"/> is not specified, this is the list of email addresses to set the email to
-        /// </summary>
-        /// <value>
-        /// The recipient emails.
-        /// </value>
-        [RockObsolete( "1.10" )]
-        [Obsolete( "This has a issue where the wrong person(s) might be logged as the recipient. Use Recipients instead to ensure the correct person is associated with the communication.", true )]
-        public List<string> RecipientEmails
-        {
-            get => _recipientEmailAddresses;
-            set => _recipientEmailAddresses = value;
-        }
-
         private List<string> _recipientEmailAddresses;
 
         /// <summary>
@@ -172,38 +158,6 @@ namespace Rock.Transactions
             ReplyTo = fromAddress;
             Subject = subject;
             HtmlMessage = message;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SaveCommunicationTransaction"/> class.
-        /// </summary>
-        /// <param name="to">The email address (or a delimited list of email addresses) that the message should be sent to</param>
-        /// <param name="fromName">From name.</param>
-        /// <param name="fromAddress">From address.</param>
-        /// <param name="subject">The subject.</param>
-        /// <param name="message">The message.</param>
-        [RockObsolete( "1.10" )]
-        [Obsolete( "This has a issue where the wrong person(s) might be logged as the recipient. Use the constructor that takes RockMessageRecipient as a parameter to ensure the correct person is associated with the communication.", true )]
-        public SaveCommunicationTransaction( string to, string fromName, string fromAddress, string subject, string message )
-            : this( fromName, fromAddress, subject, message )
-        {
-            RecipientEmails = to.SplitDelimitedValues().ToList();
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SaveCommunicationTransaction"/> class.
-        /// </summary>
-        /// <param name="to">To.</param>
-        /// <param name="fromName">From name.</param>
-        /// <param name="fromAddress">From address.</param>
-        /// <param name="subject">The subject.</param>
-        /// <param name="message">The message.</param>
-        [RockObsolete( "1.10" )]
-        [Obsolete( "This has a issue where the wrong person(s) might be logged as the recipient. Use the constructor that takes RockMessageRecipient as a parameter to ensure the correct person is associated with the communication.", true )]
-        public SaveCommunicationTransaction( List<string> to, string fromName, string fromAddress, string subject, string message )
-            : this( fromName, fromAddress, subject, message )
-        {
-            RecipientEmails = to;
         }
 
         /// <summary>

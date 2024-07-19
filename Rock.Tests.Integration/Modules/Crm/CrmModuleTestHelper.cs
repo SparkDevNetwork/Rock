@@ -14,12 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Modules.Crm
 {
@@ -56,5 +58,64 @@ namespace Rock.Tests.Integration.Modules.Crm
             var newFamily = PersonService.SaveNewPerson( person, dataContext );
             return newFamily;
         }
+    }
+
+    /// <summary>
+    /// Manages global configuration settings for a Rock instance.
+    /// </summary>
+    public class GlobalSettingsDataManager
+    {
+        private static Lazy<GlobalSettingsDataManager> _instance = new Lazy<GlobalSettingsDataManager>();
+
+        public static GlobalSettingsDataManager Instance
+        {
+            get
+            {
+                return _instance.Value;
+            }
+        }
+
+        /// <summary>
+        /// Add or update a Phone Number Country Code definition.
+        /// These definitions are used to parse and format phone numbers for different countries.
+        /// </summary>
+        /// <param name="countryCode"></param>
+        /// <param name="description"></param>
+        /// <param name="matchRegEx"></param>
+        /// <param name="formatRegEx"></param>
+        /// <returns></returns>
+        public int AddOrUpdatePhoneNumberCountryCode( string countryCode, string description, string matchRegEx, string formatRegEx )
+        {
+            var rockContext = new RockContext();
+            var definedTypeService = new DefinedTypeService( rockContext );
+            var definedType = definedTypeService.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
+
+            if ( definedType == null )
+            {
+                throw new Exception( "Defined Type \"Phone Country Code\" not found." );
+            }
+
+            var countryCodeValue = definedType.DefinedValues.FirstOrDefault( v => v.Value == countryCode );
+            if ( countryCodeValue == null )
+            {
+                countryCodeValue = new DefinedValue()
+                {
+                    DefinedTypeId = definedType.Id,
+                };
+                definedType.DefinedValues.Add( countryCodeValue );
+            }
+            countryCodeValue.LoadAttributes();
+
+            countryCodeValue.Value = countryCode;
+            countryCodeValue.Description = description;
+            countryCodeValue.SetAttributeValue( "MatchRegEx", matchRegEx );
+            countryCodeValue.SetAttributeValue( "FormatRegEx", formatRegEx );
+
+            rockContext.SaveChanges();
+            countryCodeValue.SaveAttributeValues( rockContext );
+
+            return countryCodeValue.Id;
+        }
+
     }
 }

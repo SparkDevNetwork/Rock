@@ -67,8 +67,9 @@ namespace Rock.Tests.Shared.TestFramework
                 {
                     await BuildContainerAsync( container, upgrade );
                 }
-                catch
+                catch ( Exception ex )
                 {
+                    System.Diagnostics.Debug.WriteLine( ex.Message );
                     await container.DisposeAsync();
                     throw;
                 }
@@ -221,7 +222,7 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
             TestHelper.Log( $"Load Sample Data: running... [Source={sampleDataUrl}]" );
 
             // Initialize the Lava Engine first, because it is needed by
-            // the sample data loader..
+            // the sample data loader.
             LavaIntegrationTestHelper.Initialize( testRockLiquidEngine: false, testDotLiquidEngine: false, testFluidEngine: true, loadShortcodes: false );
             LavaIntegrationTestHelper.GetEngineInstance( typeof( Rock.Lava.Fluid.FluidEngine ) );
             Rock.Lava.LavaService.RockLiquidIsEnabled = false;
@@ -244,7 +245,10 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
 
             // Run Rock Jobs to ensure calculated fields are updated.
 
-            new Rock.Jobs.PostInstallDataMigrations().InsertAnalyitcsSourceDateData( 300 );
+            // We can't run the full PostInstallDataMigrations job because it
+            // tries to get to files within the RockWeb folder that we don't
+            // have. So just run the bit we need manually.
+            new Rock.Jobs.PostInstallDataMigrations().InsertAnalyticsSourceDateData( 300 );
             ExecuteRockJob<Rock.Jobs.RockCleanup>();
             ExecuteRockJob<Rock.Jobs.CalculateFamilyAnalytics>();
             ExecuteRockJob<Rock.Jobs.ProcessBIAnalytics>( new Dictionary<string, string>

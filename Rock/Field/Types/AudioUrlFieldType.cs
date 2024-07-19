@@ -29,7 +29,7 @@ namespace Rock.Field.Types
     /// Audio Url field type
     /// Stored as URL
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.AUDIO_URL )]
     public class AudioUrlFieldType : FieldType
     {

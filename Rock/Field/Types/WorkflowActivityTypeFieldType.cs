@@ -25,6 +25,7 @@ using System.Web.UI.WebControls;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -34,13 +35,82 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of activity types for a specific workflow type
     /// </summary>
     [Serializable]
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.WORKFLOW_ACTIVITY )]
     public class WorkflowActivityFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
         #region Configuration
 
         private const string WORKFLOW_TYPE_KEY = "WorkflowType";
+        private const string CLIENT_VALUES_KEY = "values";
+        private const string WORKFLOW_TYPE_OPTIONS = "WorkflowTypes";
+
+        /// <inheritdoc />
+        public override Dictionary<string, string> GetPublicEditConfigurationProperties( Dictionary<string, string> privateConfigurationValues )
+        {
+            var configurationProperties = base.GetPublicEditConfigurationProperties( privateConfigurationValues );
+
+            var workflowTypes = WorkflowTypeCache.All().OrderBy( w => w.Name ).ToListItemBagList();
+            configurationProperties[WORKFLOW_TYPE_OPTIONS] = workflowTypes.ToCamelCaseJson( false, true );
+
+            return configurationProperties;
+        }
+
+        /// <inheritdoc />
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
+        {
+            var configurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
+
+            if ( usage != ConfigurationValueUsage.View )
+            {
+                var workflowTypeGuid = configurationValues.ContainsKey( WORKFLOW_TYPE_KEY ) ? configurationValues[WORKFLOW_TYPE_KEY].AsGuidOrNull() : null;
+
+                WorkflowType workflowType = null;
+
+                using ( var rockContext = new RockContext() )
+                {
+                    if ( workflowTypeGuid.HasValue )
+                    {
+                        var workflowTypeService = new WorkflowTypeService( rockContext );
+                        workflowType = workflowTypeService.Get( workflowTypeGuid.Value );
+                    }
+
+                    if ( workflowType == null )
+                    {
+                        workflowType = GetContextWorkflowType();
+                    }
+
+                    if ( workflowType != null )
+                    {
+                        var workflowActivityTypes = workflowType.ActivityTypes;
+
+                        if ( workflowActivityTypes?.Any() == true )
+                        {
+                            var activityTypes = new List<ListItemBag>();
+
+                            foreach ( var activityType in workflowActivityTypes.OrderBy( a => a.Order ) )
+                            {
+                                activityTypes.Add( new ListItemBag() { Text = activityType.Name ?? "[New Activity]", Value = activityType.Guid.ToString().ToUpper() } );
+                            }
+
+                            configurationValues[CLIENT_VALUES_KEY] = activityTypes.ToCamelCaseJson( false, true );
+                        }
+                    }
+                }
+            }
+
+            return configurationValues;
+        }
+
+        /// <inheritdoc />
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            var configurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
+
+            configurationValues.Remove( CLIENT_VALUES_KEY );
+
+            return configurationValues;
+        }
 
         #endregion
 
@@ -83,6 +153,18 @@ namespace Rock.Field.Types
         #endregion
 
         #region Edit Control
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return privateValue;
+        }
 
         private WorkflowType GetContextWorkflowType()
         {

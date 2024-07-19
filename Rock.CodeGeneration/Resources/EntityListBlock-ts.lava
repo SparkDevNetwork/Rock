@@ -102,7 +102,7 @@
     }{% endif %}
 
     /**
-     * Called when the Add button has been clicked by the indivual.
+     * Called when the Add button has been clicked by the individual.
      */
     function onAddItem(): void {
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {

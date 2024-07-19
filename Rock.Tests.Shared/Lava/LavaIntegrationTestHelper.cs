@@ -237,6 +237,17 @@ namespace Rock.Tests.Shared.Lava
         }
 
         /// <summary>
+        /// Get an instance of the default Lava engine.
+        /// For Rock v17 and above, the default engine is Fluid.
+        /// </summary>
+        /// <returns></returns>
+        public static ILavaEngine GetDefaultEngineInstance()
+        {
+            // The Fluid engine is the default Lava engine for Rock v17.
+            return _fluidEngine;
+        }
+
+        /// <summary>
         /// Set a Lava Engine instance to be used for subsequent tests.
         /// Only one engine of each type can be active at any time.
         /// </summary>
@@ -514,6 +525,26 @@ namespace Rock.Tests.Shared.Lava
             {
                 engine.RegisterShortcode( shortcode.TagName, shortCodeFactory );
             }
+        }
+
+        /// <summary>
+        /// Process the specified input template and return the result.
+        /// </summary>
+        /// <param name="inputTemplate"></param>
+        /// <returns></returns>
+        public string GetTemplateOutput( string inputTemplate, LavaTestRenderOptions options )
+        {
+            ILavaEngine engine;
+            if ( options.LavaEngineTypes != null )
+            {
+                engine = GetEngineInstance( options.LavaEngineTypes.FirstOrDefault() );
+            }
+            else
+            {
+                 engine = GetDefaultEngineInstance();
+            }
+
+            return GetTemplateOutput( engine, inputTemplate, options );
         }
 
         /// <summary>
@@ -835,7 +866,8 @@ namespace Rock.Tests.Shared.Lava
         /// <summary>
         /// Process the specified input template and verify against the expected output.
         /// </summary>
-        /// <param name="expectedOutput"></param>
+        /// <param name="engine"></param>
+        /// <param name="expectedOutputs"></param>
         /// <param name="inputTemplate"></param>
         public void AssertTemplateOutput( ILavaEngine engine, IEnumerable<string> expectedOutputs, string inputTemplate, LavaTestRenderOptions options = null )
         {
@@ -856,8 +888,22 @@ namespace Rock.Tests.Shared.Lava
         /// <summary>
         /// Process the specified input template and verify against the expected output.
         /// </summary>
-        /// <param name="expectedOutput"></param>
+        /// <param name="matchRequirement"></param>
         /// <param name="inputTemplate"></param>
+        /// <param name="options"></param>
+        public void AssertTemplateOutput( LavaTestOutputMatchRequirement matchRequirement, string inputTemplate, LavaTestRenderOptions options = null )
+        {
+            AssertTemplateOutput( new List<LavaTestOutputMatchRequirement> { matchRequirement },
+                inputTemplate,
+                options );
+        }
+
+        /// <summary>
+        /// Process the specified input template and verify against the expected output.
+        /// </summary>
+        /// <param name="matchRequirements"></param>
+        /// <param name="inputTemplate"></param>
+        /// <param name="options"></param>
         public void AssertTemplateOutput( IEnumerable<LavaTestOutputMatchRequirement> matchRequirements, string inputTemplate, LavaTestRenderOptions options = null )
         {
             var engines = options?.LavaEngineTypes ?? new List<Type>();
@@ -870,7 +916,6 @@ namespace Rock.Tests.Shared.Lava
             {
                 AssertTemplateOutput( engine, matchRequirements, inputTemplate, options );
             } );
-
         }
 
         /// <summary>
@@ -1000,6 +1045,16 @@ namespace Rock.Tests.Shared.Lava
             }
         }
 
+        public void AssertTextMatch( string expected, string actual, bool ignoreWhitespace = false, bool ignoreCase = false )
+        {
+            var isMatch = GetSimpleTextMatchResult( expected, actual, ignoreWhitespace, ignoreCase, out string message );
+
+            if ( !isMatch )
+            {
+                Assert.That.Fail( message );
+            }
+        }
+
         private bool GetSimpleTextMatchResult( string expected, string actual, bool ignoreWhitespace, bool ignoreCase, out string message )
         {
             message = string.Empty;
@@ -1083,15 +1138,48 @@ namespace Rock.Tests.Shared.Lava
         {
             const int showCharacterBufferMax = 50;
 
+            // Get the position indicators for the match failure.
             var matchedText = actual.Substring( 0, indexActual );
             var line = matchedText.Where( c => c == '\n' )
                 .Count() + 1;
-            var column = indexActual - matchedText.LastIndexOf( '\n' ) + 1;
+            var column = indexActual;
+            var lastCrIndex = matchedText.LastIndexOf( '\n' );
+            if ( lastCrIndex > 0 )
+            {
+                column = column - lastCrIndex;
+            }
 
-            var expectedText = expected.Substring( indexExpected, showCharacterBufferMax + 1 )
-                .Truncate( showCharacterBufferMax );
-            var actualText = actual.Substring( indexActual, showCharacterBufferMax + 1 )
-                .Truncate( showCharacterBufferMax );
+            // Get the expected text snippet, including the last matched character for context.
+            var expectedText = string.Empty;
+            if ( indexExpected < expected.Length )
+            {
+                var startIndex = indexExpected > 0 ? indexExpected - 1 : 0;
+                if ( showCharacterBufferMax > expected.Length - startIndex )
+                {
+                    expectedText = expected.Substring( startIndex );
+                }
+                else
+                {
+                    expectedText = expected.Substring( startIndex, showCharacterBufferMax + 1 )
+                        .Truncate( showCharacterBufferMax );
+                }
+            }
+
+            // Get the actual text snippet, including the last matched character for context.
+            var actualText = string.Empty;
+            if ( indexActual < actual.Length )
+            {
+                var startIndex = indexActual > 0 ? indexActual - 1 : 0;
+                if ( showCharacterBufferMax > actual.Length - startIndex )
+                {
+                    actualText = actual.Substring( startIndex );
+                }
+                else
+                {
+                    actualText = actual.Substring( startIndex, showCharacterBufferMax + 1 )
+                        .Truncate( showCharacterBufferMax );
+                }
+            }
 
             return $"Match failed (Line={line}, Column={column}, Offset={indexExpected}, Expected={expectedText}, Actual={actualText}).\n-->Expected: {expectedText}\n---->Actual: {actualText}";
         }
@@ -1121,6 +1209,41 @@ namespace Rock.Tests.Shared.Lava
             var result = engine.RenderTemplate( inputTemplate.Trim(), options );
             Assert.That.IsNull( result.Error, "The template failed to render." );
             Assert.That.IsFalse( result.Text.IsNullOrWhiteSpace(), "The template produced no output." );
+        }
+
+        /// <summary>
+        /// Verify that the specified template is valid.
+        /// </summary>
+        /// <param name="inputTemplate"></param>
+        /// <returns></returns>
+        public void AssertTemplateIsValid( string inputTemplate, LavaTestRenderOptions options = null )
+        {
+            ExecuteForActiveEngines( ( engine ) =>
+            {
+                AssertTemplateIsValid( engine, inputTemplate, options );
+            } );
+        }
+
+        /// <summary>
+        /// Verify that the specified template is valid.
+        /// </summary>
+        /// <param name="inputTemplate"></param>
+        /// <returns></returns>
+        public void AssertTemplateIsValid( ILavaEngine engine, string inputTemplate, LavaTestRenderOptions options = null )
+        {
+            inputTemplate = inputTemplate ?? string.Empty;
+
+            options = options ?? new LavaTestRenderOptions();
+
+            var renderOptions = new LavaRenderParameters
+            {
+                Context = engine.NewRenderContext( options.MergeFields ),
+                ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.Throw
+            };
+
+            var result = engine.RenderTemplate( inputTemplate.Trim(), renderOptions );
+
+            Assert.IsFalse( result.HasErrors );
         }
 
         /// <summary>

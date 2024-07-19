@@ -2,10 +2,10 @@
 <template>
     <div class="registrationentry-registrant">
         <NotificationBox v-if="hasWaitlist && !isOnWaitlist" alertType="success">
-            This {{ registrantTerm }} will be fully registered.
+            This {{ registrationEntryTerms.registrantSingularLowerCase }} will be fully registered.
         </NotificationBox>
         <NotificationBox v-else-if="isOnWaitlist" alertType="warning">
-            This {{ registrantTerm }} will be on the waiting list.
+            This {{ registrationEntryTerms.registrantSingularLowerCase }} will be on the waiting list.
         </NotificationBox>
         <template v-for="(r, i) in registrants" :key="r.guid">
             <Registrant v-show="currentRegistrantIndex === i" :currentRegistrant="r" :isWaitList="isOnWaitlist" @next="onNext" @previous="onPrevious" />
@@ -15,12 +15,13 @@
 <script setup lang="ts">
     import { computed, ref } from "vue";
     import Registrant from "./registrant.partial.obs";
-    import { CurrentRegistrationEntryState, PersistSession, scrollToTopAfterNextRender, use } from "./utils.partial";
+    import { CurrentRegistrationEntryState, PersistSession, RegistrationEntryTerms, scrollToTopAfterNextRender, use } from "./utils.partial";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrantBag";
 
     const registrationEntryState = use(CurrentRegistrationEntryState);
     const persistSession = use(PersistSession);
+    const registrationEntryTerms = use(RegistrationEntryTerms);
 
     const emit = defineEmits<{
         (e: "next"): void,
@@ -129,11 +130,6 @@
     const isOnWaitlist = computed<boolean>(() => {
         const currentRegistrant = registrationEntryState.registrants[registrationEntryState.currentRegistrantIndex];
         return currentRegistrant.isOnWaitList;
-    });
-
-    /** What are the registrants called? */
-    const registrantTerm = computed<string>(() => {
-        return (registrationEntryState.viewModel.registrantTerm || "registrant").toLowerCase();
     });
 
     const registrants = computed<RegistrantBag[]>(() => {

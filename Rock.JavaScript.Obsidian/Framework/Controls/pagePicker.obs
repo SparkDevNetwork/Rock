@@ -23,8 +23,7 @@
                                  showBlankItem
                                  :lazyMode="isLazy"
                                  :displayStyle="routePickerDisplayStyle"
-                                 :items="actualRouteItems"
-                                 :open="open" />
+                                 :items="actualRouteItems" />
             </div>
         </template>
     </TreeItemPicker>
@@ -103,7 +102,6 @@
 
     const http = useHttp();
     const standardFieldProps = useStandardRockFormFieldProps(props);
-    const open = ref(null);
 
     // #region Page
 

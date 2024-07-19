@@ -670,6 +670,11 @@ namespace Rock.SystemGuid
         public const string MOBILE_CRM_GROUP_MEMBERS = "592242ED-7536-49EA-94DE-7B4EBA7E87A6";
 
         /// <summary>
+        /// The GUID for the mobile check-in block
+        /// </summary>
+        public const string MOBILE_CHECKIN_CHECKIN = "BC0A4B6C-9F6D-4D39-8FFE-B6F9FA4B2F49";
+
+        /// <summary>
         /// The obsidian event registration entry
         /// </summary>
         public const string OBSIDIAN_EVENT_REGISTRATION_ENTRY = "06AAC065-BF89-483D-B671-80F0F72779A6";
@@ -1263,6 +1268,11 @@ namespace Rock.SystemGuid
         /// The EntityType Guid for <see cref="Rock.Model.EntityCampusFilter"/> 
         /// </summary>
         public const string ENTITY_CAMPUS_FILTER = "A736A9FB-F2A5-4458-B126-FAD6BD3F3B78";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.EntityIntent"/> 
+        /// </summary>
+        public const string ENTITY_INTENT = "15CE39A3-193F-44E5-80C7-DE47DA3EAF97";
 
         /// <summary>
         /// The EntityType Guid for <see cref="Rock.Model.EntitySet"/> 
@@ -1940,9 +1950,16 @@ namespace Rock.SystemGuid
         public const string NOTIFICATION_MESSAGE_TYPE = "36FB1038-8836-429F-BAD4-04D32892D6D0";
 
         /// <summary>
-        /// The EntityType Guid for <see cref="Rock.Web.HttpModules.Observability"/> 
+        /// The EntityType Guid for <see cref="Rock.Web.HttpModules.RockGateway"/> 
         /// </summary>
+        [RockObsolete( "1.17" )]
+        [Obsolete( "Use HTTP_MODULE_ROCK_GATEWAY instead." )]
         public const string HTTP_MODULE_OBSERVABILITY = "FE7A8295-9383-4FD8-9FB2-FF77A8042462";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Web.HttpModules.RockGateway"/> 
+        /// </summary>
+        public const string HTTP_MODULE_ROCK_GATEWAY = "FE7A8295-9383-4FD8-9FB2-FF77A8042462";
 
         /// <summary>
         /// The EntityType Guid for <see cref="Rock.Model.AdaptiveMessage"/> 
@@ -1958,5 +1975,10 @@ namespace Rock.SystemGuid
         /// The EntityType Guid for <see cref="Rock.Model.AdaptiveMessageAdaptationSegment"/> 
         /// </summary>
         public const string ADAPTIVE_MESSAGE_ADAPTATION_SEGMENT = "40EDF82B-EFF5-4253-A129-965F7BC90033";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.CheckInLabel"/> 
+        /// </summary>
+        public const string CHECK_IN_LABEL = "8B651EB1-492F-46D0-821B-CA7355C6E6E7";
     }
 }

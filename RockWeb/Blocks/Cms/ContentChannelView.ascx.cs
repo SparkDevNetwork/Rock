@@ -64,12 +64,6 @@ namespace RockWeb.Blocks.Cms
         IsRequired = false,
         Order = 1,
         Key = AttributeKey.DetailPage )]
-    [BooleanField(
-        "Enable Legacy Global Attribute Lava",
-        Description = "This should only be enabled if your lava is using legacy Global Attributes. Enabling this option, will negatively affect the performance of this block.",
-        DefaultBooleanValue = false,
-        Order = 2,
-        Key = AttributeKey.SupportLegacy )]
 
     // Custom Settings
     [ContentChannelField(
@@ -212,7 +206,6 @@ namespace RockWeb.Blocks.Cms
         {
             public const string EnabledLavaCommands = "EnabledLavaCommands";
             public const string DetailPage = "DetailPage";
-            public const string SupportLegacy = "SupportLegacy";
             public const string Channel = "Channel";
             public const string Status = "Status";
             public const string Template = "Template";
@@ -643,6 +636,7 @@ $(document).ready(function() {
             kvlOrder.Required = true;
 
             ShowEdit();
+            ShowView(); // Populate the placeholder so that incase the model is closed a blank page is not shown.
 
             upnlContent.Update();
         }
@@ -847,14 +841,22 @@ $(document).ready(function() {
                     {
                         var proxySafeUri = Request.UrlProxySafe();
 
+                        var imageUrl = FileUrlHelper.GetImageUrl(
+                            attributeValue.AsGuid(),
+                            new GetImageUrlOptions
+                            {
+                                PublicAppRoot = $"{proxySafeUri.Scheme}://{proxySafeUri.Authority}/"
+                            }
+                        );
+
                         HtmlMeta metaDescription = new HtmlMeta();
                         metaDescription.Name = "og:image";
-                        metaDescription.Content = $"{proxySafeUri.Scheme}://{proxySafeUri.Authority}/GetImage.ashx?guid={attributeValue}";
+                        metaDescription.Content = imageUrl;
                         RockPage.Header.Controls.Add( metaDescription );
 
                         HtmlLink imageLink = new HtmlLink();
                         imageLink.Attributes.Add( "rel", "image_src" );
-                        imageLink.Attributes.Add( "href", $"{proxySafeUri.Scheme}://{proxySafeUri.Authority}/GetImage.ashx?guid={attributeValue}" );
+                        imageLink.Attributes.Add( "href", imageUrl );
                         RockPage.Header.Controls.Add( imageLink );
                     }
                 }
@@ -1790,7 +1792,7 @@ $(document).ready(function() {
             public int Count { get; set; }
         }
 
-        private class ArchiveSummaryModel : DotLiquid.Drop
+        private class ArchiveSummaryModel : LavaDataObject
         {
             public int Month { get; set; }
             public string MonthName { get; set; }

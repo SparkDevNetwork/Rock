@@ -258,7 +258,7 @@ namespace Rock.Utility
         /// <returns></returns>
         private static List<int> GetFilteredPersonIds( CampaignItem campaignConfiguration, RockContext rockContext )
         {
-            var dataView = new DataViewService( rockContext ).Get( campaignConfiguration.DataViewGuid );
+            var dataView = DataViewCache.Get( campaignConfiguration.DataViewGuid );
             var personService = new PersonService( rockContext );
             int recordStatusInactiveId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE.AsGuid() ).Id;
             var filteredPersonIds = new List<int>();

@@ -28,17 +28,24 @@
                 required: true
             },
 
+            /**
+             * If the modelValue is an object or array and its properties get changed, normally
+             * that doesn't trigger a re-validation. If you enable this, it'll watch more deeply for
+             * changes, therefore being able to trigger on any change to the modelValue. Only use
+             * this when you actually need to because it can potentially cause performance issues
+             * and unintended side effects.
+             */
+            watchDeep: {
+                type: Boolean,
+                default: false
+            },
+
             name: {
                 type: String,
                 required: true
             },
 
             disableLabel: {
-                type: Boolean,
-                default: false
-            },
-
-            watchDeep: {
                 type: Boolean,
                 default: false
             },
@@ -119,9 +126,9 @@
     <RockLabel :for="uniqueId" :help="help" v-if="!disableLabel">
         {{label}} <slot name="besideLabel" />
     </RockLabel>
-    <slot v-bind="{field: $attrs, uniqueId, errors, fieldLabel}" />
+    <slot v-bind="{field: $attrs, uniqueId, fieldLabel}" />
 </div>
-<slot v-else v-bind="{field: $attrs, uniqueId, errors, fieldLabel}" />
+<slot v-else v-bind="{field: $attrs, uniqueId, fieldLabel}" />
 <slot name="post" />
 `
     });

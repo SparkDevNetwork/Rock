@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,6 +19,8 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using MassTransit;
 using MassTransit.AzureServiceBusTransport;
+
+using Microsoft.Extensions.Logging;
 using Microsoft.ServiceBus;
 using Rock.Attribute;
 using Rock.Data;
@@ -65,6 +67,7 @@ namespace Rock.Bus.Transport
         Key = AttributeKey.DeadLetterOnMessageExpiration )]
 
     [Rock.SystemGuid.EntityTypeGuid( "91130C54-D189-4B0B-B8CB-F92B6681A327")]
+    [RockLoggingCategory]
     public class AzureServiceBus : TransportComponent
     {
         #region Attribute Keys
@@ -97,7 +100,7 @@ namespace Rock.Bus.Transport
             // Catch bad data entries and default to 7 days if so and log it.
             if ( !TimeSpan.TryParse( messageExpirationString, out messageExpiration ) )
             {
-                RockLogger.Log.Warning( RockLogDomains.Bus, $"{nameof( AzureServiceBus )}: An invalid Message Expiration TimeSpan value of {messageExpirationString} was specified. Defaulting to 07:00:00:00 (7 days)." );
+                Logger.LogWarning( $"An invalid Message Expiration TimeSpan value of {messageExpirationString} was specified. Defaulting to 07:00:00:00 (7 days)." );
                 messageExpiration = TimeSpan.FromDays( 7 );
 
                 SetAttributeValue( AttributeKey.MessageExpiration, $"{messageExpiration.Days:D2}:{messageExpiration.Hours:D2}:{messageExpiration.Minutes:D2}:{messageExpiration.Seconds:D2}" );

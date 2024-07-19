@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField :modelValue="internalValue" name="step-program-step-type-picker">
+    <RockFormField :modelValue="internalValue" name="interaction-channel-interaction-component-picker">
         <InteractionChannelPicker
                                   v-if="!defaultInteractionChannelGuid"
                                   v-model="internalChannelValue"
@@ -48,6 +48,11 @@
             default: null
         },
 
+        interactionChannel: {
+            type: Object as PropType<ListItemBag | null>,
+            default: null
+        },
+
         disabled: {
             type: Boolean,
             default: false
@@ -56,12 +61,13 @@
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: ListItemBag | null): void
+        (e: "update:interactionChannel", value: ListItemBag | null): void
     }>();
 
     // #region Values
 
     const internalValue = ref<ListItemBag | null>(props.modelValue);
-    const internalChannelValue = ref<ListItemBag | null>(null);
+    const internalChannelValue = ref<ListItemBag | null>(props.interactionChannel);
 
     const securityGrantToken = useSecurityGrantToken();
     const http = useHttp();
@@ -94,9 +100,13 @@
         }
     });
 
-    watch(internalChannelValue, () => {
+    watch(internalChannelValue, (val) => {
         if (!skipWatcher) {
             internalValue.value = null;
+        }
+
+        if (!deepEqual(val, props.interactionChannel, false)) {
+            emit("update:interactionChannel", val);
         }
     });
 

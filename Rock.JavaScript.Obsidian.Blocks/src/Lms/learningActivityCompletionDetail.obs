@@ -1,0 +1,204 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+
+    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+
+    <DetailBlock v-if="!blockError"
+                 v-model:mode="panelMode"
+                 :name="panelName"
+                 :labels="blockLabels"
+                 :alwaysShowLabels="true"
+                 :entityKey="entityKey"
+                 :isAuditHidden="false"
+                 :isBadgesVisible="false"
+                 :isDeleteVisible="false"
+                 :isEditVisible="isEditable"
+                 :isFollowVisible="false"
+                 :isFullScreenVisible="false"
+                 :isSecurityHidden="true"
+                 @cancelEdit="onCancelEdit"
+                 @save="onSave">
+        <template #view>
+            <ViewPanel :modelValue="learningActivityCompletionViewBag" :options="options" />
+        </template>
+
+        <template #edit>
+            <EditPanel v-model="learningActivityCompletionEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
+        </template>
+    </DetailBlock>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import DetailBlock from "@Obsidian/Templates/detailBlock";
+    import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import EditPanel from "./LearningActivityCompletionDetail/editPanel.partial.obs";
+    import ViewPanel from "./LearningActivityCompletionDetail/viewPanel.partial.obs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { NavigationUrlKey } from "./LearningActivityCompletionDetail/types.partial";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
+    import { LearningActivityCompletionDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+
+    const config = useConfigurationValues<DetailBlockBox<LearningActivityCompletionBag, LearningActivityCompletionDetailOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const blockError = ref("");
+    const errorMessage = ref("");
+
+    const learningActivityCompletionViewBag = ref(config.entity);
+    const learningActivityCompletionEditBag = ref<ValidPropertiesBox<LearningActivityCompletionBag>>({
+        bag: config.entity as LearningActivityCompletionBag,
+        validProperties: config.validProperties
+    });
+
+    // Initialize in edit mode.
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
+
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: learningActivityCompletionEditBag
+    });
+
+    const gradingScales = ref(config.options?.gradingScales?.sort((a,b) => b.thresholdPercentage - a.thresholdPercentage) ?? []);
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * The entity name to display in the block panel.
+     */
+    const panelName = computed((): string => {
+        return [
+            learningActivityCompletionViewBag.value?.student?.name ?? "",
+            learningActivityCompletionViewBag.value?.activityBag?.name ?? "",
+            learningActivityCompletionViewBag.value?.activityBag?.activityComponent?.name ?? ""
+        ].filter(s => s.length > 0).join(" - ");
+    });
+
+    /**
+     * The identifier key value for this entity.
+     */
+    const entityKey = computed((): string => {
+        return learningActivityCompletionViewBag.value?.idKey ?? "";
+    });
+
+    /**
+     * Additional labels to display in the block panel.
+     */
+    const blockLabels = computed((): PanelAction[] | undefined => {
+        const labels: PanelAction[] = [];
+
+        if (panelMode.value === DetailPanelMode.Add) {
+            return labels;
+        }
+
+        const pointsEarned = learningActivityCompletionEditBag.value?.bag?.pointsEarned ?? 0;
+        const pointsPossible = learningActivityCompletionViewBag.value?.activityBag?.points ?? 0;
+        const percentEarned = pointsPossible > 0 ? pointsEarned / pointsPossible * 100 : 0;
+        const grade = gradingScales.value?.find(s => percentEarned >= s.thresholdPercentage);
+        const hasGradeScale = grade != null;
+        const isGradePassing = hasGradeScale ? grade.isPassing : false;
+
+        const gradeText = hasGradeScale ? `${grade.name} (${percentEarned}%)` : `${percentEarned}%`;
+
+        if (gradeText.length > 0) {
+            labels.push({
+                title: gradeText,
+                type: isGradePassing ? "success" : "warning"
+            });
+        }
+
+        if (!learningActivityCompletionViewBag.value?.wasCompletedOnTime) {
+            labels.push({
+                title: "Late",
+                type: "warning"
+            });
+        }
+
+        if (!learningActivityCompletionViewBag.value?.isFacilitatorCompleted) {
+            labels.push({
+                title: "Requires Scoring",
+                type: "warning"
+            });
+        }
+
+        return labels;
+    });
+
+    const isEditable = computed((): boolean => {
+        return config.isEditable === true;
+    });
+
+    const options = computed((): LearningActivityCompletionDetailOptionsBag => {
+        return config.options ?? {};
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for the Cancel button being clicked while in Edit mode.
+     * Handles redirect to parent page if creating a new entity.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onCancelEdit(): Promise<boolean | string> {
+        if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+            return config.navigationUrls[NavigationUrlKey.ParentPage];
+        }
+
+        return true;
+    }
+
+    /**
+     * Event handler for the panel's Save event. Send the data to the server
+     * to be saved and then leave edit mode or redirect to target page.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onSave(): Promise<boolean | string> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<string>("Save", {
+            box: learningActivityCompletionEditBag.value
+        });
+
+        if (result.isSuccess && result.data) {
+            if (result.statusCode === 200 && typeof result.data === "string") {
+                return result.data;
+            }
+        }
+
+        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save learning activity completion.";
+
+        return false;
+    }
+
+    // #endregion
+
+    // Handle any initial error conditions or the need to go into edit mode.
+    if (config.errorMessage) {
+        blockError.value = config.errorMessage;
+    }
+    else if (!config.entity) {
+        blockError.value = "The specified learning activity completion could not be viewed.";
+    }
+    else if (!config.entity.idKey) {
+        learningActivityCompletionEditBag.value = { bag: config.entity };
+        panelMode.value = DetailPanelMode.Add;
+    }
+</script>

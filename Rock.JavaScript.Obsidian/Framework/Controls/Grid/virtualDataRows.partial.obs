@@ -2,7 +2,7 @@
     <div class="grid-body" ref="element">
         <div :style="beforePadStyle" />
         <DataRow v-if="hasRows"
-                v-for="(row, index) of virtualRows"
+                 v-for="(row, index) of virtualRows"
                  :key="props.grid.getRowKey(row)"
                  :columns="props.columns"
                  :row="row"
@@ -149,7 +149,7 @@
     /**
      * Whether or not there are any rows given
      */
-     const hasRows = computed(() => {
+    const hasRows = computed(() => {
         return props.rows.length > 0;
     });
 
@@ -211,11 +211,11 @@
      * Determine the class to apply to each row
      */
     function getRowClass(row: Record<string, unknown>): string | undefined {
-        if (typeof props.rowClass == "string") {
+        if (typeof props.rowClass === "string") {
             return props.rowClass;
         }
 
-        if (typeof props.rowClass == "function") {
+        if (typeof props.rowClass === "function") {
             return props.rowClass(row);
         }
 

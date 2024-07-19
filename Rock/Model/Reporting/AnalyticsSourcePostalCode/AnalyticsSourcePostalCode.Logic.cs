@@ -23,15 +23,12 @@ using System.Data.Entity.Spatial;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Xml.Serialization;
 
 using EntityFramework.Utilities;
 
 using Newtonsoft.Json;
 
 using OfficeOpenXml;
-
-using RestSharp;
 
 using Rock.Data;
 
@@ -85,7 +82,7 @@ namespace Rock.Model
                 // Longitude data on the DbGeography, which doesn't exist for polygon based DbGeography.
 
                 // Batch size
-                int batchSize = 1000;
+                var batchSize = 1000;
                 RockContext rockContext = new RockContext();
 
                 // Calculate the number of batches
@@ -156,9 +153,9 @@ namespace Rock.Model
                     return new List<AnalyticsSourcePostalCode>();
                 }
 
-                int noOfCol = workSheet.Dimension.End.Column;
-                int noOfRow = workSheet.Dimension.End.Row;
-                int rowIndex = 1;
+                var noOfCol = workSheet.Dimension.End.Column;
+                var noOfRow = workSheet.Dimension.End.Row;
+                var rowIndex = 1;
 
                 // Get headers
                 for ( int c = 1; c <= noOfCol; c++ )
@@ -185,7 +182,7 @@ namespace Rock.Model
                     table.Rows.Add( dr );
                 }
 
-                // Deserialize data as AnalyticsSourcePostalCode and ignore any parsing errors fro DataType mismatch, some decimal columns contain string '**'
+                // Deserialize data as AnalyticsSourcePostalCode and ignore any parsing errors from DataType mismatch, some decimal columns contain string '**'
                 // values so we ignore these and leave their values as default.
                 var data = JsonConvert.DeserializeObject<List<AnalyticsSourcePostalCode>>( JsonConvert.SerializeObject( table ), new JsonSerializerSettings()
                 {
@@ -300,21 +297,21 @@ namespace Rock.Model
             if ( !string.IsNullOrWhiteSpace( coordinates ) )
             {
                 // Assuming the coordinates are in the format "longitude1,latitude1,0 longitude2,latitude2,0 ..."
-                string[] pointStrings = coordinates.Split( ' ' );
+                var pointStrings = coordinates.Split( ' ' );
 
                 if ( pointStrings.Length >= 2 )
                 {
                     // Extract latitude and longitude pairs
                     var points = pointStrings.Select( pointString =>
                     {
-                        string[] values = pointString.Split( ',' );
-                        double longitude = double.Parse( values[0] );
-                        double latitude = double.Parse( values[1] );
+                        var values = pointString.Split( ',' );
+                        var longitude = double.Parse( values[0] );
+                        var latitude = double.Parse( values[1] );
                         return new Tuple<double, double>( latitude, longitude );
                     } ).ToList();
 
                     // Create the WKT representation of the polygon
-                    string wkt = $"POLYGON(({string.Join( ", ", points.Select( p => $"{p.Item2} {p.Item1}" ) )}))";
+                    var wkt = $"POLYGON(({string.Join( ", ", points.Select( p => $"{p.Item2} {p.Item1}" ) )}))";
 
                     // Create the DbGeography instance from the WKT representation
                     return DbGeography.PolygonFromText( wkt, 4326 );

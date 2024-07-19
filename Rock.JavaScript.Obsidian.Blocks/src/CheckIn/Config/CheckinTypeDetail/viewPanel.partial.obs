@@ -1,0 +1,104 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+
+        <ValueDetailList :modelValue="topValues" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="leftSideValues" />
+            </div>
+
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="rightSideValues" />
+            </div>
+        </div>
+
+</fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
+    import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
+    import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+    import { CheckinTypeBag } from "@Obsidian/ViewModels/Blocks/Checkin/Config/CheckinTypeDetail/checkinTypeBag";
+    import { CheckinTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Checkin/Config/CheckinTypeDetail/checkinTypeDetailOptionsBag";
+
+    const props = defineProps({
+    modelValue: {
+    type: Object as PropType<CheckinTypeBag | null>,
+            required: false
+        },
+
+        options: {
+            type: Object as PropType<CheckinTypeDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    // #region Computed Values
+
+    /** The values to display full-width at the top of the block. */
+    const topValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (props.modelValue.description) {
+            valueBuilder.addTextValue("", props.modelValue.description);
+        }
+
+        if (props.modelValue.scheduledTimes) {
+            valueBuilder.addTextValue("Scheduled Times", props.modelValue.scheduledTimes);
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const leftSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (props.modelValue.checkInType) {
+            valueBuilder.addTextValue("Check-in Type", props.modelValue.checkInType);
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const rightSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (props.modelValue.searchType) {
+            valueBuilder.addTextValue("Search Type", props.modelValue.searchType);
+        }
+
+        if (props.modelValue.phoneNumberCompare) {
+            valueBuilder.addTextValue("Phone Number Compare", props.modelValue.phoneNumberCompare);
+        }
+
+        return valueBuilder.build();
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+</script>

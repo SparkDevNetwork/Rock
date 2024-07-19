@@ -278,6 +278,7 @@
     import OccurrenceDate from "./GroupScheduler/occurrenceDate.partial.obs";
     import SelectFilters from "./GroupScheduler/selectFilters.partial.obs";
     import {
+        AddAttendanceOccurrenceId,
         NavigationUrlKey,
         ReloadAllOccurrences,
         ReloadOccurrencesContainingResource,
@@ -624,6 +625,33 @@
     }
 
     /**
+     * Adds the provided attendance occurrence identifier to the scheduled occurrence matching the provided unique identifier.
+     *
+     * @param scheduleOccurrenceGuid The schedule occurrence unique identifier.
+     * @param attendanceOccurrenceId The attendance occurrence identifier to add.
+     */
+    function addAttendanceOccurrenceId(scheduleOccurrenceGuid: Guid, attendanceOccurrenceId: number): void {
+        if (!scheduleOccurrences.value) {
+            return;
+        }
+
+        const occurrenceIndex = scheduleOccurrences.value
+            .findIndex((occurrence: GroupSchedulerOccurrenceBag) => occurrence.guid === scheduleOccurrenceGuid);
+
+        if (occurrenceIndex === -1) {
+            return;
+        }
+
+        const updatedOccurrences = [...scheduleOccurrences.value];
+        updatedOccurrences[occurrenceIndex] = {
+            ...scheduleOccurrences.value[occurrenceIndex],
+            attendanceOccurrenceId: attendanceOccurrenceId
+        };
+
+        scheduleOccurrences.value = updatedOccurrences;
+    }
+
+    /**
      * Observes this group scheduler's descendent schedule elements' sizes.
      */
     function observeScheduleSizes(): void {
@@ -728,7 +756,7 @@
                     targetSchedules = scheduleComponentsByOccurrenceDate.value[currentDateIndex === occurrenceDateCount.value - 1 ? 0 : currentDateIndex + 1];
                 }
                 else {
-                    // There is only one occurrece date; go to the first schedule within this same occurrence date.
+                    // There is only one occurrence date; go to the first schedule within this same occurrence date.
                 }
 
                 if (targetSchedules?.length) {
@@ -1009,6 +1037,7 @@
 
     // #endregion
 
+    provide(AddAttendanceOccurrenceId, addAttendanceOccurrenceId);
     provide(UnassignedResourceCounts, unassignedResourceCounts);
     provide(ReportAssignedResources, reportAssignedResources);
     provide(ReloadAllOccurrences, reloadAllOccurrences);

@@ -243,6 +243,8 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
+            GroupCache.UpdateCachedEntity( Id, entityState );
+
             // If the group changed, and it was a security group, flush the security for the group
             Guid? originalGroupTypeGuid = null;
             Guid groupTypeSecurityRole = Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid();

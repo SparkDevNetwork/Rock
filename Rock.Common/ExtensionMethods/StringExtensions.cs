@@ -970,20 +970,6 @@ namespace Rock
         /// <param name="startIndex">The 0-based starting position.</param>
         /// <param name="maxLength">The maximum length.</param>
         /// <returns></returns>
-        [Obsolete( "Use SubstringSafe() instead. Obsolete as of 1.12.0" )]
-        [RockObsolete( "1.12" )]
-        public static string SafeSubstring( this string str, int startIndex, int maxLength )
-        {
-            return str.SubstringSafe( startIndex, maxLength );
-        }
-
-        /// <summary>
-        /// Returns a substring of a string. Uses an empty string for any part that doesn't exist and will return a partial substring if the string isn't long enough for the requested length (the built-in method would throw an exception in these cases).
-        /// </summary>
-        /// <param name="str">The string.</param>
-        /// <param name="startIndex">The 0-based starting position.</param>
-        /// <param name="maxLength">The maximum length.</param>
-        /// <returns></returns>
         public static string SubstringSafe( this string str, int startIndex, int maxLength )
         {
             if ( str == null || maxLength < 0 || startIndex < 0 || startIndex > str.Length )
@@ -1038,6 +1024,15 @@ namespace Rock
             if ( str.Length <= maxLength )
             {
                 return str;
+            }
+
+            // Since we include the ellipsis in the number of max characters
+            // we need to disable ellipsis if they told us to have a max
+            // length of 3 or less - which is the number of periods that
+            // would be added.
+            if ( maxLength <= 3 )
+            {
+                addEllipsis = false;
             }
 
             // If adding an ellipsis then reduce the maxlength by three to allow for the additional characters
@@ -1725,6 +1720,54 @@ namespace Rock
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Convert a string into camelCase.
+        /// </summary>
+        /// <remarks>Originally from https://github.com/JamesNK/Newtonsoft.Json/blob/01e1759cac40d8154e47ed0e11c12a9d42d2d0ff/Src/Newtonsoft.Json/Utilities/StringUtils.cs#L155</remarks>
+        /// <param name="value">The string to be converted.</param>
+        /// <returns>A string in camel case.</returns>
+        public static string ToCamelCase( this string value )
+        {
+            if ( string.IsNullOrEmpty( value ) || !char.IsUpper( value[0] ) )
+            {
+                return value;
+            }
+
+            var chars = value.ToCharArray();
+
+            for ( int i = 0; i < chars.Length; i++ )
+            {
+                if ( i == 1 && !char.IsUpper( chars[i] ) )
+                {
+                    break;
+                }
+
+                var hasNext = i + 1 < chars.Length;
+
+                if ( i > 0 && hasNext && !char.IsUpper( chars[i + 1] ) )
+                {
+                    // if the next character is a space, which is not considered uppercase 
+                    // (otherwise we wouldn't be here...)
+                    // we want to ensure that the following:
+                    // 'FOO bar' is rewritten as 'foo bar', and not as 'foO bar'
+                    // The code was written in such a way that the first word in uppercase
+                    // ends when if finds an uppercase letter followed by a lowercase letter.
+                    // now a ' ' (space, (char)32) is considered not upper
+                    // but in that case we still want our current character to become lowercase
+                    if ( char.IsSeparator( chars[i + 1] ) )
+                    {
+                        chars[i] = char.ToLower( chars[i] );
+                    }
+
+                    break;
+                }
+
+                chars[i] = char.ToLower( chars[i] );
+            }
+
+            return new string( chars );
         }
 
         #endregion String Extensions

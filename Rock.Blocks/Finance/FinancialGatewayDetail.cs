@@ -175,12 +175,47 @@ namespace Rock.Blocks.Finance
             {
                 IdKey = entity.IdKey,
                 BatchTimeOffsetTicks = entity.GetBatchTimeOffset().ToString(),
-                Description = entity.Description,
-                EntityType = entity.EntityType.ToListItemBag(),
+                Description = entity.Description.IsNullOrWhiteSpace() ? entity.GetGatewayComponent()?.Description : entity.Description,
+                EntityType = ToGatewayTypeListItemBag( entity.EntityType ),
                 IsActive = entity.IsActive,
                 Name = entity.Name,
                 BatchSchedule = entity.BatchDayOfWeek.HasValue ? BatchWeekly : BatchDaily,
-                BatchStartDay = entity.BatchDayOfWeek?.ToString( "D" )
+                BatchStartDay = entity.BatchDayOfWeek?.ToString( "D" ),
+                InactiveGatewayNotificationMessage = !entity.IsActive ? GetInactiveNotificationMessage( entity ) : null,
+            };
+        }
+
+        /// <summary>
+        /// Converts the EntityType to ListItemBag with the corresponding ComponentName.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <returns></returns>
+        private ListItemBag ToGatewayTypeListItemBag( EntityType entityType )
+        {
+            if ( entityType == null )
+            {
+                return null;
+            }
+
+            var componentEntityType = EntityTypeCache.Get( entityType.Guid );
+            var componentName = Rock.Reflection.GetDisplayName( componentEntityType.GetEntityType() );
+
+            // If it has a DisplayName use it as is, otherwise use the original logic
+            if ( string.IsNullOrWhiteSpace( componentName ) )
+            {
+                componentName = entityType.FriendlyName;
+                // If the component name already has a space then trust
+                // that they are using the exact name formatting they want.
+                if ( !componentName.Contains( ' ' ) )
+                {
+                    componentName = componentName.SplitCase();
+                }
+            }
+
+            return new ListItemBag()
+            {
+                Text = componentName,
+                Value = entityType.Guid.ToString(),
             };
         }
 
@@ -325,6 +360,34 @@ namespace Rock.Blocks.Finance
             return true;
         }
 
+        /// <summary>
+        /// Gets the notification message for inactive gateways.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <returns></returns>
+        private string GetInactiveNotificationMessage( FinancialGateway entity )
+        {
+            var message = "<strong>Important!</strong> An 'Inactive' status will prevent the gateway from being shown in the gateway picker for Registration templates if it is not already selected. An 'Inactive' status DOES NOT prevent charges from being processed for a registration where the gateway is already assigned.";
+
+            if ( entity == null || entity.Id == 0 )
+            {
+                // This is a new gateway so show the message but don't bother looking for registrations using it.
+                return message;
+            }
+
+            var activeRegistrations = new FinancialGatewayService( new RockContext() ).GetRegistrationTemplatesForGateway( entity.Id, false ).ToList();
+            if ( !activeRegistrations.Any() )
+            {
+                // This gateway isn't used by any registrations so show the message but don't bother looking for registrations using it.
+                return message;
+            }
+
+            var registrationNames = " To prevent this choose a different payment gateway for these registrations: <b>'" + string.Join( "', '", activeRegistrations.Select( r => r.Name ) ).Trim().TrimEnd( ',' ) + "'</b>";
+            message += registrationNames;
+
+            return message;
+        }
+
         #endregion
 
         #region Block Actions
@@ -436,25 +499,30 @@ namespace Rock.Blocks.Finance
         {
             var entity = GetInitialEntity();
 
-            var message = "An 'Inactive' status will prevent the gateway from being shown in the gateway picker for Registration templates if it is not already selected. An 'Inactive' status DOES NOT prevent charges from being processed for a registration where the gateway is already assigned.";
+            var inactiveGatewayMessage = GetInactiveNotificationMessage( entity );
 
-            if ( entity == null || entity.Id == 0 )
+            return ActionOk( new { inactiveGatewayMessage = inactiveGatewayMessage } );
+        }
+
+        /// <summary>
+        /// Gets the gateway component description.
+        /// </summary>
+        /// <returns></returns>
+        [BlockAction]
+        public BlockActionResult GetGatewayComponentDescription( Guid? entityTypeGuid )
+        {
+            var description = string.Empty;
+            if ( entityTypeGuid.HasValue )
             {
-                // This is a new gateway so show the message but don't bother looking for registrations using it.
-                return ActionOk( new { inactiveGatewayMessage = message } );
+                var entityType = EntityTypeCache.Get( entityTypeGuid.Value );
+                if ( entityType != null )
+                {
+                    var component = Rock.Financial.GatewayContainer.GetComponent( entityType.Name );
+                    description = component?.Description;
+                }
             }
 
-            var activeRegistrations = new FinancialGatewayService( new RockContext() ).GetRegistrationTemplatesForGateway( entity.Id, false ).ToList();
-            if ( !activeRegistrations.Any() )
-            {
-                // This gateway isn't used by any registrations so show the message but don't bother looking for registrations using it.
-                return ActionOk( new { inactiveGatewayMessage = message } );
-            }
-
-            var registrationNames = " To prevent this choose a different payment gateway for these registrations: <b>'" + string.Join( "', '", activeRegistrations.Select( r => r.Name ) ).Trim().TrimEnd( ',' ) + "'</b>";
-            message += registrationNames;
-
-            return ActionOk( new { inactiveGatewayMessage = message } );
+            return ActionOk( new { description = description });
         }
 
         #endregion

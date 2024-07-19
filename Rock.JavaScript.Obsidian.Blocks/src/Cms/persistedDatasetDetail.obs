@@ -11,12 +11,12 @@
                  :entityKey="entityKey"
                  :entityTypeGuid="EntityType.PersistedDataset"
                  entityTypeName="PersistedDataset"
-                 :isAuditHidden="false"
+                 :isAuditHidden="true"
                  :isBadgesVisible="true"
                  :isDeleteVisible="isEditable"
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
-                 :isSecurityHidden="false"
+                 :isSecurityHidden="true"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
                  @edit="onEdit"
@@ -61,6 +61,9 @@
     const persistedDatasetEditBag = ref<PersistedDatasetBag>({} as PersistedDatasetBag);
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
+
+    const lastRefreshDate = new Date(persistedDatasetViewBag.value?.lastRefreshDateTime ?? "Never");
+    const formattedDate = lastRefreshDate ? new Date(lastRefreshDate).toLocaleDateString("en-US") : "Never";
 
     // The properties that are being edited in the UI. This is used to
     // inform the server which incoming values have valid data in them.

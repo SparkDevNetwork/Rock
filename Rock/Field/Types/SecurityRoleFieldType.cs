@@ -39,7 +39,12 @@ namespace Rock.Field.Types
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.SECURITY_ROLE )]
     public class SecurityRoleFieldType : FieldType, IEntityReferenceFieldType
     {
+        #region Configuration
+
         private const string VALUES_PUBLIC_KEY = "values";
+
+        #endregion
+
         #region Formatting
 
         /// <inheritdoc/>

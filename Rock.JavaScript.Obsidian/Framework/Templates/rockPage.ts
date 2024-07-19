@@ -104,8 +104,9 @@ export async function initializeBlock(config: ObsidianBlockConfigBag): Promise<A
     }
 
     const rootElement = document.getElementById(config.rootElementId);
+    const wrapperElement = rootElement?.querySelector<HTMLElement>(".obsidian-block-wrapper");
 
-    if (!rootElement) {
+    if (!rootElement || !wrapperElement) {
         throw "Could not initialize Obsidian block because the root element was not found.";
     }
 
@@ -125,8 +126,8 @@ export async function initializeBlock(config: ObsidianBlockConfigBag): Promise<A
     const name = `Root${config.blockFileUrl.replace(/\//g, ".")}`;
     const staticContent = ref<Node[]>([]);
 
-    while (rootElement.firstChild !== null) {
-        const node = rootElement.firstChild;
+    while (wrapperElement.firstChild !== null) {
+        const node = wrapperElement.firstChild;
         node.remove();
         staticContent.value.push(node);
     }
@@ -158,6 +159,19 @@ export async function initializeBlock(config: ObsidianBlockConfigBag): Promise<A
                 }
 
                 isLoaded = true;
+
+                if (rootElement.classList.contains("obsidian-block-has-placeholder")) {
+                    wrapperElement.style.padding = "1px 0px";
+                    const realHeight = wrapperElement.getBoundingClientRect().height - 2;
+                    wrapperElement.style.padding = "";
+
+                    rootElement.style.height = `${realHeight}px`;
+                    setTimeout(() => {
+                        rootElement.querySelector(".obsidian-block-placeholder")?.remove();
+                        rootElement.style.height = "";
+                        rootElement.classList.remove("obsidian-block-has-placeholder");
+                    }, 200);
+                }
 
                 rootElement.classList.remove("obsidian-block-loading");
 
@@ -211,9 +225,72 @@ export async function initializeBlock(config: ObsidianBlockConfigBag): Promise<A
 
     app.directive("content", contentDirective);
     app.component("v-style", developerStyle);
-    app.mount(rootElement);
+    app.mount(wrapperElement);
 
     return app;
+}
+
+/**
+* This is an internal method which would be changed in future. This was created for the Short Link Modal and would be made more generic in future.
+* @param url
+*/
+export function showShortLink(url: string): void {
+
+    // create an iframe
+    // set width and height = 400
+    // set postiion to abs
+    // set the src attribute
+
+    const rootElement = document.createElement("div");
+    const modalPopup = document.createElement("div");
+    const modalPopupContentPanel = document.createElement("div");
+    const iframe = document.createElement("iframe");
+
+    rootElement.className = "modal-scrollable";
+    rootElement.id = "shortlink-modal-popup";
+    rootElement.style.zIndex = "1060";
+    rootElement.appendChild(modalPopup);
+
+    modalPopup.id = "shortlink-modal-popup";
+    modalPopup.className = "modal container modal-content rock-modal rock-modal-frame modal-overflow in";
+    modalPopup.style.opacity = "1";
+    modalPopup.style.display = "block";
+    modalPopup.style.marginTop = "0px";
+    modalPopup.style.position = "absolute";
+    modalPopup.style.top = "30px";
+    modalPopup.appendChild(modalPopupContentPanel);
+
+    modalPopupContentPanel.className = "iframe";
+    modalPopupContentPanel.id = "shortlink-modal-popup_contentPanel";
+    modalPopupContentPanel.appendChild(iframe);
+
+    document.body.appendChild(rootElement);
+
+    const modalBackDroping = document.createElement("div");
+    modalBackDroping.id = "shortlink-modal-popup_backDrop";
+    modalBackDroping.className = "modal-backdrop in";
+    modalBackDroping.style.zIndex = "1050";
+    document.body.appendChild(modalBackDroping);
+
+
+    iframe.id = "shortlink-modal-popup_iframe";
+    iframe.src = url;
+    iframe.style.display = "block";
+    iframe.style.width = "100%";
+    iframe.style.borderRadius = "6px";
+    iframe.scrolling = "no";
+    iframe.style.overflowY = "clip";
+    const iframeResizer = new ResizeObserver((event) => {
+        const iframeBody = event[0].target;
+        iframe.style.height = (iframeBody.scrollHeight?.toString() + "px") ?? "25vh";
+    });
+    iframe.onload = () => {
+        if(!iframe?.contentWindow?.document?.documentElement) {
+            return;
+        }
+        iframe.style.height = (iframe.contentWindow.document.body.scrollHeight?.toString() + "px") ?? "25vh";
+        iframeResizer.observe(iframe.contentWindow.document.body);
+    };
 }
 
 /**
@@ -339,3 +416,10 @@ export async function initializePageTimings(config: DebugTimingConfig): Promise<
     });
     app.mount(rootElement);
 }
+
+/**
+* This is an internal type which would be changed in future. This was created for the Short Link Modal and would be made more generic in future.
+*/
+export type ShortLinkEmitter = {
+    closeModal: string
+};

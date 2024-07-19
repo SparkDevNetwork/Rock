@@ -19,6 +19,9 @@ using System.Data.Entity;
 using System.Linq;
 using System.Text;
 
+using Microsoft.Extensions.Logging;
+
+using Rock.Logging;
 using Rock.Model;
 using Rock.UniversalSearch.IndexModels.Attributes;
 
@@ -28,6 +31,7 @@ namespace Rock.UniversalSearch.IndexModels
     /// Group Index
     /// </summary>
     /// <seealso cref="Rock.UniversalSearch.IndexModels.IndexModelBase" />
+    [RockLoggingCategory]
     public class GroupIndex : IndexModelBase
     {
         /// <summary>
@@ -157,7 +161,8 @@ namespace Rock.UniversalSearch.IndexModels
             var groupMemberCount = rockContext.Set<GroupMember>().Count( gm => gm.GroupId == group.Id && gm.IsArchived == false && gm.GroupMemberStatus == GroupMemberStatus.Active );
             if ( groupMemberCount > 10000 )
             {
-                Rock.Logging.RockLogger.Log.Debug( Logging.RockLogDomains.Bus, $"Skipping universal search index of Group {group.Name} becauses the number of active users {groupMemberCount} exceeds the limit of 10K." );
+                RockLogger.LoggerFactory.CreateLogger<GroupIndex>()
+                    .LogDebug( $"Skipping universal search index of Group {group.Name} becauses the number of active users {groupMemberCount} exceeds the limit of 10K." );
             }
             else if ( groupMemberCount > 0 )
             {

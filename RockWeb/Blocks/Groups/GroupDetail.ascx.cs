@@ -30,6 +30,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Enums.Group;
 using Rock.Model;
+using Rock.Model.Groups.Group.Options;
 using Rock.Security;
 using Rock.Utility;
 using Rock.Utility.Enums;
@@ -679,15 +680,6 @@ namespace RockWeb.Blocks.Groups
                     return;
                 }
 
-                bool isSecurityRoleGroup = group.IsActive && ( group.IsSecurityRole || group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) );
-                if ( isSecurityRoleGroup )
-                {
-                    foreach ( var auth in authService.Queryable().Where( a => a.GroupId == group.Id ).ToList() )
-                    {
-                        authService.Delete( auth );
-                    }
-                }
-
                 // If group has a non-named schedule, delete the schedule record.
                 if ( group.ScheduleId.HasValue )
                 {
@@ -704,14 +696,16 @@ namespace RockWeb.Blocks.Groups
                 }
 
                 // NOTE: groupService.Delete will automatically Archive instead Delete if this Group has GroupHistory enabled, but since this block has UI logic for Archive vs Delete, we can do a direct Archive in btnArchive_Click
-                groupService.Delete( group );
+                if ( group.IsSecurityRoleOrSecurityGroupType() )
+                {
+                    GroupService.DeleteSecurityRoleGroup( group.Id );
+                }
+                else
+                {
+                    groupService.Delete( group );
+                }
 
                 rockContext.SaveChanges();
-
-                if ( isSecurityRoleGroup )
-                {
-                    Rock.Security.Authorization.Clear();
-                }
             }
 
             NavigateAfterDeleteOrArchive( parentGroupId );
@@ -1364,101 +1358,35 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnCopy_Click( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
-            var groupService = new GroupService( rockContext );
-            var authService = new AuthService( rockContext );
-            var attributeService = new AttributeService( rockContext );
+            mdCopyGroup.Show();
+        }
 
+        /// <summary>
+        /// Handles the SaveClick event of the mdCopyGroup control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdCopyGroup_SaveClick( object sender, EventArgs e )
+        {
             int groupId = hfGroupId.ValueAsInt();
-            var group = groupService.Queryable( "GroupType" )
-                    .Where( g => g.Id == groupId )
-                    .FirstOrDefault();
+            bool includeChildGroups = cbCopyGroupIncludeChildGroups.Checked;
+            int? newGroupId = null;
 
-            if ( group != null )
+            if ( groupId > 0 )
             {
-                group.LoadAttributes( rockContext );
-
-                // Clone the group
-                var newGroup = group.CloneWithoutIdentity();
-                newGroup.IsSystem = false;
-                newGroup.Name = group.Name + " - Copy";
-
-                if ( group.ScheduleId.HasValue && group.Schedule.ScheduleType != ScheduleType.Named )
+                var copyGroupOptions = new CopyGroupOptions
                 {
-                    newGroup.Schedule = new Schedule();
-
-                    // NOTE: Schedule Name should be set to string.Empty to indicate that it is a Custom or Weekly schedule and not a "Named" schedule.
-                    newGroup.Schedule.Name = string.Empty;
-                    newGroup.Schedule.iCalendarContent = group.Schedule.iCalendarContent;
-                    newGroup.Schedule.WeeklyDayOfWeek = group.Schedule.WeeklyDayOfWeek;
-                    newGroup.Schedule.WeeklyTimeOfDay = group.Schedule.WeeklyTimeOfDay;
-                }
-
-                var auths = authService.GetByGroup( group.Id );
-                rockContext.WrapTransaction( () =>
-                {
-                    groupService.Add( newGroup );
-                    rockContext.SaveChanges();
-
-                    newGroup.LoadAttributes( rockContext );
-
-                    Rock.Attribute.Helper.CopyAttributes( group, newGroup, rockContext );
-
-                    newGroup.SaveAttributeValues( rockContext );
-
-                    /* Take care of Group Member Attributes */
-                    var entityTypeId = EntityTypeCache.Get( typeof( GroupMember ) ).Id;
-                    string qualifierColumn = "GroupId";
-                    string qualifierValue = group.Id.ToString();
-
-                    // Get the existing attributes for this entity type and qualifier value
-                    var attributes = attributeService.GetByEntityTypeQualifier( entityTypeId, qualifierColumn, qualifierValue, true );
-
-                    foreach ( var attribute in attributes )
-                    {
-                        var newAttribute = attribute.Clone( false );
-                        newAttribute.Id = 0;
-                        newAttribute.Guid = Guid.NewGuid();
-                        newAttribute.IsSystem = false;
-                        newAttribute.EntityTypeQualifierValue = newGroup.Id.ToString();
-
-                        foreach ( var qualifier in attribute.AttributeQualifiers )
-                        {
-                            var newQualifier = qualifier.Clone( false );
-                            newQualifier.Id = 0;
-                            newQualifier.Guid = Guid.NewGuid();
-                            newQualifier.IsSystem = false;
-
-                            newAttribute.AttributeQualifiers.Add( newQualifier );
-                        }
-
-                        attributeService.Add( newAttribute );
-                    }
-
-                    rockContext.SaveChanges();
-
-                    foreach ( var auth in auths )
-                    {
-                        var newAuth = auth.CloneWithoutIdentity();
-                        newAuth.GroupId = newGroup.Id;
-                        authService.Add( newAuth );
-                    }
-
-                    rockContext.SaveChanges();
-                    Rock.Security.Authorization.Clear();
-
-                    // Copy the group-specific requirements.
-                    foreach ( var groupRequirement in group.GroupRequirements )
-                    {
-                        GroupRequirement newGroupRequirement = groupRequirement.CloneWithoutIdentity();
-                        newGroup.GroupRequirements.Add( newGroupRequirement );
-                    }
-
-                    rockContext.SaveChanges();
-                } );
-
-                NavigateToCurrentPage( new Dictionary<string, string> { { PageParameterKey.GroupId, newGroup.Id.ToString() } } );
+                    GroupId = groupId,
+                    IncludeChildGroups = includeChildGroups,
+                    CreatedByPersonAliasId = CurrentPersonAliasId
+                };
+                newGroupId = GroupService.CopyGroup( copyGroupOptions );
             }
+
+            var qryParams = new Dictionary<string, string>();
+            qryParams[PageParameterKey.GroupId] = newGroupId.HasValue && newGroupId > 0 ? newGroupId.Value.ToString() : groupId.ToString();
+            qryParams[PageParameterKey.ExpandedIds] = PageParameter( PageParameterKey.ExpandedIds );
+            NavigateToPage( RockPage.Guid, qryParams );
         }
 
         #endregion

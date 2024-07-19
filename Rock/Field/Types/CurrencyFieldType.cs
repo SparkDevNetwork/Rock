@@ -30,6 +30,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field used to save and display a currency amount
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.Advanced )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [IconSvg( @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16""><path d=""M11.88,10.78c-.25,1.31-1.47,2.11-3.22,2.23v1.33A.66.66,0,0,1,8,15a.65.65,0,0,1-.65-.66V13l-.28,0a13.63,13.63,0,0,1-2.22-.57l-.33-.11A.66.66,0,1,1,4.92,11l.33.1a11.61,11.61,0,0,0,2,.53c1.52.21,3.14-.05,3.34-1.12s-.52-1.33-2.75-1.9L7.4,8.52c-1.31-.34-3.74-1-3.28-3.3C4.37,3.91,5.59,3.11,7.35,3V1.66A.65.65,0,0,1,8,1a.66.66,0,0,1,.66.66V3l.27,0a12.45,12.45,0,0,1,1.72.41.66.66,0,1,1-.38,1.26,10.14,10.14,0,0,0-1.52-.37C7.23,4.14,5.61,4.4,5.4,5.47c-.16.86.38,1.27,2.33,1.78l.43.11C9.92,7.81,12.34,8.43,11.88,10.78Z""/></svg>" )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CURRENCY )]

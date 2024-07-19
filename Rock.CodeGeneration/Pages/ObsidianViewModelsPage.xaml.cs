@@ -160,7 +160,7 @@ namespace Rock.CodeGeneration.Pages
         /// <returns>A string that represents the file name.</returns>
         private string GetFileNameForType( Type type )
         {
-            return $"{type.Name.Split( '`' )[0].CamelCase()}.d.ts";
+            return $"{type.Name.Split( '`' )[0].ToCamelCase()}.d.ts";
         }
 
         /// <summary>
@@ -210,7 +210,7 @@ namespace Rock.CodeGeneration.Pages
                         var file = createdFiles[i];
                         var filename = Path.Combine( solutionPath, file.SolutionRelativePath );
 
-                        if ( filename.EndsWith( ".cs" ) || filename.EndsWith( ".ts" ) )
+                        if ( filename.EndsWith( ".cs" ) )
                         {
                             var projectName = file.SolutionRelativePath.Split( '\\' )[0];
 

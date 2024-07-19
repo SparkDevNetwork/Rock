@@ -14,12 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 #endif
 using Rock.Attribute;
 using Rock.Constants;
@@ -34,13 +34,63 @@ namespace Rock.Field.Types
     /// Field Type to select a single (or null) SiteFieldType
     /// Stored as Site.Id
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [FieldTypeUsage( FieldTypeUsage.System )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.SITE )]
     public class SiteFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
         #region Configuration
 
         private const string SHORTENING_SITES_ONLY = "shorteningSitesOnly";
+        private const string VALUES_PUBLIC_KEY = "values";
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string privateValue )
+        {
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
+
+            var shorteningSitesOnly = publicConfigurationValues.GetValueOrNull( SHORTENING_SITES_ONLY ).AsBoolean();
+
+            var sites = SiteCache.All();
+            if ( shorteningSitesOnly )
+            {
+                sites = sites.Where( s => s.EnabledForShortening )
+                    .ToList();
+            }
+
+            publicConfigurationValues[VALUES_PUBLIC_KEY] = sites
+                .OrderBy( a => a.Name )
+                .ToListItemBagList()
+                .ToCamelCaseJson( false, true );
+
+            return publicConfigurationValues;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            var privateConfigurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
+            privateConfigurationValues.Remove( VALUES_PUBLIC_KEY );
+            return privateConfigurationValues;
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            // The Site Field Type stores the Site by the SiteId in the datbase. However, the remote devices display it by the Site GUID.
+            // So, this method gets the site GUID based on the SiteId.
+            var publicValue = SiteCache.GetGuid( privateValue.ToIntSafe() ).ToStringSafe();
+            return publicValue;
+        }
+
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            // The Webforms version of the Site Field Type used to store the Id of the Site in the database.
+            // We are replicating the same behavior in the Obsidian version for backwards compactibility.
+            var privateValue = SiteCache.GetId( publicValue.AsGuid() ).ToStringSafe();
+            return privateValue;
+        }
 
         #endregion
 

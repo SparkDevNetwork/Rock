@@ -16,21 +16,28 @@
                     field="name"
                     :filter="textValueFilter"
                     visiblePriority="xs"
-                    width="5%" />
+                    width="10%" />
 
-        <TextColumn name="fileName"
-                    title="Layout File"
-                    field="fileName"
-                    :filter="textValueFilter"
-                    visiblePriority="xs"
-                    width="50%" />
+        <Column name="fileName"
+                title="Layout File"
+                field="fileName"
+                :filter="textValueFilter"
+                visiblePriority="xs"
+                width="25%">
+            <template #format="{ row }">
+                <span v-if="row.fileName">
+                    {{ row.fileName.split('|')[0] }}
+                    <span v-if="row.fileName.includes('|Missing')" class="label label-danger">Missing</span>
+                </span>
+            </template>
+        </Column>
 
         <TextColumn name="description"
                     title="Description"
                     field="description"
                     :filter="textValueFilter"
                     visiblePriority="md"
-                    width="1%" />
+                    width="35%" />
 
         <BooleanColumn name="isSystem"
                        title="System"
@@ -113,10 +120,9 @@
     <!-- Informational Note -->
     <NotificationBox :alertType="'info'"
                      :dismissible="false"
-                     :class="'mt-4'">
-        <div>
-            <strong>Note</strong> {{ note }}
-        </div>
+                     :class="'mt-4'"
+                     heading="Note">
+           {{ note }}
     </NotificationBox>
 </template>
 
@@ -139,7 +145,7 @@
 
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
-    const note = "Rock will ensure that at least one layout entry exists for each layout file in the site's theme folder. If all the layouts for a layout file are deleted, Rock will automatically and immediately recreate a new layout entry.";
+    const note = " Rock will ensure that at least one layout entry exists for each layout file in the site's theme folder. If all the layouts for a layout file are deleted, Rock will automatically and immediately recreate a new layout entry.";
 
     // #endregion
 

@@ -5,7 +5,7 @@
             <h4 class="mt-0">Test Control</h4>
             <slot name="default" />
 
-            <div v-if="enableReflection" class="mt-3">
+            <div v-if="enableReflection && config.showReflection" class="mt-3">
                 <div class="mb-3 galleryContent-reflectionToggle">
                     <Switch v-model="showReflection" text="Show Reflection" />
                 </div>
@@ -29,25 +29,25 @@
         </div>
     </div>
     <div v-if="$slots.settings" class="mb-5">
-        <h4 class="mt-0">Settings</h4>
+        <h4 class="mt-0">Demo Settings</h4>
         <slot name="settings" />
     </div>
-    <div v-if="importCode || exampleCode || $slots.usage" class="mb-5">
+    <div v-if="importCode || exampleCode || $slots.usage || $slots.usageNotes" class="mb-5">
         <h4 class="mt-0 mb-3">Usage Notes</h4>
+        <slot name="usageNotes" />
         <slot name="usage">
-            <h5 v-if="importCode" class="mt-3 mb-2">Import</h5>
+            <h5 v-if="importCode || $slots.importNotes" class="mt-3 mb-2">Import</h5>
             <slot name="importNotes" />
-            <div v-if="importCode" class="galleryContent-codeSampleWrapper">
-                <pre class="galleryContent-codeSample"><code v-html="styledImportCode"></code></pre>
-                <CopyButton :value="importCode" class="galleryContent-codeCopyButton" btnSize="sm" btnType="link" />
-            </div>
-            <h5 v-if="exampleCode" class="mt-3 mb-2">Template Syntax</h5>
+            <CodeSample v-if="importCode" :code="importCode" language="typescript" />
+            <h5 v-if="exampleCode || $slots.syntaxNotes" class="mt-3 mb-2">Template Syntax</h5>
             <slot name="syntaxNotes" />
-            <div v-if="exampleCode" class="galleryContent-codeSampleWrapper">
-                <pre class="galleryContent-codeSample"><code v-html="styledExampleCode"></code></pre>
-                <CopyButton :value="exampleCode" class="galleryContent-codeCopyButton" btnSize="sm" btnType="link" />
-            </div>
+            <CodeSample v-if="exampleCode" :code="exampleCode" language="html" />
         </slot>
+    </div>
+
+    <div v-if="$slots.props" class="mb-5">
+        <h4 class="mt-0 mb-3">Props</h4>
+        <slot name="props" />
     </div>
 
     <div v-if="$slots.header">
@@ -113,14 +113,15 @@
 </style>
 
 <script setup lang="ts">
-    import CopyButton from "@Obsidian/Controls/copyButton.obs";
     import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
     import Switch from "@Obsidian/Controls/switch.obs";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
-    import HighlightJs from "@Obsidian/Libs/highlightJs";
+    import CodeSample from "./codeSample.partial.obs";
     import * as ObjectUtils from "@Obsidian/Utility/objectUtils";
     import { computed, getCurrentInstance, PropType, ref } from "vue";
     import { convertComponentName } from "./utils.partial";
+    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { ControlGalleryInitializationBox } from "@Obsidian/ViewModels/Blocks/Example/ControlGallery/controlGalleryInitializationBox";
 
     const props = defineProps({
         // The value passed into/controlled by the component, if any
@@ -157,6 +158,8 @@
         }
     });
 
+    const config = useConfigurationValues<ControlGalleryInitializationBox>();
+
     // Calculate a header based on the name of the component, adding spaces and stripping out the "Gallery" suffix
     const componentName = convertComponentName(getCurrentInstance()?.parent?.type?.name);
 
@@ -178,26 +181,6 @@
                 })
             );
         }
-    });
-
-    const styledImportCode = computed((): string | undefined => {
-        if (!props.importCode) {
-            return undefined;
-        }
-
-        return HighlightJs.highlight(props.importCode, {
-            language: "typescript"
-        })?.value;
-    });
-
-    const styledExampleCode = computed((): string | undefined => {
-        if (!props.exampleCode) {
-            return undefined;
-        }
-
-        return HighlightJs.highlight(props.exampleCode, {
-            language: "html"
-        })?.value;
     });
 
     const showReflection = ref(false);

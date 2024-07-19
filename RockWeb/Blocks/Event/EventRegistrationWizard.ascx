@@ -160,8 +160,9 @@
                         <fieldset>
                             <div class="row">
                                 <div class="col-md-6">
+                                    <Rock:RegistrationTemplatePicker ID="rtpRegistrationTemplate" runat="server" Required="true" Label="Registration Template" OnSelectItem="rtpRegistrationTemplate_SelectItem" Visible="true" />
                                     <Rock:DataDropDownList ID="ddlTemplate" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.RegistrationTemplate, Rock" AppendDataBoundItems="true" EnhanceForLongLists="true"
-                                        PropertyName="Name" Label="Registration Template" AutoPostBack="true" OnSelectedIndexChanged="ddlTemplate_SelectedIndexChanged" Required="true">
+                                        PropertyName="Name" Label="Registration Template" AutoPostBack="true" OnSelectedIndexChanged="ddlTemplate_SelectedIndexChanged" Required="true" Visible="false">
                                         <asp:ListItem Text="" Value="" />
                                     </Rock:DataDropDownList>
                                     <asp:Literal ID="lTemplateDescription" runat="server" />
@@ -285,7 +286,7 @@
 
                         <fieldset>
 
-                            <Rock:Toggle ID="tgExistingroup" runat="server" OnText="Existing Group" OffText="New Group" OnCheckedChanged="tgExistingroup_CheckedChanged" ButtonSizeCssClass="btn-xs" CssClass="mb-2" />
+                            <Rock:Toggle ID="tgExistingroup" runat="server" OnText="Select Existing Group" OffText="Create New Group" OnCheckedChanged="tgExistingroup_CheckedChanged" ButtonSizeCssClass="btn-xs" CssClass="mb-2" />
 
                             <asp:Panel ID="pnlNewGroup" runat="server">
 

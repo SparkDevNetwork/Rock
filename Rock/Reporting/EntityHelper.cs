@@ -50,21 +50,6 @@ namespace Rock.Reporting
         }
 
         /// <summary>
-        /// Gets the cache key for the EntityFields
-        /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <param name="entity">The entity.</param>
-        /// <param name="includeOnlyReportingFields">if set to <c>true</c> [include only reporting fields].</param>
-        /// <param name="limitToFilterableFields">if set to <c>true</c> [limit to filterable fields].</param>
-        /// <returns></returns>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Use other GetCacheKey" )]
-        public static string GetCacheKey( Type entityType, IEntity entity, bool includeOnlyReportingFields = true, bool limitToFilterableFields = true )
-        {
-            return GetCacheKey( entityType, includeOnlyReportingFields, limitToFilterableFields );
-        }
-
-        /// <summary>
         /// Gets the entity field identified by it's uniqueFieldName ( the consistently unique name of the field in the form of "Property: {{ Name }}" for properties and "Attribute:{{ Name }} (Guid:{{ Guid }})" for attribute )
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
@@ -134,20 +119,6 @@ namespace Rock.Reporting
         /// <summary>
         /// Gets the entity fields for a specific Entity
         /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <param name="includeOnlyReportingFields">if set to <c>true</c> [include only reporting fields].</param>
-        /// <param name="limitToFilterableFields">if set to <c>true</c> [limit to filterable fields].</param>
-        /// <returns></returns>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Not Supported. Could cause inconsistent results." )]
-        public static List<EntityField> GetEntityFields( IEntity entity, bool includeOnlyReportingFields = true, bool limitToFilterableFields = true )
-        {
-            return GetEntityFields( entity?.GetType(), includeOnlyReportingFields, limitToFilterableFields );
-        }
-
-        /// <summary>
-        /// Gets the entity fields for a specific Entity
-        /// </summary>
         /// <param name="entityType">Type of the entity.</param>
         /// <param name="includeOnlyReportingFields">if set to <c>true</c> [include only reporting fields].</param>
         /// <param name="limitToFilterableFields">if set to <c>true</c> [limit to filterable fields].</param>
@@ -209,96 +180,7 @@ namespace Rock.Reporting
             // Go thru filteredEntityProperties and create the list of EntityFields that we can include
             foreach ( var property in filteredEntityProperties )
             {
-                EntityField entityField = new EntityField( property.Name, FieldKind.Property, property );
-                entityField.IsPreviewable = property.GetCustomAttributes( typeof( PreviewableAttribute ), true ).Any();
-                var fieldTypeAttribute = property.GetCustomAttribute<Rock.Data.FieldTypeAttribute>();
-
-                // check if we can set it from the fieldTypeAttribute
-                if ( ( fieldTypeAttribute != null ) && SetEntityFieldFromFieldTypeAttribute( entityField, fieldTypeAttribute ) )
-                {
-                    // intentionally blank, entity field is already setup
-                }
-
-                // Enum Properties
-                else if ( property.PropertyType.IsEnum )
-                {
-                    entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.SINGLE_SELECT.AsGuid() );
-
-                    var list = new List<string>();
-                    foreach ( var name in Enum.GetNames( property.PropertyType ) )
-                    {
-                        // ignore Obsolete Enum values
-                        object value = Enum.Parse( property.PropertyType, name );
-                        var fieldInfo = value.GetType().GetField( name );
-                        if ( fieldInfo?.GetCustomAttribute<ObsoleteAttribute>() != null )
-                        {
-                            continue;
-                        }
-
-                        // if the Enum has a [Description] attribute, use the description text
-                        var description = fieldInfo.GetCustomAttribute<DescriptionAttribute>()?.Description ?? name.SplitCase();
-                        list.Add( string.Format( "{0}^{1}", value, description ) );
-                    }
-
-                    var listSource = string.Join( ",", list );
-                    entityField.FieldConfig.Add( "values", new Field.ConfigurationValue( listSource ) );
-                    entityField.FieldConfig.Add( "fieldtype", new Field.ConfigurationValue( "rb" ) );
-                }
-
-                // Boolean properties
-                else if ( property.PropertyType == typeof( bool ) || property.PropertyType == typeof( bool? ) )
-                {
-                    entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.BOOLEAN.AsGuid() );
-                }
-
-                // Datetime properties
-                else if ( property.PropertyType == typeof( DateTime ) || property.PropertyType == typeof( DateTime? ) )
-                {
-                    var colAttr = property.GetCustomAttributes( typeof( ColumnAttribute ), true ).FirstOrDefault();
-                    if ( colAttr != null && ( ( ColumnAttribute ) colAttr ).TypeName == "Date" )
-                    {
-                        entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.DATE.AsGuid() );
-                    }
-                    else
-                    {
-                        entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.DATE_TIME.AsGuid() );
-                    }
-                }
-
-                // Decimal properties
-                else if ( property.PropertyType == typeof( decimal ) || property.PropertyType == typeof( decimal? ) )
-                {
-                    entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.DECIMAL.AsGuid() );
-                }
-
-                // Text Properties
-                else if ( property.PropertyType == typeof( string ) )
-                {
-                    entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.TEXT.AsGuid() );
-                }
-
-                // Integer Properties (which may be a DefinedValue)
-                else if ( property.PropertyType == typeof( int ) || property.PropertyType == typeof( int? ) )
-                {
-                    entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.INTEGER.AsGuid() );
-
-                    var definedValueAttribute = property.GetCustomAttribute<Rock.Data.DefinedValueAttribute>();
-                    if ( definedValueAttribute != null )
-                    {
-                        // Defined Value Properties
-                        Guid? definedTypeGuid = definedValueAttribute.DefinedTypeGuid;
-                        if ( definedTypeGuid.HasValue )
-                        {
-                            var definedType = DefinedTypeCache.Get( definedTypeGuid.Value );
-                            entityField.Title = definedType != null ? definedType.Name : property.Name.Replace( "ValueId", string.Empty ).SplitCase();
-                            if ( definedType != null )
-                            {
-                                entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.DEFINED_VALUE.AsGuid() );
-                                entityField.FieldConfig.Add( "definedtype", new Field.ConfigurationValue( definedType.Id.ToString() ) );
-                            }
-                        }
-                    }
-                }
+                var entityField = GetEntityFieldForProperty( property );
 
                 if ( entityField != null && entityField.FieldType != null )
                 {
@@ -406,6 +288,107 @@ namespace Rock.Reporting
         }
 
         /// <summary>
+        /// Constructs a single entity field from the given property.
+        /// </summary>
+        /// <param name="property">The definition of the property.</param>
+        /// <returns>A new instance of <see cref="EntityField"/>.</returns>
+        internal static EntityField GetEntityFieldForProperty( PropertyInfo property )
+        {
+            EntityField entityField = new EntityField( property.Name, FieldKind.Property, property );
+            entityField.IsPreviewable = property.GetCustomAttributes( typeof( PreviewableAttribute ), true ).Any();
+            var fieldTypeAttribute = property.GetCustomAttribute<Rock.Data.FieldTypeAttribute>();
+
+            // check if we can set it from the fieldTypeAttribute
+            if ( ( fieldTypeAttribute != null ) && SetEntityFieldFromFieldTypeAttribute( entityField, fieldTypeAttribute ) )
+            {
+                // intentionally blank, entity field is already setup
+            }
+
+            // Enum Properties
+            else if ( property.PropertyType.IsEnum )
+            {
+                entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.SINGLE_SELECT.AsGuid() );
+
+                var list = new List<string>();
+                foreach ( var name in Enum.GetNames( property.PropertyType ) )
+                {
+                    // ignore Obsolete Enum values
+                    object value = Enum.Parse( property.PropertyType, name );
+                    var fieldInfo = value.GetType().GetField( name );
+                    if ( fieldInfo?.GetCustomAttribute<ObsoleteAttribute>() != null )
+                    {
+                        continue;
+                    }
+
+                    // if the Enum has a [Description] attribute, use the description text
+                    var description = fieldInfo.GetCustomAttribute<DescriptionAttribute>()?.Description ?? name.SplitCase();
+                    list.Add( string.Format( "{0}^{1}", value, description ) );
+                }
+
+                var listSource = string.Join( ",", list );
+                entityField.FieldConfig.Add( "values", new Field.ConfigurationValue( listSource ) );
+                entityField.FieldConfig.Add( "fieldtype", new Field.ConfigurationValue( "rb" ) );
+            }
+
+            // Boolean properties
+            else if ( property.PropertyType == typeof( bool ) || property.PropertyType == typeof( bool? ) )
+            {
+                entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.BOOLEAN.AsGuid() );
+            }
+
+            // Datetime properties
+            else if ( property.PropertyType == typeof( DateTime ) || property.PropertyType == typeof( DateTime? ) )
+            {
+                var colAttr = property.GetCustomAttributes( typeof( ColumnAttribute ), true ).FirstOrDefault();
+                if ( colAttr != null && ( ( ColumnAttribute ) colAttr ).TypeName == "Date" )
+                {
+                    entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.DATE.AsGuid() );
+                }
+                else
+                {
+                    entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.DATE_TIME.AsGuid() );
+                }
+            }
+
+            // Decimal properties
+            else if ( property.PropertyType == typeof( decimal ) || property.PropertyType == typeof( decimal? ) )
+            {
+                entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.DECIMAL.AsGuid() );
+            }
+
+            // Text Properties
+            else if ( property.PropertyType == typeof( string ) )
+            {
+                entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.TEXT.AsGuid() );
+            }
+
+            // Integer Properties (which may be a DefinedValue)
+            else if ( property.PropertyType == typeof( int ) || property.PropertyType == typeof( int? ) )
+            {
+                entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.INTEGER.AsGuid() );
+
+                var definedValueAttribute = property.GetCustomAttribute<Rock.Data.DefinedValueAttribute>();
+                if ( definedValueAttribute != null )
+                {
+                    // Defined Value Properties
+                    Guid? definedTypeGuid = definedValueAttribute.DefinedTypeGuid;
+                    if ( definedTypeGuid.HasValue )
+                    {
+                        var definedType = DefinedTypeCache.Get( definedTypeGuid.Value );
+                        entityField.Title = definedType != null ? definedType.Name : property.Name.Replace( "ValueId", string.Empty ).SplitCase();
+                        if ( definedType != null )
+                        {
+                            entityField.FieldType = FieldTypeCache.Get( SystemGuid.FieldType.DEFINED_VALUE.AsGuid() );
+                            entityField.FieldConfig.Add( "definedtype", new Field.ConfigurationValue( definedType.Id.ToString() ) );
+                        }
+                    }
+                }
+            }
+
+            return entityField;
+        }
+
+        /// <summary>
         /// Sets the entity field from field type attribute.
         /// </summary>
         /// <param name="entityField">The entity field.</param>
@@ -437,26 +420,6 @@ namespace Rock.Reporting
             }
 
             return false;
-        }
-
-        /// <summary>
-        /// Adds the entity field for attribute.
-        /// </summary>
-        /// <param name="entityFields">The entity fields.</param>
-        /// <param name="attribute">The attribute.</param>
-        /// <param name="limitToFilterableAttributes">if set to <c>true</c> [limit to filterable attributes].</param>
-        [Obsolete( "Use AddEntityFieldsForAttributeList instead", true )]
-        [RockObsolete( "1.10" )]
-        public static void AddEntityFieldForAttribute( List<EntityField> entityFields, AttributeCache attribute, bool limitToFilterableAttributes = true )
-        {
-            var attributeList = new List<AttributeCache>();
-            attributeList.Add( attribute );
-
-            HashSet<string> legacyNameHash = new HashSet<string>( entityFields.Select( a => a.LegacyName ).ToArray() );
-            foreach ( var attributeItem in attributeList )
-            {
-                AddEntityFieldForAttribute( entityFields, legacyNameHash, attributeItem, limitToFilterableAttributes );
-            }
         }
 
         /// <summary>

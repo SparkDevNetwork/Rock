@@ -1,0 +1,165 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField modelValue=""
+                   formGroupClasses="image-uploader"
+                   name="imageuploader">
+        <template #default="{ uniqueId, field }">
+            <div class="control-wrapper">
+                <div ref="dropZoneElement" :id="uniqueId" class="imageupload-group" @click="onSelectFileClick">
+                    <div class="imageupload-thumbnail" style="width: 100px; height: 100px;">
+                        <div class="imageupload-thumbnail-image" :style="thumbnailStyle"></div>
+                    </div>
+
+                    <div v-if="isUploading" class="upload-progress">
+                        <i class="fa fa-refresh fa-spin fa-3x"></i>
+                        <div>{{ uploadProgressText }}</div>
+                    </div>
+
+                    <div class="imageupload-dropzone">
+                        <span>Upload</span>
+                        <input ref="fileInputElement" type="file" style="display: none;" @change="onFileChange" @remove="onFileRemove" />
+                    </div>
+                </div>
+            </div>
+        </template>
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { blobToBase64 } from "./utils.partial";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<string | undefined | null>,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string | undefined): void;
+    }>();
+
+    // Description: This component behaves like a standard ImageUplaoder except
+    // that no data is sent to the server. The "upload" all stays in-memory.
+    // The consuming component then stores the data some other way. In our case,
+    // it stuffs it into the field configuration.
+
+    // NOTE: This could have been implemented on the stock ImageUploader
+    // with some kind of handler pattern where we provide an object that deals
+    // with the "upload", but the existing ImageUploader uses a guid as the
+    // underlying value which doesn't work for us. In the future this might
+    // become a standard core control if we have need of something like this in
+    // the future.
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+
+    // Variables related to the progress of uploading a new file.
+    const isUploading = ref(false);
+    const uploadProgressText = ref("");
+
+    // Element references used to interact directly with the DOM.
+    const fileInputElement = ref<HTMLInputElement | null>(null);
+    const dropZoneElement = ref<HTMLElement | null>(null);
+
+    /** The CSS styles to use for the thumbnail element. */
+    const thumbnailStyle = computed((): Record<string, string> => {
+        const imageUrl = internalValue.value ? `data:image/png;base64,${internalValue.value}` : "/Assets/Images/no-picture.svg";
+
+        return {
+            backgroundImage: `url('${imageUrl}')`,
+            backgroundSize: "cover",
+            backgroundPosition: "50%"
+        };
+    });
+
+    /**
+     * Upload the specified file into Rock with the current settings.
+     *
+     * @param file The file to be uploaded.
+     */
+    async function uploadFile(file: File): Promise<void> {
+        // Update the UI to reflect that we are currently uploading.
+        isUploading.value = true;
+        uploadProgressText.value = "0%";
+
+        try {
+            internalValue.value = await blobToBase64(file);
+        }
+        finally {
+            // Clear the uploading progress whether success or failure.
+            isUploading.value = false;
+        }
+    }
+
+    /**
+     * Event handler for when the individual clicks to manually select a file
+     * to be uploaded into Rock.
+     */
+    function onSelectFileClick(): void {
+        if (!isUploading.value) {
+            fileInputElement.value?.click();
+        }
+    }
+
+    /**
+     * Event handler for when the file input has a new file selected. This
+     * is triggered for manual selection only, not drag and drop.
+     */
+    function onFileChange(): void {
+        if (isUploading.value) {
+            return;
+        }
+
+        if (fileInputElement.value && fileInputElement.value.files && fileInputElement.value.files.length > 0) {
+            uploadFile(fileInputElement.value.files[0]);
+        }
+    }
+
+    /**
+     * Event handler for when the file input has been cleared. This is
+     * probably not actually needed since the control is hidden but including
+     * it just in case.
+     */
+    function onFileRemove(): void {
+        if (isUploading.value) {
+            return;
+        }
+    }
+
+    // Watch for the drop zone element to become available. Once we have it
+    // register for the drag and drop events to support dropping a file onto
+    // the file uploader component.
+    watch(dropZoneElement, () => {
+        if (dropZoneElement.value) {
+            // Register the dragover event so we can indicate that we will
+            // accept a file dropped on us.
+            dropZoneElement.value.addEventListener("dragover", event => {
+                if (!isUploading.value && event.dataTransfer) {
+                    event.stopPropagation();
+                    event.preventDefault();
+
+                    if (event.dataTransfer.items.length === 1 && event.dataTransfer.items[0].kind === "file") {
+                        event.dataTransfer.dropEffect = "copy";
+                    }
+                    else {
+                        event.dataTransfer.dropEffect = "none";
+                    }
+                }
+            });
+
+            // Register the drop event so we can begin the upload for the
+            // file that was dropped on us.
+            dropZoneElement.value.addEventListener("drop", event => {
+                if (!isUploading.value && event.dataTransfer && event.dataTransfer.files.length > 0) {
+                    event.stopPropagation();
+                    event.preventDefault();
+
+                    uploadFile(event.dataTransfer.files[0]);
+                }
+            });
+        }
+    });
+</script>

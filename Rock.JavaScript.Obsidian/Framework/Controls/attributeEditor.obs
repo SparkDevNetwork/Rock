@@ -73,7 +73,7 @@
             </div>
 
             <div class="col-md-6">
-                <FieldTypeEditor v-model="fieldTypeValue" :isFieldTypeReadOnly="isFieldTypeReadOnly" />
+                <FieldTypeEditor v-model="fieldTypeValue" :isFieldTypeReadOnly="isFieldTypeReadOnly" :attributeGuid="attributeGuid" />
             </div>
         </div>
 
@@ -219,6 +219,8 @@
     });
 
     const isFieldTypeReadOnly = computed((): boolean => !!props.modelValue?.guid);
+
+    const attributeGuid = computed((): Guid | undefined | null => props.modelValue?.guid);
 
     function populateAttributeKey(): void {
         // if the attribute key hasn't been filled in yet, populate it with the attribute name minus whitespace

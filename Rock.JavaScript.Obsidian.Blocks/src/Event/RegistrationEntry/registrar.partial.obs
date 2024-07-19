@@ -1,7 +1,7 @@
 ﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div v-if="isRegistrarPanelShown" class="well">
-        <h4>This Registration Was Completed By</h4>
+        <h4>This {{ registrationEntryTerms.registrationSingularTitleCase }} Was Completed By</h4>
         <template v-if="useLoggedInPersonForRegistrar">
             <div class="row">
                 <div class="col-md-6 col-sm-6">
@@ -34,7 +34,7 @@
                 <div class="col-md-6 col-sm-6">
                     <RadioButtonList
                                      v-if="familyOptions.length"
-                                     :label="`${registrar.nickName || 'Person'} is in the same ${viewModel.familyTerm || 'immediate family'} as`"
+                                     :label="`${registrar.nickName || registrationEntryTerms.registrantSingularTitleCase} is in the same ${viewModel.familyTerm || 'immediate family'} as`"
                                      rules='required:{"allowEmptyString": true}'
                                      :modelValue="registrar.familyGuid ?? undefined"
                                      @update:modelValue="onUpdateFamilyGuid"
@@ -47,7 +47,7 @@
 </template>
 <script setup lang="ts">
     import { computed, ref, watch } from "vue";
-    import { CurrentRegistrationEntryState, getRegistrantBasicInfo, use } from "./utils.partial";
+    import { CurrentRegistrationEntryState, getRegistrantBasicInfo, RegistrationEntryTerms, use } from "./utils.partial";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
@@ -65,6 +65,7 @@
 
     const store = useStore();
     const registrationEntryState = use(CurrentRegistrationEntryState);
+    const registrationEntryTerms = use(RegistrationEntryTerms);
 
     // #region Values
 

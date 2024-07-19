@@ -21,14 +21,16 @@ using System.Linq;
 using System.Web;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-
+using Rock.Communication;
 using Rock.Data;
 using Rock.Lava;
+using Rock.Logging;
 using Rock.Model;
+using Rock.Tests.Integration.Communications;
+using Rock.Tests.Integration.Modules.Communications.Transport;
 using Rock.Tests.Shared;
 using Rock.Tests.Shared.Lava;
 using Rock.Utility;
-using Rock.Utility.Settings;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Modules.Core.Lava
@@ -538,14 +540,52 @@ Ted Decker<br/>Cindy Decker<br/>Noah Decker<br/>Alex Decker<br/>
         #region PageRoute
 
         [TestMethod]
-        public void PageRoute_ForPageNumber_EmitsUrl()
+        [Ignore("The current documentation example is incorrect. It references a system setting that is undefined.")]
+        public void PageRoute_DocumentationExample_EmitsExpectedOutput()
+        {
+            TestHelper.AssertTemplateOutput( "/WorkflowEntry/10/324",
+                "{{ 'Global' | Attribute:'WorkflowEntryPage','RawValue' | PageRoute:'WorkflowTypeId=10^WorkflowId=324' }}" );
+        }
+
+        [TestMethod]
+        public void PageRoute_WithActiveHttpRequest_EmitsUrlForApplicationRoot()
+        {
+            var simulator = new Http.TestLibrary.HttpSimulator( "Websites/Website1" );
+            using ( simulator.SimulateRequest() )
+            {
+                TestHelper.AssertTemplateOutput( "/Websites/Website1/page/12?PersonID=10&GroupId=20", "{{ '12' | PageRoute:'PersonID=10^GroupId=20' }}" );
+            }
+        }
+
+        [TestMethod]
+        public void PageRoute_WithNoActiveHttpRequest_EmitsUrlWithDefaultApplicationRoot()
         {
             var pageId = GetPageIdFromRouteName( "Admin" );
-            var simulator = new Http.TestLibrary.HttpSimulator();
+
+            TestHelper.AssertTemplateOutput( $"/Admin", "{{ " + pageId + " | PageRoute }}" );
+        }
+
+        [TestMethod]
+        public void PageRoute_ForPageNumberWithAssociatedRoute_EmitsUrlWithRoute()
+        {
+            var pageId = GetPageIdFromRouteName( "Admin" );
+            var simulator = new Http.TestLibrary.HttpSimulator("");
 
             using ( simulator.SimulateRequest() )
             {
                 TestHelper.AssertTemplateOutput( "/Admin", "{{ " + pageId + " | PageRoute }}" );
+            }
+        }
+
+        [TestMethod]
+        public void PageRoute_ForPageNumberWithAssociatedRouteParameters_EmitsUrlWithRouteParameters()
+        {
+            var pageId = GetPageIdFromRouteName( "reporting/dataviews" );
+            var simulator = new Http.TestLibrary.HttpSimulator();
+
+            using ( simulator.SimulateRequest() )
+            {
+                TestHelper.AssertTemplateOutput( "/reporting/dataviews/1", "{{ " + pageId + " | PageRoute:'DataViewId=1' }}" );
             }
         }
 
@@ -558,6 +598,76 @@ Ted Decker<br/>Cindy Decker<br/>Noah Decker<br/>Alex Decker<br/>
             {
                 TestHelper.AssertTemplateOutput( "/page/12?PersonID=10&GroupId=20", "{{ '12' | PageRoute:'PersonID=10^GroupId=20' }}" );
             }
+        }
+
+        [TestMethod]
+        public void PageRoute_InSystemCommunication_ReturnsRelativeUrl()
+        {
+            var pageId = GetPageIdFromRouteName( "person/{PersonId}" );
+
+            var template = "{{ $pageId | PageRoute:'PersonId=1' }}".Replace( "$pageId", pageId.ToString() );
+
+            var result = SendLavaTemplateInSystemCommunication( template );
+
+            var emailMessageText = result.EmailMessage.Body;
+
+            TestHelper.AssertTextMatch( $"<html><head></head><body>/person/1</body></html>",
+                emailMessageText,
+                ignoreWhitespace: true,
+                ignoreCase: true );
+        }
+
+        private const string _systemCommunicationTestGuid = "E81D2E50-809A-405F-9E19-ABAB31B0DFAB";
+
+        private MockSmtpSendResult SendLavaTemplateInSystemCommunication( string lavaTemplate )
+        {
+            // Create a new System Communication containing the test lava template.
+            var communication = CommunicationsDataManager.Instance.NewSystemCommunication( _systemCommunicationTestGuid.AsGuid(),
+                $"Test Communication ({_systemCommunicationTestGuid})",
+                $"Test Communication ({_systemCommunicationTestGuid})",
+                CategoryCache.GetId( SystemGuid.Category.SYSTEM_COMMUNICATION_WORKFLOW.AsGuid() ).GetValueOrDefault() );
+
+            communication.Body = lavaTemplate; 
+
+            CommunicationsDataManager.Instance.SaveSystemCommunication( communication );
+
+            var person = TestDataHelper.GetTestPerson( TestGuids.TestPeople.TedDecker );
+
+            var mergeObjects = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+
+            mergeObjects.Add( "Person", person );
+
+            var logger = new RockLoggerMemoryBuffer();
+            var messageResult = CommunicationHelper.CreateEmailMessage( person, mergeObjects, communication, logger );
+            var message = messageResult.Message;
+            message.AppRoot = "/test";
+
+            var medium = CommunicationsDataManager.Instance.GetCommunicationMediumComponent( CommunicationType.Email );
+            var mediumAttributes = GetMediumAttributes( medium );
+
+            var smtpTransport = new MockSmtpTransport();
+
+            smtpTransport.Send( messageResult.Message, medium.EntityType.Id, mediumAttributes, out var errorMessages );
+            Assert.IsFalse( errorMessages.Any() );
+
+            var processedMessage = smtpTransport.ProcessedItems.LastOrDefault();
+
+            return processedMessage;
+        }
+
+        private Dictionary<string, string> GetMediumAttributes( MediumComponent medium )
+        {
+            var mediumAttributes = new Dictionary<string, string>();
+            foreach ( var attr in medium.Attributes.Select( a => a.Value ) )
+            {
+                string value = medium.GetAttributeValue( attr.Key );
+                if ( value.IsNotNullOrWhiteSpace() )
+                {
+                    mediumAttributes.Add( attr.Key, medium.GetAttributeValue( attr.Key ) );
+                }
+            }
+
+            return mediumAttributes;
         }
 
         #endregion
@@ -633,9 +743,15 @@ Ted Decker<br/>Cindy Decker<br/>Noah Decker<br/>Alex Decker<br/>
                 ThemeName = "MyTheme",
                 HasActiveHttpRequest = hasHttpRequest
             };
-            var fluidEngine = LavaService.NewEngineInstance( typeof( Rock.Lava.Fluid.FluidEngine ),
-                    new LavaEngineConfigurationOptions { HostService = host } );
 
+            // In addition to the HostService, a FileSystem is also required to resolve the path for the Site Theme.
+            var config = new LavaEngineConfigurationOptions
+            {
+                HostService = host,
+                FileSystem = new WebsiteLavaFileSystem()
+            };
+
+            var fluidEngine = LavaService.NewEngineInstance( typeof( Rock.Lava.Fluid.FluidEngine ), config );
             return fluidEngine;
         }
 

@@ -1,19 +1,20 @@
 ﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <button :class="cssClass" :disabled="isButtonDisabled" @click="onButtonClick" :type="type" :data-shortcut-key="shortcutKey">
+    <button ref="element" :class="cssClass" :disabled="isButtonDisabled" @click="onButtonClick" :type="type" v-bind="tooltipAttrs" :data-shortcut-key="shortcutKey">
         <template v-if="isButtonLoading">
-            {{ loadingText }}
+            <slot name="loading">{{ loadingText }}</slot>
         </template>
         <slot v-else />
     </button>
 </template>
 
 <script setup lang="ts">
-    import { computed, PropType, ref } from "vue";
+    import { computed, PropType, ref, watch } from "vue";
     import { isPromise } from "@Obsidian/Utility/promiseUtils";
     import { LiteralUnion } from "@Obsidian/Types/Utility/support";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
 
     const props = defineProps({
         isLoading: {
@@ -65,6 +66,11 @@
             default: false
         },
 
+        /** This gets turned into a tooltip as well as being the accessibility title */
+        title: {
+            type: String
+        },
+
         shortcutKey: {
             type: String as PropType<string>,
             default: ""
@@ -72,6 +78,7 @@
     });
 
     const isProcessing = ref(false);
+    const element = ref();
 
     const isButtonDisabled = computed((): boolean => {
         return props.disabled || (props.autoDisable && isProcessing.value) || props.isLoading;
@@ -95,6 +102,22 @@
 
     const cssClass = computed((): string => {
         return `btn ${typeClass.value} ${sizeClass.value} ${props.isSquare ? "btn-square" : ""}`;
+    });
+
+    const tooltipAttrs = computed(() => {
+        if (props.title) {
+            return {
+                title: props.title,
+                "data-toggle": "tooltip"
+            };
+        }
+        return {};
+    });
+
+    watch([element, () => props.title], () => {
+        if (props.title && element.value) {
+            tooltip(element.value);
+        }
     });
 
     const onButtonClick = async (event: MouseEvent): Promise<void> => {

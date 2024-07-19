@@ -38,13 +38,9 @@ namespace Rock.Field.Types
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.MEDIA_SELECTOR )]
     public class MediaSelectorFieldType : FieldType, ILinkableFieldType
     {
-        #region Configuration
-
         private const string MODE_TYPE = "modetype";
         private const string ITEM_WIDTH = "itemwidth";
         private const string MEDIA_ITEMS = "mediaitems";
-
-        #endregion
 
         #region Configuration
 
@@ -113,20 +109,17 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override string GetCondensedTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            // Don't truncate the value.
             return GetTextValue( privateValue, privateConfigurationValues );
         }
-
 
         /// <inheritdoc/>
         public override string GetCondensedHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            // Don't truncate the value.
             return GetHtmlValue( privateValue, privateConfigurationValues );
         }
 
         /// <summary>
-        /// Formats the value extended.
+        /// URLs the link.
         /// </summary>
         /// <param name="value">The value.</param>
         /// <param name="configurationValues">The configuration values.</param>

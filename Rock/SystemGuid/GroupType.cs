@@ -14,8 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-
 namespace Rock.SystemGuid
 {
     /// <summary>
@@ -26,12 +24,12 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Security Role group type guid
         /// </summary>
-        public const string GROUPTYPE_SECURITY_ROLE= "AECE949F-704C-483E-A4FB-93D5E4720C4C";
+        public const string GROUPTYPE_SECURITY_ROLE = "AECE949F-704C-483E-A4FB-93D5E4720C4C";
 
         /// <summary>
         /// Family group type guid
         /// </summary>
-        public const string GROUPTYPE_FAMILY= "790E3215-3B10-442B-AF69-616C0DCB998E";
+        public const string GROUPTYPE_FAMILY = "790E3215-3B10-442B-AF69-616C0DCB998E";
 
         /// <summary>
         /// Event Attendees group type guid

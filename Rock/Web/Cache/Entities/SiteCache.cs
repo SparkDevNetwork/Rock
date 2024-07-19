@@ -499,6 +499,8 @@ namespace Rock.Web.Cache
 
         /// <inheritdoc cref="Site.EnablePageViewGeoTracking" />
         [DataMember]
+        [RockObsolete( "1.17" )]
+        [Obsolete( "Geolocation lookups are now performed on all interactions, regardless of this setting." )]
         public bool EnablePageViewGeoTracking { get; private set; }
 
         /// <inheritdoc cref="Site.DisablePredictableIds" />
@@ -587,7 +589,9 @@ namespace Rock.Web.Cache
             ThumbnailFileUrl = site.ThumbnailFileUrl;
             LatestVersionDateTime = site.LatestVersionDateTime;
             EnableExclusiveRoutes = site.EnableExclusiveRoutes;
+#pragma warning disable CS0618 // Type or member is obsolete
             EnablePageViewGeoTracking = site.EnablePageViewGeoTracking;
+#pragma warning restore CS0618 // Type or member is obsolete
             DisablePredictableIds = site.DisablePredictableIds;
             EnableVisitorTracking = site.EnableVisitorTracking;
             EnablePersonalization = site.EnablePersonalization;
@@ -728,16 +732,6 @@ namespace Rock.Web.Cache
         #endregion
 
         #region Static Methods
-
-        /// <summary>
-        /// Flushes this instance.
-        /// </summary>
-        [Obsolete( "This will not work with a distributed cache system such as Redis. Flush the Site from the cache instead.", true )]
-        [RockObsolete( "1.10" )]
-        public static void RemoveSiteDomains()
-        {
-            _siteDomains = new ConcurrentDictionary<string, int?>();
-        }
 
         /// <summary>
         /// Returns site based on domain

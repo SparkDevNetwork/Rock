@@ -101,8 +101,7 @@
         </Panel>
 
         <div class="row">
-            <div class="col-md-2">
-
+            <div class="col-md-4">
                 <NumberBox v-model="memoryCacheDuration"
                            label="Memory Cache Duration"
                            help="How long the persisted object should be cached in memory. This is a sliding timeline, so each time the object is read the counter will reset. Leave blank to not cache the object in memory which will mean it will be deserialized into the object on each request (still fast)."
@@ -119,10 +118,10 @@
                             :isCurrentDateOffset="false" />
             </div>
 
-            <div class="col-md-2 col-md-offset-4">
+            <div class="col-md-4 col-md-offset-2">
                 <EntityTypePicker v-model="entityType"
                                   label="Entity Type"
-                                  help="Set this to indicate which EntityType the JSON object should be associated with. This will be used by the PersistedDataset Lava Filter when entity related options such as 'AppendFollowing' are specified.'"
+                                  help="Set this to indicate which EntityType the JSON object should be associated with. This will be used by the PersistedDataset Lava Filter when entity related options such as 'AppendFollowing' are specified."
                                   :multiple="false"
                                   :showBlankItem="true"
                                   :disabled="isSystem" />
@@ -132,7 +131,6 @@
                           label="Allow Manual Refresh" />
             </div>
         </div>
-
     </fieldset>
 </template>
 

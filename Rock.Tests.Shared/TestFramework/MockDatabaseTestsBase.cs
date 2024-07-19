@@ -50,10 +50,6 @@ namespace Rock.Tests.Shared.TestFramework
 
             // Start the bus.
             await RockMessageBus.StartBusInternalAsync( busComponentMock.Object );
-
-            // Register a fake IRockLogger that discards all logged messages.
-            var loggerMock = new Mock<IRockLogger>( MockBehavior.Loose );
-            RockLogger.SetLoggerInternal( loggerMock.Object );
         }
 
         /// <summary>
@@ -62,9 +58,6 @@ namespace Rock.Tests.Shared.TestFramework
         [ClassCleanup( InheritanceBehavior.BeforeEachDerivedClass )]
         public static void ClassCleanup()
         {
-            // Reset the rock logger.
-            RockLogger.SetLoggerInternal( null );
-
             // Stop the fake bus.
             RockMessageBus.StopBusInternal();
         }

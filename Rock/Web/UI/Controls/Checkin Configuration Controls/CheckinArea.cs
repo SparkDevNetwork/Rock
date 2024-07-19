@@ -44,6 +44,8 @@ namespace Rock.Web.UI.Controls
 
         private Grid _gCheckinLabels;
 
+        private Grid _gNextGenCheckInLabels;
+
         /// <summary>
         /// Gets the group type unique identifier.
         /// </summary>
@@ -127,6 +129,7 @@ namespace Rock.Web.UI.Controls
         {
             // manually wireup the grid events since they don't seem to do it automatically 
             string eventTarget = Page.Request.Params["__EVENTTARGET"];
+
             if ( eventTarget.StartsWith( _gCheckinLabels.UniqueID ) )
             {
                 List<string> subTargetList = eventTarget.Replace( _gCheckinLabels.UniqueID, string.Empty ).Split( new char[] { '$' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
@@ -144,6 +147,26 @@ namespace Rock.Web.UI.Controls
                     int rowIndex = subTargetList.First().AsNumeric().AsInteger() - 2;
                     RowEventArgs rowEventArgs = new RowEventArgs( rowIndex, this.CheckinLabels[rowIndex].AttributeKey );
                     DeleteCheckinLabel_Click( this, rowEventArgs );
+                }
+            }
+
+            if ( eventTarget.StartsWith( _gNextGenCheckInLabels.UniqueID ) )
+            {
+                List<string> subTargetList = eventTarget.Replace( _gNextGenCheckInLabels.UniqueID, string.Empty ).Split( new char[] { '$' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+                EnsureChildControls();
+
+                string lblAddControlId = subTargetList.Last();
+                var lblAdd = _gNextGenCheckInLabels.Actions.FindControl( lblAddControlId ) as LinkButton;
+                if ( lblAdd != null )
+                {
+                    AddNextGenCheckInLabel_Click( this, new EventArgs() );
+                }
+                else
+                {
+                    // rowIndex is determined by the numeric suffix of the control id after the Grid, subtract 2 (one for the header, and another to convert from 0 to 1 based index)
+                    int rowIndex = subTargetList.First().AsNumeric().AsInteger() - 2;
+                    RowEventArgs rowEventArgs = new RowEventArgs( rowIndex, this.NextGenCheckInLabels[rowIndex].Guid );
+                    DeleteNextGenCheckInLabel_Click( this, rowEventArgs );
                 }
             }
         }
@@ -200,6 +223,47 @@ namespace Rock.Web.UI.Controls
             set
             {
                 ViewState["CheckinLabels"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Special class for storing CheckInLabel references for the grid.
+        /// </summary>
+        [Serializable]
+        public class NextGenCheckInLabelInfo
+        {
+            /// <summary>
+            /// The unique identifier to identify this row in memory.
+            /// </summary>
+            public Guid Guid { get; set; }
+
+            /// <summary>
+            /// The label identifier.
+            /// </summary>
+            public int CheckInLabelId { get; set; }
+
+            /// <summary>
+            /// The name of the label.
+            /// </summary>
+            public string Name { get; set; }
+        }
+
+        /// <summary>
+        /// Gets or sets the checkin labels used by the next-generation check-in system.
+        /// </summary>
+        /// <value>
+        /// The checkin labels used by the next-generation check-in system.
+        /// </value>
+        public List<NextGenCheckInLabelInfo> NextGenCheckInLabels
+        {
+            get
+            {
+                return ViewState["NextGenCheckInLabels"] as List<NextGenCheckInLabelInfo>;
+            }
+
+            set
+            {
+                ViewState["NextGenCheckInLabels"] = value;
             }
         }
 
@@ -317,6 +381,7 @@ namespace Rock.Web.UI.Controls
 
             // Check-in Labels grid
             CreateCheckinLabelsGrid();
+            CreateNextGenCheckInLabelsGrid();
         }
 
         /// <summary>
@@ -353,6 +418,32 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Creates the checkin labels grid for the next-generation labels.
+        /// </summary>
+        private void CreateNextGenCheckInLabelsGrid()
+        {
+            _gNextGenCheckInLabels = new Grid();
+
+            // make the ID static so we can handle Postbacks from the Add and Delete actions
+            _gNextGenCheckInLabels.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+            _gNextGenCheckInLabels.ID = this.ClientID + "_gNextGenCheckInLabels";
+            _gNextGenCheckInLabels.CssClass = "margin-b-md";
+            _gNextGenCheckInLabels.DisplayType = GridDisplayType.Light;
+            _gNextGenCheckInLabels.ShowActionRow = true;
+            _gNextGenCheckInLabels.RowItemText = "Label";
+            _gNextGenCheckInLabels.Actions.ShowAdd = true;
+
+            _gNextGenCheckInLabels.DataKeyNames = new string[] { nameof( NextGenCheckInLabelInfo.Guid ) };
+            _gNextGenCheckInLabels.Columns.Add( new BoundField { DataField = nameof( NextGenCheckInLabelInfo.CheckInLabelId ), Visible = false } );
+            _gNextGenCheckInLabels.Columns.Add( new BoundField { DataField = nameof( NextGenCheckInLabelInfo.Name ), HeaderText = "Name" } );
+
+            var deleteField = new DeleteField();
+            _gNextGenCheckInLabels.Columns.Add( deleteField );
+
+            Controls.Add( _gNextGenCheckInLabels );
+        }
+
+        /// <summary>
         /// Writes the <see cref="T:System.Web.UI.WebControls.CompositeControl" /> content to the specified <see cref="T:System.Web.UI.HtmlTextWriter" /> object, for display on the client.
         /// </summary>
         /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter" /> that represents the output stream to render HTML content on the client.</param>
@@ -380,6 +471,17 @@ namespace Rock.Web.UI.Controls
                     _gCheckinLabels.DataBind();
                 }
                 _gCheckinLabels.RenderControl( writer );
+
+                if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+                {
+                    writer.WriteLine( "<h3>Next Gen Check-in Labels</h3>" );
+                    if ( NextGenCheckInLabels != null )
+                    {
+                        _gNextGenCheckInLabels.DataSource = NextGenCheckInLabels;
+                        _gNextGenCheckInLabels.DataBind();
+                    }
+                    _gNextGenCheckInLabels.RenderControl( writer );
+                }
             }
         }
 
@@ -453,6 +555,26 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Handles the Click event of the DeleteCheckinLabel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void DeleteNextGenCheckInLabel_Click( object sender, RowEventArgs e )
+        {
+            DeleteNextGenCheckInLabelClick?.Invoke( sender, e );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the AddCheckinLabel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void AddNextGenCheckInLabel_Click( object sender, EventArgs e )
+        {
+            AddNextGenCheckInLabelClick?.Invoke( sender, e );
+        }
+
+        /// <summary>
         /// Occurs when [delete checkin label click].
         /// </summary>
         public event EventHandler<RowEventArgs> DeleteCheckinLabelClick;
@@ -461,5 +583,15 @@ namespace Rock.Web.UI.Controls
         /// Occurs when [add checkin label click].
         /// </summary>
         public event EventHandler AddCheckinLabelClick;
+
+        /// <summary>
+        /// Occurs when [delete checkin label click].
+        /// </summary>
+        public event EventHandler<RowEventArgs> DeleteNextGenCheckInLabelClick;
+
+        /// <summary>
+        /// Occurs when [add checkin label click].
+        /// </summary>
+        public event EventHandler AddNextGenCheckInLabelClick;
     }
 }

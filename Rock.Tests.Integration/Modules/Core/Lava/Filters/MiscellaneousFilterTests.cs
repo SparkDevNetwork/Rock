@@ -26,6 +26,7 @@ using Rock.Data;
 using Rock.Lava;
 using Rock.Lava.Fluid;
 using Rock.Model;
+using Rock.Tests.Integration.Core;
 using Rock.Tests.Shared;
 using Rock.Tests.Shared.Lava;
 using Rock.Utility.Settings;
@@ -66,55 +67,8 @@ namespace Rock.Tests.Integration.Modules.Core.Lava.Filters
             rockContext.SaveChanges();
 
             // Add a Persisted Dataset containing some test people.
-            var datasetLava = @"
-[
-{%- person where:'Guid == `<benJonesGuid>` || Guid == `<billMarbleGuid>` || Guid == `<alishaMarbleGuid>`' iterator:'People' -%}
-  {%- for item in People -%}
-    {
-        `Id`: {{ item.Id | ToJSON }},
-        `FirstName`: {{ item.NickName | ToJSON }},
-        `LastName`: {{ item.LastName | ToJSON }},
-        `FullName`: {{ item.FullName | ToJSON }},
-    }
-    {%- unless forloop.last -%},{%- endunless -%}
-  {%- endfor -%}
-{%- endperson -%}
-]
-";
-
-            datasetLava = datasetLava.Replace( "<benJonesGuid>", TestGuids.TestPeople.BenJones )
-                .Replace( "<billMarbleGuid>", TestGuids.TestPeople.BillMarble )
-                .Replace( "<alishaMarbleGuid>", TestGuids.TestPeople.AlishaMarble );
-
-            // Create a Persisted Dataset.
-            const string PersistedDataSetPeopleGuid = "99FF9EFA-D9E3-48DE-AD08-C67389FF688F";
-
-            datasetLava = datasetLava.Replace( "`", @"""" );
-
-            var ps = new PersistedDatasetService( rockContext );
-
-            var pds = ps.Get( PersistedDataSetPeopleGuid.AsGuid() );
-
-            if ( pds == null )
-            {
-                pds = new PersistedDataset();
-
-                pds.Guid = PersistedDataSetPeopleGuid.AsGuid();
-
-                ps.Add( pds );
-            }
-
-            pds.Name = "Persons";
-            pds.AccessKey = "persons";
-            pds.Description = "A persisted dataset created for testing purposes.";
-            pds.BuildScriptType = PersistedDatasetScriptType.Lava;
-            pds.BuildScript = datasetLava;
-            pds.EnabledLavaCommands = "RockEntity";
-            pds.EntityTypeId = EntityTypeCache.Get( typeof( Person ), createIfNotFound: false, rockContext ).Id;
-
-            pds.UpdateResultData();
-
-            rockContext.SaveChanges();
+            PersistedDatasetDataManager.Instance.AddPersistedDatasetForPersonBasicInfo( "99FF9EFA-D9E3-48DE-AD08-C67389FF688F".AsGuid(),
+                "persons" );
         }
 
         #region Debug

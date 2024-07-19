@@ -1,10 +1,10 @@
 import { HttpResult } from "@Obsidian/Types/Utility/http";
 import RegistrationEntry from "../../src/Event/registrationEntry.obs";
+import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
 import { mockBlockActions, mountBlock } from "../blocks";
 import { Guid } from "@Obsidian/Types";
 import { getMatching, waitFor } from "../utils";
 import { flushPromises } from "@vue/test-utils";
-import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
 
 function getConfigurationValues(): RegistrationEntryInitializationBox {
     // This is weird, but we have to do this because the block actually
@@ -1592,5 +1592,6 @@ const configurationValues: RegistrationEntryInitializationBox = {
     "hideProgressBar": false,
     "showSmsOptIn": false,
     "isPaymentPlanAllowed": false,
-    "isPaymentPlanConfigured": false
+    "isPaymentPlanConfigured": false,
+    "disableCaptchaSupport": true
 };

@@ -1,0 +1,259 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Tag"
+          :entityTypeGuid="EntityType.Tag"
+          stickyHeader
+          liveUpdates
+          gridSettings
+          :gridSettingsActive="hasSettingsFilters"
+          @gridSettingsClick="isGridSettingsVisible = true"
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          @selectItem="onSelectItem">
+
+        <ReorderColumn v-if="isReorderColumnVisible"
+                       @orderChanged="onOrderChanged" />
+
+        <TextColumn name="name"
+                    title="Name"
+                    field="name"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <TextColumn name="entityType"
+                    title="Entity Type"
+                    field="entityType"
+                    :filter="textValueFilter"
+                    visiblePriority="md" />
+
+        <TextColumn v-if="config.options?.isQualifierColumnsVisible"
+                    name="entityTypeQualifierColumn"
+                    title="Qualifier Column"
+                    field="entityTypeQualifierColumn"
+                    :filter="textValueFilter"
+                    visiblePriority="md" />
+
+        <TextColumn v-if="config.options?.isQualifierColumnsVisible"
+                    name="entityTypeQualifierValue"
+                    title="Qualifier Value"
+                    field="entityTypeQualifierValue"
+                    :filter="textValueFilter"
+                    visiblePriority="md" />
+
+        <LabelColumn name="scope"
+                     title="Scope"
+                     field="scope"
+                     :filter="pickExistingValueFilter"
+                     :textSource="scopes"
+                     :classSource="scopeLabelColors"
+                     width="15%"
+                     visiblePriority="xs" />
+
+        <PersonColumn name="owner"
+                      title="Owner"
+                      field="owner"
+                      :hideAvatar="true"
+                      :filter="pickExistingValueFilter"
+                      :filterValue="getPersonNameFilterValue"
+                      visiblePriority="xs" />
+
+        <NumberColumn name="entityCount"
+                    title="Entity Count"
+                    field="entityCount"
+                    :filter="numberValueFilter"
+                    visiblePriority="md" />
+
+        <BooleanColumn name="isActive"
+                       title="Active"
+                       field="isActive"
+                       visiblePriority="md" />
+
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+    </Grid>
+
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible" />
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { BooleanColumn, PersonColumn, pickExistingValueFilter, TextColumn, textValueFilter, numberValueFilter, DeleteColumn, ReorderColumn, LabelColumn, NumberColumn } from "@Obsidian/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { TagListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/TagList/tagListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { GridSettingsOptions, NavigationUrlKey, PreferenceKey } from "./TagList/types.partial";
+    import { computed, reactive, ref, watch } from "vue";
+    import GridSettingsModal from "./TagList/gridSettingsModal.partial.obs";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+
+    const config = useConfigurationValues<ListBlockBox<TagListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const isGridSettingsVisible = ref(false);
+    const gridSettings = ref<GridSettingsOptions>({
+        owner: JSON.parse(preferences.getValue(PreferenceKey.FilterOwner) || "{}"),
+        scopes: JSON.parse(preferences.getValue(PreferenceKey.FilterScope) || "[]"),
+        category: JSON.parse(preferences.getValue(PreferenceKey.FilterCategory) || "{}"),
+        entityType: JSON.parse(preferences.getValue(PreferenceKey.FilterEntityName) || "{}")
+    });
+
+    const scopeLabelColors: Record<string, string> = {
+        "Organization": "primary",
+        "Personal": "default"
+    };
+
+    const scopes: Record<string, string> = {
+        "Organization": "Organization",
+        "Personal": "Personal"
+    };
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** `true` if the grid settings is performing any filtering. */
+    const hasSettingsFilters = computed((): boolean => {
+        const isOwnerFilterActive = isActiveScope("Personal") && !!gridSettings.value.owner?.value;
+        return isOwnerFilterActive
+            || gridSettings.value.scopes.length > 0
+            || !!gridSettings.value.category?.value
+            || !!gridSettings.value.entityType?.value;
+    });
+
+    const isReorderColumnVisible = computed((): boolean => {
+        const ownerFilter = preferences.getValue(PreferenceKey.FilterOwner);
+        return (config.options?.isReorderColumnVisible ?? false) && isActiveScope("Organization") && !ownerFilter;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Returns true if the specified scope has been selected as a filter.
+     */
+    function isActiveScope(scope: string): boolean {
+        return gridSettings.value?.scopes?.includes(scope);
+    }
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    /**
+    * Gets the filter value text to use for the name column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getPersonNameFilterValue(row: Record<string, unknown>): string {
+        const person = row["owner"] as PersonFieldBag;
+        return !person ? "" : `${person.nickName} ${person.lastName}`;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+        }
+    }
+
+    /**
+     * Called when a row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete tag.");
+        }
+    }
+
+    /**
+     * Called when the Add button has been clicked by the indivual.
+     */
+    function onAddItem(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
+        }
+    }
+
+    /**
+     * Called when a row has been dragged from one position to a new position.
+     *
+     * @param item The item that was moved to a new position.
+     * @param beforeItem The item that the first item was dropped before.
+     *
+     * @returns `true` if the operation succeeded; otherwise `false`.
+     */
+    async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        const result = await invokeBlockAction<string>("ReorderItem", {
+            key: item["idKey"],
+            beforeKey: beforeItem?.["idKey"] ?? null
+        });
+
+        return result.isSuccess;
+    }
+
+    // #endregion
+
+    watch(gridSettings, async () => {
+        preferences.setValue(PreferenceKey.FilterScope, JSON.stringify(gridSettings.value.scopes));
+        preferences.setValue(PreferenceKey.FilterCategory, JSON.stringify(gridSettings.value.category));
+        preferences.setValue(PreferenceKey.FilterEntityName, JSON.stringify(gridSettings.value.entityType));
+
+        if (config.options?.isReorderColumnVisible && isActiveScope("Personal")) {
+            preferences.setValue(PreferenceKey.FilterOwner, JSON.stringify(gridSettings.value.owner));
+        }
+        else {
+            preferences.setValue(PreferenceKey.FilterOwner, "");
+            gridSettings.value.owner = config.options?.currentPersonAlias ?? undefined;
+        }
+
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
+    });
+
+    gridDataSource.value = loadGridData();
+</script>

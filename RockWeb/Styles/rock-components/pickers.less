@@ -233,6 +233,129 @@
     }
   }
 
+  .personpicker-results {
+    container-type: inline-size;
+  }
+
+  .personpicker-item {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px 16px;
+    background: @well-bg;
+    border: 1px solid @well-border;
+    padding: 8px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    border-radius: @border-radius-base;
+    align-items: center;
+
+    &:focus-visible {
+      outline: @brand-primary auto 1px;
+    }
+
+    .main .data {
+      align-self: center;
+    }
+
+    .main,
+    .address-email,
+    .phones {
+      grid-column: span 2;
+    }
+
+    .taglist {
+      flex-direction: column-reverse;
+      align-items: end;
+    }
+
+    .item-meta .taglist {
+      display: none;
+    }
+  }
+
+  @media (min-width: 420px) {
+    .personpicker-item {
+      .address-email,
+      .phones {
+        grid-column: span 1;
+      }
+
+      .item-meta {
+        display: grid;
+        grid-template-columns: 1fr max-content;
+        gap: 24px;
+      }
+    }
+  }
+
+  @media (min-width: 480px) {
+    .personpicker-item {
+      grid-template-columns: 1fr 1fr;
+      .main {
+        grid-column: span 1;
+        grid-row: span 2;
+
+        .taglist {
+          display: none;
+        }
+      }
+
+      .item-meta {
+        display: block;
+        .taglist {
+          display: flex;
+          float: right;
+          margin-left: 4px;
+        }
+      }
+
+      .address-email,
+      .phones {
+        // put both into second column in the first row
+        grid-column: ~"2 / span 1";
+      }
+    }
+  }
+
+  @media (min-width: 820px) {
+    .personpicker-item {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+      grid-template-rows: 1fr;
+      gap: 0 16px;
+
+      .item-meta {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: minmax(0, 4fr) minmax(min-content, 2fr) minmax(min-content, 100px);
+        height: 100%;
+        align-items: center;
+      }
+
+      .taglist,
+      .address-email,
+      .phones {
+        grid-column: span 1;
+      }
+
+      .taglist {
+        order: 3;
+        align-self: start;
+      }
+    }
+  }
+
+  @media (min-width: 1020px) {
+    .personpicker-item {
+      .item-meta {
+        grid-template-columns: minmax(0, 4fr) minmax(min-content, 2fr) minmax(min-content, 200px);
+      }
+
+      .taglist {
+        flex-direction: row;
+      }
+    }
+  }
+
   // details used for pickers like person picker to show the details of the selected item
   .picker-select-item-details {
     @media (min-width: @screen-sm-min) {
@@ -332,15 +455,6 @@
       position: relative;
       width: 350px;
     }
-  }
-}
-
-// date time picker
-.date-time-picker {
-  margin-bottom: 11px;
-
-  .input-group {
-    margin-bottom: 4px;
   }
 }
 

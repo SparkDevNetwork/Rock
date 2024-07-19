@@ -378,7 +378,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             decimal growthPercent = 0;
 
-            if ( baseGrowthContribution == 0 )
+            if ( last90DaysContribution == 0 )
+            {
+                growthPercent = 0;
+            }
+            else if ( baseGrowthContribution == 0 )
             {
                 growthPercent = 100;
             }
@@ -410,10 +414,28 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             var last90DayCount = twelveMonthTransactions.Count( t => t.TransactionDateTime >= ninetyDaysAgo );
             var last90DayCountText = $"{last90DayCount} {"gift".PluralizeIf( last90DayCount != 1 )}";
+            var growthPercentClass = string.Empty;
+            var growthPercentIcon = string.Empty;
+
+            if ( last90DaysContribution == 0 )
+            {
+                growthPercentClass = "default";
+                growthPercentIcon = "fa-minus";
+            }
+            else if ( isGrowthPositive )
+            {
+                growthPercentClass = "success";
+                growthPercentIcon = "fa-arrow-up";
+            }
+            else
+            {
+                growthPercentClass = "danger";
+                growthPercentIcon = "fa-arrow-down";
+            }
 
             var last90DaysSubValue =
-$@"<span title=""{growthPercentText}"" class=""small text-{( isGrowthPositive ? "success" : "danger" )}"">
-    <i class=""fa {( isGrowthPositive ? "fa-arrow-up" : "fa-arrow-down" )}""></i>
+$@"<span title=""{growthPercentText}"" class=""small text-{growthPercentClass}"">
+    <i class=""fa {growthPercentIcon}""></i>
     {growthPercentDisplay}
 </span>
 <div class=""small"">{last90DayCountText}</div>";
@@ -539,7 +561,7 @@ $@"<span title=""{growthPercentText}"" class=""small text-{( isGrowthPositive ? 
                 $"{giftAmountIqr}",
                 "fa-fw fa-money-bill",
                 "left",
-                $"A typical gift amount has a median value of ${giftAmountMedian} with an IQR variance of ${giftAmountIqr}." );
+                $"A typical gift amount has a median value of ${giftAmountMedian} with a variability of ${giftAmountIqr}." );
 
             stringBuilder.Append( typicalGiftKpi );
 
@@ -554,7 +576,7 @@ $@"<span title=""{growthPercentText}"" class=""small text-{( isGrowthPositive ? 
                 giftFrequencyDaysMean + "d",
                 $"{PlusOrMinus}{giftFrequencyDaysStdDev}d",
                 "fa-fw fa-clock",
-                description: $"A typical gift frequency has a mean value of {giftFrequencyDaysMean} {giftFrequencyDaysMeanUnits} with a standard deviation variance of {giftFrequencyDaysStdDev} {giftFrequencyDaysStdDevUnits}." );
+                description: $"A typical gift frequency has a mean value of {giftFrequencyDaysMean} {giftFrequencyDaysMeanUnits} with a variability of {giftFrequencyDaysStdDev} {giftFrequencyDaysStdDevUnits}." );
 
             stringBuilder.Append( typicalFrequencyKpi );
 

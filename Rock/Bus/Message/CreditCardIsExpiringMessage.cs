@@ -17,6 +17,8 @@
 using System;
 using System.Collections.Generic;
 
+using Microsoft.Extensions.Logging;
+
 using Rock.Bus.Queue;
 using Rock.Configuration;
 using Rock.Logging;
@@ -141,6 +143,7 @@ namespace Rock.Bus.Message
     /// Credit Card Is Expiring Message.
     /// Sends queues for member credit cards that are close to expiration when running the <see cref="Rock.Jobs.SendCreditCardExpirationNotices"/> job
     /// </summary>
+    [RockLoggingCategory]
     public class CreditCardIsExpiringMessage : ICreditCardIsExpiringMessage
     {
         /// <summary>
@@ -263,6 +266,8 @@ namespace Rock.Bus.Message
         /// <param name="financialScheduledTransactions"></param>
         public static void Publish( Person person, FinancialPaymentDetail financialPaymentDetail, List<int> financialScheduledTransactions)
         {
+            var logger = RockLogger.LoggerFactory.CreateLogger<CreditCardIsExpiringMessage>();
+
             if ( !RockMessageBus.IsRockStarted )
             {
                 // Don't publish events until Rock is all the way started
@@ -272,12 +277,12 @@ namespace Rock.Bus.Message
 
                 if ( elapsedSinceProcessStarted.TotalSeconds > RockMessageBus.MAX_SECONDS_SINCE_STARTTIME_LOG_ERROR )
                 {
-                    RockLogger.Log.Error( RockLogDomains.Bus, logMessage );
-                    ExceptionLogService.LogException( new BusException(logMessage ) );
+                    logger.LogError( logMessage );
+                    ExceptionLogService.LogException( new BusException( logMessage ) );
                 }
                 else
                 {
-                    RockLogger.Log.Debug( RockLogDomains.Bus, logMessage );
+                    logger.LogDebug( logMessage );
                 }
 
                 return;
@@ -313,7 +318,7 @@ namespace Rock.Bus.Message
 
             _ = RockMessageBus.PublishAsync<ExpiringCardEventQueue, CreditCardIsExpiringMessage>( message );
 
-            RockLogger.Log.Debug( RockLogDomains.Bus, "Published 'Credit Card Is Expiring Message' message." );
+            logger.LogDebug( "Published 'Credit Card Is Expiring Message' message." );
         }
 
         /// <summary>

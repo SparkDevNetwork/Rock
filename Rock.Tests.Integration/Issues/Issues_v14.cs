@@ -117,11 +117,10 @@ namespace Rock.Tests.Integration.BugFixes
 
             var engineOptions = new LavaEngineConfigurationOptions
             {
-                InitializeDynamicShortcodes = false
+                InitializeDynamicShortcodes = false,
+                ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.Throw
             };
-            var engine = global::Rock.Lava.LavaService.NewEngineInstance( typeof( RockLiquidEngine ), engineOptions );
-
-            LavaIntegrationTestHelper.SetEngineInstance( engine );
+            var engine = LavaService.NewEngineInstance( typeof( RockLiquidEngine ), engineOptions );
 
             var mergeFields = new LavaDataDictionary();
             var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = parallelProcessTotal };
@@ -138,7 +137,7 @@ namespace Rock.Tests.Integration.BugFixes
                     Parallel.For( 0, iterationTotal, parallelOptions, ( i1 ) =>
                     {
                         passCount = i1;
-                        var output = template.ResolveMergeFields( mergeFields, throwExceptionOnErrors: true );
+                        var output = engine.RenderTemplate( template, mergeFields );
                     } );
                 }
             }

@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 
-import { CurrencyInfoBag } from "../ViewModels/Rest/Utilities/currencyInfoBag";
+import { CurrencyInfoBag } from "@Obsidian/ViewModels/Rest/Utilities/currencyInfoBag";
 
 // From https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat/NumberFormat
 // Number.toLocaleString takes the same options as Intl.NumberFormat

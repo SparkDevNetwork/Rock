@@ -22,14 +22,16 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.Blocks
 {
+    [RockObsolete( "1.17" )]
+    [Obsolete( "Use the new extension methods defined in Rock assembly." )]
     public static class IValidPropertiesBoxExtensions
     {
-        public static bool IsValidProperty( this IValidPropertiesBox box, string propertyName )
+        public static bool IsValidProperty( IValidPropertiesBox box, string propertyName )
         {
             return box.ValidProperties.Contains( propertyName, StringComparer.OrdinalIgnoreCase );
         }
 
-        public static void IfValidProperty( this IValidPropertiesBox box, string propertyName, Action executeIfValid )
+        public static void IfValidProperty( IValidPropertiesBox box, string propertyName, Action executeIfValid )
         {
             if ( IsValidProperty( box, propertyName ) )
             {
@@ -37,7 +39,7 @@ namespace Rock.Blocks
             }
         }
 
-        public static TReturn IfValidProperty<TReturn>( this IValidPropertiesBox box, string propertyName, Func<TReturn> executeIfValid, TReturn defaultValue )
+        public static TReturn IfValidProperty<TReturn>( IValidPropertiesBox box, string propertyName, Func<TReturn> executeIfValid, TReturn defaultValue )
         {
             if ( IsValidProperty( box, propertyName ) )
             {

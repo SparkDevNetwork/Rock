@@ -590,16 +590,18 @@ namespace RockWeb.Blocks.Groups
                             return;
                         }
 
-                        groupService.Delete( group, true );
+                        if ( group.IsSecurityRoleOrSecurityGroupType() )
+                        {
+                            GroupService.DeleteSecurityRoleGroup( group.Id );
+                        }
+                        else
+                        {
+                            groupService.Delete( group );
+                        }
                     }
                 }
 
                 rockContext.SaveChanges();
-
-                if ( isSecurityRoleGroup )
-                {
-                    Rock.Security.Authorization.Clear();
-                }
             }
 
             BindGrid();

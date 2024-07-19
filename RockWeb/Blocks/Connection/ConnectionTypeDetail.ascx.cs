@@ -53,6 +53,7 @@ namespace RockWeb.Blocks.Connection
         private List<ConnectionStatusState> StatusesState { get; set; }
         private List<ConnectionWorkflow> WorkflowsState { get; set; }
         private List<Attribute> ConnectionRequestAttributesState { get; set; }
+        private List<Attribute> ConnectionTypeAttributesState { get; set; }
 
         #endregion
 
@@ -65,6 +66,7 @@ namespace RockWeb.Blocks.Connection
             public const string StatusesStateJson = "StatusesStateJson";
             public const string WorkflowsStateJson = "WorkflowsStateJson";
             public const string ConnectionRequestAttributesStateJson = "ConnectionRequestAttributesStateJson";
+            public const string ConnectionTypeAttributesStateJson = "ConnectionTypeAttributesStateJson";
         }
 
         #endregion ViewStateKeys
@@ -128,6 +130,16 @@ namespace RockWeb.Blocks.Connection
             {
                 ConnectionRequestAttributesState = RockJsonTextReader.DeserializeObjectInSimpleMode<List<Attribute>>( json );
             }
+
+            json = ViewState[ViewStateKey.ConnectionTypeAttributesStateJson] as string;
+            if ( string.IsNullOrWhiteSpace( json ) )
+            {
+                ConnectionTypeAttributesState = new List<Attribute>();
+            }
+            else
+            {
+                ConnectionTypeAttributesState = RockJsonTextReader.DeserializeObjectInSimpleMode<List<Attribute>>( json );
+            }
         }
 
         /// <summary>
@@ -176,6 +188,13 @@ namespace RockWeb.Blocks.Connection
             gWorkflows.Actions.ShowAdd = true;
             gWorkflows.Actions.AddClick += gWorkflows_Add;
             gWorkflows.GridRebind += gWorkflows_GridRebind;
+
+            gConnectionTypeAttributes.DataKeyNames = new string[] { "Guid" };
+            gConnectionTypeAttributes.Actions.ShowAdd = true;
+            gConnectionTypeAttributes.Actions.AddClick += gConnectionTypeAttributes_Add;
+            gConnectionTypeAttributes.EmptyDataText = Server.HtmlEncode( None.Text );
+            gConnectionTypeAttributes.GridRebind += gConnectionTypeAttributes_GridRebind;
+            gConnectionTypeAttributes.GridReorder += gConnectionTypeAttributes_GridReorder;
 
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', 'This will also delete all the connection opportunities! Are you sure you wish to continue with the delete?');", ConnectionType.FriendlyTypeName );
             btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.ConnectionType ) ).Id;
@@ -228,6 +247,8 @@ namespace RockWeb.Blocks.Connection
             ViewState[ViewStateKey.StatusesStateJson] = RockJsonTextWriter.SerializeObjectInSimpleMode( StatusesState, Formatting.None, jsonSetting );
             ViewState[ViewStateKey.WorkflowsStateJson] = RockJsonTextWriter.SerializeObjectInSimpleMode( WorkflowsState, Formatting.None, jsonSetting );
             ViewState[ViewStateKey.ConnectionRequestAttributesStateJson] = RockJsonTextWriter.SerializeObjectInSimpleMode( ConnectionRequestAttributesState, Formatting.None, jsonSetting );
+            ViewState[ViewStateKey.ConnectionTypeAttributesStateJson] = RockJsonTextWriter.SerializeObjectInSimpleMode( ConnectionTypeAttributesState, Formatting.None, jsonSetting );
+
 
             return base.SaveViewState();
         }
@@ -521,6 +542,8 @@ namespace RockWeb.Blocks.Connection
                     connectionWorkflow.ConnectionTypeId = connectionTypeId;
                 }
 
+                avcEditAttributes.GetEditValues( connectionType );
+
                 if ( !connectionType.IsValid )
                 {
                     // Controls will render the error messages
@@ -531,6 +554,7 @@ namespace RockWeb.Blocks.Connection
                 rockContext.WrapTransaction( () =>
                 {
                     rockContext.SaveChanges();
+                    connectionType.SaveAttributeValues( rockContext );
 
                     foreach ( var connectionStatusState in StatusesState )
                     {
@@ -564,6 +588,7 @@ namespace RockWeb.Blocks.Connection
                     string qualifierValue = connectionType.Id.ToString();
                     Helper.SaveAttributeEdits( AttributesState, new ConnectionOpportunity().TypeId, "ConnectionTypeId", qualifierValue, rockContext );
                     Helper.SaveAttributeEdits( ConnectionRequestAttributesState, new ConnectionRequest().TypeId, "ConnectionTypeId", qualifierValue, rockContext );
+                    Helper.SaveAttributeEdits( ConnectionTypeAttributesState, new ConnectionType().TypeId, "Id", qualifierValue, rockContext );
 
                     connectionType = connectionTypeService.Get( connectionType.Id );
                     if ( connectionType != null )
@@ -771,6 +796,149 @@ namespace RockWeb.Blocks.Connection
 
         #endregion
 
+
+        #region ConnectionTypeAttributes Grid and Picker
+
+        /// <summary>
+        /// Handles the Add event of the gConnectionTypeAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gConnectionTypeAttributes_Add( object sender, EventArgs e )
+        {
+            gConnectionTypeAttributes_ShowEdit( Guid.Empty );
+        }
+
+        /// <summary>
+        /// Handles the Edit event of the gConnectionTypeAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        protected void gConnectionTypeAttributes_Edit( object sender, RowEventArgs e )
+        {
+            Guid attributeGuid = ( Guid ) e.RowKeyValue;
+            gConnectionTypeAttributes_ShowEdit( attributeGuid );
+        }
+
+        /// <summary>
+        /// Gs the connection type attributes_ show edit.
+        /// </summary>
+        /// <param name="attributeGuid">The attribute GUID.</param>
+        protected void gConnectionTypeAttributes_ShowEdit( Guid attributeGuid )
+        {
+            Attribute attribute;
+            if ( attributeGuid.Equals( Guid.Empty ) )
+            {
+                attribute = new Attribute();
+                attribute.FieldTypeId = FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT ).Id;
+                edtConnectionTypeAttributes.ActionTitle = ActionTitle.Add( "attribute for connection type " + tbName.Text );
+            }
+            else
+            {
+                attribute = ConnectionTypeAttributesState.First( a => a.Guid.Equals( attributeGuid ) );
+                edtConnectionTypeAttributes.ActionTitle = ActionTitle.Edit( "attribute for connection type " + tbName.Text );
+            }
+
+            var reservedKeyNames = new List<string>();
+            ConnectionTypeAttributesState.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList().ForEach( a => reservedKeyNames.Add( a ) );
+            edtConnectionTypeAttributes.ReservedKeyNames = reservedKeyNames.ToList();
+
+            edtConnectionTypeAttributes.SetAttributeProperties( attribute, typeof( ConnectionType ) );
+
+            ShowDialog( "ConnectionTypeAttributes" );
+        }
+
+        /// <summary>
+        /// Handles the GridReorder event of the gConnectionTypeAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
+        protected void gConnectionTypeAttributes_GridReorder( object sender, GridReorderEventArgs e )
+        {
+            SortAttributes( ConnectionTypeAttributesState, e.OldIndex, e.NewIndex );
+            BindConnectionTypeAttributesGrid();
+        }
+
+        /// <summary>
+        /// Handles the Delete event of the gConnectionTypeAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected void gConnectionTypeAttributes_Delete( object sender, RowEventArgs e )
+        {
+            Guid attributeGuid = ( Guid ) e.RowKeyValue;
+            ConnectionTypeAttributesState.RemoveEntity( attributeGuid );
+
+            BindConnectionTypeAttributesGrid();
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gConnectionTypeAttributes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void gConnectionTypeAttributes_GridRebind( object sender, EventArgs e )
+        {
+            BindConnectionTypeAttributesGrid();
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the dlgConnectionTypeAttribute control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void dlgConnectionTypeAttribute_SaveClick( object sender, EventArgs e )
+        {
+            Rock.Model.Attribute attribute = new Rock.Model.Attribute();
+            edtConnectionTypeAttributes.GetAttributeProperties( attribute );
+
+            // Controls will show warnings
+            if ( !attribute.IsValid )
+            {
+                return;
+            }
+
+            if ( ConnectionTypeAttributesState.Any( a => a.Guid.Equals( attribute.Guid ) ) )
+            {
+                // get the non-editable stuff from the state and put it back into the object...
+                var attributeState = ConnectionTypeAttributesState.Where( a => a.Guid.Equals( attribute.Guid ) ).FirstOrDefault();
+                if ( attributeState != null )
+                {
+                    attribute.Order = attributeState.Order;
+                    attribute.CreatedDateTime = attributeState.CreatedDateTime;
+                    attribute.CreatedByPersonAliasId = attributeState.CreatedByPersonAliasId;
+                    attribute.ForeignGuid = attributeState.ForeignGuid;
+                    attribute.ForeignId = attributeState.ForeignId;
+                    attribute.ForeignKey = attributeState.ForeignKey;
+                }
+
+                ConnectionTypeAttributesState.RemoveEntity( attribute.Guid );
+            }
+            else
+            {
+                attribute.Order = ConnectionTypeAttributesState.Any() ? ConnectionTypeAttributesState.Max( a => a.Order ) + 1 : 0;
+            }
+
+            ConnectionTypeAttributesState.Add( attribute );
+
+            BindConnectionTypeAttributesGrid();
+            HideDialog();
+        }
+
+        /// <summary>
+        /// Binds the connection type attributes grid.
+        /// </summary>
+        private void BindConnectionTypeAttributesGrid()
+        {
+            gConnectionTypeAttributes.AddCssClass( "attribute-grid" );
+            SetAttributeListOrder( ConnectionTypeAttributesState );
+            gConnectionTypeAttributes.DataSource = ConnectionTypeAttributesState.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
+            gConnectionTypeAttributes.DataBind();
+        }
+
+        #endregion
+
         #region Attributes Grid and Picker
 
         /// <summary>
@@ -857,11 +1025,11 @@ namespace RockWeb.Blocks.Connection
         }
 
         /// <summary>
-        /// Handles the SaveClick event of the dlgConnectionTypeAttribute control.
+        /// Handles the SaveClick event of the dlgConnectionOpportunityAttribute control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void dlgConnectionTypeAttribute_SaveClick( object sender, EventArgs e )
+        protected void dlgConnectionOpportunityAttribute_SaveClick( object sender, EventArgs e )
         {
             var attribute = edtAttributes.SaveChangesToStateCollection( AttributesState );
 
@@ -1847,6 +2015,11 @@ namespace RockWeb.Blocks.Connection
                 ppConnectionRequestDetail.SetValue( connectionType.ConnectionRequestDetailPage );
             }
 
+            connectionType.LoadAttributes();
+            avcEditAttributes.ShowCategoryLabel = false;
+            avcEditAttributes.ExcludedAttributes = connectionType.Attributes.Where( a => !a.Value.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) ).Select( a => a.Value ).ToArray();
+            avcEditAttributes.AddEditControls( connectionType );
+
             ActivityTypesState = connectionType.ConnectionActivityTypes.ToList();
             WorkflowsState = connectionType.ConnectionWorkflows.ToList();
             StatusesState = connectionType.ConnectionStatuses
@@ -1870,6 +2043,16 @@ namespace RockWeb.Blocks.Connection
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
                 .ToList();
+
+
+            ConnectionTypeAttributesState = attributeService.GetByEntityTypeId( new ConnectionType().TypeId, true ).AsQueryable()
+                .Where( a =>
+                    a.EntityTypeQualifierColumn.Equals( "Id", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierValue.Equals( qualifierValue ) )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .ToList();
+            BindConnectionTypeAttributesGrid();
 
             BindAttributesGrid();
             BindConnectionActivityTypesGrid();
@@ -1972,6 +2155,9 @@ namespace RockWeb.Blocks.Connection
                 case "CONNECTIONREQUESTATTRIBUTES":
                     dlgConnectionRequestAttribute.Show();
                     break;
+                case "CONNECTIONTYPEATTRIBUTES":
+                    dlgConnectionTypeAttribute.Show();
+                    break;
             }
         }
 
@@ -2017,6 +2203,9 @@ namespace RockWeb.Blocks.Connection
                     break;
                 case "CONNECTIONREQUESTATTRIBUTES":
                     dlgConnectionRequestAttribute.Hide();
+                    break;
+                case "CONNECTIONTYPEATTRIBUTES":
+                    dlgConnectionTypeAttribute.Hide();
                     break;
             }
 

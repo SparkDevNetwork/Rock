@@ -21,10 +21,11 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using EF6.TagWith;
+
+using Microsoft.Extensions.Logging;
+
 using Rock.Attribute;
 using Rock.Data;
-using Rock.IpAddress;
 using Rock.Logging;
 using Rock.Model;
 using Rock.SystemKey;
@@ -32,38 +33,19 @@ using Rock.SystemKey;
 namespace Rock.Jobs
 {
     /// <summary>
-    /// This job will create new InteractionSessionLocation records and/or link existing InteractionSession records to the corresponding InteractionSessionLocation record.
+    /// This job will update Interaction counts and Durations for InteractionSession records.
     /// </summary>
     [DisplayName( "Populate Interaction Session Data" )]
-    [Description( "This job will create new InteractionSessionLocation records and / or link existing InteractionSession records to the corresponding InteractionSessionLocation record." )]
+    [Description( "This job will update Interaction counts and Durations for InteractionSession records." )]
 
-    [ComponentField(
-        "Rock.IpAddress.IpAddressLookupContainer, Rock",
-        Name = "IP Address Geocoding Component",
-        Description = "The service that will perform the IP GeoCoding lookup for any new IPs that have not been GeoCoded. Not required to be set here because the job will use the first active component if one is not configured here.",
-        IsRequired = false,
-        Order = 0,
-        Key = AttributeKey.IPAddressGeoCodingComponent )]
-    [IntegerField(
-        "Lookback Maximum (days)",
-        Description = "The number of days into the past the job should look for unmatched addresses in the InteractionSession table. (default 30 days)",
-        IsRequired = false,
-        Order = 1,
-        DefaultIntegerValue = 30,
-        Key = AttributeKey.LookbackMaximumInDays )]
-    [IntegerField(
-        "Max Records To Process Per Run",
-        Description = "The number of unique IP addresses to process on each run of this job.",
-        IsRequired = false,
-        DefaultIntegerValue = 50000,
-        Order = 2,
-        Key = AttributeKey.MaxRecordsToProcessPerRun )]
     [IntegerField(
         "Command Timeout",
         AttributeKey.CommandTimeout,
         Description = "Maximum amount of time (in seconds) to wait for each SQL command to complete. On a large database with lots of Interactions, this could take several hours or more.",
         IsRequired = false,
         DefaultIntegerValue = AttributeDefaultValue.CommandTimeout )]
+
+    [RockLoggingCategory]
     public class PopulateInteractionSessionData : RockJob
     {
         #region Keys
@@ -76,16 +58,22 @@ namespace Rock.Jobs
             /// <summary>
             /// IP Address GeoCoding Component
             /// </summary>
+            [RockObsolete( "1.17" )]
+            [Obsolete]
             public const string IPAddressGeoCodingComponent = "IPAddressGeoCodingComponent";
 
             /// <summary>
             /// Lookback Maximum in Days
             /// </summary>
+            [RockObsolete( "1.17" )]
+            [Obsolete]
             public const string LookbackMaximumInDays = "LookbackMaximumInDays";
 
             /// <summary>
             /// How Many Records
             /// </summary>
+            [RockObsolete( "1.17" )]
+            [Obsolete]
             public const string MaxRecordsToProcessPerRun = "HowManyRecords";
 
             /// <summary>
@@ -135,9 +123,6 @@ namespace Rock.Jobs
                 .GetValue( SystemSetting.POPULATE_INTERACTION_SESSION_DATA_JOB_SETTINGS )
                 .FromJsonOrNull<PopulateInteractionSessionDataJobSettings>() ?? new PopulateInteractionSessionDataJobSettings();
 
-            // Read settings from job
-            settings.MaxRecordsToProcessPerRun = GetAttributeValue( AttributeKey.MaxRecordsToProcessPerRun ).AsIntegerOrNull() ?? 50000;
-
             var jobResult = Execute( settings );
 
             this.Result = jobResult.GetResultSummaryHtml();
@@ -156,15 +141,8 @@ namespace Rock.Jobs
 
             var jobResult = new RockJobResult();
 
-            // STEP 1: Process IP location lookups
-            var result = ProcessInteractionSessionForIP( settings );
-            if ( result.IsNotNullOrWhiteSpace() )
-            {
-                jobResult.OutputMessages.Add( result );
-            }
-
-            // STEP 2: Update Interaction Counts and Durations for Session
-            result = ProcessInteractionCountAndDuration( settings );
+            // Update Interaction Counts and Durations for Session
+            var result = ProcessInteractionCountAndDuration( settings );
             if ( result.IsNotNullOrWhiteSpace() )
             {
                 jobResult.OutputMessages.Add( result );
@@ -245,7 +223,7 @@ namespace Rock.Jobs
                         var minSessionId = interactionSessions.Min( s => s.Id );
                         var maxSessionId = interactionSessions.Max( s => s.Id );
 
-                        LogDebugInfo( "Update Interaction Metadata", $"BatchSize={ interactionSessions.Count }, SessionId={ minSessionId } --> { maxSessionId }." );
+                        LogDebugInfo( "Update Interaction Metadata", $"BatchSize={interactionSessions.Count}, SessionId={minSessionId} --> {maxSessionId}." );
 
                         foreach ( var interactionSession in interactionSessions )
                         {
@@ -398,310 +376,15 @@ namespace Rock.Jobs
             return interactionSessions;
         }
 
-        /// <summary>
-        /// Processes the looking up of Interaction Sessions that do not have geo information.
-        /// </summary>
-        /// <param name="settings"></param>
-        /// <returns></returns>
-        internal string ProcessInteractionSessionForIP( PopulateInteractionSessionDataJobSettings settings )
-        {
-            // This portion of the job looks for interaction sessions tied to interaction channels whose websites
-            // have geo tracking enabled. The logic is broken into two parts:
-            //      1. First we look for sessions that need location information. This is stored in a collection of
-            //         IP addresses with their matching session ids
-            //      2. Next we send that collection to the IP lookup provider. This is done as a group to support
-            //         bulk lookups.
-            //
-            // The job setting 'Number of Records to Process' tells us the max number of IP lookups to do at the provider
-            // per job run. This will represent more than that number of sessions as many sessions have the
-            // same IP address. In testing, after running a few times, processing 5,000 address can update over 100,000 sessions.
-
-            if ( settings.IpAddressLookupIsDisabled )
-            {
-                return $"<i class='fa fa-circle text-warn'></i> IP Address lookup is disabled.";
-            }
-
-            var stopwatch = Stopwatch.StartNew();
-
-            var warningMsg = string.Empty;
-
-            // Read settings from job
-            var numberOfRecordsToProcess = settings.MaxRecordsToProcessPerRun ?? 50000;
-
-            var ipAddressComponentGuid = GetAttributeValue( AttributeKey.IPAddressGeoCodingComponent );
-            var lookbackMaximumInDays = GetAttributeValue( AttributeKey.LookbackMaximumInDays ).ToStringOrDefault( "30" ).AsInteger();
-
-            var lookBackStartDate = RockDateTime.Now.Date.AddDays( -lookbackMaximumInDays );
-
-            // First ensure we have a lookup provider to use
-            var provider = GetLookupComponent( ipAddressComponentGuid );
-
-            if ( provider == null )
-            {
-                return $"<i class='fa fa-circle text-info'></i> No IP Address lookup service active.";
-            }
-
-            // If the lookup provider is not ready to process, exit early to avoid the relatively expensive operation of
-            // querying the database for unresolved interaction sessions.
-            var canProcess = provider.VerifyCanProcess( out var statusMessage );
-            if ( !canProcess )
-            {
-                return $"<i class='fa fa-circle text-warn'></i> IP Address lookup service is unavailable."
-                    + ( statusMessage.IsNullOrWhiteSpace() ? "" : $" ({statusMessage})" );
-            }
-
-            // This collection will be used to store IP address that need to be processed using the lookup provider
-            var ipAddressSessionKeyValue = new Dictionary<string, List<int>>();
-
-            // This collection will be used to store IP address that we have already looked up in the database to prevent unnessary future reads
-            var previouslyFoundIpAddresses = new Dictionary<string, int>();
-
-            // Counters for reporting back metrics
-            var recordsUpdated = 0;
-            var totalRecordsProcessed = 0;
-
-            // Number of sessions to process at a time. Keep this small to stop the RockContext from gummed up
-            var sessionBatchSize = 500;
-
-            // Need to keep track of what sessions have been processed in the loop as we're not updating most sessions in the loop. That will be
-            // done in the process step.
-            var minSessionId = 0;
-
-            while ( true )
-            {
-                try
-                {
-                    var rockContext = new RockContext();
-                    rockContext.Database.CommandTimeout = _commandTimeout;
-                    var currentDateTime = RockDateTime.Now;
-
-                    // Determine how many sessions to take at a time with a max limit per batch. This helps us to not process more than we're allowed to in one run.
-                    var remainingLookupsAllowed = numberOfRecordsToProcess - ipAddressSessionKeyValue.Count();
-                    var maxRecordsToReturn = remainingLookupsAllowed < sessionBatchSize ? remainingLookupsAllowed : sessionBatchSize;
-
-                    // Get next batch of Interaction Sessions
-                    LogDebugInfo( "Retrieve Interaction Sessions", $"StartDate={lookBackStartDate}, MaxRecords={maxRecordsToReturn}" );
-
-                    var interactionSessions = GetInteractionSessionsForIpResolution( rockContext, maxRecordsToReturn, lookBackStartDate, minSessionId );
-
-                    // If there are no more sessions to process then exit the loop
-                    if ( interactionSessions.Count() == 0 )
-                    {
-                        break;
-                    }
-
-                    // Update the min session id for the next batch run. This ensures we don't process the same batch of sessions over and over in the loop
-                    minSessionId = interactionSessions.Max( s => s.Id );
-
-                    // Update the job progress
-                    this.UpdateLastStatusMessage( $"Processing Interaction Session for IP : {maxRecordsToReturn} IP's are being processed currently. Total {recordsUpdated} Interaction Session{( recordsUpdated < 2 ? "" : "s" )} are processed till now. " );
-
-                    LogDebugInfo( "Process IP Address Lookups", $"BatchSize={ interactionSessions.Count }, SessionId={ interactionSessions.Min( s => s.Id ) } --> { interactionSessions.Max( s => s.Id ) }" );
-
-                    foreach ( var interactionSession in interactionSessions )
-                    {
-                        totalRecordsProcessed += 1;
-
-                        // In some rare cases the IP address of the session can have two address (comma separated). This can
-                        // happen with CDNs and other web proxies. There is logic in Rock to handle this, but some older sessions
-                        // might still have them. We'll clean this up here.
-                        if ( interactionSession.IpAddress.Contains( "," ) )
-                        {
-                            interactionSession.IpAddress = interactionSession.IpAddress.Split( ',' ).FirstOrDefault().Trim();
-                        }
-
-                        // Check if we have already lookup this IP address up in the database
-                        if ( previouslyFoundIpAddresses.ContainsKey( interactionSession.IpAddress ) )
-                        {
-                            interactionSession.InteractionSessionLocationId = previouslyFoundIpAddresses[interactionSession.IpAddress];
-                            recordsUpdated += 1;
-                            continue;
-                        }
-
-                        // Next check the list of IP addresses that we have already attempted to lookup and did not find
-                        if ( ipAddressSessionKeyValue.ContainsKey( interactionSession.IpAddress ) )
-                        {
-                            ipAddressSessionKeyValue[interactionSession.IpAddress].Add( interactionSession.Id );
-                            continue;
-                        }
-
-                        // Finally break down and look in the database for it. We'll only consider ones lookuped in the last
-                        // 90 days in case the IP address information has been updated in the providers database.
-                        var lookupExpireDate = RockDateTime.Now.AddDays( -90 );
-                        var interactionSessionLocationId = new InteractionSessionLocationService( rockContext ).Queryable()
-                            .Where( m => m.IpAddress == interactionSession.IpAddress )
-                            .Where( m => m.LookupDateTime >= lookupExpireDate )
-                            .Select( a => a.Id )
-                            .FirstOrDefault();
-
-                        // If we found a match link it up
-                        if ( interactionSessionLocationId != default( int ) )
-                        {
-                            interactionSession.InteractionSessionLocationId = interactionSessionLocationId;
-                            previouslyFoundIpAddresses.Add( interactionSession.IpAddress, interactionSessionLocationId );
-                            recordsUpdated += 1;
-                            continue;
-                        }
-
-                        // We didn't find it, add it to the list of addresses to lookup
-                        ipAddressSessionKeyValue.Add( interactionSession.IpAddress, new List<int> { interactionSession.Id } );
-                    }
-
-                    rockContext.SaveChanges();
-
-                    // If we processed the max number we're allowed per run exit
-                    if ( ipAddressSessionKeyValue.Count() >= numberOfRecordsToProcess )
-                    {
-                        break;
-                    }
-                }
-                catch ( Exception ex )
-                {
-                    // Capture and log the exception because we're not going to fail this job
-                    var message = $"An error occurred while trying to process interaction sessions. Error: {ex.Message}";
-                    _errors.Add( string.Format( @"ProcessInteractionSessionForIP method after {0} records.", totalRecordsProcessed ) );
-
-                    var exceptionWrapper = new Exception( message, ex );
-                    _exceptions.Add( exceptionWrapper );
-                    ExceptionLogService.LogException( exceptionWrapper, null );
-
-                    break;
-                }
-            }
-
-            // We now have our list of IPs that need to be processed
-            if ( ipAddressSessionKeyValue.Count > 0 )
-            {
-                this.UpdateLastStatusMessage( $"Processing Interaction Session : Total {recordsUpdated} Interaction Session{( recordsUpdated < 2 ? "" : "s" )} are processed till now. {ipAddressSessionKeyValue.Count} sent to LookupComponent to process." );
-                recordsUpdated = ProcessIPOnLookupComponent( provider, ipAddressSessionKeyValue );
-            }
-
-            stopwatch.Stop();
-
-            // Log our metrics
-            LogDebugInfo( "Process Interaction Session", $"Completed in {stopwatch.Elapsed.TotalSeconds:0.00}s." );
-
-            // Suppress sending an update if an error occurred. That will be show via the exception processing
-            if ( recordsUpdated == -1 )
-            {
-                return string.Empty;
-            }
-
-            return $"<i class='fa fa-circle text-success'></i> Updated IP location on {recordsUpdated} {"interaction session".PluralizeIf( recordsUpdated != 1 )} with {totalRecordsProcessed} total interaction sessions using {ipAddressSessionKeyValue.Count} lookup credits (others were found in the database) in {stopwatch.Elapsed.TotalSeconds:0.00}s. {warningMsg}";
-        }
-
-        /// <summary>
-        /// Gets the IP Lookup component.
-        /// </summary>
-        /// <param name="configuredProvider">The configured provider.</param>
-        /// <returns></returns>
-        internal virtual IpAddressLookupComponent GetLookupComponent( string configuredProvider )
-        {
-            // Get the configured component from the job settings
-            if ( configuredProvider.AsGuidOrNull().HasValue )
-            {
-                return IpAddressLookupContainer.GetComponent( configuredProvider );
-            }
-
-            // Otherwise use an active provider
-            return IpAddressLookupContainer.Instance.Components.Select( a => a.Value.Value ).Where( x => x.IsActive ).FirstOrDefault();
-        }
-
-        /// <summary>
-        /// Gets the interaction sessions to process 
-        /// </summary>
-        private List<InteractionSession> GetInteractionSessionsForIpResolution( RockContext rockContext, int maxRecordsToReturn, DateTime lookBackStartDate, int minId )
-        {
-            // Create filter on the Interaction Components tied to a site with geo tracking enabled
-            var interactionComponentQry = new InteractionComponentService( rockContext )
-                .QueryByPagesOnSitesWithGeoTracking()
-                .Select( a => a.Id );
-
-            // Create interaction query so we can find sessions tied to sites with geo tracking enabled
-            var interactionQry = new InteractionService( rockContext )
-                .Queryable()
-                .Where( i => i.InteractionDateTime >= lookBackStartDate )
-                .Where( i => interactionComponentQry.Contains( i.InteractionComponentId ) )
-                .Select( i => i.Id );
-
-            // Create InteractionSession query
-            using ( new QueryHintScope( rockContext, QueryHintType.RECOMPILE ) )
-            {
-                var sessions = new InteractionSessionService( rockContext )
-                .Queryable()
-                .Where( s =>
-                    !s.InteractionSessionLocationId.HasValue
-                    && s.IpAddress != null
-                    && s.IpAddress != string.Empty && s.IpAddress != "::1" && !s.IpAddress.StartsWith( "192.168" )
-                        && !s.IpAddress.StartsWith( "10." ) && !s.IpAddress.StartsWith( "169.254" ) && s.IpAddress != "127.0.0.1"
-                    && s.Interactions.Any( i => interactionQry.Contains( i.Id ) )
-                    && s.Id > minId )
-                .OrderBy( s => s.Id )
-                .Take( maxRecordsToReturn )
-                .TagWith( this.GetType().FullName + $" ({this.GetJobId()})" )
-                .ToList();
-
-                return sessions;
-            }
-        }
-
-        /// <summary>
-        /// Processes the IP addresses that need to be looked up by the provider.
-        /// </summary>
-        /// <param name="provider">The provider.</param>
-        /// <param name="ipAddressSessionKeyValue">The ip address session key value.</param>
-        /// <returns>Count of the number of sessions updated</returns>
-        private int ProcessIPOnLookupComponent( IpAddressLookupComponent provider, Dictionary<string, List<int>> ipAddressSessionKeyValue )
-        {
-            var errorMessage = string.Empty;
-            try
-            {
-                // Get the IP locations for the selected IP addresses
-                var ipAddressList = new List<string>( ipAddressSessionKeyValue.Keys );
-
-                LogDebugInfo( "Process IP Lookups", $"BatchSize={ ipAddressList.Count }, Data={ ipAddressList.Take( 20 ).JoinStrings( "," ) }..." );
-                var lookupResults = provider.BulkLookup( ipAddressList, out errorMessage );
-
-                // Create Interaction Session Locations and update Sessions
-                IpLocationUtilities.UpdateInteractionSessionLocations( lookupResults, ipAddressSessionKeyValue );
-
-                if ( errorMessage.IsNotNullOrWhiteSpace() )
-                {
-                    _errors.Add( string.Format( @"IP Lookup Component failed with batch of {0} IP with error message {1}.", ipAddressSessionKeyValue.Count, errorMessage ) );
-                }
-
-                // Return the number sessions that we're updated
-                return ipAddressSessionKeyValue.Values.Sum( v => v.Count() );
-            }
-            catch ( Exception ex )
-            {
-                // Capture and log the exception because we're not going to fail this job
-                var message = $"An error occurred while trying to lookup IP Addresses from Lookup Component so it was skipped. Error: {ex.Message}";
-                _errors.Add( string.Format( @"IP Lookup Component failed with batch of {0} IP.", ipAddressSessionKeyValue.Count ) );
-
-                var exceptionWrapper = new Exception( message, ex );
-                _exceptions.Add( exceptionWrapper );
-                ExceptionLogService.LogException( exceptionWrapper, null );
-
-                return -1;
-            }
-        }
         private void LogDebugInfo( string taskName, string message )
         {
-            Log( RockLogLevel.Debug, $"({taskName}): {message}" );
+            Logger.LogDebug( $"({taskName}): {message}" );
         }
 
         internal class PopulateInteractionSessionDataJobSettings
         {
             public DateTime? LastSuccessfulJobRunDateTime { get; set; }
             public DateTime? LastNullDurationLastCalculatedDateTimeUpdateDateTime { get; set; }
-            public int? MaxRecordsToProcessPerRun { get; set; } 
-
-            /// <summary>
-            /// A flag indicating if the IP Address Lookup process will attempt to resolve IP addresses
-            /// in addition to recalculating interaction session data.
-            /// </summary>
-            public bool IpAddressLookupIsDisabled { get; set; }
         }
 
         /// <summary>

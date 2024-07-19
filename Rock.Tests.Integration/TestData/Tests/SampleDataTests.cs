@@ -17,22 +17,21 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Tests.Integration.Crm.Steps;
 using Rock.Tests.Integration.Metrics;
+using Rock.Tests.Shared;
 
 namespace Rock.Tests.Integration.TestData
 {
     [TestClass]
-
-    public class SampleDataTests
+    [TestCategory( TestFeatures.TestDataUtilities )]
+    public class SampleDataTests : UtilityTestActionsBase
     {
         [TestMethod]
-        [TestProperty( "Utility", "SampleData" )]
         public void AddMetricsTestData()
         {
             MetricsDataManager.Instance.AddDataForWeeklyAttendanceMetrics();
         }
 
         [TestMethod]
-        [TestProperty( "Utility", "SampleData" )]
         public void AddStepsTestData()
         {
             StepsFeatureDataHelper.AddSampleTestData();

@@ -20,6 +20,15 @@ var Rock;
             debug: false
         };
         class MediaPlayer {
+            get map() {
+                return MediaPlayer.toRle(this.watchBits);
+            }
+            get percentWatched() {
+                return this.percentWatchedInternal;
+            }
+            get duration() {
+                return this.player.duration;
+            }
             constructor(elementSelector, options = {}) {
                 this.timerId = null;
                 this.watchBits = Array();
@@ -48,15 +57,6 @@ var Rock;
                     this.element.removeChild(this.element.firstChild);
                 }
                 this.setupPlayer();
-            }
-            get map() {
-                return MediaPlayer.toRle(this.watchBits);
-            }
-            get percentWatched() {
-                return this.percentWatchedInternal;
-            }
-            get duration() {
-                return this.player.duration;
             }
             seek(positionInSeconds) {
                 this.player.currentTime = positionInSeconds;

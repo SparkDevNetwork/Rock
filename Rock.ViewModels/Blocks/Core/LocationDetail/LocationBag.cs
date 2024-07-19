@@ -15,13 +15,14 @@
 // </copyright>
 //
 
+using System;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Core.LocationDetail
 {
     /// <summary>
-    /// 
+    /// Contains details of the location.
     /// </summary>
     /// <seealso cref="Rock.ViewModels.Utility.EntityBagBase" />
     public class LocationBag : EntityBagBase
@@ -34,7 +35,12 @@ namespace Rock.ViewModels.Blocks.Core.LocationDetail
         /// <summary>
         /// Gets or sets the image identifier.
         /// </summary>
-        public int? ImageId { get; set; }
+        public ListItemBag Image { get; set; }
+
+        /// <summary>
+        /// Gets or sets the image identifier.
+        /// </summary>
+        public string ImageUrlParam { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is active.
@@ -113,6 +119,13 @@ namespace Rock.ViewModels.Blocks.Core.LocationDetail
         /// The geo fence well known text.
         /// </value>
         public string GeoFence_WellKnownText { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the guid.
+        /// </summary>
+        /// <value>
+        /// The guid.
+        /// </value>
+        public Guid Guid { get; set; }
     }
 }

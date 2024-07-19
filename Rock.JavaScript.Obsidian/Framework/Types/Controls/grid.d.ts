@@ -420,7 +420,7 @@ type StandardColumnProps = {
 
     /**
      * Provides a custom component that will be used to render a skeleton of
-     * the cell during data loading operations. This is rearely needed as you
+     * the cell during data loading operations. This is rarely needed as you
      * can usually accomplish the same with a template.
      */
     skeletonComponent: {

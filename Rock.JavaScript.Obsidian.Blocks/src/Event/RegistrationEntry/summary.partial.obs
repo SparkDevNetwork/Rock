@@ -12,13 +12,15 @@
             </div>
 
             <div v-else class="margin-b-md">
-                <p>The following {{ registrantTerm }} will be registered for {{ instanceName }}:</p>
+                <p>The following {{ registrantOrRegistrantsTermLowerCase }} will be registered for {{ instanceName }}:</p>
                 <ul>
                     <li v-for="r in registrantInfos" :key="r.guid">
                         <strong>{{ r.firstName }} {{ r.lastName }}</strong>
                     </li>
                 </ul>
             </div>
+
+            <Captcha v-if="!disableCaptchaSupport" ref="captchaElement" />
 
             <NotificationBox v-if="submitErrorMessage" alertType="danger">{{ submitErrorMessage }}</NotificationBox>
 
@@ -43,20 +45,26 @@
         CurrentRegistrationEntryState,
         GetPersistSessionArgs,
         PersistSession,
+        RegistrationEntryTerms,
         getRegistrantBasicInfo, use
     } from "./utils.partial";
+    import Captcha from "@Obsidian/Controls/captcha.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import { Guid } from "@Obsidian/Types";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { BlockActionContextBag } from "@Obsidian/ViewModels/Blocks/blockActionContextBag";
     import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
     import { RegistrationEntrySuccessBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntrySuccessBag";
 
     const getRegistrationEntryBlockArgs = use(GetPersistSessionArgs);
     const invokeBlockAction = useInvokeBlockAction();
     const registrationEntryState = use(CurrentRegistrationEntryState);
+    const disableCaptchaSupport = ref(registrationEntryState.viewModel.disableCaptchaSupport);
+    const captchaElement = ref<InstanceType<typeof Captcha> | undefined>();
     const persistSession = use(PersistSession);
+    const registrationEntryTerms = use(RegistrationEntryTerms);
 
     const emit = defineEmits<{
         (e: "next"): void,
@@ -140,8 +148,8 @@
     });
 
     /** The registrant term - plural if there are more than 1 */
-    const registrantTerm = computed<string>(() => {
-        return (registrantInfos.value.length === 1 ? viewModel.value.registrantTerm : viewModel.value.pluralRegistrantTerm) ?? "";
+    const registrantOrRegistrantsTermLowerCase = computed<string>(() => {
+        return registrantInfos.value.length === 1 ? registrationEntryTerms.value.registrantSingularLowerCase : registrationEntryTerms.value.registrantPluralLowerCase;
     });
 
     /** The name of this registration instance */
@@ -206,9 +214,16 @@
     async function submit(): Promise<boolean> {
         submitErrorMessage.value = "";
 
+        const actionContext: BlockActionContextBag = {};
+
+        if (captchaElement.value) {
+            actionContext.captcha = await captchaElement.value.getToken();
+            captchaElement.value.refreshToken();
+        }
+
         const result = await invokeBlockAction<RegistrationEntrySuccessBag>("SubmitRegistration", {
             args: getRegistrationEntryBlockArgs()
-        });
+        }, actionContext);
 
         if (result.isError || !result.data) {
             submitErrorMessage.value = result.errorMessage || "Unknown error";

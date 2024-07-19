@@ -22,6 +22,7 @@ using System.Text.RegularExpressions;
 using System.Web.Hosting;
 using System.Web.UI.WebControls;
 using Humanizer;
+using Rock.Utility;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Communication
@@ -124,18 +125,7 @@ namespace Rock.Communication
                 // if a template-logo exists in the template, update the src attribute to whatever the uploaded logo is (or set it to the placeholder if it is not set)
                 if ( binaryFileId != null && binaryFileId > 0 )
                 {
-                    string getImagePath;
-
-                    if ( HostingEnvironment.IsHosted )
-                    {
-                        getImagePath = System.Web.VirtualPathUtility.ToAbsolute( "~/GetImage.ashx" );
-                    }
-                    else
-                    {
-                        getImagePath = "/GetImage.ashx";
-                    }
-
-                    newTemplateLogoSrc = $"{getImagePath}?Id={binaryFileId}";
+                    newTemplateLogoSrc = FileUrlHelper.GetImageUrl( binaryFileId.Value );
                 }
                 else
                 {

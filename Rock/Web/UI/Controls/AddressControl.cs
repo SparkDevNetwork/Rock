@@ -292,6 +292,7 @@ namespace Rock.Web.UI.Controls
         private string _LocalityLabel;
         private string _StateLabel;
         private string _PostalCodeLabel;
+        private bool _ShowCountrySelection = false;
 
         #endregion
 
@@ -772,7 +773,7 @@ namespace Rock.Web.UI.Controls
                 selectedCountry = GetDefaultCountry();
             }
             if ( string.IsNullOrWhiteSpace( selectedState ) )
-            { 
+            {
                 selectedState = GetDefaultState();
             }
 
@@ -915,6 +916,8 @@ namespace Rock.Web.UI.Controls
         /// <param name="countryCode"></param>
         private void LoadCountryConfiguration( string countryCode )
         {
+            _ShowCountrySelection = GlobalAttributesCache.Get().GetValue( "SupportInternationalAddresses" ).AsBooleanOrNull() ?? false;
+
             var countryValue = DefinedTypeCache.Get( new Guid( SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
                 .DefinedValues
                 .Where( v => v.Value.Equals( countryCode, StringComparison.OrdinalIgnoreCase ) )
@@ -1164,6 +1167,9 @@ namespace Rock.Web.UI.Controls
         {
             if ( location != null )
             {
+                /* 22-Sep-2020 - SK
+                   Always set the Country first as it determines the related list of State values.
+                */
                 Country = location.Country;
                 Street1 = location.Street1;
                 Street2 = location.Street2;
@@ -1175,11 +1181,11 @@ namespace Rock.Web.UI.Controls
             else
             {
                 Country = GetDefaultCountry();
+                State = GetDefaultState();
                 Street1 = string.Empty;
                 Street2 = string.Empty;
                 City = string.Empty;
                 County = string.Empty;
-                State = GetDefaultState();
                 PostalCode = string.Empty;
             }
         }
@@ -1346,6 +1352,12 @@ namespace Rock.Web.UI.Controls
             {
                 _ddlCountry.Items.Add( new ListItem( UseCountryAbbreviation ? country.Value : country.Description, country.Value ) );
             }
+
+            if ( this.PartialAddressIsAllowed )
+            {
+                // Country is optional in filter mode.
+                _ddlCountry.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
+            }
         }
 
         /// <summary>
@@ -1378,14 +1390,14 @@ namespace Rock.Web.UI.Controls
         private void BindStates( string country )
         {
             var showStateList = false;
+            List<StateListSelectionItem> stateList = null;
+
             var countryGuid = DefinedTypeCache.Get( new Guid( SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
                 .DefinedValues
                 .Where( v => v.Value.Equals( country, StringComparison.OrdinalIgnoreCase ) )
                 .Select( v => v.Guid )
                 .FirstOrDefault()
                 .ToString();
-
-            List<StateListSelectionItem> stateList = null;
 
             if ( countryGuid.IsNotNullOrWhiteSpace() )
             {
@@ -1421,7 +1433,6 @@ namespace Rock.Web.UI.Controls
             this.HasStateList = showStateList;
             if ( showStateList )
             {
-
                 _ddlState.Visible = true;
                 _tbState.Visible = false;
 
@@ -1458,7 +1469,7 @@ namespace Rock.Web.UI.Controls
             // Return the default state for the Organization if no Country is selected
             // or the selected Country matches the Organization Address.
             if ( string.IsNullOrWhiteSpace( this.Country )
-                 || this.Country == _orgCountry )
+                || this.Country == _orgCountry )
             {
                 return _orgState;
             }

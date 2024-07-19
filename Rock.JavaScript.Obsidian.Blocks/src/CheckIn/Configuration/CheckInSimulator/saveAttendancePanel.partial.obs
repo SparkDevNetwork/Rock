@@ -1,0 +1,115 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+
+<template>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="row">
+                <div class="col-md-6">
+                    <CheckBox label="Pending"
+                              v-model="isPending" />
+                </div>
+
+                <div class="col-md-6">
+                    <NumberUpDown label="Ability Level"
+                                  v-model="abilityLevelNumber"
+                                  help="Enter 0 for no selection."
+                                  :min="0" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <NumberUpDown label="Area"
+                                  v-model="areaNumber"
+                                  :min="1" />
+                </div>
+
+                <div class="col-md-6">
+                    <NumberUpDown label="Group"
+                                  v-model="groupNumber"
+                                  :min="1" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <NumberUpDown label="Location"
+                                  v-model="locationNumber"
+                                  :min="1" />
+                </div>
+
+                <div class="col-md-6">
+                    <NumberUpDown label="Schedule"
+                                  v-model="scheduleNumber"
+                                  :min="1" />
+                </div>
+            </div>
+        </div>
+
+        <div v-if="result" class="col-md-8">
+            <CheckInResultDetail :result="result" />
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
+    import CheckInResultDetail from "./checkInResultDetail.partial.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { CheckInResultBag } from "@Obsidian/ViewModels/CheckIn/checkInResultBag";
+
+    const props = defineProps({
+        abilityLevelNumber: {
+            type: Number as PropType<number>,
+            required: true
+        },
+
+        areaNumber: {
+            type: Number as PropType<number>,
+            required: true
+        },
+
+        groupNumber: {
+            type: Number as PropType<number>,
+            required: true
+        },
+
+        locationNumber: {
+            type: Number as PropType<number>,
+            required: true
+        },
+
+        scheduleNumber: {
+            type: Number as PropType<number>,
+            required: true
+        },
+
+        isPending: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        result: {
+            type: Object as PropType<CheckInResultBag>,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (event: "update:abilityLevelNumber", value: number): void;
+        (event: "update:areaNumber", value: number): void;
+        (event: "update:groupNumber", value: number): void;
+        (event: "update:locationNumber", value: number): void;
+        (event: "update:scheduleNumber", value: number): void;
+        (event: "update:isPending", value: boolean): void;
+    }>();
+
+    const abilityLevelNumber = useVModelPassthrough(props, "abilityLevelNumber", emit);
+    const areaNumber = useVModelPassthrough(props, "areaNumber", emit);
+    const groupNumber = useVModelPassthrough(props, "groupNumber", emit);
+    const locationNumber = useVModelPassthrough(props, "locationNumber", emit);
+    const scheduleNumber = useVModelPassthrough(props, "scheduleNumber", emit);
+    const isPending = useVModelPassthrough(props, "isPending", emit);
+</script>

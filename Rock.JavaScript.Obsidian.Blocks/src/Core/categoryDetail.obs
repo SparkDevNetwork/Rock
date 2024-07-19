@@ -4,7 +4,7 @@
 
     <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
 
-    <DetailBlock v-if="!blockError"
+    <DetailBlock v-if="!blockError && isBlockVisible"
                  v-model:mode="panelMode"
                  :name="panelName"
                  :labels="blockLabels"
@@ -13,8 +13,9 @@
                  entityTypeName="Category"
                  :isAuditHidden="false"
                  :isBadgesVisible="true"
-                 :isDeleteVisible="isEditable"
+                 :isDeleteVisible="isDeletable"
                  :isEditVisible="isEditable"
+
                  :isFollowVisible="false"
                  :isSecurityHidden="false"
                  @cancelEdit="onCancelEdit"
@@ -26,7 +27,7 @@
         </template>
 
         <template #edit>
-            <EditPanel v-model="categoryEditBag" :options="options" @propertyChanged="onPropertyChanged" />
+            <EditPanel v-model="categoryEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
         </template>
     </DetailBlock>
 </template>
@@ -40,41 +41,35 @@
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import EditPanel from "./CategoryDetail/editPanel.partial.obs";
     import ViewPanel from "./CategoryDetail/viewPanel.partial.obs";
-    import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
-    import { debounce } from "@Obsidian/Utility/util";
+    import { useConfigurationValues, useInvokeBlockAction, useEntityDetailBlock } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./CategoryDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { CategoryBag } from "@Obsidian/ViewModels/Blocks/Core/CategoryDetail/categoryBag";
     import { CategoryDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/CategoryDetail/categoryDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+
 
     const config = useConfigurationValues<DetailBlockBox<CategoryBag, CategoryDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const securityGrant = getSecurityGrant(config.securityGrantToken);
 
-    // #region Values
+    // #region Valuesz
 
     const blockError = ref("");
     const errorMessage = ref("");
 
     const categoryViewBag = ref(config.entity);
-    const categoryEditBag = ref<CategoryBag>({} as CategoryBag);
+    const categoryEditBag = ref<ValidPropertiesBox<CategoryBag>>({
+        bag: {} as CategoryBag
+    });
 
     const entityTypeGuid = EntityType.Category;
-
+    const isBlockVisible = ref(true);
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
-    // The properties that are being edited in the UI. This is used to
-    // inform the server which incoming values have valid data in them.
-    const validProperties = [
-        "attributeValues",
-        "description",
-        "highlightColor",
-        "iconCssClass",
-        "name",
-        "parentCategory"
-    ];
-
-    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(categoryEditBag, validProperties, invokeBlockAction), undefined, true);
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: categoryEditBag
+    });
 
     // #endregion
 
@@ -111,6 +106,10 @@
         return config.isEditable === true && categoryViewBag.value?.isSystem !== true;
     });
 
+    const isDeletable = computed((): boolean => {
+        return isEditable.value && categoryViewBag?.value?.isDeletable === true;
+    });
+
     const options = computed((): CategoryDetailOptionsBag => {
         return config.options ?? {};
     });
@@ -130,7 +129,7 @@
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
     async function onCancelEdit(): Promise<boolean | string> {
-        if (!categoryEditBag.value?.idKey) {
+        if (!categoryEditBag.value?.bag?.idKey) {
             if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
                 return config.navigationUrls[NavigationUrlKey.ParentPage];
             }
@@ -171,35 +170,20 @@
      * @returns true if the panel should enter edit mode; otherwise false.
      */
     async function onEdit(): Promise<boolean> {
-        const result = await invokeBlockAction<DetailBlockBox<CategoryBag, CategoryDetailOptionsBag>>("Edit", {
+        const result = await invokeBlockAction<ValidPropertiesBox<CategoryBag>>("Edit", {
             key: categoryViewBag.value?.idKey
         });
 
-        if (result.isSuccess && result.data && result.data.entity) {
-            categoryEditBag.value = result.data.entity;
-
+        if (result.isSuccess && result.data && result.data.bag) {
+            categoryEditBag.value = {
+                bag: result.data.bag,
+                validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
+            };
             return true;
         }
         else {
             return false;
         }
-    }
-
-    /**
-     * Event handler for when a value has changed that has an associated
-     * C# property name. This is used to detect changes to values that
-     * might cause qualified attributes to either show up or not show up.
-     *
-     * @param propertyName The name of the C# property that was changed.
-     */
-    function onPropertyChanged(propertyName: string): void {
-        // If we don't have any qualified attribute properties or this property
-        // is not one of them then do nothing.
-        if (!config.qualifiedAttributeProperties || !config.qualifiedAttributeProperties.some(n => n.toLowerCase() === propertyName.toLowerCase())) {
-            return;
-        }
-
-        refreshAttributesDebounce();
     }
 
     /**
@@ -210,20 +194,13 @@
      */
     async function onSave(): Promise<boolean | string> {
         errorMessage.value = "";
-
-        const data: DetailBlockBox<CategoryBag, CategoryDetailOptionsBag> = {
-            entity: categoryEditBag.value,
-            isEditable: true,
-            validProperties: validProperties
-        };
-
-        const result = await invokeBlockAction<CategoryBag | string>("Save", {
-            box: data
+        const result = await invokeBlockAction<ValidPropertiesBox<CategoryBag> | string>("Save", {
+            box: categoryEditBag.value
         });
 
         if (result.isSuccess && result.data) {
             if (result.statusCode === 200 && typeof result.data === "object") {
-                categoryViewBag.value = result.data;
+                categoryViewBag.value = result.data.bag;
 
                 return true;
             }
@@ -239,8 +216,8 @@
 
     // #endregion
 
-    provideSecurityGrant(securityGrant);
-
+    const params = new URLSearchParams(window.location.search);
+    const categoryId = params.get("CategoryId");
     // Handle any initial error conditions or the need to go into edit mode.
     if (config.errorMessage) {
         blockError.value = config.errorMessage;
@@ -248,8 +225,15 @@
     else if (!config.entity) {
         blockError.value = "The specified category could not be viewed.";
     }
-    else if (!config.entity.idKey) {
-        categoryEditBag.value = config.entity;
+    else if (!config.entity.idKey && categoryId) {
+
+        categoryEditBag.value = {
+            bag: config.entity,
+            validProperties: Object.keys(config.entity)
+        };
         panelMode.value = DetailPanelMode.Add;
+    }
+    else if (!categoryId) {
+        isBlockVisible.value = false;
     }
 </script>

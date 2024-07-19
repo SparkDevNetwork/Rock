@@ -10,4 +10,5 @@ RockModelViews.xml
 /LuceneSearchIndex/
 /LuceneContentCollectionIndex/
 /ChromeEngine/
+/Geolocation/
 Run.Migration.bat

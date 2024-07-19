@@ -2,9 +2,8 @@
 <template>
     <RockSuspense>
         <template #default>
-            <div v-if="displayWithinExistingRow" :class="columnClass" v-for="a in validAttributes" :key="a.attributeGuid">
-                <RockField
-                           :isEditMode="isEditMode"
+            <div v-if="displayWithinExistingRow" :class="columnClass" v-for="a in validAttributes" :key="a.attributeGuid!">
+                <RockField :isEditMode="isEditMode"
                            :attribute="a"
                            :modelValue="values[a.key!]"
                            @update:modelValue="onUpdateValue(a.key!, $event)"
@@ -15,8 +14,7 @@
             <TabbedContent v-else-if="actuallyDisplayAsTabs" :tabs="attributeCategoryNames">
                 <template #tabpane="{ item }">
                     <div v-for="a in getCategoryAttributes(item)" :key="a.attributeGuid">
-                        <RockField
-                                   :isEditMode="isEditMode"
+                        <RockField :isEditMode="isEditMode"
                                    :attribute="a"
                                    :modelValue="values[a.key!]"
                                    @update:modelValue="onUpdateValue(a.key!, $event)"
@@ -34,8 +32,7 @@
                     <div :class="{ 'attribute-value-container-display': true, 'row': numberOfColumns > 1 }">
                         <ItemsWithPreAndPostHtml :items="prePostHtmlItems[cat.guid]" v-if="isEditMode && showPrePostHtml">
                             <template v-slot:[a.attributeGuid] v-for="a in cat.attributes" :key="a.attributeGuid">
-                                <RockField
-                                           :isEditMode="isEditMode"
+                                <RockField :isEditMode="isEditMode"
                                            :attribute="a"
                                            :modelValue="values[a.key!]"
                                            @update:modelValue="onUpdateValue(a.key!, $event)"
@@ -44,9 +41,8 @@
                             </template>
                         </ItemsWithPreAndPostHtml>
 
-                        <div v-else :class="columnClass" v-for="a in cat.attributes" :key="a.attributeGuid">
-                            <RockField
-                                       :isEditMode="isEditMode"
+                        <div v-else :class="columnClass" v-for="a in cat.attributes" :key="a.attributeGuid!">
+                            <RockField :isEditMode="isEditMode"
                                        :attribute="a"
                                        :modelValue="values[a.key!]"
                                        @update:modelValue="onUpdateValue(a.key!, $event)"
@@ -94,9 +90,14 @@
             type: Object as PropType<Record<string, PublicAttributeBag>>,
             required: true
         },
+        /*  09/24/2023 - KA
+            Set default value to false to mimic Webforms AttributeValueContainer which does
+            no have configurable value for showEmptyValues and thus defaults to not showing
+            empty values in view mode.
+        */
         showEmptyValues: {
             type: Boolean,
-            default: true
+            default: false
         },
         showAbbreviatedName: {
             type: Boolean,

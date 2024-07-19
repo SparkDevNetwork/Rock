@@ -6,14 +6,12 @@
                      :label="label"
                      :displayStyle="displayStyle"
                      :items="actualTypeItems"
-                     showBlankItem
                      :multiple="false" />
     <BaseAsyncPicker v-model="internalRoleValue"
                      v-bind="standardProps"
                      :label="roleLabel"
                      :displayStyle="displayStyle"
                      :items="actualRoleItems"
-                     showBlankItem
                      :multiple="false" />
 </template>
 
@@ -190,7 +188,7 @@
 
     /** If the value is changed from the outside, fill in all the required data */
     watch(() => props.modelValue, () => {
-        if (updateRefValue(internalRoleValue, props.modelValue)) {
+        if (updateRefValue(internalRoleValue, props.modelValue) && props.modelValue != null) {
             loadRoleOptionsFromValue();
         }
     });

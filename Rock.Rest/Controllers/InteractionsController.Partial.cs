@@ -25,6 +25,9 @@ using System.Net;
 using System.Net.Http;
 using System.Web;
 using System.Web.Http;
+
+using Microsoft.Extensions.Logging;
+
 using Rock.Cms.Utm;
 using Rock.Data;
 using Rock.Logging;
@@ -199,8 +202,9 @@ namespace Rock.Rest.Controllers
             }
             catch ( Exception ex )
             {
+                var logger = RockLogger.LoggerFactory.CreateLogger<InteractionsController>();
                 // If there is a problem creating the interaction, record it but do not generate an error for the caller.
-                RockLogger.Log.Error( RockLogDomains.Interaction, ex );
+                logger.LogError( ex.Message, ex );
             }
 
             return Ok();

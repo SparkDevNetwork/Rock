@@ -8,22 +8,6 @@
     </div>
 </template>
 
-<script lang="ts">
-    declare global {
-        /* eslint-disable @typescript-eslint/naming-convention */
-        interface Window {
-            Rock: {
-                controls: {
-                    datePicker: {
-                        initialize: (args: Record<string, unknown>) => void
-                    }
-                }
-            }
-        }
-        /* eslint-enable @typescript-eslint/naming-convention */
-    }
-</script>
-
 <script setup lang="ts">
     import { computed, onMounted, PropType, watch, ref, nextTick } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";

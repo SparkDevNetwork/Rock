@@ -27,58 +27,65 @@
                         </template>
 
                         <div tabindex="0">
-                            <div ref="nameSearchTextBox" class="personpicker-search-panel" :class="{ 'row': isAdvancedSearch }">
-                                <TextBox v-model="nameSearchText" :formGroupClasses="isAdvancedSearch ? 'col-sm-6' : ''" disableLabel>
+                            <div ref="nameSearchTextBox" class="personpicker-search-panel" :class="{ 'row form-row': isAdvancedSearch }">
+                                <TextBox v-model="nameSearchText" :formGroupClasses="isAdvancedSearch ? 'col-sm-6' : ''" disableLabel :disableAutocomplete="true" type="search">
                                     <template #inputGroupPrepend>
                                         <span class="input-group-addon">Name</span>
                                     </template>
                                 </TextBox>
-                                <TextBox v-if="isAdvancedSearch" v-model="phoneSearchText" formGroupClasses="col-sm-6" disableLabel>
+                                <TextBox v-if="isAdvancedSearch" v-model="phoneSearchText" formGroupClasses="col-sm-6" disableLabel :disableAutocomplete="true" type="tel">
                                     <template #inputGroupPrepend>
                                         <span class="input-group-addon">Phone</span>
                                     </template>
                                 </TextBox>
-                                <TextBox v-if="isAdvancedSearch" v-model="addressSearchText" formGroupClasses="col-sm-6" disableLabel>
+                                <TextBox v-if="isAdvancedSearch" v-model="addressSearchText" formGroupClasses="col-sm-6" disableLabel :disableAutocomplete="true">
                                     <template #inputGroupPrepend>
                                         <span class="input-group-addon">Address</span>
                                     </template>
                                 </TextBox>
-                                <TextBox v-if="isAdvancedSearch" v-model="emailSearchText" formGroupClasses="col-sm-6" disableLabel>
+                                <TextBox v-if="isAdvancedSearch" v-model="emailSearchText" formGroupClasses="col-sm-6" disableLabel :disableAutocomplete="true" type="email">
                                     <template #inputGroupPrepend>
                                         <span class="input-group-addon">Email</span>
                                     </template>
                                 </TextBox>
                             </div>
 
-                            <div>
+                            <div class="personpicker-results">
                                 <div v-for="result in searchResults"
                                      :key="result.primaryAliasGuid!"
-                                     class="well cursor-pointer mb-2 p-2"
+                                     class="personpicker-item"
                                      :style="{ borderColor: internalValue?.value == result.primaryAliasGuid ? 'var(--color-primary)' : undefined }"
                                      tabindex="0"
                                      @click="selectPerson(result)"
                                      @keypress.enter="selectPerson(result)"
+                                     :class="{ 'o-60': !result.isActive }"
                                      role="button">
-                                    <div class="d-flex text-xs flex-wrap gap" :class="{ 'o-60': !result.isActive }">
-                                        <div class="person-image flex-shrink-0" :style="getPersonImageStyle(result)" :alt="'Profile image for ' + result.name"></div>
-                                        <div style="width:200px;" class="flex-shrink-0">
-                                            <div class="leading-snug"><span class="text-md font-weight-semibold">{{ result.name }}</span> <i class="fa fa-child text-primary" v-if="result.ageClassification == AgeClassification.Child" aria-label="Child" title="Child"></i> <span v-if="result.formattedAge" class="text-muted">{{ result.formattedAge }}</span></div>
-                                            <div v-if="getSubInformation(result)" class="text-muted"><small v-html="getSubInformation(result)" /></div>
-                                            <a :href="`/Person/${result.guid}`" @click.stop target="_blank" rel="noreferrer noopener">Profile</a>
-                                        </div>
-                                        <div style="width:275px;" class="flex-shrink-0">
-                                            <div>{{ result.address }}</div>
-                                            <div>{{ result.email }}</div>
-                                        </div>
-                                        <ul style="width:150px;" class="list-unstyled flex-shrink-0">
-                                            <li v-for="phone in result.phoneNumbers" :key="phone.type ?? '' + phone.number ?? ''">{{ phone.isUnlisted ? 'Unlisted' : phone.number }} <small v-if="phone.type" class="text-muted">{{ phone.type }}</small></li>
-                                        </ul>
-                                        <div class="ml-auto flex-shrink-0">
-                                            <div class="taglist">
-                                                <Tag v-for="tag in getTags(result)" :key="tag.name ?? undefined" :modelValue="tag" disabled />
+                                        <div class="main d-flex gap flex-fill flex-shrink-0">
+                                            <div class="person-image flex-shrink-0" :style="getPersonImageStyle(result)" :alt="'Profile image for ' + result.name"></div>
+                                            <div class="data flex-fill">
+                                                <div class="taglist pull-right">
+                                                    <Tag v-for="tag in getTags(result)" :key="tag.name ?? undefined" :modelValue="tag" class="mb-0" disabled />
+                                                </div>
+                                                <div class="leading-snug"><span class="text-md font-weight-semibold">{{ result.name }}</span> <i class="fa fa-child text-primary" v-if="result.ageClassification == AgeClassification.Child" aria-label="Child" title="Child"></i> <span v-if="result.formattedAge" class="text-muted">{{ result.formattedAge }}</span></div>
+                                                <div v-if="getSubInformation(result)" class="text-muted"><span v-html="getSubInformation(result)" /></div>
+                                                <small><a :href="`/Person/${result.guid}`" @click.stop target="_blank" rel="noreferrer noopener" tabindex="-1">Profile</a></small>
                                             </div>
                                         </div>
-                                    </div>
+
+                                        <div class="item-meta">
+                                            <div class="taglist justify-content-end">
+                                                <Tag v-for="tag in getTags(result)" :key="tag.name ?? undefined" :modelValue="tag" class="mb-0" disabled />
+                                            </div>
+
+                                            <div class="address-email">
+                                                <div v-html="result.address"></div>
+                                                <div>{{ result.email }}</div>
+                                            </div>
+                                            <ul class="phones list-unstyled m-0">
+                                                <li v-for="phone in result.phoneNumbers" :key="phone.type ?? '' + phone.number ?? ''">{{ phone.isUnlisted ? 'Unlisted' : phone.number }} <small v-if="phone.type" class="text-muted">{{ phone.type.charAt(0) }}</small></li>
+                                            </ul>
+                                        </div>
+
                                 </div>
                             </div>
                         </div>

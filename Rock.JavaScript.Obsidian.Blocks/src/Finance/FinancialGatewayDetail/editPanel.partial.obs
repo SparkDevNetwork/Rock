@@ -98,7 +98,7 @@
 
     const weeklySchedule = "Weekly";
     const dailySchedule = "Daily";
-    const defaultInactiveMessage = "An 'Inactive' status will prevent the gateway from being shown in the gateway picker for Registration templates if it is not already selected. An 'Inactive' status DOES NOT prevent charges from being processed for a registration where the gateway is already assigned.";
+    const defaultInactiveMessage = "<strong>Important!</strong> An 'Inactive' status will prevent the gateway from being shown in the gateway picker for Registration templates if it is not already selected. An 'Inactive' status DOES NOT prevent charges from being processed for a registration where the gateway is already assigned.";
     const attributes = ref(props.modelValue?.bag?.attributes ?? {});
     const attributeValues = ref(props.modelValue?.bag?.attributeValues ?? {});
     const description = propertyRef(props.modelValue?.bag?.description ?? "", "Description");
@@ -182,6 +182,27 @@
         else {
             inactiveGatewayMessage.value = defaultInactiveMessage;
         }
+    }, {
+        immediate: true
+    });
+
+    // Get the component description and set as description if description is empty.
+    watch(() => gatewayType.value, async () => {
+        // if user has already entered a description then return.
+        if (description.value) {
+            return;
+        }
+
+        const entityTypeGuid = gatewayType.value.value;
+        if (entityTypeGuid) {
+            const result = await invokeBlockAction<{ description: string }>("GetGatewayComponentDescription", {
+                entityTypeGuid: entityTypeGuid
+            });
+
+            if (result.isSuccess && result.data) {
+                description.value = result.data.description;
+            }
+        }
     });
 
     // Watch for parental changes in our model value and update all our values.
@@ -201,7 +222,7 @@
     // array) and then emit a new object defined as newValue.
     watch([attributeValues, dayOfWeek, batchSchedule, ...propRefs], () => {
         const newValue: ValidPropertiesBox<FinancialGatewayBag> = {
-            bag: { ...props.modelValue } as FinancialGatewayBag
+            bag: { ...props.modelValue.bag } as FinancialGatewayBag
         };
         setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value),
         setPropertiesBoxValue(newValue, "description", description.value),

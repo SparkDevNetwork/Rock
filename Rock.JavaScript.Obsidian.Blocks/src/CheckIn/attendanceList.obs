@@ -27,7 +27,7 @@
                     title="Note"
                     field="note"
                     :filter="textValueFilter"
-                    visiblePriority="xs" />
+                    visiblePriority="md" />
 
         <TextColumn name="createdByPersonName"
                     title="Entered By"
@@ -39,7 +39,7 @@
                         title="Entered On"
                         field="createdDateTime"
                         :filter="dateValueFilter"
-                        visiblePriority="xs" />
+                        visiblePriority="md" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>

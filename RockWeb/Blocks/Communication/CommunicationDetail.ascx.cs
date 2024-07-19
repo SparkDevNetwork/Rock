@@ -36,6 +36,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -1983,8 +1984,8 @@ namespace RockWeb.Blocks.Communication
                     sb.Append( "<div class='row'><div class='col-md-12'><ul>" );
                     foreach ( var binaryFile in emailAttachments.Select( a => a.BinaryFile ).ToList() )
                     {
-                        sb.AppendFormat( "<li><a target='_blank' rel='noopener noreferrer' href='{0}GetFile.ashx?id={1}'>{2}</a></li>",
-                            System.Web.VirtualPathUtility.ToAbsolute( "~" ), binaryFile.Id, binaryFile.FileName );
+                        sb.AppendFormat( "<li><a target='_blank' rel='noopener noreferrer' href='{0}'>{1}</a></li>",
+                            FileUrlHelper.GetFileUrl( binaryFile.Id ), binaryFile.FileName );
                     }
                     sb.Append( "</ul></div></div>" );
                 }

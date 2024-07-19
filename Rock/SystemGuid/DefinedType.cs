@@ -512,6 +512,11 @@ namespace Rock.SystemGuid
         public const string PEER_NETWORK_RELATIONSHIP_TYPE = "F2E8E639-F16D-489D-AAFB-BE0133531E41";
 
         /// <summary>
+        /// Clarifies what the metrics are measuring, enabling the system to utilize these metrics for analytics.
+        /// </summary>
+        public const string MEASUREMENT_CLASSIFICATION = "A9897479-110E-4E50-8F60-160CEFE4CF7B";
+
+        /// <summary>
         /// List of different sources from which website traffic may originate.
         /// </summary>
         public const string UTM_SOURCE = "3CFE43A9-5D0C-4BE4-B1EC-AFA06BBB7C32";

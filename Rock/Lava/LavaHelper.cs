@@ -26,6 +26,7 @@ using Newtonsoft.Json.Linq;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Reporting;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -87,6 +88,12 @@ namespace Rock.Lava
         /// <returns></returns>
         public static Dictionary<string, object> GetCommonMergeFields( RockPage rockPage, Person currentPerson = null, CommonMergeFieldsOptions options = null )
         {
+            /*
+                6/10/2024 - DSH
+
+                If you make any changes here to add or remove common merge fields,
+                you need to make the same changes in RockRequestContext.
+            */
             var mergeFields = new Dictionary<string, object>();
 
             if ( rockPage == null && HttpContext.Current != null )
@@ -178,6 +185,12 @@ namespace Rock.Lava
             if ( options.GetCampuses )
             {
                 mergeFields.Add( "Campuses", CampusCache.All() );
+            }
+
+            // Add client information 
+            if ( rockPage != null )
+            {
+                mergeFields.Add( "Geolocation", rockPage.RequestContext?.ClientInformation?.Geolocation );
             }
 
             return mergeFields;
@@ -380,6 +393,8 @@ namespace Rock.Lava
         /// <param name="input"></param>
         /// <param name="rockContext"></param>
         /// <returns></returns>
+        [RockObsolete("1.17")]
+        [Obsolete( "Use GetDataViewDefinitionFromInputParameter( object ) instead." )]
         public static DataView GetDataViewFromInputParameter( object input, RockContext rockContext )
         {
             DataView dataView = null;
@@ -413,6 +428,55 @@ namespace Rock.Lava
                         var inputAsString = s.ToStringSafe().Trim();
                         dataView = dataViewService.Queryable()
                             .FirstOrDefault( d => d.Name != null && d.Name.Equals( inputAsString ) );
+                    }
+                }
+            }
+            return dataView;
+        }
+
+        /// <summary>
+        /// Gets a DataView object from a Lava input parameter containing a Data View reference.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <param name="rockContext"></param>
+        /// <returns></returns>
+        public static IDataViewDefinition GetDataViewDefinitionFromInputParameter( object input, RockContext rockContext )
+        {
+            IDataViewDefinition dataView = null;
+
+            // Parse the input object for a dataView.
+            if ( input is IDataViewDefinition dv )
+            {
+                dataView = dv;
+            }
+            else if ( input is string s )
+            {
+                var inputAsGuid = s.AsGuidOrNull();
+                if ( inputAsGuid != null )
+                {
+                    // If the input is a Guid, retrieve the corresponding DataView.
+                    dataView = DataViewCache.Get( inputAsGuid.Value );
+                }
+                else
+                {
+                    var inputAsInt = s.AsIntegerOrNull();
+                    if ( inputAsInt != null )
+                    {
+                        // If the input is an integer, retrieve the corresponding dataView.
+                        dataView = DataViewCache.Get( inputAsInt.Value );
+                    }
+                    else
+                    {
+                        // If the input is a string, retrieve by name.
+                        var dataViewService = new DataViewService( rockContext );
+
+                        var inputAsString = s.ToStringSafe().Trim();
+                        var dataViewId = dataViewService.Queryable()
+                            .Where( d => d.Name != null && d.Name.Equals( inputAsString ) )
+                            .Select( d => d.Id )
+                            .FirstOrDefault();
+
+                        dataView = DataViewCache.Get( dataViewId );
                     }
                 }
             }

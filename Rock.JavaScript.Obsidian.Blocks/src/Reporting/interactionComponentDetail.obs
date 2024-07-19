@@ -1,0 +1,29 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel :title="name" type="block">
+
+        <NotificationBox v-if="errorMessage" alertType="warning" v-html="errorMessage" />
+
+        <div v-if="!errorMessage" v-html="content">
+
+        </div>
+
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
+    import { InteractionComponentDetailInitializationBox } from "@Obsidian/ViewModels/Blocks/Reporting/InteractionComponentDetail/interactionComponentDetailInitializationBox";
+
+    const config = useConfigurationValues<InteractionComponentDetailInitializationBox>();
+
+    const name = ref(config.componentName ?? "Interaction Component");
+    const content = ref(config.content ?? "");
+    const errorMessage = ref(config.errorMessage ?? "");
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+</script>

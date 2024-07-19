@@ -11,7 +11,7 @@
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
                  entityTypeName="AppleTVApp"
-                 :isAuditHidden="false"
+                 :isAuditHidden="isAuditHidden"
                  :isBadgesVisible="true"
                  :isDeleteVisible="false"
                  :isEditVisible="isEditable"
@@ -71,8 +71,7 @@
         "description",
         "isActive",
         "loginPage",
-        "enablePageViews",
-        "enablePageViewGeoTracking"
+        "enablePageViews"
     ];
 
     const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(appleTvAppEditBag, validProperties, invokeBlockAction), undefined, true);
@@ -80,6 +79,10 @@
     // #endregion
 
     // #region Computed Values
+
+    const isAuditHidden = computed((): boolean => {
+        return panelMode.value != DetailPanelMode.View;
+    });
 
     /**
      * The entity name to display in the block panel.

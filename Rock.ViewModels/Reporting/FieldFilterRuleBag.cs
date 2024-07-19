@@ -46,6 +46,13 @@ namespace Rock.ViewModels.Reporting
         public string Value { get; set; }
 
         /// <summary>
+        /// The property path from the main object being filtered to the object
+        /// that contains the property or attribute. This may be <c>null</c> or
+        /// an empty string, which means the main object is used.
+        /// </summary>
+        public string Path { get; set; }
+
+        /// <summary>
         /// The source location for where to get the left-hand side value.
         /// </summary>
         public FieldFilterSourceType SourceType { get; set; }

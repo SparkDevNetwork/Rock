@@ -1,9 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField
-                   :modelValue="fileGuid"
-                   formGroupClasses="image-uploader"
-                   name="imageuploader">
+    <RockFormField :modelValue="fileGuid" formGroupClasses="image-uploader" name="imageuploader">
         <template #default="{ uniqueId, field }">
             <div class="control-wrapper">
                 <NotificationBox v-if="uploadErrorMessage" alertType="warning">
@@ -12,7 +9,7 @@
                 </NotificationBox>
 
                 <div ref="dropZoneElement" :id="uniqueId" class="imageupload-group" :style="{ pointerEvents: disabled ? 'none' : undefined }" @click="onSelectFileClick">
-                    <div class="imageupload-thumbnail" style="width: 100px; height: 100px;">
+                    <div class="imageupload-thumbnail" :style="thumbnailWrapperStyle">
                         <a v-if="fileUrl" :href="fileUrl" target="_blank" rel="noopener noreferrer" @click.stop>
                             <div class="imageupload-thumbnail-image" :style="thumbnailStyle"></div>
                         </a>
@@ -82,6 +79,26 @@
             default: true
         },
 
+        noPictureUrl: {
+            type: String,
+            default: "/Assets/Images/no-picture.svg"
+        },
+
+        thumbnailHeight: {
+            type: Number,
+            default: 100
+        },
+
+        thumbnailWidth: {
+            type: Number,
+            default: 100
+        },
+
+        uploadUrl: {
+            type: String,
+            default: "/ImageUploader.ashx"
+        },
+
         /**
          * A processor that will allow modification of the image file before
          * it is uploaded to the server. A new file should be created and
@@ -95,6 +112,8 @@
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: ListItemBag | undefined): void;
+        (e: "imageUploaded"): void;
+        (e: "imageRemoved"): void;
     }>();
 
     const fileGuid = ref<Guid | null>(toGuidOrNull(props.modelValue?.value));
@@ -118,9 +137,17 @@
         return null;
     });
 
+    /** The CSS styles to use for the thumbnail wrapper element. */
+    const thumbnailWrapperStyle = computed((): Record<string, string> => {
+        return {
+            width: `${props.thumbnailWidth}px`,
+            height: `${props.thumbnailHeight}px`
+        };
+    });
+
     /** The CSS styles to use for the thumbnail element. */
     const thumbnailStyle = computed((): Record<string, string> => {
-        const imageUrl = fileGuid.value ? `/GetImage.ashx?guid=${fileGuid.value}&width=500` : "/Assets/Images/no-picture.svg";
+        const imageUrl = fileGuid.value ? `/GetImage.ashx?guid=${fileGuid.value}&width=${props.thumbnailWidth}` : props.noPictureUrl;
 
         return {
             backgroundImage: `url('${imageUrl}')`,
@@ -159,7 +186,7 @@
 
             // Perform the actual file upload using the helper function.
             const result = await uploadBinaryFile(file, props.binaryFileTypeGuid || BinaryFiletype.Default, {
-                baseUrl: "/ImageUploader.ashx",
+                baseUrl: props.uploadUrl,
                 isTemporary: props.uploadAsTemporary,
                 progress: (progress, total, percent) => {
                     uploadProgressText.value = `${percent}%`;
@@ -168,6 +195,7 @@
 
             fileGuid.value = toGuidOrNull(result.value);
             fileName.value = result.text ?? "";
+            emit("imageUploaded");
         }
         catch (e) {
             // Show any error message we got.
@@ -195,6 +223,7 @@
     function onRemoveFileClick(): void {
         fileGuid.value = null;
         fileName.value = "";
+        emit("imageRemoved");
     }
 
     /**

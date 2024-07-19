@@ -40,19 +40,6 @@ namespace Rock.Model
         private static CacheItemPolicy cacheItemPolicy10Minutes = new CacheItemPolicy { SlidingExpiration = TimeSpan.FromMinutes( 10 ) };
 
         /// <summary>
-        /// Gets the calendar event.
-        /// </summary>
-        /// <param name="iCalendarContent">RFC 5545 ICal Content</param>
-        /// <returns></returns>
-        [RockObsolete( "1.12.4" )]
-        [Obsolete( "Use CreateCalendarEvent instead" )]
-        public static CalendarEvent GetCalendarEvent( string iCalendarContent )
-        {
-            // changed to obsolete because this used to return a shared object that could be altered or create thread-safety issues
-            return CreateCalendarEvent( iCalendarContent );
-        }
-
-        /// <summary>
         /// Creates the calendar event.
         /// </summary>
         /// <param name="iCalendarContent">RFC 5545 ICal Content</param>
@@ -75,33 +62,6 @@ namespace Rock.Model
             }
 
             return calendarEvent;
-        }
-
-        /// <summary>
-        /// Gets the occurrences.
-        /// </summary>
-        /// <param name="icalEvent">The ical event.</param>
-        /// <param name="startTime">The start time.</param>
-        /// <returns></returns>
-        [Obsolete( "Use the override with the string instead of the Ical.Net.Event." )]
-        [RockObsolete( "1.12.4" )]
-        public static IList<Occurrence> GetOccurrences( CalendarEvent icalEvent, DateTime startTime )
-        {
-            return icalEvent.GetOccurrences( startTime ).ToList();
-        }
-
-        /// <summary>
-        /// Gets the occurrences.
-        /// </summary>
-        /// <param name="icalEvent">The ical event.</param>
-        /// <param name="startTime">The start time.</param>
-        /// <param name="endTime">The end time.</param>
-        /// <returns></returns>
-        [Obsolete( "Use the override with the string instead of the Ical.Net.Event." )]
-        [RockObsolete( "1.12.4" )]
-        public static IList<Occurrence> GetOccurrences( CalendarEvent icalEvent, DateTime startTime, DateTime endTime )
-        {
-            return icalEvent.GetOccurrences( startTime, endTime ).ToList();
         }
 
         /// <summary>

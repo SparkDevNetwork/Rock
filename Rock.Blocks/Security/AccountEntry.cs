@@ -30,6 +30,7 @@ using Rock.Security;
 using Rock.Security.Authentication;
 using Rock.Security.Authentication.Passwordless;
 using Rock.ViewModels.Blocks.Security.AccountEntry;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -390,6 +391,13 @@ namespace Rock.Blocks.Security
         [BlockAction]
         public BlockActionResult ForgotUsername( AccountEntryForgotUsernameRequestBag bag )
         {
+            var disableCaptcha = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
+
+            if ( !disableCaptcha && !RequestContext.IsCaptchaValid )
+            {
+                return ActionBadRequest( "Captcha was not valid." );
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var person = GetSelectedDuplicatePerson( bag.PersonId, bag.Email, bag.LastName, rockContext );
@@ -1240,28 +1248,6 @@ namespace Rock.Blocks.Security
         }
 
         /// <summary>
-        /// Determines if the full name is valid.
-        /// </summary>
-        /// <param name="box">The register request box.</param>
-        /// <returns><c>true</c> if valid; otherwise, <c>false</c>.</returns>
-        private static bool IsFullNameValid( AccountEntryRegisterRequestBox box )
-        {
-            /*
-                12/28/2022 - JMH
-             
-                See https://app.asana.com/0/1121505495628584/1200018171012738/f on why this is done
-
-                Reason: Passwordless Authentication
-             */
-            if ( box.FullName.IsNotNullOrWhiteSpace() )
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        /// <summary>
         /// Determines if the new person is old enough for a new account.
         /// </summary>
         /// <param name="box">The register request box.</param>
@@ -1344,12 +1330,6 @@ namespace Rock.Blocks.Security
             {
                 // The API consumer isn't sending the request properly.
                 errorMessage = "Request missing";
-                return false;
-            }
-
-            if ( !IsFullNameValid( box ) )
-            {
-                errorMessage = "Invalid Form Value";
                 return false;
             }
 

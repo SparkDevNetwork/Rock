@@ -8,11 +8,8 @@
                 <div v-if="hasMergeFields" class="codeeditor-header margin-b-md clearfix">
                 </div>
 
-                <div :class="codeEditorClass"
-                     :style="codeEditorStyle">
-                    <pre v-once
-                         :id="codeEditorId"
-                         class="position-absolute inset-0 m-0 ace_editor">{{ internalValue }}</pre>
+                <div :class="codeEditorClass" :style="codeEditorStyle">
+                    <pre v-once :id="codeEditorId" class="position-absolute inset-0 m-0 ace_editor">{{ internalValue }}</pre>
                 </div>
             </div>
         </template>
@@ -33,23 +30,60 @@
     import { newGuid } from "@Obsidian/Utility/guid";
     import { isFullscreen, enterFullscreen, exitFullscreen } from "@Obsidian/Utility/fullscreen";
     import { updateRefValue } from "@Obsidian/Utility/component";
-    import { LiteralUnion } from "@Obsidian/Types/Utility/support";
+
+    const themes = {
+        0: "rock",
+        1: "chrome",
+        2: "crimson_editor",
+        3: "dawn",
+        4: "dreamweaver",
+        5: "eclipse",
+        6: "solarized_light",
+        7: "textmate",
+        8: "tomorrow",
+        9: "xcode",
+        10: "github",
+        11: "ambiance",
+        12: "chaos",
+        13: "clouds_midnight",
+        14: "cobalt",
+        15: "idle_fingers",
+        16: "kr_theme",
+        17: "merbivore",
+        18: "merbivore_soft",
+        19: "mono_industrial",
+        20: "monokai",
+        21: "pastel_on_dark",
+        22: "solarized_dark",
+        23: "terminal",
+        24: "tomorrow_night",
+        25: "tomorrow_night_blue",
+        26: "tomorrow_night_bright",
+        27: "tomorrow_night_eighties",
+        28: "twilight",
+        29: "vibrant_ink",
+    } as const;
 
     // The valid theme types for intellisense.
-    type ThemeTypes = "rock"
-        | "chrome" | "crimson_editor" | "dawn" | "dreamweaver"
-        | "eclipse" | "solarized_light" | "textmate" | "tomorrow"
-        | "xcode" | "github" | "ambiance" | "chaos"
-        | "clouds_midnight" | "cobalt" | "idle_fingers" | "kr_theme"
-        | "merbivore" | "merbivore_soft" | "mono_industrial" | "monokai"
-        | "pastel_on_dark" | "solarized_dark" | "terminal" | "tomorrow_night"
-        | "tomorrow_night_blue" | "tomorrow_night_bright" | "tomorrow_night_eighties"
-        | "twilight" | "vibrant_ink";
+    type ThemeTypes = keyof typeof themes | typeof themes[keyof typeof themes];
+
+    const modes = {
+        0: "text",
+        1: "css",
+        2: "html",
+        3: "lava",
+        4: "javascript",
+        5: "less",
+        6: "powershell",
+        7: "sql",
+        8: "typescript",
+        9: "csharp",
+        10: "markdown",
+        11: "xml"
+    } as const;
 
     // The valid mode types for intellisense.
-    type ModeTypes = "text" | "css" | "html" | "lava"
-        | "javascript" | "less" | "powershell" | "sql"
-        | "typescript" | "csharp" | "markdown" | "xml";
+    type ModeTypes = keyof typeof modes | typeof modes[keyof typeof modes];
 
     // Start loading the signature pad script so that it is available for us
     // to use later when the control becomes visible.
@@ -96,13 +130,13 @@
 
         /** The name of the theme to use when styling the editor. */
         theme: {
-            type: String as PropType<LiteralUnion<ThemeTypes>>,
+            type: [String, Number] as PropType<ThemeTypes>,
             default: "rock"
         },
 
         /** The name of the syntax mode that represents the expected language. */
         mode: {
-            type: String as PropType<LiteralUnion<ModeTypes>>,
+            type: [String, Number] as PropType<ModeTypes>,
             default: "text"
         },
 
@@ -171,13 +205,31 @@
         return height;
     });
 
+    // Since themes can be passed in as the number or string, we need to convert it to the string version
+    const themeName = computed<string>(() => {
+        if (typeof props.theme == "number") {
+            return themes[props.theme];
+        }
+
+        return props.theme;
+    });
+
+    // Since modes can be passed in as the number or string, we need to convert it to the string version
+    const modeName = computed<string>(() => {
+        if (typeof props.mode == "number") {
+            return modes[props.mode];
+        }
+
+        return props.mode;
+    });
+
     // #endregion
 
     // Watch for changes in the ACE configuration.
-    watch(() => [props.theme, props.mode, props.noLineWrap, props.disabled], () => {
+    watch(() => [themeName.value, modeName.value, props.noLineWrap, props.disabled], () => {
         if (editor) {
-            editor.setTheme(`ace/theme/${getAceTheme(props.theme)}`);
-            editor.getSession().setMode(`ace/mode/${getAceMode(props.mode)}`);
+            editor.setTheme(`ace/theme/${getAceTheme(themeName.value)}`);
+            editor.getSession().setMode(`ace/mode/${getAceMode(modeName.value)}`);
             editor.getSession().setUseWrapMode(!props.noLineWrap);
             editor.setReadOnly(props.disabled);
         }
@@ -185,6 +237,10 @@
 
     watch(() => props.modelValue, () => {
         updateRefValue(internalValue, props.modelValue);
+
+        if (editor && editor.getValue() !== internalValue.value) {
+            editor.setValue(internalValue.value, 1);
+        }
     });
 
     watch(internalValue, () => {
@@ -194,8 +250,8 @@
     onMounted(async (): Promise<void> => {
         await aceScriptPromise;
         editor = window.ace.edit(codeEditorId.value);
-        editor.setTheme(`ace/theme/${getAceTheme(props.theme)}`);
-        editor.getSession().setMode(`ace/mode/${getAceMode(props.mode)}`);
+        editor.setTheme(`ace/theme/${getAceTheme(themeName.value)}`);
+        editor.getSession().setMode(`ace/mode/${getAceMode(modeName.value)}`);
         editor.getSession().setUseWrapMode(!props.noLineWrap);
         editor.setShowPrintMargin(false);
         editor.setReadOnly(props.disabled);

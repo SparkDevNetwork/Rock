@@ -1514,11 +1514,7 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void ClearExceptionLog()
         {
-            var dataContext = GetDataContext();
-
-            var exceptionService = new ExceptionLogService( dataContext );
-
-            exceptionService.TruncateLog();
+            ExceptionLogService.TruncateLog();
         }
 
         #region Control Events

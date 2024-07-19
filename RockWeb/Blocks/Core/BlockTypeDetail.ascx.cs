@@ -192,19 +192,19 @@ namespace RockWeb.Blocks.Core
             var blocks = BlockCache.All()
                 .Where( b => b.BlockTypeId == blockTypeId );
             var pages = blocks
-                .Where( b => b.PageId != null )
+                .Where( b => b.Page != null )
                 .OrderBy( b => b.Page.GetFullyQualifiedPageName() )
                 .Select( b => b.Page.GetHyperLinkedPageBreadCrumbs() )
                 .Select( p => $"<li>{p}</li>" )
                 .ToList();
             var layouts = blocks
-                .Where( b => b.LayoutId != null )
+                .Where( b => b.Layout != null )
                 .Select( b => $"<a href='/admin/cms/sites/layouts/{b.LayoutId}'>{b.Layout.Name}</a> (Layout), {b.Zone} (Zone)" )
                 .Select( l => $"<li>{l}</li>" )
                 .OrderBy( l => l )
                 .ToList();
             var sites = blocks
-                .Where( b => b.SiteId != null )
+                .Where( b => b.Site != null )
                 .Select( b => $"<a href='/admin/cms/sites/{b.SiteId}'>{b.Site.Name}</a> (Site), {b.Zone} (Zone)" )
                 .Select( s => $"<li>{s}</li>" )
                 .OrderBy( s => s )

@@ -76,6 +76,7 @@
     /**
      * Called when the individual clicks the "Requery REST Data" button.
      */
+
     async function refreshControllerList(): Promise<void> {
         const result = await invokeBlockAction("RefreshControllerList");
 
@@ -87,6 +88,7 @@
     /**
      * Called when the grid is requesting the row data be loaded.
      */
+
     async function loadGridData(): Promise<GridDataBag> {
         const result = await invokeBlockAction<GridDataBag>("GetGridData");
 
@@ -113,6 +115,7 @@
             window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
         }
     }
+
 
     // #endregion
 

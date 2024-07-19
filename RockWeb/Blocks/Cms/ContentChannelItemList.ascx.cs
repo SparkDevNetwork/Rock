@@ -22,11 +22,12 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Microsoft.Extensions.Logging;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Lava;
-using Rock.Logging;
 using Rock.Model;
 using Rock.Model.CMS.ContentChannelItem.Options;
 using Rock.Security;
@@ -39,9 +40,9 @@ namespace RockWeb.Blocks.Cms
     /// <summary>
     /// 
     /// </summary>
-    [DisplayName("Content Channel Item List")]
-    [Category("CMS")]
-    [Description("Lists content channel items.")]
+    [DisplayName( "Content Channel Item List" )]
+    [Category( "CMS" )]
+    [Description( "Lists content channel items." )]
 
     #region Block Attributes
 
@@ -165,8 +166,8 @@ namespace RockWeb.Blocks.Cms
             }
 
             gfFilter.Visible = GetAttributeValue( AttributeKey.ShowFilters ).AsBoolean();
-            
-            if (string.IsNullOrWhiteSpace(GetAttributeValue( AttributeKey.ContentChannel)))
+
+            if ( string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.ContentChannel ) ) )
             {
                 _channelId = PageParameter( PageParameterKey.ContentChannelId ).AsIntegerOrNull();
             }
@@ -192,7 +193,7 @@ namespace RockWeb.Blocks.Cms
                     var startDateColumn = gItems.ColumnsWithDataField( "StartDateTime" ).OfType<DateField>().FirstOrDefault();
                     var expireDateColumn = gItems.ColumnsWithDataField( "ExpireDateTime" ).OfType<DateField>().FirstOrDefault();
                     var priorityColumn = gItems.ColumnsWithDataField( "Priority" ).FirstOrDefault();
-                    
+
                     //// NOTE: The EventOccurrences Column's visibility is set in GridBind()
 
                     startDateTimeColumn.HeaderText = startHeading;
@@ -444,7 +445,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            OnInit(e);
+            OnInit( e );
             BindGrid();
         }
 
@@ -710,7 +711,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         /// <param name="contentItemStatus">The content item status.</param>
         /// <returns></returns>
-        protected string DisplayStatus (ContentChannelItemStatus contentItemStatus)
+        protected string DisplayStatus( ContentChannelItemStatus contentItemStatus )
         {
             string labelType = "default";
             if ( contentItemStatus == ContentChannelItemStatus.Approved )
@@ -766,7 +767,7 @@ namespace RockWeb.Blocks.Cms
             lUploadName.Text = item.Name;
             var licenseGuid = ContentChannelCache.Get( _channelId.Value )?.ContentLibraryConfiguration?.LicenseTypeValueGuid ?? Rock.SystemGuid.DefinedValue.LIBRARY_LICENSE_TYPE_OPEN.AsGuid();
             aLibraryLicense.HRef = $"https://rockrms.com/library/licenses?utm_source=rock-item-uploaded";
-            aLibraryLicense.InnerHtml = $"{ DefinedValueCache.Get( licenseGuid ).Value } License";
+            aLibraryLicense.InnerHtml = $"{DefinedValueCache.Get( licenseGuid ).Value} License";
             mdUploadContentLibrary.Show();
         }
 
@@ -787,7 +788,7 @@ namespace RockWeb.Blocks.Cms
                 }
                 catch ( AddToContentLibraryException ex )
                 {
-                    RockLogger.Log.Error( RockLogDomains.Cms, ex, ex.Message );
+                    Logger.LogError( ex, ex.Message );
                     mdGridWarning.Show( ex.Message.ConvertCrLfToHtmlBr(), ModalAlertType.Alert );
                 }
             }
@@ -813,7 +814,7 @@ namespace RockWeb.Blocks.Cms
                 }
                 catch ( AddToContentLibraryException ex )
                 {
-                    RockLogger.Log.Error( RockLogDomains.Cms, ex, ex.Message );
+                    Logger.LogError( ex, ex.Message );
                     mdGridWarning.Show( ex.Message.ConvertCrLfToHtmlBr(), ModalAlertType.Alert );
                 }
             }
@@ -845,7 +846,7 @@ namespace RockWeb.Blocks.Cms
         {
             var item = e.CommandArgument.ToStringSafe().FromJsonOrNull<ContentLibraryItemData>();
             hfItemId.Value = item.Id.ToString();
-            nbRedownloadWarning.Text = $"The action you are about to perform will overwrite the existing content of the item \"{ item.Name }\". Any changes will be lost. Are you sure you want to proceed with the update?";
+            nbRedownloadWarning.Text = $"The action you are about to perform will overwrite the existing content of the item \"{item.Name}\". Any changes will be lost. Are you sure you want to proceed with the update?";
             mdRedownloadContentLibrary.Show();
         }
 
@@ -855,8 +856,8 @@ namespace RockWeb.Blocks.Cms
             {
                 var contentChannelItemId = hfItemId.Value.AsInteger();
                 var contentChannelItemService = new ContentChannelItemService( rockContext );
-                
-                var contentLibraryItemGuid = contentChannelItemService.AsNoFilter().AsNoTracking().Where( i => i.Id ==  contentChannelItemId ).Select( i => i.ContentLibrarySourceIdentifier ).FirstOrDefault();
+
+                var contentLibraryItemGuid = contentChannelItemService.AsNoFilter().AsNoTracking().Where( i => i.Id == contentChannelItemId ).Select( i => i.ContentLibrarySourceIdentifier ).FirstOrDefault();
                 var result = contentChannelItemService.AddFromContentLibrary( new Rock.Model.CMS.ContentChannelItem.Options.ContentLibraryItemDownloadOptions
                 {
                     ContentLibraryItemGuidToDownload = contentLibraryItemGuid.Value,

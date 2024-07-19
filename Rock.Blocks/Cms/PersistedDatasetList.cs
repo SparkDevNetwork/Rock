@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -141,10 +141,12 @@ namespace Rock.Blocks.Cms
             return new GridBuilder<PersistedDataset>()
                 .WithBlock( this )
                 .AddTextField( "idKey", a => a.IdKey )
+                .AddField("id", a => a.Id)
                 .AddTextField( "name", a => a.Name )
                 .AddField( "lastRefreshDateTime", a => a.LastRefreshDateTime )
                 .AddTextField( "accessKey", a => a.AccessKey )
                 .AddField( "timeToBuildMS", a => a.TimeToBuildMS.HasValue ? Math.Round( ( double ) a.TimeToBuildMS ).ToString() : "-" )
+                .AddField("allowManualRefresh", a => a.AllowManualRefresh)
                 .AddTextField( "resultData", a => a.ResultData )
                 .AddField( "resultSize", a => a.ResultData != null ? a.ResultData.Length / 1024 : 0 )
                 .AddField( "isSystem", a => a.IsSystem );

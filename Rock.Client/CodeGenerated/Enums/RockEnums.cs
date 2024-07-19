@@ -25,6 +25,63 @@ using System.Collections.Generic;
 
 #pragma warning disable CS1591
 
+namespace Rock.Client.Enums.CheckIn
+{
+    /// <summary>
+    /// </summary>
+    public enum AbilityLevelDeterminationMode
+    {
+        Ask = 0x0,
+        DoNotAsk = 0x1,
+        DoNotAskIfThereIsNoAbilityLevel = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum AutoSelectMode
+    {
+        PeopleOnly = 0x0,
+        PeopleAndAreaGroupLocation = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum FamilySearchMode
+    {
+        PhoneNumber = 0x0,
+        Name = 0x1,
+        NameAndPhone = 0x2,
+        ScannedId = 0x3,
+        FamilyId = 0x4,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum KioskCheckInMode
+    {
+        Individual = 0x0,
+        Family = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum PhoneSearchMode
+    {
+        Contains = 0x0,
+        EndsWith = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum SuccessLavaTemplateDisplayMode
+    {
+        Never = 0x0,
+        Replace = 0x1,
+        Append = 0x2,
+    }
+
+}
+
 namespace Rock.Client.Enums.Blocks.Security.AccountEntry
 {
     /// <summary>
@@ -886,15 +943,6 @@ namespace Rock.Client.Enums
 
     /// <summary>
     /// </summary>
-    public enum SchedulerResourceListSourceType
-    {
-        Group = 0x0,
-        AlternateGroup = 0x1,
-        DataView = 0x2,
-    }
-
-    /// <summary>
-    /// </summary>
     [Flags]
     public enum ScheduleType
     {
@@ -1258,6 +1306,212 @@ namespace Rock.Client.Enums.Event
 
 }
 
+namespace Rock.Client.Enums.Controls
+{
+    /// <summary>
+    /// </summary>
+    public enum AttributeFormat
+    {
+        FriendlyValue = 0x0,
+        RawValue = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum DayOfWeek
+    {
+        Sunday = 0x0,
+        Monday = 0x1,
+        Tuesday = 0x2,
+        Wednesday = 0x3,
+        Thursday = 0x4,
+        Friday = 0x5,
+        Saturday = 0x6,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum DetailPanelMode
+    {
+        View = 0x0,
+        Edit = 0x1,
+        Add = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum FieldFormat
+    {
+        String = 0x0,
+        Number = 0x1,
+        Date = 0x2,
+        Boolean = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum FieldSource
+    {
+        Property = 0x0,
+        Attribute = 0x1,
+        LavaExpression = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum MediaSelectorMode
+    {
+        Image = 0x0,
+        Audio = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum MergeTemplateOwnership
+    {
+        Global = 0x0,
+        Personal = 0x1,
+        PersonalAndGlobal = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum RequirementLevel
+    {
+        Unspecified = 0x0,
+        Optional = 0x1,
+        Required = 0x2,
+        Unavailable = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum RockCacheabilityType
+    {
+        Public = 0x0,
+        Private = 0x1,
+        NoCache = 0x2,
+        NoStore = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
+    [Flags]
+    public enum SlidingDateRangeType
+    {
+        Last = 0x0,
+        Current = 0x1,
+        DateRange = 0x2,
+        Previous = 0x4,
+        Next = 0x8,
+        Upcoming = 0x10,
+        All = -1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum TimeUnitType
+    {
+        Hour = 0x0,
+        Day = 0x1,
+        Week = 0x2,
+        Month = 0x3,
+        Year = 0x4,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum UniversalItemValuePickerDisplayStyle
+    {
+        Auto = 0x0,
+        List = 0x1,
+        Condensed = 0x2,
+    }
+
+}
+
+namespace Rock.Client.Enums.CheckIn.Labels
+{
+    /// <summary>
+    /// </summary>
+    public enum BarcodeFormat
+    {
+        QRCode = 0x0,
+        Code128 = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum DitherMode
+    {
+        None = 0x0,
+        Fast = 0x1,
+        Quality = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum HorizontalTextAlignment
+    {
+        Left = 0x0,
+        Center = 0x1,
+        Right = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum LabelFieldType
+    {
+        Text = 0x0,
+        Line = 0x1,
+        Rectangle = 0x2,
+        Ellipse = 0x3,
+        Icon = 0x4,
+        Image = 0x5,
+        AttendeePhoto = 0x6,
+        Barcode = 0x7,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum LabelFormat
+    {
+        Designed = 0x0,
+        Zpl = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum LabelType
+    {
+        Family = 0x0,
+        Person = 0x1,
+        Attendance = 0x2,
+        Checkout = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum TextCollectionFormat
+    {
+        FirstItemOnly = 0x0,
+        CommaDelimited = 0x1,
+        OnePerLine = 0x2,
+        TwoColumn = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum TextFieldSubType
+    {
+        Custom = 0x0,
+        AttendeeInfo = 0x1,
+        CheckInInfo = 0x2,
+        AchievementInfo = 0x3,
+    }
+
+}
+
 namespace Rock.Client.Enums.Core
 {
     /// <summary>
@@ -1565,103 +1819,6 @@ namespace Rock.Client.Enums.Configuration
 
 }
 
-namespace Rock.Client.Enums.Controls
-{
-    /// <summary>
-    /// </summary>
-    public enum DayOfWeek
-    {
-        Sunday = 0x0,
-        Monday = 0x1,
-        Tuesday = 0x2,
-        Wednesday = 0x3,
-        Thursday = 0x4,
-        Friday = 0x5,
-        Saturday = 0x6,
-    }
-
-    /// <summary>
-    /// </summary>
-    public enum DetailPanelMode
-    {
-        View = 0x0,
-        Edit = 0x1,
-        Add = 0x2,
-    }
-
-    /// <summary>
-    /// </summary>
-    public enum MediaSelectorMode
-    {
-        Image = 0x0,
-        Audio = 0x1,
-    }
-
-    /// <summary>
-    /// </summary>
-    public enum MergeTemplateOwnership
-    {
-        Global = 0x0,
-        Personal = 0x1,
-        PersonalAndGlobal = 0x2,
-    }
-
-    /// <summary>
-    /// </summary>
-    public enum RequirementLevel
-    {
-        Unspecified = 0x0,
-        Optional = 0x1,
-        Required = 0x2,
-        Unavailable = 0x3,
-    }
-
-    /// <summary>
-    /// </summary>
-    public enum RockCacheabilityType
-    {
-        Public = 0x0,
-        Private = 0x1,
-        NoCache = 0x2,
-        NoStore = 0x3,
-    }
-
-    /// <summary>
-    /// </summary>
-    [Flags]
-    public enum SlidingDateRangeType
-    {
-        Last = 0x0,
-        Current = 0x1,
-        DateRange = 0x2,
-        Previous = 0x4,
-        Next = 0x8,
-        Upcoming = 0x10,
-        All = -1,
-    }
-
-    /// <summary>
-    /// </summary>
-    public enum TimeUnitType
-    {
-        Hour = 0x0,
-        Day = 0x1,
-        Week = 0x2,
-        Month = 0x3,
-        Year = 0x4,
-    }
-
-    /// <summary>
-    /// </summary>
-    public enum UniversalItemValuePickerDisplayStyle
-    {
-        Auto = 0x0,
-        List = 0x1,
-        Condensed = 0x2,
-    }
-
-}
-
 namespace Rock.Client.Enums.Reporting
 {
     /// <summary>
@@ -1722,6 +1879,31 @@ namespace Rock.Client.Enums.Blocks.Security.Login
     {
         Start = 0x0,
         Verify = 0x1,
+    }
+
+}
+
+namespace Rock.Client.Enums.WebFarm
+{
+    /// <summary>
+    /// </summary>
+    public enum LogSeverity
+    {
+        Info = 0x0,
+        Warning = 0x1,
+        Critical = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum LogType
+    {
+        Availability = 0x0,
+        Ping = 0x1,
+        Pong = 0x2,
+        Startup = 0x3,
+        Shutdown = 0x4,
+        Error = 0x5,
     }
 
 }

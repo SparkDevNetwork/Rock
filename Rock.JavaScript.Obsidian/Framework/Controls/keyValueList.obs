@@ -1,7 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField
-                   :modelValue="internalValues"
+    <RockFormField :modelValue="internalValues"
                    name="key-value-list"
                    v-bind="fieldProps"
                    :formGroupClasses="'key-value-list ' + formGroupClasses"

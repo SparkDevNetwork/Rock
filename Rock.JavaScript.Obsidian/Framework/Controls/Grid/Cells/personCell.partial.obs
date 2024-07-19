@@ -1,12 +1,15 @@
 <template>
     <div class="d-flex flex-fill align-items-center">
-        <div v-if="!props.column.props.hideAvatar" class="mr-2 flex-shrink-0"
+        <div v-if="!hideAvatar" class="mr-2 flex-shrink-0"
              :style="{ 'width': '24px', 'height': '24px', 'border-radius': '12px', 'background-image': `url('${photoUrl}')`, 'background-size': 'cover' }">
         </div>
         <div class="flex-grow-1">
-            <strong>
-                {{ formattedName }}
-            </strong>
+            <template v-if="showAsLink && idKey">
+                <a :href="`/person/${idKey}`"><strong>{{ formattedName }}</strong></a>
+            </template>
+            <template v-else>
+                <strong>{{ formattedName }}</strong>
+            </template>
             <div v-if="detailText" class="text-muted">{{ detailText }}</div>
         </div>
     </div>
@@ -18,6 +21,19 @@
     import { computed } from "vue";
 
     const props = defineProps(standardCellProps);
+
+    const showAsLink = props.column.props.showAsLink;
+    const hideAvatar = props.column.props.hideAvatar;
+    const idKey = computed((): string | undefined => {
+        if (!props.column.field) {
+            return undefined;
+        }
+        const value = props.row[props.column.field] as PersonFieldBag;
+        if (typeof value?.idKey === "string") {
+            return value.idKey;
+        }
+        return undefined;
+    });
 
     /** Contains the URL for the avatar. */
     const photoUrl = computed((): string => {

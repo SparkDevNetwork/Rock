@@ -23,6 +23,7 @@ namespace Rock.ViewModels.Blocks.Cms.AdaptiveMessageAdaptationDetail
     /// <summary>
     /// 
     /// </summary>
+    /// <seealso cref="Rock.ViewModels.Utility.EntityBagBase" />
     public class AdaptiveMessageAdaptationBag : EntityBagBase
     {
         /// <summary>

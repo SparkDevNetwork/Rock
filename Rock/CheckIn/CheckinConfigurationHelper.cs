@@ -140,21 +140,6 @@ namespace Rock.CheckIn
         /// <summary>
         /// Gets the checkin status.
         /// </summary>
-        /// <param name="kiosk">The kiosk.</param>
-        /// <param name="configuredGroupTypeIds">The configured group type ids.</param>
-        /// <param name="checkInType">Type of the check in.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.11" )]
-        [Obsolete( "Use other GetCheckinStatus" )]
-        public static CheckinStatus GetCheckinStatus( KioskDevice kiosk, List<int> configuredGroupTypeIds, CheckinType checkInType )
-        {
-            var checkinState = new CheckInState( kiosk.Device?.Id ?? 0, checkInType.Id, configuredGroupTypeIds );
-            return GetCheckinStatus( checkinState );
-        }
-
-        /// <summary>
-        /// Gets the checkin status.
-        /// </summary>
         /// <param name="checkInState">State of the check in.</param>
         /// <returns></returns>
         public static CheckinStatus GetCheckinStatus( CheckInState checkInState )

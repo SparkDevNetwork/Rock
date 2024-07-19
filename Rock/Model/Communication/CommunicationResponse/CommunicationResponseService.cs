@@ -24,6 +24,7 @@ using System.Threading.Tasks;
 
 using Rock.Data;
 using Rock.Enums.Communication;
+using Rock.Utility;
 using Rock.ViewModels.Communication;
 using Rock.Web.Cache;
 
@@ -725,7 +726,7 @@ namespace Rock.Model
 
             if ( communicationResponse.FromPerson.PhotoId.HasValue )
             {
-                messageBag.PhotoUrl = $"{publicUrl}GetImage.ashx?Id={communicationResponse.FromPerson.PhotoId}&maxwidth=256&maxheight=256";
+                messageBag.PhotoUrl = FileUrlHelper.GetImageUrl( communicationResponse.FromPerson.PhotoId.Value, new GetImageUrlOptions { MaxWidth = 256, MaxHeight = 256 } );
             }
 
             foreach ( var attachment in communicationResponse.Attachments )
@@ -737,8 +738,8 @@ namespace Rock.Model
                     messageBag.Attachments.Add( new ConversationAttachmentBag
                     {
                         FileName = attachment.FileName,
-                        Url = $"{publicUrl}GetImage.ashx?Guid={attachment.Guid}",
-                        ThumbnailUrl = $"{publicUrl}GetImage.ashx?Guid={attachment.Guid}&maxwidth=512&maxheight=512"
+                        Url = FileUrlHelper.GetImageUrl( attachment.Guid ),
+                        ThumbnailUrl = FileUrlHelper.GetImageUrl( attachment.Guid, new GetImageUrlOptions { MaxWidth = 512, MaxHeight = 512 } )
                     } );
                 }
                 else
@@ -746,7 +747,7 @@ namespace Rock.Model
                     messageBag.Attachments.Add( new ConversationAttachmentBag
                     {
                         FileName = attachment.FileName,
-                        Url = $"{publicUrl}GetFile.ashx?Guid={attachment.Guid}",
+                        Url = FileUrlHelper.GetFileUrl( attachment.Guid ),
                         ThumbnailUrl = null
                     } );
                 }

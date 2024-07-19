@@ -18,7 +18,10 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
+
+using DotLiquid;
 
 using Rock.Attribute;
 using Rock.Constants;
@@ -27,6 +30,7 @@ using Rock.Model;
 using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.SiteDetail;
+using Rock.ViewModels.Blocks.Communication.SnippetTypeDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
@@ -45,11 +49,19 @@ namespace Rock.Blocks.Cms
 
     #region Block Attributes
 
+    [BinaryFileTypeField( "Default File Type",
+        Key = AttributeKey.DefaultFileType,
+        Description = "The default file type to use while uploading Favicon",
+        IsRequired = true,
+        DefaultValue = Rock.SystemGuid.BinaryFiletype.DEFAULT, // this was previously defaultBinaryFileTypeGuid which maps to base default value
+        Category = "",
+        Order = 0 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "88ce8a0b-35b6-4427-817f-2fdf485d0241" )]
     [Rock.SystemGuid.BlockTypeGuid( "3e935e45-4796-4389-ab1c-98d2403faedf" )]
-    public class SiteDetail : RockDetailBlockType
+    public class SiteDetail : RockEntityDetailBlockType<Site, SiteBag>
     {
         #region Keys
 
@@ -63,6 +75,11 @@ namespace Rock.Blocks.Cms
             public const string ParentPage = "ParentPage";
         }
 
+        private static class AttributeKey
+        {
+            public const string DefaultFileType = "DefaultFileType";
+        }
+
         #endregion Keys
 
         #region Methods
@@ -70,18 +87,13 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var box = new DetailBlockBox<SiteBag, SiteDetailOptionsBag>();
+            var box = new DetailBlockBox<SiteBag, SiteDetailOptionsBag>();
 
-                SetBoxInitialEntityState( box, rockContext );
+            SetBoxInitialEntityState( box );
 
-                box.NavigationUrls = GetBoxNavigationUrls();
-                box.Options = GetBoxOptions( box.IsEditable, rockContext, string.Empty );
-                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<Site>();
-
-                return box;
-            }
+            box.NavigationUrls = GetBoxNavigationUrls();
+            box.Options = GetBoxOptions( box.IsEditable );
+            return box;
         }
 
         /// <summary>
@@ -89,15 +101,17 @@ namespace Rock.Blocks.Cms
         /// or edit the entity.
         /// </summary>
         /// <param name="isEditable"><c>true</c> if the entity is editable; otherwise <c>false</c>.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <param name="key">The id identifier of the entity.</param>
         /// <returns>The options that provide additional details to the block.</returns>
-        private SiteDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext, string key )
+        private SiteDetailOptionsBag GetBoxOptions( bool isEditable )
         {
             var options = new SiteDetailOptionsBag();
-            var attributes = GetSiteAttributes( rockContext, key );
-            options.SiteAttributes = new List<PublicEditableAttributeBag>();
-            options.SiteAttributes.AddRange( attributes.Select( attribute => PublicAttributeHelper.GetPublicEditableAttributeViewModel( attribute ) ) );
+
+            options.Themes = new List<ListItemBag>();
+
+            var physicalRootFolder = AppDomain.CurrentDomain.BaseDirectory;
+            string physicalFolder = Path.Combine( physicalRootFolder, RequestContext.ResolveRockUrl( "~~/" ).RemoveLeadingForwardslash() );
+            var di = new DirectoryInfo( physicalFolder );
+            options.Themes.AddRange( di.Parent.EnumerateDirectories().OrderBy( a => a.Name ).Select( themeDir => new ListItemBag() { Text = themeDir.Name, Value = themeDir.Name } ) );
             return options;
         }
 
@@ -106,10 +120,9 @@ namespace Rock.Blocks.Cms
         /// valid after storing all the data from the client.
         /// </summary>
         /// <param name="site">The Site to be validated.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <param name="errorMessage">On <c>false</c> return, contains the error message.</param>
         /// <returns><c>true</c> if the Site is valid, <c>false</c> otherwise.</returns>
-        private bool ValidateSite( Site site, RockContext rockContext, out string errorMessage )
+        private bool ValidateSite( Site site, out string errorMessage )
         {
             errorMessage = null;
 
@@ -121,10 +134,9 @@ namespace Rock.Blocks.Cms
         /// ErrorMessage properties depending on the entity and permissions.
         /// </summary>
         /// <param name="box">The box to be populated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        private void SetBoxInitialEntityState( DetailBlockBox<SiteBag, SiteDetailOptionsBag> box, RockContext rockContext )
+        private void SetBoxInitialEntityState( DetailBlockBox<SiteBag, SiteDetailOptionsBag> box )
         {
-            var entity = GetInitialEntity( rockContext );
+            var entity = GetInitialEntity();
 
             if ( entity == null )
             {
@@ -135,7 +147,7 @@ namespace Rock.Blocks.Cms
             var isViewable = entity.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson );
             box.IsEditable = entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson );
 
-            entity.LoadAttributes( rockContext );
+            entity.LoadAttributes( RockContext );
 
             if ( entity.Id != 0 )
             {
@@ -143,7 +155,6 @@ namespace Rock.Blocks.Cms
                 if ( isViewable )
                 {
                     box.Entity = GetEntityBagForView( entity );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
                 {
@@ -156,13 +167,15 @@ namespace Rock.Blocks.Cms
                 if ( box.IsEditable )
                 {
                     box.Entity = GetEntityBagForEdit( entity );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
+                    box.Options.ReservedKeyNames = box.Entity.SiteAttributes.Select( a => a.Key ).ToList();
                 }
                 else
                 {
                     box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( Site.FriendlyTypeName );
                 }
             }
+
+            PrepareDetailBox( box, entity );
         }
 
         /// <summary>
@@ -193,7 +206,6 @@ namespace Rock.Blocks.Cms
                 EnabledForShortening = entity.EnabledForShortening,
                 EnableExclusiveRoutes = entity.EnableExclusiveRoutes,
                 EnableMobileRedirect = entity.EnableMobileRedirect,
-                EnablePageViewGeoTracking = entity.EnablePageViewGeoTracking,
                 EnablePageViews = entity.EnablePageViews,
                 EnablePersonalization = entity.EnablePersonalization,
                 EnableVisitorTracking = entity.EnableVisitorTracking,
@@ -217,23 +229,27 @@ namespace Rock.Blocks.Cms
                 RegistrationPageRoute = entity.RegistrationPageRoute.ToListItemBag(),
                 RequiresEncryption = entity.RequiresEncryption,
                 SiteLogoBinaryFile = entity.SiteLogoBinaryFile.ToListItemBag(),
-                Theme = entity.Theme
+                Theme = entity.Theme,
+                SiteUrl = $"{this.RequestContext.ResolveRockUrl( "~/page/" )}{entity.DefaultPageId}"
             };
 
             if ( entity.SiteDomains != null )
             {
-                bag.SiteDomains = string.Join( "\n", entity.SiteDomains.OrderBy( d => d.Order ).Select( d => d.Domain ).ToArray( ) );
+                bag.SiteDomains = string.Join( "\n", entity.SiteDomains.OrderBy( d => d.Order ).Select( d => d.Domain ).ToArray() );
             }
+
+            var attributes = GetSiteAttributes( RockContext, entity.Id.ToString() );
+
+            bag.SiteAttributes = new List<PublicEditableAttributeBag>();
+            bag.SiteAttributes.AddRange( attributes.Select( attribute => PublicAttributeHelper.GetPublicEditableAttributeViewModel( attribute ) ) );
+            bag.BinaryFileTypeGuid = GetAttributeValue( AttributeKey.DefaultFileType ).AsGuid();
+
 
             return bag;
         }
 
-        /// <summary>
-        /// Gets the bag for viewing the specied entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for view purposes.</param>
-        /// <returns>A <see cref="SiteBag"/> that represents the entity.</returns>
-        private SiteBag GetEntityBagForView( Site entity )
+        /// <inheritdoc/>
+        protected override SiteBag GetEntityBagForView( Site entity )
         {
             if ( entity == null )
             {
@@ -241,18 +257,14 @@ namespace Rock.Blocks.Cms
             }
 
             var bag = GetCommonEntityBag( entity );
-
+            bag.AllowsCompile = new Rock.Web.UI.RockTheme( entity.Theme ).AllowsCompile;
             bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
 
             return bag;
         }
 
-        /// <summary>
-        /// Gets the bag for editing the specied entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for edit purposes.</param>
-        /// <returns>A <see cref="SiteBag"/> that represents the entity.</returns>
-        private SiteBag GetEntityBagForEdit( Site entity )
+        /// <inheritdoc/>
+        protected override SiteBag GetEntityBagForEdit( Site entity )
         {
             if ( entity == null )
             {
@@ -266,160 +278,146 @@ namespace Rock.Blocks.Cms
             return bag;
         }
 
-        /// <summary>
-        /// Updates the entity from the data in the save box.
-        /// </summary>
-        /// <param name="entity">The entity to be updated.</param>
-        /// <param name="box">The box containing the information to be updated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns><c>true</c> if the box was valid and the entity was updated, <c>false</c> otherwise.</returns>
-        private bool UpdateEntityFromBox( Site entity, DetailBlockBox<SiteBag, SiteDetailOptionsBag> box, RockContext rockContext )
+        /// <inheritdoc/>
+        protected override bool UpdateEntityFromBox( Site entity, ValidPropertiesBox<SiteBag> box )
         {
             if ( box.ValidProperties == null )
             {
                 return false;
             }
 
-            box.IfValidProperty( nameof( box.Entity.AllowedFrameDomains ),
-                () => entity.AllowedFrameDomains = ReformatDomains( box.Entity.AllowedFrameDomains ) );
+            box.IfValidProperty( nameof( box.Bag.AllowedFrameDomains ),
+                () => entity.AllowedFrameDomains = ReformatDomains( box.Bag.AllowedFrameDomains ) );
 
-            box.IfValidProperty( nameof( box.Entity.AllowIndexing ),
-                () => entity.AllowIndexing = box.Entity.AllowIndexing );
+            box.IfValidProperty( nameof( box.Bag.AllowIndexing ),
+                () => entity.AllowIndexing = box.Bag.AllowIndexing );
 
-            box.IfValidProperty( nameof( box.Entity.ChangePasswordPage ),
-                () => entity.ChangePasswordPageId = box.Entity.ChangePasswordPage.GetEntityId<Page>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.ChangePasswordPage ),
+                () => entity.ChangePasswordPageId = box.Bag.ChangePasswordPage.GetEntityId<Page>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.ChangePasswordPageRoute ),
-                () => entity.ChangePasswordPageRouteId = box.Entity.ChangePasswordPageRoute.GetEntityId<PageRoute>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.ChangePasswordPageRoute ),
+                () => entity.ChangePasswordPageRouteId = box.Bag.ChangePasswordPageRoute.GetEntityId<PageRoute>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.CommunicationPage ),
-                () => entity.CommunicationPageId = box.Entity.CommunicationPage.GetEntityId<Page>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.CommunicationPage ),
+                () => entity.CommunicationPageId = box.Bag.CommunicationPage.GetEntityId<Page>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.CommunicationPageRoute ),
-                () => entity.CommunicationPageRouteId = box.Entity.CommunicationPageRoute.GetEntityId<PageRoute>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.CommunicationPageRoute ),
+                () => entity.CommunicationPageRouteId = box.Bag.CommunicationPageRoute.GetEntityId<PageRoute>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.DefaultPage ),
-                () => entity.DefaultPageId = box.Entity.DefaultPage.GetEntityId<Page>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.DefaultPage ),
+                () => entity.DefaultPageId = box.Bag.DefaultPage.GetEntityId<Page>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.DefaultPageRoute ),
-                () => entity.DefaultPageRouteId = box.Entity.DefaultPageRoute.GetEntityId<PageRoute>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.DefaultPageRoute ),
+                () => entity.DefaultPageRouteId = box.Bag.DefaultPageRoute.GetEntityId<PageRoute>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.Description ),
-                () => entity.Description = box.Entity.Description );
+            box.IfValidProperty( nameof( box.Bag.Description ),
+                () => entity.Description = box.Bag.Description );
 
-            box.IfValidProperty( nameof( box.Entity.DisablePredictableIds ),
-                () => entity.DisablePredictableIds = box.Entity.DisablePredictableIds );
+            box.IfValidProperty( nameof( box.Bag.DisablePredictableIds ),
+                () => entity.DisablePredictableIds = box.Bag.DisablePredictableIds );
 
-            box.IfValidProperty( nameof( box.Entity.EnabledForShortening ),
-                () => entity.EnabledForShortening = box.Entity.EnabledForShortening );
+            box.IfValidProperty( nameof( box.Bag.EnabledForShortening ),
+                () => entity.EnabledForShortening = box.Bag.EnabledForShortening );
 
-            box.IfValidProperty( nameof( box.Entity.EnableExclusiveRoutes ),
-                () => entity.EnableExclusiveRoutes = box.Entity.EnableExclusiveRoutes );
+            box.IfValidProperty( nameof( box.Bag.EnableExclusiveRoutes ),
+                () => entity.EnableExclusiveRoutes = box.Bag.EnableExclusiveRoutes );
 
-            box.IfValidProperty( nameof( box.Entity.EnableMobileRedirect ),
-                () => entity.EnableMobileRedirect = box.Entity.EnableMobileRedirect );
+            box.IfValidProperty( nameof( box.Bag.EnableMobileRedirect ),
+                () => entity.EnableMobileRedirect = box.Bag.EnableMobileRedirect );
 
-            box.IfValidProperty( nameof( box.Entity.EnablePageViewGeoTracking ),
-                () => entity.EnablePageViewGeoTracking = box.Entity.EnablePageViewGeoTracking );
+            box.IfValidProperty( nameof( box.Bag.EnablePageViews ),
+                () => entity.EnablePageViews = box.Bag.EnablePageViews );
 
-            box.IfValidProperty( nameof( box.Entity.EnablePageViews ),
-                () => entity.EnablePageViews = box.Entity.EnablePageViews );
+            box.IfValidProperty( nameof( box.Bag.EnablePersonalization ),
+                () => entity.EnablePersonalization = box.Bag.EnablePersonalization );
 
-            box.IfValidProperty( nameof( box.Entity.EnablePersonalization ),
-                () => entity.EnablePersonalization = box.Entity.EnablePersonalization );
+            box.IfValidProperty( nameof( box.Bag.EnableVisitorTracking ),
+                () => entity.EnableVisitorTracking = box.Bag.EnableVisitorTracking );
 
-            box.IfValidProperty( nameof( box.Entity.EnableVisitorTracking ),
-                () => entity.EnableVisitorTracking = box.Entity.EnableVisitorTracking );
+            box.IfValidProperty( nameof( box.Bag.ErrorPage ),
+                () => entity.ErrorPage = box.Bag.ErrorPage );
 
-            box.IfValidProperty( nameof( box.Entity.ErrorPage ),
-                () => entity.ErrorPage = box.Entity.ErrorPage );
+            box.IfValidProperty( nameof( box.Bag.ExternalUrl ),
+                () => entity.ExternalUrl = box.Bag.ExternalUrl );
 
-            box.IfValidProperty( nameof( box.Entity.ExternalUrl ),
-                () => entity.ExternalUrl = box.Entity.ExternalUrl );
+            box.IfValidProperty( nameof( box.Bag.FavIconBinaryFile ),
+                () => entity.FavIconBinaryFileId = box.Bag.FavIconBinaryFile.GetEntityId<BinaryFile>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.FavIconBinaryFile ),
-                () => entity.FavIconBinaryFileId = box.Entity.FavIconBinaryFile.GetEntityId<BinaryFile>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.GoogleAnalyticsCode ),
+                () => entity.GoogleAnalyticsCode = box.Bag.GoogleAnalyticsCode );
 
-            box.IfValidProperty( nameof( box.Entity.GoogleAnalyticsCode ),
-                () => entity.GoogleAnalyticsCode = box.Entity.GoogleAnalyticsCode );
+            box.IfValidProperty( nameof( box.Bag.IndexStartingLocation ),
+                () => entity.IndexStartingLocation = box.Bag.IndexStartingLocation );
 
-            box.IfValidProperty( nameof( box.Entity.IndexStartingLocation ),
-                () => entity.IndexStartingLocation = box.Entity.IndexStartingLocation );
+            box.IfValidProperty( nameof( box.Bag.IsActive ),
+                () => entity.IsActive = box.Bag.IsActive );
 
-            box.IfValidProperty( nameof( box.Entity.IsActive ),
-                () => entity.IsActive = box.Entity.IsActive );
+            box.IfValidProperty( nameof( box.Bag.IsIndexEnabled ),
+                () => entity.IsIndexEnabled = box.Bag.IsIndexEnabled );
 
-            box.IfValidProperty( nameof( box.Entity.IsIndexEnabled ),
-                () => entity.IsIndexEnabled = box.Entity.IsIndexEnabled );
+            box.IfValidProperty( nameof( box.Bag.IsSystem ),
+                () => entity.IsSystem = box.Bag.IsSystem );
 
-            box.IfValidProperty( nameof( box.Entity.IsSystem ),
-                () => entity.IsSystem = box.Entity.IsSystem );
+            box.IfValidProperty( nameof( box.Bag.LoginPage ),
+                () => entity.LoginPageId = box.Bag.LoginPage.GetEntityId<Page>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.LoginPage ),
-                () => entity.LoginPageId = box.Entity.LoginPage.GetEntityId<Page>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.LoginPageRoute ),
+                () => entity.LoginPageRouteId = box.Bag.LoginPageRoute.GetEntityId<PageRoute>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.LoginPageRoute ),
-                () => entity.LoginPageRouteId = box.Entity.LoginPageRoute.GetEntityId<PageRoute>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.MobilePage ),
+                () => entity.MobilePageId = box.Bag.MobilePage.GetEntityId<Page>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.MobilePage ),
-                () => entity.MobilePageId = box.Entity.MobilePage.GetEntityId<Page>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.Name ),
+                () => entity.Name = box.Bag.Name );
 
-            box.IfValidProperty( nameof( box.Entity.Name ),
-                () => entity.Name = box.Entity.Name );
+            box.IfValidProperty( nameof( box.Bag.PageHeaderContent ),
+                () => entity.PageHeaderContent = box.Bag.PageHeaderContent );
 
-            box.IfValidProperty( nameof( box.Entity.PageHeaderContent ),
-                () => entity.PageHeaderContent = box.Entity.PageHeaderContent );
+            box.IfValidProperty( nameof( box.Bag.PageNotFoundPage ),
+                () => entity.PageNotFoundPageId = box.Bag.PageNotFoundPage.GetEntityId<Page>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.PageNotFoundPage ),
-                () => entity.PageNotFoundPageId = box.Entity.PageNotFoundPage.GetEntityId<Page>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.PageNotFoundPageRoute ),
+                () => entity.PageNotFoundPageRouteId = box.Bag.PageNotFoundPageRoute.GetEntityId<PageRoute>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.PageNotFoundPageRoute ),
-                () => entity.PageNotFoundPageRouteId = box.Entity.PageNotFoundPageRoute.GetEntityId<PageRoute>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.RedirectTablets ),
+                () => entity.RedirectTablets = box.Bag.RedirectTablets );
 
-            box.IfValidProperty( nameof( box.Entity.RedirectTablets ),
-                () => entity.RedirectTablets = box.Entity.RedirectTablets );
+            box.IfValidProperty( nameof( box.Bag.RegistrationPage ),
+                () => entity.RegistrationPageId = box.Bag.RegistrationPage.GetEntityId<Page>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.RegistrationPage ),
-                () => entity.RegistrationPageId = box.Entity.RegistrationPage.GetEntityId<Page>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.RegistrationPageRoute ),
+                () => entity.RegistrationPageRouteId = box.Bag.RegistrationPageRoute.GetEntityId<PageRoute>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.RegistrationPageRoute ),
-                () => entity.RegistrationPageRouteId = box.Entity.RegistrationPageRoute.GetEntityId<PageRoute>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.RequiresEncryption ),
+                () => entity.RequiresEncryption = box.Bag.RequiresEncryption );
 
-            box.IfValidProperty( nameof( box.Entity.RequiresEncryption ),
-                () => entity.RequiresEncryption = box.Entity.RequiresEncryption );
+            box.IfValidProperty( nameof( box.Bag.SiteLogoBinaryFile ),
+                () => entity.SiteLogoBinaryFileId = box.Bag.SiteLogoBinaryFile.GetEntityId<BinaryFile>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.SiteLogoBinaryFile ),
-                () => entity.SiteLogoBinaryFileId = box.Entity.SiteLogoBinaryFile.GetEntityId<BinaryFile>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.Theme ),
+                () => entity.Theme = box.Bag.Theme );
 
-            box.IfValidProperty( nameof( box.Entity.Theme ),
-                () => entity.Theme = box.Entity.Theme );
+            box.IfValidProperty( nameof( box.Bag.Theme ),
+                () => entity.Theme = box.Bag.Theme );
 
-            box.IfValidProperty( nameof( box.Entity.Theme ),
-                () => entity.Theme = box.Entity.Theme );
+            box.IfValidProperty( nameof( box.Bag.SiteDomains ),
+                () => UpdateSiteDomains( entity, box, RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.SiteDomains ),
-                () => UpdateSiteDomains( entity, box, rockContext ) );
-
-            box.IfValidProperty( nameof( box.Entity.AttributeValues ),
+            box.IfValidProperty( nameof( box.Bag.AttributeValues ),
                 () =>
                 {
-                    entity.LoadAttributes( rockContext );
+                    entity.LoadAttributes( RockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson );
                 } );
 
             return true;
         }
 
-        /// <summary>
-        /// Gets the initial entity from page parameters or creates a new entity
-        /// if page parameters requested creation.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns>The <see cref="Site"/> to be viewed or edited on the page.</returns>
-        private Site GetInitialEntity( RockContext rockContext )
+        /// <inheritdoc/>
+        protected override Site GetInitialEntity()
         {
-            return GetInitialEntity<Site, SiteService>( rockContext, PageParameterKey.SiteId );
+            return GetInitialEntity<Site, SiteService>( RockContext, PageParameterKey.SiteId );
         }
 
         /// <summary>
@@ -434,47 +432,10 @@ namespace Rock.Blocks.Cms
             };
         }
 
-        /// <inheritdoc/>
-        protected override string RenewSecurityGrantToken()
+        // <inheritdoc/>
+        protected override bool TryGetEntityForEditAction( string idKey, out Site entity, out BlockActionResult error )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var entity = GetInitialEntity( rockContext );
-
-                if ( entity != null )
-                {
-                    entity.LoadAttributes( rockContext );
-                }
-
-                return GetSecurityGrantToken( entity );
-            }
-        }
-
-        /// <summary>
-        /// Gets the security grant token that will be used by UI controls on
-        /// this block to ensure they have the proper permissions.
-        /// </summary>
-        /// <returns>A string that represents the security grant token.</string>
-        private string GetSecurityGrantToken( Site entity )
-        {
-            var securityGrant = new Rock.Security.SecurityGrant();
-
-            securityGrant.AddRulesForAttributes( entity, RequestContext.CurrentPerson );
-
-            return securityGrant.ToToken();
-        }
-
-        /// <summary>
-        /// Attempts to load an entity to be used for an edit action.
-        /// </summary>
-        /// <param name="idKey">The identifier key of the entity to load.</param>
-        /// <param name="rockContext">The database context to load the entity from.</param>
-        /// <param name="entity">Contains the entity that was loaded when <c>true</c> is returned.</param>
-        /// <param name="error">Contains the action error result when <c>false</c> is returned.</param>
-        /// <returns><c>true</c> if the entity was loaded and passed security checks.</returns>
-        private bool TryGetEntityForEditAction( string idKey, RockContext rockContext, out Site entity, out BlockActionResult error )
-        {
-            var entityService = new SiteService( rockContext );
+            var entityService = new SiteService( RockContext );
             error = null;
 
             // Determine if we are editing an existing entity or creating a new one.
@@ -513,6 +474,10 @@ namespace Rock.Blocks.Cms
         /// <returns></returns>
         private string ReformatDomains( string allowedDomains )
         {
+            if ( string.IsNullOrEmpty( allowedDomains ) )
+            {
+                return allowedDomains;
+            }
             return allowedDomains
                 .Replace( ", ", " " )
                 .Replace( ",", " " )
@@ -527,10 +492,10 @@ namespace Rock.Blocks.Cms
         /// <param name="entity"></param>
         /// <param name="box"></param>
         /// <param name="rockContext"></param>
-        private void UpdateSiteDomains( Site entity, DetailBlockBox<SiteBag, SiteDetailOptionsBag> box, RockContext rockContext )
+        private void UpdateSiteDomains( Site entity, ValidPropertiesBox<SiteBag> box, RockContext rockContext )
         {
             var siteDomainService = new SiteDomainService( rockContext );
-            var currentDomains = box.Entity.SiteDomains.SplitDelimitedValues().ToList();
+            var currentDomains = box.Bag.SiteDomains.SplitDelimitedValues().ToList();
             entity.SiteDomains = entity.SiteDomains ?? new List<SiteDomain>();
 
             // Remove any deleted domains
@@ -576,8 +541,9 @@ namespace Rock.Blocks.Cms
             foreach ( var attr in attributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
             {
                 attributeService.Delete( attr );
-                rockContext.SaveChanges();
             }
+
+            rockContext.SaveChanges();
 
             // Update the Attributes that were assigned in the UI
             foreach ( var attributeState in viewStateAttributes )
@@ -586,6 +552,12 @@ namespace Rock.Blocks.Cms
             }
         }
 
+        /// <summary>
+        /// Gets the site attributes.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="siteIdQualifierValue">The site identifier qualifier value.</param>
+        /// <returns></returns>
         private static List<Model.Attribute> GetSiteAttributes( RockContext rockContext, string siteIdQualifierValue )
         {
             return new AttributeService( rockContext ).GetByEntityTypeId( new Page().TypeId, true ).AsQueryable()
@@ -610,24 +582,23 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                entity.LoadAttributes( rockContext );
-
-                var id = IdHasher.Instance.GetId( key );
-                var box = new DetailBlockBox<SiteBag, SiteDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity ),
-                    Options = GetBoxOptions( true, rockContext, id.ToString() )
-                };
-
-                return ActionOk( box );
+                return actionError;
             }
+
+            entity.LoadAttributes( RockContext );
+
+            var id = IdHasher.Instance.GetId( key );
+            var box = new DetailBlockBox<SiteBag, SiteDetailOptionsBag>
+            {
+                Entity = GetEntityBagForEdit( entity ),
+                Options = GetBoxOptions( true )
+            };
+
+            box.Options.ReservedKeyNames = box.Entity.SiteAttributes.Select( a => a.Key ).ToList();
+
+            return ActionOk( box );
         }
 
         /// <summary>
@@ -636,151 +607,154 @@ namespace Rock.Blocks.Cms
         /// <param name="box">The box that contains all the information required to save.</param>
         /// <returns>A new entity bag to be used when returning to view mode, or the URL to redirect to after creating a new entity.</returns>
         [BlockAction]
-        public BlockActionResult Save( DetailBlockBox<SiteBag, SiteDetailOptionsBag> box )
+        public BlockActionResult Save( ValidPropertiesBox<SiteBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new SiteService( RockContext );
+
+            if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )
             {
-                var entityService = new SiteService( rockContext );
+                return actionError;
+            }
 
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
+            int? existingIconId = entity.FavIconBinaryFileId;
+            int? existingLogoId = entity.SiteLogoBinaryFileId;
+
+            if ( !UpdateEntityFromBox( entity, box ) )
+            {
+                return ActionBadRequest( "Invalid data." );
+            }
+
+            // Ensure everything is valid before saving.
+            if ( !ValidateSite( entity, out var validationMessage ) )
+            {
+                return ActionBadRequest( validationMessage );
+            }
+
+            var isNew = entity.Id == 0;
+
+            RockContext.WrapTransaction( () =>
+            {
+                RockContext.SaveChanges();
+                entity.SaveAttributeValues( RockContext );
+
+                if ( box.Bag.SiteAttributes.Count > 0 )
                 {
-                    return actionError;
+
+                    SaveAttributes( new Page().TypeId, "SiteId", entity.Id.ToString(), box.Bag.SiteAttributes, RockContext );
                 }
 
-                int? existingIconId = entity.FavIconBinaryFileId;
-                int? existingLogoId = entity.SiteLogoBinaryFileId;
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
+                if ( existingIconId.HasValue && existingIconId.Value != entity.FavIconBinaryFileId )
                 {
-                    return ActionBadRequest( "Invalid data." );
+                    var binaryFileService = new BinaryFileService( RockContext );
+                    var binaryFile = binaryFileService.Get( existingIconId.Value );
+                    if ( binaryFile != null )
+                    {
+                        // marked the old images as IsTemporary so they will get cleaned up later
+                        binaryFile.IsTemporary = true;
+                        RockContext.SaveChanges();
+                    }
                 }
 
-                // Ensure everything is valid before saving.
-                if ( !ValidateSite( entity, rockContext, out var validationMessage ) )
+                if ( existingLogoId.HasValue && existingLogoId.Value != entity.SiteLogoBinaryFileId )
                 {
-                    return ActionBadRequest( validationMessage );
-                }
-
-                var isNew = entity.Id == 0;
-
-                rockContext.WrapTransaction( () =>
-                {
-                    rockContext.SaveChanges();
-
-                    if ( box.Options.SiteAttributes.Count > 0 )
+                    var binaryFileService = new BinaryFileService( RockContext );
+                    var binaryFile = binaryFileService.Get( existingLogoId.Value );
+                    if ( binaryFile != null )
                     {
-                        SaveAttributes( new Page().TypeId, "SiteId", entity.Id.ToString(), box.Options.SiteAttributes, rockContext );
-                    }
-
-                    if ( existingIconId.HasValue && existingIconId.Value != entity.FavIconBinaryFileId )
-                    {
-                        var binaryFileService = new BinaryFileService( rockContext );
-                        var binaryFile = binaryFileService.Get( existingIconId.Value );
-                        if ( binaryFile != null )
-                        {
-                            // marked the old images as IsTemporary so they will get cleaned up later
-                            binaryFile.IsTemporary = true;
-                            rockContext.SaveChanges();
-                        }
-                    }
-
-                    if ( existingLogoId.HasValue && existingLogoId.Value != entity.SiteLogoBinaryFileId )
-                    {
-                        var binaryFileService = new BinaryFileService( rockContext );
-                        var binaryFile = binaryFileService.Get( existingLogoId.Value );
-                        if ( binaryFile != null )
-                        {
-                            // marked the old images as IsTemporary so they will get cleaned up later
-                            binaryFile.IsTemporary = true;
-                            rockContext.SaveChanges();
-                        }
-                    }
-
-                    if ( isNew )
-                    {
-                        Rock.Security.Authorization.CopyAuthorization( PageCache.Layout.Site, entity, rockContext, Rock.Security.Authorization.EDIT );
-                        Rock.Security.Authorization.CopyAuthorization( PageCache.Layout.Site, entity, rockContext, Rock.Security.Authorization.ADMINISTRATE );
-                        Rock.Security.Authorization.CopyAuthorization( PageCache.Layout.Site, entity, rockContext, Rock.Security.Authorization.APPROVE );
-                    }
-                } );
-
-                // add/update for the InteractionChannel for this site and set the RetentionPeriod
-                var interactionChannelService = new InteractionChannelService( rockContext );
-                int channelMediumWebsiteValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
-                var interactionChannelForSite = interactionChannelService.Queryable()
-                    .Where( a => a.ChannelTypeMediumValueId == channelMediumWebsiteValueId && a.ChannelEntityId == entity.Id ).FirstOrDefault();
-
-                if ( interactionChannelForSite == null )
-                {
-                    interactionChannelForSite = new InteractionChannel();
-                    interactionChannelForSite.ChannelTypeMediumValueId = channelMediumWebsiteValueId;
-                    interactionChannelForSite.ChannelEntityId = entity.Id;
-                    interactionChannelService.Add( interactionChannelForSite );
-                }
-
-                interactionChannelForSite.Name = entity.Name;
-                interactionChannelForSite.RetentionDuration = box.Entity.RetentionDuration;
-                interactionChannelForSite.ComponentEntityTypeId = EntityTypeCache.Get<Rock.Model.Page>().Id;
-
-                rockContext.SaveChanges();
-
-                // Create the default page is this is a new site
-                if ( !entity.DefaultPageId.HasValue && isNew )
-                {
-                    var siteCache = SiteCache.Get( entity.Id );
-                    var pageService = new PageService( rockContext );
-
-                    // Create the layouts for the site, and find the first one
-                    // LayoutService.RegisterLayouts( HttpRequest.MapPath( "~" ), siteCache );
-
-                    var layoutService = new LayoutService( rockContext );
-                    var layouts = layoutService.GetBySiteId( siteCache.Id );
-                    var layout = layouts.FirstOrDefault( l => l.FileName.Equals( "FullWidth", StringComparison.OrdinalIgnoreCase ) );
-                    if ( layout == null )
-                    {
-                        layout = layouts.FirstOrDefault();
-                    }
-
-                    if ( layout != null )
-                    {
-                        var page = new Page();
-                        page.LayoutId = layout.Id;
-                        page.PageTitle = siteCache.Name + " Home Page";
-                        page.InternalName = page.PageTitle;
-                        page.BrowserTitle = page.PageTitle;
-                        page.EnableViewState = true;
-                        page.IncludeAdminFooter = true;
-                        page.MenuDisplayChildPages = true;
-
-                        var lastPage = pageService.GetByParentPageId( null ).OrderByDescending( b => b.Order ).FirstOrDefault();
-
-                        page.Order = lastPage != null ? lastPage.Order + 1 : 0;
-                        pageService.Add( page );
-
-                        rockContext.SaveChanges();
-
-                        entity = entityService.Get( siteCache.Id );
-                        entity.DefaultPageId = page.Id;
-
-                        rockContext.SaveChanges();
+                        // marked the old images as IsTemporary so they will get cleaned up later
+                        binaryFile.IsTemporary = true;
+                        RockContext.SaveChanges();
                     }
                 }
 
                 if ( isNew )
                 {
-                    return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
-                    {
-                        [PageParameterKey.SiteId] = entity.IdKey
-                    } ) );
+                    Rock.Security.Authorization.CopyAuthorization( PageCache.Layout.Site, entity, RockContext, Rock.Security.Authorization.EDIT );
+                    Rock.Security.Authorization.CopyAuthorization( PageCache.Layout.Site, entity, RockContext, Rock.Security.Authorization.ADMINISTRATE );
+                    Rock.Security.Authorization.CopyAuthorization( PageCache.Layout.Site, entity, RockContext, Rock.Security.Authorization.APPROVE );
+                }
+            } );
+
+            // add/update for the InteractionChannel for this site and set the RetentionPeriod
+            var interactionChannelService = new InteractionChannelService( RockContext );
+            int channelMediumWebsiteValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid() ).Id;
+            var interactionChannelForSite = interactionChannelService.Queryable()
+                .Where( a => a.ChannelTypeMediumValueId == channelMediumWebsiteValueId && a.ChannelEntityId == entity.Id ).FirstOrDefault();
+
+            if ( interactionChannelForSite == null )
+            {
+                interactionChannelForSite = new InteractionChannel();
+                interactionChannelForSite.ChannelTypeMediumValueId = channelMediumWebsiteValueId;
+                interactionChannelForSite.ChannelEntityId = entity.Id;
+                interactionChannelService.Add( interactionChannelForSite );
+            }
+
+            interactionChannelForSite.Name = entity.Name;
+            interactionChannelForSite.RetentionDuration = box.Bag.RetentionDuration;
+            interactionChannelForSite.ComponentEntityTypeId = EntityTypeCache.Get<Rock.Model.Page>().Id;
+
+            RockContext.SaveChanges();
+
+            // Create the default page is this is a new site
+            if ( !entity.DefaultPageId.HasValue && isNew )
+            {
+                var siteCache = SiteCache.Get( entity.Id );
+                var pageService = new PageService( RockContext );
+
+                // Create the layouts for the site, and find the first one
+                // LayoutService.RegisterLayouts( HttpRequest.MapPath( "~" ), siteCache );
+
+                var layoutService = new LayoutService( RockContext );
+                var layouts = layoutService.GetBySiteId( siteCache.Id );
+                var layout = layouts.FirstOrDefault( l => l.FileName.Equals( "FullWidth", StringComparison.OrdinalIgnoreCase ) );
+                if ( layout == null )
+                {
+                    layout = layouts.FirstOrDefault();
                 }
 
-                // Ensure navigation properties will work now.
-                entity = entityService.Get( entity.Id );
-                entity.LoadAttributes( rockContext );
+                if ( layout != null )
+                {
+                    var page = new Page();
+                    page.LayoutId = layout.Id;
+                    page.PageTitle = siteCache.Name + " Home Page";
+                    page.InternalName = page.PageTitle;
+                    page.BrowserTitle = page.PageTitle;
+                    page.EnableViewState = true;
+                    page.IncludeAdminFooter = true;
+                    page.MenuDisplayChildPages = true;
 
-                return ActionOk( GetEntityBagForView( entity ) );
+                    var lastPage = pageService.GetByParentPageId( null ).OrderByDescending( b => b.Order ).FirstOrDefault();
+
+                    page.Order = lastPage != null ? lastPage.Order + 1 : 0;
+                    pageService.Add( page );
+
+                    RockContext.SaveChanges();
+
+                    entity = entityService.Get( siteCache.Id );
+                    entity.DefaultPageId = page.Id;
+
+                    RockContext.SaveChanges();
+                }
             }
+
+            if ( isNew )
+            {
+                return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
+                {
+                    [PageParameterKey.SiteId] = entity.IdKey
+                } ) );
+            }
+
+            // Ensure navigation properties will work now.
+            entity = entityService.Get( entity.Id );
+            entity.LoadAttributes( RockContext );
+
+            var bag = GetEntityBagForView( entity );
+            return ActionOk( new ValidPropertiesBox<SiteBag>
+            {
+                Bag = bag,
+                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
+            } );
         }
 
         /// <summary>
@@ -791,104 +765,47 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new SiteService( RockContext );
+
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                var entityService = new SiteService( rockContext );
+                return actionError;
+            }
 
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                var sitePages = new List<int> {
+            var sitePages = new List<int> {
                     entity.DefaultPageId ?? -1,
                     entity.LoginPageId ?? -1,
                     entity.RegistrationPageId ?? -1,
                     entity.PageNotFoundPageId ?? -1
                 };
 
-                var pageService = new PageService( rockContext );
-                foreach ( var page in pageService.Queryable( "Layout" )
-                    .Where( t => !t.IsSystem && ( t.Layout.SiteId == entity.Id || sitePages.Contains( t.Id ) ) ) )
-                {
-                    if ( pageService.CanDelete( page, out string deletePageErrorMessage ) )
-                    {
-                        pageService.Delete( page );
-                    }
-                }
-
-                var layoutService = new LayoutService( rockContext );
-                var layoutQry = layoutService.Queryable()
-                    .Where( l =>
-                    l.SiteId == entity.Id );
-                layoutService.DeleteRange( layoutQry );
-
-                rockContext.SaveChanges( true );
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                return ActionOk( this.GetParentPageUrl() );
-            }
-        }
-
-        /// <summary>
-        /// Refreshes the list of attributes that can be displayed for editing
-        /// purposes based on any modified values on the entity.
-        /// </summary>
-        /// <param name="box">The box that contains all the information about the entity being edited.</param>
-        /// <returns>A box that contains the entity and attribute information.</returns>
-        [BlockAction]
-        public BlockActionResult RefreshAttributes( DetailBlockBox<SiteBag, SiteDetailOptionsBag> box )
-        {
-            using ( var rockContext = new RockContext() )
+            var pageService = new PageService( RockContext );
+            foreach ( var page in pageService.Queryable( "Layout" )
+                .Where( t => !t.IsSystem && ( t.Layout.SiteId == entity.Id || sitePages.Contains( t.Id ) ) ) )
             {
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
+                if ( pageService.CanDelete( page, out string deletePageErrorMessage ) )
                 {
-                    return actionError;
+                    pageService.Delete( page );
                 }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                // Reload attributes based on the new property values.
-                entity.LoadAttributes( rockContext );
-
-                var refreshedBox = new DetailBlockBox<SiteBag, SiteDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity )
-                };
-
-                var oldAttributeGuids = box.Entity.Attributes.Values.Select( a => a.AttributeGuid ).ToList();
-                var newAttributeGuids = refreshedBox.Entity.Attributes.Values.Select( a => a.AttributeGuid );
-
-                // If the attributes haven't changed then return a 204 status code.
-                if ( oldAttributeGuids.SequenceEqual( newAttributeGuids ) )
-                {
-                    return ActionStatusCode( System.Net.HttpStatusCode.NoContent );
-                }
-
-                // Replace any values for attributes that haven't changed with
-                // the value sent by the client. This ensures any unsaved attribute
-                // value changes are not lost.
-                foreach ( var kvp in refreshedBox.Entity.Attributes )
-                {
-                    if ( oldAttributeGuids.Contains( kvp.Value.AttributeGuid ) )
-                    {
-                        refreshedBox.Entity.AttributeValues[kvp.Key] = box.Entity.AttributeValues[kvp.Key];
-                    }
-                }
-
-                return ActionOk( refreshedBox );
             }
+
+            var layoutService = new LayoutService( RockContext );
+            var layoutQry = layoutService.Queryable()
+                .Where( l =>
+                l.SiteId == entity.Id );
+            layoutService.DeleteRange( layoutQry );
+
+            RockContext.SaveChanges( true );
+
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
+
+            return ActionOk( this.GetParentPageUrl() );
         }
 
         /// <summary>
@@ -901,11 +818,10 @@ namespace Rock.Blocks.Cms
         {
             PublicEditableAttributeBag editableAttribute;
             string modalTitle;
-            var rockContext = new RockContext();
 
-            var entity = GetInitialEntity( rockContext );
+            var entity = GetInitialEntity();
             var siteIdQualifierValue = entity.Id.ToString();
-            var attributes = GetSiteAttributes( rockContext, siteIdQualifierValue );
+            var attributes = GetSiteAttributes( RockContext, siteIdQualifierValue );
 
             if ( !attributeGuid.HasValue )
             {
@@ -926,6 +842,37 @@ namespace Rock.Blocks.Cms
             attributes.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList().ForEach( a => reservedKeyNames.Add( a ) );
 
             return ActionOk( new { editableAttribute, reservedKeyNames, modalTitle } );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnCompileTheme control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        [BlockAction]
+        public BlockActionResult CompileTheme( string idKey )
+        {
+            var rockContext = new RockContext();
+            SiteService siteService = new SiteService( rockContext );
+            Site site = siteService.Get( idKey );
+
+            if ( site == null )
+            {
+                return ActionBadRequest( "Unable to find the requested site." );
+            }
+
+            string messages;
+            var theme = new Rock.Web.UI.RockTheme( site.Theme );
+            bool success = theme.Compile( out messages );
+
+            if ( success )
+            {
+                return ActionOk( new { message = "Theme was successfully compiled." } );
+            }
+            else
+            {
+                return ActionBadRequest( string.Format( "An error occurred compiling the theme {0}. Message: {1}.", site.Theme, messages ) );
+            }
         }
 
         #endregion

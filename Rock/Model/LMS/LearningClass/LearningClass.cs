@@ -155,6 +155,21 @@ namespace Rock.Model
             return Name;
         }
 
+        /// <summary>
+        /// Gets the entity object type's friendly name
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> that represents the entity object type's friendly name.
+        /// </value>
+        public new static string FriendlyTypeName
+        {
+            get
+            {
+                // Because Entity.FriendlyTypeName would show the base class type name.
+                return "Learning Class";
+            }
+        }
+
         #endregion
     }
 
@@ -173,7 +188,7 @@ namespace Rock.Model
             this.HasOptional( a => a.LearningSemester ).WithMany( a => a.LearningClasses ).HasForeignKey( a => a.LearningSemesterId ).WillCascadeOnDelete( false );
             this.HasRequired( a => a.LearningCourse ).WithMany( a => a.LearningClasses ).HasForeignKey( a => a.LearningCourseId ).WillCascadeOnDelete( true );
 
-            // We don't intend to allow deletion of an in-use grading system at this time, therefore do not cascade delete as an additiona protection.
+            // We don't intend to allow deletion of an in-use grading system at this time, therefore as an additional protection do not cascade deletes.
             this.HasRequired( a => a.LearningGradingSystem ).WithMany( a => a.LearningClasses ).HasForeignKey( a => a.LearningGradingSystemId ).WillCascadeOnDelete( false );
         }
     }

@@ -178,15 +178,15 @@ namespace Rock.Blocks.WebFarm
         {
             return new WebFarmSettingsBag
             {
-                IsActive = RockWebFarm.IsEnabled(),
+                IsEnabled = RockWebFarm.IsEnabled(),
+                HasValidKey = RockWebFarm.HasValidKey(),
+                IsRunning = RockWebFarm.IsRunning(),
                 WebFarmKey = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.WEBFARM_KEY ),
                 LowerPollingLimit = RockWebFarm.GetLowerPollingLimitSeconds(),
                 UpperPollingLimit = RockWebFarm.GetUpperPollingLimitSeconds(),
                 MinimumPollingDifference = RockWebFarm.GetMinimumPollingDifferenceSeconds(),
                 MaxPollingWaitSeconds = RockWebFarm.GetMaxPollingWaitSeconds(),
-                IsInMemoryTransport = Rock.Bus.RockMessageBus.IsInMemoryTransport,
-                HasValidKey = RockWebFarm.HasValidKey(),
-                IsRunning = RockWebFarm.IsRunning()
+                IsInMemoryTransport = Rock.Bus.RockMessageBus.IsInMemoryTransport
             };
         }
 
@@ -283,8 +283,8 @@ namespace Rock.Blocks.WebFarm
                 return false;
             }
 
-            box.IfValidProperty( nameof( box.Entity.IsActive ),
-                () => RockWebFarm.SetIsEnabled( box.Entity.IsActive ) );
+            box.IfValidProperty( nameof( box.Entity.IsEnabled ),
+                () => RockWebFarm.SetIsEnabled( box.Entity.IsEnabled ) );
 
             box.IfValidProperty( nameof( box.Entity.WebFarmKey ),
                 () => SystemSettings.SetValue( Rock.SystemKey.SystemSetting.WEBFARM_KEY, box.Entity.WebFarmKey ) );

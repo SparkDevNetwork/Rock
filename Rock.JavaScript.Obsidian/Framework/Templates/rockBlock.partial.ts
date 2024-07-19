@@ -59,7 +59,7 @@ function addBlockChangedEventListener(blockId: Guid, callback: (() => void)): vo
     document.querySelector("#rock-config-trigger")?.addEventListener("click", onTriggerClick, true);
 
     // This code can be removed once WebForms is no longer in use.
-    if (Sys) {
+    if (typeof Sys !== "undefined") {
         Sys.Application.add_load(() => {
             document.querySelector("#rock-config-trigger")?.addEventListener("click", onTriggerClick, true);
         });

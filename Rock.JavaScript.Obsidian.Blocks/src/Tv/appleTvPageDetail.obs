@@ -8,7 +8,7 @@
         <Panel type="block" :title="panelName" :headerSecondaryActions="headerSecondaryActions">
 
             <template #headerActions>
-                <span class="action clickable text-info" title="Copy Page Guid to Clipboard" @click="onExportClick">
+                <span class="action clickable text-info" v-if="appleTvPageEditBag.idKey" title="Copy Page Guid to Clipboard" @click="onExportClick">
                     <i class="fa fa-clipboard"></i>
                 </span>
             </template>
@@ -108,7 +108,7 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return appleTvPageEditBag.value?.name ?? "New Application";
+        return appleTvPageEditBag.value?.name ?? "New Page";
     });
 
     /**

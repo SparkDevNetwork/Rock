@@ -94,7 +94,7 @@
 
     /** Will be `true` if we have a filter and it should be visible. */
     const isFilterVisible = computed((): boolean => {
-        return !props.light && props.column.filter !== undefined;
+        return !props.light && props.column.filter != null;
     });
 
     /** Will be `true` if sorting is enabled on the grid. */
@@ -262,7 +262,7 @@
             });
         }
         else {
-        document.removeEventListener("mousedown", onMouseDownEvent);
-    }
-});
+            document.removeEventListener("mousedown", onMouseDownEvent);
+        }
+    });
 </script>

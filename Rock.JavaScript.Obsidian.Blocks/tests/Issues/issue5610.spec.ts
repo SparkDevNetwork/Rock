@@ -1,10 +1,11 @@
 import { HttpResult } from "@Obsidian/Types/Utility/http";
 import RegistrationEntry from "../../src/Event/registrationEntry.obs";
+import Registrant from "../../src/Event/RegistrationEntry/registrant.partial.obs";
+import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
 import { mockBlockActions, mountBlock } from "../blocks";
 import { waitFor } from "../utils";
 import { Guid } from "@Obsidian/Types";
 import { flushPromises } from "@vue/test-utils";
-import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
 
 function getConfigurationValues(): RegistrationEntryInitializationBox {
     // This is weird, but we have to do this because the block actually
@@ -100,7 +101,7 @@ describe("Issue 5610", () => {
         // Select the family member. I can't find a better way to do this
         // because Ant Select does not have an actual HTML element backing
         // it that we can change to trigger the update.
-        const secondRegistrant = instance.findAllComponents({name: "Event.RegistrationEntry.Registrant"})[1];
+        const secondRegistrant = instance.findAllComponents(Registrant)[1];
         instance.get(".registrationentry-registrant > div:nth-child(2)")
             .findAllComponents({name: "DropDownList"})[0]
             .vm
@@ -192,7 +193,7 @@ describe("Issue 5610", () => {
         // Select the family member. I can't find a better way to do this
         // because Ant Select does not have an actual HTML element backing
         // it that we can change to trigger the update.
-        const secondRegistrant = instance.findAllComponents({name: "Event.RegistrationEntry.Registrant"})[1];
+        const secondRegistrant = instance.findAllComponents(Registrant)[1];
         instance.get(".registrationentry-registrant > div:nth-child(2)")
             .findAllComponents({name: "DropDownList"})[0]
             .vm
@@ -337,7 +338,7 @@ const configurationValues: RegistrationEntryInitializationBox = {
         "discountAmount": 0.0,
         "discountMaxRegistrants": 0,
         "discountPercentage": 0.0,
-        "previouslyPaid": 0.0,
+        "previouslyPaid": 0.0
     },
     "isUnauthorized": false,
     "instructionsHtml": "",
@@ -699,5 +700,6 @@ const configurationValues: RegistrationEntryInitializationBox = {
     "hideProgressBar": false,
     "showSmsOptIn": false,
     "isPaymentPlanAllowed": false,
-    "isPaymentPlanConfigured": false
+    "isPaymentPlanConfigured": false,
+    "disableCaptchaSupport": true
 };

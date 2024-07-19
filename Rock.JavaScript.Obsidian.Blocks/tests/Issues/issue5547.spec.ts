@@ -1,8 +1,8 @@
 import RegistrationEntry from "../../src/Event/registrationEntry.obs";
+import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
 import { mockBlockActions, mountBlock } from "../blocks";
 import { HttpResult } from "@Obsidian/Types/Utility/http";
 import { Guid } from "@Obsidian/Types";
-import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
 
 function getConfigurationValues(): RegistrationEntryInitializationBox {
     // This is weird, but we have to do this because the block actually
@@ -559,8 +559,9 @@ const configurationValues: RegistrationEntryInitializationBox = {
             "disabled": null
         }
     ],
+    "hideProgressBar": false,
     "showSmsOptIn": false,
     "isPaymentPlanAllowed": false,
     "isPaymentPlanConfigured": false,
-    "hideProgressBar": false
+    "disableCaptchaSupport": true
 };

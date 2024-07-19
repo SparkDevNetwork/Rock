@@ -68,5 +68,13 @@ namespace Rock.ViewModels.Blocks.Finance.FinancialGatewayDetail
         /// The batch start day.
         /// </value>
         public string BatchStartDay { get; set; }
+
+        /// <summary>
+        /// Gets or sets the inactive gateway notification message.
+        /// </summary>
+        /// <value>
+        /// The inactive gateway notification message.
+        /// </value>
+        public string InactiveGatewayNotificationMessage { get; set; }
     }
 }

@@ -21,10 +21,15 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
+
 /** The information needed to identify a specific occurrence to be scheduled within the Group Scheduler. */
 export type GroupSchedulerOccurrenceBag = {
-    /** Gets or sets the attendance occurrence ID for this occurrence. */
-    attendanceOccurrenceId: number;
+    /**
+     * Gets or sets the attendance occurrence ID for this occurrence.
+     * This attendance occurrence might not exist yet.
+     */
+    attendanceOccurrenceId?: number | null;
 
     /** Gets or sets the desired capacity for this occurrence. */
     desiredCapacity?: number | null;
@@ -40,6 +45,9 @@ export type GroupSchedulerOccurrenceBag = {
 
     /** Gets or sets the group order for this occurrence. */
     groupOrder: number;
+
+    /** Gets the unique identifier for this group scheduler occurrence. */
+    guid: Guid;
 
     /** Gets or sets whether scheduling is enabled for this occurrence. */
     isSchedulingEnabled: boolean;

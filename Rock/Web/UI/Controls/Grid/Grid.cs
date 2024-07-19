@@ -23,6 +23,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
@@ -1556,6 +1557,45 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
         }
 
         /// <summary>
+        /// Sets the grid data source from a paginated data source object.
+        /// This type of data source can provide efficient querying of the total number of items and a single page of data for display.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="dataSource">A grid data source.</param>
+        [RockInternal("1.16.0")]
+        public void SetDataSource<T>( IPaginatedDataSource<T> dataSource )
+        {
+            if ( this.AllowPaging )
+            {
+                this.AllowCustomPaging = true;
+
+                var currentPageData = dataSource.GetItems( this.PageIndex, this.PageSize );
+                this.DataSource = currentPageData;
+
+                if ( currentPageData.Count < this.PageSize )
+                {
+                    // The current page has fewer records than the page size, so this is the last page.
+                    // We can calculate the total number of records without requerying the data source.
+                    this.VirtualItemCount = ( this.PageIndex * this.PageSize ) + currentPageData.Count;
+                }
+                else
+                {
+                    this.VirtualItemCount = dataSource.GetTotalItemCount();
+                }
+
+                PreDataBound = false;
+                CurrentPageRows = currentPageData.Count();
+            }
+            else
+            {
+                // Get all of the items.
+                this.DataSource = dataSource.GetItems();
+            }
+
+            this.DatasourceSQL = string.Empty;
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.WebControls.BaseDataBoundControl.DataBound"/> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs"/> object that contains the event data.</param>
@@ -2135,593 +2175,722 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Actions_ExcelExportClick( object sender, EventArgs e )
         {
-            // disable paging if no specific keys where selected (or if no select option is shown)
-            bool selectAll = !SelectedKeys.Any();
-            RebindGrid( e, selectAll, true, false );
+            // Create default settings.
+            var filename = ExportFilename;
+            var workSheetName = "Export";
+            var title = "Rock Export";
 
-            // create default settings
-            string filename = ExportFilename;
-            string workSheetName = "Export";
-            string title = "Rock Export";
+            // Safely retrieve the cancellation token so Rock can cancel the export if the request is aborted.
+            // Checking if the request is cancelled is cheap but it makes the code less readable,
+            // thus cancellation checks should only be added before performance-heavy regions.
+            var cancellationToken = Context?.GetOwinContext()?.Request?.CallCancelled ?? CancellationToken.None;
 
-            ExcelPackage excel = new ExcelPackage();
-
-            if ( !string.IsNullOrEmpty( this.ExportTitleName ) )
+            // Create the excel file.
+            using ( var excel = new ExcelPackage() )
             {
-                // If we have a Export Title Name then use it
-                workSheetName = this.ExportTitleName.ReplaceSpecialCharacters( "_" ).TrimEnd( '_' );
-                title = this.ExportTitleName;
-            }
-            else if ( !string.IsNullOrEmpty( this.Caption ) )
-            {
-                // Then try the caption
-                workSheetName = this.Caption.ReplaceSpecialCharacters( "_" ).TrimEnd( '_' );
-                title = this.Caption;
-            }
-            else
-            {
-                // otherwise use the page title
-                var pageTitle = ( Page as RockPage )?.PageTitle;
-
-                if ( !string.IsNullOrEmpty( pageTitle ) )
+                if ( !string.IsNullOrEmpty( this.ExportTitleName ) )
                 {
-                    workSheetName = pageTitle.ReplaceSpecialCharacters( "_" ).TrimEnd( '_' );
-                    title = pageTitle;
+                    // If we have an Export Title Name then use it as the title.
+                    workSheetName = this.ExportTitleName.ReplaceSpecialCharacters( "_" ).TrimEnd( '_' );
+                    title = this.ExportTitleName;
                 }
-            }
-
-            excel.Workbook.Properties.Title = title;
-
-            // add author info
-            Rock.Model.UserLogin userLogin = Rock.Model.UserLoginService.GetCurrentUser();
-            if ( userLogin != null )
-            {
-                excel.Workbook.Properties.Author = userLogin.Person.FullName;
-            }
-            else
-            {
-                excel.Workbook.Properties.Author = "Rock";
-            }
-
-            // add the page that created this
-            excel.Workbook.Properties.SetCustomPropertyValue( "Source", this.Page.Request.UrlProxySafe().OriginalString );
-
-            ExcelWorksheet worksheet = excel.Workbook.Worksheets.Add( workSheetName );
-
-            //// write data to worksheet there are three supported data sources
-            //// DataTables, DataViews and ILists
-
-            var headerRows = 3;
-            int rowCounter = headerRows;
-            int columnCounter = 1;
-
-            if ( this.ExportSource == ExcelExportSource.ColumnOutput )
-            {
-                // Columns to export with their column index as the key
-                var gridColumns = new Dictionary<int, DataControlField>();
-                for ( int i = 0; i < this.CreatedColumns.Count; i++ )
+                else if ( !string.IsNullOrEmpty( this.Caption ) )
                 {
-                    var dataField = this.CreatedColumns[i];
-                    var rockField = this.CreatedColumns[i] as IRockGridField;
-                    if ( rockField != null &&
-                        (
-                            rockField.ExcelExportBehavior == ExcelExportBehavior.AlwaysInclude ||
-                            ( rockField.ExcelExportBehavior == ExcelExportBehavior.IncludeIfVisible && rockField.Visible )
-                        ) )
+                    // Otherwise, if we have a Caption then use it as the title.
+                    workSheetName = this.Caption.ReplaceSpecialCharacters( "_" ).TrimEnd( '_' );
+                    title = this.Caption;
+                }
+                else
+                {
+                    // Otherwise, use the page title as the title.
+                    var pageTitle = ( Page as RockPage )?.PageTitle;
+
+                    if ( !string.IsNullOrEmpty( pageTitle ) )
                     {
-                        gridColumns.Add( i, dataField );
+                        workSheetName = pageTitle.ReplaceSpecialCharacters( "_" ).TrimEnd( '_' );
+                        title = pageTitle;
                     }
                 }
 
-                columnCounter = 1;
-                foreach ( var col in gridColumns )
+                excel.Workbook.Properties.Title = title;
+
+                // Add author info.
+                var userLogin = Rock.Model.UserLoginService.GetCurrentUser();
+
+                if ( userLogin != null )
                 {
-                    worksheet.Cells[rowCounter, columnCounter].Value = col.Value.HeaderText;
-                    columnCounter++;
+                    excel.Workbook.Properties.Author = userLogin.Person.FullName;
+                }
+                else
+                {
+                    excel.Workbook.Properties.Author = "Rock";
                 }
 
-                var dataItems = this.DataSourceAsList;
-                var gridViewRows = this.Rows.OfType<GridViewRow>().ToList();
-                if ( gridViewRows.Count != dataItems.Count )
+                // Add the page that created this.
+                excel.Workbook.Properties.SetCustomPropertyValue( "Source", this.Page.Request.UrlProxySafe().OriginalString );
+
+                var worksheet = excel.Workbook.Worksheets.Add( workSheetName );
+
+                // Write data to worksheet (there are three supported data sources):  DataTables, DataViews and ILists.
+
+                var headerRows = 3;
+                var rowCounter = headerRows;
+                var columnCounter = 1;
+                var preventVerticalAlignmentFormatting = false;
+                    
+                // Stop exporting if the client aborted the request.
+                if ( cancellationToken.IsCancellationRequested )
                 {
+                    Context.ApplicationInstance.CompleteRequest();
                     return;
                 }
 
-                var selectedKeys = SelectedKeys.ToList();
-                for ( int i = 0; i < dataItems.Count; i++ )
+                if ( this.ExportSource == ExcelExportSource.ColumnOutput )
                 {
-                    var dataItem = dataItems[i];
-                    var gridViewRow = gridViewRows[i];
-
-                    if ( selectedKeys.Any() && this.DataKeyNames.Count() == 1 )
+                    // Columns to export with their column index as the key
+                    var gridColumns = new Dictionary<int, DataControlField>();
+                    for ( var i = 0; i < this.CreatedColumns.Count; i++ )
                     {
-                        var dataKeyValue = dataItem.GetPropertyValue( this.DataKeyNames[0] );
-                        if ( !selectedKeys.Contains( dataKeyValue ) )
+                        var dataField = this.CreatedColumns[i];
+                        var rockField = this.CreatedColumns[i] as IRockGridField;
+                        if ( rockField != null &&
+                            (
+                                rockField.ExcelExportBehavior == ExcelExportBehavior.AlwaysInclude ||
+                                ( rockField.ExcelExportBehavior == ExcelExportBehavior.IncludeIfVisible && rockField.Visible )
+                            ) )
                         {
-                            // if there are specific rows selected, skip over rows that aren't selected
-                            continue;
+                            gridColumns.Add( i, dataField );
                         }
                     }
 
-                    rowCounter++;
-                    var args = new RockGridViewRowEventArgs( gridViewRow, true );
-                    gridViewRow.DataItem = dataItem;
-                    this.OnRowDataBound( args );
-                    columnCounter = 0;
-                    var gridViewRowCellLookup = gridViewRow.Cells.OfType<DataControlFieldCell>().ToDictionary( k => k.ContainingField, v => v );
+                    columnCounter = 1;
                     foreach ( var col in gridColumns )
                     {
+                        worksheet.Cells[rowCounter, columnCounter].Value = col.Value.HeaderText;
                         columnCounter++;
-
-                        object exportValue = null;
-                        if ( col.Value is RockBoundField )
-                        {
-                            exportValue = ( col.Value as RockBoundField ).GetExportValue( gridViewRow );
-                        }
-                        else if ( col.Value is RockTemplateField )
-                        {
-                            var fieldCell = gridViewRowCellLookup[col.Value];
-                            exportValue = ( col.Value as RockTemplateField ).GetExportValue( gridViewRow, fieldCell );
-                        }
-
-                        ExcelHelper.SetExcelValue( worksheet.Cells[rowCounter, columnCounter], exportValue );
-
-                        // Set the initial column format when processing the first row of data
-                        // This is done here because a value is needed to determine the data types
-                        if ( rowCounter == headerRows + 1 )
-                        {
-                            worksheet.Column( columnCounter ).Style.Numberformat.Format = ExcelHelper.DefaultColumnFormat( col.Value as IRockGridField, exportValue );
-                        }
                     }
-                }
-            }
-            else if ( this.DataSourceAsDataTable != null )
-            {
-                var gridDataFields = this.Columns.OfType<BoundField>().ToList();
-                DataTable data = this.DataSourceAsDataTable;
-                columnCounter = 0;
-
-                var encryptedColumns = new List<int>();
-
-                // Set up the columns
-                foreach ( DataColumn column in data.Columns )
-                {
-                    columnCounter++;
-
-                    // Print column headings
-                    var gridField = gridDataFields.FirstOrDefault( a => a.DataField == column.ColumnName );
-                    worksheet.Cells[rowCounter, columnCounter].Value = gridField != null ? gridField.HeaderText : column.ColumnName.SplitCase();
-
-                    // Set the initial column format
-                    worksheet.Column( columnCounter ).Style.Numberformat.Format = ExcelHelper.DefaultColumnFormat( column.DataType );
-
-                    // Check to see if this is an encrypted column
-                    if ( gridField is EncryptedField )
+                    
+                    // Stop exporting if the client aborted the request.
+                    if ( cancellationToken.IsCancellationRequested )
                     {
-                        encryptedColumns.Add( columnCounter - 1 );
-                    }
-                }
-
-                // print data
-                int gridRowCounter = 0;
-                var selectedKeys = SelectedKeys.ToList();
-                foreach ( DataRowView rowView in data.DefaultView )
-                {
-                    if ( selectedKeys.Any() && this.DataKeyNames.Count() == 1 )
-                    {
-                        if ( gridRowCounter == this.Rows.Count )
-                        {
-                            // Stop when the counter reaches the number of rows displayed in the grid.
-                            break;
-                        }
-
-                        var dataKeyValue = this.DataKeys[gridRowCounter].Value;
-                        gridRowCounter++;
-
-                        if ( !selectedKeys.Contains( dataKeyValue ) )
-                        {
-                            // if there are specific rows selected, skip over rows that aren't selected
-                            continue;
-                        }
-                    }
-                    else if ( selectedKeys.Any() )
-                    {
-                        // If the grid has multiple DataKeyNames the selected keys contains the one based row index.
-                        gridRowCounter++;
-                        if ( !selectedKeys.Contains( gridRowCounter ) )
-                        {
-                            continue;
-                        }
+                        Context.ApplicationInstance.CompleteRequest();
+                        return;
                     }
 
-                    rowCounter++;
-
-                    for ( int i = 0; i < data.Columns.Count; i++ )
+                    var defaultCellStyle = worksheet.Workbook.Styles.CellXfs.FirstOrDefault();
+                    if ( defaultCellStyle != null )
                     {
-                        var value = encryptedColumns.Contains( i ) ? Security.Encryption.DecryptString( rowView.Row[i].ToString() ) : rowView.Row[i];
-                        value = value.ReverseCurrencyFormatting();
-
-                        int columnIndex = i + 1;
-                        ExcelHelper.SetExcelValue( worksheet.Cells[rowCounter, columnIndex], value );
-
-                        // Update column formatting based on data
-                        ExcelHelper.FinalizeColumnFormat( worksheet, columnIndex, value );
-                    }
-                }
-            }
-            else
-            {
-                var definedValueFields = this.Columns.OfType<DefinedValueField>().ToList();
-                Dictionary<PropertyInfo, bool> propIsDefinedValueLookup = new Dictionary<PropertyInfo, bool>();
-                Dictionary<BoundField, PropertyInfo> boundFieldPropLookup = new Dictionary<BoundField, PropertyInfo>();
-                var attributeFields = this.Columns.OfType<AttributeField>().ToList();
-                var lavaFields = new List<LavaField>();
-                var visibleFields = new Dictionary<int, DataControlField>();
-
-                int fieldOrder = 0;
-                foreach ( DataControlField dataField in this.Columns )
-                {
-                    if ( dataField is BoundField )
-                    {
-                        var boundField = dataField as BoundField;
-                        visibleFields.Add( fieldOrder++, boundField );
+                        // Align text to the top of each cell by default.
+                        // It's more performant to set the vertical alignment before the data rows are added.
+                        defaultCellStyle.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Top;
+                        preventVerticalAlignmentFormatting = true;
                     }
 
-                    if ( dataField is RockTemplateField )
+                    // Text in headers should be vertically aligned to the bottom.
+                    using ( var range = worksheet.Cells[1, 1, 3, columnCounter] )
                     {
-                        var rockTemplateField = dataField as RockTemplateField;
+                        range.Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Bottom;
+                    }
 
-                        /*
-                         * 2020-03-03 - JPH
-                         *
-                         * Since LavaField inherits from RockTemplateField, perform this LavaField check only
-                         * after determining that this dataField is of type RockTemplateField. This way, we
-                         * will add the dataField to the visibleFields collection only once, and only if its
-                         * ExcelExportBehavior dictates to do so.
-                         *
-                         * Reason: Issue #3950 (Lava report fields generate two columns in Excel exports)
-                         * https://github.com/SparkDevNetwork/Rock/issues/3950
-                         * 
-                         * 2021-05-28 ETD
-                         * Changed to check if this is a LavaField first and then add it to the LavaField list.
-                         * Add it to the Visibility list if it is Visible and ExcelExportBehavior is IncludeIfVisible.
-                         * 
-                         * Reason: This is to ensure that a lava field in a report does get exported.
-                         * https://github.com/SparkDevNetwork/Rock/issues/4673
-                         */
-                        if ( dataField is LavaField )
+                    // Always enable paging to limit large datasets from consuming too much CPU and memory.
+                    this.PageSize = 100000;
+                    this.PageIndex = 0;
+                    var previousPageIndex = -1;
+
+                    // The initial PageCount will be set from the grid currently on the page,
+                    // and will be updated once RebindGrid is called.
+                    while ( this.PageIndex < this.PageCount && this.PageIndex > previousPageIndex )
+                    {
+                        // Processing page of data.
+
+                        // Stop exporting if the client aborted the request.
+                        if ( cancellationToken.IsCancellationRequested )
                         {
-                            var lavaField = dataField as LavaField;
-                            lavaFields.Add( lavaField );
+                            Context.ApplicationInstance.CompleteRequest();
+                            return;
+                        }
 
-                            if ( rockTemplateField.ExcelExportBehavior == ExcelExportBehavior.AlwaysInclude
-                                || ( rockTemplateField.Visible == true && rockTemplateField.ExcelExportBehavior == ExcelExportBehavior.IncludeIfVisible ) )
+                        // Bind the grid data for the current page.
+                        RebindGrid( e, disablePaging: false, isExporting: true, isCommunication: false );
+
+                        var dataItems = this.DataSourceAsList;
+                        var gridViewRows = this.Rows.OfType<GridViewRow>().ToList();
+                        if ( gridViewRows.Count != dataItems.Count )
+                        {
+                            return;
+                        }
+
+                        var selectedKeys = SelectedKeys.ToList();
+                        for ( var i = 0; i < dataItems.Count; i++ )
+                        {
+                            // Processing row of data in page.
+                    
+                            // Stop exporting if the client aborted the request.
+                            if ( cancellationToken.IsCancellationRequested )
                             {
-                                visibleFields.Add( fieldOrder++, rockTemplateField );
+                                Context.ApplicationInstance.CompleteRequest();
+                                return;
+                            }
+
+                            var dataItem = dataItems[i];
+                            var gridViewRow = gridViewRows[i];
+
+                            if ( selectedKeys.Any() && this.DataKeyNames.Count() == 1 )
+                            {
+                                var dataKeyValue = dataItem.GetPropertyValue( this.DataKeyNames[0] );
+                                if ( !selectedKeys.Contains( dataKeyValue ) )
+                                {
+                                    // if there are specific rows selected, skip over rows that aren't selected
+                                    continue;
+                                }
+                            }
+
+                            rowCounter++;
+                            var args = new RockGridViewRowEventArgs( gridViewRow, true );
+                            gridViewRow.DataItem = dataItem;
+                            this.OnRowDataBound( args );
+                            columnCounter = 0;
+                            var gridViewRowCellLookup = gridViewRow.Cells.OfType<DataControlFieldCell>().ToDictionary( k => k.ContainingField, v => v );
+                            foreach ( var col in gridColumns )
+                            {
+                                // Processing cell of data in row.
+
+                                columnCounter++;
+
+                                object exportValue = null;
+                                if ( col.Value is RockBoundField )
+                                {
+                                    exportValue = ( col.Value as RockBoundField ).GetExportValue( gridViewRow );
+                                }
+                                else if ( col.Value is RockTemplateField )
+                                {
+                                    var fieldCell = gridViewRowCellLookup[col.Value];
+                                    exportValue = ( col.Value as RockTemplateField ).GetExportValue( gridViewRow, fieldCell );
+                                }
+
+                                ExcelHelper.SetExcelValue( worksheet.Cells[rowCounter, columnCounter], exportValue );
+
+                                // Set the initial column format when processing the first row of data
+                                // This is done here because a value is needed to determine the data types
+                                if ( rowCounter == headerRows + 1 )
+                                {
+                                    worksheet.Column( columnCounter ).Style.Numberformat.Format = ExcelHelper.DefaultColumnFormat( col.Value as IRockGridField, exportValue );
+                                }
                             }
                         }
-                        else if ( rockTemplateField.ExcelExportBehavior == ExcelExportBehavior.AlwaysInclude )
+
+                        // Incrementing doesn't change the value of PageIndex once on the final page.
+                        // Keep track of the previous page so we can check
+                        // if the the previous page is the same as the PageIndex (this means we're on the last page).
+                        previousPageIndex = this.PageIndex;
+                        this.PageIndex++;
+                    }
+                }
+                else
+                {
+                    // disable paging if no specific keys where selected (or if no select option is shown)
+                    var selectAll = !SelectedKeys.Any();
+                    RebindGrid( e, selectAll, isExporting: true, isCommunication: false );
+                    
+                    // Stop exporting if the client aborted the request.
+                    if ( cancellationToken.IsCancellationRequested )
+                    {
+                        Context.ApplicationInstance.CompleteRequest();
+                        return;
+                    }
+
+                    // DataSourceAsDataTable is only set after RebindGrid is called.
+                    if ( this.DataSourceAsDataTable != null )
+                    {
+                        var gridDataFields = this.Columns.OfType<BoundField>().ToList();
+                        var data = this.DataSourceAsDataTable;
+                        columnCounter = 0;
+
+                        var encryptedColumns = new List<int>();
+
+                        // Set up the columns
+                        foreach ( DataColumn column in data.Columns )
                         {
-                            // Since we are in ExcelExportSource.DataSource mode, only export RockTemplateField if ExcelExportBehavior is AlwaysInclude
-                            visibleFields.Add( fieldOrder++, rockTemplateField );
+                            columnCounter++;
+
+                            // Print column headings
+                            var gridField = gridDataFields.FirstOrDefault( a => a.DataField == column.ColumnName );
+                            worksheet.Cells[rowCounter, columnCounter].Value = gridField != null ? gridField.HeaderText : column.ColumnName.SplitCase();
+
+                            // Set the initial column format
+                            worksheet.Column( columnCounter ).Style.Numberformat.Format = ExcelHelper.DefaultColumnFormat( column.DataType );
+
+                            // Check to see if this is an encrypted column
+                            if ( gridField is EncryptedField )
+                            {
+                                encryptedColumns.Add( columnCounter - 1 );
+                            }
                         }
-                    }
-                }
 
-                if ( CustomColumns != null && CustomColumns.Any() )
-                {
-                    foreach ( var columnConfig in CustomColumns )
-                    {
-                        var column = columnConfig.GetGridColumn();
-                        lavaFields.Add( column );
-                        visibleFields.Add( fieldOrder++, column );
-                    }
-                }
+                        // print data
+                        var gridRowCounter = 0;
+                        var selectedKeys = SelectedKeys.ToList();
+                        foreach ( DataRowView rowView in data.DefaultView )
+                        {
+                            // Stop exporting if the client aborted the request.
+                            if ( cancellationToken.IsCancellationRequested )
+                            {
+                                Context.ApplicationInstance.CompleteRequest();
+                                return;
+                            }
 
-                var oType = GetDataSourceObjectType();
+                            if ( selectedKeys.Any() && this.DataKeyNames.Count() == 1 )
+                            {
+                                if ( gridRowCounter == this.Rows.Count )
+                                {
+                                    // Stop when the counter reaches the number of rows displayed in the grid.
+                                    break;
+                                }
 
-                // get all properties of the objects in the grid
-                List<PropertyInfo> allprops = new List<PropertyInfo>( oType.GetProperties() );
+                                var dataKeyValue = this.DataKeys[gridRowCounter].Value;
+                                gridRowCounter++;
 
-                // If this is a dynamic class, don't include any of the properties that are inherited from the base class.
-                allprops = FilterDynamicObjectPropertiesCollection( oType, allprops );
+                                if ( !selectedKeys.Contains( dataKeyValue ) )
+                                {
+                                    // if there are specific rows selected, skip over rows that aren't selected
+                                    continue;
+                                }
+                            }
+                            else if ( selectedKeys.Any() )
+                            {
+                                // If the grid has multiple DataKeyNames the selected keys contains the one based row index.
+                                gridRowCounter++;
+                                if ( !selectedKeys.Contains( gridRowCounter ) )
+                                {
+                                    continue;
+                                }
+                            }
 
-                // Inspect the collection of Fields that appear in the Grid and add the corresponding data item properties to the set of fields to be exported.
-                // The fields are exported in the same order as they appear in the Grid.
-                var props = new List<PropertyInfo>();
-                foreach ( PropertyInfo prop in allprops )
-                {
-                    // skip over virtual properties that aren't shown in the grid since they are probably lazy loaded and it is too late to get them
-                    var getMethod = prop.GetGetMethod();
-                    if ( getMethod == null || ( getMethod.IsVirtual && !getMethod.IsFinal && prop.GetCustomAttributes( typeof( Rock.Data.PreviewableAttribute ) ).Count() == 0 ) )
-                    {
-                        continue;
-                    }
+                            rowCounter++;
 
-                    // Skip the lava property (is added through columns)
-                    if ( prop.Name.StartsWith( "Data_Lava_" ) )
-                    {
-                        continue;
-                    }
+                            for ( var i = 0; i < data.Columns.Count; i++ )
+                            {
+                                var value = encryptedColumns.Contains( i ) ? Security.Encryption.DecryptString( rowView.Row[i].ToString() ) : rowView.Row[i];
+                                value = value.ReverseCurrencyFormatting();
 
-                    props.Add( prop );
-                }
+                                var columnIndex = i + 1;
+                                ExcelHelper.SetExcelValue( worksheet.Cells[rowCounter, columnIndex], value );
 
-                var lavaDataFields = new Dictionary<string, LavaFieldTemplate.DataFieldInfo>();
-
-                // Grid column headings
-                var boundPropNames = new List<string>();
-                var addedHeaderNames = new List<string>();
-
-                // Array provides slight performance improvement here over a list
-                var orderedVisibleFields = visibleFields.OrderBy( f => f.Key ).Select( f => f.Value ).ToArray();
-                for ( int i = 0; i < orderedVisibleFields.Count(); i++ )
-                {
-                    DataControlField dataField = orderedVisibleFields[i];
-                    if ( dataField.HeaderText.IsNullOrWhiteSpace() )
-                    {
-                        dataField.HeaderText = string.Format( "Column {0}", i );
+                                // Update column formatting based on data
+                                ExcelHelper.FinalizeColumnFormat( worksheet, columnIndex, value );
+                            }
+                        }
                     }
                     else
                     {
-                        var headerText = dataField.HeaderText;
-                        if ( addedHeaderNames.Contains( dataField.HeaderText, StringComparer.InvariantCultureIgnoreCase ) )
-                        {
-                            headerText = string.Format( "{0} {1}", dataField.HeaderText, i );
-                        }
-                        worksheet.Cells[rowCounter, columnCounter].Value = headerText;
-                        addedHeaderNames.Add( headerText );
-                    }
+                        var definedValueFields = this.Columns.OfType<DefinedValueField>().ToList();
+                        var propIsDefinedValueLookup = new Dictionary<PropertyInfo, bool>();
+                        var boundFieldPropLookup = new Dictionary<BoundField, PropertyInfo>();
+                        var attributeFields = this.Columns.OfType<AttributeField>().ToList();
+                        var lavaFields = new List<LavaField>();
+                        var visibleFields = new Dictionary<int, DataControlField>();
 
-                    var boundField = dataField as BoundField;
-                    if ( boundField != null )
-                    {
-                        var prop = GetPropertyFromBoundField( props, boundFieldPropLookup, boundField );
-                        if ( prop != null )
+                        var fieldOrder = 0;
+                        foreach ( DataControlField dataField in this.Columns )
+                        {
+                            if ( dataField is BoundField )
+                            {
+                                var boundField = dataField as BoundField;
+                                visibleFields.Add( fieldOrder++, boundField );
+                            }
+
+                            if ( dataField is RockTemplateField )
+                            {
+                                var rockTemplateField = dataField as RockTemplateField;
+
+                                /*
+                                 * 2020-03-03 - JPH
+                                 *
+                                 * Since LavaField inherits from RockTemplateField, perform this LavaField check only
+                                 * after determining that this dataField is of type RockTemplateField. This way, we
+                                 * will add the dataField to the visibleFields collection only once, and only if its
+                                 * ExcelExportBehavior dictates to do so.
+                                 *
+                                 * Reason: Issue #3950 (Lava report fields generate two columns in Excel exports)
+                                 * https://github.com/SparkDevNetwork/Rock/issues/3950
+                                 * 
+                                 * 2021-05-28 ETD
+                                 * Changed to check if this is a LavaField first and then add it to the LavaField list.
+                                 * Add it to the Visibility list if it is Visible and ExcelExportBehavior is IncludeIfVisible.
+                                 * 
+                                 * Reason: This is to ensure that a lava field in a report does get exported.
+                                 * https://github.com/SparkDevNetwork/Rock/issues/4673
+                                 */
+                                if ( dataField is LavaField )
+                                {
+                                    var lavaField = dataField as LavaField;
+                                    lavaFields.Add( lavaField );
+
+                                    if ( rockTemplateField.ExcelExportBehavior == ExcelExportBehavior.AlwaysInclude
+                                        || ( rockTemplateField.Visible == true && rockTemplateField.ExcelExportBehavior == ExcelExportBehavior.IncludeIfVisible ) )
+                                    {
+                                        visibleFields.Add( fieldOrder++, rockTemplateField );
+                                    }
+                                }
+                                else if ( rockTemplateField.ExcelExportBehavior == ExcelExportBehavior.AlwaysInclude )
+                                {
+                                    // Since we are in ExcelExportSource.DataSource mode, only export RockTemplateField if ExcelExportBehavior is AlwaysInclude
+                                    visibleFields.Add( fieldOrder++, rockTemplateField );
+                                }
+                            }
+                        }
+
+                        if ( CustomColumns != null && CustomColumns.Any() )
+                        {
+                            foreach ( var columnConfig in CustomColumns )
+                            {
+                                var column = columnConfig.GetGridColumn();
+                                lavaFields.Add( column );
+                                visibleFields.Add( fieldOrder++, column );
+                            }
+                        }
+                    
+                        // Stop exporting if the client aborted the request.
+                        if ( cancellationToken.IsCancellationRequested )
+                        {
+                            Context.ApplicationInstance.CompleteRequest();
+                            return;
+                        }
+
+                        var oType = GetDataSourceObjectType();
+
+                        // get all properties of the objects in the grid
+                        var allprops = new List<PropertyInfo>( oType.GetProperties() );
+
+                        // If this is a dynamic class, don't include any of the properties that are inherited from the base class.
+                        allprops = FilterDynamicObjectPropertiesCollection( oType, allprops );
+
+                        // Inspect the collection of Fields that appear in the Grid and add the corresponding data item properties to the set of fields to be exported.
+                        // The fields are exported in the same order as they appear in the Grid.
+                        var props = new List<PropertyInfo>();
+                        foreach ( var prop in allprops )
+                        {
+                            // skip over virtual properties that aren't shown in the grid since they are probably lazy loaded and it is too late to get them
+                            var getMethod = prop.GetGetMethod();
+                            if ( getMethod == null || ( getMethod.IsVirtual && !getMethod.IsFinal && prop.GetCustomAttributes( typeof( Rock.Data.PreviewableAttribute ) ).Count() == 0 ) )
+                            {
+                                continue;
+                            }
+
+                            // Skip the lava property (is added through columns)
+                            if ( prop.Name.StartsWith( "Data_Lava_" ) )
+                            {
+                                continue;
+                            }
+
+                            props.Add( prop );
+                        }
+
+                        var lavaDataFields = new Dictionary<string, LavaFieldTemplate.DataFieldInfo>();
+
+                        // Grid column headings
+                        var boundPropNames = new List<string>();
+                        var addedHeaderNames = new List<string>();
+                    
+                        // Stop exporting if the client aborted the request.
+                        if ( cancellationToken.IsCancellationRequested )
+                        {
+                            Context.ApplicationInstance.CompleteRequest();
+                            return;
+                        }
+
+                        // Array provides slight performance improvement here over a list
+                        var orderedVisibleFields = visibleFields.OrderBy( f => f.Key ).Select( f => f.Value ).ToArray();
+                        for ( var i = 0; i < orderedVisibleFields.Count(); i++ )
+                        {
+                            var dataField = orderedVisibleFields[i];
+                            if ( dataField.HeaderText.IsNullOrWhiteSpace() )
+                            {
+                                dataField.HeaderText = string.Format( "Column {0}", i );
+                            }
+                            else
+                            {
+                                var headerText = dataField.HeaderText;
+                                if ( addedHeaderNames.Contains( dataField.HeaderText, StringComparer.InvariantCultureIgnoreCase ) )
+                                {
+                                    headerText = string.Format( "{0} {1}", dataField.HeaderText, i );
+                                }
+                                worksheet.Cells[rowCounter, columnCounter].Value = headerText;
+                                addedHeaderNames.Add( headerText );
+                            }
+
+                            var boundField = dataField as BoundField;
+                            if ( boundField != null )
+                            {
+                                var prop = GetPropertyFromBoundField( props, boundFieldPropLookup, boundField );
+                                if ( prop != null )
+                                {
+                                    if ( lavaFields.Any() )
+                                    {
+                                        var mergeFieldName = boundField.HeaderText.Replace( " ", string.Empty ).RemoveSpecialCharacters();
+                                        lavaDataFields.TryAdd( mergeFieldName, new LavaFieldTemplate.DataFieldInfo { PropertyInfo = prop, GridField = boundField } );
+                                    }
+
+                                    boundPropNames.Add( prop.Name );
+
+                                    // Set the initial column format
+                                    worksheet.Column( columnCounter ).Style.Numberformat.Format = ExcelHelper.DefaultColumnFormat( prop.PropertyType );
+                                }
+                            }
+
+                            columnCounter++;
+                        }
+
+                        // headings for data not associated with a bound field
+                        foreach ( var prop in props.Where( p => !boundPropNames.Contains( p.Name ) ) )
                         {
                             if ( lavaFields.Any() )
                             {
-                                var mergeFieldName = boundField.HeaderText.Replace( " ", string.Empty ).RemoveSpecialCharacters();
-                                lavaDataFields.TryAdd( mergeFieldName, new LavaFieldTemplate.DataFieldInfo { PropertyInfo = prop, GridField = boundField } );
+                                var mergeFieldName = prop.Name;
+                                lavaDataFields.TryAdd( mergeFieldName, new LavaFieldTemplate.DataFieldInfo { PropertyInfo = prop, GridField = null } );
                             }
 
-                            boundPropNames.Add( prop.Name );
+                            var headerText = prop.Name.SplitCase();
+                            if ( addedHeaderNames.Contains( headerText, StringComparer.InvariantCultureIgnoreCase ) )
+                            {
+                                var lastInt = 0;
+                                do
+                                {
+                                    lastInt += 1;
+                                    headerText = string.Format( "{0} {1}", prop.Name.SplitCase(), lastInt );
+                                }
+                                while ( addedHeaderNames.Contains( headerText, StringComparer.InvariantCultureIgnoreCase ) );
+                            }
 
-                            // Set the initial column format
+                            addedHeaderNames.Add( headerText );
+                            worksheet.Cells[rowCounter, columnCounter].Value = headerText;
                             worksheet.Column( columnCounter ).Style.Numberformat.Format = ExcelHelper.DefaultColumnFormat( prop.PropertyType );
+
+                            columnCounter++;
                         }
-                    }
 
-                    columnCounter++;
-                }
+                        var appRoot = ( ( RockPage ) Page ).ResolveRockUrl( "~/" );
+                        var themeRoot = ( ( RockPage ) Page ).ResolveRockUrl( "~~/" );
 
-                // headings for data not associated with a bound field
-                foreach ( var prop in props.Where( p => !boundPropNames.Contains( p.Name ) ) )
-                {
-                    if ( lavaFields.Any() )
-                    {
-                        var mergeFieldName = prop.Name;
-                        lavaDataFields.TryAdd( mergeFieldName, new LavaFieldTemplate.DataFieldInfo { PropertyInfo = prop, GridField = null } );
-                    }
+                        // print data
+                        int dataIndex = 0;
 
-                    var headerText = prop.Name.SplitCase();
-                    if ( addedHeaderNames.Contains( headerText, StringComparer.InvariantCultureIgnoreCase ) )
-                    {
-                        var lastInt = 0;
-                        do
+                        var data = this.DataSourceAsList;
+
+                        var selectedKeys = SelectedKeys.ToList();
+                        foreach ( var item in data )
                         {
-                            lastInt += 1;
-                            headerText = string.Format( "{0} {1}", prop.Name.SplitCase(), lastInt );
-                        }
-                        while ( addedHeaderNames.Contains( headerText, StringComparer.InvariantCultureIgnoreCase ) );
-                    }
-
-                    addedHeaderNames.Add( headerText );
-                    worksheet.Cells[rowCounter, columnCounter].Value = headerText;
-                    worksheet.Column( columnCounter ).Style.Numberformat.Format = ExcelHelper.DefaultColumnFormat( prop.PropertyType );
-
-                    columnCounter++;
-                }
-
-                string appRoot = ( ( RockPage ) Page ).ResolveRockUrl( "~/" );
-                string themeRoot = ( ( RockPage ) Page ).ResolveRockUrl( "~~/" );
-
-                // print data
-                int dataIndex = 0;
-
-                IList data = this.DataSourceAsList;
-
-                var selectedKeys = SelectedKeys.ToList();
-                foreach ( var item in data )
-                {
-                    if ( selectedKeys.Any() && this.DataKeyNames.Count() == 1 )
-                    {
-                        var dataKeyValue = item.GetPropertyValue( this.DataKeyNames[0] );
-                        if ( !selectedKeys.Contains( dataKeyValue ) )
-                        {
-                            // if there are specific rows selected, skip over rows that aren't selected
-                            dataIndex++;
-                            continue;
-                        }
-                    }
-
-                    IHasAttributes dataItemWithAttributes = null;
-                    if ( attributeFields.Any() )
-                    {
-                        // First check to see if there is an object list
-                        if ( ObjectList != null )
-                        {
-                            // If an object list exists, check to see if the associated object has attributes
-                            string key = DataKeys[dataIndex].Value.ToString();
-                            if ( !string.IsNullOrWhiteSpace( key ) && ObjectList.ContainsKey( key ) )
+                            // Stop exporting if the client aborted the request.
+                            if ( cancellationToken.IsCancellationRequested )
                             {
-                                dataItemWithAttributes = ObjectList[key] as IHasAttributes;
+                                Context.ApplicationInstance.CompleteRequest();
+                                return;
                             }
-                        }
 
-                        // Then check if DataItem has attributes
-                        if ( dataItemWithAttributes == null )
-                        {
-                            dataItemWithAttributes = item as IHasAttributes;
-                        }
-
-                        if ( dataItemWithAttributes != null )
-                        {
-                            if ( dataItemWithAttributes.Attributes == null )
+                            if ( selectedKeys.Any() && this.DataKeyNames.Count() == 1 )
                             {
-                                dataItemWithAttributes.LoadAttributes();
-                            }
-                        }
-                    }
-
-                    columnCounter = 0;
-                    rowCounter++;
-
-                    foreach ( var dataField in visibleFields.OrderBy( f => f.Key ).Select( f => f.Value ) )
-                    {
-                        columnCounter++;
-
-                        var attributeField = dataField as AttributeField;
-                        if ( attributeField != null )
-                        {
-                            bool exists = dataItemWithAttributes.Attributes.ContainsKey( attributeField.DataField );
-                            if ( exists )
-                            {
-                                var attrib = dataItemWithAttributes.Attributes[attributeField.DataField];
-                                string rawValue = dataItemWithAttributes.GetAttributeValue( attributeField.DataField );
-                                string resultHtml = attrib.FieldType.Field.FormatValue( null, attrib.EntityTypeId, dataItemWithAttributes.Id, rawValue, attrib.QualifierValues, false )?.ReverseCurrencyFormatting()?.ToString();
-                                if ( !string.IsNullOrEmpty( resultHtml ) )
+                                var dataKeyValue = item.GetPropertyValue( this.DataKeyNames[0] );
+                                if ( !selectedKeys.Contains( dataKeyValue ) )
                                 {
-                                    worksheet.Cells[rowCounter, columnCounter].Value = resultHtml;
-
-                                    // Update column formatting based on data
-                                    ExcelHelper.FinalizeColumnFormat( worksheet, columnCounter, resultHtml );
+                                    // if there are specific rows selected, skip over rows that aren't selected
+                                    dataIndex++;
+                                    continue;
                                 }
                             }
-                            continue;
-                        }
 
-                        var boundField = dataField as BoundField;
-                        if ( boundField != null )
-                        {
-                            var cell = worksheet.Cells[rowCounter, columnCounter];
-                            var prop = GetPropertyFromBoundField( props, boundFieldPropLookup, boundField );
-                            object exportValue = null;
-                            if ( prop != null )
+                            IHasAttributes dataItemWithAttributes = null;
+                            if ( attributeFields.Any() )
                             {
-                                object propValue = prop.GetValue( item, null );
-
-                                if ( dataField is CallbackField )
+                                // First check to see if there is an object list
+                                if ( ObjectList != null )
                                 {
-                                    propValue = ( dataField as CallbackField ).GetFormattedDataValue( propValue );
+                                    // If an object list exists, check to see if the associated object has attributes
+                                    var key = DataKeys[dataIndex].Value.ToString();
+                                    if ( !string.IsNullOrWhiteSpace( key ) && ObjectList.ContainsKey( key ) )
+                                    {
+                                        dataItemWithAttributes = ObjectList[key] as IHasAttributes;
+                                    }
                                 }
 
-                                if ( dataField is LavaBoundField )
+                                // Then check if DataItem has attributes
+                                if ( dataItemWithAttributes == null )
                                 {
-                                    propValue = ( dataField as LavaBoundField ).GetFormattedDataValue( propValue );
+                                    dataItemWithAttributes = item as IHasAttributes;
                                 }
 
-                                if ( dataField is HtmlField )
+                                if ( dataItemWithAttributes != null )
                                 {
-                                    propValue = ( dataField as HtmlField ).FormatDataValue( propValue );
+                                    if ( dataItemWithAttributes.Attributes == null )
+                                    {
+                                        dataItemWithAttributes.LoadAttributes();
+                                    }
+                                }
+                            }
+
+                            columnCounter = 0;
+                            rowCounter++;
+
+                            foreach ( var dataField in visibleFields.OrderBy( f => f.Key ).Select( f => f.Value ) )
+                            {
+                                columnCounter++;
+
+                                var attributeField = dataField as AttributeField;
+                                if ( attributeField != null )
+                                {
+                                    var exists = dataItemWithAttributes.Attributes.ContainsKey( attributeField.DataField );
+                                    if ( exists )
+                                    {
+                                        var attrib = dataItemWithAttributes.Attributes[attributeField.DataField];
+                                        var rawValue = dataItemWithAttributes.GetAttributeValue( attributeField.DataField );
+                                        var resultHtml = attrib.FieldType.Field.FormatValue( null, attrib.EntityTypeId, dataItemWithAttributes.Id, rawValue, attrib.QualifierValues, false )?.ReverseCurrencyFormatting()?.ToString();
+                                        if ( !string.IsNullOrEmpty( resultHtml ) )
+                                        {
+                                            worksheet.Cells[rowCounter, columnCounter].Value = resultHtml;
+
+                                            // Update column formatting based on data
+                                            ExcelHelper.FinalizeColumnFormat( worksheet, columnCounter, resultHtml );
+                                        }
+                                    }
+                                    continue;
                                 }
 
+                                var boundField = dataField as BoundField;
+                                if ( boundField != null )
+                                {
+                                    var cell = worksheet.Cells[rowCounter, columnCounter];
+                                    var prop = GetPropertyFromBoundField( props, boundFieldPropLookup, boundField );
+                                    object exportValue = null;
+                                    if ( prop != null )
+                                    {
+                                        var propValue = prop.GetValue( item, null );
+
+                                        if ( dataField is CallbackField )
+                                        {
+                                            propValue = ( dataField as CallbackField ).GetFormattedDataValue( propValue );
+                                        }
+
+                                        if ( dataField is LavaBoundField )
+                                        {
+                                            propValue = ( dataField as LavaBoundField ).GetFormattedDataValue( propValue );
+                                        }
+
+                                        if ( dataField is HtmlField )
+                                        {
+                                            propValue = ( dataField as HtmlField ).FormatDataValue( propValue );
+                                        }
+
+                                        if ( propValue != null )
+                                        {
+                                            exportValue = GetExportValue( prop, propValue, IsDefinedValue( definedValueFields, propIsDefinedValueLookup, prop ), cell ).ReverseCurrencyFormatting();
+                                        }
+                                    }
+                                    else if ( boundField.DataField?.Contains( "." ) == true )
+                                    {
+                                        exportValue = item.GetPropertyValue( boundField.DataField );
+                                    }
+
+                                    if ( exportValue != null )
+                                    {
+                                        ExcelHelper.SetExcelValue( cell, exportValue );
+
+                                        // Update column formatting based on data
+                                        ExcelHelper.FinalizeColumnFormat( worksheet, columnCounter, exportValue );
+                                    }
+
+                                    continue;
+                                }
+
+                                var lavaField = dataField as LavaField;
+                                if ( lavaField != null )
+                                {
+                                    var mergeValues = new Dictionary<string, object>();
+                                    foreach ( var dataFieldItem in lavaDataFields )
+                                    {
+                                        var dataFieldValue = dataFieldItem.Value.PropertyInfo.GetValue( item, null );
+                                        if ( dataFieldItem.Value.GridField is DefinedValueField )
+                                        {
+                                            var definedValue = ( dataFieldItem.Value.GridField as DefinedValueField ).GetDefinedValue( dataFieldValue );
+                                            dataFieldValue = definedValue != null ? definedValue.Value : null;
+                                        }
+                                        mergeValues.Add( dataFieldItem.Key, dataFieldValue );
+                                    }
+                                    mergeValues.Add( "Row", item );
+
+                                    var resolvedValue = lavaField.LavaTemplate.ResolveMergeFields( mergeValues );
+                                    resolvedValue = resolvedValue.Replace( "~~/", themeRoot ).Replace( "~/", appRoot ).ReverseCurrencyFormatting().ToString();
+
+                                    if ( !string.IsNullOrEmpty( resolvedValue ) )
+                                    {
+                                        worksheet.Cells[rowCounter, columnCounter].Value = resolvedValue;
+
+                                        // Update column formatting based on data
+                                        ExcelHelper.FinalizeColumnFormat( worksheet, columnCounter, resolvedValue );
+                                    }
+
+                                    continue;
+                                }
+
+                                var rockTemplateField = dataField as RockTemplateField;
+                                if ( rockTemplateField != null )
+                                {
+                                    var row = this.Rows[dataIndex];
+                                    var cell = row?.Cells.OfType<DataControlFieldCell>().Where( a => a.ContainingField == rockTemplateField ).FirstOrDefault();
+                                    if ( cell != null )
+                                    {
+                                        var exportValue = rockTemplateField.GetExportValue( row, cell );
+
+                                        if ( exportValue != null )
+                                        {
+                                            worksheet.Cells[rowCounter, columnCounter].Value = exportValue;
+
+                                            // Update column formatting based on data
+                                            ExcelHelper.FinalizeColumnFormat( worksheet, columnCounter, exportValue );
+                                        }
+
+                                        continue;
+                                    }
+                                }
+                            }
+
+                            foreach ( var prop in props.Where( p => !boundPropNames.Contains( p.Name ) ) )
+                            {
+                                columnCounter++;
+                                var propValue = prop.GetValue( item, null );
                                 if ( propValue != null )
                                 {
-                                    exportValue = GetExportValue( prop, propValue, IsDefinedValue( definedValueFields, propIsDefinedValueLookup, prop ), cell ).ReverseCurrencyFormatting();
-                                }
-                            }
-                            else if ( boundField.DataField?.Contains( "." ) == true )
-                            {
-                                exportValue = item.GetPropertyValue( boundField.DataField );
-                            }
-
-                            if ( exportValue != null )
-                            {
-                                ExcelHelper.SetExcelValue( cell, exportValue );
-
-                                // Update column formatting based on data
-                                ExcelHelper.FinalizeColumnFormat( worksheet, columnCounter, exportValue );
-                            }
-
-                            continue;
-                        }
-
-                        var lavaField = dataField as LavaField;
-                        if ( lavaField != null )
-                        {
-                            var mergeValues = new Dictionary<string, object>();
-                            foreach ( var dataFieldItem in lavaDataFields )
-                            {
-                                var dataFieldValue = dataFieldItem.Value.PropertyInfo.GetValue( item, null );
-                                if ( dataFieldItem.Value.GridField is DefinedValueField )
-                                {
-                                    var definedValue = ( dataFieldItem.Value.GridField as DefinedValueField ).GetDefinedValue( dataFieldValue );
-                                    dataFieldValue = definedValue != null ? definedValue.Value : null;
-                                }
-                                mergeValues.Add( dataFieldItem.Key, dataFieldValue );
-                            }
-                            mergeValues.Add( "Row", item );
-
-                            string resolvedValue = lavaField.LavaTemplate.ResolveMergeFields( mergeValues );
-                            resolvedValue = resolvedValue.Replace( "~~/", themeRoot ).Replace( "~/", appRoot ).ReverseCurrencyFormatting().ToString();
-
-                            if ( !string.IsNullOrEmpty( resolvedValue ) )
-                            {
-                                worksheet.Cells[rowCounter, columnCounter].Value = resolvedValue;
-
-                                // Update column formatting based on data
-                                ExcelHelper.FinalizeColumnFormat( worksheet, columnCounter, resolvedValue );
-                            }
-
-                            continue;
-                        }
-
-                        var rockTemplateField = dataField as RockTemplateField;
-                        if ( rockTemplateField != null )
-                        {
-                            var row = this.Rows[dataIndex];
-                            var cell = row?.Cells.OfType<DataControlFieldCell>().Where( a => a.ContainingField == rockTemplateField ).FirstOrDefault();
-                            if ( cell != null )
-                            {
-                                var exportValue = rockTemplateField.GetExportValue( row, cell );
-
-                                if ( exportValue != null )
-                                {
-                                    worksheet.Cells[rowCounter, columnCounter].Value = exportValue;
+                                    var cell = worksheet.Cells[rowCounter, columnCounter];
+                                    var exportValue = GetExportValue( prop, propValue, IsDefinedValue( definedValueFields, propIsDefinedValueLookup, prop ), cell ).ReverseCurrencyFormatting();
+                                    ExcelHelper.SetExcelValue( cell, exportValue );
 
                                     // Update column formatting based on data
                                     ExcelHelper.FinalizeColumnFormat( worksheet, columnCounter, exportValue );
                                 }
-
-                                continue;
                             }
+
+                            dataIndex++;
                         }
                     }
-
-                    foreach ( var prop in props.Where( p => !boundPropNames.Contains( p.Name ) ) )
-                    {
-                        columnCounter++;
-                        object propValue = prop.GetValue( item, null );
-                        if ( propValue != null )
-                        {
-                            var cell = worksheet.Cells[rowCounter, columnCounter];
-                            var exportValue = GetExportValue( prop, propValue, IsDefinedValue( definedValueFields, propIsDefinedValueLookup, prop ), cell ).ReverseCurrencyFormatting();
-                            ExcelHelper.SetExcelValue( cell, exportValue );
-
-                            // Update column formatting based on data
-                            ExcelHelper.FinalizeColumnFormat( worksheet, columnCounter, exportValue );
-                        }
-                    }
-
-                    dataIndex++;
                 }
+                    
+                // Stop exporting if the client aborted the request.
+                if ( cancellationToken.IsCancellationRequested )
+                {
+                    Context.ApplicationInstance.CompleteRequest();
+                    return;
+                }
+
+                worksheet.FormatWorksheet( title, headerRows, rowCounter, columnCounter, preventVerticalAlignmentFormatting );
+                    
+                // Stop exporting if the client aborted the request.
+                if ( cancellationToken.IsCancellationRequested )
+                {
+                    Context.ApplicationInstance.CompleteRequest();
+                    return;
+                }
+
+                // send the spreadsheet to the browser
+                excel.SendToBrowser( this.Page, filename );
             }
-
-            worksheet.FormatWorksheet( title, headerRows, rowCounter, columnCounter );
-
-            // send the spreadsheet to the browser
-            excel.SendToBrowser( this.Page, filename );
         }
 
         /// <summary>
@@ -2854,7 +3023,7 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
         /// <param name="disablePaging">if set to <c>true</c> [disable paging].</param>
         /// <param name="isExporting">if set to <c>true</c> [is exporting].</param>
         /// <param name="isCommunication">if set to <c>true</c> [is communication].</param>
-        /// <param name="isMergeExport">if set to <c>true</c> [is exporting] is due to the MergeTemplate buttom click.</param>
+        /// <param name="isMergeExport">if set to <c>true</c> [is exporting] is due to the MergeTemplate button click.</param>
         private void RebindGrid( EventArgs e, bool disablePaging, bool isExporting, bool isCommunication, bool isMergeExport )
         {
             var origPaging = this.AllowPaging;
@@ -4715,6 +4884,76 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
         {
             return string.Format( "{0} [{1}]", this.Property, this.Direction );
         }
+    }
+
+    /// <summary>
+    /// Provides base functionality for a data source that can be queried to provide a page of data items.
+    /// </summary>
+    /// <typeparam name="T">The <see cref="System.Type"/> of the items returned by the data source.</typeparam>
+    [RockInternal("1.16.0")]
+    public abstract class PaginatedDataSourceBase<T> : IPaginatedDataSource<T>
+    {
+        /// <inheritdoc />
+        public virtual int DefaultPageSize { get; set; } = 50;
+
+        /// <inheritdoc />
+        public virtual int MaximumPageSize => 5000;
+
+        /// <inheritdoc />
+        public abstract int GetTotalItemCount();
+
+        /// <inheritdoc />
+        public List<T> GetItems()
+        {
+            return GetItems( 0, this.MaximumPageSize );
+        }
+
+        /// <inheritdoc />
+        public List<T> GetItems( int pageIndex )
+        {
+            return GetItems( pageIndex, this.DefaultPageSize );
+        }
+
+        /// <inheritdoc />
+        public abstract List<T> GetItems( int pageIndex, int pageSize );
+    }
+
+    /// <summary>
+    /// Represents a data source that can be queried to provide a page of data items.
+    /// </summary>
+    /// <typeparam name="T">The <see cref="System.Type"/> of the items returned by the data source.</typeparam>
+    [RockInternal("1.16.0")]
+    public interface IPaginatedDataSource<T>
+    {
+        /// <summary>
+        /// The default number of items that will be retrieved per request.
+        /// </summary>
+        int DefaultPageSize { get; }
+
+        /// <summary>
+        /// Get the items for the specified page.
+        /// </summary>
+        /// <param name="pageIndex"></param>
+        /// <param name="pageSize"></param>
+        /// <returns></returns>
+        List<T> GetItems( int pageIndex, int pageSize );
+
+        /// <summary>
+        /// Get all of the items.
+        /// </summary>
+        /// <returns></returns>
+        List<T> GetItems();
+
+        /// <summary>
+        /// The maximum number of items that can be returned per request.
+        /// </summary>
+        int MaximumPageSize { get; }
+
+        /// <summary>
+        /// Gets the total number of items available from the data source.
+        /// </summary>
+        /// <returns></returns>
+        int GetTotalItemCount();
     }
 
     #endregion

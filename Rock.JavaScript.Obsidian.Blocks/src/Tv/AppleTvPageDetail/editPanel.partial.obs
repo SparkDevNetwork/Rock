@@ -87,6 +87,7 @@
         updateRefValue(description, props.modelValue.description ?? "");
         updateRefValue(showInMenu, props.modelValue.showInMenu);
         updateRefValue(pageTVML, props.modelValue.pageTVML ?? "");
+        updateRefValue(cacheability, props.modelValue.rockCacheability ?? null);
     });
 
     // Determines which values we want to track changes on (defined in the

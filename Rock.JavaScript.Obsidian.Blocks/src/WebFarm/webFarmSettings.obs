@@ -63,7 +63,7 @@
     // inform the server which incoming values have valid data in them.
     const validProperties = [
         "attributeValues",
-        "isActive",
+        "isEnabled",
         "webFarmKey",
         "lowerPollingLimit",
         "upperPollingLimit",
@@ -90,7 +90,7 @@
     const blockLabels = computed((): PanelAction[] | undefined => {
         const labels: PanelAction[] = [];
 
-        const isEnabled = webFarmSettingsViewBag.value?.isActive;
+        const isEnabled = webFarmSettingsViewBag.value?.isEnabled;
         const hasValidKey = webFarmSettingsViewBag.value?.hasValidKey;
         const isRunning = webFarmSettingsViewBag.value?.isRunning;
 
@@ -127,7 +127,7 @@
     });
 
     const options = computed((): WebFarmSettingsDetailOptionsBag => {
-        return config.options ?? {} as WebFarmSettingsDetailOptionsBag;
+        return config.options ?? {};
     });
 
     // #endregion

@@ -21,6 +21,9 @@ namespace Rock.Media
     /// <summary>
     /// The configuration options that are available for Rock's JavaScript
     /// media player.
+    ///
+    /// NOTE: This is copied to Rock.ViewModels/Rest/Controls/MediaPlayerOptionsBag.cs.
+    /// If making any changes to this, be sure to update that as well
     /// </summary>
     [Newtonsoft.Json.JsonObject(
         NamingStrategyType = typeof( Newtonsoft.Json.Serialization.CamelCaseNamingStrategy ),

@@ -494,19 +494,6 @@ namespace Rock.Model
         /// Gets the Schedule's iCalender Event.
         /// </summary>
         /// <value>
-        /// A <see cref="DDay.iCal.Event"/> representing the iCalendar event for this Schedule.
-        /// </value>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Use GetICalEvent() instead " )]
-        public virtual DDay.iCal.Event GetCalendarEvent()
-        {
-            return ScheduleICalHelper.GetCalendarEvent( iCalendarContent );
-        }
-
-        /// <summary>
-        /// Gets the Schedule's iCalender Event.
-        /// </summary>
-        /// <value>
         /// A <see cref="Ical.Net.CalendarComponents.CalendarEvent"/> representing the iCalendar event for this Schedule.
         /// </value>
         public virtual CalendarEvent GetICalEvent()
@@ -520,83 +507,6 @@ namespace Rock.Model
         }
 
         private CalendarEvent _getICalEvent = null;
-
-        /// <summary>
-        /// Gets the occurrences.
-        /// </summary>
-        /// <param name="beginDateTime">The begin date time.</param>
-        /// <param name="endDateTime">The end date time.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Use GetICalOccurrences() instead." )]
-        public IList<DDay.iCal.Occurrence> GetOccurrences( DateTime beginDateTime, DateTime? endDateTime = null )
-        {
-            return this.GetOccurrences( beginDateTime, endDateTime, null );
-        }
-
-        /// <summary>
-        /// Gets the occurrences with option to override the ICal.Event.DTStart
-        /// </summary>
-        /// <param name="beginDateTime">The begin date time.</param>
-        /// <param name="endDateTime">The end date time.</param>
-        /// <param name="scheduleStartDateTimeOverride">The schedule start date time override.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Use GetICalOccurrences() instead." )]
-        public IList<DDay.iCal.Occurrence> GetOccurrences( DateTime beginDateTime, DateTime? endDateTime, DateTime? scheduleStartDateTimeOverride )
-        {
-            var occurrences = new List<DDay.iCal.Occurrence>();
-
-            DDay.iCal.Event calEvent = GetCalendarEvent();
-            if ( calEvent == null )
-            {
-                return occurrences;
-            }
-
-            if ( scheduleStartDateTimeOverride.HasValue )
-            {
-                calEvent.DTStart = new DDay.iCal.iCalDateTime( scheduleStartDateTimeOverride.Value );
-            }
-
-            if ( calEvent.DTStart != null )
-            {
-                var exclusionDates = new List<DateRange>();
-                if ( this.CategoryId.HasValue && this.CategoryId.Value > 0 )
-                {
-                    var category = CategoryCache.Get( this.CategoryId.Value );
-                    if ( category != null )
-                    {
-                        exclusionDates = category.ScheduleExclusions
-                            .Where( e => e.Start.HasValue && e.End.HasValue )
-                            .ToList();
-                    }
-                }
-
-                foreach ( var occurrence in endDateTime.HasValue ?
-                    ScheduleICalHelper.GetOccurrences( calEvent, beginDateTime, endDateTime.Value ) :
-                    ScheduleICalHelper.GetOccurrences( calEvent, beginDateTime ) )
-                {
-                    bool exclude = false;
-                    if ( exclusionDates.Any() && occurrence.Period.StartTime != null )
-                    {
-                        var occurrenceStart = occurrence.Period.StartTime.Value;
-                        if ( exclusionDates.Any( d =>
-                            d.Start.Value <= occurrenceStart &&
-                            d.End.Value >= occurrenceStart ) )
-                        {
-                            exclude = true;
-                        }
-                    }
-
-                    if ( !exclude )
-                    {
-                        occurrences.Add( occurrence );
-                    }
-                }
-            }
-
-            return occurrences;
-        }
 
         /// <summary>
         /// Gets the occurrences.

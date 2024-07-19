@@ -14,29 +14,68 @@
             <div class="control-wrapper">
                 <slot name="prepend" :isInputGroupSupported="true" />
                 <div :class="controlContainerClass">
-                    <slot name="inputGroupPrepend" :isInputGroupSupported="true" />
-
-                    <textarea v-if="isTextarea"
-                              :value="internalValue"
-                              :rows="rows"
-                              cols="20"
-                              :maxlength="maxLength"
-                              :id="uniqueId"
-                              class="form-control"
-                              v-bind="field"
-                              @input="onInput"
-                              @change="onChange"></textarea>
-
-                    <input v-else :value="internalValue"
-                           :id="uniqueId"
-                           :type="type"
-                           :class="formControlClass"
-                           v-bind="field"
-                           :maxlength="maxLength"
-                           :placeholder="placeholder"
-                           @input="onInput"
-                           @change="onChange" />
-                    <slot name="inputGroupAppend" :isInputGroupSupported="true" />
+                    <template v-if="isTextarea">
+                        <slot name="inputGroupPrepend" :isInputGroupSupported="true" />
+                        <textarea :value="internalValue"
+                                  :rows="rows"
+                                  cols="20"
+                                  :maxlength="maxLength"
+                                  :id="uniqueId"
+                                  class="form-control"
+                                  v-bind="field"
+                                  @input="onInput"
+                                  @change="onChange"></textarea>
+                        <slot name="inputGroupAppend" :isInputGroupSupported="true" />
+                    </template>
+                    <template v-else-if="isClearable">
+                        <template v-if="$slots.inputGroupPrepend || $slots.inputGroupAppend">
+                            <slot name="inputGroupPrepend" :isInputGroupSupported="true" />
+                            <input :value="internalValue"
+                                   :id="uniqueId"
+                                   :type="type"
+                                   class="form-control"
+                                   :class="formControlClass"
+                                   style="display: table-cell;"
+                                   v-bind="field"
+                                   :maxlength="maxLength"
+                                   :placeholder="placeholder"
+                                   @input="onInput"
+                                   @change="onChange" />
+                            <i v-if="internalValue"
+                               class="fa fa-times text-muted clear-icon clear-position-with-slots"
+                               @click="onClear"></i>
+                            <slot name="inputGroupAppend" :isInputGroupSupported="true" />
+                        </template>
+                        <template v-else>
+                            <div class="input-container">
+                                <input :value="internalValue"
+                                       :id="uniqueId"
+                                       :type="type"
+                                       :class="formControlClass"
+                                       v-bind="field"
+                                       :maxlength="maxLength"
+                                       :placeholder="placeholder"
+                                       @input="onInput"
+                                       @change="onChange" />
+                                <i v-if="internalValue"
+                                   class="fa fa-times text-muted clear-icon"
+                                   @click="onClear"></i>
+                            </div>
+                        </template>
+                    </template>
+                    <template v-else>
+                        <slot name="inputGroupPrepend" :isInputGroupSupported="true" />
+                        <input :value="internalValue"
+                               :id="uniqueId"
+                               :type="type"
+                               :class="formControlClass"
+                               v-bind="field"
+                               :maxlength="maxLength"
+                               :placeholder="placeholder"
+                               @input="onInput"
+                               @change="onChange" />
+                        <slot name="inputGroupAppend" :isInputGroupSupported="true" />
+                    </template>
                 </div>
                 <slot name="append" :isInputGroupSupported="true" />
             </div>
@@ -74,9 +113,13 @@
             type: Boolean as PropType<boolean>,
             default: false
         },
+        disableAutocomplete: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
         placeholder: {
             type: String as PropType<string>,
-            default: ""
+            default: null
         },
         inputClasses: {
             type: String as PropType<string>,
@@ -97,6 +140,10 @@
         allowHtml: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+        isClearable: {
+            type: Boolean as PropType<boolean>,
+            default: false,
         },
         ...standardRockFormFieldProps
     });
@@ -195,7 +242,32 @@
         }
     }
 
+    function onClear(): void {
+        internalValue.value = "";
+        emit("update:modelValue", internalValue.value);
+    }
+
     watch(() => props.modelValue, () => {
         internalValue.value = props.modelValue;
     });
 </script>
+
+<style scoped>
+.input-container {
+    display: flex;
+    align-items: center;
+}
+
+.clear-icon {
+    margin-left: -34px;
+    cursor: pointer;
+    padding: 10px;
+}
+
+.clear-position-with-slots {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 3;
+}
+</style>

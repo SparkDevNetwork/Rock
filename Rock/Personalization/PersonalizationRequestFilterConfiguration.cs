@@ -74,6 +74,12 @@ namespace Rock.Personalization
         public List<IPAddressRequestFilter> IPAddressRequestFilters { get; set; } = new List<IPAddressRequestFilter>();
 
         /// <summary>
+        /// Gets or sets the geolocation request filters. These are always OR'd.
+        /// </summary>
+        /// <value>The geolocation request filters.</value>
+        public List<GeolocationRequestFilter> GeolocationRequestFilters { get; set; } = new List<GeolocationRequestFilter>();
+
+        /// <summary>
         /// Gets or sets the environment request filter.
         /// </summary>
         /// <value>The environment request filter.</value>

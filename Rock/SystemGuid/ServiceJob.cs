@@ -238,11 +238,21 @@ namespace Rock.SystemGuid
         /// The Job to run Post v16.6 Data Migrations to an index to the CreatedDateTime column on the Interaction table.
         /// </summary>
         public const string DATA_MIGRATIONS_166_ADD_INTERACTION_CREATED_DATE_TIME_INDEX = "2B2E2C6F-0184-4797-9D39-E8FC700D9887";
-        
+
         /// <summary>
-        /// The Job to run Post v16.6 Add CommunicationRecipient Index.
+        /// The Job to run Post v16.6 to add a new index to the CommunicationRecipient table.
         /// </summary>
         public const string DATA_MIGRATIONS_166_ADD_COMMUNICATION_RECIPIENT_INDEX = "48070B65-FC20-401F-B25F-8F4D13BA5F36";
+
+        /// <summary>
+        /// The Job to run Post v17.0 Data Migrations to chop Shortened Link Block.
+        /// </summary>
+        public const string DATA_MIGRATIONS_170_CHOP_SHORTENED_LINKS_BLOCK = "8899363A-C52B-4D82-88C2-CA199D73E95C";
+
+        /// <summary>
+        /// The Job to run Post v17.0 Data Migrations to chop 6 blocks Block.
+        /// </summary>
+        public const string DATA_MIGRATIONS_166_CHOP_OBSIDIAN_BLOCKS = "4B8A66B3-1D92-480C-B473-D066B64E72AD";
 
         /// <summary>
         /// The Job to get NCOA
@@ -364,6 +374,11 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_162_CHOP_EMAIL_PREFERENCE_ENTRY = "AE07C80A-80A4-48FD-908C-56DDB1CAA322";
 
         /// <summary>
+        /// The post update data migration job to remove the legacy Communication Recipient List Webforms block.
+        /// </summary>
+        public const string DATA_MIGRATIONS_170_REMOVE_COMMUNICATION_RECIPIENT_LIST_BLOCK = "54CCFFFD-83A8-4BB6-A699-DDE34310BFE6";
+
+        /// <summary>
         /// The post update data migration job to remove legacy preference attributes.
         /// </summary>
         public const string DATA_MIGRATIONS_170_REMOVE_LEGACY_PREFERENCES = "46d98280-7611-4588-831d-6924e2be9da6";
@@ -372,5 +387,25 @@ namespace Rock.SystemGuid
         /// The <see cref="Rock.Jobs.UpdatePersistedDatasets" /> job.
         /// </summary>
         public const string UPDATE_PERSISTED_DATASETS = "B6D3B48A-039A-4A1C-87BE-3FC0152AB5DA";
+
+        /// <summary>
+        /// The Job to run Post v16.7 to populate EntityIntents from AdditionalSettingsJson.
+        /// </summary>
+        public const string DATA_MIGRATIONS_167_POPULATE_ENTITY_INTENTS_FROM_ADDITIONAL_SETTINGS_JSON = "155C2051-1513-4BB3-83AD-8D37EBBC3F59";
+
+        /// <summary>
+        /// The post update data migration job to remove the legacy Communication Recipient List Webforms block.
+        /// </summary>
+        public const string DATA_MIGRATIONS_170_REMOVE_DISC_BLOCK = "795AE7B0-8B61-4577-B50A-350907CA0C65";
+
+        /// <summary>
+        /// The job for sending available learning activity notifications. <see cref="Rock.Jobs.SendLearningActivityNotifications"/>.
+        /// </summary>
+        public const string SEND_LEARNING_ACTIVITY_NOTIFICATIONS = "0075859b-8dc3-4e95-9075-89198886fcb4";
+
+        /// <summary>
+        /// The job for updating learning program completions. <see cref="Rock.Jobs.UpdateProgramCompletions"/>.
+        /// </summary>
+        public const string UPDATE_PROGRAM_COMPLETIONS = "4E805A88-C031-4BA0-BAD6-0A706E647870";
     }
 }

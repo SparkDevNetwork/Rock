@@ -40,6 +40,7 @@ namespace Rock.Field.Types
     /// Stored as either a single DefinedValue.Guid or a comma-delimited list of DefinedValue.Guids (if AllowMultiple).
     /// </summary>
     [Serializable]
+    [FieldTypeUsage( FieldTypeUsage.Advanced )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [IconSvg( @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16""><path d=""M14.12,10.62V2.31A1.31,1.31,0,0,0,12.81,1H4.06A2.19,2.19,0,0,0,1.88,3.19v9.62A2.19,2.19,0,0,0,4.06,15h9.41a.66.66,0,0,0,0-1.31h-.22V11.86A1.32,1.32,0,0,0,14.12,10.62Zm-2.18,3.07H4.06a.88.88,0,0,1,0-1.75h7.88Zm.87-3.07H4.06a2.13,2.13,0,0,0-.87.19V3.19a.87.87,0,0,1,.87-.88h8.75Z""/></svg>" )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.DEFINED_VALUE )]
@@ -145,7 +146,7 @@ namespace Rock.Field.Types
                 publicConfigurationValues[DEFINED_TYPE_KEY] = definedType?.Guid.ToString();
             }
 
-            if ( usage == ConfigurationValueUsage.Configure )
+            if ( usage == ConfigurationValueUsage.Configure || usage == ConfigurationValueUsage.Edit )
             {
                 // If in configure mode, get the selectable value options that
                 // have been set.
@@ -203,6 +204,7 @@ namespace Rock.Field.Types
             selectableValues = ConvertDelimitedGuidsToIds( selectableValues, v => DefinedValueCache.Get( v )?.Id );
 
             privateConfigurationValues[SELECTABLE_VALUES_KEY] = selectableValues;
+            privateConfigurationValues.Remove( SELECTABLE_VALUES_PUBLIC_KEY );
 
             // Convert the defined type value from a guid to an integer.
             var definedTypeGuid = privateConfigurationValues.GetValueOrDefault( DEFINED_TYPE_KEY, string.Empty ).AsGuidOrNull();
@@ -219,6 +221,43 @@ namespace Rock.Field.Types
             }
 
             return privateConfigurationValues;
+        }
+
+        /// <summary>
+        /// Adds the defined value to the attribute configuration. This only
+        /// updates the configuration if it is required. If the id already is
+        /// selected or the configuration already specifies all values to be
+        /// shown then no changes are made. This makes the change but does not
+        /// save the changes to the database.
+        /// </summary>
+        /// <param name="attributeId">The attribute identifier.</param>
+        /// <param name="definedValueId">The defined value identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns><c>true</c> if SaveChanges() should be called, <c>false</c> otherwise.</returns>
+        internal static bool AddValueToAttributeConfiguration( int attributeId, int definedValueId, RockContext rockContext )
+        {
+            var qualifier = new AttributeQualifierService( rockContext )
+                .Queryable()
+                .Where( q => q.AttributeId == attributeId && q.Key == SELECTABLE_VALUES_KEY )
+                .FirstOrDefault();
+
+            if ( qualifier == null || qualifier.Value.IsNullOrWhiteSpace() )
+            {
+                return false;
+            }
+
+            var ids = qualifier.Value.SplitDelimitedValues().AsIntegerList();
+
+            if ( ids.Contains( definedValueId ) )
+            {
+                return false;
+            }
+
+            ids.Add( definedValueId );
+
+            qualifier.Value = string.Join( ",", ids.Select( id => id.ToString() ) );
+
+            return true;
         }
 
         #endregion
@@ -414,36 +453,6 @@ namespace Rock.Field.Types
             string titleJs = System.Web.HttpUtility.JavaScriptStringEncode( title );
             var format = "return Rock.reporting.formatFilterForDefinedValueField('{0}', $selectedContent);";
             return string.Format( format, titleJs );
-        }
-
-        /// <inheritdoc/>
-        public override ComparisonValue GetPublicFilterValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            var values = privateValue.FromJsonOrNull<List<string>>();
-
-            if ( values?.Count == 2 )
-            {
-                return new ComparisonValue
-                {
-                    ComparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.Contains ),
-                    Value = values[1]
-                };
-            }
-            else if ( values?.Count == 1 )
-            {
-                return new ComparisonValue
-                {
-                    ComparisonType = ComparisonType.Contains,
-                    Value = values[0]
-                };
-            }
-            else
-            {
-                return new ComparisonValue
-                {
-                    Value = string.Empty
-                };
-            }
         }
 
         /// <summary>

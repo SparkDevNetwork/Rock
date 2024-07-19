@@ -58,11 +58,7 @@ namespace Rock.Model
                 return false;
             }
 
-            if ( new Service<AuthAuditLog>( Context ).Queryable().Any( a => a.GroupId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, AuthAuditLog.FriendlyTypeName );
-                return false;
-            }
+            // ignoring AuthAuditLog,GroupId
 
             if ( new Service<Campus>( Context ).Queryable().Any( a => a.TeamGroupId == item.Id ) )
             {
@@ -70,11 +66,7 @@ namespace Rock.Model
                 return false;
             }
 
-            if ( new Service<Communication>( Context ).Queryable().Any( a => a.ListGroupId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Group.FriendlyTypeName, Communication.FriendlyTypeName );
-                return false;
-            }
+            // ignoring Communication,ListGroupId
 
             if ( new Service<ConnectionRequest>( Context ).Queryable().Any( a => a.AssignedGroupId == item.Id ) )
             {

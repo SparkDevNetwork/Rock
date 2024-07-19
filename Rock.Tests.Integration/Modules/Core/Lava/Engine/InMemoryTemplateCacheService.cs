@@ -23,7 +23,7 @@ using Rock.Lava;
 namespace Rock.Tests.Integration.Modules.Core.Lava.Engine
 {
     /// <summary>
-    /// An implementation of a provider for Lava Template objects that caches teplates in memory.
+    /// An implementation of a provider for Lava Template objects that caches templates in memory.
     /// </summary>
     public class InMemoryTemplateCacheService : ILavaTemplateCacheService
     {

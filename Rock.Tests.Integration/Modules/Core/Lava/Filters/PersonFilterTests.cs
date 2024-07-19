@@ -39,6 +39,7 @@ namespace Rock.Tests.Integration.Modules.Core.Lava.Filters
     /// These tests require the standard Rock sample data set to be present in the target database.
     /// </remarks>
     [TestClass]
+    [TestCategory( "Core.Crm.Person" )]
     public class PersonFilterTests : LavaIntegrationTestBase
     {
         #region Address
@@ -455,6 +456,33 @@ Your token is: <token>
             person.AccountProtectionProfile = profile;
 
             rockContext.SaveChanges();
+        }
+
+        [TestMethod]
+        public void PersonByPersonActionIdentifier_WithValidIdentifier_ReturnsPerson()
+        {
+            var rockContext = new RockContext();
+
+            var person = new PersonService( rockContext ).Queryable().First( x => x.Guid.ToString() == TestGuids.TestPeople.BillMarble );
+            var action = "photo-opt-out";
+            var actionIdentifier = person.GetPersonActionIdentifier( action );
+
+            var values = new LavaDataDictionary()
+            {
+                { "IdentifierToken", actionIdentifier }
+            };
+
+            var options = new LavaTestRenderOptions { MergeFields = values };
+
+            const string template = @"
+{% assign person = IdentifierToken | PersonByPersonActionIdentifier: 'photo-opt-out' %}
+Current Person Guid = {{ person.Guid }}
+";
+            string outputExpected = $"Current Person Guid = {person.Guid}";
+
+            TestHelper.AssertTemplateOutput( outputExpected,
+                template,
+                options );
         }
 
         #endregion

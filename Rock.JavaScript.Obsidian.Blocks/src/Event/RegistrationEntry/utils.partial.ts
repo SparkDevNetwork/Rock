@@ -17,39 +17,29 @@
 
 import { Guid } from "@Obsidian/Types";
 import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
-import { areEqual, newGuid } from "@Obsidian/Utility/guid";
+import { newGuid } from "@Obsidian/Utility/guid";
 import {
     RegistrationEntryState,
     RegistrationCostSummaryInfo,
     RegistrantBasicInfo,
-    TransactionFrequency,
-    PaymentPlanFrequency,
     PaymentPlanConfiguration,
-    PaymentPlanConfigurationOptions,
-    GetNextDayOption,
     PersonGuid,
     FormFieldGuid,
-    FormFieldValue
+    FormFieldValue,
+    RegistrationEntryTerminology
 } from "./types.partial";
-import { InjectionKey, Ref, computed, inject, nextTick, ref, watch } from "vue";
+import { ComputedRef, InjectionKey, Ref, inject, nextTick } from "vue";
 import { smoothScrollToTop } from "@Obsidian/Utility/page";
 import { PublicComparisonValueBag } from "@Obsidian/ViewModels/Utility/publicComparisonValueBag";
 import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
-import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
 import { RegistrationEntryArgsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryArgsBag";
 import { RegistrantsSameFamily } from "@Obsidian/Enums/Event/registrantsSameFamily";
 import { RegistrationPersonFieldType } from "@Obsidian/Enums/Event/registrationPersonFieldType";
 import { RegistrationFieldSource } from "@Obsidian/Enums/Event/registrationFieldSource";
-import { CurrencyInfoBag } from "@Obsidian/ViewModels/Utility/currencyInfoBag";
-import { asFormattedString, toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
 import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrantBag";
 import { RegistrationEntryFormBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFormBag";
 import { RegistrationEntryFormFieldBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFormFieldBag";
 import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { RockCurrency } from "@Obsidian/Utility/rockCurrency";
-import { RegistrationEntryCreatePaymentPlanRequestBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryCreatePaymentPlanRequestBag";
 
 /** If all registrants are to be in the same family, but there is no currently authenticated person,
  *  then this guid is used as a common family guid */
@@ -161,6 +151,11 @@ export const ConfigurePaymentPlan: InjectionKey<{
     wipPaymentPlanConfiguration: Ref<PaymentPlanConfiguration | null | undefined>;
     finalPaymentPlanConfiguration: Ref<PaymentPlanConfiguration | null | undefined>;
 }> = Symbol("registration-configure-payment-plan");
+
+/**
+ * An injection key to provide the registration entry terms.
+ */
+export const RegistrationEntryTerms: InjectionKey<ComputedRef<RegistrationEntryTerminology>> = Symbol("registration-entry-terms");
 
 /** An injection key to provide the original field values for each registrant. */
 export const OriginalFormFieldValues: InjectionKey<Ref<Record<PersonGuid, Record<FormFieldGuid, FormFieldValue>>>> = Symbol("original-field-values");

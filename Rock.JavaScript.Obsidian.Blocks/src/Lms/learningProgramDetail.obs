@@ -1,0 +1,513 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+
+    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+
+    <template v-if="isCompletionsTabSelected">
+        <ProgramCompletionGrid
+                               :tabs="tabs"
+                               :entityName="programName"
+                               :labels="blockLabels"
+                               :showSemesterColumn="isAcademicConfigurationMode"
+                               @tabChange="onSelectTab"
+                               @rowClick="onCompletionClick" />
+    </template>
+    <template v-else-if="isSemestersTabSelected">
+        <SemesterGrid
+                      :tabs="tabs"
+                      :entityName="programName"
+                      :labels="blockLabels"
+                      :isAddEnabled="isEditable"
+                      :isDeleteEnabled="isEditable"
+                      @tabChange="onSelectTab"
+                      @deleteClick="onDeleteSemesterClick" />
+    </template>
+
+    <template v-if="!isCompletionsTabSelected && !isSemestersTabSelected">
+        <div v-if="showKpis" class="row d-flex mb-3">
+            <Kpi :value="activeClasses" label="Active Classes" iconCssClass="fa fa-chalkboard-teacher" color="blue" :isCard="true" tooltip="The number of active classes for courses in this program." />
+            <Kpi :value="activeStudents" label="Active Students" iconCssClass="fa fa-users" color="red" :isCard="true" tooltip="The total number of students enrolled in courses for this program." />
+            <Kpi :value="completions" label="Completions" iconCssClass="fa fa-check-square" color="green" :isCard="true" tooltip="The total number of students who've completed this program." />
+        </div>
+
+        <DetailBlock
+                     v-if="!blockError"
+                     v-model:mode="panelMode"
+                     :alwaysShowLabels="true"
+                     :isFullScreenVisible="false"
+                     :isAuditHidden="true"
+                     :name="panelName"
+                     :labels="blockLabels"
+                     :entityKey="entityKey"
+                     :entityTypeGuid="entityTypeGuid"
+                     entityTypeName="LearningProgram"
+                     :isBadgesVisible="false"
+                     :isSecurityHidden="false"
+                     :footerSecondaryActions="footerSecondaryActions"
+                     :onDelete="onDelete"
+                     @cancelEdit="onCancelEdit"
+                     @save="onSave">
+            <template #sidebar v-if="panelMode === DetailPanelMode.View">
+                <ImageWithIcon :imageFileGuid="imageGuid"
+                               :highlightColor="highlightColor"
+                               :iconCssClass="iconCssClass" />
+            </template>
+            <template #view>
+                <ViewPanel :modelValue="learningProgramViewBag" :options="options" :hasFullScreen="false" />
+
+                <div>
+                    <RockButton v-for="action in footerActions" :btnType="action.type" @click.preventDefault="action.handler" class="mr-3">
+                        {{ action.title }}
+                    </RockButton>
+                </div>
+                <Modal v-model="showDetailsModal" title="Additional Details">
+                    <AdditionalDetailsModal :modelValue="learningProgramAdditionalDetailsBag" />
+                </Modal>
+            </template>
+            <template #edit>
+                <EditPanel v-model="learningProgramEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" :hasFullScreen="false" />
+            </template>
+        </DetailBlock>
+    </template>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import ProgramCompletionGrid from "./LearningProgramSecondaryLists/programCompletionGrid.partial.obs";
+    import SemesterGrid from "./LearningProgramSecondaryLists/semesterGrid.partial.obs";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import DetailBlock from "@Obsidian/Templates/detailBlock";
+    import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import EditPanel from "./LearningProgramDetail/editPanel.partial.obs";
+    import ViewPanel from "./LearningProgramDetail/viewPanel.partial.obs";
+    import AdditionalDetailsModal from "./LearningProgramDetail/additionalDetailsModal.obs";
+    import ImageWithIcon from "@Obsidian/Controls/imageWithIcon.obs";
+    import Kpi from "@Obsidian/Controls/kpi.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useEntityDetailBlock, useBlockBrowserBus, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { NavigationUrlKey } from "./LearningProgramDetail/types.partial";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { LearningProgramBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningProgramDetail/learningProgramBag";
+    import { LearningProgramDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningProgramDetail/learningProgramDetailOptionsBag";
+    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+    import { ConfigurationMode, ConfigurationModeDescription } from "@Obsidian/Enums/Lms/configurationMode";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { BlockMessages } from "@Obsidian/Utility/browserBus";
+
+    const config = useConfigurationValues<DetailBlockBox<LearningProgramBag, LearningProgramDetailOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    onConfigurationValuesChanged(useReloadBlock());
+
+    const browserBus = useBlockBrowserBus();
+
+    // #region Values
+
+    const tabs = ref(["Overview", "Description", "Completions", "Semesters"]);
+
+    const selectedTabIndex = ref(0);
+
+    const blockError = ref("");
+    const errorMessage = ref("");
+    const showDetailsModal = ref(false);
+
+    const learningProgramViewBag = ref(config.entity);
+    const learningProgramEditBag = ref<ValidPropertiesBox<LearningProgramBag>>({bag: {} as LearningProgramBag});
+    const learningProgramAdditionalDetailsBag = ref(config.entity);
+
+    const entityTypeGuid = EntityType.LearningProgram;
+
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
+
+    const imageGuid = ref<string>(learningProgramViewBag.value?.imageBinaryFile?.value ?? "");
+    const iconCssClass = ref<string>(learningProgramViewBag.value?.iconCssClass ?? "");
+    const highlightColor = ref<string>(learningProgramViewBag.value?.highlightColor ?? "");
+
+    const activeClasses = ref(learningProgramViewBag.value?.activeClasses);
+    const activeStudents = ref(learningProgramViewBag.value?.activeStudents);
+    const completions = ref(learningProgramViewBag.value?.completions);
+    const showKpis = ref(learningProgramViewBag.value?.showKpis);
+
+    const programName = ref(learningProgramViewBag.value?.publicName ?? "");
+    const isAcademicConfigurationMode = learningProgramViewBag.value?.configurationMode === ConfigurationMode.AcademicCalendar;
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: learningProgramEditBag
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * The entity name to display in the block panel.
+     */
+    const panelName = computed((): string => {
+        return learningProgramViewBag.value?.name ?? "";
+    });
+
+    /**
+     * The identifier key value for this entity.
+     */
+    const entityKey = computed((): string => {
+        return learningProgramViewBag.value?.idKey ?? "";
+    });
+
+    /**
+     * Additional labels to display in the block panel.
+     */
+    const blockLabels = computed((): PanelAction[] | undefined => {
+        const labels: PanelAction[] = [];
+
+        if (panelMode.value === DetailPanelMode.Add) {
+            return undefined;
+        }
+
+        if (learningProgramViewBag.value != null) {
+            labels.push({
+                title: ConfigurationModeDescription[learningProgramViewBag.value.configurationMode],
+                type: "default"
+            });
+        }
+
+        if (learningProgramViewBag.value?.category) {
+            labels.push({
+                title: learningProgramViewBag.value?.category.text ?? "",
+                type: learningProgramViewBag.value?.categoryColor ?? "info"
+            });
+        }
+
+        if (learningProgramViewBag.value?.isPublic === true) {
+            labels.push({
+                title: "Public",
+                type: "success"
+            });
+        }
+        else {
+            labels.push({
+                title: "Private",
+                type: "warning"
+            });
+        }
+
+        if (learningProgramViewBag.value?.isActive === true) {
+            labels.push({
+                iconCssClass: "fa fa-lightbulb",
+                title: "Active",
+                type: "success"
+            });
+        }
+        else {
+            labels.push({
+                iconCssClass: "far fa-lightbulb",
+                title: "Inactive",
+                type: "danger"
+            });
+        }
+
+        return labels;
+    });
+
+    /**
+     * The footer actions for the block panel.
+     */
+    const footerActions = computed((): PanelAction[] => {
+        if (panelMode.value != DetailPanelMode.View) {
+            return [];
+        }
+
+        const footerActionsPanelActions: PanelAction[] = [];
+
+        if (config.navigationUrls?.[NavigationUrlKey.CoursesPage]) {
+            footerActionsPanelActions.push({
+                title: "Courses",
+                type: "default",
+                handler: () => {
+                    window.location.href = makeUrlRedirectSafe(config.navigationUrls?.[NavigationUrlKey.CoursesPage] ?? "");
+                }
+            });
+        }
+
+        footerActionsPanelActions.push({
+            title: "Completions",
+            type: "default",
+            handler: () => {
+                onSelectTab(tabs.value.findIndex(t => t === "Completions"));
+            }
+        });
+
+        if (learningProgramViewBag.value?.configurationMode === ConfigurationMode.AcademicCalendar) {
+            footerActionsPanelActions.push({
+                title: "Semesters",
+                type: "default",
+                handler: () => {
+                    onSelectTab(tabs.value.findIndex(t => t === "Semesters"));
+                }
+            });
+        }
+
+        return footerActionsPanelActions;
+    });
+
+    /**
+     * The footer secondary actions for the block panel.
+     */
+    const footerSecondaryActions = computed((): PanelAction[] => {
+        if (panelMode.value != DetailPanelMode.View) {
+            return [];
+        }
+
+        const secondaryActions: PanelAction[] = [];
+
+        if (isEditable) {
+            secondaryActions.push({
+                iconCssClass: "fa fa-ellipsis-h",
+                title: "Additional Details",
+                type: "default",
+                handler: async () => {
+                    if (await onViewAdditionalDetailsModal()) {
+                        showDetailsModal.value = true;
+                    }
+                }
+            }, {
+                iconCssClass: "fa fa-pencil",
+                title: "Edit",
+                type: "default",
+                handler: async () => {
+                    if (await onEdit()) {
+                        panelMode.value = DetailPanelMode.Edit;
+
+                        // Because we're not using the standard edit button we are now responsible
+                        // for alerting other blocks that we're entering edit mode (end edit will work as normal).
+                        browserBus.publish(BlockMessages.BeginEdit);
+                    }
+                }
+            });
+        }
+
+        return secondaryActions;
+    });
+
+    const isEditable = computed((): boolean => config.isEditable === true);
+
+    const isCompletionsTabSelected = computed((): boolean => selectedTabIndex.value === 2);
+    const isDescriptionTabSelected = computed((): boolean => selectedTabIndex.value === 1);
+    const isSemestersTabSelected = computed((): boolean => selectedTabIndex.value === 3);
+
+    const options = computed((): LearningProgramDetailOptionsBag => {
+        return config.options ?? {};
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for the Cancel button being clicked while in Edit mode.
+     * Handles redirect to parent page if creating a new entity.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onCancelEdit(): Promise<boolean | string> {
+        if (!learningProgramEditBag.value?.bag?.idKey) {
+            if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+                return config.navigationUrls[NavigationUrlKey.ParentPage];
+            }
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Event handler for a program completion row click.
+     *
+     * @returns false if it should stay on the page; or a string containing a redirect URL.
+     */
+    function onCompletionClick(idKey: string): void {
+        const url = (config.navigationUrls && config.navigationUrls[NavigationUrlKey.CompletionDetailPage]) ?? "";
+        if (url.length > 0) {
+            window.location.href = url.replace("((Key))", idKey + "?autoEdit=True&returnUrl=" + window.location);
+        }
+    }
+
+    /**
+     * Event handler for the Delete button being clicked. Sends the
+     * delete request to the server and then redirects to the target page.
+     *
+     * @returns false if it should stay on the page; or a string containing a redirect URL.
+     */
+    async function onDelete(): Promise<false | string> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<string>("Delete", {
+            key: learningProgramViewBag.value?.idKey
+        });
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to delete learning program.";
+
+            return false;
+        }
+    }
+
+    /**
+     * Event handler for the Semester Delete button being clicked. Sends the
+     * delete request to the server and then redirects to the target page.
+     *
+     * @returns false if it should stay on the page; or a string containing a redirect URL.
+     */
+    async function onDeleteSemesterClick(): Promise<false | string> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<string>("DeleteSemester", {
+            key: learningProgramViewBag.value?.idKey
+        });
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to delete learning semester.";
+
+            return false;
+        }
+    }
+
+    /**
+     * Event handler for the Edit button being clicked. Request the edit
+     * details from the server and then enter edit mode.
+     *
+     * @returns true if the panel should enter edit mode; otherwise false.
+     */
+    async function onEdit(): Promise<boolean> {
+        const result = await invokeBlockAction<ValidPropertiesBox<LearningProgramBag>>("Edit", {
+            key: learningProgramViewBag.value?.idKey
+        });
+
+        if (result.isSuccess && result.data && result.data.bag) {
+            learningProgramEditBag.value.bag = result.data.bag;
+
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    /**
+     * Event handler for the panel's Save event. Send the data to the server
+     * to be saved and then leave edit mode or redirect to target page.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onSave(): Promise<boolean | string> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<ValidPropertiesBox<LearningProgramBag> | string>("Save", {
+            box: learningProgramEditBag.value
+        });
+
+        if (result.isSuccess && result.data) {
+            if (result.statusCode === 200 && typeof result.data === "object") {
+                learningProgramViewBag.value = result.data.bag;
+
+                return true;
+            }
+            else if (result.statusCode === 201 && typeof result.data === "string") {
+                return result.data;
+            }
+        }
+
+        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save the learning program.";
+
+        return false;
+    }
+
+    function onSelectTab(tabIndex: number): void {
+
+        if (selectedTabIndex.value === tabIndex) {
+            return;
+        }
+
+        const newTabName = tabIndex >= 0 && tabIndex < tabs.value.length ? tabs.value[tabIndex] : 0;
+
+        const queryParams = new URLSearchParams(window.location.search);
+        queryParams.set("tab", newTabName.toString() ?? "");
+        history.pushState(null, "", "?" + queryParams.toString());
+        selectedTabIndex.value = tabIndex;
+
+        if (isDescriptionTabSelected.value === true && isEditable.value === true) {
+            onEdit();
+        }
+    }
+
+    /**
+     * Event handler for the Additional Details Modal button being clicked.
+     * Request all attribute details from the server and then show the modal.
+     *
+     * @returns true if the panel should enter edit mode; otherwise false.
+     */
+    async function onViewAdditionalDetailsModal(): Promise<boolean> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<LearningProgramBag | string>("GetEntityBagWithAllAttributes");
+
+        if (result.isSuccess && result.data) {
+            if (result.statusCode === 200 && typeof result.data === "object") {
+                learningProgramAdditionalDetailsBag.value = result.data;
+                return true;
+            }
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to get additional details.";
+        }
+
+        errorMessage.value = result.errorMessage ?? "Unknown error while trying to get additional details.";
+        return false;
+    }
+
+    // #endregion
+
+    // Handle any initial error conditions or the need to go into edit mode.
+    if (config.errorMessage) {
+        blockError.value = config.errorMessage;
+    }
+    else if (!config.entity) {
+        blockError.value = "The specified learning program could not be viewed.";
+    }
+    else if (!config.entity.idKey) {
+        learningProgramEditBag.value.bag = config.entity;
+        panelMode.value = DetailPanelMode.Add;
+    }
+
+    // Set initially selected tab.
+    const queryString = new URLSearchParams(window.location.search.toLowerCase());
+    let tabIndex = 0;
+    if (queryString.has("tab")) {
+        const tab = queryString.get("tab")?.toLowerCase() ?? "";
+
+        if (tab === "description") {
+            tabIndex = 1;
+        }
+        else if (tab === "completions") {
+            tabIndex = 2;
+        }
+        else if (tab === "semesters") {
+            tabIndex = 3;
+        }
+    }
+
+    selectedTabIndex.value = tabIndex;
+</script>

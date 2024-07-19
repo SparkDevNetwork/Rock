@@ -1,14 +1,9 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField :modelValue="internalValue"
-                   v-bind="standardProps"
-                   name="schedule-builder">
+    <RockFormField :modelValue="internalValue" v-bind="standardProps" name="schedule-builder">
         <div class="control-wrapper">
             <div class="picker">
-                <a class="picker-label"
-                   href="#"
-                   :title="scheduleSummary"
-                   @click.prevent="onEditSchedule">
+                <a class="picker-label" href="#" :title="scheduleSummary" @click.prevent="onEditSchedule">
                     <i class="fa fa-calendar"></i>
                     Edit Schedule
                 </a>
@@ -16,10 +11,7 @@
         </div>
     </RockFormField>
 
-    <Modal v-model="isModalVisible"
-           title="Schedule Builder"
-           saveText="OK"
-           @save="onSaveSchedule">
+    <Modal v-model="isModalVisible" title="Schedule Builder" saveText="OK" @save="onSaveSchedule">
         <DateTimePicker v-model="startDateTime"
                         label="Start Date / Time"
                         help="Select the Date and Time to base the schedule on. Make sure to set this if you want the schedule to work. Set to blank if you want to leave this unscheduled."
@@ -28,15 +20,13 @@
         <RockFormField :modelValue="duration" label="Duration" name="duration">
             <template #default>
                 <div class="form-control-group">
-                    <NumberBox v-model="durationInHours"
-                               inputGroupClasses="input-width-md">
+                    <NumberBox v-model="durationInHours" inputGroupClasses="input-width-md">
                         <template #inputGroupAppend>
                             <span class="input-group-addon">hrs</span>
                         </template>
                     </NumberBox>
 
-                    <NumberBox v-model="durationInMinutes"
-                               inputGroupClasses="input-width-md">
+                    <NumberBox v-model="durationInMinutes" inputGroupClasses="input-width-md">
                         <template #inputGroupAppend>
                             <span class="input-group-addon">mins</span>
                         </template>
@@ -45,22 +35,15 @@
             </template>
         </RockFormField>
 
-        <RadioButtonList v-model="scheduleType"
-                         :items="scheduleTypeItems"
-                         horizontal />
+        <RadioButtonList v-model="scheduleType" :items="scheduleTypeItems" horizontal />
 
         <TransitionVerticalCollapse>
-            <div v-if="isRecurringSchedule"
-                 class="mt-3">
+            <div v-if="isRecurringSchedule" class="mt-3">
                 <legend class="legend-small">Recurrence</legend>
 
-                <RadioButtonList v-model="occurrencePattern"
-                                 label="Occurrence Pattern"
-                                 :items="occurrencePatternItems"
-                                 horizontal />
+                <RadioButtonList v-model="occurrencePattern" label="Occurrence Pattern" :items="occurrencePatternItems" horizontal />
 
-                <div v-if="isRecurringSpecificDates"
-                     class="recurrence-pattern-type control-group controls recurrence-pattern-specific-date">
+                <div v-if="isRecurringSpecificDates" class="recurrence-pattern-type control-group controls recurrence-pattern-specific-date">
                     <ul>
                         <li v-for="date of specificDates">
                             <span>{{ getShortDateText(date) }}</span>&ThinSpace;
@@ -75,34 +58,29 @@
                                     <DatePicker v-model="addSpecificDateValue" />
                                 </td>
                                 <td>
-                                    <a class="btn btn-primary btn-xs add-specific-date-ok ml-3"
-                                       @click.prevent="onAddSpecificDateOk">
+                                    <a class="btn btn-primary btn-xs add-specific-date-ok ml-3" @click.prevent="onAddSpecificDateOk">
                                         <span>OK</span>
                                     </a>
-                                    <a class="btn btn-link btn-xs add-specific-date-cancel"
-                                       @click.prevent="onAddSpecificDateCancel">
+                                    <a class="btn btn-link btn-xs add-specific-date-cancel" @click.prevent="onAddSpecificDateCancel">
                                         <span>Cancel</span>
                                     </a>
                                 </td>
                             </tr>
                         </table>
                     </div>
-                    <a v-else class="btn btn-action btn-sm add-specific-date"
-                       @click.prevent="onAddSpecificDate">
+                    <a v-else class="btn btn-action btn-sm add-specific-date" @click.prevent="onAddSpecificDate">
                         <i class="fa fa-plus"></i>
                         <span>&nbsp;Add Date</span>
                     </a>
                 </div>
 
-                <div v-if="isRecurringDaily"
-                     class="recurrence-pattern-type recurrence-pattern-daily">
+                <div v-if="isRecurringDaily" class="recurrence-pattern-type recurrence-pattern-daily">
                     <div class="form-control-group">
                         <label class="radio-inline">
                             <input :id="dailyRadioId" :name="dailyRadioId" type="radio" value="everyDay" v-model="recurringDailyType" />
                             <span class="label-text">Every</span>
                         </label>
-                        <NumberBox v-model="recurringDailyDays"
-                                   inputGroupClasses="input-width-md">
+                        <NumberBox v-model="recurringDailyDays" inputGroupClasses="input-width-md">
                             <template #inputGroupAppend>
                                 <span class="input-group-addon">days</span>
                             </template>
@@ -119,17 +97,15 @@
                     <div class="form-control-group">
                         <label class="radio-inline">
                             <input :id="dailyRadioId" :name="dailyRadioId" type="radio" value="everyWeekend" v-model="recurringDailyType" />
-                            <span class="label-text">Every weekend</span>
+                            <span class="label-text">Every weekend day</span>
                         </label>
                     </div>
                 </div>
 
-                <div v-if="isRecurringWeekly"
-                     class="recurrence-pattern-type recurrence-pattern-weekly">
+                <div v-if="isRecurringWeekly" class="recurrence-pattern-type recurrence-pattern-weekly">
                     <div class="form-control-group">
                         <span>Every&ThinSpace;</span>
-                        <NumberBox v-model="recurringWeeklyWeeks"
-                                   inputGroupClasses="input-width-md">
+                        <NumberBox v-model="recurringWeeklyWeeks" inputGroupClasses="input-width-md">
                             <template #inputGroupAppend>
                                 <span class="input-group-addon">week(s)</span>
                             </template>
@@ -138,14 +114,11 @@
                     </div>
 
                     <div class="week-days">
-                        <CheckBoxList v-model="recurringWeeklyDays"
-                                      :items="recurringWeeklyDaysItems"
-                                      horizontal />
+                        <CheckBoxList v-model="recurringWeeklyDays" :items="recurringWeeklyDaysItems" horizontal />
                     </div>
                 </div>
 
-                <div v-if="isRecurringMonthly"
-                     class="recurrence-pattern-type recurrence-pattern-monthly">
+                <div v-if="isRecurringMonthly" class="recurrence-pattern-type recurrence-pattern-monthly">
                     <div class="form-group controls">
                         <div class="form-control-group">
                             <label class="radio-inline">
@@ -153,15 +126,11 @@
                                 <span class="label-text">Day</span>
                             </label>
 
-                            <NumberBox v-model="recurringMonthlyDayOfMonth"
-                                       class="input-width-sm"
-                                       :minimumValue="1"
-                                       :maximumValue="31" />
+                            <NumberBox v-model="recurringMonthlyDayOfMonth" class="input-width-sm" :minimumValue="1" :maximumValue="31" />
 
                             <span>&ThinSpace;of every&ThinSpace;</span>
 
-                            <NumberBox v-model="recurringMonthlyMonths"
-                                       class="input-width-sm" />
+                            <NumberBox v-model="recurringMonthlyMonths" class="input-width-sm" />
 
                             <span>&ThinSpace;months&ThinSpace;</span>
                         </div>
@@ -173,21 +142,17 @@
                             </label>
 
                             <div class="input-group input-width-xl">
-                                <DropDownList v-model="recurringMonthlyRate"
-                                              :items="recurringMonthlyRateItems"
-                                              multiple />
+                                <DropDownList v-model="recurringMonthlyRate" :items="recurringMonthlyRateItems" multiple />
                             </div>
 
                             <div class="input-group input-width-xl">
-                                <DropDownList v-model="recurringMonthlyWeekday"
-                                              :items="recurringMonthlyWeekdayItems" />
+                                <DropDownList v-model="recurringMonthlyWeekday" :items="recurringMonthlyWeekdayItems" />
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div v-if="isRecurringUntil"
-                     class="continue-until">
+                <div v-if="isRecurringUntil" class="continue-until">
                     <div class="controls">
                         <hr />
                     </div>
@@ -217,8 +182,7 @@
                                 <span class="label-text">End after</span>
                             </label>
 
-                            <NumberBox v-model="recurringContinueUntilCount"
-                                       inputGroupClasses="input-width-lg">
+                            <NumberBox v-model="recurringContinueUntilCount" inputGroupClasses="input-width-lg">
                                 <template #inputGroupAppend>
                                     <span class="input-group-addon">occurrences</span>
                                 </template>
@@ -227,8 +191,7 @@
                     </div>
                 </div>
 
-                <div v-if="isRecurringExclusions"
-                     class="exclusions">
+                <div v-if="isRecurringExclusions" class="exclusions">
                     <hr />
 
                     <label class="control-labe">Exclusions</label>
@@ -248,20 +211,17 @@
                                         <DateRangePicker v-model="addExclusionDateRangeValue" />
                                     </td>
                                     <td>
-                                        <a class="btn btn-primary btn-xs add-exclusion-daterange-ok ml-3"
-                                           @click.prevent="onAddExclusionDateRangeOk">
+                                        <a class="btn btn-primary btn-xs add-exclusion-daterange-ok ml-3" @click.prevent="onAddExclusionDateRangeOk">
                                             <span>OK</span>
                                         </a>
-                                        <a class="btn btn-link btn-xs add-exclusion-daterange-cancel"
-                                           @click.prevent="onAddExclusionDateRangeCancel">
+                                        <a class="btn btn-link btn-xs add-exclusion-daterange-cancel" @click.prevent="onAddExclusionDateRangeCancel">
                                             <span>Cancel</span>
                                         </a>
                                     </td>
                                 </tr>
                             </table>
                         </div>
-                        <a v-else class="btn btn-action btn-sm add-exclusion-daterange"
-                           @click.prevent="onAddExclusionDateRange">
+                        <a v-else class="btn btn-action btn-sm add-exclusion-daterange" @click.prevent="onAddExclusionDateRange">
                             <i class="fa fa-plus"></i>
                             <span>&nbsp;Add Date Range</span>
                         </a>

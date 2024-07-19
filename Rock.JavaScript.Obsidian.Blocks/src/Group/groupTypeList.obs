@@ -1,0 +1,204 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Group Type"
+          :entityTypeGuid="EntityType.GroupType"
+          stickyHeader
+          liveUpdates
+          gridSettings
+          :gridSettingsActive="hasSettingsFilters"
+          @gridSettingsClick="onClickGridSetting"
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          @selectItem="onSelectItem">
+
+        <ReorderColumn @orderChanged="onOrderChanged" />
+
+        <TextColumn name="name"
+                    title="Name"
+                    field="name"
+                    :filter="textValueFilter"
+                    width="25%"
+                    visiblePriority="xs" />
+
+        <TextColumn name="purpose"
+                    title="Purpose"
+                    field="purpose"
+                    :filter="textValueFilter"
+                    width="15%"
+                    visiblePriority="md" />
+
+        <NumberColumn name="groupsCount"
+                      title="Group Count"
+                      field="groupsCount"
+                      :filter="numberValueFilter"
+                      visiblePriority="md" />
+
+        <BooleanColumn name="showInNavigation"
+                       title="Show In Navigation"
+                       field="showInNavigation"
+                       :filter="booleanValueFilter"
+                       visiblePriority="md" />
+
+        <BooleanColumn name="isSystem"
+                       title="System"
+                       field="isSystem"
+                       :filter="booleanValueFilter"
+                       visiblePriority="xs" />
+
+        <SecurityColumn />
+
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+    </Grid>
+
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible" />
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { BooleanColumn, TextColumn, textValueFilter, numberValueFilter, booleanValueFilter, DeleteColumn, ReorderColumn, SecurityColumn, NumberColumn } from "@Obsidian/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { GroupTypeListOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupTypeList/groupTypeListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { NavigationUrlKey } from "./GroupTypeList/types.partial";
+    import { GridSettingsOptions, PreferenceKey } from "./GroupTypeList/types.partial";
+    import GridSettingsModal from "./GroupTypeList/gridSettingsModal.partial.obs";
+    import { computed, reactive, ref, watch } from "vue";
+
+    const config = useConfigurationValues<ListBlockBox<GroupTypeListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const isGridSettingsVisible = ref(false);
+    const gridSettings = ref<GridSettingsOptions>({
+        purpose: JSON.parse(preferences.getValue(PreferenceKey.FilterPurpose) || "{}"),
+        showInNavigation: preferences.getValue(PreferenceKey.FilterShowInNavigation),
+        systemGroupType: preferences.getValue(PreferenceKey.FilterSystemGroupTypes),
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** `true` if the grid settings is performing any filtering. */
+    const hasSettingsFilters = computed((): boolean => {
+        return !!gridSettings.value.purpose?.value
+            || !!gridSettings.value.showInNavigation
+            || !!gridSettings.value.systemGroupType;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+    * Called when the grid setting icon is clicked, displays the block filters.
+    *
+    */
+    function onClickGridSetting(): void {
+        isGridSettingsVisible.value = true;
+    }
+
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+        }
+    }
+
+    /**
+     * Called when a row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete group type.");
+        }
+    }
+
+    /**
+     * Called when the Add button has been clicked by the indivual.
+     */
+    function onAddItem(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
+        }
+    }
+
+    /**
+     * Called when a row has been dragged from one position to a new position.
+     *
+     * @param item The item that was moved to a new position.
+     * @param beforeItem The item that the first item was dropped before.
+     *
+     * @returns `true` if the operation succeeded; otherwise `false`.
+     */
+    async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        const result = await invokeBlockAction<string>("ReorderItem", {
+            key: item["idKey"],
+            beforeKey: beforeItem?.["idKey"] ?? null
+        });
+
+        return result.isSuccess;
+    }
+
+    // #endregion
+
+    watch(gridSettings, async () => {
+        preferences.setValue(PreferenceKey.FilterPurpose, JSON.stringify(gridSettings.value.purpose));
+        preferences.setValue(PreferenceKey.FilterShowInNavigation, gridSettings.value.showInNavigation ?? "");
+        preferences.setValue(PreferenceKey.FilterSystemGroupTypes, gridSettings.value.systemGroupType ?? "");
+
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
+    });
+
+    gridDataSource.value = loadGridData();
+</script>

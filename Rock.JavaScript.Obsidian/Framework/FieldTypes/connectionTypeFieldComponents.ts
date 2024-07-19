@@ -55,7 +55,7 @@ export const EditComponent = defineComponent({
             catch {
                 return [];
             }
-        }
+        },
     },
 
     watch: {

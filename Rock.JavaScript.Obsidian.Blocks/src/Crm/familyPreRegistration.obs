@@ -62,18 +62,11 @@
                         </div>
                     </Panel>
 
-                    <Panel title="Adult Information">
+                    <Panel :title="`${pluralize(adultLabel)} Information`">
                         <template #default>
-                            <h4 class="heading-individual">First Adult</h4>
+                            <h4 class="heading-individual">First {{ adultLabel }}</h4>
 
                             <div class="row">
-                                <TextBox
-                                         v-model="fullName"
-                                         autocomplete="new-password"
-                                         class="rock-fullname"
-                                         :disabled="isSaving || isNavigating"
-                                         placeholder="Please enter name (Required)" />
-
                                 <div class="col-sm-6">
                                     <StaticFormControl
                                                        v-if="adult1.isFirstNameReadOnly"
@@ -99,12 +92,12 @@
                             </div>
                             <div class="row">
                                 <div class="col-sm-6">
-                                    <GenderDropDownList
-                                                        v-if="config.adultGenderField?.isShown"
-                                                        v-model="adult1.genderStringValue"
-                                                        :disabled="isSaving || isNavigating"
-                                                        label="Gender"
-                                                        :rules="config.adultGenderField.isRequired ? adult1RequiredGenderRules : ''" />
+                                    <GenderPicker
+                                                  v-if="config.adultGenderField?.isShown"
+                                                  v-model="adult1.genderStringValue"
+                                                  :disabled="isSaving || isNavigating"
+                                                  label="Gender"
+                                                  :rules="config.adultGenderField.isRequired ? adult1RequiredGenderRules : ''" />
                                 </div>
                                 <div class="col-sm-6">
                                     <DefinedValuePicker
@@ -273,7 +266,7 @@
 
                             <hr />
 
-                            <h4 class="heading-individual">Second Adult</h4>
+                            <h4 class="heading-individual">Second {{ adultLabel }}</h4>
 
                             <div class="adult-2-fields">
                                 <div class="row">
@@ -302,11 +295,11 @@
                                 </div>
                                 <div class="row">
                                     <div v-if="config.adultGenderField?.isShown" class="col-sm-6">
-                                        <GenderDropDownList
-                                                            v-model="adult2.genderStringValue"
-                                                            :disabled="isSaving || isNavigating"
-                                                            label="Gender"
-                                                            :rules="isAdult2Entered && config.adultGenderField.isRequired ? adult2RequiredGenderRules : ''" />
+                                        <GenderPicker
+                                                      v-model="adult2.genderStringValue"
+                                                      :disabled="isSaving || isNavigating"
+                                                      label="Gender"
+                                                      :rules="isAdult2Entered && config.adultGenderField.isRequired ? adult2RequiredGenderRules : ''" />
                                     </div>
                                     <div v-if="config.adultSuffixField?.isShown" class="col-sm-6">
                                         <DefinedValuePicker
@@ -416,7 +409,7 @@
                                                               :attributes="adult2.attributes"
                                                               columnBreakpoint="sm"
                                                               :displayWithinExistingRow="true"
-                                                              isEditMode
+                                                              :isEditMode="isAdult2Entered"
                                                               :numberOfColumns="2"
                                                               :showCategoryLabel="true" />
                                 </div>
@@ -449,14 +442,18 @@
                         </template>
                     </Panel>
 
-                    <Panel type="default" title="Children">
+                    <Panel type="default" :title="pluralize(childLabel)">
                         <PreRegistrationChildren
                                                  v-model="children"
                                                  :disabled="isSaving || isNavigating"
                                                  :lastName="adult1.lastName"
+                                                 :childLabel="childLabel"
+                                                 :adultLabel="adultLabel"
                                                  @addChild="onAddChild"
                                                  @removeChild="onRemoveChild" />
                     </Panel>
+
+                    <Captcha v-if="!disableCaptcha" ref="captchaElement"></Captcha>
                 </template>
 
                 <template #footerActions>
@@ -490,7 +487,7 @@
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import EthnicityPicker from "@Obsidian/Controls/ethnicityPicker.obs";
-    import GenderDropDownList from "@Obsidian/Controls/genderDropDownList.obs";
+    import GenderPicker from "@Obsidian/Controls/genderPicker.obs";
     import ImageEditor from "@Obsidian/Controls/imageEditor.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
@@ -501,6 +498,7 @@
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import Captcha from "@Obsidian/Controls/captcha.obs";
     import { CommunicationPreference } from "@Obsidian/Enums/Blocks/Crm/FamilyPreRegistration/communicationPreference";
     import { Gender } from "@Obsidian/Enums/Crm/gender";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
@@ -517,6 +515,8 @@
     import { FamilyPreRegistrationScheduleDateBag } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationScheduleDateBag";
     import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { pluralize } from "@Obsidian/Utility/stringUtils";
+    import { BlockActionContextBag } from "@Obsidian/ViewModels/Blocks/blockActionContextBag";
     import { toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const config = useConfigurationValues<FamilyPreRegistrationInitializationBox>();
@@ -540,12 +540,15 @@
     const isUsernameAvailable = ref<boolean | null | undefined>();
     const confirmPassword = ref<string>("");
     const address = ref<AddressControlBag | undefined>(config.address ?? undefined);
-    const fullName = ref<string>("");
     const familyAttributeValues = ref<Record<string, string>>(config.familyAttributeValues || {});
     const createAccount = ref<CreateAccountRequest>({
         username: "",
         password: ""
     });
+    const disableCaptcha = ref(config.disableCaptchaSupport);
+    const captchaElement = ref<InstanceType<typeof Captcha> | undefined>();
+    const adultLabel = config.adultLabel || "Adult";
+    const childLabel = config.childLabel || "Child";
 
     // Create the request bags that will be used to pre-register the adults and children.
     const adult1Request = ref<PersonRequestBag>(convertPersonToPersonRequest(config.adult1));
@@ -569,24 +572,24 @@
     // Even though the first rule is a required rule,
     // we need to add the special "required" rule to get the required indicator to display.
     const adult1RequiredRules = computed<ValidationRule[]>(() => [
-        createRuleWithSuffix(required, `for First Adult`),
+        createRuleWithSuffix(required, `for First ${adultLabel}`),
         "required"
     ]);
 
     const adult1RequiredGenderRules = computed<ValidationRule[]>(() => [
-        createRuleWithSuffix(required, `for First Adult`),
-        createRuleWithReplacement(createNotEqualRule(Gender.Unknown), "is required for First Adult"),
+        createRuleWithSuffix(required, `for First ${adultLabel}`),
+        createRuleWithReplacement(createNotEqualRule(Gender.Unknown), `is required for First ${adultLabel}`),
         "required"
     ]);
 
     const adult2RequiredRules = computed<ValidationRule[]>(() => [
-        createRuleWithSuffix(required, `for Second Adult`),
+        createRuleWithSuffix(required, `for Second ${adultLabel}`),
         "required"
     ]);
 
     const adult2RequiredGenderRules = computed<ValidationRule[]>(() => [
-        createRuleWithSuffix(required, `for Second Adult`),
-        createRuleWithReplacement(createNotEqualRule(Gender.Unknown), "is required for Second Adult"),
+        createRuleWithSuffix(required, `for Second ${adultLabel}`),
+        createRuleWithReplacement(createNotEqualRule(Gender.Unknown), `is required for Second ${adultLabel}`),
         "required"
     ]);
 
@@ -646,14 +649,20 @@
                 createAccount: createAccount.value,
                 familyAttributeValues: familyAttributeValues.value,
                 familyGuid: toGuidOrNull(config.familyGuid),
-                fullName: fullName.value,
                 plannedVisitDate: plannedVisitDate.value,
                 scheduleGuid: toGuidOrNull(scheduleGuidOrEmptyString.value)
             };
 
             clearErrors();
 
-            const result = await invokeBlockAction<FamilyPreRegistrationSaveResponseBag>("Save", { bag });
+            const actionContext: BlockActionContextBag = {};
+
+            if (captchaElement.value) {
+                actionContext.captcha = await captchaElement.value.getToken();
+                captchaElement.value.refreshToken();
+            }
+
+            const result = await invokeBlockAction<FamilyPreRegistrationSaveResponseBag>("Save", { bag }, actionContext);
 
             if (result.isSuccess && result?.data) {
                 if (result.data.errors?.length) {

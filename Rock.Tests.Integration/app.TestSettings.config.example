@@ -3,5 +3,46 @@
     <add key="SampleDataUrl" value="http://storage.rockrms.com/sampledata/sampledata_1_14_1.xml" />
     <add key="PasswordKey" value="D42E08ECDE448643C528C899F90BADC9411AE07F74F9BA00A81BA06FD17E3D6BA22C4AE6947DD9686A35E8538D72B471F14CDB31BD50B9F5B2A1C26E290E5FC2" />
     <add key="DataEncryptionKey" value="v8Hw27G0dXAhjo9HCzi5MFMwJZznhunhivaillaPjpzc3czzTBkkCz+PzaRyCq61Rsvn7oq2G5zMHoixGT0lvc2uuuoHRIduOZJ0uxTGLa48ZWfJ2iBY8lSgwFmRgYEEOSZZQyA0nGSwJlgNicJRCfArC8IikRMKRWQCzenaLjA=" />
+
+  <!-- The DatabaseHost setting determines the container used for the test database.
+         * "docker" uses a Docker container hosting a SQL Server image.
+           Configure and manage Docker containers using the Docker Desktop application.
+         * "localdb" uses the LocalDB instance.
+           Configure and manage LocalDB databases from Visual Studio or SQL Server Management Studio.
+         * "remote" uses a remote database server; these databases are not created or replaced automatically.
+         If not specified, the Docker container is used.
+          -->
+  <add key="DatabaseHost" value="docker" />
+
+  <!-- Test Database Configuration -->
+
+  <!-- The DatabaseInitializer specifies the name of an optional class that contains functions to initialize a new database for a specific test scenario.
+       The class must support the ITestDatabaseInitializer interface. -->
+  <add key="DatabaseInitializer" value="Initializer.SampleDataset" />
+
+  <!-- The LocalDbResetDatabaseName specifies the name of the database that can be reset to a default image during test executions.
+       If a different target name is specified in the database connection string, database resets will be disabled.
+       This may be useful where testing requires data that is manually added during the development process.
+       In this case, changes made to the test database will persist for subsequent test runs, which may cause unexpected results and test failures. -->
+  <!--<add key="LocalDbResetDatabaseName" value="" />-->
+  
+  <!-- The LocalDbResetMigrationName specifies the migration to which the test database should be reset.
+       If not specified, the most recent migration is restored. -->
+  <!--<add key="LocalDbResetMigrationName" value="" />-->
+
+  <!-- The LocalDbArchiveRetentionDays specifies the number of days after which a database image will be deleted from the local file system.
+       If not specified, database images will be retained indefinitely. -->
+  <add key="LocalDbArchiveRetentionDays" value="180" />
+
+  <!-- The ExternalIntegrationsEnabled flag specifies if tests that depend on external resources should be executed or ignored.
+       This flag should only be enabled when testing features that require correctly configured resources or services that are external to Rock.
+       If not specified, tests that require external resources will return a result of Inconclusive. -->
+  <add key="ExternalIntegrationsEnabled" value="false" />
+
+  <!-- The UtilityTestActionsEnabled flag specifies if tests that are intended to be perform utility actions should be available for execution or ignored.
+       These tests are intended for manual execution during development, and this flag should be disabled for automated test runs.
+       If not specified, tests that perform utility actions will return a result of Inconclusive. -->
+  <add key="UtilityTestActionsEnabled" value="false" />
+
 </appSettings>
 

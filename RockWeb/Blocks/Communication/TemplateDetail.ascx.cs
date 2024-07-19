@@ -29,6 +29,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -108,7 +109,7 @@ namespace RockWeb.Blocks.Communication
                 var lavaFieldsTemplateDictionary = hfLavaFieldsState.Value.FromJsonOrNull<Dictionary<string, string>>() ?? new Dictionary<string, string>();
 
                 // dictionary of keys and default values from Lava Fields KeyValueList control
-                var lavaFieldsDefaultDictionary = kvlMergeFields.Value.AsDictionary();
+                var lavaFieldsDefaultDictionary = kvlMergeFields.GetValueAsDictionary();
 
                 CommunicationTemplateHelper.CreateDynamicLavaValueControls( lavaFieldsTemplateDictionary, lavaFieldsDefaultDictionary, phLavaFieldsControls );
                 btnUpdateTemplatePreview.Visible = lavaFieldsTemplateDictionary.Any();
@@ -227,7 +228,7 @@ namespace RockWeb.Blocks.Communication
             communicationTemplate.ReplyToEmail = tbReplyToAddress.Text;
             communicationTemplate.CCEmails = tbCCList.Text;
             communicationTemplate.BCCEmails = tbBCCList.Text;
-            communicationTemplate.LavaFields = kvlMergeFields.Value.AsDictionaryOrNull();
+            communicationTemplate.LavaFields = kvlMergeFields.GetValueAsDictionaryOrNull();
             communicationTemplate.CssInliningEnabled = cbCssInliningEnabled.Checked;
 
             var binaryFileIds = hfAttachedBinaryFileIds.Value.SplitDelimitedValues().AsIntegerList();
@@ -358,7 +359,7 @@ namespace RockWeb.Blocks.Communication
             UpdateControls();
 
             Dictionary<string, string> lavaFieldsTemplateDictionary = CommunicationTemplateHelper.GetLavaFieldsTemplateDictionaryFromTemplateHtml( ceEmailTemplate.Text );
-            kvlMergeFields.Value = lavaFieldsTemplateDictionary.Select( a => string.Format( "{0}^{1}", a.Key, a.Value ) ).ToList().AsDelimited( "|" );
+            kvlMergeFields.SetValue( lavaFieldsTemplateDictionary );
         }
 
         #endregion
@@ -427,7 +428,7 @@ namespace RockWeb.Blocks.Communication
             tbCCList.Text = communicationTemplate.CCEmails;
             tbBCCList.Text = communicationTemplate.BCCEmails;
             cbCssInliningEnabled.Checked = communicationTemplate.CssInliningEnabled;
-            kvlMergeFields.Value = communicationTemplate.LavaFields.Select( a => string.Format( "{0}^{1}", a.Key, a.Value ) ).ToList().AsDelimited( "|" );
+            kvlMergeFields.SetValue( communicationTemplate.LavaFields );
 
             hfShowAdditionalFields.Value = ( !string.IsNullOrEmpty( communicationTemplate.ReplyToEmail ) || !string.IsNullOrEmpty( communicationTemplate.CCEmails ) || !string.IsNullOrEmpty( communicationTemplate.BCCEmails ) ).ToTrueFalse().ToLower();
 
@@ -575,7 +576,7 @@ namespace RockWeb.Blocks.Communication
 
             foreach ( var binaryFileAttachment in binaryFileAttachments )
             {
-                var attachmentUrl = string.Format( "{0}GetFile.ashx?id={1}", System.Web.VirtualPathUtility.ToAbsolute( "~" ), binaryFileAttachment.Key );
+                var attachmentUrl = FileUrlHelper.GetFileUrl( binaryFileAttachment.Key );
                 var removeAttachmentJS = string.Format( "removeAttachment( this, '{0}', '{1}' );", hfAttachedBinaryFileIds.ClientID, binaryFileAttachment.Key );
                 sbAttachmentsHtml.AppendLine( string.Format( "    <li><a href='{0}' target='_blank' rel='noopener noreferrer'>{1}</a> <a><i class='fa fa-times' onclick=\"{2}\"></i></a></li>", attachmentUrl, binaryFileAttachment.Value, removeAttachmentJS ) );
             }
@@ -629,7 +630,7 @@ namespace RockWeb.Blocks.Communication
             lavaFieldsTemplateDictionaryFromControls = CommunicationTemplateHelper.UpdateLavaFieldsTemplateDictionaryFromControls( phLavaFieldsControls, lavaFieldsTemplateDictionaryFromControls );
 
             // dictionary of keys and default values from Lava Fields KeyValueList control
-            var lavaFieldsDefaultDictionary = kvlMergeFields.Value.AsDictionary();
+            var lavaFieldsDefaultDictionary = kvlMergeFields.GetValueAsDictionary();
 
             ceEmailTemplate.Text = CommunicationTemplateHelper.GetUpdatedTemplateHtml( ceEmailTemplate.Text, imgTemplateLogo.BinaryFileId, lavaFieldsTemplateDictionaryFromControls, lavaFieldsDefaultDictionary );
 
@@ -710,7 +711,7 @@ namespace RockWeb.Blocks.Communication
             var lavaFieldsTemplateDictionary = hfLavaFieldsState.Value.FromJsonOrNull<Dictionary<string, string>>() ?? new Dictionary<string, string>();
 
             // dictionary of keys and default values from Lava Fields KeyValueList control
-            var lavaFieldsDefaultDictionary = kvlMergeFields.Value.AsDictionary();
+            var lavaFieldsDefaultDictionary = kvlMergeFields.GetValueAsDictionary();
 
             phLavaFieldsControls.Controls.Clear();
 

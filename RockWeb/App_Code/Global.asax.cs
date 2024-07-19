@@ -19,6 +19,7 @@ using System.Configuration;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
@@ -28,10 +29,13 @@ using System.Web.Optimization;
 using System.Web.Routing;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
+
 using Rock;
+using Rock.Blocks;
 using Rock.Communication;
 using Rock.Configuration;
 using Rock.Data;
+using Rock.Enums.Cms;
 using Rock.Logging;
 using Rock.Model;
 using Rock.Observability;
@@ -126,9 +130,6 @@ namespace RockWeb
 
             Rock.Bus.RockMessageBus.IsRockStarted = false;
             QueueInUse = false;
-
-            // Start-up the observability features
-            ObservabilityHelper.ConfigureObservability( true );
 
             /* 2020-05-20 MDP
                 * Prior to Application_Start, Rock.WebStartup has an AssemblyInitializer class that runs as a PreApplicationStartMethod.
@@ -370,10 +371,64 @@ namespace RockWeb
                 // Pass in a CancellationToken so we can stop compiling if Rock shuts down before it is done
                 BlockTypeService.VerifyBlockTypeInstanceProperties( allUsedBlockTypeIds, _threadCancellationTokenSource.Token );
 
+                // This methods updates the SiteTypeFlags property on the BlockType Table for each block. This logic was introduce to improve performance.
+                // The SiteTypeFlags column stores the flags related to the SiteTypes associated with the Block Types which otherwise needs to be fetched using Reflection.
+                UpdateSiteTypeFlagsOnBlockTypes();
+
                 Debug.WriteLine( string.Format( "[{0,5:#} seconds] Block Types Compiled", stopwatchCompileBlockTypes.Elapsed.TotalSeconds ) );
             } );
 
             BlockTypeCompilationThread.Start();
+        }
+
+        private static void UpdateSiteTypeFlagsOnBlockTypes()
+        {
+            var blockTypesWithSiteTypes = BlockTypeCache.All()
+               .Where( bt => string.IsNullOrEmpty( bt.Path ) )
+               .Select( bt => new
+               {
+                   bt.Id,
+                   compiledType = bt.GetCompiledType(),
+                   bt.SiteTypeFlags
+               } );
+
+
+            foreach ( var blockTypeWithSiteType in blockTypesWithSiteTypes )
+            {
+                var type = blockTypeWithSiteType.compiledType;
+                SiteTypeFlags? siteTypes = SiteTypeFlags.None;
+                if ( typeof( RockBlockType ).IsAssignableFrom( type ) )
+                {
+                    siteTypes = type.GetCustomAttribute<SupportedSiteTypesAttribute>()?.SiteTypes
+                        .Select( s => s.ToString().ConvertToEnum<SiteTypeFlags>() )
+                        .Aggregate( SiteTypeFlags.None, ( a, s ) => a | s );
+                }
+                else if ( typeof( IRockObsidianBlockType ).IsAssignableFrom( type ) )
+                {
+                    siteTypes |= SiteTypeFlags.Web;
+                }
+                else if ( typeof( IRockMobileBlockType ).IsAssignableFrom( type ) )
+                {
+                    siteTypes |= SiteTypeFlags.Mobile;
+                }
+
+                if ( blockTypeWithSiteType.SiteTypeFlags != siteTypes )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var blockTypeService = new BlockTypeService( rockContext );
+                        var blockType = blockTypeService.Queryable()
+                            .Where( bt => bt.Id == blockTypeWithSiteType.Id )
+                            .FirstOrDefault();
+                        if ( blockType == null )
+                        {
+                            continue;
+                        }
+                        blockType.SiteTypeFlags = siteTypes ?? SiteTypeFlags.None;
+                        rockContext.SaveChanges();
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -475,6 +530,8 @@ namespace RockWeb
         protected void Application_BeginRequest( object sender, EventArgs e )
         {
             Context.AddOrReplaceItem( "Request_Start_Time", RockDateTime.Now );
+
+            WebRequestHelper.SetThreadCultureFromRequest( HttpContext.Current?.Request );
         }
 
         /// <summary>
@@ -516,7 +573,7 @@ namespace RockWeb
 
                             // Check for client\remote host disconnection error specifically SignalR or web-socket connections
                             // Ignore this error as it indicates the server it trying to write a response to a disconnected client.
-                            if( httpEx.Message.IsNotNullOrWhiteSpace() && httpEx.StackTrace.IsNotNullOrWhiteSpace() &&
+                            if ( httpEx.Message.IsNotNullOrWhiteSpace() && httpEx.StackTrace.IsNotNullOrWhiteSpace() &&
                                 httpEx.Message.Contains( "The remote host closed the connection." ) &&
                                 httpEx.StackTrace.Contains( "Microsoft.AspNet.SignalR.Owin.ServerResponse.Write" ) )
                             {
@@ -554,7 +611,7 @@ namespace RockWeb
                             ex = newEx;
                         }
                     }
-                                      
+
                     if ( !( ex is HttpRequestValidationException ) )
                     {
                         SendNotification( ex );
@@ -635,8 +692,6 @@ namespace RockWeb
                 // https://weblog.west-wind.com/posts/2013/oct/02/use-iis-application-initialization-for-keeping-aspnet-apps-alive
                 var client = new WebClient();
                 client.DownloadString( GetKeepAliveUrl() );
-
-                RockLogger.Log.Close();
             }
             catch
             {
@@ -1050,7 +1105,7 @@ namespace RockWeb
             Rock.SystemKey.SystemSetting.ENABLE_KEEP_ALIVE can be enabled in Rock's System Settings. 
 
             */
-            
+
             var keepAliveUrl = GetKeepAliveUrl();
 
             // call a page on the site to keep IIS alive

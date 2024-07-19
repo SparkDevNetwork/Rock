@@ -149,6 +149,8 @@ export const EntityType = {
     CampusTopic: "0FFDCB0B-B435-4E66-9085-2750534E706A",
     /** The EntityType Guid for Rock.Model.Category  */
     Category: "1D68154E-EC76-44C8-9813-7736B27AECF9",
+    /** The EntityType Guid for Rock.Model.CheckInLabel  */
+    CheckInLabel: "8B651EB1-492F-46D0-821B-CA7355C6E6E7",
     /** The checkr provider */
     CheckrProvider: "8D9DE88A-C649-47B2-BA5C-92A24F60AE61",
     /** The EntityType Guid for Rock.Model.Communication  */
@@ -231,6 +233,8 @@ export const EntityType = {
     DocumentType: "18CF366F-46B6-49CA-B557-BCABD6BBD175",
     /** The EntityType Guid for Rock.Model.EntityCampusFilter  */
     EntityCampusFilter: "A736A9FB-F2A5-4458-B126-FAD6BD3F3B78",
+    /** The EntityType Guid for Rock.Model.EntityIntent  */
+    EntityIntent: "15CE39A3-193F-44E5-80C7-DE47DA3EAF97",
     /** The EntityType Guid for Rock.Model.EntitySet  */
     EntitySet: "50E3F9C8-4010-41AF-8F61-08308DC44640",
     /** The EntityType Guid for Rock.Model.EntitySetItem  */
@@ -349,8 +353,10 @@ export const EntityType = {
     HtmlContent: "FB30EC4C-7DCC-41A4-94AB-E728A8CE537B",
     /** The HTTP module component */
     HttpModuleComponent: "EDE69F48-5E05-4260-B360-DA37DFD1AB83",
-    /** The EntityType Guid for Rock.Web.HttpModules.Observability  */
+    /** The EntityType Guid for Rock.Web.HttpModules.RockGateway  */
     HttpModuleObservability: "FE7A8295-9383-4FD8-9FB2-FF77A8042462",
+    /** The EntityType Guid for Rock.Web.HttpModules.RockGateway  */
+    HttpModuleRockGateway: "FE7A8295-9383-4FD8-9FB2-FF77A8042462",
     /** The EntityType Guid for Rock.Model.IdentityVerification  */
     IdentityVerification: "C76071B0-0C2F-4A3F-88BF-08B2E006C614",
     /** The EntityType Guid for Rock.Model.IdentityVerificationCode  */
@@ -441,6 +447,8 @@ export const EntityType = {
     Metriccategory: "3D35C859-DF37-433F-A20A-0FFD0FCB9862",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Prayer.AnswerToPrayer. */
     MobileAnswerToPrayerBlockType: "759AFCA0-9E0B-4A22-A402-CD4499F2A457",
+    /** The GUID for the mobile check-in block */
+    MobileCheckinCheckin: "BC0A4B6C-9F6D-4D39-8FFE-B6F9FA4B2F49",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Cms.DailyChallengeEntry */
     MobileCmsDailyChallengeEntry: "E9BC058A-CFE4-498B-A7E7-DD38DC74B30E",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Cms.Hero */

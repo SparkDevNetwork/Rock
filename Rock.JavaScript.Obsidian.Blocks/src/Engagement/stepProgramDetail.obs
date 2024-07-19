@@ -6,8 +6,9 @@
 
     <RockForm v-if="!blockError" v-model:submit="submitForm" @submit="onSave" :formResetKey="resetKey">
         <Panel type="block" :title="panelName" :headerSecondaryActions="blockLabels">
-            <template v-if="categoryName" #headerActions>
-                <span class="label label-info">{{ categoryName }}</span>
+            <template #headerActions>
+                <span v-if="categoryName" class="label label-info mr-1">{{ categoryName }}</span>
+                <span v-if="!stepProgramViewBag?.isActive" class="label label-danger">Inactive</span>
             </template>
             <template #default>
                 <ViewPanel v-if="panelMode == DetailPanelMode.View"

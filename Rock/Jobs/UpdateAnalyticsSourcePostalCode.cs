@@ -122,7 +122,7 @@ namespace Rock.Jobs
                         var remainingCount = censusData.Count - skipCount;
 
                         // Calculate the number of batches needed to save the remaining records.
-                        int batches = ( int ) Math.Ceiling( ( double ) remainingCount / batchSize );
+                        var batches = ( int ) Math.Ceiling( ( double ) remainingCount / batchSize );
                         for ( int i = 0; i < batches; i++ )
                         {
                             // Renew context to clear saved entries from memory, this is done to speed up the process since we are 
@@ -145,7 +145,7 @@ namespace Rock.Jobs
                     if ( boundaryData?.Any() == true )
                     {
                         // Calculate the number of batches needed to save the updated records.
-                        int updateBatches = ( int ) Math.Ceiling( ( double ) censusData.Count / batchSize );
+                        var updateBatches = ( int ) Math.Ceiling( ( double ) censusData.Count / batchSize );
                         for ( int i = 0; i < updateBatches; i++ )
                         {
                             rockContext = new RockContext();

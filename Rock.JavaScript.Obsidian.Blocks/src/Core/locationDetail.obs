@@ -7,6 +7,7 @@
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
                  :name="panelName"
+                 :title="panelTitle"
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="EntityType.Location"
@@ -15,8 +16,8 @@
                  :isBadgesVisible="true"
                  :isDeleteVisible="isEditable"
                  :isEditVisible="isEditable"
-                 :isFollowVisible="true"
-                 :isSecurityHidden="false"
+                 :isFollowVisible="false"
+                 :isSecurityHidden="isSecurityHidden"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
                  @edit="onEdit"
@@ -40,7 +41,7 @@
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import EditPanel from "./LocationDetail/editPanel.partial.obs";
     import ViewPanel from "./LocationDetail/viewPanel.partial.obs";
-    import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { getSecurityGrant, onConfigurationValuesChanged, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { debounce } from "@Obsidian/Utility/util";
     import { NavigationUrlKey } from "./LocationDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
@@ -67,7 +68,7 @@
     const validProperties = [
         "attributeValues",
         "firmRoomThreshold",
-        "imageId",
+        "image",
         "isActive",
         "isGeoPointLocked",
         "locationTypeValue",
@@ -75,7 +76,9 @@
         "parentLocation",
         "printerDevice",
         "softRoomThreshold",
-        "addressFields"
+        "addressFields",
+        "geoPoint_WellKnownText",
+        "geoFence_WellKnownText"
     ];
 
     const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(locationEditBag, validProperties, invokeBlockAction), undefined, true);
@@ -83,6 +86,13 @@
     // #endregion
 
     // #region Computed Values
+
+    /**
+     * If user can administrate show security button.
+     */
+    const isSecurityHidden = computed((): boolean => {
+        return config.options?.canAdministrate !== true;
+    });
 
     /**
      * The entity name to display in the block panel.
@@ -139,12 +149,21 @@
     });
 
     const options = computed((): LocationDetailOptionsBag => {
-        return config.options ?? {};
+        return config.options ?? {
+            canAdministrate: false,
+            hasParentLocationId: false,
+            hasPersonId: false,
+            isPersonIdAvailable: false,
+            mapStyleGuid: ""
+        };
     });
 
-    // #endregion
-
-    // #region Functions
+    /**
+    * The panel title
+    */
+    const panelTitle = computed((): string => {
+        return panelMode.value === DetailPanelMode.Add ? "Add Location" : options.value.panelTitle ?? "";
+    });
 
     // #endregion
 
@@ -157,12 +176,31 @@
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
     async function onCancelEdit(): Promise<boolean | string> {
-        if (!locationEditBag.value?.idKey) {
+
+        if (options.value.hasPersonId) {
             if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
                 return config.navigationUrls[NavigationUrlKey.ParentPage];
             }
 
             return false;
+        }
+        else {
+            if (!locationEditBag.value?.idKey) {
+                // Cancelling on Add, and we know the parentLocationId, so we are probably in treeview mode, so navigate to theh current page
+                if (options.value.hasParentLocationId) {
+                    if (config.navigationUrls?.[NavigationUrlKey.CurrentPage]) {
+                        return config.navigationUrls[NavigationUrlKey.CurrentPage];
+                    }
+                }
+                else {
+                    // Cancelling on Add. Return to parent page
+                    if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+                        return config.navigationUrls[NavigationUrlKey.ParentPage];
+                    }
+                }
+
+                return false;
+            }
         }
 
         return true;
@@ -249,10 +287,15 @@
         });
 
         if (result.isSuccess && result.data) {
-            if (result.statusCode === 200 && typeof result.data === "object") {
-                locationViewBag.value = result.data;
+            if (result.statusCode === 200) {
 
-                return true;
+                if (typeof result.data === "object") {
+                    locationViewBag.value = result.data;
+                    return true;
+                }
+                else {
+                    return result.data;
+                }
             }
             else if (result.statusCode === 201 && typeof result.data === "string") {
                 return result.data;
@@ -268,6 +311,11 @@
 
     provideSecurityGrant(securityGrant);
 
+    if (config.options?.hasPersonId) {
+        panelMode.value = DetailPanelMode.Add;
+        locationEditBag.value = locationViewBag.value ?? {} as LocationBag;
+    }
+
     // Handle any initial error conditions or the need to go into edit mode.
     if (config.errorMessage) {
         blockError.value = config.errorMessage;
@@ -279,4 +327,6 @@
         locationEditBag.value = config.entity;
         panelMode.value = DetailPanelMode.Add;
     }
+
+    onConfigurationValuesChanged(useReloadBlock());
 </script>

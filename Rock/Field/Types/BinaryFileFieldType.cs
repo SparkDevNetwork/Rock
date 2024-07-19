@@ -26,6 +26,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.Utility;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -36,7 +37,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of binary files of a specific type
     /// Stored as BinaryFile's Guid
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.BINARY_FILE )]
     public class BinaryFileFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
@@ -113,10 +114,25 @@ namespace Rock.Field.Types
                 }
                 else
                 {
-                    var filePath = System.Web.VirtualPathUtility.ToAbsolute( "~/GetFile.ashx" );
-                    return string.Format( "<a href='{0}?guid={1}' title='{2}' class='btn btn-xs btn-default'>View</a>", filePath, binaryFileInfo.Guid, System.Web.HttpUtility.HtmlEncode( binaryFileInfo.FileName ) );
+                    var filePath = FileUrlHelper.GetFileUrl( binaryFileInfo.Guid );
+                    return string.Format( "<a href='{0}' title='{1}' class='btn btn-xs btn-default'>View</a>", filePath, System.Web.HttpUtility.HtmlEncode( binaryFileInfo.FileName ) );
                 }
             }
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return new BinaryFileService( new Data.RockContext() )
+                .Get( privateValue.AsGuid() )
+                .ToListItemBag()
+                .ToCamelCaseJson( false, true );
         }
 
         /// <inheritdoc/>
@@ -136,49 +152,51 @@ namespace Rock.Field.Types
         #region Edit Control
 
         /// <inheritdoc/>
-        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
-        {
-            string formattedValue = string.Empty;
-            var guid = privateValue.AsGuidOrNull();
-
-            if ( !guid.HasValue || guid.Value.IsEmpty() )
-            {
-                return "";
-            }
-
-            using ( var rockContext = new RockContext() )
-            {
-                var binaryFileInfo = new BinaryFileService( rockContext )
-                    .Queryable()
-                    .AsNoTracking()
-                    .Where( f => f.Guid == guid.Value )
-                    .Select( f => new
-                    {
-                        f.FileName,
-                        f.Guid
-                    } )
-                    .FirstOrDefault();
-
-                if ( binaryFileInfo == null )
-                {
-                    return "";
-                }
-
-                // A binary file needs more than just the Guid to properly display
-                // in most cases, so include the guid and the filename.
-                return new ListItemBag
-                {
-                    Value = binaryFileInfo.Guid.ToString(),
-                    Text = binaryFileInfo.FileName
-                }.ToCamelCaseJson( false, true );
-            }
-        }
-
-        /// <inheritdoc/>
         public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
         {
             // Extract the raw value.
             return publicValue.FromJsonOrNull<ListItemBag>()?.Value ?? string.Empty;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            var configurationProperties = base.GetPrivateConfigurationValues( publicConfigurationValues );
+
+            // Get the Guid value if one exists.
+            if ( publicConfigurationValues.ContainsKey( BINARY_FILE_TYPE ) )
+            {
+                var publicValue = publicConfigurationValues[BINARY_FILE_TYPE].FromJsonOrNull<ListItemBag>();
+
+                if ( !string.IsNullOrWhiteSpace( publicValue?.Value ) )
+                {
+                    configurationProperties[BINARY_FILE_TYPE] = publicValue.Value;
+                }
+            }
+
+            return configurationProperties;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
+        {
+            var configurationProperties = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
+
+            if ( privateConfigurationValues.ContainsKey( BINARY_FILE_TYPE ) )
+            {
+                var guidValue = privateConfigurationValues[BINARY_FILE_TYPE];
+
+                if ( !string.IsNullOrWhiteSpace( guidValue ) && Guid.TryParse( guidValue, out Guid guid ) )
+                {
+                    configurationProperties[BINARY_FILE_TYPE] = new ListItemBag()
+                    {
+                        Text = BinaryFileTypeCache.Get( guidValue )?.Name,
+                        Value = guidValue.ToString()
+                    }.ToCamelCaseJson( false, true );
+                }
+            }
+
+            return configurationProperties;
         }
 
         #endregion

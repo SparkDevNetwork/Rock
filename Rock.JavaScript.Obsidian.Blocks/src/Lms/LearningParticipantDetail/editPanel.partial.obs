@@ -1,0 +1,96 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <PersonPicker
+                      formControlClasses="input-width-md margin-l-sm"
+                      v-model="personSelection"
+                      :excludeDeceased="true"
+                      :enableSelfSelection="true"
+                      label="Participant"
+                      rules="required" />
+
+        <DropDownList :show-blank-item="false"
+                      formControlClasses="input-width-md margin-l-sm"
+                      v-model="roleValue"
+                      label="Participant Role"
+                      help="The role the participant will play in the class."
+                      :items="classRoles"
+                      horizontal
+                      rules="required" />
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { LearningParticipantBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningParticipantDetail/learningParticipantBag";
+    import { LearningParticipantDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningParticipantDetail/learningParticipantDetailOptionsBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<LearningParticipantBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<LearningParticipantDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const classRoles = ref(props.options?.classRoles ?? []);
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<LearningParticipantBag>): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const personSelection = ref<ListItemBag | undefined>(props.modelValue.bag?.personAlias ?? undefined);
+    const personAlias = propertyRef<ListItemBag>(
+        props.modelValue.bag?.personAlias ?? { value: "", text: "" }, "PersonAlias"
+    );
+    const participantRole = propertyRef(props.modelValue.bag?.participantRole ?? {}, "ParticipantRole");
+    const isFacilitator = ref(props.modelValue.bag?.isFacilitator ?? false);
+
+    const roleValue = ref(participantRole.value.value ?? "");
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(personAlias, props.modelValue.bag?.personAlias?.value ?? {});
+        updateRefValue(roleValue, props.modelValue.bag?.participantRole?.value ?? "");
+    });
+
+    // Watch for changes to our monitored values and emit a modelValue change event when necessary.
+    watch([personSelection, roleValue], () => {
+        const newValue: ValidPropertiesBox<LearningParticipantBag> = {
+            bag: { ...props.modelValue.bag } as LearningParticipantBag
+        };
+
+        setPropertiesBoxValue(newValue, "personAlias", personAlias.value);
+        setPropertiesBoxValue(newValue, "participantRole", { value: roleValue.value });
+        setPropertiesBoxValue(newValue, "isFacilitator", isFacilitator.value);
+
+        emit("update:modelValue", newValue);
+    });
+</script>

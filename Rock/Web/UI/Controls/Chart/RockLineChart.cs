@@ -108,6 +108,10 @@ namespace Rock.Web.UI.Controls
             {
                 timeScale = ChartJsTimeSeriesTimeScaleSpecifier.Day;
             }
+            else if ( intervalType == "week" )
+            {
+                timeScale = ChartJsTimeSeriesTimeScaleSpecifier.Week;
+            }
             else if ( intervalType == "month" )
             {
                 timeScale = ChartJsTimeSeriesTimeScaleSpecifier.Month;

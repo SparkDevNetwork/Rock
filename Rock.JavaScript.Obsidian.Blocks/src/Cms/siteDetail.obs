@@ -4,52 +4,100 @@
 
     <NotificationBox v-if="errorMessage" alertType="danger" v-text="errorMessage" />
 
-    <DetailBlock v-if="!blockError"
-                 v-model:mode="panelMode"
-                 :name="panelName"
-                 :labels="blockLabels"
-                 :entityKey="entityKey"
-                 :entityTypeGuid="EntityType.Site"
-                 entityTypeName="Site"
-                 :isAuditHidden="false"
-                 :isBadgesVisible="true"
-                 :isDeleteVisible="isEditable"
-                 :isEditVisible="isEditable"
-                 :isFollowVisible="true"
-                 :isSecurityHidden="false"
-                 @cancelEdit="onCancelEdit"
-                 @delete="onDelete"
-                 @edit="onEdit"
-                 @save="onSave">
-        <template #view>
-            <ViewPanel :modelValue="siteViewBag" :options="options" />
-        </template>
+    <RockForm v-model:submit="submitForm" @submit="onSave" :formResetKey="resetKey">
+        <Panel type="block" :title="panelName" :headerSecondaryActions="blockLabels">
+            <template v-if="siteViewBag?.idKey" #headerActions>
+                <a :href="siteUrl" target="_blank"><span class="label label-info" @click="onVisitSite">Visit Site</span></a>
+            </template>
+            <template #default>
+                <ViewPanel v-if="panelMode == DetailPanelMode.View"
+                           :modelValue="siteViewBag"
+                           :options="options" />
+                <EditPanel v-if="panelMode === DetailPanelMode.Add || panelMode === DetailPanelMode.Edit"
+                           v-model="siteEditBag"
+                           :isEditable="isEditable"
+                           :options="options"
+                           @propertyChanged="baseBlock.onPropertyChanged" />
 
-        <template #edit>
-            <EditPanel v-model="siteEditBag" :options="options" @propertyChanged="onPropertyChanged" />
-        </template>
-    </DetailBlock>
+                <ModalAlert v-model="isShowing" :type="alertType">{{ compileMessage }}</ModalAlert>
+
+                <Modal v-model="showAuditDetailsModal" title="Audit Details">
+                    <AuditDetail :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />
+                </Modal>
+            </template>
+            <template #footerActions>
+                <div v-if="panelMode === DetailPanelMode.Edit || panelMode === DetailPanelMode.Add">
+                    <RockButton v-if="isEditable"
+                                :btnSize="BtnSize.Default"
+                                :btnType="BtnType.Primary"
+                                @click="onStartSubmitForm">
+                        Save
+                    </RockButton>
+                    <RockButton v-if="isEditable"
+                                :btnSize="BtnSize.Default"
+                                :btnType="BtnType.Link"
+                                @click="onCancelEdit">
+                        Cancel
+                    </RockButton>
+                </div>
+
+                <div v-if="panelMode === DetailPanelMode.View && isEditable">
+                    <RockButton :btnSize="BtnSize.Default"
+                                :btnType="BtnType.Primary"
+                                @click="onEdit">
+                        Edit
+                    </RockButton>
+                    <RockButton :btnSize="BtnSize.Default"
+                                :btnType="BtnType.Link"
+                                @click="onDelete">
+                        Delete
+                    </RockButton>
+                </div>
+            </template>
+            <template #footerSecondaryActions>
+                <RockButton v-if="panelMode === DetailPanelMode.View"
+                            :btnSize="BtnSize.Default"
+                            :btnType="BtnType.Default"
+                            :isLoading="isCompiling"
+                            loadingText="Compiling..."
+                            :disabled="!allowsCompile"
+                            @click="onCompileTheme">
+                    {{ compileBtnText }}
+                </RockButton>
+            </template>
+        </Panel>
+    </RockForm>
 </template>
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import DetailBlock from "@Obsidian/Templates/detailBlock";
+    import Panel from "@Obsidian/Controls/panel.obs";
     import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import EditPanel from "./SiteDetail/editPanel.partial.obs";
     import ViewPanel from "./SiteDetail/viewPanel.partial.obs";
-    import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
-    import { debounce } from "@Obsidian/Utility/util";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import AuditDetail from "@Obsidian/Controls/auditDetail.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import ModalAlert from "@Obsidian/Controls/modalAlert.obs";
+    import { useConfigurationValues, useInvokeBlockAction, useEntityDetailBlock } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./SiteDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { SiteBag } from "@Obsidian/ViewModels/Blocks/Cms/SiteDetail/siteBag";
     import { SiteDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/SiteDetail/siteDetailOptionsBag";
+    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+    import { confirmDelete } from "@Obsidian/Utility/dialogs";
+    import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
+    import { ModalAlertType } from "@Obsidian/Enums/Controls/modalAlertType";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const config = useConfigurationValues<DetailBlockBox<SiteBag, SiteDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const securityGrant = getSecurityGrant(config.securityGrantToken);
 
     // #region Values
 
@@ -57,55 +105,32 @@
     const errorMessage = ref("");
 
     const siteViewBag = ref(config.entity);
-    const siteEditBag = ref<SiteBag>({} as SiteBag);
+
+    const submitForm = ref(false);
+    const resetKey = ref("");
+    const showAuditDetailsModal = ref(false);
+    const params = new URLSearchParams(window.location.search);
+    const isAutoEditMode = ref(asBooleanOrNull(params.get("autoEdit")) ?? false);
+    const isCompiling = ref(false);
+    const siteUrl = ref(siteViewBag.value?.siteUrl ?? "/");
+    const isShowing = ref(false);
+    const alertType = ref<ModalAlertType>();
+    const compileMessage = ref("");
+    const allowsCompile = config.entity?.allowsCompile;
+    const compileBtnText = allowsCompile ? "Compile Theme" : "Theme Doesn't Support Compiling";
+
+
+    const entityTypeGuid = EntityType.Site;
+    const siteEditBag = ref<ValidPropertiesBox<SiteBag>>({
+        bag: {} as SiteBag
+    });
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
-    // The properties that are being edited in the UI. This is used to
-    // inform the server which incoming values have valid data in them.
-    const validProperties = [
-        "attributeValues",
-        "allowedFrameDomains",
-        "allowIndexing",
-        "changePasswordPage",
-        "changePasswordPageRoute",
-        "communicationPage",
-        "communicationPageRoute",
-        "defaultPage",
-        "defaultPageRoute",
-        "description",
-        "disablePredictableIds",
-        "enabledForShortening",
-        "enableExclusiveRoutes",
-        "enableMobileRedirect",
-        "enablePageViewGeoTracking",
-        "enablePageViews",
-        "enablePersonalization",
-        "enableVisitorTracking",
-        "errorPage",
-        "externalUrl",
-        "favIconBinaryFile",
-        "googleAnalyticsCode",
-        "indexStartingLocation",
-        "isActive",
-        "isIndexEnabled",
-        "loginPage",
-        "loginPageRoute",
-        "mobilePage",
-        "name",
-        "pageHeaderContent",
-        "pageNotFoundPage",
-        "pageNotFoundPageRoute",
-        "redirectTablets",
-        "registrationPage",
-        "registrationPageRoute",
-        "requiresEncryption",
-        "siteLogoBinaryFile",
-        "theme",
-        "siteDomains"
-    ];
-
-    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(siteEditBag, validProperties, invokeBlockAction), undefined, true);
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: siteEditBag
+    });
 
     // #endregion
 
@@ -115,7 +140,7 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return siteViewBag.value?.name ?? "";
+        return panelMode.value === DetailPanelMode.Add ? "Add Site" : siteViewBag.value?.name ?? "";
     });
 
     /**
@@ -129,43 +154,25 @@
      * Additional labels to display in the block panel.
      */
     const blockLabels = computed((): PanelAction[] | undefined => {
-        const labels: PanelAction[] = [];
+        const actions: PanelAction[] = [];
 
-        if (panelMode.value !== DetailPanelMode.View) {
-            return undefined;
-        }
-
-        if (siteViewBag.value?.isActive === true) {
-            labels.push({
-                iconCssClass: "fa fa-lightbulb",
-                title: "Active",
-                type: "success"
-            });
-        }
-        else {
-            labels.push({
-                iconCssClass: "far fa-lightbulb",
-                title: "Inactive",
-                type: "danger"
+        if (siteViewBag?.value?.idKey) {
+            actions.push({
+                type: "default",
+                title: "Audit Details",
+                handler: onAuditClick
             });
         }
 
-        if (siteViewBag.value?.isSystem) {
-            labels.push({
-                title: "System",
-                type: "success"
-            });
-        }
-
-        return labels;
+        return actions;
     });
 
     const isEditable = computed((): boolean => {
-        return config.isEditable === true && siteViewBag.value?.isSystem !== true;
+        return config.isEditable === true;
     });
 
     const options = computed((): SiteDetailOptionsBag => {
-        return config.options ?? { themes: [], siteAttributes: [] };
+        return config.options ?? {};
     });
 
     // #endregion
@@ -176,22 +183,55 @@
 
     // #region Event Handlers
 
+    const onAuditClick = (): void => {
+        showAuditDetailsModal.value = true;
+    };
+
+    const onVisitSite = (): void => {
+        if (siteUrl.value) {
+            window.location.href = makeUrlRedirectSafe(siteUrl.value);
+        }
+    };
+
+    async function onCompileTheme(): Promise<void> {
+        isCompiling.value = true;
+
+        try {
+            const result = await invokeBlockAction<{ message: string }>("CompileTheme", {
+                idKey: siteViewBag.value?.idKey
+            });
+
+            isShowing.value = true;
+
+            if (result.isSuccess && result.data) {
+                alertType.value = ModalAlertType.Information;
+                compileMessage.value = result.data.message;
+            }
+            else {
+                alertType.value = ModalAlertType.Alert;
+                compileMessage.value = result.errorMessage ?? "Unknown error while trying compile theme.";
+            }
+        }
+        finally {
+            isCompiling.value = false;
+        }
+    }
+
     /**
      * Event handler for the Cancel button being clicked while in Edit mode.
      * Handles redirect to parent page if creating a new entity.
      *
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
-    async function onCancelEdit(): Promise<boolean | string> {
-        if (!siteEditBag.value?.idKey) {
+    function onCancelEdit(): void {
+        if (!siteEditBag.value?.bag?.idKey) {
             if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
-                return config.navigationUrls[NavigationUrlKey.ParentPage];
+                window.location.href = makeUrlRedirectSafe(config.navigationUrls[NavigationUrlKey.ParentPage]);
             }
-
-            return false;
         }
-
-        return true;
+        else {
+            panelMode.value = DetailPanelMode.View;
+        }
     }
 
     /**
@@ -200,20 +240,22 @@
      *
      * @returns false if it should stay on the page; or a string containing a redirect URL.
      */
-    async function onDelete(): Promise<false | string> {
+    async function onDelete(): Promise<void> {
         errorMessage.value = "";
+
+        if (!await confirmDelete("Site")) {
+            return;
+        }
 
         const result = await invokeBlockAction<string>("Delete", {
             key: siteViewBag.value?.idKey
         });
 
         if (result.isSuccess && result.data) {
-            return result.data;
+            window.location.href = makeUrlRedirectSafe(result.data);
         }
         else {
-            errorMessage.value = result.errorMessage ?? "Unknown error while trying to delete site.";
-
-            return false;
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to delete group member schedule template.";
         }
     }
 
@@ -223,36 +265,19 @@
      *
      * @returns true if the panel should enter edit mode; otherwise false.
      */
-    async function onEdit(): Promise<boolean> {
+    async function onEdit(): Promise<void> {
         const result = await invokeBlockAction<DetailBlockBox<SiteBag, SiteDetailOptionsBag>>("Edit", {
             key: siteViewBag.value?.idKey
         });
 
-        if (result.isSuccess && result.data && result.data.entity) {
-            siteEditBag.value = result.data.entity;
+        if (result.isSuccess && result.data && result.data) {
+            siteEditBag.value = {
+                bag: result.data.entity,
+                validProperties: result.data.validProperties ?? Object.keys(result.data.entity ?? {})
+            };
             config.options = result.data.options;
-            return true;
+            panelMode.value = DetailPanelMode.Edit;
         }
-        else {
-            return false;
-        }
-    }
-
-    /**
-     * Event handler for when a value has changed that has an associated
-     * C# property name. This is used to detect changes to values that
-     * might cause qualified attributes to either show up or not show up.
-     *
-     * @param propertyName The name of the C# property that was changed.
-     */
-    function onPropertyChanged(propertyName: string): void {
-        // If we don't have any qualified attribute properties or this property
-        // is not one of them then do nothing.
-        if (!config.qualifiedAttributeProperties || !config.qualifiedAttributeProperties.some(n => n.toLowerCase() === propertyName.toLowerCase())) {
-            return;
-        }
-
-        refreshAttributesDebounce();
     }
 
     /**
@@ -261,39 +286,32 @@
      *
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
-    async function onSave(): Promise<boolean | string> {
+    async function onSave(): Promise<void> {
         errorMessage.value = "";
 
-        const data: DetailBlockBox<SiteBag, SiteDetailOptionsBag> = {
-            entity: siteEditBag.value,
-            isEditable: true,
-            validProperties: validProperties,
-            options: options.value
-        };
-
-        const result = await invokeBlockAction<SiteBag | string>("Save", {
-            box: data
+        const result = await invokeBlockAction<ValidPropertiesBox<SiteBag> | string>("Save", {
+            box: siteEditBag?.value
         });
 
         if (result.isSuccess && result.data) {
             if (result.statusCode === 200 && typeof result.data === "object") {
-                siteViewBag.value = result.data;
-
-                return true;
+                siteViewBag.value = result.data.bag;
+                panelMode.value = DetailPanelMode.View;
             }
             else if (result.statusCode === 201 && typeof result.data === "string") {
-                return result.data;
+                window.location.href = makeUrlRedirectSafe(result.data);
             }
         }
-
-        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save site.";
-
-        return false;
+        else {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to save site.";
+        }
     }
 
-    // #endregion
+    const onStartSubmitForm = (): void => {
+        submitForm.value = true;
+    };
 
-    provideSecurityGrant(securityGrant);
+    // #endregion
 
     // Handle any initial error conditions or the need to go into edit mode.
     if (config.errorMessage) {
@@ -303,7 +321,7 @@
         blockError.value = "The specified site could not be viewed.";
     }
     else if (!config.entity.idKey) {
-        siteEditBag.value = config.entity;
+        siteEditBag.value = { bag: config.entity };
         panelMode.value = DetailPanelMode.Add;
     }
 </script>

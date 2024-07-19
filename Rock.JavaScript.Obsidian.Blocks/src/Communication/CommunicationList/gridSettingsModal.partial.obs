@@ -1,0 +1,151 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Settings"
+           saveText="Save"
+           @save="onSave">
+        <SectionHeader title="Filters" />
+
+        <div class="row">
+            <div class="col-md-4">
+                <TextBox v-model="subject"
+                         label="Subject" />
+            </div>
+
+            <div class="col-md-4">
+                <DropDownList v-model="communicationType"
+                              label="Communication Type"
+                              :items="communcationTypeItems" />
+            </div>
+
+            <div class="col-md-4">
+                <DropDownList v-model="status"
+                              label="Status"
+                              :items="statusItems" />
+            </div>
+
+            <div class="col-md-4">
+                <PersonPicker v-model="createdBy"
+                              label="Created By" />
+            </div>
+
+
+            <div class="col-md-4">
+                <DateRangePicker v-model="createdDateRange"
+                                 label="Created Date Range"
+                                 help="Note: Leaving dates blank will default to last 7 days." />
+            </div>
+
+            <div class="col-md-4">
+                <DateRangePicker v-model="sentDateRange"
+                                 label="Sent Date Range" />
+            </div>
+
+            <div class="col-md-4">
+                <TextBox v-model="content"
+                         label="Content" />
+            </div>
+
+            <div class="col-md-4">
+                <NumberRangeBox label="Recipient Count" v-model="recipientCount" />
+            </div>
+
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import DateRangePicker from "@Obsidian/Controls/dateRangePicker.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import NumberRangeBox from "@Obsidian/Controls/numberRangeBox.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import { ref, PropType, watch } from "vue";
+    import { GridSettingsOptions } from "./types.partial";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        communcationTypeItems: {
+            type: Object as PropType<ListItemBag[]>,
+            required: true,
+        },
+
+        statusItems: {
+            type: Object as PropType<ListItemBag[]>,
+            required: true,
+        },
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GridSettingsOptions): void;
+        (e: "update:visible", value: boolean): void;
+        (e: "close"): void;
+    }>();
+
+    const subject = ref(props.modelValue.subject ?? "");
+    const communicationType = ref(props.modelValue.communicationType ?? "");
+    const status = ref(props.modelValue.status ?? "");
+    const createdBy = ref(props.modelValue.createdBy);
+    const createdDateRange = ref(props.modelValue.createdDateRange ?? undefined);
+    const sentDateRange = ref(props.modelValue.sentDateRange ?? undefined);
+    const content = ref(props.modelValue.content ?? "");
+    const recipientCount = ref(props.modelValue.recipientCount);
+
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+
+    function onSave(): void {
+        if (!createdDateRange.value) {
+            createdDateRange.value = {
+                lowerValue: RockDateTime.now().addDays(-7).date.toISOString()
+            };
+        }
+        const value: GridSettingsOptions = {
+            subject: subject.value,
+            communicationType: communicationType.value,
+            status: status.value,
+            createdBy: createdBy.value,
+            createdDateRange: createdDateRange.value,
+            sentDateRange: sentDateRange.value,
+            content: content.value,
+            recipientCount: recipientCount.value
+        };
+
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
+
+        isVisible.value = false;
+    }
+
+    watch(() => props.modelValue, () => {
+        subject.value = props.modelValue.subject ?? "";
+        status.value = props.modelValue.communicationType ?? "";
+        status.value = props.modelValue.status ?? "";
+        createdBy.value = props.modelValue.createdBy;
+        createdDateRange.value = props.modelValue.createdDateRange ?? undefined;
+        sentDateRange.value = props.modelValue.sentDateRange ?? undefined;
+        content.value = props.modelValue.content ?? "";
+        recipientCount.value = props.modelValue.recipientCount;
+    });
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            emit("close");
+        }
+    });
+</script>

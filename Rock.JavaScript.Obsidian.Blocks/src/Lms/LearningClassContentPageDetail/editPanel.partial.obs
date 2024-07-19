@@ -1,0 +1,103 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="title"
+                         label="Page Title"
+                         helpText="The title that will be used for the page in the navigation."
+                         placeholder="Syllabus"
+                         rules="required" />
+            </div>
+
+            <div class="col-md-3">
+                <DatePicker v-model="startDateTime"
+                            label="Start Date"
+                            helpText="The date that this page should be shown. Leave this blank to have the page aways available to view." />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <StructuredContentEditor v-model="content" label="Page Content" />
+            </div>
+        </div>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, watch } from "vue";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
+    import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { LearningClassContentPageBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassContentPageDetail/learningClassContentPageBag";
+    import { LearningClassContentPageDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassContentPageDetail/learningClassContentPageDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<LearningClassContentPageBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<LearningClassContentPageDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<LearningClassContentPageBag>): void
+    }>();
+
+    // #region Values
+
+    const title = propertyRef(props.modelValue.bag?.title ?? "", "Title");
+    const startDateTime = propertyRef(props.modelValue.bag?.startDateTime, "StartDateTime");
+    const content = propertyRef(props.modelValue.bag?.content ?? "", "Content");
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [
+        title
+        , startDateTime
+        , content
+    ];
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(title, props.modelValue.bag?.title ?? "");
+        updateRefValue(startDateTime, props.modelValue.bag?.startDateTime);
+        updateRefValue(content, props.modelValue.bag?.content ?? "");
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([...propRefs], () => {
+        const newValue: ValidPropertiesBox<LearningClassContentPageBag> = {
+            bag: { ...props.modelValue.bag } as LearningClassContentPageBag
+        };
+
+        setPropertiesBoxValue(newValue, "title", title.value);
+        setPropertiesBoxValue(newValue, "startDateTime", startDateTime.value ?? "");
+        setPropertiesBoxValue(newValue, "content", content.value);
+
+        emit("update:modelValue", newValue);
+    });
+</script>

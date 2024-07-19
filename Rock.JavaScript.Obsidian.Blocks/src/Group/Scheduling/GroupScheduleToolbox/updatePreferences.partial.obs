@@ -196,7 +196,7 @@
 
     const offsetDaysItems = computed((): ListItemBag[] => {
         const items: ListItemBag[] = [
-            { text: "Do not send a reminder", value: "" },
+            { text: "Do not send a reminder", value: "-1" },
         ];
 
         for (let i = 1; i < 15; i++) {

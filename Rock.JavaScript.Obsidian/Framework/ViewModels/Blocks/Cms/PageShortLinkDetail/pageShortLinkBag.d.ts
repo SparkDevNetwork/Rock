@@ -34,6 +34,9 @@ export type PageShortLinkBag = {
     /** Gets or sets the link to be copied to the clipboard in the UI when the user clicks the copy button in the view mode. */
     copyLink?: string | null;
 
+    /** Get the Default Domain URL of the site to be passed to the front end. */
+    defaultDomainURL?: string | null;
+
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
 

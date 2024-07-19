@@ -200,7 +200,7 @@ namespace Rock.Blocks.Cms
             var blocks = BlockCache.All()
                 .Where( b => b.BlockTypeId == entity.Id );
             bag.Pages = blocks
-                .Where( b => b.PageId != null )
+                .Where( b => b.Page != null )
                 .OrderBy( b => b.Page.GetFullyQualifiedPageName() ) // ordering by FullyQualifiedPageName to keep it consistent with the ordering used before HyperLinkedPageBreadCrumbs.
                 .Select( b => b.Page.GetHyperLinkedPageBreadCrumbs() )
                 .ToList();

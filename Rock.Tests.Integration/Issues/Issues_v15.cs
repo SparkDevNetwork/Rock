@@ -21,6 +21,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Jobs;
 using Rock.Model;
+using Rock.Tests.Integration.Data.Interactions;
 using Rock.Tests.Integration.Modules.Core.Lava;
 using Rock.Tests.Shared;
 
@@ -53,7 +54,7 @@ namespace Rock.Tests.Integration.BugFixes
             var rockContext = new RockContext();
             var interactionService = new InteractionService( rockContext );
 
-            var args = new TestDataHelper.Interactions.CreatePageViewInteractionActionArgs
+            var args = new CreatePageViewInteractionActionArgs
             {
                 Guid = testInteractionGuid1.AsGuid(),
                 ForeignKey = "IntegrationTestData",
@@ -67,7 +68,7 @@ namespace Rock.Tests.Integration.BugFixes
                 UserPersonAliasId = TestDataHelper.GetTestPerson( TestGuids.TestPeople.TedDecker ).PrimaryAliasId
             };
 
-            var interaction1 = TestDataHelper.Interactions.CreatePageViewInteraction( args, rockContext );
+            var interaction1 = InteractionsDataManager.Instance.CreatePageViewInteraction( args );
             interactionService.Add( interaction1 );
 
             // Create an interaction session with a valid Browser Session Guid.
@@ -75,14 +76,10 @@ namespace Rock.Tests.Integration.BugFixes
             args.BrowserIpAddress = "1.1.1.2";
             args.BrowserSessionGuid = Guid.NewGuid();
 
-            var interaction2 = TestDataHelper.Interactions.CreatePageViewInteraction( args, rockContext );
+            var interaction2 = InteractionsDataManager.Instance.CreatePageViewInteraction( args );
             interactionService.Add( interaction2 );
 
-            rockContext.SaveChanges();
-
             var settings = new PopulateInteractionSessionData.PopulateInteractionSessionDataJobSettings();
-            settings.IpAddressLookupIsDisabled = true;
-            settings.MaxRecordsToProcessPerRun = 10;
 
             var job = new PopulateInteractionSessionData();
             var jobResult = job.Execute( settings );

@@ -21,8 +21,11 @@ using System.Data.Entity;
 using System.Data.Entity.Spatial;
 using System.Data.SqlClient;
 using System.Linq;
+
 using EF6.TagWith;
-using Microsoft.SqlServer.Types;
+
+using Microsoft.Extensions.Logging;
+
 using Rock.Data;
 using Rock.Logging;
 using Rock.Reporting.DataFilter;
@@ -35,6 +38,7 @@ namespace Rock.Model
     /// <summary>
     /// DataView Service and Data access class
     /// </summary>
+    [RockLoggingCategory]
     public partial class DataViewService
     {
         /// <summary>
@@ -255,7 +259,8 @@ namespace Rock.Model
 
             if ( timeToRunDurationMilliseconds.HasValue )
             {
-                RockLogger.Log.Debug( RockLogDomains.Reporting, "{methodName} dataViewId: {dataViewId} timeToRunDurationMilliseconds: {timeToRunDurationMilliseconds}", nameof( AddRunDataViewTransaction ), dataViewId, timeToRunDurationMilliseconds );
+                RockLogger.LoggerFactory.CreateLogger<DataViewService>()
+                    .LogDebug( "{methodName} dataViewId: {dataViewId} timeToRunDurationMilliseconds: {timeToRunDurationMilliseconds}", nameof( AddRunDataViewTransaction ), dataViewId, timeToRunDurationMilliseconds );
                 dataViewInfo.TimeToRunDurationMilliseconds = timeToRunDurationMilliseconds;
                 /*
                  * If the run duration is set that means this was called after the expression was
@@ -365,7 +370,7 @@ namespace Rock.Model
 
             if ( dataViewObjectQuery == null )
             {
-                RockLogger.Log.WriteToLog( RockLogLevel.Error, $"{nameof( UpdateDataViewPersistedValues )}: Unable to update persisted values for data view with ID {dataView.Id}." );
+                Logger.LogError( $"{nameof( UpdateDataViewPersistedValues )}: Unable to update persisted values for data view with ID {dataView.Id}." );
                 return;
             }
 
@@ -436,15 +441,7 @@ END CATCH;";
                     if ( objectParameter.Value is DbGeography geography )
                     {
                         // We need to manually convert DbGeography to SqlGeography since we're sidestepping EF here.
-                        // https://stackoverflow.com/a/45099842 (Use SqlGeography instead of DbGeography)
-                        // https://stackoverflow.com/a/23187033 (Entity Framework: SqlGeography vs DbGeography)
-                        return new SqlParameter
-                        {
-                            ParameterName = objectParameter.Name,
-                            Value = SqlGeography.Parse( geography.AsText() ),
-                            SqlDbType = SqlDbType.Udt,
-                            UdtTypeName = "geography"
-                        };
+                        return Location.GetGeographySqlParameter( objectParameter.Name, geography );
                     }
 
                     return new SqlParameter( objectParameter.Name, objectParameter.Value ?? DBNull.Value );

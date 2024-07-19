@@ -147,6 +147,16 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string HISTORY_CONNECTION_REQUEST = "A8542DD2-91B1-4CCA-873A-D052BCD6EE06";
 
+        /// <summary>
+        /// History of location changes
+        /// </summary>
+        public const string HISTORY_LOCATION = "67E8F6D1-2F20-43FD-BAEC-144E70428AC3";
+
+        /// <summary>
+        /// History of learning activity completion changes.
+        /// </summary>
+        public const string HISTORY_LEARNING_ACTIVITY_COMPLETION = "40A49BFF-5AE5-487B-B4AA-95DE435209FE";
+
         #endregion
 
         #region Schedule Categories
@@ -297,6 +307,16 @@ namespace Rock.SystemGuid
         /// The insights metrics Category Guid
         /// </summary>
         public const string INSIGHTS = "CEC746EE-76D6-477F-B7CF-374542F92041";
+
+        /// <summary>
+        /// The tithing overview Category Guid
+        /// </summary>
+        public const string TITHING_OVERVIEW = "914E7A39-EA2D-469B-95B5-B6518DBE5F52";
+
+        /// <summary>
+        /// The metric Category Guid
+        /// </summary>
+        public const string METRIC = "67DA5B5A-E5CF-4F1A-B76A-D8460BAF5F8C";
 
         #endregion
 

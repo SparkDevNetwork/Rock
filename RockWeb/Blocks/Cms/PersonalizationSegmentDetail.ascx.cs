@@ -28,6 +28,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Personalization.SegmentFilters;
 using Rock.Reporting;
+using Rock.Tasks;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -210,7 +211,7 @@ namespace RockWeb.Blocks.Cms
 
             // Person Filters
             dvpFilterDataView.SetValue( personalizationSegment.FilterDataViewId );
-            
+
             // Session Filters
             tglSessionCountFiltersAllAny.Checked = AdditionalFilterConfiguration.SessionFilterExpressionType == FilterExpressionType.GroupAll;
             BindSessionCountFiltersGrid();
@@ -279,11 +280,20 @@ namespace RockWeb.Blocks.Cms
                 return;
             }
 
+            bool isSegmentDefinitionChanged = (
+               personalizationSegment.Name != tbName.Text ||
+               personalizationSegment.IsActive != cbIsActive.Checked ||
+               personalizationSegment.SegmentKey != tbSegmentKey.Text ||
+               personalizationSegment.FilterDataViewId != dvpFilterDataView.SelectedValueAsId() ||
+               personalizationSegment.AdditionalFilterConfiguration != this.AdditionalFilterConfiguration
+            );
+
             personalizationSegment.Name = tbName.Text;
             personalizationSegment.IsActive = cbIsActive.Checked;
             personalizationSegment.SegmentKey = tbSegmentKey.Text;
             personalizationSegment.Description = tbDescription.Text;
             personalizationSegment.FilterDataViewId = dvpFilterDataView.SelectedValueAsId();
+            personalizationSegment.AdditionalFilterConfiguration = this.AdditionalFilterConfiguration;
 
             if ( tglSessionCountFiltersAllAny.Checked )
             {
@@ -312,33 +322,10 @@ namespace RockWeb.Blocks.Cms
                 AdditionalFilterConfiguration.InteractionFilterExpressionType = FilterExpressionType.GroupAny;
             }
 
-            personalizationSegment.AdditionalFilterConfiguration = this.AdditionalFilterConfiguration;
+            // Mark segment as dirty to signal the PostSave hook to update the sometimes long running Personalization data on a background task.
+            personalizationSegment.IsDirty = isSegmentDefinitionChanged;
 
             rockContext.SaveChanges();
-
-            try
-            {
-                var updatePersonalizationRockContext = new RockContext();
-                updatePersonalizationRockContext.Database.CommandTimeout = GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180;
-                new PersonalizationSegmentService( updatePersonalizationRockContext ).UpdatePersonAliasPersonalizationData( PersonalizationSegmentCache.Get( personalizationSegment.Id ) );
-            }
-            catch ( Exception ex )
-            {
-                this.LogException( ex );
-                var sqlTimeoutException = ReportingHelper.FindSqlTimeoutException( ex );
-                if ( sqlTimeoutException != null )
-                {
-                    nbSegmentDataUpdateError.NotificationBoxType = NotificationBoxType.Warning;
-                    nbSegmentDataUpdateError.Text = "This segment filter personalization data could not be calculated in a timely manner. You can try again or adjust the timeout setting of this block.";
-                    return;
-                }
-
-                nbSegmentDataUpdateError.NotificationBoxType = NotificationBoxType.Danger;
-                nbSegmentDataUpdateError.Text = "An error occurred when updating personalization data";
-                nbSegmentDataUpdateError.Details = ex.Message;
-                return;
-            }
-
 
             NavigateToParentPage();
         }

@@ -47,7 +47,7 @@ namespace Rock.Tests.Integration.Modules.Web.Controls
         }
 
         [TestMethod]
-        public void AddressControl_ValidationFailsIfRequiredFieldNotSupplied()
+        public void AddressControl_RequiredFieldNotSupplied_ValidationFails()
         {
             var addressControl = new Rock.Web.UI.Controls.AddressControl();
 
@@ -69,9 +69,10 @@ namespace Rock.Tests.Integration.Modules.Web.Controls
         }
 
         [TestMethod]
-        public void AddressControl_FilterModeDoesNotSetDefaultValues()
+        public void AddressControl_PartialAddressEnabled_DoesNotSetDefaultValues()
         {
             var addressControl = new Rock.Web.UI.Controls.AddressControl();
+
             addressControl.PartialAddressIsAllowed = true;
 
             // Create an address with a Street Only.
@@ -90,9 +91,10 @@ namespace Rock.Tests.Integration.Modules.Web.Controls
         }
 
         [TestMethod]
-        public void AddressControl_FilterModeIncompleteAddressIsValid()
+        public void AddressControl_PartialAddressEnabled_IncompleteEntryIsValid()
         {
             var addressControl = new Rock.Web.UI.Controls.AddressControl();
+
             addressControl.PartialAddressIsAllowed = true;
 
             // Create an address with a Street Only.

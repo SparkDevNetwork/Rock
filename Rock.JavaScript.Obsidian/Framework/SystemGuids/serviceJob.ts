@@ -115,15 +115,25 @@ export const ServiceJob = {
     DataMigrations161SwapFinancialBatchList: "7750ECFD-26E3-49DE-8E90-1B1A6DCCC3FE",
     /** The post update data migration job to chop the Email Preference Entry block. */
     DataMigrations162ChopEmailPreferenceEntry: "AE07C80A-80A4-48FD-908C-56DDB1CAA322",
-    /** The Job to run Post v16.6 Add CommunicationRecipient Index. */
+    /** The Job to run Post v16.6 to add a new index to the CommunicationRecipient table. */
     DataMigrations166AddCommunicationRecipientIndex: "48070B65-FC20-401F-B25F-8F4D13BA5F36",
     /** The Job to run Post v16.6 Data Migrations to an index to the CreatedDateTime column on the Interaction table. */
     DataMigrations166AddInteractionCreatedDateTimeIndex: "2B2E2C6F-0184-4797-9D39-E8FC700D9887",
+    /** The Job to run Post v17.0 Data Migrations to chop 6 blocks Block. */
+    DataMigrations166ChopObsidianBlocks: "4B8A66B3-1D92-480C-B473-D066B64E72AD",
     /**
      * The Job to run Post v16.6 Data Migrations to update the newly
      * created TargetCount column on AchievementType.
      */
     DataMigrations166UpdateAchievementtypeTargetcountColumn: "ab4d7fa7-8e07-48d3-8225-bdecc63b71f5",
+    /** The Job to run Post v16.7 to populate EntityIntents from AdditionalSettingsJson. */
+    DataMigrations167PopulateEntityIntentsFromAdditionalSettingsJson: "155C2051-1513-4BB3-83AD-8D37EBBC3F59",
+    /** The Job to run Post v17.0 Data Migrations to chop Shortened Link Block. */
+    DataMigrations170ChopShortenedLinksBlock: "8899363A-C52B-4D82-88C2-CA199D73E95C",
+    /** The post update data migration job to remove the legacy Communication Recipient List Webforms block. */
+    DataMigrations170RemoveCommunicationRecipientListBlock: "54CCFFFD-83A8-4BB6-A699-DDE34310BFE6",
+    /** The post update data migration job to remove the legacy Communication Recipient List Webforms block. */
+    DataMigrations170RemoveDiscBlock: "795AE7B0-8B61-4577-B50A-350907CA0C65",
     /** The post update data migration job to remove legacy preference attributes. */
     DataMigrations170RemoveLegacyPreferences: "46d98280-7611-4588-831d-6924e2be9da6",
     /**
@@ -158,6 +168,8 @@ export const ServiceJob = {
     RockCleanup: "1A8238B1-038A-4295-9FDE-C6D93002A5D7",
     /** The Job to send an email digest with an attendance summary of all child groups to regional group leaders */
     SendGroupAttendanceDigest: "9F9E9C3B-FC58-4939-A272-4FA86D44CE7B",
+    /** The job for sending available learning activity notifications. Rock.Jobs.SendLearningActivityNotifications. */
+    SendLearningActivityNotifications: "0075859b-8dc3-4e95-9075-89198886fcb4",
     /** The steps automation job - add steps based on people in a dataview */
     StepsAutomation: "97858941-0447-49D6-9E35-B03665FEE965",
     /** The media synchronize job. */
@@ -170,4 +182,6 @@ export const ServiceJob = {
     UpdatePersistedDatasets: "B6D3B48A-039A-4A1C-87BE-3FC0152AB5DA",
     /** The Rock.Jobs.UpdatePersonalizationData job. */
     UpdatePersonalizationData: "67CFE1FE-7C64-4328-8576-F1A4BFD0EA8B",
+    /** The job for updating learning program completions. Rock.Jobs.UpdateProgramCompletions. */
+    UpdateProgramCompletions: "4E805A88-C031-4BA0-BAD6-0A706E647870",
 };

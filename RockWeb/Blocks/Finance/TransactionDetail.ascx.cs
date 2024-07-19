@@ -30,6 +30,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -1329,7 +1330,7 @@ namespace RockWeb.Blocks.Finance
                 GetForeignCurrencyFields( txn );
                 gpPaymentGateway.Visible = true;
 
-                if ( txn.Batch != null && txn.Batch.Status == BatchStatus.Closed )
+                if ( txn.Batch != null && ( txn.Batch.Status == BatchStatus.Closed || txn.Batch.IsAutomated ) )
                 {
                     batchEditAllowed = false;
                 }
@@ -1345,7 +1346,7 @@ namespace RockWeb.Blocks.Finance
 
             lbEdit.Visible = editAllowed && batchEditAllowed;
             lbRefund.Visible = refundAllowed && txn.RefundDetails == null;
-            lbAddTransaction.Visible = editAllowed && batch != null && batch.Status != BatchStatus.Closed;
+            lbAddTransaction.Visible = editAllowed && batch != null && batch.Status != BatchStatus.Closed && !batch.IsAutomated;
 
             if ( !editAllowed )
             {
@@ -1357,7 +1358,7 @@ namespace RockWeb.Blocks.Finance
                 if ( !batchEditAllowed )
                 {
                     readOnly = true;
-                    nbEditModeMessage.Text = string.Format( "<strong>Note</strong> Because this {0} belongs to a batch that is closed, editing is not enabled.", FinancialTransaction.FriendlyTypeName );
+                    nbEditModeMessage.Text = string.Format( "<strong>Note</strong> Because this {0} belongs to a batch that is either automated or is closed, so editing is not enabled.", FinancialTransaction.FriendlyTypeName );
                 }
             }
 
@@ -1681,7 +1682,7 @@ namespace RockWeb.Blocks.Finance
                     var primaryImage = txn.Images
                         .OrderBy( i => i.Order )
                         .FirstOrDefault();
-                    imgPrimary.ImageUrl = string.Format( "~/GetImage.ashx?id={0}", primaryImage.BinaryFileId );
+                    imgPrimary.ImageUrl = FileUrlHelper.GetImageUrl( primaryImage.BinaryFileId );
 
                     rptrImages.DataSource = txn.Images
                         .Where( i => !i.Id.Equals( primaryImage.Id ) )
@@ -2257,17 +2258,21 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
-        /// Images the URL.
+        /// Gets the image URL with optional maximum width and height properties.
         /// </summary>
         /// <param name="binaryFileId">The binary file identifier.</param>
         /// <param name="maxWidth">The maximum width.</param>
         /// <param name="maxHeight">The maximum height.</param>
-        /// <returns></returns>
+        /// <returns>The URL of the image with specified dimensions.</returns>
         protected string ImageUrl( int binaryFileId, int? maxWidth = null, int? maxHeight = null )
         {
-            string width = maxWidth.HasValue ? string.Format( "&maxWidth={0}", maxWidth.Value ) : string.Empty;
-            string height = maxHeight.HasValue ? string.Format( "&maxHeight={0}", maxHeight.Value ) : string.Empty;
-            return ResolveRockUrl( string.Format( "~/GetImage.ashx?id={0}{1}{2}", binaryFileId, width, height ) );
+            var options = new GetImageUrlOptions
+            {
+                MaxWidth = maxWidth,
+                MaxHeight = maxHeight
+            };
+
+            return FileUrlHelper.GetImageUrl( binaryFileId, options );
         }
 
         /// <summary>

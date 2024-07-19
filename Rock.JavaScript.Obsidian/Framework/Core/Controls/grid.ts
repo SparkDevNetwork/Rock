@@ -1197,13 +1197,20 @@ export function getColumnDefinitions(columnNodes: VNode[]): ColumnDefinition[] {
     for (const node of columnNodes) {
         const name = getVNodeProp<string>(node, "name");
 
-        // Check if this node is the special AttributeColumns or DynamicColumns node.
+        // Check if this node is the special AttributeColumns, DynamicColumns or
+        // has a list of child nodes.
         if (!name) {
             if (getVNodeProp<boolean>(node, "__attributeColumns") === true) {
                 buildAttributeColumns(columns, node);
             }
             else if (getVNodeProp<boolean>(node, "__dynamicColumns") === true) {
                 buildDynamicColumns(columns, node);
+            }
+            else if (node?.children?.length) {
+                // V-For was used, so it's just a blank VNode with children that
+                // we need to loop through.
+                const newColumns = getColumnDefinitions(node.children as VNode[]);
+                columns.push(...newColumns);
             }
 
             continue;

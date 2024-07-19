@@ -18,6 +18,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Logging;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -34,6 +35,8 @@ using System.Web;
 using System.Web.UI.WebControls;
 using System.Xml.Linq;
 
+using Microsoft.Extensions.Logging;
+
 namespace Rock.Utility
 {
     /// <summary>
@@ -46,16 +49,36 @@ namespace Rock.Utility
         /// <summary>
         /// Create a new instance.
         /// </summary>
-        public SampleDataManager() : this( null )
+        public SampleDataManager() : this( ( ILogger ) null )
         {
         }
 
         /// <summary>
         /// Create a new instance.
         /// </summary>
-        public SampleDataManager( IRockLogger logDevice )
+        public SampleDataManager( ILogger logger )
         {
-            _taskLog = logDevice ?? new RockLoggerMemoryBuffer( new RockLogConfiguration() );
+            _taskLog = logger ?? new RockLoggerMemoryBuffer();
+        }
+
+        /// <summary>
+        /// Create a new instance.
+        /// </summary>
+        public SampleDataManager( ILavaEngine lavaEngine, ILogger logger = null )
+        {
+            _taskLog = logger ?? new RockLoggerMemoryBuffer();
+
+            _lavaEngine = lavaEngine;
+        }
+
+        /// <summary>
+        /// Create a new instance.
+        /// </summary>
+        [Obsolete( "This is not used and will be removed in the future." )]
+        [RockObsolete( "1.17" )]
+        public SampleDataManager( IRockLogger logDevice )
+            : this( ( ILogger ) null )
+        {
         }
 
         #endregion
@@ -63,7 +86,9 @@ namespace Rock.Utility
         #region Fields
 
         private SampleDataImportActionArgs _args = new SampleDataImportActionArgs();
-        private readonly IRockLogger _taskLog;
+
+        private readonly ILogger _taskLog;
+        private readonly ILavaEngine _lavaEngine;
 
         /// <summary>
         /// Stopwatch used to measure time during certain operations.
@@ -252,13 +277,15 @@ namespace Rock.Utility
         /// <summary>
         /// The log device used to record processing details.
         /// </summary>
-        public IRockLogger LogDevice
-        {
-            get
-            {
-                return _taskLog;
-            }
-        }
+        [Obsolete( "This is not used and will be removed in the future." )]
+        [RockObsolete( "1.17" )]
+        public IRockLogger LogDevice => null;
+
+        /// <summary>
+        /// Gets the logger associated with this instance.
+        /// </summary>
+        /// <value>The logger.</value>
+        public ILogger Logger => _taskLog;
 
         /// <summary>
         /// Process all the data in the XML file; deleting stuff and then adding stuff.
@@ -286,6 +313,14 @@ namespace Rock.Utility
             this.ProcessXmlDocument( xdoc, args );
         }
 
+        private void VerifyEnvironment()
+        {
+            if ( LavaService.GetCurrentEngine() == null )
+            {
+                throw new Exception( "SampleDataManager processing failed. The LavaService must be initialized to process sample data correctly." );
+            }
+        }
+
         /// <summary>
         /// Process all the data in the XML file; deleting stuff and then adding stuff.
         /// as per https://github.com/SparkDevNetwork/Rock/wiki/z.-Rock-Solid-Demo-Church-Specification#wiki-xml-data
@@ -294,6 +329,9 @@ namespace Rock.Utility
         /// <param name="args"></param>
         internal void ProcessXmlDocument( XDocument xdoc, SampleDataImportActionArgs args )
         {
+            // Prior to processing, verify the environment.
+            VerifyEnvironment();
+
             _args = args ?? new SampleDataImportActionArgs();
 
             // Re-seed the randomizer with the given seed if it's non-0.
@@ -457,7 +495,7 @@ namespace Rock.Utility
 
                 if ( _args.EnableStopwatch )
                 {
-                    _taskLog.WriteToLog( RockLogLevel.Debug, _sb.ToString() );
+                    Logger.LogDebug( _sb.ToString() );
                 }
 
                 // Clear the static objects that contains all security roles and auth rules (so that it will be refreshed)
@@ -499,7 +537,7 @@ namespace Rock.Utility
             {
                 var x = string.Format( format, args );
                 _sb.Append( x );
-                _taskLog.WriteToLog( RockLogLevel.Debug, x );
+                Logger.LogDebug( x );
             }
         }
 
@@ -942,7 +980,7 @@ namespace Rock.Utility
 
                 // Merge lava fields
                 // LAVA additionalReminderDetails
-                Dictionary<string, object> mergeObjects = new Dictionary<string, object>();
+                var mergeObjects = new LavaDataDictionary();
                 DateTime? registrationStartsDate = null;
                 DateTime? registrationEndsDate = null;
                 DateTime? sendReminderDate = null;
@@ -951,30 +989,32 @@ namespace Rock.Utility
 
                 if ( element.Attribute( "registrationStarts" ) != null )
                 {
-                    var y = element.Attribute( "registrationStarts" ).Value.ResolveMergeFields( mergeObjects );
-                    registrationStartsDate = DateTime.Parse( y );
+                    var renderResult = _lavaEngine.RenderTemplate( element.Attribute( "registrationStarts" ).Value, mergeObjects );
+                    registrationStartsDate = DateTime.Parse( renderResult.Text );
                 }
 
                 if ( element.Attribute( "registrationEnds" ) != null )
                 {
-                    registrationEndsDate = DateTime.Parse( element.Attribute( "registrationEnds" ).Value.ResolveMergeFields( mergeObjects ) );
+                    var renderResult = _lavaEngine.RenderTemplate( element.Attribute( "registrationEnds" ).Value, mergeObjects );
+                    registrationEndsDate = DateTime.Parse( renderResult.Text );
                 }
 
                 if ( element.Attribute( "sendReminderDate" ) != null )
                 {
-                    sendReminderDate = DateTime.Parse( element.Attribute( "sendReminderDate" ).Value.ResolveMergeFields( mergeObjects ) );
+                    var renderResult = _lavaEngine.RenderTemplate( element.Attribute( "sendReminderDate" ).Value, mergeObjects );
+                    sendReminderDate = DateTime.Parse( renderResult.Text );
                 }
 
                 if ( element.Attribute( "additionalReminderDetails" ) != null )
                 {
-                    additionalReminderDetails = element.Attribute( "additionalReminderDetails" ).Value;
-                    additionalReminderDetails = additionalReminderDetails.ResolveMergeFields( mergeObjects );
+                    var renderResult = _lavaEngine.RenderTemplate( element.Attribute( "additionalReminderDetails" ).Value, mergeObjects );
+                    additionalReminderDetails = renderResult.Text;
                 }
 
                 if ( element.Attribute( "additionalConfirmationDetails" ) != null )
                 {
-                    additionalConfirmationDetails = element.Attribute( "additionalConfirmationDetails" ).Value;
-                    additionalConfirmationDetails = additionalConfirmationDetails.ResolveMergeFields( mergeObjects );
+                    var renderResult = _lavaEngine.RenderTemplate( element.Attribute( "additionalConfirmationDetails" ).Value, mergeObjects );
+                    additionalConfirmationDetails = renderResult.Text;
                 }
 
                 // Get the contact info

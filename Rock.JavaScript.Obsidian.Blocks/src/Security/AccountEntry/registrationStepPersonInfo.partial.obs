@@ -3,50 +3,44 @@
     <div>
         <fieldset>
             <legend>Your Information</legend>
-            <TextBox
-                v-model="internalFirstName"
-                :disabled="disabled"
-                label="First Name"
-                rules="required" />
-            <TextBox
-                v-model="internalLastName"
-                :disabled="disabled"
-                label="Last Name"
-                rules="required" />
-            <EmailBox
-                v-if="!isEmailHidden"
-                v-model="internalEmail"
-                :disabled="disabled"
-                label="Email"
-                rules="required" />
-            <GenderDropDownList
-                v-if="isGenderPickerShown"
-                v-model="internalGender"
-                :disabled="disabled" />
-            <BirthdayPicker
-                v-model="internalBirthday"
-                :disabled="disabled"
-                label="Birthday"
-                rules="required" />
+            <TextBox v-model="internalFirstName"
+                     :disabled="disabled"
+                     label="First Name"
+                     rules="required" />
+            <TextBox v-model="internalLastName"
+                     :disabled="disabled"
+                     label="Last Name"
+                     rules="required" />
+            <EmailBox v-if="!isEmailHidden"
+                      v-model="internalEmail"
+                      :disabled="disabled"
+                      label="Email"
+                      rules="required" />
+            <GenderPicker v-if="isGenderPickerShown"
+                          v-model="internalGender"
+                          :disabled="disabled"
+                          label="Gender" />
+            <BirthdayPicker v-model="internalBirthday"
+                            :disabled="disabled"
+                            label="Birthday"
+                            rules="required" />
         </fieldset>
 
         <fieldset v-if="internalArePhoneNumbersShown">
             <legend v-if="internalPhoneNumbers.length > 1">Phone Numbers</legend>
             <template v-for="(value, key) in internalPhoneNumbers">
-                <PhoneNumberDetails
-                    v-if="!value.isHidden"
-                    v-model="internalPhoneNumbers[key]"
-                    :disabled="disabled"
-                    :isMobile="isMobile" />
+                <PhoneNumberDetails v-if="!value.isHidden"
+                                    v-model="internalPhoneNumbers[key]"
+                                    :disabled="disabled"
+                                    :isMobile="isMobile" />
             </template>
         </fieldset>
 
         <fieldset v-if="isAddressShown">
             <legend>Address</legend>
-            <Address
-                v-model="internalAddress"
-                :disabled="disabled"
-                :rules="addressRules"></Address>
+            <Address v-model="internalAddress"
+                     :disabled="disabled"
+                     :rules="addressRules"></Address>
         </fieldset>
 
         <CampusPicker
@@ -58,12 +52,11 @@
             :campusTypeFilter="campusTypeFilter"
             :showBlankItem="true" />
 
-        <AttributeValuesContainer
-            v-if="internalAttributes"
-            v-model="internalAttributeValues"
-            :attributes="internalAttributes"
-            isEditMode
-            :showCategoryLabel="false" />
+        <AttributeValuesContainer v-if="internalAttributes"
+                                  v-model="internalAttributeValues"
+                                  :attributes="internalAttributes"
+                                  isEditMode
+                                  :showCategoryLabel="false" />
     </div>
 </template>
 
@@ -76,10 +69,10 @@
     import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
     import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
-    import GenderDropDownList from "@Obsidian/Controls/genderDropDownList.obs";
+    import GenderPicker from "@Obsidian/Controls/genderPicker.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { Gender } from "@Obsidian/Enums/Crm/gender";
-    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
     import { AccountEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryInitializationBox";
     import { AccountEntryPersonInfoBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryPersonInfoBag";
     import { AccountEntryPhoneNumberBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryPhoneNumberBag";
@@ -156,7 +149,7 @@
             return (props.modelValue?.gender ?? 0).toString();
         },
         set(newValue: string) {
-            emit("update:modelValue", { ...props.modelValue, gender: toNumberOrNull(newValue) as Gender ?? Gender.Unknown });
+            emit("update:modelValue", { ...props.modelValue, gender: toNumber(newValue) as Gender });
         }
     });
 
@@ -225,7 +218,7 @@
     /**
      * Updates the person's campus guid whenever the campus picker selection changes.
      */
-     function onCampusChanged(value: ListItemBag | ListItemBag[] | null): void {
+    function onCampusChanged(value: ListItemBag | ListItemBag[] | null): void {
         if (isListItemBag(value)) {
             emit("update:modelValue", { ...props.modelValue, campus: value.value });
         }

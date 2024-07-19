@@ -27,24 +27,6 @@
     </RockFormField>
 </template>
 
-<script lang="ts">
-    type Rock = {
-        controls: {
-            datePicker: {
-                initialize: (args: Record<string, unknown>) => void;
-            };
-        };
-    };
-
-    declare global {
-        /* eslint-disable @typescript-eslint/naming-convention */
-        interface Window {
-            Rock: Rock;
-        }
-        /* eslint-enable @typescript-eslint/naming-convention */
-    }
-</script>
-
 <script setup lang="ts">
     import { computed, onMounted, PropType, ref, watch } from "vue";
     import { toNumber } from "@Obsidian/Utility/numberUtils";

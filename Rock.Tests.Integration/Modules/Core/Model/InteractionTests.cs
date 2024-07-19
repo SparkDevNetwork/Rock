@@ -20,6 +20,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Model;
+using Rock.Tests.Integration.Data.Interactions;
 using Rock.Tests.Shared.TestFramework;
 
 namespace Rock.Tests.Integration.Modules.Core.Model
@@ -44,7 +45,6 @@ namespace Rock.Tests.Integration.Modules.Core.Model
 
             var interaction = BuildInteraction( rockContext, Convert.ToDateTime( "2010-3-15" ) );
 
-            interactionService.Add( interaction );
             rockContext.SaveChanges();
 
             var interactionId = interaction.Id;
@@ -72,7 +72,6 @@ namespace Rock.Tests.Integration.Modules.Core.Model
                 for ( var i = 0; i < 15; i++ )
                 {
                     var interaction = BuildInteraction( rockContext, TestDataHelper.GetRandomDateInRange( minDateValue, maxDateValue ) );
-                    interactionService.Add( interaction );
                 }
 
                 rockContext.SaveChanges();
@@ -91,9 +90,9 @@ namespace Rock.Tests.Integration.Modules.Core.Model
             }
         }
 
-        private Interaction BuildInteraction( RockContext rockContext, DateTime interactionDate )
+        private Rock.Model.Interaction BuildInteraction( RockContext rockContext, DateTime interactionDate )
         {
-            var args = new TestDataHelper.Interactions.CreatePageViewInteractionActionArgs
+            var args = new CreatePageViewInteractionActionArgs
             {
                 PageIdentifier = SystemGuid.Page.EXCEPTION_LIST,
                 ForeignKey = interactionForeignKey,
@@ -101,7 +100,7 @@ namespace Rock.Tests.Integration.Modules.Core.Model
                 BrowserIpAddress = "127.0.0.1"
             };
 
-            var interaction = TestDataHelper.Interactions.CreatePageViewInteraction( args, rockContext );
+            var interaction = InteractionsDataManager.Instance.CreatePageViewInteraction( args, rockContext );
             return interaction;
         }
 

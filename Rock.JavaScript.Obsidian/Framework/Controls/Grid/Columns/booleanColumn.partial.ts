@@ -36,6 +36,10 @@ function getExportValue(row: Record<string, unknown>, column: ColumnDefinition):
     return row[column.field] === true;
 }
 
+/**
+ * Displays a boolean value as a checkmark if the value is `true`, otherwise
+ * the cell is blank.
+ */
 export default defineComponent({
     props: {
         ...standardColumnProps,

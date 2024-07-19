@@ -275,7 +275,6 @@ namespace RockWeb.Blocks.Connection
             gConnectionRequestActivities.DataKeyNames = new string[] { "Guid" };
             gConnectionRequestActivities.Actions.AddClick += gConnectionRequestActivities_Add;
             gConnectionRequestActivities.GridRebind += gConnectionRequestActivities_GridRebind;
-            gConnectionRequestActivities.RowDataBound += gConnectionRequestActivities_RowDataBound;
 
             gConnectionRequestWorkflows.DataKeyNames = new string[] { "Guid" };
             gConnectionRequestWorkflows.GridRebind += gConnectionRequestWorkflows_GridRebind;

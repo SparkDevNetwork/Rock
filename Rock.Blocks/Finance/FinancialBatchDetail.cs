@@ -45,10 +45,12 @@ namespace Rock.Blocks.Finance
     #region Block Attributes
     [LinkedPage( "Transaction Matching Page",
         Description = "Page used to match transactions for a batch.",
+        Key = AttributeKey.TransactionMatchingPage,
         Order = 1 )]
 
     [LinkedPage( "Audit Page",
         Description = "Page used to display the history of changes to a batch.",
+        Key = AttributeKey.AuditPage,
         Order = 2 )]
 
     [DefinedTypeField( "Batch Names",
@@ -58,6 +60,13 @@ namespace Rock.Blocks.Finance
         Category = "",
         Key = AttributeKey.BatchNames,
         Order = 3 )]
+
+    [BooleanField(
+        "Hide Account Totals Section",
+        Description = "When enabled the Account Totals section of the Financial Batch Detail block will be hidden.",
+        Key = AttributeKey.IsAccountTotalsHidden,
+        Order = 4
+        )]
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "b5976e12-a3e4-4faf-95b5-3d54f25405da" )]
@@ -67,14 +76,6 @@ namespace Rock.Blocks.Finance
         private const string AuthorizationReopenBatch = "ReopenBatch";
 
         #region Keys
-
-        /// <summary>
-        /// Keys to use for Attributes
-        /// </summary>
-        private static class AttributeKey
-        {
-            public const string BatchNames = "BatchNames";
-        }
 
         private static class PageParameterKey
         {
@@ -88,6 +89,13 @@ namespace Rock.Blocks.Finance
             public const string AuditLogs = "AuditLogs";
         }
 
+        private static class AttributeKey
+        {
+            public const string TransactionMatchingPage = "TransactionMatchingPage";
+            public const string AuditPage = "AuditPage";
+            public const string IsAccountTotalsHidden = "IsAccountTotalsHidden";
+            public const string BatchNames = "BatchNames";
+        }
         #endregion Keys
 
         #region Block State
@@ -173,12 +181,14 @@ namespace Rock.Blocks.Finance
                     .GroupBy( d => new
                     {
                         AccountId = d.AccountId,
-                        AccountName = d.Account.Name
+                        AccountName = d.Account.Name,
+                        GlCode = d.Account.GlCode,
                     } )
                     .Select( s => new FinancialBatchAccountTotalsBag
                     {
                         Name = s.Key.AccountName,
-                        Currency = s.Sum( a => ( decimal? ) a.Amount ) ?? 0.0M
+                        Currency = s.Sum( a => ( decimal? ) a.Amount ) ?? 0.0M,
+                        GlCode = s.Key.GlCode
                     } )
                     .OrderBy( s => s.Name )
                     .ToList();
@@ -196,6 +206,7 @@ namespace Rock.Blocks.Finance
                 options.BatchNameDefinedTypeGuid = GetAttributeValue( AttributeKey.BatchNames );
             }
 
+            options.IsAccountTotalsHidden = GetAttributeValue( AttributeKey.IsAccountTotalsHidden ).AsBoolean();
             var currencyInfo = new RockCurrencyCodeInfo();
             options.CurrencyInfo = new ViewModels.Utility.CurrencyInfoBag
             {
@@ -435,9 +446,9 @@ namespace Rock.Blocks.Finance
             return new Dictionary<string, string>
             {
                 [NavigationUrlKey.ParentPage] = this.GetParentPageUrl(),
-                [NavigationUrlKey.MatchTransactions] = this.GetLinkedPageUrl( "TransactionMatchingPage",
+                [NavigationUrlKey.MatchTransactions] = this.GetLinkedPageUrl( AttributeKey.TransactionMatchingPage,
                     new Dictionary<string, string>() { { "BatchId", $"{id}" } } ),
-                [NavigationUrlKey.AuditLogs] = this.GetLinkedPageUrl( "AuditPage",
+                [NavigationUrlKey.AuditLogs] = this.GetLinkedPageUrl( AttributeKey.AuditPage,
                     new Dictionary<string, string>() { { "BatchId", $"{id}" } } )
             };
         }
@@ -506,9 +517,9 @@ namespace Rock.Blocks.Finance
             }
 
             var isReopenDisabled = entity.Status == BatchStatus.Closed && !entity.IsAuthorized( AuthorizationReopenBatch, RequestContext.CurrentPerson );
-            if ( !entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) || isReopenDisabled )
+            if ( entity.IsAutomated || !entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) || isReopenDisabled )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${FinancialBatch.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {FinancialBatch.FriendlyTypeName}." );
                 return false;
             }
 
@@ -647,8 +658,9 @@ namespace Rock.Blocks.Finance
 
                 entity.LoadAttributes( rockContext );
 
+                // Put the financial batch to the context entities.
                 var contextEntity = RequestContext.GetContextEntity<FinancialBatch>();
-                contextEntity.CopyPropertiesFrom( entity );
+                contextEntity?.CopyPropertiesFrom( entity );
 
                 return ActionOk( GetEntityBagForView( entity ) );
             }

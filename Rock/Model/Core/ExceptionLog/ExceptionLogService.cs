@@ -22,14 +22,19 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+
+using Microsoft.Extensions.Logging;
+
 using Rock.Data;
+using Rock.Logging;
 
 namespace Rock.Model
 {
     /// <summary>
     /// The data access/service class for <see cref="Rock.Model.ExceptionLog"/> entity type objects.
     /// </summary>
-    public partial class ExceptionLogService 
+    [RockLoggingCategory]
+    public partial class ExceptionLogService
     {
         #region Fields
 
@@ -52,7 +57,7 @@ namespace Rock.Model
         {
             return Queryable().Where( t => ( t.ParentId == parentId || ( parentId == null && t.ParentId == null ) ) );
         }
-        
+
         /// <summary>
         /// Gets a collection of <see cref="Rock.Model.ExceptionLog"/> entities by the Id of the <see cref="Rock.Model.Site"/> that they occurred on.
         /// </summary>
@@ -121,12 +126,13 @@ namespace Rock.Model
 
         /// <summary>
         /// Remove all records from the Exception Log.
+        /// This method is declared static as it is not using any properties of the class.
         /// </summary>
-        public void TruncateLog()
+        public static void TruncateLog()
         {
-            int recordsDeleted = DbService.ExecuteCommand( "TRUNCATE TABLE ExceptionLog" );
-
-            // TODO: We should record the log truncation action in an appropriate application log.
+            DbService.ExecuteCommand( "TRUNCATE TABLE ExceptionLog" );
+            RockLogger.LoggerFactory.CreateLogger<ExceptionLogService>()
+                .LogInformation( "The Exception Log Table has been truncated." );
         }
 
         /// <summary>

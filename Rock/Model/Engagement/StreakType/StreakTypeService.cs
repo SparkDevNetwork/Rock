@@ -322,19 +322,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Rebuild the streak type occurrence map and streak maps from the attendance structure of the streak type.
-        /// This method makes it's own Rock Context and saves changes.
-        /// </summary>
-        /// <param name="streakTypeId"></param>
-        /// <param name="errorMessage"></param>
-        [Obsolete( "Use the overload with Progress instead", true )]
-        [RockObsolete( "1.10" )]
-        public static void RebuildStreakTypeFromAttendance( int streakTypeId, out string errorMessage )
-        {
-            RebuildStreakTypeFromAttendance( null, streakTypeId, out errorMessage );
-        }
-
-        /// <summary>
         /// Rebuild the streak type occurrence map and streak maps from the linked activity structure of the streak type.
         /// This method makes it's own Rock Context and saves changes.
         /// </summary>
@@ -392,47 +379,6 @@ namespace Rock.Model
                     errorMessage = $"The streak type structure {streakTypeCache.StructureType.Value} is not supported";
                     break;
             }
-        }
-
-        /// <summary>
-        /// Rebuild the streak type occurrence map and streak maps from the attendance structure of the streak type.
-        /// This method makes it's own Rock Context and saves changes.
-        /// </summary>
-        /// <param name="progress">The progress.</param>
-        /// <param name="streakTypeId">The streak type identifier.</param>
-        /// <param name="errorMessage">The error message.</param>
-        [Obsolete( "Use the RebuildStreakType method instead", true )]
-        [RockObsolete( "1.10" )]
-        public static void RebuildStreakTypeFromAttendance( IProgress<int?> progress, int streakTypeId, out string errorMessage )
-        {
-            var streakTypeCache = StreakTypeCache.Get( streakTypeId );
-
-            // Validate the parameters
-            if ( streakTypeCache == null )
-            {
-                errorMessage = "A valid streak type cache is required";
-                return;
-            }
-
-            if ( !streakTypeCache.IsActive )
-            {
-                errorMessage = "An active streak type is required";
-                return;
-            }
-
-            if ( !streakTypeCache.StructureType.HasValue )
-            {
-                errorMessage = "A streak type linked activity structure is required";
-                return;
-            }
-
-            if ( streakTypeCache.StructureType != StreakStructureType.AnyAttendance && !streakTypeCache.StructureEntityId.HasValue )
-            {
-                errorMessage = "A streak type linked activity entity id is required";
-                return;
-            }
-
-            RebuildStreakTypeFromAttendance( progress, streakTypeCache, out errorMessage );
         }
 
         /// <summary>
@@ -1417,32 +1363,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Notes that the currently logged in person is present. This will update the Streak Engagement map and also
-        /// Attendance (if enabled).
-        /// </summary>
-        /// <param name="streakTypeCache"></param>
-        /// <param name="personId"></param>
-        /// <param name="errorMessage"></param>
-        /// <param name="dateOfEngagement">Defaults to today</param>
-        /// <param name="groupId">This is required for marking attendance unless the streak type is a group structure type</param>
-        /// <param name="locationId"></param>
-        /// <param name="scheduleId"></param>
-        /// <param name="addOrUpdateAttendanceRecord">Should this method add or create <see cref="Attendance"/> models?</param>
-        [Obsolete( "Use the new simpler MarkEngagement, MarkAttendanceEngagement, or MarkInteractionEngagement methods instead" )]
-        [RockObsolete( "1.12" )]
-        public void MarkEngagement( StreakTypeCache streakTypeCache, int personId, out string errorMessage, DateTime? dateOfEngagement = null, int? groupId = null, int? locationId = null, int? scheduleId = null, bool addOrUpdateAttendanceRecord = true )
-        {
-            var attendanceEngagementArgs = new AttendanceEngagementArgs
-            {
-                GroupId = groupId,
-                LocationId = locationId,
-                ScheduleId = scheduleId
-            };
-
-            MarkAttendanceEngagement( streakTypeCache, personId, attendanceEngagementArgs, out errorMessage, dateOfEngagement );
-        }
-
-        /// <summary>
         /// Notes that the currently logged in person is present. This will update the Streak Engagement map and also add an
         /// Interaction (if enabled).
         /// </summary>
@@ -1694,28 +1614,6 @@ namespace Rock.Model
             }
 
             return streak;
-        }
-
-        /// <summary>
-        /// Handles the interaction record.
-        /// </summary>
-        /// <param name="interaction">The interaction.</param>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Use the override with the Interaction Id instead of the Interaction object." )]
-        public static void HandleInteractionRecord( Interaction interaction )
-        {
-            var rockContext = new RockContext();
-            var streakTypeService = new StreakTypeService( rockContext );
-            streakTypeService.HandleInteractionRecord( interaction, out var errorMessage );
-
-            if ( !errorMessage.IsNullOrWhiteSpace() )
-            {
-                ExceptionLogService.LogException( $"Error while handling interaction record for streaks: {errorMessage}" );
-            }
-            else
-            {
-                rockContext.SaveChanges();
-            }
         }
 
         /// <summary>
@@ -2071,262 +1969,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// When an interaction record is created or modified (example: page view), the method should be called to synchronize that
-        /// interaction to any matching streak types and streaks using this method.
-        /// </summary>
-        /// <param name="interaction"></param>
-        /// <param name="errorMessage"></param>
-        [RockObsolete( "1.11" )]
-        [Obsolete( "This method is only being used internally and is being replaced with a private method. Use the override with the Interaction Id for public access." )]
-        public void HandleInteractionRecord( Interaction interaction, out string errorMessage )
-        {
-            errorMessage = string.Empty;
-
-            if ( interaction == null )
-            {
-                // No streak data can be marked in this case. Do not throw an error since this operation is chained to the post save event
-                // of an interaction model. We don't even know if this interaction was supposed to be related to a streak type.
-                return;
-            }
-
-            if ( !interaction.PersonAliasId.HasValue )
-            {
-                // If we don't know what person this interaction is tied to then it is impossible to mark engagement in a streak. This is not
-                // an error because a null PersonAliasId is a valid state for the interaction model.
-                return;
-            }
-
-            // Get the person since it's possible the incoming model does not have the virtual PersonAlias loaded
-            var rockContext = Context as RockContext;
-            var personAliasService = new PersonAliasService( rockContext );
-            var person = personAliasService.GetPerson( interaction.PersonAliasId.Value );
-
-            if ( person == null )
-            {
-                // This is an error state because it is an invalid data scenario.
-                errorMessage = $"The person alias {interaction.PersonAliasId.Value} did not produce a valid person record.";
-                return;
-            }
-
-            // Get the person's streaks
-            var personId = person.Id;
-            var streakService = new StreakService( rockContext );
-            var enrolledInStreakTypeIdQuery = streakService.Queryable()
-                .AsNoTracking()
-                .Where( se => se.PersonAlias.PersonId == personId )
-                .Select( se => se.StreakTypeId );
-            var enrolledInStreakTypeIds = new HashSet<int>( enrolledInStreakTypeIdQuery );
-
-            // Calculate the interaction hierarchy details
-            var componentId = interaction.InteractionComponentId;
-
-            // Get the InteractionComponent since it's possible the incoming model does not have the virtual InteractionComponent loaded
-            var interactionComponent = new InteractionComponentService( rockContext ).Get( componentId );
-            var channelId = interactionComponent.InteractionChannelId;
-            var mediumId = interactionComponent.InteractionChannel?.ChannelTypeMediumValueId;
-
-            // Query each active streak type and mark engagement for it if the person
-            // is enrolled or the streak type does not require enrollment
-            var matchedStreakTypes = StreakTypeCache.All().Where( s =>
-                s.IsActive &&
-                s.StructureType.HasValue &&
-                s.StructureEntityId.HasValue &&
-                (
-                    !s.RequiresEnrollment ||
-                    enrolledInStreakTypeIds.Contains( s.Id )
-                ) &&
-                (
-                    ( s.StructureType == StreakStructureType.InteractionChannel && s.StructureEntityId.Value == channelId ) ||
-                    ( s.StructureType == StreakStructureType.InteractionComponent && s.StructureEntityId.Value == componentId ) ||
-                    ( s.StructureType == StreakStructureType.InteractionMedium && s.StructureEntityId.Value == mediumId )
-                ) );
-
-            foreach ( var streakType in matchedStreakTypes )
-            {
-                MarkEngagement( streakType, personId, out errorMessage, interaction.InteractionDateTime, null );
-            }
-        }
-
-        /// <summary>
-        /// When an attendance record is created or modified (example: check-in), the method should be called to synchronize that
-        /// attendance to any matching streak types and streaks using this method.
-        /// </summary>
-        /// <param name="attendance"></param>
-        /// <param name="errorMessage"></param>
-        [RockObsolete( "1.11" )]
-        [Obsolete( "This method is only being used internally and is being replaced with a private method. Use the override with the Interaction Id for public access." )]
-        public void HandleAttendanceRecord( Attendance attendance, out string errorMessage )
-        {
-            errorMessage = string.Empty;
-
-            if ( attendance == null )
-            {
-                // No streak data can be marked in this case. Do not throw an error since this operation is chained to the post save event
-                // of an attendance model. We don't even know if this attendance was supposed to be related to a streak type.
-                return;
-            }
-
-            if ( attendance.DidAttend != true )
-            {
-                // If DidAttend is false, then don't do anything for the streak type. We should not unset the bit for the day/week because
-                // we don't know if they had some other engagement besides this and cannot assume it should be unset.
-                return;
-            }
-
-            if ( !attendance.PersonAliasId.HasValue )
-            {
-                // If we don't know what person this attendance is tied to then it is impossible to mark engagement in a streak. This is not
-                // an error because a null PersonAliasId is a valid state for the attendance model.
-                return;
-            }
-
-            // Get the occurrence to ensure all of the virtual properties are included since it's possible the incoming
-            // attendance model does not have all of this data populated
-            var rockContext = Context as RockContext;
-            var occurrenceService = new AttendanceOccurrenceService( rockContext );
-            var occurrence = occurrenceService.Get( attendance.OccurrenceId );
-
-            if ( occurrence == null )
-            {
-                // This is an error state because it is an invalid data scenario.
-                errorMessage = $"The attendance record {attendance.Id} does not have a valid occurrence model.";
-                return;
-            }
-
-            // Get the person since it's possible the incoming attendance model does not have the virtual PersonAlias loaded
-            var personAliasService = new PersonAliasService( rockContext );
-            var person = personAliasService.GetPerson( attendance.PersonAliasId.Value );
-
-            if ( person == null )
-            {
-                // This is an error state because it is an invalid data scenario.
-                errorMessage = $"The person alias {attendance.PersonAliasId.Value} did not produce a valid person record.";
-                return;
-            }
-
-            // Get the person's streaks
-            var personId = person.Id;
-            var streakService = new StreakService( rockContext );
-            var enrolledInStreakTypeIdQuery = streakService.Queryable()
-                .AsNoTracking()
-                .Where( se => se.PersonAlias.PersonId == personId )
-                .Select( se => se.StreakTypeId );
-            var enrolledInStreakTypeIds = new HashSet<int>( enrolledInStreakTypeIdQuery );
-
-            // Calculate the attendance group details
-            var groupId = occurrence.GroupId;
-            var groupTypeId = occurrence.Group?.GroupTypeId;
-            var purposeId = occurrence.Group?.GroupType.GroupTypePurposeValueId;
-
-            var checkInConfigIdList = occurrence.Group?.GroupType.ParentGroupTypes.Select( pgt => pgt.Id );
-            var checkInConfigIds = checkInConfigIdList == null ? new HashSet<int>() : new HashSet<int>( checkInConfigIdList );
-
-            // Loop through each active streak types that has attendance enabled and mark engagement for it if the person
-            // is enrolled or the streak type does not require enrollment
-            var matchedStreakTypes = StreakTypeCache.All().Where( s =>
-                s.IsActive &&
-                s.StructureType.HasValue &&
-                s.EnableAttendance &&
-                (
-                    !s.RequiresEnrollment ||
-                    enrolledInStreakTypeIds.Contains( s.Id )
-                ) &&
-                (
-                    s.StructureType == StreakStructureType.AnyAttendance ||
-                    (
-                        s.StructureEntityId.HasValue &&
-                        (
-                            ( s.StructureType == StreakStructureType.Group && s.StructureEntityId.Value == groupId ) ||
-                            ( s.StructureType == StreakStructureType.GroupType && s.StructureEntityId.Value == groupTypeId ) ||
-                            ( s.StructureType == StreakStructureType.GroupTypePurpose && s.StructureEntityId.Value == purposeId ) ||
-                            ( s.StructureType == StreakStructureType.CheckInConfig && checkInConfigIds.Contains( s.StructureEntityId.Value ) )
-                        )
-                    )
-                ) );
-
-            foreach ( var streakType in matchedStreakTypes )
-            {
-                MarkEngagement( streakType, personId, out errorMessage, occurrence.OccurrenceDate, null );
-            }
-        }
-
-        /// <summary>
-        /// This convenience method calls <see cref="HandleAttendanceRecord(Attendance)"/> in an asynchronous fashion such that the calling
-        /// process can continue uninhibited. Use this where the streak type and streaks should be synchronized, but the calling
-        /// process should continue quickly and without regard to the success of this operation. This method creates it's own data
-        /// context and saves the changes when complete.
-        /// </summary>
-        /// <param name="attendance"></param>
-        [Obsolete( "Use the HandleAttendanceRecord method instead", true )]
-        [RockObsolete( "1.10" )]
-        public static void HandleAttendanceRecordAsync( Attendance attendance )
-        {
-            Task.Run( () =>
-            {
-                var rockContext = new RockContext();
-                var service = new StreakTypeService( rockContext );
-                service.HandleAttendanceRecord( attendance, out var errorMessage );
-
-                if ( !errorMessage.IsNullOrWhiteSpace() )
-                {
-                    ExceptionLogService.LogException( errorMessage );
-                    return;
-                }
-
-                rockContext.SaveChanges();
-            } );
-        }
-
-        /// <summary>
-        /// This convenience method calls <see cref="HandleAttendanceRecord(Attendance)"/> for all attendance records associated the occurrence
-        /// in an asynchronous fashion such that the calling process can continue uninhibited. Use this where the streak type and streaks
-        /// should be synchronized, but the calling process should continue quickly and without regard to the success of this operation.
-        /// This method creates it's own data context and any changes will be saved automatically.
-        /// </summary>
-        /// <param name="occurrenceId"></param>
-        [Obsolete( "Use the HandleAttendanceRecord method instead", true )]
-        [RockObsolete( "1.10" )]
-        public static void HandleAttendanceRecordsAsync( int occurrenceId )
-        {
-            Task.Run( () =>
-            {
-                var rockContext = new RockContext();
-                var service = new AttendanceService( rockContext );
-                var attendances = service.Queryable().AsNoTracking().Where( a => a.OccurrenceId == occurrenceId );
-
-                foreach ( var attendance in attendances )
-                {
-                    HandleAttendanceRecordAsync( attendance );
-                }
-            } );
-        }
-
-        /// <summary>
-        /// Synchronize streaks for all attendance records associated with the occurrence
-        /// </summary>
-        /// <param name="occurrenceId"></param>
-        /// <param name="errorMessage"></param>
-        [Obsolete( "Use HandleAttendanceRecord method instead", true )]
-        [RockObsolete( "1.10" )]
-        public void HandleAttendanceRecords( int occurrenceId, out string errorMessage )
-        {
-            errorMessage = string.Empty;
-            var rockContext = Context as RockContext;
-            var service = new AttendanceService( rockContext );
-            var attendances = service.Queryable().AsNoTracking().Where( a => a.OccurrenceId == occurrenceId );
-
-            foreach ( var attendance in attendances )
-            {
-                HandleAttendanceRecord( attendance, out errorMessage );
-
-                if ( !errorMessage.IsNullOrWhiteSpace() )
-                {
-                    return;
-                }
-            }
-        }
-
-        /// <summary>
         /// Get the name of the streak type's attendance structure
         /// </summary>
         /// <returns></returns>
@@ -2380,33 +2022,6 @@ namespace Rock.Model
         #endregion Methods
 
         #region Static Methods
-
-        /// <summary>
-        /// Get the most recent bits from a map where there was an occurrence
-        /// </summary>
-        /// <param name="engagementMap">The engagement map.</param>
-        /// <param name="occurrenceMap">The occurrence map.</param>
-        /// <param name="mapStartDate">The start date.</param>
-        /// <param name="streakOccurrenceFrequency">The streak occurrence frequency.</param>
-        /// <param name="unitCount">The unit count.</param>
-        /// <returns></returns>
-        [Obsolete( "Downgrading the visibility of this method and renaming to GetMostRecentOccurrences", true )]
-        [RockObsolete( "1.10" )]
-        public static OccurrenceEngagement[] GetMostRecentEngagementBits( byte[] engagementMap, byte[] occurrenceMap, DateTime mapStartDate, StreakOccurrenceFrequency streakOccurrenceFrequency, int unitCount = 24 )
-        {
-            // Try to accommodate this without knowing the streak type id until this method is removed since it is obsolete
-            var streakTypeCache = StreakTypeCache.All().FirstOrDefault( st =>
-                st.StartDate == mapStartDate &&
-                st.OccurrenceFrequency == streakOccurrenceFrequency &&
-                st.OccurrenceMap.Length == occurrenceMap.Length );
-
-            if ( streakTypeCache == null )
-            {
-                return null;
-            }
-
-            return GetMostRecentOccurrences( streakTypeCache, engagementMap, null, unitCount );
-        }
 
         /// <summary>
         /// Get the most recent bits from a map where there was an occurrence
@@ -2467,29 +2082,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Start an async task to calculate steak data and then copy it to the streak model
-        /// </summary>
-        /// <param name="streakTypeId"></param>
-        [RockObsolete( "1.10" )]
-        [Obsolete( "Use the HandlePostSaveChanges method instead.", true )]
-        public static void UpdateEnrollmentStreakPropertiesAsync( int streakTypeId )
-        {
-            Task.Run( () =>
-            {
-                var rockContext = new RockContext();
-                var streakService = new StreakService( rockContext );
-                var streakIds = streakService.Queryable().AsNoTracking()
-                    .Where( se => se.StreakTypeId == streakTypeId )
-                    .Select( se => se.Id );
-
-                foreach ( var streakId in streakIds )
-                {
-                    StreakService.HandlePostSaveChanges( streakId );
-                }
-            } );
-        }
-
-        /// <summary>
         /// Updates the enrollments within by calling <see cref="StreakService.HandlePostSaveChanges(int)"/> for each streak.
         /// </summary>
         /// <param name="streakTypeId">The streak type identifier.</param>
@@ -2509,45 +2101,6 @@ namespace Rock.Model
             }
 
             return streakIds.Count;
-        }
-
-        /// <summary>
-        /// Determines if the bit at the bitDate in the map is set.
-        /// </summary>
-        /// <param name="map"></param>
-        /// <param name="mapStartDate"></param>
-        /// <param name="bitDate"></param>
-        /// <param name="occurrenceFrequency"></param>
-        /// <param name="errorMessage"></param>
-        /// <returns></returns>
-        [RockObsolete( "1.10" )]
-        [Obsolete( "Use the override with StreakTypeCache instead.", true )]
-        public static bool IsBitSet( byte[] map, DateTime mapStartDate, DateTime bitDate, StreakOccurrenceFrequency occurrenceFrequency, out string errorMessage )
-        {
-            errorMessage = string.Empty;
-
-            if ( map == null || map.Length == 0 )
-            {
-                return false;
-            }
-
-            if ( bitDate < mapStartDate )
-            {
-                errorMessage = "The specified date occurs before the streak type start date";
-                return false;
-            }
-
-            var unitsFromStart = GetFrequencyUnitDifference( mapStartDate, bitDate, occurrenceFrequency, false );
-            var bytesNeeded = ( unitsFromStart / BitsPerByte ) + 1;
-            var byteIndex = map.Length - bytesNeeded;
-            var byteBitValue = ( byte ) ( 1 << ( unitsFromStart % BitsPerByte ) );
-
-            if ( byteIndex < 0 )
-            {
-                return false;
-            }
-
-            return ( map[byteIndex] & byteBitValue ) == byteBitValue;
         }
 
         /// <summary>
@@ -2588,65 +2141,6 @@ namespace Rock.Model
             }
 
             return ( map[byteIndex] & byteBitValue ) == byteBitValue;
-        }
-
-        /// <summary>
-        /// Set the bit that corresponds to bitDate. This method works in-place unless the array has to grow. Note that if the array does not
-        /// grow and get reallocated, then Entity Framework will not track the change. If needed, force the property state to Modified:
-        /// rockContext.Entry( streakModel ).Property( s => s.OccurrenceMap ).IsModified = true;
-        /// </summary>
-        /// <param name="map"></param>
-        /// <param name="mapStartDate"></param>
-        /// <param name="bitDate"></param>
-        /// <param name="occurrenceFrequency"></param>
-        /// <param name="errorMessage"></param>
-        /// <param name="newValue"></param>
-        /// <returns></returns>
-        [Obsolete( "Use the override with StreakTypeCache param instead", true )]
-        [RockObsolete( "1.10" )]
-        public static byte[] SetBit( byte[] map, DateTime mapStartDate, DateTime bitDate, StreakOccurrenceFrequency occurrenceFrequency, bool newValue, out string errorMessage )
-        {
-            errorMessage = string.Empty;
-
-            if ( occurrenceFrequency == StreakOccurrenceFrequency.Weekly )
-            {
-                mapStartDate = mapStartDate.SundayDate();
-                bitDate = bitDate.SundayDate();
-            }
-
-            if ( bitDate < mapStartDate )
-            {
-                errorMessage = "The specified date occurs before the streak type start date";
-                return map;
-            }
-
-            var unitsFromStart = GetFrequencyUnitDifference( mapStartDate, bitDate, occurrenceFrequency, false );
-            var bytesNeeded = ( unitsFromStart / BitsPerByte ) + 1;
-
-            if ( map == null )
-            {
-                map = AllocateNewByteArray( bytesNeeded );
-            }
-            else if ( bytesNeeded > map.Length )
-            {
-                // Grow the map to accommodate the new value
-                map = PadLeft( map, bytesNeeded );
-            }
-
-            // Set the target bit within it's byte
-            var byteIndex = map.Length - bytesNeeded;
-            var byteBitValue = ( byte ) ( 1 << ( unitsFromStart % BitsPerByte ) );
-
-            if ( newValue )
-            {
-                map[byteIndex] |= byteBitValue;
-            }
-            else
-            {
-                map[byteIndex] &= ( byte ) ~byteBitValue;
-            }
-
-            return map;
         }
 
         /// <summary>
@@ -2818,50 +2312,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Get the number of frequency units (days or weeks) between the two dates
-        /// </summary>
-        /// <param name="startDate">The start date.</param>
-        /// <param name="endDate">The end date.</param>
-        /// <param name="occurrenceFrequency">The occurrence frequency.</param>
-        /// <param name="isInclusive">if set to <c>true</c> [is inclusive].</param>
-        /// <returns></returns>
-        [Obsolete( "Use the override with StreakTypeCache param instead", true )]
-        [RockObsolete( "1.10" )]
-        public static int GetFrequencyUnitDifference( DateTime startDate, DateTime endDate, StreakOccurrenceFrequency occurrenceFrequency, bool isInclusive )
-        {
-            if ( occurrenceFrequency == StreakOccurrenceFrequency.Monthly ||
-                 occurrenceFrequency == StreakOccurrenceFrequency.Yearly )
-            {
-                throw new NotImplementedException( string.Format( "Get Frequency Unit Difference for the StreakOccurrenceFrequency '{0}' is not implemented. Use the override with StreakTypeCache param instead.", occurrenceFrequency ) );
-            }
-
-            var isDaily = occurrenceFrequency == StreakOccurrenceFrequency.Daily;
-
-            if ( !isDaily )
-            {
-                startDate = startDate.SundayDate();
-                endDate = endDate.SundayDate();
-            }
-
-            // Calculate the difference in days
-            var numberOfDays = endDate.Date.Subtract( startDate.Date ).Days;
-            var oneFrequencyUnitOfDays = isDaily ? 1 : DaysPerWeek;
-
-            // Adjust to be inclusive if needed
-            if ( isInclusive && numberOfDays >= 0 )
-            {
-                numberOfDays += oneFrequencyUnitOfDays;
-            }
-            else if ( isInclusive )
-            {
-                numberOfDays -= oneFrequencyUnitOfDays;
-            }
-
-            // Convert from days to the frequency units
-            return isDaily ? numberOfDays : ( numberOfDays / DaysPerWeek );
-        }
-
-        /// <summary>
         /// Get the number of frequency units (days, weeks, months, or years) between the two dates
         /// </summary>
         /// <param name="startDate">The start date.</param>
@@ -2924,32 +2374,6 @@ namespace Rock.Model
                 default:
                     throw new NotImplementedException( string.Format( "Get Frequency Unit Difference for the StreakOccurrenceFrequency '{0}' is not implemented", streakTypeCache.OccurrenceFrequency ) );
             }
-        }
-
-        /// <summary>
-        /// Gets the maximum date for allowing streaks toe be broken. This is the end of the last fully elapsed frequency unit (day or week).
-        /// The idea is that streaks should not be broken until the period for engagement has fully elapsed. Until that time period has
-        /// elapsed, people still have time to engage and it isn't fair to show their streak as broken.
-        /// </summary>
-        /// <param name="streakOccurrenceFrequency"></param>
-        /// <returns></returns>
-        [Obsolete( "Use the override with StreakTypeCache param instead", true )]
-        [RockObsolete( "1.10" )]
-        public static DateTime GetMaxDateForStreakBreaking( StreakOccurrenceFrequency streakOccurrenceFrequency )
-        {
-            if ( streakOccurrenceFrequency == StreakOccurrenceFrequency.Monthly ||
-                 streakOccurrenceFrequency == StreakOccurrenceFrequency.Yearly )
-            {
-                throw new NotImplementedException( string.Format( "Get Max Date For Streak Breaking for the StreakOccurrenceFrequency '{0}' is not implemented. Use the override with StreakTypeCache param instead.", streakOccurrenceFrequency ) );
-            }
-
-            if ( streakOccurrenceFrequency == StreakOccurrenceFrequency.Daily )
-            {
-                return RockDateTime.Today.AddDays( -1 );
-            }
-
-            // Weekly - this will need to be adjusted when the SundayDate method is replaced the with configurable start/end of week
-            return RockDateTime.Now.SundayDate().AddDays( -1 * DaysPerWeek );
         }
 
         /// <summary>

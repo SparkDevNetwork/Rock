@@ -73,7 +73,7 @@ namespace Rock.CodeGeneration.FileGenerators
 
                 AppendCommentBlock( sb, property, 4 );
 
-                sb.Append( $"    {property.Name.CamelCase()}" );
+                sb.Append( $"    {property.Name.ToCamelCase()}" );
 
                 // If its nullable that means it could also be undefined.
                 if ( isNullable )
@@ -431,7 +431,7 @@ namespace Rock.CodeGeneration.FileGenerators
                     var refTypeName = segments[segments.Length - 2];
                     var refName = segments[segments.Length - 1];
 
-                    return $"{{@link {refTypeName}.{refName.CamelCase()}}}";
+                    return $"{{@link {refTypeName}.{refName.ToCamelCase()}}}";
                 }
             } );
 
@@ -567,7 +567,7 @@ namespace Rock.CodeGeneration.FileGenerators
             }
             else if ( type.Namespace.StartsWith( "Rock.ViewModels" ) && ( type.Name.EndsWith( "Bag" ) || type.Name.EndsWith( "Box" ) ) )
             {
-                var path = $"{type.Namespace.Substring( 15 ).Trim( '.' ).Replace( '.', '/' )}/{type.Name.CamelCase()}";
+                var path = $"{type.Namespace.Substring( 15 ).Trim( '.' ).Replace( '.', '/' )}/{type.Name.ToCamelCase()}";
                 tsType = type.Name;
                 imports.Add( new TypeScriptImport
                 {
@@ -576,23 +576,30 @@ namespace Rock.CodeGeneration.FileGenerators
                 } );
                 isNullable = isNullable || !isRequired;
             }
+            else if ( type.IsEnum && type.Namespace.StartsWith( "Rock.Enums" ) )
+            {
+                var path = $"{type.Namespace.Substring( 10 ).Trim( '.' ).Replace( '.', '/' )}/{type.Name.ToCamelCase()}";
+                tsType = type.Name;
+                imports.Add( new TypeScriptImport
+                {
+                    SourcePath = $"@Obsidian/Enums/{path}",
+                    NamedImport = type.Name
+                } );
+            }
+            else if ( type.IsEnum && type.GetCustomAttribute<Rock.Enums.EnumDomainAttribute>() != null )
+            {
+                var domain = type.GetCustomAttribute<Rock.Enums.EnumDomainAttribute>().Domain;
+                var path = $"{SupportTools.GetDomainFolderName( domain )}/{type.Name.ToCamelCase()}";
+                tsType = type.Name;
+                imports.Add( new TypeScriptImport
+                {
+                    SourcePath = $"@Obsidian/Enums/{path}",
+                    NamedImport = type.Name
+                } );
+            }
             else if ( type.IsEnum )
             {
-                var importPath = GetImportPathForEnumType( type );
-
-                if ( importPath.IsNotNullOrWhiteSpace() )
-                {
-                    tsType = type.Name;
-                    imports.Add( new TypeScriptImport
-                    {
-                        SourcePath = importPath,
-                        NamedImport = type.Name
-                    } );
-                }
-                else
-                {
-                    tsType = "number";
-                }
+                tsType = "number";
             }
 
             if ( isNullable )
@@ -601,39 +608,6 @@ namespace Rock.CodeGeneration.FileGenerators
             }
 
             return (tsType, imports);
-        }
-
-        /// <summary>
-        /// Gets the path to use for where the enum file should be written.
-        /// </summary>
-        /// <param name="type">The type that will be written to a file.</param>
-        /// <returns>A string that represents the directory that will contain the enum file.</returns>
-        /// <exception cref="Exception">Attempt to export an enum with an invalid namespace, this shouldn't happen.</exception>
-        private static string GetImportPathForEnumType( Type type )
-        {
-            if ( type.Namespace.StartsWith( "Rock.Enums" ) )
-            {
-                return $"@Obsidian/Enums/{type.Namespace.Substring( 10 ).Trim( '.' ).Replace( '.', '/' )}/{type.Name.CamelCase()}";
-            }
-            else
-            {
-                // If the type isn't in the Rock.Enums namespace then use the
-                // EnumDomain attribute to determine the actual domain it's in.
-                var domainAttribute = type.GetCustomAttributes()
-                    .FirstOrDefault( a => a.GetType().FullName == "Rock.Enums.EnumDomainAttribute" );
-
-                if ( domainAttribute != null )
-                {
-                    var domain = ( string ) domainAttribute.GetType().GetProperty( "Domain" ).GetValue( domainAttribute );
-                    domain = SupportTools.GetDomainFolderName( domain );
-
-                    return $"@Obsidian/Enums/{domain}/{type.Name.CamelCase()}";
-                }
-                else
-                {
-                    return null;
-                }
-            }
         }
 
         /// <summary>

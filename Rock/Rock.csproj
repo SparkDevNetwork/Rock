@@ -35,7 +35,7 @@
     <DefineConstants>TRACE;WEBFORMS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\Rock.XML</DocumentationFile>
+    <DocumentationFile>bin\Release\Rock.xml</DocumentationFile>
     <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <ItemGroup>
@@ -51,14 +51,14 @@
     <Reference Include="AWSSDK.S3, Version=3.3.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604, processorArchitecture=MSIL">
       <HintPath>..\packages\AWSSDK.S3.3.3.21.1\lib\net45\AWSSDK.S3.dll</HintPath>
     </Reference>
-    <Reference Include="Azure.Core, Version=1.15.0.0, Culture=neutral, PublicKeyToken=92742159e12e44c8, processorArchitecture=MSIL">
-      <HintPath>..\packages\Azure.Core.1.15.0\lib\net461\Azure.Core.dll</HintPath>
+    <Reference Include="Azure.Core, Version=1.39.0.0, Culture=neutral, PublicKeyToken=92742159e12e44c8, processorArchitecture=MSIL">
+      <HintPath>..\packages\Azure.Core.1.39.0\lib\net472\Azure.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Azure.Storage.Blobs, Version=12.9.0.0, Culture=neutral, PublicKeyToken=92742159e12e44c8, processorArchitecture=MSIL">
-      <HintPath>..\packages\Azure.Storage.Blobs.12.9.0\lib\netstandard2.0\Azure.Storage.Blobs.dll</HintPath>
+    <Reference Include="Azure.Storage.Blobs, Version=12.20.0.0, Culture=neutral, PublicKeyToken=92742159e12e44c8, processorArchitecture=MSIL">
+      <HintPath>..\packages\Azure.Storage.Blobs.12.20.0\lib\netstandard2.0\Azure.Storage.Blobs.dll</HintPath>
     </Reference>
-    <Reference Include="Azure.Storage.Common, Version=12.8.0.0, Culture=neutral, PublicKeyToken=92742159e12e44c8, processorArchitecture=MSIL">
-      <HintPath>..\packages\Azure.Storage.Common.12.8.0\lib\netstandard2.0\Azure.Storage.Common.dll</HintPath>
+    <Reference Include="Azure.Storage.Common, Version=12.19.0.0, Culture=neutral, PublicKeyToken=92742159e12e44c8, processorArchitecture=MSIL">
+      <HintPath>..\packages\Azure.Storage.Common.12.19.0\lib\netstandard2.0\Azure.Storage.Common.dll</HintPath>
     </Reference>
     <Reference Include="BCrypt.Net, Version=0.1.5073.29922, Culture=neutral, PublicKeyToken=6bcd409ee6bc9292, processorArchitecture=MSIL">
       <HintPath>..\packages\BCrypt-Official.0.1.109\lib\BCrypt.Net.dll</HintPath>
@@ -142,8 +142,8 @@
     <Reference Include="Google.Cloud.Storage.V1, Version=2.4.0.0, Culture=neutral, PublicKeyToken=185c282632e132a0, processorArchitecture=MSIL">
       <HintPath>..\packages\Google.Cloud.Storage.V1.2.4.0\lib\net45\Google.Cloud.Storage.V1.dll</HintPath>
     </Reference>
-    <Reference Include="Google.Protobuf, Version=3.19.4.0, Culture=neutral, PublicKeyToken=a7d26565bac4d604, processorArchitecture=MSIL">
-      <HintPath>..\packages\Google.Protobuf.3.19.4\lib\net45\Google.Protobuf.dll</HintPath>
+    <Reference Include="Google.Protobuf, Version=3.22.5.0, Culture=neutral, PublicKeyToken=a7d26565bac4d604, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Protobuf.3.22.5\lib\net45\Google.Protobuf.dll</HintPath>
     </Reference>
     <Reference Include="GreenPipes, Version=2.1.4.118, Culture=neutral, PublicKeyToken=b800c4cfcdeea87b, processorArchitecture=MSIL">
       <HintPath>..\packages\GreenPipes.2.1.4\lib\net452\GreenPipes.dll</HintPath>
@@ -166,8 +166,8 @@
     <Reference Include="Ical.Net, Version=1.0.0.0, Culture=neutral, PublicKeyToken=65c0446cd019ea53, processorArchitecture=MSIL">
       <HintPath>..\packages\Ical.Net.4.2.0\lib\netstandard2.0\Ical.Net.dll</HintPath>
     </Reference>
-    <Reference Include="ICSharpCode.SharpZipLib, Version=1.3.3.11, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
-      <HintPath>..\packages\SharpZipLib.1.3.3\lib\net45\ICSharpCode.SharpZipLib.dll</HintPath>
+    <Reference Include="ICSharpCode.SharpZipLib, Version=1.4.2.13, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpZipLib.1.4.2\lib\netstandard2.0\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
     <Reference Include="IdentityModel, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\IdentityModel.3.0.0\lib\net461\IdentityModel.dll</HintPath>
@@ -202,8 +202,14 @@
     <Reference Include="MassTransit.RabbitMqTransport, Version=5.5.2.0, Culture=neutral, PublicKeyToken=b8e0e9f2f1e657fa, processorArchitecture=MSIL">
       <HintPath>..\packages\MassTransit.RabbitMQ.5.5.2\lib\net452\MassTransit.RabbitMqTransport.dll</HintPath>
     </Reference>
-    <Reference Include="MessagePack, Version=1.7.3.4, Culture=neutral, PublicKeyToken=b4a0369545f0a1be, processorArchitecture=MSIL">
-      <HintPath>..\packages\MessagePack.1.7.3.4\lib\net47\MessagePack.dll</HintPath>
+    <Reference Include="MaxMind.Db, Version=2.0.0.0, Culture=neutral, PublicKeyToken=66afa4cc5ae853ac, processorArchitecture=MSIL">
+      <HintPath>..\packages\MaxMind.Db.3.0.0\lib\net461\MaxMind.Db.dll</HintPath>
+    </Reference>
+    <Reference Include="MaxMind.GeoIP2, Version=4.0.0.0, Culture=neutral, PublicKeyToken=66afa4cc5ae853ac, processorArchitecture=MSIL">
+      <HintPath>..\packages\MaxMind.GeoIP2.4.1.0\lib\net461\MaxMind.GeoIP2.dll</HintPath>
+    </Reference>
+    <Reference Include="MessagePack, Version=1.9.0.0, Culture=neutral, PublicKeyToken=b4a0369545f0a1be, processorArchitecture=MSIL">
+      <HintPath>..\packages\MessagePack.1.9.11\lib\net47\MessagePack.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNet.SignalR.Core, Version=2.4.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.SignalR.Core.2.4.3\lib\net45\Microsoft.AspNet.SignalR.Core.dll</HintPath>
@@ -244,47 +250,50 @@
     <Reference Include="Microsoft.Azure.Storage.Common, Version=11.1.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Azure.Storage.Common.11.1.3\lib\net452\Microsoft.Azure.Storage.Common.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=5.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.5.0.0\lib\net461\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
+    <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.8.0.0\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Diagnostics.Tracing.EventSource, Version=1.1.28.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Diagnostics.Tracing.EventSource.Redist.1.1.28\lib\net46\Microsoft.Diagnostics.Tracing.EventSource.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Extensions.Configuration, Version=3.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Extensions.Configuration.3.1.0\lib\netstandard2.0\Microsoft.Extensions.Configuration.dll</HintPath>
+    <Reference Include="Microsoft.Extensions.Configuration, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Configuration.8.0.0\lib\net462\Microsoft.Extensions.Configuration.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Extensions.Configuration.Abstractions, Version=3.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Extensions.Configuration.Abstractions.3.1.0\lib\netstandard2.0\Microsoft.Extensions.Configuration.Abstractions.dll</HintPath>
+    <Reference Include="Microsoft.Extensions.Configuration.Abstractions, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Configuration.Abstractions.8.0.0\lib\net462\Microsoft.Extensions.Configuration.Abstractions.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Extensions.Configuration.Binder, Version=3.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Extensions.Configuration.Binder.3.1.0\lib\netstandard2.0\Microsoft.Extensions.Configuration.Binder.dll</HintPath>
+    <Reference Include="Microsoft.Extensions.Configuration.Binder, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Configuration.Binder.8.0.0\lib\net462\Microsoft.Extensions.Configuration.Binder.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Extensions.DependencyInjection, Version=3.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.3.1.0\lib\net461\Microsoft.Extensions.DependencyInjection.dll</HintPath>
+    <Reference Include="Microsoft.Extensions.DependencyInjection, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.8.0.0\lib\net462\Microsoft.Extensions.DependencyInjection.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=3.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.Abstractions.3.1.0\lib\netstandard2.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.Abstractions.8.0.0\lib\net462\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Extensions.Logging, Version=3.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Extensions.Logging.3.1.0\lib\netstandard2.0\Microsoft.Extensions.Logging.dll</HintPath>
+    <Reference Include="Microsoft.Extensions.Logging, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Logging.8.0.0\lib\net462\Microsoft.Extensions.Logging.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Extensions.Logging.Abstractions, Version=3.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Extensions.Logging.Abstractions.3.1.0\lib\netstandard2.0\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Logging.Abstractions.8.0.0\lib\net462\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Extensions.Logging.Configuration, Version=3.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Extensions.Logging.Configuration.3.1.0\lib\netstandard2.0\Microsoft.Extensions.Logging.Configuration.dll</HintPath>
+    <Reference Include="Microsoft.Extensions.Logging.Configuration, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Logging.Configuration.8.0.0\lib\net462\Microsoft.Extensions.Logging.Configuration.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Logging.Debug, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Logging.Debug.8.0.0\lib\net462\Microsoft.Extensions.Logging.Debug.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Extensions.Logging.TraceSource, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Extensions.Logging.TraceSource.2.1.0\lib\netstandard2.0\Microsoft.Extensions.Logging.TraceSource.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Extensions.Options, Version=3.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Extensions.Options.3.1.0\lib\netstandard2.0\Microsoft.Extensions.Options.dll</HintPath>
+    <Reference Include="Microsoft.Extensions.Options, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Options.8.0.0\lib\net462\Microsoft.Extensions.Options.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Extensions.Options.ConfigurationExtensions, Version=3.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Extensions.Options.ConfigurationExtensions.3.1.0\lib\netstandard2.0\Microsoft.Extensions.Options.ConfigurationExtensions.dll</HintPath>
+    <Reference Include="Microsoft.Extensions.Options.ConfigurationExtensions, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Options.ConfigurationExtensions.8.0.0\lib\net462\Microsoft.Extensions.Options.ConfigurationExtensions.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Extensions.Primitives, Version=3.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Extensions.Primitives.3.1.0\lib\netstandard2.0\Microsoft.Extensions.Primitives.dll</HintPath>
+    <Reference Include="Microsoft.Extensions.Primitives, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Primitives.8.0.0\lib\net462\Microsoft.Extensions.Primitives.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.IdentityModel.Clients.ActiveDirectory, Version=2.21.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.IdentityModel.Clients.ActiveDirectory.2.21.301221612\lib\net45\Microsoft.IdentityModel.Clients.ActiveDirectory.dll</HintPath>
@@ -292,11 +301,11 @@
     <Reference Include="Microsoft.IdentityModel.Clients.ActiveDirectory.WindowsForms, Version=2.21.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.IdentityModel.Clients.ActiveDirectory.2.21.301221612\lib\net45\Microsoft.IdentityModel.Clients.ActiveDirectory.WindowsForms.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.IdentityModel.JsonWebTokens, Version=5.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.IdentityModel.JsonWebTokens.5.5.0\lib\net461\Microsoft.IdentityModel.JsonWebTokens.dll</HintPath>
+    <Reference Include="Microsoft.IdentityModel.JsonWebTokens, Version=5.7.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.IdentityModel.JsonWebTokens.5.7.0\lib\net461\Microsoft.IdentityModel.JsonWebTokens.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.IdentityModel.Logging, Version=5.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.IdentityModel.Logging.5.5.0\lib\net461\Microsoft.IdentityModel.Logging.dll</HintPath>
+    <Reference Include="Microsoft.IdentityModel.Logging, Version=5.7.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.IdentityModel.Logging.5.7.0\lib\net461\Microsoft.IdentityModel.Logging.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.IdentityModel.Protocols, Version=5.2.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.IdentityModel.Protocols.5.2.1\lib\net451\Microsoft.IdentityModel.Protocols.dll</HintPath>
@@ -304,14 +313,14 @@
     <Reference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect, Version=5.2.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.IdentityModel.Protocols.OpenIdConnect.5.2.1\lib\net451\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.IdentityModel.Tokens, Version=5.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.IdentityModel.Tokens.5.5.0\lib\net461\Microsoft.IdentityModel.Tokens.dll</HintPath>
+    <Reference Include="Microsoft.IdentityModel.Tokens, Version=5.7.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.IdentityModel.Tokens.5.7.0\lib\net461\Microsoft.IdentityModel.Tokens.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Net.Http.Headers, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Net.Http.Headers.2.2.0\lib\netstandard2.0\Microsoft.Net.Http.Headers.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Owin, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Owin.4.0.0\lib\net451\Microsoft.Owin.dll</HintPath>
+    <Reference Include="Microsoft.Owin, Version=4.2.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Owin.4.2.2\lib\net45\Microsoft.Owin.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Owin.Host.SystemWeb, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Owin.Host.SystemWeb.3.0.1\lib\net45\Microsoft.Owin.Host.SystemWeb.dll</HintPath>
@@ -360,16 +369,16 @@
       <HintPath>..\packages\NuGet.Core.2.11.1\lib\net40-Client\NuGet.Core.dll</HintPath>
     </Reference>
     <Reference Include="OpenTelemetry, Version=1.0.0.0, Culture=neutral, PublicKeyToken=7bd6737fe5b67e3c, processorArchitecture=MSIL">
-      <HintPath>..\packages\OpenTelemetry.1.5.1\lib\net462\OpenTelemetry.dll</HintPath>
+      <HintPath>..\packages\OpenTelemetry.1.7.0\lib\net462\OpenTelemetry.dll</HintPath>
     </Reference>
     <Reference Include="OpenTelemetry.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=7bd6737fe5b67e3c, processorArchitecture=MSIL">
-      <HintPath>..\packages\OpenTelemetry.Api.1.5.1\lib\net462\OpenTelemetry.Api.dll</HintPath>
+      <HintPath>..\packages\OpenTelemetry.Api.1.7.0\lib\net462\OpenTelemetry.Api.dll</HintPath>
     </Reference>
     <Reference Include="OpenTelemetry.Api.ProviderBuilderExtensions, Version=1.0.0.0, Culture=neutral, PublicKeyToken=7bd6737fe5b67e3c, processorArchitecture=MSIL">
-      <HintPath>..\packages\OpenTelemetry.Api.ProviderBuilderExtensions.1.5.1\lib\net462\OpenTelemetry.Api.ProviderBuilderExtensions.dll</HintPath>
+      <HintPath>..\packages\OpenTelemetry.Api.ProviderBuilderExtensions.1.7.0\lib\net462\OpenTelemetry.Api.ProviderBuilderExtensions.dll</HintPath>
     </Reference>
     <Reference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol, Version=1.0.0.0, Culture=neutral, PublicKeyToken=7bd6737fe5b67e3c, processorArchitecture=MSIL">
-      <HintPath>..\packages\OpenTelemetry.Exporter.OpenTelemetryProtocol.1.5.1\lib\net462\OpenTelemetry.Exporter.OpenTelemetryProtocol.dll</HintPath>
+      <HintPath>..\packages\OpenTelemetry.Exporter.OpenTelemetryProtocol.1.7.0\lib\net462\OpenTelemetry.Exporter.OpenTelemetryProtocol.dll</HintPath>
     </Reference>
     <Reference Include="OpenXmlPowerTools, Version=4.2.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\OpenXmlPowerTools.4.2\lib\OpenXmlPowerTools.dll</HintPath>
@@ -407,7 +416,10 @@
       <HintPath>..\libs\Rock.Common.Tv\Rock.Common.Tv.dll</HintPath>
     </Reference>
     <Reference Include="Serilog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
-      <HintPath>..\packages\Serilog.2.8.0\lib\net46\Serilog.dll</HintPath>
+      <HintPath>..\packages\Serilog.3.1.1\lib\net471\Serilog.dll</HintPath>
+    </Reference>
+    <Reference Include="Serilog.Extensions.Logging, Version=7.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
+      <HintPath>..\packages\Serilog.Extensions.Logging.8.0.0\lib\net462\Serilog.Extensions.Logging.dll</HintPath>
     </Reference>
     <Reference Include="Serilog.Formatting.Compact, Version=1.1.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
       <HintPath>..\packages\Serilog.Formatting.Compact.1.1.0\lib\net452\Serilog.Formatting.Compact.dll</HintPath>
@@ -422,7 +434,7 @@
       <HintPath>..\packages\SixLabors.Fonts.1.0.0-beta18\lib\netstandard2.0\SixLabors.Fonts.dll</HintPath>
     </Reference>
     <Reference Include="SixLabors.ImageSharp, Version=2.0.0.0, Culture=neutral, PublicKeyToken=d998eea7b14cab13, processorArchitecture=MSIL">
-      <HintPath>..\packages\SixLabors.ImageSharp.2.1.3\lib\net472\SixLabors.ImageSharp.dll</HintPath>
+      <HintPath>..\packages\SixLabors.ImageSharp.2.1.8\lib\net472\SixLabors.ImageSharp.dll</HintPath>
     </Reference>
     <Reference Include="SixLabors.ImageSharp.Drawing, Version=1.0.0.0, Culture=neutral, PublicKeyToken=d998eea7b14cab13, processorArchitecture=MSIL">
       <HintPath>..\packages\SixLabors.ImageSharp.Drawing.1.0.0-beta15\lib\net472\SixLabors.ImageSharp.Drawing.dll</HintPath>
@@ -430,6 +442,9 @@
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ClientModel, Version=1.0.0.0, Culture=neutral, PublicKeyToken=92742159e12e44c8, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ClientModel.1.0.0\lib\netstandard2.0\System.ClientModel.dll</HintPath>
     </Reference>
     <Reference Include="System.ComponentModel.Annotations, Version=4.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.ComponentModel.Annotations.4.7.0\lib\net461\System.ComponentModel.Annotations.dll</HintPath>
@@ -443,15 +458,15 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Data.Entity.Design" />
     <Reference Include="System.Data.Services" />
-    <Reference Include="System.Diagnostics.DiagnosticSource, Version=7.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Diagnostics.DiagnosticSource.7.0.0\lib\net462\System.Diagnostics.DiagnosticSource.dll</HintPath>
+    <Reference Include="System.Diagnostics.DiagnosticSource, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Diagnostics.DiagnosticSource.8.0.0\lib\net462\System.Diagnostics.DiagnosticSource.dll</HintPath>
     </Reference>
     <Reference Include="System.DirectoryServices" />
     <Reference Include="System.DirectoryServices.AccountManagement" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.IdentityModel" />
-    <Reference Include="System.IdentityModel.Tokens.Jwt, Version=5.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.IdentityModel.Tokens.Jwt.5.5.0\lib\net461\System.IdentityModel.Tokens.Jwt.dll</HintPath>
+    <Reference Include="System.IdentityModel.Tokens.Jwt, Version=5.7.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IdentityModel.Tokens.Jwt.5.7.0\lib\net461\System.IdentityModel.Tokens.Jwt.dll</HintPath>
     </Reference>
     <Reference Include="System.Interactive.Async, Version=3.2.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Interactive.Async.3.2.0\lib\net46\System.Interactive.Async.dll</HintPath>
@@ -463,17 +478,20 @@
     <Reference Include="System.IO.FileSystem.Primitives, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.IO.FileSystem.Primitives.4.3.0\lib\net46\System.IO.FileSystem.Primitives.dll</HintPath>
     </Reference>
+    <Reference Include="System.IO.Hashing, Version=6.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IO.Hashing.6.0.0\lib\net461\System.IO.Hashing.dll</HintPath>
+    </Reference>
     <Reference Include="System.IO.Packaging, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\OpenXMLSDK-MOT.2.6.0.0\lib\System.IO.Packaging.dll</HintPath>
     </Reference>
-    <Reference Include="System.IO.Pipelines, Version=4.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.IO.Pipelines.4.5.0\lib\netstandard2.0\System.IO.Pipelines.dll</HintPath>
+    <Reference Include="System.IO.Pipelines, Version=4.0.2.4, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IO.Pipelines.4.7.5\lib\net461\System.IO.Pipelines.dll</HintPath>
     </Reference>
     <Reference Include="System.IO.UnmanagedMemoryStream, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.IO.UnmanagedMemoryStream.4.3.0\lib\net46\System.IO.UnmanagedMemoryStream.dll</HintPath>
     </Reference>
-    <Reference Include="System.Linq.Dynamic.Core, Version=1.2.9.0, Culture=neutral, PublicKeyToken=0f07ec44de6ac832, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Linq.Dynamic.Core.1.2.9\lib\net46\System.Linq.Dynamic.Core.dll</HintPath>
+    <Reference Include="System.Linq.Dynamic.Core, Version=1.4.2.0, Culture=neutral, PublicKeyToken=0f07ec44de6ac832, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Linq.Dynamic.Core.1.4.2\lib\net46\System.Linq.Dynamic.Core.dll</HintPath>
     </Reference>
     <Reference Include="System.Management" />
     <Reference Include="System.Management.Automation, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -502,17 +520,22 @@
       <HintPath>..\packages\System.Runtime.InteropServices.RuntimeInformation.4.3.0\lib\net45\System.Runtime.InteropServices.RuntimeInformation.dll</HintPath>
     </Reference>
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Runtime.Serialization.Primitives, Version=4.1.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.Serialization.Primitives.4.3.0\lib\net46\System.Runtime.Serialization.Primitives.dll</HintPath>
+      <Private>True</Private>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Security" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.ServiceModel.Web" />
     <Reference Include="System.Text.Encoding.CodePages, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Text.Encoding.CodePages.5.0.0\lib\net461\System.Text.Encoding.CodePages.dll</HintPath>
     </Reference>
-    <Reference Include="System.Text.Encodings.Web, Version=5.0.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Text.Encodings.Web.5.0.1\lib\net461\System.Text.Encodings.Web.dll</HintPath>
+    <Reference Include="System.Text.Encodings.Web, Version=6.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Text.Encodings.Web.6.0.0\lib\net461\System.Text.Encodings.Web.dll</HintPath>
     </Reference>
-    <Reference Include="System.Text.Json, Version=5.0.0.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Text.Json.5.0.2\lib\net461\System.Text.Json.dll</HintPath>
+    <Reference Include="System.Text.Json, Version=6.0.0.9, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Text.Json.6.0.9\lib\net461\System.Text.Json.dll</HintPath>
     </Reference>
     <Reference Include="System.Threading.Channels, Version=4.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Threading.Channels.4.5.0\lib\netstandard2.0\System.Threading.Channels.dll</HintPath>
@@ -785,12 +808,14 @@
     <Compile Include="Bus\Consumer\RockConsumerAsync.cs" />
     <Compile Include="Bus\Exceptions\BusException.cs" />
     <Compile Include="Bus\Faults\ReceiveFaultObserver.cs" />
+    <Compile Include="Bus\Message\CloudPrintProxyStatusMessage.cs" />
     <Compile Include="Bus\Message\NewItemCacheAddedMessage.cs" />
     <Compile Include="Bus\Message\ClearReferencedEntityDependenciesMessage.cs" />
     <Compile Include="Bus\Message\CreditCardIsExpiringMessage.cs" />
     <Compile Include="Bus\Message\GiftWasGivenMessage.cs" />
     <Compile Include="Bus\Message\PageRouteWasUpdatedMessage.cs" />
     <Compile Include="Bus\Message\ScheduledGiftWasModifiedMessage.cs" />
+    <Compile Include="Bus\Queue\CloudPrintQueue.cs" />
     <Compile Include="Bus\Queue\ExpiringCardEventQueue.cs" />
     <Compile Include="Bus\Queue\PageRouteEventQueue.cs" />
     <Compile Include="Chart\ChartJs\ChartColorPaletteGenerator.cs" />
@@ -807,6 +832,83 @@
     <Compile Include="Chart\MetricChartDataSourceBuilder.cs" />
     <Compile Include="CheckIn\CheckInGroupLocationSchedule.cs" />
     <Compile Include="CheckIn\CompletedAchievement.cs" />
+    <Compile Include="CheckIn\v2\AbilityLevelOpportunity.cs" />
+    <Compile Include="CheckIn\v2\AreaConfigurationData.cs" />
+    <Compile Include="CheckIn\v2\AreaOpportunity.cs" />
+    <Compile Include="CheckIn\v2\AttendanceSessionRequest.cs" />
+    <Compile Include="CheckIn\v2\CheckInFieldFilterBuilder.cs" />
+    <Compile Include="CheckIn\v2\CloudPrintProxyStatusConsumer.cs" />
+    <Compile Include="CheckIn\v2\CloudPrintSocket.cs" />
+    <Compile Include="CheckIn\v2\DefaultLabelProvider.cs" />
+    <Compile Include="CheckIn\v2\DefaultSaveProvider.cs" />
+    <Compile Include="CheckIn\v2\Filters\BirthMonthOpportunityFilter.cs" />
+    <Compile Include="CheckIn\v2\Filters\LocationClosedOpportunityFilter.cs" />
+    <Compile Include="CheckIn\v2\Labels\AttendanceLabel.cs" />
+    <Compile Include="CheckIn\v2\Labels\AttendanceLabelData.cs" />
+    <Compile Include="CheckIn\v2\Labels\AttendeePhotoFieldConfiguration.cs" />
+    <Compile Include="CheckIn\v2\Labels\BarcodeFieldConfiguration.cs" />
+    <Compile Include="CheckIn\v2\Labels\CheckoutLabelData.cs" />
+    <Compile Include="CheckIn\v2\Labels\EllipseFieldConfiguration.cs" />
+    <Compile Include="CheckIn\v2\Labels\FamilyLabelData.cs" />
+    <Compile Include="CheckIn\v2\Labels\Formatters\CallbackDataFormatter.cs" />
+    <Compile Include="CheckIn\v2\Labels\Formatters\DataFormatter.cs" />
+    <Compile Include="CheckIn\v2\Labels\DateAttributeFieldDataSource.cs" />
+    <Compile Include="CheckIn\v2\Labels\Formatters\CheckInDetailDataFormatter.cs" />
+    <Compile Include="CheckIn\v2\Labels\Formatters\DateDataFormatter.cs" />
+    <Compile Include="CheckIn\v2\Labels\FieldDataSource.cs" />
+    <Compile Include="CheckIn\v2\Labels\FieldSourceHelper.cs" />
+    <Compile Include="CheckIn\v2\Labels\Formatters\FullNameDataFormatter.cs" />
+    <Compile Include="CheckIn\v2\Labels\Formatters\GenderDataFormatter.cs" />
+    <Compile Include="CheckIn\v2\Labels\Formatters\GradeDataFormatter.cs" />
+    <Compile Include="CheckIn\v2\Labels\Formatters\SecurityCodeAndNameDataFormatter.cs" />
+    <Compile Include="CheckIn\v2\Labels\Formatters\WeekdayDateDataFormatter.cs" />
+    <Compile Include="CheckIn\v2\Labels\IconFieldConfiguration.cs" />
+    <Compile Include="CheckIn\v2\Labels\IFieldConfiguration.cs" />
+    <Compile Include="CheckIn\v2\Labels\ILabelDataHasPerson.cs" />
+    <Compile Include="CheckIn\v2\Labels\LabelPrintProvider.cs" />
+    <Compile Include="CheckIn\v2\Labels\ImageFieldConfiguration.cs" />
+    <Compile Include="CheckIn\v2\Labels\LabelField.cs" />
+    <Compile Include="CheckIn\v2\Labels\LabelIcon.cs" />
+    <Compile Include="CheckIn\v2\Labels\RenderedLabel.cs" />
+    <Compile Include="CheckIn\v2\Labels\LineFieldConfiguration.cs" />
+    <Compile Include="CheckIn\v2\Labels\MultiValueFieldDataSource.cs" />
+    <Compile Include="CheckIn\v2\Labels\Formatters\PersonAgeDataFormatter.cs" />
+    <Compile Include="CheckIn\v2\Labels\PersonLabelData.cs" />
+    <Compile Include="CheckIn\v2\Labels\PrinterCapabilities.cs" />
+    <Compile Include="CheckIn\v2\Labels\PrintLabelRequest.cs" />
+    <Compile Include="CheckIn\v2\Labels\RectangleFieldConfiguration.cs" />
+    <Compile Include="CheckIn\v2\Labels\Renderers\ILabelRenderer.cs" />
+    <Compile Include="CheckIn\v2\Labels\Renderers\ZplImageHelper.cs" />
+    <Compile Include="CheckIn\v2\Labels\Renderers\ZplImageCache.cs" />
+    <Compile Include="CheckIn\v2\Labels\Renderers\ZplImageOptions.cs" />
+    <Compile Include="CheckIn\v2\Labels\Renderers\ZplLabelRenderer.cs" />
+    <Compile Include="CheckIn\v2\Labels\Renderers\TextLabelRenderer.cs" />
+    <Compile Include="CheckIn\v2\Labels\SingleValueFieldDataSource.cs" />
+    <Compile Include="CheckIn\v2\Labels\TextFieldConfiguration.cs" />
+    <Compile Include="CheckIn\v2\PreparedAttendanceRequest.cs" />
+    <Compile Include="CheckIn\v2\TemplateConfigurationData.cs" />
+    <Compile Include="CheckIn\v2\CheckInDirector.cs" />
+    <Compile Include="CheckIn\v2\Attendee.cs" />
+    <Compile Include="CheckIn\v2\CheckInSession.cs" />
+    <Compile Include="CheckIn\v2\DefaultConversionProvider.cs" />
+    <Compile Include="CheckIn\v2\DefaultSearchProvider.cs" />
+    <Compile Include="CheckIn\v2\GroupConfigurationData.cs" />
+    <Compile Include="CheckIn\v2\GroupOpportunity.cs" />
+    <Compile Include="CheckIn\v2\LocationOpportunity.cs" />
+    <Compile Include="CheckIn\v2\CheckInMessageException.cs" />
+    <Compile Include="CheckIn\v2\OpportunityCollection.cs" />
+    <Compile Include="CheckIn\v2\DefaultSelectionProvider.cs" />
+    <Compile Include="CheckIn\v2\DefaultOpportunityFilterProvider.cs" />
+    <Compile Include="CheckIn\v2\Filters\AgeOpportunityFilter.cs" />
+    <Compile Include="CheckIn\v2\Filters\DataViewOpportunityFilter.cs" />
+    <Compile Include="CheckIn\v2\Filters\GenderOpportunityFilter.cs" />
+    <Compile Include="CheckIn\v2\Filters\GradeOpportunityFilter.cs" />
+    <Compile Include="CheckIn\v2\Filters\MembershipOpportunityFilter.cs" />
+    <Compile Include="CheckIn\v2\Filters\DuplicateCheckInOpportunityFilter.cs" />
+    <Compile Include="CheckIn\v2\Filters\OpportunityFilter.cs" />
+    <Compile Include="CheckIn\v2\ScheduleOpportunity.cs" />
+    <Compile Include="CheckIn\v2\Filters\ThresholdOpportunityFilter.cs" />
+    <Compile Include="CheckIn\v2\RecentAttendance.cs" />
     <Compile Include="ClientService\ClientServiceBase.cs" />
     <Compile Include="ClientService\Connection\ConnectionOpportunity\ConnectionOpportunityClientService.cs" />
     <Compile Include="ClientService\Connection\ConnectionType\ConnectionTypeClientService.cs" />
@@ -868,6 +970,8 @@
     <Compile Include="Cms\StructuredContent\BlockTypes\ParagraphData.cs" />
     <Compile Include="Cms\StructuredContent\BlockTypes\QuoteRenderer.cs" />
     <Compile Include="Cms\StructuredContent\BlockTypes\QuoteData.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\RawData.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\RawRenderer.cs" />
     <Compile Include="Cms\StructuredContent\BlockTypes\TableRenderer.cs" />
     <Compile Include="Cms\StructuredContent\BlockTypes\TableData.cs" />
     <Compile Include="Cms\StructuredContent\BlockTypes\WarningRenderer.cs" />
@@ -971,6 +1075,7 @@
     <Compile Include="Configuration\HostingSettings.cs" />
     <Compile Include="Configuration\IConnectionStringProvider.cs" />
     <Compile Include="Configuration\WebFormsConnectionStringProvider.cs" />
+    <Compile Include="Core\InteractionInfo.cs" />
     <Compile Include="Core\NotificationMessageTypeComponent.cs" />
     <Compile Include="Core\NotificationMessageTypeContainer.cs" />
     <Compile Include="Core\NotificationMessageTypes\ConnectionRequestMention.cs" />
@@ -1026,11 +1131,19 @@
     <Compile Include="Field\UniversalFieldTypeGuidAttribute.cs" />
     <Compile Include="Financial\IScheduledNumberOfPaymentsGateway.cs" />
     <Compile Include="Financial\ISettlementGateway.cs" />
+    <Compile Include="Jobs\UpdateProgramCompletions.cs" />
+    <Compile Include="Model\LMS\LearningActivityCompletion\LearningActivityCompletion.SaveHook.cs" />
+    <Compile Include="Model\LMS\LearningClassAnnouncement\LearningClassAnnouncementService.cs" />
+    <Compile Include="Model\LMS\LearningGradingSystemScale\LearningGradingSystemScaleService.cs" />
+    <Compile Include="Net\Geolocation\IpGeoException.cs" />
+    <Compile Include="Net\Geolocation\IpGeolocation.cs" />
+    <Compile Include="Net\Geolocation\IpGeoLookup.cs" />
     <Compile Include="IpAddress\Classes\IpLocation.cs" />
     <Compile Include="IpAddress\IpLocationUtilities.cs" />
     <Compile Include="Jobs\IndexContentCollections.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostUpdateJob.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV161RemoveObsidianGroupScheduleToolboxBackButtons.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV167PopulateEntityIntentsFromAdditionalSettingsJson.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV166AddCommunicationRecipientIndex.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV166UpdateAchievementTypeTargetCount.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV16UpdateInteractionSessionStartDateKey.cs" />
@@ -1045,10 +1158,12 @@
     <Compile Include="Jobs\PostUpdateJobs\PostV16UpdateMediaElementDefaultUrls.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV16UpdateNoteData.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV16UpdatePersonPrimaryAliasId.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV17InteractionIndexPostMigration.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV16UpdateWorkflowIds.cs" />
     <Compile Include="Jobs\PostUpdateDataMigrationsReplaceWebFormsBlocksWithObsidianBlocks.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV152CreateAttributeValue_ValueAsPersonId_Index.cs" />
     <Compile Include="Jobs\PostV154DataMigrationsUpdateAgeBracketValues.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV17RemoveLegacyPreferencesPostMigration.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV166DataMigrationsAddInteractionCreatedDateTimeIndex.cs" />
     <Compile Include="Jobs\ProcessReminders.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV133DataMigrationsAddInteractionSessionLocationIndexToInteractionSession.cs" />
@@ -1060,6 +1175,7 @@
     <Compile Include="Jobs\RockJob.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV141DataMigrationsUpdateCurrentSessions1900.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV15DataMigrationsReplaceTransactionEntryBlocksWithUtilityPaymentBlock.cs" />
+    <Compile Include="Jobs\SendLearningActivityNotifications.cs" />
     <Compile Include="Jobs\SendGroupAttendanceReminders.cs" />
     <Compile Include="Jobs\SendSignUpReminders.cs" />
     <Compile Include="Jobs\UpdateAnalyticsSourcePostalCode.cs" />
@@ -1067,10 +1183,24 @@
     <Compile Include="Lava\Blocks\AdaptiveMessageBlock.cs" />
     <Compile Include="Lava\Blocks\InteractionIntentWriteTag.cs" />
     <Compile Include="Lava\Blocks\ObserveBlock.cs" />
+    <Compile Include="Lava\Filters\LavaFilters.Identifiers.cs" />
     <Compile Include="Lava\Filters\LavaFilters.Text.cs" />
     <Compile Include="Lava\Filters\LavaFilters.Person.cs" />
     <Compile Include="Lava\Filters\LavaFilters.EntitySets.cs" />
     <Compile Include="Lava\Helpers\LavaAppendWatchesHelper.cs" />
+    <Compile Include="Lava\Shortcodes\NetworkGraphShortcode.cs" />
+    <Compile Include="Lms\AssessmentComponent.cs" />
+    <Compile Include="Lms\PointAssessmentComponent.cs" />
+    <Compile Include="Lms\VideoWatchComponent.cs" />
+    <Compile Include="Lms\FileUploadComponent.cs" />
+    <Compile Include="Lms\CheckOffComponent.cs" />
+    <Compile Include="Lms\LearningActivityComponent.cs" />
+    <Compile Include="Lms\LearningActivityContainer.cs" />
+    <Compile Include="Logging\DynamicConfigurationProvider.cs" />
+    <Compile Include="Logging\RockJobLogger.cs" />
+    <Compile Include="Logging\RockLoggingCategoryAttribute.cs" />
+    <Compile Include="Logging\SerilogConfiguration.cs" />
+    <Compile Include="Logging\SeriSinkWrapper.cs" />
     <Compile Include="Model\CMS\AdaptiveMessageAdaptationSegment\AdaptiveMessageAdaptationSegment.cs" />
     <Compile Include="Model\CMS\AdaptiveMessageAdaptation\AdaptiveMessageAdaptation.cs" />
     <Compile Include="Model\CMS\AdaptiveMessageAdaptation\AdaptiveMessageAdaptation.Logic.cs" />
@@ -1081,7 +1211,6 @@
     <Compile Include="Model\CMS\ContentChannelItem\AddFromContentLibraryException.cs" />
     <Compile Include="Model\CMS\ContentChannelItem\Options\ContentLibraryItemUploadOptions.cs" />
     <Compile Include="Model\CMS\ContentChannelItem\Options\ContentLibraryItemDownloadOptions.cs" />
-    <Compile Include="Model\CMS\Page\Page.WebForms.cs" />
     <Compile Include="Lava\Filters\LavaFilters.Reporting.cs" />
     <Compile Include="Lava\Shortcodes\AICompletionShortcode.cs" />
     <Compile Include="Lava\WebsiteLavaHost.cs" />
@@ -1101,6 +1230,7 @@
     <Compile Include="Model\CodeGenerated\AdaptiveMessageAdaptationSegmentService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\AdaptiveMessageAdaptationService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\AdaptiveMessageService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\CheckInLabelService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\ContentCollectionService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\ContentCollectionSourceService.CodeGenerated.cs" />
     <Compile Include="Jobs\UpdatePersonalizationData.cs" />
@@ -1114,6 +1244,7 @@
     <Compile Include="Model\CMS\RequestFilter\RequestFilter.WebForms.cs" />
     <Compile Include="Model\CodeGenerated\ContentTopicDomainService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\ContentTopicService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\EntityIntentService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\InteractiveExperienceActionService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\InteractiveExperienceAnswerService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\InteractiveExperienceOccurrenceService.CodeGenerated.cs" />
@@ -1144,6 +1275,9 @@
     <Compile Include="Model\Core\AttributeQualifier\AttributeQualifier.SaveHook.cs" />
     <Compile Include="Model\Core\AttributeReferencedEntity\AttributeReferencedEntity.cs" />
     <Compile Include="Model\Core\AttributeValueReferencedEntity\AttributeValueReferencedEntity.cs" />
+    <Compile Include="Model\Core\EntityIntent\EntityIntent.cs" />
+    <Compile Include="Model\Core\EntityIntent\EntityIntent.Logic.cs" />
+    <Compile Include="Model\Core\EntityIntent\EntityIntentService.cs" />
     <Compile Include="Model\Core\EntitySet\Options\AddEntitySetActionOptions.cs" />
     <Compile Include="Model\Core\Interaction\Interaction.Logic.cs" />
     <Compile Include="Model\Core\NoteType\NoteType.SaveHook.cs" />
@@ -1157,6 +1291,7 @@
     <Compile Include="Model\Core\PersonPreference\PersonPreferenceService.cs" />
     <Compile Include="Model\Engagement\AchievementType\AchievementType.SaveHook.cs" />
     <Compile Include="Model\Event\AttendanceOccurrence\AttendanceOccurrence.SaveHook.cs" />
+    <Compile Include="Model\Event\CheckInLabel\CheckInLabel.cs" />
     <Compile Include="Model\Event\InteractiveExperienceAction\InteractiveExperienceAction.cs" />
     <Compile Include="Model\Event\InteractiveExperienceAction\InteractiveExperienceActionService.cs" />
     <Compile Include="Model\Event\InteractiveExperienceAnswer\InteractiveExperienceAnswer.cs" />
@@ -1174,10 +1309,15 @@
     <Compile Include="Model\Finance\FinancialPledge\FinancialPledge.SaveHook.cs" />
     <Compile Include="Model\Finance\FinancialScheduledTransaction\FinancialScheduledTransactionExtensionMethods.cs" />
     <Compile Include="Model\Finance\FinancialScheduledTransaction\FinancialScheduledTransactionPaymentPlanPair.cs" />
+    <Compile Include="Model\Finance\FinancialScheduledTransaction\PaymentFrequencyConfiguration.cs" />
     <Compile Include="Model\Finance\FinancialScheduledTransaction\PaymentPlan.cs" />
+    <Compile Include="Model\Finance\FinancialScheduledTransaction\PaymentPlanConfiguration.cs" />
+    <Compile Include="Model\Finance\FinancialScheduledTransaction\PaymentPlanConfigurationOptions.cs" />
+    <Compile Include="Model\Finance\FinancialScheduledTransaction\PaymentPlanConfigurationService.cs" />
     <Compile Include="Model\Group\GroupLocationHistoricalSchedule\GroupLocationHistoricalScheduleService.cs" />
     <Compile Include="Model\Event\RegistrationTemplateFormField\RegistrationTemplateFormFieldException.cs" />
     <Compile Include="Model\Event\RegistrationTemplateForm\RegistrationTemplateFormService.cs" />
+    <Compile Include="Model\Group\GroupLocation\GroupLocation.Logic.cs" />
     <Compile Include="Model\Group\GroupMemberAssignment\GroupMemberAssignment.SaveHook.cs" />
     <Compile Include="Model\Group\GroupMember\GroupMemberService.WebForms.cs" />
     <Compile Include="Model\Event\InteractiveExperienceScheduleCampus\InteractiveExperienceScheduleCampus.cs" />
@@ -1186,26 +1326,35 @@
     <Compile Include="Model\Group\GroupSync\GroupSyncResult.cs" />
     <Compile Include="Model\Group\GroupSync\GroupSyncService.cs" />
     <Compile Include="Model\Group\PeerNetwork\PeerNetwork.cs" />
-    <Compile Include="Model\LMS\LearningActivityCompletion\LearningActivityCompletion.Logic.cs" />
     <Compile Include="Model\LMS\LearningActivityCompletion\LearningActivityCompletion.cs" />
+    <Compile Include="Model\LMS\LearningActivityCompletion\LearningActivityCompletion.Logic.cs" />
+    <Compile Include="Model\LMS\LearningActivityCompletion\LearningActivityCompletionService.cs" />
     <Compile Include="Model\LMS\LearningActivity\LearningActivity.cs" />
+    <Compile Include="Model\LMS\LearningActivity\LearningActivityService.cs" />
     <Compile Include="Model\LMS\LearningActivity\LearningActivity.Logic.cs" />
     <Compile Include="Model\LMS\LearningClassContentPage\LearningClassContentPage.cs" />
     <Compile Include="Model\LMS\LearningClassAnnouncement\LearningClassAnnouncement.cs" />
     <Compile Include="Model\LMS\LearningClass\LearningClass.Logic.cs" />
     <Compile Include="Model\LMS\LearningGradingSystemScale\LearningGradingSystemScale.cs" />
     <Compile Include="Model\LMS\LearningParticipant\LearningParticipant.cs" />
+    <Compile Include="Model\LMS\LearningParticipant\LearningParticipant.SaveHook.cs" />
+    <Compile Include="Model\LMS\LearningParticipant\LearningParticipantService.cs" />
     <Compile Include="Model\LMS\LearningCourseRequirement\LearningCourseRequirement.cs" />
     <Compile Include="Model\LMS\LearningGradingSystem\LearningGradingSystem.cs" />
     <Compile Include="Model\LMS\LearningCourse\LearningCourse.cs" />
+    <Compile Include="Model\LMS\LearningCourse\LearningCourseService.cs" />
     <Compile Include="Model\LMS\LearningProgramCompletion\LearningProgramCompletion.cs" />
     <Compile Include="Model\LMS\LearningProgram\LearningProgram.Logic.cs" />
     <Compile Include="Model\LMS\LearningProgram\LearningProgram.cs" />
+    <Compile Include="Model\LMS\LearningProgram\LearningProgram.SaveHook.cs" />
+    <Compile Include="Model\LMS\LearningProgram\LearningProgramService.cs" />
     <Compile Include="Model\LMS\LearningClass\LearningClass.cs" />
+    <Compile Include="Model\LMS\LearningClass\LearningClassService.cs" />
     <Compile Include="Model\LMS\LearningSemester\LearningSemester.cs" />
     <Compile Include="Model\Reporting\AnalyticsSourcePostalCode\AnalyticsSourcePostalCode.cs" />
     <Compile Include="Model\Reporting\AnalyticsSourcePostalCode\AnalyticsSourcePostalCode.Logic.cs" />
     <Compile Include="Model\Reporting\AnalyticsSourcePostalCode\ZipCodeBoundary.cs" />
+    <Compile Include="Model\Group\Group\Options\CopyGroupOptions.cs" />
     <Compile Include="Model\Reporting\DataViewFilter\DataViewFilter.SaveHook.cs" />
     <Compile Include="Model\Security\RemoteAuthenticationSessionExtensions.cs" />
     <Compile Include="Model\Security\RemoteAuthenticationSessionService.cs" />
@@ -1216,9 +1365,12 @@
     <Compile Include="Net\NullRockResponseContext.cs" />
     <Compile Include="Net\RockRequestContextAccessor.cs" />
     <Compile Include="Net\RockResponseContext.WebForms.cs" />
+    <Compile Include="Observability\CategoryLogProcessor.cs" />
+    <Compile Include="Observability\LogExporterWrapper.cs" />
     <Compile Include="Observability\ObservabilityHelper.cs" />
     <Compile Include="Observability\RockActivitySource.cs" />
     <Compile Include="Observability\RockMetricSource.cs" />
+    <Compile Include="Obsidian\ObsidianComponent.cs" />
     <Compile Include="Obsidian\UI\GridActionUrlKey.cs" />
     <Compile Include="Obsidian\UI\GridBuilder.cs" />
     <Compile Include="Obsidian\UI\GridBuilderExtensions.cs" />
@@ -1226,6 +1378,7 @@
     <Compile Include="Obsidian\UI\GridHelper.cs" />
     <Compile Include="Personalization\PersonalizationRequestFilters\EnvironmentRequestFilter.cs" />
     <Compile Include="Net\IRequest.cs" />
+    <Compile Include="Personalization\PersonalizationRequestFilters\GeolocationRequestFilter.cs" />
     <Compile Include="Personalization\PersonalizationSegmentFilter.cs" />
     <Compile Include="Personalization\PersonalizationSegmentAdditionalFilterConfiguration.cs" />
     <Compile Include="Personalization\PersonalizationSegmentFilters\InteractionSegmentFilter.cs" />
@@ -1255,6 +1408,9 @@
     <Compile Include="Model\Finance\BenevolenceType\BenevolenceType.Logic.cs" />
     <Compile Include="Personalization\SegmentFilterCookieData.cs" />
     <Compile Include="Model\Event\EventCalendar\EventCalendarService.cs" />
+    <Compile Include="Plugin\HotFixes\188_MigrationRollupsForV17_0_0.cs" />
+    <Compile Include="Plugin\HotFixes\191_MigrationRollupsForV17_0_2.cs" />
+    <Compile Include="Plugin\HotFixes\190_MigrationRollupsForV17_0_1.cs" />
     <Compile Include="Plugin\HotFixes\189_UpdateAppleDeviceList.cs" />
     <Compile Include="Plugin\HotFixes\187_MigrationRollupsForV15_2_6.cs" />
     <Compile Include="Plugin\HotFixes\186_MigrationRollupsForV15_2_5.cs" />
@@ -1284,9 +1440,19 @@
     <Compile Include="Plugin\HotFixes\160_SetupReminders.cs" />
     <Compile Include="Plugin\HotFixes\178_FixLockedOutCaptionLoginBlockSetting.cs" />
     <Compile Include="Plugin\HotFixes\177_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge.cs" />
+    <Compile Include="Plugin\HotFixes\195_MigrationRollupForV17_0_4.cs" />
+    <Compile Include="Plugin\HotFixes\204_MigrationRollupsForV17_0_11.cs" />
+    <Compile Include="Plugin\HotFixes\203_MigrationRollupsForV17_0_10.cs" />
+    <Compile Include="Plugin\HotFixes\202_MigrationRollupsForV17_0_9.cs" />
+    <Compile Include="Plugin\HotFixes\201_MigrationRollupsForV17_0_8.cs" />
+    <Compile Include="Plugin\HotFixes\199_MigrationRollupsForV17_0_7.cs" />
+    <Compile Include="Plugin\HotFixes\198_MigrationRollupsForV17_0_6.cs" />
+    <Compile Include="Plugin\HotFixes\197_MigrationRollupsForV17_0_5.cs" />
     <Compile Include="Plugin\HotFixes\196_MigrationRollupsForV16_5_1.cs" />
+    <Compile Include="Plugin\HotFixes\194_MigratoinRollupForV17_0_3.cs" />
     <Compile Include="Plugin\HotFixes\193_MigratoinRollupForV15_4_1.cs" />
     <Compile Include="Plugin\HotFixes\192_MailgunCopyApiKeyToHttpWebhookSigningKey.cs" />
+    <Compile Include="Plugin\HotFixes\200_AddMaxMindGeolocation.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -1309,10 +1475,13 @@
     <Compile Include="RealTime\Topics\InteractiveExperienceParticipantTopic.cs" />
     <Compile Include="RealTime\Topics\ITestCommunicationTransport.cs" />
     <Compile Include="RealTime\Topics\TestCommunicationTransportTopic.cs" />
-    <Compile Include="Reporting\FieldFilterGroup.cs" />
-    <Compile Include="Reporting\FieldFilterRule.cs" />
+    <Compile Include="Reporting\FieldFilterPublicConverter.cs" />
+    <Compile Include="Reporting\FieldFilterExpressionBuilder.cs" />
     <Compile Include="Reporting\DataFilter\Group\SignUpOpportunityHasNoAttendanceFilter.cs" />
     <Compile Include="Reporting\DataFilter\Group\SignUpOpportunityHasNoMembersFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\HasCompletedActivityFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\HasCompletedCourseFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\HasCompletedProgramFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\GivingAlertsFilter.cs" />
     <Compile Include="RealTime\Context.cs" />
     <Compile Include="RealTime\Engine.cs" />
@@ -1349,6 +1518,8 @@
     <Compile Include="Reporting\DataFilter\Person\InteractionIntentsFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\PersonalDevicesFilter.cs" />
     <Compile Include="Bulk\SampleData\SampleDataManager.cs" />
+    <Compile Include="Reporting\DataSelect\Person\HasCompletedCourseSelect.cs" />
+    <Compile Include="Reporting\DataSelect\Person\HasCompletedProgramSelect.cs" />
     <Compile Include="Reporting\DataTransform\Person\AllowedCheckInChildrenTransform.cs" />
     <Compile Include="Reporting\DataTransform\Person\AllowedCheckInTransform.cs" />
     <Compile Include="Reporting\DataViewQueryBuilder.cs" />
@@ -1369,6 +1540,8 @@
     <Compile Include="Security\Authentication\PasswordlessAuthentication.cs" />
     <Compile Include="Security\Authentication\Passwordless\PasswordlessAuthenticationState.cs" />
     <Compile Include="SystemGuid\SnippetType.cs" />
+    <Compile Include="Tasks\UpdatePersonAliasPersonalizationData.cs" />
+    <Compile Include="UniversalSearch\IndexHelper.cs" />
     <Compile Include="Tv\Classes\AppleTvPageSettings.cs" />
     <Compile Include="Utility\CaptchaApi\CloudflareApi.cs" />
     <Compile Include="Utility\ContentLibraryApi\CachedContentLibraryApi.cs" />
@@ -1531,7 +1704,6 @@
     <Compile Include="Model\Core\Schedule\InetCalendarHelper.cs" />
     <Compile Include="Model\Core\Schedule\Schedule.Logic.cs" />
     <Compile Include="Model\Core\Schedule\Schedule.SaveHook.cs" />
-    <Compile Include="Model\Core\Schedule\ScheduleICalHelper.cs" />
     <Compile Include="Model\Core\Schedule\ScheduleOccurrence.cs" />
     <Compile Include="Model\Core\Schedule\ScheduleService.cs" />
     <Compile Include="Model\Core\Schedule\ScheduleType.cs" />
@@ -1715,7 +1887,6 @@
     <Compile Include="Model\Group\GroupTypeRole\GroupTypeRole.Logic.cs" />
     <Compile Include="Model\Group\GroupType\GroupType.Logic.cs" />
     <Compile Include="Model\Group\GroupType\GroupType.SaveHook.cs" />
-    <Compile Include="Model\Group\GroupType\GroupTypePath.cs" />
     <Compile Include="Model\Group\Group\Group.Logic.cs" />
     <Compile Include="Model\Group\Group\Group.SaveHook.cs" />
     <Compile Include="Model\Group\Group\GroupParentCircularReferenceException.cs" />
@@ -1957,7 +2128,9 @@
     <Compile Include="Utility\ExtensionMethods\RockCacheabilityExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\CommunicationRecipientResponseExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\EntityContextStateExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\IValidPropertiesBoxExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\LavaLibraryExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\PersonBasicEditorExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\MediaPlayerOptionsExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\NameValueCollectionExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\Obsolete\JsonExtensions.cs" />
@@ -1971,6 +2144,7 @@
     <Compile Include="Utility\ExtensionMethods\RockResponseContextExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\SecurityGrantExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\Image.cs" />
+    <Compile Include="Utility\FileUrlHelper.cs" />
     <Compile Include="Utility\IdHasher.cs" />
     <Compile Include="Utility\IWebHostEnvironment.cs" />
     <Compile Include="Utility\MethodRetry.cs" />
@@ -2010,7 +2184,6 @@
     <Compile Include="Jobs\PostInstallDataMigrations.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV122_UpdateInteractionIndex.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV124DataMigrationsUpdateGroupSalutations.cs" />
-    <Compile Include="Jobs\PostUpdateJobs\PostV124DataMigrationUnencryptPaymentDetailFields.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV125DataMigrationsAddSystemCommunicationIndexToCommunication.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV12DataMigrationsAddStatusIndexToCommunicationRecipient.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV12DataMigrationsAddIndexToCommunication.cs" />
@@ -2218,15 +2391,19 @@
     <Compile Include="Web\Cache\Entities\AdaptiveMessageCache.cs" />
     <Compile Include="Web\Cache\Entities\AssetStorageProviderCache.cs" />
     <Compile Include="Web\Cache\Entities\BinaryFileTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\EntityIntentCache.cs" />
+    <Compile Include="Web\Cache\Entities\GroupCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentTopicDomainCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentTopicCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentCollectionCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentCollectionSourceCache.cs" />
+    <Compile Include="Web\Cache\Entities\DeviceCache.cs" />
     <Compile Include="Web\Cache\Entities\DataViewCache.cs" />
     <Compile Include="Web\Cache\Entities\DataViewFilterCache.cs" />
     <Compile Include="Web\Cache\Entities\FinancialAccountCache.cs" />
     <Compile Include="Web\Cache\Entities\InteractiveExperienceCache.cs" />
     <Compile Include="Web\Cache\Entities\InteractiveExperienceScheduleCache.cs" />
+    <Compile Include="Web\Cache\Entities\GroupLocationCache.cs" />
     <Compile Include="Web\Cache\Entities\NamedScheduleCache.cs" />
     <Compile Include="Web\Cache\Entities\NamedLocationCache.cs" />
     <Compile Include="Web\Cache\Entities\NotificationMessageTypeCache.cs" />
@@ -2243,7 +2420,7 @@
     <Compile Include="Logging\IRockLogConfiguration.cs" />
     <Compile Include="Logging\IRockLogger.cs" />
     <Compile Include="Logging\RockLogDomains.cs" />
-    <Compile Include="Logging\RockLoggerSerilog.cs" />
+    <Compile Include="Logging\LegacySerilogLogger.cs" />
     <Compile Include="Logging\RockLogger.cs" />
     <Compile Include="Logging\RockLogConfiguration.cs" />
     <Compile Include="Web\Cache\NonEntities\DbCommandObservabilityCache.cs" />
@@ -2255,7 +2432,7 @@
     <Compile Include="Web\Cache\RockCacheAllIdUpdater.cs" />
     <Compile Include="Web\Cache\RockCacheConsumer.cs" />
     <Compile Include="Web\HttpModules\DeepLinks.cs" />
-    <Compile Include="Web\HttpModules\Observability.cs" />
+    <Compile Include="Web\HttpModules\RockGateway.cs" />
     <Compile Include="Web\HttpModules\SignalRErrorModule.cs" />
     <Compile Include="Web\IBreadCrumb.cs" />
     <Compile Include="Blocks\IBreadCrumbBlock.cs" />
@@ -2410,7 +2587,6 @@
     <Compile Include="Web\Cache\Entities\ContentChannelTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\DocumentTypeCache.cs" />
     <Compile Include="Web\Cache\Entities\PersistedDatasetCache.cs" />
-    <Compile Include="Web\Cache\Entities\Obsolete\PersonBadgeCache.cs" />
     <Compile Include="Web\Cache\Entities\AchievementTypePrerequisiteCache.cs" />
     <Compile Include="Web\Cache\Entities\AchievementTypeCache.cs" />
     <Compile Include="Web\Cache\NonEntities\EntityDocumentTypesCache.cs" />
@@ -2680,7 +2856,6 @@
     <Compile Include="Web\Cache\Entities\PageCache.cs" />
     <Compile Include="Web\Cache\Entities\SiteCache.cs" />
     <Compile Include="Web\Cache\NonEntities\AttributeValueCache.cs" />
-    <Compile Include="Web\Cache\Entities\Obsolete\EntityAttributesCache.cs" />
     <Compile Include="Web\Cache\NonEntities\GlobalAttributesCache.cs" />
     <Compile Include="Web\Cache\NonEntities\LavaTemplateCache.cs" />
     <Compile Include="Web\Cache\NonEntities\RoleCache.cs" />
@@ -2723,7 +2898,6 @@
     <Compile Include="Communication\Medium\Email.cs" />
     <Compile Include="Communication\Medium\PushNotification.cs" />
     <Compile Include="Communication\Medium\Sms.cs" />
-    <Compile Include="Communication\RecipientData.cs" />
     <Compile Include="Communication\RockEmailMessage.cs" />
     <Compile Include="Communication\RockMessage.cs" />
     <Compile Include="Communication\RockPushMessage.cs" />
@@ -2738,7 +2912,6 @@
     <Compile Include="Configuration\AttributeValuesConfig.cs" />
     <Compile Include="Configuration\RockConfig.cs" />
     <Compile Include="Constants\DisplayStrings.cs" />
-    <Compile Include="Constants\SystemSettingKeys.cs" />
     <Compile Include="Data\BoundFieldTypeAttribute.cs" />
     <Compile Include="Data\DbContext.cs" />
     <Compile Include="Data\DbService.cs" />
@@ -2992,7 +3165,6 @@
     <Compile Include="Lava\Blocks\SqlBlock.cs" />
     <Compile Include="Lava\Blocks\WorkflowActivateBlock.cs" />
     <Compile Include="Lava\LavaHelper.cs" />
-    <Compile Include="Lava\LavaSupportLevel.cs" />
     <Compile Include="Lava\Shortcodes\BootstrapAlertShortcode.cs" />
     <Compile Include="MergeTemplates\HtmlMergeTemplateType.cs" />
     <Compile Include="MergeTemplates\MergeTemplateType.cs" />
@@ -3047,6 +3219,19 @@
     <Compile Include="Model\CodeGenerated\ContentChannelItemSlugService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\GroupSyncService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\LavaShortcodeService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\LearningActivityCompletionService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\LearningActivityService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\LearningClassAnnouncementService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\LearningClassContentPageService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\LearningClassService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\LearningCourseRequirementService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\LearningCourseService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\LearningGradingSystemScaleService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\LearningGradingSystemService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\LearningParticipantService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\LearningProgramCompletionService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\LearningProgramService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\LearningSemesterService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\MetaFirstNameGenderLookupService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\MetaLastNameLookupService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\MetaNickNameLookupService.CodeGenerated.cs" />
@@ -3492,7 +3677,7 @@
     <Compile Include="Reporting\DataTransform\Person\FamilyMembersTransform.cs" />
     <Compile Include="Reporting\DataTransform\Person\FatherTransform.cs" />
     <Compile Include="Reporting\DataTransform\Person\GrandchildTransform.cs" />
-    <Compile Include="Reporting\DataTransform\Person\GrandparentTransform.cs" />
+    <Compile Include="Reporting\DataTransform\Person\GrandParentTransform.cs" />
     <Compile Include="Reporting\DataTransform\Person\MotherTransform.cs" />
     <Compile Include="Reporting\DataTransform\Person\SpouseTransform.cs" />
     <Compile Include="Reporting\IRecipientDataSelect.cs" />
@@ -3564,8 +3749,6 @@
     <Compile Include="Model\Workflow\WorkflowTrigger\WorkflowTrigger.cs" />
     <Compile Include="Model\Workflow\WorkflowTrigger\WorkflowTriggerService.cs" />
     <Compile Include="Model\Workflow\WorkflowType\WorkflowType.cs" />
-    <Compile Include="PersonProfile\BadgeComponent.cs" />
-    <Compile Include="PersonProfile\BadgeContainer.cs" />
     <Compile Include="Badge\Component\AlertNote.cs" />
     <Compile Include="Badge\Component\AttendingDuration.cs" />
     <Compile Include="Badge\Component\Campus.cs" />
@@ -3576,8 +3759,6 @@
     <Compile Include="Badge\Component\InGroupWithPurpose.cs" />
     <Compile Include="Badge\Component\LastVisitOnSite.cs" />
     <Compile Include="Badge\Component\Liquid.cs" />
-    <Compile Include="PersonProfile\HighlightLabelBadge.cs" />
-    <Compile Include="PersonProfile\IconBadge.cs" />
     <Compile Include="Plugin\HotFixes\002_CheckinGradeRequired.cs" />
     <Compile Include="Plugin\HotFixes\003_FixSystemEmailQuote.cs" />
     <Compile Include="Plugin\HotFixes\004_FixGradeRequiredAttribute.cs" />
@@ -3735,7 +3916,7 @@
     <Compile Include="Security\Authentication\Twitter.cs" />
     <Compile Include="Transactions\SaveCommunicationTransaction.cs" />
     <Compile Include="UniversalSearch\FormattedSearchResult.cs" />
-    <Compile Include="UniversalSearch\IndexComponents\Elasticsearch.cs" />
+    <Compile Include="UniversalSearch\IndexComponents\ElasticSearch.cs" />
     <Compile Include="UniversalSearch\IndexComponents\Lucene.cs" />
     <Compile Include="UniversalSearch\IndexModels\Attributes\RockIndexField.cs" />
     <Compile Include="UniversalSearch\IndexModels\BusinessIndex.cs" />
@@ -3776,8 +3957,6 @@
     <Compile Include="Blocks\IRockBlockType.cs" />
     <Compile Include="Web\UI\Adapters\ListControlAdaptor.cs" />
     <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
-    <Compile Include="Web\UI\Controls\Badges\PersonProfileBadgeList.cs" />
-    <Compile Include="Web\UI\Controls\Badges\PersonProfileBadge.cs" />
     <Compile Include="Web\UI\Controls\Grid\CustomActionConfig.cs" />
     <Compile Include="Web\UI\Controls\DefinedValueEditor.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DefinedValuePickerWithAdd.cs" />
@@ -4560,6 +4739,7 @@
   <ItemGroup>
     <Folder Include="Pbx\Provider\" />
     <Folder Include="RealTime\AspNetCore\" />
+    <Folder Include="Web\Cache\Entities\Obsolete\" />
     <Folder Include="Web\UI\Controls\Finance\" />
   </ItemGroup>
   <ItemGroup>
@@ -4620,6 +4800,7 @@
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
+  <Import Project="..\Applications\RockCloudPrint\Rock.CloudPrint.Shared.Common\Rock.CloudPrint.Shared.Common.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>REM Sets vbcscompiler.exe time to live to 10 seconds. Dev environment defaults to 600 secs which can cause issues when switching branches

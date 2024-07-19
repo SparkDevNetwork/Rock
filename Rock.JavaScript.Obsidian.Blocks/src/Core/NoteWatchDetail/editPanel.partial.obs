@@ -1,0 +1,259 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+
+        <h4 class="mt-0">Watched by</h4>
+
+        <NotificationBox v-if="isWatcherMustBeSelectWarningVisible" alertType="warning" dismissible>A Person or Group must be specified as the watcher</NotificationBox>
+        <NotificationBox v-if="isUnableToOverrideWarningVisible" alertType="danger" dismissible>Unable to set Watching to false. This would override another note watch that doesn't allow overrides.</NotificationBox>
+
+        <div class="row">
+            <div class="col-md-6">
+                <PersonPicker v-if="!hidePersonPicker"
+                              v-model="watcherPersonAlias"
+                              label="Watcher Person"
+                              help="The person that will receive notifications for this note watch"
+                              enableSelfSelection
+                              :disabled="disablePersonPicker" />
+                <GroupPicker v-if="!hideGroupPicker"
+                             v-model="watcherGroup"
+                             label="Watcher Group"
+                             help="Member of this group will receive notifications for this note watch"
+                             :disabled="disableGroupPicker" />
+            </div>
+            <div class="col-md-6">
+                <CheckBox v-model="isWatching"
+                          label="Watching"
+                          help="Set this to false to block notifications." />
+                <CheckBox v-if="isWatching"
+                          v-model="allowOverride"
+                          label="Allow Override"
+                          help="Set this to false to prevent other note watches from blocking this note watch." />
+            </div>
+        </div>
+
+        <h4>Watch Filter</h4>
+
+        <NotificationBox v-if="isWatchFilterMustBeSeletedWarningVisible" alertType="danger" dismissible>A Watch Filter must be specified.</NotificationBox>
+
+        <div class="row">
+            <div class="col-md-6">
+                <EntityTypePicker v-model="entityType"
+                                  label="Entity Type"
+                                  help="Set EntityType to enable watching a specific note type or specific entity."
+                                  :disabled="disabledEntityTypePicker"
+                                  :showBlankItem="true"
+                                  enhanceForLongLists
+                                  :includeGlobalOption="false" />
+                <div>
+                    <PersonPicker v-if="showPersonPicker"
+                                  v-model="watchedEntity"
+                                  label="Watching Person"
+                                  help="Select a Person to watch notes added to this person." />
+                    <GroupPicker v-if="showGroupPicker"
+                                 v-model="watchedEntity"
+                                 label="Watching Group"
+                                 help="Select a Group to watch notes added to this group." />
+                    <div v-if="showGenericEntityDetails">
+                        <NumberBox v-model="entityId"
+                                   label="EntityId"
+                                   help="Specify the entity id to watch notes added to the specified entity." />
+                        <RockLiteral v-if="entityName" label="Name">
+                            <template #label>Name</template>
+                            <div v-html="entityName">
+
+                            </div>
+                        </RockLiteral>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <NotificationBox v-if="isNoteTypeWarningVisible" alertType="danger" dismissible >This note type doesn't allow note watches.</NotificationBox>
+                <DropDownList v-if="showNoteTypePicker"
+                              v-model="noteTypeValue"
+                              :items="noteTypeOptions"
+                              label="Note Type"
+                              help="Select a Note Type to watch all notes of this note" />
+
+                <RockLiteral v-if="watchedNoteText" label="Watching Note">{{ watchedNoteText }}</RockLiteral>
+            </div>
+        </div>
+
+        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, computed, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import { useInvokeBlockAction, watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import GroupPicker from "@Obsidian/Controls/groupPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import RockLiteral from "@Obsidian/Controls/rockLiteral.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { NoteWatchBag } from "@Obsidian/ViewModels/Blocks/Core/NoteWatchDetail/noteWatchBag";
+    import { NoteWatchDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/NoteWatchDetail/noteWatchDetailOptionsBag";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<NoteWatchBag>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<NoteWatchDetailOptionsBag>,
+            required: true
+        },
+
+        errorDetails: {
+            type: Object as PropType<string>,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: NoteWatchBag): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.attributes ?? {});
+    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const watcherPersonAlias = propertyRef(props.modelValue.watcherPersonAlias ?? {}, "WatcherPersonAliasId");
+    const watcherGroup = propertyRef(props.modelValue.watcherGroup ?? {}, "watcherGroupId");
+    const entityType = propertyRef(props.modelValue.entityType ?? {}, "EntityTypeId");
+    const isWatching = propertyRef(props.modelValue.isWatching, "IsWatching");
+    const allowOverride = propertyRef(props.modelValue.allowOverride, "AllowOverride");
+    const noteTypeValue = propertyRef(props.modelValue.noteType?.value ?? "", "NoteTypeId");
+    const entityId = propertyRef(props.modelValue.entityId, "EntityId");
+    const entityName = ref(props.modelValue.entityName ?? "");
+    const watchedEntity = ref(props.modelValue.watchedEntity ?? {});
+    const watchedNoteText = ref(props.modelValue.watchedNoteText ?? "");
+
+    const noteTypeOptions = ref(props.options.noteTypeOptions ?? []);
+    const disableGroupPicker = ref(props.options.disableGroupPicker);
+    const disablePersonPicker = ref(props.options.disablePersonPicker);
+    const hideGroupPicker = ref(props.options.hideGroupPicker);
+    const hidePersonPicker = ref(props.options.hidePersonPicker);
+    const isWatcherMustBeSelectWarningVisible = ref(false);
+    const isUnableToOverrideWarningVisible = ref(false);
+    const isWatchFilterMustBeSeletedWarningVisible = ref(false);;
+    const isNoteTypeWarningVisible = ref(false);
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [watcherPersonAlias, watcherGroup, entityType, isWatching, allowOverride, noteTypeValue, entityId];
+
+    // #endregion
+
+    // #region Computed Values
+    const showGenericEntityDetails = computed((): boolean => {
+        const value = entityType.value?.value;
+        return value != null && value?.toUpperCase() !== EntityType.Person && value?.toUpperCase() !== EntityType.Group;
+    });
+
+    const showPersonPicker = computed((): boolean => {
+        return entityType.value?.value?.toUpperCase() == EntityType.Person;
+    });
+
+    const showGroupPicker = computed((): boolean => {
+        return entityType.value?.value?.toUpperCase() == EntityType.Group;
+    });
+
+    const showNoteTypePicker = computed((): boolean => {
+        return entityType.value?.value != null;
+    });
+
+    const disabledEntityTypePicker = computed((): boolean => {
+        const entityIdValue = entityId.value;
+        const watchedEntityValue = watchedEntity.value;
+        return entityIdValue !== null && entityIdValue !== undefined || watchedEntityValue?.value !== null && watchedEntityValue?.value !== undefined;
+    });
+
+    // #endregion
+
+    // Watch for changes to the entity Id and get the entity's name.
+    watch(() => entityId.value, async () => {
+        if (!entityId.value) {
+            entityName.value = "";
+        }
+        else {
+            const result = await invokeBlockAction<{ entityName: string }>("GetEntityName", {
+                entityId: entityId.value,
+                entityTypeGuid: entityType.value?.value
+            });
+
+            if (result.isSuccess && result.data) {
+                entityName.value = result.data.entityName;
+            }
+        }
+    });
+
+    // Watch for changes to the entityType and get the associated note types.
+    watch(() => entityType.value, async () => {
+        if (entityType.value?.value) {
+            const result = await invokeBlockAction<{ noteTypeOptions: ListItemBag[] }>("GetNoteTypes", {
+                entityTypeGuid: entityType.value?.value
+            });
+
+            if (result.isSuccess && result.data) {
+                noteTypeOptions.value = result.data.noteTypeOptions;
+            }
+        }
+    });
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
+        updateRefValue(watcherPersonAlias, props.modelValue.watcherPersonAlias ?? {});
+        updateRefValue(watcherGroup, props.modelValue.watcherGroup ?? {});
+        updateRefValue(entityType, props.modelValue.entityType ?? {});
+        updateRefValue(isWatching, props.modelValue.isWatching ?? {});
+        updateRefValue(allowOverride, props.modelValue.allowOverride ?? {});
+        updateRefValue(noteTypeValue, props.modelValue.noteType?.value ?? "");
+        updateRefValue(entityId, props.modelValue.entityId);
+        updateRefValue(watchedEntity, props.modelValue.watchedEntity ?? {});
+    });
+
+    watch(() => props.errorDetails, () => {
+        isWatcherMustBeSelectWarningVisible.value = props.errorDetails === "WatcherMustBeSelected";
+        isUnableToOverrideWarningVisible.value = props.errorDetails === "UnableToOverride";
+        isWatchFilterMustBeSeletedWarningVisible.value = props.errorDetails === "WatchFilterMustBeSelected";
+        isNoteTypeWarningVisible.value = props.errorDetails === "NoteTypeDoesNotAllowWatch";
+    })
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, watchedEntity, ...propRefs], () => {
+        const newValue: NoteWatchBag = {
+            ...props.modelValue,
+            attributeValues: attributeValues.value,
+            watcherPersonAlias: watcherPersonAlias.value,
+            watcherGroup: watcherGroup.value,
+            entityType: entityType.value,
+            isWatching: isWatching.value,
+            allowOverride: allowOverride.value,
+            noteType: { value: noteTypeValue?.value },
+            entityId: entityId.value,
+            watchedEntity: watchedEntity.value,
+        };
+
+            emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

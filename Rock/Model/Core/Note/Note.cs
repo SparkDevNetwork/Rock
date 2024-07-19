@@ -89,7 +89,7 @@ namespace Rock.Model
         /// Gets or sets a flag indicating if this note should be pinned to top
         /// </summary>
         /// <value>
-        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this note is an alert; otherwise <c>false</c>.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this note is pinned; otherwise <c>false</c>.
         /// </value>
         [DataMember]
         public bool IsPinned { get; set; }

@@ -223,7 +223,7 @@ namespace RockWeb.Blocks.Core
             if ( !string.IsNullOrWhiteSpace( type ) )
             {
 
-                queryable = queryable.Where( f => f.MimeType.Contains( name ) );
+                queryable = queryable.Where( f => f.MimeType.Contains( type ) );
             }
 
             if ( sortProperty != null )

@@ -39,7 +39,7 @@ export type WebFarmSettingsBag = {
     idKey?: string | null;
 
     /** Gets or sets a value indicating whether this instance is active. */
-    isActive: boolean;
+    isEnabled: boolean;
 
     /** Gets or sets a value indicating whether this instance is in memory transport. */
     isInMemoryTransport: boolean;

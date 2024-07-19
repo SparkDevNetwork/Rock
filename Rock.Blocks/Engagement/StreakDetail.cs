@@ -15,6 +15,12 @@
 // </copyright>
 //
 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Text;
+
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
@@ -24,13 +30,8 @@ using Rock.SystemGuid;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Engagement.StreakDetail;
 using Rock.ViewModels.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
 
 namespace Rock.Blocks.Engagement
 {
@@ -51,7 +52,7 @@ namespace Rock.Blocks.Engagement
 
     [Rock.SystemGuid.EntityTypeGuid( "867abce8-47a9-46fa-8a35-47ebbc60c4fe" )]
     [Rock.SystemGuid.BlockTypeGuid( "1c98107f-dfbf-44bd-a860-0c9df2e6c495" )]
-    public class StreakDetail : RockDetailBlockType
+    public class StreakDetail : RockDetailBlockType, IBreadCrumbBlock
     {
         private readonly int ChartBitsToShow = 350;
         #region Keys
@@ -60,6 +61,7 @@ namespace Rock.Blocks.Engagement
         {
             public const string StreakId = "StreakId";
             public const string StreakTypeId = "StreakTypeId";
+            public const string PersonId = "PersonId";
         }
 
         private static class NavigationUrlKey
@@ -80,7 +82,7 @@ namespace Rock.Blocks.Engagement
                 var box = new DetailBlockBox<StreakBag, StreakDetailOptionsBag>();
 
                 SetBoxInitialEntityState( box, rockContext );
-                if(box.Entity == null)
+                if ( box.Entity == null )
                 {
                     return box;
                 }
@@ -124,11 +126,11 @@ namespace Rock.Blocks.Engagement
         private bool ValidateStreak( Streak streak, RockContext rockContext, out string errorMessage )
         {
             errorMessage = "";
-            if ( streak.IsValid )
+            if ( streak != null && streak.IsValid )
             {
                 return true;
             }
-            var validationResult = streak.ValidationResults.FirstOrDefault();
+            var validationResult = streak?.ValidationResults.FirstOrDefault();
             var message = validationResult == null ? "The values entered are not valid." : validationResult.ErrorMessage;
             errorMessage = message;
             return false;
@@ -148,6 +150,25 @@ namespace Rock.Blocks.Engagement
             {
                 box.ErrorMessage = $"The {Streak.FriendlyTypeName} was not found.";
                 return;
+            }
+
+            if ( entity.Id == 0 )
+            {
+                var presetPersonId = GetInitialEntity<Rock.Model.Person, PersonService>( rockContext, PageParameterKey.PersonId )?.Id ?? 0;
+                if ( presetPersonId > 0 )
+                {
+                    var streakTypeId = entity.StreakType?.Id ?? entity.StreakTypeId;
+                    if ( streakTypeId == 0 )
+                    {
+                        streakTypeId = GetInitialEntity<Rock.Model.StreakType, StreakTypeService>( rockContext, PageParameterKey.StreakTypeId )?.Id ?? 0;
+                    }
+                    var streakService = new StreakService( rockContext );
+                    var enrollments = streakService.GetByStreakTypeAndPerson( streakTypeId, presetPersonId );
+                    if ( enrollments.Any() )
+                    {
+                        entity = enrollments.First();
+                    }
+                }
             }
 
             var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
@@ -173,8 +194,9 @@ namespace Rock.Blocks.Engagement
                 // New entity is being created, prepare for edit mode by default.
                 if ( box.IsEditable )
                 {
-                    box.Entity = GetEntityBagForEdit( entity );
+                    box.Entity = GetEntityBagForEdit( entity, rockContext );
                     box.SecurityGrantToken = GetSecurityGrantToken( entity );
+                    box.Entity.IsAddMode = true;
                 }
                 else
                 {
@@ -197,9 +219,9 @@ namespace Rock.Blocks.Engagement
             var streakTypeId = entity.StreakTypeId;
             if ( streakTypeId == 0 )
             {
-                streakTypeId = PageParameter( PageParameterKey.StreakTypeId ).AsInteger();
+                streakTypeId = GetInitialEntity<Rock.Model.StreakType, StreakTypeService>( new RockContext(), PageParameterKey.StreakTypeId )?.Id ?? 0;
             }
-            ListItemBag streakType = entity.StreakType?.ToListItemBag() ?? StreakTypeCache.Get( streakTypeId ).ToListItemBag() ?? new ListItemBag ();
+            ListItemBag streakType = entity.StreakType?.ToListItemBag() ?? StreakTypeCache.Get( streakTypeId ).ToListItemBag() ?? new ListItemBag();
             return new StreakBag
             {
                 IdKey = entity.IdKey,
@@ -240,7 +262,7 @@ namespace Rock.Blocks.Engagement
         /// </summary>
         /// <param name="entity">The entity to be represented for edit purposes.</param>
         /// <returns>A <see cref="StreakBag"/> that represents the entity.</returns>
-        private StreakBag GetEntityBagForEdit( Streak entity )
+        private StreakBag GetEntityBagForEdit( Streak entity, RockContext rockContext )
         {
             if ( entity == null )
             {
@@ -248,6 +270,12 @@ namespace Rock.Blocks.Engagement
             }
 
             var bag = GetCommonEntityBag( entity );
+
+            var presetPersonId = GetInitialEntity<Rock.Model.Person, PersonService>( rockContext, PageParameterKey.PersonId )?.Id ?? 0;
+            if ( presetPersonId > 0 )
+            {
+                bag.PersonAlias = new PersonAliasService( rockContext ).GetPrimaryAlias( presetPersonId ).ToListItemBag();
+            }
 
             bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
 
@@ -411,7 +439,7 @@ namespace Rock.Blocks.Engagement
 
                 var box = new DetailBlockBox<StreakBag, StreakDetailOptionsBag>
                 {
-                    Entity = GetEntityBagForEdit( entity )
+                    Entity = GetEntityBagForEdit( entity, rockContext )
                 };
 
                 return ActionOk( box );
@@ -443,21 +471,11 @@ namespace Rock.Blocks.Engagement
                     var personId = new PersonAliasService( rockContext ).GetPersonId( box.Entity.PersonAlias.Value.AsGuid() ).ToIntSafe();
                     var streakTypeCache = StreakTypeCache.Get( box.Entity.StreakType.Value.AsGuid() );
                     var streakTypeService = new StreakTypeService( rockContext );
-                    entity = streakTypeService.Enroll( streakTypeCache, personId, out errorMessage, entity.EnrollmentDate, entity.LocationId );
-
-                    if ( !entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                    var locationId = box.Entity.Location.GetEntityId<Location>( rockContext );
+                    entity = streakTypeService.Enroll( streakTypeCache, personId, out errorMessage, box.Entity.EnrollmentDate, locationId );
+                    if ( !string.IsNullOrEmpty( errorMessage ) )
                     {
-                        entity.AllowPerson( Authorization.VIEW, RequestContext.CurrentPerson, rockContext );
-                    }
-
-                    if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-                    {
-                        entity.AllowPerson( Authorization.EDIT, RequestContext.CurrentPerson, rockContext );
-                    }
-
-                    if ( !entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
-                    {
-                        entity.AllowPerson( Authorization.ADMINISTRATE, RequestContext.CurrentPerson, rockContext );
+                        return ActionBadRequest( errorMessage );
                     }
                 }
                 else
@@ -471,10 +489,6 @@ namespace Rock.Blocks.Engagement
 
                 // Ensure everything is valid before saving.
                 string validationMessage = "";
-                if ( entity == null )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
                 if ( !ValidateStreak( entity, rockContext, out validationMessage ) )
                 {
                     return ActionBadRequest( validationMessage );
@@ -485,6 +499,22 @@ namespace Rock.Blocks.Engagement
                     rockContext.SaveChanges();
                     entity.SaveAttributeValues( rockContext );
                 } );
+
+                // Copied over the authorization logic from webforms block.
+                if ( !entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                {
+                    entity.AllowPerson( Authorization.VIEW, RequestContext.CurrentPerson, rockContext );
+                }
+
+                if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                {
+                    entity.AllowPerson( Authorization.EDIT, RequestContext.CurrentPerson, rockContext );
+                }
+
+                if ( !entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+                {
+                    entity.AllowPerson( Authorization.ADMINISTRATE, RequestContext.CurrentPerson, rockContext );
+                }
 
                 if ( isNew )
                 {
@@ -562,7 +592,7 @@ namespace Rock.Blocks.Engagement
 
                 var refreshedBox = new DetailBlockBox<StreakBag, StreakDetailOptionsBag>
                 {
-                    Entity = GetEntityBagForEdit( entity )
+                    Entity = GetEntityBagForEdit( entity, rockContext )
                 };
 
                 var oldAttributeGuids = box.Entity.Attributes.Values.Select( a => a.AttributeGuid ).ToList();
@@ -710,13 +740,29 @@ namespace Rock.Blocks.Engagement
                 return null;
             }
             OccurrenceEngagement[] occurrenceEngagement = null;
-            var streakTypeService = new StreakTypeService( rockContext );
-            var streakTypeId = StreakTypeCache.Get( entity.StreakType.Value ).Id;
-            var personId = new PersonAliasService( rockContext ).GetPerson( entity.PersonAlias.Value.AsGuid() ).Id;
+            var streakTypeId = 0;
+            var personId = 0;
+            if ( entity.StreakType != null )
+            {
+                streakTypeId = StreakTypeCache.Get( entity.StreakType.Value )?.Id ?? 0;
+            }
+            else
+            {
+                streakTypeId = GetInitialEntity<Rock.Model.StreakType, StreakTypeService>( rockContext, PageParameterKey.StreakTypeId )?.Id ?? 0;
+            }
+            if ( entity.PersonAlias != null )
+            {
+                personId = new PersonAliasService( rockContext ).GetPerson( entity.PersonAlias.Value.AsGuid() )?.Id ?? 0;
+            }
+            else
+            {
+                personId = GetInitialEntity<Rock.Model.Person, PersonService>( rockContext, PageParameterKey.PersonId )?.Id ?? 0;
+            }
 
             if ( personId > 0 && streakTypeId > 0 )
             {
                 var errorMessage = string.Empty;
+                var streakTypeService = new StreakTypeService( rockContext );
                 occurrenceEngagement = streakTypeService.GetRecentEngagementBits( streakTypeId, personId, ChartBitsToShow, out errorMessage );
             }
 
@@ -757,5 +803,33 @@ namespace Rock.Blocks.Engagement
         }
 
         #endregion
+
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var enrollmentId = pageReference.GetPageParameter( PageParameterKey.StreakId );
+                var enrollment = new StreakService( rockContext ).Get( enrollmentId );
+                var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageReference.Parameters );
+                var breadCrumbName = "";
+                if ( enrollment == null || enrollment.Id == 0 )
+                {
+                    breadCrumbName = "New Enrollment";
+                }
+                else
+                {
+                    breadCrumbName = new PersonAliasService( rockContext ).GetPersonNoTracking( enrollment.PersonAliasId )?.FullName ?? "";
+                }
+                var breadCrumb = new BreadCrumbLink( breadCrumbName, breadCrumbPageRef );
+
+                return new BreadCrumbResult
+                {
+                    BreadCrumbs = new List<IBreadCrumb>
+                   {
+                       breadCrumb
+                   }
+                };
+            }
+        }
     }
 }

@@ -1,10 +1,10 @@
 import { HttpResult } from "@Obsidian/Types/Utility/http";
 import RegistrationEntry from "../../src/Event/registrationEntry.obs";
+import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
+import { RegistrationEntryFormBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFormBag";
 import { mockBlockActions, mountBlock } from "../blocks";
 import { waitFor } from "../utils";
 import { Guid } from "@Obsidian/Types";
-import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
-import { RegistrationEntryFormBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFormBag";
 
 function getConfigurationValues(): RegistrationEntryInitializationBox {
     // This is weird, but we have to do this because the block actually
@@ -98,9 +98,11 @@ describe("Issue 5612", () => {
 
     test("Moving to second form scrolls to top", async () => {
         const configuration = getConfigurationValues();
+        
         if (!configuration.registrantForms) {
             configuration.registrantForms = [];
         }
+        
         configuration.registrantForms.push(JSON.parse(JSON.stringify(secondFormConfiguration)));
 
         const blockActions = mockBlockActions({
@@ -458,7 +460,8 @@ const configurationValues: RegistrationEntryInitializationBox = {
     "hideProgressBar": false,
     "showSmsOptIn": false,
     "isPaymentPlanAllowed": false,
-    "isPaymentPlanConfigured": false
+    "isPaymentPlanConfigured": false,
+    "disableCaptchaSupport": true
 };
 
 const secondFormConfiguration: RegistrationEntryFormBag = {
