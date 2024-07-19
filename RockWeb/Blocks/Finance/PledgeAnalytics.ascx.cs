@@ -212,7 +212,25 @@ namespace RockWeb.Blocks.Finance
 
             gList.DataSource = dv;
             gList.DataBind();
-            
+
+            pnlSummary.Visible = true;
+            decimal pledgeTotal = 0;
+            decimal totalGivingAmount = 0;
+            foreach ( DataRow row in ds.Tables[0].Rows )
+            {
+                if ( !DBNull.Value.Equals( row["PledgeAmount"] ) )
+                {
+                    pledgeTotal += ( decimal ) row["PledgeAmount"];
+                }
+
+                if ( !DBNull.Value.Equals( row["GiftAmount"] ) )
+                {
+                    totalGivingAmount += ( decimal ) row["GiftAmount"];
+                }
+            }
+
+            lPledgeTotal.Text = pledgeTotal.FormatAsCurrencyWithDecimalPlaces( 2 );
+            lTotalGivingAmount.Text = totalGivingAmount.FormatAsCurrencyWithDecimalPlaces( 2 );
         }
 
         /// <summary>
