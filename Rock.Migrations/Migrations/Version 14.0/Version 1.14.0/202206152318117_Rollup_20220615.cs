@@ -117,8 +117,10 @@ namespace Rock.Migrations
         {
             // Add Page - Internal Name: Step Flow - Site: Rock RMS
             RockMigrationHelper.AddPage( true, SystemGuid.Page.STEP_PROGRAM_DETAIL, "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Step Flow", "", SystemGuid.Page.STEP_FLOW, "fa-project-diagram" );
+#pragma warning disable CS0618 // Type or member is obsolete
             // Add Page Route - Page:Step Flow - Route: steps/program/{ProgramId}/flow
             RockMigrationHelper.AddPageRoute( SystemGuid.Page.STEP_FLOW, "steps/program/{ProgramId}/flow", SystemGuid.PageRoute.STEP_FLOW );
+#pragma warning restore CS0618 // Type or member is obsolete
             // Add Block - Block Name: Step Flow - Page Name: Step Flow Layout: - Site: Rock RMS
             RockMigrationHelper.AddBlock( true, SystemGuid.Page.STEP_FLOW.AsGuid(), null, SystemGuid.Site.SITE_ROCK_INTERNAL.AsGuid(), "2B4E0128-BCDF-48BF-AEC9-85001169DA3E".AsGuid(), "Step Flow", "Main", @"", @"", 0, "A40684E9-10DA-4CF8-815B-EBDE53624419" );
         }

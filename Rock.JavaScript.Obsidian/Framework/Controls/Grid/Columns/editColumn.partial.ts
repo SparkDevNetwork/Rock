@@ -48,6 +48,11 @@ export default defineComponent({
             default: "52px"
         },
 
+        columnType: {
+            type: String as PropType<string>,
+            default: "edit"
+        },
+
         /**
          * Called when the edit button has been clicked.
          */

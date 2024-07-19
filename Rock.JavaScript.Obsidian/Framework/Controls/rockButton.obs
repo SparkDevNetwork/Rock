@@ -1,6 +1,6 @@
 ﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <button :class="cssClass" :disabled="isButtonDisabled" @click="onButtonClick" :type="type">
+    <button :class="cssClass" :disabled="isButtonDisabled" @click="onButtonClick" :type="type" :data-shortcut-key="shortcutKey">
         <template v-if="isButtonLoading">
             {{ loadingText }}
         </template>
@@ -63,6 +63,11 @@
         isSquare: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        shortcutKey: {
+            type: String as PropType<string>,
+            default: ""
         }
     });
 

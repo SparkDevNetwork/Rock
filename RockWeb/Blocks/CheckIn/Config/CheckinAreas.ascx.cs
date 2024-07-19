@@ -591,9 +591,11 @@ namespace RockWeb.Blocks.CheckIn.Config
                         group.LoadAttributes( rockContext );
                         checkinGroup.GetGroupValues( group );
 
+                        var nonOverflowGroupLocations = group.GroupLocations.Where( gl => !gl.IsOverflowLocation ).ToList();
+
                         // populate groupLocations with whatever is currently in the grid, with just enough info to repopulate it and save it later
                         var newLocationIds = checkinGroup.Locations.Select( l => l.LocationId ).ToList();
-                        foreach ( var groupLocation in group.GroupLocations.Where( l => !newLocationIds.Contains( l.LocationId ) ).ToList() )
+                        foreach ( var groupLocation in nonOverflowGroupLocations.Where( l => !newLocationIds.Contains( l.LocationId ) ).ToList() )
                         {
                             groupLocation.GroupLocationScheduleConfigs.Clear();
 
@@ -601,7 +603,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                             group.GroupLocations.Remove( groupLocation );
                         }
 
-                        var existingLocationIds = group.GroupLocations.Select( g => g.LocationId ).ToList();
+                        var existingLocationIds = nonOverflowGroupLocations.Select( g => g.LocationId ).ToList();
                         foreach ( var item in checkinGroup.Locations.Where( l => !existingLocationIds.Contains( l.LocationId ) ).ToList() )
                         {
                             var groupLocation = new GroupLocation();
@@ -609,11 +611,12 @@ namespace RockWeb.Blocks.CheckIn.Config
                             group.GroupLocations.Add( groupLocation );
                         }
 
-                        // Set the new order
+                        // Set the new order and make sure they are all marked as non-overflow.
                         foreach ( var item in checkinGroup.Locations.OrderBy( l => l.Order ).ToList() )
                         {
                             var groupLocation = group.GroupLocations.FirstOrDefault( gl => gl.LocationId == item.LocationId );
                             groupLocation.Order = item.Order ?? 0;
+                            groupLocation.IsOverflowLocation = false;
                         }
 
                         if ( group.IsValid )
@@ -1022,7 +1025,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                         checkinArea.Visible = true;
                         btnSave.Visible = true;
                         btnDelete.Visible = true;
-                        btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', '{1}');", "check-in area", "This action cannot be undone." );
+                        btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '\"{0}\" check-in area', '{1}');", groupType.Name, "This action cannot be undone." );
 
                     }
                     else
@@ -1063,9 +1066,13 @@ namespace RockWeb.Blocks.CheckIn.Config
 
                         var locationService = new LocationService( rockContext );
                         var locationQry = locationService.Queryable().Select( a => new { a.Id, a.ParentLocationId, a.Name } );
+                        var orderedGroupLocations = group.GroupLocations
+                            .Where( gl => !gl.IsOverflowLocation )
+                            .OrderBy( gl => gl.Order )
+                            .ThenBy( gl => gl.Location.Name );
 
                         checkinGroup.Locations = new List<CheckinGroup.LocationGridItem>();
-                        foreach ( var groupLocation in group.GroupLocations.OrderBy( gl => gl.Order ).ThenBy( gl => gl.Location.Name ) )
+                        foreach ( var groupLocation in orderedGroupLocations )
                         {
                             var location = groupLocation.Location;
                             var gridItem = new CheckinGroup.LocationGridItem();
@@ -1089,7 +1096,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                         checkinGroup.Visible = true;
                         btnSave.Visible = true;
                         btnDelete.Visible = true;
-                        btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}', '{1}');", "check-in group", "<br>Any attendance records connected with this group will be lost. This action cannot be undone." );
+                        btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '\"{0}\" check-in group', '{1}');", group.Name, "<br>Any attendance records connected with this group will be lost. This action cannot be undone." );
                     }
                     else
                     {

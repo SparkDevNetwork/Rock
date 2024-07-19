@@ -29,18 +29,41 @@ namespace Rock.CodeGeneration
         /// <returns>A string in camel case.</returns>
         public static string CamelCase( this string str )
         {
-            if ( str.Length == 0 )
+            if ( str.IsNullOrWhiteSpace() )
             {
                 return str;
             }
-            else if ( str.Length == 1 )
+
+            var chars = str.ToCharArray();
+
+            // Taken from https://github.com/dotnet/runtime/blob/v8.0.6/src/libraries/System.Text.Json/Common/JsonCamelCaseNamingPolicy.cs
+            // so that we can correctly match the camel case naming scheme until we
+            // can move away from .NET Framework.
+            for ( int i = 0; i < chars.Length; i++ )
             {
-                return str.ToLowerInvariant();
+                if ( i == 1 && !char.IsUpper( chars[i] ) )
+                {
+                    break;
+                }
+
+                bool hasNext = ( i + 1 < chars.Length );
+
+                // Stop when next char is already lowercase.
+                if ( i > 0 && hasNext && !char.IsUpper( chars[i + 1] ) )
+                {
+                    // If the next char is a space, lowercase current char before exiting.
+                    if ( chars[i + 1] == ' ' )
+                    {
+                        chars[i] = char.ToLowerInvariant( chars[i] );
+                    }
+
+                    break;
+                }
+
+                chars[i] = char.ToLowerInvariant( chars[i] );
             }
-            else
-            {
-                return str.Substring( 0, 1 ).ToLowerInvariant() + str.Substring( 1 );
-            }
+
+            return new string( chars );
         }
     }
 }

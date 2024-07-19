@@ -17,15 +17,27 @@
 
 import { Guid } from "@Obsidian/Types";
 import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
-import { newGuid } from "@Obsidian/Utility/guid";
+import { areEqual, newGuid } from "@Obsidian/Utility/guid";
 import {
     RegistrationEntryState,
     RegistrationCostSummaryInfo,
-    RegistrantBasicInfo } from "./types.partial";
-import { InjectionKey, Ref, inject, nextTick } from "vue";
+    RegistrantBasicInfo,
+    TransactionFrequency,
+    PaymentPlanFrequency,
+    PaymentPlanConfiguration,
+    PaymentPlanConfigurationOptions,
+    GetNextDayOption,
+    PersonGuid,
+    FormFieldGuid,
+    FormFieldValue
+} from "./types.partial";
+import { InjectionKey, Ref, computed, inject, nextTick, ref, watch } from "vue";
 import { smoothScrollToTop } from "@Obsidian/Utility/page";
 import { PublicComparisonValueBag } from "@Obsidian/ViewModels/Utility/publicComparisonValueBag";
 import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
+import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
+import { RegistrationEntryArgsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryArgsBag";
 import { RegistrantsSameFamily } from "@Obsidian/Enums/Event/registrantsSameFamily";
 import { RegistrationPersonFieldType } from "@Obsidian/Enums/Event/registrationPersonFieldType";
 import { RegistrationFieldSource } from "@Obsidian/Enums/Event/registrationFieldSource";
@@ -35,7 +47,9 @@ import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEnt
 import { RegistrationEntryFormBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFormBag";
 import { RegistrationEntryFormFieldBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFormFieldBag";
 import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
-import { RegistrationEntryArgsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryArgsBag";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { RockCurrency } from "@Obsidian/Utility/rockCurrency";
+import { RegistrationEntryCreatePaymentPlanRequestBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryCreatePaymentPlanRequestBag";
 
 /** If all registrants are to be in the same family, but there is no currently authenticated person,
  *  then this guid is used as a common family guid */
@@ -140,19 +154,13 @@ export const RegistrationCostSummary: InjectionKey<{
     updateRegistrationCostSummary: (newValue: Partial<RegistrationCostSummaryInfo>) => void;
 }> = Symbol("registration-cost-summary");
 
-export function formatCurrency(value: number, overrides?: Partial<CurrencyInfoBag> | null | undefined): string {
-    const currencyBag: CurrencyInfoBag = {
-        decimalPlaces: 2,
-        symbol: "$",
-        ...overrides
-    };
+/**
+ * An injection key to provide the data to configure a new payment plan.
+ */
+export const ConfigurePaymentPlan: InjectionKey<{
+    wipPaymentPlanConfiguration: Ref<PaymentPlanConfiguration | null | undefined>;
+    finalPaymentPlanConfiguration: Ref<PaymentPlanConfiguration | null | undefined>;
+}> = Symbol("registration-configure-payment-plan");
 
-    const formattedValue = toCurrencyOrNull(value, currencyBag);
-
-    if (formattedValue) {
-        return formattedValue;
-    }
-    else {
-        return `${currencyBag.symbol}${asFormattedString(value, currencyBag.decimalPlaces)}`;
-    }
-}
+/** An injection key to provide the original field values for each registrant. */
+export const OriginalFormFieldValues: InjectionKey<Ref<Record<PersonGuid, Record<FormFieldGuid, FormFieldValue>>>> = Symbol("original-field-values");

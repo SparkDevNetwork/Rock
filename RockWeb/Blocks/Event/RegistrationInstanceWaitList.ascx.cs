@@ -1196,16 +1196,25 @@ namespace RockWeb.Blocks.Event
                         // Filter query by any configured person attribute filters
                         if ( groupMemberAttributes != null && groupMemberAttributes.Any() )
                         {
+                            bool isFilterModeApplied = false;
                             var groupMemberService = new GroupMemberService( rockContext );
                             var groupMemberQry = groupMemberService.Queryable().AsNoTracking();
 
                             foreach ( var attribute in groupMemberAttributes )
                             {
                                 var filterControl = phWaitListFormFieldFilters.FindControl( FILTER_ATTRIBUTE_PREFIX + attribute.Id.ToString() );
-                                groupMemberQry = attribute.FieldType.Field.ApplyAttributeQueryFilter( groupMemberQry, filterControl, attribute, groupMemberService, Rock.Reporting.FilterMode.SimpleFilter );
+                                var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
+                                if ( filterValues.Any( a => a.IsNotNullOrWhiteSpace() ) )
+                                {
+                                    isFilterModeApplied = true;
+                                    groupMemberQry = attribute.FieldType.Field.ApplyAttributeQueryFilter( groupMemberQry, filterControl, attribute, groupMemberService, Rock.Reporting.FilterMode.SimpleFilter );
+                                }
                             }
 
-                            qry = qry.Where( r => groupMemberQry.Any( g => g.Id == r.GroupMemberId ) );
+                            if ( isFilterModeApplied )
+                            {
+                                qry = qry.Where( r => groupMemberQry.Any( g => g.Id == r.GroupMemberId ) );
+                            }
                         }
                     }
 
@@ -1257,7 +1266,7 @@ namespace RockWeb.Blocks.Event
                             {
                                 groupMemberIds.Add( groupMember.Id );
                                 string linkedPageUrl = LinkedPageUrl( "GroupDetailPage", new Dictionary<string, string> { { "GroupId", groupMember.GroupId.ToString() } } );
-                                GroupLinks.AddOrIgnore( groupMember.GroupId, isExporting ? groupMember.Group.Name : string.Format( "<a href='{0}'>{1}</a>", linkedPageUrl, groupMember.Group.Name ) );
+                                GroupLinks.TryAdd( groupMember.GroupId, isExporting ? groupMember.Group.Name : string.Format( "<a href='{0}'>{1}</a>", linkedPageUrl, groupMember.Group.Name ) );
                             }
 
                             // If the campus column was selected to be displayed on grid, preload all the people's

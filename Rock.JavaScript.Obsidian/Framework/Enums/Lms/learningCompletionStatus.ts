@@ -24,22 +24,22 @@
 /** Determines the learning completion status for a ( learning ) class. */
 export const LearningCompletionStatus = {
     /** The class is not yet complete. */
-    Incomplete: 1,
+    Incomplete: 0,
 
     /** The class has been compelted with a failing grade. */
-    Fail: 2,
+    Fail: 1,
 
     /** The class has been completed with a passing grade. */
-    Pass: 3
+    Pass: 2
 } as const;
 
 /** Determines the learning completion status for a ( learning ) class. */
 export const LearningCompletionStatusDescription: Record<number, string> = {
-    1: "Incomplete",
+    0: "Incomplete",
 
-    2: "Fail",
+    1: "Fail",
 
-    3: "Pass"
+    2: "Pass"
 };
 
 /** Determines the learning completion status for a ( learning ) class. */

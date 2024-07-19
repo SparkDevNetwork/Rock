@@ -16,7 +16,7 @@
 //
 using System;
 
-using Rock.Utility.Settings;
+using Rock.Configuration;
 using Rock.Web.Cache;
 
 namespace Rock.Attribute
@@ -45,7 +45,7 @@ namespace Rock.Attribute
             if ( !string.IsNullOrWhiteSpace( contentChannelGuid ) )
             {
                 Guid guid = Guid.Empty;
-                if ( Guid.TryParse( contentChannelGuid, out guid ) && RockInstanceConfig.DatabaseIsAvailable )
+                if ( Guid.TryParse( contentChannelGuid, out guid ) && RockApp.Current.IsDatabaseAvailable() )
                 {
                     var contentChannel = ContentChannelCache.Get( guid );
                     if ( contentChannel != null )

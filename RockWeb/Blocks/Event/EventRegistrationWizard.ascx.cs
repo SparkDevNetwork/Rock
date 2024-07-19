@@ -561,22 +561,25 @@ namespace RockWeb.Blocks.Event
             var result = new CommitResult();
 
             // Create RegistrationInstance object.
-            var registrationInstance = new RegistrationInstance();
-            registrationInstance.AdditionalConfirmationDetails = htmlConfirmationDetails.Text;
-            registrationInstance.AdditionalReminderDetails = htmlReminderDetails.Text;
-            registrationInstance.ContactPersonAliasId = ppContact.PersonAliasId;
-            registrationInstance.ContactPhone = PhoneNumber.FormattedNumber( PhoneNumber.DefaultCountryCode(), tbContactPhone.Number );
-            registrationInstance.ContactEmail = tbContactEmail.Text;
-            registrationInstance.Name = tbRegistrationName.Text;
-            registrationInstance.RegistrationInstructions = htmlRegistrationInstructions.Text;
-            registrationInstance.RegistrationTemplateId = ddlTemplate.SelectedValueAsInt().Value;
-            registrationInstance.SendReminderDateTime = dtpReminderDate.SelectedDateTime;
-            registrationInstance.StartDateTime = dtpRegistrationStarts.SelectedDateTime;
-            registrationInstance.EndDateTime = dtpRegistrationEnds.SelectedDateTime;
-            registrationInstance.IsActive = GetAttributeValue( AttributeKey.SetRegistrationInstanceActive ).AsBoolean();
+            var registrationInstance = new RegistrationInstance
+            {
+                AdditionalConfirmationDetails = htmlConfirmationDetails.Text,
+                AdditionalReminderDetails = htmlReminderDetails.Text,
+                ContactPersonAliasId = ppContact.PersonAliasId,
+                ContactPhone = PhoneNumber.FormattedNumber( PhoneNumber.DefaultCountryCode(), tbContactPhone.Number ),
+                ContactEmail = tbContactEmail.Text,
+                Name = tbRegistrationName.Text,
+                RegistrationInstructions = htmlRegistrationInstructions.Text,
+                RegistrationTemplateId = ddlTemplate.SelectedValueAsInt().Value,
+                SendReminderDateTime = dtpReminderDate.SelectedDateTime,
+                StartDateTime = dtpRegistrationStarts.SelectedDateTime,
+                EndDateTime = dtpRegistrationEnds.SelectedDateTime,
+                IsActive = GetAttributeValue( AttributeKey.SetRegistrationInstanceActive ).AsBoolean(),
+                PaymentDeadlineDate = dpPaymentDeadline.SelectedDate
+            };
 
             // Set Maximum Attendees
-            int maximumAttendees = 0;
+            var maximumAttendees = 0;
             if ( int.TryParse( numbMaximumAttendees.Text, out maximumAttendees ) )
             {
                 registrationInstance.MaxAttendees = maximumAttendees;
@@ -1053,7 +1056,6 @@ namespace RockWeb.Blocks.Event
             {
                 registrationTemplateQuery = registrationTemplateQuery.Where( rt => rt.GroupTypeId.HasValue );
             }
-
 
             var registrationTemplates = registrationTemplateQuery.ToList().OrderBy( r => r.Name );
             ddlTemplate.DataSource = registrationTemplates;
@@ -1647,6 +1649,8 @@ namespace RockWeb.Blocks.Event
                 }
 
                 lTemplateDescription.Text = registrationTemplate.Description;
+                dpPaymentDeadline.Required = registrationTemplate.IsPaymentPlanAllowed == true;
+                dpPaymentDeadline.Visible = registrationTemplate.IsPaymentPlanAllowed == true;
             }
         }
 

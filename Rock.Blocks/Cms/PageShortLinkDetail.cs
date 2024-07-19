@@ -292,6 +292,13 @@ namespace Rock.Blocks.CMS
 
             var bag = GetCommonEntityBag( entity );
 
+            var utmSettings = entity.GetAdditionalSettings<PageShortLink.UtmSettings>();
+            bag.UtmSourceValue = DefinedValueCache.Get( utmSettings.UtmSourceValueId ?? 0 ).ToListItemBag();
+            bag.UtmMediumValue = DefinedValueCache.Get( utmSettings.UtmMediumValueId ?? 0 ).ToListItemBag();
+            bag.UtmCampaignValue = DefinedValueCache.Get( utmSettings.UtmCampaignValueId ?? 0 ).ToListItemBag();
+            bag.UtmTerm = utmSettings.UtmTerm ?? "";
+            bag.UtmContent = utmSettings.UtmContent ?? "";
+
             if ( loadAttributes )
             {
                 bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
@@ -330,6 +337,35 @@ namespace Rock.Blocks.CMS
 
                     entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
                 } );
+
+            var utmSettings = entity.GetAdditionalSettings<PageShortLink.UtmSettings>();
+
+            box.IfValidProperty( nameof( box.Entity.UtmSourceValue ), () =>
+            {
+                utmSettings.UtmSourceValueId = DefinedValueCache.GetId( ( box.Entity.UtmSourceValue?.Value ).AsGuid() );
+            } );
+
+            box.IfValidProperty( nameof( box.Entity.UtmMediumValue ), () =>
+            {
+                utmSettings.UtmMediumValueId = DefinedValueCache.GetId( ( box.Entity.UtmMediumValue?.Value ).AsGuid() );
+            } );
+
+            box.IfValidProperty( nameof( box.Entity.UtmCampaignValue ), () =>
+            {
+                utmSettings.UtmCampaignValueId = DefinedValueCache.GetId( ( box.Entity.UtmCampaignValue?.Value ).AsGuid() );
+            } );
+
+            box.IfValidProperty( nameof( box.Entity.UtmTerm ), () =>
+            {
+                utmSettings.UtmTerm = box.Entity.UtmTerm;
+            } );
+
+            box.IfValidProperty( nameof( box.Entity.UtmContent ), () =>
+            {
+                utmSettings.UtmContent = box.Entity.UtmContent;
+            } );
+
+            entity.SetAdditionalSettings( utmSettings );
 
             return true;
         }

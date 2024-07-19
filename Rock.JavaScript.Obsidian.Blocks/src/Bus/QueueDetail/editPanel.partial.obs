@@ -6,7 +6,7 @@
                 <NumberBox v-model="timeToLiveSeconds"
                            label="Time to Live (Seconds)"
                            help="The amount of seconds that a message sent on the queue can persist without being consumed before being discarded. A value less than 1 means the message will not expire."
-                           rules="gte:1" />
+                           rules="gte:0" />
             </div>
         </div>
     </fieldset>

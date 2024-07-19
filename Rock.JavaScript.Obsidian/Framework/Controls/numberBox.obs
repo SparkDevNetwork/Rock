@@ -11,7 +11,7 @@
                 <div :class="controlContainerClass">
                     <slot name="inputGroupPrepend" :isInputGroupSupported="true" />
                     <input
-                           v-model="internalValue"
+                           :value="internalValue"
                            :id="uniqueId"
                            type="number"
                            class="form-control"
@@ -22,7 +22,8 @@
                            :step="internalStep"
                            :min="minimumValue"
                            :max="maximumValue"
-                           @change="formatInternalValue"
+                           @input="onInput"
+                           @change="onChange"
                            @blur="formatInternalValue" />
                     <slot name="inputGroupAppend" :isInputGroupSupported="true" />
                 </div>
@@ -42,6 +43,11 @@
         modelValue: {
             type: Number as PropType<number | null>,
             default: null
+        },
+        /** Internal use to track what modifier flags were applied to modelValue. */
+        modelModifiers: {
+            type: Object as PropType<Record<string, boolean>>,
+            default: () => ({})
         },
         placeholder: {
             type: String as PropType<string>,
@@ -115,14 +121,46 @@
         internalValue.value = formatNumber(internalNumberValue.value);
     }
 
+    /**
+     * Event handler for the input field having any modification to the value
+     * happen. This is basically called on every key press.
+     *
+     * @param e The object that describes the event.
+     */
+     function onInput(e: Event): void {
+        if (e.target instanceof HTMLInputElement) {
+            internalValue.value = e.target.value;
+        }
+
+        // Lazy models do not get every single key press.
+        if (!props.modelModifiers.lazy) {
+            emit("update:modelValue", internalNumberValue.value);
+        }
+    }
+
+    /**
+     * Event handler for the input field when the changed value is "committed".
+     * This is basically called when the focus leaves the input field.
+     *
+     * @param e The object that describes the event.
+     */
+     function onChange(e: Event): void {
+        if (e.target instanceof HTMLInputElement) {
+            internalValue.value = e.target.value;
+        }
+
+        formatInternalValue();
+
+        // Only send the update if we didn't send it in the onInput handler.
+        if (props.modelModifiers.lazy) {
+            emit("update:modelValue", internalNumberValue.value);
+        }
+    }
+
     watch(() => props.modelValue, () => {
         if (props.modelValue !== internalNumberValue.value) {
             internalValue.value = formatNumber(props.modelValue);
         }
-    });
-
-    watch(internalNumberValue, () => {
-        emit("update:modelValue", internalNumberValue.value);
     });
 
     watch(() => props.decimalCount, () => {

@@ -45,6 +45,11 @@ export default defineComponent({
         skeletonComponent: {
             type: Object as PropType<Component>,
             default: TextSkeletonCell
+        },
+
+        columnType: {
+            type: String as PropType<string>,
+            default: "attribute"
         }
     }
 });

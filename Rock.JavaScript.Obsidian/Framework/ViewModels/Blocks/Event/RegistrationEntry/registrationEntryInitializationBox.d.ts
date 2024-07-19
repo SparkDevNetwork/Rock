@@ -31,6 +31,7 @@ import { RegistrationEntrySessionBag } from "@Obsidian/ViewModels/Blocks/Event/R
 import { RegistrationEntrySuccessBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntrySuccessBag";
 import { GatewayControlBag } from "@Obsidian/ViewModels/Controls/gatewayControlBag";
 import { SavedFinancialAccountListItemBag } from "@Obsidian/ViewModels/Finance/savedFinancialAccountListItemBag";
+import { CurrencyInfoBag } from "@Obsidian/ViewModels/Utility/currencyInfoBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
@@ -51,6 +52,9 @@ export type RegistrationEntryInitializationBox = {
     /** Gets or sets the cost. */
     cost: number;
 
+    /** Gets or sets the currency information. */
+    currencyInfo?: CurrencyInfoBag | null;
+
     /** Gets or sets the current person family unique identifier. */
     currentPersonFamilyGuid?: Guid | null;
 
@@ -62,6 +66,9 @@ export type RegistrationEntryInitializationBox = {
 
     /** Gets or sets the family members. */
     familyMembers?: RegistrationEntryFamilyMemberBag[] | null;
+
+    /** Gets or sets the term for specifying which household or family a person is a member of. */
+    familyTerm?: string | null;
 
     /** Gets or sets the fees. */
     fees?: RegistrationEntryFeeBag[] | null;
@@ -102,6 +109,12 @@ export type RegistrationEntryInitializationBox = {
      */
     isInlineSignatureRequired: boolean;
 
+    /** Gets value indicating whether registrants should be able to pay their registration costs in multiple, scheduled installments. */
+    isPaymentPlanAllowed: boolean;
+
+    /** Gets a value indicating whether the payment plan has been configured. */
+    isPaymentPlanConfigured: boolean;
+
     /** Gets or sets a value indicating whether this instance is redirect gateway. */
     isRedirectGateway: boolean;
 
@@ -119,6 +132,12 @@ export type RegistrationEntryInitializationBox = {
 
     /** Gets or sets the maximum registrants. */
     maxRegistrants: number;
+
+    /** Gets the payment deadline date. */
+    paymentDeadlineDate?: string | null;
+
+    /** Gets the collection of payment plan frequencies from which a registrant can select. */
+    paymentPlanFrequencies?: ListItemBag[] | null;
 
     /** Gets or sets the plural fee term. */
     pluralFeeTerm?: string | null;

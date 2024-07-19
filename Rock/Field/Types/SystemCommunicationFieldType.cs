@@ -345,6 +345,24 @@ namespace Rock.Field.Types
             var editControl = control as ListControl;
             if ( editControl != null )
             {
+                var includeInactive = configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) && configurationValues[INCLUDE_INACTIVE_KEY].Value.AsBoolean();
+                if ( !includeInactive )
+                {
+                    var listItem = editControl.Items.FindByValue( value );
+                    if ( listItem == null )
+                    {
+                        var valueGuid = value.AsGuid();
+                        var systemCommunication = new SystemCommunicationService( new RockContext() )
+                           .Queryable().AsNoTracking()
+                           .Where( o => o.Guid == valueGuid )
+                           .FirstOrDefault();
+                        if ( systemCommunication != null )
+                        {
+                            editControl.Items.Add( new ListItem( systemCommunication.Title, systemCommunication.Guid.ToString() ) );
+                        }
+                    }
+                }
+
                 editControl.SetValue( value );
             }
         }

@@ -18,6 +18,7 @@ namespace Rock.Migrations
 {
     using System;
 
+    using Rock.Configuration;
     using Rock.Utility.Settings;
 
     /// <summary>
@@ -100,7 +101,7 @@ namespace Rock.Migrations
         /// </summary>
         public void AddDotLiquidWarningBlockToHomePageUp()
         {
-            if ( RockInstanceConfig.LavaEngineName != "Fluid" )
+            if ( RockApp.Current.GetCurrentLavaEngineName() != "Fluid" )
             {
                 // Add Html Block Instance to HomePage Main Zone
                 RockMigrationHelper.AddBlock( Rock.SystemGuid.Page.INTERNAL_HOMEPAGE, "", Rock.SystemGuid.BlockType.HTML_CONTENT, "DotLiquid Warning", "Main", "", "", -1, "CAEC8719-BEDF-4BE3-9847-55DE93624974" );

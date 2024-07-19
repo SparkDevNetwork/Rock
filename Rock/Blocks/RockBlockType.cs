@@ -378,7 +378,7 @@ namespace Rock.Blocks
             // Filename convention is camelCase.
             var fileName = $"{type.Name.Substring( 0, 1 ).ToLower()}{type.Name.Substring( 1 )}";
 
-            return $"/Obsidian/Blocks/{namespaces.AsDelimited( "/" )}/{fileName}.obs";
+            return $"~/Obsidian/Blocks/{namespaces.AsDelimited( "/" )}/{fileName}.obs";
         }
 
         /// <summary>
@@ -470,6 +470,7 @@ Obsidian.onReady(() => {{
         private async Task<ObsidianBlockConfigBag> GetConfigBagAsync( string rootElementId )
         {
             List<BlockCustomActionBag> configActions = null;
+            var reloadModeAttribute = GetType().GetCustomAttribute<ConfigurationChangedReloadAttribute>();
 
             if ( this is IHasCustomActions customActionsBlock )
             {
@@ -489,14 +490,15 @@ Obsidian.onReady(() => {{
 
             return new ObsidianBlockConfigBag
             {
-                BlockFileUrl = ObsidianFileUrl,
+                BlockFileUrl = RequestContext.ResolveRockUrl( ObsidianFileUrl ),
                 RootElementId = rootElementId,
                 BlockGuid = BlockCache.Guid,
+                BlockTypeGuid = BlockCache.BlockType.Guid,
                 ConfigurationValues = await GetBlockInitializationAsync( RockClientType.Web ),
                 CustomConfigurationActions = configActions,
-                Preferences = blockPreferences
+                Preferences = blockPreferences,
+                ReloadMode = reloadModeAttribute?.ReloadMode ?? Enums.Cms.BlockReloadMode.None
             };
-
         }
 
         /// <summary>
@@ -792,7 +794,11 @@ Obsidian.onReady(() => {{
         {
             var rootElementId = $"obsidian-{BlockCache.Guid}";
 
-            return ActionOk( await GetConfigBagAsync( rootElementId ) );
+            var config = await GetConfigBagAsync( rootElementId );
+
+            config.InitialContent = GetInitialHtmlContent();
+
+            return ActionOk( config );
         }
 
         #endregion

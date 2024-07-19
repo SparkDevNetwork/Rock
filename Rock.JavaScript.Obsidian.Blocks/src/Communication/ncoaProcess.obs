@@ -1,0 +1,200 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel title="National Change of Address (NCOA) Processing">
+        <p><strong>Enhance Your Data</strong></p>
+        <p>TrueNCOA provides a service to non-profits to validate and update person address data leveraging the National Change of Address (NCOA)
+            database maintained by the U.S. Postal Service. The output will include details such as the person’s current address, move date, and
+            move type (temporary or permanent).
+        </p>
+        <p class="mb-4">Be sure to <a href="https://app.truencoa.com/Users/Register">sign-up with TrueNCOA</a> before you get started. This block will export the needed input file for TrueNCOA and allow you to
+            import their results back into Rock.
+        </p>
+        <div>
+            <div class="d-flex flex-row justify-content-around flex-wrap">
+                <RockForm class="well col-md-5 col-sm-10 col-xs-12 d-flex flex-column justify-content-between" style="height: 650px;" @submit="exportFile" :hideErrors="true">
+                    <div>
+                        <h3>STEP 1: NCOA Export Tool</h3>
+                        <div class="ml-2">
+                            <p class="text-muted text-wrap">Select a data vew to filter your export.</p>
+                            <div class="col-lg-9 col-md-11 col-sm-8 col-xs-12 p-0">
+                                <DataViewPicker
+                                    v-model="selectedPersonDataView"
+                                    label="Person Data View"
+                                    rules="required" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ml-2">
+                        <RockButton
+                            :btnSize="BtnSize.Default"
+                            :btnType="BtnType.Primary"
+                            :disabled="isStep1Loading"
+                            type="submit" >
+                            Export File
+                        </RockButton>
+                    </div>
+                </RockForm>
+                <RockForm class="well col-md-5 col-sm-10 col-xs-12 d-flex flex-column justify-content-between" style="height: 650px;" @submit="processImportFile" :hideErrors="true">
+                    <div>
+                        <h3>STEP 2: NCOA Results Uploader</h3>
+                        <div class="ml-2">
+                            <p class="text-muted text-wrap">Upload and configure file processing settings.</p>
+                            <FileUploader
+                                v-model="importedFile"
+                                label="TrueNCOA Results"
+                                help="The results file from TrueNCOA."
+                                rules="required"
+                                :uploadAsTemporary="true"
+                                uploadButtonText="Upload"
+                                :showDeleteButton="true" />
+                            <div class="col-lg-9 col-md-11 col-sm-8 col-xs-12 p-0">
+                                <NumberBox
+                                    v-model="minMoveDistance"
+                                    label="Minimum Move Distance to Inactivate"
+                                    help="Minimum move distance that a person moved before marking the person's account to inactivate."
+                                    rules="required"
+                                    placeholder="200" >
+                                    <template #inputGroupAppend>
+                                        <span class="input-group-addon">miles</span>
+                                    </template>
+                                </NumberBox>
+                            </div>
+                            <CheckBox v-model="isMark48Month"
+                                label="Mark 48 Month Move as Previous Address"
+                                help="Mark moves in the 19-48 month category as a previous address." />
+                            <CheckBox v-model="isMarkInvalidAddresses"
+                                label="Mark Invalid Addresses as Previous Address"
+                                help="Mark Invalid Addresses as Previous Addresses" />
+                                <div class="col-lg-9 col-md-11 col-sm-8 col-xs-12 p-0">
+                                    <DefinedValuePicker
+                                        v-model="selectedInactiveReason"
+                                        label="Inactive Record Reason"
+                                        :definedTypeGuid="DefinedType.PersonRecordStatusReason"
+                                        help="The reason to use when inactivating people due to moving beyond the configured number of miles."
+                                        rules="required" />
+                                </div>
+                        </div>
+                    </div>
+                    <div class="ml-2">
+                        <RockButton
+                            :btnSize="BtnSize.Default"
+                            :btnType="BtnType.Primary"
+                            :disabled="isStep2Loading"
+                            type="submit" >
+                            Import File
+                        </RockButton>
+                    </div>
+                </RockForm>
+                <div class="col-md-10 col-sm-10 col-xs-12">
+                    <NotificationBox v-if="successMessage"
+                        alertType="success"
+                        v-html="successMessage" />
+                    <NotificationBox v-if="errorMessage"
+                        v-text="errorMessage"
+                        alertType="warning" />
+                </div>
+            </div>
+        </div>
+    </Panel>
+</template>
+
+<script setup lang="ts">
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+import Panel from "@Obsidian/Controls/panel.obs";
+import RockButton from "@Obsidian/Controls/rockButton.obs";
+import RockForm from "@Obsidian/Controls/rockForm.obs";
+import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
+import FileUploader from "@Obsidian/Controls/fileUploader.obs";
+import NumberBox from "@Obsidian/Controls/numberBox.obs";
+import CheckBox from "@Obsidian/Controls/checkBox.obs";
+import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+import { ref } from "vue";
+import { NcoaProcessSavedSettingsBag } from "@Obsidian/ViewModels/Blocks/Communication/NcoaProcess/ncoaProcessSavedSettingsBag";
+import { NcoaProcessBag } from "@Obsidian/ViewModels/Blocks/Communication/NcoaProcess/ncoaProcessBag";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { Workbook } from "@Obsidian/Libs/exceljs";
+import { downloadWorkbook } from "@Obsidian/Utility/file";
+import { NcoaProcessPersonAddressBag } from "@Obsidian/ViewModels/Blocks/Communication/NcoaProcess/ncoaProcessPersonAddressBag";
+
+    const box = useConfigurationValues<NcoaProcessSavedSettingsBag>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const minMoveDistance = ref(box.minimumMoveDistance ?? 200);
+    const isMark48Month = ref(box.is48MonthMoveChecked ?? true);
+    const isMarkInvalidAddresses = ref(box.isInvalidAddressesChecked ?? true);
+    const selectedPersonDataView = ref(box.personDataView ?? null);
+    const selectedInactiveReason = ref<ListItemBag | null>(box.inactiveRecordReason ?? null);
+    const importedFile = ref(box.uploadFileReference ?? null);
+    const successMessage = ref("");
+    const errorMessage = ref("");
+    const isStep1Loading = ref(false);
+    const isStep2Loading = ref(false);
+
+    const exportFile = async (): Promise<void> => {
+        successMessage.value = "";
+        errorMessage.value = "";
+        isStep1Loading.value = true;
+        const result = await invokeBlockAction<NcoaProcessBag>("PrepareExportFile", { dataViewValue: selectedPersonDataView.value?.value});
+        // Generate Excel file and download
+        if (result.isSuccess && result.data?.addresses != null) {
+            const workbook = generateDataForFile(result.data.addresses);
+            await downloadWorkbook(workbook, "ExportedAddresses", "xlsx").then(() => {
+                successMessage.value = result.data?.successMessage || "Success";
+            });
+        }
+        else {
+            errorMessage.value = result.errorMessage || "Error";
+        }
+        isStep1Loading.value = false;
+    };
+
+    const processImportFile = async ():Promise<void> => {
+        successMessage.value = "";
+        errorMessage.value = "";
+        isStep2Loading.value = true;
+
+        const bag = <NcoaProcessBag> {
+            inactiveReason: selectedInactiveReason.value,
+            mark48MonthAsPrevious: isMark48Month.value,
+            markInvalidAsPrevious: isMarkInvalidAddresses.value,
+            minMoveDistance: minMoveDistance.value,
+            ncoaFileUploadReference: importedFile.value
+        };
+        const result = await invokeBlockAction<NcoaProcessBag>("ProcessNcoaImportFile", { bag });
+
+        if (result.isSuccess) {
+            successMessage.value = result.data?.successMessage || "Success";
+        }
+        else {
+            errorMessage.value = result.errorMessage || "Error";
+        }
+        isStep2Loading.value = false;
+    };
+
+    // Generates the Workbook and converts the data passed in from a dictionary to an array so that the file is properly formatted.
+    function generateDataForFile(data: NcoaProcessPersonAddressBag[]): Workbook {
+        const workbook = new Workbook();
+        const worksheet = workbook.addWorksheet();
+
+        // Converting the dictionary to an array.
+        const keys = Object.keys(data);
+        const headerRow = Object.keys(data[keys[0]]) as string[];
+        const dataArray = [headerRow];
+        keys.forEach(key => {
+            const rowData = Object.values(data[key]).map(value => String(value));
+            dataArray.push(rowData);
+        });
+
+        // Add data to worksheet
+        dataArray.forEach(row => {
+            worksheet.addRow(row);
+        });
+
+        return workbook;
+    }
+
+</script>

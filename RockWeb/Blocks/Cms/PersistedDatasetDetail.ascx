@@ -46,7 +46,7 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:NumberBox ID="nbRefreshIntervalHours" runat="server" Label="Refresh Interval" AppendText="hour(s)" CssClass="input-width-md" NumberType="Double" Required="true" Help="How often the dataset should be updated by the Update Persisted Dataset job." />
+                        <Rock:NumberBox ID="nbRefreshIntervalHours" runat="server" Label="Refresh Interval" AppendText="hour(s)" CssClass="input-width-md" NumberType="Double" Required="false" Help="How often the dataset should be updated by the Update Persisted Dataset job." />
                         <Rock:NumberBox ID="nbMemoryCacheDurationHours" runat="server" Label="Memory Cache Duration" AppendText="hour(s)" CssClass="input-width-md" NumberType="Double" Help="How long the persisted object should be cached in memory. This is a sliding timeline, so each time the object is read the counter will reset. Leave blank to not cache the object in memory which will mean it will be deserialized into the object on each request (still fast). " />
                         <Rock:DatePicker ID="dtpExpireDateTime" runat="server" Label="Expires on" Help="Set this to consider the dataset inactive after the specified date. This will mean that its value is no longer updated by the refresh job and that it will return empty when requested through Lava." />
                     </div>
@@ -58,8 +58,8 @@
                 </div>
 
                 <div class="actions">
-                    <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                    <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                    <asp:LinkButton ID="btnSave" runat="server" data-shortcut-key="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                    <asp:LinkButton ID="btnCancel" runat="server" data-shortcut-key="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                 </div>
             </div>
         </asp:Panel>

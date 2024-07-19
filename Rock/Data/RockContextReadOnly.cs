@@ -21,7 +21,7 @@ using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Linq.Expressions;
 
-using Rock.Utility.Settings;
+using Rock.Configuration;
 
 namespace Rock.Data
 {
@@ -50,7 +50,7 @@ namespace Rock.Data
         /// Initializes a new instance of the <see cref="RockContextReadOnly"/> class.
         /// </summary>
         public RockContextReadOnly()
-            : this( new RockContext( RockInstanceConfig.Database.ReadOnlyConnectionString ) )
+            : this( new RockContext( RockApp.Current.InitializationSettings.ReadOnlyConnectionString ) )
         {
             /*  2021-09-28 MDP
 

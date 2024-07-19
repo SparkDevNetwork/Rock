@@ -13,14 +13,13 @@
 
                 <asp:Panel ID="pnlEntry" runat="server">
 
-                    <Rock:RockControlWrapper ID="rcwBulkUpdateCampuses" runat="server" Visible="false" Label="Campus Filter" CssClass="well" Help="Only connection requests for this campus will be effected by the Update.">
-                        <Rock:RockRadioButtonList ID="rblBulkUpdateCampuses" runat="server" RepeatDirection="Horizontal">
-                        </Rock:RockRadioButtonList>
-                    </Rock:RockControlWrapper>
-
                     <Rock:NotificationBox ID="nbBulkUpdateNotification" runat="server" Visible="false"></Rock:NotificationBox>
 
                     <asp:ValidationSummary ID="ValidationSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
+
+                    <Rock:RockControlWrapper ID="rcwBulkUpdateCampuses" runat="server" Visible="false" Label="Campus Filter" CssClass="well" Help="Only connection requests for this campus will be affected by the Update.">
+                        <Rock:RockCheckBoxList ID="cblBulkUpdateCampuses" runat="server" RepeatDirection="Horizontal" AutoPostBack="true"></Rock:RockCheckBoxList>
+                    </Rock:RockControlWrapper>
 
                     <div class="row fade-inactive">
 

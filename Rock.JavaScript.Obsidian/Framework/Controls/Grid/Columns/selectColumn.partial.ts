@@ -52,6 +52,11 @@ export default defineComponent({
         width: {
             type: String as PropType<string>,
             default: "56px"
-        }
+        },
+
+        columnType: {
+            type: String as PropType<string>,
+            default: "select"
+        },
     }
 });

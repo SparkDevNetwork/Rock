@@ -21,6 +21,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Web.UI;
+
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Field;
 using Rock.Model;
@@ -43,6 +45,19 @@ namespace Rock.Utility
         /// <param name="propertyType">Type of the property.</param>
         /// <returns></returns>
         public static Expression PropertyFilterExpression( List<string> filterValues, Expression parameterExpression, string propertyName, Type propertyType )
+        {
+            var propertyExpression = Expression.Property( parameterExpression, propertyName );
+
+            return PropertyFilterExpression( filterValues, propertyExpression );
+        }
+
+        /// <summary>
+        /// Gets a filter expression for an entity property value.
+        /// </summary>
+        /// <param name="filterValues">The filter values.</param>
+        /// <param name="propertyExpression">The expression used to access the property.</param>
+        /// <returns></returns>
+        internal static Expression PropertyFilterExpression( List<string> filterValues, Expression propertyExpression )
         {
             /* 2020-08-17 MDP
              * If it isn't fully configured we won't filter. We can detect if the filter isn't configured by..
@@ -67,7 +82,7 @@ namespace Rock.Utility
                 return Expression.Constant( true );
             }
 
-            var type = propertyType;
+            var type = propertyExpression.Type;
             bool isNullableType = type.IsGenericType && type.GetGenericTypeDefinition() == typeof( Nullable<> );
             if ( isNullableType )
             {
@@ -81,9 +96,9 @@ namespace Rock.Utility
             if ( value != null || valueNotNeeded )
             {
                 // a valid value is specified or we are doing a NotBlank/IsNotBlank, so build an filter expression
-                MemberExpression propertyExpression = Expression.Property( parameterExpression, propertyName );
                 ConstantExpression constantExpression = value != null ? Expression.Constant( value, type ) : null;
-                return ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
+
+                return ComparisonHelper.ValueComparisonExpression( comparisonType, propertyExpression, constantExpression );
             }
             else
             {
@@ -170,13 +185,26 @@ namespace Rock.Utility
         /// <returns></returns>
         public static Expression GetAttributeExpression( IService serviceInstance, ParameterExpression parameterExpression, EntityField entityField, List<string> values )
         {
+            return GetAttributeExpression( ( RockContext ) serviceInstance.Context, parameterExpression, entityField, values );
+        }
+
+        /// <summary>
+        /// Builds an expression for an attribute field
+        /// </summary>
+        /// <param name="rockContext">The database context.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <param name="entityField">The entity field.</param>
+        /// <param name="values">The filter parameter values: FieldName, <see cref="ComparisonType">Comparison Type</see>, (optional) Comparison Value(s)</param>
+        /// <returns></returns>
+        internal static Expression GetAttributeExpression( RockContext rockContext, ParameterExpression parameterExpression, EntityField entityField, List<string> values )
+        {
             if ( !values.Any() )
             {
                 // if no filter parameter values where specified, don't filter
                 return new NoAttributeFilterExpression();
             }
 
-            var service = new AttributeValueService( ( RockContext ) serviceInstance.Context );
+            var service = new AttributeValueService( rockContext );
 
             /*
                 13-Sep-2023 - DJL
@@ -330,10 +358,10 @@ namespace Rock.Utility
                             var qualifierGroupTypeId = attributeCache.EntityTypeQualifierValue.AsInteger();
 
                             List<int> inheritedGroupTypeIds = null;
-                            using (var rockContext = new RockContext() )
+                            using (var groupTypeRockContext = new RockContext() )
                             {
-                                var groupType = new GroupTypeService( rockContext ).Get( qualifierGroupTypeId );
-                                inheritedGroupTypeIds = groupType.GetAllDependentGroupTypeIds( rockContext );
+                                var groupType = new GroupTypeService( groupTypeRockContext ).Get( qualifierGroupTypeId );
+                                inheritedGroupTypeIds = groupType.GetAllDependentGroupTypeIds( groupTypeRockContext );
                             }
 
                             if ( inheritedGroupTypeIds != null )
@@ -360,6 +388,131 @@ namespace Rock.Utility
             {
                 return expression;
             }
+        }
+
+        /// <summary>
+        /// Builds an expression to compare an entities attribute value on an
+        /// in-memory object. This expression cannot be used in a LINQ to SQL
+        /// statement as it will generate an exception.
+        /// </summary>
+        /// <param name="parameterExpression">The expression that identifies the entity object.</param>
+        /// <param name="comparedToAttribute">The attribute that will be used to get the entity value.</param>
+        /// <param name="values">The values defined on the filter.</param>
+        /// <returns>An expression that compares the attribute value of an entity.</returns>
+        internal static Expression GetAttributeMemoryExpression( ParameterExpression parameterExpression, AttributeCache comparedToAttribute, List<string> values )
+        {
+            // All this negation 
+            // Determine the appropriate comparison type to use for this Expression.
+            // Attribute Value records only exist for Entities that have a value specified for the Attribute.
+            // Therefore, if the specified comparison works by excluding certain values we must invert our filter logic:
+            // first we find the Attribute Values that match those values and then we exclude the associated Entities from the result set.
+            ComparisonType? comparisonType = ComparisonType.EqualTo;
+            ComparisonType? evaluatedComparisonType = comparisonType;
+            var filterValues = new List<string>( values );
+
+            // If Values.Count >= 2, then Values[0] is ComparisonType, and Values[1] is a CompareToValue. Otherwise, Values[0] is a CompareToValue (for example, a SingleSelect attribute)
+            if ( filterValues.Count >= 2 )
+            {
+                comparisonType = filterValues[0].ConvertToEnumOrNull<ComparisonType>();
+
+                switch ( comparisonType )
+                {
+                    case ComparisonType.DoesNotContain:
+                        evaluatedComparisonType = ComparisonType.Contains;
+                        break;
+                    case ComparisonType.IsBlank:
+                        evaluatedComparisonType = ComparisonType.IsNotBlank;
+                        break;
+                    // TODO: The following 2 case statements have been removed to
+                    // match functionality in develop branch. Since this is new
+                    // logic and internal, we are going to make the logic match
+                    // now rather than later. Remove when merged to develop.
+                    //case ComparisonType.LessThan:
+                    //    evaluatedComparisonType = ComparisonType.GreaterThanOrEqualTo;
+                    //    break;
+                    //case ComparisonType.LessThanOrEqualTo:
+                    //    evaluatedComparisonType = ComparisonType.GreaterThan;
+                    //    break;
+                    case ComparisonType.NotEqualTo:
+                        evaluatedComparisonType = ComparisonType.EqualTo;
+                        break;
+                    default:
+                        evaluatedComparisonType = comparisonType;
+                        break;
+                }
+
+                filterValues[0] = evaluatedComparisonType.ToString();
+            }
+
+            // If this is a TextFieldType, In-Memory LINQ is case-sensitive
+            // but LinqToSQL is not, so lets compare values using ToLower().
+            if ( comparedToAttribute.FieldType.Field is Rock.Field.Types.TextFieldType )
+            {
+                if ( filterValues.Count >= 2 )
+                {
+                    filterValues[1] = filterValues[1]?.ToLower();
+                }
+                else if ( filterValues.Count >= 1 )
+                {
+                    filterValues[0] = filterValues[0]?.ToLower();
+                }
+            }
+
+            var attributeValueParameterExpression = Expression.Parameter( typeof( AttributeValue ) );
+            var entityCondition = comparedToAttribute.FieldType.Field.AttributeFilterExpression( comparedToAttribute.QualifierValues, filterValues, attributeValueParameterExpression );
+
+            if ( entityCondition is NoAttributeFilterExpression )
+            {
+                return entityCondition;
+            }
+
+            var conditionLambda = Expression.Lambda<Func<AttributeValue, bool>>( entityCondition, attributeValueParameterExpression );
+            var filterFunc = conditionLambda.Compile();
+            var method = typeof( ExpressionHelper ).GetMethod( nameof( CompareToInMemoryAttribute ), BindingFlags.NonPublic | BindingFlags.Static );
+
+            var expression = Expression.Call( method, parameterExpression, Expression.Constant( comparedToAttribute ), Expression.Constant( filterFunc ) );
+
+            // If we have used an inverted comparison type for the evaluation,
+            // invert the Expression so that it excludes the matching Entities.
+            if ( comparisonType != evaluatedComparisonType )
+            {
+                return Expression.Not( expression );
+            }
+            else
+            {
+                return expression;
+            }
+        }
+
+        /// <summary>
+        /// Performs additional steps required to compare an in-memory object's
+        /// attribute value to the filter expression returned by the field type.
+        /// </summary>
+        /// <param name="entity">The entity to retrieve the value from.</param>
+        /// <param name="comparedToAttribute">The attribute that will be used for the source value.</param>
+        /// <param name="filterFunc">The function (expression) from the attribute's field type.</param>
+        /// <returns><c>true</c> if the attribute value matches the <paramref name="filterFunc"/> filter.</returns>
+        private static bool CompareToInMemoryAttribute( IHasAttributes entity, AttributeCache comparedToAttribute, Func<AttributeValue, bool> filterFunc )
+        {
+            var comparedToAttributeValue = entity.GetAttributeValue( comparedToAttribute.Key );
+
+            // if this is a TextFieldType, In-Memory LINQ is case-sensitive but LinqToSQL is not, so lets compare values using ToLower()
+            if ( comparedToAttribute.FieldType.Field is Rock.Field.Types.TextFieldType )
+            {
+                comparedToAttributeValue = comparedToAttributeValue?.ToLower();
+            }
+
+            // create an instance of an AttributeValue to run the expressions against
+            var attributeValueToEvaluate = new Rock.Model.AttributeValue
+            {
+                AttributeId = comparedToAttribute.Id,
+                Value = comparedToAttributeValue,
+                ValueAsBoolean = comparedToAttributeValue.AsBooleanOrNull(),
+                ValueAsNumeric = comparedToAttributeValue.AsDecimalOrNull(),
+                ValueAsDateTime = comparedToAttributeValue.AsDateTime()
+            };
+
+            return filterFunc.Invoke( attributeValueToEvaluate );
         }
 
         /// <summary>

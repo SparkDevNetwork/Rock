@@ -24,9 +24,13 @@
 import { Guid } from "@Obsidian/Types";
 import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrantBag";
 import { RegistrarBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrarBag";
+import { RegistrationEntryPaymentPlanBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryPaymentPlanBag";
 
 /** RegistrationEntryBlockSession */
 export type RegistrationEntrySessionBag = {
+    /** Gets or sets the active payment plan that has been configured for the registration. */
+    activePaymentPlan?: RegistrationEntryPaymentPlanBag | null;
+
     /** Gets or sets the amount to pay now. */
     amountToPayNow: number;
 

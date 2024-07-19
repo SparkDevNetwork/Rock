@@ -16,6 +16,7 @@
 //
 using System;
 using System.ComponentModel;
+using System.Configuration;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -355,6 +356,11 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
+            // Don't remove Id as this is required if this control is defined as attribute Field in Bulk Update
+            writer.AddAttribute( "id", this.ClientID );
+            writer.AddAttribute( "class", "form-control-group " + this.FormGroupCssClass );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
             if ( !ContentChannelId.HasValue )
             {
                 // If prompting for _ddlContentChannel, both _ddlContentChannel and _ddlContentChannelItem will be shown,
@@ -370,6 +376,8 @@ namespace Rock.Web.UI.Controls
             }
 
             _ddlContentChannelItem.RenderControl( writer );
+            writer.RenderEndTag();
+
         }
 
         /// <summary>

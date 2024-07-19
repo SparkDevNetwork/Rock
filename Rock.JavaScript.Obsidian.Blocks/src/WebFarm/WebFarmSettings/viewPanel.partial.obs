@@ -27,9 +27,7 @@
                                         <span v-if="node.isUnresponsive" class="label label-danger rounded-pill position-absolute m-2" style="bottom:0;right:0;">
                                             {{ node.humanReadableLastSeen }}
                                         </span>
-                                        <div v-html="node.chartHtml">
-
-                                        </div>
+                                        <Chart type="line" :data="getChartData(node.chartData ?? '{}')" :options="options" />
                                     </div>
                                 </div>
                             </a>
@@ -97,7 +95,7 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, PropType, ref, onMounted } from "vue";
+    import { computed, PropType, ref } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -106,6 +104,8 @@
     import { WebFarmSettingsBag } from "@Obsidian/ViewModels/Blocks/WebFarm/WebFarmSettings/webFarmSettingsBag";
     import { WebFarmSettingsDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/WebFarm/WebFarmSettings/webFarmSettingsDetailOptionsBag";
     import { WebFarmNodeBag } from "@Obsidian/ViewModels/Blocks/WebFarm/WebFarmNodeDetail/webFarmNodeBag";
+    import Chart from "@Obsidian/Controls/chart.obs";
+    import { ChartData, ChartOptions } from "@Obsidian/Libs/chart";
 
     const props = defineProps({
         modelValue: {
@@ -125,6 +125,42 @@
     const attributeValues = ref(props.modelValue?.attributeValues ?? {});
     const isInMemoryTransport = ref(props.modelValue?.isInMemoryTransport);
     const nodes = ref(props.modelValue?.nodes ?? []);
+    const options = ref<ChartOptions>({
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            },
+            tooltip: {
+                intersect: false,
+                callbacks: {
+                    label: function (context) {
+                        var label = context.dataset.data[context.dataIndex] || "";
+                        if (label) {
+                            label = "CPU: " + label + "%";
+                        }
+
+                        return `${label}`;
+                    }
+                }
+            }
+        },
+        scales: {
+            y: {
+                display: false,
+                min: 0,
+                max: 100,
+            },
+            x: {
+                display: false
+            }
+        },
+        hover: {
+            mode: "nearest",
+            intersect: false
+        },
+    });
 
     // #endregion
 
@@ -169,11 +205,15 @@
         }
 
         if (props.modelValue.maxPollingWaitSeconds) {
-            valueBuilder.addTextValue("Max Polling Limit", `${props.modelValue.maxPollingWaitSeconds} seconds`);
+            valueBuilder.addTextValue("Max Polling Wait", `${props.modelValue.maxPollingWaitSeconds} seconds`);
         }
 
         return valueBuilder.build();
     });
+
+    // #endregion
+
+    // #region Functions
 
     const getCardClass = (isActive: boolean): string => {
         return isActive ? "card card-node" : "card card-node bg-disabled";
@@ -193,67 +233,18 @@
 
     const getHeaderHTML = (node: WebFarmNodeBag): string => {
         return `<span class="server-meta" title='Polling Interval: ${node.currentLeadershipPollingIntervalSeconds}'>
-                            <i class="${node.isActive ? "fa fa-server" : "fa fa-exclamation-triangle"}"></i>
-                            <span class="node-name text-truncate">
-                                ${node.nodeName}
+                                <i class="${node.isActive ? "fa fa-server" : "fa fa-exclamation-triangle"}"></i>
+                                <span class="node-name text-truncate">
+                                    ${node.nodeName}
+                                </span>
                             </span>
-                        </span>
-                        ${getLeaderIcon(node.isLeader)}
-                        ${getCurrentJobRunnerIcon(node.isCurrentJobRunner)}`;
+                            ${getLeaderIcon(node.isLeader)}
+                            ${getCurrentJobRunnerIcon(node.isCurrentJobRunner)}`;
     };
 
-    // #endregion
-
-    // #region Functions
-    onMounted(() => {
-        var $ = window["$"];
-        var options = {
-            responsive: true,
-            maintainAspectRatio: false,
-            legend: {
-                display: false
-            },
-            scales: {
-                yAxes: [{
-                    display: false,
-                    ticks: {
-                        min: 0,
-                        max: 100
-                    }
-                }],
-                xAxes: [{
-                    display: false
-                }]
-            },
-            hover: {
-                mode: "nearest",
-                intersect: false
-            },
-            tooltips: {
-                hasIndicator: true,
-                intersect: false,
-                callbacks: {
-                    label: function (tooltipItem, data) {
-                        var label = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index] || "";
-                        if (label) {
-                            label = "CPU: " + label + "%";
-                        }
-
-                        return label;
-                    }
-                }
-            }
-        };
-
-        $(".js-chart").each(() =>  {
-            var el = $(this);
-            var data = el.attr("data-chart") ? JSON.parse(el.attr("data-chart")) : {};
-            //var chart = new Chart(el, { type: "line", data: data, options: options });
-        });
-    });
-    // #endregion
-
-    // #region Event Handlers
+    const getChartData = (chartData: string): ChartData => {
+        return JSON.parse(chartData);
+    };
 
     // #endregion
 </script>

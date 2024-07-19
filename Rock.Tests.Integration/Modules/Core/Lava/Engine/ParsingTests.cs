@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Lava;
@@ -124,26 +125,40 @@ Slow
             TestHelper.AssertTemplateOutput( expectedOutput, input );
         }
 
-        [TestMethod]
-        public void Operators_IfWithNoOperator_BooleanTrueIsParsedAsTruthy()
+        [DataTestMethod]
+        [DataRow( "true | AsBoolean", true )]
+        [DataRow( "'true'", true )]
+        [DataRow( "''", true )]
+        public void Operators_IfWithNoOperatorAndAnyDefinedValue_ReturnsTrue( string value, bool expectedResult )
         {
             var input = @"
-{% assign isTruthy = true | AsBoolean %}
-{% if isTruthy %}true{% else %}false{% endif %}
+{% assign value = $value %}
+{% if value %}true{% else %}false{% endif %}
 ";
-
-            TestHelper.AssertTemplateOutput( "true", input );
+            input = input.Replace( "$value", value );
+            TestHelper.AssertTemplateOutput( expectedResult.ToString().ToLower(), input );
         }
 
         [TestMethod]
-        public void Operators_IfWithNoOperator_StringWithContentIsParsedAsTruthy()
+        public void Operators_IfWithNoOperatorAndUndefinedVariable_ReturnsFalse()
         {
             var input = @"
-{% assign isTruthy = 'true' %}
-{% if isTruthy %}true{% else %}false{% endif %}
+{% if noVariable %}true{% else %}false{% endif %}
 ";
 
-            TestHelper.AssertTemplateOutput( "true", input );
+            TestHelper.AssertTemplateOutput( "false", input );
+        }
+
+        [TestMethod]
+        public void Operators_IfWithNoOperatorAndNullVariable_ReturnsFalse()
+        {
+            var input = @"
+{% if value %}true{% else %}false{% endif %}
+";
+
+            var options = new LavaTestRenderOptions();
+            options.MergeFields = new Dictionary<string, object> { { "value", null } };
+            TestHelper.AssertTemplateOutput( "false", input, options  );
         }
 
         /// <summary>

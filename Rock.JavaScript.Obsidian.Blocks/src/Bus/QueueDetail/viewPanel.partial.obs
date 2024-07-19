@@ -62,8 +62,13 @@
             return valueBuilder.build();
         }
 
-        if (props.modelValue.timeToLiveSeconds) {
-            valueBuilder.addTextValue("Time To Live", `${props.modelValue.timeToLiveSeconds.toString()} seconds`);
+        if (props.modelValue.timeToLiveSeconds != null) {
+            if (props.modelValue.timeToLiveSeconds > 0) {
+                valueBuilder.addTextValue("Time To Live", `${props.modelValue.timeToLiveSeconds.toString()} seconds`);
+            }
+            else {
+                valueBuilder.addTextValue("Time To Live", `Indefinite`);
+            }
         }
 
         if (props.modelValue.messagesConsumedLastMinute != null) {

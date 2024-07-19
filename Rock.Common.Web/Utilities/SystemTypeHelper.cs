@@ -66,7 +66,7 @@ namespace Rock
                 {
                     if ( string.IsNullOrWhiteSpace( typeName ) || typeEntry.Key == typeName )
                     {
-                        types.AddOrIgnore( typeEntry.Key, typeEntry.Value );
+                        types.TryAdd( typeEntry.Key, typeEntry.Value );
                     }
                 }
             }

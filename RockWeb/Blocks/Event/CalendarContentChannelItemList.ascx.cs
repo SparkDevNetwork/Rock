@@ -121,7 +121,7 @@ namespace RockWeb.Blocks.Event
                             .SelectMany( i => i.EventCalendar.ContentChannels )
                             .Select( c => c.ContentChannel )
                             .ToList()
-                            .ForEach( c => channels.AddOrIgnore( c.Id, c ) );
+                            .ForEach( c => channels.TryAdd( c.Id, c ) );
 
                         ExpandedPanels = eventItemOccurrence.ContentChannelItems
                             .Where( i => i.ContentChannelItem != null )

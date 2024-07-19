@@ -1241,9 +1241,23 @@ namespace Rock.Blocks.Types.Mobile.Security
         {
             int mobileNumberValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
 
+            string providedName = null;
+
+            if( person != null )
+            {
+                if( person.NickName.IsNotNullOrWhiteSpace() )
+                {
+                    providedName = person.NickName;
+                }
+                else if( person.FirstName.IsNotNullOrWhiteSpace() )
+                {
+                    providedName = person.FirstName;
+                }
+            }
+
             return new OnboardDetails
             {
-                FirstName = person?.FirstName,
+                FirstName = providedName,
                 LastName = person?.LastName,
                 BirthDate = person?.BirthDate,
                 CampusGuid = person?.GetCampus()?.Guid,
@@ -1349,6 +1363,10 @@ namespace Rock.Blocks.Types.Mobile.Security
         /// <param name="rockContext">The rock context.</param>
         private void UpdateExistingPerson( Person person, OnboardDetails details, RockContext rockContext )
         {
+            // This method purposefully does not update the person's name.
+            // The OnboardDetails object could either contain the NickName
+            // or the FirstName in the FirstName property.
+
             // Update the BirthDate value if they provided one. The user
             // will always provide a year to this method.
             if ( details.BirthDate.HasValue )
@@ -1401,7 +1419,7 @@ namespace Rock.Blocks.Types.Mobile.Security
             person.Email = details.Email;
 
             var familyGroup = person.GetFamily( rockContext );
-            if ( familyGroup != null && details.CampusGuid.HasValue )
+            if ( familyGroup != null && details.CampusGuid.HasValue && details.CampusGuid != Guid.Empty )
             {
                 familyGroup.CampusId = CampusCache.Get( details.CampusGuid.Value ).Id;
             }
@@ -1615,7 +1633,7 @@ namespace Rock.Blocks.Types.Mobile.Security
 
                     // Only a single match is taken as a quality match. If
                     // there were more than 1 then we don't match.
-                    person = people.Count == 1 ? people[ 0 ] : null;
+                    person = people.Count == 1 ? people[0] : null;
                 }
                 else if ( request.SendSms && request.PhoneNumber.IsNotNullOrWhiteSpace() )
                 {
@@ -1626,7 +1644,7 @@ namespace Rock.Blocks.Types.Mobile.Security
 
                     // Only a single match is taken as a quality match. If
                     // there were more than 1 then we don't match.
-                    person = personIds.Count == 1 ? new PersonService( rockContext ).Get( personIds[ 0 ] ) : null;
+                    person = personIds.Count == 1 ? new PersonService( rockContext ).Get( personIds[0] ) : null;
                 }
                 else
                 {
@@ -1786,7 +1804,7 @@ namespace Rock.Blocks.Types.Mobile.Security
                 // values now before we start creating the person.
                 if ( request.Details.UserName.IsNotNullOrWhiteSpace() )
                 {
-                    if( !UserLoginService.IsUsernameValid( request.Details.UserName ) )
+                    if ( !UserLoginService.IsUsernameValid( request.Details.UserName ) )
                     {
                         return ActionBadRequest( UserLoginService.FriendlyUsernameRules() );
                     }
@@ -1814,9 +1832,21 @@ namespace Rock.Blocks.Types.Mobile.Security
                 // been changed then the record is no longer the same.
                 bool isSamePerson = person != null;
 
-                if ( isSamePerson && ( person.FirstName != request.Details.FirstName || person.LastName != request.Details.LastName ) )
+                if ( isSamePerson )
                 {
-                    isSamePerson = false;
+                    // We want to catch the edge case where the provided value
+                    // matches either the first name or the nickname. If it
+                    // doesn't match either then we can assume it's a different
+                    // person.
+                    if ( person.FirstName != request.Details.FirstName && person.NickName != request.Details.FirstName )
+                    {
+                        isSamePerson = false;
+                    }
+
+                    if( person.LastName != request.Details.LastName )
+                    {
+                        isSamePerson = false;
+                    }
                 }
 
                 if ( isSamePerson && person.Gender != Rock.Model.Gender.Unknown && person.Gender != ToWeb( request.Details.Gender ) )

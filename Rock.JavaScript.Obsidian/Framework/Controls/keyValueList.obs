@@ -148,11 +148,19 @@
             defaultValue = options.value[0].value ?? "";
         }
 
-        internalValues.value.push({ key: "", value: defaultValue });
+        internalValues.value = [
+            ...internalValues.value,
+            {
+                key: "",
+                value: defaultValue
+            }
+        ];
     }
 
     function onRemoveClick(index: number): void {
-        internalValues.value.splice(index, 1);
+        const newValues = [...internalValues.value];
+        newValues.splice(index, 1);
+        internalValues.value = newValues;
     }
 
     const augmentedRules = computed((): ValidationRule[] => {

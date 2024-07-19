@@ -89,8 +89,8 @@
                         </div>
 
                         <div class="actions">
-                            <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                            <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                            <asp:LinkButton ID="btnSave" runat="server" data-shortcut-key="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                            <asp:LinkButton ID="btnCancel" runat="server" data-shortcut-key="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                         </div>
 
                     </div>
@@ -119,8 +119,68 @@
                                 </ul>
                                 <div class="tab-content">
                                     <div id="tabPaneAccount" runat="server" class="tab-pane fade in">
+                                        <Rock:NotificationBox ID="nbPaneAccountError" runat="server" CssClass="margin-t-md" NotificationBoxType="Danger" Visible="false" />
+                                        <Rock:NotificationBox ID="nbPaneAccountWarning" runat="server" CssClass="margin-t-md" NotificationBoxType="Warning" Visible="false" />
                                         <div class="row fee-totals">
-                                            <div class="col-sm-offset-8 col-sm-4 fee-totals-options">
+                                            <div class="col-sm-6 fee-totals-options">
+                                                <asp:Panel ID="pnlPaymentPlanSummary" runat="server" CssClass="well" Visible="false">
+                                                    <h4>Payment Plan</h4>
+
+                                                    <Rock:RockLiteral ID="lFrequencyPaymentAmount" runat="server" />
+                                                    <Rock:RockLiteral ID="lNextPaymentDate" runat="server" Label="Next Payment Date" />
+
+                                                    <span id="spanChangeButtonWrapper" runat="server" data-toggle="tooltip" data-placement="top" data-original-title=""><asp:LinkButton ID="lbChangePaymentPlan" runat="server" CssClass="btn btn-default btn-xs margin-t-sm" Text="Change" OnClick="lbChangePaymentPlan_Click" CausesValidation="false" /></span>
+                                                    <asp:LinkButton ID="lbDeletePaymentPlan" runat="server" CssClass="btn btn-link btn-xs margin-t-sm text-primary" Text="Delete" OnClick="lbDeletePaymentPlan_Click" CausesValidation="false" />
+
+                                                    <Rock:ModalDialog ID="mdUpdatePaymentPlan" runat="server" Title="Update Payment Plan" ValidationGroup="vgUpdatePaymentPlan" OnSaveClick="mdUpdatePaymentPlan_SaveClick" SaveButtonCausesValidation="true">
+                                                        <Content>
+                                                            <Rock:NotificationBox ID="nbUpdatePaymentPlanError" runat="server" CssClass="margin-t-md" NotificationBoxType="Danger" Visible="false" />
+                                                            <Rock:NotificationBox ID="nbUpdatePaymentPlanWarning" runat="server" CssClass="margin-t-md" NotificationBoxType="Warning" Visible="false" />
+                                                            <asp:ValidationSummary ID="vsUpdatePaymentPlan" runat="server" ValidationGroup="vgUpdatePaymentPlan" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
+
+                                                            <div class="row">
+                                                                <div class="col">
+                                                                    <asp:Literal ID="lUpdatePaymentPlanMessage" runat="server" />
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="row">
+                                                                <div class="col-md-7">
+                                                                    <Rock:RockDropDownList ID="ddlPaymentPlanFrequencies" runat="server" Label="Desired Payment Frequency" ValidationGroup="vgUpdatePaymentPlan" OnSelectedIndexChanged="ddlPaymentPlanFrequencies_SelectedIndexChanged" Required="true" AutoPostBack="true" />
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="row">
+                                                                <div class="col-md-2">
+                                                                    <Rock:DatePicker ID="dpPaymentPlanStartDate" runat="server" Label="Start Date" ValidationGroup="vgUpdatePaymentPlan" Required="true" AllowPastDateSelection="false" OnSelectDate="dpPaymentPlanStartDate_SelectDate" />
+                                                                </div>
+                                                                <div class="col-md-2">
+                                                                    <Rock:NumberBox ID="nbUpdatePaymentPlanNumberOfPayments" runat="server" Label="Number of Payments" ValidationGroup="vgUpdatePaymentPlan" Required="true" OnTextChanged="nbUpdatePaymentPlanNumberOfPayments_TextChanged" AutoPostBack="true" />
+                                                                </div>
+                                                            </div>
+
+
+                                                            <asp:Panel ID="pnlUpdatePaymentPlanSummary" runat="server">
+                                                                <label class="control-label">Plan Summary</label>
+                                                                <div class="row">
+                                                                    <div class="col-md-8">
+                                                                        <Rock:RockLiteral ID="lPaymentPlanSummaryPaymentAmount" runat="server" Label="Payment Amount" />
+                                                                    </div>
+                                                                </div>
+                                                            </asp:Panel>
+                                                        </Content>
+                                                    </Rock:ModalDialog>
+
+                                                    <Rock:ModalDialog ID="mdDeletePaymentPlan" runat="server" Title="Are you sure?" OnSaveClick="mdDeletePaymentPlan_SaveClick" SaveButtonText="Delete" Visible="false">
+                                                        <Content>
+                                                            <p>Are you sure you want to delete this payment plan?</p>
+                                                        </Content>
+                                                    </Rock:ModalDialog>
+                                                </asp:Panel>
+                                            </div>
+                                            <div class="col-sm-2">
+                                            </div>
+                                            <div class="col-sm-4 fee-totals-options">
                                                 <Rock:RockLiteral ID="lTotalCost" runat="server" Label="Total Cost" />
                                                 <Rock:RockLiteral ID="lPreviouslyPaid" runat="server" Label="Paid" />
                                                 <Rock:RockLiteral ID="lRemainingDue" runat="server" Label="Amount Remaining" />
@@ -181,7 +241,7 @@
                                             <Rock:NotificationBox ID="nbPaymentError" runat="server" NotificationBoxType="Danger" Visible="true" />
 
                                             <asp:PlaceHolder ID="phPaymentAmount" runat="server">
-                                                <Rock:PersonPicker ID="ppPayee" runat="server" Label="Payee" Required="true" ValidationGroup="Payment" Help="The person who is making the payment." />
+                                                <Rock:PersonPicker ID="ppPayer" runat="server" Label="Payer" Required="true" ValidationGroup="Payment" Help="The person who is making the payment." />
                                                 <Rock:CurrencyBox ID="cbPaymentAmount" runat="server" Label="Payment Amount" Required="true" ValidationGroup="Payment"></Rock:CurrencyBox>
                                                 <Rock:RockTextBox ID="tbComments" runat="server" Label="Comments" TextMode="MultiLine" Rows="2" />
                                             </asp:PlaceHolder>
@@ -253,7 +313,7 @@
                         </div>
 
                         <div class="actions">
-                            <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" ToolTip="Alt+m" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
+                            <asp:LinkButton ID="btnEdit" runat="server" data-shortcut-key="e" AccessKey="m" ToolTip="Alt+e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
                             <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                             <Rock:HiddenFieldWithClass ID="hfHasPayments" runat="server" CssClass="js-has-payments" />
                             <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link js-delete-registration" OnClick="btnDelete_Click" CausesValidation="false" />

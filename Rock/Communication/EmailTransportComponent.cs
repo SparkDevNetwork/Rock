@@ -721,7 +721,7 @@ namespace Rock.Communication
 
             foreach ( var mergeField in mergeFields )
             {
-                rockMessageRecipient.MergeFields.AddOrIgnore( mergeField.Key, mergeField.Value );
+                rockMessageRecipient.MergeFields.TryAdd( mergeField.Key, mergeField.Value );
             }
 
             // To
@@ -989,6 +989,23 @@ namespace Rock.Communication
                 var httpValue = unsubscribeUrl.ResolveMergeFields( mergeFields, recipientEmail.CurrentPerson, recipientEmail.EnabledLavaCommands );
                 if ( httpValue.IsNotNullOrWhiteSpace() )
                 {
+                    try
+                    {
+                        // Add a utm=email-header parameter to the one-click unsubscribe URL
+                        // to identify when this URL is used to unsubscribe a person from email communications.
+                        var uriBuilder = new UriBuilder( httpValue );
+                        var queryString = uriBuilder.Query?.ParseQueryString() ?? new System.Collections.Specialized.NameValueCollection();
+                        queryString.Add( "utm", "email-header" );
+                        uriBuilder.Query = queryString.ToString();
+                        httpValue = uriBuilder.Uri.ToString();
+                    }
+                    catch ( UriFormatException ex )
+                    {
+                        // This could happen if the Email medium has an invalid UnsubscribeURL value.
+                        // Log the exception and move on.
+                        ExceptionLogService.LogException( ex, null );
+                    }
+
                     listUnsubscribeHeaderValues.Add( $"<{httpValue}>" );
                 }
             }
@@ -1002,6 +1019,36 @@ namespace Rock.Communication
             
             if ( unsubscribeEmail.IsNotNullOrWhiteSpace() )
             {
+                // Ensure the mailto address has the "subject=" email header.
+
+                var hasSubjectHeader = unsubscribeEmail.IndexOf( "?subject=", StringComparison.OrdinalIgnoreCase ) >= 0
+                    || unsubscribeEmail.IndexOf( "&subject=", StringComparison.OrdinalIgnoreCase ) >= 0;
+
+                if ( !hasSubjectHeader )
+                {
+                    string subjectHeaderValue;
+                    if ( communication?.Subject.IsNotNullOrWhiteSpace() == true )
+                    {
+                        subjectHeaderValue = $"unsubscribe {communication.Subject}".UrlEncode();
+                    }
+                    else
+                    {
+                        subjectHeaderValue = "unsubscribe";
+                    }
+                    
+                    string headerSeparator;
+                    if ( unsubscribeEmail.Contains( "?" ) )
+                    {
+                        headerSeparator = "&";
+                    }
+                    else
+                    {
+                        headerSeparator = "?";
+                    }
+
+                    unsubscribeEmail = $"{unsubscribeEmail}{headerSeparator}subject={subjectHeaderValue}";
+                }
+                
                 listUnsubscribeHeaderValues.Add( $"<mailto:{unsubscribeEmail}>" );
             }
 

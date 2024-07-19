@@ -188,6 +188,17 @@ namespace RockWeb.Blocks.Connection
             {
                 GetDetails();
             }
+            else
+            {
+                var causingControlClientId = Request["__EVENTTARGET"].ToStringSafe();
+                var causingControl = Page.FindControl( causingControlClientId );
+
+                // If postback is due to a campus change rebind opportunity connector, this will refresh the available connector list based on the campus.
+                if ( causingControl.ClientID == cblBulkUpdateCampuses.ClientID )
+                {
+                    RebindOpportunityConnector();
+                }
+            }
 
             SetControlSelection();
         }
@@ -266,15 +277,7 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlOpportunity_SelectedIndexChanged( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
-            var connectionOpportunity = GetConnectionOpportunity(rockContext );
-
-            if ( connectionOpportunity != null )
-            {
-                rbBulkUpdateDefaultConnector.Text = $"Keep Default Connector for {connectionOpportunity.Name}";
-            }
-
-            RebindOpportunityConnector( connectionOpportunity, rockContext );
+            RebindOpportunityConnector();
         }
 
         /// <summary>
@@ -313,7 +316,8 @@ namespace RockWeb.Blocks.Connection
 
             var currentOpportunityId = ConnectionCampusCountViewModelsState.FirstOrDefault().OpportunityId;
             var selectedOpportunity = ddlOpportunity.SelectedValue.AsInteger();
-            var selectedCampusId = rblBulkUpdateCampuses.SelectedValue.AsIntegerOrNull();
+            var selectedCampusIds = cblBulkUpdateCampuses.SelectedValuesAsInt;
+            var includeNoCampus = cblBulkUpdateCampuses.SelectedValues.Exists( v => v.IsNullOrWhiteSpace() );
 
             bool hasChangeValue = SelectedFields.Count > 0 || currentOpportunityId != selectedOpportunity || !rbBulkUpdateCurrentConnector.Checked || cbAddActivity.Checked || wtpLaunchWorkflow.SelectedValue != "0";
 
@@ -322,8 +326,10 @@ namespace RockWeb.Blocks.Connection
                 var rockContext = new RockContext();
                 List<string> changes = GetChangesSummary( rockContext );
 
-                var requestCount = new ConnectionRequestService( rockContext ).Queryable().AsNoTracking()
-                    .Where( cr => RequestIdsState.Contains( cr.Id ) && cr.CampusId == selectedCampusId ).Count();
+                var requestCount = new ConnectionRequestService( rockContext ).Queryable()
+                    .AsNoTracking()
+                    .Where( cr => RequestIdsState.Contains( cr.Id ) && ( ( includeNoCampus && !cr.CampusId.HasValue ) || selectedCampusIds.Contains( cr.CampusId.Value ) ) )
+                    .Count();
 
                 StringBuilder sb = new StringBuilder();
                 sb.AppendFormat( "<p>You are about to make the following updates to {0} connection requests:</p>", requestCount.ToString( "N0" ) );
@@ -379,7 +385,8 @@ namespace RockWeb.Blocks.Connection
 
             var rockContext = new RockContext();
 
-            var selectedCampusId = rblBulkUpdateCampuses.SelectedValue.AsIntegerOrNull();
+            var selectedCampusIds = cblBulkUpdateCampuses.SelectedValuesAsInt;
+            var includeNoCampus = cblBulkUpdateCampuses.SelectedValues.Exists( v => v.IsNullOrWhiteSpace() );
             var connectionRequestService = new ConnectionRequestService( rockContext );
             var connectionRequestActivityService = new ConnectionRequestActivityService( rockContext );
             var connectionOpportunity = GetConnectionOpportunity(rockContext );
@@ -393,7 +400,8 @@ namespace RockWeb.Blocks.Connection
 
             var connectionRequests = connectionRequestService.Queryable()
                 .Include( cr => cr.Campus )
-                .Where( cr => RequestIdsState.Contains( cr.Id ) && cr.CampusId == selectedCampusId ).ToList();
+                .Where( cr => RequestIdsState.Contains( cr.Id ) && ( ( includeNoCampus && !cr.CampusId.HasValue ) || selectedCampusIds.Contains( cr.CampusId.Value ) ) )
+                .ToList();
 
             foreach ( var connectionRequest in connectionRequests )
             {
@@ -417,7 +425,7 @@ namespace RockWeb.Blocks.Connection
                 {
                     if ( rbBulkUpdateDefaultConnector.Checked )
                     {
-                        connectionRequest.ConnectorPersonAliasId = GetConnectionOpportunity( rockContext ).GetDefaultConnectorPersonAliasId( selectedCampusId );
+                        connectionRequest.ConnectorPersonAliasId = GetConnectionOpportunity( rockContext ).GetDefaultConnectorPersonAliasId( connectionRequest.CampusId );
                     }
                     else if ( rbBulkUpdateSelectConnector.Checked )
                     {
@@ -442,7 +450,7 @@ namespace RockWeb.Blocks.Connection
 
                 if ( cbAddActivity.Checked )
                 {
-                    var connectors = GetConnectors( connectionOpportunity, rockContext, selectedCampusId );
+                    var connectors = GetConnectors( connectionOpportunity, rockContext, cblBulkUpdateCampuses.SelectedValues );
 
                     var connectionRequestActivity = new ConnectionRequestActivity();
                     var connector = connectors.ContainsKey( ddlActivityConnector.SelectedValue.AsInteger() ) ? connectors[ddlActivityConnector.SelectedValue.AsInteger()] : null;
@@ -582,13 +590,13 @@ namespace RockWeb.Blocks.Connection
         {
             if ( connectionCampusCountViewModels.Count > 0 )
             {
-                rblBulkUpdateCampuses.Items.Clear();
+                cblBulkUpdateCampuses.Items.Clear();
 
                 for ( int i = 0; i < connectionCampusCountViewModels.Count; i++ )
                 {
                     var campusCountItem = connectionCampusCountViewModels[i];
-                    var listItem = new ListItem( $"{campusCountItem.Campus} ({campusCountItem.Count})", campusCountItem.CampusId.ToString() ) { Selected = i == 0 };
-                    rblBulkUpdateCampuses.Items.Add( listItem );
+                    var listItem = new ListItem( $"{campusCountItem.Campus} ({campusCountItem.Count})", campusCountItem.CampusId.ToString() ) { Selected = true };
+                    cblBulkUpdateCampuses.Items.Add( listItem );
                 }
             }
 
@@ -634,13 +642,29 @@ namespace RockWeb.Blocks.Connection
         /// <summary>
         /// Rebinds the opportunity connector.
         /// </summary>
+        private void RebindOpportunityConnector()
+        {
+            var rockContext = new RockContext();
+            var connectionOpportunity = GetConnectionOpportunity( rockContext );
+
+            if ( connectionOpportunity != null )
+            {
+                rbBulkUpdateDefaultConnector.Text = $"Keep Default Connector for {connectionOpportunity.Name}";
+            }
+
+            RebindOpportunityConnector( connectionOpportunity, rockContext );
+        }
+
+        /// <summary>
+        /// Rebinds the opportunity connector.
+        /// </summary>
         /// <param name="connectionOpportunity">The connection opportunity.</param>
         /// <param name="rockContext">The rock context.</param>
         private void RebindOpportunityConnector( ConnectionOpportunity connectionOpportunity, RockContext rockContext )
         {
-            var selectedCampusId = rblBulkUpdateCampuses.SelectedValue.AsIntegerOrNull();
+            var selectedCampusIds = cblBulkUpdateCampuses.SelectedValuesAsInt;
 
-            Dictionary<int, Person> connectors = GetConnectors( connectionOpportunity, rockContext, selectedCampusId );
+            Dictionary<int, Person> connectors = GetConnectors( connectionOpportunity, rockContext, cblBulkUpdateCampuses.SelectedValues );
 
             ddlBulkUpdateOpportunityConnector.Items.Clear();
             ddlBulkUpdateOpportunityConnector.Items.Add( new ListItem( string.Empty, string.Empty ) );
@@ -649,9 +673,10 @@ namespace RockWeb.Blocks.Connection
             connectors.ToList()
                 .ForEach( c => ddlBulkUpdateOpportunityConnector.Items.Add( new ListItem( c.Value.FullName, c.Key.ToString() ) ) );
 
-            // If default connector is checked set as selected value in Connector dropdown
-            if ( rbBulkUpdateDefaultConnector.Checked && connectionOpportunity != null )
+            // If default connector is checked and a single campus is selected set default connector person as selected value in Connector dropdown
+            if ( rbBulkUpdateDefaultConnector.Checked && connectionOpportunity != null && selectedCampusIds.Count == 1 )
             {
+                var selectedCampusId = selectedCampusIds[0];
                 var defaultConnectorPersonId = connectionOpportunity.GetDefaultConnectorPersonId( selectedCampusId );
                 if ( defaultConnectorPersonId.HasValue )
                 {
@@ -665,13 +690,17 @@ namespace RockWeb.Blocks.Connection
         /// </summary>
         /// <param name="connectionOpportunity">The connection opportunity.</param>
         /// <param name="rockContext">The rock context.</param>
-        /// <param name="selectedCampusId">The selected campus identifier.</param>
+        /// <param name="selectedCampuses">The selected campus identifier.</param>
         /// <returns></returns>
-        private Dictionary<int, Person> GetConnectors( ConnectionOpportunity connectionOpportunity, RockContext rockContext, int? selectedCampusId )
+        private Dictionary<int, Person> GetConnectors( ConnectionOpportunity connectionOpportunity, RockContext rockContext, List<string> selectedCampuses )
         {
+            var selectedCampusIds = selectedCampuses.AsIntegerList();
+            var includeNoCampus = selectedCampuses.Exists( v => v.IsNullOrWhiteSpace() );
+
             var connectors = new Dictionary<int, Person>();
             var connectionOpportunityConnectorPersonList = new ConnectionOpportunityConnectorGroupService( rockContext ).Queryable()
-                        .Where( a => a.ConnectionOpportunityId == connectionOpportunity.Id && ( !selectedCampusId.HasValue || !a.CampusId.HasValue || a.CampusId.Value == selectedCampusId.Value ) )
+                        .Where( a => a.ConnectionOpportunityId == connectionOpportunity.Id
+                            && ( ( includeNoCampus && !a.CampusId.HasValue ) || selectedCampusIds.Contains( a.CampusId.Value ) ) )
                         .SelectMany( a => a.ConnectorGroup.Members )
                         .Where( a => a.GroupMemberStatus == GroupMemberStatus.Active )
                         .Select( a => a.Person )
@@ -680,12 +709,12 @@ namespace RockWeb.Blocks.Connection
                         .AsNoTracking()
                         .ToList();
 
-            connectionOpportunityConnectorPersonList.ForEach( p => connectors.AddOrIgnore( p.Id, p ) );
+            connectionOpportunityConnectorPersonList.ForEach( p => connectors.TryAdd( p.Id, p ) );
 
             // Add the current person as possible connector
             if ( CurrentPerson != null )
             {
-                connectors.AddOrIgnore( CurrentPerson.Id, CurrentPerson );
+                connectors.TryAdd( CurrentPerson.Id, CurrentPerson );
             }
 
             return connectors;
@@ -697,11 +726,10 @@ namespace RockWeb.Blocks.Connection
         private void GetActivityDetails()
         {
             var rockContext = new RockContext();
-            var selectedCampusId = rblBulkUpdateCampuses.SelectedValue.AsIntegerOrNull();
             var connectionOpportunity = GetConnectionOpportunity( rockContext );
 
             // Get connectors and add to dropdown list
-            var connectors = GetConnectors( connectionOpportunity, rockContext, selectedCampusId );
+            var connectors = GetConnectors( connectionOpportunity, rockContext, cblBulkUpdateCampuses.SelectedValues );
             ddlActivityConnector.Items.Clear();
             ddlActivityConnector.Items.Add( new ListItem( string.Empty, string.Empty ) );
             connectors.ToList()
@@ -753,6 +781,8 @@ namespace RockWeb.Blocks.Connection
             SetControlSelection( ddlActivityType, "Activity Type" );
             SetControlSelection( ddlActivityConnector, "Connector" );
             SetControlSelection( tbActivityNote, "Note" );
+
+            rbBulkUpdateSelectConnector.Visible = cblBulkUpdateCampuses.SelectedValues.Count == 1;
         }
 
         /// <summary>

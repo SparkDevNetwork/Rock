@@ -249,7 +249,7 @@ namespace Rock.Blocks.Core
             bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
 
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, GetCurrentPerson() );
-            mergeFields.AddOrIgnore( "CurrentPerson", GetCurrentPerson() );
+            mergeFields.TryAdd( "CurrentPerson", GetCurrentPerson() );
             mergeFields.Add( "InteractionChannel", entity );
 
             string template = GetAttributeValue( AttributeKey.DefaultTemplate );

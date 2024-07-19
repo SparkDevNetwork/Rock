@@ -15,8 +15,27 @@
                 <slot name="prepend" :isInputGroupSupported="true" />
                 <div :class="controlContainerClass">
                     <slot name="inputGroupPrepend" :isInputGroupSupported="true" />
-                    <textarea v-if="isTextarea" v-model="internalValue" :rows="rows" cols="20" :maxlength="maxLength" :id="uniqueId" class="form-control" v-bind="field"></textarea>
-                    <input v-else v-model="internalValue" :id="uniqueId" :type="type" :class="formControlClass" v-bind="field" :maxlength="maxLength" :placeholder="placeholder" />
+
+                    <textarea v-if="isTextarea"
+                              :value="internalValue"
+                              :rows="rows"
+                              cols="20"
+                              :maxlength="maxLength"
+                              :id="uniqueId"
+                              class="form-control"
+                              v-bind="field"
+                              @input="onInput"
+                              @change="onChange"></textarea>
+
+                    <input v-else :value="internalValue"
+                           :id="uniqueId"
+                           :type="type"
+                           :class="formControlClass"
+                           v-bind="field"
+                           :maxlength="maxLength"
+                           :placeholder="placeholder"
+                           @input="onInput"
+                           @change="onChange" />
                     <slot name="inputGroupAppend" :isInputGroupSupported="true" />
                 </div>
                 <slot name="append" :isInputGroupSupported="true" />
@@ -26,9 +45,8 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, useSlots } from "vue";
+    import { computed, ref, useSlots, watch } from "vue";
     import { PropType } from "vue";
-    import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import RockFormField from "./rockFormField.obs";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
     import type { ValidationRule } from "@Obsidian/Types/validationRules";
@@ -38,6 +56,11 @@
         modelValue: {
             type: String as PropType<string>,
             required: true
+        },
+        /** Internal use to track what modifier flags were applied to modelValue. */
+        modelModifiers: {
+            type: Object as PropType<Record<string, boolean>>,
+            default: () => ({})
         },
         type: {
             type: String as PropType<string>,
@@ -84,7 +107,7 @@
 
     const slots = useSlots();
 
-    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+    const internalValue = ref(props.modelValue);
     const fieldProps = useStandardRockFormFieldProps(props);
 
     const isTextarea = computed((): boolean => {
@@ -136,5 +159,43 @@
         }
 
         return rules;
+    });
+
+    /**
+     * Event handler for the input field having any modification to the value
+     * happen. This is basically called on every key press.
+     *
+     * @param e The object that describes the event.
+     */
+    function onInput(e: Event): void {
+        if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+            internalValue.value = e.target.value;
+        }
+
+        // Lazy models do not get every single key press.
+        if (!props.modelModifiers.lazy) {
+            emit("update:modelValue", internalValue.value);
+        }
+    }
+
+    /**
+     * Event handler for the input field when the changed value is "committed".
+     * This is basically called when the focus leaves the input field.
+     *
+     * @param e The object that describes the event.
+     */
+    function onChange(e: Event): void {
+        if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+            internalValue.value = e.target.value;
+        }
+
+        // Only send the update if we didn't send it in the onInput handler.
+        if (props.modelModifiers.lazy) {
+            emit("update:modelValue", internalValue.value);
+        }
+    }
+
+    watch(() => props.modelValue, () => {
+        internalValue.value = props.modelValue;
     });
 </script>

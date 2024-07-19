@@ -17,42 +17,41 @@
             <!-- Top Panel Section -->
             <template #gridHeaderPrepend>
                 <Panel :hasTitle="false">
-                    <div class="refresh-tooltip">
-                        <button class="btn btn-xs btn-default" @click.prevent="refreshData">
+                    <div class="d-flex justify-content-end">
+                        <button ref="refreshTooltip" class="btn btn-xs btn-default" @click.prevent="refreshData" :title="formatLastUpdated(lastUpdated) + '. Estimated refresh time ' + estimatedRefreshTime + 's.'">
                             {{ calculateTimeDifference(lastUpdated) }}
                             <i class="fas fa-sync-alt"></i>
                         </button>
-                        <span class="tooltip-text">
-                            {{ formatLastUpdated(lastUpdated) }} <br />
-                            Estimated Refresh Time: {{ estimatedRefreshTime }} seconds
-                        </span>
                     </div>
 
-                    <div class="filter-row">
-                        <StandardFilterDaysBack :style="'width: 26vw'"
-                                                :onUpdate:modelValue="onDateRangeSelected"
-                                                v-model="selectedDateRange"
-                                                label="Attendance Date Range" />
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <StandardFilterDaysBack :onUpdate:modelValue="onDateRangeSelected"
+                                                    v-model="selectedDateRange"
+                                                    label="Attendance Date Range" />
+                        </div>
 
-                        <DropDownList v-if="bag.showCampusFilter" :style="'width: 26vw'"
-                                      v-model="campusValue"
-                                      :items="uniqueCampuses"
-                                      :onUpdate:modelValue="onCampusSelected"
-                                      label="Campus" />
+                        <div class="col-sm-4" v-if="bag.showCampusFilter">
+                            <DropDownList v-model="campusValue"
+                                          :items="uniqueCampuses"
+                                          :onUpdate:modelValue="onCampusSelected"
+                                          label="Campus" />
+                        </div>
 
-                        <DropDownList :style="'width: 26vw'"
-                                      v-model="teamValue"
-                                      :items="uniqueGroups"
-                                      :onUpdate:modelValue="onTeamSelected"
-                                      label="Team" />
+                        <div class="col-sm-4">
+                            <DropDownList v-model="teamValue"
+                                          :items="uniqueGroups"
+                                          :onUpdate:modelValue="onTeamSelected"
+                                          label="Team" />
+                        </div>
                     </div>
 
                     <!-- Chart Section -->
-                    <div class="volunteer-monthly-giving-chart-container">
-                        <h3 class="w-100 flex">Volunteer Monthly Giving Rate</h3>
-                        <div class="volunteer-monthly-giving-chart">
-                            <div v-for="stat in teamDonationStats" :key="stat.month" class="volunteer-monthly-giving-bar-container">
-                                <div class="volunteer-monthly-giving-bar">
+                    <div class="styled-scroll">
+                        <h3 class="mb-0">Volunteer Monthly Giving Rate</h3>
+                        <div class="monthlysummarychart">
+                            <div v-for="stat in teamDonationStats" :key="stat.month">
+                                <div class="monthlysummarychart-bar">
                                     <div v-if="stat.donatedPercentage > 0" class="donated percent" :style="{ height: `${stat.donatedPercentage}%` }">
                                         <span v-if="stat.donatedPercentage >= 20">
                                             {{ stat.donatedPercentage.toFixed(1) }}%
@@ -73,41 +72,18 @@
             </template>
 
             <!-- Grid Section -->
-            <Column name="name"
-                    title="Name"
-                    sortValue="{{ row.person.lastName }} {{ row.person.nickName }}"
-                    :filter="textValueFilter"
-                    filterValue="{{ row.person.nickName }} {{ row.person.lastName }}"
-                    quickFilterValue="{{ row.person.nickName }} {{ row.person.lastName }}">
-                <template #format="{ row }">
-                    <div class="d-flex flex-fill align-items-center">
-                        <div class="mr-2 flex-shrink-0"
-                             :style="{ 'width': '24px', 'height': '24px', 'border-radius': '12px', 'background-image': `url('${row.person.photoUrl}')`, 'background-size': 'cover' }">
-                        </div>
-                        <div class="flex-grow-1">
-                            {{ row.person.nickName }} {{ row.person.lastName }}
-                        </div>
-                    </div>
-                </template>
 
-                <template #skeleton>
-                    <div class="d-flex flex-fill align-items-center">
-                        <div class="mr-2 flex-shrink-0 skeleton skeleton-xs"
-                             style="width: 24px; height: 24px; border-radius: 12px;" />
-                        <div class="skeleton skeleton-text skeleton-sm skeleton-rounded flex-grow-1" />
-                    </div>
-                </template>
-
-                <template #export="{ row }">
-                    {{ row.person.nickName }} {{ row.person.lastName }}
-                </template>
-            </Column>
+            <PersonColumn name="person"
+                          title="Person"
+                          field="person"
+                          visiblePriority="xs"
+                          width="15%" />
 
             <TextColumn v-if="bag.showCampusFilter"
                         name="campus"
                         title="Campus"
                         field="campus"
-                        visiblePriority="xs"
+                        visiblePriority="sm"
                         width="10%">
                 <template #format="{ row }">
                     {{ decodeHtml(row.campus) }}
@@ -134,12 +110,12 @@
             <Column name="givingMonths"
                     title="Giving Months"
                     field="givingMonths"
-                    :sortField="'false'"
+                    itemClass="giving-trends"
+                    :disableSort="true"
                     width="30%">
                 <template #format="{ row }">
-                    <div class="bar-chart">
-                        <div v-for="(bar, index) in getBarChart(row.givingMonths)" :key="index" class="bar" :class="bar.class">
-                            <div class="tooltip">{{ bar.month }}</div>
+                    <div class="trend-chart">
+                        <div v-for="(bar, index) in getBarChart(row.givingMonths)" :key="index" class="bar" :class="bar.class" :title="getTooltipContent(bar.month)" ref="setBarRef">
                         </div>
                     </div>
                 </template>
@@ -149,111 +125,51 @@
 </template>
 
 <style scoped>
-.volunteer-generosity-analysis .top-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.volunteer-generosity-analysis .filter-row {
-    display: flex;
-    gap: 20px;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.volunteer-generosity-analysis .chart-row,
-.grid-row {
-    margin-bottom: 20px;
-}
-
-.bar-chart {
-    display: flex;
-    align-items: end;
+/* Months Giving Chart */
+.volunteer-generosity-analysis :deep(.grid-cell.giving-trends) {
     position: relative;
-    top: 14px;
+    overflow: visible;
 }
 
+.trend-chart {
+    display: flex;
+    position: absolute;
+    bottom: 0;
+    right: var(--table-cell-padding-x);
+    left: var(--table-cell-padding-x);
+    height: initial;
+}
 
 .bar {
-    width: 20px;
+    width: 4%;
     margin: 0 2px;
     position: relative;
-}
-
-.full,
-.empty,
-.fullEmpty {
     height: 30px;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
     transition: height 0.3s ease-out;
-}
-
-.empty,
-.fullEmpty {
-    background-color: transparent;
-    border-bottom: 3px solid var(--color-info);
-}
-
-.full {
     background-color: var(--color-info);
 }
 
-.tooltip {
-    visibility: hidden;
-    width: 70px;
-    background-color: black;
-    color: #fff;
-    text-align: center;
-    font-size: smaller;
-    border-radius: 6px;
-    padding: 5px 0;
-    position: absolute;
-    z-index: 1;
-    bottom: 35px;
-    left: 50%;
-    margin-left: -35px;
-    opacity: 0;
-    transition: opacity 0.3s;
-}
-
-.bar:hover .tooltip {
-    visibility: visible;
-    opacity: 0.8;
+.empty {
+    height: 3px;
+    align-self: flex-end;
 }
 
 
-.volunteer-monthly-giving-chart-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.volunteer-monthly-giving-chart {
+.monthlysummarychart {
     display: flex;
     justify-content: space-around;
     padding: 10px 0;
     width: 100%;
+    overflow: auto;
 }
 
-.volunteer-monthly-giving-bar-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 52px;
-}
 
-.volunteer-monthly-giving-bar {
+.monthlysummarychart-bar {
     width: 52px;
-    margin: 0 4px;
-    position: relative;
     display: flex;
     flex-direction: column-reverse;
-    align-items: center;
-    height: 108px;
+    height: 110px;
+    margin: 0 4px;
 }
 
 .not-donated,
@@ -264,6 +180,7 @@
     justify-content: center;
     color: white;
     transition: height 0.3s ease-out;
+    font-size: 14px;
 }
 
 .not-donated {
@@ -273,22 +190,16 @@
 
 .donated {
     background-color: var(--color-success);
-    border-top: 1px solid #098F62;
+    border-top: 1px solid #00000035;
 }
 
 .month-label {
-    display: flex;
+    display: block;
     text-align: center;
     font-size: 0.7em;
     align-items: baseline;
     margin-top: 5px;
-}
-
-.volunteer-monthly-giving-month-labels {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    margin-bottom: 20px;
+    font-weight: 600;
 }
 
 .volunteer-monthly-giving-bar,
@@ -297,124 +208,30 @@
     height: 108px;
 }
 
-.filter-row {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-    margin-bottom: 20px;
-}
-
-.filter-row.no-campus {
-    grid-template-columns: 1fr 2fr;
-}
-
-.filter-row > * {
-    flex: 1;
-    padding: 10px;
-}
-
-.tooltip::after {
-    content: '';
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    margin-left: -5px;
-    border-width: 5px;
-    border-style: solid;
-    border-color: black transparent transparent transparent;
-}
-
-.refresh-tooltip {
-    position: relative;
-    display: flex;
-    justify-content: end;
-}
-
-.refresh-tooltip .tooltip-text {
-    background-color: #000;
-    border-radius: 6px;
-    bottom: 125%;
-    color: #fff;
-    font-size: small;
-    margin-left: -110px;
-    opacity: 0.7;
-    padding: 10px;
-    position: absolute;
-    text-align: center;
-    transition: opacity .3s;
-    visibility: hidden;
-    width: 270px;
-    z-index: 1;
-}
-
-.refresh-tooltip .tooltip-text::after {
-    content: '';
-    position: absolute;
-    bottom: -10px;
-    left: 69%;
-    transform: translateX(-50%);
-    border-width: 5px;
-    border-style: solid;
-    border-color: black transparent transparent transparent;
-}
-
-.refresh-tooltip:hover .tooltip-text {
-    visibility: visible;
-    opacity: o.7;
-}
-
-.tooltip::before {
-    content: '';
-    position: absolute;
-    bottom: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    border: 5px solid transparent;
-    border-top-color: black;
-}
-
-.grid-row,
-.volunteer-monthly-giving-chart-container {
-    width: 100%;
-}
-
-.volunteer-monthly-giving-month-labels {
-    display: flex;
-    justify-content: space-between;
-    padding: 0 10px;
-}
-
 .percent {
     display: flex;
     justify-content: center;
     align-items: center;
 }
-
-.no-data-message {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 200px;
-    text-align: center;
-}
 </style>
 
 <script setup lang="ts">
-    import { ref, reactive, watch } from "vue";
+    import { ref, reactive, watch, nextTick } from "vue";
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { VolunteerGenerosityDataBag } from "@Obsidian/ViewModels/Blocks/Reporting/VolunteerGenerosityAnalysis/volunteerGenerosityDataBag";
-    import { VolunteerGenerositySetupBag } from "@Obsidian/ViewModels/Blocks/Reporting/VolunteerGenerosityAnalysis/volunteerGenerositySetupBag";
+    import { VolunteerGenerosityInitializationBox } from "@Obsidian/ViewModels/Blocks/Reporting/VolunteerGenerosityAnalysis/volunteerGenerosityInitializationBox";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
-    import Grid, { TextColumn, textValueFilter, Column, PersonColumn, pickExistingValueFilter, dateValueFilter, DateColumn } from "@Obsidian/Controls/grid";
+    import Grid, { TextColumn, textValueFilter, Column, dateValueFilter, DateColumn, PersonColumn } from "@Obsidian/Controls/grid";
     import StandardFilterDaysBack from "@Obsidian/Controls/standardFilterDaysBack.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { PreferenceKey } from "./VolunteerGenerosityAnalyisis/types.partial";
     import Panel from "@Obsidian/Controls/panel.obs";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
     const config = useConfigurationValues<ListBlockBox<VolunteerGenerosityDataBag>>();
-    const bag = useConfigurationValues<VolunteerGenerositySetupBag>();
+    const bag = useConfigurationValues<VolunteerGenerosityInitializationBox>();
     const gridDataSource = ref<Promise<GridDataBag>>();
     const invokeBlockAction = useInvokeBlockAction();
     let gridData: GridDataBag | undefined;
@@ -431,11 +248,16 @@
     const isRefreshing = ref(false);
     const uniqueGroups = ref<Record<string, unknown>[]>([{ text: "All", value: "" }]);
     const uniqueCampuses = ref<Record<string, unknown>[]>([{ text: "All", value: "" }]);
+    const refreshTooltip = ref<HTMLElement | null>(null);
 
     // #endregion
 
     // #region Functions
 
+    /**
+     * Fetches the block preferences for the campus and team dropdowns
+     * @returns void
+     */
     const fetchBlockPreferences = async (): Promise<void> => {
         const defaultCampus = blockPreferences.getValue(PreferenceKey.Campus) || "";
         const defaultTeam = blockPreferences.getValue(PreferenceKey.Team) || "";
@@ -448,30 +270,41 @@
      * @param lastUpdatedString The last updated date
      * @returns A string representing the time difference
      */
-    const calculateTimeDifference = (lastUpdatedString: string | number | Date): string => {
-        const lastUpdatedDate = new Date(lastUpdatedString);
-        const now = new Date();
-        let diffInSeconds = Math.floor((now.getTime() - lastUpdatedDate.getTime()) / 1000);
+     const calculateTimeDifference = (lastUpdatedString: string): string => {
+        const lastUpdatedDate = RockDateTime.parseISO(lastUpdatedString);
+        const now = RockDateTime.now();
+
+        if (!lastUpdatedDate) {
+            return "Data last updated N/A";
+        }
+
+        // Convert both dates to the same time zone using the offset
+        const lastUpdatedDateUTC = lastUpdatedDate.universalDateTime;
+        const nowUTC = now.universalDateTime;
+
+        const diffInSeconds = Math.floor((nowUTC.toMilliseconds() - lastUpdatedDateUTC.toMilliseconds()) / 1000);
+
         let timeDiffStr = "Data Updated: ";
 
         if (diffInSeconds < 60) {
             timeDiffStr += `${diffInSeconds} seconds ago`;
         }
-        else if (diffInSeconds < 3600) { // Less than 1 hour
+    else if (diffInSeconds < 3600) { // Less than 1 hour
             const minutes = Math.floor(diffInSeconds / 60);
             timeDiffStr += `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
         }
-        else if (diffInSeconds < 86400) { // Less than 1 day
+    else if (diffInSeconds < 86400) { // Less than 1 day
             const hours = Math.floor(diffInSeconds / 3600);
             timeDiffStr += `${hours} hour${hours > 1 ? "s" : ""} ago`;
         }
-        else {
+    else {
             const days = Math.floor(diffInSeconds / 86400);
             timeDiffStr += `${days} day${days > 1 ? "s" : ""} ago`;
         }
 
         return timeDiffStr;
-    };
+};
+
 
     /**
      * Calculate the donation percentages for each month
@@ -533,20 +366,18 @@
      * @param lastUpdated The last updated date
      * @returns A formatted string representing the last updated date
      */
-    const formatLastUpdated = (lastUpdated): string => {
-        const lastUpdatedDate = new Date(lastUpdated);
-        const datePart = lastUpdatedDate.toLocaleDateString("en-US", { year: "numeric", month: "2-digit", day: "2-digit" });
-        let hours = lastUpdatedDate.getHours();
-        const minutes = lastUpdatedDate.getMinutes();
-        const ampm = hours >= 12 ? "PM" : "AM";
-        hours = hours % 12;
-        hours = hours ? hours : 12; // the hour '0' should be '12'
-        const minutesStr = minutes < 10 ? "0" + minutes : minutes;
-        const timePart = `${hours}:${minutesStr} ${ampm}`;
+     const formatLastUpdated = (lastUpdated): string => {
+        const lastUpdatedDate = RockDateTime.parseISO(lastUpdated);
+
+        if (!lastUpdatedDate) {
+            return "Data last updated N/A";
+        }
+
+        const datePart = lastUpdatedDate.toLocaleString({ year: "numeric", month: "2-digit", day: "2-digit" });
+        const timePart = lastUpdatedDate.toLocaleString({ hour: "numeric", minute: "2-digit", hour12: true }).replace(" ", "");
 
         return `Data last updated ${datePart} at ${timePart}`;
     };
-
 
     /**
      * @param value The selected date range value
@@ -564,7 +395,6 @@
      */
     const onCampusSelected = (value: string | string[]): void => {
         if (!value || Array.isArray(value)) {
-            console.error("Unexpected value received for campus selection");
             return;
         }
 
@@ -578,7 +408,6 @@
      */
     const onTeamSelected = (value: string | string[]): void => {
         if (!value || Array.isArray(value)) {
-            console.error("Unexpected value received for team selection");
             return;
         }
 
@@ -603,17 +432,49 @@
      * @param givenMonthsStr A comma separated string of months and years
      * @returns An array of objects representing the bar chart
      */
-    const getBarChart = (givenMonthsStr): { month: string; full: string; class: string; }[] => {
+    const getBarChart = (givenMonthsStr: string): { month: string; full: string; class: string; }[] => {
         const givenMonths = givenMonthsStr ? givenMonthsStr.split(",").map(monthYear => monthYear.trim()) : [];
         const allEmpty = givenMonths.length === 0; // Check if all months are empty
 
         return last13Months.map(displayedMonth => {
             const isFull = givenMonths.includes(displayedMonth);
             let barClass = isFull ? "full" : "empty";
-            if (allEmpty) barClass = "fullEmpty"; // Apply fullEmpty class if all months are empty
+            if (allEmpty) barClass = "empty";
 
-            return { month: displayedMonth, full: isFull, class: barClass };
+            return { month: displayedMonth, full: isFull.toString(), class: barClass };
+
         });
+    };
+
+    /**
+     * Sets the tooltip for the trend chart bars
+     * @param el The refresh button element
+     * @returns void
+     */
+    const setBarRef = (el: HTMLElement): void => {
+        if (el) {
+            tooltip(el, { html: true, sanitize: false });
+        }
+    };
+
+    /**
+     * Initializes the tooltip for the refresh button
+     * @returns void
+     */
+    const initializeTooltip = (): void => {
+        nextTick(() => {
+            if (refreshTooltip.value) {
+                tooltip(refreshTooltip.value);
+            }
+        });
+    };
+
+    /**
+     * @param month The month to display in the tooltip
+     * @returns A string representing the tooltip content
+     */
+    const getTooltipContent = (month: string): string => {
+        return `${month}`;
     };
 
     /**
@@ -668,6 +529,7 @@
 
                 await fetchBlockPreferences();
                 calculateDonationPercentages();
+                initializeTooltip();
 
                 return gridData;
             }

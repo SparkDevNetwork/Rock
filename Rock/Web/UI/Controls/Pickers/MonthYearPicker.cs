@@ -398,7 +398,8 @@ namespace Rock.Web.UI.Controls
             bool needsAutoPostBack = SelectedMonthYearChanged != null || ValueChanged != null;
             _monthDropDownList.AutoPostBack = needsAutoPostBack;
             _yearDropDownList.AutoPostBack = needsAutoPostBack;
-
+            // Don't remove Id as this is required if this control is defined as attribute Field in Bulk Update
+            writer.AddAttribute( "id", this.ClientID );
             writer.AddAttribute("class", "form-control-group");
             writer.RenderBeginTag(HtmlTextWriterTag.Div);
 

@@ -179,6 +179,14 @@ namespace Rock.Personalization.SegmentFilters
         /// </value>
         public string TermComparisonValue { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether to include descendant pages in the filter.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if child pages should be included; otherwise, <c>false</c>.
+        /// </value>
+        public bool IncludeChildPages { get; set; }
+
         #endregion Configuration
 
         /// <summary>
@@ -240,6 +248,10 @@ namespace Rock.Personalization.SegmentFilters
             if ( pageNames.Any() )
             {
                 limitedToPages = $"limited to the {pageNames.AsDelimited( ",", " and " )} pages";
+            }
+            if ( IncludeChildPages )
+            {
+                limitedToPages += " and any child pages";
             }
 
             string requestDetails = PageUrlComparisonValue.IsNotNullOrWhiteSpace() || PageReferrerComparisonValue.IsNotNullOrWhiteSpace() ? " where " : string.Empty;
@@ -305,7 +317,19 @@ namespace Rock.Personalization.SegmentFilters
 
             if ( selectedPageIds.Any() )
             {
-                pageViewsInteractionsQuery = new InteractionService( rockContext ).GetPageViewsByPage( siteIds, selectedPageIds ).Where( a => a.PersonAliasId.HasValue );
+                var pageService = new PageService( rockContext );
+                var allPageIds = selectedPageIds;
+
+                if ( IncludeChildPages )
+                {
+                    foreach ( var pageId in selectedPageIds )
+                    {
+                        var descendantPages = pageService.GetAllDescendents( pageId ).Select( p => p.Id );
+                        allPageIds = allPageIds.Union( descendantPages ).ToArray();
+                    }
+                }
+
+                pageViewsInteractionsQuery = new InteractionService( rockContext ).GetPageViewsByPage( siteIds, allPageIds ).Where( a => a.PersonAliasId.HasValue );
             }
             else
             {

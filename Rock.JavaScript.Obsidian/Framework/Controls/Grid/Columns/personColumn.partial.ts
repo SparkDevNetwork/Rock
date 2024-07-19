@@ -85,6 +85,16 @@ export default defineComponent({
         showLastNameFirst: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        columnType: {
+            type: String as PropType<string>,
+            default: "person"
+        },
+
+        detailField: {
+            type: [String, Boolean] as PropType<string | false>,
+            required: false
         }
     }
 });

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Configuration;
 using System.Data.Entity;
 using System.Linq;
 
@@ -185,11 +186,25 @@ namespace Rock.Blocks.Cms
             }
 
             var rockContext = new RockContext();
-
             Schedule schedule = null;
-            if (entity.PersistedScheduleId.HasValue)
+            string friendlyScheduleText = null;
+            bool isNamedSchedule = false;
+            string iCalContent = "";
+
+            if ( entity.PersistedScheduleId.HasValue )
             {
-                schedule = new ScheduleService(rockContext).Get(entity.PersistedScheduleId.Value);
+                schedule = new ScheduleService( rockContext ).Get( entity.PersistedScheduleId.Value );
+                if ( schedule != null && schedule.Name.IsNotNullOrWhiteSpace() )
+                {
+                    friendlyScheduleText = schedule.ToFriendlyScheduleText();
+                    iCalContent = schedule.iCalendarContent;
+                    isNamedSchedule = true;
+                }
+                else
+                {
+                    friendlyScheduleText = schedule.ToFriendlyScheduleText();
+                    iCalContent = schedule.iCalendarContent;
+                }
             }
 
             var entityBag = new PersistedDatasetBag
@@ -199,7 +214,7 @@ namespace Rock.Blocks.Cms
                 AllowManualRefresh = entity.AllowManualRefresh,
                 BuildScript = entity.BuildScript,
                 Description = entity.Description,
-                EnabledLavaCommands = entity.EnabledLavaCommands.SplitDelimitedValues(",").Select(c => new ListItemBag() { Value = c, Text = c } ).ToList(),
+                EnabledLavaCommands = entity.EnabledLavaCommands.SplitDelimitedValues( "," ).Select( c => new ListItemBag() { Value = c, Text = c } ).ToList(),
                 EntityType = entity.EntityType.ToListItemBag(),
                 ExpireDateTime = entity.ExpireDateTime,
                 IsSystem = entity.IsSystem,
@@ -211,9 +226,9 @@ namespace Rock.Blocks.Cms
                 PersistedScheduleId = entity.PersistedScheduleId,
                 RefreshInterval = entity.RefreshIntervalMinutes,
                 PersistenceType = entity.PersistedScheduleId.HasValue ? "Schedule" : ( entity.RefreshIntervalMinutes.HasValue ? "Interval" : null ),
-                PersistedScheduleType = entity.PersistedScheduleId.HasValue && (schedule != null && !schedule.Name.IsNullOrWhiteSpace()) ? "NamedSchedule" : ( entity.PersistedScheduleId.HasValue ? "Unique" : null ),
-                PersistedSchedule = schedule?.iCalendarContent,
-                FriendlyScheduleText = schedule?.FriendlyScheduleText
+                PersistedScheduleType = isNamedSchedule ? "NamedSchedule" : "Unique",
+                PersistedSchedule = iCalContent,
+                FriendlyScheduleText = friendlyScheduleText
             };
 
             if ( entity.RefreshIntervalMinutes.HasValue )
@@ -340,13 +355,28 @@ namespace Rock.Blocks.Cms
                 () => entity.Name = box.Entity.Name );
 
             box.IfValidProperty( nameof( box.Entity.PersistedScheduleId ),
-                () => entity.PersistedScheduleId = box.Entity.PersistedScheduleId );
+                () =>
+                {
+                    if ( box.Entity.PersistenceType == "Schedule" )
+                    {
+                        if ( box.Entity.PersistedScheduleType == "NamedSchedule" && box.Entity.PersistedScheduleId.HasValue )
+                        {
+                            entity.PersistedScheduleId = box.Entity.PersistedScheduleId;
+                        }
+                        else
+                        {
+                            entity.PersistedScheduleId = null;
+                        }
+                    }
+                } );
 
             if ( box.Entity.MemoryCacheDurationHours.HasValue )
             {
                 box.IfValidProperty( nameof( box.Entity.MemoryCacheDurationHours ),
                     () => entity.MemoryCacheDurationMS = ( int ) TimeSpan.FromHours( box.Entity.MemoryCacheDurationHours.Value ).TotalMilliseconds );
             }
+
+
 
             if ( box.Entity.RefreshIntervalHours.HasValue )
             {
@@ -357,6 +387,10 @@ namespace Rock.Blocks.Cms
             // Update RefreshIntervalMinutes based on Interval Type
             if ( box.Entity.PersistenceType == "Interval" && box.Entity.RefreshInterval.HasValue )
             {
+                // Ensure the schedule is removed if the PersistenceType is Interval
+                entity.PersistedSchedule = null;
+                entity.PersistedScheduleId = null;
+
                 int intervalMinutes = box.Entity.RefreshInterval.Value;
                 string intervalType = box.Entity.PersistedScheduleIntervalType ?? "Mins";
 
@@ -375,7 +409,7 @@ namespace Rock.Blocks.Cms
             }
             else
             {
-                // If the persistence type is not 'Interval', reset the interval minutes
+                // If the PersistenceType is not 'Interval', reset the interval minutes
                 entity.RefreshIntervalMinutes = null;
             }
 
@@ -388,11 +422,14 @@ namespace Rock.Blocks.Cms
         /// <returns>A list of named schedules.</returns>
         private List<ListItemBag> LoadNamedSchedules()
         {
+            var persistedDatasetScheduleCategoryGuid = Rock.SystemGuid.Category.SCHEDULE_PERSISTED_DATASETS.AsGuid();
+
             return NamedScheduleCache.All()
-                .Where(a => a.IsActive && !string.IsNullOrWhiteSpace(a.Name))
-                .Select(a => new ListItemBag { Value = a.Id.ToString(), Text = a.Name })
+                .Where( a => a.IsActive && !string.IsNullOrWhiteSpace( a.Name ) && a.CategoryId == CategoryCache.Get( persistedDatasetScheduleCategoryGuid ).Id )
+                .Select( a => new ListItemBag { Value = a.Id.ToString(), Text = a.Name } )
                 .ToList();
         }
+
         /// <summary>
         /// Gets the initial entity from page parameters or creates a new entity
         /// if page parameters requested creation.
@@ -528,28 +565,34 @@ namespace Rock.Blocks.Cms
                 }
 
                 // Manage Schedule if applicable
-                if ( scheduleBag != null && !string.IsNullOrEmpty( scheduleBag.iCalendarContent ) )
+                if ( box.Entity.PersistenceType == "Schedule" && !string.IsNullOrEmpty( scheduleBag.iCalendarContent ) )
                 {
                     var scheduleService = new ScheduleService( rockContext );
                     Schedule schedule = null;
 
-                    if ( entity.PersistedScheduleId.HasValue )
+                    if ( box.Entity.PersistedScheduleType == "NamedSchedule" )
                     {
-                        schedule = scheduleService.Get( entity.PersistedScheduleId.Value );
+                        // If it's a Named Schedule, retrieve the schedule using the PersistedScheduleId
+                        if ( box.Entity.PersistedScheduleId.HasValue )
+                        {
+                            var namedSchedule = NamedScheduleCache.Get( box.Entity.PersistedScheduleId.Value );
+                            if ( namedSchedule != null )
+                            {
+                                box.Entity.FriendlyScheduleText = namedSchedule.FriendlyScheduleText;
+                            }
+                        }
                     }
-
-                    if ( schedule == null )
+                    else
                     {
+                        // If it's a Unique Schedule, create a new schedule
                         schedule = new Schedule
                         {
                             iCalendarContent = scheduleBag.iCalendarContent
                         };
                         scheduleService.Add( schedule );
+                        rockContext.SaveChanges();
                         entity.PersistedScheduleId = schedule.Id;
-                    }
-                    else
-                    {
-                        schedule.iCalendarContent = scheduleBag.iCalendarContent;
+                        box.Entity.FriendlyScheduleText = schedule.ToFriendlyScheduleText();
                     }
                 }
 

@@ -28,13 +28,17 @@
             type: Object as PropType<Record<Guid, unknown>>,
             required: true
         },
-        isKnownFamilyMember: {
+        disabled: {
             type: Boolean as PropType<boolean>,
-            required: true
+            default: false
         }
     });
 
     const registrationEntryState = use(CurrentRegistrationEntryState);
+
+    // #region Values
+
+    // #endregion
 
     // #region Computed Values
 
@@ -99,18 +103,17 @@
 
     const fieldControlComponentProps = computed(() => {
         const componentProps: Record<string, unknown> = {
-            rules: props.field.isRequired ? "required" : ""
+            rules: props.field.isRequired ? "required" : "",
+            disabled: props.disabled
         };
 
         switch (props.field.personFieldType) {
             case RegistrationPersonFieldType.FirstName:
                 componentProps.label = "First Name";
-                componentProps.disabled = props.isKnownFamilyMember;
                 break;
 
             case RegistrationPersonFieldType.LastName:
                 componentProps.label = "Last Name";
-                componentProps.disabled = props.isKnownFamilyMember;
                 break;
 
             case RegistrationPersonFieldType.MiddleName:

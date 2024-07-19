@@ -38,7 +38,7 @@
                     help="Lava Template to use for building JSON that will be used as the cached dataset object."
                     theme="rock"
                     mode="lava"
-                    :editorHeight="200"
+                    :editorHeight="300"
                     :disabled="isSystem" />
 
         <LavaCommandPicker v-model="enabledLavaCommands"
@@ -124,7 +124,7 @@
                                   label="Entity Type"
                                   help="Set this to indicate which EntityType the JSON object should be associated with. This will be used by the PersistedDataset Lava Filter when entity related options such as 'AppendFollowing' are specified.'"
                                   :multiple="false"
-                                  :includeGlobalOption="false"
+                                  :showBlankItem="true"
                                   :disabled="isSystem" />
 
                 <CheckBox v-model="allowManualRefresh"
@@ -280,10 +280,11 @@
             expireDateTime: expiresOn.value,
             persistedScheduleIntervalType: typeOfInterval.value,
             persistenceType: isPersistenceEnabled.value ? persistenceType.value : null,
-            persistedScheduleType: isPersistenceEnabled.value ? persistedScheduleType.value : null,
+            persistedScheduleType: isPersistenceEnabled.value ? typeOfSchedule.value : null,
             refreshInterval: isPersistenceEnabled.value && typeOfPersistence.value === "Interval" ? intervalMinutes.value : null,
-            persistedSchedule: isPersistenceEnabled.value && typeOfPersistence.value === "Schedule" ? persistedSchedule.value : null,
-            persistedScheduleId: isPersistenceEnabled.value && typeOfPersistence.value === "Schedule" && selectedNamedSchedule.value ? parseInt(selectedNamedSchedule.value) : null
+            persistedSchedule: isPersistenceEnabled.value && typeOfPersistence.value === "Schedule" && typeOfSchedule.value === "Unique" ? persistedSchedule.value : null,
+            persistedScheduleId: isPersistenceEnabled.value && typeOfPersistence.value === "Schedule" && typeOfSchedule.value === "NamedSchedule" && selectedNamedSchedule.value ? parseInt(selectedNamedSchedule.value) : null,
+            friendlyScheduleText: props.modelValue.friendlyScheduleText,
         };
         emit("update:modelValue", newValue);
     }

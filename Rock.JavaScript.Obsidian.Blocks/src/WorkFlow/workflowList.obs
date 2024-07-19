@@ -1,0 +1,414 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="!config.options?.canView" alertType="warning">
+        <strong>Note</strong> You are not authorized to view this workflow type.
+    </NotificationBox>
+
+    <Grid v-else
+          :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          :itemTerm="config.options?.itemTerm ?? 'Workflow'"
+          :entityTypeGuid="EntityType.Workflow"
+          stickyHeader
+          liveUpdates
+          gridSettings
+          :gridSettingsActive="hasSettingsFilters"
+          @gridSettingsClick="isGridSettingsVisible = true"
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          @selectItem="onSelectItem"
+          @selectedKeysChanged="onSelectedKeysChanged">
+        <SelectColumn />
+
+        <TextColumn v-if="config.options?.isWorkflowIdColumnVisible"
+                    name="workflowId"
+                    title="Id"
+                    field="workflowId"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <TextColumn name="name"
+                    title="Name"
+                    field="name"
+                    :filter="textValueFilter"
+                    visiblePriority="xs"
+                    width="35%" />
+
+        <PersonColumn name="initiator"
+                      title="Initiated By"
+                      field="initiator"
+                      :hideAvatar="true"
+                      :detailField="false"
+                      :showAsLink="true"
+                      :filter="pickExistingValueFilter"
+                      :filterValue="getInitiatorFilterValue"
+                      :quickFilterValue="getInitiatorFilterValue"
+                      visiblePriority="md" />
+
+        <Column name="activities"
+                title="Activities"
+                field="activities"
+                :filterValue="getActivitiesRowFilterValue"
+                :quickFilterValue="getActivitiesRowFilterValue"
+                :filter="textValueFilter"
+                visiblePriority="md">
+            <template #format="{ row }">
+                <div class="text-lg">
+                    <div v-for="activity in row.activities">
+                        {{ activity }}
+                    </div>
+                </div>
+            </template>
+
+            <template #skeleton>
+                <div class="skeleton skeleton-text skeleton-rounded" />
+            </template>
+        </Column>
+
+        <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []"
+                          visiblePriority="md" />
+
+        <DateTimeColumn name="createdDateTime"
+                        title="Created"
+                        field="createdDateTime"
+                        :filter="dateValueFilter"
+                        visiblePriority="md"
+                        itemClass="grid-item-pull-left"
+                        width="150">
+            <template #format="{ row }">
+                <span>{{ getElapsed(row.createdDateTime) }}</span>
+            </template>
+        </DateTimeColumn>
+
+        <Column name="status"
+                title="Status"
+                field="status"
+                :filterValue="getStatusRowFilterValue"
+                :quickFilterValue="getStatusRowFilterValue"
+                :filter="pickExistingValueFilter"
+                visiblePriority="xs">
+            <template #format="{ row }">
+                <div class="text-lg">
+                    <span class='label label-info'>{{ row.status }}</span>
+                </div>
+            </template>
+
+            <template #skeleton>
+                <div class="skeleton skeleton-text skeleton-rounded" />
+            </template>
+        </Column>
+
+        <Column name="isCompleted"
+                title="State"
+                field="isCompleted"
+                :filterValue="getStateRowFilterValue"
+                :quickFilterValue="getStateRowFilterValue"
+                :filter="pickExistingValueFilter"
+                visiblePriority="md">
+            <template #format="{ row }">
+                <div class="text-lg">
+                    <span v-if="row.isCompleted" class='label label-default'>Completed</span>
+                    <span v-else class='label label-success'>Active</span>
+                </div>
+            </template>
+
+            <template #skeleton>
+                <div class="skeleton skeleton-text skeleton-rounded" />
+            </template>
+        </Column>
+
+        <Column v-if="config.options?.canView"
+                name="view"
+                itemClass="grid-columncommand"
+                width="52"
+                visiblePriority="md">
+            <template #format="{ row }">
+                <RockButton @click="onSelectItem(row)" :btnType="BtnType.Default" :btnSize="BtnSize.Small">
+                    <i class="fa fa-file-text-o"></i>
+                </RockButton>
+            </template>
+        </Column>
+
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+
+        <template #gridFooterAppend>
+            <div v-if="isDeleteButtonVisible" class="d-flex" style="padding: var(--table-cell-padding-y) 52px var(--table-cell-padding-y) var(--table-cell-padding-x);">
+                <RockButton @click="onDeleteButtonClick" :btnType="BtnType.Default" :btnSize="BtnSize.ExtraSmall" class="mr-2">
+                    Delete
+                </RockButton>
+            </div>
+        </template>
+    </Grid>
+
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible" />
+
+    <Modal v-model="isInformationModalOpen" title="Information" saveText="Ok" @save="onOkClick" cancelText="" :isCloseButtonHidden="true" :clickBackdropToClose="false">
+        <p>The Workflow items are scheduled to be deleted.</p>
+    </Modal>
+</template>
+
+<style>
+.grid-item-pull-left {
+    flex-direction: column;
+    align-items: end;
+}
+</style>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { AttributeColumns, PersonColumn, TextColumn, DeleteColumn, SelectColumn, Column, DateTimeColumn, pickExistingValueFilter, textValueFilter, dateValueFilter } from "@Obsidian/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { WorkflowListOptionsBag } from "@Obsidian/ViewModels/Blocks/Workflow/WorkflowList/workflowListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { GridSettingsOptions, NavigationUrlKey, PreferenceKey } from "./WorkflowList/types.partial";
+    import { computed, reactive, ref, watch } from "vue";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+    import GridSettingsModal from "./WorkflowList/gridSettingsModal.partial.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { IGridState } from "@Obsidian/Types/Controls/grid";
+    import { Guid } from "@Obsidian/Types";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+
+    const config = useConfigurationValues<ListBlockBox<WorkflowListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+    const selectedKeys = ref<string[]>([]);
+    const isDeleteButtonVisible = ref<boolean>(false);
+    const isInformationModalOpen = ref<boolean>(false);
+
+    const isGridSettingsVisible = ref(false);
+    const gridSettings = ref<GridSettingsOptions>({
+        name: preferences.getValue(makeKeyUniqueToWorkflowType(PreferenceKey.FilterName)),
+        initiator: JSON.parse(preferences.getValue(makeKeyUniqueToWorkflowType(PreferenceKey.FilterInitiator)) || "{}"),
+        status: preferences.getValue(makeKeyUniqueToWorkflowType(PreferenceKey.FilterStatus)),
+        activatedDateRangeLowerValue: preferences.getValue(makeKeyUniqueToWorkflowType(PreferenceKey.FilterActivatedDateRangeLowerValue)),
+        activatedDateRangeUpperValue: preferences.getValue(makeKeyUniqueToWorkflowType(PreferenceKey.FilterActivatedDateRangeUpperValue)),
+        completedDateRangeLowerValue: preferences.getValue(makeKeyUniqueToWorkflowType(PreferenceKey.FilterCompletedDateRangeLowerValue)),
+        completedDateRangeUpperValue: preferences.getValue(makeKeyUniqueToWorkflowType(PreferenceKey.FilterCompletedDateRangeUpperValue)),
+        state: JSON.parse(preferences.getValue(makeKeyUniqueToWorkflowType(PreferenceKey.FilterState)) || '["Active","Completed"]'),
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** `true` if the grid settings is performing any filtering. */
+    const hasSettingsFilters = computed((): boolean => {
+        return !!gridSettings.value.name
+            || !!gridSettings.value.initiator?.value
+            || !!gridSettings.value.status
+            || !!gridSettings.value.activatedDateRangeLowerValue
+            || !!gridSettings.value.activatedDateRangeUpperValue
+            || !!gridSettings.value.completedDateRangeLowerValue
+            || !!gridSettings.value.completedDateRangeUpperValue
+            || (!!gridSettings.value.state && gridSettings.value.state.length > 0);
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            isDeleteButtonVisible.value = !!result.data.rows && result.data.rows?.length > 0;
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    /**
+    * Gets the filter value text to use for the activities column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getActivitiesRowFilterValue(row: Record<string, unknown>): string {
+        let filterValue = "";
+        let activities = row["activities"] as string[];
+
+        for (const activity of activities) {
+            filterValue += activity;
+        }
+
+        return filterValue;
+    }
+
+    /**
+    * Gets the filter value text to use for the status column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getStatusRowFilterValue(row: Record<string, unknown>): string {
+        return row["status"] as string;
+    }
+
+    /**
+    * Gets the filter value text to use for the state column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getStateRowFilterValue(row: Record<string, unknown>): string {
+        const isCompleted = row.isCompleted as boolean;
+        return isCompleted ? "Completed" : "Active";
+    }
+
+    /**
+    * Gets the filter value text to use for the initiator column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getInitiatorFilterValue(row: Record<string, unknown>): string {
+        const person = row["initiator"] as PersonFieldBag;
+        return !person ? "" : `${person.nickName} ${person.lastName}`;
+    }
+
+    /**
+    * Makes the key unique to the current workflowType.
+    *
+    * @param row The preference key.
+    */
+    function makeKeyUniqueToWorkflowType(key: string): string {
+        if (config.options?.workflowTypeIdKey) {
+            return `${config.options?.workflowTypeIdKey}-${key}`;
+        }
+        return key;
+    }
+
+    function getElapsed(date: string): string {
+        return RockDateTime.parseISO(date)?.localDateTime.humanizeElapsed() ?? "";
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            const url = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+            window.location.href = url;
+        }
+    }
+
+    /**
+     * Called when a row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete workflow.");
+        }
+    }
+
+    /**
+     * Called when the Add button has been clicked by the indivual.
+     */
+    function onAddItem(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.EntryPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.EntryPage].replace("((workflowTypeKey))", config.options?.workflowTypeIdKey ?? "");
+        }
+    }
+
+    /**
+    * Called when the individual changes which rows are selected.
+    *
+    * @param state The state object that describes the grid.
+    */
+    function onSelectedKeysChanged(state: IGridState): void {
+        selectedKeys.value = [...state.selectedKeys];
+    }
+
+    /**
+    * Called when the individual clicks the Unfollow button, sends a request to the server
+    * with the selected person's to be unfollowed.
+    */
+    async function onDeleteButtonClick(): Promise<void> {
+        let selectedGuids: string[] = [];
+        if (selectedKeys.value.length > 0) {
+
+            for (const key of selectedKeys.value) {
+                const row = gridData?.rows?.find(r => r.idKey === key);
+                if (row) {
+                    const guid = row["guid"] as Guid;
+                    selectedGuids.push(guid);
+                }
+            }
+
+            if (selectedGuids.length > 0) {
+                const result = await invokeBlockAction("DeleteWorkflows", {
+                    workflowGuids: selectedGuids
+                });
+
+                if (result.isSuccess) {
+                    isInformationModalOpen.value = true;
+                }
+            }
+        }
+        else {
+            await alert("At least one workflow must be selected.");
+        }
+    }
+
+    /**
+     * Called when the ok button on the information is clicked after multiple items are deleted.
+     */
+    function onOkClick(): void {
+        gridDataSource.value = loadGridData();
+        isInformationModalOpen.value = false;
+    }
+
+    // #endregion
+
+    watch(gridSettings, async () => {
+        preferences.setValue(makeKeyUniqueToWorkflowType(PreferenceKey.FilterName), gridSettings.value?.name ?? "");
+        preferences.setValue(makeKeyUniqueToWorkflowType(PreferenceKey.FilterInitiator), JSON.stringify(gridSettings.value.initiator));
+        preferences.setValue(makeKeyUniqueToWorkflowType(PreferenceKey.FilterStatus), gridSettings.value?.status ?? "");
+        preferences.setValue(makeKeyUniqueToWorkflowType(PreferenceKey.FilterActivatedDateRangeLowerValue), gridSettings.value.activatedDateRangeLowerValue ?? "");
+        preferences.setValue(makeKeyUniqueToWorkflowType(PreferenceKey.FilterActivatedDateRangeUpperValue), gridSettings.value.activatedDateRangeUpperValue ?? "");
+        preferences.setValue(makeKeyUniqueToWorkflowType(PreferenceKey.FilterCompletedDateRangeLowerValue), gridSettings.value.completedDateRangeLowerValue ?? "");
+        preferences.setValue(makeKeyUniqueToWorkflowType(PreferenceKey.FilterCompletedDateRangeUpperValue), gridSettings.value.completedDateRangeUpperValue ?? "");
+        preferences.setValue(makeKeyUniqueToWorkflowType(PreferenceKey.FilterState), JSON.stringify(gridSettings.value.state));
+
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
+    });
+
+    gridDataSource.value = loadGridData();
+</script>

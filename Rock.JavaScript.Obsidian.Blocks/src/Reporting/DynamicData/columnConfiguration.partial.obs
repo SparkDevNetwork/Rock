@@ -1,0 +1,191 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockLabel>
+        {{ name }}
+    </RockLabel>
+    <div class="row">
+        <div class="col-md-2">
+            <div class="form-group">
+                <DropDownList v-model="columnType"
+                              :items="columnTypeItems"
+                              :showBlankItem="false"
+                              :disableLabel="true"
+                              :disabled="disabled" />
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <DropDownList v-model="visiblePriority"
+                              :items="visiblePriorityItems"
+                              :disableLabel="true"
+                              blankValue="Priority"
+                              :disabled="disabled" />
+            </div>
+            <div class="form-group">
+                <TextBox v-model="width"
+                         :disableLabel="true"
+                         placeholder="Width"
+                         :rules="widthPattern"
+                         :disabled="disabled" />
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <CheckBox v-model="enableFiltering"
+                          label=""
+                          text="Enable Filtering"
+                          :disabled="disabled" />
+
+                <CheckBox v-model="hideFromGrid"
+                          label=""
+                          text="Hide from Grid"
+                          :disabled="disabled" />
+
+                <CheckBox v-model="excludeFromExport"
+                          label=""
+                          text="Exclude from Export"
+                          :disabled="disabled" />
+
+                <CheckBox v-if="showLastNameFirstCheckbox"
+                          v-model="personShowLastNameFirst"
+                          label=""
+                          text="Last Name First"
+                          :disabled="disabled" />
+            </div>
+        </div>
+    </div>
+    <hr>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
+    import { ValidationResult } from "@Obsidian/ValidationRules";
+    import { ColumnConfigurationBag } from "@Obsidian/ViewModels/Blocks/Reporting/DynamicData/columnConfigurationBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        config: {
+            type: Object as PropType<ColumnConfigurationBag>,
+            required: true
+        },
+
+        columnTypeItems: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        visiblePriorityItems: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    // #region Values
+
+    const name = ref(props.config.splitCaseName);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const columnType = computed<string>({
+        get() {
+            return props.config.columnType ?? "";
+        },
+        set(newValue: string) {
+            props.config.columnType = newValue;
+        }
+    });
+
+    const visiblePriority = computed<string>({
+        get() {
+            return props.config.visiblePriority ?? "";
+        },
+        set(newValue: string) {
+            props.config.visiblePriority = newValue;
+        }
+    });
+
+    const width = computed<string>({
+        get() {
+            return props.config.width ?? "";
+        },
+        set(newValue: string) {
+            props.config.width = newValue?.trim();
+        }
+    });
+
+    const enableFiltering = computed<boolean>({
+        get() {
+            return props.config.enableFiltering;
+        },
+        set(newValue: boolean) {
+            props.config.enableFiltering = newValue;
+        }
+    });
+
+    const hideFromGrid = computed<boolean>({
+        get() {
+            return props.config.hideFromGrid;
+        },
+        set(newValue: boolean) {
+            props.config.hideFromGrid = newValue;
+        }
+    });
+
+    const excludeFromExport = computed<boolean>({
+        get() {
+            return props.config.excludeFromExport;
+        },
+        set(newValue: boolean) {
+            props.config.excludeFromExport = newValue;
+        }
+    });
+
+    const personShowLastNameFirst = computed<boolean>({
+        get() {
+            return props.config.personShowLastNameFirst;
+        },
+        set(newValue: boolean) {
+            props.config.personShowLastNameFirst = newValue;
+        }
+    });
+
+    const showLastNameFirstCheckbox = computed((): boolean => {
+        return columnType.value === "person";
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Ensures the column's width value is in the expected format.
+     *
+     * @param value The width value.
+     */
+    function widthPattern(value: unknown): ValidationResult {
+        if (!value) {
+            return true;
+        }
+
+        if (/^\d*\.?\d+ *%?$/.test(String(value)?.trim())) {
+            return true;
+        }
+
+        const name = props.config?.splitCaseName;
+        return `${(isNullOrWhiteSpace(name) ? "Width" : `${name} column width`)} must be a number (for pixels) or end in %`;
+    }
+
+    // #endregion Functions
+</script>

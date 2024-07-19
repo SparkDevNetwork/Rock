@@ -198,6 +198,8 @@ namespace Rock.Jobs
                         {
                             // set era attribute to true
                             var eraAttributeValue = attributeValueService.Queryable().Where( v => v.AttributeId == eraAttribute.Id && v.EntityId == person.Id ).FirstOrDefault();
+                            var isCurrentlyEra = eraAttributeValue?.ValueAsBoolean ?? false;
+
                             if ( eraAttributeValue == null )
                             {
                                 eraAttributeValue = new AttributeValue();
@@ -209,14 +211,16 @@ namespace Rock.Jobs
 
                             // add start date
                             var eraStartAttributeValue = attributeValueService.Queryable().Where( v => v.AttributeId == eraStartAttribute.Id && v.EntityId == person.Id ).FirstOrDefault();
-                            if (eraStartAttributeValue == null )
+                            if ( eraStartAttributeValue == null )
                             {
                                 eraStartAttributeValue = new AttributeValue();
                                 eraStartAttributeValue.EntityId = person.Id;
                                 eraStartAttributeValue.AttributeId = eraStartAttribute.Id;
                                 attributeValueService.Add( eraStartAttributeValue );
                             }
-                            eraStartAttributeValue.Value = RockDateTime.Now.ToISO8601DateString();
+                            // There can be some circumstances where a child family member may already be eRa whiles the adult family member is not,
+                            // thus we check if the current family member is already eRa, if they are their eRa date and history is not updated.
+                            eraStartAttributeValue.Value = !isCurrentlyEra || !eraStartAttributeValue.ValueAsDateTime.HasValue ? RockDateTime.Now.ToISO8601DateString() : eraStartAttributeValue.Value;
 
                             // delete end date if it exists
                             var eraEndAttributeValue = attributeValueService.Queryable().Where( v => v.AttributeId == eraEndAttribute.Id && v.EntityId == person.Id ).FirstOrDefault();
@@ -226,7 +230,7 @@ namespace Rock.Jobs
                             }
 
                             // add a history record
-                            if ( personAnalyticsCategoryId != 0 && personEntityTypeId != 0 && attributeEntityTypeId != 0 && eraAttributeId != 0 )
+                            if ( personAnalyticsCategoryId != 0 && personEntityTypeId != 0 && attributeEntityTypeId != 0 && eraAttributeId != 0 && !isCurrentlyEra )
                             {
                                 History historyRecord = new History();
                                 historyService.Add( historyRecord );

@@ -63,15 +63,26 @@
     <Compile Include="Cms\AdaptiveMessageAdaptationDetail.cs" />
     <Compile Include="Cms\AdaptiveMessageDetail.cs" />
     <Compile Include="Cms\AdaptiveMessageList.cs" />
+    <Compile Include="Cms\LayoutList.cs" />
     <Compile Include="Cms\PageRouteList.cs" />
     <Compile Include="Core\SignatureDocumentDetail.cs" />
     <Compile Include="Core\SignatureDocumentList.cs" />
     <Compile Include="Crm\PersonDuplicateList.cs" />
+    <Compile Include="Communication\NcoaProcess.cs" />
+    <Compile Include="Security\AuthScopeList.cs" />
+    <Compile Include="Security\AuthClientList.cs" />
+    <Compile Include="Core\PersonSignalList.cs" />
+    <Compile Include="Crm\PersonDetail\GivingConfiguration.cs" />
+    <Compile Include="Finance\FinancialPledgeList.cs" />
+    <Compile Include="Security\RestKeyList.cs" />
     <Compile Include="Crm\PersonMergeRequestList.cs" />
+    <Compile Include="Event\RegistrationInstanceLinkageList.cs" />
     <Compile Include="Event\RegistrationInstanceFeeList.cs" />
     <Compile Include="Core\RestControllerList.cs" />
+    <Compile Include="Cms\PersistedDatasetList.cs" />
     <Compile Include="Cms\SiteList.cs" />
     <Compile Include="Core\AuditList.cs" />
+    <Compile Include="Communication\SystemCommunicationList.cs" />
     <Compile Include="Core\BinaryFileDetail.cs" />
     <Compile Include="Core\CampusList.cs" />
     <Compile Include="Communication\EmailPreferenceEntry.cs" />
@@ -85,8 +96,10 @@
     <Compile Include="Cms\LavaShortcodeDetail.cs" />
     <Compile Include="Engagement\AchievementAttemptDetail.cs" />
     <Compile Include="Engagement\AchievementTypeList.cs" />
+    <Compile Include="CheckIn\AttendanceList.cs" />
     <Compile Include="Engagement\ConnectionTypeList.cs" />
     <Compile Include="Event\RegistrationEntry\ExtensionMethods.cs" />
+    <Compile Include="Finance\BenevolenceRequestList.cs" />
     <Compile Include="Finance\FinancialBatchList.cs" />
     <Compile Include="Engagement\StepProgramDetail.cs" />
     <Compile Include="Finance\FinancialGatewayDetail.cs" />
@@ -94,8 +107,11 @@
     <Compile Include="Finance\BusinessContactList.cs" />
     <Compile Include="Finance\SavedAccountList.cs" />
     <Compile Include="Finance\FinancialPledgeDetail.cs" />
-    <Compile Include="Fundraising\FundraisingDonationList.cs" />
+    <Compile Include="Finance\FundraisingDonationList.cs" />
     <Compile Include="Group\Scheduling\GroupScheduleToolbox.cs" />
+    <Compile Include="Prayer\PrayerCommentList.cs" />
+    <Compile Include="Prayer\PrayerRequestList.cs" />
+    <Compile Include="Reporting\DynamicData.cs" />
     <Compile Include="Reporting\MergeTemplateList.cs" />
     <Compile Include="Reporting\ReportList.cs" />
     <Compile Include="Reporting\VolunteerGenerosityAnalysis.cs" />
@@ -189,6 +205,7 @@
     <Compile Include="WorkFlow\FormBuilder\FormTemplateDetail.cs" />
     <Compile Include="WorkFlow\FormBuilder\Utility.cs" />
     <Compile Include="WorkFlow\WorkflowTriggerDetail.cs" />
+    <Compile Include="WorkFlow\WorkflowList.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
@@ -207,9 +224,17 @@
       <Project>{8820CD93-70EE-496D-B17B-0C4C68DD4957}</Project>
       <Name>Rock.Lava.Shared</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Rock.NCOA\Rock.NCOA.csproj">
+      <Project>{6fc5781e-c9fc-41e9-87fb-2a9ca8aa2088}</Project>
+      <Name>Rock.NCOA</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rock.Rest\Rock.Rest.csproj">
       <Project>{ADD1EDD0-A4CB-4E82-B6AD-6AD1D556DEAE}</Project>
       <Name>Rock.Rest</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Rock.Version\Rock.Version.csproj">
+      <Project>{6fe0930c-6832-4c2f-8a76-d4e4a2d80ddf}</Project>
+      <Name>Rock.Version</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rock.ViewModels\Rock.ViewModels.csproj">
       <Project>{05baaf85-9c53-4ccd-a535-036427b0df72}</Project>

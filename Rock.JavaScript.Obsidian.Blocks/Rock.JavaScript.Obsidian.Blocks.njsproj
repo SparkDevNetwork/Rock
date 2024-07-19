@@ -42,6 +42,7 @@
     <Content Include="src\Cms\lavaShortcodeDetail.obs" />
     <Content Include="src\Cms\LavaShortcodeDetail\editPanel.partial.obs" />
     <Content Include="src\Cms\LavaShortcodeDetail\viewPanel.partial.obs" />
+    <Content Include="src\Cms\layoutList.obs" />
     <Content Include="src\Cms\libraryViewer.obs" />
     <Content Include="src\Cms\LibraryViewer\itemBadgeList.partial.obs" />
     <Content Include="src\Cms\LibraryViewer\itemDownloadsLabel.partial.obs" />
@@ -52,6 +53,9 @@
     <Content Include="src\Cms\LibraryViewer\itemStampList.partial.obs" />
     <Content Include="src\Cms\pageRouteList.obs" />
     <Content Include="src\Core\auditList.obs" />
+    <Content Include="src\Communication\systemCommunicationList.obs" />
+    <Content Include="src\Security\authScopeList.obs" />
+    <Content Include="src\Security\authClientList.obs" />
     <Content Include="src\Core\binaryFileDetail.obs" />
     <Content Include="src\Core\BinaryFileDetail\editPanel.partial.obs" />
     <Content Include="src\Core\BinaryFileDetail\viewPanel.partial.obs" />
@@ -60,6 +64,9 @@
     <Content Include="src\Core\CategoryDetail\editPanel.partial.vue" />
     <Content Include="src\Core\CategoryDetail\viewPanel.partial.vue" />
     <Content Include="src\Core\definedValueList.obs" />
+    <Content Include="src\Core\personSignalList.obs" />
+    <Content Include="src\Finance\financialPledgeList.obs" />
+    <Content Include="src\Security\restKeyList.obs" />
     <Content Include="src\Crm\personMergeRequestList.obs" />
     <Content Include="src\Core\followingEventTypeDetail.obs" />
     <Content Include="src\Core\FollowingEventTypeDetail\editPanel.partial.obs" />
@@ -109,12 +116,14 @@
     <Content Include="src\Engagement\streakTypeExclusionDetail.obs" />
     <Content Include="src\Engagement\StreakTypeExclusionDetail\editPanel.partial.obs" />
     <Content Include="src\Engagement\StreakTypeExclusionDetail\viewPanel.partial.obs" />
+    <Content Include="src\Event\attendanceList.obs" />
     <Content Include="src\Event\eventCalendarDetail.obs" />
     <Content Include="src\Event\EventCalendarDetail\editPanel.partial.obs" />
     <Content Include="src\Event\EventCalendarDetail\viewPanel.partial.obs" />
     <Content Include="src\Event\eventItemDetail.obs" />
     <Content Include="src\Event\EventItemDetail\editPanel.partial.obs" />
     <Content Include="src\Event\EventItemDetail\viewPanel.partial.obs" />
+    <Content Include="src\Event\registrationInstanceLinkageList.obs" />
     <Content Include="src\Event\registrationEntry.obs" />
     <Content Include="src\Event\RegistrationEntry\costSummary.partial.obs" />
     <Content Include="src\Event\RegistrationEntry\discountCodeForm.partial.obs" />
@@ -131,6 +140,7 @@
     <Content Include="src\Event\RegistrationEntry\sessionRenewal.partial.obs" />
     <Content Include="src\Event\RegistrationEntry\success.partial.obs" />
     <Content Include="src\Event\RegistrationEntry\summary.partial.obs" />
+    <Content Include="src\Finance\benevolenceRequestList.obs" />
     <Content Include="src\Finance\businessDetail.obs" />
     <Content Include="src\Finance\BusinessDetail\editPanel.partial.obs" />
     <Content Include="src\Finance\BusinessDetail\viewPanel.partial.obs" />
@@ -141,7 +151,7 @@
     <Content Include="src\Finance\financialGatewayDetail.obs" />
     <Content Include="src\Finance\FinancialGatewayDetail\editPanel.partial.obs" />
     <Content Include="src\Finance\FinancialGatewayDetail\viewPanel.partial.obs" />
-    <Content Include="src\Fundraising\fundraisingDonationList.obs" />
+    <Content Include="src\Finance\fundraisingDonationList.obs" />
     <Content Include="src\Finance\savedAccountList.obs" />
     <Content Include="src\Finance\businessContactList.obs" />
     <Content Include="src\Group\Scheduling\groupScheduler.obs" />
@@ -178,6 +188,9 @@
     <Content Include="src\Group\groupRegistration.obs" />
     <Content Include="src\Group\GroupRegistration\editPanel.partial.obs" />
     <Content Include="src\Group\GroupRegistration\viewPanel.partial.obs" />
+    <Content Include="src\Reporting\dynamicData.obs" />
+    <Content Include="src\Reporting\dynamicDataCustomSettings.obs" />
+    <Content Include="src\Reporting\DynamicData\columnConfiguration.partial.obs" />
     <Content Include="src\Reporting\mergeTemplateList.obs" />
     <Content Include="src\Reporting\reportList.obs" />
     <Content Include="src\Security\ConfirmAccount.obs" />
@@ -209,6 +222,7 @@
     <Content Include="src\Event\InteractiveExperiences\InteractiveExperienceDetail\actionsPanel.partial.vue" />
     <Content Include="src\Event\InteractiveExperiences\InteractiveExperienceDetail\editPanel.partial.vue" />
     <Content Include="src\Event\InteractiveExperiences\InteractiveExperienceDetail\viewPanel.partial.vue" />
+    <Content Include="src\Communication\ncoaProcess.obs" />
     <Content Include="src\Communication\snippetDetail.obs" />
     <Content Include="src\Communication\SnippetDetail\editPanel.partial.obs" />
     <Content Include="src\Communication\SnippetDetail\viewPanel.partial.obs" />
@@ -284,6 +298,7 @@
     <Content Include="src\Utility\smsTestTransport.obs" />
     <Content Include="src\Utility\SmsTestTransport\attachment.partial.obs" />
     <Content Include="src\WorkFlow\workflowTriggerDetail.obs" />
+    <Content Include="src\WorkFlow\workflowList.obs" />
     <Content Include="tsconfig.json" />
   </ItemGroup>
   <ItemGroup>
@@ -299,6 +314,7 @@
     <Folder Include="src\Cms\ContentCollectionView\" />
     <Folder Include="src\Cms\LavaShortcodeDetail\" />
     <Folder Include="src\Cms\LayoutDetail\" />
+    <Folder Include="src\Cms\LayoutList\" />
     <Folder Include="src\Cms\LibraryViewer\" />
     <Folder Include="src\Cms\MediaAccountDetail\" />
     <Folder Include="src\Cms\MediaFolderDetail\" />
@@ -309,11 +325,16 @@
     <Folder Include="src\Cms\PersonalLinkSectionDetail\" />
     <Folder Include="src\Cms\SiteDetail\" />
     <Folder Include="src\Communication\" />
+    <Folder Include="src\Communication\CommunicationList\" />
+    <Folder Include="src\Communication\NcoaProcess\" />
     <Folder Include="src\Communication\SnippetDetail\" />
     <Folder Include="src\Communication\SnippetTypeDetail\" />
+    <Folder Include="src\Communication\SystemCommunicationList\" />
     <Folder Include="src\Communication\SystemPhoneNumberDetail\" />
     <Folder Include="src\Core\" />
     <Folder Include="src\Core\AssetStorageProviderDetail\" />
+    <Folder Include="src\Security\AuthScopeList\" />
+    <Folder Include="src\Security\AuthClientList\" />
     <Folder Include="src\Core\BinaryFileDetail\" />
     <Folder Include="src\Core\CampusDetail\" />
     <Folder Include="src\Core\CategoryDetail\" />
@@ -321,6 +342,9 @@
     <Folder Include="src\Core\SignatureDocumentDetail\" />
     <Folder Include="src\Core\SignatureDocumentList\" />
     <Folder Include="src\Crm\PersonDuplicateList\" />
+    <Folder Include="src\Core\PersonSignalList\" />
+    <Folder Include="src\Finance\FinancialPledgeList\" />
+    <Folder Include="src\Security\RestKeyList\" />
     <Folder Include="src\Crm\PersonMergeRequestList\" />
     <Folder Include="src\Core\FollowingEventTypeDetail\" />
     <Folder Include="src\Core\InteractionChannelDetail\" />
@@ -348,15 +372,17 @@
     <Folder Include="src\Engagement\StreakDetail\" />
     <Folder Include="src\Engagement\StreakTypeDetail\" />
     <Folder Include="src\Engagement\StreakTypeExclusionDetail\" />
+    <Folder Include="src\Event\AttendanceList\" />
     <Folder Include="src\Event\EventCalendarDetail\" />
     <Folder Include="src\Event\EventItemDetail\" />
+    <Folder Include="src\Event\RegistrationInstanceLinkageList\" />
     <Folder Include="src\Event\RegistrationInstanceFeeList\" />
+    <Folder Include="src\Finance\BenevolenceRequestList\" />
     <Folder Include="src\Finance\BusinessDetail\" />
     <Folder Include="src\Finance\FinancialBatchDetail\" />
     <Folder Include="src\Finance\FinancialBatchList\" />
     <Folder Include="src\Finance\FinancialGatewayDetail\" />
-    <Folder Include="src\Fundraising\" />
-    <Folder Include="src\Fundraising\FundraisingDonationList\" />
+    <Folder Include="src\Finance\FundraisingDonationList\" />
     <Folder Include="src\Finance\BusinessContactList\" />
     <Folder Include="src\Finance\SavedAccountList\" />
     <Folder Include="src\Group\Scheduling\" />
@@ -367,6 +393,7 @@
     <Folder Include="src\Finance\FinancialPledgeDetail\" />
     <Folder Include="src\Group\" />
     <Folder Include="src\Group\GroupRegistration\" />
+    <Folder Include="src\Reporting\DynamicData\" />
     <Folder Include="src\Reporting\MergeTemplateList\" />
     <Folder Include="src\Reporting\ReportList\" />
     <Folder Include="src\Security\ConfirmAccount\" />
@@ -434,6 +461,7 @@
     <TypeScriptCompile Include="src\Cms\LayoutDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Cms\LayoutDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\LayoutDetail\viewPanel.partial.ts" />
+    <TypeScriptCompile Include="src\Cms\LayoutList\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\LibraryViewer\utils.partial.ts" />
     <TypeScriptCompile Include="src\Cms\mediaAccountDetail.ts" />
     <TypeScriptCompile Include="src\Cms\MediaAccountDetail\editPanel.partial.ts" />
@@ -464,14 +492,18 @@
     <TypeScriptCompile Include="src\Cms\SiteDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Cms\SiteDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Cms\SiteDetail\viewPanel.partial.ts" />
+    <TypeScriptCompile Include="src\Communication\CommunicationList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\assetStorageProviderDetail.ts" />
     <TypeScriptCompile Include="src\Core\AssetStorageProviderDetail\editPanel.partial.ts" />
     <TypeScriptCompile Include="src\Core\AssetStorageProviderDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\AssetStorageProviderDetail\viewPanel.partial.ts" />
+    <TypeScriptCompile Include="src\Communication\NcoaProcess\types.partial.ts" />
     <TypeScriptCompile Include="src\Communication\SnippetDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Communication\SnippetTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Communication\SystemPhoneNumberDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\attributes.ts" />
+    <TypeScriptCompile Include="src\Security\AuthScopeList\types.partial.ts" />
+    <TypeScriptCompile Include="src\Security\AuthClientList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\BinaryFileDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\campusDetail.ts" />
     <TypeScriptCompile Include="src\Core\CampusDetail\editPanel.partial.ts" />
@@ -482,6 +514,9 @@
     <TypeScriptCompile Include="src\Core\SignatureDocumentDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\SignatureDocumentList\types.partial.ts" />
     <TypeScriptCompile Include="src\Crm\PersonDuplicateList\types.partial.ts" />
+    <TypeScriptCompile Include="src\Core\PersonSignalList\types.partial.ts" />
+    <TypeScriptCompile Include="src\Finance\FinancialPledgeList\types.partial.ts" />
+    <TypeScriptCompile Include="src\Security\RestKeyList\types.partial.ts" />
     <TypeScriptCompile Include="src\Crm\PersonMergeRequestList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\FollowingEventTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\InteractionChannelDetail\types.partial.ts" />
@@ -519,14 +554,17 @@
     <TypeScriptCompile Include="src\Engagement\SignUp\SignUpFinder\signUpFilterType.partial.ts" />
     <TypeScriptCompile Include="src\Engagement\StreakDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Engagement\StreakTypeExclusionDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Event\AttendanceList\types.partial.ts" />
     <TypeScriptCompile Include="src\Event\EventCalendarDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Event\EventItemDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\Event\RegistrationInstanceLinkageList\types.partial.ts" />
     <TypeScriptCompile Include="src\Event\RegistrationInstanceFeeList\types.partial.ts" />
+    <TypeScriptCompile Include="src\Finance\BenevolenceRequestList\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\BusinessDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialBatchList\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialGatewayDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\FinancialPledgeDetail\types.partial.ts" />
-    <TypeScriptCompile Include="src\Fundraising\FundraisingDonationList\types.partial.ts" />
+    <TypeScriptCompile Include="src\Finance\FundraisingDonationList\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\SavedAccountList\types.partial.ts" />
     <TypeScriptCompile Include="src\Finance\BusinessContactList\types.partial.ts" />
     <TypeScriptCompile Include="src\Group\Scheduling\GroupScheduler\types.partial.ts" />

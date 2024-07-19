@@ -24,12 +24,16 @@
 import { WebFarmNodeBag } from "@Obsidian/ViewModels/Blocks/WebFarm/WebFarmNodeDetail/webFarmNodeBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
+/** Contains details on the web farm settings. */
 export type WebFarmSettingsBag = {
     /** Gets or sets the attributes. */
     attributes?: Record<string, PublicAttributeBag> | null;
 
     /** Gets or sets the attribute values. */
     attributeValues?: Record<string, string> | null;
+
+    /** Gets or sets a value indicating whether the web farm has a valid key. */
+    hasValidKey: boolean;
 
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
@@ -40,13 +44,16 @@ export type WebFarmSettingsBag = {
     /** Gets or sets a value indicating whether this instance is in memory transport. */
     isInMemoryTransport: boolean;
 
+    /** Gets or sets a value indicating whether the web farm is running. */
+    isRunning: boolean;
+
     /** Gets or sets the lower polling limit. */
     lowerPollingLimit: number;
 
     /** Gets or sets the maximum polling wait seconds. */
     maxPollingWaitSeconds: number;
 
-    /** Gets or sets the minimun polling difference. */
+    /** Gets or sets the minimum polling difference. */
     minimumPollingDifference: number;
 
     /** Gets or sets the nodes. */

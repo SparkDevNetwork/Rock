@@ -211,6 +211,15 @@ namespace RockWeb.Blocks.Cms
 
         #endregion
 
+        #region Properties
+
+        /// <summary>
+        /// Gets the interaction intent defined type cache.
+        /// </summary>
+        protected DefinedTypeCache InteractionIntentDefinedTypeCache => DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.INTERACTION_INTENT ) );
+
+        #endregion
+
         #region Control Methods
 
         /// <summary>
@@ -245,10 +254,9 @@ namespace RockWeb.Blocks.Cms
             lbSave.OnClientClick = clearScript;
             lbCancel.OnClientClick = clearScript;
 
-            var interactionIntentDefinedType = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.INTERACTION_INTENT ) );
-            if ( interactionIntentDefinedType != null )
+            if ( InteractionIntentDefinedTypeCache != null )
             {
-                dvpContentChannelItemIntents.DefinedTypeId = interactionIntentDefinedType.Id;
+                dvpContentChannelItemIntents.DefinedTypeId = InteractionIntentDefinedTypeCache.Id;
                 dvpContentChannelItemIntents.Visible = true;
             }
             else
@@ -418,14 +426,14 @@ namespace RockWeb.Blocks.Cms
                     }
                 }
 
-                if (contentItem.ContentChannel.IsContentLibraryEnabled)
+                if ( contentItem.ContentChannel.IsContentLibraryEnabled )
                 {
                     contentItem.ExperienceLevel = rblExperienceLevel.SelectedValueAsEnumOrNull<ContentLibraryItemExperienceLevel>();
                     contentItem.ContentLibraryContentTopicId = ddlTopic.SelectedValueAsInt();
                 }
 
                 // Intent Settings
-                if ( dvpContentChannelItemIntents.Visible )
+                if ( InteractionIntentDefinedTypeCache != null )
                 {
                     var intentSettings = contentItem.GetAdditionalSettings<ContentChannelItemService.IntentSettings>();
 
@@ -1284,7 +1292,7 @@ namespace RockWeb.Blocks.Cms
                     }
                 }
 
-                if ( dvpContentChannelItemIntents.Visible )
+                if ( InteractionIntentDefinedTypeCache != null )
                 {
                     var intentSettings = contentItem.GetAdditionalSettings<ContentChannelItemService.IntentSettings>();
                     if ( intentSettings.InteractionIntentValueIds?.Any() == true )

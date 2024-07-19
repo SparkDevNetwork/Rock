@@ -242,7 +242,7 @@ namespace RockWeb.Blocks.Reporting
                              .Take( pageSize + 1 );
 
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
-                    mergeFields.AddOrIgnore( "CurrentPerson", CurrentPerson );
+                    mergeFields.TryAdd( "CurrentPerson", CurrentPerson );
                     mergeFields.Add( "InteractionDetailPage", LinkedPageRoute( "InteractionDetailPage" ) );
                     mergeFields.Add( "InteractionChannel", component.InteractionChannel );
                     mergeFields.Add( "InteractionComponent", component );

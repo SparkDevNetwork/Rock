@@ -908,8 +908,13 @@ namespace Rock.Data
         /// Adds a new PageRoute to the given page but only if the given route name does not exist for the specified page
         /// **NOTE**: If a *different* Page has this route, it'll still get added since it could be valid if it is on a different site
         /// </summary>
+        /// <remarks>
+        ///     WARNING! This method is deprecated and should not be used for new code.
+        /// </remarks>
         /// <param name="pageGuid">The page GUID.</param>
         /// <param name="route">The route.</param>
+        [Obsolete( "Use AddOrUpdatePageRoute instead." )]
+        [RockObsolete( "1.16.6" )]
         public void AddPageRoute( string pageGuid, string route )
         {
             AddPageRoute( pageGuid, route, null );
@@ -919,9 +924,14 @@ namespace Rock.Data
         /// Adds a new PageRoute to the given page but only if the given route name does not exist for the specified page
         /// **NOTE**: If a *different* Page has this route, it'll still get added since it could be valid if it is on a different site
         /// </summary>
+        /// <remarks>
+        ///     WARNING! This method is deprecated and should not be used for new code.
+        /// </remarks>
         /// <param name="pageGuid">The page GUID.</param>
         /// <param name="route">The route.</param>
         /// <param name="guid">The unique identifier.</param>
+        [Obsolete( "Use AddOrUpdatePageRoute instead." )]
+        [RockObsolete( "1.16.6" )]
         public void AddPageRoute( string pageGuid, string route, string guid )
         {
             // Known GUID or create one. This is needed because we don't want ticks around the NEWID function.
@@ -937,6 +947,50 @@ namespace Rock.Data
                     VALUES(1, @PageId, '{route}', {guid} )
                 END" );
 
+        }
+
+        /// <summary>
+        /// Add or Updates the PageId and/or Route for the given PageRouteGuid.
+        /// **NOTE**: If it is a new route and a *different* Page has this route, it'll still get added since it could be valid if it is on a different site
+        /// </summary>
+        /// <param name="pageGuid">The GUID.</param>
+        /// <param name="route">The route.</param>
+        public void AddOrUpdatePageRoute( string pageGuid, string route )
+        {
+            AddOrUpdatePageRoute( pageGuid, route, null );
+        }
+
+        /// <summary>
+        /// Add or Updates the PageId and/or Route for the given PageRouteGuid.
+        /// **NOTE**: If it is a new route and a *different* Page has this route, it'll still get added since it could be valid if it is on a different site
+        /// </summary>
+        /// <param name="pageGuid">The GUID.</param>
+        /// <param name="route">The route.</param>
+        /// <param name="guid">The unique identifier.</param>
+        public void AddOrUpdatePageRoute( string pageGuid, string route, string guid )
+        {
+            guid = guid ?? Guid.NewGuid().ToString();
+
+            string sql = $@"
+                DECLARE @pageId INT = (SELECT [Id] FROM [dbo].[Page] WHERE [Guid] = '{pageGuid}')
+                IF @pageId IS NULL
+                BEGIN
+                    RETURN;
+                END
+
+                IF (EXISTS(SELECT [Id] FROM [dbo].[PageRoute] WHERE [Guid] = '{guid}'))
+                BEGIN
+                    UPDATE [dbo].[PageRoute]
+                    SET [PageId] = @pageId, [Route] = '{route}'
+                    WHERE [Guid] = '{guid}'
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO [dbo].[PageRoute] ([IsSystem],[PageId],[Route],[Guid])
+                    VALUES(1, @PageId, '{route}', '{guid}' )
+                END";
+
+            Migration.Sql( sql );
         }
 
         /// <summary>

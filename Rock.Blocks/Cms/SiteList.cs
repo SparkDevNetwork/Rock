@@ -187,7 +187,7 @@ namespace Rock.Blocks.Cms
 
                 if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
-                    return ActionBadRequest( $"Not authorized to delete ${Site.FriendlyTypeName}." );
+                    return ActionBadRequest( $"Not authorized to delete {Site.FriendlyTypeName}." );
                 }
 
                 var sitePages = new List<int> {

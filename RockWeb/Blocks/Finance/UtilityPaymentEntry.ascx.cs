@@ -3316,9 +3316,9 @@ mission. We are so grateful for your commitment.</p>
                     return false;
                 }
 
-                Person BusinessOrPerson = GetPersonOrBusiness( person );
+                Person businessOrPerson = GetPersonOrBusiness( person );
 
-                var paymentInfo = GetTxnPaymentInfo( BusinessOrPerson, out errorMessage );
+                var paymentInfo = GetTxnPaymentInfo( businessOrPerson, givingAsBusiness, out errorMessage );
                 if ( paymentInfo == null )
                 {
                     return false;
@@ -3347,7 +3347,7 @@ mission. We are so grateful for your commitment.</p>
                     // manually assign the Guid that we generated at the beginning of the transaction UI entry to help make duplicate scheduled transactions impossible
                     scheduledTransaction.Guid = transactionGuid;
 
-                    SaveScheduledTransaction( financialGateway, gateway, BusinessOrPerson, paymentInfo, schedule, scheduledTransaction, rockContext );
+                    SaveScheduledTransaction( financialGateway, gateway, businessOrPerson, paymentInfo, schedule, scheduledTransaction, rockContext );
                     paymentDetail = scheduledTransaction.FinancialPaymentDetail.Clone( false );
                 }
                 else
@@ -3369,7 +3369,7 @@ mission. We are so grateful for your commitment.</p>
                     // manually assign the Guid that we generated at the beginning of the transaction UI entry to help make duplicate transactions impossible
                     transaction.Guid = transactionGuid;
 
-                    SaveTransaction( financialGateway, gateway, BusinessOrPerson, paymentInfo, transaction, rockContext );
+                    SaveTransaction( financialGateway, gateway, businessOrPerson, paymentInfo, transaction, rockContext );
                     paymentDetail = transaction.FinancialPaymentDetail.Clone( false );
                 }
 
@@ -3385,7 +3385,7 @@ mission. We are so grateful for your commitment.</p>
             }
         }
 
-        private ReferencePaymentInfo GetTxnPaymentInfo( Person person, out string errorMessage )
+        private ReferencePaymentInfo GetTxnPaymentInfo( Person person, bool givingAsBusiness, out string errorMessage )
         {
             errorMessage = null;
 
@@ -3401,6 +3401,11 @@ mission. We are so grateful for your commitment.</p>
             }
             else
             {
+                if ( givingAsBusiness )
+                {
+                    paymentInfo.BusinessName = person.LastName;
+                }
+
                 paymentInfo.FirstName = person.FirstName;
                 paymentInfo.LastName = person.LastName;
             }
@@ -3456,8 +3461,6 @@ mission. We are so grateful for your commitment.</p>
                     scheduledTransaction.SourceTypeValueId = source.Id;
                 }
             }
-
-            var transactionEntity = this.GetTransactionEntity();
 
             PopulateTransactionDetails( scheduledTransaction.ScheduledTransactionDetails );
 
@@ -3594,7 +3597,7 @@ mission. We are so grateful for your commitment.</p>
 
             TransactionCode = transaction.TransactionCode;
         }
-
+        
         /// <summary>
         /// Populates the transaction details for a FinancialTransaction or ScheduledFinancialTransaction
         /// </summary>

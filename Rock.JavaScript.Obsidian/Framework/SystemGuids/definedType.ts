@@ -154,6 +154,8 @@ export const DefinedType = {
     MotivatorThemeType: "354715FA-564A-420A-8324-0411988AE7AB",
     /** Motivator Type */
     MotivatorType: "1DFF1804-0055-491E-9559-54EA3F8F89D1",
+    /** List of different types of relationships and individual could have in their Peer Network. */
+    PeerNetworkRelationshipType: "F2E8E639-F16D-489D-AAFB-BE0133531E41",
     /** Guid for the types of possible check-in system ability levels (such as Infant, Crawler, etc.) */
     PersonAbilityLevelType: "7BEEF4D4-0860-4913-9A3D-857634D1BF7C",
     /** Guid for the person's connection status (such as member, attendee, participant, etc.) */
@@ -221,6 +223,12 @@ export const DefinedType = {
     ThemePurpose: "99FF0317-9B21-4E56-9F83-EA89A3C8C789",
     /** Campus Topic Type */
     TopicType: "41141100-8fc6-44bb-aa36-9778eeda7f62",
+    /** List of different campaigns that may generate website traffic. */
+    UtmCampaign: "A2F452BB-39E8-40F8-9DAD-74DBD920FD2F",
+    /** List of different marketing or advertising mediums that may initiate website traffic. */
+    UtmMedium: "31693856-8553-4321-A302-B84CF1D22BAB",
+    /** List of different sources from which website traffic may originate. */
+    UtmSource: "3CFE43A9-5D0C-4BE4-B1EC-AFA06BBB7C32",
     /** Used to manage the lava code that can be launched via webhook. */
     WebhookToLava: "7BCF6434-8B15-49C3-8EF3-BAB9A63B545D",
     /** Used to manage the workflows that can be launched via webhook. */

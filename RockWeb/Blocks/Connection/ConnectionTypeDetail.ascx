@@ -38,7 +38,7 @@
                     </p>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnEdit" runat="server" AccessKey="e" ToolTip="Alt+e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
+                        <asp:LinkButton ID="btnEdit" runat="server" data-shortcut-key="e" ToolTip="Alt+e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
                         <span class="pull-right">
@@ -173,8 +173,8 @@
                     </Rock:PanelWidget>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                        <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                        <asp:LinkButton ID="btnSave" runat="server" data-shortcut-key="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                        <asp:LinkButton ID="btnCancel" runat="server" data-shortcut-key="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                     </div>
                 </div>
             </div>
@@ -272,8 +272,8 @@
                          </div>
                          <Rock:RockDropDownList ID="ddlMoveTo" runat="server" Label="Move To" Required="true" ValidationGroup="vgConnectionStatusAutomation" DataTextField="Name" DataValueField="Guid" />
                          <div class="actions">
-                             <asp:LinkButton ID="lbSaveAutomation" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save Automation" CssClass="btn btn-xs btn-default" OnClick="lbSaveAutomation_Click"  ValidationGroup="vgConnectionStatusAutomation" />
-                             <asp:LinkButton ID="lbCancelAutomation" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-xs btn-link" CausesValidation="false" OnClick="lbCancelAutomation_Click" />
+                             <asp:LinkButton ID="lbSaveAutomation" runat="server" data-shortcut-key="s" ToolTip="Alt+s" Text="Save Automation" CssClass="btn btn-xs btn-default" OnClick="lbSaveAutomation_Click"  ValidationGroup="vgConnectionStatusAutomation" />
+                             <asp:LinkButton ID="lbCancelAutomation" runat="server" data-shortcut-key="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-xs btn-link" CausesValidation="false" OnClick="lbCancelAutomation_Click" />
                          </div>
                     </Rock:RockControlWrapper>
 

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -105,7 +105,7 @@ namespace Rock.Model
         [MaxLength( 75 )]
         [DataMember]
         [Previewable]
-        [RegularExpression( @"[\w\.\'_%-]+(\+[\w-]*)?@([\w-]+\.)+[\w-]+", ErrorMessage = "The Email address is invalid" )]
+        [EmailAddressValidation]
         [Index( "IX_Email" )]
         public string ContactEmail { get; set; }
 

@@ -3,6 +3,7 @@
     <button type="button"
             :class="buttonCssClass"
             :title="actionTooltip"
+            :data-shortcut-key="shortcutKey"
             @click.prevent.stop="onActionClick">
         <i :class="iconCssClass"></i>
     </button>
@@ -46,6 +47,11 @@
         return props.action.tooltip;
     });
 
+    /** The shortcut key for the action. */
+    const shortcutKey = computed((): string | undefined => {
+        return props.action.shortcutKey;
+    });
+
     /** The CSS classes to be applied to the button. */
     const buttonCssClass = computed((): string => {
         let classes = "btn btn-grid-action";
@@ -75,6 +81,7 @@
      * action and wait for it to complete.
      */
     const onActionClick = async (): Promise<void> => {
+        console.log("Action button clicked");
         if (!props.action.handler || props.action.disabled || isExecuting.value) {
             return;
         }
