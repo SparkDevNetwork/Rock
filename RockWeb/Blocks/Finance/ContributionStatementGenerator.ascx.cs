@@ -161,28 +161,16 @@ namespace RockWeb.Blocks.Finance
             }
 
             FinancialStatementGeneratorOptions financialStatementGeneratorOptions = new FinancialStatementGeneratorOptions();
-            DateTime startDate; // Declare startDate here
+            var startDate = new DateTime( statementYear, 1, 1 );
             // If the statementStartMonth page parameter exists and its value is between 1 and 12 use it, otherwise startDate retains the normal behavior.
             if ( statementStartMonth > 0 && statementStartMonth < 12 )
             {
                 startDate = new DateTime( statementYear, statementStartMonth, 1 );
             }
-            else
-            {
-                startDate = new DateTime( statementYear, 1, 1 ); // Assuming default startDate behavior
-            }
-            DateTime endDate; // Declare endDate here
             // If the statementEndMonth page parameter exists and its value is between 1 and 12 use it, otherwise endDate retains the normal behavior.
-            if ( statementEndMonth > 0 && statementEndMonth < 12 )
-            {
-                endDate = new DateTime( statementYear, statementEndMonth, 1 ).AddMonths( 1 );
-            }
-            else    
-            {
-                endDate = startDate.AddYears( 1 ); // Assuming default endDate behavior
-            }
+            var endDate = ( statementEndMonth > 0 && statementEndMonth < 12 ) ? ( new DateTime( statementYear, statementEndMonth, 1 ) ).AddMonths( 1 ) : startDate.AddYears( 1 );
             // Ensure that endDate is greater than or equal to startDate
-            if ( statementEndMonth < statementStartMonth )
+            if ( statementEndMonth > 0 && statementEndMonth < statementStartMonth )
             {
                 endDate = startDate.AddYears( 1 ).AddMonths( -1 ); // Checking if endDate is less than the startDate. Removing a month from endDate to create a full year if it is.
             }
