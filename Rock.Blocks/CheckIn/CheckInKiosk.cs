@@ -425,7 +425,7 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                     g.Group.Id,
                     g.Group.Name,
                     g.Group.GroupTypeId,
-                    gl.LocationId
+                    LocationId = ( int? ) gl.LocationId
                 } )
                 .ToList();
 
@@ -439,7 +439,9 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                     Id = IdHasher.Instance.GetHash( g.Key.Id ),
                     Name = g.Key.Name,
                     AreaId = IdHasher.Instance.GetHash( g.Key.GroupTypeId ),
-                    LocationIds = g.Select( l => IdHasher.Instance.GetHash( l.LocationId ) ).ToList()
+                    LocationIds = g.Where( l => l.LocationId.HasValue )
+                        .Select( l => IdHasher.Instance.GetHash( l.LocationId.Value ) )
+                        .ToList()
                 } )
                 .ToList();
         }

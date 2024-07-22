@@ -82,7 +82,6 @@ namespace Rock.CheckIn.v2
         {
             List<RenderedLabel> labels;
 
-            var group = new GroupService( RockContext ).Get( 5 );
             using ( var activity = ObservabilityHelper.StartActivity( "Render Labels" ) )
             {
                 activity?.AddTag( "rock.checkin.print_provider", GetType().FullName );
@@ -213,6 +212,11 @@ namespace Rock.CheckIn.v2
                 return new List<RenderedLabel>();
             }
 
+            attendanceLabels.Select( a => a.Person )
+                .Where( p => p.Attributes == null )
+                .DistinctBy( p => p.Id )
+                .LoadAttributes( RockContext );
+
             var sessionFamily = allAttendance.Where( a => a.SearchResultGroupId.HasValue ).FirstOrDefault()?.SearchResultGroup;
 
             return !checkout
@@ -254,6 +258,11 @@ namespace Rock.CheckIn.v2
             {
                 return new List<RenderedLabel>();
             }
+
+            attendanceLabels.Select( a => a.Person )
+                .Where( p => p.Attributes == null )
+                .DistinctBy( p => p.Id )
+                .LoadAttributes( RockContext );
 
             var sessionFamily = allAttendance.Where( a => a.SearchResultGroupId.HasValue ).FirstOrDefault()?.SearchResultGroup;
 
@@ -462,6 +471,15 @@ namespace Rock.CheckIn.v2
         /// <returns>A new instance of <see cref="RenderedLabel"/> that contains either the data to be printed or an error message, will be <see langword="null"/> if the label conditions prevent rendering.</returns>
         public RenderedLabel RenderLabelUnconditionally( Rock.Model.CheckInLabel label, AttendanceLabel attendanceLabel, List<AttendanceLabel> attendanceLabels, Group sessionFamily, DeviceCache printer )
         {
+            var people = new List<Person>( attendanceLabels.Count + 1 );
+
+            people.AddRange( attendanceLabels.Select( a => a.Person ) );
+            people.Add( attendanceLabel.Person );
+
+            people.Where( p => p.Attributes == null )
+                .DistinctBy( p => p.Id )
+                .LoadAttributes( RockContext );
+
             var labelData = GetLabelData( label.LabelType, attendanceLabel, attendanceLabels, sessionFamily );
 
             return RenderLabel( label, labelData, printer );
