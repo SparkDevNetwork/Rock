@@ -106,6 +106,9 @@ namespace Rock.Client
         public string PushOpenMessage { get; set; }
 
         /// <summary />
+        public string PushOpenMessageJson { get; set; }
+
+        /// <summary />
         public string PushSound { get; set; }
 
         /// <summary />
@@ -214,6 +217,7 @@ namespace Rock.Client
             this.PushMessage = source.PushMessage;
             this.PushOpenAction = source.PushOpenAction;
             this.PushOpenMessage = source.PushOpenMessage;
+            this.PushOpenMessageJson = source.PushOpenMessageJson;
             this.PushSound = source.PushSound;
             this.PushTitle = source.PushTitle;
             this.ReplyToEmail = source.ReplyToEmail;
