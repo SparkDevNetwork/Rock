@@ -186,7 +186,16 @@ namespace RockWeb.Webhooks.org_lakepointe
             {
                 string errorMessage = string.Empty;
 
-                new Rock.Communication.Medium.Sms().ProcessResponse( toPhone, fromPhone, body, out errorMessage );
+                string[] blockedNumbers = GlobalAttributesCache.Value( "BlockedPhoneNumbers" ).Split(',');
+                if ( toPhone != "20411" && blockedNumbers.Contains(fromPhone.Replace( "+", "" ) ) )
+                {
+                    // This number is blocked - do not process the response
+                    // Do not set errorMessage since that will be sent as a reply if it has a value
+                }
+                else
+                {
+                    new Rock.Communication.Medium.Sms().ProcessResponse( toPhone, fromPhone, body, out errorMessage );
+                }
 
                 var regexStop = new System.Text.RegularExpressions.Regex( @"^(off|stop|unsubscribe)$" );
                 var regexStart = new System.Text.RegularExpressions.Regex( @"^(start|on|subscribe)$" );
