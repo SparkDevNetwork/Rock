@@ -109,7 +109,11 @@ namespace Rock.CheckIn.v2.Labels
                 }
             }
 
-            var source = printRequest.DataSources[config.SourceKey];
+            if ( !printRequest.DataSources.TryGetValue( config.SourceKey, out var source ) )
+            {
+                return new List<string> { string.Empty };
+            }
+
             var values = source.GetValues( this, printRequest );
 
             // Deal with any bad field sources. This may due to test prints or
@@ -125,7 +129,7 @@ namespace Rock.CheckIn.v2.Labels
             }
             else
             {
-                return values.Select( v => v.ToString() ).ToList();
+                return values.Select( v => v.ToStringSafe() ).ToList();
             }
         }
 

@@ -1037,7 +1037,7 @@ namespace Rock.CheckIn.v2.Labels
                             Key = $"attribute:person:{entityField.AttributeGuid}",
                             Name = entityField.Title,
                             Category = "Attributes",
-                            ValueFunc = ( source, field, printRequest ) => source.Person.GetAttributeValue( entityField.AttributeGuid.Value )
+                            ValueFunc = ( source, field, printRequest ) => source.Person.GetAttributeTextValue( attributeCache.Key )
                         };
                     }
 
