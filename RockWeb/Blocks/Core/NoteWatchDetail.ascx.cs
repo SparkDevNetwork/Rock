@@ -320,6 +320,10 @@ namespace RockWeb.Blocks.Core
         protected void cbIsWatching_CheckedChanged( object sender, EventArgs e )
         {
             cbAllowOverride.Visible = cbIsWatching.Checked;
+            if ( !cbIsWatching.Checked && cbAllowOverride.Checked )
+            {
+                cbAllowOverride.Checked = false;
+            }
         }
 
         #endregion

@@ -4,8 +4,12 @@
 
         <h4 class="mt-0">Watched by</h4>
 
-        <NotificationBox v-if="isWatcherMustBeSelectWarningVisible" alertType="warning" dismissible>A Person or Group must be specified as the watcher</NotificationBox>
-        <NotificationBox v-if="isUnableToOverrideWarningVisible" alertType="danger" dismissible>Unable to set Watching to false. This would override another note watch that doesn't allow overrides.</NotificationBox>
+        <NotificationBox v-if="isWatcherMustBeSelectWarningVisible" alertType="warning" dismissible @dismiss="isWatcherMustBeSelectWarningVisible = false">
+            A Person or Group must be specified as the watcher
+        </NotificationBox>
+        <NotificationBox v-if="isUnableToOverrideWarningVisible" alertType="danger" dismissible @dismiss="isUnableToOverrideWarningVisible = false">
+            Unable to set Watching to false. This would override another note watch that doesn't allow overrides.
+        </NotificationBox>
 
         <div class="row">
             <div class="col-md-6">
@@ -34,7 +38,9 @@
 
         <h4>Watch Filter</h4>
 
-        <NotificationBox v-if="isWatchFilterMustBeSeletedWarningVisible" alertType="danger" dismissible>A Watch Filter must be specified.</NotificationBox>
+        <NotificationBox v-if="isWatchFilterMustBeSeletedWarningVisible" alertType="danger" dismissible @dismiss="isWatchFilterMustBeSeletedWarningVisible = false">
+            A Watch Filter must be specified.
+        </NotificationBox>
 
         <div class="row">
             <div class="col-md-6">
@@ -68,7 +74,9 @@
                 </div>
             </div>
             <div class="col-md-6">
-                <NotificationBox v-if="isNoteTypeWarningVisible" alertType="danger" dismissible >This note type doesn't allow note watches.</NotificationBox>
+                <NotificationBox v-if="isNoteTypeWarningVisible" alertType="danger" dismissible @dismiss="isNoteTypeWarningVisible = false">
+                    This note type doesn't allow note watches.
+                </NotificationBox>
                 <DropDownList v-if="showNoteTypePicker"
                               v-model="noteTypeValue"
                               :items="noteTypeOptions"
@@ -237,6 +245,7 @@
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
     watch([attributeValues, watchedEntity, ...propRefs], () => {
+
         const newValue: NoteWatchBag = {
             ...props.modelValue,
             attributeValues: attributeValues.value,
@@ -244,13 +253,13 @@
             watcherGroup: watcherGroup.value,
             entityType: entityType.value,
             isWatching: isWatching.value,
-            allowOverride: allowOverride.value,
+            allowOverride: (!isWatching.value && allowOverride.value) ? false : allowOverride.value,
             noteType: { value: noteTypeValue?.value },
             entityId: entityId.value,
             watchedEntity: watchedEntity.value,
         };
 
-            emit("update:modelValue", newValue);
+        emit("update:modelValue", newValue);
     });
 
     // Watch for any changes to props that represent properties and then
