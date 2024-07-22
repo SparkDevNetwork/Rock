@@ -29,6 +29,7 @@
         <Column name="Status"
                 title="Status"
                 field="isActive"
+                :filter="booleanValueFilter"
                 visiblePriority="xs">
             <template #format="{ row }">
                 <span v-if="row.isActive" class="label label-success">
@@ -51,7 +52,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, BooleanColumn, TextColumn, textValueFilter, DeleteColumn, ReorderColumn, SecurityColumn, SelectColumn } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, booleanValueFilter, TextColumn, textValueFilter, DeleteColumn, ReorderColumn, SecurityColumn, SelectColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { ConnectionOpportunityListOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionOpportunityList/connectionOpportunityListOptionsBag";
