@@ -202,6 +202,7 @@ namespace Rock.Model
             target.PushMessage = source.PushMessage;
             target.PushOpenAction = source.PushOpenAction;
             target.PushOpenMessage = source.PushOpenMessage;
+            target.PushOpenMessageJson = source.PushOpenMessageJson;
             target.PushSound = source.PushSound;
             target.PushTitle = source.PushTitle;
             #pragma warning disable 612, 618
