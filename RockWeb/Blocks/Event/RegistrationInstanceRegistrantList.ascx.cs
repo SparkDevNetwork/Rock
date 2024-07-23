@@ -1734,11 +1734,8 @@ namespace RockWeb.Blocks.Event
                     if ( groupMemberAttributes != null && groupMemberAttributes.Any() )
                     {
                         /*
-                            SK - 07/02/2023
-                            Reverted back changes made via https://github.com/SparkDevNetwork/Rock/commit/a5bda143b0ba02f0897c2245513bbc23a638f156
-                            - Fixed issue in Live Metrics where a 'no valid groups or locations' message would show if a Group had a non-checkin parent group.
-
-                            IF the other situation occurs again, we will have more details about where/why/how to handle it next.
+                            SK - 07/23/2024
+                            The logic below evaluates if any filter is applied to any group member attribute. If not, it returns all the data irrespective of whether the registrant is part of any group. If a filter is applied, the registrant must be part of a group.
                         */
                         var groupMemberService = new GroupMemberService( rockContext );
                         var groupMemberQry = groupMemberService.Queryable().AsNoTracking();
