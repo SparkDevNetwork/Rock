@@ -26,6 +26,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
+using Rock.Utility.Enums;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -1714,6 +1715,40 @@ namespace RockWeb.Blocks.Cms
             }
 
             BindPhoneNumbers( person );
+
+            if ( person.Id != CurrentPerson.Id && ( person.AccountProtectionProfile == AccountProtectionProfile.High || person.AccountProtectionProfile == AccountProtectionProfile.Extreme ) )
+            {
+                var accountProtectionWarningMessage = "Only the account owner can update the email.";
+
+                if ( GetAttributeValue( AttributeKey.ShowPhoneNumbers ).AsBoolean() )
+                {
+                    accountProtectionWarningMessage = "Only the account owner can update the email and phone number.";
+
+                    foreach ( RepeaterItem item in rContactInfo.Items )
+                    {
+                        PhoneNumberBox pnbPhone = item.FindControl( "pnbPhone" ) as PhoneNumberBox;
+                        CheckBox cbSms = item.FindControl( "cbSms" ) as CheckBox;
+                        HtmlGenericControl phoneNumberContainer = ( HtmlGenericControl ) item.FindControl( "divPhoneNumberContainer" );
+
+                        pnbPhone.Enabled = false;
+                        pnbPhone.Required = false;
+                        cbSms.Enabled = false;
+                        phoneNumberContainer.RemoveCssClass( "required" );
+                    }
+                }
+
+                tbEmail.Enabled = false;
+                tbEmail.Required = false;
+                nbAccountProtectionWarning.Visible = true;
+                nbAccountProtectionWarning.NotificationBoxType = NotificationBoxType.Warning;
+                nbAccountProtectionWarning.Text = accountProtectionWarningMessage;
+
+            }
+            else
+            {
+                tbEmail.Enabled = true;
+                nbAccountProtectionWarning.Visible = false;
+            }
 
             pnlView.Visible = false;
             pnlEdit.Visible = true;
