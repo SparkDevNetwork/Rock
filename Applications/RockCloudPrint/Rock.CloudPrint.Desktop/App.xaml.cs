@@ -42,10 +42,13 @@ namespace Rock.CloudPrint.Desktop
                 try
                 {
                     var proc = System.Diagnostics.Process.Start( objProcessInfo );
-                    Current.Shutdown();
                 }
                 catch
                 {
+                }
+                finally
+                {
+                    Current.Shutdown();
                 }
             }
 #endif

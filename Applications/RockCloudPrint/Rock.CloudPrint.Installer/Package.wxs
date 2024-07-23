@@ -15,6 +15,8 @@
              Compressed="true">
 
         <MediaTemplate EmbedCab="yes" />
+        <Icon Id="AppIcon" SourceFile="..\Rock.CloudPrint.Desktop\cloud-print.ico" />
+        <Property Id="ARPPRODUCTICON" Value="AppIcon" />
 
         <!-- Allow upgrades and prevent downgrades -->
         <MajorUpgrade DowngradeErrorMessage="A later version of [ProductName] is already installed. Setup will now exit." />

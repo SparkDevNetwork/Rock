@@ -25,10 +25,12 @@ namespace Rock.CloudPrint.Service;
 class NamedPipeService : BackgroundService
 {
     private readonly ILogger _logger;
+    private readonly ProxyStatus _status;
 
-    public NamedPipeService( ILogger<NamedPipeService> logger )
+    public NamedPipeService( ILogger<NamedPipeService> logger, ProxyStatus status )
     {
         _logger = logger;
+        _status = status;
     }
 
     protected override async Task ExecuteAsync( CancellationToken stoppingToken )
@@ -66,7 +68,13 @@ class NamedPipeService : BackgroundService
 
                             if ( request.Type == 0 )
                             {
-                                await pipe.WriteAsync( new PipeStatusResponse { IsConnected = true }, stoppingToken );
+                                await pipe.WriteAsync( new PipeStatusResponse
+                                {
+                                    IsConnected = _status.IsConnected,
+                                    StartedDateTime = _status.StartedDateTime,
+                                    ConnectedDateTime = _status.ConnectedDateTime,
+                                    TotalLabelsPrinted = _status.TotalPrinted
+                                }, stoppingToken );
                             }
                         }
                     }

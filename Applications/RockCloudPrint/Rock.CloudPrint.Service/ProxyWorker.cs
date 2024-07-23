@@ -22,6 +22,7 @@ using Polly;
 using Polly.Retry;
 
 namespace Rock.CloudPrint.Service;
+
 /// <summary>
 /// This is the main background worker for the printer proxy. It is in charge
 /// of making sure the proxy stays connected and reconnects when the options
@@ -56,6 +57,8 @@ class ProxyWorker : BackgroundService
     /// </summary>
     private ProxyClientWebSocket? _proxy;
 
+    private ProxyStatus _status;
+
     #endregion
 
     /// <summary>
@@ -67,6 +70,7 @@ class ProxyWorker : BackgroundService
         _serviceProvider = serviceProvider;
         _logger = serviceProvider.GetRequiredService<ILogger<ProxyWorker>>();
         _optionsMonitor = serviceProvider.GetRequiredService<IOptionsMonitor<CloudPrintOptions>>();
+        _status = serviceProvider.GetRequiredService<ProxyStatus>();
 
         _optionsMonitor.OnChange( OnConfigurationChanged );
     }
@@ -113,7 +117,9 @@ class ProxyWorker : BackgroundService
         }
 
         var ws = await ConnectAsync( cancellationToken );
-        var proxy = new ProxyClientWebSocket( ws, _logger );
+        var proxy = new ProxyClientWebSocket( ws, _logger, _status );
+
+        _status.SetConnected( true );
 
         proxy.Closed += Proxy_Closed;
 
@@ -269,6 +275,8 @@ class ProxyWorker : BackgroundService
                         _logger.LogInformation( "Disconnected from server." );
                         proxy.Closed -= Proxy_Closed;
                         _proxy = null;
+
+                        _status.SetConnected( false );
                     }
                 }
                 finally
