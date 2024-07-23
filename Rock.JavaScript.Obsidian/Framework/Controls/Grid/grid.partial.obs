@@ -45,6 +45,7 @@
                       :itemTerm="gridState.itemTerm"
                       :markInactiveRows="markInactiveRows"
                       :rowClass="rowClass"
+                      :emptyDataText="emptyDataText"
                       @click="onRowClick" />
         </div>
 
@@ -58,6 +59,7 @@
                       :itemTerm="gridState.itemTerm"
                       :markInactiveRows="markInactiveRows"
                       :rowClass="rowClass"
+                      :emptyDataText="emptyDataText"
                       @click="onRowClick" />
         </div>
 
@@ -70,6 +72,7 @@
                          :itemTerm="gridState.itemTerm"
                          :markInactiveRows="markInactiveRows"
                          :rowClass="rowClass"
+                         :emptyDataText="emptyDataText"
                          @click="onRowClick" />
 
         <div class="grid-footing">
@@ -766,6 +769,15 @@
         rowClass: {
             type: [String, Function] as PropType<string | ((row: Record<string, unknown>) => string)>,
             default: undefined
+        },
+
+        /**
+         * The text to display in the empty data row. The default is an empty string (""), which indicates that this property is not set.
+         */
+        emptyDataText: {
+            type: String,
+            default: "",
+            required: false,
         },
 
         /**

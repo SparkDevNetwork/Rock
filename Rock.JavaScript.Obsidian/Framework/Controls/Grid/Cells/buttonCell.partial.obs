@@ -4,7 +4,7 @@
         <button class="btn btn-default btn-sm"
                 :title="title"
                 :disabled="isDisabled"
-                @click.stop="onClick">
+                @click.prevent.stop="onClick">
             <i :class="iconClass"></i>
         </button>
     </div>
