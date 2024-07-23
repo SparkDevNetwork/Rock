@@ -19,6 +19,7 @@ using Rock.Model;
 using Rock.Web.UI.Controls;
 using System.Collections.Generic;
 using System.Linq;
+
 #if WEBFORMS
 using System.Web.UI;
 #endif
@@ -166,6 +167,8 @@ namespace Rock.Field.Types
                 phoneControl.Number = numberPart;
             }
         }
+#endif
+        #endregion
 
         private string _defaultCountryCode = null;
 
@@ -177,8 +180,6 @@ namespace Rock.Field.Types
             }
             return _defaultCountryCode;
         }
-#endif
-        #endregion
 
         private class PhoneNumberFieldValue
         {

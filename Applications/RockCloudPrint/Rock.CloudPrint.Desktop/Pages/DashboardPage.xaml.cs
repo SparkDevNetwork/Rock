@@ -30,6 +30,8 @@ namespace Rock.CloudPrint.Desktop.Pages
     public partial class DashboardPage : Page
     {
         private readonly ServiceController? _service;
+        private bool _isRunning = false;
+        private PipeStatusResponse? _lastStatus;
 
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
@@ -49,12 +51,14 @@ namespace Rock.CloudPrint.Desktop.Pages
             catch ( InvalidOperationException )
             {
                 _service = null;
+                ServiceAction.Visibility = System.Windows.Visibility.Collapsed;
             }
 
             UpdateStatus();
 
             Unloaded += DashboardPage_Unloaded;
 
+            Task.Run( () => RunPipeAsync( _cancellationTokenSource.Token ), _cancellationTokenSource.Token );
             Task.Run( () => RunDashboardAsync( _cancellationTokenSource.Token ), _cancellationTokenSource.Token );
         }
 
@@ -65,40 +69,38 @@ namespace Rock.CloudPrint.Desktop.Pages
 
         private void UpdateStatus()
         {
-            if ( _service == null )
-            {
-                ServiceAction.Visibility = System.Windows.Visibility.Collapsed;
-                ServiceState.Message = "Unable to determine service state, it may not be installed correctly.";
-                ServiceState.Severity = InfoBarSeverity.Error;
+            var status = _lastStatus;
 
-                return;
-            }
-
-            _service.Refresh();
-
-            if ( _service.Status == ServiceControllerStatus.Stopped )
+            if ( _isRunning && status != null )
             {
-                ServiceAction.Visibility = System.Windows.Visibility.Visible;
-                ServiceAction.Content = "Start";
-                ServiceState.Message = "Service is stopped.";
-                ServiceState.Severity = InfoBarSeverity.Warning;
-            }
-            else if ( _service.Status == ServiceControllerStatus.Running )
-            {
-                ServiceAction.Visibility = System.Windows.Visibility.Visible;
+                if ( status.IsConnected )
+                {
+                    ServiceState.Message = "Service is running and connected.";
+                    ServiceState.Severity = InfoBarSeverity.Success;
+
+                    ServiceInformationPanel.Visibility = System.Windows.Visibility.Visible;
+
+                    StartTime.Text = status.StartedDateTime.ToString();
+                    ConnectedSince.Text = status.ConnectedDateTime != null ? status.ConnectedDateTime.ToString() : "Unknown";
+                    TotalLabels.Text = status.TotalLabelsPrinted.ToString( "n0" );
+                }
+                else
+                {
+                    ServiceState.Message = "Service is running but not connected to a Rock server.";
+                    ServiceState.Severity = InfoBarSeverity.Warning;
+
+                    ServiceInformationPanel.Visibility = System.Windows.Visibility.Collapsed;
+                }
+
                 ServiceAction.Content = "Stop";
-                ServiceState.Message = "Service is running.";
-                ServiceState.Severity = InfoBarSeverity.Success;
             }
             else
             {
-                ServiceAction.Visibility = System.Windows.Visibility.Collapsed;
-                ServiceState.Message = "Service in unknown state.";
-                ServiceState.Severity = InfoBarSeverity.Informational;
-            }
+                ServiceState.Message = "Service does not appear to be running.";
+                ServiceState.Severity = InfoBarSeverity.Error;
 
-            // Until we fix permission requirement.
-            ServiceAction.Visibility = System.Windows.Visibility.Collapsed;
+                ServiceAction.Content = "Start";
+            }
         }
 
         private void ServiceAction_Click( object sender, System.Windows.RoutedEventArgs e )
@@ -124,18 +126,9 @@ namespace Rock.CloudPrint.Desktop.Pages
             {
                 try
                 {
-                    var pipeClient = new NamedPipeClientStream( "RockCloudPrintService" );
-                    await pipeClient.ConnectAsync( stoppingToken );
-                    var pipe = new PipeObjectStream( pipeClient );
+                    await Task.Delay( 1_000, stoppingToken );
 
-                    while ( !stoppingToken.IsCancellationRequested )
-                    {
-                        // Do something.
-
-                        await Task.Delay( 1_000, stoppingToken );
-                    }
-                    //await pipe.WriteAsync( new PipeRequest { Type = 0 } );
-                    //var result = await pipe.ReadAsync<PipeStatusResponse>();
+                    await Dispatcher.InvokeAsync( UpdateStatus );
                 }
                 catch ( TaskCanceledException ) when ( stoppingToken.IsCancellationRequested )
                 {
@@ -146,6 +139,56 @@ namespace Rock.CloudPrint.Desktop.Pages
                     System.Diagnostics.Debug.WriteLine( ex );
                 }
             }
+        }
+
+        private async Task RunPipeAsync( CancellationToken stoppingToken )
+        {
+            while ( !stoppingToken.IsCancellationRequested )
+            {
+                try
+                {
+                    var pipeClient = new NamedPipeClientStream( "RockCloudPrintService" );
+                    await pipeClient.ConnectAsync( stoppingToken );
+
+                    var pipe = new PipeObjectStream( pipeClient );
+                    await UpdateStatusFromServer( pipe, stoppingToken );
+
+                    _isRunning = true;
+
+                    while ( !stoppingToken.IsCancellationRequested )
+                    {
+                        await UpdateStatusFromServer( pipe, stoppingToken );
+
+                        await Task.Delay( 1_000, stoppingToken );
+                    }
+                }
+                catch ( TaskCanceledException ) when ( stoppingToken.IsCancellationRequested )
+                {
+                    break;
+                }
+                catch ( Exception ex )
+                {
+                    System.Diagnostics.Debug.WriteLine( ex );
+                }
+
+                _isRunning = false;
+
+                try
+                {
+                    await Task.Delay( 5_000, stoppingToken );
+                }
+                catch ( TaskCanceledException ) when ( stoppingToken.IsCancellationRequested )
+                {
+                    break;
+                }
+            }
+        }
+
+        private async Task UpdateStatusFromServer( PipeObjectStream pipe, CancellationToken cancellationToken )
+        {
+            await pipe.WriteAsync( new PipeRequest { Type = 0 }, cancellationToken );
+
+            _lastStatus = await pipe.ReadAsync<PipeStatusResponse>( cancellationToken );
         }
     }
 }

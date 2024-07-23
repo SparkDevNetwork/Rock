@@ -17,6 +17,7 @@
 import { defineComponent, ref, watch } from "vue";
 import { getFieldEditorProps } from "./utils";
 import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
+import { debounce } from "@Obsidian/Utility/util";
 
 type PhoneNumberFieldValue = {
     number: string,
@@ -36,6 +37,14 @@ export const EditComponent = defineComponent({
         const phoneNumber = ref("");
         const countryCode = ref("");
 
+        // We need to debounce this because when the country code changes, it also tends to change the phone number
+        // in order to format it, and if we emit both changes immediately, something on the outside is only
+        // catching one of them and so by the time it updates this modelValue prop, it actually overrides one of
+        // the changes.
+        const emitChanges = debounce(() => {
+            emit("update:modelValue", JSON.stringify({ number: phoneNumber.value, countryCode: countryCode.value }));
+        }, 5);
+
         watch(() => props.modelValue, () => {
             try {
                 const fieldValue = JSON.parse(props.modelValue) as PhoneNumberFieldValue;
@@ -43,15 +52,13 @@ export const EditComponent = defineComponent({
                 phoneNumber.value = fieldValue?.number ?? "";
                 countryCode.value = fieldValue?.countryCode ?? "";
             }
-            catch(e) {
+            catch (e) {
                 phoneNumber.value = "";
                 countryCode.value = "";
             }
-        }, {immediate:true});
+        }, {immediate: true});
 
-        watch([phoneNumber, countryCode], () => {
-            emit("update:modelValue", JSON.stringify({number:phoneNumber.value, countryCode:countryCode.value}));
-        });
+        watch([phoneNumber, countryCode], () => emitChanges());
 
         return {
             phoneNumber,

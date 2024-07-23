@@ -34,14 +34,21 @@ class ProxyClientWebSocket : ProxyWebSocket
     private readonly ILogger _logger;
 
     /// <summary>
+    /// The shared proxy status instance.
+    /// </summary>
+    private readonly ProxyStatus _status;
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="ProxyClientWebSocket"/> class.
     /// </summary>
     /// <param name="socket">The <see cref="WebSocket"/> used for communication.</param>
     /// <param name="logger">The instance used for logging.</param>
-    public ProxyClientWebSocket( WebSocket socket, ILogger logger )
+    /// <param name="status">The shared proxy status instance.</param>
+    public ProxyClientWebSocket( WebSocket socket, ILogger logger, ProxyStatus status )
         : base( socket )
     {
         _logger = logger;
+        _status = status;
     }
 
     /// <inheritdoc/>
@@ -59,6 +66,8 @@ class ProxyClientWebSocket : ProxyWebSocket
         }
         else if ( message is CloudPrintMessagePrint printMessage )
         {
+            _status.AddLabel();
+
             var printResult = await SendPrintDataAsync( printMessage.Address, extraData, cancellationToken );
 
             await PostResponseAsync( message, printResult, cancellationToken );

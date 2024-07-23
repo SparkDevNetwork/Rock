@@ -21,6 +21,41 @@
 
         <ui:Button x:Name="ServiceAction"
                    Appearance="Primary"
+                   Content="Start"
+                   HorizontalAlignment="Right"
                    Click="ServiceAction_Click" />
+
+        <StackPanel x:Name="ServiceInformationPanel" Margin="0,24,0,0">
+            <ui:TextBlock Margin="0,0,0,8"
+                          FontTypography="BodyStrong"
+                          Text="Service Information" />
+
+            <ui:CardControl Margin="0,0,0,12">
+                <ui:CardControl.Header>
+                    <StackPanel>
+                        <ui:TextBlock FontTypography="Body" Text="Start Time" />
+                        <ui:TextBlock x:Name="StartTime" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" Text="Unknown" />
+                    </StackPanel>
+                </ui:CardControl.Header>
+            </ui:CardControl>
+
+            <ui:CardControl Margin="0,0,0,12">
+                <ui:CardControl.Header>
+                    <StackPanel>
+                        <ui:TextBlock FontTypography="Body" Text="Connected Since" />
+                        <ui:TextBlock x:Name="ConnectedSince" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" Text="Unknown" />
+                    </StackPanel>
+                </ui:CardControl.Header>
+            </ui:CardControl>
+
+            <ui:CardControl Margin="0,0,0,12">
+                <ui:CardControl.Header>
+                    <StackPanel>
+                        <ui:TextBlock FontTypography="Body" Text="Labels Printed Since Start" />
+                        <ui:TextBlock x:Name="TotalLabels" Foreground="{ui:ThemeResource TextFillColorSecondaryBrush}" Text="0" />
+                    </StackPanel>
+                </ui:CardControl.Header>
+            </ui:CardControl>
+        </StackPanel>
     </StackPanel>
 </Page>
