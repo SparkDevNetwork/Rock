@@ -1718,11 +1718,11 @@ namespace RockWeb.Blocks.Cms
 
             if ( person.Id != CurrentPerson.Id && ( person.AccountProtectionProfile == AccountProtectionProfile.High || person.AccountProtectionProfile == AccountProtectionProfile.Extreme ) )
             {
-                var accountProtectionWarningMessage = "Email updates for this account can only be done by the owner.";
+                var accountProtectionWarningMessage = "Only the account owner can update the email.";
 
                 if ( GetAttributeValue( AttributeKey.ShowPhoneNumbers ).AsBoolean() )
                 {
-                    accountProtectionWarningMessage = "Email and phone updates for this account can only be done by the owner.";
+                    accountProtectionWarningMessage = "Only the account owner can update the email and phone number.";
 
                     foreach ( RepeaterItem item in rContactInfo.Items )
                     {
