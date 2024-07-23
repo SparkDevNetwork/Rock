@@ -324,6 +324,12 @@ namespace Rock.Model
         [DataMember]
         public bool ShowOnBulk { get; set; }
 
+        /// <summary>
+        /// Gets or sets a flag indicating if changes to the attribute values should be recorded into the generic History log table.
+        /// </summary>
+        [DataMember]
+        public bool IsSuppressHistoryLogging { get; set; }
+
         #endregion
 
         #region Navigation Properties

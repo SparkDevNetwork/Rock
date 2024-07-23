@@ -76,6 +76,10 @@
     <Compile Include="Migrations\202407222116293_AddCommunicationPushOpenMessageJsonColumns.Designer.cs">
       <DependentUpon>202407222116293_AddCommunicationPushOpenMessageJsonColumns.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202407231435427_AddIsSuppressHistoryLoggingToAttribute.cs" />
+    <Compile Include="Migrations\202407231435427_AddIsSuppressHistoryLoggingToAttribute.Designer.cs">
+      <DependentUpon>202407231435427_AddIsSuppressHistoryLoggingToAttribute.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.Designer.cs">
       <DependentUpon>202404221542135_Mobile_AdditionalSettingsJson.cs</DependentUpon>
@@ -2158,6 +2162,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202407222116293_AddCommunicationPushOpenMessageJsonColumns.resx">
       <DependentUpon>202407222116293_AddCommunicationPushOpenMessageJsonColumns.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202407231435427_AddIsSuppressHistoryLoggingToAttribute.resx">
+      <DependentUpon>202407231435427_AddIsSuppressHistoryLoggingToAttribute.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.resx">
       <DependentUpon>202404221542135_Mobile_AdditionalSettingsJson.cs</DependentUpon>
