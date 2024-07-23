@@ -73,7 +73,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         Description = "Lava template for rendering each result item. The Lava merge field will be 'Item'.",
         TemplateBlockValueGuid = SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_CORE_SEARCH,
         IsRequired = true,
-        DefaultValue = "50FABA2A-B23C-46CD-A634-2F54BC1AE8C3",
+        DefaultValue = "351A873D-B82E-4700-99ED-5A6D5B3E4149",
         Key = AttributeKey.ResultItemTemplate,
         Order = 4 )]
 
@@ -188,9 +188,7 @@ namespace Rock.Blocks.Types.Mobile.Core
         /// </summary>
         private static class DefaultAttributeValue
         {
-            public const string ResultsSeparatorContent = @"<StackLayout StyleClass=""search-result-header"">
-    <Rock:Divider />
-</StackLayout>";
+            public const string ResultsSeparatorContent = @"";
         }
 
         /// <summary>
