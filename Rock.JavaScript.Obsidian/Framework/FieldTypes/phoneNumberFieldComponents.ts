@@ -14,9 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent } from "vue";
+import { defineComponent, ref, watch } from "vue";
 import { getFieldEditorProps } from "./utils";
 import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
+import { debounce } from "@Obsidian/Utility/util";
+
+type PhoneNumberFieldValue = {
+    number: string,
+    countryCode: string
+};
 
 export const EditComponent = defineComponent({
     name: "PhoneNumberField.Edit",
@@ -27,33 +33,41 @@ export const EditComponent = defineComponent({
 
     props: getFieldEditorProps(),
 
-    data() {
+    setup(props, { emit }) {
+        const phoneNumber = ref("");
+        const countryCode = ref("");
+
+        // We need to debounce this because when the country code changes, it also tends to change the phone number
+        // in order to format it, and if we emit both changes immediately, something on the outside is only
+        // catching one of them and so by the time it updates this modelValue prop, it actually overrides one of
+        // the changes.
+        const emitChanges = debounce(() => {
+            emit("update:modelValue", JSON.stringify({ number: phoneNumber.value, countryCode: countryCode.value }));
+        }, 5);
+
+        watch(() => props.modelValue, () => {
+            try {
+                const fieldValue = JSON.parse(props.modelValue) as PhoneNumberFieldValue;
+
+                phoneNumber.value = fieldValue?.number ?? "";
+                countryCode.value = fieldValue?.countryCode ?? "";
+            }
+            catch (e) {
+                phoneNumber.value = "";
+                countryCode.value = "";
+            }
+        }, {immediate: true});
+
+        watch([phoneNumber, countryCode], () => emitChanges());
+
         return {
-            internalValue: ""
+            phoneNumber,
+            countryCode
         };
     },
 
-    computed: {
-        configAttributes(): Record<string, number | boolean> {
-            const attributes: Record<string, number | boolean> = {};
-            return attributes;
-        }
-    },
-
-    watch: {
-        internalValue(): void {
-            this.$emit("update:modelValue", this.internalValue);
-        },
-        modelValue: {
-            immediate: true,
-            handler(): void {
-                this.internalValue = this.modelValue || "";
-            }
-        }
-    },
-
     template: `
-<PhoneNumberBox v-model="internalValue" v-bind="configAttributes" />
+<PhoneNumberBox v-model="phoneNumber" v-model:countryCode="countryCode" />
 `
 });
 
