@@ -122,6 +122,8 @@ namespace Rock.Model
             target.CCEmails = source.CCEmails;
             target.CommunicationTemplateId = source.CommunicationTemplateId;
             target.CommunicationType = source.CommunicationType;
+            target.EmailMetricsReminderOffsetDays = source.EmailMetricsReminderOffsetDays;
+            target.EmailMetricsReminderSentDateTime = source.EmailMetricsReminderSentDateTime;
             target.EnabledLavaCommands = source.EnabledLavaCommands;
             target.ExcludeDuplicateRecipientAddress = source.ExcludeDuplicateRecipientAddress;
             target.ForeignGuid = source.ForeignGuid;

@@ -440,6 +440,24 @@ namespace Rock.Model
             {
             }
         }
+        
+        /// <summary>
+        /// Gets or sets the number of days to wait after the communication is sent to send the email metrics reminder communication.
+        /// </summary>
+        /// <value>
+        /// The number of days to wait after the communication is sent to send the email metrics reminder communication.
+        /// </value>
+        [DataMember]
+        public int? EmailMetricsReminderOffsetDays { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the datetime that the email metrics reminder communication was sent.
+        /// </summary>
+        /// <value>
+        /// The email metrics reminder communication send date time.
+        /// </value>
+        [DataMember]
+        public DateTime? EmailMetricsReminderSentDateTime { get; set; }
 
         #endregion
 
