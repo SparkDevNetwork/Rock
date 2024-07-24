@@ -15,8 +15,6 @@
 // </copyright>
 //
 
-import { DateTimeFormat } from "./rockDateTime";
-
 /**
  * A helper object that provides equivalent format strings for a given locale,
  * for the various date libraries used throughout Rock.
@@ -70,7 +68,11 @@ export class LocaleDateFormatter {
         // string. Note that month is specified as an index in the Date
         // constructor, so "2" represents month "3".
         const date = new Date(2222, 2, 4);
-        const localeDateString = date.toLocaleDateString(undefined, DateTimeFormat.DateShort);
+        const localeDateString = date.toLocaleDateString(undefined, {
+            year: "numeric",
+            month: "numeric",
+            day: "numeric"
+        });
 
         // Fall back to a default, en-US format string if any step of the
         // parsing fails.
@@ -78,36 +80,36 @@ export class LocaleDateFormatter {
 
         let localeFormatString = localeDateString;
 
-        // Replace the known year date part with the 4 digit format string.
+        // Replace the known year date part with a 2 or 4 digit format string.
         if (localeDateString.includes("2222")) {
             localeFormatString = localeDateString
                 .replace("2222", "YYYY");
         }
         else if (localeDateString.includes("22")) {
             localeFormatString = localeDateString
-                .replace("22", "YYYY");
+                .replace("22", "YY");
         }
         else {
             return new LocaleDateFormatter(defaultFormatString);
         }
 
-        // Replace the known month date part with the 2 digit format string.
+        // Replace the known month date part with a 1 or 2 digit format string.
         if (localeFormatString.includes("03")) {
             localeFormatString = localeFormatString.replace("03", "MM");
         }
         else if (localeFormatString.includes("3")) {
-            localeFormatString = localeFormatString.replace("3", "MM");
+            localeFormatString = localeFormatString.replace("3", "M");
         }
         else {
             return new LocaleDateFormatter(defaultFormatString);
         }
 
-        // Replace the known day date part with the 2 digit format string.
+        // Replace the known day date part with a 1 or 2 digit format string.
         if (localeFormatString.includes("04")) {
             localeFormatString = localeFormatString.replace("04", "DD");
         }
         else if (localeFormatString.includes("4")) {
-            localeFormatString = localeFormatString.replace("4", "DD");
+            localeFormatString = localeFormatString.replace("4", "D");
         }
         else {
             return new LocaleDateFormatter(defaultFormatString);
