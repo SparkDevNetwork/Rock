@@ -50,6 +50,12 @@ namespace Rock.Client
         public Rock.Client.Enums.CommunicationType CommunicationType { get; set; }
 
         /// <summary />
+        public int? EmailMetricsReminderOffsetDays { get; set; }
+
+        /// <summary />
+        public DateTime? EmailMetricsReminderSentDateTime { get; set; }
+
+        /// <summary />
         public string EnabledLavaCommands { get; set; }
 
         /// <summary />
@@ -199,6 +205,8 @@ namespace Rock.Client
             this.CCEmails = source.CCEmails;
             this.CommunicationTemplateId = source.CommunicationTemplateId;
             this.CommunicationType = source.CommunicationType;
+            this.EmailMetricsReminderOffsetDays = source.EmailMetricsReminderOffsetDays;
+            this.EmailMetricsReminderSentDateTime = source.EmailMetricsReminderSentDateTime;
             this.EnabledLavaCommands = source.EnabledLavaCommands;
             this.ExcludeDuplicateRecipientAddress = source.ExcludeDuplicateRecipientAddress;
             this.ForeignGuid = source.ForeignGuid;
