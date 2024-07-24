@@ -1348,6 +1348,9 @@ namespace Rock.Model
                     Person = a.Person,
                     Note = a.Note,
                     ScheduleTemplateId = a.ScheduleTemplateId,
+                    // LPC CODE
+                    ScheduleTemplateName = a.ScheduleTemplate.Name,
+                    // END LPC CODE
                     ScheduleStartDate = a.ScheduleStartDate,
                     MemberAssignments = a.GroupMemberAssignments
                         .Where( x => x.ScheduleId.HasValue ).Select( s => new MemberAssignmentInfo
@@ -1452,6 +1455,9 @@ namespace Rock.Model
                      */
                     GroupMemberId = a.GroupMemberId,
                     GroupRole = groupTypeRoleCacheLookup.GetValueOrNull( a.GroupRoleId ),
+                    // LPC CODE
+                    ScheduleTemplateName = a.ScheduleTemplateName,
+                    // END LPC CODE
                     ResourcePreferenceList = a.MemberAssignments?
                         .OrderBy( r => r.Schedule.Order )
                         .ThenBy( r => r.Schedule.GetNextStartDateTime( RockDateTime.Now.Date ) )
@@ -3080,6 +3086,9 @@ namespace Rock.Model
             public Person Person { get; set; }
             public string Note { get; set; }
             public int? ScheduleTemplateId { get; set; }
+            // LPC CODE
+            public string ScheduleTemplateName { get; set; }
+            // END LPC CODE
             public DateTime? ScheduleStartDate { get; set; }
             public IEnumerable<MemberAssignmentInfo> MemberAssignments { get; internal set; }
         }
@@ -3399,6 +3408,17 @@ namespace Rock.Model
         /// The group member identifier.
         /// </value>
         public int? GroupMemberId { get; set; }
+
+        // LPC CODE
+        /// <summary>
+        /// Gets or sets the name of the group member's ScheduleTemplate.
+        /// NOTE: This will be NULL if the resource list has manually added personIds and/or comes from a Person DataView.
+        /// </summary>
+        /// <value>
+        /// The name of the group member's ScheduleTemplate.
+        /// </value>
+        public string ScheduleTemplateName { get; set; }
+        // END LPC CODE
 
         /// <summary>
         /// Gets or sets the name of the person nick.

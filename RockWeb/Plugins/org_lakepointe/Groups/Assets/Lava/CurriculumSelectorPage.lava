@@ -1,0 +1,84 @@
+<!-- Curriclulm Selection -->
+<style>
+    .btn-primary {
+        margin-top: 15px;
+        margin-bottom: 15px;
+        padding-top: 15px;
+        padding-bottom: 15px;
+        display: block;
+    }
+
+    .two-lines {
+        height: 3em;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        text-wrap: wrap;
+        margin: 0;
+    }
+</style>
+
+
+<!-- figure out what curricula they should be able to see -->
+{% sql personAliasId:'{{ Person.PrimaryAlias.Id }}' return:'curricula'%}
+    -- This will replace the old _org_lakepointe_sp_CanViewLgCurriculum
+
+    DECLARE @FeatureSetAttributeId INT = 132518
+    DECLARE @Curriculum NVARCHAR(40) = '%63E6EA73-7E54-4BF6-A060-100F028B19A1%' -- Curriculum
+
+    -- check if in an Override Group
+    DECLARE @Override INT;
+    SELECT @Override = CASE WHEN EXISTS
+    (
+        SELECT gm.PersonId
+        FROM [GroupMember] gm
+        JOIN [PersonAlias] pa ON pa.PersonId = gm.PersonId AND pa.Id = @PersonAliasId
+        WHERE gm.GroupId IN (1002372, 800522)
+            AND gm.IsArchived = 0 AND gm.GroupMemberStatus = 1
+    ) THEN 1 ELSE 0 END;
+
+    SELECT dv.Id, dv.Value, dv.Description, ldv.Id AS [LanguageId], ldv.Value AS [Language],
+        CASE WHEN glt.Value IS NULL THEN 'True' ELSE glt.Value END AS [DisplayOnGLT] -- attribute defaults to true but may not be present
+    FROM [DefinedValue] dv
+    JOIN [AttributeValue] av ON TRY_CAST(av.Value AS UNIQUEIDENTIFIER) = dv.Guid
+    JOIN [Attribute] a ON a.Id = av.AttributeId AND a.[Key] = 'GroupCurriculum'
+    JOIN
+    (
+        SELECT g.Id, pa.Id AS PersonAliasId
+        FROM [Group] g
+        JOIN [GroupMember] gm ON gm.GroupId = g.Id AND gm.IsArchived = 0 AND gm.GroupMemberStatus = 1
+        JOIN [PersonAlias] pa ON pa.PersonId = gm.PersonId
+        JOIN [GroupTypeRole] gtr ON gtr.Id = gm.GroupRoleId
+        JOIN [AttributeValue] av ON av.EntityId = gtr.Id
+            AND av.AttributeId = @FeatureSetAttributeId
+            AND av.Value LIKE @Curriculum
+    ) gd ON gd.Id = av.EntityId AND (@Override = 1 OR gd.PersonAliasId = @PersonAliasId)
+    JOIN [AttributeValue] l ON l.EntityId = dv.Id AND l.AttributeId = 107473
+    JOIN [DefinedValue] ldv ON ldv.Guid = TRY_CAST(l.Value AS UNIQUEIDENTIFIER) AND ldv.DefinedTypeId = 350
+    LEFT JOIN [AttributeValue] glt ON glt.EntityId = dv.Id AND glt.AttributeId = 108716
+    WHERE dv.DefinedTypeId = 381 AND dv.IsActive = 1
+    GROUP BY dv.Id, dv.Value, dv.Description, ldv.Id, ldv.Value, glt.Value
+{% endsql %}
+
+{% assign channelCount = curricula | Size %}
+{% if channelCount == 1 %}
+    {% capture link %}{{ 'Global' | Attribute:'PublicApplicationRoot' }}page/{% case curricula[0].LanguageId %}{% when 5658 %}4667{% when 5659 %}4669{% endcase %}?CurriculumId={{ curricula[0].Id }}{% endcapture %}
+    {{ link | PageRedirect }}
+{% else %}
+    <div class="container-fluid">
+        <div class="row">
+            {% for curriculum in curricula %}
+                <div class="col-sm-12 col-md-6 col-lg-3">
+                    {% capture link %}{{ 'Global' | Attribute:'PublicApplicationRoot' }}page/{% case curriculum.LanguageId %}{% when 5658 %}4667{% when 5659 %}4669{% endcase %}?CurriculumId={{ curriculum.Id }}{% endcapture %}
+                    <a href="{{ link }}" class="btn btn-primary stretched-link"
+                        data-toggle="tooltip" data-placement="top" data-html="true">
+                        <i class="fal fa-newspaper fa-5x"></i>
+                        <p class="two-lines">{{ curriculum.Value }}</p>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}

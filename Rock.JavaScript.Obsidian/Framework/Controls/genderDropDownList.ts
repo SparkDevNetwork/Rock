@@ -14,11 +14,24 @@
 // limitations under the License.
 // </copyright>
 //
-import { computed, defineComponent } from "vue";
+import { PropType, computed, defineComponent } from "vue";
 import { normalizeRules, rulesPropType } from "@Obsidian/ValidationRules";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import DropDownList from "./dropDownList";
 import { Gender } from "@Obsidian/Enums/Crm/gender";
+// LPC CODE
+import { useStore } from "@Obsidian/PageState";
+const store = useStore();
+/** Gets the lang parameter from the query string.
+ * Returns "en" or "es". Defaults to "en" if invalid. */
+function getLang(): string {
+    var lang = typeof store.state.pageParameters["lang"] === 'string' ? store.state.pageParameters["lang"] : "";
+    if (lang != "es") {
+        lang = "en";
+    }
+    return lang;
+}
+// END LPC CODE
 
 export default defineComponent({
     name: "GenderDropDownList",
@@ -31,12 +44,20 @@ export default defineComponent({
         rules: rulesPropType
     },
 
+    // LPC CODE
+    methods: {
+        getLang
+    },
+    // END LPC CODE
+
     setup(props) {
+        // LPC MODIFIED CODE
         const options: ListItemBag[] = [
             { text: " ", value: Gender.Unknown.toString() },
-            { text: "Male", value: Gender.Male.toString() },
-            { text: "Female", value: Gender.Female.toString() }
+            { text: getLang() == "es" ? "Masculino" : "Male", value: Gender.Male.toString() },
+            { text: getLang() == "es" ? "Femenino" : "Female", value: Gender.Female.toString() }
         ];
+        // END LPC MODIFIED CODE
 
         const computedRules = computed(() => {
             const rules = normalizeRules(props.rules);
@@ -55,7 +76,9 @@ export default defineComponent({
         };
     },
 
+    // LPC MODIFIED CODE
     template: `
-<DropDownList label="Gender" :items="options" :showBlankItem="false" :rules="computedRules" />
+<DropDownList :label="getLang() == 'es' ? 'Género' : 'Gender'" :items="options" :showBlankItem="false" :rules="computedRules" />
 `
+    // END LPC MODIFIED CODE
 });

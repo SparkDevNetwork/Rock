@@ -212,7 +212,7 @@ namespace RockWeb.Blocks.Event
                         }
                     }
 
-                    eventItem.EventItemOccurrences = occurrenceList;
+                    eventItem.EventItemOccurrences = occurrenceList.OrderBy( o => o.Campus?.Order ).ThenBy( o => o.EventItem.Name ).ToList();
 
                     var mergeFields = new Dictionary<string, object>();
                     mergeFields.Add( "RegistrationPage", LinkedPageRoute( "RegistrationPage" ) );

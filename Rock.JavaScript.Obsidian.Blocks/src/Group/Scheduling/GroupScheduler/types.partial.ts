@@ -68,6 +68,11 @@ export interface ISchedulerResource {
     /** The group member ID. NOTE: This will be NULL if the resource list has manually added personIds and/or comes from a Person DataView. */
     GroupMemberId?: number | null,
 
+    // LPC CODE
+    /** The name of the group member's ScheduleTemplate. NOTE: This will be NULL if the resource list has manually added personIds and/or comes from a Person DataView. */
+    ScheduleTemplateName?: string | null,
+    // END LPC CODE
+
     /** The nickname of the person. */
     PersonNickName?: string | null,
 

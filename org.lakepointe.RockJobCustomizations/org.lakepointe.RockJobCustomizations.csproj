@@ -70,6 +70,9 @@
     <Compile Include="AddToGroupAfterConnectionStatusChange.cs" />
     <Compile Include="AttendanceCleanup.cs" />
     <Compile Include="BackgroundCheckUpdate.cs" />
+    <Compile Include="CheckAzureSqlScale.cs" />
+    <Compile Include="TestSmsPipeline.cs" />
+    <Compile Include="ManageBaptismSchedules.cs" />
     <Compile Include="GroupAttendeesWithoutAttendanceCleanup.cs" />
     <Compile Include="GenerateLGCodes.cs" />
     <Compile Include="Groups\GroupUpdateNotification.cs" />

@@ -87,6 +87,24 @@ namespace Rock.Blocks.Engagement.SignUp
         DefaultBooleanValue = false,
         Order = 5 )]
 
+    [DefinedValueField( "Connection Status",
+        Key = AttributeKey.ConnectionStatus,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS,
+        Description = "The connection status to use for new individuals (default: 'Web Prospect'.)",
+        IsRequired = true,
+        AllowMultiple = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PROSPECT,
+        Order = 6 )]
+
+    [DefinedValueField( "Record Status",
+        Key = AttributeKey.RecordStatus,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS,
+        Description = "The record status to use for new individuals (default: 'Pending'.)",
+        IsRequired = true,
+        AllowMultiple = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING,
+        Order = 7 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "ED7A31F2-8D4C-469A-B2D8-7E28B8717FB8" )]
@@ -103,6 +121,8 @@ namespace Rock.Blocks.Engagement.SignUp
             public const string RegistrantConfirmationSystemCommunication = "RegistrantConfirmationSystemCommunication";
             public const string RequireEmail = "RequireEmail";
             public const string RequireMobilePhone = "RequireMobilePhone";
+            public const string ConnectionStatus = "ConnectionStatus";
+            public const string RecordStatus = "RecordStatus";
         }
 
         private static class PageParameterKey
@@ -789,6 +809,9 @@ namespace Rock.Blocks.Engagement.SignUp
             var groupMemberAssignmentsToDelete = new List<GroupMemberAssignment>();
             var groupMembersToDelete = new List<GroupMember>();
 
+            var recordStatusValue = DefinedValueCache.Get( GetAttributeValue( AttributeKey.RecordStatus ).AsGuid() ) ?? DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() );
+            var connectionStatusValue = DefinedValueCache.Get( GetAttributeValue( AttributeKey.ConnectionStatus ).AsGuid() ) ?? DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PROSPECT.AsGuid() );
+
             if ( mode == RegisterMode.Anonymous )
             {
                 if ( GetAttributeValue( AttributeKey.RequireEmail ).AsBoolean() && registrants.Any( r => string.IsNullOrWhiteSpace( r.Email ) ) )
@@ -918,7 +941,9 @@ namespace Rock.Blocks.Engagement.SignUp
                             LastName = registrant.LastName,
                             Email = registrant.Email,
                             RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id,
-                            CommunicationPreference = communicationPreference
+                            CommunicationPreference = communicationPreference,
+                            RecordStatusValueId = recordStatusValue != null ? recordStatusValue.Id : ( int? ) null,
+                            ConnectionStatusValueId = connectionStatusValue != null ? connectionStatusValue.Id : ( int? ) null
                         };
 
                         if ( wasMobilePhoneProvided )

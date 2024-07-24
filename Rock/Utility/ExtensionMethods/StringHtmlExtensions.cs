@@ -202,7 +202,7 @@ namespace Rock
         /// <returns>true if valid email, false otherwise</returns>
         public static bool IsValidEmail( this string email )
         {
-            Match match = Regex.Match( email, @"[\w\.\'_%-]+(\+[\w-]*)?@([\w-]+\.)+[\w-]+" );
+            Match match = Regex.Match( email, @"[\w\.\'_%-]+(\+[\w\.\'_%-]*)?@([\w-]+\.)+[\w-]+" ); // LPC change to improve + email address handling
             if ( !match.Success || match.Index != 0 )
             {
                 return false;

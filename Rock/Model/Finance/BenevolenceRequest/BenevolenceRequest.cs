@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -69,7 +69,7 @@ namespace Rock.Model
         [DataMember]
         [MaxLength( 254 )]
         [Previewable]
-        [RegularExpression( @"[\w\.\'_%-]+(\+[\w-]*)?@([\w-]+\.)+[\w-]+", ErrorMessage = "The Email address is invalid" )]
+        [RegularExpression( @"[\w\.\'_%-]+(\+[\w\.\'_%-]*)?@([\w-]+\.)+[\w-]+", ErrorMessage = "The Email address is invalid" )]  // LPC Change to improve +email address handling
         public string Email { get; set; }
 
         /// <summary>

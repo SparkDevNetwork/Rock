@@ -1,5 +1,8 @@
 {% assign day = 'Now' | Date:'dddd' %}
 
+{%- comment -%}
+Child label
+{%- endcomment -%}
 CT~~CD,~CC^~CT~
 ^XA~JSN^LT0^MNW^MTD^PON^PMN^LH0,0^JMA^PR6,6~SD15^LRN^CI27^XZ
 ^XA^PW800^LL0400^LS0
@@ -12,14 +15,13 @@ CT~~CD,~CC^~CT~
 ^FO7,285^FB547,1,0,L^A0N,80,80^FH\^FD
 {% for groupMember in GroupMembers %}
     {% if groupMember.PersonId == Person.Id %}
-        {% assign color = groupMember | Attribute:'ColorGroup','Object' | Property:'Description'%}
-        {{color}} {{groupMember | Attribute:'Pack'}}
+        {{groupMember | Attribute:'SmallGroup'}} {{groupMember | Attribute:'GradeColor','Object' | Property:'Description'}}{{groupMember | Attribute:'SNGradeColor','Object' | Property:'Description'}}
         {% break %}
     {% endif %}
 {% endfor %}
 {% for groupMember in Group.Members %}
     {% if groupMember.PersonId == Person.Id %}
-        {{groupMember | Attribute:'ColorGroup','Object' | Property:'Description'}} {{groupMember | Attribute:'Pack'}}
+        {{groupMember | Attribute:'SmallGroup'}} {{groupMember | Attribute:'GradeColor','Object' | Property:'Description'}}{{groupMember | Attribute:'SNGradeColor','Object' | Property:'Description'}}
         {% break %}
     {% endif %}
 {% endfor %}
@@ -29,14 +31,12 @@ CT~~CD,~CC^~CT~
 ^FO580,220^FB290,1,0,C^A0N,75,75^FD{{ Person.SecurityCode }}^FS
 ^FO615,330^FB200,1,0,L^A0N,75,75^FD
 {% case day %}
-{% when 'Monday' %}
-Day 1
 {% when 'Tuesday' %}
-Day 2
+Day 1
 {% when 'Wednesday' %}
-Day 3
+Day 2
 {% when 'Thursday' %}
-Day 4
+Day 3
 {% endcase %}
 ^FS
 
@@ -52,7 +52,9 @@ Day 4
 
 
 
-
+{%- comment -%}
+In slip
+{%- endcomment -%}
 ^XA~JSN^LT0^MNW^MTD^POI^PMN^LH0,0^JMA^PR6,6~SD15^LRN^CI27^XZ
 ^XA^PW800^LL0400^LS0^FWI,0
 
@@ -62,14 +64,12 @@ Day 4
 
 ^FO700,7^FB300,L^A0R,90,90^FH\^FD
 {% case day %}
-{% when 'Monday' %}
-Day 1
 {% when 'Tuesday' %}
-Day 2
+Day 1
 {% when 'Wednesday' %}
-Day 3
+Day 2
 {% when 'Thursday' %}
-Day 4
+Day 3
 {% endcase %}
 ^FS
 
@@ -80,6 +80,7 @@ Day 4
 
 ^FO380,7^FB100,L^A0R,100,100^FH\^FD{% assign personAllergy = Person | Attribute:'Allergy' %}{% if personAllergy != '' %}A{% endif %}^FS
 ^FO380,80^FB100,1,0,L^A0R,100,100^FH\^FD{% assign personMedicalAlert = Person | Attribute:'Arena-16-81' %}{% if personMedicalAlert  != '' %}M{% endif %}^FS
+^FO380,170^FB100,1,0,L^A0R,100,100^FH\^FD{% assign personLegalNotes = Person | Attribute:'LegalNotes' %}{% if personLegalNotes != '' %}C{% endif %}^FS
 
 ^FO360,7^FB325,1,0,L^A0R,20,20^FH\^FD{% assign personAllergy = Person | Attribute:'Allergy' %}{% if personAllergy != '' %}{{ personAllergy | Truncate:50,'...' }}{% endif %}^FS
 
@@ -87,14 +88,13 @@ Day 4
 ^FO200,7^FB325,1,0,L^A0R,75,75^FH\^FD
 {% for groupMember in GroupMembers %}
     {% if groupMember.PersonId == Person.Id %}
-        {% assign color = groupMember | Attribute:'ColorGroup','Object' | Property:'Description'%}
-        {{color}} {{groupMember | Attribute:'Pack'}}
+        {{groupMember | Attribute:'SmallGroup'}} {{groupMember | Attribute:'GradeColor','Object' | Property:'Description'}}{{groupMember | Attribute:'SNGradeColor','Object' | Property:'Description'}}
         {% break %}
     {% endif %}
 {% endfor %}
 {% for groupMember in Group.Members %}
     {% if groupMember.PersonId == Person.Id %}
-        {{groupMember | Attribute:'ColorGroup','Object' | Property:'Description'}} {{groupMember | Attribute:'Pack'}}
+        {{groupMember | Attribute:'SmallGroup'}} {{groupMember | Attribute:'GradeColor','Object' | Property:'Description'}}{{groupMember | Attribute:'SNGradeColor','Object' | Property:'Description'}}
         {% break %}
     {% endif %}
 {% endfor %}
@@ -104,15 +104,7 @@ Day 4
 ^FO0,7^FB325,L^A0R,100,100^FH\^FD{{ Person.SecurityCode }}^FS
 ^FO10,345^FB410,L^A0,40,40^FH\^FD*Give this label to leader^FS
 
-{% comment %}
-Lava if statements are checked right to left.
-{% endcomment %}
-{% if day != 'Wednesday' and Group.GroupTypeId == 598 or Group.GroupTypeId == 617 %}
-^MMC
-{% else %}
 ^MMT
-{% endif %}
-
 ^XZ
 
 
@@ -120,7 +112,7 @@ Lava if statements are checked right to left.
 
 
 {%- comment -%}
-Only print memo label on Wednesday.
+Evangelism label - Only on Wednesday
 {%- endcomment -%}
 {% if day == 'Wednesday'%}
 ^XA~JSN^LT0^MNW^MTD^PON^PMN^LH0,0^JMA^PR6,6~SD15^LRN^CI27^XZ
@@ -134,13 +126,13 @@ Only print memo label on Wednesday.
 ^FO257,200^FB260,1,0,L^A0N,40,40^FH\^FD
 {% for groupMember in GroupMembers %}
     {% if groupMember.PersonId == Person.Id %}
-        {{groupMember | Attribute:'ColorGroup','Object' | Property:'Description'}} {{groupMember | Attribute:'Pack'}}
+        {{groupMember | Attribute:'SmallGroup'}} {{groupMember | Attribute:'GradeColor','Object' | Property:'Description'}}{{groupMember | Attribute:'SNGradeColor','Object' | Property:'Description'}}
         {% break %}
     {% endif %}
 {% endfor %}
 {% for groupMember in Group.Members %}
     {% if groupMember.PersonId == Person.Id %}
-        {{groupMember | Attribute:'ColorGroup','Object' | Property:'Description'}} {{groupMember | Attribute:'Pack'}}
+        {{groupMember | Attribute:'SmallGroup'}} {{groupMember | Attribute:'GradeColor','Object' | Property:'Description'}}{{groupMember | Attribute:'SNGradeColor','Object' | Property:'Description'}}
         {% break %}
     {% endif %}
 {% endfor %}
@@ -151,12 +143,7 @@ Only print memo label on Wednesday.
 ^FO7,325^FB800,1,0,L^A0N,30,30^FH\^FDParent Phone: {{Person | Attribute:'ParentsCellPhone'}}^FS
 ^FO7,360^FB800,1,0,L^A0N,30,30^FH\^FDPreferred Language: {{Person | Attribute:'PreferredLanguage'}}^FS
 
-{% if Group.GroupTypeId == 598 or Group.GroupTypeId == 617 %}
-^MMC
-{% else %}
 ^MMT
-{% endif %}
-
 ^XZ
 {% endif %}
 
@@ -165,11 +152,8 @@ Only print memo label on Wednesday.
 
 
 {%- comment -%}
-Only print out slip if not 4th & 5th grade.
-598 is the RW 4 & 5 group type
-617 is the FW 4 & 5 group type
+Out slip
 {%- endcomment -%}
-{% if Group.GroupTypeId != 598 and Group.GroupTypeId != 617 %}
 ^XA~JSN^LT0^MNW^MTD^POI^PMN^LH0,0^JMA^PR6,6~SD15^LRN^CI27^XZ
 ^XA^PW800^LL0400^LS0^FWI,0
 
@@ -179,14 +163,12 @@ Only print out slip if not 4th & 5th grade.
 
 ^FO700,7^FB300,L^A0R,90,90^FH\^FD
 {% case day %}
-{% when 'Monday' %}
-Day 1
 {% when 'Tuesday' %}
-Day 2
+Day 1
 {% when 'Wednesday' %}
-Day 3
+Day 2
 {% when 'Thursday' %}
-Day 4
+Day 3
 {% endcase %}
 ^FS
 
@@ -195,18 +177,19 @@ Day 4
 
 ^FO540,7^FB387,1,0,L^A0R,30,30^FH\^FD{{ Person.GradeFormatted }}^FS
 
+^FO380,7^FB100,L^A0R,100,100^FH\^FD{% assign personLegalNotes = Person | Attribute:'LegalNotes' %}{% if personLegalNotes != '' %}C{% endif %}^FS
+
 ^FO280,7^FB325,1,0,L^A0R,30,30^FH\^FD{{Group.Id | GroupById | Property:'Name'}}^FS
 ^FO200,7^FB325,1,0,L^A0R,75,75^FH\^FD
 {% for groupMember in GroupMembers %}
     {% if groupMember.PersonId == Person.Id %}
-        {% assign color = groupMember | Attribute:'ColorGroup','Object' | Property:'Description'%}
-        {{color}} {{groupMember | Attribute:'Pack'}}
+        {{groupMember | Attribute:'SmallGroup'}} {{groupMember | Attribute:'GradeColor','Object' | Property:'Description'}}{{groupMember | Attribute:'SNGradeColor','Object' | Property:'Description'}}
         {% break %}
     {% endif %}
 {% endfor %}
 {% for groupMember in Group.Members %}
     {% if groupMember.PersonId == Person.Id %}
-        {{groupMember | Attribute:'ColorGroup','Object' | Property:'Description'}} {{groupMember | Attribute:'Pack'}}
+        {{groupMember | Attribute:'SmallGroup'}} {{groupMember | Attribute:'GradeColor','Object' | Property:'Description'}}{{groupMember | Attribute:'SNGradeColor','Object' | Property:'Description'}}
         {% break %}
     {% endif %}
 {% endfor %}
@@ -219,4 +202,3 @@ Day 4
 
 ^MMC
 ^XZ
-{% endif %}

@@ -337,7 +337,21 @@
 
                 <div id="divGridActivities" runat="server">
                     <div class="panel-heading">
-                        <h1 class="panel-title">Activities</h1>
+                        <!-- LPC CODE -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <!-- END LPC CODE -->
+                                <h1 class="panel-title">Activities</h1>
+                                <!-- LPC CODE -->
+                            </div>
+                            <div class="col-md-6 text-right">
+                                <asp:LinkButton runat="server" ID="lbRequestModalViewModeAddActivity" CssClass="btn btn-default btn-xs">
+                                    <i class="fa fa-plus"></i>
+                                    Add Activity
+                                </asp:LinkButton>
+                            </div>
+                        </div>
+                        <!-- END LPC CODE -->
                     </div>
                     <div class="panel-body">
                         <div class="grid grid-panel">

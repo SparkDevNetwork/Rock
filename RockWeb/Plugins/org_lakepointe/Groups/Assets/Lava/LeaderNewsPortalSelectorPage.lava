@@ -1,0 +1,69 @@
+<!-- Leader News Portal Selection -->
+<style>
+    .btn-primary {
+        margin-top: 15px;
+        margin-bottom: 15px;
+        padding-top: 15px;
+        padding-bottom: 15px;
+        display: block;
+    }
+
+    .two-lines {
+        height: 3em;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        text-wrap: wrap;
+        margin: 0;
+    }
+</style>
+
+<!-- figure out what leader portals they should be able to see -->
+{% sql personAliasId:'{{ Person.PrimaryAlias.Id }}' return:'newschannels'%}
+    DECLARE @FeatureSetAttributeId INT = 132518
+    DECLARE @News NVARCHAR(40) = '%E93C8E1D-AFE2-486C-BD10-74DFE47593F5%' -- 10096 Leader News Portal
+
+    SELECT ChannelName, ChannelUrl
+    FROM
+    (
+        -- members of a group with a role that can view a Leader News Portal
+        SELECT newsChannel.Value AS [ChannelName], newsChannel.Description AS [ChannelUrl], newsChannel.[Order] AS [Order]
+        FROM [Group] g
+        JOIN [GroupType] gt ON gt.Id = g.GroupTypeId
+        JOIN [GroupMember] gm ON gm.GroupId = g.Id AND gm.GroupMemberStatus = 1
+        JOIN [PersonAlias] pa ON pa.PersonId = gm.PersonId
+            AND pa.Id = @PersonAliasId
+        JOIN [GroupTypeRole] gtr ON gtr.Id = gm.GroupRoleId
+        JOIN [AttributeValue] av ON av.EntityId = gtr.Id
+            AND av.AttributeId = @FeatureSetAttributeId
+            AND av.Value LIKE @News
+        JOIN [AttributeValue] nc ON nc.EntityId = gt.Id
+        JOIN [Attribute] nct ON nct.Id = nc.AttributeId AND nct.[Key] = 'LeaderNewsPortal'
+        JOIN [DefinedValue] newsChannel ON newsChannel.Guid = TRY_CAST(nc.Value AS UNIQUEIDENTIFIER)
+        WHERE g.IsActive = 1
+            AND g.IsArchived = 0
+    ) a
+    GROUP BY [ChannelName], [ChannelUrl], [Order]
+    ORDER BY [Order]
+{% endsql %}
+
+{% assign channelCount = newschannels | Size %}
+{% if channelCount == 1 %}
+    {{ newschannels[0].ChannelUrl | PageRedirect }}
+{% else %}
+    <div class="container-fluid">
+        <div class="row">
+            {% for newschannel in newschannels %}
+                <div class="col-sm-12 col-md-6 col-lg-3">
+                    <a href="{{ newschannel.ChannelUrl }}" class="btn btn-primary stretched-link"
+                        data-toggle="tooltip" data-placement="top" data-html="true">
+                        <i class="fal fa-newspaper fa-5x"></i>
+                        <p class="two-lines">{{ newschannel.ChannelName }}</p>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}

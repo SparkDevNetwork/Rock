@@ -10,13 +10,17 @@
 {% assign memo = '' %}
 
 {% for gt in Person.GroupTypes %}
-
-    {% if gt.Id == 626 or gt.Id == 627 %}
-        {% assign isSelfReleaseEligible = true %}
-    {% endif %}
-
     {%  for g in gt.Groups %}
         {% assign groupObject = g.Id | GroupById %}
+
+        {% assign selected = groupObject | Property:'Selected' %}
+        {% if selected == true %}
+            {% continue %}
+        {% endif %}
+
+        {% if gt.Id == 626 or gt.Id == 627 or gt.Id == 340 %}
+            {% assign isSelfReleaseEligible = true %}
+        {% endif %}
 
         {% if isNursery == false %}
             {% assign isNursery = groupObject | Attribute:'IncludeNurseryCareOnLabel' | AsBoolean %}
@@ -92,7 +96,7 @@ CT~~CD,~CC^~CT~
 ^FO140,363^FB67,1,0,L^A0N,43,43^FH\^FD{% if personLegalNotes != '' %}C{% endif %}^FS
 ^FO207,363^FB67,1,0,L^A0N,43,43^FH\^FD{% if personBaptized  != ''  %}B{% endif %}^FS
 ^FO273,363^FB67,1,0,L^A0N,43,43^FH\^FD{% if personFoster == 'true' %}P{% endif %}^FS
-^FO340,363^FB67,1,0,L^A0N,43,43^FH\^FD{% if personSelfRelease == 'Yes' %}S{% endif %}^FS
+^FO340,363^FB67,1,0,L^A0N,43,43^FH\^FD{% if personSelfRelease == 'Yes' and isSelfReleaseEligible == true %}S{% endif %}^FS
 
 ^MMT
 ^XZ
@@ -115,7 +119,7 @@ CT~~CD,~CC^~CT~
 
 ^FO430,7^FB100,L^A0R,100,100^FH\^FD{% if personAllergy != '' %}A{% endif %}^FS
 ^FO430,63^FB100,1,0,L^A0R,100,100^FH\^FD{% if personMedicalAlert  != '' %}M{% endif %}^FS
-^FO430,133^FB100,1,0,L^A0R,100,100^FH\^FD{% if personSelfRelease == 'Yes' %}S{% endif %}^FS
+^FO430,133^FB100,1,0,L^A0R,100,100^FH\^FD{% if personSelfRelease == 'Yes' and isSelfReleaseEligible == true %}S{% endif %}^FS
 
 {% if isNursery == true %}
 ^FO573,200^GB1,194,4^FS

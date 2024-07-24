@@ -1,0 +1,201 @@
+//- GLT2 Group Detail
+
+{% comment %}
+	{% include '~~/Assets/Lava/GroupDetail_NoMembers2.lava' %}
+	The content below is derivative of the include file above. Once the content stabilizes, move it back into the include file.
+	Note this content is used on at least two pages. Moving it back to the include file will mean we only need to maintain one copy.
+{% endcomment %}
+
+{% if AllowedActions.View == true or AllowedActions.Edit == true or AllowedActions.ManageMembers == true or AllowedActions.Administrate == true %}
+	{% assign countActive = -1 %}
+	{% assign countInactive = -1 %}
+	{% assign countPending = -1 %}
+	{% for member in Group.Members %}
+		{% case member.GroupMemberStatus %}
+			{% when 'Active' %}
+				{% assign countActive = countActive | Plus: 1 %}
+			{% when 'Inactive' %}
+				{% assign countInactive = countInactive | Plus: 1 %}
+			{% when 'Pending' %}
+				{% assign countPending = countPending | Plus: 1 %}
+			{% else %}
+		{% endcase %}
+
+		{% if member.GroupRole.IsLeader and member.GroupMemberStatus == 1 and member.PersonId == CurrentPerson.Id %}
+			{% assign v = member.GroupRole | Attribute:'GroupLeaderToolboxFeatureSet','RawValue' %}
+			{% capture f %}
+				{[ LeaderToolboxFeatureSet groupfeatures:v ]}
+			{% endcapture %}
+			{% assign memberFeatures = f | FromJSON %}
+	{% endif %}
+	{% endfor %}
+	{% assign countInactive = -1 %} {% comment %} Hack to prevent Inactive members from being displayed {% endcomment %}
+
+	{% assign coachGroup = Group.ParentGroup %}
+	{% for member in coachGroup.Members %}
+		{% if member.GroupMemberStatus == 1 and member.PersonId == CurrentPerson.Id %}
+			{% assign isCurrentPersonLeader = true %}
+			{% assign v = member.GroupRole | Attribute:'GroupLeaderToolboxFeatureSet','RawValue' %}
+			{% capture f %}
+				{[ LeaderToolboxFeatureSet groupfeatures:v ]}
+			{% endcapture %}
+			{% assign coachFeatures = f | FromJSON %}
+		{% endif %}
+	{% endfor %}
+
+	{% assign captainGroup = Group.ParentGroup.ParentGroup %}
+	{% for member in captainGroup.Members %}
+		{% if member.GroupMemberStatus == 1 and member.PersonId == CurrentPerson.Id %}
+			{% assign isCurrentPersonLeader = true %}
+			{% assign v = member.GroupRole | Attribute:'GroupLeaderToolboxFeatureSet','RawValue' %}
+			{% capture f %}
+				{[ LeaderToolboxFeatureSet groupfeatures:v ]}
+			{% endcapture %}
+			{% assign captainFeatures = f | FromJSON %}
+		{% endif %}
+	{% endfor %}
+
+	<h1>{{ Group.Name }}</h1>
+
+	{% if memberFeatures.addGuestButton == true or coachFeatures.addGuestButton == true or captainFeatures.addGuestButton == true %}
+    	<a href='/page/2445?Group={{Group.Guid}}&IsFormPrefilled=False' class="btn btn-primary">Add Guest</a>
+	{% endif %}
+
+	{% if memberFeatures.schedulerButton == true or coachFeatures.schedulerButton == true or captainFeatures.schedulerButton == true %}
+    	<a href='/schedulegroup?GroupId={{Group.Id}}' class="btn btn-primary">Scheduler</a>
+	{% endif %}
+
+	<p>{{ Group.Description }}</p>
+
+	{% if Group.GroupType.GroupCapacityRule != 'None' and  Group.GroupCapacity != '' %}
+		{% assign warningLevel = 'warning' %}
+
+		{% if Group.GroupType.GroupCapacityRule == 'Hard' %}
+			{% assign warningLevel = 'danger' %}
+		{% endif %}
+
+		{% assign activeMemberCount = countActive | Plus:1 %} {% comment %}the counter is zero based{% endcomment %}
+		{% assign overageAmount = activeMemberCount | Minus:Group.GroupCapacity %}
+
+		{% if overageAmount > 0 %}
+			<div class="alert alert-{{ warningLevel }} margin-t-sm">This group is over capacity by {{ overageAmount }} {{ 'individual' | PluralizeForQuantity:overageAmount }}.</div>
+		{% endif %}
+	{% endif %}
+
+	<div class="row">
+		{% assign anyLocations = false %}
+		{% for location in Group.GroupLocations %}
+			{% assign address = location.Location.FormattedAddress %}
+			{% if address != null and address != '' %}
+				{% assign anyLocations = true %}
+				{% break %}
+			{% endif %}
+		{% endfor %}
+
+		{% assign leaders = Group.Members | Where:'GroupMemberStatus == 1 && GroupRole.IsLeader' %}
+		{% assign leaderCount = leaders | Size %}
+
+		{% if anyLocations == true or leaderCount > 0 %}
+			<div class="col-md-6">
+		{% else %}
+			<div class="col-md-12">
+		{% endif %}
+
+		<h4>Group Details:</h4>
+
+		{% assign coaches = Group.ParentGroup.Members | Where:'GroupMemberStatus == 1' %}
+		{% assign coachCount = coaches | Size %}
+		{% if coachCount > 0 %}
+			<p><strong>{{ 'Coach' | Pluralize:coachCount }}:</strong> {{ coaches | Join:', ' }}</p>
+		{% endif %}
+
+		{% assign captains = Group.ParentGroup.ParentGroup.Members | Where:'GroupMemberStatus == 1' %}
+		{% assign captainCount = captains | Size %}
+		{% if captainCount > 0 %}
+			<p><strong>{{ 'Captain' | Pluralize:captainCount }}:</strong> {{ captains | Join:', ' }}</p>
+		{% endif %}
+
+		{% for attribute in Group.AttributeValues %}
+			<strong>{{ attribute.AttributeName }}:</strong> {{ attribute.ValueFormatted }} <br />
+		{% endfor %}
+
+		{% if memberFeatures.addSendEmailToCoachButton == true or coachFeatures.addSendEmailToCoachButton == true or captainFeatures.addSendEmailToCoachButton == true %}
+			{% if coachCount > 0 %}
+				{% assign coachEmails = Group.ParentGroup.Members | Select:'Person' | Where:'IsEmailActive',1 | Select:'Email' | Join:',' %}
+				<a href="mailto:{{ coachEmails }}" class="btn btn-primary" style="margin-bottom:10px;">Send Email to Group Coach</a>
+			{% elseif captainCount > 0 %}
+				{% assign coachEmails = Group.ParentGroup.ParentGroup.Members | Select:'Person' | Where:'IsEmailActive',1 | Select:'Email' | Join:',' %}
+				<a href="mailto:{{ coachEmails }}" class="btn btn-primary" style="margin-bottom:10px;">Send Email to Group Captain</a>
+			{% endif %}
+		{% endif %}
+		{% if memberFeatures.showHeadCount == true or coachFeatures.showHeadCount == true or captainFeatures.showHeadCount == true %}
+			<a href="/page/2309?GroupID={{Group.Id}}&gvp={{'Global' | Page:'Id' }}" class="btn btn-primary" style="margin-bottom:10px;">Enter Headcount</a>
+		{% endif %}
+		</div>
+
+		{% if anyLocations == true or leaderCount > 0 %}
+			<div class="col-md-6">
+				{% if leaderCount > 0 %}
+					<div class="row">
+						<div class="col-md-12">
+							<h4>Leaders:</h4>
+							<ul>
+								{% for leader in leaders %}
+									<li>{{ leader.Person.FullName }} <small>({{ leader.GroupRole.Name }})</small></li>
+								{% endfor %}
+							</ul>
+						</div>
+					</div>
+				{% endif %}
+
+				{% if anyLocations == true %}
+					<div class="row">
+						<div class="col-md-12">
+							<h4>Location:</h4>
+							{% for location in Group.GroupLocations %}
+								{% assign address = location.Location.FormattedAddress | RegExReplace:'-[0-9]+$','' %}
+								<p><a href="https://www.google.com/maps/place/{{ address | Replace:' ','+' | Replace:'\r\n',',+' }}" target="_blank" rel="noopener noreferrer">{{ location.Location.FormattedHtmlAddress }}</a></p>
+							{% endfor %}
+						</div>
+					</div>
+				{% endif %}
+				</div>
+		{% endif %}
+	</div>
+
+	{% if memberFeatures.requestUpdates == true or coachFeatures.requestUpdates == true or captainFeatures.requestUpdates == true %}
+		<div class="actions margin-v-md clearfix">
+			{% capture editLink %}/page/2308?Group={{Group.Guid}}{% endcapture %}
+			<a class="btn btn-primary pull-right" href="{{editLink}}">Request Group Details Update</a>
+		</div>
+	{% endif %}
+
+	{% if LinkedPages.RosterPage != '' and  LinkedPages.AttendancePage != '' or Group.GroupType.TakesAttendance == 'False' %}
+		<ul class="nav nav-tabs margin-v-lg">
+			{% if memberFeatures.roster == true or coachFeatures.roster == true or captainFeatures.roster == true %}
+				{% if LinkedPages.RosterPage != '' %}
+					{% if LinkedPages.RosterPage == CurrentPage.Path %}
+						<li role="presentation" class="active"><a href="{{ LinkedPages.RosterPage }}?GroupId={{ Group.Id }}">Roster</a></li>
+					{% else %}
+						<li role="presentation"><a href="{{ LinkedPages.RosterPage }}?GroupId={{ Group.Id }}">Roster</a></li>
+					{% endif %}
+				{% endif %}
+			{% endif %}
+
+			{% if memberFeatures.attendance == true or coachFeatures.attendance == true or captainFeatures.attendance == true %}
+				{% if LinkedPages.AttendancePage != '' and Group.GroupType.TakesAttendance == 'True' %}
+					{% if LinkedPages.AttendancePage == CurrentPage.Path %}
+						<li role="presentation" class="active"><a href="{{ LinkedPages.AttendancePage }}?GroupId={{ Group.Id }}">Attendance</a></li>
+					{% else %}
+						<li role="presentation"><a href="{{ LinkedPages.AttendancePage }}?GroupId={{ Group.Id }}">Attendance</a></li>
+					{% endif %}
+				{% endif %}
+			{% endif %}
+		</ul>
+	{% endif %}
+
+{% else %}
+	{% if Group.Id %}
+		<div class='alert alert-warning'>You do not have permission to view this group.</div>
+	{% endif %}
+{% endif %}

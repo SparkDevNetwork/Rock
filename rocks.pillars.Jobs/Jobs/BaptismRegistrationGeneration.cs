@@ -24,50 +24,55 @@ namespace rocks.pillars.Jobs.Jobs
     /// Custom Rock Job
     /// </summary>
     [RegistrationTemplateField("Baptism Registration Template",
-                    Description = "This is the registration template to use to create registraion instances for",
-                    IsRequired = true,
-                    Order = 0)]
+        Description = "This is the registration template to use to create registraion instances for",
+        IsRequired = true,
+        Order = 0)]
+    [AccountField("Account",
+        Description = "The account to use for the registration instance to be created",
+        IsRequired = true,
+        Order = 1)]
     [LavaField("Registration Instance Name",
-                Description = "(Lava) The name of the registration instance to be created",
-                IsRequired = false,
-                Order = 1)]
+        Description = "(Lava) The name of the registration instance to be created",
+        IsRequired = false,
+        Order = 2)]
     [EventItemField("Event Item",
-                    Description = "The event item used to create occurrences",
-                    IsRequired = true,
-                    Order = 2)]
+        Description = "The event item used to create occurrences",
+        IsRequired = true,
+        Order = 3)]
     [IntegerField("Days After Registration Instance End Date to Inactivate",
-                 Description = "How many days after the registration end date to inactivate the registration instance. Leaving this option blank will disable this setting",
-                 IsRequired = false,
-                 Order = 3)]
+        Description = "How many days after the registration end date to inactivate the registration instance. Leaving this option blank will disable this setting",
+        IsRequired = false,
+        Order = 4)]
     [IntegerField("Weeks Ahead",
-                Description = "How many weeks ahead should the job generate instances",
-                IsRequired = true,
-                Order = 4)]
+        Description = "How many weeks ahead should the job generate instances",
+        IsRequired = true,
+        Order = 5)]
     [IntegerField("Registration Start Date",
-                Description = "How many days before the scheduled time will the registration open",
-                IsRequired = true,
-                Order = 5)]
+        Description = "How many days before the scheduled time will the registration open",
+        IsRequired = true,
+        Order = 6)]
     [DefinedTypeField("Baptism Configuration Defined Type",
-                  Description = "This is the Defined Type setup to pull in the Baptism Configuration.",
-                  IsRequired = true,
-                  Order = 6)]
+        Description = "This is the Defined Type setup to pull in the Baptism Configuration.",
+        IsRequired = true,
+        Order = 7)]
     [DefinedTypeField("Baptism Blackout Dates",
-                Description = "This is the defined type that has the Baptism Blackout dates.",
-                IsRequired = true,
-                Order = 7)]
+        Description = "This is the defined type that has the Baptism Blackout dates.",
+        IsRequired = true,
+        Order = 8)]
     [DayOfWeekField("Cutoff Day of Week",
         Description = "Day of the week prior to the event should registration stop",
         IsRequired = true,
-        Order = 8)]
+        Order = 9)]
     [TimeField("Cutoff Time of Day",
         Description = "Time of day when registration should stop",
         IsRequired = true,
-        Order = 9)]
+        Order = 10)]
 
     [DisallowConcurrentExecution]
     public class BaptismRegistrationGeneration : IJob
     {
         private Guid? _regTemplateGuid;
+        private Guid? _account;
         private string _regInsName;
         private Guid? _eventItemGuid;
         private int? _inactiveDays;
@@ -82,11 +87,13 @@ namespace rocks.pillars.Jobs.Jobs
         private int _instancesInactivated = 0;
 
         private RegistrationTemplate _regTemplate;
+        private int? _accountId;
 
         public void Execute(IJobExecutionContext context)
         {
             JobDataMap dataMap = context.JobDetail.JobDataMap;
             _regTemplateGuid = dataMap.GetString("BaptismRegistrationTemplate").AsGuidOrNull();
+            _account = dataMap.GetString("Account").AsGuidOrNull();
             _regInsName = dataMap.GetString("RegistrationInstanceName");
             _eventItemGuid = dataMap.GetString("EventItem").AsGuidOrNull();
             _inactiveDays = dataMap.GetString("DaysAfterRegistrationInstanceEndDatetoInactivate").AsIntegerOrNull();
@@ -97,7 +104,11 @@ namespace rocks.pillars.Jobs.Jobs
             _dayOfWeek = dataMap.GetString("CutoffDayofWeek").ConvertToEnum<DayOfWeek>();
             _timeOfDay = dataMap.GetString("CutoffTimeofDay").AsTimeSpan();
 
-            _regTemplate = new RegistrationTemplateService(new RockContext()).Get(_regTemplateGuid.Value);
+            using (var rockContext = new RockContext())
+            {
+                _regTemplate = new RegistrationTemplateService(rockContext).Get(_regTemplateGuid.Value);
+                _accountId = new FinancialAccountService(rockContext).GetId(_account.Value);
+            }
 
             var today = RockDateTime.Today;
             var weeksAheadDate = today.AddDays(_weeksAhead * 7);
@@ -370,6 +381,7 @@ namespace rocks.pillars.Jobs.Jobs
                     ContactEmail = configValues.ContactEmail,
                     ContactPhone = configValues.ContactPhone,
                     ContactPersonAliasId = configValues.ContactPersonAliasId,
+                    AccountId = _accountId,
                     ReminderSent = false,
                     RegistrationInstructions = string.Empty,
                     RegistrationTemplateId = _regTemplate.Id

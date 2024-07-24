@@ -408,7 +408,7 @@ namespace RockWeb.Blocks.Groups
         private bool LoadPhoneNumbers()
         {
             // First load up all of the available numbers
-            var smsNumbers = SystemPhoneNumberCache.All()
+            var smsNumbers = SystemPhoneNumberCache.All( false )
                 .Where( spn => spn.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
                 .OrderBy( spn => spn.Order )
                 .ThenBy( spn => spn.Name )
@@ -2348,7 +2348,7 @@ namespace RockWeb.Blocks.Groups
             else if ( communicationType == CommunicationType.SMS && hfToSMSNumber.Value.IsNotNullOrWhiteSpace() )
             {
                 hfFromSMSNumber.SetValue( ddlSmsNumbers.SelectedValue.AsInteger() );
-                var smsPhoneNumbers = SystemPhoneNumberCache.All()
+                var smsPhoneNumbers = SystemPhoneNumberCache.All( false )
                     .Where( v => v.IsAuthorized( Authorization.VIEW, this.CurrentPerson )
                         && v.Id == hfFromSMSNumber.Value.AsInteger() )
                     .ToList();

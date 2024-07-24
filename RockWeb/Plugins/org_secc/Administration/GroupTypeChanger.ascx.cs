@@ -310,57 +310,174 @@ namespace RockWeb.Plugins.org_secc.Administration
 
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            // Get the old groupTypeId before we change it
-            var stringGroupTypeId = group.GroupTypeId.ToString();
-
-            // Map group roles
-            group.GroupTypeId = ddlGroupTypes.SelectedValue.AsInteger();
-            var groupMembers = group.Members;
-            foreach ( var role in group.GroupType.Roles )
+            using ( var transaction = rockContext.Database.BeginTransaction() )
             {
+                // Get the old groupTypeId before we change it
+                var stringGroupTypeId = group.GroupTypeId.ToString();
+
+                // Map group roles
+                group.GroupTypeId = ddlGroupTypes.SelectedValue.AsInteger();
+                var groupMembers = group.Members;
+                foreach ( var role in group.GroupType.Roles )
+                {
                 var ddlRole = ( RockDropDownList ) phRoles.FindControl( role.Id.ToString() + "_ddlRole" );
-                var roleMembers = groupMembers.Where( gm => gm.GroupRoleId == role.Id );
-                foreach ( var member in roleMembers )
-                {
-                    member.GroupRoleId = ddlRole.SelectedValue.AsInteger();
-                }
-            }
-
-            // Map group member group type id
-            int groupTypeId = group.GroupTypeId;
-            foreach ( var member in groupMembers )
-            {
-                member.GroupTypeId = groupTypeId;
-            }
-
-            // Map attributes
-            var attributeService = new AttributeService( rockContext );
-            var attributeValueService = new AttributeValueService( rockContext );
-
-            Dictionary<string, int> memberDeletedAttributes = new Dictionary<string, int>();
-            Dictionary<string, string> groupDeletedAttributes = new Dictionary<string, string>();
-
-            // Map group member attributes
-            var groupMemberEntityId = new EntityTypeService( rockContext ).Get( Rock.SystemGuid.EntityType.GROUP_MEMBER.AsGuid() ).Id;
-
-            var attributes = attributeService.Queryable()
-                .Where( a =>
-                    a.EntityTypeQualifierColumn == "GroupTypeId"
-                    && a.EntityTypeQualifierValue == stringGroupTypeId
-                    && a.EntityTypeId == groupMemberEntityId
-                    ).ToList();
-            foreach ( var attribute in attributes )
-            {
-                var ddlAttribute = ( RockDropDownList )phMemberAttributes.FindControl( attribute.Id.ToString() + "_ddlAttribute" );
-                // If the dropdown is found
-                if ( ddlAttribute != null )
-                {
-                    var newAttributeId = ddlAttribute.SelectedValue.AsInteger();
-                    // For every group member in the group
-                    foreach ( var member in groupMembers )
+                    var roleMembers = groupMembers.Where( gm => gm.GroupRoleId == role.Id );
+                    foreach ( var member in roleMembers )
                     {
+                        member.GroupRoleId = ddlRole.SelectedValue.AsInteger();
+                    }
+                }
+
+                // Map group member group type id
+                int groupTypeId = group.GroupTypeId;
+                foreach ( var member in groupMembers )
+                {
+                    member.GroupTypeId = groupTypeId;
+                }
+                rockContext.SaveChanges( true );
+
+                // Map attributes
+                var attributeService = new AttributeService( rockContext );
+                var attributeValueService = new AttributeValueService( rockContext );
+
+                Dictionary<string, int> memberDeletedAttributes = new Dictionary<string, int>();
+                Dictionary<string, string> groupDeletedAttributes = new Dictionary<string, string>();
+
+                // Map group member attributes
+                var groupMemberEntityId = new EntityTypeService( rockContext ).Get( Rock.SystemGuid.EntityType.GROUP_MEMBER.AsGuid() ).Id;
+
+                var attributes = attributeService.Queryable()
+                    .Where( a =>
+                        a.EntityTypeQualifierColumn == "GroupTypeId"
+                        && a.EntityTypeQualifierValue == stringGroupTypeId
+                        && a.EntityTypeId == groupMemberEntityId
+                        ).ToList();
+
+                // Delete conflicting attribute values
+                foreach ( var attribute in attributes )
+                {
+                    var ddlAttribute = ( RockDropDownList )phMemberAttributes.FindControl( attribute.Id.ToString() + "_ddlAttribute" );
+                    // If the dropdown is found
+                    if ( ddlAttribute != null )
+                    {
+                        var newAttributeId = ddlAttribute.SelectedValue.AsInteger();
+                        // For every group member in the group
+                        foreach ( var member in groupMembers )
+                        {
+                            var attributeEntity = attributeValueService.Queryable()
+                                .Where( av => av.EntityId == member.Id && av.AttributeId == attribute.Id )
+                                .FirstOrDefault();
+                            // If the attribute value is found
+                            if ( attributeEntity != null )
+                            {
+                                // Delete any existing attribute values that have the same EntityId and the new AttributeId
+                                var existingAttributeValues = attributeValueService.Queryable()
+                                    .Where( av => av.EntityId == member.Id && av.AttributeId == newAttributeId ).ToList();
+
+                                foreach ( var existingAttributeValue in existingAttributeValues )
+                                {
+                                    attributeValueService.Delete( existingAttributeValue );
+                                }
+                            }
+
+                        }
+                    }
+                }
+                rockContext.SaveChanges( true );
+
+                // Move existing attribute values
+                foreach ( var attribute in attributes )
+                {
+                    var ddlAttribute = ( RockDropDownList )phMemberAttributes.FindControl( attribute.Id.ToString() + "_ddlAttribute" );
+                    // If the dropdown is found
+                    if ( ddlAttribute != null )
+                    {
+                        var newAttributeId = ddlAttribute.SelectedValue.AsInteger();
+                        // For every group member in the group
+                        foreach ( var member in groupMembers )
+                        {
+                            var attributeEntity = attributeValueService.Queryable()
+                                .Where( av => av.EntityId == member.Id && av.AttributeId == attribute.Id )
+                                .FirstOrDefault();
+                            // If the attribute value is found
+                            if ( attributeEntity != null )
+                            {
+                                // If a new attribute mapping was selected
+                                if ( newAttributeId != 0 )
+                                {
+                                    // Map attribute value to new attribute
+                                    attributeEntity.AttributeId = newAttributeId;
+                                }
+                                else
+                                {
+                                    // Remove inapplicable attribute value
+
+                                    // Count how many records were affected for each attribute (don't count empty records)
+                                    if ( attributeEntity.Value != "" && attributeEntity.Value != null )
+                                    {
+                                        int currentCount;
+                                        memberDeletedAttributes.TryGetValue( attributeEntity.AttributeName, out currentCount );
+                                        memberDeletedAttributes[attributeEntity.AttributeName] = currentCount + 1;
+                                    }
+
+                                    attributeValueService.Delete( attributeEntity );
+                                }
+                            }
+
+                        }
+                    }
+                }
+                rockContext.SaveChanges( true );
+
+                // Map group attributes
+                var groupEntityId = new EntityTypeService( rockContext ).Get( Rock.SystemGuid.EntityType.GROUP.AsGuid() ).Id;
+
+                var groupAttributes = attributeService.Queryable()
+                    .Where( a =>
+                        a.EntityTypeQualifierColumn == "GroupTypeId"
+                        && a.EntityTypeQualifierValue == stringGroupTypeId
+                        && a.EntityTypeId == groupEntityId
+                        ).ToList();
+
+                // Delete conflicting attribute values
+                foreach ( var attribute in groupAttributes )
+                {
+                    var ddlAttribute = ( RockDropDownList )phMemberAttributes.FindControl( attribute.Id.ToString() + "_ddlAttribute" );
+                    // If the dropdown is found
+                    if ( ddlAttribute != null )
+                    {
+                        var newAttributeId = ddlAttribute.SelectedValue.AsInteger();
+
                         var attributeEntity = attributeValueService.Queryable()
-                            .Where( av => av.EntityId == member.Id && av.AttributeId == attribute.Id )
+                            .Where( av => av.EntityId == group.Id && av.AttributeId == attribute.Id )
+                            .FirstOrDefault();
+                        // If the attribute value is found
+                        if ( attributeEntity != null )
+                        {
+                            // Delete any existing attribute values that have the same EntityId and the new AttributeId
+                            var existingAttributeValues = attributeValueService.Queryable()
+                                .Where( av => av.EntityId == group.Id && av.AttributeId == newAttributeId ).ToList();
+
+                            foreach ( var existingAttributeValue in existingAttributeValues )
+                            {
+                                attributeValueService.Delete( existingAttributeValue );
+                            }
+                        }
+                    }
+                }
+                rockContext.SaveChanges( true );
+
+                // Move existing attribute values
+                foreach ( var attribute in groupAttributes )
+                {
+                    var ddlAttribute = ( RockDropDownList )phMemberAttributes.FindControl( attribute.Id.ToString() + "_ddlAttribute" );
+                    // If the dropdown is found
+                    if ( ddlAttribute != null )
+                    {
+                        var newAttributeId = ddlAttribute.SelectedValue.AsInteger();
+
+                        var attributeEntity = attributeValueService.Queryable()
+                            .Where( av => av.EntityId == group.Id && av.AttributeId == attribute.Id )
                             .FirstOrDefault();
                         // If the attribute value is found
                         if ( attributeEntity != null )
@@ -373,92 +490,45 @@ namespace RockWeb.Plugins.org_secc.Administration
                             }
                             else
                             {
-                                // Remove inapplicable attribute value
-
-                                // Count how many records were affected for each attribute (don't count empty records)
+                                // Remove inapplicable attribute value and
+                                // count how many records were affected (don't count empty records)
                                 if ( attributeEntity.Value != "" && attributeEntity.Value != null )
                                 {
-                                    int currentCount;
-                                    memberDeletedAttributes.TryGetValue( attributeEntity.AttributeName, out currentCount );
-                                    memberDeletedAttributes[attributeEntity.AttributeName] = currentCount + 1;
+                                    groupDeletedAttributes.Add( attributeEntity.AttributeName, attributeEntity.Value );
                                 }
-
                                 attributeValueService.Delete( attributeEntity );
                             }
                         }
-
                     }
                 }
-            }
+                rockContext.SaveChanges( true );
 
-            // Map group attributes
-            var groupEntityId = new EntityTypeService( rockContext ).Get( Rock.SystemGuid.EntityType.GROUP.AsGuid() ).Id;
-
-            var groupAttributes = attributeService.Queryable()
-                .Where( a =>
-                    a.EntityTypeQualifierColumn == "GroupTypeId"
-                    && a.EntityTypeQualifierValue == stringGroupTypeId
-                    && a.EntityTypeId == groupEntityId
-                    ).ToList();
-            foreach ( var attribute in groupAttributes )
-            {
-                var ddlAttribute = ( RockDropDownList )phMemberAttributes.FindControl( attribute.Id.ToString() + "_ddlAttribute" );
-                // If the dropdown is found
-                if ( ddlAttribute != null )
+                if ( memberDeletedAttributes.Count > 0 || groupDeletedAttributes.Count > 0 )
                 {
-                    var newAttributeId = ddlAttribute.SelectedValue.AsInteger();
-
-                    var attributeEntity = attributeValueService.Queryable()
-                        .Where( av => av.EntityId == group.Id && av.AttributeId == attribute.Id )
-                        .FirstOrDefault();
-                    // If the attribute value is found
-                    if ( attributeEntity != null )
+                    nbSuccess.Text = "<br>Some attributes were not mapped to new attributes and have been automatically deleted.<br>";
+                    if ( memberDeletedAttributes.Count > 0 )
                     {
-                        // If a new attribute mapping was selected
-                        if ( newAttributeId != 0 )
+                        nbSuccess.Text += "<b>Deleted Group Member Attributes</b><br><ul>";
+                        foreach ( var deletedAttribute in memberDeletedAttributes )
                         {
-                            // Map attribute value to new attribute
-                            attributeEntity.AttributeId = newAttributeId;
-                        }
-                        else
-                        {
-                            // Remove inapplicable attribute value and
-                            // count how many records were affected (don't count empty records)
-                            if ( attributeEntity.Value != "" && attributeEntity.Value != null )
-                            {
-                                groupDeletedAttributes.Add( attributeEntity.AttributeName, attributeEntity.Value );
-                            }
-                            attributeValueService.Delete( attributeEntity );
-                        }
-                    }
-                }
-            }
-
-            if ( memberDeletedAttributes.Count > 0 || groupDeletedAttributes.Count > 0 )
-            {
-                nbSuccess.Text = "<br>Some attributes were not mapped to new attributes and have been automatically deleted.<br>";
-                if ( memberDeletedAttributes.Count > 0 )
-                {
-                    nbSuccess.Text += "<b>Deleted Group Member Attributes</b><br><ul>";
-                    foreach ( var deletedAttribute in memberDeletedAttributes )
-                    {
                         nbSuccess.Text += $"<li>{ deletedAttribute.Key }<ul><li>Records Affected: { deletedAttribute.Value }</li></ul></li>";
+                        }
+                        nbSuccess.Text += "</ul>";
                     }
-                    nbSuccess.Text += "</ul>";
-                }
-                if ( groupDeletedAttributes.Count > 0 )
-                {
-                    nbSuccess.Text += "<b>Deleted Group Attributes</b><br><ul>";
-                    foreach ( var deletedAttribute in groupDeletedAttributes )
+                    if ( groupDeletedAttributes.Count > 0 )
                     {
-                        nbSuccess.Text += $"<li>{deletedAttribute.Key}<ul><li>Value: {deletedAttribute.Value}</li></ul></li>";
+                        nbSuccess.Text += "<b>Deleted Group Attributes</b><br><ul>";
+                        foreach ( var deletedAttribute in groupDeletedAttributes )
+                        {
+                            nbSuccess.Text += $"<li>{deletedAttribute.Key}<ul><li>Value: {deletedAttribute.Value}</li></ul></li>";
+                        }
+                        nbSuccess.Text += "</ul>";
                     }
-                    nbSuccess.Text += "</ul>";
                 }
-            }
 
-            rockContext.SaveChanges( true );
-            nbSuccess.Visible = true;
+                transaction.Commit();
+                nbSuccess.Visible = true;
+            }
         }
     }
 }

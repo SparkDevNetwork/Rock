@@ -335,16 +335,7 @@ namespace RockWeb.Plugins.org_lakepointe.GroupScheduling
                 InviteStatuses = cblInviteStatus.SelectedValues.ToArray()
             };
 
-            //gpGroups.SetValues( userPreferenceConfiguration.GroupIds ?? new int[0] );
-            cbIncludeChildGroups.Checked = userPreferenceConfiguration.IncludeChildGroups;
-            cblInviteStatus.SetValues( userPreferenceConfiguration.InviteStatuses );
-            UpdateListsForSelectedGroups();
-
-            lbSchedules.SetValues( userPreferenceConfiguration.ScheduleIds ?? new int[0] );
-            UpdateLocationListFromSelectedSchedules();
-
-            cblLocations.SetValues( userPreferenceConfiguration.LocationIds ?? new int[0] );
-
+            // Get selected groups
             List<int> groupIds;
             string groupIdParameter = PageParameter( PageParameterKey.GroupId );
             string groupIdsParameter = PageParameter( PageParameterKey.GroupIds );
@@ -371,6 +362,16 @@ namespace RockWeb.Plugins.org_lakepointe.GroupScheduling
                     .Where( g => groupIds.Contains( g.Id ) )
                     .Select( g => g.Id ).ToList() );
             }
+
+            //gpGroups.SetValues( userPreferenceConfiguration.GroupIds ?? new int[0] );
+            cbIncludeChildGroups.Checked = userPreferenceConfiguration.IncludeChildGroups;
+            cblInviteStatus.SetValues( userPreferenceConfiguration.InviteStatuses );
+            UpdateListsForSelectedGroups();
+
+            lbSchedules.SetValues( userPreferenceConfiguration.ScheduleIds ?? new int[0] );
+            UpdateLocationListFromSelectedSchedules();
+
+            cblLocations.SetValues( userPreferenceConfiguration.LocationIds ?? new int[0] );
         }
 
         /// <summary>

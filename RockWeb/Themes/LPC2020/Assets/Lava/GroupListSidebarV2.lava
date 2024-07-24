@@ -85,9 +85,9 @@
 
         {% comment %} The rest of the coach hack begins here {% endcomment %}
         {% for result in results %}
-            {% group id:'{{ result.Id }}' %}
+            {% group id:'{{ result.Id }}' securityenabled:'false' %}
                 {% capture content %}
-                    {{ group.Name }} <small>(Coach<i class='fa fa-asterisk'></i>)</small>
+                    {{ group.Name }} <small>({{ result.Role }}<i class='fa fa-asterisk'></i>)</small>
                     {% assign pending = 0 -%}
                     {% for member in group.Members -%}
                         {% if member.GroupMemberStatus == 'Pending' -%}

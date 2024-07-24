@@ -88,18 +88,39 @@
 </style>
 
 {% sql personAliasGuid:'{{ CurrentPerson.PrimaryAlias.Guid }}' return:'groups' %}
-    SELECT g.Id AS [GroupId], g.Name AS [GroupName], gtr.Name AS [GroupRole], g.CampusId AS [CampusId], c.Name AS [Campus]
-        , dv.Id AS [CurriculumId], dv.Value AS [Curriculum]
-    FROM [GroupMember] gm
-    JOIN [PersonAlias] pa ON gm.PersonId = pa.PersonId AND pa.Guid = TRY_CAST(@personAliasGuid AS UNIQUEIDENTIFIER)
-    JOIN [Group] g ON gm.GroupId = g.Id AND g.IsActive = 1
-    JOIN [GroupType] gt ON gt.Id = g.GroupTypeId AND gt.GroupTypePurposeValueId = 5856 -- Life Groups
-    JOIN [GroupTypeRole] gtr on gtr.Id = gm.GroupRoleId AND gtr.IsLeader = 1
-    LEFT JOIN [Campus] c ON c.Id = g.CampusId
-    JOIN [AttributeValue] gc ON gc.EntityId = g.Id
+    SELECT data.GroupId AS [GroupId], data.GroupName AS [GroupName], data.GroupRole AS [GroupRole], data.CampusId AS [CampusId]
+        , c.Name AS [Campus], dv.Id AS [CurriculumId], dv.Value AS [Curriculum]
+    FROM
+    (
+        SELECT g.Id AS [GroupId], g.Name AS [GroupName], gtr.Name AS [GroupRole], g.CampusId AS [CampusId]
+        FROM [GroupMember] gm
+        JOIN [PersonAlias] pa ON gm.PersonId = pa.PersonId AND pa.Guid = TRY_CAST(@personAliasGuid AS UNIQUEIDENTIFIER)
+        JOIN [Group] g ON gm.GroupId = g.Id AND g.IsActive = 1
+        JOIN [GroupType] gt ON gt.Id = g.GroupTypeId AND gt.GroupTypePurposeValueId = 5856 -- Life Groups
+        JOIN [GroupTypeRole] gtr on gtr.Id = gm.GroupRoleId AND gtr.IsLeader = 1
+        WHERE gm.IsArchived = 0 AND gm.GroupMemberStatus = 1
+
+        UNION ALL
+
+        SELECT g.Id AS [GroupId], g.Name AS [GroupName], a.Name AS [GroupRole], g.CampusId AS [CampusId]
+        FROM [Group] g
+        JOIN [GroupType] gt ON gt.Id = g.GroupTypeId AND gt.GroupTypePurposeValueId = 5856 -- Life Groups
+        JOIN [AttributeValue] av ON av.EntityId = g.Id AND av.Value = @personAliasGuid
+        JOIN [Attribute] a ON a.Id = av.AttributeId AND (a.[Key] = 'AGCoach' OR a.[Key] = 'LGCoach')
+        WHERE g.IsActive = 1
+
+        UNION ALL
+
+        SELECT g.Id AS [GroupId], g.Name AS [GroupName], 'Administrative' AS [GroupRole], g.CampusId AS [CampusId]
+        FROM [Group] g
+        JOIN [GroupMember] gm ON gm.GroupId = g.Id AND gm.IsArchived = 0 AND gm.GroupMemberStatus = 1
+        JOIN [PersonAlias] pa ON gm.PersonId = pa.PersonId AND pa.Guid = TRY_CAST(@personAliasGuid AS UNIQUEIDENTIFIER)
+        WHERE g.IsActive = 1 AND g.ParentGroupId = 800793
+    ) data
+    LEFT JOIN [Campus] c ON c.Id = data.CampusId
+    JOIN [AttributeValue] gc ON gc.EntityId = data.GroupId
     JOIN [Attribute] gca ON gca.Id = gc.AttributeId AND gca.[Key] = 'GroupCurriculum'
     JOIN [DefinedValue] dv ON dv.Guid = TRY_CAST(gc.Value AS UNIQUEIDENTIFIER)
-    WHERE gm.IsArchived = 0 AND gm.GroupMemberStatus = 1
 {% endsql %}
 
 {% assign today = 'Global' | PageParameter:'Date' | AsDateTime %}
@@ -258,7 +279,7 @@
             <div class="row">
                 <div class="col-md-12">
                     {% definedvalue id:'{{ item.CurriculumId }}' %}
-                        <p><a href="{{'Global' | Attribute:'PublicApplicationRoot'}}page/4667?CurriculumId={{ item.CurriculumId }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">{{ definedvalue.Value }}</a></p>
+                        <p><a href="{{'Global' | Attribute:'PublicApplicationRoot'}}page/4667?CurriculumId={{ item.CurriculumId }}" class="btn btn-primary" target="_blank" style="white-space:normal;">{{ definedvalue.Value }}</a></p>
                     {% enddefinedvalue %}
                 </div>
             </div>

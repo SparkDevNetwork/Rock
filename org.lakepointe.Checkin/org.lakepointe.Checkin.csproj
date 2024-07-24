@@ -99,6 +99,7 @@
     <Compile Include="Workflow\Action\Checkin\CreateCheckoutLabels.cs" />
     <Compile Include="Workflow\Action\Checkin\FilterCheckoutHoldingPeriod.cs" />
     <Compile Include="Workflow\Action\Checkin\CheckoutPreCheck.cs" />
+    <Compile Include="Workflow\Action\Checkin\FilterGroupsByRequirements.cs" />
     <Compile Include="Workflow\Action\Checkin\FindFamilyMembersOrCurrentPerson.cs" />
     <Compile Include="Workflow\Action\Checkin\FindRelationshipsForCurrentUser.cs" />
     <Compile Include="Workflow\Action\Checkin\GetAdditionalCheckedInGroups.cs" />

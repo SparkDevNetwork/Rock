@@ -47,6 +47,11 @@ namespace org.lakepointe.Checkin.Workflow.Action.Checkin
                                 .Where(m => m.PersonId == person.Person.Id)
                                 .Where(m => m.GroupMemberStatus == GroupMemberStatus.Active)
                                 .Where(m => kioskGroupIds.Contains(m.GroupId))
+
+                                // Note that we removed these groups earlier (See FilterGroupsByRequirements) but we have to be careful not to add them back in here
+                                .Where( m => !m.Group.SchedulingMustMeetRequirements  // include groups that don't require group requirements for scheduling
+                                    || !m.GroupMemberRequirements.Where( r => !r.RequirementMetDateTime.HasValue ).Any() ) // or groups that do but where there are no requirements not met by the member
+
                                 .Select(m => m.Group);
 
                             foreach (var belongsGroup in personBelongGroups)

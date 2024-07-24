@@ -20,8 +20,8 @@ using System.Linq;
 using System.Net;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using System.Text.RegularExpressions;
 using DocumentFormat.OpenXml.Wordprocessing;
+using Rock.Security;
 
 // ID 7534 GUID 37AC82B9-901D-4F1D-BF70-E5C3508AB8A6
 // ID 7535 GUID 9A81AB9A-4D4E-49A3-AE7E-D8D960193E03
@@ -383,6 +383,22 @@ namespace RockWeb.Plugins.org_lakepointe.VolunteerApplication
             upVolunteerApplication.Triggers.Add( new PostBackTrigger() { ControlID = "lbNext" } );
         }
 
+        protected void rblInternationalStudent_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            ConnectionRequest.AttributeValues["IsInternationalStudent"].Value = MapYesNoToTrueFalse( rblInternationalStudent.SelectedValue );
+
+            if (rblInternationalStudent.SelectedValue == "Yes" )
+            {
+                // if they tell us they're an international student, make sure we force SSN to be false. We'll hide the control but if had
+                // previously been set to true that might mislead the people following up on the application. (Sometimes international students
+                // have a SSN for reporting scholarship income. That doesn't mean we can use it for a background check.)
+                SavedValues["HasSSN"] = "False";
+                rblSSN.SelectedValue = "No";
+            }
+
+            SelectPage( CurrentPage ); // Reconfigure current page based on new selection
+        }
+
         #endregion
 
         #region Methods
@@ -493,6 +509,25 @@ namespace RockWeb.Plugins.org_lakepointe.VolunteerApplication
                     return false;
                 }
             }
+            else
+            {
+                // transitional patch ... for in-process applications started but not submitted before we added the requirement to provide four references,
+                // we need to add the spot for the fourth reference so they don't have to figure out how to do that manually using
+                // the attribute matrix widget.
+                // SNS - 20240306 - This entire else clause can be removed after 20240601. That should be more than enough time for all "in-process" applications to be finished.
+                if ( SavedValues.ContainsKey("References") ) // Level 0 apps don't require references
+                {
+                    var attributeMatrixService = new AttributeMatrixService( _context );
+                    var references = attributeMatrixService.Get( SavedValues["References"].AsGuid() );
+                    references.LoadAttributes();
+                    if ( references.AttributeMatrixItems.Count < 4 )
+                    {
+                        // add a fourth reference slot
+                        AddAttributeMatrixItem( _context, references );
+                        _context.SaveChanges();
+                    }
+                }
+            }
 
             switch ( ConnectionRequest.AssignedGroupId )
             {
@@ -533,6 +568,8 @@ namespace RockWeb.Plugins.org_lakepointe.VolunteerApplication
                     ScrollToTop();
                     return false;
             }
+
+            ConnectionRequest.LoadAttributes();
 
             PageSequence = PageSequenceFor( ApplicationType );
 
@@ -629,6 +666,7 @@ namespace RockWeb.Plugins.org_lakepointe.VolunteerApplication
                             AddAttributeMatrixItem(rockContext, references);
                             AddAttributeMatrixItem(rockContext, references);
                             AddAttributeMatrixItem(rockContext, references);
+                            AddAttributeMatrixItem( rockContext, references );
 
                             var referenceResponses = new AttributeMatrix { Guid = Guid.NewGuid() };
                             referenceResponses.AttributeMatrixTemplateId = ApplicationType == ApplicationTypes.LEVEL2 ? 20 : 12; // Reference Response
@@ -806,6 +844,24 @@ namespace RockWeb.Plugins.org_lakepointe.VolunteerApplication
             rblSSN.Help = Translation["HelpHaveSSN"];
             rblSSN.Items[0].Text = Translation["Yes"];
             rblSSN.Items[1].Text = Translation["No"];
+
+            rblInternationalStudent.Label = Translation["LabelInternationalStudent"];
+            rblInternationalStudent.Help = Translation["HelpInternationalStudent"];
+            rblInternationalStudent.Items[0].Text = Translation["Yes"];
+            rblInternationalStudent.Items[1].Text = Translation["No"];
+            rtbSurname.Label = Translation["Surname"];
+            rtbGivenName.Label = Translation["GivenName"];
+            rtbMothersMaidenName.Label = Translation["MothersMaidenName"];
+            rtbOtherNames.Label = Translation["OtherNames"];
+            rtbPlaceOfBirth.Label = Translation["PlaceOfBirth"];
+            dppDateOfBirth.Label = Translation["LabelBirthDate"];
+            rtbCurrentAddress.Label = Translation["CurrentAddress"];
+            rtbYearsInTX.Label = Translation["YearsInTexas"];
+            rtbMonthsAtLakepointe.Label = Translation["MonthsAtLakepointe"];
+            rtbPriorAddress.Label = Translation["PriorAddress"];
+            rtbSocialSecurityNumber.Label = Translation["SocialSecurityNumber"];
+            rfuIDFront.Label = Translation["CopyOfIdFront"];
+
             lSectionTitleAdultRelease.Text = Translation["SectionTitleRelease"];
             rcblAdultRelease.Items[0].Text = Translation["AdultRelease1"];
             rcblAdultRelease.Items[1].Text = Translation["AdultRelease2"];
@@ -912,6 +968,31 @@ namespace RockWeb.Plugins.org_lakepointe.VolunteerApplication
             lPageTitleSafetyPolicy7.Visible = false;
             rcblAgreeL2.SetValues( SavedValues["Agree"].Split( ',' ) );
             rblSSN.SelectedValue = MapTrueFalseToYesNo( SavedValues["HasSSN"] );
+
+            rblInternationalStudent.SelectedValue = MapTrueFalseToYesNo( ConnectionRequest.AttributeValues.ContainsKey( "IsInternationalStudent" ) ? ConnectionRequest.AttributeValues["IsInternationalStudent"].Value : "No" );
+            rtbSurname.Text = ConnectionRequest.AttributeValues.ContainsKey( "Surname" ) ? ConnectionRequest.AttributeValues["Surname"].Value : string.Empty;
+            rtbGivenName.Text = ConnectionRequest.AttributeValues.ContainsKey( "GivenName" ) ? ConnectionRequest.AttributeValues["GivenName"].Value : string.Empty;
+            rtbMothersMaidenName.Text = ConnectionRequest.AttributeValues.ContainsKey( "MothersFullMaidenName" ) ? ConnectionRequest.AttributeValues["MothersFullMaidenName"].Value : string.Empty;
+            rtbOtherNames.Text = ConnectionRequest.AttributeValues.ContainsKey( "OtherNamesUsed" ) ? ConnectionRequest.AttributeValues["OtherNamesUsed"].Value : string.Empty;
+            rtbPlaceOfBirth.Text = ConnectionRequest.AttributeValues.ContainsKey( "PlaceOfBirth" ) ? ConnectionRequest.AttributeValues["PlaceOfBirth"].Value : string.Empty;
+            rtbCurrentAddress.Text = ConnectionRequest.AttributeValues.ContainsKey( "CurrentUSAddress" ) ? ConnectionRequest.AttributeValues["CurrentUSAddress"].Value : string.Empty;
+            rtbYearsInTX.Text = ConnectionRequest.AttributeValues.ContainsKey( "NumberOfYearsInTexas" ) ? ConnectionRequest.AttributeValues["NumberOfYearsInTexas"].Value : string.Empty;
+            rtbMonthsAtLakepointe.Text = ConnectionRequest.AttributeValues.ContainsKey( "MonthsAttendingLakepointeChurch" ) ? ConnectionRequest.AttributeValues["MonthsAttendingLakepointeChurch"].Value : string.Empty;
+            rtbPriorAddress.Text = ConnectionRequest.AttributeValues.ContainsKey( "PriorAddressOut-of-USAddress" ) ? ConnectionRequest.AttributeValues["PriorAddressOut-of-USAddress"].Value : string.Empty;
+            rtbSocialSecurityNumber.Text = ConnectionRequest.AttributeValues.ContainsKey( "NationalIDNumber" ) ? Encryption.DecryptString( ConnectionRequest.AttributeValues["NationalIDNumber"].Value ) : string.Empty;
+
+            var frontId = GetImageId( "CopyOfPassport" );
+            if ( frontId != null )
+            {
+                rfuIDFront.BinaryFileId = frontId.Value;
+            }
+
+            var dateString = ConnectionRequest.AttributeValues.ContainsKey( "DateOfBirth" ) ? ConnectionRequest.AttributeValues["DateOfBirth"].Value : string.Empty;
+            if ( dateString != string.Empty )
+            {
+                dppDateOfBirth.SelectedDate = DateTime.Parse( dateString, null, System.Globalization.DateTimeStyles.RoundtripKind );
+            }
+
             rcblAdultRelease.SetValues( SavedValues["Release"].Split( ',' ) );
         }
 
@@ -965,6 +1046,8 @@ namespace RockWeb.Plugins.org_lakepointe.VolunteerApplication
             // Personal Information Page
             ddlGender.BindToEnum<Gender>(); // false, new Gender[] { Gender.Unknown });
 
+            // Beware. Except for PreferredContactMethod, everything on this page is derived from CurrentPerson
+            // and any changes to that data are NOT persisted.
             tbFirstName.Text = CurrentPerson.NickName;
             tbLastName.Text = CurrentPerson.LastName;
             ddlGender.SelectedValue = ( ( int ) CurrentPerson.Gender ).ToString();
@@ -1019,7 +1102,48 @@ namespace RockWeb.Plugins.org_lakepointe.VolunteerApplication
             // Safety Policy for Minors Pages
             rcblAgree.SetValues( SavedValues["Agree"].Split( ',' ) );
             rblSSN.SelectedValue = MapTrueFalseToYesNo( SavedValues["HasSSN"] );
+
+            rblInternationalStudent.SelectedValue = MapTrueFalseToYesNo( ConnectionRequest.AttributeValues.ContainsKey( "IsInternationalStudent" ) ? ConnectionRequest.AttributeValues["IsInternationalStudent"].Value : "No" );
+            rtbSurname.Text = ConnectionRequest.AttributeValues.ContainsKey( "Surname" ) ? ConnectionRequest.AttributeValues["Surname"].Value : string.Empty;
+            rtbGivenName.Text = ConnectionRequest.AttributeValues.ContainsKey( "GivenName" ) ? ConnectionRequest.AttributeValues["GivenName"].Value : string.Empty;
+            rtbMothersMaidenName.Text = ConnectionRequest.AttributeValues.ContainsKey( "MothersFullMaidenName" ) ? ConnectionRequest.AttributeValues["MothersFullMaidenName"].Value : string.Empty;
+            rtbOtherNames.Text = ConnectionRequest.AttributeValues.ContainsKey( "OtherNamesUsed" ) ? ConnectionRequest.AttributeValues["OtherNamesUsed"].Value : string.Empty;
+            rtbPlaceOfBirth.Text = ConnectionRequest.AttributeValues.ContainsKey( "PlaceOfBirth" ) ? ConnectionRequest.AttributeValues["PlaceOfBirth"].Value : string.Empty;
+            rtbCurrentAddress.Text = ConnectionRequest.AttributeValues.ContainsKey( "CurrentUSAddress" ) ? ConnectionRequest.AttributeValues["CurrentUSAddress"].Value : string.Empty;
+            rtbYearsInTX.Text = ConnectionRequest.AttributeValues.ContainsKey( "NumberOfYearsInTexas" ) ? ConnectionRequest.AttributeValues["NumberOfYearsInTexas"].Value : string.Empty;
+            rtbMonthsAtLakepointe.Text = ConnectionRequest.AttributeValues.ContainsKey( "MonthsAttendingLakepointeChurch" ) ? ConnectionRequest.AttributeValues["MonthsAttendingLakepointeChurch"].Value : string.Empty;
+            rtbPriorAddress.Text = ConnectionRequest.AttributeValues.ContainsKey( "PriorAddressOut-of-USAddress" ) ? ConnectionRequest.AttributeValues["PriorAddressOut-of-USAddress"].Value : string.Empty;
+            rtbSocialSecurityNumber.Text = ConnectionRequest.AttributeValues.ContainsKey( "NationalIDNumber" ) ? Encryption.DecryptString( ConnectionRequest.AttributeValues["NationalIDNumber"].Value ) : string.Empty;
+
+            var frontId = GetImageId( "CopyOfPassport" );
+            if ( frontId != null )
+            {
+                rfuIDFront.BinaryFileId = frontId.Value;
+            }
+
+            var dateString = ConnectionRequest.AttributeValues.ContainsKey( "DateOfBirth" ) ? ConnectionRequest.AttributeValues["DateOfBirth"].Value : string.Empty;
+            if ( dateString != string.Empty )
+            {
+                dppDateOfBirth.SelectedDate = DateTime.Parse( dateString, null, System.Globalization.DateTimeStyles.RoundtripKind );
+            }
+
             rcblAdultRelease.SetValues( SavedValues["Release"].Split( ',' ) );
+        }
+
+        private int? GetImageId( string key )
+        {
+            if ( !ConnectionRequest.AttributeValues.ContainsKey( key ) )
+            {
+                return null;
+            }
+
+            var guid = ConnectionRequest.AttributeValues[key].Value.AsGuidOrNull();
+            if ( guid == null )
+            {
+                return null;
+            }
+
+            return new BinaryFileService( _context ).Get( guid.Value ).Id;
         }
 
         private void InitializeChildApplication()
@@ -1103,6 +1227,7 @@ namespace RockWeb.Plugins.org_lakepointe.VolunteerApplication
             rcblNoticeOfRequirements.SetValues( SavedValues["NoticeOfRequirements"].Split( ',' ) );
             rcblParentGuardianApproval.SetValues( SavedValues["ParentApproval"].Split( ',' ) );
             rblSSN.SelectedValue = MapTrueFalseToYesNo( SavedValues["HasSSN"] );
+            rblInternationalStudent.SelectedValue = MapTrueFalseToYesNo( ConnectionRequest.AttributeValues["IsInternationalStudent"].Value ) ?? "No";
             rcblMinorRelease.SetValues( SavedValues["Release"].Split( ',' ) );
             rtbMinorSignature.Text = SavedValues["MinorSignature"];
         }
@@ -1188,6 +1313,7 @@ namespace RockWeb.Plugins.org_lakepointe.VolunteerApplication
             rcblNoticeOfRequirements.SetValues( SavedValues["NoticeOfRequirements"].Split( ',' ) );
             rcblParentGuardianApproval.SetValues( SavedValues["ParentApproval"].Split( ',' ) );
             rblSSN.SelectedValue = MapTrueFalseToYesNo( SavedValues["HasSSN"] );
+            rblInternationalStudent.SelectedValue = MapTrueFalseToYesNo( ConnectionRequest.AttributeValues["IsInternationalStudent"].Value ) ?? "No";
             rcblMinorRelease.SetValues( SavedValues["Release"].Split( ',' ) );
             rtbMinorSignature.Text = SavedValues["MinorSignature"];
         }
@@ -1249,6 +1375,10 @@ namespace RockWeb.Plugins.org_lakepointe.VolunteerApplication
             if ( ApplicationType == ApplicationTypes.ADULT || ApplicationType == ApplicationTypes.STAFF )
             {
                 rblSSN.SelectedValue = MapTrueFalseToYesNo( SavedValues["HasSSN"] );
+            }
+            if ( ApplicationType == ApplicationTypes.ADULT || ApplicationType == ApplicationTypes.LEVEL2 )
+            {
+                rblInternationalStudent.SelectedValue = MapTrueFalseToYesNo( ConnectionRequest.AttributeValues["IsInternationalStudent"].Value ) ?? "No";
             }
             rcblAdultRelease.SetValues( SavedValues["Release"].Split( ',' ) );
         }
@@ -1336,12 +1466,40 @@ namespace RockWeb.Plugins.org_lakepointe.VolunteerApplication
                             case ApplicationTypes.LEVEL2:
                                 SavedValues["Agree"] = rcblAgreeL2.SelectedValues.JoinStrings( "," );
                                 SavedValues["HasSSN"] = MapYesNoToTrueFalse( rblSSN.SelectedValue );
+                                ConnectionRequest.AttributeValues["IsInternationalStudent"].Value = MapYesNoToTrueFalse( rblInternationalStudent.SelectedValue );
+                                ConnectionRequest.AttributeValues["Surname"].Value = rtbSurname.Text;
+                                ConnectionRequest.AttributeValues["GivenName"].Value = rtbGivenName.Text;
+                                ConnectionRequest.AttributeValues["MothersFullMaidenName"].Value = rtbMothersMaidenName.Text;
+                                ConnectionRequest.AttributeValues["OtherNamesUsed"].Value = rtbOtherNames.Text;
+                                ConnectionRequest.AttributeValues["PlaceOfBirth"].Value = rtbPlaceOfBirth.Text;
+                                ConnectionRequest.AttributeValues["DateOfBirth"].Value = dppDateOfBirth.SelectedDate.ToISO8601DateString();
+                                ConnectionRequest.AttributeValues["CurrentUSAddress"].Value = rtbCurrentAddress.Text;
+                                ConnectionRequest.AttributeValues["NumberOfYearsInTexas"].Value = rtbYearsInTX.Text;
+                                ConnectionRequest.AttributeValues["MonthsAttendingLakepointeChurch"].Value = rtbMonthsAtLakepointe.Text;
+                                ConnectionRequest.AttributeValues["PriorAddressOut-of-USAddress"].Value = rtbPriorAddress.Text;
+                                ConnectionRequest.AttributeValues["NationalIDNumber"].Value = Encryption.EncryptString( rtbSocialSecurityNumber.Text );
+                                ConnectionRequest.AttributeValues["CopyOfPassport"].Value = GetGuidOfBinaryFile( rfuIDFront.BinaryFileId );
+                                ConnectionRequest.SaveAttributeValues();
                                 SavedValues["Release"] = rcblAdultRelease.SelectedValues.JoinStrings( "," );
                                 break;
-                            case ApplicationTypes.STAFF:
                             case ApplicationTypes.ADULT:
+                            case ApplicationTypes.STAFF:
                                 SavedValues["Agree"] = rcblAgree.SelectedValues.JoinStrings( "," );
                                 SavedValues["HasSSN"] = MapYesNoToTrueFalse( rblSSN.SelectedValue );
+                                ConnectionRequest.AttributeValues["IsInternationalStudent"].Value = MapYesNoToTrueFalse( rblInternationalStudent.SelectedValue );
+                                ConnectionRequest.AttributeValues["Surname"].Value = rtbSurname.Text;
+                                ConnectionRequest.AttributeValues["GivenName"].Value = rtbGivenName.Text;
+                                ConnectionRequest.AttributeValues["MothersFullMaidenName"].Value = rtbMothersMaidenName.Text;
+                                ConnectionRequest.AttributeValues["OtherNamesUsed"].Value = rtbOtherNames.Text;
+                                ConnectionRequest.AttributeValues["PlaceOfBirth"].Value = rtbPlaceOfBirth.Text;
+                                ConnectionRequest.AttributeValues["DateOfBirth"].Value = dppDateOfBirth.SelectedDate.ToISO8601DateString();
+                                ConnectionRequest.AttributeValues["CurrentUSAddress"].Value = rtbCurrentAddress.Text;
+                                ConnectionRequest.AttributeValues["NumberOfYearsInTexas"].Value = rtbYearsInTX.Text;
+                                ConnectionRequest.AttributeValues["MonthsAttendingLakepointeChurch"].Value = rtbMonthsAtLakepointe.Text;
+                                ConnectionRequest.AttributeValues["PriorAddressOut-of-USAddress"].Value = rtbPriorAddress.Text;
+                                ConnectionRequest.AttributeValues["NationalIDNumber"].Value = Encryption.EncryptString( rtbSocialSecurityNumber.Text );
+                                ConnectionRequest.AttributeValues["CopyOfPassport"].Value = GetGuidOfBinaryFile( rfuIDFront.BinaryFileId );
+                                ConnectionRequest.SaveAttributeValues();
                                 SavedValues["Release"] = rcblAdultRelease.SelectedValues.JoinStrings( "," );
                                 flagged = ( SavedValues["FollowRules"] == "False" ) ||
                                     ( SavedValues["HasAbusedChild"] == "True" ) ||
@@ -1476,6 +1634,17 @@ namespace RockWeb.Plugins.org_lakepointe.VolunteerApplication
 
                 SelectPage( nextPage );
             }
+        }
+
+        private string GetGuidOfBinaryFile( int? id )
+        {
+            if ( id == null )
+            {
+                return null;
+            }
+
+            var bfs = new BinaryFileService( _context );
+            return bfs.Get( id.Value ).Guid.ToString();
         }
 
         private void SaveApplication( Guid? binaryFileGuid, Person applicant )
@@ -1699,6 +1868,9 @@ namespace RockWeb.Plugins.org_lakepointe.VolunteerApplication
             lSectionTitleParentInfo.Visible = ApplicationType == ApplicationTypes.RECENT_TEEN || ApplicationType == ApplicationTypes.TEEN || ApplicationType == ApplicationTypes.CHILD;
             rblSSN.Visible = ApplicationType == ApplicationTypes.ADULT || ApplicationType == ApplicationTypes.STAFF || ApplicationType == ApplicationTypes.LEVEL2;
             rblSSN.Required = ApplicationType == ApplicationTypes.ADULT || ApplicationType == ApplicationTypes.STAFF || ApplicationType == ApplicationTypes.LEVEL2;
+            rblInternationalStudent.Visible = ApplicationType == ApplicationTypes.ADULT || ApplicationType == ApplicationTypes.LEVEL2;
+
+            bool isInternationalStudent = ConnectionRequest.AttributeValues.ContainsKey( "IsInternationalStudent" ) ? ConnectionRequest.AttributeValues["IsInternationalStudent"].Value == "True" : false;
 
             if ( Request.Params.AllKeys.Contains( "PDF" ) )
             {
@@ -1771,6 +1943,26 @@ namespace RockWeb.Plugins.org_lakepointe.VolunteerApplication
                 pnlAdultRelease.Visible = ApplicationType == ApplicationTypes.ADULT || ApplicationType == ApplicationTypes.EXISTING_VOLUNTEER || ApplicationType == ApplicationTypes.STAFF || ApplicationType == ApplicationTypes.LEVEL2;
                 pnlSSN.Visible = ApplicationType == ApplicationTypes.ADULT || ApplicationType == ApplicationTypes.EXISTING_VOLUNTEER || ApplicationType == ApplicationTypes.STAFF || ApplicationType == ApplicationTypes.LEVEL2;
                 rblSSN.Enabled = false;
+                pnlInternationalStudent.Visible = ApplicationType == ApplicationTypes.ADULT || ApplicationType == ApplicationTypes.LEVEL2;
+                rblInternationalStudent.Enabled = false;
+                pnlInternationalStudentDetails.Visible = false;
+                if ( isInternationalStudent )
+                {
+                    pnlInternationalStudentDetails.Visible = ( ApplicationType == ApplicationTypes.ADULT || ApplicationType == ApplicationTypes.LEVEL2 );
+                    rtbSurname.Enabled = false;
+                    rtbGivenName.Enabled = false;
+                    rtbMothersMaidenName.Enabled = false;
+                    rtbOtherNames.Enabled = false;
+                    rtbPlaceOfBirth.Enabled = false;
+                    dppDateOfBirth.Enabled = false;
+                    rtbCurrentAddress.Enabled = false;
+                    rtbYearsInTX.Enabled = false;
+                    rtbMonthsAtLakepointe.Enabled = false;
+                    rtbPriorAddress.Enabled = false;
+                    rfuIDFront.Visible = false;     // don't include images of ID in the PDF
+                    rtbSocialSecurityNumber.Visible = false; // don't include the SSN in the PDF
+                }
+
                 rcblAdultRelease.Enabled = false;
 
                 pnlMinorRelease.Visible = ApplicationType == ApplicationTypes.RECENT_TEEN || ApplicationType == ApplicationTypes.TEEN || ApplicationType == ApplicationTypes.CHILD;
@@ -1821,6 +2013,26 @@ namespace RockWeb.Plugins.org_lakepointe.VolunteerApplication
                 pnlAckAndAgLevel2.Visible = CurrentPage == PageNames.SAFETY_POLICY_7 && ApplicationType == ApplicationTypes.LEVEL2;
                 pnlAckAndAgLevel0.Visible = CurrentPage == PageNames.SAFETY_POLICY_7 && ApplicationType == ApplicationTypes.LEVEL0;
                 pnlSSN.Visible = CurrentPage == PageNames.SAFETY_POLICY_7 && ( ApplicationType == ApplicationTypes.ADULT || ApplicationType == ApplicationTypes.EXISTING_VOLUNTEER || ApplicationType == ApplicationTypes.STAFF || ApplicationType == ApplicationTypes.LEVEL2 );
+
+                pnlInternationalStudent.Visible = CurrentPage == PageNames.SAFETY_POLICY_7 && ( ApplicationType == ApplicationTypes.ADULT || ApplicationType == ApplicationTypes.LEVEL2 );
+                pnlInternationalStudentDetails.Visible = false;
+                if ( isInternationalStudent && CurrentPage == PageNames.SAFETY_POLICY_7 && ( ApplicationType == ApplicationTypes.ADULT || ApplicationType == ApplicationTypes.LEVEL2 ) )
+                {
+                    pnlSSN.Visible = false;
+                    pnlInternationalStudentDetails.Visible = true;
+                    rtbSurname.Enabled = true;
+                    rtbGivenName.Enabled = true;
+                    rtbMothersMaidenName.Enabled = true;
+                    rtbOtherNames.Enabled = true;
+                    rtbPlaceOfBirth.Enabled = true;
+                    dppDateOfBirth.Enabled = true;
+                    rtbCurrentAddress.Enabled = true;
+                    rtbYearsInTX.Enabled = true;
+                    rtbMonthsAtLakepointe.Enabled = true;
+                    rtbPriorAddress.Enabled = true;
+                    rfuIDFront.Enabled = true;
+                }
+
                 pnlAdultRelease.Visible = CurrentPage == PageNames.SAFETY_POLICY_7 && ( ApplicationType == ApplicationTypes.ADULT || ApplicationType == ApplicationTypes.EXISTING_VOLUNTEER || ApplicationType == ApplicationTypes.STAFF || ApplicationType == ApplicationTypes.LEVEL2 );
                 pnlMinorRelease.Visible = CurrentPage == PageNames.SAFETY_POLICY_7 && ( ApplicationType == ApplicationTypes.RECENT_TEEN || ApplicationType == ApplicationTypes.TEEN || ApplicationType == ApplicationTypes.CHILD );
 
@@ -2083,9 +2295,9 @@ namespace RockWeb.Plugins.org_lakepointe.VolunteerApplication
                         ScrollToTop();
                         return false;
                     }
-                    if ( unrelated < 2 )
+                    if ( unrelated < 3 )
                     {
-                        nbWarning.Text = "You must provide at least two references who are not related to you.";
+                        nbWarning.Text = "You must provide at least three references who are not related to you.";
                         ScrollToTop();
                         return false;
                     }

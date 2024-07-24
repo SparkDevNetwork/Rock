@@ -1,0 +1,111 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <template v-for="(child, index) in modelValue" :key="child.guid">
+        <PreRegistrationChild
+            :childNumber="index + 1"
+            :child="child"
+            :disabled="disabled"
+            @remove="$emit('removeChild', child)" />
+        <hr>
+    </template>
+    <!-- LPC MODIFIED CODE -->
+    <NotificationBox v-if="addChildErrors.length" alertType="danger" :title="getLang() == 'es' ? 'Añadir Niño' : 'Add Child'">
+    <!-- END LPC MODIFIED CODE -->
+        <ul>
+            <li v-for="error in addChildErrors">{{ error }}</li>
+        </ul>
+    </NotificationBox>
+    <RockButton
+        btnSize="xs"
+        btnType="default"
+        class="add pull-right"
+        :disabled="disabled"
+        @click="onAddChildClicked">
+        <i class="fa fa-user"></i>
+        <!-- LPC MODIFIED CODE -->
+        <span>{{ getLang() == 'es' ? ' Añadir Niño' : ' Add Child' }}</span>
+        <!-- END LPC MODIFIED CODE -->
+    </RockButton>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref } from "vue";
+    import PreRegistrationChild from "./preRegistrationChild.partial.obs";
+    import { ChildRequestBag } from "./types.partial";
+    import { convertPersonToChildRequest } from "./utils.partial";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { FamilyPreRegistrationPersonBag } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationPersonBag";
+    // LPC CODE
+    import { useStore } from "@Obsidian/PageState";
+
+    const store = useStore();
+
+    /** Gets the lang parameter from the query string.
+     * Returns "en" or "es". Defaults to "en" if invalid. */
+    function getLang(): string {
+        var lang = typeof store.state.pageParameters["lang"] === 'string' ? store.state.pageParameters["lang"] : "";
+
+        if (lang != "es") {
+            lang = "en";
+        }
+
+        return lang;
+    }
+    // END LPC CODE
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ChildRequestBag[]>,
+            required: true,
+        },
+
+        lastName: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "addChild", child: ChildRequestBag): void,
+        (e: "removeChild", child: ChildRequestBag): void,
+    }>();
+
+    //#region Values
+
+    const addChildErrors = ref<string[]>([]);
+
+    //#endregion
+
+    //#region Event Handlers
+
+    /**
+     * Event handler for a child being added.
+     */
+    async function onAddChildClicked(): Promise<void> {
+        addChildErrors.value = [];
+
+        const result = await invokeBlockAction<FamilyPreRegistrationPersonBag>("GetNewChild");
+
+        if (result?.isSuccess && result.data) {
+            const child = convertPersonToChildRequest(result.data);
+            child.lastName = props.lastName;
+
+            emit("addChild", child);
+        }
+        else {
+            addChildErrors.value = [result?.errorMessage || "An unexpected error occurred while adding a child. Please try again."];
+        }
+    }
+
+    //#endregion
+
+</script>

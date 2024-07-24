@@ -306,7 +306,7 @@ export default defineComponent({
 <div class="registrationentry-payment">
     <RockForm @submit="onNext">
         <!-- MODIFIED LPC CODE -->
-        <h4>{{ getLang() == 'es' ? 'Informaci?n De Pago' : 'Payment Information' }}</h4>
+        <h4>{{ getLang() == 'es' ? 'Información De Pago' : 'Payment Information' }}</h4>
         <div>
             {{ getLang() == 'es' ? 'Cantidad de Pago:' : 'Payment Amount:' }} {{ amountToPayText }}
         </div>

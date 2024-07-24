@@ -43,6 +43,7 @@
     <div class="row">
         <div class="col-xs-12" style="text-align:center;">
             <h3>No Resources Available</h3>
+            <p>Please select a category on the left.</p>
         </div>
     </div>
 {% endif %}

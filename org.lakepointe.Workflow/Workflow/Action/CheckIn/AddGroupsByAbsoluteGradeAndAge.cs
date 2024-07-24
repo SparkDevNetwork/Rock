@@ -604,7 +604,7 @@ namespace org.lakepointe.Workflow.Action.CheckIn
         /// <param name="addGroupTypes">All the possible absolute limit CheckInGroupTypes.</param>
         private void AddFirstAbsoluteGroupWithLocation( CheckInPerson person, Dictionary<int, List<CheckInGroup>> addGroupTypes )
         {
-            foreach ( CheckInGroupType existingGroupType in person.GroupTypes.OrderBy( gt => gt.GroupType.Order ) )
+            foreach ( CheckInGroupType existingGroupType in person.GroupTypes.OrderBy( gt => gt.GroupType.Order ).ThenBy( gt => gt.GroupType.Name ) )
             {
                 if ( !addGroupTypes.ContainsKey( existingGroupType.GroupType.Id ) )
                 {
@@ -612,7 +612,7 @@ namespace org.lakepointe.Workflow.Action.CheckIn
                 }
 
                 var addGroups = addGroupTypes[existingGroupType.GroupType.Id];
-                foreach ( var anAddGroup in addGroups.OrderBy( g => g.Group.Order ) )
+                foreach ( var anAddGroup in addGroups.OrderBy( g => g.Group.Order ).ThenBy( g => g.Group.Name ) )
                 {
                     if ( anAddGroup.Locations.Count != 0 )
                     {
@@ -622,7 +622,7 @@ namespace org.lakepointe.Workflow.Action.CheckIn
                             // Don't add the group in if there are not locations in it
                             existingGroup.ExcludedByFilter = false;
                             existingGroup.Notes = "Using Absolute Limits.";
-                            existingGroup.Locations.Add( anAddGroup.Locations.OrderBy( l => l.Order ).FirstOrDefault() );
+                            existingGroup.Locations.Add( anAddGroup.Locations.OrderBy( l => l.Order ).ThenBy( l => l.Location.Name ).FirstOrDefault() );
 
                             return;
                         }
@@ -630,7 +630,7 @@ namespace org.lakepointe.Workflow.Action.CheckIn
                         {
                             anAddGroup.Notes = "Using Absolute Limits.";
                             // Remove all but the first location.
-                            anAddGroup.Locations = new List<CheckInLocation>() { anAddGroup.Locations.OrderBy( l => l.Order ).FirstOrDefault() };
+                            anAddGroup.Locations = new List<CheckInLocation>() { anAddGroup.Locations.OrderBy( l => l.Order ).ThenBy( l => l.Location.Name ).FirstOrDefault() };
                             existingGroupType.Groups.Add( anAddGroup );
 
                             return;

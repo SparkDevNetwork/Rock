@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
@@ -1586,7 +1586,7 @@ namespace RockWeb.Plugins.org_lakepointe.CheckIn.Manager
 
                     // Get the group types
                     var parentGroupType = GroupTypeCache.Get( groupTypeTemplateGuid.Value );
-                    AddGroupTypesRecursively( chartTimes, parentGroupType );
+                    AddGroupTypesRecursively( chartTimes, parentGroupType, new List<int>() );
 
                     lGroupTypeName.Text = parentGroupType.Name ?? "";
 
@@ -1604,7 +1604,7 @@ namespace RockWeb.Plugins.org_lakepointe.CheckIn.Manager
 
                     if ( parentGroupType != null )
                     {
-                        AddGroupsForGroupType( occurrences, chartTimes, validLocationids, validLocationIdsFiltered, parentGroupType, groups, groupIds );
+                        AddGroupsForGroupType( occurrences, chartTimes, validLocationids, validLocationIdsFiltered, parentGroupType, groups, groupIds, new List<int>() );
                     }
 
                     // Remove any groups without child locations
@@ -1680,35 +1680,46 @@ namespace RockWeb.Plugins.org_lakepointe.CheckIn.Manager
         }
 
         private void AddGroupsForGroupType( List<AttendanceOccurrence> occurrences, List<DateTime> chartTimes, List<int> validLocationids,
-            List<int> validLocationIdsFiltered, GroupTypeCache parentGroupType, List<Group> groups, List<int> groupIds )
+            List<int> validLocationIdsFiltered, GroupTypeCache parentGroupType, List<Group> groups, List<int> groupIds, List<int> antiRecursionIds )
         {
+            antiRecursionIds.Add( parentGroupType.Id );
             foreach ( var childGroupType in parentGroupType.ChildGroupTypes.OrderBy( t => t.Order ) )
             {
-                if ( childGroupType != parentGroupType )
+                // skip if child group type has already been looked at
+                if ( antiRecursionIds.Contains( childGroupType.Id ) )
                 {
-                    AddGroupsForGroupType( occurrences, chartTimes, validLocationids, validLocationIdsFiltered, childGroupType, groups, groupIds );
-
-                    // Find top-level groups and add them to navigation, adding child groups recursively
-                    groups.Where( g =>
-                        g.GroupTypeId == childGroupType.Id &&
-                        ( g.ParentGroup == null || g.ParentGroup.GroupTypeId != childGroupType.Id ) )
-                        .OrderBy( g => g.Order )
-                        .ToList()
-                        .ForEach( g => AddGroupToNavigation( occurrences, chartTimes, validLocationids, validLocationIdsFiltered, groups, groupIds, g ) );
+                    continue;
                 }
+
+                AddGroupsForGroupType( occurrences, chartTimes, validLocationids, validLocationIdsFiltered, childGroupType, groups, groupIds, antiRecursionIds );
+
+                // Find top-level groups and add them to navigation, adding child groups recursively
+                groups.Where( g =>
+                    g.GroupTypeId == childGroupType.Id &&
+                    ( g.ParentGroup == null || g.ParentGroup.GroupTypeId != childGroupType.Id ) )
+                    .OrderBy( g => g.Order )
+                    .ToList()
+                    .ForEach( g => AddGroupToNavigation( occurrences, chartTimes, validLocationids, validLocationIdsFiltered, groups, groupIds, g ) );
             }
         }
 
-        private void AddGroupTypesRecursively( List<DateTime> chartTimes, GroupTypeCache parentGroupType )
+        private void AddGroupTypesRecursively( List<DateTime> chartTimes, GroupTypeCache parentGroupType, List<int> antiRecursionIds )
         {
             if ( parentGroupType != null )
             {
+                antiRecursionIds.Add( parentGroupType.Id );
                 foreach ( var childGroupType in parentGroupType.ChildGroupTypes.OrderBy( t => t.Order ) )
                 {
+                    // skip if child group type has already been looked at
+                    if ( antiRecursionIds.Contains( childGroupType.Id ) )
+                    {
+                        continue;
+                    }
+
                     AddGroupType( null, childGroupType, chartTimes );
                     if ( childGroupType != parentGroupType )
                     {
-                        AddGroupTypesRecursively( chartTimes, childGroupType );
+                        AddGroupTypesRecursively( chartTimes, childGroupType, antiRecursionIds );
                     }
                 }
             }

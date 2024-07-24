@@ -30,6 +30,20 @@ import { useHttp } from "@Obsidian/Utility/http";
 
 const store = useStore();
 
+// LPC CODE
+/** Gets the lang parameter from the query string.
+ * Returns "en" or "es". Defaults to "en" if invalid. */
+function getLang(): string {
+    var lang = typeof store.state.pageParameters["lang"] === 'string' ? store.state.pageParameters["lang"] : "";
+
+    if (lang != "es") {
+        lang = "en";
+    }
+
+    return lang;
+}
+// END LPC CODE
+
 /** A form to save a payment token for later use as a Financial Person Saved Account */
 const SaveFinancialAccountForm = defineComponent({
     name: "SaveFinancialAccountForm",
@@ -99,6 +113,9 @@ const SaveFinancialAccountForm = defineComponent({
         },
     },
     methods: {
+        // LPC CODE
+        getLang,
+        // END LPC CODE
         async onSubmit() {
             this.errorTitle = "";
             this.errorMessage = "";
@@ -147,21 +164,30 @@ const SaveFinancialAccountForm = defineComponent({
             <strong v-if="errorTitle">{{errorTitle}}:</strong>
             {{errorMessage}}
         </NotificationBox>
-        <InlineCheckBox label="Save account information for future gifts" v-model="doSave" />
+        <InlineCheckBox :label="getLang() == 'es' ? 'Guardar información para futuros pagos' : 'Save account information for future gifts'" v-model="doSave" />
         <RockForm v-if="doSave" @submit="onSubmit">
-            <TextBox label="Name for the account" rules="required" v-model="savedAccountName" />
+            <TextBox :label="getLang() == 'es' ? 'Nombre de la cuenta' : 'Name for the account'" rules="required" v-model="savedAccountName" />
             <template v-if="isLoginCreationNeeded">
                 <NotificationBox alertType="info">
-                    <strong>Note:</strong>
-                    For security purposes you will need to login to use your saved account information. To create
-                    a login account please provide a user name and password below. You will be sent an email with
-                    the account information above as a reminder.
+                    <strong>
+                        {{ getLang() == 'es' ? 'Nota:' : 'Note:' }}
+                    </strong>
+                    <span v-if="getLang() == 'es'">
+                        Por seguridad, necesitarás iniciar sesión para usar tu información guardada. Para crear una cuenta,
+                        por favor provee un usuario y contraseña a continuación. Te enviaremos un email con la información
+                        de la cuenta como recordatorio.
+                    </span>
+                    <span v-else>
+                        For security purposes you will need to login to use your saved account information. To create
+                        a login account please provide a user name and password below. You will be sent an email with
+                        the account information above as a reminder.
+                    </span>
                 </NotificationBox>
-                <TextBox label="Username" v-model="username" rules="required" />
-                <TextBox label="Password" v-model="password" type="password" rules="required" />
-                <TextBox label="Confirm Password" v-model="confirmPassword" type="password" rules="required" />
+                <TextBox :label="getLang() == 'es' ? 'Usuario' : 'Username'" v-model="username" rules="required" />
+                <TextBox :label="getLang() == 'es' ? 'Contraseña' : 'Password'" v-model="password" type="password" rules="required" />
+                <TextBox :label="getLang() == 'es' ? 'Confirmar Contraseña' : 'Confirm Password'" v-model="confirmPassword" type="password" rules="required" />
             </template>
-            <RockButton :isLoading="isLoading" btnType="primary" type="submit">Save Account</RockButton>
+            <RockButton :isLoading="isLoading" btnType="primary" type="submit">{{ getLang() == 'es' ? 'Guardar Cuenta' : 'Save Account' }}</RockButton>
         </RockForm>
     </template>
 </div>`

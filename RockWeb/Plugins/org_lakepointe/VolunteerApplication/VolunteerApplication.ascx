@@ -449,8 +449,60 @@
             <p style="page-break-after: always;">&nbsp;</p>
             <asp:Panel ID="pnlAdultRelease" runat="server" Visible="false">
                 <div class="row">
-                    <div class="col-md-12">
+                    <asp:Panel runat="server" class="col-md-12">
                         <h3 class="text-center"><asp:Literal ID="lSectionTitleAdultRelease" runat="server" /></h3>
+                        <asp:Panel ID="pnlInternationalStudent" runat="server" Visible="false">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <Rock:RockRadioButtonList ID="rblInternationalStudent" runat="server" Enabled="true" Required="true" OnSelectedIndexChanged="rblInternationalStudent_SelectedIndexChanged" AutoPostBack="true">
+                                        <asp:ListItem Value="Yes" Selected="False"></asp:ListItem>
+                                        <asp:ListItem Value="No" Selected="False"></asp:ListItem>
+                                    </Rock:RockRadioButtonList>
+                                </div>
+                            </div>
+                            <asp:Panel ID="pnlInternationalStudentDetails" runat="server" Visible="false">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <Rock:RockTextBox ID="rtbSurname" runat="server" Visible="true" Required="true" Enabled="true" />
+                                    </div>
+                                    <div class="col-md-3">
+                                        <Rock:RockTextBox ID="rtbGivenName" runat="server" Visible="true" Required="true" Enabled="true" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <Rock:RockTextBox ID="rtbMothersMaidenName" runat="server" Visible="true" Required="true" Enabled="true" />
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <Rock:RockTextBox ID="rtbOtherNames" runat="server" Visible="true" Required="true" Enabled="true" />
+                                    </div>
+                                    <div class="col-md-3">
+                                        <Rock:RockTextBox ID="rtbPlaceOfBirth" runat="server" Visible="true" Required="true" Enabled="true" />
+                                    </div>
+                                    <div class="col-md-3">
+                                        <Rock:DatePartsPicker ID="dppDateOfBirth" runat="server" Visible="true" Required="true" AllowFutureDates="false" Enabled="false" />
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <Rock:RockTextBox ID="rtbCurrentAddress" runat="server" TextMode="MultiLine" Rows="5" Required="true" Visible="true" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <Rock:RockTextBox ID="rtbYearsInTX" runat="server" Visible="true" Required="true" Enabled="true" />
+                                        <Rock:RockTextBox ID="rtbMonthsAtLakepointe" runat="server" Visible="true" Required="true" Enabled="true" />
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <Rock:RockTextBox ID="rtbPriorAddress" runat="server" TextMode="MultiLine" Rows="5" Required="true" Visible="true" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <Rock:FileUploader ID="rfuIDFront" runat="server" Required="true" Enabled="true" />
+                                        <Rock:RockTextBox ID="rtbSocialSecurityNumber" runat="server" Visible="true" Required="false" />
+                                    </div>
+                                </div>
+                            </asp:Panel>
+                        </asp:Panel>
                         <asp:Panel ID="pnlSSN" runat="server" Visible="false">
                             <div class="row">
                                 <div class="col-md-12">
@@ -467,7 +519,7 @@
                             <asp:ListItem Value="3" Selected="False"></asp:ListItem>
                             <asp:ListItem Value="4" Selected="False"></asp:ListItem>
                         </Rock:RockCheckBoxList>
-                    </div>
+                    </asp:Panel>
                 </div>
             </asp:Panel>
             <asp:Panel ID="pnlMinorRelease" runat="server" Visible="false">

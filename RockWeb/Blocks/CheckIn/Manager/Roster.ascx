@@ -69,12 +69,18 @@
                             <asp:ListItem Text="Present" Value="3" />
                             <asp:ListItem Text="Checked-out" Value="4" />
                         </Rock:ButtonGroup>
+                        <!-- LPC CODE -->
+                        <asp:LinkButton ID="btnMove" runat="server" CssClass="btn btn-sm btn-primary" Text="<i class='fa fa-truck'></i> Move" OnClick="btnMove_Click" CausesValidation="false" Visible="false" />
+                        <!-- END LPC CODE -->
                     </div>
                 </div>
                 <div class="panel-body">
                     <div class="grid grid-panel">
                         <Rock:Grid ID="gAttendees" runat="server" DisplayType="Light" UseFullStylesForLightGrid="true" OnRowDataBound="gAttendees_RowDataBound" OnRowSelected="gAttendees_RowSelected" DataKeyNames="PersonGuid,AttendanceIds" AllowSorting="true" ShowActionRow="false">
                             <Columns>
+                                <%-- LPC CODE --%>
+                                <Rock:SelectField />
+                                <%-- END LPC CODE --%>
                                 <Rock:RockLiteralField ID="lPhoto" ItemStyle-CssClass="avatar-column" ColumnPriority="TabletSmall" />
                                 <Rock:RockLiteralField ID="lMobileIcon" HeaderStyle-CssClass="d-table-cell d-sm-none d-print-none" ItemStyle-CssClass="mobile-icon d-table-cell d-sm-none d-print-none py-0 align-middle" />
                                 <Rock:RockLiteralField ID="lName" HeaderText="Name" HeaderStyle-CssClass="print-first-col" ItemStyle-CssClass="name js-name align-middle print-first-col" SortExpression="NickName,LastName,PersonGuid" />
@@ -126,6 +132,32 @@
                     <Rock:RockCheckBoxList ID="cblSchedulesCheckoutAttendee" runat="server" Label="Schedules" RepeatDirection="Horizontal" Required="true" ValidationGroup="vgConfirmCheckoutAttendee" />
                 </Content>
             </Rock:ModalDialog>
+
+            <!-- LPC CODE -->
+            <!-- Confirm Move modal -->
+            <Rock:ModalDialog ID="mdConfirmMove" runat="server" Title="Move" ValidationGroup="vgConfirmMove" SaveButtonText="Move" OnSaveClick="mdConfirmMove_SaveClick">
+                <Content>
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <Rock:RockCheckBoxList ID="cblSchedules" runat="server" Label="Move From Service" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" Required="true" ValidationGroup="vgConfirmMove" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <Rock:RockDropDownList ID="ddlMovePersonSchedule" runat="server" Label="Service" AutoPostBack="false" Required="true" ValidationGroup="vgConfirmMove" />
+                        </div>
+                        <div class="col-md-4">
+                            <Rock:LocationItemPicker ID="lpMovePersonLocation" runat="server" Label="Location" EnableFullWidth="true" OnSelectItem="lpMovePersonLocation_SelectItem" Required="true" ValidationGroup="vgConfirmMove" />
+                        </div>
+                        <div class="col-md-4">
+                            <Rock:RockDropDownList ID="ddlMovePersonGroup" runat="server" Label="Group" AutoPostBack="true" OnSelectedIndexChanged="ddlMovePersonGroup_SelectedIndexChanged" Required="true" ValidationGroup="vgConfirmMove" />
+                        </div>
+                    </div>
+
+                    <Rock:NotificationBox ID="nbMovePersonLocationFull" runat="server" NotificationBoxType="Warning" />
+                </Content>
+            </Rock:ModalDialog>
+            <!-- END LPC CODE -->
         </asp:Panel>
     </ContentTemplate>
 </Rock:RockUpdatePanel>

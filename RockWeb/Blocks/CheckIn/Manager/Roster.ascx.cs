@@ -117,6 +117,15 @@ namespace RockWeb.Blocks.CheckIn.Manager
         Order = 10
         )]
 
+    // LPC CODE
+    [BooleanField(
+        "Enable Move Button",
+        Key = AttributeKey.EnableMoveButton,
+        Description = "When enabled, a 'Move' button will be shown in 'Present' mode allowing the user to move people.",
+        DefaultBooleanValue = true,
+        Order = 11 )]
+    // END LPC CODE
+
     #endregion Block Attributes
 
     [Rock.SystemGuid.BlockTypeGuid( "EA5C2CF9-8602-445F-B2B7-48D0A5CFEA8C" )]
@@ -146,6 +155,10 @@ namespace RockWeb.Blocks.CheckIn.Manager
             public const string EnableMarkPresentButton = "EnableMarkPresentButton";
 
             public const string CheckInRosterAlertIconCategory = "CheckInRosterAlertIconCategory";
+
+            // LPC CODE
+            public const string EnableMoveButton = "EnableMoveButton";
+            // END LPC CODE
         }
 
         #endregion Attribute Keys
@@ -1252,9 +1265,304 @@ namespace RockWeb.Blocks.CheckIn.Manager
             BindGrid();
         }
 
+        // LPC CODE
+        /// <summary>
+        /// Handles the Click event of the btnMove control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnMove_Click( object sender, EventArgs e )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                // Get the selected attendees
+                var selectedRows = gAttendees.SelectedKeys;
+                IList<RosterAttendee> attendees = GetAttendees( rockContext );
+                var selectedAttendees = attendees.Where( a => selectedRows.Contains( a.PersonGuid ) );
+                if ( selectedAttendees.Count() == 0 )
+                {
+                    selectedAttendees = attendees;
+                }
+
+                var attendanceService = new AttendanceService( rockContext );
+
+                // Get the schedules to put in the Move From multi-select
+                var schedules = new HashSet<Schedule>();
+                foreach ( var attendee in selectedAttendees )
+                {
+                    foreach ( var id in attendee.AttendanceIds )
+                    {
+                        var attendance = attendanceService.Get( id );
+                        if ( attendance != null )
+                        {
+                            var schedule = attendance.Occurrence.Schedule;
+                            if ( schedule != null )
+                            {
+                                schedules.Add( schedule );
+                            }
+                        }
+                    }
+                }
+                cblSchedules.DataSource = schedules;
+                cblSchedules.DataBind();
+                if ( cblSchedules.Items.Count == 1 )
+                {
+                    cblSchedules.Items[0].Selected = true;
+                }
+
+                // Configure location picker
+                if ( CurrentCampusId > 0 )
+                {
+                    // if the selected attendance is at specific campus, set the location picker to that campus's locations
+                    var campusLocationId = CampusCache.Get( CurrentCampusId )?.LocationId;
+                    lpMovePersonLocation.RootLocationId = campusLocationId ?? 0;
+                }
+                else
+                {
+                    lpMovePersonLocation.RootLocationId = 0;
+                }
+                lpMovePersonLocation.SetValueFromLocationId( CurrentLocationId );
+
+                // Configure group picker
+                LoadMovePersonGroups();
+
+                int? mostCommonGroupId = selectedAttendees.GroupBy( a => a.GroupId )
+                    .OrderByDescending( g => g.Count() )
+                    .Select( g => g.Key )
+                    .FirstOrDefault();
+
+                if ( mostCommonGroupId != null && mostCommonGroupId > 0 )
+                {
+                    ddlMovePersonGroup.SetValue( mostCommonGroupId );
+                }
+
+                // Configure schedule picker
+                LoadMovePersonSchedules();
+
+                ddlMovePersonSchedule.SetValue( CurrentScheduleId );
+
+                // Show the modal
+                mdConfirmMove.Show();
+            }
+            
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlMovePersonGroup control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlMovePersonGroup_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            LoadMovePersonSchedules();
+        }
+
+        /// <summary>
+        /// Handles the SelectItem event of the lpMovePersonLocation control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lpMovePersonLocation_SelectItem( object sender, EventArgs e )
+        {
+            // just in case a location warning is showing, we can hide if they are selecting a different location
+            nbMovePersonLocationFull.Visible = false;
+            LoadMovePersonGroups();
+            LoadMovePersonSchedules();
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the mdMovePerson control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdConfirmMove_SaveClick( object sender, EventArgs e )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var attendanceService = new AttendanceService( rockContext );
+                var attendanceOccurrenceService = new AttendanceOccurrenceService( rockContext );
+
+                // Get the selected attendees
+                var selectedRows = gAttendees.SelectedKeys;
+                IList<RosterAttendee> attendees = GetAttendees( rockContext );
+                var selectedAttendees = attendees.Where( a => selectedRows.Contains( a.PersonGuid ) );
+                if ( selectedAttendees.Count() == 0 )
+                {
+                    selectedAttendees = attendees;
+                }
+
+                // Get the attendances that match the Move From schedule
+                var attendances = new List<Attendance>();
+                foreach ( var attendee in selectedAttendees )
+                {
+                    foreach ( var attendanceId in attendee.AttendanceIds )
+                    {
+                        var attendance = attendanceService.Get( attendanceId );
+                        if ( attendance != null && cblSchedules.SelectedValuesAsInt.Contains( attendance.Occurrence.ScheduleId ?? 0 )
+                            && attendance.IsCurrentlyCheckedIn == true )
+                        {
+                            attendances.Add( attendance );
+                        }
+                    }
+                }
+
+                // Get the info for where to move the attendances to
+                var selectedOccurrenceDate = DateTime.Today;
+                var selectedScheduleId = ddlMovePersonSchedule.SelectedValueAsId();
+                var selectedLocationId = lpMovePersonLocation.SelectedValueAsId();
+                var selectedGroupId = ddlMovePersonGroup.SelectedValueAsId();
+                if ( !selectedLocationId.HasValue || !selectedGroupId.HasValue || !selectedScheduleId.HasValue )
+                {
+                    return;
+                }
+
+                // Check if this would overload the capacity
+                var location = NamedLocationCache.Get( selectedLocationId.Value );
+
+                var locationFirmRoomThreshold = location?.FirmRoomThreshold;
+                if ( locationFirmRoomThreshold.HasValue )
+                {
+                    var locationCount = attendanceService.GetByDateOnLocationAndSchedule( selectedOccurrenceDate, selectedLocationId.Value, selectedScheduleId.Value )
+                        .Where( a => a.EndDateTime == null ).Count();
+
+                    if ( ( locationCount + attendances.Count ) >= locationFirmRoomThreshold.Value )
+                    {
+                        int remainingCapacity = locationFirmRoomThreshold.Value - locationCount - 1;
+
+                        nbMovePersonLocationFull.Text = $"The {attendances.Count} {(attendances.Count == 1 ? "person" : "people")} you have selected exceed the {location}'s remaining hard threshold capacity of {(remainingCapacity < 0 ? 0 : remainingCapacity)}.";
+                        nbMovePersonLocationFull.Visible = true;
+                        return;
+                    }
+                }
+
+                // Move the people
+                var newRoomsOccurrence = attendanceOccurrenceService.GetOrAdd( selectedOccurrenceDate, selectedGroupId, selectedLocationId, selectedScheduleId );
+                foreach ( var attendance in attendances )
+                {
+                    attendance.OccurrenceId = newRoomsOccurrence.Id;
+                }
+                rockContext.SaveChanges();
+
+                mdConfirmMove.Hide();
+
+                BindGrid();
+            }
+        }
+        // END LPC CODE
+
         #endregion Control Events
 
         #region Internal Methods
+
+        // LPC CODE
+        /// <summary>
+        /// Updates the list of Groups in the 'Move Person' dialog based on selected Location
+        /// </summary>
+        private void LoadMovePersonGroups()
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var currentlySelectedGroupId = ddlMovePersonGroup.SelectedValueAsId();
+                ddlMovePersonGroup.Items.Clear();
+
+                IQueryable<GroupLocation> availableGroupQuery;
+
+                int selectedLocationId = lpMovePersonLocation.SelectedValue.AsInteger();
+                availableGroupQuery = new GroupLocationService( rockContext ).Queryable().Where( a => a.LocationId == selectedLocationId && a.Schedules.Where( s => s.IsActive ).Any() );
+
+                var groupsQuery = new GroupService( rockContext ).Queryable();
+                var availableGroupList = groupsQuery
+                    .Include( a => a.ParentGroup )
+                    .Where( g => g.IsActive
+                        && !g.IsArchived
+                        && availableGroupQuery.Any( x => x.GroupId == g.Id ) )
+                    .OrderBy( a => a.Order )
+                    .ThenBy( a => a.Name )
+                    .AsNoTracking()
+                    .ToList();
+
+                // For each group, if it has at least one schedule that is active now, add it to the list
+                foreach ( var group in availableGroupList )
+                {
+                    bool hasActiveSchedule = false;
+
+                    foreach ( var location in group.GroupLocations )
+                    {
+                        foreach ( var schedule in location.Schedules )
+                        {
+                            if ( schedule.IsScheduleActive )
+                            {
+                                hasActiveSchedule = true;
+                                break;
+                            }
+                        }
+                        if ( hasActiveSchedule == true )
+                        {
+                            break;
+                        }
+                    }
+
+                    if ( hasActiveSchedule == true )
+                    {
+                        if ( group.ParentGroup != null )
+                        {
+                            ddlMovePersonGroup.Items.Add( new ListItem( $"{group.ParentGroup.Name} > {group.Name}", group.Id.ToString() ) );
+                        }
+                        else
+                        {
+                            ddlMovePersonGroup.Items.Add( new ListItem( group.Name, group.Id.ToString() ) );
+                        }
+                    }
+                }
+
+                ddlMovePersonGroup.SetValue( currentlySelectedGroupId );
+            }
+        }
+
+        /// <summary>
+        /// Loads the move person schedules based on selected Group and Location
+        /// </summary>
+        /// <param name="selectedGroupId">The selected group identifier.</param>
+        /// <param name="selectedLocationId">The selected location identifier.</param>
+        private void LoadMovePersonSchedules()
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var scheduleService = new ScheduleService( rockContext );
+
+                var groupLocationQuery = new GroupLocationService( rockContext ).Queryable();
+
+                int selectedGroupId = ddlMovePersonGroup.SelectedValue.AsInteger();
+                if ( selectedGroupId > 0 )
+                {
+                    groupLocationQuery = groupLocationQuery.Where( a => a.GroupId == selectedGroupId );
+                }
+
+                int selectedLocationId = lpMovePersonLocation.SelectedValue.AsInteger();
+                if ( selectedLocationId > 0 )
+                {
+                    groupLocationQuery = groupLocationQuery.Where( a => a.LocationId == selectedLocationId );
+                }
+
+                var scheduleList = scheduleService.Queryable().Where( a =>
+                    a.IsActive
+                    && groupLocationQuery.Any( x => x.Schedules.Any( s => s.Id == a.Id ) )
+                    && a.Name != null
+                    && a.Name != string.Empty ).ToList();
+
+                var sortedScheduleList = scheduleList.OrderByOrderAndNextScheduledDateTime();
+                ddlMovePersonSchedule.Items.Clear();
+
+                foreach ( var schedule in sortedScheduleList )
+                {
+                    if ( schedule.IsScheduleActive )
+                    {
+                        ddlMovePersonSchedule.Items.Add( new ListItem( schedule.Name, schedule.Id.ToString() ) );
+                    }
+                }
+            }
+        }
+        // END LPC CODE
 
         /// <summary>
         /// Resets control visibility to default values.
@@ -1446,6 +1754,10 @@ namespace RockWeb.Blocks.CheckIn.Manager
             btnCheckoutAll.Visible = GetAttributeValue( AttributeKey.EnableCheckoutAll ).AsBoolean()
                 && anyRoomHasAllowCheckout
                 && rosterStatusFilter == RosterStatusFilter.Present;
+            // LPC CODE
+            btnMove.Visible = rosterStatusFilter == RosterStatusFilter.Present && GetAttributeValue( AttributeKey.EnableMoveButton ).AsBoolean( true ); ;
+            gAttendees.ColumnsOfType<SelectField>().First().Visible = rosterStatusFilter == RosterStatusFilter.Present;
+            // END LPC CODE
 
             serviceTimesField.Visible = true;
 

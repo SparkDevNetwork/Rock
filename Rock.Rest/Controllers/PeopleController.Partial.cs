@@ -564,6 +564,65 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
+        /// Unsubscribes a person from all email communications or a specific communication list if one is provided.
+        /// </summary>
+        /// <param name="personActionIdentifier">The person action identifier. Action should be "Unsubscribe".</param>
+        /// <param name="communicationListIdKey">The communication list identifier key.</param>
+        /// <remarks>
+        /// <para>This endpoint is for email client one-click unsubscribe functionality (<a href="https://datatracker.ietf.org/doc/html/rfc8058">RFC8058</a>).</para>
+        /// <para>As of 12/13/2023, <a href="https://datatracker.ietf.org/doc/html/rfc8058#section-3.1">RFC8058 Section 3.1</a> states:</para>
+        /// <para>
+        /// The POST request MUST NOT include cookies, HTTP authorization, or any
+        /// other context information. The unsubscribe operation is logically
+        /// unrelated to any previous web activity, and context information could
+        /// inappropriately link the unsubscribe to previous activity.
+        /// </para>
+        /// <para>For this reason, this endpoint does not and must not require authentication or authorization other than the encrypted person action identifier.</para>
+        /// </remarks>
+        [System.Web.Http.Route( "api/People/OneClickUnsubscribe/{personActionIdentifier}")]
+        [HttpPost]
+        [Rock.SystemGuid.RestActionGuid( "D9B2C190-B881-4691-8941-079F47CE0E2F" )]
+        public HttpResponseMessage OneClickUnsubscribe( string personActionIdentifier, string communicationListIdKey = null )
+        {
+            // The service for this controller should be an instance of the PersonService,
+            // but create one if it is not.
+            var rockContext = ( RockContext ) this.Service.Context;
+            if ( !( this.Service is PersonService personService ) )
+            {
+                personService = new PersonService( rockContext );
+            }
+            
+            // Enable lazy loading.
+            SetProxyCreation( true );
+
+            // Get the person from the action identifier, ensuring "Unsubscribe" is the action.
+            var person = personService.GetByPersonActionIdentifier( personActionIdentifier, "Unsubscribe" );
+            if ( person == null )
+            {
+                return new HttpResponseMessage( HttpStatusCode.BadRequest )
+                {
+                    Content = new StringContent( "Invalid person" )
+                };
+            }
+
+            if ( communicationListIdKey.IsNotNullOrWhiteSpace() )
+            {
+                // Unsubscribe from email communication list.
+                var communicationListsQuery = new GroupService( rockContext )
+                    .GetQueryableByKey( communicationListIdKey )
+                    .IsCommunicationList();
+                personService.UnsubscribeFromEmail( person, communicationListsQuery );
+            }
+            else
+            {
+                personService.OneClickUnsubscribeFromEmail( person );
+            }
+            rockContext.SaveChanges();
+
+            return new HttpResponseMessage( HttpStatusCode.NoContent );
+        }
+
+        /// <summary>
         /// Updates the profile photo of the logged in person.
         /// </summary>
         /// <param name="photoBytes">The photo bytes.</param>

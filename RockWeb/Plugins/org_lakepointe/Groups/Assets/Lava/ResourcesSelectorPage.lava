@@ -1,0 +1,87 @@
+<!-- Resources Selection -->
+<style>
+    .btn-primary {
+        margin-top: 15px;
+        margin-bottom: 15px;
+        padding-top: 15px;
+        padding-bottom: 15px;
+        display: block;
+    }
+
+    .two-lines {
+        height: 3em;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        text-wrap: wrap;
+        margin: 0;
+    }
+</style>
+
+<!-- figure out what curricula they should be able to see -->
+{% sql personAliasId:'{{ Person.PrimaryAlias.Id }}' return:'resources'%}
+    -- replaces old _org_lakepointe_sp_CanViewAdultLeaderResources
+    -- Adult LG Leader Resources
+    DECLARE @FeatureSetAttributeId INT = 132518
+    DECLARE @Curriculum NVARCHAR(40) = '%63E6EA73-7E54-4BF6-A060-100F028B19A1%' -- 10093 Curriculum (also controls access to leader resources)
+
+    -- Override Groups
+    DECLARE @AO INT;
+    SELECT @AO = CASE WHEN EXISTS
+    (
+        SELECT gm.PersonId
+        FROM [GroupMember] gm
+        JOIN [PersonAlias] pa ON pa.PersonId = gm.PersonId AND pa.Id = @PersonAliasId
+        WHERE gm.GroupId IN (1002372, 800522)
+            AND gm.IsArchived = 0 AND gm.GroupMemberStatus = 1
+    ) THEN 1 ELSE 0 END;
+
+    SELECT dv.Id, dv.Value, dv.Description
+    FROM [DefinedValue] dv
+    JOIN [AttributeValue] av ON TRY_CAST(av.Value AS UNIQUEIDENTIFIER) = dv.Guid
+    JOIN [Attribute] a ON a.Id = av.AttributeId AND a.[Key] = 'Language'
+    JOIN
+    (
+        SELECT g.Id, pa.Id AS PersonAliasId
+        FROM [Group] g
+        JOIN [GroupMember] gm ON gm.GroupId = g.Id AND gm.IsArchived = 0 AND gm.GroupMemberStatus = 1
+        JOIN [PersonAlias] pa ON pa.PersonId = gm.PersonId
+        JOIN [GroupTypeRole] gtr ON gtr.Id = gm.GroupRoleId
+        JOIN [AttributeValue] av ON av.EntityId = gtr.Id
+            AND av.AttributeId = @FeatureSetAttributeId
+            AND av.Value LIKE @Curriculum
+    ) gd ON gd.Id = av.EntityId AND (@AO = 1 OR gd.PersonAliasId = @PersonAliasId)
+    WHERE dv.DefinedTypeId = 350 AND dv.IsActive = 1
+    GROUP BY dv.Id, dv.Value, dv.Description
+{% endsql %}
+
+{% assign channelCount = resources | Size %}
+{% if channelCount == 1 %}
+    {% capture link %}{{ 'Global' | Attribute:'PublicApplicationRoot' }}page/{% case resources[0].Id %}{% when 5658 %}4668{% when 5659 %}4671{% endcase %}{% endcapture %}
+    {{ link | PageRedirect }}
+{% else %}
+    <div class="container-fluid">
+        <div class="row">
+            {% for resource in resources %}
+                <div class="col-sm-12 col-md-6 col-lg-3">
+                    {% case resource.Id %}
+                    {% when 5658 %}
+                        <a href="/page/4668" class="btn btn-primary stretched-link"
+                            data-toggle="tooltip" data-placement="top" data-html="true">
+                            <i class="fal fa-newspaper fa-5x"></i>
+                            <p class="two-lines">Leader Resources</p>
+                        </a>
+                    {% when 5659 %}
+                        <a href="/page/4671" class="btn btn-primary stretched-link"
+                            data-toggle="tooltip" data-placement="top" data-html="true" style="text-wrap:wrap">
+                            <i class="fal fa-newspaper fa-5x"></i>
+                            <p class="two-lines">RECURSOS DE LIDERAZGO</p>
+                        </a>
+                    {% endcase %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}

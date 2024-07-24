@@ -470,6 +470,12 @@ Avalaible parameters:
             var tmplate = GetAttributeValue(AttributeKey.PickerLavaTemplate);
 
             lSelectBapTypeHtml.Text = tmplate.ResolveMergeFields(mergeFields);
+
+            // Hide the panel if its contents are empty
+            if ( lSelectBapTypeHtml.Text.Trim() == "" )
+            {
+                pnlBapTyp.Visible = false;
+            }
         }
 
         protected void rCampusSelection_ItemDataBound(object sender, RepeaterItemEventArgs e)
@@ -500,6 +506,12 @@ Avalaible parameters:
             var tmplate = GetAttributeValue(AttributeKey.PickerLavaTemplate);
 
             lCampusSelectionHtml.Text = tmplate.ResolveMergeFields(mergeFields);
+
+            // Hide the panel if its contents are empty
+            if ( lCampusSelectionHtml.Text.Trim() == "" )
+            {
+                pnlCampus.Visible = false;
+            }
         }
 
         protected void rDateSelection_ItemDataBound(object sender, RepeaterItemEventArgs e)
@@ -530,6 +542,12 @@ Avalaible parameters:
             var tmplate = GetAttributeValue(AttributeKey.PickerLavaTemplate);
 
             lDateSelectionHtml.Text = tmplate.ResolveMergeFields(mergeFields);
+
+            // Hide the panel if its contents are empty
+            if ( lDateSelectionHtml.Text.Trim() == "" )
+            {
+                pnlDate.Visible = false;
+            }
         }
 
         protected void rTimeSelection_ItemDataBound(object sender, RepeaterItemEventArgs e)
@@ -560,6 +578,12 @@ Avalaible parameters:
             var tmplate = GetAttributeValue(AttributeKey.PickerLavaTemplate);
 
             lTimeSelectionHtml.Text = tmplate.ResolveMergeFields(mergeFields);
+
+            // Hide the panel if its contents are empty
+            if ( lTimeSelectionHtml.Text.Trim() == "" )
+            {
+                pnlTime.Visible = false;
+            }
         }
 
         /// <summary>
@@ -697,7 +721,7 @@ Avalaible parameters:
                             })
                             .ToList();
 
-                        var maxSpots = regInstances.Sum(i => i.MaxAttendees);
+                        var maxSpots = regInstances.Sum( i => Math.Max( i.MaxAttendees.ToIntSafe(), i.Registrants ) );
                         var reg = regInstances.Sum(i => i.Registrants);
 
                         if (maxSpots != 0 && _hiddenEventIds.Contains( g.Id ) == false)
@@ -706,8 +730,8 @@ Avalaible parameters:
                             {
                                 ItemId = g.Id.ToString(),
                                 ItemName = g.Name,
-                                ItemSpotsLeft = maxSpots.Value - reg,
-                                IsAvailable = (maxSpots.Value - reg) > 0,
+                                ItemSpotsLeft = Math.Max( maxSpots - reg, 0 ),
+                                IsAvailable = (maxSpots - reg) > 0,
                                 ShowCount = GetAttributeValue(AttributeKey.ShowEventTypeCount).AsBoolean()
                             });
                         }
@@ -798,7 +822,7 @@ Avalaible parameters:
                             && i.Linkages.FirstOrDefault().Group != null
                             && i.Linkages.FirstOrDefault().GroupId == g.Id).FirstOrDefault();
 
-                    var maxSpots = regInstances.Sum(i => i.MaxAttendees);
+                    var maxSpots = regInstances.Sum( i => Math.Max( i.MaxAttendees.ToIntSafe(), i.Registrants ) );
                     var reg = regInstances.Sum(i => i.Registrants);
                     var regId = tiedInstance != null ? tiedInstance.Id : 0;
                     var eventOccId = tiedInstance != null && tiedInstance.Linkages.FirstOrDefault() != null ?
@@ -810,11 +834,9 @@ Avalaible parameters:
 
                     if (sameDate != null)
                     {
-                        sameDate.ItemSpotsLeft = (maxSpots.Value - reg) >= 0 ?
-                            sameDate.ItemSpotsLeft + (maxSpots.Value - reg) :
-                            sameDate.ItemSpotsLeft;
+                        sameDate.ItemSpotsLeft += Math.Max( maxSpots - reg, 0 );
 
-                        sameDate.IsAvailable = (maxSpots.Value - reg) >= 0 ? true : sameDate.IsAvailable;
+                        sameDate.IsAvailable = (maxSpots - reg) >= 0 ? true : sameDate.IsAvailable;
                     }
                     else
                     {
@@ -824,8 +846,8 @@ Avalaible parameters:
                             {
                                 ItemId = eventOccId.ToString(),
                                 ItemName = time,
-                                ItemSpotsLeft = maxSpots.Value - reg,
-                                IsAvailable = (maxSpots.Value - reg) > 0,
+                                ItemSpotsLeft = Math.Max( maxSpots - reg, 0 ),
+                                IsAvailable = (maxSpots - reg) > 0,
                                 RegistrationId = regId,
                                 ShowCount = GetAttributeValue(AttributeKey.ShowTimeCount).AsBoolean()
                             });
@@ -873,7 +895,7 @@ Avalaible parameters:
                             Registrants = i.Linkages.FirstOrDefault().Group.Members.Count()
                         }).ToList();
 
-                    var maxSpots = regInstances.Sum(i => i.MaxAttendees);
+                    var maxSpots = regInstances.Sum( i => Math.Max( i.MaxAttendees.ToIntSafe(), i.Registrants ) );
                     var reg = regInstances.Sum(i => i.Registrants);
 
                     var groupDate = g.Name.Split('-').FirstOrDefault().Trim();
@@ -882,11 +904,9 @@ Avalaible parameters:
 
                     if(sameDate != null)
                     {
-                        sameDate.ItemSpotsLeft = (maxSpots.Value - reg) >= 0 ?
-                            sameDate.ItemSpotsLeft + (maxSpots.Value - reg) :
-                            sameDate.ItemSpotsLeft;
+                        sameDate.ItemSpotsLeft += Math.Max( maxSpots - reg, 0 );
 
-                        sameDate.IsAvailable = (maxSpots.Value - reg) >= 0 ? true : sameDate.IsAvailable;
+                        sameDate.IsAvailable = (maxSpots - reg) >= 0 ? true : sameDate.IsAvailable;
                     }
                     else
                     {
@@ -896,8 +916,8 @@ Avalaible parameters:
                             {
                                 ItemId = groupDate,
                                 ItemName = groupDate,
-                                ItemSpotsLeft = maxSpots.Value - reg,
-                                IsAvailable = (maxSpots.Value - reg) > 0,
+                                ItemSpotsLeft = Math.Max( maxSpots - reg, 0 ),
+                                IsAvailable = (maxSpots - reg) > 0,
                                 ShowCount = GetAttributeValue(AttributeKey.ShowDateCount).AsBoolean()
                             });
                         }
@@ -947,7 +967,7 @@ Avalaible parameters:
                         })
                         .ToList();
 
-                    var maxSpots = regInstances.Sum(i => i.MaxAttendees);
+                    var maxSpots = regInstances.Sum( i => Math.Max( i.MaxAttendees.ToIntSafe(), i.Registrants ) );
                     var reg = regInstances.Sum(i => i.Registrants);
 
                     if (maxSpots != 0 && _hiddenCampusIds.Contains( g.Id ) == false)
@@ -956,8 +976,8 @@ Avalaible parameters:
                         {
                             ItemId = g.Id.ToString(),
                             ItemName = g.Name,
-                            ItemSpotsLeft = maxSpots.Value - reg,
-                            IsAvailable = (maxSpots.Value - reg) > 0,
+                            ItemSpotsLeft = Math.Max( maxSpots - reg, 0 ),
+                            IsAvailable = (maxSpots - reg) > 0,
                             ShowCount = GetAttributeValue(AttributeKey.ShowCampusCount).AsBoolean()
                         });
                     }

@@ -88,6 +88,7 @@
 {% sql personId:'{{ CurrentPerson.Id }}' return:'roles' %}
     DECLARE
         @groupId INT = null,
+        @coachCaptainId INT = null,
         @columns NVARCHAR(MAX) = '',
         @aggColumns NVARCHAR(MAX) = '',
         @sql NVARCHAR(MAX) = '';
@@ -110,10 +111,14 @@
 
     -- override group
     SET @groupId = (SELECT TOP 1 gm.GroupId FROM GroupMember gm WHERE gm.PersonId = @personId AND gm.GroupId = 927999 AND gm.GroupMemberStatus != 0 AND gm.IsArchived = 0);
+    SET @coachCaptainId = (SELECT TOP 1 gm.GroupId
+        FROM [GroupMember] gm
+	    JOIN [Group] g ON g.Id = gm.GroupId AND g.GroupTypeId IN (649, 650)
+	    WHERE gm.PersonId = @personId AND gm.GroupMemberStatus != 0 AND gm.IsArchived = 0);
 
-    IF @groupId = 927999
+    IF @groupId = 927999 OR @coachCaptainId IS NOT NULL
     BEGIN
-        -- person is in curriculum team - override all roles to 1
+        -- person is in curriculum team or is a coach or captain - override all roles to 1
         -- dynamic sql
         SET @sql = '
         SELECT TOP 1 '+ @aggColumns +', STRING_AGG(Campuses, '','') AS Campuses
@@ -530,7 +535,8 @@
             video4.Value as [Video4],
             video5.Value as [Video5],
             musicVideo1.Value as [MusicVideo1],
-            musicVideo2.Value as [MusicVideo2]
+            musicVideo2.Value as [MusicVideo2],
+            musicVideo3.Value as [MusicVideo3]
         FROM [ContentChannelItem] cci
         LEFT JOIN [AttributeValue] lesson1 ON lesson1.EntityId = cci.Id AND lesson1.AttributeId = 123249
         LEFT JOIN [AttributeValue] lesson2 ON lesson2.EntityId = cci.Id AND lesson2.AttributeId = 123250
@@ -544,6 +550,7 @@
         LEFT JOIN [AttributeValue] video5 ON video5.EntityId = cci.Id AND video5.AttributeId = 123258
         LEFT JOIN [AttributeValue] musicVideo1 ON musicVideo1.EntityId = cci.Id AND musicVideo1.AttributeId = 123259
         LEFT JOIN [AttributeValue] musicVideo2 ON musicVideo2.EntityId = cci.Id AND musicVideo2.AttributeId = 123260
+        LEFT JOIN [AttributeValue] musicVideo3 ON musicVideo3.EntityId = cci.Id AND musicVideo3.AttributeId = 139792
         WHERE cci.ContentChannelId = 113
             AND (StartDateTime IS NULL OR StartDateTime <= @now)
             AND (ExpireDateTime IS NULL OR ExpireDateTime >= @now)
@@ -648,7 +655,8 @@
 
             {% assign isMusicVideo1 = item.MusicVideo1 and item.MusicVideo1 != '' %}
             {% assign isMusicVideo2 = item.MusicVideo2 and item.MusicVideo2 != '' %}
-            {% if isMusicVideo1 or isMusicVideo2 %}
+            {% assign isMusicVideo3 = item.MusicVideo3 and item.MusicVideo3 != '' %}
+            {% if isMusicVideo1 or isMusicVideo2 or isMusicVideo3 %}
                 <div class="row">
                     <h3>Music Videos</h3>
                     {% if isMusicVideo1 %}
@@ -662,6 +670,13 @@
                         <div class="col-md-6">
                             <div class="video" style="--aspect-ratio: 16/9;">
                                 <iframe src="//fast.wistia.net/embed/iframe/{{ item.MusicVideo2 }}?playerColor=f04b28" loading="lazy" allowtransparency="true" frameborder="0" scrolling="no" class="wistia_embed" name="wistia_embed" allowfullscreen mozallowfullscreen webkitallowfullscreen oallowfullscreen msallowfullscreen width="1600" height="900"></iframe>
+                            </div>
+                        </div>
+                    {% endif %}
+                    {% if isMusicVideo3 %}
+                        <div class="col-md-6">
+                            <div class="video" style="--aspect-ratio: 16/9;">
+                                <iframe src="//fast.wistia.net/embed/iframe/{{ item.MusicVideo3 }}?playerColor=f04b28" loading="lazy" allowtransparency="true" frameborder="0" scrolling="no" class="wistia_embed" name="wistia_embed" allowfullscreen mozallowfullscreen webkitallowfullscreen oallowfullscreen msallowfullscreen width="1600" height="900"></iframe>
                             </div>
                         </div>
                     {% endif %}
@@ -689,7 +704,9 @@
             sgLesson2.Value as [SGLesson2],
             sgLesson3.Value as [SGLesson3],
             sgLesson4.Value as [SGLesson4],
-            sgLesson5.Value as [SGLesson5]
+            sgLesson5.Value as [SGLesson5],
+            musicVideo1.Value as [MusicVideo1],
+            musicVideo2.Value as [MusicVideo2]
         FROM [ContentChannelItem] cci
         LEFT JOIN [AttributeValue] lgLesson1 ON lgLesson1.EntityId = cci.Id AND lgLesson1.AttributeId = 123261
         LEFT JOIN [AttributeValue] lgLesson2 ON lgLesson2.EntityId = cci.Id AND lgLesson2.AttributeId = 123262
@@ -701,6 +718,8 @@
         LEFT JOIN [AttributeValue] sgLesson3 ON sgLesson3.EntityId = cci.Id AND sgLesson3.AttributeId = 123268
         LEFT JOIN [AttributeValue] sgLesson4 ON sgLesson4.EntityId = cci.Id AND sgLesson4.AttributeId = 123269
         LEFT JOIN [AttributeValue] sgLesson5 ON sgLesson5.EntityId = cci.Id AND sgLesson5.AttributeId = 123270
+        LEFT JOIN [AttributeValue] musicVideo1 ON musicVideo1.EntityId = cci.Id AND musicVideo1.AttributeId = 139790
+        LEFT JOIN [AttributeValue] musicVideo2 ON musicVideo2.EntityId = cci.Id AND musicVideo2.AttributeId = 139791
         WHERE cci.ContentChannelId = 114
             AND (StartDateTime IS NULL OR StartDateTime <= @now)
             AND (ExpireDateTime IS NULL OR ExpireDateTime >= @now)
@@ -809,6 +828,29 @@
                     {% if isSGLesson5 %}
                         <div class="col-md-6">
                             <p><a href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}GetFile.ashx?Guid={{ item.SGLesson5 }}" class="btn btn-primary" target="_blank" style="width:100%; white-space:normal;">Small Group Lesson Week 5</a></p>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="spacer"></div>
+            {% endif %}
+
+            {% assign isMusicVideo1 = item.MusicVideo1 and item.MusicVideo1 != '' %}
+            {% assign isMusicVideo2 = item.MusicVideo2 and item.MusicVideo2 != '' %}
+            {% if isMusicVideo1 or isMusicVideo2 %}
+                <div class="row">
+                    <h3>Music Videos</h3>
+                    {% if isMusicVideo1 %}
+                        <div class="col-md-6">
+                            <div class="video" style="--aspect-ratio: 16/9;">
+                                <iframe src="//fast.wistia.net/embed/iframe/{{ item.MusicVideo1 }}?playerColor=f04b28" loading="lazy" allowtransparency="true" frameborder="0" scrolling="no" class="wistia_embed" name="wistia_embed" allowfullscreen mozallowfullscreen webkitallowfullscreen oallowfullscreen msallowfullscreen width="1600" height="900"></iframe>
+                            </div>
+                        </div>
+                    {% endif %}
+                    {% if isMusicVideo2 %}
+                        <div class="col-md-6">
+                            <div class="video" style="--aspect-ratio: 16/9;">
+                                <iframe src="//fast.wistia.net/embed/iframe/{{ item.MusicVideo2 }}?playerColor=f04b28" loading="lazy" allowtransparency="true" frameborder="0" scrolling="no" class="wistia_embed" name="wistia_embed" allowfullscreen mozallowfullscreen webkitallowfullscreen oallowfullscreen msallowfullscreen width="1600" height="900"></iframe>
+                            </div>
                         </div>
                     {% endif %}
                 </div>
@@ -1207,10 +1249,12 @@
         <div class="col-xs-12">
             <h2 style="text-align:center;">Leader Tools</h2>
             <div id="tools">
+<!--
                 <a href="{{'Global' | Attribute:'PublicApplicationRoot'}}page/2804" class="btn btn-primary">
                     <div class="toolIcon"><i class="far fa-sign-out"></i></div>
                     Gonna be out
                 </a>
+-->
                 <a href="{{'Global' | Attribute:'PublicApplicationRoot'}}page/3313?Campus={{ CurrentPerson.PrimaryCampus.Guid }}" class="btn btn-primary">
                     <div class="toolIcon"><i class="far fa-book-user"></i></div>
                     Staff Contacts

@@ -11,7 +11,7 @@
   "ErrorFirstName": "First Name is required for all children.",
   "LabelLastName": "Last Name",
   "ErrorLastName": "Last Name is required for all children.",
-  "LabelHasAllergy": "Does the child have and allergy?",
+  "LabelHasAllergy": "Does the child have an allergy?",
   "HelpHasAllergy": "If the child is allergic to something. Selecting 'Yes' will allow you to enter what the allergy is.",
   "Yes": "Yes",
   "No": "No",

@@ -47,6 +47,18 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationDatePickerFieldBag.cs" />
+    <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationSmsOptInFieldBag.cs" />
+    <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationFieldBag.cs" />
+    <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationDateAndTimeFieldBag.cs" />
+    <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationSaveResponseBag.cs" />
+    <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationGetScheduleDatesRequestBag.cs" />
+    <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationGetScheduleDatesResponseBag.cs" />
+    <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationInitializationBox.cs" />
+    <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationCreateAccountRequestBag.cs" />
+    <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationPersonBag.cs" />
+    <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationSaveRequestBag.cs" />
+    <Compile Include="Blocks\Crm\FamilyPreRegistration\FamilyPreRegistrationScheduleDateBag.cs" />
     <Compile Include="Blocks\Cms\ContentCollectionDetail\CustomFieldFilterBag.cs" />
     <Compile Include="Blocks\Engagement\SignUp\SignUpDetail\SignUpDetailInitializationBox.cs" />
     <Compile Include="Blocks\Engagement\SignUp\SignUpRegister\SignUpRegisterRequestBag.cs" />
