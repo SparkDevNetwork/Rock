@@ -1449,7 +1449,7 @@ namespace Rock.Blocks.Event
 
                 var registrationCosts = GetRegistrationCosts( rockContext, context, args );
                 var paymentReductionAmount = GetPaymentReductionAmountForForceWaitListedRegistrants( forceWaitlistedRegistrantGuids, registrationCosts );
-                var minimumPaymentAmount = GetMinimumPaymentAmount( rockContext, context, registrationCosts );
+                var minimumPaymentAmount = GetMinimumPaymentAmountForNonForceWaitListedRegistrants( rockContext, context, forceWaitlistedRegistrantGuids, registrationCosts );
                 ReduceRegistrationPaymentAmount( context.RegistrationSettings, args, paymentReductionAmount, minimumPaymentAmount );
 
                 var isPaymentNeededNow = args.AmountToPayNow > 0;
@@ -1700,9 +1700,10 @@ namespace Rock.Blocks.Event
         /// </summary>
         /// <param name="rockContext">The Rock context.</param>
         /// <param name="registrationContext">The registration context.</param>
+        /// <param name="forceWaitListedRegistrantGuids">The registrants who were forcefully placed on the waitlist.</param>
         /// <param name="registrationCosts">The registration costs.</param>
         /// <returns>The minimum amount due today.</returns>
-        private static decimal GetMinimumPaymentAmount( RockContext rockContext, RegistrationContext registrationContext, IEnumerable<RegistrationCostSummaryInfo> registrationCosts )
+        private static decimal GetMinimumPaymentAmountForNonForceWaitListedRegistrants( RockContext rockContext, RegistrationContext registrationContext, List<Guid> forceWaitlistedRegistrantGuids, IEnumerable<RegistrationCostSummaryInfo> registrationCosts )
         {
             var amountPaid = new RegistrationService( rockContext ).GetTotalPayments( registrationContext.Registration.Id );
 
@@ -1715,7 +1716,12 @@ namespace Rock.Blocks.Event
             else
             {
                 // Otherwise, return the sum of all minimum payment (or discounted payment, if less) amounts for all costs.
-                return registrationCosts.Sum( c => Math.Min( c.MinPayment, c.DiscountedCost ) );
+                return registrationCosts
+                    .Where(
+                        cost => cost.RegistrationRegistrantGuid.HasValue
+                        && forceWaitlistedRegistrantGuids.Contains( cost.RegistrationRegistrantGuid.Value )
+                    )
+                    .Sum( c => Math.Min( c.MinPayment, c.DiscountedCost ) );
             }
         }
 
