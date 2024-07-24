@@ -1279,7 +1279,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
 
             while ( workflowTypeService.Queryable().Any( w => w.WorkflowIdPrefix == newPrefix ) )
             {
-                newPrefix = $"{basePrefix}{suffix}";
+                newPrefix = $"{basePrefix}-{suffix}";
                 suffix++;
             }
 
