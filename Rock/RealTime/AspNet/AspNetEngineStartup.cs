@@ -155,25 +155,25 @@ namespace Rock.RealTime.AspNet
         }
 
         /// <summary>
-        /// Fixes the negotiate endpoint connection data. This is only needed by
-        /// Rock.Mobile shell when running under the simulator. For some reason it
-        /// URL encodes part of the string which confuses the ASP.Net implementation
-        /// of SignalR.
+        /// Fixes the endpoint connectionData query string parameter on
+        /// requests to SignalR.
         /// </summary>
         /// <param name="context">The context that identifies the request.</param>
         /// <param name="nextHandler">The next handler to be called after this one.</param>
         /// <returns>A Task that indicates when this process has completed.</returns>
         private static Task FixNegotiateConnectionData( IOwinContext context, Func<Task> nextHandler )
         {
-            if ( context.Request.Path.Value != "/negotiate"
-                && context.Request.Path.Value != "/start"
-                && context.Request.Path.Value != "/connect"
-                && context.Request.Path.Value != "/poll" )
-            {
-                return nextHandler();
-            }
-
             var connectionData = context.Request.Query["connectionData"];
+
+            // It seems like this is an issue on iOS and MAUI. We are seeing
+            // it on both simulator and physical devices. Data was intercepted
+            // with a MiTM proxy to inspect the request. The connectionData is
+            // URL encoded twice when coming from these devices. The above line
+            // to get the connectionData will automatically URL decode it once.
+            // However, this leaves us with a second URL encoding. So far this
+            // has always shown up as starting with "[%7B" (which is "[{"). So
+            // we check for that string and then decode it again so that SignalR
+            // can actually understand the data.
             if ( connectionData != null && connectionData.StartsWith( "[%7B" ) )
             {
                 var sb = new System.Text.StringBuilder();
