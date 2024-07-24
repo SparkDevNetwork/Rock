@@ -42,7 +42,7 @@ namespace RockWeb.Blocks.Core
 
     [LinkedPage( "Detail Page",
         Key = AttributeKey.DetailPage )]
-    
+
     [EntityTypeField( "Entity Type",
         Description = "Set an Entity Type to limit this block to Note Types and Entities for a specific entity type.",
         IsRequired = false,
@@ -262,9 +262,9 @@ namespace RockWeb.Blocks.Core
             if ( blockNoteTypeGuid.HasValue )
             {
                 // if a NoteType was specified in block settings, only list note watches for the specified note type
-                var noteType =NoteTypeCache.Get( blockNoteTypeGuid.Value );
+                var noteType = NoteTypeCache.Get( blockNoteTypeGuid.Value );
 
-                if (noteType != null)
+                if ( noteType != null )
                 {
                     int noteTypeId = noteType.Id;
                     qry = qry.Where( a => a.NoteTypeId.HasValue && a.NoteTypeId == noteTypeId );
@@ -274,7 +274,7 @@ namespace RockWeb.Blocks.Core
             {
                 // if an EntityType was specific in block settings, only list note watches for the specified entity type (or for NoteTypes of the specified EntityType)
                 var entityType = EntityTypeCache.Get( blockEntityTypeGuid.Value );
-                if (entityType != null)
+                if ( entityType != null )
                 {
                     int entityTypeId = entityType.Id;
                     qry = qry.Where( a =>
