@@ -75,6 +75,9 @@
     <Compile Include="Blocks\Communication\NcoaProcess\NcoaProcessBag.cs" />
     <Compile Include="Blocks\Communication\NcoaProcess\NcoaProcessSavedSettingsBag.cs" />
     <Compile Include="Blocks\Communication\NcoaProcess\NcoaProcessPersonAddressBag.cs" />
+    <Compile Include="Blocks\Core\AuthClientDetail\AuthClientBag.cs" />
+    <Compile Include="Blocks\Core\AuthClientDetail\AuthClientDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Core\AuthClientDetail\AuthClientScopeBag.cs" />
     <Compile Include="Blocks\Crm\PhotoVerifyList\PhotoVerifyListOptionsBag.cs" />
     <Compile Include="Blocks\Security\AuthScopeList\AuthScopeListOptionsBag.cs" />
     <Compile Include="Blocks\Security\AuthClientList\AuthClientListOptionsBag.cs" />
