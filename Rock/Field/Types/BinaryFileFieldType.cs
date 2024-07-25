@@ -479,7 +479,7 @@ namespace Rock.Field.Types
         public override string GetFilterValueValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
             // return a dummy value since this only supports IsBlank and IsNotBlank
-            return "0";
+            return string.Empty;
         }
 
         /// <summary>
