@@ -131,6 +131,34 @@ export default defineComponent({
                 rules: props.field.isRequired ? "required" : ""
             };
 
+            // LPC CODE
+            if (getLang() == 'es') {
+                for (let i = 0; i < registrationEntryState.viewModel.maritalStatuses.length; i++) {
+                    if (registrationEntryState.viewModel.maritalStatuses[i].text == "Married") {
+                        registrationEntryState.viewModel.maritalStatuses[i].text = "Casado";
+                    }
+                    else if (registrationEntryState.viewModel.maritalStatuses[i].text == "Single") {
+                        registrationEntryState.viewModel.maritalStatuses[i].text = "Soltero";
+                    }
+                    else if (registrationEntryState.viewModel.maritalStatuses[i].text == "Engaged") {
+                        registrationEntryState.viewModel.maritalStatuses[i].text = "Comprometido";
+                    }
+                    else if (registrationEntryState.viewModel.maritalStatuses[i].text == "Divorced") {
+                        registrationEntryState.viewModel.maritalStatuses[i].text = "Divorciado";
+                    }
+                    else if (registrationEntryState.viewModel.maritalStatuses[i].text == "Unknown") {
+                        registrationEntryState.viewModel.maritalStatuses[i].text = "Desconocido";
+                    }
+                    else if (registrationEntryState.viewModel.maritalStatuses[i].text == "Widowed") {
+                        registrationEntryState.viewModel.maritalStatuses[i].text = "Viudo";
+                    }
+                    else if (registrationEntryState.viewModel.maritalStatuses[i].text == "Separated") {
+                        registrationEntryState.viewModel.maritalStatuses[i].text = "Separado";
+                    }
+                }
+            }
+            // END LPC CODE
+
             switch (props.field.personFieldType) {
                 // MODIFIED LPC CODE
                 case RegistrationPersonFieldType.FirstName:
