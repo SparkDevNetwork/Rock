@@ -40,6 +40,28 @@ namespace Rock.Blocks.Reporting
     [IconCssClass( "fa fa-question" )]
     //[SupportedSiteTypes( SiteType.Web )]
 
+    #region Block Attributes
+
+    [DefinedValueField(
+        "Campus Types",
+        Key = AttributeKey.CampusTypes,
+        Description = "This setting filters the list of campuses by type that are displayed in the chart.",
+        IsRequired = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_TYPE,
+        AllowMultiple = true,
+        Order = 0 )]
+
+    [DefinedValueField(
+        "Campus Statuses",
+        Key = AttributeKey.CampusStatuses,
+        Description = "This setting filters the list of campuses by statuses that are displayed in the chart.",
+        IsRequired = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_STATUS,
+        AllowMultiple = true,
+        Order = 1 )]
+
+    #endregion
+
     [SystemGuid.EntityTypeGuid( "1e44b061-7767-487d-a98f-16912e8c7de7" )]
     [SystemGuid.BlockTypeGuid( "db756565-8a35-42e2-bc79-8d11f57e4004" )]
     public class TithingOverview : RockBlockType
@@ -77,6 +99,12 @@ namespace Rock.Blocks.Reporting
         #endregion
 
         #region Keys
+
+        private static class AttributeKey
+        {
+            public const string CampusTypes = "CampusTypes";
+            public const string CampusStatuses = "CampusStatuses";
+        }
 
         private static class ChartTypeKey
         {
@@ -375,12 +403,29 @@ namespace Rock.Blocks.Reporting
                     .ToList();
             }
 
-            var inactiveCampusIds = CampusCache.All().Where( c => c.IsActive == false ).Select( c => c.Id ).ToList();
+            var campusTypeIds = GetAttributeValues( AttributeKey.CampusTypes )
+                .AsGuidOrNullList()
+                .Where( g => g.HasValue )
+                .Select( g => DefinedValueCache.GetId( g.Value ) )
+                .Where( id => id.HasValue )
+                .Select( id => id.Value )
+                .ToList();
 
-            if ( inactiveCampusIds.Count > 0 )
-            {
-                _tithingOverviewMetricValues = _tithingOverviewMetricValues.Where( m => !m.CampusId.HasValue || !inactiveCampusIds.Contains( m.CampusId.Value ) ).ToList();
-            }
+            var campusStatusIds = GetAttributeValues( AttributeKey.CampusStatuses )
+                .AsGuidOrNullList()
+                .Where( g => g.HasValue )
+                .Select( g => DefinedValueCache.GetId( g.Value ) )
+                .Where( id => id.HasValue )
+                .Select( id => id.Value )
+                .ToList();
+
+            var filteredCampusIds = CampusCache.All( false )
+                .Where( c => ( !campusTypeIds.Any() || ( c.CampusTypeValueId.HasValue && campusTypeIds.Contains( c.CampusTypeValueId.Value ) ) )
+                    && ( !campusStatusIds.Any() || ( c.CampusStatusValueId.HasValue && campusStatusIds.Contains( c.CampusStatusValueId.Value ) ) ) )
+                .Select( c => c.Id )
+                .ToList();
+
+            _tithingOverviewMetricValues = _tithingOverviewMetricValues.Where( m => !m.CampusId.HasValue || filteredCampusIds.Contains( m.CampusId.Value ) ).ToList();
 
             return _tithingOverviewMetricValues;
         }
@@ -405,7 +450,7 @@ namespace Rock.Blocks.Reporting
             else
             {
                 var lastRunDate = new MetricValueService( RockContext ).Queryable()
-                    .Where( m => m.Metric.Guid == metricGuid )
+                    .Where( m => m.Metric.Guid == metricGuid && m.MetricValueType == MetricValueType.Measure )
                     .OrderByDescending( m => m.MetricValueDateTime )
                     .Select( m => m.MetricValueDateTime )
                     .FirstOrDefault();
@@ -431,7 +476,7 @@ namespace Rock.Blocks.Reporting
             var metricValuesQry = new MetricValueService( rockContext )
                 .Queryable()
                 .Include( a => a.MetricValuePartitions.Select( b => b.MetricPartition ) )
-                .Where( a => a.Metric.Guid == metricGuid );
+                .Where( a => a.Metric.Guid == metricGuid && a.MetricValueType == MetricValueType.Measure );
 
             return metricValuesQry.OrderBy( a => a.MetricValueDateTime );
         }
