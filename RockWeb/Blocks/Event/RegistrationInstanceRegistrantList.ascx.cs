@@ -1744,54 +1744,17 @@ namespace RockWeb.Blocks.Event
                         {
                             var filterControl = phRegistrantsRegistrantFormFieldFilters.FindControl( FILTER_ATTRIBUTE_PREFIX + attribute.Id.ToString() );
                             var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
-                            if ( filterValues.Any() )
+                            if ( filterValues.Count > 1 )
                             {
-                                if ( attribute.FieldTypeId == FieldTypeCache.Get( Rock.SystemGuid.FieldType.DEFINED_VALUE ).Id || attribute.FieldTypeId == FieldTypeCache.Get( Rock.SystemGuid.FieldType.GROUP_MEMBER ).Id )
-                                {
-                                    if ( filterValues.Count > 1 && filterValues.Last().IsNotNullOrWhiteSpace() )
-                                    {
-                                        isFilterModeApplied = true;
-                                    }
-                                }
-                                else if ( attribute.FieldTypeId == FieldTypeCache.Get( Rock.SystemGuid.FieldType.BINARY_FILE ).Id )
-                                {
-                                    if ( filterValues.Count > 1 && filterValues.Last() != "0" )
-                                    {
-                                        isFilterModeApplied = true;
-                                    }
-                                }
-                                else if ( attribute.FieldTypeId == FieldTypeCache.Get( Rock.SystemGuid.FieldType.DATE ).Id || attribute.FieldTypeId == FieldTypeCache.Get( Rock.SystemGuid.FieldType.DATE_TIME ).Id )
-                                {
-                                    if ( filterValues.Count > 1 && filterValues.First() != "0" )
-                                    {
-                                        ComparisonType comparisonType = filterValues.First().ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
-                                        var dateTime = filterValues[1].AsDateTime();
-                                        if ( comparisonType == ComparisonType.Between )
-                                        {
-                                            var dateRangeFromDelimitedValues = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( filterValues[1] );
-                                            ConstantExpression constantExpressionLower = dateRange.Start.HasValue
-                                                ? Expression.Constant( dateRangeFromDelimitedValues.Start, typeof( DateTime ) )
-                                                : null;
-
-                                            ConstantExpression constantExpressionUpper = dateRange.End.HasValue
-                                                ? Expression.Constant( dateRangeFromDelimitedValues.End, typeof( DateTime ) )
-                                                : null;
-
-                                            if ( constantExpressionLower != null || constantExpressionUpper != null )
-                                            {
-                                                isFilterModeApplied = true;
-                                            }
-                                        }
-                                        else if ( comparisonType == ComparisonType.IsBlank || comparisonType == ComparisonType.IsNotBlank || dateTime.HasValue )
-                                        {
-                                            isFilterModeApplied = true;
-                                        }
-                                    }
-                                }
-                                else if ( filterValues.Last().IsNotNullOrWhiteSpace() )
+                                var comparisionType = filterValues[0].ConvertToEnumOrNull<ComparisonType>();
+                                if ( comparisionType.HasValue && ( comparisionType == ComparisonType.IsBlank || comparisionType == ComparisonType.IsNotBlank || filterValues.Last().IsNotNullOrWhiteSpace() ) )
                                 {
                                     isFilterModeApplied = true;
                                 }
+                            }
+                            else if ( filterValues.Any( a => a.IsNotNullOrWhiteSpace() ) )
+                            {
+                                isFilterModeApplied = true;
                             }
                         }
 

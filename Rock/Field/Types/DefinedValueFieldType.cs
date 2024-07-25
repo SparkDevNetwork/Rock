@@ -1337,7 +1337,7 @@ namespace Rock.Field.Types
             bool allowMultiple = configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean();
             if ( allowMultiple && string.IsNullOrWhiteSpace( value ) )
             {
-                return null;
+                return string.Empty;
             }
 
             return value;
