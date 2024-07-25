@@ -894,14 +894,14 @@ namespace RockWeb.Blocks.Connection
             var oldStatusId = request.ConnectionStatusId;
             var oldIndex = request.Order;
 
-            // Update the dragged request to the new status and the new order.
+            // Update the dragged request to the new status.
             request.ConnectionStatusId = newStatusId;
-            request.Order = newIndex;
-            rockContext.SaveChanges();
 
             // Reordering is only allowed when the cards are sorted by order
             if ( CurrentSortProperty == ConnectionRequestViewModelSortProperty.Order )
             {
+                request.Order = newIndex;
+
                 var requestsOfStatus = service.Queryable()
                     .Where( r =>
                         r.ConnectionStatusId == newStatusId &&
@@ -919,20 +919,25 @@ namespace RockWeb.Blocks.Connection
 
                     rockContext.BulkUpdate( requestsOfOldStatus, r => new ConnectionRequest { Order = r.Order - 1, ModifiedDateTime = r.ModifiedDateTime } );
                     IncrementRequestOrder( requestsOfStatus, newIndex, rockContext );
-                    return;
                 }
-
-                // A Connction Request remained in its original status and was moved up in order. 
-                if (newIndex < oldIndex)
+                // A Connection Request remained in its original status and was moved up in order.
+                else if ( newIndex < oldIndex ) 
                 {
                     IncrementRequestOrder( requestsOfStatus, newIndex, rockContext );
-                    return;
                 }
-
                 // A Connection Request remained in its original status and was moved down in order.
-                requestsOfStatus = requestsOfStatus.Where( r => r.Order > oldIndex && r.Order <= newIndex );
-                rockContext.BulkUpdate( requestsOfStatus, r => new ConnectionRequest { Order = r.Order - 1, ModifiedDateTime = r.ModifiedDateTime } );
+                else
+                {
+                    requestsOfStatus = requestsOfStatus.Where( r => r.Order > oldIndex && r.Order <= newIndex );
+                    rockContext.BulkUpdate( requestsOfStatus, r => new ConnectionRequest { Order = r.Order - 1, ModifiedDateTime = r.ModifiedDateTime } );
+                }
             }
+            else if ( oldStatusId != newStatusId )
+            {
+                MaintainRequestOrder( request, service, oldIndex, oldStatusId, newStatusId, rockContext );
+            }
+
+            rockContext.SaveChanges();
         }
 
         /// <summary>
@@ -941,10 +946,37 @@ namespace RockWeb.Blocks.Connection
         /// <param name="requestsOfStatus">The selected connection requests from a status.</param>
         /// <param name="newIndex">The new index of the dropped connection request.</param>
         /// <param name="rockContext">The rock context.</param>
-        private void IncrementRequestOrder(IQueryable<ConnectionRequest> requestsOfStatus, int newIndex, RockContext rockContext)
+        private void IncrementRequestOrder( IQueryable<ConnectionRequest> requestsOfStatus, int newIndex, RockContext rockContext )
         {
             requestsOfStatus = requestsOfStatus.Where( r => r.Order >= newIndex );
             rockContext.BulkUpdate( requestsOfStatus, r => new ConnectionRequest { Order = r.Order + 1, ModifiedDateTime = r.ModifiedDateTime } );
+        }
+
+        /// <summary>
+        /// Maintains the order of connection requests when they are moved to a new status and are not sorted by order.
+        /// </summary>
+        /// <param name="request">The moved connection request.</param>
+        /// <param name="service">The connection request service.</param>
+        /// <param name="oldIndex">The old order index of the moved connection request.</param>
+        /// <param name="oldStatusId">The old connection status id that the connection request was moved from.</param>
+        /// <param name="newStatusId">The new connection status id that the connection request was moved to.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void MaintainRequestOrder( ConnectionRequest request, ConnectionRequestService service, int oldIndex, int oldStatusId, int newStatusId, RockContext rockContext )
+        {
+            request.Order = 0;
+            var requestsOfOldStatus = service.Queryable()
+                .Where( r =>
+                    r.ConnectionStatusId == oldStatusId &&
+                    r.ConnectionOpportunityId == request.ConnectionOpportunityId &&
+                    r.Order > oldIndex );
+            var requestsOfStatus = service.Queryable()
+                .Where( r =>
+                    r.ConnectionStatusId == newStatusId &&
+                    r.ConnectionOpportunityId == request.ConnectionOpportunityId &&
+                    r.Id != ConnectionRequestId.Value );
+
+            rockContext.BulkUpdate( requestsOfOldStatus, r => new ConnectionRequest { Order = r.Order - 1, ModifiedDateTime = r.ModifiedDateTime } );
+            IncrementRequestOrder( requestsOfStatus, 0, rockContext );
         }
 
         /// <summary>
@@ -1466,6 +1498,11 @@ namespace RockWeb.Blocks.Connection
             else
             {
                 connectionRequest.ConnectionState = ConnectionState.Active;
+            }
+
+            if ( connectionRequest.ConnectionStatusId != rblRequestModalAddEditModeStatus.SelectedValueAsInt().Value )
+            {
+                MaintainRequestOrder( connectionRequest, connectionRequestService, connectionRequest.Order, connectionRequest.ConnectionStatusId, rblRequestModalAddEditModeStatus.SelectedValueAsInt().Value, rockContext );
             }
 
             connectionRequest.ConnectionStatusId = rblRequestModalAddEditModeStatus.SelectedValueAsInt().Value;

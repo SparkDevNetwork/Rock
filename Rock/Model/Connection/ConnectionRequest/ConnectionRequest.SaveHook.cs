@@ -183,6 +183,12 @@ namespace Rock.Model
                                 r.ConnectionStatusId == connectionRequest.ConnectionStatusId &&
                                 r.ConnectionOpportunityId == connectionRequest.ConnectionOpportunityId &&
                                 r.Id != connectionRequest.Id );
+
+                            if ( connectionRequest.Order > 0 )
+                            {
+                                requestsOfStatus = requestsOfStatus.Where( r => r.Order >= connectionRequest.Order );
+                            }
+
                             rockContext.BulkUpdate( requestsOfStatus, r => new ConnectionRequest { Order = r.Order + 1, ModifiedDateTime = r.ModifiedDateTime } );
                             break;
                         }
