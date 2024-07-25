@@ -142,6 +142,7 @@
     <Compile Include="Cms\PageRouteList.cs" />
     <Compile Include="Core\PersonFollowingList.cs" />
     <Compile Include="Communication\NcoaProcess.cs" />
+    <Compile Include="Core\AuthClientDetail.cs" />
     <Compile Include="Crm\PhotoVerify.cs" />
     <Compile Include="Security\AuthScopeList.cs" />
     <Compile Include="Security\AuthClientList.cs" />
@@ -225,6 +226,7 @@
     <Compile Include="Engagement\StreakTypeExclusionDetail.cs" />
     <Compile Include="Finance\FinancialGatewayList.cs" />
     <Compile Include="Finance\BusinessContactList.cs" />
+    <Compile Include="Event\RegistrationInstancePaymentList.cs" />
     <Compile Include="Finance\SavedAccountList.cs" />
     <Compile Include="Finance\FinancialPledgeDetail.cs" />
     <Compile Include="Finance\FinancialPledgeList.cs" />
