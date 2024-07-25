@@ -8,6 +8,7 @@ GO
 11/16/2022 Steve Swaringen - Updated to exclude inactive/archived groups
 01/05/2024 Steve Swaringen - Updated to use new serve team structure instead of group attributes
 06/18/2024 Jon Corey - Updated to use new life group structure instead of group attributes
+07/25/2024 Jon Corey - Removed the references to group attributes since we've fully switched over now
 ************************************************************************************************************************************************/
 ALTER   PROCEDURE [dbo].[_org_lakepointe_sp_GroupsAssignedToCoach] @PersonAliasGuid NVARCHAR(40)
 AS
@@ -25,16 +26,6 @@ BEGIN
 		JOIN [Person] p ON p.Id = gm.PersonId
 		WHERE gm.GroupMemberStatus = 1 and gm.IsArchived = 0
 	)
-
-	-- old-style with coach attributes
-	SELECT g.Id, g.Name, 'Coach' AS [Role]
-	FROM [Group] g
-	JOIN [AttributeValue] coachav ON coachav.EntityId = g.Id
-	JOIN [Attribute] coacha ON coacha.Id = coachav.AttributeId AND coacha.[Key] = 'AGCoach' AND coacha.EntityTypeId = 16
-	JOIN [PersonAlias] coach ON coach.Guid = TRY_CAST(coachav.Value AS UNIQUEIDENTIFIER) AND coach.PersonId = @PersonId
-	WHERE g.IsActive = 1 AND g.IsArchived = 0 -- Added SNS 20221116 per https://helpdesk.lakepointe.org/app/itdesk/ui/requests/63677000019976129/details
-
-	UNION ALL
 
 	-- Serve Teams: New style from coach groups
 	SELECT g.Id, g.Name, 'Coach' AS [Role]
