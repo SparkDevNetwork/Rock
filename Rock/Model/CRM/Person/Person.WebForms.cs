@@ -306,6 +306,7 @@ namespace Rock.Model
         {
             var photoUrl = new StringBuilder();
 
+            string baseUrl = VirtualPathUtility.ToAbsolute( "~/" );
             string altText = personPhotoImageTagArgs.AltText;
             string className = personPhotoImageTagArgs.ClassName;
             int? photoId = personPhotoImageTagArgs.PhotoId;
@@ -340,12 +341,12 @@ namespace Rock.Model
             {
                 if ( recordTypeValueGuid.HasValue && recordTypeValueGuid.Value == SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() )
                 {
-                    photoUrl.Append( "Assets/Images/business-no-photo.svg?" );
+                    photoUrl.Append( baseUrl + "Assets/Images/business-no-photo.svg?" );
                 }
                 else if ( age.HasValue && age.Value < 18 )
                 {
                     // it's a child
-                    photoUrl.Append( GetPhotoPath( gender, false ) );
+                    photoUrl.Append( baseUrl + GetPhotoPath( gender, false ) );
                 }
                 else
                 {
@@ -361,12 +362,12 @@ namespace Rock.Model
                     if ( ageClassification.HasValue && ageClassification == AgeClassification.Child )
                     {
                         // it's a child
-                        photoUrl.Append( GetPhotoPath( gender, false ) );
+                        photoUrl.Append( baseUrl + GetPhotoPath( gender, false ) );
                     }
                     else
                     {
                         // it's an adult
-                        photoUrl.Append( GetPhotoPath( gender, true ) );
+                        photoUrl.Append( baseUrl + GetPhotoPath( gender, true ) );
                     }
                 }
             }
