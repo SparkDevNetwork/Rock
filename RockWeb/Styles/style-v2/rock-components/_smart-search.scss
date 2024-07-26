@@ -1,0 +1,139 @@
+//
+// Smart Search - search at th top of the page for
+// searching people, groups, etc. (Rock Component)
+
+// =============================================================
+// Table of Content           
+//  + Base Style  
+// =============================================================
+
+
+// ======================== BASE STYLE ========================
+.smartsearch {
+  position:           relative;
+  width:              298px;
+  padding:            var(--spacing-tiny) var(--spacing-small);
+  margin-top:         var(--spacing-small);
+  font-size:          var(--font-size-xsmall);
+  color:              var(--color-interface-stronger);
+  background-color:   var(--color-interface-softest);
+  border:             1px solid var(--color-interface-stronger);
+  border-radius:      var(--rounded-small);
+
+  &:focus-within {
+    background:       var(--color-interface-softest);
+  }
+
+  input::-moz-placeholder,
+  input::-webkit-input-placeholder {
+    color:            var(--color-interface-softer)
+  }
+
+  .nav > li > a {
+    padding:          var(--spacing-tiny) var(--spacing-medium);
+  }
+
+  input::selection,
+  input::-moz-selection {
+    color:            var(--color-interface-softest);
+    background:       var(--color-interface-stronger);
+  }
+
+  &:focus {
+    border-color:     var(--color-interface-strong);
+  }
+
+  .twitter-typeahead {
+    display:        block !important;
+    margin-right:   128px;
+  }
+
+  .smartsearch-type {
+    width:          128px;
+  }
+
+  > i {
+    position:     absolute;
+    float:        left;
+    margin-top:   var(--spacing-small);
+    font-size:    var(--font-size-regular);
+    opacity:      .6;
+  }
+
+  input {
+    width:        150px;
+    margin:       0;
+    font-size:    var(--font-size-small);
+    color:        var(--color-interface-softest);
+    background:   transparent;
+    border:       0;
+    border-radius: 0;
+
+    &:focus {
+      outline:      0; // get rid of orange box in chrome
+      box-shadow:   none;
+    }
+  }
+
+  .tt-hint {
+    padding: $smartsearch-input-padding;
+  }
+
+  .tt-dropdown-menu {
+    min-width:    290px;
+    max-width:    100vw;
+    margin-top:   2px;
+    margin-left:  0;
+    border:       0;
+  }
+
+  input.searchinput {
+    width:      100%;
+    padding:    $smartsearch-input-padding;
+    color:      var(--color-interface-softest);
+    border:     0 !important;
+    box-shadow: none !important;
+  }
+
+  .dropdown {
+    .navbar-link {
+      width:        100%;
+      color:        var(--color-interface-softest);
+      text-align:   right;
+      white-space:  nowrap;
+      cursor:       pointer;
+
+      span {
+        padding-right: var(--spacing-tiny);
+      }
+
+      &:hover,
+      &:focus {
+        background-color: transparent;
+      }
+
+      b {
+        display: inline-block;
+        width: .625em;
+      }
+    }
+
+    &.open {
+      .navbar-link {
+        background-color: transparent;
+      }
+    }
+
+    .dropdown-menu {
+      top: 35px;
+      right: 0;
+      left: auto;
+      // smart search type menu
+      font-size: var(--font-size-xsmall);
+      cursor: pointer;
+    }
+  }
+}
+// ====================== END BASE STYLE ======================
+
+

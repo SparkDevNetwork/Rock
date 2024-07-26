@@ -1,0 +1,24 @@
+
+
+// Security Controls - login status etc (Rock Component)
+
+
+// =============================================================
+// Table of Content           
+//  + Base Style  
+//  + Touch
+// =============================================================
+
+
+// ======================== BASE STYLE ========================
+
+.loginstatus {
+  & > li {
+    min-width: 160px;
+    text-align: right;
+
+    & li {
+      text-align: left;
+    }
+  }
+}

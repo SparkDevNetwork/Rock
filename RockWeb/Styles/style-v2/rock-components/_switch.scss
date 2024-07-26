@@ -1,0 +1,107 @@
+
+
+//Switch (Rock Component)
+
+
+// =============================================================
+// Table of Content           
+//  + Base style
+// =============================================================
+
+
+@media (max-width: $screen-small) {
+  .hide-label-sm .control-label {
+    display: none;
+  }
+}
+
+// ======================== BASE STYLE ========================
+.custom-control-input {
+  position: absolute;
+  z-index: -1;
+  opacity: 0;
+}
+
+.custom-switch {
+  padding-left:   calc($custom-switch-width + var(--spacing-small));
+
+  .custom-switch-centered & {
+    padding-top:  var(--spacing-small) !important;
+  }
+
+  .custom-control-label {
+    position:     relative;
+    font-weight:  var(--font-weight-regular);
+    cursor:       pointer;
+
+    &.custom-control-label-bold {
+      font-weight: 600;
+    }
+
+    &::before {
+      position:       absolute;
+      top:            $caret-width-base;
+      left:           calc(($custom-switch-width + var(--spacing-small))* -1);
+      display:        block;
+      width:          $custom-switch-width;
+      height:         $custom-switch-height;
+      pointer-events: all;
+      content: "";
+      background-color: var(--color-interface-softest);
+      border:           1px solid var(--color-interface-soft);
+      border-radius:    var(--rounded-large);
+    }
+
+    &::after {
+      position:           absolute;
+      top:                $caret-width-base + $custom-switch-indicator-padding;
+      left:               calc((($custom-switch-width + var(--spacing-small)) * -1) + $custom-switch-indicator-padding);
+      display:            block;
+      width:              $custom-switch-indicator-size;
+      height:             $custom-switch-indicator-size;
+      content:            "";
+      background:         no-repeat 50%/50% 50%;
+      background-color:   var(--color-interface-soft);
+      border-radius:      var(--rounded-large);
+      transition:         transform .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out, -webkit-transform .15s ease-in-out;
+    }
+  }
+
+  .custom-control-input {
+    &:focus ~ .custom-control-label::before {
+      box-shadow:         0 0 0 1px var(--color-interface-softest), 0 0 0 3px fade(var(--color-primary), 20%);
+    }
+
+    &:disabled ~ .custom-control-label::before {
+      background-color:   var(--color-interface-soft);
+    }
+
+    &:focus:not(:checked) ~ .custom-control-label::before {
+      border-color:       var(--color-link);
+    }
+
+    &:active ~ .custom-control-label::before {
+      color:              var(--color-interface-softest);
+      background-color: #f39c62; //TODO this is hard coded
+    }
+  }
+
+  .custom-control-input:checked ~ .custom-control-label {
+    &::after {
+      background-color:   var(--color-interface-softest);
+      transform:          translateX(($custom-switch-width - $custom-switch-indicator-size - (1px * 4)));
+    }
+
+    &::before {
+      background-color:   var(--color-primary);
+      border-color:       var(--color-primary);
+    }
+  }
+
+  .custom-control-input:disabled {
+    &:checked ~ .custom-control-label::before {
+      background-color: #f39c62;
+    }
+  }
+}
+// ====================== END BASE STYLE ======================

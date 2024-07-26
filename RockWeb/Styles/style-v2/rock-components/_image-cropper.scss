@@ -1,0 +1,84 @@
+
+
+// Image Cropper - styles for image crop component (Rock Component)
+
+
+// =============================================================
+// Table of Content           
+//  + Base style
+// =============================================================
+
+
+// ======================== BASE STYLE ========================
+
+.image-editor-photo {
+  position: relative;
+  width: 150px;
+
+  .image-container {
+    width: 150px;
+    height: 150px;
+    border: 3px solid $ui-autocomplete-border;
+  }
+
+  .options {
+    position: absolute;
+    top: 110px;
+    right: 0;
+    padding: 0 var(--spacing-small);
+    color: var(--color-interface-stronger);
+    background-color: $ui-autocomplete-bg;
+    border-radius: var(--rounded-small) 0 0 var(--rounded-small);
+    opacity: 0;
+    -webkit-transition: opacity .25s ease-in-out;
+    -moz-transition: opacity .25s ease-in-out;
+    transition: opacity .25s ease-in-out;
+
+    &:focus-within {
+      opacity: 1;
+    }
+
+    a {
+      display: inline-block;
+      padding: var(--spacing-small);
+      color: var(--color-interface-stronger);
+      text-decoration: none;
+      cursor: pointer;
+
+      &:hover {
+        opacity: .5;
+      }
+    }
+  }
+
+  .js-upload-progress {
+    position: absolute;
+    top: 55px;
+    left: 55px;
+    color: var(--color-interface-medium);
+    opacity: .5;
+  }
+}
+
+.image-editor-fileinput {
+  height: 0;
+  visibility: hidden;
+}
+
+.image-editor-group.imageupload-group {
+  border: 0;
+}
+
+.image-editor-crop-container {
+  width: 480px;
+  height: 480px;
+}
+
+
+.image-editor-photo:hover .options {
+  opacity: 1;
+}
+// ====================== END BASE STYLE ======================
+
+
+

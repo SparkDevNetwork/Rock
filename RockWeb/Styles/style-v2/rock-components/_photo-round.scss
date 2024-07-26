@@ -1,0 +1,31 @@
+
+
+// Photo Round (Rock Component)
+
+
+// =============================================================
+// Table of Content           
+//  + Base Style  
+// =============================================================
+
+
+// ======================== BASE STYLE ========================
+.photo-round {
+  background-repeat: no-repeat;
+  background-position-x: center;
+  background-size: cover;
+  border-radius: 9999px;
+
+  &.photo-round-sm {
+    width: 35px;
+    height: 35px;
+  }
+
+  &.photo-round-xs {
+    width: 20px;
+    height: 20px;
+  }
+}
+// ====================== END BASE STYLE ======================
+
+

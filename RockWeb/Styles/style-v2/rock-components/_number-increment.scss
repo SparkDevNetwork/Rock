@@ -1,0 +1,74 @@
+
+// Number-Inredement (Rock Component)
+
+
+// =============================================================
+// Table of Content           
+//  + Base Style  
+// =============================================================
+
+
+// ======================== BASE STYLE ========================
+.numberincrement {
+  -webkit-user-select:  none;
+  -moz-user-select:     none;
+  -ms-user-select:      none;
+  user-select:          none;
+
+  .numberincrement-up,
+  .numberincrement-down {
+    padding:          var(--spacing-small) var(--spacing-medium);
+    color:            var(--color-interface-stronger);
+    cursor:           pointer;
+    background-color: var(--color-interface-softer);
+    border:           1px solid var(--color-interface-soft);
+
+    &.disabled {
+      color:          var(--color-interface-stronger);
+      cursor:         default;
+    }
+  }
+
+  .numberincrement-down {
+    border-radius:    var(--rounded-small) 0 0 var(--rounded-small);
+  }
+
+  .numberincrement-up {
+    border-radius:    0 var(--rounded-small) var(--rounded-small) 0;
+  }
+
+  .numberincrement-value {
+    padding:          var(--spacing-tiny) var(--spacing-medium);
+    background-color: var(--color-interface-softest);
+    border-color:     var(--color-interface-soft);
+    border-style:     solid;
+    border-width:     1px 0;
+  }
+
+  // adjustments for different sizes
+  &.input-sm {
+    .numberincrement-up,
+    .numberincrement-down {
+      padding:        var(--spacing-tiny) var(--spacing-small);
+    }
+
+    .numberincrement-value {
+      padding:        var(--spacing-tiny) var(--spacing-medium);
+    }
+  }
+
+  &.input-lg {
+    .numberincrement-up,
+    .numberincrement-down {
+      padding:        var(--spacing-medium) var(--spacing-large);
+    }
+
+    .numberincrement-value {
+      padding:        var(--spacing-medium) var(--spacing-large);
+    }
+  }
+}
+// ====================== END BASE STYLE ======================
+
+
+

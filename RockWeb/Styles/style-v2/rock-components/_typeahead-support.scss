@@ -1,0 +1,53 @@
+
+
+// TypeAhead - styles for type ahead support (Rock Component)
+
+
+// =============================================================
+// Table of Content           
+//  + Base Style
+// =============================================================
+
+
+// ======================== BASE STYLE ========================
+
+.twitter-typeahead .tt-query,
+.twitter-typeahead .tt-hint {
+  margin-bottom: 0;
+}
+
+.tt-dropdown-menu {
+  min-width:                200px;
+  padding:                  var(--spacing-medium);
+  color:                    var(--color-interface-medium);
+  background-color:         $ui-autocomplete-bg;
+  -webkit-background-clip:  padding-box;
+  -moz-background-clip:     padding;
+  background-clip:          padding-box;
+  border:                   1px solid $ui-autocomplete-border;
+  border-radius:            0 0 var(--rounded-small) var(--rounded-small);
+  box-shadow:               0 5px 10px rgba(0,0,0,.2);
+}
+
+.tt-suggestion {
+  display:          block;
+
+  p {
+    padding:        var(--spacing-tiny);
+    margin:         0;
+    border-radius:  var(--rounded-small);
+
+    &:hover {
+      color:            var(--color-interface-medium);
+      background-color: var(--color-interface-soft);
+    }
+  }
+}
+
+.tt-suggestion.tt-is-under-cursor {
+  color:  var(--color-interface-soft);
+}
+
+.tt-suggestion.tt-is-under-cursor a {
+  color:  var(--color-interface-medium);
+}
