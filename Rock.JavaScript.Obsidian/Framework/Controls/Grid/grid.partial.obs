@@ -2137,6 +2137,7 @@
 
     watch([currentPage, pageSize], () => {
         updateVisibleRows();
+        updatePageCount();
     });
 
     watch(() => props.keyField, () => {
