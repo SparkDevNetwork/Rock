@@ -28,10 +28,12 @@
     import { LearningParticipantBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningParticipantDetail/learningParticipantBag";
     import { LearningParticipantDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningParticipantDetail/learningParticipantDetailOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<LearningParticipantBag>,
+            type: Object as PropType<ValidPropertiesBox<LearningParticipantBag>>,
             required: true
         },
 
@@ -44,18 +46,18 @@
     const classRoles = ref(props.options?.classRoles ?? []);
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: LearningParticipantBag): void,
+        (e: "update:modelValue", value: ValidPropertiesBox<LearningParticipantBag>): void,
         (e: "propertyChanged", value: string): void
     }>();
 
     // #region Values
 
-    const personSelection = ref<ListItemBag | undefined>(props.modelValue.personAlias ?? undefined);
+    const personSelection = ref<ListItemBag | undefined>(props.modelValue.bag?.personAlias ?? undefined);
     const personAlias = propertyRef<ListItemBag>(
-        props.modelValue.personAlias ?? { value: "", text: "" }, "PersonAlias"
+        props.modelValue.bag?.personAlias ?? { value: "", text: "" }, "PersonAlias"
     );
-    const participantRole = propertyRef(props.modelValue?.participantRole ?? {}, "ParticipantRole");
-    const isFacilitator = ref(props.modelValue?.isFacilitator ?? {});
+    const participantRole = propertyRef(props.modelValue.bag?.participantRole ?? {}, "ParticipantRole");
+    const isFacilitator = ref(props.modelValue.bag?.isFacilitator ?? false);
 
     const roleValue = ref(participantRole.value.value ?? "");
 
@@ -75,18 +77,19 @@
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
-        updateRefValue(personAlias, props.modelValue.personAlias?.value ?? {});
-        updateRefValue(roleValue, props.modelValue.participantRole?.value ?? "");
+        updateRefValue(personAlias, props.modelValue.bag?.personAlias?.value ?? {});
+        updateRefValue(roleValue, props.modelValue.bag?.participantRole?.value ?? "");
     });
 
     // Watch for changes to our monitored values and emit a modelValue change event when necessary.
     watch([personSelection, roleValue], () => {
-        const newValue: LearningParticipantBag = {
-            ...props.modelValue,
-            personAlias: personSelection.value,
-            participantRole: { value: roleValue.value },
-            isFacilitator: isFacilitator.value
+        const newValue: ValidPropertiesBox<LearningParticipantBag> = {
+            bag: { ...props.modelValue.bag } as LearningParticipantBag
         };
+
+        setPropertiesBoxValue(newValue, "personAlias", personAlias.value);
+        setPropertiesBoxValue(newValue, "participantRole", { value: roleValue.value });
+        setPropertiesBoxValue(newValue, "isFacilitator", isFacilitator.value);
 
         emit("update:modelValue", newValue);
     });

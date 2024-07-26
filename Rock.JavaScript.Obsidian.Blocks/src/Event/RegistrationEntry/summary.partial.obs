@@ -45,6 +45,7 @@
         CurrentRegistrationEntryState,
         GetPersistSessionArgs,
         PersistSession,
+        RegistrationEntryTerms,
         getRegistrantBasicInfo, use
     } from "./utils.partial";
     import Captcha from "@Obsidian/Controls/captcha.obs";
@@ -63,6 +64,7 @@
     const disableCaptchaSupport = ref(registrationEntryState.viewModel.disableCaptchaSupport);
     const captchaElement = ref<InstanceType<typeof Captcha> | undefined>();
     const persistSession = use(PersistSession);
+    const registrationEntryTerms = use(RegistrationEntryTerms);
 
     const emit = defineEmits<{
         (e: "next"): void,
@@ -147,17 +149,7 @@
 
     /** The registrant term - plural if there are more than 1 */
     const registrantOrRegistrantsTermLowerCase = computed<string>(() => {
-        return registrantInfos.value.length === 1 ? registrantTermLowerCase.value : registrantsTermLowerCase.value;
-    });
-
-    /** The registrant term (singular) (lower case). */
-    const registrantTermLowerCase = computed<string>(() => {
-        return registrationEntryState.viewModel.registrantTerm?.toLowerCase() || "registrant";
-    });
-
-    /** The registrants term (plural) (lower case). */
-    const registrantsTermLowerCase = computed<string>(() => {
-        return registrationEntryState.viewModel.pluralRegistrantTerm?.toLowerCase() || "registrants";
+        return registrantInfos.value.length === 1 ? registrationEntryTerms.value.registrantSingularLowerCase : registrationEntryTerms.value.registrantPluralLowerCase;
     });
 
     /** The name of this registration instance */

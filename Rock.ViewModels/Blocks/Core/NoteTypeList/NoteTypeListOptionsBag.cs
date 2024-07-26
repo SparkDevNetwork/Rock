@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System;
+
 namespace Rock.ViewModels.Blocks.Core.NoteTypeList
 {
     /// <summary>
@@ -22,5 +24,9 @@ namespace Rock.ViewModels.Blocks.Core.NoteTypeList
     /// </summary>
     public class NoteTypeListOptionsBag
     {
+        /// <summary>
+        /// Gets or sets the entity type unique identifier.
+        /// </summary>
+        public Guid? EntityTypeGuid { get; set; }
     }
 }

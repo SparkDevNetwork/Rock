@@ -263,6 +263,7 @@ import MarkdownEditorGallery from "./ControlGallery/markdownEditorGallery.partia
 import JsonFieldsBuilderGallery from "./ControlGallery/jsonFieldsBuilderGallery.partial.obs";
 import HtmlEditorGallery from "./ControlGallery/htmlEditorGallery.partial.obs";
 import TextBoxGallery from "./ControlGallery/textBoxGallery.partial.obs";
+import AssetAndFileManagerGallery from "./ControlGallery/assetAndFileManagerGallery.partial.obs";
 import { Guid } from "@Obsidian/Types";
 
 
@@ -8141,7 +8142,9 @@ const controlGalleryComponents: Record<string, Component> = [
     MarkdownEditorGallery,
     JsonFieldsBuilderGallery,
     HtmlEditorGallery,
-    TextBoxGallery,]
+    TextBoxGallery,
+    AssetAndFileManagerGallery,
+]
     // Fix vue 3 SFC putting name in __name.
     .map(a => {
         a.name = upperCaseFirstCharacter((a.__name ?? a.name).replace(/\.partial$/, ""));

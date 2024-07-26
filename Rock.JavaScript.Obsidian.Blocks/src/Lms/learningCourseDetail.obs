@@ -13,7 +13,7 @@
                  :entityTypeGuid="entityTypeGuid"
                  entityTypeName="Course"
                  :isAuditHidden="true"
-                 :isBadgesVisible="true"
+                 :isBadgesVisible="false"
                  :isDeleteVisible="false"
                  :isEditVisible="isEditable"
                  :isSecurityHidden="false"
@@ -31,7 +31,7 @@
         </template>
 
         <template #edit>
-            <EditPanel v-model="learningCourseEditBag" :options="options" @propertyChanged="onPropertyChanged" />
+            <EditPanel v-model="learningCourseEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
         </template>
     </DetailBlock>
 
@@ -52,17 +52,16 @@
     import ViewPanel from "./LearningCourseDetail/viewPanel.partial.obs";
     import ImageWithIcon from "@Obsidian/Controls/imageWithIcon.obs";
     import LearningClassSecondaryLists from "../Lms/LearningClassSecondaryLists/LearningClassSecondaryLists.partial.obs";
-    import { getSecurityGrant, onConfigurationValuesChanged, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
-    import { debounce } from "@Obsidian/Utility/util";
+    import { onConfigurationValuesChanged, useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./LearningCourseDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { LearningCourseBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningCourseDetail/learningCourseBag";
     import { LearningCourseDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningCourseDetail/learningCourseDetailOptionsBag";
     import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const config = useConfigurationValues<DetailBlockBox<LearningCourseBag, LearningCourseDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const securityGrant = getSecurityGrant(config.securityGrantToken);
     onConfigurationValuesChanged(useReloadBlock());
 
     // #region Values
@@ -71,7 +70,14 @@
     const errorMessage = ref("");
 
     const learningCourseViewBag = ref(config.entity);
-    const learningCourseEditBag = ref<LearningCourseBag>({} as LearningCourseBag);
+    const learningCourseEditBag = ref<ValidPropertiesBox<LearningCourseBag>>({
+        bag: {} as LearningCourseBag
+    });
+
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: learningCourseEditBag
+    });
 
     const entityTypeGuid = EntityType.LearningCourse;
 
@@ -81,30 +87,6 @@
     const imageGuid = ref<string>(learningCourseViewBag.value?.imageBinaryFile?.value ?? "");
     const iconCssClass = ref<string>(learningCourseViewBag.value?.programIconCssClass ?? "");
     const highlightColor = ref<string>(learningCourseViewBag.value?.programHighlightColor ?? "");
-
-    // The properties that are being edited in the UI. This is used to
-    // inform the server which incoming values have valid data in them.
-    const validProperties = [
-        "attributeValues",
-        "allowHistoricalAccess",
-        "category",
-        "completionWorkflowType",
-        "courseCode",
-        "courseRequirements",
-        "credits",
-        "description",
-        "enableAnnouncements",
-        "imageBinaryFile",
-        "isActive",
-        "isPublic",
-        "learningProgram",
-        "maxStudents",
-        "name",
-        "publicName",
-        "summary"
-    ];
-
-    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(learningCourseEditBag, validProperties, invokeBlockAction), undefined, true);
 
     // #endregion
 
@@ -188,7 +170,7 @@
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
     async function onCancelEdit(): Promise<boolean | string> {
-        if (!learningCourseEditBag.value?.idKey) {
+        if (!learningCourseEditBag.value?.bag?.idKey) {
             if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
                 return config.navigationUrls[NavigationUrlKey.ParentPage];
             }
@@ -211,30 +193,13 @@
         });
 
         if (result.isSuccess && result.data && result.data.entity) {
-            learningCourseEditBag.value = result.data.entity;
+            learningCourseEditBag.value.bag = result.data.entity;
 
             return true;
         }
         else {
             return false;
         }
-    }
-
-    /**
-     * Event handler for when a value has changed that has an associated
-     * C# property name. This is used to detect changes to values that
-     * might cause qualified attributes to either show up or not show up.
-     *
-     * @param propertyName The name of the C# property that was changed.
-     */
-    function onPropertyChanged(propertyName: string): void {
-        // If we don't have any qualified attribute properties or this property
-        // is not one of them then do nothing.
-        if (!config.qualifiedAttributeProperties || !config.qualifiedAttributeProperties.some(n => n.toLowerCase() === propertyName.toLowerCase())) {
-            return;
-        }
-
-        refreshAttributesDebounce();
     }
 
     /**
@@ -246,19 +211,17 @@
     async function onSave(): Promise<boolean | string> {
         errorMessage.value = "";
 
-        const data: DetailBlockBox<LearningCourseBag, LearningCourseDetailOptionsBag> = {
-            entity: learningCourseEditBag.value,
-            isEditable: true,
-            validProperties: validProperties
+        const data: ValidPropertiesBox<LearningCourseBag> = {
+            bag: learningCourseEditBag.value.bag
         };
 
-        const result = await invokeBlockAction<LearningCourseBag | string>("Save", {
+        const result = await invokeBlockAction<ValidPropertiesBox<LearningCourseBag> | string>("Save", {
             box: data
         });
 
         if (result.isSuccess && result.data) {
             if (result.statusCode === 200 && typeof result.data === "object") {
-                learningCourseViewBag.value = result.data;
+                learningCourseViewBag.value = result.data.bag;
 
                 return true;
             }
@@ -274,8 +237,6 @@
 
     // #endregion
 
-    provideSecurityGrant(securityGrant);
-
     // Handle any initial error conditions or the need to go into edit mode.
     if (config.errorMessage) {
         blockError.value = config.errorMessage;
@@ -284,7 +245,7 @@
         blockError.value = "The specified learning course could not be viewed.";
     }
     else if (!config.entity.idKey) {
-        learningCourseEditBag.value = config.entity;
+        learningCourseEditBag.value.bag = config.entity;
         panelMode.value = DetailPanelMode.Add;
     }
 </script>

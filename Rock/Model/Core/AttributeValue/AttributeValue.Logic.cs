@@ -335,7 +335,7 @@ namespace Rock.Model
         {
             var attributeCache = AttributeCache.Get( AttributeId );
 
-            if ( attributeCache?.EntityTypeId == null )
+            if ( attributeCache?.EntityTypeId == null || attributeCache.IsSuppressHistoryLogging )
             {
                 return;
             }

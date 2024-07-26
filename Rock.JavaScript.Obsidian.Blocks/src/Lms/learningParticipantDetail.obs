@@ -25,7 +25,7 @@
         </template>
 
         <template #edit>
-            <EditPanel v-model="learningParticipantEditBag" :options="options" @propertyChanged="onPropertyChanged" />
+            <EditPanel v-model="learningParticipantEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
         </template>
     </DetailBlock>
 </template>
@@ -39,15 +39,14 @@
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import EditPanel from "./LearningParticipantDetail/editPanel.partial.obs";
     import ViewPanel from "./LearningParticipantDetail/viewPanel.partial.obs";
-    import { getSecurityGrant, onConfigurationValuesChanged, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
-    import { debounce } from "@Obsidian/Utility/util";
+    import { onConfigurationValuesChanged, useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { LearningParticipantBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningParticipantDetail/learningParticipantBag";
     import { LearningParticipantDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningParticipantDetail/learningParticipantDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const config = useConfigurationValues<DetailBlockBox<LearningParticipantBag, LearningParticipantDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const securityGrant = getSecurityGrant(config.securityGrantToken);
     onConfigurationValuesChanged(useReloadBlock());
 
     // #region Values
@@ -56,28 +55,20 @@
     const errorMessage = ref("");
 
     const learningParticipantViewBag = ref(config.entity);
-    const learningParticipantEditBag = ref<LearningParticipantBag>({} as LearningParticipantBag);
+    const learningParticipantEditBag = ref<ValidPropertiesBox<LearningParticipantBag>>({
+        bag: {} as LearningParticipantBag
+    });
+
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: learningParticipantEditBag
+    });
 
     const entityTypeGuid = EntityType.LearningParticipant;
     const personAlias = ref(learningParticipantViewBag.value?.personAlias ?? {});
     const semesterName = ref(learningParticipantViewBag.value?.semesterName ?? "");
     const scheduledTime = ref(learningParticipantViewBag.value?.scheduledTime ?? "");
     const panelMode = ref<DetailPanelMode>(learningParticipantViewBag.value?.idKey ? DetailPanelMode.View : DetailPanelMode.Add);
-
-    // The properties that are being edited in the UI. This is used to
-    // inform the server which incoming values have valid data in them.
-    const validProperties = [
-        "attributeValues",
-        "groupRoleId",
-        "learningClass",
-        "learningCompletionDateTime",
-        "learningCompletionStatus",
-        "learningGradePercent",
-        "learningGradingSystemScale",
-        "learningProgramCompletion"
-    ];
-
-    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(learningParticipantEditBag, validProperties, invokeBlockAction), undefined, true);
 
     // #endregion
 
@@ -150,23 +141,6 @@
     }
 
     /**
-     * Event handler for when a value has changed that has an associated
-     * C# property name. This is used to detect changes to values that
-     * might cause qualified attributes to either show up or not show up.
-     *
-     * @param propertyName The name of the C# property that was changed.
-     */
-    function onPropertyChanged(propertyName: string): void {
-        // If we don't have any qualified attribute properties or this property
-        // is not one of them then do nothing.
-        if (!config.qualifiedAttributeProperties || !config.qualifiedAttributeProperties.some(n => n.toLowerCase() === propertyName.toLowerCase())) {
-            return;
-        }
-
-        refreshAttributesDebounce();
-    }
-
-    /**
      * Event handler for the panel's Save event. Send the data to the server
      * to be saved and then leave edit mode or redirect to target page.
      *
@@ -175,19 +149,13 @@
     async function onSave(): Promise<boolean | string> {
         errorMessage.value = "";
 
-        const data: DetailBlockBox<LearningParticipantBag, LearningParticipantDetailOptionsBag> = {
-            entity: learningParticipantEditBag.value,
-            isEditable: true,
-            validProperties: validProperties
-        };
-
-        const result = await invokeBlockAction<LearningParticipantBag | string>("Save", {
-            box: data
+        const result = await invokeBlockAction<ValidPropertiesBox<LearningParticipantBag> | string>("Save", {
+            box: learningParticipantEditBag.value
         });
 
         if (result.isSuccess && result.data) {
             if (result.statusCode === 200 && typeof result.data === "object") {
-                learningParticipantViewBag.value = result.data;
+                learningParticipantViewBag.value = result.data.bag;
 
                 return true;
             }
@@ -203,8 +171,6 @@
 
     // #endregion
 
-    provideSecurityGrant(securityGrant);
-
     // Handle any initial error conditions or the need to go into edit mode.
     if (config.errorMessage) {
         blockError.value = config.errorMessage;
@@ -213,7 +179,7 @@
         blockError.value = "The specified learning participant could not be viewed.";
     }
     else if (!config.entity.idKey) {
-        learningParticipantEditBag.value = config.entity;
+        learningParticipantEditBag.value = { bag: config.entity};
         panelMode.value = DetailPanelMode.Add;
     }
 </script>

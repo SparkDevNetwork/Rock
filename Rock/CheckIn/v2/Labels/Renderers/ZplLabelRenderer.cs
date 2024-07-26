@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -184,7 +185,13 @@ namespace Rock.CheckIn.v2.Labels.Renderers
                 writer.Write( "^FR" );
             }
 
-            var fontSize = GetFontDotSize( config.FontSize );
+            if ( config.MaxLength > 0 )
+            {
+                textValue = textValue.Truncate( config.MaxLength );
+            }
+
+            var fontSizeInPoints = GetFontSize( textValue.Length, config.FontSize, config.AdaptiveFontSize );
+            var fontSize = GetFontDotSize( fontSizeInPoints );
             var horizontalFontSize = fontSize;
             var lineCount = Math.Max( 1, ( int ) Math.Round( ToDots( height ) / ( double ) fontSize ) );
             var alignment = "L";
@@ -192,6 +199,9 @@ namespace Rock.CheckIn.v2.Labels.Renderers
             if ( config.HorizontalAlignment == HorizontalTextAlignment.Center )
             {
                 alignment = "C";
+                // If the text does not end in a ZPL newline then the alignment
+                // doesn't work exactly as expected.
+                textValue += "\\&";
             }
             else if ( config.HorizontalAlignment == HorizontalTextAlignment.Right )
             {
@@ -205,11 +215,6 @@ namespace Rock.CheckIn.v2.Labels.Renderers
             else if ( config.IsCondensed )
             {
                 horizontalFontSize = ( int ) Math.Floor( fontSize * 0.8 );
-            }
-
-            if ( config.MaxLength > 0 )
-            {
-                textValue = textValue.Truncate( config.MaxLength );
             }
 
             writer.WriteLine( $"^FB{ToDots( width )},{lineCount},0,{alignment}^A0,{horizontalFontSize},{fontSize}^FD{textValue}^FS" );
@@ -482,9 +487,17 @@ namespace Rock.CheckIn.v2.Labels.Renderers
             var config = field.GetConfiguration<BarcodeFieldConfiguration>();
             string content = null;
 
-            if ( config.IsDynamic )
+            if ( config.IsDynamic && config.DynamicTextTemplate.IsNotNullOrWhiteSpace() )
             {
-                content = config.DynamicTextTemplate;
+                if ( config.DynamicTextTemplate.IsLavaTemplate() )
+                {
+                    var mergeFields = PrintRequest.GetMergeFields();
+                    content = config.DynamicTextTemplate.ResolveMergeFields( mergeFields );
+                }
+                else
+                {
+                    content = config.DynamicTextTemplate;
+                }
             }
             else if ( PrintRequest.LabelData is ILabelDataHasPerson personData )
             {
@@ -566,6 +579,31 @@ namespace Rock.CheckIn.v2.Labels.Renderers
         private int ToDots( double valueInInches )
         {
             return ( int ) Math.Floor( valueInInches * _dpi );
+        }
+
+        /// <summary>
+        /// Gets the font size to use for the given text value length.
+        /// </summary>
+        /// <param name="textLength">The length of the text string to be rendered.</param>
+        /// <param name="baseFontSize">The base font size that will be used if no adaptive size is found.</param>
+        /// <param name="adaptiveFontSizes">The table of adaptive font sizes.</param>
+        /// <returns>The font size to use.</returns>
+        private double GetFontSize( int textLength, double baseFontSize, Dictionary<int, double> adaptiveFontSizes )
+        {
+            if ( adaptiveFontSizes != null )
+            {
+                var size = adaptiveFontSizes
+                    .Where( a => textLength >= a.Key )
+                    .OrderBy( a => a.Key )
+                    .FirstOrDefault();
+
+                if ( size.Value > 0 )
+                {
+                    return size.Value;
+                }
+            }
+
+            return baseFontSize;
         }
 
         /// <summary>

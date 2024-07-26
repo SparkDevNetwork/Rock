@@ -4,6 +4,7 @@
         <PageHeader title="Rock Solid"
                     :hasBack="hasBackButton"
                     :hideNavigation="!hasNavigation"
+                    :isOverrideMode="isOverrideMode"
                     @back="onBack"
                     @home="onHome" />
 
@@ -91,17 +92,34 @@
                                        :configuration="configuration"
                                        :session="currentSession"
                                        @updateActions="onUpdateActions($event, Screen.CheckoutSuccess)" />
+
+                <template v-for="supervisorScreen in supervisorScreens">
+                    <component v-if="supervisorScreen.screen === currentScreen"
+                               :key="supervisorScreen.screen"
+                               :is="supervisorScreen.component"
+                               :configuration="configuration"
+                               :supervisorData="supervisorData"
+                               @updateActions="onUpdateActions($event, supervisorScreen.screen)"
+                               @enableOverride="onEnableOverride($event)"
+                               @supervisorScreen="onSupervisorScreen"
+                               @closeSupervisor="onCloseSupervisor" />
+                </template>
             </ContentTransition>
         </section>
 
         <PageFooter :title="footerStatusText"
-                    :actions="currentScreenActions" />
+                    :actions="currentScreenActions"
+                    @configure="onConfigureClick" />
     </div>
 </template>
 
 <script setup lang="ts">
     import AbilityLevelSelectScreen from "./CheckInKiosk/abilityLevelSelectScreen.partial.obs";
     import ActionSelectScreen from "./CheckInKiosk/actionSelectScreen.partial.obs";
+    import SupervisorActionsScreen from "./CheckInKiosk/supervisorActionsScreen.partial.obs";
+    import SupervisorLoginScreen from "./CheckInKiosk/supervisorLoginScreen.partial.obs";
+    import SupervisorReprintScreen from "./CheckInKiosk/supervisorReprintScreen.partial.obs";
+    import SupervisorScheduleLocationsScreen from "./CheckInKiosk/supervisorScheduleLocationsScreen.partial.obs";
     import AreaSelectScreen from "./CheckInKiosk/areaSelectScreen.partial.obs";
     import CheckoutSelectScreen from "./CheckInKiosk/checkoutSelectScreen.partial.obs";
     import CheckoutSuccessScreen from "./CheckInKiosk/checkoutSuccessScreen.partial.obs";
@@ -117,10 +135,10 @@
     import SuccessScreen from "./CheckInKiosk/successScreen.partial.obs";
     import WelcomeScreen from "./CheckInKiosk/welcomeScreen.partial.obs";
     import ContentTransition from "./CheckInKiosk/contentTransition.partial.obs";
-    import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from "vue";
+    import { Component as VueComponent, computed, onBeforeUnmount, onMounted, ref, shallowRef } from "vue";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { provideKioskState } from "./CheckInKiosk/utils.partial";
-    import { AdminScreen, KioskButton, Screen } from "./CheckInKiosk/types.partial";
+    import { SupervisorScreen, SupervisorScreenData, KioskButton, Screen } from "./CheckInKiosk/types.partial";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
     import { CheckInSession } from "./CheckInKiosk/checkInSession.partial";
     import { useHttp } from "@Obsidian/Utility/http";
@@ -135,20 +153,40 @@
     provideKioskState(kioskState);
 
     const configuration = ref<KioskConfigurationBag>({});
-    const currentScreen = ref<Screen | AdminScreen>(Screen.None);
+    const currentScreen = ref<Screen | SupervisorScreen>(Screen.None);
     const currentScreenActions = ref<KioskButton[]>([]);
-    const currentSession = shallowRef<CheckInSession>(new CheckInSession(configuration.value, http));
+    const currentSession = shallowRef<CheckInSession>(createNewSession());
     const previousScreens = shallowRef<CheckInSession[]>([]);
+    let currentAttendeeId: string | undefined | null;
     let lastActivity: number = Date.now();
     let idleTimer: number | undefined;
     const activityEvents = ["mousemove", "mousedown", "touchmove", "touchstart", "keydown"];
+
+    const supervisorData = ref<SupervisorScreenData>({ pinCode: "" });
+    const supervisorScreens = ref<{ screen: SupervisorScreen, component: VueComponent }[]>([
+        {
+            screen: SupervisorScreen.Login,
+            component: SupervisorLoginScreen
+        },
+        {
+            screen: SupervisorScreen.Actions,
+            component: SupervisorActionsScreen
+        },
+        {
+            screen: SupervisorScreen.Reprint,
+            component: SupervisorReprintScreen
+        },
+        {
+            screen: SupervisorScreen.ScheduleLocations,
+            component: SupervisorScheduleLocationsScreen
+        }
+    ]);
 
     const hasNavigation = computed((): boolean => {
         return currentScreen.value !== Screen.Welcome;
     });
 
     const hasBackButton = computed((): boolean => {
-
         return currentScreen.value !== Screen.Welcome
             && currentScreen.value !== Screen.Success
             && currentScreen.value !== Screen.CheckoutSuccess
@@ -161,6 +199,12 @@
         }
 
         return `${configuration.value.kiosk.name} · ${configuration.value.template.name}`;
+    });
+
+    /** Kiosk is current in override mode which bypasses some filtering logic. */
+    const isOverrideMode = computed((): boolean => {
+        return currentSession.value.overridePinCode !== undefined
+            && currentSession.value.overridePinCode !== "";
     });
 
     /**
@@ -204,20 +248,32 @@
         window.location.href = blockConfiguration.setupPageRoute as string;
     }
 
-    function navigateToScreen(screen: Screen, preserveSession: boolean = false): void {
+    function createNewSession(): CheckInSession {
+        let session = new CheckInSession(configuration.value, http);
+
+        if (blockConfiguration.apiKey) {
+            session = session.withApiKey(blockConfiguration.apiKey as string);
+        }
+
+        return session;
+    }
+
+    function navigateToScreen(screen: Screen): void {
         currentScreenActions.value = [];
         currentScreen.value = screen;
 
-        if (!preserveSession && screen === Screen.Welcome) {
-            currentSession.value = new CheckInSession(configuration.value, http);
+        // Delete any pending attendance records created, this should be moved
+        // to the session object.
+        if (screen === Screen.Welcome) {
+            // This is async, but we don't need to wait for it to complete.
+            currentSession.value.cancelSession();
+
+            currentSession.value = createNewSession();
             previousScreens.value = [];
-        }
-        else if (screen === Screen.Success) {
-            // TODO: Do stuff here?
         }
     }
 
-    function onUpdateActions(actions: KioskButton[], source: Screen | AdminScreen): void {
+    function onUpdateActions(actions: KioskButton[], source: Screen | SupervisorScreen): void {
         if (currentScreen.value === source) {
             currentScreenActions.value = actions;
         }
@@ -226,6 +282,13 @@
     function onNextScreen(session: CheckInSession): void {
         previousScreens.value = [...previousScreens.value, currentSession.value];
 
+        // Prevent moving back to a previous attendee if we have any attendance
+        // records created.
+        if (session.attendances.length > 0 && currentAttendeeId !== session.getCurrentAttendee()?.person?.id) {
+            previousScreens.value = [];
+        }
+
+        currentAttendeeId = session.getCurrentAttendee()?.person?.id;
         currentSession.value = session;
 
         navigateToScreen(session.currentScreen);
@@ -259,13 +322,50 @@
      * back to the welcome screen.
      */
     function onIdleTimerCheck(): void {
-        if (currentScreen.value === Screen.Welcome) {
+        if (currentScreen.value === Screen.Welcome || currentScreen.value >= SupervisorScreen.Login) {
             return;
         }
 
-        if (Date.now() - lastActivity > 10000) {
+        if (Date.now() - lastActivity > 20000) {
             navigateToScreen(Screen.Welcome);
         }
+    }
+
+    /**
+     * Called when the configure button is clicked. Show the supervisor login
+     * screen to allow to kiosk administration.
+     */
+    function onConfigureClick(): void {
+        previousScreens.value = [];
+        currentScreen.value = SupervisorScreen.Login;
+    }
+
+    /**
+     * Called when the supervisor screen wants to enter override mode. Configure
+     * a new session in override mode.
+     *
+     * @param pinCode The PIN code to use when authorizing override mode to the REST APIs.
+     */
+    async function onEnableOverride(pinCode: string): Promise<void> {
+        // This is async, but we don't need to wait for it to complete.
+        currentSession.value.cancelSession();
+
+        currentSession.value = createNewSession().withStartOverride(pinCode);
+        previousScreens.value = [];
+
+        navigateToScreen(currentSession.value.currentScreen);
+    }
+
+    function onSupervisorScreen(screen: SupervisorScreen): void {
+        currentScreen.value = screen;
+    }
+
+    /**
+     * Called when the supervisor screen should be closed. This will return to
+     * the welcome screen.
+     */
+    function onCloseSupervisor(): void {
+        navigateToScreen(Screen.Welcome);
     }
 
     // Read our check-in configuration and then start up.

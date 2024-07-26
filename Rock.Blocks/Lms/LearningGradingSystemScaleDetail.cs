@@ -353,11 +353,7 @@ namespace Rock.Blocks.Lms
 
             var isNew = entity.Id == 0;
 
-            RockContext.WrapTransaction( () =>
-            {
-                RockContext.SaveChanges();
-                entity.SaveAttributeValues( RockContext );
-            } );
+            RockContext.SaveChanges();
 
             if ( isNew )
             {
@@ -369,9 +365,6 @@ namespace Rock.Blocks.Lms
 
             // Ensure navigation properties will work now.
             entity = entityService.Get( entity.Id );
-            entity.LoadAttributes( RockContext );
-
-            var bag = GetEntityBagForEdit( entity );
 
             // This block doesn't contain a view mode so return to the parent page instead.
             return ActionOk( this.GetCurrentPageUrl( new Dictionary<string, string>

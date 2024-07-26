@@ -55,7 +55,7 @@
                             <label>Filter Settings</label>
                             <div class="row">
                                 <div class="col-md-6">
-                                    <Rock:RockCheckBox ID="cbHideRefundedTransactions" runat="server" Text="Hide Refunded Transactions" />
+                                    <Rock:RockCheckBox ID="cbHideRefundedTransactions" runat="server" Text="Hide Refunded Transactions" Help="When true, transactions that have been fully refunded (as well as any refund transactions themselves) will not be shown." />
                                     <Rock:RockCheckBox ID="cbHideModifiedTransactions" runat="server" Text="Hide Transactions that are corrected on the same date. <br/> Transactions that have a matching negative amount on the same date and same account will not be shown." />
                                 </div>
                                 <div class="col-md-6">

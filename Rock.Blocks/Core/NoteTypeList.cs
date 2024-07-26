@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
@@ -45,6 +46,13 @@ namespace Rock.Blocks.Core
         Description = "The page that will show the note type details.",
         Key = AttributeKey.DetailPage )]
 
+    [EntityTypeField("Entity Type",
+
+        IncludeGlobalAttributeOption = false,
+        IsRequired = false,
+        Order = 0,
+        Key = AttributeKey.EntityType)]
+
     [Rock.SystemGuid.EntityTypeGuid( "ca07cfe0-ac86-4ad5-a4e2-03a90b0281f5" )]
     [Rock.SystemGuid.BlockTypeGuid( "23e3ca31-6a1f-43cb-ac06-374bd9cb9fa5" )]
     [CustomizedGrid]
@@ -55,6 +63,7 @@ namespace Rock.Blocks.Core
         private static class AttributeKey
         {
             public const string DetailPage = "DetailPage";
+            public const string EntityType = "EntityType";
         }
 
         private static class NavigationUrlKey
@@ -63,6 +72,12 @@ namespace Rock.Blocks.Core
         }
 
         #endregion Keys
+
+        #region Fields
+
+        private EntityTypeCache _blockConfigEntityType = null;
+
+        #endregion Fields
 
         #region Methods
 
@@ -89,7 +104,7 @@ namespace Rock.Blocks.Core
         private NoteTypeListOptionsBag GetBoxOptions()
         {
             var options = new NoteTypeListOptionsBag();
-
+            options.EntityTypeGuid = GetAttributeValue( AttributeKey.EntityType ).AsGuidOrNull();
             return options;
         }
 
@@ -119,8 +134,19 @@ namespace Rock.Blocks.Core
         /// <inheritdoc/>
         protected override IQueryable<NoteType> GetListQueryable( RockContext rockContext )
         {
-            return base.GetListQueryable( rockContext )
+            var qry = base.GetListQueryable( rockContext )
                 .Include( a => a.EntityType );
+            Guid? blockEntityTypeGuid = GetAttributeValue( AttributeKey.EntityType ).AsGuidOrNull();
+            if ( blockEntityTypeGuid.HasValue )
+            {
+                _blockConfigEntityType = EntityTypeCache.Get( blockEntityTypeGuid.Value );
+                if (_blockConfigEntityType != null )
+                {
+                    qry = qry.Where( a => a.EntityTypeId == _blockConfigEntityType.Id );
+                }
+            }
+
+            return qry.OrderBy(a => a.EntityType.Name).ThenBy(a => a.Order).ThenBy(a => a.Name);
         }
 
         /// <inheritdoc/>
@@ -128,7 +154,7 @@ namespace Rock.Blocks.Core
         {
             return new GridBuilder<NoteType>()
                 .WithBlock( this )
-                .AddField("id", a => a.Id)
+                .AddField( "id", a => a.Id )
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddTextField( "entityType", a => a.EntityType?.FriendlyName )
                 .AddTextField( "name", a => a.Name )
@@ -137,14 +163,38 @@ namespace Rock.Blocks.Core
                 .AddField( "allowsWatching", a => a.AllowsWatching )
                 .AddField( "allowsReplies", a => a.AllowsReplies )
                 .AddField( "allowsAttachments", a => a.AllowsAttachments )
-                .AddField( "isSystem", a => a.IsSystem )
-                .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
-                .AddAttributeFields( GetGridAttributes() );
+                .AddField( "isSystem", a => a.IsSystem );
         }
 
         #endregion
 
         #region Block Actions
+
+        /// <summary>
+        /// Changes the ordered position of a single item.
+        /// </summary>
+        /// <param name="key">The identifier of the item that will be moved.</param>
+        /// <param name="beforeKey">The identifier of the item it will be placed before.</param>
+        /// <returns>An empty result that indicates if the operation succeeded.</returns>
+        [BlockAction]
+        public BlockActionResult ReorderItem( string key, string beforeKey )
+        {
+            // Get the queryable and make sure it is ordered correctly.
+            var qry = GetListQueryable( RockContext );
+            qry = GetOrderedListQueryable( qry, RockContext );
+
+            // Get the entities from the database.
+            var items = GetListItems( qry, RockContext );
+
+            if ( !items.ReorderEntity( key, beforeKey ) )
+            {
+                return ActionBadRequest( "Invalid reorder attempt." );
+            }
+
+            RockContext.SaveChanges();
+
+            return ActionOk();
+        }
 
         /// <summary>
         /// Deletes the specified entity.

@@ -25,6 +25,7 @@ using Rock.Attribute;
 using Rock.Chart;
 using Rock.Data;
 using Rock.Model;
+using Rock.Utility;
 using Rock.ViewModels.Blocks.Reporting.TithingOverview;
 using Rock.Web.Cache;
 
@@ -38,6 +39,28 @@ namespace Rock.Blocks.Reporting
     [Description( "Shows high-level statistics of the tithing overview." )]
     [IconCssClass( "fa fa-question" )]
     //[SupportedSiteTypes( SiteType.Web )]
+
+    #region Block Attributes
+
+    [DefinedValueField(
+        "Campus Types",
+        Key = AttributeKey.CampusTypes,
+        Description = "This setting filters the list of campuses by type that are displayed in the chart.",
+        IsRequired = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_TYPE,
+        AllowMultiple = true,
+        Order = 0 )]
+
+    [DefinedValueField(
+        "Campus Statuses",
+        Key = AttributeKey.CampusStatuses,
+        Description = "This setting filters the list of campuses by statuses that are displayed in the chart.",
+        IsRequired = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_STATUS,
+        AllowMultiple = true,
+        Order = 1 )]
+
+    #endregion
 
     [SystemGuid.EntityTypeGuid( "1e44b061-7767-487d-a98f-16912e8c7de7" )]
     [SystemGuid.BlockTypeGuid( "db756565-8a35-42e2-bc79-8d11f57e4004" )]
@@ -76,6 +99,12 @@ namespace Rock.Blocks.Reporting
         #endregion
 
         #region Keys
+
+        private static class AttributeKey
+        {
+            public const string CampusTypes = "CampusTypes";
+            public const string CampusStatuses = "CampusStatuses";
+        }
 
         private static class ChartTypeKey
         {
@@ -169,7 +198,7 @@ namespace Rock.Blocks.Reporting
                 .Distinct();
 
             var seriesNameKeyValue = new Dictionary<string, string>();
-            foreach ( var dataSeriesDataset in dataSeriesDatasets )
+            foreach ( var dataSeriesDataset in dataSeriesDatasets.Where( x => !string.IsNullOrWhiteSpace( x ) ) )
             {
                 var seriesNameValue = GetSeriesPartitionName( dataSeriesDataset );
                 seriesNameKeyValue.Add( dataSeriesDataset, seriesNameValue );
@@ -204,35 +233,6 @@ namespace Rock.Blocks.Reporting
         #endregion
 
         #region Bar Chart
-
-        /// <summary>
-        /// Gets the bar chart data arguments.
-        /// </summary>
-        /// <returns></returns>
-        private static ChartJsCategorySeriesDataFactory.GetJsonArgs GetBarChartDataArgs()
-        {
-            return new ChartJsCategorySeriesDataFactory.GetJsonArgs
-            {
-                DisplayLegend = true,
-                LineTension = 0.4m,
-                MaintainAspectRatio = false,
-                SizeToFitContainerWidth = true
-            };
-        }
-
-        /// <summary>
-        /// Gets a configured factory that creates the data required for the bar chart.
-        /// </summary>
-        public ChartJsCategorySeriesDataFactory<ChartJsCategorySeriesDataPoint> GetBarChartDataFactory( RockContext rockContext )
-        {
-            var chartFactory = new ChartJsCategorySeriesDataFactory<ChartJsCategorySeriesDataPoint>
-            {
-                Datasets = GetCategorySeriesDataset( rockContext ),
-                ChartStyle = ChartJsCategorySeriesChartStyleSpecifier.Bar,
-            };
-
-            return chartFactory;
-        }
 
         /// <summary>
         /// Gets the dataset for the bar chart.
@@ -280,6 +280,27 @@ namespace Rock.Blocks.Reporting
             }
 
             return datasets;
+        }
+
+        private string GetChartDataJson( List<ChartJsCategorySeriesDataset> datasets )
+        {
+            var jsDataset = new
+            {
+                labels = datasets.SelectMany( ds => ds.DataPoints ).Select( x => x.Category ).ToList(),
+                datasets = new List<dynamic>
+                {
+                    new
+                    {
+                        data = datasets.SelectMany( ds => ds.DataPoints.Select( dp => dp.Value ) ),
+                        backgroundColor = datasets.Select( ds => ds.FillColor ),
+                        borderColor = datasets.Select( ds => ds.BorderColor ),
+                        borderWidth = 2,
+                        lineTension = 0.4m,
+                    }
+                }
+            };
+
+            return jsDataset.ToJson();
         }
 
         #endregion
@@ -382,6 +403,30 @@ namespace Rock.Blocks.Reporting
                     .ToList();
             }
 
+            var campusTypeIds = GetAttributeValues( AttributeKey.CampusTypes )
+                .AsGuidOrNullList()
+                .Where( g => g.HasValue )
+                .Select( g => DefinedValueCache.GetId( g.Value ) )
+                .Where( id => id.HasValue )
+                .Select( id => id.Value )
+                .ToList();
+
+            var campusStatusIds = GetAttributeValues( AttributeKey.CampusStatuses )
+                .AsGuidOrNullList()
+                .Where( g => g.HasValue )
+                .Select( g => DefinedValueCache.GetId( g.Value ) )
+                .Where( id => id.HasValue )
+                .Select( id => id.Value )
+                .ToList();
+
+            var filteredCampusIds = CampusCache.All( false )
+                .Where( c => ( !campusTypeIds.Any() || ( c.CampusTypeValueId.HasValue && campusTypeIds.Contains( c.CampusTypeValueId.Value ) ) )
+                    && ( !campusStatusIds.Any() || ( c.CampusStatusValueId.HasValue && campusStatusIds.Contains( c.CampusStatusValueId.Value ) ) ) )
+                .Select( c => c.Id )
+                .ToList();
+
+            _tithingOverviewMetricValues = _tithingOverviewMetricValues.Where( m => !m.CampusId.HasValue || filteredCampusIds.Contains( m.CampusId.Value ) ).ToList();
+
             return _tithingOverviewMetricValues;
         }
 
@@ -405,7 +450,7 @@ namespace Rock.Blocks.Reporting
             else
             {
                 var lastRunDate = new MetricValueService( RockContext ).Queryable()
-                    .Where( m => m.Metric.Guid == metricGuid )
+                    .Where( m => m.Metric.Guid == metricGuid && m.MetricValueType == MetricValueType.Measure )
                     .OrderByDescending( m => m.MetricValueDateTime )
                     .Select( m => m.MetricValueDateTime )
                     .FirstOrDefault();
@@ -417,7 +462,7 @@ namespace Rock.Blocks.Reporting
                 }
             }
 
-            return metricValuesQry;
+            return metricValuesQry.OrderByDescending( m => m.MetricValueDateTime );
         }
 
         /// <summary>
@@ -431,7 +476,7 @@ namespace Rock.Blocks.Reporting
             var metricValuesQry = new MetricValueService( rockContext )
                 .Queryable()
                 .Include( a => a.MetricValuePartitions.Select( b => b.MetricPartition ) )
-                .Where( a => a.Metric.Guid == metricGuid );
+                .Where( a => a.Metric.Guid == metricGuid && a.MetricValueType == MetricValueType.Measure );
 
             return metricValuesQry.OrderBy( a => a.MetricValueDateTime );
         }
@@ -451,7 +496,7 @@ namespace Rock.Blocks.Reporting
             switch ( chartType )
             {
                 case ChartTypeKey.BarChart:
-                    return GetBarChartDataFactory( rockContext ).GetChartDataJson( GetBarChartDataArgs() );
+                    return GetChartDataJson( GetCategorySeriesDataset( rockContext ) );
                 default:
                     return GetLineChartDataFactory( rockContext ).GetChartDataJson( GetLineChartDataArgs() );
             }
@@ -571,9 +616,10 @@ namespace Rock.Blocks.Reporting
         {
             var givingHouseHoldsDatasets = GetGivingHouseholdsMetricValues( rockContext, chartType );
             var tithingHouseHoldsDatasets = GetTithingHouseholdsMetricValues( rockContext, chartType );
-            var tithingOverviewDataset = GetTithingOverviewMetricValues( rockContext, ChartTypeKey.BarChart );
+            var tithingOverviewDataset = GetTithingOverviewMetricValues( rockContext, chartType );
 
             var toolTipData = new Dictionary<string, TithingOverviewToolTipBag>();
+            var currencyInfo = new RockCurrencyCodeInfo();
 
             foreach ( var dataset in tithingOverviewDataset )
             {
@@ -598,7 +644,13 @@ namespace Rock.Blocks.Reporting
                         Value = dataset.Value,
                         CampusClosedDate = campus.ClosedDate,
                         CampusOpenedDate = campus.OpenedDate,
-                        CampusShortCode = campus.ShortCode
+                        CampusShortCode = campus.ShortCode,
+                        CurrencyInfo = new ViewModels.Utility.CurrencyInfoBag
+                        {
+                            Symbol = currencyInfo.Symbol,
+                            DecimalPlaces = currencyInfo.DecimalPlaces,
+                            SymbolLocation = currencyInfo.SymbolLocation
+                        }
                     };
 
                     toolTipData.AddOrReplace( campusKey, toolTipInfo );

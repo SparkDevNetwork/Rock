@@ -9,7 +9,7 @@
             <div class="control-wrapper">
                 <div class="checkbox">
                     <label class="rock-checkbox-icon">
-                        <input type="checkbox" v-bind="field" v-model="internalValue" :id="uniqueId" />
+                        <input type="checkbox" v-bind="field" v-model="internalValue" :id="uniqueId" :value="value" />
                         <span class="label-text">&nbsp;{{ text }}
                             <slot name="textAppend" />
                         </span>
@@ -26,7 +26,7 @@
 
     const props = defineProps({
         modelValue: {
-            type: Boolean as PropType<boolean>,
+            type: [Boolean, Array] as PropType<boolean | string[]>,
             required: true
         },
 
@@ -43,11 +43,16 @@
         text: {
             type: String as PropType<string>,
             default: ""
+        },
+
+        value: {
+            type: String,
+            default: undefined
         }
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: boolean): void;
+        (e: "update:modelValue", value: boolean | string[]): void;
     }>();
 
     const internalValue = ref(props.modelValue);

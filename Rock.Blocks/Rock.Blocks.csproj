@@ -90,11 +90,13 @@
     <Compile Include="Bus\QueueList.cs" />
     <Compile Include="CheckIn\CheckInKiosk.cs" />
     <Compile Include="CheckIn\CheckInKioskSetup.cs" />
+    <Compile Include="CheckIn\CloudPrintMonitor.cs" />
     <Compile Include="CheckIn\Configuration\CheckInSimulator.cs" />
     <Compile Include="CheckIn\Configuration\LabelDesigner.cs" />
     <Compile Include="Cms\AdaptiveMessageAdaptationDetail.cs" />
     <Compile Include="Cms\AdaptiveMessageDetail.cs" />
     <Compile Include="Cms\AdaptiveMessageList.cs" />
+    <Compile Include="Cms\AssetManager.cs" />
     <Compile Include="Cms\BlockTypeList.cs" />
     <Compile Include="Cms\ContentChannelDetail.cs" />
     <Compile Include="Cms\ContentChannelItemList.cs" />
@@ -140,6 +142,8 @@
     <Compile Include="Cms\PageRouteList.cs" />
     <Compile Include="Core\PersonFollowingList.cs" />
     <Compile Include="Communication\NcoaProcess.cs" />
+    <Compile Include="Core\AuthClientDetail.cs" />
+    <Compile Include="Crm\PhotoVerify.cs" />
     <Compile Include="Security\AuthScopeList.cs" />
     <Compile Include="Security\AuthClientList.cs" />
     <Compile Include="Core\PersonSignalList.cs" />
@@ -222,6 +226,7 @@
     <Compile Include="Engagement\StreakTypeExclusionDetail.cs" />
     <Compile Include="Finance\FinancialGatewayList.cs" />
     <Compile Include="Finance\BusinessContactList.cs" />
+    <Compile Include="Event\RegistrationInstancePaymentList.cs" />
     <Compile Include="Finance\SavedAccountList.cs" />
     <Compile Include="Finance\FinancialPledgeDetail.cs" />
     <Compile Include="Finance\FinancialPledgeList.cs" />
@@ -335,6 +340,7 @@
     <Compile Include="RockObsidianDetailBlockType.cs" />
     <Compile Include="Engagement\Steps\StepFlow.cs" />
     <Compile Include="WebFarm\WebFarmNodeDetail.cs" />
+    <Compile Include="WebFarm\WebFarmNodeLogList.cs" />
     <Compile Include="WebFarm\WebFarmSettings.cs" />
     <Compile Include="Security\Login.cs" />
     <Compile Include="Utility\RealTimeDebugger.cs" />

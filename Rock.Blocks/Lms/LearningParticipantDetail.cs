@@ -31,6 +31,7 @@ using Rock.Security;
 using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Lms.LearningParticipantDetail;
+using Rock.ViewModels.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
 
@@ -51,7 +52,7 @@ namespace Rock.Blocks.Lms
 
     [Rock.SystemGuid.EntityTypeGuid( "7f3752ef-7a4a-4f96-bd5c-e6609f0bfac6" )]
     [Rock.SystemGuid.BlockTypeGuid( "f1179439-31a1-4897-ab2e-b991d60455aa" )]
-    public class LearningParticipantDetail : RockDetailBlockType, IBreadCrumbBlock
+    public class LearningParticipantDetail : RockEntityDetailBlockType<LearningParticipant, LearningParticipantBag>, IBreadCrumbBlock
     {
         #region Keys
 
@@ -75,18 +76,14 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var box = new DetailBlockBox<LearningParticipantBag, LearningParticipantDetailOptionsBag>();
+            var box = new DetailBlockBox<LearningParticipantBag, LearningParticipantDetailOptionsBag>();
 
-                SetBoxInitialEntityState( box, rockContext );
+            SetBoxInitialEntityState( box );
 
-                box.NavigationUrls = GetBoxNavigationUrls();
-                box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<LearningParticipant>();
+            box.NavigationUrls = GetBoxNavigationUrls();
+            box.Options = GetBoxOptions( box.IsEditable );
 
-                return box;
-            }
+            return box;
         }
 
         /// <summary>
@@ -94,15 +91,14 @@ namespace Rock.Blocks.Lms
         /// or edit the entity.
         /// </summary>
         /// <param name="isEditable"><c>true</c> if the entity is editable; otherwise <c>false</c>.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>The options that provide additional details to the block.</returns>
-        private LearningParticipantDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext )
+        private LearningParticipantDetailOptionsBag GetBoxOptions( bool isEditable )
         {
             var options = new LearningParticipantDetailOptionsBag();
 
             var classId = PageParameter( PageParameterKey.LearningClassId );
 
-            options.ClassRoles = new LearningClassService( rockContext ).GetClassRoles( classId )?.ToListItemBagList();
+            options.ClassRoles = new LearningClassService( RockContext ).GetClassRoles( classId )?.ToListItemBagList();
 
             return options;
         }
@@ -112,10 +108,9 @@ namespace Rock.Blocks.Lms
         /// valid after storing all the data from the client.
         /// </summary>
         /// <param name="learningParticipant">The LearningParticipant to be validated.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <param name="errorMessage">On <c>false</c> return, contains the error message.</param>
         /// <returns><c>true</c> if the LearningParticipant is valid, <c>false</c> otherwise.</returns>
-        private bool ValidateLearningParticipant( LearningParticipant learningParticipant, RockContext rockContext, out string errorMessage )
+        private bool ValidateLearningParticipant( LearningParticipant learningParticipant, out string errorMessage )
         {
             errorMessage = null;
 
@@ -128,9 +123,9 @@ namespace Rock.Blocks.Lms
         /// </summary>
         /// <param name="box">The box to be populated.</param>
         /// <param name="rockContext">The rock context.</param>
-        private void SetBoxInitialEntityState( DetailBlockBox<LearningParticipantBag, LearningParticipantDetailOptionsBag> box, RockContext rockContext )
+        private void SetBoxInitialEntityState( DetailBlockBox<LearningParticipantBag, LearningParticipantDetailOptionsBag> box )
         {
-            var entity = GetInitialEntity( rockContext );
+            var entity = GetInitialEntity();
 
             if ( entity == null )
             {
@@ -138,10 +133,10 @@ namespace Rock.Blocks.Lms
                 return;
             }
 
-            var isViewable = BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
-            box.IsEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
+            box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
-            entity.LoadAttributes( rockContext );
+            entity.LoadAttributes( RockContext );
 
             if ( entity.Id != 0 )
             {
@@ -149,7 +144,6 @@ namespace Rock.Blocks.Lms
                 if ( isViewable )
                 {
                     box.Entity = GetEntityBagForView( entity );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
                 {
@@ -164,14 +158,14 @@ namespace Rock.Blocks.Lms
                     var bag = GetEntityBagForEdit( entity );
                     box.Entity = bag;
                     box.ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList();
-
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
                 {
                     box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( LearningParticipant.FriendlyTypeName );
                 }
             }
+
+            PrepareDetailBox( box, entity );
         }
 
         /// <summary>
@@ -205,7 +199,7 @@ namespace Rock.Blocks.Lms
         /// </summary>
         /// <param name="entity">The entity to be represented for view purposes.</param>
         /// <returns>A <see cref="LearningParticipantBag"/> that represents the entity.</returns>
-        private LearningParticipantBag GetEntityBagForView( LearningParticipant entity )
+        protected override LearningParticipantBag GetEntityBagForView( LearningParticipant entity )
         {
             if ( entity == null )
             {
@@ -224,7 +218,7 @@ namespace Rock.Blocks.Lms
         /// </summary>
         /// <param name="entity">The entity to be represented for edit purposes.</param>
         /// <returns>A <see cref="LearningParticipantBag"/> that represents the entity.</returns>
-        private LearningParticipantBag GetEntityBagForEdit( LearningParticipant entity )
+        protected override LearningParticipantBag GetEntityBagForEdit( LearningParticipant entity )
         {
             if ( entity == null )
             {
@@ -245,35 +239,35 @@ namespace Rock.Blocks.Lms
         /// <param name="box">The box containing the information to be updated.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns><c>true</c> if the box was valid and the entity was updated, <c>false</c> otherwise.</returns>
-        private bool UpdateEntityFromBox( LearningParticipant entity, DetailBlockBox<LearningParticipantBag, LearningParticipantDetailOptionsBag> box, RockContext rockContext )
+        protected override bool UpdateEntityFromBox( LearningParticipant entity, ValidPropertiesBox<LearningParticipantBag> box )
         {
             if ( box.ValidProperties == null )
             {
                 return false;
             }
 
-            if ( Guid.TryParse( box.Entity.PersonAlias.Value, out var primaryAliasGuid ) )
+            if ( Guid.TryParse( box.Bag.PersonAlias.Value, out var primaryAliasGuid ) )
             {
-                var person = new PersonAliasService( rockContext ).Get( primaryAliasGuid );
+                var person = new PersonAliasService( RockContext ).Get( primaryAliasGuid );
                 entity.PersonId = person.PersonId;
             }
 
             var classId = RequestContext.PageParameterAsId( PageParameterKey.LearningClassId );
 
-            if ( classId > 0 && Guid.TryParse( box.Entity.ParticipantRole.Value, out var roleGuid ) )
+            if ( classId > 0 && Guid.TryParse( box.Bag.ParticipantRole.Value, out var roleGuid ) )
             {
-                entity.GroupRoleId = new LearningClassService( rockContext ).GetClassRoles( classId ).First( r => r.Guid == roleGuid ).Id;
+                entity.GroupRoleId = new LearningClassService( RockContext ).GetClassRoles( classId ).First( r => r.Guid == roleGuid ).Id;
             }
 
-            box.IfValidProperty( nameof( box.Entity.CurrentGradePercent ),
-                () => entity.LearningGradePercent = box.Entity.CurrentGradePercent );
+            box.IfValidProperty( nameof( box.Bag.CurrentGradePercent ),
+                () => entity.LearningGradePercent = box.Bag.CurrentGradePercent );
 
-            box.IfValidProperty( nameof( box.Entity.AttributeValues ),
+            box.IfValidProperty( nameof( box.Bag.AttributeValues ),
                 () =>
                 {
-                    entity.LoadAttributes( rockContext );
+                    entity.LoadAttributes( RockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson );
                 } );
 
             return true;
@@ -283,9 +277,8 @@ namespace Rock.Blocks.Lms
         /// Gets the initial entity from page parameters or creates a new entity
         /// if page parameters requested creation.
         /// </summary>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>The <see cref="LearningParticipant"/> to be viewed or edited on the page.</returns>
-        private LearningParticipant GetInitialEntity( RockContext rockContext )
+        protected override LearningParticipant GetInitialEntity()
         {
             var partipicantId = RequestContext.PageParameterAsId( PageParameterKey.LearningParticipantId );
 
@@ -294,7 +287,7 @@ namespace Rock.Blocks.Lms
                 return new LearningParticipant();
             }
 
-            return new LearningParticipantService( rockContext )
+            return new LearningParticipantService( RockContext )
                 .Queryable()
                 .AsNoTracking()
                 .Include( p => p.Person )
@@ -314,18 +307,15 @@ namespace Rock.Blocks.Lms
                 return null;
             }
 
-            using ( var rockContext = new RockContext() )
-            {
-                return new AttendanceService( rockContext )
-                    .Queryable()
-                    .AsNoTracking()
-                    .Count( a =>
-                        a.DidAttend.HasValue &&
-                        a.DidAttend.Value &&
-                        a.Occurrence.GroupId == entity.LearningClassId &&
-                        a.PersonAlias != null &&
-                        a.PersonAlias.PersonId == entity.PersonId );
-            }
+            return new AttendanceService( RockContext )
+                .Queryable()
+                .AsNoTracking()
+                .Count( a =>
+                    a.DidAttend.HasValue &&
+                    a.DidAttend.Value &&
+                    a.Occurrence.GroupId == entity.LearningClassId &&
+                    a.PersonAlias != null &&
+                    a.PersonAlias.PersonId == entity.PersonId );
         }
 
         /// <summary>
@@ -347,47 +337,16 @@ namespace Rock.Blocks.Lms
             };
         }
 
-        /// <inheritdoc/>
-        protected override string RenewSecurityGrantToken()
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                var entity = GetInitialEntity( rockContext );
-
-                if ( entity != null )
-                {
-                    entity.LoadAttributes( rockContext );
-                }
-
-                return GetSecurityGrantToken( entity );
-            }
-        }
-
-        /// <summary>
-        /// Gets the security grant token that will be used by UI controls on
-        /// this block to ensure they have the proper permissions.
-        /// </summary>
-        /// <returns>A string that represents the security grant token.</string>
-        private string GetSecurityGrantToken( LearningParticipant entity )
-        {
-            var securityGrant = new Rock.Security.SecurityGrant();
-
-            securityGrant.AddRulesForAttributes( entity, RequestContext.CurrentPerson );
-
-            return securityGrant.ToToken();
-        }
-
         /// <summary>
         /// Attempts to load an entity to be used for an edit action.
         /// </summary>
         /// <param name="idKey">The identifier key of the entity to load.</param>
-        /// <param name="rockContext">The database context to load the entity from.</param>
         /// <param name="entity">Contains the entity that was loaded when <c>true</c> is returned.</param>
         /// <param name="error">Contains the action error result when <c>false</c> is returned.</param>
         /// <returns><c>true</c> if the entity was loaded and passed security checks.</returns>
-        private bool TryGetEntityForEditAction( string idKey, RockContext rockContext, out LearningParticipant entity, out BlockActionResult error )
+        protected override bool TryGetEntityForEditAction( string idKey, out LearningParticipant entity, out BlockActionResult error )
         {
-            var entityService = new LearningParticipantService( rockContext );
+            var entityService = new LearningParticipantService( RockContext );
             error = null;
 
             // Determine if we are editing an existing entity or creating a new one.
@@ -406,7 +365,7 @@ namespace Rock.Blocks.Lms
                 if ( classIdKey.IsNotNullOrWhiteSpace() )
                 {
                     var classId = IdHasher.Instance.GetId( classIdKey );
-                    entity.LearningClass = new LearningClassService( rockContext ).Queryable().Include( c => c.GroupType ).FirstOrDefault( c => c.Id == classId );
+                    entity.LearningClass = new LearningClassService( RockContext ).Queryable().Include( c => c.GroupType ).FirstOrDefault( c => c.Id == classId );
                 }
 
                 entity.GroupId = IdHasher.Instance.GetId( classIdKey ) ?? 0;
@@ -420,7 +379,7 @@ namespace Rock.Blocks.Lms
                 return false;
             }
 
-            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 error = ActionBadRequest( $"Not authorized to edit {LearningParticipant.FriendlyTypeName}." );
                 return false;
@@ -512,7 +471,7 @@ namespace Rock.Blocks.Lms
                 return false;
             }
 
-            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 error = ActionBadRequest( $"Not authorized to edit {LearningParticipant.FriendlyTypeName}." );
                 return false;
@@ -561,24 +520,21 @@ namespace Rock.Blocks.Lms
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                entity.LoadAttributes( rockContext );
-
-                var bag = GetEntityBagForEdit( entity );
-                var box = new DetailBlockBox<LearningParticipantBag, LearningParticipantDetailOptionsBag>
-                {
-                    Entity = bag,
-                    ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
-                };
-
-                return ActionOk( box );
+                return actionError;
             }
+
+            entity.LoadAttributes( RockContext );
+
+            var bag = GetEntityBagForEdit( entity );
+            var box = new DetailBlockBox<LearningParticipantBag, LearningParticipantDetailOptionsBag>
+            {
+                Entity = bag,
+                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
+            };
+
+            return ActionOk( box );
         }
 
         /// <summary>
@@ -587,50 +543,41 @@ namespace Rock.Blocks.Lms
         /// <param name="box">The box that contains all the information required to save.</param>
         /// <returns>A new entity bag to be used when returning to view mode, or the URL to redirect to after creating a new entity.</returns>
         [BlockAction]
-        public BlockActionResult Save( DetailBlockBox<LearningParticipantBag, LearningParticipantDetailOptionsBag> box )
+        public BlockActionResult Save( ValidPropertiesBox<LearningParticipantBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )
             {
-
-                if ( !TryGetEntityForEditAction( box.Entity, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                // Ensure everything is valid before saving.
-                if ( !ValidateLearningParticipant( entity, rockContext, out var validationMessage ) )
-                {
-                    return ActionBadRequest( validationMessage );
-                }
-
-                var isNew = entity.Id == 0;
-
-                rockContext.WrapTransaction( () =>
-                {
-                    rockContext.SaveChanges();
-                    entity.SaveAttributeValues( rockContext );
-                } );
-
-                if ( isNew )
-                {
-                    return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
-                    {
-                        [PageParameterKey.LearningParticipantId] = entity.IdKey
-                    } ) );
-                }
-
-                // Ensure navigation properties will work now.
-                entity = new LearningParticipantService( rockContext ).Get( entity.Id );
-                entity.LoadAttributes( rockContext );
-
-                return ActionOk( GetEntityBagForView( entity ) );
+                return actionError;
             }
+
+            // Update the entity instance from the information in the bag.
+            if ( !UpdateEntityFromBox( entity, box ) )
+            {
+                return ActionBadRequest( "Invalid data." );
+            }
+
+            // Ensure everything is valid before saving.
+            if ( !ValidateLearningParticipant( entity, out var validationMessage ) )
+            {
+                return ActionBadRequest( validationMessage );
+            }
+
+            var isNew = entity.Id == 0;
+
+            RockContext.SaveChanges();
+
+            if ( isNew )
+            {
+                return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
+                {
+                    [PageParameterKey.LearningParticipantId] = entity.IdKey
+                } ) );
+            }
+
+            // Ensure navigation properties will work now.
+            entity = new LearningParticipantService( RockContext ).Get( entity.Id );
+
+            return ActionOk( GetEntityBagForView( entity ) );
         }
 
         /// <summary>
@@ -641,79 +588,22 @@ namespace Rock.Blocks.Lms
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new LearningParticipantService( RockContext );
+
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                var entityService = new LearningParticipantService( rockContext );
-
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                return ActionOk( this.GetParentPageUrl() );
+                return actionError;
             }
-        }
 
-        /// <summary>
-        /// Refreshes the list of attributes that can be displayed for editing
-        /// purposes based on any modified values on the entity.
-        /// </summary>
-        /// <param name="box">The box that contains all the information about the entity being edited.</param>
-        /// <returns>A box that contains the entity and attribute information.</returns>
-        [BlockAction]
-        public BlockActionResult RefreshAttributes( DetailBlockBox<LearningParticipantBag, LearningParticipantDetailOptionsBag> box )
-        {
-            using ( var rockContext = new RockContext() )
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
             {
-                if ( !TryGetEntityForEditAction( box.Entity, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                // Reload attributes based on the new property values.
-                entity.LoadAttributes( rockContext );
-
-                var refreshedBox = new DetailBlockBox<LearningParticipantBag, LearningParticipantDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity )
-                };
-
-                var oldAttributeGuids = box.Entity.Attributes.Values.Select( a => a.AttributeGuid ).ToList();
-                var newAttributeGuids = refreshedBox.Entity.Attributes.Values.Select( a => a.AttributeGuid );
-
-                // If the attributes haven't changed then return a 204 status code.
-                if ( oldAttributeGuids.SequenceEqual( newAttributeGuids ) )
-                {
-                    return ActionStatusCode( System.Net.HttpStatusCode.NoContent );
-                }
-
-                // Replace any values for attributes that haven't changed with
-                // the value sent by the client. This ensures any unsaved attribute
-                // value changes are not lost.
-                foreach ( var kvp in refreshedBox.Entity.Attributes )
-                {
-                    if ( oldAttributeGuids.Contains( kvp.Value.AttributeGuid ) )
-                    {
-                        refreshedBox.Entity.AttributeValues[kvp.Key] = box.Entity.AttributeValues[kvp.Key];
-                    }
-                }
-
-                return ActionOk( refreshedBox );
+                return ActionBadRequest( errorMessage );
             }
+
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
+
+            return ActionOk( this.GetParentPageUrl() );
         }
 
         /// <summary>
@@ -723,51 +613,48 @@ namespace Rock.Blocks.Lms
         [BlockAction]
         public BlockActionResult GetLearningPlan()
         {
-            using ( var rockContext = new RockContext() )
+            var entity = GetInitialEntity();
+
+            if ( entity == null )
             {
-                var entity = GetInitialEntity( rockContext );
-
-                if ( entity == null )
-                {
-                    return ActionBadRequest( $"The {LearningParticipant.FriendlyTypeName} was not found." );
-                }
-
-                var now = DateTime.Now;
-
-                // Get the grade scales first since we'll need them for the grade caluculations.
-                var gradeScales = new LearningParticipantService( rockContext ).Queryable()
-                    .Where( p => p.Id == entity.Id )
-                    .Include( c => c.LearningClass.LearningGradingSystem.LearningGradingSystemScales )
-                    .SelectMany( c => c.LearningClass.LearningGradingSystem.LearningGradingSystemScales )
-                    .ToList()
-                    .OrderByDescending( g => g.ThresholdPercentage );
-
-                var learningPlan = new LearningActivityCompletionService( rockContext ).Queryable()
-                    .Include( a => a.LearningActivity )
-                    .Where( a => a.StudentId == entity.Id )
-                    .AsNoTracking()
-                    .ToList()
-                    .OrderBy( a => a.LearningActivity.Order );
-
-                var components = LearningActivityContainer.Instance.Components;
-
-                // Return all activities for the course.
-                var gridBuilder = new GridBuilder<LearningActivityCompletion>()
-                    .AddTextField( "idKey", a => a.IdKey )
-                    .AddTextField( "name", a => a.LearningActivity.Name )
-                    .AddField( "type", a => a.LearningActivity.ActivityComponentId )
-                    .AddField( "componentIconCssClass", a => components.FirstOrDefault( c => c.Value.Value.EntityType.Id == a.LearningActivity.ActivityComponentId ).Value.Value.IconCssClass )
-                    .AddField( "componentHighlightColor", a => components.FirstOrDefault( c => c.Value.Value.EntityType.Id == a.LearningActivity.ActivityComponentId ).Value.Value.HighlightColor )
-                    .AddField( "componentName", a => components.FirstOrDefault( c => c.Value.Value.EntityType.Id == a.LearningActivity.ActivityComponentId ).Value.Value.Name )
-                    .AddField( "dateCompleted", a => a.CompletedDateTime )
-                    .AddField( "dateAvailable", a => a.AvailableDateTime )
-                    .AddField( "dueDate", a => a.DueDate )
-                    .AddField( "isPastDue", a => a.DueDate != null && a.DueDate >= now && !a.CompletedDateTime.HasValue )
-                    .AddField( "isAvailableNow", a => a.AvailableDateTime != null && now >= a.AvailableDateTime )
-                    .AddTextField( "grade", a => a.GradeText( gradeScales ) );
-
-                return ActionOk( gridBuilder.Build( learningPlan ) );
+                return ActionBadRequest( $"The {LearningParticipant.FriendlyTypeName} was not found." );
             }
+
+            var now = DateTime.Now;
+
+            // Get the grade scales first since we'll need them for the grade caluculations.
+            var gradeScales = new LearningParticipantService( RockContext ).Queryable()
+                .Where( p => p.Id == entity.Id )
+                .Include( c => c.LearningClass.LearningGradingSystem.LearningGradingSystemScales )
+                .SelectMany( c => c.LearningClass.LearningGradingSystem.LearningGradingSystemScales )
+                .ToList()
+                .OrderByDescending( g => g.ThresholdPercentage );
+
+            var learningPlan = new LearningActivityCompletionService( RockContext ).Queryable()
+                .Include( a => a.LearningActivity )
+                .Where( a => a.StudentId == entity.Id )
+                .AsNoTracking()
+                .ToList()
+                .OrderBy( a => a.LearningActivity.Order );
+
+            var components = LearningActivityContainer.Instance.Components;
+
+            // Return all activities for the course.
+            var gridBuilder = new GridBuilder<LearningActivityCompletion>()
+                .AddTextField( "idKey", a => a.IdKey )
+                .AddTextField( "name", a => a.LearningActivity.Name )
+                .AddField( "type", a => a.LearningActivity.ActivityComponentId )
+                .AddField( "componentIconCssClass", a => components.FirstOrDefault( c => c.Value.Value.EntityType.Id == a.LearningActivity.ActivityComponentId ).Value.Value.IconCssClass )
+                .AddField( "componentHighlightColor", a => components.FirstOrDefault( c => c.Value.Value.EntityType.Id == a.LearningActivity.ActivityComponentId ).Value.Value.HighlightColor )
+                .AddField( "componentName", a => components.FirstOrDefault( c => c.Value.Value.EntityType.Id == a.LearningActivity.ActivityComponentId ).Value.Value.Name )
+                .AddField( "dateCompleted", a => a.CompletedDateTime )
+                .AddField( "dateAvailable", a => a.AvailableDateTime )
+                .AddField( "dueDate", a => a.DueDate )
+                .AddField( "isPastDue", a => a.DueDate != null && a.DueDate >= now && !a.CompletedDateTime.HasValue )
+                .AddField( "isAvailableNow", a => a.AvailableDateTime != null && now >= a.AvailableDateTime )
+                .AddTextField( "grade", a => a.GradeText( gradeScales ) );
+
+            return ActionOk( gridBuilder.Build( learningPlan ) );
         }
 
         #endregion

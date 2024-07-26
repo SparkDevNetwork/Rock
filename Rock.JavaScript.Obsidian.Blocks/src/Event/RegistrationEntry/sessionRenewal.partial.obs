@@ -2,35 +2,35 @@
 <template>
     <Dialog :modelValue="isModalVisible" :dismissible="false">
         <template #header>
-            <h4 v-if="isLoading || spotsSecured === null">{{ registrationTermTitleCase }} Timed Out</h4>
+            <h4 v-if="isLoading || spotsSecured === null">{{ registrationEntryTerms.registrationSingularTitleCase }} Timed Out</h4>
             <h4 v-else>Request Extension</h4>
         </template>
         <template #default>
             <LoadingIndicator v-if="isLoading" />
             <template v-else-if="hasWaitlist && spotsSecured === 0">
                 Due to high demand there is no longer space available.
-                You can continue, but your {{ registrantsTermLowerCase }} will be placed on the waitlist.
-                Do you wish to continue with the {{ registrationTermLowerCase }}?
+                You can continue, but your {{ registrationEntryTerms.registrantPluralLowerCase }} will be placed on the waitlist.
+                Do you wish to continue with the {{ registrationEntryTerms.registrationSingularLowerCase }}?
             </template>
             <template v-else-if="spotsSecured === 0">
-                Due to high demand there is no longer space available for this {{ registrantTermLowerCase }}.
+                Due to high demand there is no longer space available for this {{ registrationEntryTerms.registrantSingularLowerCase }}.
             </template>
             <template v-else-if="hasWaitlist && spotsSecured !== null">
-                Due to high demand there is no longer space available for all your {{ registrantsTermLowerCase }}.
+                Due to high demand there is no longer space available for all your {{ registrationEntryTerms.registrantPluralLowerCase }}.
                 Your last {{ waitlistRegistrantCountWord }}
-                {{ pluralConditional(waitlistRegistrantCount, registrantTermLowerCase, ` ${registrantsTermLowerCase}`) }}
+                {{ pluralConditional(waitlistRegistrantCount, registrationEntryTerms.registrantSingularLowerCase, ` ${registrationEntryTerms.registrantPluralLowerCase}`) }}
                 will be placed on the waitlist.
-                Do you wish to continue with the {{ registrationTermLowerCase }}?
+                Do you wish to continue with the {{ registrationEntryTerms.registrationSingularLowerCase }}?
             </template>
             <template v-else-if="spotsSecured !== null">
-                Due to high demand there is no longer space available for all your {{ registrantsTermLowerCase }}.
+                Due to high demand there is no longer space available for all your {{ registrationEntryTerms.registrantPluralLowerCase }}.
                 Only {{ nonWaitlistRegistrantCountWord }} {{ pluralConditional(nonWaitlistRegistrantCount, 'spot is', 'spots are') }} available.
-                Your {{ registrationTermLowerCase }} has been updated to only allow
-                {{ nonWaitlistRegistrantCountWord }} {{ pluralConditional(nonWaitlistRegistrantCount, registrantTermLowerCase, ` ${registrantsTermLowerCase}`) }}.
-                Do you wish to continue with the {{ registrationTermLowerCase }}?
+                Your {{ registrationEntryTerms.registrationSingularLowerCase }} has been updated to only allow
+                {{ nonWaitlistRegistrantCountWord }} {{ pluralConditional(nonWaitlistRegistrantCount, registrationEntryTerms.registrantSingularLowerCase, ` ${registrationEntryTerms.registrantPluralLowerCase}`) }}.
+                Do you wish to continue with the {{ registrationEntryTerms.registrationSingularLowerCase }}?
             </template>
             <template v-else>
-                Your {{ registrationTermLowerCase }} has timed out. Do you wish to request an extension in time?
+                Your {{ registrationEntryTerms.registrationSingularLowerCase }} has timed out. Do you wish to request an extension in time?
             </template>
         </template>
         <template v-if="!isLoading" #footer>
@@ -39,25 +39,25 @@
             </template>
             <template v-else-if="spotsSecured !== null">
                 <RockButton btnType="primary" @click="close">Yes</RockButton>
-                <RockButton btnType="link" @click="restart">No, cancel {{ registrationTermLowerCase }}</RockButton>
+                <RockButton btnType="link" @click="restart">No, cancel {{ registrationEntryTerms.registrationSingularLowerCase }}</RockButton>
             </template>
             <template v-else>
                 <RockButton btnType="primary" @click="requestRenewal">Yes</RockButton>
-                <RockButton btnType="link" @click="restart">No, cancel {{ registrationTermLowerCase }}</RockButton>
+                <RockButton btnType="link" @click="restart">No, cancel {{ registrationEntryTerms.registrationSingularLowerCase }}</RockButton>
             </template>
         </template>
     </Dialog>
 </template>
 <script setup lang="ts">
     import { computed, nextTick, PropType, ref, watch } from "vue";
-    import { CurrentRegistrationEntryState, use } from "./utils.partial";
+    import { CurrentRegistrationEntryState, RegistrationEntryTerms, use } from "./utils.partial";
     import Dialog from "@Obsidian/Controls/dialog.obs";
     import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { toWord } from "@Obsidian/Utility/numberUtils";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-    import { pluralConditional, toTitleCase } from "@Obsidian/Utility/stringUtils";
+    import { pluralConditional } from "@Obsidian/Utility/stringUtils";
     import { SessionRenewalResultBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/sessionRenewalResultBag";
     import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { Guid } from "@Obsidian/Types";
@@ -75,6 +75,7 @@
 
     const registrationEntryState = use(CurrentRegistrationEntryState);
     const invokeBlockAction = useInvokeBlockAction();
+    const registrationEntryTerms = use(RegistrationEntryTerms);
 
     // #region Values
 
@@ -85,26 +86,6 @@
     // #endregion
 
     // #region Computed Values
-
-    /** The registrant term (singular) (lower case). */
-    const registrantTermLowerCase = computed<string>(() => {
-        return registrationEntryState.viewModel.registrantTerm?.toLowerCase() || "registrant";
-    });
-
-    /** The registrants term (plural) (lower case). */
-    const registrantsTermLowerCase = computed<string>(() => {
-        return registrationEntryState.viewModel.pluralRegistrantTerm?.toLowerCase() || "registrants";
-    });
-
-    /** The registration term (singular) (lower case). */
-    const registrationTermLowerCase = computed<string>(() => {
-        return registrationEntryState.viewModel.registrationTerm?.toLowerCase() || "registration";
-    });
-
-    /** The registration term (singular) (title case). */
-    const registrationTermTitleCase = computed<string>(() => {
-        return toTitleCase(registrationEntryState.viewModel.registrationTerm ?? null) || "Registration";
-    });
 
     /** Does this registration instance have a waitlist? */
     const hasWaitlist = computed<boolean>(() => {

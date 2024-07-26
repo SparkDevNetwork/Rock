@@ -1,0 +1,1 @@
+cloc --include-ext=cs,aspx,ascx,ashx,js,ts,css,less,obs --force-lang="Vuejs component",obs Rock Rock.* RockWeb/App_Code RockWeb/*.* RockWeb/Blocks RockWeb/Scripts/Rock RockWeb/Styles/_*.* RockWeb/Styles/Blocks RockWeb/Styles/rock-components RockWeb/Themes --exclude-content auto-generated --not-match-f=Designer.cs --exclude-dir=CodeGenerated,node_modules,dist

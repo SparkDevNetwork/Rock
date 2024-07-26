@@ -18,7 +18,7 @@
                     title="User Name"
                     field="userName"
                     :filter="textValueFilter"
-                    width="25%"
+                    width="15%"
                     visiblePriority="xs" />
 
         <PersonColumn name="person"

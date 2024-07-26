@@ -362,10 +362,7 @@ namespace Rock.Blocks.Lms
 
             var isNew = entity.Id == 0;
 
-            RockContext.WrapTransaction( () =>
-            {
-                RockContext.SaveChanges();
-            } );
+            RockContext.SaveChanges();
 
             if ( isNew )
             {

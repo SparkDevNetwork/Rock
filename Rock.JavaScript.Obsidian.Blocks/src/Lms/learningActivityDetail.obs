@@ -26,7 +26,7 @@
             <ViewPanel :modelValue="learningActivityViewBag" :options="options" :hasFullScreen="false" />
         </template>
         <template #edit>
-            <EditPanel v-model="learningActivityEditBag" :options="options" @propertyChanged="onPropertyChanged" :hasFullScreen="false" />
+            <EditPanel v-model="learningActivityEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" :hasFullScreen="false" />
         </template>
     </DetailBlock>
 </template>
@@ -34,7 +34,7 @@
 <script setup lang="ts">
     import { computed, ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import { onConfigurationValuesChanged, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import DetailBlock from "@Obsidian/Templates/detailBlock";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
@@ -45,7 +45,6 @@
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import EditPanel from "./LearningActivityDetail/editPanel.partial.obs";
     import ViewPanel from "./LearningActivityDetail/viewPanel.partial.obs";
-    import { debounce } from "@Obsidian/Utility/util";
     import { NavigationUrlKey } from "./LearningActivityDetail/types.partial";
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
 
@@ -53,7 +52,7 @@
     const invokeBlockAction = useInvokeBlockAction();
     onConfigurationValuesChanged(useReloadBlock());
 
-    const entityTypeGuid = EntityType.LearningProgram;
+    const entityTypeGuid = EntityType.LearningActivity;
 
     // #region Values
 
@@ -67,11 +66,10 @@
         bag: {} as LearningActivityBag
     });
 
-    // The properties that are being edited in the UI. This is used to
-    // inform the server which incoming values have valid data in them.
-    const validProperties = [];
-
-    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(learningActivityEditBag, validProperties, invokeBlockAction), undefined, true);
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: learningActivityEditBag
+    });
 
     // #endregion
 
@@ -240,23 +238,6 @@
         errorMessage.value = result.errorMessage ?? "Unknown error while trying to save learning activity.";
 
         return false;
-    }
-
-    /**
-     * Event handler for when a value has changed that has an associated
-     * C# property name. This is used to detect changes to values that
-     * might cause qualified attributes to either show up or not show up.
-     *
-     * @param propertyName The name of the C# property that was changed.
-     */
-    function onPropertyChanged(propertyName: string): void {
-        // If we don't have any qualified attribute properties or this property
-        // is not one of them then do nothing.
-        if (!config.qualifiedAttributeProperties || !config.qualifiedAttributeProperties.some(n => n.toLowerCase() === propertyName.toLowerCase())) {
-            return;
-        }
-
-        refreshAttributesDebounce();
     }
 
     // #endregion

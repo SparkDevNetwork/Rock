@@ -24,7 +24,7 @@
         </template>
 
         <template #edit>
-            <EditPanel v-model="learningActivityCompletionEditBag" :options="options" />
+            <EditPanel v-model="learningActivityCompletionEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
         </template>
     </DetailBlock>
 </template>
@@ -67,7 +67,7 @@
         entity: learningActivityCompletionEditBag
     });
 
-    const gradingScales = ref(config.options?.gradingScales.sort((a,b) => b.thresholdPercentage - a.thresholdPercentage));
+    const gradingScales = ref(config.options?.gradingScales?.sort((a,b) => b.thresholdPercentage - a.thresholdPercentage) ?? []);
 
     // #endregion
 

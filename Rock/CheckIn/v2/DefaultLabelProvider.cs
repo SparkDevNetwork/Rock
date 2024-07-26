@@ -20,11 +20,13 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 using Rock.CheckIn.v2.Labels;
 using Rock.CheckIn.v2.Labels.Renderers;
+using Rock.Cms.StructuredContent.BlockTypes;
 using Rock.Data;
 using Rock.Enums.CheckIn.Labels;
 using Rock.Model;
@@ -80,7 +82,6 @@ namespace Rock.CheckIn.v2
         {
             List<RenderedLabel> labels;
 
-            var group = new GroupService( RockContext ).Get( 5 );
             using ( var activity = ObservabilityHelper.StartActivity( "Render Labels" ) )
             {
                 activity?.AddTag( "rock.checkin.print_provider", GetType().FullName );
@@ -211,6 +212,11 @@ namespace Rock.CheckIn.v2
                 return new List<RenderedLabel>();
             }
 
+            attendanceLabels.Select( a => a.Person )
+                .Where( p => p.Attributes == null )
+                .DistinctBy( p => p.Id )
+                .LoadAttributes( RockContext );
+
             var sessionFamily = allAttendance.Where( a => a.SearchResultGroupId.HasValue ).FirstOrDefault()?.SearchResultGroup;
 
             return !checkout
@@ -252,6 +258,11 @@ namespace Rock.CheckIn.v2
             {
                 return new List<RenderedLabel>();
             }
+
+            attendanceLabels.Select( a => a.Person )
+                .Where( p => p.Attributes == null )
+                .DistinctBy( p => p.Id )
+                .LoadAttributes( RockContext );
 
             var sessionFamily = allAttendance.Where( a => a.SearchResultGroupId.HasValue ).FirstOrDefault()?.SearchResultGroup;
 
@@ -430,15 +441,75 @@ namespace Rock.CheckIn.v2
         /// <param name="attendanceLabels">All attendance records related to this check-in session.</param>
         /// <param name="sessionFamily">The family that was matched during the check-in operation, may be <see langword="null"/>.</param>
         /// <param name="printer">The device that the label will be sent to, may be <see langword="null"/>.</param>
-        /// <returns>A new instance of <see cref="RenderedLabel"/> that contains either the data to be printed or an error message, will never be <see langword="null"/>.</returns>
+        /// <returns>A new instance of <see cref="RenderedLabel"/> that contains either the data to be printed or an error message, will be <see langword="null"/> if the label conditions prevent rendering.</returns>
         public RenderedLabel RenderLabel( Rock.Model.CheckInLabel label, AttendanceLabel attendanceLabel, List<AttendanceLabel> attendanceLabels, Group sessionFamily, DeviceCache printer )
+        {
+            var labelData = GetLabelData( label.LabelType, attendanceLabel, attendanceLabels, sessionFamily );
+
+            var filter = label.GetConditionalPrintCriteria();
+            var builder = new Reporting.FieldFilterExpressionBuilder();
+            var fn = builder.GetIsMatchFunction( filter, labelData.GetType() );
+
+            if ( !fn( labelData ) )
+            {
+                return null;
+            }
+
+            return RenderLabel( label, labelData, printer );
+        }
+
+        /// <summary>
+        /// Renders a single label and returns a reference to the data that
+        /// should be sent to the printer. This will render the label even if
+        /// it has conditional display filters that would normally prevent it.
+        /// </summary>
+        /// <param name="label">The label to be rendered.</param>
+        /// <param name="attendanceLabel">The primary attendance record this label is being printed for, may be <see langword="null"/>.</param>
+        /// <param name="attendanceLabels">All attendance records related to this check-in session.</param>
+        /// <param name="sessionFamily">The family that was matched during the check-in operation, may be <see langword="null"/>.</param>
+        /// <param name="printer">The device that the label will be sent to, may be <see langword="null"/>.</param>
+        /// <returns>A new instance of <see cref="RenderedLabel"/> that contains either the data to be printed or an error message, will be <see langword="null"/> if the label conditions prevent rendering.</returns>
+        public RenderedLabel RenderLabelUnconditionally( Rock.Model.CheckInLabel label, AttendanceLabel attendanceLabel, List<AttendanceLabel> attendanceLabels, Group sessionFamily, DeviceCache printer )
+        {
+            var people = new List<Person>( attendanceLabels.Count + 1 );
+
+            people.AddRange( attendanceLabels.Select( a => a.Person ) );
+            people.Add( attendanceLabel.Person );
+
+            people.Where( p => p.Attributes == null )
+                .DistinctBy( p => p.Id )
+                .LoadAttributes( RockContext );
+
+            var labelData = GetLabelData( label.LabelType, attendanceLabel, attendanceLabels, sessionFamily );
+
+            return RenderLabel( label, labelData, printer );
+        }
+
+        /// <summary>
+        /// Renders a single label and returns a reference to the data that
+        /// should be sent to the printer.
+        /// </summary>
+        /// <param name="label">The label to be rendered.</param>
+        /// <param name="labelData">The label data to use when rendering.</param>
+        /// <param name="printer">The device that the label will be sent to, may be <see langword="null"/>.</param>
+        /// <returns>A new instance of <see cref="RenderedLabel"/> that contains either the data to be printed or an error message, will never be <see langword="null"/>.</returns>
+        private RenderedLabel RenderLabel( Rock.Model.CheckInLabel label, object labelData, DeviceCache printer )
         {
             if ( label.LabelFormat == LabelFormat.Zpl )
             {
-                // TODO: Render this.
+                var mergeFields = new Dictionary<string, object>();
+
+                foreach ( var prop in labelData.GetType().GetProperties() )
+                {
+                    mergeFields.Add( prop.Name, prop.GetValue( labelData ) );
+                }
+
+                var zpl = label.Content.ResolveMergeFields( mergeFields );
+
                 return new RenderedLabel
                 {
-                    Data = new byte[0]
+                    Data = Encoding.UTF8.GetBytes( zpl ),
+                    PrintTo = printer
                 };
             }
 
@@ -463,7 +534,7 @@ namespace Rock.CheckIn.v2
                     IsCutterSupported = hasCutter
                 },
                 RockContext = RockContext,
-                LabelData = GetLabelData( label.LabelType, attendanceLabel, attendanceLabels, sessionFamily ),
+                LabelData = labelData,
                 DataSources = FieldSourceHelper.GetCachedDataSources( label.LabelType ),
                 Label = designedLabel
             };
@@ -477,6 +548,11 @@ namespace Rock.CheckIn.v2
                 foreach ( var field in printRequest.Label.Fields )
                 {
                     var labelField = new LabelField( field );
+
+                    if ( !labelField.IsMatch( labelData ) )
+                    {
+                        continue;
+                    }
 
                     renderer.WriteField( labelField );
                 }

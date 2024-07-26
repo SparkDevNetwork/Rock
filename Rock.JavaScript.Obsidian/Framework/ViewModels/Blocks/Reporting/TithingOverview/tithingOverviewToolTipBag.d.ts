@@ -21,6 +21,8 @@
 // </copyright>
 //
 
+import { CurrencyInfoBag } from "@Obsidian/ViewModels/Utility/currencyInfoBag";
+
 /** Contains all the tooltip information for the Tithing Overview block charts. */
 export type TithingOverviewToolTipBag = {
     /** Gets or sets the campus. */
@@ -40,6 +42,9 @@ export type TithingOverviewToolTipBag = {
 
     /** Gets or sets the campus short code. */
     campusShortCode?: string | null;
+
+    /** Gets or sets the currency symbol. */
+    currencyInfo?: CurrencyInfoBag | null;
 
     /** Gets or sets the date. */
     date?: string | null;

@@ -273,6 +273,7 @@
     <Compile Include="TestData\Cms\PersonalizationDataManager.cs" />
     <Compile Include="TestData\Cms\WebsiteDataManager.cs" />
     <Compile Include="TestData\Communications\CommunicationsDataManager.cs" />
+    <Compile Include="TestData\Cms\Shortcodes\ShortcodeDataManager.cs" />
     <Compile Include="TestData\Communications\TestDataHelper.Communications.cs" />
     <Compile Include="TestData\Core\PersistedDatasetDataManager.cs" />
     <Compile Include="TestData\Core\SecurityDataManager.cs" />
@@ -376,7 +377,10 @@
     <Compile Include="Modules\Core\Model\RegistrationTests.cs" />
     <Compile Include="Modules\Core\Model\StepTests.cs" />
     <Compile Include="Modules\Core\Model\DeviceTests.cs" />
+    <Compile Include="TestData\Tests\TestPlugInMigration.cs" />
+    <Compile Include="TestData\Tests\LocalDbTestActions.cs" />
     <Compile Include="TestData\Tests\SampleDataTests.cs" />
+    <Compile Include="TestData\Tests\UtilityTestActionsBase.cs" />
     <Compile Include="TestExtensionMethods.cs" />
     <Compile Include="Modules\Core\Logging\RockSerilogReaderTests.cs" />
     <Compile Include="Modules\Rest\ControllersTests\AttendanceControllerTests.cs" />

@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -1732,6 +1733,10 @@ namespace RockWeb.Blocks.Event
                     // Filter query by any configured person attribute filters
                     if ( groupMemberAttributes != null && groupMemberAttributes.Any() )
                     {
+                        /*
+                            SK - 07/23/2024
+                            The logic below evaluates if any filter is applied to any group member attribute. If not, it returns all the data irrespective of whether the registrant is part of any group. If a filter is applied, the registrant must be part of a group.
+                        */
                         var groupMemberService = new GroupMemberService( rockContext );
                         var groupMemberQry = groupMemberService.Queryable().AsNoTracking();
                         bool isFilterModeApplied = false;
@@ -1739,10 +1744,54 @@ namespace RockWeb.Blocks.Event
                         {
                             var filterControl = phRegistrantsRegistrantFormFieldFilters.FindControl( FILTER_ATTRIBUTE_PREFIX + attribute.Id.ToString() );
                             var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
-                            if ( filterValues.Any( a => a.IsNotNullOrWhiteSpace() ) )
+                            if ( filterValues.Any() )
                             {
-                                isFilterModeApplied = true;
-                                groupMemberQry = attribute.FieldType.Field.ApplyAttributeQueryFilter( groupMemberQry, filterControl, attribute, groupMemberService, Rock.Reporting.FilterMode.SimpleFilter );
+                                if ( attribute.FieldTypeId == FieldTypeCache.Get( Rock.SystemGuid.FieldType.DEFINED_VALUE ).Id || attribute.FieldTypeId == FieldTypeCache.Get( Rock.SystemGuid.FieldType.GROUP_MEMBER ).Id )
+                                {
+                                    if ( filterValues.Count > 1 && filterValues.Last().IsNotNullOrWhiteSpace() )
+                                    {
+                                        isFilterModeApplied = true;
+                                    }
+                                }
+                                else if ( attribute.FieldTypeId == FieldTypeCache.Get( Rock.SystemGuid.FieldType.BINARY_FILE ).Id )
+                                {
+                                    if ( filterValues.Count > 1 && filterValues.Last() != "0" )
+                                    {
+                                        isFilterModeApplied = true;
+                                    }
+                                }
+                                else if ( attribute.FieldTypeId == FieldTypeCache.Get( Rock.SystemGuid.FieldType.DATE ).Id || attribute.FieldTypeId == FieldTypeCache.Get( Rock.SystemGuid.FieldType.DATE_TIME ).Id )
+                                {
+                                    if ( filterValues.Count > 1 && filterValues.First() != "0" )
+                                    {
+                                        ComparisonType comparisonType = filterValues.First().ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
+                                        var dateTime = filterValues[1].AsDateTime();
+                                        if ( comparisonType == ComparisonType.Between )
+                                        {
+                                            var dateRangeFromDelimitedValues = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( filterValues[1] );
+                                            ConstantExpression constantExpressionLower = dateRange.Start.HasValue
+                                                ? Expression.Constant( dateRangeFromDelimitedValues.Start, typeof( DateTime ) )
+                                                : null;
+
+                                            ConstantExpression constantExpressionUpper = dateRange.End.HasValue
+                                                ? Expression.Constant( dateRangeFromDelimitedValues.End, typeof( DateTime ) )
+                                                : null;
+
+                                            if ( constantExpressionLower != null || constantExpressionUpper != null )
+                                            {
+                                                isFilterModeApplied = true;
+                                            }
+                                        }
+                                        else if ( comparisonType == ComparisonType.IsBlank || comparisonType == ComparisonType.IsNotBlank || dateTime.HasValue )
+                                        {
+                                            isFilterModeApplied = true;
+                                        }
+                                    }
+                                }
+                                else if ( filterValues.Last().IsNotNullOrWhiteSpace() )
+                                {
+                                    isFilterModeApplied = true;
+                                }
                             }
                         }
 

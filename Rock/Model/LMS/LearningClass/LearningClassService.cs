@@ -109,7 +109,6 @@ namespace Rock.Model
                 }
             } );
 
-
             return newLearningClass;
         }
 

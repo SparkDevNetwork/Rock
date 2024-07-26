@@ -76,6 +76,18 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
         #endregion Attribute Keys
 
+        #region Security Actions
+
+        /// <summary>
+        /// Keys to use for Block Attributes
+        /// </summary>
+        private static class SecurityActionKey
+        {
+            public const string ViewProtectionProfile = "ViewProtectionProfile";
+        }
+
+        #endregion
+
         #region Base Control Methods
 
         /// <summary>
@@ -173,7 +185,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
         private void ShowProtectionLevel()
         {
-            if ( Person.AccountProtectionProfile > Rock.Utility.Enums.AccountProtectionProfile.Low )
+            if ( Person.AccountProtectionProfile > Rock.Utility.Enums.AccountProtectionProfile.Low && IsUserAuthorized( SecurityActionKey.ViewProtectionProfile ) )
             {
                 string acctProtectionLevel = $@"
                     <div class=""protection-profile"">

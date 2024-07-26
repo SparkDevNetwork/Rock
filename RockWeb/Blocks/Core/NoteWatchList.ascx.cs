@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -42,7 +42,7 @@ namespace RockWeb.Blocks.Core
 
     [LinkedPage( "Detail Page",
         Key = AttributeKey.DetailPage )]
-    
+
     [EntityTypeField( "Entity Type",
         Description = "Set an Entity Type to limit this block to Note Types and Entities for a specific entity type.",
         IsRequired = false,
@@ -250,23 +250,35 @@ namespace RockWeb.Blocks.Core
             RockContext rockContext = new RockContext();
             NoteWatchService noteWatchService = new NoteWatchService( rockContext );
 
-            var qry = noteWatchService.Queryable().Include( a => a.WatcherPersonAlias.Person ).Include( a => a.WatcherGroup );
+            var qry = noteWatchService.Queryable()
+                .Include( a => a.WatcherPersonAlias.Person )
+                .Include( a => a.WatcherGroup )
+                .Include( a => a.NoteType )
+                .Include( a => a.EntityType );
 
             Guid? blockEntityTypeGuid = this.GetAttributeValue( AttributeKey.EntityType ).AsGuidOrNull();
             Guid? blockNoteTypeGuid = this.GetAttributeValue( AttributeKey.NoteType ).AsGuidOrNull();
+
             if ( blockNoteTypeGuid.HasValue )
             {
-                // if a NoteType was specified in block settings, only list note watches for the specified note type
-                int noteTypeId = EntityTypeCache.Get( blockNoteTypeGuid.Value ).Id;
-                qry = qry.Where( a => a.NoteTypeId.HasValue && a.NoteTypeId == noteTypeId );
+                var noteType = NoteTypeCache.Get( blockNoteTypeGuid.Value );
+
+                if ( noteType != null )
+                {
+                    int noteTypeId = noteType.Id;
+                    qry = qry.Where( a => a.NoteTypeId.HasValue && a.NoteTypeId == noteTypeId );
+                }
             }
             else if ( blockEntityTypeGuid.HasValue )
             {
-                // if an EntityType was specific in block settings, only list note watches for the specified entity type (or for NoteTypes of the specified EntityType)
-                int entityTypeId = EntityTypeCache.Get( blockEntityTypeGuid.Value ).Id;
-                qry = qry.Where( a =>
-                    ( a.EntityTypeId.HasValue && a.EntityTypeId.Value == entityTypeId )
-                    || ( a.NoteTypeId.HasValue && a.NoteType.EntityTypeId == entityTypeId ) );
+                var entityType = EntityTypeCache.Get( blockEntityTypeGuid.Value );
+                if ( entityType != null )
+                {
+                    int entityTypeId = entityType.Id;
+                    qry = qry.Where( a =>
+                        ( a.EntityTypeId.HasValue && a.EntityTypeId.Value == entityTypeId ) ||
+                        ( a.NoteTypeId.HasValue && a.NoteType.EntityTypeId == entityTypeId ) );
+                }
             }
 
             var contextPerson = ContextEntity<Person>();
@@ -274,12 +286,10 @@ namespace RockWeb.Blocks.Core
 
             if ( contextPerson != null )
             {
-                // if there is a Person context, only list note watches that where the watcher is the person context
                 qry = qry.Where( a => a.WatcherPersonAliasId.HasValue && a.WatcherPersonAlias.PersonId == contextPerson.Id );
             }
             else if ( contextGroup != null )
             {
-                // if there is a Group context, only list note watches that where the watcher is the group context
                 qry = qry.Where( a => a.WatcherGroupId.HasValue && a.WatcherGroupId == contextGroup.Id );
             }
 
@@ -294,8 +304,17 @@ namespace RockWeb.Blocks.Core
                 qry = qry.OrderBy( d => d.EntityType.Name ).ThenBy( a => a.NoteType.Name );
             }
 
-            gList.SetLinqDataSource( qry );
-            gList.DataBind();
+            // Add null check for the data source
+            if ( qry != null )
+            {
+                gList.SetLinqDataSource( qry );
+                gList.DataBind();
+            }
+            else
+            {
+                gList.DataSource = null;
+                gList.DataBind();
+            }
         }
 
         #endregion

@@ -4,7 +4,7 @@
           :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
-          title="Event Occurrence"
+          title="Event Occurrences"
           itemTerm="Event Occurrence"
           :entityTypeGuid="EntityType.EventItemOccurrence"
           stickyHeader

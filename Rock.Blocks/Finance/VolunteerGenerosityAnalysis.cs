@@ -160,7 +160,15 @@ namespace Rock.Blocks.Finance
                     PersonId = d.PersonId,
                     LastName = d.LastName,
                     NickName = d.NickName,
-                    PhotoUrl = d.PhotoUrl,
+                    PhotoUrl = Person.GetPersonPhotoUrl(
+                                initials: $"{d.NickName.Substring(0, 1)}{d.LastName.Substring(0, 1)}",
+                                photoId: d.PhotoId,
+                                age: d.Age,
+                                gender: d.Gender,
+                                recordTypeValueId: null,
+                                ageClassification: d.AgeClassification,
+                                size: null
+                               ),
                     ConnectionStatus = d.ConnectionStatus
                 } )
                 .AddField( "givingId", d => d.GivingId )
@@ -225,8 +233,6 @@ namespace Rock.Blocks.Finance
 
             return string.Join( ", ", donationMonths );
         }
-
-
 
         #endregion
     }

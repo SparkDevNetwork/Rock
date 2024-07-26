@@ -1710,17 +1710,17 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
         module.showShortLink('{ResolveUrl( string.Format( "~/ShortLink/{0}?t=Shortened Link&Url={1}", _pageCache.Id, Server.UrlEncode( HttpContext.Current.Request.UrlProxySafe().AbsoluteUri.ToString() ) ) )}');
     }});
 }});";
-                            HtmlGenericControl aObsidianShortLink = new HtmlGenericControl( "a" );
-                            buttonBar.Controls.Add( aObsidianShortLink );
-                            aObsidianShortLink.ID = "aObsidianShortLink";
-                            aObsidianShortLink.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                            aObsidianShortLink.Attributes.Add( "class", "btn properties" );
-                            aObsidianShortLink.Attributes.Add( "href", "#" );
-                            aObsidianShortLink.Attributes.Add( "onclick", $"event.preventDefault(); {administratorShortlinkScript}" );
-                            aObsidianShortLink.Attributes.Add( "Title", "Add Obsidian Short Link" );
-                            HtmlGenericControl iObsidianShortLink = new HtmlGenericControl( "i" );
-                            aObsidianShortLink.Controls.Add( iObsidianShortLink );
-                            iObsidianShortLink.Attributes.Add( "class", "fa fa-link" );
+                            HtmlGenericControl aShortLink = new HtmlGenericControl( "a" );
+                            buttonBar.Controls.Add( aShortLink );
+                            aShortLink.ID = "aShortLink";
+                            aShortLink.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+                            aShortLink.Attributes.Add( "class", "btn properties" );
+                            aShortLink.Attributes.Add( "href", "#" );
+                            aShortLink.Attributes.Add( "onclick", $"event.preventDefault(); {administratorShortlinkScript}" );
+                            aShortLink.Attributes.Add( "Title", "Add Short Link" );
+                            HtmlGenericControl iShortLink = new HtmlGenericControl( "i" );
+                            aShortLink.Controls.Add( iShortLink );
+                            iShortLink.Attributes.Add( "class", "fa fa-link" );
 
                             // System Info
                             HtmlGenericControl aSystemInfo = new HtmlGenericControl( "a" );
@@ -2606,8 +2606,7 @@ Sys.Application.add_load(function () {
 
                 pageViewTransaction.Enqueue();
 
-                var intentSettings = _pageCache.GetAdditionalSettings<PageService.IntentSettings>();
-                InteractionService.RegisterIntentInteractions( intentSettings.InteractionIntentValueIds );
+                InteractionService.RegisterIntentInteractions( _pageCache.InteractionIntentValueIds );
 
                 return;
             }

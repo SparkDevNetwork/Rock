@@ -224,6 +224,9 @@ namespace Rock.Web
 
                                             addShortLinkInteractionMsg.Send();
 
+                                            // Set cache headers to prevent the CDNs from caching the temporary redirection to avoid redirection to stale urls.
+                                            requestContext.HttpContext.Response.Cache.SetCacheability( System.Web.HttpCacheability.NoCache );
+                                            requestContext.HttpContext.Response.Cache.SetNoStore();
                                             requestContext.HttpContext.Response.Redirect( urlWithUtm, false );
                                             requestContext.HttpContext.ApplicationInstance.CompleteRequest();
 

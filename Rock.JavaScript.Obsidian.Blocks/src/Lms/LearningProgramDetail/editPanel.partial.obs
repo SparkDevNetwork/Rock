@@ -114,10 +114,12 @@
     import ImageUploader from "@Obsidian/Controls/imageuploader.obs";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<LearningProgramBag>,
+            type: Object as PropType<ValidPropertiesBox<LearningProgramBag>>,
             required: true
         },
 
@@ -128,38 +130,38 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: LearningProgramBag): void,
+        (e: "update:modelValue", value: ValidPropertiesBox<LearningProgramBag>): void,
         (e: "propertyChanged", value: string): void
     }>();
 
     // #region Values
-    const defaultConfigurationMode = ConfigurationMode.OnDemandLearning;
+    const defaultConfigurationMode = ConfigurationMode.OnDemandLearning.toString();
 
     const programDetailTabs: Array<string> = ["Overview", "Description"];
 
     const imageFileTypeGuid = BinaryFiletype.Default;
     const configurationModes = enumToListItemBag(ConfigurationModeDescription);
 
-    const attributes = ref(props.modelValue.attributes ?? {});
-    const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const attributes = ref(props.modelValue.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue.bag?.attributeValues ?? {});
     const systemCommunications = ref(props.options.systemCommunications ?? []);
 
-    const systemCommunicationValue = propertyRef(props.modelValue.systemCommunication?.value ?? "", "SystemCommunication");
-    const completionWorkflowType = propertyRef(props.modelValue.completionWorkflowType ?? {}, "CompletionWorkflowType");
-    const description = propertyRef(props.modelValue.description ?? "", "Description");
-    const summary = propertyRef(props.modelValue.summary ?? "", "Summary");
-    const configurationMode = propertyRef(props.modelValue.configurationMode?.toString(), "ConfigurationMode");
-    const highlightColor = propertyRef(props.modelValue.highlightColor ?? "", "HighlightColor");
-    const iconCssClass = propertyRef(props.modelValue.iconCssClass ?? "", "IconCssClass");
-    const isCompletionStatusTracked = propertyRef(props.modelValue.isCompletionStatusTracked ?? false, "TrackProgramStatus");
-    const absencesWarningCount = propertyRef(props.modelValue.absencesWarningCount, "AbsencesWarningCount");
-    const absencesCriticalCount = propertyRef(props.modelValue.absencesCriticalCount, "AbsencesCriticalCount");
-    const category = propertyRef(props.modelValue.category ?? null, "Category");
-    const imageBinaryFile = propertyRef(props.modelValue.imageBinaryFile ?? null, "ImageBinaryFile");
-    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
-    const isPublic = propertyRef(props.modelValue.isPublic ?? false, "IsPublic");
-    const name = propertyRef(props.modelValue.name ?? "", "Name");
-    const publicName = propertyRef(props.modelValue.publicName ?? name.value, "PublicName");
+    const systemCommunicationValue = propertyRef(props.modelValue.bag?.systemCommunication?.value ?? "", "SystemCommunication");
+    const completionWorkflowType = propertyRef(props.modelValue.bag?.completionWorkflowType ?? {}, "CompletionWorkflowType");
+    const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
+    const summary = propertyRef(props.modelValue.bag?.summary ?? "", "Summary");
+    const configurationMode = propertyRef(props.modelValue.bag?.configurationMode?.toString(), "ConfigurationMode");
+    const highlightColor = propertyRef(props.modelValue.bag?.highlightColor ?? "", "HighlightColor");
+    const iconCssClass = propertyRef(props.modelValue.bag?.iconCssClass ?? "", "IconCssClass");
+    const isCompletionStatusTracked = propertyRef(props.modelValue.bag?.isCompletionStatusTracked ?? false, "TrackProgramStatus");
+    const absencesWarningCount = propertyRef(props.modelValue.bag?.absencesWarningCount, "AbsencesWarningCount");
+    const absencesCriticalCount = propertyRef(props.modelValue.bag?.absencesCriticalCount, "AbsencesCriticalCount");
+    const category = propertyRef(props.modelValue.bag?.category ?? null, "Category");
+    const imageBinaryFile = propertyRef(props.modelValue.bag?.imageBinaryFile ?? null, "ImageBinaryFile");
+    const isActive = propertyRef(props.modelValue.bag?.isActive ?? false, "IsActive");
+    const isPublic = propertyRef(props.modelValue.bag?.isPublic ?? false, "IsPublic");
+    const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
+    const publicName = propertyRef(props.modelValue.bag?.publicName ?? name.value, "PublicName");
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -198,49 +200,51 @@
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
-        updateRefValue(attributes, props.modelValue.attributes ?? {});
-        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
-        updateRefValue(description, props.modelValue.description ?? "");
-        updateRefValue(isActive, props.modelValue.isActive ?? false);
-        updateRefValue(isPublic, props.modelValue.isPublic ?? false);
-        updateRefValue(isCompletionStatusTracked, props.modelValue.isCompletionStatusTracked ?? false);
-        updateRefValue(name, props.modelValue.name ?? "");
-        updateRefValue(publicName, props.modelValue.name ?? "");
-        updateRefValue(summary, props.modelValue.summary ?? "");
-        updateRefValue(configurationMode, props.modelValue.configurationMode?.toString() ?? defaultConfigurationMode);
-        updateRefValue(systemCommunicationValue, props.modelValue.systemCommunication?.value ?? "");
-        updateRefValue(category, props.modelValue.category ?? null);
-        updateRefValue(highlightColor, props.modelValue.highlightColor ?? "");
-        updateRefValue(iconCssClass, props.modelValue.iconCssClass ?? "");
-        updateRefValue(imageBinaryFile, props.modelValue.imageBinaryFile ?? null);
-        updateRefValue(absencesWarningCount, props.modelValue.absencesWarningCount ?? null);
-        updateRefValue(absencesCriticalCount, props.modelValue.absencesCriticalCount ?? null);
-        updateRefValue(completionWorkflowType, props.modelValue.completionWorkflowType ?? {});
+        updateRefValue(attributes, props.modelValue.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.bag?.attributeValues ?? {});
+        updateRefValue(description, props.modelValue.bag?.description ?? "");
+        updateRefValue(isActive, props.modelValue.bag?.isActive ?? false);
+        updateRefValue(isPublic, props.modelValue.bag?.isPublic ?? false);
+        updateRefValue(isCompletionStatusTracked, props.modelValue.bag?.isCompletionStatusTracked ?? false);
+        updateRefValue(name, props.modelValue.bag?.name ?? "");
+        updateRefValue(publicName, props.modelValue.bag?.name ?? "");
+        updateRefValue(summary, props.modelValue.bag?.summary ?? "");
+        updateRefValue(configurationMode, props.modelValue.bag?.configurationMode?.toString() ?? defaultConfigurationMode);
+        updateRefValue(systemCommunicationValue, props.modelValue.bag?.systemCommunication?.value ?? "");
+        updateRefValue(category, props.modelValue.bag?.category ?? null);
+        updateRefValue(highlightColor, props.modelValue.bag?.highlightColor ?? "");
+        updateRefValue(iconCssClass, props.modelValue.bag?.iconCssClass ?? "");
+        updateRefValue(imageBinaryFile, props.modelValue.bag?.imageBinaryFile ?? null);
+        updateRefValue(absencesWarningCount, props.modelValue.bag?.absencesWarningCount ?? null);
+        updateRefValue(absencesCriticalCount, props.modelValue.bag?.absencesCriticalCount ?? null);
+        updateRefValue(completionWorkflowType, props.modelValue.bag?.completionWorkflowType ?? {});
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
     watch([attributeValues, ...propRefs], () => {
-        const newValue: LearningProgramBag = {
-            ...props.modelValue,
-            attributeValues: attributeValues.value,
-            description: description.value,
-            name: name.value,
-            publicName: name.value,
-            summary: summary.value,
-            configurationMode: parseInt(configurationMode.value) as ConfigurationMode,
-            category: category.value,
-            isCompletionStatusTracked: isCompletionStatusTracked.value,
-            systemCommunication: { value: systemCommunicationValue.value },
-            completionWorkflowType: completionWorkflowType.value,
-            isActive: isActive.value,
-            isPublic: isPublic.value,
-            highlightColor: highlightColor.value,
-            iconCssClass: iconCssClass.value,
-            imageBinaryFile: imageBinaryFile.value,
-            absencesWarningCount: absencesWarningCount.value,
-            absencesCriticalCount: absencesCriticalCount.value
+        const newValue: ValidPropertiesBox<LearningProgramBag> = {
+            bag: { ...props.modelValue.bag } as LearningProgramBag
         };
+
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "publicName", publicName.value);
+        setPropertiesBoxValue(newValue, "summary", summary.value);
+        setPropertiesBoxValue(newValue, "configurationMode", parseInt(configurationMode.value ?? defaultConfigurationMode) as ConfigurationMode);
+        setPropertiesBoxValue(newValue, "category", category.value);
+        setPropertiesBoxValue(newValue, "isCompletionStatusTracked", isCompletionStatusTracked.value);
+        setPropertiesBoxValue(newValue, "systemCommunication", { value: systemCommunicationValue.value });
+        setPropertiesBoxValue(newValue, "completionWorkflowType", completionWorkflowType.value);
+        setPropertiesBoxValue(newValue, "isActive", isActive.value);
+        setPropertiesBoxValue(newValue, "isPublic", isPublic.value);
+        setPropertiesBoxValue(newValue, "highlightColor", highlightColor.value);
+        setPropertiesBoxValue(newValue, "iconCssClass", iconCssClass.value);
+        setPropertiesBoxValue(newValue, "imageBinaryFile", imageBinaryFile.value);
+        setPropertiesBoxValue(newValue, "absencesWarningCount", absencesWarningCount.value);
+        setPropertiesBoxValue(newValue, "absencesCriticalCount", absencesCriticalCount.value);
 
         emit("update:modelValue", newValue);
     });

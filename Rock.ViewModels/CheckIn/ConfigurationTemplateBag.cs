@@ -73,6 +73,16 @@ namespace Rock.ViewModels.CheckIn
         public bool IsAutoSelect { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether to allow self-checkout on
+        /// public kiosks for this configuration. When enabled, if an individual
+        /// in the family is already checked in then the kiosk will prompt if
+        /// they want to check-in another family member of checkout existing
+        /// individuals.
+        /// </summary>
+        /// <value><c>true</c> if self check-out mode is enabled; otherwise, <c>false</c>.</value>
+        public bool IsCheckoutAtKioskAllowed { get; set; }
+
+        /// <summary>
         /// Gets a value indicating whether the current location occupancy
         /// counts should be displayed when selecting a location.
         /// </summary>

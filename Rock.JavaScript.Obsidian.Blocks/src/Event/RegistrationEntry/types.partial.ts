@@ -137,3 +137,18 @@ export type TransactionFrequency = {
 };
 
 export type GetNextDayOption = "end-of-month";
+
+export type RegistrationEntryTerminology = {
+    discountCodeSingularLowerCase: string;
+    discountCodeSingularTitleCase: string;
+    feePluralLowerCase: string;
+    feePluralTitleCase: string;
+    feeSingularLowerCase: string;
+    registrantPluralLowerCase: string;
+    registrantSingularLowerCase: string;
+    registrantSingularTitleCase: string;
+    registrationPluralLowerCase: string;
+    registrationSingularLowerCase: string;
+    registrationSingularTitleCase: string;
+    signatureDocumentSingularTitleCase: string;
+};

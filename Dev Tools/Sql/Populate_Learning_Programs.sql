@@ -2,7 +2,8 @@
 -- Author:        Rock
 -- Create Date:   04-04-24
 -- Description:   Populates LearningProgram, Courses, Classes, Activities, Students, Facilitators 
---  and other data for a complete LMS test environment.
+--  and other data for a complete LMS test environment. 
+--  LearningProgramCompletion Records will be created by the 'Update Program Completions' job.
 --
 -- Change History:
 --                 
@@ -216,7 +217,6 @@ SELECT c.CourseId,c.GradingSystemId, c.SemesterId, g.Id
 FROM #classes c
 JOIN [Group] g ON g.[Guid] = c.ClassGuid;
 
-
 /* Add a syllabus ContentPage to all created classes. */ 
 DECLARE @contentPageContent NVARCHAR(MAX) = '{"time":1719854012944,"blocks":[{"id":"XF223JYWoi","type":"header","data":{"text":"Course Overview:","level":3}},{"id":"HgLH4Gl6Fu","type":"paragraph","data":{"text":"&nbsp;\"Introduction to the New Testament\" offers students an immersive journey into the sacred Christian scriptures. This course will explore the historical, literary, and theological dimensions of the New Testament, spanning from the Gospels'' accounts of Jesus Christ to the visionary writings in Revelation."}},{"id":"CmjigRceFH","type":"header","data":{"text":"Course Objectives:","level":3}},{"id":"OzQA9hniFU","type":"list","data":{"style":"unordered","items":[{"content":"Understand the historical context of the New Testament texts.","items":[]},{"content":"Analyze key passages for their theological and literary significance.","items":[]},{"content":"Recognize the various genres and writing styles within the New Testament.","items":[]},{"content":"Discuss the impact of the New Testament on Christian theology and practices.","items":[]}]}},{"id":"DzcbG7ZJu7","type":"header","data":{"text":"&nbsp;Course Outline:","level":3}},{"id":"6BUqLsXVIi","type":"list","data":{"style":"ordered","items":[{"content":"Introduction and Background","items":[{"content":"The historical and cultural world of the New Testament","items":[]},{"content":"Canonization:  How the New Testament came to be","items":[]}]},{"content":"The Gospels","items":[{"content":"Synoptic Gospels: Matthew, Mark, and Luke","items":[]},{"content":"The Gospel of John: A unique perspective","items":[]}]},{"content":"Acts of the Apostles","items":[{"content":"The early Christian community and missionary journeys","items":[]}]},{"content":"Pauline Epistles","items":[{"content":"The theology and context of Paul''s letters","items":[]}]},{"content":"General Epistles","items":[{"content":"From Hebrews to Jude: Diverse voices in early Christianity","items":[]}]},{"content":"Revelation and Apocalyptic Literature","items":[{"content":"Symbols, prophecy, and the end times","items":[]}]}]}},{"id":"D2VZID577K","type":"header","data":{"text":"Assessment Methods:","level":3}},{"id":"vQR2ojuKof","type":"list","data":{"style":"unordered","items":[{"content":"Class Participation: 10%","items":[]},{"content":"Quizzes: 20%","items":[]},{"content":"Midterm Exam: 25%","items":[]},{"content":"Research Paper (8-10 pages): 20%","items":[]},{"content":"Final Exam: 25%","items":[]}]}},{"id":"yfICZbb2kJ","type":"header","data":{"text":"Required Texts:","level":3}},{"id":"7zAgNkxyqw","type":"list","data":{"style":"unordered","items":[{"content":"\"The New Oxford Annotated Bible: New Revised Standard Version with the Apocrypha.\" Oxford University Press.","items":[]},{"content":"Ehrman, Bart D. \"The New Testament: A Historical Introduction to the Early Christian Writings.\" Oxford University Press.","items":[]}]}},{"id":"QN-4zlZCdB","type":"header","data":{"text":"Academic Integrity:","level":3}},{"id":"dyYzZMyyFq","type":"paragraph","data":{"text":"Plagiarism and any form of academic dishonesty will not be tolerated. Students found in violation will face disciplinary actions as per institutional policies."}},{"id":"7FjzGXVR0r","type":"header","data":{"text":"Note:&nbsp;","level":3}},{"id":"NyiUxJs3OD","type":"paragraph","data":{"text":"The instructor reserves the right to make changes to the syllabus as necessary. Any changes will be communicated in a timely manner.&nbsp;&nbsp;"}}],"version":"2.28.0"}';
 
@@ -294,7 +294,7 @@ JOIN (
 ) p ON p.PersonRowNumber = n.Number
 
 /* Add a Participant as a GroupMember first (the table owning the identity column) */
-INSERT [GroupMember] ( [IsSystem], [GroupId], [PersonId], [GroupRoleId], [GroupMemberStatus], [Guid], [GroupTypeId], [DateTimeAdded] )
+INSERT [GroupMember] ( [IsSystem], [GroupId], [PersonId], [GroupRoleId], [GroupMemberStatus], [Guid], [GroupTypeId], [DateTimeAdded], [CreatedDateTime] )
 SELECT
     0, 
     p.[GroupId], 
@@ -303,6 +303,7 @@ SELECT
     @activeGroupMemberStatus,
     p.GroupMemberGuid, 
     @lmsGroupType, 
+   p.RandomDateTimeAdded,
    p.RandomDateTimeAdded
 FROM #participants p
 WHERE NOT EXISTS (
@@ -310,29 +311,6 @@ WHERE NOT EXISTS (
     FROM [GroupMember] ex
     WHERE ex.[Guid] = p.GroupMemberGuid
 )
-
-
-/* Add LearningProgramCompletion Records for any programs that support it. */
-INSERT [LearningProgramCompletion] ( [LearningProgramId], [PersonAliasId], [StartDate], [StartDateKey], [CompletionStatus], [Guid] )
-SELECT 
-    [LearningProgramId],
-    [PrimaryAliasId], 
-    EarliestSemesterStartDate, 
-    CONCAT(
-        YEAR(EarliestSemesterStartDate), 
-        MONTH(EarliestSemesterStartDate), 
-        DAY(EarliestSemesterStartDate)
-    ) [StartDateKey], 
-    @pendingProgramCompletion, 
-    NEWID()
-FROM (
-    SELECT DISTINCT c.[LearningProgramId], pers.PrimaryAliasId, MIN(SemesterStartDate) EarliestSemesterStartDate
-    FROM #participants p
-    JOIN Person pers on pers.[Id] = p.[PersonId]
-    JOIN #classes c ON p.[ClassGuid] = c.[ClassGuid]
-    WHERE c.[TracksCompletionStatus] = 1
-    GROUP BY c.[LearningProgramId], pers.PrimaryAliasId
-) distinctPrograms
 
 /* Add a Participant */
 INSERT [LearningParticipant] ( [LearningCompletionStatus], [LearningGradePercent], [LearningClassId], [LearningProgramCompletionId], [Id] )

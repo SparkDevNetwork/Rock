@@ -155,6 +155,21 @@ namespace Rock.Model
             return Name;
         }
 
+        /// <summary>
+        /// Gets the entity object type's friendly name
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> that represents the entity object type's friendly name.
+        /// </value>
+        public new static string FriendlyTypeName
+        {
+            get
+            {
+                // Because Entity.FriendlyTypeName would show the base class type name.
+                return "Learning Class";
+            }
+        }
+
         #endregion
     }
 

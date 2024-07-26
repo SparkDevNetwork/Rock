@@ -297,8 +297,8 @@ upnlFiles.ClientID // {2}
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbDownload_Click( object sender, EventArgs e )
         {
-            var ( provider, component ) = GetAssetStorageProvider();
-            if ( provider == null || component  == null )
+            var (provider, component) = GetAssetStorageProvider();
+            if ( provider == null || component == null )
             {
                 return;
             }
@@ -343,8 +343,8 @@ upnlFiles.ClientID // {2}
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbDelete_Click( object sender, EventArgs e )
         {
-            var ( provider, component ) = GetAssetStorageProvider();
-            if ( provider == null || component  == null )
+            var (provider, component) = GetAssetStorageProvider();
+            if ( provider == null || component == null )
             {
                 return;
             }
@@ -386,8 +386,8 @@ upnlFiles.ClientID // {2}
                 return;
             }
 
-            var ( provider, component ) = GetAssetStorageProvider();
-            if ( provider == null || component  == null )
+            var (provider, component) = GetAssetStorageProvider();
+            if ( provider == null || component == null )
             {
                 return;
             }
@@ -417,8 +417,8 @@ upnlFiles.ClientID // {2}
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbDeleteFolder_Click( object sender, EventArgs e )
         {
-            var ( provider, component ) = GetAssetStorageProvider();
-            if ( provider == null || component  == null )
+            var (provider, component) = GetAssetStorageProvider();
+            if ( provider == null || component == null )
             {
                 return;
             }
@@ -443,8 +443,8 @@ upnlFiles.ClientID // {2}
                 return;
             }
 
-            var ( provider, component ) = GetAssetStorageProvider();
-            if ( provider == null || component  == null )
+            var (provider, component) = GetAssetStorageProvider();
+            if ( provider == null || component == null )
             {
                 return;
             }
@@ -506,7 +506,7 @@ upnlFiles.ClientID // {2}
                 return;
             }
 
-            Label nameLabel = (Label) e.Item.FindControl( "lbName" );
+            Label nameLabel = ( Label ) e.Item.FindControl( "lbName" );
 
             // Constrain the file name length to 100 characters to prevent it from messing with the UI
             nameLabel.Text = asset.Name.LeftWithEllipsis( 100 );
@@ -519,10 +519,10 @@ upnlFiles.ClientID // {2}
 
                 nameLabel.AddCssClass( "asset-has-error" );
 
-                Label lbLastModified = (Label) e.Item.FindControl( "lbLastModified" );
+                Label lbLastModified = ( Label ) e.Item.FindControl( "lbLastModified" );
                 lbLastModified.AddCssClass( "asset-has-error" );
 
-                Label lbFileSize = (Label) e.Item.FindControl( "lbFileSize" );
+                Label lbFileSize = ( Label ) e.Item.FindControl( "lbFileSize" );
                 lbFileSize.AddCssClass( "asset-has-error" );
             }
         }
@@ -535,8 +535,8 @@ upnlFiles.ClientID // {2}
         /// </summary>
         private void ListFiles()
         {
-            var ( provider, component ) = GetAssetStorageProvider();
-            if ( provider == null || component  == null )
+            var (provider, component) = GetAssetStorageProvider();
+            if ( provider == null || component == null )
             {
                 return;
             }
@@ -550,7 +550,7 @@ upnlFiles.ClientID // {2}
         /// Gets the asset storage provider [cache] and associated asset storage component using the ID stored in the hidden field.
         /// </summary>
         /// <returns>The asset storage provider and component.</returns>
-        private ( AssetStorageProviderCache provider, AssetStorageComponent component ) GetAssetStorageProvider()
+        private (AssetStorageProviderCache provider, AssetStorageComponent component) GetAssetStorageProvider()
         {
             var provider = AssetStorageProviderCache.Get( hfAssetStorageId.ValueAsInt() );
             var component = provider?.AssetStorageComponent;
@@ -565,7 +565,7 @@ upnlFiles.ClientID // {2}
         /// <returns></returns>
         private bool IsValidName( string renameFolderName )
         {
-            Regex regularExpression = new Regex( @"^([^*/><?\\|:,]).*$" );
+            Regex regularExpression = new Regex( @"^[^*/><?\\\\|:,~]+$" );
             return regularExpression.IsMatch( renameFolderName );
         }
 

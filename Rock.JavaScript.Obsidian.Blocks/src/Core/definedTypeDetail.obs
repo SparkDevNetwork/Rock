@@ -26,7 +26,7 @@
         </template>
 
         <template #edit>
-            <EditPanel v-model="definedTypeEditBag" :options="options" @propertyChanged="onPropertyChanged" />
+            <EditPanel v-model="definedTypeEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
         </template>
     </DetailBlock>
 </template>
@@ -37,19 +37,17 @@
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import DetailBlock from "@Obsidian/Templates/detailBlock";
     import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
-    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import EditPanel from "./DefinedTypeDetail/editPanel.partial.obs";
     import ViewPanel from "./DefinedTypeDetail/viewPanel.partial.obs";
-    import { getSecurityGrant, onConfigurationValuesChanged, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
-    import { debounce } from "@Obsidian/Utility/util";
+    import { useConfigurationValues, useInvokeBlockAction, useReloadBlock, useEntityDetailBlock, onConfigurationValuesChanged } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./DefinedTypeDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { DefinedTypeBag } from "@Obsidian/ViewModels/Blocks/Core/DefinedTypeDetail/definedTypeBag";
     import { DefinedTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/DefinedTypeDetail/definedTypeDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const config = useConfigurationValues<DetailBlockBox<DefinedTypeBag, DefinedTypeDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const securityGrant = getSecurityGrant(config.securityGrantToken);
 
     // #region Values
 
@@ -57,26 +55,18 @@
     const errorMessage = ref("");
 
     const definedTypeViewBag = ref(config.entity);
-    const definedTypeEditBag = ref<DefinedTypeBag>({} as DefinedTypeBag);
+    const definedTypeEditBag = ref<ValidPropertiesBox<DefinedTypeBag>>({
+        bag: {} as DefinedTypeBag
+    });
 
     const entityTypeGuid = EntityType.DefinedType;
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
-    // The properties that are being edited in the UI. This is used to
-    // inform the server which incoming values have valid data in them.
-    const validProperties = [
-        "attributeValues",
-        "categorizedValuesEnabled",
-        "category",
-        "description",
-        "enableSecurityOnValues",
-        "helpText",
-        "isActive",
-        "name"
-    ];
-
-    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(definedTypeEditBag, validProperties, invokeBlockAction), undefined, true);
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: definedTypeEditBag
+    });
 
     // #endregion
 
@@ -126,7 +116,7 @@
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
     async function onCancelEdit(): Promise<boolean | string> {
-        if (!definedTypeEditBag.value?.idKey) {
+        if (!definedTypeEditBag.value?.bag?.idKey) {
             if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
                 return config.navigationUrls[NavigationUrlKey.ParentPage];
             }
@@ -167,35 +157,21 @@
      * @returns true if the panel should enter edit mode; otherwise false.
      */
     async function onEdit(): Promise<boolean> {
-        const result = await invokeBlockAction<DetailBlockBox<DefinedTypeBag, DefinedTypeDetailOptionsBag>>("Edit", {
+        const result = await invokeBlockAction<ValidPropertiesBox<DefinedTypeBag>>("Edit", {
             key: definedTypeViewBag.value?.idKey
         });
 
-        if (result.isSuccess && result.data && result.data.entity) {
-            definedTypeEditBag.value = result.data.entity;
+        if (result.isSuccess && result.data && result.data.bag) {
+            definedTypeEditBag.value = {
+                bag: result.data.bag,
+                validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
+            };
 
             return true;
         }
         else {
             return false;
         }
-    }
-
-    /**
-     * Event handler for when a value has changed that has an associated
-     * C# property name. This is used to detect changes to values that
-     * might cause qualified attributes to either show up or not show up.
-     *
-     * @param propertyName The name of the C# property that was changed.
-     */
-    function onPropertyChanged(propertyName: string): void {
-        // If we don't have any qualified attribute properties or this property
-        // is not one of them then do nothing.
-        if (!config.qualifiedAttributeProperties || !config.qualifiedAttributeProperties.some(n => n.toLowerCase() === propertyName.toLowerCase())) {
-            return;
-        }
-
-        refreshAttributesDebounce();
     }
 
     /**
@@ -207,19 +183,13 @@
     async function onSave(): Promise<boolean | string> {
         errorMessage.value = "";
 
-        const data: DetailBlockBox<DefinedTypeBag, DefinedTypeDetailOptionsBag> = {
-            entity: definedTypeEditBag.value,
-            isEditable: true,
-            validProperties: validProperties
-        };
-
-        const result = await invokeBlockAction<DefinedTypeBag | string>("Save", {
-            box: data
+        const result = await invokeBlockAction<ValidPropertiesBox<DefinedTypeBag> | string>("Save", {
+            box: definedTypeEditBag.value
         });
 
         if (result.isSuccess && result.data) {
             if (result.statusCode === 200 && typeof result.data === "object") {
-                definedTypeViewBag.value = result.data;
+                definedTypeViewBag.value = result.data.bag;
 
                 return true;
             }
@@ -235,8 +205,6 @@
 
     // #endregion
 
-    provideSecurityGrant(securityGrant);
-
     // Handle any initial error conditions or the need to go into edit mode.
     if (config.errorMessage) {
         blockError.value = config.errorMessage;
@@ -245,7 +213,7 @@
         blockError.value = "The specified defined type could not be viewed.";
     }
     else if (!config.entity.idKey) {
-        definedTypeEditBag.value = config.entity;
+        definedTypeEditBag.value = { bag: config.entity };
         panelMode.value = DetailPanelMode.Add;
     }
 

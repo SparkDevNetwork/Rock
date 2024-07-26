@@ -18,12 +18,16 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.Http;
+using System.Web.Http.Results;
 
 using Rock.Attribute;
 using Rock.Badge;
@@ -31,6 +35,7 @@ using Rock.ClientService.Core.Category;
 using Rock.ClientService.Core.Category.Options;
 using Rock.Cms.StructuredContent;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Controls;
 using Rock.Extension;
@@ -42,10 +47,10 @@ using Rock.Media;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Security;
+using Rock.Storage.AssetStorage;
 using Rock.Utility;
 using Rock.Utility.CaptchaApi;
 using Rock.ViewModels.Controls;
-using Rock.ViewModels.Crm;
 using Rock.ViewModels.Rest.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web;
@@ -621,6 +626,1133 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Asset Manager
+
+        /// <summary>
+        /// Gets the root storage providers and/or the root File Browser folder.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="AssetManagerTreeItemBag"/> objects that represent the asset storage providers/folders.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AssetManagerGetRootFolders" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "9A96E14F-99DB-4F9A-95EB-DF17D3B5EE25" )]
+        public IHttpActionResult AssetManagerGetRootFolders( [FromBody] AssetManagerGetRootFoldersOptionsBag options )
+        {
+            var expandedFolders = new List<string>();
+            var tree = new List<TreeItemBag>();
+            var updatedExpandedFolders = new List<string>();
+            var selectedFolder = options.SelectedFolder.IsNotNullOrWhiteSpace() ? ParseAssetKey( options.SelectedFolder ) : null;
+
+            // Decrypt the root folder of the ExpandedFolders so we actually know which folders to expand
+            if ( ( options.ExpandedFolders?.Count ?? 0 ) > 0 )
+            {
+                foreach ( var folder in options.ExpandedFolders )
+                {
+                    var parsedAsset = ParseAssetKey( folder );
+                    expandedFolders.Add( $"{parsedAsset.ProviderId},{parsedAsset.FullPath}" );
+                }
+            }
+
+            if ( options.EnableFileManager && options.RootFolder.IsNotNullOrWhiteSpace() )
+            {
+                var (folder, expandedFileFolders) = GetRootFolder( options.RootFolder, expandedFolders, selectedFolder );
+
+                tree.Add( folder );
+                if ( expandedFileFolders != null )
+                {
+                    updatedExpandedFolders.AddRange( expandedFileFolders );
+                }
+
+                // If only file manager is enabled, we want the folder expanded immediately
+                if ( !options.EnableAssetManager && !( folder.Children?.Any() ?? false ) )
+                {
+                    var (children, expanded) = GetChildFolders( ParseAssetKey( folder.Value ), expandedFolders );
+                    folder.Children = children;
+                    updatedExpandedFolders.Add( folder.Value );
+                }
+            }
+
+            if ( options.EnableAssetManager )
+            {
+                var (assetTree, expandedAssetFolders) = GetAssetStorageProviders( expandedFolders, selectedFolder );
+
+                tree.AddRange( assetTree );
+                updatedExpandedFolders.AddRange( expandedAssetFolders );
+
+                var folder = assetTree?.ElementAt( 0 );
+
+                // If only asset manager is enabled and only one asset provider exists, we want it expanded immediately
+                if ( !options.EnableFileManager && ( assetTree?.Count ?? 0 ) == 1 && !( folder.Children?.Any() ?? false ) )
+                {
+                    var (children, expanded) = GetChildrenOfAsset( ParseAssetKey( folder.Value ), expandedFolders );
+                    folder.Children = children;
+                    updatedExpandedFolders.Add( folder.Value );
+                }
+            }
+
+            return Ok( new
+            {
+                Tree = tree,
+                UpdatedExpandedFolders = updatedExpandedFolders,
+            } );
+        }
+
+        /// <summary>
+        /// Gets a list of folders of a given parent folder.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="AssetManagerTreeItemBag"/> objects that represent the asset storage providers/folders.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AssetManagerGetChildren" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "68C50BAE-C50C-4143-B37F-58C80BF5E1BF" )]
+        public IHttpActionResult AssetManagerGetChildren( [FromBody] AssetManagerBaseOptionsBag options )
+        {
+            var parsedAsset = ParseAssetKey( options.AssetFolderId );
+
+            if ( parsedAsset.ProviderId == null || parsedAsset.FullPath == null )
+            {
+                return Ok( new List<AssetManagerTreeItemBag>() );
+            }
+
+            if ( parsedAsset.IsAssetProviderAsset )
+            {
+                var (tree, updatedExpandedFolders) = GetChildrenOfAsset( parsedAsset, new List<string>() );
+                return Ok( tree );
+            }
+            else if ( parsedAsset.IsLocalAsset )
+            {
+                var (tree, updatedExpandedFolders) = GetChildFolders( parsedAsset, new List<string>() );
+                return Ok( tree );
+            }
+
+            return Ok( new List<AssetManagerTreeItemBag>() );
+        }
+
+        /// <summary>
+        /// Gets the files present in a asset provider folder
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="Asset"/> objects that represent the files.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AssetManagerGetFiles" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "D45422C0-5FCA-44C4-B9E1-4BA05E8D534D" )]
+        public IHttpActionResult AssetManagerGetFiles( [FromBody] AssetManagerGetFilesOptionsBag options )
+        {
+            var asset = ParseAssetKey( options.AssetFolderId );
+
+            if ( asset.ProviderId == null || asset.FullPath == null )
+            {
+                return BadRequest();
+            }
+
+            if ( asset.IsLocalAsset )
+            {
+                var files = GetFilesInFolder( asset, options.BrowseMode );
+
+                return Ok( files );
+            }
+
+            if ( asset.IsAssetProviderAsset )
+            {
+                var (provider, component) = GetAssetStorageProvider( asset.ProviderId.Value );
+
+                if ( provider == null || component == null )
+                {
+                    return BadRequest();
+                }
+
+                List<Asset> files = component.ListFilesInFolder( provider.ToEntity(), new Asset { Key = asset.FullPath, Type = AssetType.Folder, AssetStorageProviderId = asset.ProviderId.Value } );
+
+                // TODO: filter on browse mode
+
+                return Ok( new AssetManagerGetFilesResultsBag<Asset>
+                {
+                    Files = files,
+                    IsFolderUploadRestricted = true
+                } );
+            }
+
+            return BadRequest();
+        }
+
+        /// <summary>
+        /// Delete a folder within a asset storage provider
+        /// </summary>
+        /// <param name="options">The options that describe which folder to delete.</param>
+        /// <returns>True if successful, false otherwise.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AssetManagerDeleteFolder" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "7625091B-D70A-4564-97C8-ED77AE5DB738" )]
+        public IHttpActionResult AssetManagerDeleteFolder( [FromBody] AssetManagerBaseOptionsBag options )
+        {
+            var asset = ParseAssetKey( options.AssetFolderId );
+
+            if ( asset.ProviderId == null || asset.FullPath == null )
+            {
+                return BadRequest();
+            }
+
+            if ( asset.IsLocalAsset )
+            {
+                try
+                {
+                    var physicalFolder = System.Web.HttpContext.Current.Server.MapPath( asset.FullPath );
+                    Directory.Delete( physicalFolder, true );
+                }
+                catch ( Exception ex )
+                {
+                    return InternalServerError( ex );
+                }
+
+                return Ok( true );
+            }
+            else if ( asset.IsAssetProviderAsset )
+            {
+                var (provider, component) = GetAssetStorageProvider( asset.ProviderId.Value );
+
+                if ( provider == null || component == null )
+                {
+                    return BadRequest();
+                }
+
+                return Ok( component.DeleteAsset( provider.ToEntity(), new Asset { Key = asset.FullPath, Type = AssetType.Folder } ) );
+            }
+
+            return BadRequest();
+        }
+
+        /// <summary>
+        /// Creates a new folder in the specified location on the file system or asset provider.
+        /// </summary>
+        /// <param name="options">The options that describe the name of the new folder and where it should be.</param>
+        /// <returns>An <see cref="AssetManagerTreeItemBag"/> object that represents the new folder.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AssetManagerAddFolder" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "B90D9215-57A4-45D3-9B70-A44AA2C9FE7B" )]
+        public IHttpActionResult AssetManagerAddFolder( [FromBody] AssetManagerAddFolderOptionsBag options )
+        {
+            if ( !IsValidAssetFolderName( options.NewFolderName ) || options.NewFolderName.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            var parsedAsset = ParseAssetKey( options.AssetFolderId );
+
+            if ( parsedAsset == null || parsedAsset.ProviderId == null || parsedAsset.FullPath == null )
+            {
+                return BadRequest();
+            }
+
+            if ( parsedAsset.IsLocalAsset )
+            {
+                var physicalFolder = System.Web.HttpContext.Current.Server.MapPath( parsedAsset.FullPath );
+                Directory.CreateDirectory( Path.Combine( physicalFolder, options.NewFolderName ) );
+
+                return Ok( new AssetManagerTreeItemBag
+                {
+                    Text = options.NewFolderName,
+                    Value = $"0,{parsedAsset.EncryptedRoot},{Path.Combine( parsedAsset.SubPath, options.NewFolderName )}",
+                    IconCssClass = "fa fa-folder",
+                    HasChildren = false,
+                    UnencryptedRoot = parsedAsset.Root
+                } );
+            }
+            else if ( parsedAsset.IsAssetProviderAsset )
+            {
+                var (provider, component) = GetAssetStorageProvider( parsedAsset.ProviderId.Value );
+
+                if ( provider == null || component == null )
+                {
+                    return BadRequest();
+                }
+
+                var asset = new Asset { Type = AssetType.Folder };
+
+                // Selecting the root does not put a value for the selected folder, so we have to make sure
+                // if it does not have a value that we use name instead of key so the root folder is used
+                // by the component.
+                if ( parsedAsset.FullPath.IsNotNullOrWhiteSpace() )
+                {
+                    asset.Key = parsedAsset.FullPath + options.NewFolderName;
+                }
+                else
+                {
+                    asset.Name = options.NewFolderName;
+                }
+
+                if ( component.CreateFolder( provider.ToEntity(), asset ) )
+                {
+                    return Ok( new AssetManagerTreeItemBag
+                    {
+                        Text = options.NewFolderName,
+                        Value = $"{provider.Id},{parsedAsset.EncryptedRoot},{Path.Combine( parsedAsset.SubPath, options.NewFolderName )}/",
+                        IconCssClass = "fa fa-folder",
+                        HasChildren = false,
+                        UnencryptedRoot = parsedAsset.Root
+                    } );
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Rename a given folder to the specified name.
+        /// </summary>
+        /// <param name="options">The options that describe which folder to rename and its new name.</param>
+        /// <returns>The new key string for the folder that was renamed.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AssetManagerRenameFolder" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "8DF6054E-6F52-4A08-A7F5-C11F44B8465C" )]
+        public IHttpActionResult AssetManagerRenameFolder( [FromBody] AssetManagerRenameFolderOptionsBag options )
+        {
+            try
+            {
+                var asset = ParseAssetKey( options.AssetFolderId );
+                var physicalPath = System.Web.HttpContext.Current.Server.MapPath( asset.FullPath );
+                var renamedPath = Path.Combine( Path.GetDirectoryName( physicalPath.TrimEnd( '/', '\\' ) ), options.NewFolderName );
+                Directory.Move( physicalPath, renamedPath );
+
+                var newKey = $"0,{asset.EncryptedRoot},{Path.Combine( Path.GetDirectoryName( asset.SubPath.TrimEnd( '/', '\\' ) ), options.NewFolderName ).Replace( "\\", "/" ).TrimEnd( '/', '\\' ) + "/"}";
+
+                return Ok( newKey );
+            }
+            catch ( Exception ex )
+            {
+                return InternalServerError( ex );
+            }
+        }
+
+        /// <summary>
+        /// Move a folder to another location on the file system.
+        /// </summary>
+        /// <param name="options">The options that describe which folder to move and where to move it to.</param>
+        /// <returns>The new key string for the folder that was moved.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AssetManagerMoveFolder" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "87A139A7-78B8-4CC9-8A3B-146A338A291F" )]
+        public IHttpActionResult AssetManagerMoveFolder( [FromBody] AssetManagerMoveFolderOptionsBag options )
+        {
+            try
+            {
+                var asset = ParseAssetKey( options.AssetFolderId );
+                var baseFolderName = Path.GetFileName( asset.FullPath.TrimEnd( '/', '\\' ) );
+                var currentPhysicalPath = System.Web.HttpContext.Current.Server.MapPath( asset.FullPath );
+                var targetRootRelativePath = Path.Combine( asset.Root, options.TargetFolder, baseFolderName );
+                var targetPhyicalPath = System.Web.HttpContext.Current.Server.MapPath( targetRootRelativePath );
+
+                if ( !Directory.Exists( targetPhyicalPath ) && !File.Exists( targetPhyicalPath ) )
+                {
+                    Directory.Move( currentPhysicalPath, targetPhyicalPath );
+                }
+                else
+                {
+                    return BadRequest( "Invalid target location. Something already exists there with the same name." );
+                }
+
+                var newKey = $"0,{asset.EncryptedRoot},{Path.Combine( options.TargetFolder, baseFolderName ).Replace( "\\", "/" ).TrimEnd( '/' ) + "/"}";
+
+                return Ok( newKey );
+            }
+            catch ( Exception ex )
+            {
+                return InternalServerError( ex );
+            }
+        }
+
+        /// <summary>
+        /// Deletes the specified file(s) from the server/asset provider
+        /// </summary>
+        /// <param name="options">The options that describe which file(s) to delete.</param>
+        /// <returns>True if every file was deleted successfully.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AssetManagerDeleteFiles" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "55ADD16B-0FC1-4F33-BB0A-03C29018866F" )]
+        public IHttpActionResult AssetManagerDeleteFiles( [FromBody] AssetManagerDeleteFilesOptionsBag options )
+        {
+            try
+            {
+                if ( options.AssetStorageProviderId == 0 )
+                {
+                    foreach ( string file in options.Files )
+                    {
+                        var physicalPath = System.Web.HttpContext.Current.Server.MapPath( file );
+                        File.Delete( physicalPath );
+                    }
+                }
+                else
+                {
+                    var (provider, component) = GetAssetStorageProvider( options.AssetStorageProviderId );
+
+                    if ( provider == null || component == null )
+                    {
+                        return BadRequest();
+                    }
+
+                    foreach ( string file in options.Files )
+                    {
+                        component.DeleteAsset( provider.ToEntity(), new Asset { Key = file, Type = AssetType.File } );
+                    }
+                }
+            }
+            catch ( Exception ex )
+            {
+                return InternalServerError( ex );
+            }
+
+            return Ok( true );
+        }
+
+        /// <summary>
+        /// Downloads the specified file via a stream.
+        /// </summary>
+        /// <param name="options">The options that describe which file to download.</param>
+        /// <returns>A stream for the download of the specified file.</returns>
+        [HttpGet]
+        [System.Web.Http.Route( "AssetManagerDownloadFile" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "C810774B-8B15-42D0-BAC2-85503AB23BC0" )]
+        public IHttpActionResult AssetManagerDownloadFile( [FromUri] AssetManagerDownloadFileOptionsBag options )
+        {
+            Stream stream;
+            string fileName = "";
+
+            try
+            {
+                if ( options.AssetStorageProviderId == 0 )
+                {
+                    var physicalPath = System.Web.HttpContext.Current.Server.MapPath( options.File );
+                    fileName = Path.GetFileName( physicalPath );
+                    stream = File.Open( physicalPath, FileMode.Open );
+                }
+                else
+                {
+                    var (provider, component) = GetAssetStorageProvider( options.AssetStorageProviderId );
+
+                    if ( provider == null || component == null || options.File.IsNullOrWhiteSpace() )
+                    {
+                        return BadRequest( "Invalid Asset Storage Provider ID or file key." );
+                    }
+
+                    Asset asset = component.GetObject( provider.ToEntity(), new Asset { Key = options.File, Type = AssetType.File }, false );
+                    fileName = asset.Name;
+                    byte[] bytes = asset.AssetStream.ReadBytesToEnd();
+                    stream = new MemoryStream( bytes );
+                }
+            }
+            catch ( Exception ex )
+            {
+                return InternalServerError( ex );
+            }
+
+            var result = new System.Net.Http.HttpResponseMessage( System.Net.HttpStatusCode.OK )
+            {
+                Content = new System.Net.Http.StreamContent( stream )
+            };
+
+            result.Content.Headers.ContentType = new MediaTypeHeaderValue( "application/octet-stream" );
+            result.Content.Headers.Add( "content-disposition", "attachment; filename=" + HttpUtility.UrlEncode( fileName ) );
+
+            return new ResponseMessageResult( result );
+        }
+
+        /// <summary>
+        /// Rename a file.
+        /// </summary>
+        /// <param name="options">The options that describe which file to rename and what to rename it.</param>
+        /// <returns>True if successful, false otherwise.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AssetManagerRenameFile" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "150AAF48-33C5-47F8-BD53-2CF3A75F88FB" )]
+        public IHttpActionResult AssetManagerRenameFile( [FromBody] AssetManagerRenameFileOptionsBag options )
+        {
+            try
+            {
+                if ( options.AssetStorageProviderId == 0 )
+                {
+                    var physicalPath = System.Web.HttpContext.Current.Server.MapPath( options.File );
+                    var renamedPath = Path.Combine( Path.GetDirectoryName( physicalPath ), options.NewFileName );
+                    File.Move( physicalPath, renamedPath );
+
+                    return Ok( true );
+                }
+                else
+                {
+                    var (provider, component) = GetAssetStorageProvider( options.AssetStorageProviderId );
+
+                    if ( provider == null || component == null || options.File.IsNullOrWhiteSpace() || options.NewFileName.IsNullOrWhiteSpace() )
+                    {
+                        return BadRequest();
+                    }
+
+                    return Ok( component.RenameAsset( provider.ToEntity(), new Asset { Key = options.File, Type = AssetType.File }, options.NewFileName ) );
+                }
+            }
+            catch ( Exception ex )
+            {
+                return InternalServerError( ex );
+            }
+        }
+
+        /// <summary>
+        /// Extract a given zip archive into its folder.
+        /// </summary>
+        /// <param name="options">The options that describe which file to extract.</param>
+        /// <returns>True if the operation worked.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AssetManagerExtractFile" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "07CECA87-B9F9-4130-AC09-584AC9DBBE8C" )]
+        public IHttpActionResult AssetManagerExtractFile( [FromBody] AssetManagerExtractFileOptionsBag options )
+        {
+            if ( options == null || options.EncryptedRoot.IsNullOrWhiteSpace() || options.FileName.IsNullOrWhiteSpace() )
+            {
+                return BadRequest();
+            }
+
+            var root = Rock.Security.Encryption.DecryptString( options.EncryptedRoot );
+            var fullPath = Path.Combine( root, options.FileName );
+            var physicalZipFile = System.Web.HttpContext.Current.Server.MapPath( fullPath );
+            var directoryPath = Path.GetDirectoryName( physicalZipFile );
+
+            try
+            {
+                if ( File.Exists( physicalZipFile ) )
+                {
+                    FileInfo fileInfo = new FileInfo( physicalZipFile );
+                    if ( fileInfo.Extension.Equals( ".zip", StringComparison.OrdinalIgnoreCase ) )
+                    {
+                        using ( ZipArchive archive = ZipFile.OpenRead( physicalZipFile ) )
+                        {
+                            foreach ( ZipArchiveEntry file in archive.Entries )
+                            {
+                                string completeFileName = Path.Combine( directoryPath, file.FullName );
+                                if ( file.Name == string.Empty )
+                                {
+                                    // Assuming Empty for Directory
+                                    Directory.CreateDirectory( Path.GetDirectoryName( completeFileName ) );
+                                    continue;
+                                }
+
+                                file.ExtractToFile( completeFileName, true );
+                            }
+                        }
+                    }
+                    else
+                    {
+                        File.Delete( physicalZipFile );
+                        throw new Exception( "Invalid File Uploaded." );
+                    }
+                    File.Delete( physicalZipFile );
+                }
+                else
+                {
+                    throw new Exception( "Error Extracting the File." );
+                }
+
+                return Ok( true );
+            }
+            catch ( Exception ex )
+            {
+                File.Delete( physicalZipFile );
+                return InternalServerError( ex );
+            }
+        }
+
+        /// <summary>
+        /// Get a flat list of all the folders and subfolders in a given root folder, excluding a given folder and its children.
+        /// </summary>
+        /// <param name="options">The options that describe which folders to load and not load.</param>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent all the folders.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "AssetManagerGetListOfAllFolders" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "1008C9C5-E33E-43F6-BB02-D1BDF2CCE205" )]
+        public IHttpActionResult AssetManagerGetListOfAllFolders( [FromBody] AssetManagerGetListOfAllFoldersOptionsBag options )
+        {
+            if ( options == null || options.EncryptedRoot.IsNullOrWhiteSpace() || options.SelectedFolder.IsNullOrWhiteSpace() )
+            {
+                return BadRequest();
+            }
+
+            try
+            {
+                var root = Rock.Security.Encryption.DecryptString( options.EncryptedRoot );
+                var physicalRootFolder = System.Web.HttpContext.Current.Server.MapPath( root );
+                var physicalSelectedFolder = System.Web.HttpContext.Current.Server.MapPath( options.SelectedFolder ).TrimEnd( '/', '\\' );
+                var folders = GetRecursiveFolders( physicalRootFolder, physicalRootFolder, physicalSelectedFolder );
+
+                if ( folders != null )
+                {
+                    var folderOptions = folders.Select( folderName => new ListItemBag { Text = folderName, Value = folderName } ).ToList();
+
+                    return Ok( folderOptions );
+                }
+
+                return Ok( new List<ListItemBag>() );
+            }
+            catch ( Exception ex )
+            {
+                return InternalServerError( ex );
+            }
+        }
+
+
+
+
+
+
+        /// <summary>
+        /// Gets the asset storage provider [cache] and associated asset storage component using the ID stored in the hidden field.
+        /// </summary>
+        /// <returns>The asset storage provider and component.</returns>
+        private (AssetStorageProviderCache provider, AssetStorageComponent component) GetAssetStorageProvider( int assetStorageProviderId )
+        {
+            var provider = AssetStorageProviderCache.Get( assetStorageProviderId );
+            var component = provider?.AssetStorageComponent;
+
+            return (provider, component);
+        }
+
+        /// <summary>
+        /// Parse a string ID in the form of "${assetStorageProviderID},${encryptedRootPath},${subPath}" and pull out its individual parts.
+        /// </summary>
+        /// <param name="assetItemKey">A key string that identifies an asset in the form of "${assetStorageProviderID},${encryptedRootPath},${subPath}".</param>
+        /// <returns>An <see cref="AssetManagerAsset"/> object that represents all the data of an asset.</returns>
+        private AssetManagerAsset ParseAssetKey( string assetItemKey )
+        {
+            try
+            {
+                var assetParts = assetItemKey.Split( ',' );
+                int assetStorageProviderId;
+
+                if ( assetParts.Length < 3 )
+                {
+                    return null;
+                }
+                else
+                {
+                    assetStorageProviderId = assetParts[0].AsInteger();
+                    var encryptedRoot = assetParts[1].Trim();
+                    var root = Rock.Security.Encryption.DecryptString( encryptedRoot );
+
+                    // Verify all local roots start with "~/"
+                    if ( assetStorageProviderId == 0 && !root.StartsWith( "~/" ) )
+                    {
+                        root = "~/" + root;
+                    }
+
+                    // Verify root ends with "/"
+                    root = root.EndsWith( "/" ) ? root : root + "/";
+
+                    var partialPath = assetParts[2].Trim();
+
+                    if ( partialPath != string.Empty )
+                    {
+                        // Verify path doesn't start with a "/" and does end with a "/"
+                        partialPath = partialPath.TrimStart( '/', '\\' ).TrimEnd( '/', '\\' ) + "/";
+                    }
+
+                    return new AssetManagerAsset
+                    {
+                        ProviderId = assetStorageProviderId,
+                        EncryptedRoot = encryptedRoot,
+                        Root = root,
+                        SubPath = partialPath
+                    };
+                }
+            }
+            catch ( Exception )
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Get a (tree) list of all the folders in the given root folder of the local file system, along with their children if they are in the given list of expanded folders.
+        /// </summary>
+        /// <returns>A (tree) list of all the child folders and an updated version of the given expanded folders list.</returns>
+        private (AssetManagerTreeItemBag, List<string> updatedExpandedFolders) GetRootFolder( string encryptedRootFolder, List<string> expandedFolders, AssetManagerAsset selectedFolder )
+        {
+
+            var rootAssetKey = $"0,{encryptedRootFolder},,True";
+            var parsedAsset = ParseAssetKey( rootAssetKey );
+
+            if ( parsedAsset.Root.IsNullOrWhiteSpace() )
+            {
+                return (null, null);
+            }
+
+            // ensure that the folder is formatted to be relative to web root
+            if ( !parsedAsset.Root.StartsWith( "~/" ) )
+            {
+                parsedAsset.Root = "~/" + parsedAsset.Root;
+            }
+
+            // If the selected folder is using this asset provider, then use its existing encrypted folder value instead or re-encrypting
+            if ( selectedFolder != null && selectedFolder.ProviderId == 0 && selectedFolder.Root == parsedAsset.Root )
+            {
+                encryptedRootFolder = selectedFolder.EncryptedRoot;
+                parsedAsset.EncryptedRoot = selectedFolder.EncryptedRoot;
+            }
+
+            var localRoot = System.Web.HttpContext.Current.Server.MapPath( parsedAsset.Root );
+
+            if ( !Directory.Exists( localRoot ) )
+            {
+                try
+                {
+                    Directory.CreateDirectory( localRoot );
+                }
+                catch
+                {
+                    // intentionally ignore the exception. It'll be handled later.
+                }
+            }
+
+            if ( Directory.Exists( localRoot ) && !IsHiddenFolder( localRoot ) )
+            {
+                var updatedExpandedFolders = new List<string>();
+
+                var folder = new DirectoryInfo( localRoot );
+                var hasChildren = false;
+                var folderKey = $"0,{encryptedRootFolder},,True";
+
+                try
+                {
+                    var subDirectoryList = Directory.GetDirectories( localRoot )
+                        .Where( dir => !IsHiddenFolder( dir ) )
+                        .ToList();
+                    hasChildren = subDirectoryList.Any();
+                }
+                catch ( Exception )
+                {
+                    // Empty. Just mark as having no children.
+                }
+
+                var folderBag = new AssetManagerTreeItemBag
+                {
+                    Text = folder.Name,
+                    Value = folderKey,
+                    IconCssClass = "fa fa-folder",
+                    HasChildren = hasChildren,
+                    UnencryptedRoot = parsedAsset.Root
+                };
+
+                if ( hasChildren && expandedFolders.Contains( $"0,{parsedAsset.Root}" ) )
+                {
+                    updatedExpandedFolders.Add( folderKey );
+                    var (children, exFolders) = GetChildFolders( parsedAsset, expandedFolders );
+
+                    folderBag.Children = children;
+
+                    if ( exFolders?.Any() ?? false )
+                    {
+                        updatedExpandedFolders.AddRange( exFolders );
+                    }
+                }
+
+                return (folderBag, updatedExpandedFolders);
+            }
+
+            return (null, null);
+        }
+
+        /// <summary>
+        /// Get a list of all the folders in the given folder of the local file system, along with their children if they are in the given list of expanded folders.
+        /// </summary>
+        /// <returns>A list of all the child folders and an updated version of the given expanded folders list.</returns>
+        private (List<TreeItemBag>, List<string> updatedExpandedFolders) GetChildFolders( AssetManagerAsset asset, List<string> expandedFolders )
+        {
+            var tree = new List<TreeItemBag>();
+            var updatedExpandedFolders = new List<string>();
+
+            if ( asset.Root.IsNullOrWhiteSpace() )
+            {
+                return (null, null);
+            }
+
+            // ensure that the folder is formatted to be relative to web root
+            if ( !asset.Root.StartsWith( "~/" ) )
+            {
+                asset.Root = "~/" + asset.Root;
+            }
+
+            var localRoot = System.Web.HttpContext.Current.Server.MapPath( asset.Root );
+            var localPath = System.Web.HttpContext.Current.Server.MapPath( asset.FullDirectoryPath );
+            var subDirectories = Directory.GetDirectories( localPath ).OrderBy( a => a ).ToList();
+
+            foreach ( var subDir in subDirectories )
+            {
+                if ( !IsHiddenFolder( subDir ) )
+                {
+                    var subDirInfo = new DirectoryInfo( subDir );
+                    var hasChildren = false;
+                    var subDirKey = $"0,{asset.EncryptedRoot},{subDir.Replace( localRoot, string.Empty ).Replace( "\\", "/" )}/";
+                    var subDirAsset = ParseAssetKey( subDirKey );
+
+                    try
+                    {
+                        var childDirectories = Directory.GetDirectories( subDir )
+                            .Where( dir => !IsHiddenFolder( dir ) )
+                            .ToList();
+                        hasChildren = childDirectories.Any();
+                    }
+                    catch ( Exception )
+                    {
+                        // Empty. Just mark as having no children.
+                    }
+
+                    var subDirItemBag = new AssetManagerTreeItemBag
+                    {
+                        Text = subDirInfo.Name,
+                        Value = subDirKey,
+                        IconCssClass = "fa fa-folder",
+                        HasChildren = hasChildren,
+                        UnencryptedRoot = asset.Root
+                    };
+
+                    if ( hasChildren && expandedFolders.Contains( $"0,{subDirAsset.FullDirectoryPath}" ) )
+                    {
+                        updatedExpandedFolders.Add( subDirKey );
+
+                        var (children, exFolders) = GetChildFolders( subDirAsset, expandedFolders );
+
+                        subDirItemBag.Children = children;
+
+                        if ( exFolders?.Any() ?? false )
+                        {
+                            updatedExpandedFolders.AddRange( exFolders );
+                        }
+                    }
+
+                    tree.Add( subDirItemBag );
+                }
+            }
+
+            return (tree, updatedExpandedFolders);
+        }
+
+        /// <summary>
+        /// Get a list of all files in the given folder. If browseMode is "image", only return the images. Also return any restrictions for the folder.
+        /// </summary>
+        /// <param name="asset">An asset model representing the folder that the files are in.</param>
+        /// <param name="browseMode">"image" or "doc", which determines whether to filter for only images or get all files.</param>
+        /// <returns>An object containing the list of files as well as flags for restrictions on the folder.</returns>
+        private AssetManagerGetFilesResultsBag<Asset> GetFilesInFolder( AssetManagerAsset asset, string browseMode /* image or doc */ )
+        {
+            var physicalRootFolder = System.Web.HttpContext.Current.Server.MapPath( asset.Root );
+            var physicalFolder = System.Web.HttpContext.Current.Server.MapPath( asset.FullDirectoryPath );
+
+            var fileTypeWhiteList = "*.*";
+            var fileList = new List<string>();
+            var files = new List<Asset>();
+
+            if ( browseMode == "image" )
+            {
+                string imageFileTypeWhiteList = GlobalAttributesCache.Get().GetValue( "ContentImageFiletypeWhitelist" );
+                if ( imageFileTypeWhiteList.IsNotNullOrWhiteSpace() )
+                {
+                    fileTypeWhiteList = imageFileTypeWhiteList;
+                }
+            }
+
+            // Directory.GetFiles doesn't support multiple patterns, so we'll do one at a time
+            List<string> fileFilters = fileTypeWhiteList.Split( new char[] { ';', ',' }, StringSplitOptions.RemoveEmptyEntries )
+                .Select( s => s = "*." + s.TrimStart( new char[] { '*', ' ' } ).TrimStart( '.' ) ) // ensure that the filter starts with '*.'
+                .ToList();
+
+            foreach ( var filter in fileFilters )
+            {
+                fileList.AddRange( Directory.GetFiles( physicalFolder, filter ).OrderBy( a => a ).ToList() );
+            }
+
+            var dir = new DirectoryInfo( physicalFolder );
+            var fileInfoList = dir.GetFiles();
+
+
+            foreach ( var filePath in fileList )
+            {
+                var file = new Asset();
+
+                var fileInfo = new FileInfo( Path.Combine( physicalFolder, filePath ) );
+                string fileName = Path.GetFileName( filePath ).Replace( "'", "&#39;" );
+                string relativeFilePath = filePath.Replace( physicalRootFolder, string.Empty );
+                string rootRelativePath = asset.Root.TrimEnd( '/', '\\' ) + "/" + relativeFilePath.TrimStart( '/', '\\' ).Replace( "\\", "/" );
+                string thumbUrl = RockApp.Current.ResolveRockUrl( "~/api/FileBrowser/GetFileThumbnail?relativeFilePath=" + HttpUtility.UrlEncode( rootRelativePath ) );
+                string downloadUrl = RockApp.Current.ResolveRockUrl( rootRelativePath );
+
+                file = new Asset
+                {
+                    AssetStorageProviderId = 0,
+                    Name = fileInfo.Name,
+                    Key = rootRelativePath,
+                    Uri = downloadUrl,
+                    Type = AssetType.File,
+                    IconPath = thumbUrl,
+                    LastModifiedDateTime = fileInfo.LastWriteTime,
+                    FileSize = fileInfo.Length
+                };
+
+                files.Add( file );
+            }
+
+            return new AssetManagerGetFilesResultsBag<Asset>
+            {
+                Files = files,
+                IsFolderRestricted = IsRestrictedFolder( asset.FullPath ),
+                IsFolderUploadRestricted = IsUploadRestrictedFolder( asset.FullPath )
+            };
+        }
+
+        /// <summary>
+        /// Get a tree of all the asset storage providers
+        /// </summary>
+        /// <returns>A tree of all the asset storage providers</returns>
+        private (List<TreeItemBag>, List<string> updatedExpandedFolders) GetAssetStorageProviders( List<string> expandedFolders, AssetManagerAsset selectedFolder )
+        {
+            var providers = AssetStorageProviderCache.All()
+                .Where( a => a.EntityTypeId.HasValue && a.IsActive );
+            var tree = new List<TreeItemBag>();
+            var updatedExpandedFolders = new List<string>();
+
+            foreach ( var provider in providers )
+            {
+                var component = provider.AssetStorageComponent;
+                var rootFolder = component.GetRootFolder( provider.ToEntity() );
+                var encryptedRootFolder = Rock.Security.Encryption.EncryptString( rootFolder );
+
+                // If the selected folder is using this asset provider, then use its existing encrypted folder value instead or re-encrypting
+                if ( selectedFolder != null && selectedFolder.ProviderId == provider.Id && selectedFolder.Root == rootFolder )
+                {
+                    encryptedRootFolder = selectedFolder.EncryptedRoot;
+                }
+
+                var providerBag = new AssetManagerTreeItemBag
+                {
+                    Text = provider.Name,
+                    Value = $"{provider.Id},{encryptedRootFolder},,{true}",
+                    IconCssClass = component.IconCssClass,
+                    HasChildren = true,
+                    UnencryptedRoot = rootFolder
+                };
+
+                if ( expandedFolders.Contains( $"{provider.Id},{rootFolder}" ) )
+                {
+                    var (children, exFolders) = GetChildrenOfAsset( ParseAssetKey( providerBag.Value ), expandedFolders );
+                    providerBag.Children = children;
+                    providerBag.ChildCount = children?.Count ?? 0;
+
+                    if ( providerBag.ChildCount == 0 )
+                    {
+                        providerBag.HasChildren = false;
+                    }
+                    else
+                    {
+                        updatedExpandedFolders.Add( providerBag.Value );
+                        updatedExpandedFolders.AddRange( exFolders );
+                    }
+                }
+
+                tree.Add( providerBag );
+            }
+
+            return (tree, updatedExpandedFolders);
+        }
+
+        /// <summary>
+        /// Get the child folders of the given parent folder asset.
+        /// </summary>
+        /// <param name="parentAsset">Parent of the children we want to get.</param>
+        /// <param name="expandedFolders">A list of expanded folders that gets updated with the correct encrypted roots.</param>
+        /// <returns>The child folders and a list of folders that got updated from the expandedFolders list.</returns>
+        private (List<TreeItemBag> children, List<string> updatedExpandedFolders) GetChildrenOfAsset( AssetManagerAsset parentAsset, List<string> expandedFolders )
+        {
+            var tree = new List<TreeItemBag>();
+            var updatedExpandedFolders = new List<string>();
+
+            var (provider, component) = GetAssetStorageProvider( parentAsset.ProviderId.Value );
+
+            if ( provider == null || component == null )
+            {
+                return (tree, updatedExpandedFolders);
+            }
+
+            var compontentRoot = component.GetRootFolder( provider.ToEntity() );
+            compontentRoot = compontentRoot.TrimEnd( '/', '\\' ) + "/";
+
+            // Cannot request assets from a root other than the configured one
+            if ( compontentRoot != parentAsset.Root )
+            {
+                return (tree, updatedExpandedFolders);
+            }
+
+            var asset = new Asset { Type = AssetType.Folder, Key = parentAsset.FullPath.TrimStart( '/', '\\' ) ?? string.Empty };
+            var folders = component.ListFoldersInFolder( provider.ToEntity(), asset );
+
+            foreach ( Asset folder in folders )
+            {
+                // If there's a folder with a name that has slashes, exclude it because it causes issues with trying to load its children
+                // and it's invalid according to our folder name rules
+                if ( folder.Name.Contains( "/" ) )
+                {
+                    continue;
+                }
+
+                var folderBag = new AssetManagerTreeItemBag
+                {
+                    Text = folder.Name,
+                    Value = $"{parentAsset.ProviderId},{parentAsset.EncryptedRoot},{Path.Combine( parentAsset.SubPath, folder.Name ).TrimEnd( '/', '\\' ) + "/"}",
+                    IconCssClass = "fa fa-folder",
+                    // Verifying if it has any children is slow, so we just say true and it gets fixed
+                    // on the client when attempting to expand children
+                    HasChildren = true,
+                    UnencryptedRoot = parentAsset.Root
+                };
+
+
+                if ( expandedFolders?.Contains( $"{parentAsset.ProviderId},{folder.Key}" ) ?? false )
+                {
+                    var (children, exFolders) = GetChildrenOfAsset( ParseAssetKey( folderBag.Value ), expandedFolders );
+                    folderBag.Children = children;
+                    folderBag.ChildCount = children?.Count ?? 0;
+
+                    if ( folderBag.ChildCount == 0 )
+                    {
+                        folderBag.HasChildren = false;
+                    }
+                    else
+                    {
+                        updatedExpandedFolders.Add( folderBag.Value );
+                        updatedExpandedFolders.AddRange( exFolders );
+                    }
+                }
+
+                tree.Add( folderBag );
+            }
+
+            return (tree, updatedExpandedFolders);
+        }
+
+        /// <summary>
+        /// Recursively gets a list of every folder that is in the given directory.
+        /// </summary>
+        /// <param name="directoryPath">The folder we want to get the children of.</param>
+        /// <param name="physicalRootFolder">The root folder where this list was started from.</param>
+        /// <param name="excludedFolder">The name of a folder that should be excluded from the list (and its children).</param>
+        /// <returns>A list of <see cref="ListItemBag"/> items of each child directory.</returns>
+        private List<string> GetRecursiveFolders( string directoryPath, string physicalRootFolder, string excludedFolder )
+        {
+            // If this is a hidden folder, don't show it.
+            if ( IsHiddenFolder( directoryPath ) || directoryPath == excludedFolder )
+            {
+                return new List<string>();
+            }
+
+            DirectoryInfo directoryInfo = new DirectoryInfo( directoryPath );
+            string relativeFolderPath = directoryPath.Replace( physicalRootFolder, string.Empty );
+
+            var folders = new List<string> { string.IsNullOrEmpty( relativeFolderPath ) ? "/" : relativeFolderPath.Replace( "\\", "/" ) };
+
+            List<string> subDirectoryList = Directory.GetDirectories( directoryPath ).OrderBy( a => a ).ToList();
+
+            foreach ( var subDirectoryPath in subDirectoryList )
+            {
+                folders.AddRange( GetRecursiveFolders( subDirectoryPath, physicalRootFolder, excludedFolder ) );
+            }
+
+            return folders;
+        }
+
+        /// <summary>
+        /// Determines whether the given folder name is a valid folder name.
+        /// </summary>
+        /// <param name="folderName">Name of the rename folder.</param>
+        /// <returns>True if folderName is valid, false otherwise</returns>
+        private bool IsValidAssetFolderName( string folderName )
+        {
+            Regex regularExpression = new Regex( @"^[^*/><?\\\\|:,~]+$" );
+            var isValid = regularExpression.IsMatch( folderName );
+
+            var invalidChars = Path.GetInvalidPathChars().ToList();
+            invalidChars.Add( '\\' );
+            invalidChars.Add( '/' );
+            invalidChars.Add( '~' );
+
+            isValid = isValid && !( folderName.ToList().Any( a => invalidChars.Contains( a ) ) || folderName.StartsWith( ".." ) || folderName.EndsWith( "." ) );
+
+            return isValid;
+        }
+
+        /// <summary>
+        /// Whether the folder at the given path should be hidden from the file manager.
+        /// </summary>
+        /// <param name="localPathName"></param>
+        /// <returns>True if the folder at the given path should be hidden from the file manager, otherwise false.</returns>
+        private bool IsHiddenFolder( string localPathName )
+        {
+            var HiddenFolders = new List<string> { "Content\\ASM_Thumbnails" };
+            return HiddenFolders.Any( a => localPathName.IndexOf( a, StringComparison.OrdinalIgnoreCase ) > -1 );
+        }
+
+        /// <summary>
+        /// Whether the folder at the given path name is restricted from certain actions.
+        /// </summary>
+        /// <param name="pathName"></param>
+        /// <returns>True if the folder at the given path name is restricted from certain actions, otherwise false.</returns>
+        private bool IsRestrictedFolder( string pathName )
+        {
+            var restrictedFolders = new List<string>()
+            {
+                "Bin",
+                "App_Data",
+                "App_Code",
+                "App_Browsers",
+                "Assets",
+                "Blocks",
+                "Content",
+                "Plugins",
+                "Scripts",
+                "SqlServerTypes",
+                "Styles",
+                "Themes",
+                "Webhooks"
+            };
+
+            pathName = pathName.TrimStart( '~' ).TrimStart( '/', '\\' ).TrimEnd( '/', '\\' );
+
+            return restrictedFolders.Contains( pathName, StringComparer.OrdinalIgnoreCase );
+        }
+
+        /// <summary>
+        /// Whether the folder at the given path name is restricted from certain types of uploads.
+        /// </summary>
+        /// <param name="pathName"></param>
+        /// <returns>True if the folder at the given path name is restricted from certain types of uploads, otherwise false.</returns>
+        private bool IsUploadRestrictedFolder( string pathName )
+        {
+            var restrictedFolders = new List<string>()
+            {
+                "Bin",
+                "App_Code"
+            };
+
+            pathName = pathName.TrimStart( '~' ).TrimStart( '/', '\\' ).TrimEnd( '/', '\\' );
+
+            return restrictedFolders.Any( a => pathName.StartsWith( a, StringComparison.OrdinalIgnoreCase ) );
+        }
+
+        #endregion
+
         #region Asset Storage Provider Picker
 
         /// <summary>
@@ -760,10 +1892,10 @@ namespace Rock.Rest.v2
         #region Badge Control
 
         /// <summary>
-        /// TODO
+        /// Get a rendered badge matching the given options
         /// </summary>
-        /// <param name="options">The options that describe badge to load.</param>
-        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the badge components.</returns>
+        /// <param name="options">The options that describe the badge to load.</param>
+        /// <returns>The HTML of a specified badge.</returns>
         [HttpPost]
         [System.Web.Http.Route( "BadgeControlGetBadge" )]
         [Authenticate]
@@ -829,7 +1961,7 @@ namespace Rock.Rest.v2
         /// Get the rendered badge information for a specific entity.
         /// </summary>
         /// <param name="options">The options that describe which badges to render.</param>
-        /// <returns>A collection of <see cref="RenderedBadgeBag"/> objects.</returns>
+        /// <returns>A collection of <see cref="ViewModels.Crm.RenderedBadgeBag"/> objects.</returns>
         [HttpPost]
         [System.Web.Http.Route( "BadgeListGetBadges" )]
         [Rock.SystemGuid.RestActionGuid( "34387B98-BF7E-4000-A28A-24EA08605285" )]
@@ -5828,7 +6960,8 @@ namespace Rock.Rest.v2
             var rockContext = new RockContext();
 
             // Chain to the v1 controller.
-            return Rock.Rest.Controllers.PeopleController.SearchForPeople( rockContext, options.Name, options.Address, options.Phone, options.Email, options.IncludeDetails, options.IncludeBusinesses, options.IncludeDeceased, false );
+            var results = Rock.Rest.Controllers.PeopleController.SearchForPeople( rockContext, options.Name, options.Address, options.Phone, options.Email, options.IncludeDetails, options.IncludeBusinesses, options.IncludeDeceased, false );
+            return results;
         }
 
         #endregion
@@ -5848,6 +6981,7 @@ namespace Rock.Rest.v2
             var countryCodeRules = new Dictionary<string, List<PhoneNumberCountryCodeRulesConfigurationBag>>();
             var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
             string defaultCountryCode = null;
+            var countryCodes = new List<string>();
 
             if ( definedType != null )
             {
@@ -5873,6 +7007,7 @@ namespace Rock.Rest.v2
                     }
 
                     countryCodeRules.Add( countryCode, rules );
+                    countryCodes.Add( countryCode );
                 }
             }
 
@@ -5882,6 +7017,7 @@ namespace Rock.Rest.v2
                 {
                     Rules = countryCodeRules,
                     DefaultCountryCode = defaultCountryCode,
+                    CountryCodes = countryCodes,
                     SmsOptInText = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.SMS_OPT_IN_MESSAGE_LABEL )
                 } );
             }
@@ -5889,6 +7025,7 @@ namespace Rock.Rest.v2
             return Ok( new PhoneNumberBoxGetConfigurationResultsBag
             {
                 Rules = countryCodeRules,
+                CountryCodes = countryCodes,
                 DefaultCountryCode = defaultCountryCode
             } );
         }

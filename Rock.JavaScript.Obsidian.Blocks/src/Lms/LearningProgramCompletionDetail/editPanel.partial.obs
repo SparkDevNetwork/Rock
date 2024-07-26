@@ -34,7 +34,7 @@
     import { LearningProgramCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningProgramCompletionDetail/learningProgramCompletionBag";
     import { LearningProgramCompletionDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningProgramCompletionDetail/learningProgramCompletionDetailOptionsBag";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
-    import { CompletionStatusDescription } from "@Obsidian/Enums/Lms/completionStatus";
+    import { CompletionStatus, CompletionStatusDescription } from "@Obsidian/Enums/Lms/completionStatus";
     import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
 
     const props = defineProps({
@@ -57,7 +57,7 @@
 
     const startDate = propertyRef(props.modelValue.bag?.startDate ?? null, "StartDate");
     const endDate = propertyRef(props.modelValue.bag?.endDate ?? null, "EndDate");
-    const completionStatus = propertyRef(props.modelValue.bag?.completionStatus?.toString() ?? null, "CompletionStatus");
+    const completionStatus = propertyRef(props.modelValue.bag?.completionStatus?.toString() ?? "", "CompletionStatus");
     const completionStatusItems = enumToListItemBag(CompletionStatusDescription);
 
     // The properties that are being edited. This should only contain
@@ -82,7 +82,7 @@
     watch(() => props.modelValue, () => {
         updateRefValue(startDate, props.modelValue.bag?.startDate ?? null);
         updateRefValue(endDate, props.modelValue.bag?.endDate ?? null);
-        updateRefValue(completionStatus, props.modelValue.bag?.completionStatus ?? null);
+        updateRefValue(completionStatus, props.modelValue.bag?.completionStatus?.toString() ?? "");
     });
 
     // Determines which values we want to track changes on (defined in the
@@ -94,7 +94,7 @@
 
         setPropertiesBoxValue(newValue, "startDate", startDate.value ?? null);
         setPropertiesBoxValue(newValue, "endDate", endDate.value ?? null);
-        setPropertiesBoxValue(newValue, "completionStatus", completionStatus.value ?? null);
+        setPropertiesBoxValue(newValue, "completionStatus", parseInt(completionStatus.value?.toString() ?? "") as CompletionStatus);
 
         emit("update:modelValue", newValue);
     });

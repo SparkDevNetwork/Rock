@@ -2,7 +2,7 @@
 <template>
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
-          keyField="id"
+          keyField="idKey"
           itemTerm="Note Watch"
           :entityTypeGuid="EntityType.NoteWatch"
           stickyHeader
@@ -15,7 +15,8 @@
                        title="Watching"
                        field="isWatching"
                        visiblePriority="xs"
-                       width="5%"/>
+                       width="80px"
+                       :itemClass="'d-flex justify-content-center align-items-center'" />
 
         <PersonColumn name="watcher"
                       title="Watcher Person"
@@ -27,6 +28,7 @@
                     title="Watcher Group"
                     field="watcherGroup"
                     :filter="textValueFilter"
+
                     visiblePriority="xs" />
 
         <TextColumn name="noteType"
@@ -42,10 +44,11 @@
                     visiblePriority="xs" />
 
         <BooleanColumn name="allowOverride"
-                       title="Allow Override"
+                       title="Allow Overrides"
                        field="allowOverride"
                        visiblePriority="xs"
-                       width="5%"/>
+                       width="80px"
+                       :itemClass="'d-flex justify-content-center align-items-center'" />
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
 

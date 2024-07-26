@@ -271,6 +271,15 @@ namespace Rock.Model
         public string PushOpenMessage { get; set; }
 
         /// <summary>
+        /// Gets or sets the push open message structured content JSON.
+        /// </summary>
+        /// <value>
+        /// The push open message structured content JSON.
+        /// </value>
+        [DataMember]
+        public string PushOpenMessageJson { get; set; }
+
+        /// <summary>
         /// Gets or sets the push data.
         /// </summary>
         /// <value>

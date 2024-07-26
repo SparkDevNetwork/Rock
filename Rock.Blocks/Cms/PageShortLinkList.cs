@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
@@ -29,7 +31,7 @@ using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.PageShortLinkList;
 using Rock.Web.Cache;
 
-namespace Rock.Blocks.CMS
+namespace Rock.Blocks.Cms
 {
     /// <summary>
     /// Displays a list of page short links.
@@ -39,7 +41,7 @@ namespace Rock.Blocks.CMS
     [Category( "CMS" )]
     [Description( "Displays a list of page short links." )]
     [IconCssClass( "fa fa-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the page short link details.",
@@ -62,7 +64,24 @@ namespace Rock.Blocks.CMS
             public const string DetailPage = "DetailPage";
         }
 
+        private static class PreferenceKey
+        {
+            public const string FilterToken = "filter-token";
+            public const string FilterSite = "filter-site";
+        }
+
         #endregion Keys
+
+        #region Properties
+
+        protected string FilterToken => GetBlockPersonPreferences()
+            .GetValue( PreferenceKey.FilterToken );
+
+        protected int? FilterSite => GetBlockPersonPreferences()
+            .GetValue( PreferenceKey.FilterSite )
+            .AsIntegerOrNull();
+
+        #endregion
 
         #region Methods
 
@@ -73,7 +92,7 @@ namespace Rock.Blocks.CMS
             var builder = GetGridBuilder();
 
             box.IsAddEnabled = GetIsAddEnabled();
-            box.IsDeleteEnabled = true;
+            box.IsDeleteEnabled = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
             box.ExpectedRowCount = null;
             box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions();
@@ -88,7 +107,10 @@ namespace Rock.Blocks.CMS
         /// <returns>The options that provide additional details to the block.</returns>
         private PageShortLinkListOptionsBag GetBoxOptions()
         {
-            var options = new PageShortLinkListOptionsBag();
+            var options = new PageShortLinkListOptionsBag
+            {
+                SiteItems = SiteCache.All().OrderBy( s => s.Name ).ToListItemBagList()
+            };
 
             return options;
         }
@@ -99,9 +121,7 @@ namespace Rock.Blocks.CMS
         /// <returns>A boolean value that indicates if the add button should be enabled.</returns>
         private bool GetIsAddEnabled()
         {
-            var entity = new PageShortLink();
-
-            return entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            return BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
         }
 
         /// <summary>
@@ -119,8 +139,19 @@ namespace Rock.Blocks.CMS
         /// <inheritdoc/>
         protected override IQueryable<PageShortLink> GetListQueryable( RockContext rockContext )
         {
-            return base.GetListQueryable( rockContext )
-                .Include( a => a.Site );
+            var queryable = base.GetListQueryable( rockContext );
+
+            if ( !string.IsNullOrWhiteSpace( FilterToken ) )
+            {
+                queryable = queryable.Where( s => s.Token.Contains( FilterToken ) );
+            }
+
+            if ( FilterSite.HasValue )
+            {
+                queryable = queryable.Where( s => s.SiteId == FilterSite.Value );
+            }
+
+            return queryable;
         }
 
         /// <inheritdoc/>
@@ -129,11 +160,10 @@ namespace Rock.Blocks.CMS
             return new GridBuilder<PageShortLink>()
                 .WithBlock( this )
                 .AddTextField( "idKey", a => a.IdKey )
-                .AddField( "id", a => a.Id)
                 .AddTextField( "url", a => a.Url )
                 .AddTextField( "site", a => a.Site?.Name )
                 .AddTextField( "token", a => a.Token )
-                .AddTextField( "shortLink", a => new ShortLinkRow(a).ShortLink )
+                .AddTextField( "shortLink", a => new ShortLinkRow( a ).ShortLink )
                 .AddAttributeFields( GetGridAttributes() );
         }
 
@@ -149,31 +179,28 @@ namespace Rock.Blocks.CMS
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new PageShortLinkService( RockContext );
+            var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( entity == null )
             {
-                var entityService = new PageShortLinkService( rockContext );
-                var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
-
-                if ( entity == null )
-                {
-                    return ActionBadRequest( $"{PageShortLink.FriendlyTypeName} not found." );
-                }
-
-                if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-                {
-                    return ActionBadRequest( $"Not authorized to delete {PageShortLink.FriendlyTypeName}." );
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                return ActionOk();
+                return ActionBadRequest( $"{PageShortLink.FriendlyTypeName} not found." );
             }
+
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to delete {PageShortLink.FriendlyTypeName}." );
+            }
+
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
+
+            return ActionOk();
         }
 
         #endregion
@@ -189,7 +216,7 @@ namespace Rock.Blocks.CMS
             public string Url { get; set; }
             public string ShortLink { get; set; }
 
-            public ShortLinkRow(PageShortLink pageShortLink)
+            public ShortLinkRow( PageShortLink pageShortLink )
             {
                 Id = pageShortLink.Id;
                 SiteId = pageShortLink.Site.Id;

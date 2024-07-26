@@ -150,12 +150,30 @@ namespace Rock.Utility
 
             if ( System.Web.Hosting.HostingEnvironment.VirtualPathProvider != null )
             {
-                urlBuilder.Append( $"{System.Web.VirtualPathUtility.ToAbsolute( "~" )}GetImage.ashx?{fileIdentifierParameter}" );
+                string baseUrl = System.Web.VirtualPathUtility.ToAbsolute( "~/" );
+                if (fileIdentifierParameter.StartsWith("Assets/"))
+                {
+                    // If it's a relative path, just append it to the base URL
+                    urlBuilder.Append( $"{baseUrl}{fileIdentifierParameter}" );
+                }
+                else
+                {
+                    // Otherwise, use the GetImage.ashx handler
+                    urlBuilder.Append( $"{baseUrl}GetImage.ashx?{fileIdentifierParameter}" );
+                }
             }
             else
             {
                 // The hosting environment is not configured to resolve the file path.
-                urlBuilder.Append( $"~/GetImage.ashx?{fileIdentifierParameter}" );
+                if ( fileIdentifierParameter.StartsWith( "Assets/" ) )
+                {
+                    urlBuilder.Append( $"~/" + fileIdentifierParameter );
+                }
+                else
+                {
+                    urlBuilder.Append( $"~/GetImage.ashx?{fileIdentifierParameter}" );
+                }
+
             }
             
             if ( options.FileName.IsNotNullOrWhiteSpace() )

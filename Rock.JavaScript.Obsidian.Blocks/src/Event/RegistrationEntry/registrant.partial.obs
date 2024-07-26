@@ -5,7 +5,7 @@
             <template v-if="isDataForm">
                 <template v-if="currentFormIndex === 0">
                     <div v-if="familyOptions.length > 1" class="well">
-                        <RadioButtonList :label="`${firstName || registrantTermTitleCase} is in the same ${viewModel.familyTerm || 'immediate family'} as`" rules="required" :modelValue="currentRegistrant.familyGuid ?? undefined" @update:modelValue="onSetFamilyGuid" :items="familyOptions" validationTitle="Family" />
+                        <RadioButtonList :label="`${firstName || registrationEntryTerms.registrantSingularTitleCase} is in the same ${viewModel.familyTerm || 'immediate family'} as`" rules="required" :modelValue="currentRegistrant.familyGuid ?? undefined" @update:modelValue="onSetFamilyGuid" :items="familyOptions" validationTitle="Family" />
                     </div>
                     <div v-if="isFamilyMembersDropDownVisible" class="row">
                         <div class="col-md-6">
@@ -30,7 +30,7 @@
                 </ItemsWithPreAndPostHtml>
 
                 <div v-if="!isWaitList && isLastForm && viewModel.fees?.length && viewModel.fees.some(f => !!f.items?.length)" class="well registration-additional-options">
-                    <h4>{{ feesTermTitleCase }}</h4>
+                    <h4>{{ registrationEntryTerms.feePluralTitleCase }}</h4>
                     <template v-for="fee in viewModel.fees" :key="fee.guid">
                         <FeeField v-if="currentRegistrant.feeItemQuantities" :modelValue="currentRegistrant.feeItemQuantities" :fee="fee" @update:modelValue="onUpdateRegistrantFee" />
                     </template>
@@ -38,13 +38,13 @@
             </template>
 
             <div v-if="isSignatureForm" class="registrant-signature-document styled-scroll">
-                <h2 class="signature-header">Please Sign the {{ signatureDocumentTermTitleCase }} for {{ firstName }}</h2>
+                <h2 class="signature-header">Please Sign the {{ registrationEntryTerms.signatureDocumentSingularTitleCase }} for {{ firstName }}</h2>
                 <div class="signaturedocument-container">
                     <iframe src="javascript: window.frameElement.getAttribute('srcdoc');" onload="this.style.height = this.contentWindow.document.body.scrollHeight + 'px'" class="signaturedocument-iframe" border="0" frameborder="0" :srcdoc="signatureSource"></iframe>
                 </div>
 
                 <div class="well">
-                    <ElectronicSignature v-model="signatureData" :isDrawn="isSignatureDrawn" @signed="onSigned" :documentTerm="signatureDocumentTermTitleCase" />
+                    <ElectronicSignature v-model="signatureData" :isDrawn="isSignatureDrawn" @signed="onSigned" :documentTerm="registrationEntryTerms.signatureDocumentSingularTitleCase" />
                 </div>
             </div>
 
@@ -68,7 +68,7 @@
     import FeeField from "./feeField.partial.obs";
     import RegistrantAttributeField from "./registrantAttributeField.partial.obs";
     import RegistrantPersonField from "./registrantPersonField.partial.obs";
-    import { convertComparisonValue, CurrentRegistrationEntryState, GetPersistSessionArgs, getRegistrantBasicInfo, OriginalFormFieldValues, scrollToTopAfterNextRender, use } from "./utils.partial";
+    import { convertComparisonValue, CurrentRegistrationEntryState, GetPersistSessionArgs, getRegistrantBasicInfo, OriginalFormFieldValues, RegistrationEntryTerms, scrollToTopAfterNextRender, use } from "./utils.partial";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import ElectronicSignature from "@Obsidian/Controls/electronicSignature.obs";
     import ItemsWithPreAndPostHtml from "@Obsidian/Controls/itemsWithPreAndPostHtml.obs";
@@ -85,7 +85,6 @@
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { getFieldType } from "@Obsidian/Utility/fieldTypes";
     import { areEqual, emptyGuid, newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
-    import { toTitleCase } from "@Obsidian/Utility/stringUtils";
     import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrantBag";
     import { RegistrationEntryFamilyMemberBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFamilyMemberBag";
     import { RegistrationEntryVisibilityBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryVisibilityBag";
@@ -121,6 +120,7 @@
     const invokeBlockAction = useInvokeBlockAction();
     const registrationEntryState = use(CurrentRegistrationEntryState);
     const getRegistrationEntryBlockArgs = use(GetPersistSessionArgs);
+    const registrationEntryTerms = use(RegistrationEntryTerms);
 
     // Make sure current registrant properties are initialized.
     if (!props.currentRegistrant.feeItemQuantities) {
@@ -282,11 +282,6 @@
         return store.state.currentPerson;
     });
 
-    /** The fees term (plural) (title case). */
-    const feesTermTitleCase = computed<string>(() => {
-        return toTitleCase(viewModel.value.pluralFeeTerm ?? null) || "Fees";
-    });
-
     /** The radio options that are displayed to allow the user to pick another person that this
      *  registrant is part of a family. */
     const familyOptions = computed<ListItemBag[]>(() => {
@@ -377,11 +372,6 @@
             })) ?? [];
     });
 
-    /** The registrant term (singular) (title case). */
-    const registrantTermTitleCase = computed<string>(() => {
-        return toTitleCase(viewModel.value.registrantTerm ?? null) || "Registrant";
-    });
-
     const firstName = computed<string>(() => {
         return getRegistrantBasicInfo(props.currentRegistrant, viewModel.value.registrantForms ?? []).firstName;
     });
@@ -394,11 +384,6 @@
         }
 
         return viewModel.value.familyMembers?.filter(fm => fm.guid)?.find(fm => areEqual(fm.guid, personGuid)) || null;
-    });
-
-    /** The signature document term (singular) (title case). */
-    const signatureDocumentTermTitleCase = computed<string>(() => {
-        return toTitleCase(viewModel.value.signatureDocumentTerm ?? null) || "Release";
     });
 
     // #endregion

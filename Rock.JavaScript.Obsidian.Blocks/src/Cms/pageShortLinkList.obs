@@ -2,16 +2,20 @@
 <template>
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
-          keyField="id"
+          keyField="idKey"
           itemTerm="Shortened Links"
           :entityTypeGuid="EntityType.PageShortLink"
           stickyHeader
           liveUpdates
+          gridSettings
+          :gridSettingsActive="hasSettingsFilters"
+          :onGridSettingsClick="onGridSettingsClick"
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          :showLaunchWorkflow="false"
           @selectItem="onSelectItem">
 
         <TextColumn name="shortLink"
-                    title="Shortened Url"
+                    title="Shortened URL"
                     field="shortLink"
                     :filter="textValueFilter"
                     visiblePriority="xs" />
@@ -28,35 +32,56 @@
                     :filter="textValueFilter"
                     visiblePriority="xs" />
 
-        <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
-
-        <CopyColumn field="shortLink" />
+        <ButtonColumn name="copy"
+                    iconClass="fa fa-clipboard"
+                    visiblePriority="xs"
+                    @click="onCopyClick" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
+
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible"
+                       :siteItems="siteItems"/>
 </template>
 
 <script setup lang="ts">
-    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, TextColumn, textValueFilter, DeleteColumn, CopyColumn } from "@Obsidian/Controls/grid";
+    import Grid, { TextColumn, textValueFilter, DeleteColumn, ButtonColumn,  } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { PageShortLinkListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkList/pageShortLinkListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { NavigationUrlKey } from "./PageShortLinkList/types.partial";
-    import { reactive, ref } from "vue";
+    import { NavigationUrlKey, GridSettingsOptions, PreferenceKey } from "./PageShortLinkList/types.partial";
+    import { reactive, ref, computed, watch } from "vue";
+    import { IGridState } from "@Obsidian/Types/Controls/grid";
+    import GridSettingsModal from "./PageShortLinkList/gridSettingsModal.partial.obs";
 
     const config = useConfigurationValues<ListBlockBox<PageShortLinkListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
 
     // #region Values
 
     const gridDataSource = ref<Promise<GridDataBag>>();
-
     let gridData: GridDataBag | undefined;
 
+    const isGridSettingsVisible = ref(false);
+    const siteItems = ref(config.options?.siteItems ?? []);
+    const gridSettings = ref<GridSettingsOptions>({
+        site: preferences.getValue(PreferenceKey.FilterSite),
+        token: preferences.getValue(PreferenceKey.FilterToken)
+    });
+
     // #endregion
+
+    // #region Computed Values
+    /** `true` if the grid settings is performing any filtering. */
+    const hasSettingsFilters = computed((): boolean => {
+        return !!(gridSettings.value.site || gridSettings.value.token);
+    });
+
 
     // #region Functions
 
@@ -86,18 +111,7 @@
      */
     function onSelectItem(key: string): void {
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
-            const templateURL = config.navigationUrls[NavigationUrlKey.DetailPage];
-
-            if (templateURL.includes("((Key))")) {
-                const newURL = templateURL.replace("((Key))", key);
-                window.location.href = newURL;
-            }
-            else {
-                alert("Navigation URL template does not contain the expected placeholder ((Key)). Please ensure the configuration is correct.");
-            }
-        }
-        else {
-            alert("Navigation URL for DetailPage was not found in block configuration. Please update your configuration and try again.");
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
         }
     }
 
@@ -132,6 +146,40 @@
             window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
         }
     }
+
+    /**
+    * The function to copy a specific website link to the clipboard.
+    *
+    * @param key The key of the row whose link is to be copied.
+    * @param grid The grid state.
+    */
+    async function onCopyClick(key: string, grid: IGridState): Promise<void> {
+        const row = grid.rows.find(r => r.idKey === key);
+        if (row) {
+            const shortLink = row.shortLink;
+            await navigator.clipboard.writeText(shortLink as string);
+            alert("Short link copied to clipboard.");
+        }
+    }
+
+    /**
+     * Called when the grid settings icon is clicked, displays the block filters..
+     */
+    function onGridSettingsClick(): void {
+        isGridSettingsVisible.value = true;
+    }
+
+      /**
+    * Watch for changes to the grid settings and update the preferences as needed.
+    */
+    watch(gridSettings, async () => {
+        preferences.setValue(PreferenceKey.FilterSite, gridSettings.value.site ?? "");
+        preferences.setValue(PreferenceKey.FilterToken, gridSettings.value.token ?? "");
+
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
+    });
 
     // #endregion
 

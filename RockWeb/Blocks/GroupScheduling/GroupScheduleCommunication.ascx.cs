@@ -260,6 +260,11 @@ namespace RockWeb.Blocks.GroupScheduling
                     .SelectMany( a => a.Attendees )
                     .WhereHasScheduledAttendanceItemStatus( selectedInviteStatus );
 
+            if ( !selectedInviteStatus.Contains( ScheduledAttendanceItemStatus.Declined ) )
+            {
+                scheduledAttendancesForOccurrenceQuery = scheduledAttendancesForOccurrenceQuery.Where( a => a.RSVP != RSVP.No );
+            }
+
             var personIds = scheduledAttendancesForOccurrenceQuery.Select( a => a.PersonAlias.PersonId ).Distinct().ToList();
             if ( !personIds.Any() )
             {

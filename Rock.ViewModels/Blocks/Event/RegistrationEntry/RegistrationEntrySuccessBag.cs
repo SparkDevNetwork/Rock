@@ -53,5 +53,29 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// The gateway person identifier.
         /// </value>
         public string GatewayPersonIdentifier { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of remaining spots for the registration instance.
+        /// </summary>
+        /// <value>
+        /// The number of remaining spots for the registration instance.
+        /// </value>
+        public int? SpotsRemaining { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of registered registrants in this registration.
+        /// </summary>
+        /// <value>
+        /// The number of registered registrants in this registration.
+        /// </value>
+        public int RegisteredCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of wait-listed registrants in this registration.
+        /// </summary>
+        /// <value>
+        /// The number of wait-listed registrants in this registration.
+        /// </value>
+        public int WaitListedCount { get; set; }
     }
 }

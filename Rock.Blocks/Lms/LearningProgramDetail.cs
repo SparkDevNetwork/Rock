@@ -82,7 +82,7 @@ namespace Rock.Blocks.Lms
 
     [Rock.SystemGuid.EntityTypeGuid( "41351a30-3b4f-44da-b413-49d7c997fbb5" )]
     [Rock.SystemGuid.BlockTypeGuid( "796c87e7-678f-4a38-8c04-a401a4f7ac21" )]
-    public class LearningProgramDetail : RockDetailBlockType, IBreadCrumbBlock
+    public class LearningProgramDetail : RockEntityDetailBlockType<LearningProgram, LearningProgramBag>, IBreadCrumbBlock
     {
         #region Keys
 
@@ -121,18 +121,14 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var box = new DetailBlockBox<LearningProgramBag, LearningProgramDetailOptionsBag>();
+            var box = new DetailBlockBox<LearningProgramBag, LearningProgramDetailOptionsBag>();
 
-                SetBoxInitialEntityState( box, rockContext );
+            SetBoxInitialEntityState( box );
 
-                box.NavigationUrls = GetBoxNavigationUrls( box.Entity.IdKey );
-                box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<LearningProgram>();
+            box.NavigationUrls = GetBoxNavigationUrls( box.Entity.IdKey );
+            box.Options = GetBoxOptions( box.IsEditable );
 
-                return box;
-            }
+            return box;
         }
 
         /// <summary>
@@ -140,13 +136,12 @@ namespace Rock.Blocks.Lms
         /// or edit the entity.
         /// </summary>
         /// <param name="isEditable"><c>true</c> if the entity is editable; otherwise <c>false</c>.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>The options that provide additional details to the block.</returns>
-        private LearningProgramDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext )
+        private LearningProgramDetailOptionsBag GetBoxOptions( bool isEditable )
         {
             var options = new LearningProgramDetailOptionsBag();
 
-            options.SystemCommunications = isEditable ? GetCommunicationTemplates( rockContext ) : new List<ListItemBag>();
+            options.SystemCommunications = isEditable ? GetCommunicationTemplates() : new List<ListItemBag>();
 
             return options;
         }
@@ -155,11 +150,11 @@ namespace Rock.Blocks.Lms
         /// Gets the communication templates.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        private List<ListItemBag> GetCommunicationTemplates( RockContext rockContext )
+        /// <returns>A <see cref="List{ListItemBag}"/> for available <see cref="SystemCommunication"/>.</returns>
+        private List<ListItemBag> GetCommunicationTemplates()
         {
             var communicationTemplates = new List<ListItemBag>();
-            foreach ( var systemEmail in new SystemCommunicationService( rockContext )
+            foreach ( var systemEmail in new SystemCommunicationService( RockContext )
                 .Queryable().AsNoTracking()
                 .OrderBy( e => e.Title )
                 .Select( e => new
@@ -179,10 +174,9 @@ namespace Rock.Blocks.Lms
         /// valid after storing all the data from the client.
         /// </summary>
         /// <param name="learningProgram">The LearningProgram to be validated.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <param name="errorMessage">On <c>false</c> return, contains the error message.</param>
         /// <returns><c>true</c> if the LearningProgram is valid, <c>false</c> otherwise.</returns>
-        private bool ValidateLearningProgram( LearningProgram learningProgram, RockContext rockContext, out string errorMessage )
+        private bool ValidateLearningProgram( LearningProgram learningProgram, out string errorMessage )
         {
             errorMessage = null;
 
@@ -200,10 +194,9 @@ namespace Rock.Blocks.Lms
         /// ErrorMessage properties depending on the entity and permissions.
         /// </summary>
         /// <param name="box">The box to be populated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        private void SetBoxInitialEntityState( DetailBlockBox<LearningProgramBag, LearningProgramDetailOptionsBag> box, RockContext rockContext )
+        private void SetBoxInitialEntityState( DetailBlockBox<LearningProgramBag, LearningProgramDetailOptionsBag> box )
         {
-            var entity = GetInitialEntity( rockContext );
+            var entity = GetInitialEntity();
 
             if ( entity == null )
             {
@@ -214,7 +207,7 @@ namespace Rock.Blocks.Lms
             var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
             box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
-            entity.LoadAttributes( rockContext );
+            entity.LoadAttributes( RockContext );
 
             if ( entity.Id != 0 )
             {
@@ -223,7 +216,6 @@ namespace Rock.Blocks.Lms
                 {
                     var onlyShowIsGridColumn = GetAttributeValue( AttributeKey.DisplayMode ) == DisplayMode.Summary;
                     box.Entity = GetEntityBagForView( entity, onlyShowIsGridColumn );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
                 {
@@ -236,7 +228,6 @@ namespace Rock.Blocks.Lms
                 if ( box.IsEditable )
                 {
                     box.Entity = GetEntityBagForEdit( entity );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
                 {
@@ -290,22 +281,12 @@ namespace Rock.Blocks.Lms
             };
         }
 
-        /// <summary>
-        /// Gets the bag for viewing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for view purposes.</param>
-        /// <returns>A <see cref="LearningProgramBag"/> that represents the entity.</returns>
-        private LearningProgramBag GetEntityBagForView( LearningProgram entity, bool onlyIsGridColumn = false )
+        private LearningProgramBag GetEntityBagForView( LearningProgram entity, bool onlyShowIsGridColumn )
         {
-            if ( entity == null )
-            {
-                return null;
-            }
-
-            var bag = GetCommonEntityBag( entity );
+            var bag = GetEntityBagForView( entity );
 
             // For the summary view only include Attribute.IsGridColumn.
-            if ( onlyIsGridColumn )
+            if ( onlyShowIsGridColumn )
             {
                 bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson,
                     attributeFilter: a => a.IsGridColumn
@@ -320,11 +301,28 @@ namespace Rock.Blocks.Lms
         }
 
         /// <summary>
+        /// Gets the bag for viewing the specified entity.
+        /// </summary>
+        /// <param name="entity">The entity to be represented for view purposes.</param>
+        /// <returns>A <see cref="LearningProgramBag"/> that represents the entity.</returns>
+        protected override LearningProgramBag GetEntityBagForView( LearningProgram entity )
+        {
+            if ( entity == null )
+            {
+                return null;
+            }
+
+            var bag = GetCommonEntityBag( entity );
+
+            return bag;
+        }
+
+        /// <summary>
         /// Gets the bag for editing the specified entity.
         /// </summary>
         /// <param name="entity">The entity to be represented for edit purposes.</param>
         /// <returns>A <see cref="LearningProgramBag"/> that represents the entity.</returns>
-        private LearningProgramBag GetEntityBagForEdit( LearningProgram entity )
+        protected override LearningProgramBag GetEntityBagForEdit( LearningProgram entity )
         {
             if ( entity == null )
             {
@@ -343,33 +341,32 @@ namespace Rock.Blocks.Lms
         /// </summary>
         /// <param name="entity">The entity to be updated.</param>
         /// <param name="box">The box containing the information to be updated.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns><c>true</c> if the box was valid and the entity was updated, <c>false</c> otherwise.</returns>
-        private bool UpdateEntityFromBox( LearningProgram entity, DetailBlockBox<LearningProgramBag, LearningProgramDetailOptionsBag> box, RockContext rockContext )
+        protected override bool UpdateEntityFromBox( LearningProgram entity, ValidPropertiesBox<LearningProgramBag> box )
         {
             if ( box.ValidProperties == null )
             {
                 return false;
             }
 
-            box.IfValidProperty( nameof( box.Entity.AbsencesCriticalCount ),
-                () => entity.AbsencesCriticalCount = box.Entity.AbsencesCriticalCount );
+            box.IfValidProperty( nameof( box.Bag.AbsencesCriticalCount ),
+                () => entity.AbsencesCriticalCount = box.Bag.AbsencesCriticalCount );
 
-            box.IfValidProperty( nameof( box.Entity.AbsencesWarningCount ),
-                () => entity.AbsencesWarningCount = box.Entity.AbsencesWarningCount );
+            box.IfValidProperty( nameof( box.Bag.AbsencesWarningCount ),
+                () => entity.AbsencesWarningCount = box.Bag.AbsencesWarningCount );
 
-            box.IfValidProperty( nameof( box.Entity.AdditionalSettingsJson ),
-                () => entity.AdditionalSettingsJson = box.Entity.AdditionalSettingsJson );
+            box.IfValidProperty( nameof( box.Bag.AdditionalSettingsJson ),
+                () => entity.AdditionalSettingsJson = box.Bag.AdditionalSettingsJson );
 
-            box.IfValidProperty( nameof( box.Entity.Category ),
-                () => entity.CategoryId = box.Entity.Category.GetEntityId<Category>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.Category ),
+                () => entity.CategoryId = box.Bag.Category.GetEntityId<Category>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.CompletionWorkflowType ),
-                () => entity.CompletionWorkflowTypeId = box.Entity.CompletionWorkflowType.GetEntityId<WorkflowType>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.CompletionWorkflowType ),
+                () => entity.CompletionWorkflowTypeId = box.Bag.CompletionWorkflowType.GetEntityId<WorkflowType>( RockContext ) );
 
             var isMovingToOnDemandMode =
-                box.Entity.ConfigurationMode != entity.ConfigurationMode &&
-                box.Entity.ConfigurationMode == Enums.Lms.ConfigurationMode.OnDemandLearning;
+                box.Bag.ConfigurationMode != entity.ConfigurationMode &&
+                box.Bag.ConfigurationMode == Enums.Lms.ConfigurationMode.OnDemandLearning;
 
             // We're unable to move to academic calendar mode from On-Demand due to the fact that none of the current participants will have records.
             if ( isMovingToOnDemandMode )
@@ -377,48 +374,48 @@ namespace Rock.Blocks.Lms
                 throw new ApplicationException( "Unable to move from Academic Calendar mode to On-Demand mode." );
             }
 
-            box.IfValidProperty( nameof( box.Entity.ConfigurationMode ),
-                () => entity.ConfigurationMode = box.Entity.ConfigurationMode );
+            box.IfValidProperty( nameof( box.Bag.ConfigurationMode ),
+                () => entity.ConfigurationMode = box.Bag.ConfigurationMode );
 
-            box.IfValidProperty( nameof( box.Entity.Description ),
-                () => entity.Description = box.Entity.Description );
+            box.IfValidProperty( nameof( box.Bag.Description ),
+                () => entity.Description = box.Bag.Description );
 
-            box.IfValidProperty( nameof( box.Entity.HighlightColor ),
-                () => entity.HighlightColor = box.Entity.HighlightColor );
+            box.IfValidProperty( nameof( box.Bag.HighlightColor ),
+                () => entity.HighlightColor = box.Bag.HighlightColor );
 
-            box.IfValidProperty( nameof( box.Entity.IconCssClass ),
-                () => entity.IconCssClass = box.Entity.IconCssClass );
+            box.IfValidProperty( nameof( box.Bag.IconCssClass ),
+                () => entity.IconCssClass = box.Bag.IconCssClass );
 
-            box.IfValidProperty( nameof( box.Entity.ImageBinaryFile ),
-                () => entity.ImageBinaryFileId = box.Entity.ImageBinaryFile.GetEntityId<BinaryFile>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.ImageBinaryFile ),
+                () => entity.ImageBinaryFileId = box.Bag.ImageBinaryFile.GetEntityId<BinaryFile>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.IsActive ),
-                () => entity.IsActive = box.Entity.IsActive );
+            box.IfValidProperty( nameof( box.Bag.IsActive ),
+                () => entity.IsActive = box.Bag.IsActive );
 
-            box.IfValidProperty( nameof( box.Entity.IsCompletionStatusTracked ),
-                () => entity.IsCompletionStatusTracked = box.Entity.IsCompletionStatusTracked );
+            box.IfValidProperty( nameof( box.Bag.IsCompletionStatusTracked ),
+                () => entity.IsCompletionStatusTracked = box.Bag.IsCompletionStatusTracked );
 
-            box.IfValidProperty( nameof( box.Entity.IsPublic ),
-                () => entity.IsPublic = box.Entity.IsPublic );
+            box.IfValidProperty( nameof( box.Bag.IsPublic ),
+                () => entity.IsPublic = box.Bag.IsPublic );
 
-            box.IfValidProperty( nameof( box.Entity.Name ),
-                () => entity.Name = box.Entity.Name );
+            box.IfValidProperty( nameof( box.Bag.Name ),
+                () => entity.Name = box.Bag.Name );
 
-            box.IfValidProperty( nameof( box.Entity.PublicName ),
-                () => entity.PublicName = box.Entity.PublicName );
+            box.IfValidProperty( nameof( box.Bag.PublicName ),
+                () => entity.PublicName = box.Bag.PublicName );
 
-            box.IfValidProperty( nameof( box.Entity.Summary ),
-                () => entity.Summary = box.Entity.Summary );
+            box.IfValidProperty( nameof( box.Bag.Summary ),
+                () => entity.Summary = box.Bag.Summary );
 
-            box.IfValidProperty( nameof( box.Entity.SystemCommunication ),
-                () => entity.SystemCommunicationId = box.Entity.SystemCommunication.GetEntityId<SystemCommunication>( rockContext ).Value );
+            box.IfValidProperty( nameof( box.Bag.SystemCommunication ),
+                () => entity.SystemCommunicationId = box.Bag.SystemCommunication.GetEntityId<SystemCommunication>( RockContext ).Value );
 
-            box.IfValidProperty( nameof( box.Entity.AttributeValues ),
+            box.IfValidProperty( nameof( box.Bag.AttributeValues ),
                 () =>
                 {
-                    entity.LoadAttributes( rockContext );
+                    entity.LoadAttributes( RockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson );
                 } );
 
             return true;
@@ -428,11 +425,10 @@ namespace Rock.Blocks.Lms
         /// Gets the initial entity from page parameters or creates a new entity
         /// if page parameters requested creation.
         /// </summary>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>The <see cref="LearningProgram"/> to be viewed or edited on the page.</returns>
-        private LearningProgram GetInitialEntity( RockContext rockContext )
+        protected override LearningProgram GetInitialEntity()
         {
-            return GetInitialEntity<LearningProgram, LearningProgramService>( rockContext, PageParameterKey.LearningProgramId );
+            return GetInitialEntity<LearningProgram, LearningProgramService>( RockContext, PageParameterKey.LearningProgramId );
         }
 
         /// <summary>
@@ -460,36 +456,6 @@ namespace Rock.Blocks.Lms
             };
         }
 
-        /// <inheritdoc/>
-        protected override string RenewSecurityGrantToken()
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                var entity = GetInitialEntity( rockContext );
-
-                if ( entity != null )
-                {
-                    entity.LoadAttributes( rockContext );
-                }
-
-                return GetSecurityGrantToken( entity );
-            }
-        }
-
-        /// <summary>
-        /// Gets the security grant token that will be used by UI controls on
-        /// this block to ensure they have the proper permissions.
-        /// </summary>
-        /// <returns>A string that represents the security grant token.</string>
-        private string GetSecurityGrantToken( LearningProgram entity )
-        {
-            var securityGrant = new Rock.Security.SecurityGrant();
-
-            securityGrant.AddRulesForAttributes( entity, RequestContext.CurrentPerson );
-
-            return securityGrant.ToToken();
-        }
-
         /// <summary>
         /// Attempts to load an entity to be used for an edit action.
         /// </summary>
@@ -498,9 +464,9 @@ namespace Rock.Blocks.Lms
         /// <param name="entity">Contains the entity that was loaded when <c>true</c> is returned.</param>
         /// <param name="error">Contains the action error result when <c>false</c> is returned.</param>
         /// <returns><c>true</c> if the entity was loaded and passed security checks.</returns>
-        private bool TryGetEntityForEditAction( string idKey, RockContext rockContext, out LearningProgram entity, out BlockActionResult error )
+        protected override bool TryGetEntityForEditAction( string idKey, out LearningProgram entity, out BlockActionResult error )
         {
-            var entityService = new LearningProgramService( rockContext );
+            var entityService = new LearningProgramService( RockContext );
             error = null;
 
             // Determine if we are editing an existing entity or creating a new one.
@@ -564,18 +530,15 @@ namespace Rock.Blocks.Lms
         /// <returns>A box that contains the entity and any other information required.</returns>
         [BlockAction]
         public BlockActionResult GetEntityBagWithAllAttributes()
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                var entity = GetInitialEntity( rockContext );
+    {
+            var entity = GetInitialEntity();
 
-                // Reload attributes based on the new property values.
-                entity.LoadAttributes( rockContext );
+            // Reload attributes based on the new property values.
+            entity.LoadAttributes( RockContext );
 
-                var bagWithAllAttributes = GetEntityBagForView( entity );
+            var bagWithAllAttributes = GetEntityBagForView( entity, false );
 
-                return ActionOk( bagWithAllAttributes );
-            }
+            return ActionOk( bagWithAllAttributes );
         }
 
         /// <summary>
@@ -587,22 +550,20 @@ namespace Rock.Blocks.Lms
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
+                if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
                 {
                     return actionError;
                 }
 
-                entity.LoadAttributes( rockContext );
+                entity.LoadAttributes( RockContext );
 
-                var box = new DetailBlockBox<LearningProgramBag, LearningProgramDetailOptionsBag>
+            var bag = GetEntityBagForEdit( entity );
+
+                return ActionOk( new ValidPropertiesBox<LearningProgramBag>
                 {
-                    Entity = GetEntityBagForEdit( entity )
-                };
-
-                return ActionOk( box );
-            }
+                    Bag = bag,
+                    ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
+                } );
         }
 
         /// <summary>
@@ -611,53 +572,56 @@ namespace Rock.Blocks.Lms
         /// <param name="box">The box that contains all the information required to save.</param>
         /// <returns>A new entity bag to be used when returning to view mode, or the URL to redirect to after creating a new entity.</returns>
         [BlockAction]
-        public BlockActionResult Save( DetailBlockBox<LearningProgramBag, LearningProgramDetailOptionsBag> box )
+        public BlockActionResult Save( ValidPropertiesBox<LearningProgramBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new LearningProgramService( RockContext );
+
+            if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )
             {
-                var entityService = new LearningProgramService( rockContext );
-
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                // Ensure everything is valid before saving.
-                if ( !ValidateLearningProgram( entity, rockContext, out var validationMessage ) )
-                {
-                    return ActionBadRequest( validationMessage );
-                }
-
-                var isNew = entity.Id == 0;
-
-                rockContext.WrapTransaction( () =>
-                {
-                    rockContext.SaveChanges();
-                    entity.SaveAttributeValues( rockContext );
-                } );
-
-                if ( isNew )
-                {
-                    return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
-                    {
-                        [PageParameterKey.LearningProgramId] = entity.IdKey
-                    } ) );
-                }
-
-                // Ensure navigation properties will work now.
-                entity = entityService.Get( entity.Id );
-                entity.LoadAttributes( rockContext );
-
-                var onlyShowIsGridColumn = GetAttributeValue( AttributeKey.DisplayMode ) == DisplayMode.Summary;
-
-                return ActionOk( GetEntityBagForView( entity, onlyShowIsGridColumn ) );
+                return actionError;
             }
+
+            // Update the entity instance from the information in the bag.
+            if ( !UpdateEntityFromBox( entity, box ) )
+            {
+                return ActionBadRequest( "Invalid data." );
+            }
+
+            // Ensure everything is valid before saving.
+            if ( !ValidateLearningProgram( entity, out var validationMessage ) )
+            {
+                return ActionBadRequest( validationMessage );
+            }
+
+            var isNew = entity.Id == 0;
+
+            RockContext.WrapTransaction( () =>
+            {
+                RockContext.SaveChanges();
+                entity.SaveAttributeValues( RockContext );
+            } );
+
+            if ( isNew )
+            {
+                return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
+                {
+                    [PageParameterKey.LearningProgramId] = entity.IdKey
+                } ) );
+            }
+
+            // Ensure navigation properties will work now.
+            entity = entityService.Get( entity.Id );
+            entity.LoadAttributes( RockContext );
+
+            var onlyShowIsGridColumn = GetAttributeValue( AttributeKey.DisplayMode ) == DisplayMode.Summary;
+
+            var bag = GetEntityBagForView( entity, onlyShowIsGridColumn );
+
+            return ActionOk( new ValidPropertiesBox<LearningProgramBag>
+            {
+                Bag = bag,
+                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
+            } );
         }
 
         /// <summary>
@@ -668,11 +632,9 @@ namespace Rock.Blocks.Lms
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var entityService = new LearningProgramService( rockContext );
+                var entityService = new LearningProgramService( RockContext );
 
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
+                if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
                 {
                     return actionError;
                 }
@@ -683,10 +645,9 @@ namespace Rock.Blocks.Lms
                 }
 
                 entityService.Delete( entity );
-                rockContext.SaveChanges();
+                RockContext.SaveChanges();
 
                 return ActionOk( this.GetParentPageUrl() );
-            }
         }
 
         /// <summary>
@@ -775,60 +736,6 @@ namespace Rock.Blocks.Lms
 
             var semestersQueryable = GetSemesterListQueryable();
             return ActionOk( gridBuilder.Build( semestersQueryable ) );
-        }
-
-        /// <summary>
-        /// Refreshes the list of attributes that can be displayed for editing
-        /// purposes based on any modified values on the entity.
-        /// </summary>
-        /// <param name="box">The box that contains all the information about the entity being edited.</param>
-        /// <returns>A box that contains the entity and attribute information.</returns>
-        [BlockAction]
-        public BlockActionResult RefreshAttributes( DetailBlockBox<LearningProgramBag, LearningProgramDetailOptionsBag> box )
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                // Reload attributes based on the new property values.
-                entity.LoadAttributes( rockContext );
-
-                var refreshedBox = new DetailBlockBox<LearningProgramBag, LearningProgramDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity )
-                };
-
-                var oldAttributeGuids = box.Entity.Attributes.Values.Select( a => a.AttributeGuid ).ToList();
-                var newAttributeGuids = refreshedBox.Entity.Attributes.Values.Select( a => a.AttributeGuid );
-
-                // If the attributes haven't changed then return a 204 status code.
-                if ( oldAttributeGuids.SequenceEqual( newAttributeGuids ) )
-                {
-                    return ActionStatusCode( System.Net.HttpStatusCode.NoContent );
-                }
-
-                // Replace any values for attributes that haven't changed with
-                // the value sent by the client. This ensures any unsaved attribute
-                // value changes are not lost.
-                foreach ( var kvp in refreshedBox.Entity.Attributes )
-                {
-                    if ( oldAttributeGuids.Contains( kvp.Value.AttributeGuid ) )
-                    {
-                        refreshedBox.Entity.AttributeValues[kvp.Key] = box.Entity.AttributeValues[kvp.Key];
-                    }
-                }
-
-                return ActionOk( refreshedBox );
-            }
         }
 
         /// <summary>

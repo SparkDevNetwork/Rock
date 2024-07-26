@@ -2,6 +2,7 @@
 <template>
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
+          :class="visibleCssClass"
           keyField="idKey"
           title="Learning Plan Completion Status"
           :entityTypeGuid="EntityType.LearningActivityCompletion"
@@ -96,7 +97,7 @@
 </template>
 
 <script setup lang="ts">
-    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import Grid, { numberValueFilter, dateValueFilter, textValueFilter, Column, DateColumn, DateTimeColumn, PersonColumn, SelectColumn, pickExistingValueFilter } from "@Obsidian/Controls/grid";
@@ -108,11 +109,26 @@
     import { computed, reactive, ref } from "vue";
     import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { BlockMessages } from "@Obsidian/Utility/browserBus";
 
     const config = useConfigurationValues<ListBlockBox<LearningActivityCompletionListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
     const reloadBlock = useReloadBlock();
     onConfigurationValuesChanged(reloadBlock);
+
+    // Use the browser bus to listen for changes to edit mode for any blocks on the page.
+    const browserBus = useBlockBrowserBus();
+    const visibleCssClass = ref("show");
+
+    // When another block on the page begins editing hide this block.
+    browserBus.subscribe(BlockMessages.BeginEdit, () => {
+        visibleCssClass.value = "hidden";
+    });
+
+    // When another block begins editing show this block.
+    browserBus.subscribe(BlockMessages.EndEdit, () => {
+        visibleCssClass.value = "show";
+    });
 
     // #region Values
 

@@ -36,6 +36,8 @@ import { ReportPickerGetChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Con
 import { SchedulePickerGetChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/schedulePickerGetChildrenOptionsBag";
 import { WorkflowActionTypePickerGetChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/workflowActionTypePickerGetChildrenOptionsBag";
 import { MergeFieldPickerGetChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/mergeFieldPickerGetChildrenOptionsBag";
+import { AssetManagerGetRootFoldersOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/assetManagerGetRootFoldersOptionsBag";
+import { AssetManagerBaseOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/assetManagerBaseOptionsBag";
 import { flatten } from "./arrayUtils";
 import { toNumberOrNull } from "./numberUtils";
 
@@ -1087,5 +1089,63 @@ export class MergeFieldTreeItemProvider implements ITreeItemProvider {
      */
     async getChildItems(item: TreeItemBag): Promise<TreeItemBag[]> {
         return this.getItems(item.value);
+    }
+}
+
+
+/**
+ * Tree Item Provider for Asset Storage Provider folders from the server and displaying
+ * them inside a tree list.
+ */
+export class AssetManagerTreeItemProvider implements ITreeItemProvider {
+
+    /** List of folders that are currently expanded in the tree list. */
+    public openFolders: Set<string> = new Set();
+    public selectedFolder: string | null = "";
+    public enableAssetManager = false;
+    public enableFileManager = false;
+    public encryptedRootFolder = "";
+
+    /**
+     * @inheritdoc
+     */
+    async getRootItems(): Promise<TreeItemBag[]> {
+        const options: AssetManagerGetRootFoldersOptionsBag = {
+            expandedFolders: this.openFolders.size > 0 ? Array.from(this.openFolders) : null,
+            selectedFolder: this.selectedFolder,
+            enableAssetManager: this.enableAssetManager,
+            enableFileManager: this.enableFileManager,
+            rootFolder: this.encryptedRootFolder
+        };
+        const url = "/api/v2/Controls/AssetManagerGetRootFolders";
+        const response = await post<{tree:TreeItemBag[], updatedExpandedFolders: string[]}>(url, undefined, options);
+
+        if (response.isSuccess && response.data) {
+            this.openFolders = new Set(response.data.updatedExpandedFolders);
+            return response.data.tree;
+        }
+        else {
+            console.error("Error Fetching Root Asset Manager Items", response.errorMessage);
+            return [];
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    async getChildItems(item: TreeItemBag): Promise<TreeItemBag[]> {
+        const options: AssetManagerBaseOptionsBag = {
+            assetFolderId: item.value
+        };
+        const url = "/api/v2/Controls/AssetManagerGetChildren";
+        const response = await post<TreeItemBag[]>(url, undefined, options);
+
+        if (response.isSuccess && response.data) {
+            return response.data;
+        }
+        else {
+            console.error("Error Fetching Asset Manager Children", response.errorMessage);
+            return [];
+        }
     }
 }

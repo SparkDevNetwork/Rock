@@ -1449,7 +1449,7 @@ namespace Rock.Blocks.Event
 
                 var registrationCosts = GetRegistrationCosts( rockContext, context, args );
                 var paymentReductionAmount = GetPaymentReductionAmountForForceWaitListedRegistrants( forceWaitlistedRegistrantGuids, registrationCosts );
-                var minimumPaymentAmount = GetMinimumPaymentAmount( rockContext, context, registrationCosts );
+                var minimumPaymentAmount = GetMinimumPaymentAmountForNonForceWaitListedRegistrants( rockContext, context, forceWaitlistedRegistrantGuids, registrationCosts );
                 ReduceRegistrationPaymentAmount( context.RegistrationSettings, args, paymentReductionAmount, minimumPaymentAmount );
 
                 var isPaymentNeededNow = args.AmountToPayNow > 0;
@@ -1700,9 +1700,10 @@ namespace Rock.Blocks.Event
         /// </summary>
         /// <param name="rockContext">The Rock context.</param>
         /// <param name="registrationContext">The registration context.</param>
+        /// <param name="forceWaitListedRegistrantGuids">The registrants who were forcefully placed on the waitlist.</param>
         /// <param name="registrationCosts">The registration costs.</param>
         /// <returns>The minimum amount due today.</returns>
-        private static decimal GetMinimumPaymentAmount( RockContext rockContext, RegistrationContext registrationContext, IEnumerable<RegistrationCostSummaryInfo> registrationCosts )
+        private static decimal GetMinimumPaymentAmountForNonForceWaitListedRegistrants( RockContext rockContext, RegistrationContext registrationContext, List<Guid> forceWaitlistedRegistrantGuids, IEnumerable<RegistrationCostSummaryInfo> registrationCosts )
         {
             var amountPaid = new RegistrationService( rockContext ).GetTotalPayments( registrationContext.Registration.Id );
 
@@ -1715,7 +1716,12 @@ namespace Rock.Blocks.Event
             else
             {
                 // Otherwise, return the sum of all minimum payment (or discounted payment, if less) amounts for all costs.
-                return registrationCosts.Sum( c => Math.Min( c.MinPayment, c.DiscountedCost ) );
+                return registrationCosts
+                    .Where(
+                        cost => cost.RegistrationRegistrantGuid.HasValue
+                        && forceWaitlistedRegistrantGuids.Contains( cost.RegistrationRegistrantGuid.Value )
+                    )
+                    .Sum( c => Math.Min( c.MinPayment, c.DiscountedCost ) );
             }
         }
 
@@ -4419,7 +4425,10 @@ namespace Rock.Blocks.Event
                 TitleHtml = "Congratulations",
                 MessageHtml = "You have successfully completed this registration.",
                 TransactionCode = transactionCode,
-                GatewayPersonIdentifier = gatewayPersonIdentifier
+                GatewayPersonIdentifier = gatewayPersonIdentifier,
+                SpotsRemaining = 0,
+                RegisteredCount = 0,
+                WaitListedCount = 0,
             };
 
             try
@@ -4462,6 +4471,19 @@ namespace Rock.Blocks.Event
                     {
                         viewModel.MessageHtml = "You have successfully completed this " + template.RegistrationTerm.ToLower();
                     }
+                    
+                    if ( registration.RegistrationInstance.MaxAttendees.HasValue )
+                    {
+                        var context = GetContext( rockContext, out var errorMessage );
+
+                        if ( context != null )
+                        {
+                            viewModel.SpotsRemaining = context.SpotsRemaining;
+                        }
+                    }
+
+                    viewModel.RegisteredCount = registration.Registrants.Count( r => !r.OnWaitList );
+                    viewModel.WaitListedCount = registration.Registrants.Count( r => r.OnWaitList );
                 }
             }
             catch ( Exception ex )

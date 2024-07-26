@@ -487,7 +487,7 @@ namespace Rock.Chart
 
                 while ( thisDate < lastDateNextDay )
                 {
-                    var categoryDataPoint = new ChartJsCategorySeriesDataPoint() { Category = thisDate.ToString( DateFormatStringDayMonthYear ), SortKey = thisDate.ToString( "yyyyMMdd" ) };
+                    var categoryDataPoint = new ChartJsCategorySeriesDataPoint() { Category = thisDate.ToString( DateFormatString ?? DateFormatStringDayMonthYear ), SortKey = thisDate.ToString( "yyyyMMdd" ) };
 
                     categoryDataPoints.Add( categoryDataPoint );
 

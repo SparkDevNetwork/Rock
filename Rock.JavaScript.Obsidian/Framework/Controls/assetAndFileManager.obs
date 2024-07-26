@@ -1,0 +1,1095 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div id="pnlAssetManager" class="picker-wrapper align-items-stretch flex-nowrap" :style="wrapperStyles">
+        <div class="picker-folders d-flex flex-column bg-body p-3 mh-100 position-relative flex-shrink-0">
+
+            <div class="mb-3 d-flex flex-shrink-0">
+                <RockButton type="button" btnSize="xs" class="mr-2" title="Create a new folder in the selected folder" @click="showAddFolderForm" :disabled="!isFolderSelected">
+                    <i class="fa fa-folder-plus"></i> <span class="hidden-xs">Add Folder</span>
+                </RockButton>
+                <RockButton type="button" btnSize="xs" title="Refresh folder list" isSquare class="ml-auto mr-2" @click="onRefreshFolders">
+                    <i class="fa fa-sync"></i>
+                </RockButton>
+                <DropDownMenu :items="folderDropDownMenuItems" align="right" class="d-flex">
+                    <template #anchor="anchorAttrs">
+                        <RockButton type="button" btnSize="xs" title="Additional Actions" isSquare :disabled="!isFolderSelected || isRootSelected || isFolderRestricted" v-bind="anchorAttrs">
+                            <i class="fa fa-ellipsis-v"></i>
+                        </RockButton>
+                    </template>
+                </DropDownMenu>
+            </div>
+
+            <RockForm v-if="isCreateFolderFormVisible" class="mb-3 well well-sm js-createfolder-div flex-shrink-0" @submit="addFolder" @keyup.esc="hideAddFolder">
+                <NotificationBox v-if="addFolderError" alertType="danger" heading="Error Creating Folder" #details>
+                    {{ addFolderError }}
+                </NotificationBox>
+                <TextBox v-model="newFolderName" size="small" label="Folder Name" :rules="addFolderValidation" help="Cannot contain any of the following characters: ^ * > < ? / \ | : , ~" />
+                <RockButton type="submit" btnSize="xs" class="mr-2" :disabled="!newFolderName">
+                    <i class="fa fa-check"></i> Create Folder
+                </RockButton>
+                <RockButton @click="hideAddFolder" type="button" btnSize="xs">
+                    <i class="fa fa-times"></i> Cancel
+                </RockButton>
+            </RockForm>
+
+            <NotificationBox v-if="folderListErrorMessage" alertType="danger" :heading="`Error ${folderListErrorAction}`" dismissible @dismiss="folderListErrorMessage = ''" #details>
+                {{ folderListErrorMessage }}
+            </NotificationBox>
+
+            <div v-if="folderListScrolled" class="scroll-shadow"><!-- Intentionally Empty... just used to create a shadow when the container below is scrolled --></div>
+
+            <div ref="folderScrollContainer" class="overflow-y-auto overflow-x-auto mh-100" style="z-index:0">
+                <TreeList v-model="selectedFolderArray"
+                          :provider="itemProvider"
+                          v-model:items="folders"
+                          disableDeselect
+                          autoExpand
+                          @treeitem-expanded="onTreeItemExpanded"
+                          @treeitem-collapsed="onTreeItemCollapsed"
+                          :initiallyExpanded="openFolders"
+                          :key="treeRefreshKey" />
+            </div>
+
+            <Transition>
+                <div v-if="isFolderPaneActionLoading" class="d-flex flex-column justify-content-center inset-0 bg-body loader-overlay">
+                    <LoadingIndicator />
+                </div>
+            </Transition>
+        </div>
+
+        <div class="picker-files d-flex flex-column p-3 mh-100 flex-shrink-0 position-relative">
+            <div class="mb-3 d-flex align-items-center">
+                <div v-if="isUploadingFile" class="js-upload-progress upload-progress-sm mr-2">
+                    <i class="fa fa-refresh fa-spin"></i>
+                </div>
+                <RockButton type="button" btnSize="xs" class="mr-2" title="Upload a file to the selected location." :disabled="isUploadDisabled" @click.prevent="fileInputElement?.click()">
+                    <i class="fa fa-upload"></i> <span class="hidden-xs">Upload File</span>
+                </RockButton>
+                <input type="file" ref="fileInputElement" class="hidden" @change="uploadFile" :disabled="isUploadDisabled">
+                <RockButton type="button" btnSize="xs" class="mr-2" title="Upload and extract a zip file in the selected location. The extracted files will overwrite existing files of the same name." v-if="enableFileManager && enableZipUpload" :disabled="isZipUploadDisabled" @click.prevent="zipFileInputElement?.click()">
+                    <i class="fa fa-archive"></i> <span class="hidden-xs">Upload Package</span>
+                </RockButton>
+                <input type="file" ref="zipFileInputElement" class="hidden" accept=".zip" @change="uploadZipFile" :disabled="isZipUploadDisabled">
+                <RockButton type="button" btnSize="xs" title="Delete selected files" class="mr-2" :disabled="selectedFileKeys.length < 1" @click="deleteFiles(selectedFileKeys)">
+                    <i class="fa fa-trash-alt"></i> <span class="hidden-xs">Delete Selected</span>
+                </RockButton>
+                <RockButton type="button" btnSize="xs" title="Refresh file list" class="ml-auto" @click="refreshFiles">
+                    <i class="fa fa-sync"></i>
+                </RockButton>
+            </div>
+
+            <NotificationBox v-if="fileListErrorMessage" alertType="danger" :heading="`Error ${fileListErrorAction}`" dismissible @dismiss="fileListErrorMessage = ''" #details>
+                {{ fileListErrorMessage }}
+            </NotificationBox>
+
+            <div v-if="fileListScrolled" class="scroll-shadow"><!-- Intentionally Empty... just used to create a shadow when the container below is scrolled --></div>
+
+            <div class="overflow-y-auto mh-100 flex-grow-1 d-flex align-items-start" ref="fileScrollContainer">
+                <table v-if="files.length > 0" class="table table-responsive table-borderless assetmanager-files">
+                    <tbody>
+                        <tr v-for="file in files" :key="file.key">
+                            <td>
+                                <CheckBox label="" v-model="selectedFileKeys" :value="file.key" />
+                            </td>
+                            <td>
+                                <img :src="file.iconPath" style="object-fit: cover; height: 58px; width: 44px;">
+                            </td>
+                            <td>
+                                <span v-show="shownFileRenameForm != file.key">{{ file.name }}</span>
+                                <RockForm v-if="shownFileRenameForm == file.key" @submit="() => renameFile(file)" @keyup.esc="hideRenameFileForm">
+                                    <div class="d-flex align-items-center">
+                                        <TextBox v-model="renameFileName" size="small" formGroupClasses="mb-0" rules="required" label="File Name" disableLabel id="asset-manager-current-file-rename-input" /><span class="mr-2">{{ renameFileExtension }}</span>
+                                        <RockButton type="submit" btnType="default" btnSize="xs" class="mr-2 flex-shrink-0" title="Rename File" isSquare><i class="fa fa-check"></i></RockButton>
+                                        <RockButton type="button" btnType="default" btnSize="xs" class="flex-shrink-0" title="Cancel" isSquare @click="hideRenameFileForm"><i class="fa fa-times"></i></RockButton>
+                                    </div>
+                                </RockForm>
+                            </td>
+                            <td data-priority="3">
+                                {{ formatDate(file.lastModifiedDateTime) }}
+                            </td>
+                            <td>
+                                {{ file.formattedFileSize }}
+                            </td>
+                            <td>
+                                <DropDownMenu :items="getFileDropDownMenuItems(file)" align="right" class="d-flex">
+                                    <template #anchor="anchorAttrs">
+                                        <RockButton type="button" btnType="link" class="text-body" v-bind="anchorAttrs"><i class="fa fa-ellipsis-v"></i></RockButton>
+                                    </template>
+                                </DropDownMenu>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div v-else-if="!isFolderSelected" class="m-auto justify-self-center text-muted" style="width:max-content;">Please select a folder</div>
+                <div v-else-if="!isLoadingFiles" class="m-auto justify-self-center text-muted" style="width:max-content;">No files found</div>
+            </div>
+
+            <Transition>
+                <div v-if="isFilePaneActionLoading" class="d-flex flex-column justify-content-center inset-0 bg-body loader-overlay">
+                    <LoadingIndicator />
+                </div>
+            </Transition>
+        </div>
+    </div>
+    <Modal v-model="isRenameFolderModalVisible" title="Rename Folder" @close="isRenameFolderModalVisible = false" @save="renameFolder" saveText="Save">
+        <div ref="renameFolderWrapper">
+            <div class="margin-b-sm">
+                <dt>Current Location</dt>
+                <dd>{{ selectedFolderSubPath }}</dd>
+            </div>
+            <TextBox v-model="renameFolderName" rules="required" label="New Folder Name">
+                <template #inputGroupPrepend>
+                    <span class="input-group-addon">{{ selectedFolderParentSubPath }}/</span>
+                </template>
+            </TextBox>
+        </div>
+    </Modal>
+    <Modal v-model="isMoveFolderModalVisible" title="Move Folder" @close="isMoveFolderModalVisible = false" @save="moveFolder" saveText="Save">
+        <NotificationBox v-if="moveFolderModalError" alertType="danger" :heading="moveFolderModalError" dismissible @dismiss="moveFolderModalError = ''" />
+        <div>
+            <div class="margin-b-sm">
+                <dt>Current Location</dt>
+                <dd>{{ selectedFolderSubPath }}</dd>
+            </div>
+            <DropDownList v-model="selectedMoveFolder" rules="required" label="Move To Folder" :items="folderMoveOptions" />
+        </div>
+        <Transition>
+            <div v-if="isMoveFolderModalLoading" class="d-flex flex-column justify-content-center inset-0 bg-body loader-overlay">
+                <LoadingIndicator />
+            </div>
+        </Transition>
+    </Modal>
+</template>
+
+<style scoped>
+.assetmanager-files th,
+.assetmanager-files td {
+    vertical-align: middle;
+}
+
+.scroll-shadow {
+    height: 1px;
+    background: transparent;
+    box-shadow: 0 0 7px black;
+    clip-path: rect(0 0 10px 100%);
+    flex-shrink: 0;
+    /* Prevents hover highlights of list items from going over the shadow */
+    z-index: 1;
+}
+
+.table-borderless th,
+.table-borderless td {
+    border: 0;
+}
+
+.loader-overlay {
+    opacity: 0.5;
+}
+
+
+.v-enter-active {
+    transition: opacity .5s ease-in;
+}
+
+.v-leave-active {
+    transition: opacity .15s ease-in-out;
+}
+
+.v-enter-from,
+.v-leave-to {
+    opacity: 0;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType, Ref, computed, nextTick, ref, watch } from "vue";
+    import RockButton from "./rockButton.obs";
+    import RockForm from "./rockForm.obs";
+    import TextBox from "./textBox.obs";
+    import CheckBox from "./checkBox.obs";
+    import TreeList from "./treeList.obs";
+    import LoadingIndicator from "./loadingIndicator.obs";
+    import DropDownMenu from "./dropDownMenu.obs";
+    import DropDownList from "./dropDownList.obs";
+    import NotificationBox from "./notificationBox.obs";
+    import Modal from "./modal.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { AssetManagerTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
+    import { AssetManagerTreeItemBag } from "@Obsidian/ViewModels/Rest/Controls/assetManagerTreeItemBag";
+    import { AssetManagerBaseOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/assetManagerBaseOptionsBag";
+    import { AssetManagerAddFolderOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/assetManagerAddFolderOptionsBag";
+    import { AssetManagerRenameFolderOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/assetManagerRenameFolderOptionsBag";
+    import { AssetManagerMoveFolderOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/assetManagerMoveFolderOptionsBag";
+    import { AssetManagerGetListOfAllFoldersOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/assetManagerGetListOfAllFoldersOptionsBag";
+    import { AssetManagerGetFilesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/assetManagerGetFilesOptionsBag";
+    import { AssetManagerGetFilesResultsBag } from "@Obsidian/ViewModels/Rest/Controls/assetManagerGetFilesResultsBag";
+    import { AssetManagerDeleteFilesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/assetManagerDeleteFilesOptionsBag";
+    import { AssetManagerRenameFileOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/assetManagerRenameFileOptionsBag";
+    import { AssetManagerExtractFileOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/assetManagerExtractFileOptionsBag";
+    import { FileAsset } from "@Obsidian/ViewModels/Controls/fileAsset";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { TreeItemBag } from "@Obsidian/ViewModels/Utility/treeItemBag";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { findFolder, folderNameComparator, isValidFolderName } from "@Obsidian/Utility/assetProvider";
+    import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
+    import { RockDateTime, DateTimeFormat } from "@Obsidian/Utility/rockDateTime";
+    import { confirm } from "@Obsidian/Utility/dialogs";
+    import { ValidationRule } from "@Obsidian/ValidationRules";
+    import { uploadAssetProviderFile, uploadContentFile } from "@Obsidian/Utility/http";
+    import * as Path from "@Obsidian/Utility/path";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<FileAsset[]>,
+        },
+
+        openFolders: {
+            type: Array as PropType<string[]>,
+            default: () => [],
+        },
+
+        selectedFolder: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        /**
+         * "flexible" will make the height grow as the number of files/folder show grows.
+         * Otherwise pass in a CSS height value.
+         * Default: "flexible"
+         */
+        height: {
+            type: String as PropType<string | "flexible">,
+            default: "flexible",
+        },
+
+        enableAssetManager: {
+            type: Boolean,
+            default: false
+        },
+
+        enableFileManager: {
+            type: Boolean,
+            default: false
+        },
+
+        /** The encrypted root folder used for the local file browser */
+        encryptedRootFolder: {
+            type: String,
+            default: ""
+        },
+
+        enableZipUpload: {
+            type: Boolean,
+            default: false
+        },
+
+        /**
+         * The root-relative URL of the page where the file editor will be opened. Falsey values will prevent the edit
+         * button from showing.
+         */
+        editFilePage: {
+            type: String,
+            default: "",
+        },
+
+        /**
+         * Select 'image' to show only image files. Select 'doc' to show all files.
+         */
+        browseMode: {
+            type: String as PropType<"doc" | "image">,
+            default: "doc",
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ListItemBag): void
+        (e: "update:openFolders", value: string[]): void
+        (e: "update:selectedFolder", value: string | null): void
+    }>();
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+    const { post } = useHttp();
+
+    // #region Styles
+
+    const wrapperStyles = computed(() => {
+        if (props.height === "flexible") {
+            return {};
+        }
+        else {
+            return {
+                height: props.height,
+            };
+        }
+    });
+
+    // #endregion
+
+    // #region Folder List
+
+    const itemProvider = ref(initializeTreeProvider());
+    const openFolders = computed(() => Array.from(itemProvider.value?.openFolders ?? []));
+    const folders = ref<AssetManagerTreeItemBag[]>([]);
+
+    const selectedFolderArray = ref<string[]>([]);
+    const selectedFolder = computed<string | null>(() => decodeURIComponent(selectedFolderArray.value[0] ?? "") || null);
+    const selectedFolderBag = computed(() => findFolder(folders.value, selectedFolder.value).folder);
+    const selectedFolderSubPath = computed(() => {
+        let path = parseFolderName(selectedFolder.value ?? "").subPath;
+        if (path.endsWith("/")) {
+            path = path.slice(0, -1);
+        }
+        return path;
+    });
+    const selectedFolderParentSubPath = computed(() => {
+        const folderName = parseFolderName(selectedFolder.value ?? "").subPath;
+        const path = Path.getDirectoryName(folderName);
+        return path;
+    });
+    const isFolderSelected = computed(() => !!selectedFolder.value);
+    const isRootSelected = computed(() => isFolderSelected.value && selectedFolder.value?.endsWith(",True"));
+    const isFolderLocal = computed(() => selectedFolder.value?.startsWith("0,"));
+
+    const isFolderRestricted = ref(false);
+
+    const renameFolderName = ref("");
+    const renameFolderWrapper = ref<HTMLDivElement | null>(null);
+    const isRenameFolderModalVisible = ref(false);
+
+    const selectedMoveFolder = ref<string>("");
+    const isMoveFolderModalVisible = ref(false);
+    const folderMoveOptions = ref<ListItemBag[]>([]);
+    const isMoveFolderModalLoading = ref(false);
+    const moveFolderModalError = ref("");
+
+    const isFolderPaneActionLoading = ref(false);
+    const folderScrollContainer = ref<HTMLElement | null>(null);
+    const folderListScrolled = ref(false);
+
+    const isCreateFolderFormVisible = ref(false);
+    const newFolderName = ref("");
+    const addFolderError = ref("");
+
+    const folderListErrorMessage = ref("");
+    const folderListErrorAction = ref("");
+    const treeRefreshKey = ref(1);
+
+    const addFolderValidation: ValidationRule[] = [
+        "required",
+        (val: unknown) => isValidFolderName(val as string) ? true : "contains invalid characters: Do not use the following characters: ^ * > < ? / \\ | : , ~",
+    ];
+
+    const folderDropDownMenuItems = computed<MenuAction[]>(() => {
+        return [{
+            title: "Rename",
+            type: "default",
+            handler: showRenameFolderModal,
+            disabled: !isFolderLocal.value
+        }, {
+            title: "Move",
+            type: "default",
+            handler: () => {
+                showMoveFolderModal();  /* Explicitly don't return promise so dropdown will hide immediately */
+            },
+            disabled: !isFolderLocal.value || isFolderRestricted.value
+        },
+        {
+            title: "Delete",
+            type: "danger",
+            handler: () => {
+                deleteSelectedFolder(); /* Explicitly don't return promise so dropdown will hide immediately */
+            }
+        }];
+    });
+
+    function showAddFolderForm(): void {
+        isCreateFolderFormVisible.value = true;
+    }
+
+    async function addFolder(): Promise<void> {
+        newFolderName.value = newFolderName.value.trim();
+        addFolderError.value = "";
+
+        isFolderPaneActionLoading.value = true;
+
+        const options: AssetManagerAddFolderOptionsBag = {
+            assetFolderId: selectedFolder.value,
+            newFolderName: newFolderName.value
+        };
+        const url = "/api/v2/Controls/AssetManagerAddFolder";
+        const response = await post<AssetManagerTreeItemBag>(url, undefined, options);
+
+        if (response.isSuccess && response.data) {
+            hideAddFolder();
+            const folder = selectedFolderBag.value;
+            if (folder) {
+                if (!folder.children) {
+                    folder.children = [];
+                }
+                folder.hasChildren = true;
+                folder.children.push(response.data);
+                folder.children.sort(folderNameComparator);
+                // Reassign so Vue sees the change (push and sort didn't trigger reactivity)
+                folder.children = folder.children; // eslint-disable-line no-self-assign
+            }
+        }
+        else {
+            addFolderError.value = response.errorMessage || "An unknown error occurred while adding the folder.";
+        }
+
+        isFolderPaneActionLoading.value = false;
+    }
+
+    function hideAddFolder(): void {
+        isCreateFolderFormVisible.value = false;
+        newFolderName.value = "";
+        addFolderError.value = "";
+    }
+
+    async function showRenameFolderModal(): Promise<void> {
+        isRenameFolderModalVisible.value = true;
+        renameFolderName.value = Path.getFileName(selectedFolderSubPath.value ?? "");
+
+        await nextTick();
+
+        const input = renameFolderWrapper.value?.querySelector("input[type=text]") as HTMLInputElement | null;
+
+        if (input) {
+            input.select();
+        }
+    }
+
+    async function renameFolder(): Promise<void> {
+        isFolderPaneActionLoading.value = true;
+
+        try {
+            const newFolderName = renameFolderName.value;
+            const options: AssetManagerRenameFolderOptionsBag = {
+                assetFolderId: selectedFolder.value,
+                newFolderName
+            };
+            const url = "/api/v2/Controls/AssetManagerRenameFolder";
+            const response = await post<string>(url, undefined, options);
+
+            if (response.isError || !response.isSuccess || !response.data) {
+                throw new Error(response.errorMessage ?? "An unknown error occurred while renaming the folder.");
+            }
+
+            // If this folder has been expanded, make sure the list of open folders is updated with the new value
+            if (itemProvider.value.openFolders.has(selectedFolder.value ?? "")) {
+                itemProvider.value.openFolders.delete(selectedFolder.value!);
+                itemProvider.value.openFolders.add(response.data);
+            }
+
+            // Update the selected folder with the new data from the server
+            if (selectedFolderBag.value) {
+                selectedFolderBag.value.text = newFolderName;
+                selectedFolderBag.value.value = response.data;
+
+                // Since the bag is updated with a new key, we need to update the selected folder array to reflect the new key
+                selectedFolderArray.value = [response.data];
+
+                if (selectedFolderBag.value.children && selectedFolderBag.value.children.length > 0) {
+                    // If has children already loaded, we need to update the children array because their key is based off the old name
+                    getChildFolders(selectedFolderBag);
+                }
+            }
+        }
+        catch (e) {
+            folderListErrorAction.value = "Renaming Folder";
+            folderListErrorMessage.value = (e as Error)?.message || "An unknown error occurred while renaming the folder.";
+        }
+        finally {
+            isRenameFolderModalVisible.value = false;
+            isFolderPaneActionLoading.value = false;
+        }
+    }
+
+    async function showMoveFolderModal(): Promise<void> {
+        isMoveFolderModalVisible.value = true;
+        isMoveFolderModalLoading.value = true;
+        moveFolderModalError.value = "";
+
+        parseFolderName;
+
+        try {
+            const options: AssetManagerGetListOfAllFoldersOptionsBag = {
+                encryptedRoot: props.encryptedRootFolder,
+                selectedFolder: parseFolderName(selectedFolder.value!).folderPath
+            };
+            const url = "/api/v2/Controls/AssetManagerGetListOfAllFolders";
+            const response = await post<ListItemBag[]>(url, undefined, options);
+
+            if (response.isError || !response.isSuccess || !response.data) {
+                throw new Error(response.errorMessage ?? "An unknown error occurred while preparing to move the folder.");
+            }
+
+            folderMoveOptions.value = response.data;
+            selectedMoveFolder.value = selectedFolderParentSubPath.value;
+        }
+        catch (e) {
+            moveFolderModalError.value = (e as Error)?.message || "An unknown error occurred while preparing to move the folder.";
+        }
+        finally {
+            isMoveFolderModalLoading.value = false;
+        }
+    }
+
+    async function moveFolder(): Promise<void> {
+        isMoveFolderModalLoading.value = true;
+
+        try {
+            const options: AssetManagerMoveFolderOptionsBag = {
+                assetFolderId: selectedFolder.value,
+                targetFolder: selectedMoveFolder.value
+            };
+            const url = "/api/v2/Controls/AssetManagerMoveFolder";
+            const response = await post<string>(url, undefined, options);
+
+            if (response.isError || !response.isSuccess || !response.data) {
+                throw new Error(response.errorMessage ?? "An unknown error occurred while moving the folder.");
+            }
+
+            // If the folder is in the open folders, update the list with the new key
+            const newKey = response.data;
+            if (itemProvider.value.openFolders.has(selectedFolder.value ?? "")) {
+                itemProvider.value.openFolders.delete(selectedFolder.value!);
+                itemProvider.value.openFolders.add(newKey);
+
+                // If any children are in the open folders list, update them to the new keys
+                let openChildFolders = openFolders.value.filter(f => f.startsWith(selectedFolder.value!));
+                if (openChildFolders.length > 0) {
+                    openChildFolders.forEach(f => {
+                        itemProvider.value.openFolders.delete(f);
+                        itemProvider.value.openFolders.add(f.replace(selectedFolder.value!, newKey));
+                    });
+                }
+            }
+
+            // Change the selected folder to the new folder key
+            selectedFolderArray.value = [newKey];
+            // Refresh folder list
+            onRefreshFolders();
+
+            isMoveFolderModalVisible.value = false;
+        }
+        catch (e) {
+            moveFolderModalError.value = (e as Error)?.message || "An unknown error occurred while renaming the folder.";
+        }
+        finally {
+            isMoveFolderModalLoading.value = false;
+        }
+    }
+
+    async function deleteSelectedFolder(): Promise<void> {
+        isFolderPaneActionLoading.value = true;
+
+        const options: AssetManagerBaseOptionsBag = {
+            assetFolderId: selectedFolder.value
+        };
+        const url = "/api/v2/Controls/AssetManagerDeleteFolder";
+        const response = await post<boolean>(url, undefined, options);
+
+        if (response.data) {
+            const { parent, index } = findFolder(folders.value, selectedFolder.value);
+
+            if (parent && parent.children && index !== -1) {
+                parent.children.splice(index, 1);
+                parent.hasChildren = parent.children.length > 0;
+            }
+
+            selectedFolderArray.value = [];
+        }
+        else {
+            folderListErrorMessage.value = response.errorMessage || "An unknown error occurred while deleting the folder.";
+            folderListErrorAction.value = "Deleting Folder";
+        }
+
+        isFolderPaneActionLoading.value = false;
+    }
+
+    function onTreeItemExpanded(item: TreeItemBag): void {
+        itemProvider.value.openFolders.add(item.value ?? "");
+    }
+
+    function onTreeItemCollapsed(item: TreeItemBag): void {
+        itemProvider.value.openFolders.delete(item.value ?? "");
+    }
+
+    function areSetsEqual(as: Set<any>, bs: Set<any>): boolean { // eslint-disable-line @typescript-eslint/no-explicit-any
+        if (as.size !== bs.size) {
+            return false;
+        }
+        for (const a of as) {
+            if (!bs.has(a)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function onRefreshFolders(): void {
+        treeRefreshKey.value++;
+    }
+
+    function parseFolderName(key: string): {
+        providerId: string,
+        encryptedRoot: string,
+        folderPath: string,
+        unencryptedRoot: string,
+        subPath: string
+    } {
+        const { folder } = findFolder(folders.value, key);
+
+        const parts = key.split(",");
+
+        if (parts.length >= 3) {
+            let root = Path.normalize((folder as AssetManagerTreeItemBag).unencryptedRoot ?? "");
+
+            if (root == "/") {
+                root = "";
+            }
+
+            return {
+                providerId: parts[0],
+                encryptedRoot: parts[1],
+                folderPath: root + parts[2],
+                unencryptedRoot: root,
+                subPath: parts[2]
+            };
+        }
+        else {
+            return {
+                providerId: "",
+                encryptedRoot: "",
+                folderPath: "",
+                unencryptedRoot: "",
+                subPath: ""
+            };
+        }
+    }
+
+    function initializeTreeProvider(): AssetManagerTreeItemProvider {
+        const provider = new AssetManagerTreeItemProvider();
+        provider.openFolders = itemProvider?.value?.openFolders ?? new Set(props.openFolders);
+        provider.selectedFolder = selectedFolder?.value ?? props.selectedFolder;
+        provider.enableAssetManager = props.enableAssetManager;
+        provider.enableFileManager = props.enableFileManager;
+        provider.encryptedRootFolder = props.encryptedRootFolder || "";
+
+        return provider;
+    }
+
+    async function getChildFolders(folderBag: Ref<TreeItemBag | null>): Promise<void> {
+        if (folderBag.value) {
+            const items = await itemProvider.value.getChildItems(folderBag.value);
+
+            if (items && items.length > 0) {
+                folderBag.value.hasChildren = true;
+                folderBag.value.children = items;
+                folderBag.value.childCount = items.length;
+            }
+            else {
+                folderBag.value.hasChildren = true; // So they can try again via the expand button
+                folderBag.value.children = null;
+                folderBag.value.childCount = 0;
+            }
+        }
+    }
+
+    watch(() => props.openFolders, () => {
+        const newList = new Set(props.openFolders);
+
+        if (!areSetsEqual(newList, itemProvider.value.openFolders)) {
+            itemProvider.value.openFolders = newList;
+        }
+    });
+
+    watch(itemProvider, () => {
+        emit("update:openFolders", Array.from(itemProvider.value.openFolders));
+    }, { deep: true });
+
+    /**
+     * Show a shadow at the top of the file list when it is scrolled, making it looks like it's
+     * sitting underneath the action bar.
+     */
+    watch(folderScrollContainer, () => {
+        if (folderScrollContainer.value) {
+            folderScrollContainer.value.addEventListener("scroll", () => {
+                folderListScrolled.value = (folderScrollContainer.value?.scrollTop ?? 0) > 0;
+            });
+        }
+        else {
+            folderListScrolled.value = false;
+        }
+    });
+
+    watch(() => [props.enableAssetManager, props.enableFileManager, props.encryptedRootFolder], () => {
+        itemProvider.value = initializeTreeProvider();
+    });
+
+    // Sync v-model: selectedFolder
+    watch(() => props.selectedFolder, () => {
+        selectedFolderArray.value = props.selectedFolder ? [props.selectedFolder] : [];
+    });
+    watch(selectedFolder, () => {
+        emit("update:selectedFolder", selectedFolder.value);
+    });
+
+    // Initialize selected folder when folders are loaded
+    watch(folders, (currentFolders, oldFolders) => {
+        // If folders just got initialized
+        if (oldFolders.length === 0 && currentFolders.length > 0 && selectedFolder.value === null) {
+            // If we have a specified selected folder and it exists in the list of folders, select it
+            if (props.selectedFolder) {
+                const isFolderLoaded = !!findFolder(currentFolders, props.selectedFolder);
+                if (isFolderLoaded) {
+                    selectedFolderArray.value = [props.selectedFolder];
+                }
+            }
+
+            // If we don't have a selected folder and there's only one root folder, select it
+            if (!selectedFolder.value && currentFolders.length === 1) {
+                selectedFolderArray.value = [currentFolders[0].value!];
+            }
+        }
+    });
+
+    // #endregion
+
+    // #region File List
+
+    const selectedFileKeys = ref<string[]>([]);
+    const files = ref<FileAsset[]>([]);
+    const isLoadingFiles = ref(false);
+
+    const fileScrollContainer = ref<HTMLElement | null>(null);
+    const fileListScrolled = ref(false);
+
+    const shownFileRenameForm = ref<string | null>(null);
+    const renameFileName = ref("");
+    const renameFileExtension = ref("");
+
+    const isUploadRestricted = ref(false);
+    const isUploadingFile = ref(false);
+    const fileInputElement = ref<HTMLInputElement | null>(null);
+    const zipFileInputElement = ref<HTMLInputElement | null>(null);
+
+    const isUploadDisabled = computed(() => !isFolderSelected.value || isUploadingFile.value || isLoadingFiles.value);
+    const isZipUploadDisabled = computed(() => isUploadDisabled.value || isUploadRestricted.value);
+
+    const isFilePaneActionLoading = ref(false);
+
+    const fileListErrorMessage = ref("");
+    const fileListErrorAction = ref("");
+
+    const restrictedFileExtensions = [
+        ".bin",
+        ".png",
+        ".jpg",
+        ".ico",
+        ".jpeg",
+        ".config",
+        ".eot",
+        ".woff",
+        ".woff2"
+    ];
+
+    async function showRenameFileForm(file: FileAsset): Promise<void> {
+        shownFileRenameForm.value = file.key;
+        renameFileName.value = Path.getFileNameWithoutExtension(file.name);
+        renameFileExtension.value = Path.getExtension(file.name);
+
+        await nextTick();
+
+        const inputField = document.querySelector(`#asset-manager-current-file-rename-input`) as HTMLInputElement;
+
+        if (inputField) {
+            inputField.focus();
+            const baseFileName = Path.getFileNameWithoutExtension(file.name);
+            inputField.setSelectionRange(0, baseFileName.length);
+        }
+    }
+
+    async function renameFile(file): Promise<void> {
+        fileListErrorAction.value = "";
+        fileListErrorMessage.value = "";
+
+        try {
+            isFilePaneActionLoading.value = true;
+            const { providerId } = parseFolderName(selectedFolder.value ?? "");
+
+            const url = "/api/v2/Controls/AssetManagerRenameFile";
+            const options: AssetManagerRenameFileOptionsBag = {
+                file: file.key,
+                assetStorageProviderId: Number(providerId),
+                newFileName: renameFileName.value + Path.getExtension(file.name),
+            };
+
+            const response = await post<boolean>(url, undefined, options);
+
+            if (response.isSuccess && response.data) {
+                hideRenameFileForm();
+            }
+            else {
+                throw response.errorMessage;
+            }
+        }
+        catch (e) {
+            fileListErrorMessage.value = (e as Error).message || "An unknown error occurred while renaming the file.";
+            fileListErrorAction.value = "Renaming File";
+        }
+        finally {
+            isFilePaneActionLoading.value = false;
+            refreshFiles();
+        }
+    }
+
+    function hideRenameFileForm(): void {
+        shownFileRenameForm.value = null;
+        renameFileName.value = "";
+    }
+
+    async function uploadFile(): Promise<void> {
+        fileListErrorAction.value = "";
+        fileListErrorMessage.value = "";
+
+        if (isUploadingFile.value) {
+            return;
+        }
+
+        try {
+
+            isUploadingFile.value = true;
+
+            if (fileInputElement.value && fileInputElement.value.files && fileInputElement.value.files.length > 0) {
+                const file = fileInputElement.value.files[0];
+                if (isFolderLocal.value) {
+                    const { encryptedRoot, subPath } = parseFolderName(selectedFolder.value ?? "");
+                    await uploadContentFile(file, encryptedRoot, subPath);
+                }
+                else {
+                    const { providerId, folderPath } = parseFolderName(selectedFolder.value ?? "");
+
+                    await uploadAssetProviderFile(file, folderPath, providerId);
+                }
+                refreshFiles();
+            }
+        }
+        catch (e) {
+            fileListErrorMessage.value = (e as Error).message ?? "An unknown error occurred while uploading the file.";
+            fileListErrorAction.value = "Uploading File";
+        }
+        finally {
+            fileInputElement.value!.files = null;
+            isUploadingFile.value = false;
+        }
+    }
+
+    async function uploadZipFile(): Promise<void> {
+        fileListErrorAction.value = "";
+        fileListErrorMessage.value = "";
+
+        if (isUploadingFile.value || !isFolderLocal.value || !zipFileInputElement.value || !zipFileInputElement.value.files || zipFileInputElement.value.files.length <= 0) {
+            return;
+        }
+
+        try {
+            isUploadingFile.value = true;
+
+            const file = zipFileInputElement.value.files[0];
+            const { encryptedRoot, subPath } = parseFolderName(selectedFolder.value ?? "");
+            const { text: fileName } = await uploadContentFile(file, encryptedRoot, subPath);
+
+            if (!fileName) {
+                throw new Error("Cannot extract file because of an issue with the upload.");
+            }
+
+            const url = "/api/v2/Controls/AssetManagerExtractFile";
+            const options: AssetManagerExtractFileOptionsBag = {
+                fileName,
+                encryptedRoot
+            };
+
+            const response = await post<boolean>(url, undefined, options);
+
+            if (response.isSuccess && response.data) {
+                // If successful, there might be new subfolders because the zip file had folders, so fetch those
+                // children so user doesn't need to refresh folders to see that their are new children
+                getChildFolders(selectedFolderBag);
+            }
+            else {
+                fileListErrorMessage.value = response.errorMessage ?? "An unknown error occurred while extracting the file.";
+                fileListErrorAction.value = "Extracting File";
+            }
+        }
+        catch (e) {
+            fileListErrorMessage.value = (e as Error).message ?? "An unknown error occurred while uploading the file.";
+            fileListErrorAction.value = "Uploading Package File";
+        }
+        finally {
+            refreshFiles();
+            zipFileInputElement.value!.files = null;
+            isUploadingFile.value = false;
+        }
+    }
+
+    async function deleteFiles(files: string[]): Promise<void> {
+        if (await confirm(`Are you sure you want to delete the selected file${files.length > 1 ? "s" : ""}?`)) {
+            fileListErrorAction.value = "";
+            fileListErrorMessage.value = "";
+
+            try {
+                isFilePaneActionLoading.value = true;
+                const { providerId } = parseFolderName(selectedFolder.value ?? "");
+
+                const url = "/api/v2/Controls/AssetManagerDeleteFiles";
+                const options: AssetManagerDeleteFilesOptionsBag = {
+                    files,
+                    assetStorageProviderId: Number(providerId)
+                };
+
+                const response = await post<TreeItemBag>(url, undefined, options);
+
+                if (response.isSuccess && response.data) {
+                    // Empty: Nothing to do, except what's already being done in the `finally` block
+                }
+                else {
+                    throw response.errorMessage;
+                }
+            }
+            catch (e) {
+                fileListErrorMessage.value = (e as Error).message || "An unknown error occurred while deleting the file(s).";
+                fileListErrorAction.value = "Deleting File";
+            }
+            finally {
+                isFilePaneActionLoading.value = false;
+                refreshFiles();
+            }
+        }
+    }
+
+    function refreshFiles(): void {
+        fetchFiles();
+    }
+
+    function resetFileState(): void {
+        shownFileRenameForm.value = null;
+        selectedFileKeys.value = [];
+        files.value = [];
+    }
+
+    async function fetchFiles(): Promise<void> {
+        resetFileState();
+        isLoadingFiles.value = true;
+        isFilePaneActionLoading.value = true;
+
+        const options: AssetManagerGetFilesOptionsBag = {
+            assetFolderId: selectedFolder.value,
+            browseMode: props.browseMode
+        };
+        const url = "/api/v2/Controls/AssetManagerGetFiles";
+        const response = await post<AssetManagerGetFilesResultsBag<FileAsset>>(url, undefined, options);
+
+        if (response.isSuccess && response.data) {
+            files.value = response.data.files ?? [];
+            isFolderRestricted.value = response.data.isFolderRestricted ?? false;
+            isUploadRestricted.value = response.data.isFolderUploadRestricted ?? false;
+        }
+
+        isLoadingFiles.value = false;
+        isFilePaneActionLoading.value = false;
+    }
+
+    function getFileDropDownMenuItems(file: FileAsset): MenuAction[] {
+        const actions: MenuAction[] = [];
+        if (isFolderLocal.value && !!props.editFilePage && !restrictedFileExtensions.includes(Path.getExtension(file.key))) {
+            actions.push({
+                title: "Edit",
+                type: "default",
+                handler: () => {
+                    window.location.href = props.editFilePage + "?RelativeFilePath=" + encodeURIComponent(file.key);
+                }
+            });
+        }
+
+        actions.push({
+            title: "Download",
+            type: "default",
+            handler: () => {
+                // Since this returns a download stream, we never actually navigate away from the page
+                window.location.href = `/api/v2/Controls/AssetManagerDownloadFile?file=${encodeURI(file.key)}&assetStorageProviderId=${parseFolderName(selectedFolder.value ?? "").providerId}`;
+            }
+        }, {
+            title: "Rename",
+            type: "default",
+            handler: () => showRenameFileForm(file)
+        }, {
+            title: "Delete",
+            type: "danger",
+            handler: () => {
+                deleteFiles([file.key]); /* Explicitly don't return promise so dropdown will hide immediately */
+            }
+        });
+
+        return actions;
+    }
+
+    watch(selectedFileKeys, () => {
+        internalValue.value = files.value.filter(f => selectedFileKeys.value.includes(f.key));
+    });
+
+    watch(selectedFolder, () => {
+        if (selectedFolder.value) {
+            fetchFiles();
+        }
+        else {
+            files.value = [];
+        }
+    });
+
+    /**
+     * Show a shadow at the top of the file list when it is scrolled, making it looks like it's
+     * sitting underneath the action bar.
+     */
+    watch(fileScrollContainer, () => {
+        if (fileScrollContainer.value) {
+            fileScrollContainer.value.addEventListener("scroll", () => {
+                fileListScrolled.value = (fileScrollContainer.value?.scrollTop ?? 0) > 0;
+            });
+        }
+        else {
+            fileListScrolled.value = false;
+        }
+    });
+
+    // #endregion
+
+    // #region Date/Time
+
+    const dateCache: { [key: string]: string } = {};
+
+    function formatDate(date: string): string {
+        if (!date) {
+            return "";
+        }
+
+        if (dateCache[date]) {
+            return dateCache[date];
+        }
+
+        const formattedDate = RockDateTime
+            .parseISO(date)
+            ?.toLocaleString(DateTimeFormat.DateTimeShort);
+
+        if (formattedDate) {
+            dateCache[date] = formattedDate;
+        }
+
+        return formattedDate ?? "";
+    }
+
+    // #endregion
+
+</script>

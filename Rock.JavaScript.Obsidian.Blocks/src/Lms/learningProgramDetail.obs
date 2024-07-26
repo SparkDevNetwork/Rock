@@ -66,7 +66,7 @@
                 </Modal>
             </template>
             <template #edit>
-                <EditPanel v-model="learningProgramEditBag" :options="options" @propertyChanged="onPropertyChanged" :hasFullScreen="false" />
+                <EditPanel v-model="learningProgramEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" :hasFullScreen="false" />
             </template>
         </DetailBlock>
     </template>
@@ -88,19 +88,21 @@
     import ImageWithIcon from "@Obsidian/Controls/imageWithIcon.obs";
     import Kpi from "@Obsidian/Controls/kpi.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import { getSecurityGrant, onConfigurationValuesChanged, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
-    import { debounce } from "@Obsidian/Utility/util";
+    import { onConfigurationValuesChanged, useConfigurationValues, useEntityDetailBlock, useBlockBrowserBus, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./LearningProgramDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { LearningProgramBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningProgramDetail/learningProgramBag";
     import { LearningProgramDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningProgramDetail/learningProgramDetailOptionsBag";
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
     import { ConfigurationMode, ConfigurationModeDescription } from "@Obsidian/Enums/Lms/configurationMode";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { BlockMessages } from "@Obsidian/Utility/browserBus";
 
     const config = useConfigurationValues<DetailBlockBox<LearningProgramBag, LearningProgramDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const securityGrant = getSecurityGrant(config.securityGrantToken);
     onConfigurationValuesChanged(useReloadBlock());
+
+    const browserBus = useBlockBrowserBus();
 
     // #region Values
 
@@ -113,7 +115,7 @@
     const showDetailsModal = ref(false);
 
     const learningProgramViewBag = ref(config.entity);
-    const learningProgramEditBag = ref<LearningProgramBag>({} as LearningProgramBag);
+    const learningProgramEditBag = ref<ValidPropertiesBox<LearningProgramBag>>({bag: {} as LearningProgramBag});
     const learningProgramAdditionalDetailsBag = ref(config.entity);
 
     const entityTypeGuid = EntityType.LearningProgram;
@@ -131,30 +133,10 @@
 
     const programName = ref(learningProgramViewBag.value?.publicName ?? "");
     const isAcademicConfigurationMode = learningProgramViewBag.value?.configurationMode === ConfigurationMode.AcademicCalendar;
-
-    // The properties that are being edited in the UI. This is used to
-    // inform the server which incoming values have valid data in them.
-    const validProperties = [
-        "attributeValues",
-        "absencesCriticalCount",
-        "absencesWarningCount",
-        "category",
-        "completionWorkflowType",
-        "configurationMode",
-        "description",
-        "highlightColor",
-        "iconCssClass",
-        "imageBinaryFile",
-        "isActive",
-        "isCompletionStatusTracked",
-        "isPublic",
-        "name",
-        "publicName",
-        "summary",
-        "systemCommunication"
-    ];
-
-    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(learningProgramEditBag, validProperties, invokeBlockAction), undefined, true);
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: learningProgramEditBag
+    });
 
     // #endregion
 
@@ -297,6 +279,10 @@
                 handler: async () => {
                     if (await onEdit()) {
                         panelMode.value = DetailPanelMode.Edit;
+
+                        // Because we're not using the standard edit button we are now responsible
+                        // for alerting other blocks that we're entering edit mode (end edit will work as normal).
+                        browserBus.publish(BlockMessages.BeginEdit);
                     }
                 }
             });
@@ -330,7 +316,7 @@
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
     async function onCancelEdit(): Promise<boolean | string> {
-        if (!learningProgramEditBag.value?.idKey) {
+        if (!learningProgramEditBag.value?.bag?.idKey) {
             if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
                 return config.navigationUrls[NavigationUrlKey.ParentPage];
             }
@@ -406,35 +392,18 @@
      * @returns true if the panel should enter edit mode; otherwise false.
      */
     async function onEdit(): Promise<boolean> {
-        const result = await invokeBlockAction<DetailBlockBox<LearningProgramBag, LearningProgramDetailOptionsBag>>("Edit", {
+        const result = await invokeBlockAction<ValidPropertiesBox<LearningProgramBag>>("Edit", {
             key: learningProgramViewBag.value?.idKey
         });
 
-        if (result.isSuccess && result.data && result.data.entity) {
-            learningProgramEditBag.value = result.data.entity;
+        if (result.isSuccess && result.data && result.data.bag) {
+            learningProgramEditBag.value.bag = result.data.bag;
 
             return true;
         }
         else {
             return false;
         }
-    }
-
-    /**
-     * Event handler for when a value has changed that has an associated
-     * C# property name. This is used to detect changes to values that
-     * might cause qualified attributes to either show up or not show up.
-     *
-     * @param propertyName The name of the C# property that was changed.
-     */
-    function onPropertyChanged(propertyName: string): void {
-        // If we don't have any qualified attribute properties or this property
-        // is not one of them then do nothing.
-        if (!config.qualifiedAttributeProperties || !config.qualifiedAttributeProperties.some(n => n.toLowerCase() === propertyName.toLowerCase())) {
-            return;
-        }
-
-        refreshAttributesDebounce();
     }
 
     /**
@@ -446,19 +415,13 @@
     async function onSave(): Promise<boolean | string> {
         errorMessage.value = "";
 
-        const data: DetailBlockBox<LearningProgramBag, LearningProgramDetailOptionsBag> = {
-            entity: learningProgramEditBag.value,
-            isEditable: true,
-            validProperties: validProperties
-        };
-
-        const result = await invokeBlockAction<LearningProgramBag | string>("Save", {
-            box: data
+        const result = await invokeBlockAction<ValidPropertiesBox<LearningProgramBag> | string>("Save", {
+            box: learningProgramEditBag.value
         });
 
         if (result.isSuccess && result.data) {
             if (result.statusCode === 200 && typeof result.data === "object") {
-                learningProgramViewBag.value = result.data;
+                learningProgramViewBag.value = result.data.bag;
 
                 return true;
             }
@@ -467,7 +430,7 @@
             }
         }
 
-        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save learning program.";
+        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save the learning program.";
 
         return false;
     }
@@ -517,8 +480,6 @@
 
     // #endregion
 
-    provideSecurityGrant(securityGrant);
-
     // Handle any initial error conditions or the need to go into edit mode.
     if (config.errorMessage) {
         blockError.value = config.errorMessage;
@@ -527,7 +488,7 @@
         blockError.value = "The specified learning program could not be viewed.";
     }
     else if (!config.entity.idKey) {
-        learningProgramEditBag.value = config.entity;
+        learningProgramEditBag.value.bag = config.entity;
         panelMode.value = DetailPanelMode.Add;
     }
 

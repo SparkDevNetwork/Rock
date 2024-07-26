@@ -103,6 +103,9 @@ export type PublicEditableAttributeBag = {
      */
     isShowOnBulk: boolean;
 
+    /** Gets or sets a flag indicating if changes to the attribute values should be recorded into the generic History log table. */
+    isSuppressHistoryLogging: boolean;
+
     /**
      * Gets or sets a value indicating whether this attribute is a system
      * attribute, which implies limited editing ability.

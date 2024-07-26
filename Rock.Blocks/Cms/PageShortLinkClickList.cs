@@ -22,6 +22,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
+using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.PageShortLinkClickList;
 using Rock.Web.Cache;
@@ -72,8 +73,8 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         protected override IQueryable<Interaction> GetListQueryable( RockContext rockContext )
         {
-            int shortLinkId = RequestContext?.PageParameters?["ShortLinkId"]?.AsInteger() ?? 0;
-            if ( shortLinkId == 0 )
+            string shortLinkIdKey = RequestContext?.PageParameters?["ShortLinkId"]?.ToString() ?? string.Empty;
+            if ( string.IsNullOrWhiteSpace( shortLinkIdKey ) )
             {
                 return Enumerable.Empty<Interaction>().AsQueryable();
             }
@@ -84,15 +85,19 @@ namespace Rock.Blocks.Cms
                 return Enumerable.Empty<Interaction>().AsQueryable();
             }
 
+            var shortLinkId = IdHasher.Instance.GetId(shortLinkIdKey);
+
             var interactions = new InteractionService( rockContext )
                 .Queryable().AsNoTracking()
                 .Include( i => i.PersonAlias )
                 .Include( i => i.PersonAlias.Person )
                 .Include( i => i.InteractionSession.DeviceType )
+                .Include( i => i.InteractionComponent )
                 .Where( i =>
                    i.InteractionComponent.InteractionChannel.ChannelTypeMediumValueId == dv.Id &&
-                   i.InteractionComponent.EntityId == shortLinkId &&
-                   i.PersonAlias != null );
+                   i.InteractionComponent.EntityId == shortLinkId )
+                .ToList()
+                .AsQueryable();
 
             return interactions;
         }
@@ -102,16 +107,27 @@ namespace Rock.Blocks.Cms
         {
             return new GridBuilder<Interaction>()
                 .WithBlock( this )
+                .AddField("idKey", a => a.InteractionComponent.IdKey )
                 .AddField( "id", a => a.InteractionComponent.EntityId )
                 .AddField( "interactionDateTime", a => a.InteractionDateTime )
                 .AddPersonField( "person", a => a.PersonAlias?.Person )
                 .AddTextField( "application", a => a.InteractionSession.DeviceType.Application )
                 .AddTextField( "clientType", a => a.InteractionSession.DeviceType.ClientType )
                 .AddTextField( "operatingSystem", a => a.InteractionSession.DeviceType.OperatingSystem )
-                .AddTextField( "source", a => a.Source );
+                .AddTextField( "source", a => GetUtmSourceName(a.SourceValueId) );
         }
 
         #endregion
+
+        private string GetUtmSourceName( int? sourceValueId )
+        {
+            if ( sourceValueId == null )
+            {
+                return string.Empty;
+            }
+
+            return Rock.Cms.Utm.UtmHelper.GetUtmSourceNameFromDefinedValueOrText( sourceValueId.Value, string.Empty );
+        }
     }
 }
 

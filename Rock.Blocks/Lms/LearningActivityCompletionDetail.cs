@@ -409,6 +409,7 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
         {
+            // Note that we need to use our own RockContext here since the RockEntityDetailBlockType base will not have initialized it yet.
             using ( var rockContext = new RockContext() )
             {
                 var entityKey = pageReference.GetPageParameter( PageParameterKey.LearningActivityCompletionId ) ?? "";
@@ -497,20 +498,12 @@ namespace Rock.Blocks.Lms
 
             var isNew = entity.Id == 0;
 
-            RockContext.WrapTransaction( () =>
-            {
-                RockContext.SaveChanges();
-            } );
+            RockContext.SaveChanges();
 
             if ( isNew )
             {
                 return ActionContent( System.Net.HttpStatusCode.Created, ParentPageUrl() );
             }
-
-            // Ensure navigation properties will work now.
-            entity = entityService.Get( entity.Id );
-
-            var bag = GetEntityBagForEdit( entity );
 
             return ActionOk( ParentPageUrl() );
         }

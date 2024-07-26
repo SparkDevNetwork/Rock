@@ -1404,6 +1404,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
             newAttribute.PostHtml = attribute.PostHtml;
             newAttribute.FieldTypeId = fieldTypeCache.Id;
             newAttribute.DefaultValue = fieldTypeCache.Field.GetPrivateEditValue( attribute.DefaultValue, configurationValues );
+            newAttribute.IsSuppressHistoryLogging = attribute.IsSuppressHistoryLogging;
 
             var categoryGuids = attribute.Categories?.Select( c => c.Value.AsGuid() ).ToList();
             newAttribute.Categories.Clear();

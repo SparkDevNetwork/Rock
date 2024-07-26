@@ -93,6 +93,28 @@
     align-items: center;
 }
 
+.check-in-page .number-pad {
+    display: grid;
+    margin: auto;
+    grid-template-columns: 130px 130px 130px;
+    grid-template-rows: 56px 56px 56px 56px;
+    gap: var(--item-spacing);
+}
+
+.check-in-page .number-pad .btn {
+    color: var(--tones-darkest);
+    background-color: var(--tones-light);
+    font-size: var(--font-size-btn-primary);
+    font-weight: 600;
+}
+
+.check-in-page .body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--item-spacing);
+}
+
+
 /*
  * Styles for the page header.
  */
@@ -283,6 +305,7 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
+    align-items: center;
     grid-row: 2/3;
     grid-column: 2/3;
 }
@@ -321,32 +344,11 @@
     align-items: center;
 }
 
-.check-in-page .search-screen .body {
-    display: flex;
-    flex-direction: column;
-    gap: var(--item-spacing);
-}
-
 .check-in-page .search-screen input.search-term {
     height: 64px;
     font-size: 36px;
     width: 0;
     min-width: 100%;
-}
-
-.check-in-page .search-screen .number-pad {
-    display: grid;
-    margin: auto;
-    grid-template-columns: 130px 130px 130px;
-    grid-template-rows: 56px 56px 56px 56px;
-    gap: var(--item-spacing);
-}
-
-.check-in-page .search-screen .number-pad .btn {
-    color: var(--tones-darkest);
-    background-color: var(--tones-light);
-    font-size: var(--font-size-btn-primary);
-    font-weight: 600;
 }
 
 .check-in-page .search-screen .search-button {
@@ -440,6 +442,17 @@
 }
 
 .check-in-page .schedule-select-screen .schedule-button .selection {
+    font-size: 50px;
+    line-height: 1;
+    margin-top: calc(var(--unit-md) * -1);
+    margin-bottom: calc(var(--unit-md) * -1);
+}
+
+
+/**
+ * Ability Level Select Screen
+*/
+.check-in-page .ability-level-button .selection {
     font-size: 50px;
     line-height: 1;
     margin-top: calc(var(--unit-md) * -1);
@@ -578,4 +591,124 @@
 .check-in-page .attendance-card .achievement + .achievement {
     padding-top: var(--unit-md);
     border-top: 1px solid var(--tones-medium);
+}
+
+
+/**
+ * Supervisor Login Screen
+*/
+.supervisor-login-screen {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--item-spacing);
+    align-items: start;
+}
+
+.supervisor-login-screen input.pin-code {
+    height: 64px;
+    font-size: 36px;
+    width: 0;
+    min-width: 100%;
+}
+
+.supervisor-login-screen .current-counts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: calc(var(--item-spacing) * 2);
+    font-size: var(--font-size-h2)
+}
+
+.supervisor-login-screen .current-counts .count-row {
+    display: flex;
+    gap: var(--item-spacing);
+}
+
+.supervisor-login-screen .current-counts .title {
+    flex-grow: 1;
+}
+
+
+/**
+ * Supervisor Action Screen
+*/
+
+.supervisor-action-screen {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    column-gap: var(--item-spacing);
+    align-items: start;
+}
+
+.supervisor-action-screen .location-button .count {
+    margin-left: auto;
+}
+
+
+/**
+ * Supervisor Reprint Screen
+*/
+
+.supervisor-reprint-screen .attendance-button .btn {
+    justify-content: initial;
+    border: 0;
+}
+
+.supervisor-reprint-screen .attendance-button .title {
+    display: flex;
+    flex-grow: 1;
+    align-items: center;
+}
+
+.supervisor-reprint-screen .attendance-button .details {
+    display: flex;
+    gap: calc(var(--item-spacing) * 0.5);
+    margin-left: auto;
+    font-size: var(--font-size-h2);
+}
+
+.supervisor-reprint-screen input.search-term {
+    height: 64px;
+    font-size: 36px;
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+
+/**
+ * Supervisor Schedule Locations Screen
+*/
+
+.supervisor-schedule-locations-screen .schedule-grid {
+    display: grid;
+    row-gap: var(--item-spacing);
+    grid-template-columns: 1fr 1fr repeat(var(--schedule-count, 0), minmax(90px, max-content));
+}
+
+.supervisor-schedule-locations-screen .schedule-grid > * {
+    border-bottom: 1px solid var(--tones-light);
+    padding-bottom: var(--unit-md);
+}
+
+.supervisor-schedule-locations-screen .schedule-grid > .header {
+    font-weight: 600;
+    font-size: var(--font-size-h2);
+    border-bottom: 1px solid var(--tones-medium);
+    padding-bottom: var(--unit-sm);
+    align-self: end;
+}
+
+.supervisor-schedule-locations-screen .schedule-grid .title {
+    font-weight: 600;
+    font-size: var(--font-size-h2);
+}
+
+.supervisor-schedule-locations-screen .schedule-grid .subtitle {
+    opacity: 0.8;
+}
+
+.supervisor-schedule-locations-screen .schedule-grid .checkbox .label-text::before,
+.supervisor-schedule-locations-screen .schedule-grid .checkbox .label-text::after {
+    width: 30px;
+    height: 30px;
 }

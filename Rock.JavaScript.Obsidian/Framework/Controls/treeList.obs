@@ -3,15 +3,21 @@
     <div style="overflow-x: hidden; max-width: 100%;">
         <ul class="rocktree">
             <TreeListItem v-for="child in internalItems"
-                          :modelValue="modelValue"
+                          :key="child.value ?? ''"
                           :item="child"
-                          :multiple="multiple"
-                          :disableFolderSelection="disableFolderSelection"
-                          :autoExpand="autoExpand"
-                          :showChildCount="showChildCount"
-                          :provider="provider"
+                          v-bind="{
+                              modelValue,
+                              multiple,
+                              disableFolderSelection,
+                              autoExpand,
+                              showChildCount,
+                              provider,
+                              disableDeselect,
+                              initiallyExpanded
+                          }"
                           @update:modelValue="onUpdateSelectedValues"
-                          @treeitem-expanded="onItemExpanded" />
+                          @treeitem-expanded="onItemExpanded"
+                          @treeitem-collapsed="onItemCollapsed" />
         </ul>
     </div>
 </template>
@@ -49,6 +55,15 @@
         },
 
         /**
+         * List of items (by their `value` property) that should be expanded when the tree list is first loaded
+         * (after root is loaded).
+         */
+        initiallyExpanded: {
+            type: Array as PropType<string[]>,
+            default: []
+        },
+
+        /**
          * Whether to automatically expand parents who have (sub)children that are selected
          */
         autoExpand: {
@@ -62,6 +77,14 @@
         showChildCount: {
             type: Boolean,
             default: false
+        },
+
+        /**
+         * When using the tree list outside of a picker,
+         */
+        disableDeselect: {
+            type: Boolean,
+            default: false
         }
     });
 
@@ -69,6 +92,7 @@
         (e: "update:modelValue", value: string[]): void;
         (e: "update:items", value: TreeItemBag[]): void;
         (e: "treeitem-expanded", value: TreeItemBag): void;
+        (e: "treeitem-collapsed", value: TreeItemBag): void;
     }>();
 
     /** The list of items currently being displayed in the tree list. */
@@ -80,7 +104,19 @@
     const getRootItems = async (): Promise<void> => {
         if (props.provider) {
             const result = props.provider.getRootItems(props.modelValue);
-            const rootItems = isPromise(result) ? await result : result;
+            let rootItems = result;
+
+            if (isPromise(result)) {
+                internalItems.value = [{
+                    children: [],
+                    hasChildren: false,
+                    iconCssClass: "fa fa-spinner fa-spin",
+                    value: "",
+                    isActive: false,
+                    isFolder: false
+                }];
+                rootItems = await result;
+            }
 
             internalItems.value = JSON.parse(JSON.stringify(rootItems)) as TreeItemBag[];
 
@@ -109,22 +145,49 @@
      * @param item The item that was expanded.
      */
     const onItemExpanded = async (item: TreeItemBag): Promise<void> => {
+        // Pass the event up to the parent so it knows about the expansion and can
+        // handle it if there's provider
+        emit("treeitem-expanded", item);
+
         if (props.provider) {
             // We have a provider, check if the item needs it's children loaded still.
             if (item.hasChildren && item.children === null) {
                 const result = props.provider.getChildItems(item);
-                const children = isPromise(result) ? await result : result;
 
+                let children = result;
+
+                if (isPromise(result)) {
+                    item.children = [{
+                        children: [],
+                        hasChildren: false,
+                        iconCssClass: "fa fa-spinner fa-spin",
+                        value: "",
+                        isActive: false,
+                        isFolder: false
+                    }];
+
+                    children = await result;
+                }
+
+                if (!children || (Array.isArray(children) && children.length === 0)) {
+                    item.hasChildren = false;
+                }
                 item.children = JSON.parse(JSON.stringify(children)) as TreeItemBag[];
 
                 emit("update:items", internalItems.value);
             }
         }
-        else {
-            // No provider, simply pass the event to the parent in case it
-            // wants to make any changes to the tree.
-            emit("treeitem-expanded", item);
-        }
+    };
+
+    /**
+     * Event handler for when an item has been collapsed.
+     *
+     * @param item The item that was collapsed.
+     */
+    const onItemCollapsed = async (item: TreeItemBag): Promise<void> => {
+        // Pass the event up to the parent so it knows about the collapse and can
+        // handle it if there's no provider
+        emit("treeitem-collapsed", item);
     };
 
     // Watch for a change in our passed items and update our internal list.
