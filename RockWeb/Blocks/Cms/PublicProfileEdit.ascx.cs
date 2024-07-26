@@ -1136,6 +1136,16 @@ namespace RockWeb.Blocks.Cms
 
                         var phoneNumberService = new PhoneNumberService( rockContext );
 
+                        // Remove any empty numbers
+                        foreach ( var phoneNumber in person.PhoneNumbers
+                                        .Where( n => n.NumberTypeValueId.HasValue && !phoneNumberTypeIds.Contains( n.NumberTypeValueId.Value )
+                                            && selectedPhoneTypeGuids.Contains( n.NumberTypeValue.Guid ) )
+                                        .ToList() )
+                        {
+                            person.PhoneNumbers.Remove( phoneNumber );
+                            phoneNumberService.Delete( phoneNumber );
+                        }
+
                         // Remove any duplicate numbers
                         var hasDuplicate = person.PhoneNumbers.GroupBy( pn => pn.Number ).Where( g => g.Count() > 1 ).Any();
 
