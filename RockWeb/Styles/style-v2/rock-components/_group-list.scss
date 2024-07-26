@@ -1,0 +1,63 @@
+
+
+// GROUP LIST (ROCK COMPONENT) (members (family view/edit in CRM Person Profile)
+
+
+// =============================================================
+// Table of Content           
+//  + Base style
+// =============================================================
+
+
+// ======================== BASE STYLE ========================
+
+.groupmembers {
+  display:    flex;
+  flex-wrap:  wrap;
+  padding:    0;
+  margin:     var(--spacing-tiny) 0;
+  list-style: none;
+
+  .member {
+    float:          left;
+    min-width:      160px;
+    min-height:     90px;
+    margin-right:   var(--spacing-medium);
+    margin-bottom:  var(--spacing-medium);
+    border-radius:  var(--rounded-small);
+
+    .person-image {
+      display:          block;
+      float:            left;
+      width:            64px;
+      height:           64px;
+      margin-right:     var(--spacing-small);
+      background-size:  cover;
+      border:           1px solid var(--color-link);
+    }
+
+    .member-information {
+      float: left;
+    }
+
+    h4 {
+      margin:         0;
+      overflow:       hidden;
+      font-size:      var(font-size-regular);
+      font-weight:    var(--font-weight-semibold);
+      text-overflow:  ellipsis;
+    }
+
+    small {
+      display:      block;
+      margin:       0;
+      line-height:  16px;
+    }
+
+    .btn {
+      margin-top:   var(--spacing-tiny);
+    }
+  }
+}
+
+// ====================== END BASE STYLE ======================

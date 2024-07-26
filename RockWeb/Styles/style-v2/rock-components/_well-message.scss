@@ -1,0 +1,59 @@
+
+
+// WELL MESSAGE (ROCK COMPONENT)
+
+
+// =============================================================
+// Table of Content           
+//  + Alternative style
+// =============================================================
+
+
+// ======================== ALTERNATIVE STYLE ========================
+.well-message {
+  text-align: center;
+
+
+  h1 {
+    font-size: var(--font-size-h2);
+  }
+
+  i {
+    margin: var(--spacing-medium) 0;
+    font-size: 84px;
+  }
+
+  &.well-message-info {
+    color:              var(--color-info-strong);
+    background-color:   var(--color-info-soft);
+    border-color:       var(--color-info-strong);
+  }
+
+  &.well-message-success {
+    color:              var(--color-success-strong);
+    background-color:   var(--color-success-soft);
+    border-color:       var(--color-success-strong);
+  }
+
+  &.well-message-danger {
+    color:              var(--color-danger-strong);
+    background-color:   var(--color-danger-soft);
+    border-color:       var(--color-danger-strong);
+  }
+
+  &.well-message-warning {
+    color:              var(--color-warning-strong);
+    background-color:   var(--color-warning-soft);
+    border-color:       var(--color-warning-strong);
+  }
+
+  &.well-message-critical {
+    color:              var(--color-ctritical-strong);
+    background-color:   var(--color-ctritical-soft);
+    border-color:       var(--color-ctritical-strong);
+  }
+}
+// ====================== END ALTERNATIVE STYLE ======================
+
+
+
