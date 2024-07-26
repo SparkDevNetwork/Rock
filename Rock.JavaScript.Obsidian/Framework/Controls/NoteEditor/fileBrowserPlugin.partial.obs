@@ -10,22 +10,57 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
-    import { getToolbarButton } from "./utils.partial";
+    /**
+     * FileBrowserPlugin - Adds a toolbar button for attaching a file.
+     *
+     * @example
+     * <!--
+     *      someEditorHost.obs - This example shows just enough code to wire up the plugin.
+     *      FYI, the Vue - Official extension complains if template and script tags are used in comments,
+     *      so using (template) and (script) for now.
+     * -->
+     * (template)
+     *   <div id="uniqueEditorId">
+     *     <FileBrowserPlugin ref="fileBrowserPlugin" />
+     *   </div>
+     * (/template)
+     *
+     * (script setup lang="ts")
+     *   import FileBrowserPlugin from "./NoteEditor/fileBrowserPlugin.partial.obs";
+     *   ...
+     *
+     *   const fileBrowserPlugin = ref<InstanceType<typeof FileBrowserPlugin> | undefined>();
+     *   ...
+     *
+     *   // The host must provide the plugins feature.
+     *   const pluginManager = providePluginsFeature({
+     *       editorInstance: computed(() => tinyMceInstance.value),
+     *       toolbarElement: computed(() => toolbarElement.value)
+     *   });
+     *   ...
+     *
+     *   // Initialize the editor.
+     *   onMounted(() => {
+     *     ...
+     *
+     *     tinymce.init({
+     *       // The file browser button can be placed anywhere in this configuration string.
+     *       // Here, the toolbar will display
+     *       // the file browser button, followed by a separator character,
+     *       // then the undo and redo buttons.
+     *       // Reference: https://www.tiny.cloud/docs/tinymce/6/toolbar-configuration-options/#example-grouped-toolbar
+     *       toolbar: `${fileBrowserPlugin.value?.id} | undo redo`
+     *     });
+     *
+     *     ...
+     *   });
+     * (/script)
+     */
+    import { ref, watch } from "vue";
+    import { getToolbarButton, usePluginHelper } from "./utils.partial";
     import Modal from "@Obsidian/Controls/modal.obs";
     import { Editor, Ui } from "@Obsidian/Libs/tinymce";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-
-    const props = defineProps({
-        tinyMceInstance: {
-            type: Object as PropType<Editor | undefined>,
-            required: true
-        },
-        toolbarElement: {
-            type: Object as PropType<HTMLElement | undefined>,
-            required: true
-        }
-    });
 
     const id = "rockfilebrowser" as const;
     const tooltip = "File Browser" as const;
@@ -36,6 +71,7 @@
 
     //#region Values
 
+    const { editorInstance, toolbarElement } = usePluginHelper();
     const toolbarButtonElement = ref<HTMLElement | undefined>();
     const isShown = ref<boolean>(false);
     const file = ref<ListItemBag | undefined>();
@@ -65,7 +101,7 @@
                 isShown.value = true;
             },
             onSetup: (_api: Ui.Toolbar.ToolbarToggleButtonInstanceApi): (api: Ui.Toolbar.ToolbarToggleButtonInstanceApi) => void => {
-                toolbarButtonElement.value = getToolbarButton(tooltip, props.toolbarElement) ?? undefined;
+                toolbarButtonElement.value = getToolbarButton(tooltip, toolbarElement.value) ?? undefined;
 
                 // Return a dispose callback.
                 return disposeTooltipButton;
@@ -79,7 +115,7 @@
 
     /** Event handler for the OK button being clicked. */
     function onOkClicked(): void {
-        const editor = props.tinyMceInstance;
+        const editor = editorInstance.value;
 
         if (editor && file.value?.value) {
             // TODO: Add the file to the editor assuming file.value is the file path.
@@ -97,12 +133,12 @@
     //#region Watchers
 
     // Register the plugin whenever the bound Editor changes.
-    watch(() => props.tinyMceInstance, () => {
+    watch(editorInstance, () => {
         // Dispose the previous tooltip button if set.
         disposeTooltipButton();
 
-        if (props.tinyMceInstance) {
-            init(props.tinyMceInstance);
+        if (editorInstance.value) {
+            init(editorInstance.value);
         }
     });
 

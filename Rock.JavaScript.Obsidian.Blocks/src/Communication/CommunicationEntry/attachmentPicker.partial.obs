@@ -1,0 +1,92 @@
+<template>
+    <PopupPicker v-model="internalAttachmentListItemBags"
+                 :disabled="disabled"
+                 :isDropDownOpenedOnShowMore="true"
+                 label="Attachments"
+                 @openPopup="onOpenPopup"
+                 @showMore="onShowMore">
+    </PopupPicker>
+
+    <NotificationBox v-if="attachmentErrorMessage" alertType="warning">
+        <strong><i class="fa fa-exclamation-triangle"></i> Warning </strong>
+        <span>{{ attachmentErrorMessage }}</span>
+    </NotificationBox>
+
+    <div ref="fileInputWrapper" class="d-none">
+        <FileUploader :disabled="disabled"
+                      :binaryFileTypeGuid="binaryFileTypeGuid"
+                      @error="onAttachmentError"
+                      @update:modelValue="onAttachmentAdded" />
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref } from "vue";
+    import PopupPicker from "./popupPicker.partial.obs";
+    import FileUploader from "@Obsidian/Controls/fileUploader.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { Guid } from "@Obsidian/Types";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        binaryFileTypeGuid: {
+            type: String as PropType<Guid>,
+            required: true
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ListItemBag[]): void;
+    }>();
+
+    //#region Values
+
+    const internalAttachmentListItemBags = useVModelPassthrough(props, "modelValue", emit);
+    const attachmentErrorMessage = ref<string | null | undefined>();
+    const fileInputWrapper = ref<HTMLInputElement | undefined>();
+
+    //#endregion
+
+    //#region Event Handlers
+
+    function onAttachmentAdded(file: ListItemBag | undefined): void {
+        if (file) {
+            const allAttachments = [...internalAttachmentListItemBags.value];
+
+            allAttachments.push(file);
+
+            internalAttachmentListItemBags.value = allAttachments;
+        }
+    }
+
+    function onAttachmentError(error: string): void {
+        attachmentErrorMessage.value = error;
+    }
+
+    function onOpenPopup(): void {
+        attachmentErrorMessage.value = null;
+        if (fileInputWrapper.value) {
+            const group = fileInputWrapper.value.querySelector(".fileupload-group") as HTMLElement;
+            if (group) {
+                group.click();
+            }
+        }
+    }
+
+    function onShowMore(): void {
+
+    }
+
+    //#endregion
+</script>

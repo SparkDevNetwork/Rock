@@ -19,7 +19,7 @@
                         <textarea :value="internalValue"
                                   :rows="rows"
                                   cols="20"
-                                  :maxlength="maxLength"
+                                  :maxlength="!canExceedMaxLength ? maxLength : undefined"
                                   :id="uniqueId"
                                   class="form-control"
                                   v-bind="field"
@@ -37,7 +37,7 @@
                                    :class="formControlClass"
                                    style="display: table-cell;"
                                    v-bind="field"
-                                   :maxlength="maxLength"
+                                   :maxlength="!canExceedMaxLength ? maxLength : undefined"
                                    :placeholder="placeholder"
                                    @input="onInput"
                                    @change="onChange" />
@@ -53,7 +53,7 @@
                                        :type="type"
                                        :class="formControlClass"
                                        v-bind="field"
-                                       :maxlength="maxLength"
+                                       :maxlength="!canExceedMaxLength ? maxLength : undefined"
                                        :placeholder="placeholder"
                                        @input="onInput"
                                        @change="onChange" />
@@ -70,7 +70,7 @@
                                :type="type"
                                :class="formControlClass"
                                v-bind="field"
-                               :maxlength="maxLength"
+                               :maxlength="!canExceedMaxLength ? maxLength : undefined"
                                :placeholder="placeholder"
                                @input="onInput"
                                @change="onChange" />
@@ -144,6 +144,16 @@
         isClearable: {
             type: Boolean as PropType<boolean>,
             default: false,
+        },
+        /**
+         * If `true`, then the max length can be exceeded; i.e., the max length is not enforced.
+         *
+         * This was added so showCountDown can display the remaining characters without limiting the
+         * the textbox to a max number of characters.
+         */
+        canExceedMaxLength: {
+            type: Boolean as PropType<boolean>,
+            default: false
         },
         ...standardRockFormFieldProps
     });

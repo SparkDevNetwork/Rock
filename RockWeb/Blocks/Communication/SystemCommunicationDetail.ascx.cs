@@ -212,6 +212,7 @@ namespace RockWeb.Blocks.Communication
             emailTemplate.PushMessage = pushCommunication.PushMessage;
             emailTemplate.PushOpenAction = pushCommunication.PushOpenAction;
             emailTemplate.PushOpenMessage = pushCommunication.PushOpenMessage;
+            emailTemplate.PushOpenMessageJson = pushCommunication.PushOpenMessageJson;
             emailTemplate.PushTitle = pushCommunication.PushTitle;
 
             if ( !emailTemplate.IsValid )
@@ -290,6 +291,7 @@ namespace RockWeb.Blocks.Communication
                     PushMessage = emailTemplate.PushMessage,
                     PushTitle = emailTemplate.PushTitle,
                     PushOpenMessage = emailTemplate.PushOpenMessage,
+                    PushOpenMessageJson = emailTemplate.PushOpenMessageJson,
                     PushOpenAction = emailTemplate.PushOpenAction
                 };
 

@@ -267,6 +267,7 @@ namespace RockWeb.Blocks.Communication
             communicationTemplate.PushMessage = pushCommunication.PushMessage;
             communicationTemplate.PushOpenAction = pushCommunication.PushOpenAction;
             communicationTemplate.PushOpenMessage = pushCommunication.PushOpenMessage;
+            communicationTemplate.PushOpenMessageJson = pushCommunication.PushOpenMessageJson;
             communicationTemplate.PushTitle = pushCommunication.PushTitle;
 
             rockContext.SaveChanges();
@@ -392,6 +393,7 @@ namespace RockWeb.Blocks.Communication
                     PushMessage = communicationTemplate.PushMessage,
                     PushTitle = communicationTemplate.PushTitle,
                     PushOpenMessage = communicationTemplate.PushOpenMessage,
+                    PushOpenMessageJson = communicationTemplate.PushOpenMessageJson,
                     PushOpenAction = communicationTemplate.PushOpenAction
                 };
             }

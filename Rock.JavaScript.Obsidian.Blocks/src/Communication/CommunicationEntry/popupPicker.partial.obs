@@ -1,0 +1,301 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <BaseAsyncPicker :modelValue="internalSample"
+                     @update:modelValue="onUpdateInternalSample"
+                     v-bind="standardProps"
+                     :disabled="disabled"
+                     displayStyle="auto"
+                     :enhanceForLongLists="false"
+                     :items="internalSample"
+                     :label="label"
+                     maxTagCount="responsive"
+                     :multiple="true">
+        <template #suffixIcon>
+            <i v-if="!isAddHidden" class="fa fa-plus" :style="{ 'pointer-events': !disabled ? 'all' : 'none' }" @click="onOpenPopupClicked"></i>
+            <i v-else></i>
+        </template>
+
+        <template #tagRender="{ label, value, disabled, closable }">
+            <div :class="`item label ${getLabelTypeRef(value).value} rounded-pill`" :data-original-title="getTooltipRef(value).value" :ref="setItemRef">
+                <div v-if="$slots.itemImage" class="item-image">
+                    <slot name="itemImage" v-bind="{ label, value, disabled, closable }"></slot>
+                </div>
+                <span class="item-content">
+                    <slot name="itemContent" v-bind="{ label, value, disabled, closable }">{{ label }}</slot>
+                </span>
+                <RockButton btnSize="xs"
+                            btnType="link"
+                            class="item-remove text-muted pr-0"
+                            :disabled="disabled"
+                            @click="onDeselectItemClicked(value)">
+                    <i class="fa fa-times"></i>
+                </RockButton>
+            </div>
+        </template>
+
+        <template #maxTagPlaceholder="{ omittedValues }">
+            <div ref="maxTagPlaceholder">
+                <RockButton class="item label label-default rounded-pill show-more-button"
+                            @click="onShowMoreClicked"
+                            @mousedown="onShowMoreMouseDown">
+                    <span class="item-content">{{ modelValue.length <= sampleSize ? omittedValues.length : (modelValue.length - (sampleSize - omittedValues.length)) }} more</span>
+                </RockButton>
+            </div>
+        </template>
+    </BaseAsyncPicker>
+</template>
+
+<style scoped>
+.item {
+    height: 30px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.item:not(.show-more-button) {
+    margin-right: 8px;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType, Ref, computed, ref, watch } from "vue";
+    import BaseAsyncPicker from "@Obsidian/Controls/baseAsyncPicker.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { standardAsyncPickerProps, useStandardAsyncPickerProps } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { getArrayDiff } from "./utils.partial";
+    import { Guid } from "@Obsidian/Types";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        /**
+         * Disables the entire control.
+         *
+         * The "show more" option is still enabled.
+         */
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            required: false,
+            default: false,
+        },
+
+        getLabelTypeRef: {
+            type: Function as PropType<(value: string) => Ref<"label-default" | "label-danger" | "label-success" | "label-info" | "label-warning">>,
+            required: false,
+            default: (_: string) => ref("label-default")
+        },
+
+        getTooltipRef: {
+            type: Function as PropType<(value: string) => Ref<string>>,
+            required: false,
+            default: (_: string) => ""
+        },
+
+        /**
+         * Is the add option hidden?
+         */
+        isAddHidden: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * Should the drop-down be shown when the "show more" button is clicked?
+         *
+         * When this is `true` and the "show more" button is clicked,
+         * the "showMore" event will be still be emitted.
+         */
+        isDropDownOpenedOnShowMore: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * This option allows fine-tuning the performance of the picker.
+         *
+         * The popup picker calculates the number of items that can be displayed and how many to hide.
+         * It calculates the width of all items and then figures out how many will fit into the available width.
+         * Since this component does not know how wide each item will be,
+         * the parent component should pass a reasonable estimate of items that can be displayed at one time.
+         */
+        sampleSize: {
+            type: Number as PropType<number>,
+            default: 25
+        },
+
+        ...standardAsyncPickerProps
+    });
+
+    const standardProps = useStandardAsyncPickerProps(props);
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", newValue: ListItemBag[]): void;
+        (e: "openPopup"): void;
+        (e: "showMore"): void;
+    }>();
+
+    //#region Values
+
+    //const internalListItemBags = useVModelPassthrough(props, "modelValue", emit);
+    const maxTagPlaceholder = ref<HTMLElement | undefined>();
+
+    //#endregion
+
+    //#region Computed Values
+
+    /**
+     * The underlying antdesign component has a hard time with large datasets.
+     * This is a sample of the data.
+     */
+    const internalSample = computed<ListItemBag[]>(() => {
+        const population = props.modelValue;
+        if (population.length <= props.sampleSize) {
+            return population;
+        }
+        else {
+            return population.slice(0, props.sampleSize);
+        }
+    });
+
+    //#endregion
+
+    //#region Functions
+
+    function findAncestor(element: HTMLElement | null, selector: string): HTMLElement | null {
+        if (!element) {
+            return null;
+        }
+
+        if (typeof element.closest === "function") {
+            return element.closest(selector) || null;
+        }
+        while (element) {
+            if (!element) {
+                return null;
+            }
+
+            if (element.matches(selector)) {
+                return element;
+            }
+            element = element.parentElement;
+        }
+        return null;
+    }
+
+    function setItemRef(el: unknown): void {
+        const htmlElement = el as HTMLElement;
+        if (htmlElement) {
+            tooltip(htmlElement);
+        }
+    }
+
+    //#endregion
+
+    //#region Event Handlers
+
+    function onOpenPopupClicked(): void {
+        if (props.disabled) {
+            // Skip if the component is disabled.
+            return;
+        }
+
+        emit("openPopup");
+    }
+
+    function onDeselectItemClicked(value: string): void {
+        const currentListItemBags = props.modelValue;
+        const newValue: ListItemBag[] = [];
+
+        for (const listItemBag of currentListItemBags) {
+            if (listItemBag.value !== value) {
+                newValue.push(listItemBag);
+            }
+        }
+
+        if (newValue.length < currentListItemBags.length) {
+            // Only update if an item was deselected.
+            emit("update:modelValue", newValue);
+        }
+    }
+
+    function onUpdateInternalSample(newSample: ListItemBag | ListItemBag[] | null): void {
+        const newValueDictionary = new Map<Guid, ListItemBag>();
+
+        if (newSample === null) {
+            // If newValue is null then all sample values were deselected.
+        }
+        else if (Array.isArray(newSample)) {
+            for (const value of newSample) {
+                if (value.value) {
+                    newValueDictionary.set(value.value, value);
+                }
+            }
+        }
+        else {
+            if (newSample.value) {
+                newValueDictionary.set(newSample.value, newSample);
+            }
+        }
+
+        const set1 = new Set<Guid>(internalSample.value.map(s => s.value!));
+        const set2 = new Set<Guid>(newValueDictionary.keys());
+        const areSetsEqual = set1.size === set2.size && [...set1].every((x) => set2.has(x));
+
+        if (!areSetsEqual) {
+            const arrayDiff = getArrayDiff(internalSample.value.values(), s => s.value ?? undefined, newValueDictionary.keys());
+
+            const internalPopulation = new Map<Guid, ListItemBag>();
+            for (const listItemBag of props.modelValue) {
+                if (listItemBag.value) {
+                    internalPopulation.set(listItemBag.value, listItemBag);
+                }
+            }
+
+            for (const removedKey of arrayDiff.removedKeys) {
+                internalPopulation.delete(removedKey);
+            }
+
+            for (const addedKey of arrayDiff.addedKeys) {
+                const value = newValueDictionary.get(addedKey);
+                if (value) {
+                    internalPopulation.set(addedKey, value);
+                }
+            }
+
+            emit("update:modelValue", Array.from(internalPopulation.values()));
+        }
+    }
+
+    function onShowMoreClicked(event: MouseEvent): void {
+        if (!props.isDropDownOpenedOnShowMore) {
+            event.stopPropagation();
+        }
+        emit("showMore");
+    }
+
+    function onShowMoreMouseDown(event: MouseEvent): void {
+        if (!props.isDropDownOpenedOnShowMore) {
+            event.stopPropagation();
+        }
+    }
+
+    //#endregion
+
+    //#region Watchers
+
+    watch(maxTagPlaceholder, (newValue: HTMLElement | undefined) => {
+        if (newValue) {
+            // To get special styling, the placeholder needs to be moved to a different ancestor element.
+            const ancestor = findAncestor(newValue, ".ant-select-selection-overflow-item-rest");
+            ancestor?.replaceChildren(newValue);
+        }
+    });
+
+    //#endregion
+</script>

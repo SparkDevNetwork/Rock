@@ -265,7 +265,7 @@
             searchValue.value = "";
         }
         else {
-            alert(result.errorMessage ?? "Unable to add tag.");
+            alert(result.serverErrorMessage ?? "Unable to add tag.");
         }
     }
 
@@ -296,7 +296,7 @@
             currentTags.value = newTags;
         }
         else {
-            alert(result.errorMessage ?? "Unable to remove tag.");
+            alert(result.serverErrorMessage ?? "Unable to remove tag.");
         }
     }
 

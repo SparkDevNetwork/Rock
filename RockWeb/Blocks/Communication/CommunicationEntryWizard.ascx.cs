@@ -586,6 +586,7 @@ function onTaskCompleted( resultData )
                     PushMessage = communication.PushMessage,
                     PushTitle = communication.PushTitle,
                     PushOpenMessage = communication.PushOpenMessage,
+                    PushOpenMessageJson = communication.PushOpenMessageJson,
                     PushOpenAction = communication.PushOpenAction
                 };
             }
@@ -1926,6 +1927,7 @@ function onTaskCompleted( resultData )
                 PushMessage = communicationTemplate.PushMessage,
                 PushTitle = communicationTemplate.PushTitle,
                 PushOpenMessage = communicationTemplate.PushOpenMessage,
+                PushOpenMessageJson = communicationTemplate.PushOpenMessageJson,
                 PushOpenAction = communicationTemplate.PushOpenAction
             };
 
@@ -3689,19 +3691,20 @@ function onTaskCompleted( resultData )
                 settings.FutureSendDateTime = dtpSendCommunicationDateTime.SelectedDateTime;
             }
 
-            var details = new CommunicationDetails();
+            var details = new CommunicationDetails
+            {
+                Subject = tbEmailSubject.Text,
+                Message = hfEmailEditorHtml.Value,
 
-            details.Subject = tbEmailSubject.Text;
-            details.Message = hfEmailEditorHtml.Value;
+                FromName = tbFromName.Text,
+                FromEmail = ebFromAddress.Text,
+                ReplyToEmail = ebReplyToAddress.Text,
+                CCEmails = ebCCList.Text,
+                BCCEmails = ebBCCList.Text,
 
-            details.FromName = tbFromName.Text;
-            details.FromEmail = ebFromAddress.Text;
-            details.ReplyToEmail = ebReplyToAddress.Text;
-            details.CCEmails = ebCCList.Text;
-            details.BCCEmails = ebBCCList.Text;
-
-            details.SmsFromSystemPhoneNumberId = ddlSMSFrom.SelectedValue.AsIntegerOrNull();
-            details.SMSMessage = tbSMSTextMessage.Text;
+                SmsFromSystemPhoneNumberId = ddlSMSFrom.SelectedValue.AsIntegerOrNull(),
+                SMSMessage = tbSMSTextMessage.Text
+            };
 
             // Get Push notification settings.
             var pushNotificationControl = phPushControl.Controls[0] as PushNotification;
@@ -4097,6 +4100,7 @@ function onTaskCompleted( resultData )
                 communication.PushMessage = settings.Details.PushMessage;
                 communication.PushOpenAction = settings.Details.PushOpenAction;
                 communication.PushOpenMessage = settings.Details.PushOpenMessage;
+                communication.PushOpenMessageJson = settings.Details.PushOpenMessageJson;
                 communication.PushTitle = settings.Details.PushTitle;
 
                 return communication;

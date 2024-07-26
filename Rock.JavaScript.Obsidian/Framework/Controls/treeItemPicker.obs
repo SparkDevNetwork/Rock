@@ -11,7 +11,7 @@
 
         <TreeList v-model="internalValues" :multiple="multiple" :items="items" :provider="provider" @update:items="onUpdateItems" :disableFolderSelection="disableFolderSelection" :autoExpand="autoExpand" :showChildCount="showChildCount" />
 
-        <template #innerLabel><span class="selected-names">{{ selectedNames }}</span></template>
+        <template #innerLabel><span class="selected-names">{{ selectedNames || blankValue }}</span></template>
 
         <template #pickerContentSuperHeader v-if="$slots.pickerContentSuperHeader">
             <slot name="pickerContentSuperHeader" />
@@ -107,7 +107,13 @@
         fullWidth: {
             type: Boolean as PropType<boolean>,
             default: false
-        }
+        },
+
+        /** The optional value to show when nothing is selected. */
+        blankValue: {
+            type: String as PropType<string>,
+            default: ""
+        },
     });
 
     const emit = defineEmits<{

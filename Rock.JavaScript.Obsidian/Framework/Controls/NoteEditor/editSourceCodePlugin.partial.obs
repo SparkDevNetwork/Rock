@@ -12,8 +12,61 @@
 </template>
 
 <script setup lang="ts">
+    /**
+     * EditSourceCodePlugin - Adds a toolbar button for editing the source code of the editor.
+     *
+     * @example
+     * <!--
+     *      someEditorHost.obs - This example shows just enough code to wire up the plugin.
+     *      FYI, the Vue - Official extension complains if template and script tags are used in comments,
+     *      so using (template) and (script) for now.
+     * -->
+     * (template)
+    *    <EditSourceCodePlugin v-model="internalValue"
+    *                          :disabled="disabled"
+    *                          :editorHeight="editorHeight"
+    *                          :mergeFields="mergeFields"
+    *                          ref="editSourceCodePlugin"
+    *                          :startInCodeEditorMode="startInCodeEditorMode">
+    *      <template #default="{ isEditorShown }">
+    *        <div v-show="!isEditorShown" id="uniqueEditorId"></div>
+    *      </template>
+    *    </EditSourceCodePlugin>
+     * (/template)
+     *
+     * (script setup lang="ts")
+     *   import EditSourceCodePlugin from "./NoteEditor/editSourceCodePlugin.partial.obs";
+     *   ...
+     *
+     *   const editSourceCodePlugin = ref<InstanceType<typeof EditSourceCodePlugin> | undefined>();
+     *   ...
+     *
+     *   // The host must provide the plugins feature.
+     *   const pluginManager = providePluginsFeature({
+     *       editorInstance: computed(() => tinyMceInstance.value),
+     *       toolbarElement: computed(() => toolbarElement.value)
+     *   });
+     *   ...
+     *
+     *   // Initialize the editor.
+     *   onMounted(() => {
+     *     ...
+     *
+     *     tinymce.init({
+     *       // The edit source code button can be placed anywhere in this configuration string.
+     *       // Here, the toolbar will display
+     *       // the edit source code button, followed by a separator character,
+     *       // then the undo and redo buttons.
+     *       // Reference: https://www.tiny.cloud/docs/tinymce/6/toolbar-configuration-options/#example-grouped-toolbar
+     *       toolbar: `${editSourceCodePlugin.value?.id} | undo redo`
+     *     });
+     *
+     *     ...
+     *   });
+     * (/script)
+     */
     import { PropType, ref, watch } from "vue";
-    import { getToolbarButton, setEditorEnabled } from "./utils.partial";
+    import { getToolbarButton, setEditorEnabled, usePluginHelper } from "./utils.partial";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
     import { Editor, Ui } from "@Obsidian/Libs/tinymce";
@@ -44,15 +97,7 @@
         startInCodeEditorMode: {
             type: Boolean as PropType<boolean>,
             default: false
-        },
-        tinyMceInstance: {
-            type: Object as PropType<Editor | undefined>,
-            required: true
-        },
-        toolbarElement: {
-            type: Object as PropType<HTMLElement | undefined>,
-            required: true
-        },
+        }
     });
 
     const id = "rockeditsourcecode" as const;
@@ -69,6 +114,7 @@
 
     //#region Values
 
+    const { editorInstance, toolbarElement } = usePluginHelper();
     const internalIsShown = useVModelPassthrough(props, "isShown", emit);
     const internalValue = useVModelPassthrough(props, "modelValue", emit);
     const toolbarButtonApi = ref<Ui.Toolbar.ToolbarToggleButtonInstanceApi | undefined>();
@@ -124,7 +170,7 @@
             },
             onSetup: (api: Ui.Toolbar.ToolbarToggleButtonInstanceApi): (api: Ui.Toolbar.ToolbarToggleButtonInstanceApi) => void => {
                 toolbarButtonApi.value = api;
-                toolbarButtonElement.value = getToolbarButton(tooltip, props.toolbarElement) ?? undefined;
+                toolbarButtonElement.value = getToolbarButton(tooltip, toolbarElement.value) ?? undefined;
 
                 toolbarButtonIconElement.value = toolbarButtonElement.value?.querySelector("svg") ?? undefined;
                 if (toolbarButtonIconElement.value) {
@@ -155,12 +201,12 @@
     //#region Watchers
 
     // Register the plugin whenever the bound Editor changes.
-    watch(() => props.tinyMceInstance, () => {
+    watch(editorInstance, () => {
         // Dispose the previous tooltip button if set.
         disposeTooltipButton();
 
-        if (props.tinyMceInstance) {
-            init(props.tinyMceInstance);
+        if (editorInstance.value) {
+            init(editorInstance.value);
         }
     });
 
@@ -184,14 +230,14 @@
 
     // Disable the editor toolbar when the source code is being edited.
     watch(internalIsShown, () => {
-        if (props.tinyMceInstance) {
+        if (editorInstance.value) {
             // Clear the TinyMCE selection before enabling/disabling, otherwise
             // some of the disabled toolbar buttons can still be clicked.
-            props.tinyMceInstance.selection?.collapse();
+            editorInstance.value.selection?.collapse();
 
             if (internalIsShown.value) {
                 // Disable the toolbar but keep the edit source code toolbar button enabled.
-                setEditorEnabled(props.tinyMceInstance, false);
+                setEditorEnabled(editorInstance.value, false);
 
                 // Enable the toolbar button as long as the plugin isn't disabled.
                 if (!props.disabled) {
@@ -200,7 +246,7 @@
             }
             else {
                 // Disable the toolbar but keep the edit source code toolbar button enabled.
-                setEditorEnabled(props.tinyMceInstance, true);
+                setEditorEnabled(editorInstance.value, true);
             }
 
             // Always update the button UI based on whether the editor is shown.

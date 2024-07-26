@@ -1,0 +1,167 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <slot></slot>
+
+    <div ref="breakpointHelperDiv"
+         style="visibility: collapse !important;"
+         :class="classes"></div>
+</template>
+
+<script setup lang="ts">
+    /**
+     * BreakpointObserver.partial.obs - Provides reactive breakpoints (xs, sm, md, lg, xl) and
+     * other breakpoint helper methods to child components.
+     *
+     * Child components should utilize `useBreakpointHelper()` to get access to the breakpoint helper.
+     *
+     * @example
+     * FYI, the Vue - Official extension complains if template and script tags are used in comments,
+     * so using (template) and (script) for now.
+     *
+     * <!-- someComponent.obs - This example shows just enough code to wire up the component. -->
+     * (template)
+     *   <BreakpointObserver @breakpointHelper="breakpointHelper = $event">
+     *     <ChildComponent v-if="breakpointHelper.isXs" />
+     *   </BreakpointObserver>
+     * (/template)
+     *
+     * (script setup lang="ts")
+     *   import BreakpointObserver from "./breakpointObserver.partial.obs";
+     *   ...
+     *
+     *   // Gives this component access to the breakpoint helper (it cannot invoke useBreakpointHelper() here).
+     *   const breakpointHelper = ref<BreakpointHelper | undefined>();
+     *   ...
+     * (/script)
+     *
+     * <!-- childComponent.obs - This example shows just enough code to wire up the component. -->
+     * (template)
+     *   <div v-if="breakpointHelper.isSm">Small</div>
+     *   <div v-else-if="breakpointHelper.isMd">Medium</div>
+     *   <div v-else-if="breakpointHelper.isLg">Large</div>
+     *   <div v-else-if="breakpointHelper.isXl">Extra Large</div>
+     * (/template)
+     *
+     * (script setup lang="ts")
+     *   import { useBreakpointObserver } from "./utils.partial.obs";
+     *   ...
+     *
+     *   // Gives this component access to the breakpoint helper.
+     *   const breakpointHelper = useBreakpointObserver();
+     *   ...
+     * (/script)
+     */
+    import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+    import { Breakpoint, BreakpointHelper } from "./types.partial";
+    import { provideBreakpointHelper } from "./utils.partial";
+
+    defineProps();
+
+    const emit = defineEmits<{
+        (e: "breakpointHelper", value: BreakpointHelper): void;
+    }>();
+
+    type CssStyleDisplay = "none" | "inline" | "block" | "inline-block" | "table";
+
+    const breakpointDisplays: Record<Exclude<Breakpoint, "unknown">, CssStyleDisplay> = {
+        "xs": "none",
+        "sm": "inline",
+        "md": "inline-block",
+        "lg": "block",
+        "xl": "table"
+    };
+
+    const displayBreakpoints: Record<CssStyleDisplay, Exclude<Breakpoint, "unknown">> = {
+        "none": "xs",
+        "inline": "sm",
+        "inline-block": "md",
+        "block": "lg",
+        "table": "xl"
+    };
+
+    // Create the class value: "d-none d-sm-inline d-md-inline-block d-lg-block d-xl-table"
+    const classes: string[] = Object.keys(breakpointDisplays)
+        .map((breakpoint: string) => breakpoint as Breakpoint)
+        .map((breakpoint: Breakpoint) => breakpoint === "xs" ? `d-${breakpointDisplays[breakpoint]}` : `d-${breakpoint}-${breakpointDisplays[breakpoint]}`);
+
+    //#region Values
+
+    /**
+     * This div helps determine the responsive breakpoint based on CSS rules.
+     *
+     * The element has `class="d-none d-sm-inline d-md-inline-block d-lg-block d-xl-table"`
+     * so whenever the screen is a specific width, the div's `display` property will be updated.
+     * We can efficiently re-check the breakpoint by listening to the window "resize" event
+     * and examining the current `display` property.
+     *
+     * Lastly, we need `visibility: collapse !important` in the div's inline style
+     * because we want to keep the element invisible while the `display` is being updated.
+     */
+    const breakpointHelperDiv = ref<HTMLElement | undefined>();
+    const breakpointHelper = ref<BreakpointHelper>(createBreakpointHelper("unknown"));
+
+    //#endregion
+
+    //#region Functions
+
+    function createBreakpointHelper(breakpoint: Breakpoint): BreakpointHelper {
+        return {
+            breakpoint: breakpoint,
+
+            isXs: breakpoint === "xs",
+            isSm: breakpoint === "sm",
+            isMd: breakpoint === "md",
+            isLg: breakpoint === "lg",
+            isXl: breakpoint === "xl",
+
+            isXsOrSmaller: breakpoint === "xs",
+            isSmOrSmaller: ["xs", "sm"].includes(breakpoint),
+            isMdOrSmaller: ["xs", "sm", "md"].includes(breakpoint),
+            isLgOrSmaller: ["xs", "sm", "md", "lg"].includes(breakpoint),
+            isXlOrSmaller: true, // skip checking breakpoints since this covers all screen sizes
+
+            isXsOrLarger: true, // skip checking breakpoints since this covers all screen sizes
+            isSmOrLarger: ["sm", "md", "lg", "xl"].includes(breakpoint),
+            isMdOrLarger: ["md", "lg", "xl"].includes(breakpoint),
+            isLgOrLarger: ["lg", "xl"].includes(breakpoint),
+            isXlOrLarger: breakpoint === "xl"
+        };
+    }
+
+    /** Checks if the breakpoint changed */
+    function checkBreakpoint(): void {
+        // Skip if the div element is not set (this could happen if this component isn't mounted).
+        if (!breakpointHelperDiv.value) {
+            return;
+        }
+
+        // Get the breakpoint that is mapped to the `display` style property.
+        const display = getComputedStyle(breakpointHelperDiv.value).display;
+        const newBreakpoint: Breakpoint = displayBreakpoints[display] ?? "unknown";
+
+        if (newBreakpoint !== breakpointHelper.value.breakpoint) {
+            breakpointHelper.value = createBreakpointHelper(newBreakpoint);
+            emit("breakpointHelper", breakpointHelper.value);
+        }
+    }
+
+    //#endregion
+
+    // Provide the readonly, reactive breakpoint and breakpoint helpert to child components.
+    provideBreakpointHelper(computed(() => breakpointHelper.value));
+
+    //#region Hooks
+
+    onMounted(() => {
+        // Check the breakpoint initially and wire up the window "resize" event handler.
+        checkBreakpoint();
+        addEventListener("resize", checkBreakpoint);
+    });
+
+    onBeforeUnmount(() => {
+        // Remove the window "resize" event handler when this component is unmounted.
+        removeEventListener("resize", checkBreakpoint);
+    });
+
+    //#endregion
+</script>

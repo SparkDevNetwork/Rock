@@ -1,0 +1,349 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <PopupPicker v-model="recipientListItems"
+                 :disabled="disabled"
+                 :getLabelTypeRef="personAliasGuid => getLabelTypeRef(findRecipient(personAliasGuid), mediumType)"
+                 :getTooltipRef="personAliasGuid => getTooltipRef(findRecipient(personAliasGuid), mediumType)"
+                 :isAddHidden="isAddHidden"
+                 :label="label"
+                 :rules="rules"
+                 validationTitle="At least one recipient"
+                 @openPopup="onOpenPopup"
+                 @showMore="onShowMore">
+        <template #itemImage="{ label, value: personAliasGuid, closable, disabled }">
+            <img :src="findRecipient(personAliasGuid)?.photoUrl ?? undefined" style="border-radius: 24px; width: 24px; height: 24px" />
+        </template>
+    </PopupPicker>
+
+    <PersonPanelPicker v-if="isPersonPickerShown" @cancel="onPersonSearchCanceled" @select="onPersonSelected" />
+
+    <RecipientModal v-model="isRecipientModalShown" :recipients="modelValue" @update:recipients="$emit('update:modelValue', $event)" :disabled="disabled" :disabledMessage="recipientManagerDisabledMessage" :getTooltipRef="getTooltipRef" :isForBulkCommunication="isForBulkCommunication" :isAddHidden="isAddHidden" />
+</template>
+
+<script setup lang="ts">
+    import { PropType, Ref, computed, nextTick, ref, watch } from "vue";
+    import PopupPicker from "./popupPicker.partial.obs";
+    import PersonPanelPicker from "./personPanelPicker.partial.obs";
+    import RecipientModal from "./recipientModal.partial.obs";
+    import { LabelType, MediumType } from "./types.partial";
+    import { updateArray } from "./utils.partial";
+    import { ValidationRule } from "@Obsidian/Types/validationRules";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { splitCase } from "@Obsidian/Utility/stringUtils";
+    import { CommunicationEntryGetRecipientsRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryGetRecipientsRequestBag";
+    import { CommunicationEntryRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryRecipientBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { Guid } from "@Obsidian/Types";
+
+    const props = defineProps({
+        /**
+         * The picked recipients.
+         */
+        modelValue: {
+            type: Array as PropType<CommunicationEntryRecipientBag[]>,
+            required: true
+        },
+
+        /**
+         * Is this component disabled?
+         */
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * The message that is displayed in the recipient manager when it is disabled.
+         */
+        recipientManagerDisabledMessage: {
+            type: String as PropType<string | null | undefined>,
+            required: false
+        },
+
+        /**
+         * Is the add option hidden?
+         */
+        isAddHidden: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** Is this for a bulk communication? */
+        isForBulkCommunication: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * The form control label.
+         */
+        label: {
+            type: String as PropType<string | undefined>,
+            required: false
+        },
+
+        /**
+         * The medium type for this recipient picker.
+         */
+        mediumType: {
+            type: String as PropType<MediumType>,
+            required: true,
+        },
+
+        /**
+         * The minimum recipient count.
+         *
+         * Set to `0` for no minimum. */
+        minimumRecipientCount: {
+            type: Number as PropType<number>,
+            default: 0
+        }
+    });
+
+    const emit = defineEmits<{
+        /** Emits an event indicating the disabled state should be updated. */
+        (e: "update:modelValue", value: CommunicationEntryRecipientBag[]): void,
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    //#region Values
+
+    const isPersonPickerShown = ref<boolean>(false);
+    const isRecipientModalShown = ref<boolean>(false);
+    const recipientListItems = ref<ListItemBag[]>(convertRecipientsToListItems(props.modelValue));
+
+    //#endregion
+
+    //#region Computed Values
+
+    const rules = computed<ValidationRule[]>(() => {
+        if (props.minimumRecipientCount === 0) {
+            return [];
+        }
+        else if (props.minimumRecipientCount === 1) {
+            return ["required"];
+        }
+        else if (props.minimumRecipientCount > 1) {
+            return [`gte:${props.minimumRecipientCount}`];
+        }
+        else {
+            // No rules for negative values.
+            return [];
+        }
+    });
+
+
+    //#endregion
+
+    //#region Event Handlers
+
+    async function onOpenPopup(): Promise<void> {
+        if (!isPersonPickerShown.value) {
+            isPersonPickerShown.value = true;
+        }
+        else {
+            isPersonPickerShown.value = false;
+            await nextTick();
+            isPersonPickerShown.value = true;
+        }
+    }
+
+    async function onShowMore(): Promise<void> {
+        if (!isRecipientModalShown.value) {
+            isRecipientModalShown.value = true;
+        }
+        else {
+            isPersonPickerShown.value = false;
+            await nextTick();
+            isPersonPickerShown.value = true;
+        }
+    }
+
+    function onPersonSearchCanceled(): void {
+        isPersonPickerShown.value = false;
+    }
+
+    async function onPersonSelected(value: ListItemBag): Promise<void> {
+        // Get communication data for the selected person.
+        const result = await invokeBlockAction<CommunicationEntryRecipientBag>("GetRecipient", {
+            personAliasGuid: toGuidOrNull(value.value) ?? emptyGuid
+        });
+
+        if (!result?.isSuccess || !result.data) {
+            console.error("An unexpected error occurred while retrieving information about the selected person:", result?.errorMessage);
+        }
+        else {
+            const updatedRecipients: CommunicationEntryRecipientBag[] = [];
+            let alreadyAdded = false;
+            for (const recipient of props.modelValue) {
+                if (!alreadyAdded && recipient.personAliasGuid === result.data.personAliasGuid) {
+                    alreadyAdded = true;
+                }
+                updatedRecipients.push(recipient);
+            }
+
+            if (!alreadyAdded) {
+                updatedRecipients.push(result.data);
+                emit("update:modelValue", updatedRecipients);
+            }
+        }
+
+        // Hide the person picker after stuff happens.
+        isPersonPickerShown.value = false;
+    }
+
+    //#endregion
+
+    //#region Functions
+
+    /** Gets the label type for a recipient. */
+    function getLabelTypeRef(recipient: CommunicationEntryRecipientBag | null, mediumType: MediumType): Ref<LabelType> {
+        return computed<LabelType>(() => {
+            if (mediumType === "email") {
+                if (!recipient
+                    || (props.isForBulkCommunication && recipient.isBulkEmailAllowed)
+                    || (!props.isForBulkCommunication && recipient.isEmailAllowed)) {
+                    // Default label when recipient is missing or email is allowed.
+                    return "label-default";
+                }
+                else {
+                    return "label-danger";
+                }
+            }
+            else if (mediumType === "sms") {
+                if (!recipient || recipient.isSmsAllowed) {
+                    // Default label when recipient is missing or email is allowed.
+                    return "label-default";
+                }
+                else {
+                    return "label-danger";
+                }
+            }
+            else if (mediumType === "push") {
+                if (!recipient || recipient.isPushAllowed) {
+                    // Default label when recipient is missing or email is allowed.
+                    return "label-default";
+                }
+                else {
+                    return "label-danger";
+                }
+            }
+            else {
+                // Unknown medium type. Use the default label type by... default.
+                return "label-default";
+            }
+        });
+    }
+
+    /** Gets the reactive email tooltip. */
+    function getTooltipRef(recipient: CommunicationEntryRecipientBag | null, mediumType: MediumType): Ref<string> {
+        return computed<string>(() => {
+            if (mediumType === "email") {
+                if (!recipient
+                    || (props.isForBulkCommunication && recipient.isBulkEmailAllowed)
+                    || (!props.isForBulkCommunication && recipient.isEmailAllowed)) {
+                    // No tooltip when recipient is missing or email is allowed.
+                    return "";
+                }
+
+                // This recipient cannot receive email messages. Get the error.
+                if (!recipient.email) {
+                    return `${recipient.name ?? "This recipient"} doesn't have an email address.`;
+                }
+                else if (!recipient.isEmailActive) {
+                    return `${recipient.name ?? "This recipient"} has an inactive email.`;
+                }
+                else {
+                    return `${recipient.name ?? "This recipient"} has email preference set to "${splitCase(recipient.emailPreference ?? "")}".`;
+                }
+            }
+            else if (mediumType === "sms") {
+                if (!recipient || recipient.isSmsAllowed) {
+                    // No tooltip when recipient is missing.
+                    return "";
+                }
+
+                // This recipient cannot receive SMS messages. Get the error.
+                return `${recipient.name ?? "This recipient"} doesn't have a phone number with SMS enabled.`;
+            }
+            else if (mediumType === "push") {
+                if (!recipient || recipient.isPushAllowed) {
+                    // No tooltip when recipient is missing.
+                    return "";
+                }
+
+                // This recipient cannot receive notifications enabled. Get the error.
+                return `${recipient.name ?? "This recipient"} doesn't have a phone number with notifications enabled.`;
+            }
+            else {
+                return "";
+            }
+        });
+    }
+
+    /** Converts recipients to list item bags. */
+    function convertRecipientsToListItems(recipients: CommunicationEntryRecipientBag[]): ListItemBag[] {
+        return recipients.map(item => ({
+            text: item.name,
+            value: item.personAliasGuid
+        }));
+    }
+
+    /** Gets the recipient for a person. */
+    function findRecipient(personAliasGuid: string): CommunicationEntryRecipientBag | null {
+        return props.modelValue.find(item => item.personAliasGuid === personAliasGuid) ?? null;
+    }
+
+    //#endregion
+
+    function getListItemBagGuidSet(listItemBags: ListItemBag[]): Set<Guid> {
+        return new Set<Guid>(listItemBags.map(l => l.value!));
+    }
+
+    //#region Watchers
+
+    // Update the ListItemBag array when the props modelValue changes.
+    watch(() => props.modelValue, () => {
+        const set1 = getListItemBagGuidSet(recipientListItems.value);
+        const set2 = new Set<Guid>(props.modelValue.map(r => r.personAliasGuid));
+        const areSetsEqual = set1.size === set2.size && [...set1].every((x) => set2.has(x));
+
+        if (!areSetsEqual) {
+            recipientListItems.value = convertRecipientsToListItems(props.modelValue);
+        }
+    });
+
+    // Update the recipients collection when the ListItemBag array changes.
+    watch(recipientListItems, async (newRecipientListItemBags) => {
+        const set1 = getListItemBagGuidSet(newRecipientListItemBags);
+        const set2 = new Set<Guid>(props.modelValue.map(r => r.personAliasGuid));
+        const areSetsEqual = set1.size === set2.size && [...set1].every((x) => set2.has(x));
+
+        if (!areSetsEqual) {
+            const newValues = await updateArray(
+                props.modelValue,
+                r => r.personAliasGuid,
+                set1,
+                async (recipientGuidsToAdd: Iterable<Guid>) => {
+                    const bag: CommunicationEntryGetRecipientsRequestBag = {
+                        personAliasGuids: Array.from(recipientGuidsToAdd)
+                    };
+
+                    const result = await invokeBlockAction<CommunicationEntryRecipientBag[]>(
+                        "GetRecipients",
+                        {
+                            bag
+                        });
+
+                    return result?.data ?? [];
+                });
+
+            emit("update:modelValue", Array.from(newValues.values()));
+        }
+    });
+
+    //#endregion
+
+</script>

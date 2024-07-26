@@ -17,10 +17,8 @@
                                                   :editorHeight="editorHeight + yOffset"
                                                   :mergeFields="mergeFields"
                                                   ref="editSourceCodePlugin"
-                                                  :startInCodeEditorMode="startInCodeEditorMode"
-                                                  :tinyMceInstance="tinyMceInstance"
-                                                  :toolbarElement="toolbarElement">
-                                <template v-slot="{ isEditorShown }">
+                                                  :startInCodeEditorMode="startInCodeEditorMode">
+                                <template #default="{ isEditorShown }">
                                     <div v-show="!updateIsEditorShown(isEditorShown)"
                                          class="note-editable"
                                          :id="assignEditorId(uniqueId)"
@@ -40,33 +38,24 @@
                 </div>
             </div>
 
-            <ParagraphPlugin ref="paragraphPlugin"
-                             :tinyMceInstance="tinyMceInstance"
-                             :toolbarElement="toolbarElement" />
+            <ParagraphPlugin ref="paragraphPlugin" />
 
-            <PasteAsPlainTextPlugin ref="pasteAsPlainTextPlugin"
-                                    :tinyMceInstance="tinyMceInstance"
-                                    :toolbarElement="toolbarElement" />
+            <PasteAsPlainTextPlugin ref="pasteAsPlainTextPlugin" />
 
             <MergeFieldPlugin :mergeFields="mergeFields"
-                              ref="mergeFieldPlugin"
-                              :tinyMceInstance="tinyMceInstance"
-                              :toolbarElement="toolbarElement" />
+                              ref="mergeFieldPlugin" />
 
             <ImageBrowserPlugin v-if="false"
-                                ref="imageBrowserPlugin"
-                                :tinyMceInstance="tinyMceInstance"
-                                :toolbarElement="toolbarElement" />
+                                ref="imageBrowserPlugin" />
 
             <FileBrowserPlugin v-if="false"
-                               ref="fileBrowserPlugin"
-                               :tinyMceInstance="tinyMceInstance"
-                               :toolbarElement="toolbarElement" />
+                               ref="fileBrowserPlugin" />
 
             <AssetManagerPlugin v-if="false"
-                                ref="assetManagerPlugin"
-                                :tinyMceInstance="tinyMceInstance"
-                                :toolbarElement="toolbarElement" />
+                                ref="assetManagerPlugin" />
+
+            <StylesheetsPlugin htmlCssReplacementSelector=".note-editor"
+                               bodyCssReplacementSelector=".note-editing-area" />
         </template>
     </RockFormField>
 </template>
@@ -87,21 +76,26 @@
 .note-editor .note-toolbar {
     padding: 0;
 }
+
+:deep(.codeeditor-header) {
+    display: none;
+}
 </style>
 
 <script setup lang="ts">
     import { PropType, computed, onMounted, onUnmounted, ref, watch, watchEffect } from "vue";
     import RockFormField from "./rockFormField.obs";
-    import AssetManagerPlugin from "./HtmlEditor/assetManagerPlugin.partial.obs";
-    import EditSourceCodePlugin from "./HtmlEditor/editSourceCodePlugin.partial.obs";
-    import FileBrowserPlugin from "./HtmlEditor/fileBrowserPlugin.partial.obs";
-    import ImageBrowserPlugin from "./HtmlEditor/imageBrowserPlugin.partial.obs";
-    import MergeFieldPlugin from "./HtmlEditor/mergeFieldPlugin.partial.obs";
-    import ParagraphPlugin from "./HtmlEditor/paragraphPlugin.partial.obs";
-    import PasteAsPlainTextPlugin from "./HtmlEditor/pasteAsPlainTextPlugin.partial.obs";
-    import { tinymce, Editor, EditorEvent, Events } from "@Obsidian/Libs/tinymce";
+    import AssetManagerPlugin from "./NoteEditor/assetManagerPlugin.partial.obs";
+    import EditSourceCodePlugin from "./NoteEditor/editSourceCodePlugin.partial.obs";
+    import FileBrowserPlugin from "./NoteEditor/fileBrowserPlugin.partial.obs";
+    import ImageBrowserPlugin from "./NoteEditor/imageBrowserPlugin.partial.obs";
+    import MergeFieldPlugin from "./NoteEditor/mergeFieldPlugin.partial.obs";
+    import ParagraphPlugin from "./NoteEditor/paragraphPlugin.partial.obs";
+    import PasteAsPlainTextPlugin from "./NoteEditor/pasteAsPlainTextPlugin.partial.obs";
+    import StylesheetsPlugin from "./NoteEditor/stylesheetsPlugin.partial.obs";
+    import { providePluginsFeature } from "./NoteEditor/utils.partial";
+    import { tinymce, Editor, EditorEvent, Events, RawEditorOptions } from "@Obsidian/Libs/tinymce";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
-    import { scopeStyleSheets, unscopeStyleSheets } from "./HtmlEditor/utils.partial";
 
     type ToolbarConfig = "light" | "full";
 
@@ -125,10 +119,10 @@
         },
 
         /**
-         * Comma-delimited merge fields available for selection.
+         * Merge fields available for selection.
          * This should include either a list of entity type names (full name), or other non-object string values.
          *
-         * Format should be one of the following:
+         * Format for each string should be one of the following:
          * @example
          * "FieldName" // Label will be a case-delimited version of FieldName (i.e. "Field Name")
          * "FieldName|Label" // Same as previous but with a custom label.
@@ -170,14 +164,15 @@
     // #region Values
 
     const internalValue = useVModelPassthrough(props, "modelValue", emit);
-    const editorId = ref<string>();
-    const editorElement = ref<HTMLElement>();
-    const toolbarId = ref<string>();
-    const toolbarElement = ref<HTMLElement>();
-    const tinyMceInstance = ref<Editor>();
+    const editorId = ref<string | undefined>();
+    const editorElement = ref<HTMLElement | undefined>();
+    const toolbarId = ref<string | undefined>();
+    const tinyMceInstance = ref<Editor | undefined>();
+    const toolbarElement = ref<HTMLElement | undefined>();
+
     // Keep track of the TinyMCE value to compare with the modelValue.
-    const tinyMceValue = ref<string>();
-    const resizerElement = ref<HTMLElement>();
+    const tinyMceValue = ref<string | undefined>();
+    const resizerElement = ref<HTMLElement | undefined>();
     const yOffset = ref<number>(0);
     const isEditorShown = ref<boolean>(false);
 
@@ -190,7 +185,13 @@
     const fileBrowserPlugin = ref<InstanceType<typeof FileBrowserPlugin> | undefined>();
     const assetManagerPlugin = ref<InstanceType<typeof AssetManagerPlugin> | undefined>();
 
-    // #endregion
+    // Provide helpers to plugins.
+    const pluginManager = providePluginsFeature({
+        editorInstance: computed(() => tinyMceInstance.value),
+        toolbarElement: computed(() => toolbarElement.value)
+    });
+
+    //#endregion
 
     // #region Computed Values
 
@@ -285,6 +286,7 @@
     }
 
     // Initialize the editor.
+    // This gets called after the plugins have been mounted.
     onMounted(() => {
         if (editorId.value && toolbarId.value) {
             // Define the toolbar buttons depending on the toolbar config (light or full).
@@ -313,7 +315,7 @@
                 }
             }
 
-            tinymce.init({
+            let editorOptions: RawEditorOptions = {
                 // Add the editor directly to the target element (instead of in an iframe)
                 // by configuring an inline editor with a fixed toolbar.
                 // An inline editor is preferred so the editor will inherit the Rock styles
@@ -342,13 +344,6 @@
 
                 // Only include the plugins that are needed to keep TinyMCE leaner.
                 plugins: "image link lists media searchreplace table help",
-
-                // Enable the use of <style> tags.
-                // "+" means "add this to the existing list of valid elements".
-                // "div[style]" means "allow <style> elements as child elements of <div> elements".
-                // Since this is an inline editor (not in an iframe), we need to use `+div[style]` instead of `+body[style]`.
-                // https://www.tiny.cloud/docs/tinymce/latest/content-filtering/#valid_children
-                valid_children: "+div[style]",
 
                 // Set the toolbar buttons.
                 toolbar: toolbarConfigs[props.toolbar],
@@ -466,6 +461,15 @@
                     { title: "Current window", value: "" },
                 ],
 
+                // Use original URL values instead of converting to local URLs.
+                // https://www.tiny.cloud/docs/tinymce/latest/url-handling/#convert_urls
+                convert_urls: false,
+
+                // relative_urls is only used when convert_urls=true; however,
+                // set relative_urls=false now to ensure convert_urls converts to absolute URLs if it is ever enabled.
+                // https://www.tiny.cloud/docs/tinymce/latest/url-handling/#relative_urls
+                relative_urls: false,
+
                 // The callback that is executed when the editor is initialized.
                 setup: (editor): void => {
                     // Keep track of the editor instance.
@@ -517,22 +521,11 @@
                             internalValue.value = newValue;
                         }
                     });
-
-                    // Since the editor is inline (not in an iframe), <style> elements
-                    // added to the code editor can leak CSS styles to the rest of the page.
-                    // To prevent this, scope the style sheets before setting the editor content,
-                    // and unscope when retrieving the content.
-                    // The "scoped" behavior is very similar to the SFC `scoped` directive; i.e. `<style scoped>`
-                    // in that this will add run-time specificity to the style rule selectors so the styles
-                    // are only isolated to this HTML Editor control instance.
-                    editor.on("BeforeSetContent", (e: EditorEvent<Events.BeforeSetContentEvent>) => {
-                        e.content = scopeStyleSheets(e.content, `#${editorId.value}`);
-                    });
-                    editor.on("GetContent", (e: EditorEvent<Events.GetContentEvent>) => {
-                        e.content = unscopeStyleSheets(e.content, `#${editorId.value}`);
-                    });
                 }
-            });
+            };
+
+            // Initialize Tiny MCE.
+            tinymce.init(pluginManager.configureEditorOptions(editorOptions));
         }
 
         // Add vertical resizing.

@@ -18,6 +18,7 @@
 import { Guid } from "@Obsidian/Types";
 import { emptyGuid, toGuidOrNull } from "./guid";
 import { post } from "./http";
+import { SiteType } from "@Obsidian/Enums/Cms/siteType";
 import { TreeItemBag } from "@Obsidian/ViewModels/Utility/treeItemBag";
 import { CategoryPickerChildTreeItemsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/categoryPickerChildTreeItemsOptionsBag";
 import { LocationItemPickerGetActiveChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/locationItemPickerGetActiveChildrenOptionsBag";
@@ -366,6 +367,11 @@ export class PageTreeItemProvider implements ITreeItemProvider {
     public selectedPageGuids?: Guid[] | null;
 
     /**
+     * The site type to limit the results.
+     */
+    public siteType?: SiteType | null;
+
+    /**
      * Gets the child items of the given parent (or root if no parent given) from the server.
      *
      * @param parentGuid The parent item whose children are retrieved.
@@ -379,7 +385,8 @@ export class PageTreeItemProvider implements ITreeItemProvider {
             guid: toGuidOrNull(parentGuid) ?? emptyGuid,
             rootPageGuid: null,
             hidePageGuids: this.hidePageGuids ?? [],
-            securityGrantToken: this.securityGrantToken
+            securityGrantToken: this.securityGrantToken,
+            siteType: this.siteType
         };
         const url = "/api/v2/Controls/PagePickerGetChildren";
         const response = await post<TreeItemBag[]>(url, undefined, options);

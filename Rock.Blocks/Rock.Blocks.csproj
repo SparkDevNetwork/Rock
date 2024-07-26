@@ -105,6 +105,8 @@
     <Compile Include="Cms\ContentChannelTypeDetail.cs" />
     <Compile Include="Cms\MediaAccountList.cs" />
     <Compile Include="Cms\MediaFolderList.cs" />
+    <Compile Include="Communication\CommunicationEntry\ValidationContext.cs" />
+    <Compile Include="Communication\CommunicationEntry\ValidationContextExtensions.cs" />
     <Compile Include="Core\PersonSuggestionList.cs" />
     <Compile Include="Cms\PageSearch.cs" />
     <Compile Include="Core\DocumentTypeList.cs" />
@@ -161,6 +163,8 @@
     <Compile Include="Communication\SmsPipelineList.cs" />
     <Compile Include="Communication\SystemCommunicationPreview.cs" />
     <Compile Include="Communication\SystemCommunicationList.cs" />
+    <Compile Include="Communication\CommunicationEntry.cs" />
+    <Compile Include="Communication\EmailPreferenceEntry.cs" />
     <Compile Include="Core\AssetStorageProviderList.cs" />
     <Compile Include="Core\AttributeMatrixTemplateDetail.cs" />
     <Compile Include="Core\AttributeMatrixTemplateList.cs" />
@@ -170,7 +174,6 @@
     <Compile Include="Core\BinaryFileTypeDetail.cs" />
     <Compile Include="Core\BinaryFileTypeList.cs" />
     <Compile Include="Core\CampusList.cs" />
-    <Compile Include="Communication\EmailPreferenceEntry.cs" />
     <Compile Include="Core\DefinedTypeList.cs" />
     <Compile Include="Core\DefinedTypeDetail.cs" />
     <Compile Include="Core\DeviceDetail.cs" />

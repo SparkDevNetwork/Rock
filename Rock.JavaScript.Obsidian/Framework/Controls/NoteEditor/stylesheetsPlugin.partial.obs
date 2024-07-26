@@ -1,0 +1,345 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<script setup lang="ts">
+    /**
+     * StylesheetsPlugin - Adds stylesheets (<style> tag) support to a note editor.
+     *
+     * <style> tags added to the note editor are internally scoped by this plugin so
+     * they do not bleed out to other parts of the page. To accomplish this, the
+     * plugin requires two input properties that tell it which elements to treat as
+     * the "html" and "body" CSS selectors within the <style> tags.
+     *
+     * Note: This plugin does not add a toolbar button.
+     *
+     * @example
+     * <!--
+     *      someEditorHost.obs - This example shows just enough code to wire up the plugin.
+     *      FYI, the Vue - Official extension complains if template and script tags are used in comments,
+     *      so using (template) and (script) for now.
+     * -->
+     * (template)
+     *   <div id="uniqueWrapperId">
+     *     <div id="uniqueEditorId">
+     *       <StylesheetsPlugin htmlCssReplacementSelector="uniqueWrapperId"
+     *                          bodyCssReplacementSelector="uniqueEditorId" />
+     *     </div>
+     *   </div>
+     * (/template)
+     *
+     * (script setup lang="ts")
+     *   import StylesheetsPlugin from "./NoteEditor/stylesheetsPlugin.partial.obs";
+     *
+     *   // The host must provide the plugins feature.
+     *   const pluginManager = providePluginsFeature({
+     *       editorInstance: computed(() => tinyMceInstance.value),
+     *       toolbarElement: computed(() => toolbarElement.value)
+     *   });
+     * (/script)
+     */
+    import { PropType, ref, watch } from "vue";
+    import { usePluginHelper } from "./utils.partial";
+    import { Editor, EditorEvent, EventDispatcher, Events, RawEditorOptions } from "@Obsidian/Libs/tinymce";
+    import { newGuid } from "@Obsidian/Utility/guid";
+
+    const props = defineProps({
+        /**
+         * This CSS selector will replace instances of `html` in &lt;style&gt; tags at runtime so styles don't bleed outside the editor.
+         *
+         * This should be an ancestor of the `bodyCssReplacementSelector` element, which should be an ancestor of the editor element..
+         */
+        htmlCssReplacementSelector: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        /**
+         * This CSS selector will replace instances of `body` in &lt;style&gt; tags at runtime so styles don't bleed outside the editor.
+         *
+         * This should be an ancestor of the editor element.
+         */
+        bodyCssReplacementSelector: {
+            type: String as PropType<string>,
+            required: true
+        }
+    });
+
+    const id = `stylesheets-${newGuid()}` as const;
+
+    defineExpose({
+        id
+    });
+
+    const { editorInstance, onConfigureEditorOptions } = usePluginHelper();
+
+    onConfigureEditorOptions((currentOptions: RawEditorOptions) => {
+        // Syntax examples:
+        // "+div[p|i]"              This would add <p> and <i> as valid child elements of <div> elements.
+        // "-div[strong]"           This would remove <strong> from being a valid child element of <div> elements.
+        // "+div[p|i],-div[strong]" Use commas to combine multiple rules.
+        // For more information, visit: https://www.tiny.cloud/docs/tinymce/latest/content-filtering/#valid_children
+
+        // Allow style elements as "root" elements in the editor.
+        // The editor is hosted in a <div> element.
+        // Since the "root" would be direct children of that host <div>,
+        // the rule should allow <style> tags as children of <div> tags.
+        const styleChildren = "+div[style]";
+
+        if (!currentOptions.valid_children) {
+            currentOptions.valid_children = styleChildren;
+        }
+        else if (!currentOptions.valid_children.includes("+div[style]")) {
+            currentOptions.valid_children += `,${styleChildren}`;
+        }
+
+        return currentOptions;
+    });
+
+    //#region Values
+
+    const beforeSetContentEventDispatcher = ref<EventDispatcher<Events.EditorEventMap> | undefined>();
+    const getContentEventDispatcher = ref<EventDispatcher<Events.EditorEventMap> | undefined>();
+
+    //#endregion
+
+    //#region Computed Values
+
+    //#endregion
+
+    //#region Functions
+
+    /**
+     * Initializes the plugin.
+     */
+    function init(editor: Editor): void {
+        // Since the editor is inline (not in an iframe), <style> elements
+        // added to the code editor can leak CSS styles to the rest of the page.
+        // To prevent this, scope the style sheets before setting the editor content,
+        // and unscope when retrieving the content.
+        // The "scoped" behavior is very similar to the SFC `scoped` directive; i.e. `<style scoped>`
+        // in that this will add run-time specificity to the style rule selectors so the styles
+        // are only isolated to this HTML Editor control instance.
+        beforeSetContentEventDispatcher.value = editor.on("BeforeSetContent", (e: EditorEvent<Events.BeforeSetContentEvent>) => {
+            e.content = scopeStyleSheets(e.content, `#${editor.id}`);
+        });
+
+        getContentEventDispatcher.value = editor.on("GetContent", (e: EditorEvent<Events.GetContentEvent>) => {
+            e.content = unscopeStyleSheets(e.content, `#${editor.id}`);
+        });
+    }
+
+    /** Disposes the tooltip button. */
+    function dispose(): void {
+        if (beforeSetContentEventDispatcher.value) {
+            beforeSetContentEventDispatcher.value.off();
+        }
+
+        if (getContentEventDispatcher.value) {
+            getContentEventDispatcher.value.off();
+        }
+    }
+
+    /** Extracts <style> elements from an HTML string. */
+    function getStyleSheetStrings(html: string): string[] {
+        return html.match(/<style.*>((?!<\/style>).)*<\/style>/sg) ?? [];
+    }
+
+    /** Scopes CSS style rules by adding a prefix to each rule selector. */
+    function scopeCSSStyleRule(cssRule: CSSStyleRule, editorElementSelector: string): string {
+        function replaceSelector(selector: string, searchSelector: string, replacementSelector: string): { selector: string; replaced: boolean; } {
+            const startsWithSearchSelector = `${searchSelector} `;
+            const endsWithSearchSelector = ` ${searchSelector}`;
+            const containsSearchSelector = ` ${searchSelector} `;
+
+            if (selector === searchSelector) {
+                return {
+                    selector: replacementSelector,
+                    replaced: true,
+                };
+            }
+            else if (selector.startsWith(startsWithSearchSelector)) {
+                // body > p
+                // =>
+                // .note-editing-area-body > p`;
+                return {
+                    selector: `${replacementSelector} ${selector.substring(startsWithSearchSelector.length)}`,
+                    replaced: true
+                };
+            }
+            else if (selector.endsWith(endsWithSearchSelector)) {
+                // html body
+                // =>
+                // html .note-editing-area-body`;
+                return {
+                    selector: `${selector.substring(0, selector.length - endsWithSearchSelector.length)} ${replacementSelector}`,
+                    replaced: true
+                };
+            }
+            else {
+                const index = selector.indexOf(containsSearchSelector);
+
+                if (index !== -1) {
+                    // html body p (search for "body")
+                    // =>
+                    // html .note-editing-area-body p
+                    return {
+                        selector: `${selector.substring(0, index)} ${replacementSelector} ${selector.substring(index + containsSearchSelector.length)}`,
+                        replaced: true
+                    };
+                }
+                else {
+                    return {
+                        selector,
+                        replaced: false
+                    };
+                }
+            }
+        }
+
+        cssRule.selectorText = cssRule.selectorText
+            // Split multiple CSS rule selectors; e.g., `*, body, p`
+            .split(",")
+            // Trim white space from each selector.
+            .map(selector => selector.trim())
+            // Omit empty selectors.
+            .filter(selector => !!selector)
+            // Add prefixes to selectors that don't already have them.
+            .map(selector => {
+                if (!selector.includes(editorElementSelector)) {
+                    const htmlReplacement = replaceSelector(selector, "html", props.htmlCssReplacementSelector);
+                    const bodyReplacement = replaceSelector(htmlReplacement.selector, "body", props.bodyCssReplacementSelector);
+                    selector = bodyReplacement.selector;
+
+                    if (bodyReplacement.replaced) {
+                        // If a `body {}` top-level style exists,
+                        // then we need to temporarily add a new CSS Rule selector
+                        // so those styles will be shown in the editor.
+                        return selector.replace(props.bodyCssReplacementSelector, `${props.bodyCssReplacementSelector} ${editorElementSelector}`);
+                    }
+                    else if (htmlReplacement.replaced) {
+                        // If an `html {}` top-level style exists,
+                        // then we need to temporarily add a new CSS Rule selector
+                        // so those styles will be shown in the editor.
+                        return selector.replace(props.htmlCssReplacementSelector, `${props.htmlCssReplacementSelector} ${editorElementSelector}`);
+                    }
+                    else {
+                        return `${editorElementSelector} ${selector}`;
+                    }
+                }
+                else {
+                    return selector;
+                }
+            })
+            // Join the selectors back together.
+            .join(", ");
+
+        return cssRule.cssText;
+    }
+
+    /**
+     * Scopes CSS rules.
+     * This also works for CSS media queries.
+     * @example
+     * // if cssRuleSelectorPrefix === "#someid" then
+     * p {
+     *   color: red;
+     * }
+     * // will become
+     * #someid p {
+     *   color: red;
+     * }
+     */
+    function scopeCSSRules(cssRules: CSSRuleList, editorElementSelector: string): string[] {
+        const rulesCssText: string[] = [];
+
+        for (let i = 0; i < cssRules.length; i++) {
+            const rule = cssRules[i];
+            if (rule instanceof CSSStyleRule) {
+                scopeCSSStyleRule(rule, editorElementSelector);
+            }
+            else if (rule instanceof CSSMediaRule) {
+                scopeCSSRules(rule.cssRules, editorElementSelector);
+            }
+            else {
+                // This isn't a CSS rule so no prefix necessary?
+            }
+
+            // Keep track of the updated CSS rules.
+            // These will be joined later when replacing the <style> tag with the scoped version.
+            rulesCssText.push(rule.cssText);
+        }
+
+        return rulesCssText;
+    }
+
+    /**
+     * Adds a prefix to every CSS rule selector in the provided HTML <style> elements.
+     */
+    function scopeStyleSheets(html: string, editorElementSelector: string): string {
+        if (!html) {
+            return html;
+        }
+
+        const styleSheetStrings = getStyleSheetStrings(html);
+        styleSheetStrings.forEach((styleSheetString: string) => {
+            // Convert the <style> HTML string to a CSSStyleSheet object.
+            const cssStyleSheet = document.createElement("style");
+            const openingTag = styleSheetString.match(/^<style.*>/)?.[0] ?? "<style>";
+            cssStyleSheet.innerHTML = styleSheetString.replace(openingTag, "").replace("</style>", "").replace(/\n\s+/g, "\n");
+            document.body.appendChild(cssStyleSheet);
+            const { sheet } = cssStyleSheet;
+            document.body.removeChild(cssStyleSheet);
+
+            // Add the prefix to each CSS rule selector.
+            if (sheet) {
+                const rulesCssText = scopeCSSRules(sheet.cssRules, editorElementSelector);
+
+                // Replace the <style> tag with the new stylesheet.
+                html = html.replace(styleSheetString, `${openingTag}\n${rulesCssText.join("\n")}\n</style>`);
+            }
+        });
+
+        return html;
+    }
+
+    /** Returns the HTML with scoped style sheets removed. */
+    function unscopeStyleSheets(html: string, editorElementSelector: string): string {
+        if (!html) {
+            return html;
+        }
+
+        const styleSheetStrings = getStyleSheetStrings(html);
+
+        styleSheetStrings.forEach((styleSheetString: string) => {
+            const styleSheetStringWithoutPrefixes = styleSheetString
+                // Strip out top-level style selectors.
+                .replace(props.htmlCssReplacementSelector, "html")
+                .replace(props.bodyCssReplacementSelector, "body")
+                // Strip out scoped selectors.
+                .replace(new RegExp(`${editorElementSelector}[\t ]+`, "g"), "")
+                .replace(editorElementSelector, "");
+
+            html = html.replace(styleSheetString, styleSheetStringWithoutPrefixes);
+        });
+
+        return html;
+    }
+
+    //#endregion
+
+    //#region Event Handlers
+
+    //#endregion
+
+    //#region Watchers
+
+    // Register the plugin whenever the bound Editor changes.
+    watch(editorInstance, () => {
+        // Dispose any dependencies.
+        dispose();
+
+        if (editorInstance.value) {
+            init(editorInstance.value);
+        }
+    });
+
+    //#endregion
+</script>
