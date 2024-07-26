@@ -81,7 +81,7 @@
     });
 
     const availableCountryCodes = computed<string[]>(() => {
-        return Object.keys(configuration.value?.rules ?? {});
+        return configuration.value?.countryCodes ?? [];
     });
 
     const availableCountryCodeOptions = computed<ListItemBag[]>(() => {
@@ -128,6 +128,7 @@
 
             if (result) {
                 configuration.value = result;
+                countryCode.value ||= result.defaultCountryCode ?? "";
             }
             else {
                 console.error("Unknown error while loading phone number configuration.");

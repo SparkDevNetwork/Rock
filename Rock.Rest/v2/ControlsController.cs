@@ -5010,6 +5010,7 @@ namespace Rock.Rest.v2
             var countryCodeRules = new Dictionary<string, List<PhoneNumberCountryCodeRulesConfigurationBag>>();
             var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
             string defaultCountryCode = null;
+            var countryCodes = new List<string>();
 
             if ( definedType != null )
             {
@@ -5035,6 +5036,7 @@ namespace Rock.Rest.v2
                     }
 
                     countryCodeRules.Add( countryCode, rules );
+                    countryCodes.Add( countryCode );
                 }
             }
 
@@ -5044,6 +5046,7 @@ namespace Rock.Rest.v2
                 {
                     Rules = countryCodeRules,
                     DefaultCountryCode = defaultCountryCode,
+                    CountryCodes = countryCodes,
                     SmsOptInText = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.SMS_OPT_IN_MESSAGE_LABEL )
                 } );
             }
@@ -5051,6 +5054,7 @@ namespace Rock.Rest.v2
             return Ok( new PhoneNumberBoxGetConfigurationResultsBag
             {
                 Rules = countryCodeRules,
+                CountryCodes = countryCodes,
                 DefaultCountryCode = defaultCountryCode
             } );
         }
