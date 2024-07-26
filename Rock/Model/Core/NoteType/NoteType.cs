@@ -268,6 +268,15 @@ namespace Rock.Model
         [DataMember]
         public bool IsMentionEnabled { get; set; }
 
+        /// <summary>
+        /// Gets or sets the additional settings json.
+        /// </summary>
+        /// <value>
+        /// The additional settings json.
+        /// </value>
+        [DataMember]
+        public string AdditionalSettingsJson { get; set; }
+
         #endregion
 
         #region Navigation Properties
