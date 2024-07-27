@@ -7,7 +7,7 @@
     <RockForm v-model:submit="submitForm" @submit="onSave" :formResetKey="resetKey">
         <Panel :title="panelTitle" :headerSecondaryActions="secondaryActions">
 
-            <EditPanel v-model="metricValueEditBag" :options="options" @propertyChanged="onPropertyChanged" :isEditable="isEditable" />
+            <EditPanel v-model="metricValueEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" :isEditable="isEditable" :validationError="validationError" />
 
             <Modal v-model="showAuditDetailsModal" title="Audit Details">
                 <AuditDetail :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />
@@ -52,17 +52,16 @@
     import AuditDetail from "@Obsidian/Controls/auditDetail.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import EditPanel from "./MetricValueDetail/editPanel.partial.obs";
-    import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
-    import { debounce } from "@Obsidian/Utility/util";
+    import { useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./MetricValueDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { MetricValueBag } from "@Obsidian/ViewModels/Blocks/Reporting/MetricValueDetail/metricValueBag";
     import { MetricValueDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Reporting/MetricValueDetail/metricValueDetailOptionsBag";
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const config = useConfigurationValues<DetailBlockBox<MetricValueBag, MetricValueDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const securityGrant = getSecurityGrant(config.securityGrantToken);
 
     // #region Values
 
@@ -72,23 +71,18 @@
     const resetKey = ref("");
     const showAuditDetailsModal = ref(false);
     const isSaving = ref(false);
+    const validationError = ref<string | null>();
 
-    const metricValueEditBag = ref<MetricValueBag>(config.entity ?? {} as MetricValueBag);
+    const metricValueEditBag = ref<ValidPropertiesBox<MetricValueBag>>({
+        bag: config.entity ?? {} as MetricValueBag
+    });
 
     const entityTypeGuid = EntityType.MetricValue;
 
-    // The properties that are being edited in the UI. This is used to
-    // inform the server which incoming values have valid data in them.
-    const validProperties = [
-        "attributeValues",
-        "metricValuePartitions",
-        "metricValueType",
-        "note",
-        "xValue",
-        "yValue"
-    ];
-
-    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(metricValueEditBag, validProperties, invokeBlockAction), undefined, true);
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: metricValueEditBag
+    });
 
     // #endregion
 
@@ -98,14 +92,14 @@
      * The entity name to display in the block panel.
      */
     const panelTitle = computed((): string => {
-        return metricValueEditBag.value.idKey ? "Edit Metric Value" : "Add Metric Value";
+        return metricValueEditBag.value.bag?.idKey ? "Edit Metric Value" : "Add Metric Value";
     });
 
     /**
      * The identifier key value for this entity.
      */
     const entityKey = computed((): string => {
-        return metricValueEditBag.value?.idKey ?? "";
+        return metricValueEditBag.value?.bag?.idKey ?? "";
     });
 
     /**
@@ -114,7 +108,7 @@
     const secondaryActions = computed((): PanelAction[] | undefined => {
         const actions: PanelAction[] = [];
 
-        if (metricValueEditBag?.value?.idKey) {
+        if (metricValueEditBag?.value?.bag?.idKey) {
             actions.push({
                 type: "default",
                 title: "Audit Details",
@@ -152,23 +146,6 @@
     }
 
     /**
-     * Event handler for when a value has changed that has an associated
-     * C# property name. This is used to detect changes to values that
-     * might cause qualified attributes to either show up or not show up.
-     *
-     * @param propertyName The name of the C# property that was changed.
-     */
-    function onPropertyChanged(propertyName: string): void {
-        // If we don't have any qualified attribute properties or this property
-        // is not one of them then do nothing.
-        if (!config.qualifiedAttributeProperties || !config.qualifiedAttributeProperties.some(n => n.toLowerCase() === propertyName.toLowerCase())) {
-            return;
-        }
-
-        refreshAttributesDebounce();
-    }
-
-    /**
      * Event handler for the panel's Save event. Send the data to the server
      * to be saved and then leave edit mode or redirect to target page.
      *
@@ -177,23 +154,22 @@
     async function onSave(): Promise<void> {
         errorMessage.value = "";
 
-        const data: DetailBlockBox<MetricValueBag, MetricValueDetailOptionsBag> = {
-            entity: metricValueEditBag.value,
-            isEditable: true,
-            validProperties: validProperties
-        };
-
-        const result = await invokeBlockAction<MetricValueBag | string>("Save", {
-            box: data
+        const result = await invokeBlockAction<ValidPropertiesBox<MetricValueBag> | string>("Save", {
+            box: metricValueEditBag.value
         });
+
+        console.log(result);
 
         if (result.isSuccess && result.data) {
             if (result.statusCode === 200 && typeof result.data === "string") {
                 window.location.href = makeUrlRedirectSafe(result.data);
             }
         }
+        else if (result.statusCode == 400 && typeof result.errorMessage === "string") {
+            validationError.value = result.errorMessage;
+        }
         else {
-            errorMessage.value = result.errorMessage ?? "Unknown error while trying to save benevolence type.";
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to save metric value.";
         }
     }
 
@@ -205,8 +181,6 @@
     };
 
     // #endregion
-
-    provideSecurityGrant(securityGrant);
 
     // Handle any initial error conditions or the need to go into edit mode.
     if (config.errorMessage) {

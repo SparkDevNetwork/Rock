@@ -154,7 +154,7 @@
     const hidePersonPicker = ref(props.options.hidePersonPicker);
     const isWatcherMustBeSelectWarningVisible = ref(false);
     const isUnableToOverrideWarningVisible = ref(false);
-    const isWatchFilterMustBeSeletedWarningVisible = ref(false);;
+    const isWatchFilterMustBeSeletedWarningVisible = ref(false);
     const isNoteTypeWarningVisible = ref(false);
 
     const invokeBlockAction = useInvokeBlockAction();
@@ -240,7 +240,7 @@
         isUnableToOverrideWarningVisible.value = props.errorDetails === "UnableToOverride";
         isWatchFilterMustBeSeletedWarningVisible.value = props.errorDetails === "WatchFilterMustBeSelected";
         isNoteTypeWarningVisible.value = props.errorDetails === "NoteTypeDoesNotAllowWatch";
-    })
+    });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
