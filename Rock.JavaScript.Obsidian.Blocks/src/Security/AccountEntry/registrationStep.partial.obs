@@ -196,7 +196,11 @@
      * Determines whether the person info is valid.
      */
     function isPersonInfoValid(): boolean {
-        return isOldEnough();
+        if (props.config.isBirthDateShown) {
+            isOldEnough();
+        }
+
+        return true;
     }
 
     //#endregion
