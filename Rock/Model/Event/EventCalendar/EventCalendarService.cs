@@ -41,10 +41,14 @@ namespace Rock.Model
         public string CreateICalendar( GetCalendarEventFeedArgs args )
         {
             /*
-             * [2024-01-16] DJL
-             * Extreme caution should be exercised when modifying the sequence or format of the elements in this section.
-             * Any changes may break the compatibility of the iCal file with third-party applications, and should be tested
-             * against Google Calendar, Outlook Web, Outlook Desktop 365 and Apple Calendar.
+             *  [2024-01-16] DJL
+             *  Extreme caution should be exercised when modifying the sequence or format of any output rendered in this section.
+             *  Most third-party applications have strict requirements for imported calendars, and only partially implement the iCalendar standard.
+             *  Changes that affect the format of the output should be tested against these major applications, in order of known difficulties:
+             *  1. Outlook Web
+             *  2. Apple Calendar
+             *  3. Google Calendar
+             *  4. Outlook Desktop 365
              */
 
             // Get a list of Rock Calendar Events that match the specified filter.
@@ -111,14 +115,20 @@ namespace Rock.Model
                     }
 
                     var iCalOccurrence = CalendarCollection.Load( occurrence.Schedule.iCalendarContent.ToStreamReader() );
-                    foreach ( var iCalEvent in iCalOccurrence[0].Events )
+                    var iCalEvents = iCalOccurrence.FirstOrDefault()?.Events;
+                    if ( iCalEvents == null )
+                    {
+                        continue;
+                    }
+
+                    foreach ( var iCalEvent in iCalEvents )
                     {
                         var hasSpecificDates = iCalEvent.RecurrenceRules.Count == 0
                             && iCalEvent.RecurrenceDates.Count > 0;
 
-                        // If the event is not within the requested date range, discard it.
+                        // If the event does not have an occurrence within the requested date range, discard it.
                         // This may occur if the template event has date values that are not aligned with the recurrence schedule.
-                        if ( iCalEvent.Start.LessThan( startDate ) || iCalEvent.Start.GreaterThan( endDate ) )
+                        if ( iCalEvent.GetOccurrences( startDate, endDate ).Count == 0 )
                         {
                             continue;
                         }
@@ -127,17 +137,21 @@ namespace Rock.Model
 
                         if ( hasSpecificDates )
                         {
-                            var iCalSpecificDateEvents = GetCalendarEventsForSpecificDates_RecurrenceId( iCalEvent, timeZoneId, occurrence, lavaTemplate, setEventDescription );
+                            var iCalSpecificDateEvents = GetCalendarEventsForSpecificDates( iCalEvent, timeZoneId, occurrence, lavaTemplate, setEventDescription );
 
                             foreach ( var iCalSpecificDateEvent in iCalSpecificDateEvents )
                             {
+                                SetCalendarEventDateTimeInfo( iCalSpecificDateEvent );
+
                                 iCalendar.Events.Add( iCalSpecificDateEvent );
                             }
                         }
                         else
                         {
                             var iCalEventNew = CopyCalendarEvent( iCalEvent );
-                            SetCalendarEventDetailsFromRockEvent( iCalEventNew, timeZoneId, occurrence, lavaTemplate, setEventDescription );
+
+                            SetCalendarEventDateTimeInfo( iCalEventNew, timeZoneId );
+                            SetCalendarEventDetailsFromRockEvent( iCalEventNew, occurrence, lavaTemplate, setEventDescription );
 
                             iCalendar.Events.Add( iCalEventNew );
                         }
@@ -177,7 +191,7 @@ namespace Rock.Model
             return calendarString;
         }
 
-        private List<CalendarEvent> GetCalendarEventsForSpecificDates_RecurrenceId( CalendarEvent iCalEvent, string timeZoneId, EventItemOccurrence occurrence, string lavaTemplate, bool setEventDescription )
+        private List<CalendarEvent> GetCalendarEventsForSpecificDates( CalendarEvent iCalEvent, string timeZoneId, EventItemOccurrence occurrence, string lavaTemplate, bool setEventDescription )
         {
             var events = new List<CalendarEvent>();
 
@@ -199,12 +213,16 @@ namespace Rock.Model
 
             CalDateTime recurrenceId;
 
-            // Add the first calendar event to create a recurring daily schedule for the number of specific dates.
+            // Create a calendar event with a recurring daily schedule for the number of specific dates.
+            // These daily events will then be rescheduled to the actual dates specified in the recurrence.
+            // This allows the events to be maintained as a series even where the recurrences have no identifiable pattern.
             var iEvent = CopyCalendarEvent( iCalEvent );
 
+            // Set the start date of the template event to the first recurrence date.
             iEvent.DtStart = ConvertToCalDateTime( firstDateTime, timeZoneId );
 
-            SetCalendarEventDetailsFromRockEvent( iEvent, timeZoneId, occurrence, lavaTemplate, setEventDescription );
+            SetCalendarEventDetailsFromRockEvent( iEvent, occurrence, lavaTemplate, setEventDescription );
+            SetCalendarEventDateTimeInfo( iEvent );
 
             iEvent.RecurrenceDates = null;
             iEvent.RecurrenceRules.Add( new RecurrencePattern( $"FREQ=DAILY;COUNT={totalDateCount}" ) );
@@ -212,7 +230,7 @@ namespace Rock.Model
 
             events.Add( iEvent );
 
-            // Add subsequent calendar events to reschedule the daily recurrences to the specific dates.
+            // Add subsequent calendar events to reschedule the daily recurrences created in the template to the specific dates.
             // Order these variations to the recurrence schedule from latest to earliest.
             // If they are not specified in this order, Outlook Web and Google Calendar fail to maintain the entries
             // as a single recurring series.
@@ -225,27 +243,20 @@ namespace Rock.Model
             {
                 iEvent = CopyCalendarEvent( iCalEvent );
 
-                SetCalendarEventDetailsFromRockEvent( iEvent, timeZoneId, occurrence, lavaTemplate, setEventDescription );
-
                 iEvent.DtStart = ConvertToCalDateTime( recurrenceDate.StartTime, timeZoneId );
 
-                // Reset the All Day event flag, because it is reset by iCal.Net when the DtStart property is assigned.
-                iEvent.IsAllDay = iCalEvent.IsAllDay;
+                SetCalendarEventDetailsFromRockEvent( iEvent, occurrence, lavaTemplate, setEventDescription );
+                SetCalendarEventDateTimeInfo( iEvent );
 
-                // Set the EndDateTime, unless this is flagged as an All Day event.
-                if ( !iEvent.IsAllDay && recurrenceDate.EndTime != null )
-                {
-                    iEvent.DtEnd = ConvertToCalDateTime( recurrenceDate.EndTime, timeZoneId );
-                }
                 iEvent.RecurrenceDates = null;
 
                 iEvent.Sequence = sequenceNo;
 
-                // The RecurrenceId should match the date in the daily recurrence pattern that is being rescheduled.
-                // The time component must be omitted, or Google Calendar will fail to match the rescheduled event correctly.
+                // The RecurrenceId must match the date in the daily recurrence pattern that is being rescheduled.
+                // The format of the RecurrenceId must exactly match the format of the DTSTART property of the event.
                 var recurrencePatternDate = firstDateTime.AddDays( totalDateCount - 1 ).AddDays( -1 * dateNo );
-                recurrenceId = ConvertToCalDateTime( recurrencePatternDate, null );
 
+                recurrenceId = ConvertToCalDateTime( recurrencePatternDate, null );
                 recurrenceId.HasTime = hasDuration;
 
                 iEvent.RecurrenceId = recurrenceId;
@@ -258,7 +269,50 @@ namespace Rock.Model
             return events;
         }
 
-        private CalendarEvent SetCalendarEventDetailsFromRockEvent( CalendarEvent iCalEvent, string timeZoneId, EventItemOccurrence occurrence, string eventCalendarLavaTemplate, bool setEventDescription )
+        /// <summary>
+        /// Adjust the date and time information for this event to ensure that the serialized iCalendar data
+        /// can be processed by calendaring applications such as Microsoft Outlook Web, Google Calendar and Apple Calendar.
+        /// These applications require specific date/time formats and value combinations for a valid import format.
+        /// </summary>
+        /// <param name="iCalEvent"></param>
+        /// <param name="timeZoneId"></param>
+        private void SetCalendarEventDateTimeInfo( CalendarEvent iCalEvent, string timeZoneId = null )
+        {
+            if ( iCalEvent.Start == null )
+            {
+                return;
+            }
+
+            // Determine the start and end time for the event.
+            // For an all-day event, omit the End date.
+            // see https://stackoverflow.com/questions/1716237/single-day-all-day-appointments-in-ics-files
+            var start = iCalEvent.Start;
+
+            timeZoneId = timeZoneId ?? iCalEvent.Start.TzId;
+
+            iCalEvent.Start = ConvertToCalDateTime( start, timeZoneId );
+
+            // Determine if this is an all-day event.
+            // The Rock ScheduleBuilder component adopts a convention of assigning a 1 second duration to an event
+            // if the duration was not specified as part of the input.
+            // Therefore, if the event starts at midnight and has a duration of less than 1s, assume it is an all day event.
+            var startTime = new TimeSpan( start.Hour, start.Minute, start.Second );
+            if ( startTime.TotalSeconds == 0 && ( iCalEvent.Duration == null || iCalEvent.Duration.TotalSeconds <= 1 ) )
+            {
+                iCalEvent.IsAllDay = true;
+            }
+
+            if ( iCalEvent.IsAllDay )
+            {
+                iCalEvent.End = null;
+            }
+            else
+            {
+                iCalEvent.End = ConvertToCalDateTime( iCalEvent.End, timeZoneId );
+            }
+        }
+
+        private CalendarEvent SetCalendarEventDetailsFromRockEvent( CalendarEvent iCalEvent, EventItemOccurrence occurrence, string eventCalendarLavaTemplate, bool setEventDescription )
         {
             var eventItem = occurrence.EventItem;
 
@@ -267,20 +321,19 @@ namespace Rock.Model
             iCalEvent.Location = !string.IsNullOrEmpty( occurrence.Location ) ? occurrence.Location : string.Empty;
             iCalEvent.Uid = occurrence.Guid.ToString();
 
-            // Determine the start and end time for the event.
-            // For an all-day event, omit the End date.
-            // see https://stackoverflow.com/questions/1716237/single-day-all-day-appointments-in-ics-files
-            iCalEvent.Start = new CalDateTime( iCalEvent.Start.Value, timeZoneId );
+            // Determine if this is an all-day event.
+            // The Rock ScheduleBuilder component adopts a convention of assigning a 1 second duration to an event
+            // if the duration was not specified as part of the input.
+            // Therefore, if the event starts at midnight and has a duration of 1s, assume it is an all day event.
+            var startTime = new TimeSpan( iCalEvent.Start.Hour, iCalEvent.Start.Minute, iCalEvent.Start.Second );
+            if ( startTime.TotalSeconds == 0 && ( iCalEvent.Duration == null || iCalEvent.Duration.TotalSeconds <= 1 ) )
+            {
+                iCalEvent.IsAllDay = true;
+            }
 
-            if ( !iCalEvent.Start.HasTime
-                && ( iCalEvent.End != null && !iCalEvent.End.HasTime )
-                && iCalEvent.Duration == null || iCalEvent.Duration.Ticks == 0 )
+            if ( iCalEvent.IsAllDay )
             {
                 iCalEvent.End = null;
-            }
-            else
-            {
-                iCalEvent.End = new CalDateTime( iCalEvent.End.Value, timeZoneId );
             }
 
             // Rock has more descriptions than iCal so lets concatenate them
@@ -409,6 +462,11 @@ namespace Rock.Model
 
         private CalDateTime ConvertToCalDateTime( IDateTime newDateTime, string tzId )
         {
+            if ( newDateTime == null )
+            {
+                return null;
+            }
+
             if ( newDateTime is CalDateTime cdt )
             {
                 if ( tzId != null )
@@ -433,8 +491,8 @@ namespace Rock.Model
                 newDate.TzId = tzId;
             }
 
-            // Set the HasTime property to ensure that iCal.Net serializes the date value as an iCalendar "DATE" rather than a "PERIOD".
-            // Microsoft Outlook ignores date values that are expressed using the iCalendar "PERIOD" type.
+            // Set the HasTime property to ensure that iCal.Net serializes the date value in the form "TZID={timezoneId}:YYYYMMDDTHHMMSS".
+            // Microsoft Outlook Web ignores date values that are expressed using the iCalendar "PERIOD" or "DATE" type.
             // (see: MS-STANOICAL - v20210817 - 2.2.86)
             newDate.HasTime = true;
 

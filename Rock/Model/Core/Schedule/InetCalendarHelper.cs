@@ -22,6 +22,7 @@ using System.Runtime.Caching;
 using Ical.Net;
 using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
+using Ical.Net.Serialization;
 
 namespace Rock.Model
 {
@@ -75,6 +76,45 @@ namespace Rock.Model
             }
 
             return calendarEvent;
+        }
+
+        /// <summary>
+        /// Serialize a CalendarEvent object to a string.
+        /// </summary>
+        /// <param name="iCalEvent"></param>
+        /// <returns></returns>
+        public static string SerializeToCalendarString( CalendarEvent iCalEvent )
+        {
+            if ( iCalEvent == null )
+            {
+                return string.Empty;
+            }
+
+            var iCalCalendar = new Calendar();
+            iCalCalendar.Events.Add( iCalEvent );
+
+            var serializer = new CalendarSerializer();
+
+            var iCalString = serializer.SerializeToString( iCalCalendar );
+            return iCalString;
+        }
+
+        /// <summary>
+        /// Serialize a Calendar object to a string.
+        /// </summary>
+        /// <param name="iCalCalendar"></param>
+        /// <returns></returns>
+        public static string SerializeToCalendarString( Calendar iCalCalendar )
+        {
+            if ( iCalCalendar == null )
+            {
+                return string.Empty;
+            }
+
+            var serializer = new CalendarSerializer( iCalCalendar );
+
+            var iCalString = serializer.SerializeToString();
+            return iCalString;
         }
 
         /// <summary>
