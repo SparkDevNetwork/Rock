@@ -146,7 +146,7 @@
             });
 
             const timeToRunLabel = persistedDatasetViewBag.value.timeToBuildMS
-                ? `${persistedDatasetViewBag.value.timeToBuildMS.toString()}ms`
+                ? `${persistedDatasetViewBag.value.timeToBuildMS.toFixed(4)}ms`
                 : "Never";
 
             labels.push({
