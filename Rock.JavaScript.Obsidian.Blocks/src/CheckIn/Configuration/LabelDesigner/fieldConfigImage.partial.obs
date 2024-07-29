@@ -22,6 +22,7 @@
     import { LabelUndoManager } from "./undoManager.partial";
     import { asBoolean, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
     import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { newGuid } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         labelManager: {
@@ -52,6 +53,10 @@
             field.configurationValues = field.configurationValues ?? {};
 
             const fieldConfig = field.configurationValues as ImageFieldConfigurationBag;
+
+            if (fieldConfig.imageData !== image.value) {
+                fieldConfig.imageId = newGuid();
+            }
 
             fieldConfig.imageData = image.value;
             fieldConfig.isColorInverted = asTrueFalseOrNull(isColorInverted.value);

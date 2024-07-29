@@ -36,12 +36,6 @@ namespace Rock.CheckIn.v2.Labels.Renderers
     internal class ZplLabelRenderer : TextLabelRenderer
     {
         /// <summary>
-        /// Holds a lookup table to quickly convert byte arrays to hex strings
-        /// for writing to the ZPL content.
-        /// </summary>
-        private static readonly uint[] _hexLookupTable = CreateLookup32();
-
-        /// <summary>
         /// The DPI of the printer. If not known we default to 203.
         /// </summary>
         private int _dpi = 203;
@@ -386,7 +380,7 @@ namespace Rock.CheckIn.v2.Labels.Renderers
 
             writer.Write( $"^GFA,{image.ImageData.Length},{image.ImageData.Length},{( width + 7 ) / 8}," );
 
-            writer.Write( ByteArrayToHexViaLookup32( image.ImageData ) );
+            writer.Write( image.ZplContent );
 
             writer.WriteLine( "^FS" );
         }
@@ -414,7 +408,7 @@ namespace Rock.CheckIn.v2.Labels.Renderers
 
             try
             {
-                image = GetImage( config.ImageData, options, false );
+                image = GetImage( config.ImageData, config.ImageId?.ToString(), options );
             }
             catch
             {
@@ -430,7 +424,7 @@ namespace Rock.CheckIn.v2.Labels.Renderers
 
             writer.Write( $"^GFA,{image.ImageData.Length},{image.ImageData.Length},{( width + 7 ) / 8}," );
 
-            writer.Write( ByteArrayToHexViaLookup32( image.ImageData ) );
+            writer.Write( image.ZplContent );
 
             writer.WriteLine( "^FS" );
         }
@@ -472,7 +466,7 @@ namespace Rock.CheckIn.v2.Labels.Renderers
 
             writer.Write( $"^GFA,{image.ImageData.Length},{image.ImageData.Length},{( width + 7 ) / 8}," );
 
-            writer.Write( ByteArrayToHexViaLookup32( image.ImageData ) );
+            writer.Write( image.ZplContent );
 
             writer.WriteLine( "^FS" );
         }
@@ -541,7 +535,7 @@ namespace Rock.CheckIn.v2.Labels.Renderers
                     // a dot width in multiples of 8 to match the GRF format.
                     writer.Write( $"^GFA,{grf.Length},{grf.Length},{( size + 7 ) / 8}," );
 
-                    writer.Write( ByteArrayToHexViaLookup32( grf ) );
+                    writer.Write( ZplImageHelper.ByteArrayToHexViaLookup32( grf ) );
                 }
 
                 writer.WriteLine( "^FS" );
@@ -627,16 +621,22 @@ namespace Rock.CheckIn.v2.Labels.Renderers
         /// specified in the options.
         /// </summary>
         /// <param name="imageData">The source image data.</param>
+        /// <param name="dataKey">The key to uniquely identify the image data amongst other label images.</param>
         /// <param name="options">The options to apply to the conversion process.</param>
-        /// <param name="ignoreCache"><c>true</c> if the cache should be ignored.</param>
         /// <returns>An instance of <see cref="ZplImageCache"/>.</returns>
         [ExcludeFromCodeCoverage]
-        protected internal virtual ZplImageCache GetImage( byte[] imageData, ZplImageOptions options, bool ignoreCache )
+        protected internal virtual ZplImageCache GetImage( byte[] imageData, string dataKey, ZplImageOptions options )
         {
-            using ( var stream = new MemoryStream( imageData ) )
+            var dataHash = dataKey.IsNotNullOrWhiteSpace() ? dataKey : xxHashSharp.xxHash.CalculateHash( imageData ).ToString();
+            var cacheKey = $"{dataHash}_{options.Width}_{options.Height}_{options.Brightness}_{options.Dithering}";
+
+            return ZplImageCache.GetOrAddExisting( cacheKey, () =>
             {
-                return ZplImageHelper.CreateImage( stream, options );
-            }
+                using ( var stream = new MemoryStream( imageData ) )
+                {
+                    return ZplImageHelper.CreateImage( stream, options );
+                }
+            } );
         }
 
         /// <summary>
@@ -649,7 +649,12 @@ namespace Rock.CheckIn.v2.Labels.Renderers
         [ExcludeFromCodeCoverage]
         protected internal virtual ZplImageCache GetIcon( int width, int height, LabelIcon icon )
         {
-            return ZplImageHelper.CreateIcon( width, height, icon );
+            var cacheKey = $"{icon.Value}_{width}_{height}";
+
+            return ZplImageCache.GetOrAddExisting( cacheKey, () =>
+            {
+                return ZplImageHelper.CreateIcon( width, height, icon );
+            } );
         }
 
         /// <summary>
@@ -739,46 +744,6 @@ namespace Rock.CheckIn.v2.Labels.Renderers
             }
 
             return grf;
-        }
-
-        /// <summary>
-        /// Creates a lookup table for fast byte to Hex conversion.
-        /// </summary>
-        /// <returns>An array of lookup values.</returns>
-        private static uint[] CreateLookup32()
-        {
-            var result = new uint[256];
-
-            for ( int i = 0; i < 256; i++ )
-            {
-                string s = i.ToString( "X2" );
-                result[i] = s[0] + ( ( uint ) s[1] << 16 );
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Converts an array of bytes into a hex string extremely fast. This
-        /// uses a lookup table and pre-allocates the character array to maximize
-        /// speed and reduce allocations.
-        /// </summary>
-        /// <param name="bytes">The array of bytes to convert to hex.</param>
-        /// <returns>A string that represents <paramref name="bytes"/> as a hexadecimal string.</returns>
-        private static string ByteArrayToHexViaLookup32( byte[] bytes )
-        {
-            var lookup32 = _hexLookupTable;
-            var result = new char[bytes.Length * 2];
-
-            for ( int i = 0; i < bytes.Length; i++ )
-            {
-                var val = lookup32[bytes[i]];
-
-                result[2 * i] = ( char ) val;
-                result[2 * i + 1] = ( char ) ( val >> 16 );
-            }
-
-            return new string( result );
         }
 
         /// <summary>
