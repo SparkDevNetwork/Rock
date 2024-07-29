@@ -34,10 +34,6 @@
 
     const value = ref("");
     const disabled = ref(false);
-    value.value = `{ hi %}`;
-    setInterval(() => {
-        disabled.value = false;
-    }, 2500);
     const editorHeight = ref(600);
     const mergeFields = ref([
         "GlobalAttribute",

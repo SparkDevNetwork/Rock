@@ -1597,7 +1597,7 @@
         const result = await invokeBlockAction<Guid>("CreateGridCommunication", args);
 
         if (!result.isSuccess || !result.data) {
-            return await alert(result.serverErrorMessage || "Unable to create communication.");
+            return await alert(result.errorMessage || "Unable to create communication.");
         }
 
         const finalUrl = makeUrlRedirectSafe(url.replace("{CommunicationId}", `${result.data}`));
@@ -1622,7 +1622,7 @@
         const result = await invokeBlockAction<Guid>("CreateGridEntitySet", args);
 
         if (!result.isSuccess || !result.data) {
-            return await alert(result.serverErrorMessage || "Unable to create entity set.");
+            return await alert(result.errorMessage || "Unable to create entity set.");
         }
 
         const finalUrl = makeUrlRedirectSafe(url.replace("{EntitySetId}", `${result.data}`));

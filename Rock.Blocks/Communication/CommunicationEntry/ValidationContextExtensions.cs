@@ -127,7 +127,7 @@ namespace Rock.Blocks.Communication
         /// <param name="validationContext">The validation context.</param>
         /// <param name="validationResult">Set to <see cref="ValidationResult.Success"/> if valid; otherwise a validation result with an error message.</param>
         /// <returns><see langword="true"/> if valid; otherwise <see langword="false"/>.</returns>
-        internal static bool IsNotEmptyCollection<TTargetItem>( this ValidationContext<IEnumerable<TTargetItem>> validationContext, out ValidationResult validationResult )
+        internal static bool IsNotEmpty<TTargetItem>( this ValidationContext<IEnumerable<TTargetItem>> validationContext, out ValidationResult validationResult )
         {
             return validationContext.WithDefaultErrorMessage( o => $"At least one {o.FriendlyName.Singularize()} is required." )
                 .Validate( o => o.Target?.Any() == true, validationContext.ErrorMessageBuilder, out validationResult );
@@ -139,7 +139,7 @@ namespace Rock.Blocks.Communication
         /// <param name="validationContext">The validation context.</param>
         /// <param name="validationResult">Set to <see cref="ValidationResult.Success"/> if valid; otherwise a validation result with an error message.</param>
         /// <returns><see langword="true"/> if valid; otherwise <see langword="false"/>.</returns>
-        internal static bool IsNotEmptyCollection<TTargetItem>( this ValidationContext<List<TTargetItem>> validationContext, out ValidationResult validationResult )
+        internal static bool IsNotEmpty<TTargetItem>( this ValidationContext<List<TTargetItem>> validationContext, out ValidationResult validationResult )
         {
             return validationContext.WithDefaultErrorMessage( o => $"At least one {o.FriendlyName.Singularize()} is required." )
                 .Validate( o => o.Target?.Any() == true, validationContext.ErrorMessageBuilder, out validationResult );
@@ -151,7 +151,7 @@ namespace Rock.Blocks.Communication
         /// <param name="validationContext">The validation context.</param>
         /// <param name="validationResult">Set to <see cref="ValidationResult.Success"/> if valid; otherwise a validation result with an error message.</param>
         /// <returns><see langword="true"/> if valid; otherwise <see langword="false"/>.</returns>
-        internal static bool IsNotEmptyGuid( this ValidationContext<Guid> validationContext, out ValidationResult validationResult )
+        internal static bool IsNotEmpty( this ValidationContext<Guid> validationContext, out ValidationResult validationResult )
         {
             return validationContext.WithDefaultErrorMessage( o => $"{o.FriendlyName} is required." )
                 .Validate( o => !o.Target.IsEmpty(), validationContext.ErrorMessageBuilder, out validationResult );

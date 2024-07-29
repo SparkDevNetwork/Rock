@@ -87,7 +87,7 @@ namespace Rock.Blocks.Communication
 
     [IntegerField( "Maximum Recipients",
         Key = AttributeKey.MaximumRecipients,
-        Description = "The maximum number of recipients allowed before communication will need to be approved",
+        Description = "The maximum number of recipients allowed before communication will need to be approved.",
         IsRequired = false,
         DefaultIntegerValue = 0,
         Order = 5 )]
@@ -99,7 +99,7 @@ namespace Rock.Blocks.Communication
         Order = 6 )]
 
     [CustomDropdownListField( "Mode",
-        "The mode to use ( 'Simple' mode will prevent users from searching/adding new people to communication).",
+        "The mode to use ('Simple' mode will prevent users from searching/adding new people to communication).",
         "Full,Simple",
         Key = AttributeKey.Mode,
         IsRequired = true,
@@ -108,7 +108,7 @@ namespace Rock.Blocks.Communication
 
     [BooleanField( "Allow CC/Bcc",
         Key = AttributeKey.AllowCcBcc,
-        Description = "Allow CC and Bcc addresses to be entered for email communications?",
+        Description = "Allow CC and BCC addresses to be entered for email communications?",
         DefaultBooleanValue = false,
         Order = 8 )]
 
@@ -133,7 +133,7 @@ namespace Rock.Blocks.Communication
 
     [BinaryFileTypeField( "Attachment Binary File Type",
         Key = AttributeKey.AttachmentBinaryFileType,
-        Description = "The FileType to use for files that are attached to an sms or email communication",
+        Description = "The FileType to use for files that are attached to an sms or email communication.",
         IsRequired = true,
         DefaultBinaryFileTypeGuid = Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT,
         Order = 12 )]
@@ -433,7 +433,7 @@ namespace Rock.Blocks.Communication
         [BlockAction( "GetMediumOptions" )]
         public BlockActionResult GetMediumOptions( Guid mediumEntityTypeGuid )
         {
-            if ( !mediumEntityTypeGuid.Validate( "Medium Type" ).IsNotEmptyGuid( out var validationResult ) )
+            if ( !mediumEntityTypeGuid.Validate( "Medium Type" ).IsNotEmpty( out var validationResult ) )
             {
                 return ActionBadRequest( validationResult.ErrorMessage );
             }
@@ -449,7 +449,7 @@ namespace Rock.Blocks.Communication
         [BlockAction( "GetRecipient" )]
         public BlockActionResult GetRecipient( Guid personAliasGuid )
         {
-            if ( !personAliasGuid.Validate( "Person" ).IsNotEmptyGuid( out var validationResult ) )
+            if ( !personAliasGuid.Validate( "Person" ).IsNotEmpty( out var validationResult ) )
             {
                 return ActionBadRequest( validationResult.ErrorMessage );
             }
@@ -483,7 +483,7 @@ namespace Rock.Blocks.Communication
         public BlockActionResult GetRecipients( CommunicationEntryGetRecipientsRequestBag bag )
         {
             if ( !bag.Validate( "Recipient Information" ).IsNotNull( out var validationResult )
-                 || !bag.PersonAliasGuids.Validate( "People" ).IsNotEmptyCollection( out validationResult ) )
+                 || !bag.PersonAliasGuids.Validate( "People" ).IsNotEmpty( out validationResult ) )
             {
                 return ActionBadRequest( validationResult.ErrorMessage );
             }
@@ -508,7 +508,7 @@ namespace Rock.Blocks.Communication
         [BlockAction( "GetTemplate" )]
         public BlockActionResult GetTemplate( Guid templateGuid )
         {
-            if ( !templateGuid.Validate( "Template" ).IsNotEmptyGuid( out var validationResult ) )
+            if ( !templateGuid.Validate( "Template" ).IsNotEmpty( out var validationResult ) )
             {
                 return ActionBadRequest( validationResult.ErrorMessage );
             }
@@ -1240,7 +1240,7 @@ namespace Rock.Blocks.Communication
                 };
             }
 
-            // Copy the communication data from the communication new/existing communication.
+            // Copy the communication data from the new/existing communication.
             var communicationBag = new CommunicationEntryCommunicationBag();
             var communicationCopyTarget = new CommunicationDetailsAdapter( communicationBag, rockContext );
             CommunicationEntryHelper.Copy( communication, communicationCopyTarget );
@@ -1629,7 +1629,7 @@ namespace Rock.Blocks.Communication
         {
             // Validation for all medium types.
             if ( !bag.Validate( "Communication Information" ).IsNotNull( out validationResult )
-                    || !bag.MediumEntityTypeGuid.Validate( "Medium Type" ).IsNotEmptyGuid( out validationResult ) )
+                    || !bag.MediumEntityTypeGuid.Validate( "Medium Type" ).IsNotEmpty( out validationResult ) )
             {
                 return false;
             }
@@ -1669,7 +1669,7 @@ namespace Rock.Blocks.Communication
         {
             // Validation for all medium types.
             if ( !bag.Validate( "Communication Information" ).IsNotNull( out validationResult )
-                    || !bag.MediumEntityTypeGuid.Validate( "Medium Type" ).IsNotEmptyGuid( out validationResult ) )
+                    || !bag.MediumEntityTypeGuid.Validate( "Medium Type" ).IsNotEmpty( out validationResult ) )
             {
                 return false;
             }
@@ -1680,7 +1680,7 @@ namespace Rock.Blocks.Communication
                 // Email
                 return bag.FromName.Validate( "From Name" ).IsNotNullOrWhiteSpace( out validationResult )
                     && bag.FromAddress.Validate( "From Address" ).IsNotNullOrWhiteSpace( out validationResult )
-                    && bag.Recipients.Validate( "Recipients" ).IsNotEmptyCollection( out validationResult )
+                    && bag.Recipients.Validate( "Recipients" ).IsNotEmpty( out validationResult )
                     && ( !bag.FutureSendDateTime.HasValue || bag.FutureSendDateTime.Value.Validate( "Schedule Send" ).IsNowOrFutureDateTime( out validationResult ) );
             }
             else if ( bag.MediumEntityTypeGuid == SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() )
@@ -1688,7 +1688,7 @@ namespace Rock.Blocks.Communication
                 // SMS
                 return bag.SmsFromSystemPhoneNumberGuid.Validate( "From Phone" ).IsNotNull( out validationResult )
                     && bag.SmsMessage.Validate( "Message" ).IsNotNullOrWhiteSpace( out validationResult )
-                    && bag.Recipients.Validate( "Recipients" ).IsNotEmptyCollection( out validationResult )
+                    && bag.Recipients.Validate( "Recipients" ).IsNotEmpty( out validationResult )
                     && ( !bag.FutureSendDateTime.HasValue || bag.FutureSendDateTime.Value.Validate( "Schedule Send" ).IsNowOrFutureDateTime( out validationResult ) );
             }
             else if ( bag.MediumEntityTypeGuid == SystemGuid.EntityType.COMMUNICATION_MEDIUM_PUSH_NOTIFICATION.AsGuid() )
@@ -1696,7 +1696,7 @@ namespace Rock.Blocks.Communication
                 // Push
                 return bag.PushTitle.Validate( "Title" ).HasMaxLength( 100, out validationResult )
                     && bag.PushMessage.Validate( "Message" ).HasMaxLength( 1024, out validationResult )
-                    && bag.Recipients.Validate( "Recipients" ).IsNotEmptyCollection( out validationResult )
+                    && bag.Recipients.Validate( "Recipients" ).IsNotEmpty( out validationResult )
                     && ( !bag.FutureSendDateTime.HasValue || bag.FutureSendDateTime.Value.Validate( "Schedule Send" ).IsNowOrFutureDateTime( out validationResult ) );
             }
             else
@@ -1714,7 +1714,7 @@ namespace Rock.Blocks.Communication
         {
             // Validation for all medium types.
             if ( !bag.Validate( "Communication Information" ).IsNotNull( out validationResult )
-                    || !bag.MediumEntityTypeGuid.Validate( "Medium Type" ).IsNotEmptyGuid( out validationResult ) )
+                    || !bag.MediumEntityTypeGuid.Validate( "Medium Type" ).IsNotEmpty( out validationResult ) )
             {
                 return false;
             }
@@ -1725,7 +1725,7 @@ namespace Rock.Blocks.Communication
                 // Email
                 return bag.FromName.Validate( "From Name" ).IsNotNullOrWhiteSpace( out validationResult )
                     && bag.FromAddress.Validate( "From Address" ).IsNotNullOrWhiteSpace( out validationResult )
-                    && bag.Recipients.Validate( "Recipients" ).IsNotEmptyCollection( out validationResult )
+                    && bag.Recipients.Validate( "Recipients" ).IsNotEmpty( out validationResult )
                     && ( !bag.FutureSendDateTime.HasValue || bag.FutureSendDateTime.Value.Validate( "Schedule Send" ).IsNowOrFutureDateTime( out validationResult ) );
             }
             else if ( bag.MediumEntityTypeGuid == SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() )
@@ -1733,7 +1733,7 @@ namespace Rock.Blocks.Communication
                 // SMS
                 return bag.SmsFromSystemPhoneNumberGuid.Validate( "From Phone" ).IsNotNull( out validationResult )
                     && bag.SmsMessage.Validate( "Message" ).IsNotNullOrWhiteSpace( out validationResult )
-                    && bag.Recipients.Validate( "Recipients" ).IsNotEmptyCollection( out validationResult )
+                    && bag.Recipients.Validate( "Recipients" ).IsNotEmpty( out validationResult )
                     && ( !bag.FutureSendDateTime.HasValue || bag.FutureSendDateTime.Value.Validate( "Schedule Send" ).IsNowOrFutureDateTime( out validationResult ) );
             }
             else if ( bag.MediumEntityTypeGuid == SystemGuid.EntityType.COMMUNICATION_MEDIUM_PUSH_NOTIFICATION.AsGuid() )
@@ -1741,7 +1741,7 @@ namespace Rock.Blocks.Communication
                 // Push
                 return bag.PushTitle.Validate( "Title" ).HasMaxLength( 100, out validationResult )
                     && bag.PushMessage.Validate( "Message" ).HasMaxLength( 1024, out validationResult )
-                    && bag.Recipients.Validate( "Recipients" ).IsNotEmptyCollection( out validationResult )
+                    && bag.Recipients.Validate( "Recipients" ).IsNotEmpty( out validationResult )
                     && ( !bag.FutureSendDateTime.HasValue || bag.FutureSendDateTime.Value.Validate( "Schedule Send" ).IsNowOrFutureDateTime( out validationResult ) );
             }
             else
@@ -1759,7 +1759,7 @@ namespace Rock.Blocks.Communication
         {
             return this.AreEmailMetricsReminderOptionsShown.Validate( "Email Metrics Reminder Feature" ).WithErrorMessage( v => $"{v.FriendlyName} is not enabled." ).IsTrue( out validationResult )
                 && bag.Validate( "Save Metrics Reminder Information" ).IsNotNull( out validationResult )
-                && bag.CommunicationGuid.Validate( "Communication" ).IsNotEmptyGuid( out validationResult )
+                && bag.CommunicationGuid.Validate( "Communication" ).IsNotEmpty( out validationResult )
                 && bag.DaysUntilReminder.Validate( "Days Until Reminder" ).IsGreaterThanOrEqualTo( 1, out validationResult );
         }
 
@@ -1769,7 +1769,7 @@ namespace Rock.Blocks.Communication
         private bool IsCancelMetricsReminderRequestValid( Guid communicationGuid, out ValidationResult validationResult )
         {
             // The Email Metrics Reminder feature does not need to be enabled to cancel an email reminder.
-            return communicationGuid.Validate( "Communication" ).IsNotEmptyGuid( out validationResult );
+            return communicationGuid.Validate( "Communication" ).IsNotEmpty( out validationResult );
         }
 
         #endregion

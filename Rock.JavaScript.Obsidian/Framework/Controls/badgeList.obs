@@ -91,7 +91,7 @@
             });
         }
         else {
-            console.error(`Error loading badges: ${result.serverErrorMessage || "Unknown error"}`);
+            console.error(`Error loading badges: ${result.errorMessage || "Unknown error"}`);
             badges.value = [];
         }
     }

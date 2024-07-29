@@ -147,7 +147,7 @@
 
     //#endregion
 
-    // Provide the readonly, reactive breakpoint and breakpoint helpert to child components.
+    // Provide the readonly, reactive breakpoint and breakpoint helper to child components.
     provideBreakpointHelper(computed(() => breakpointHelper.value));
 
     //#region Hooks

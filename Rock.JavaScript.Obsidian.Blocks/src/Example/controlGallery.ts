@@ -8404,51 +8404,13 @@ export default defineComponent({
         Panel,
         SectionHeader,
         ...controlGalleryComponents,
-        ...templateGalleryComponents,
-        TextBox
+        ...templateGalleryComponents
     },
 
     setup() {
         onConfigurationValuesChanged(useReloadBlock());
 
         const currentComponent = ref<Component>(Object.values(controlGalleryComponents)[0]);
-        const search = ref<string>();
-        const searchRegex = computed<RegExp | null>(() => {
-            const searchValue = search.value;
-            if (!searchValue) {
-                return null;
-            }
-
-            try {
-                // Matches regex strings in the form /<regex>/<flags>
-                const match = searchValue.match(/\/(.+)\/(.*)/);
-
-                if (match && match.length) {
-                    return new RegExp(match[1], match[2] || "i");
-                }
-            }
-            catch {
-                // The search string was not regex.
-            }
-
-            return new RegExp(searchValue, "i");
-        });
-        const filteredControlGalleryComponents = computed(() => {
-            const tester = searchRegex.value;
-            if (!tester) {
-                return controlGalleryComponents;
-            }
-
-            const filtered: Record<string, Component> = {};
-
-            for (const key of Object.keys(controlGalleryComponents)) {
-                if (key.match(tester)) {
-                    filtered[key] = controlGalleryComponents[key];
-                }
-            }
-
-            return filtered;
-        });
 
         function getComponentFromHash(): void {
             const hashComponent = new URL(document.URL).hash.replace("#", "");
@@ -8473,9 +8435,7 @@ export default defineComponent({
             currentComponent,
             convertComponentName,
             controlGalleryComponents,
-            templateGalleryComponents,
-            search,
-            filteredControlGalleryComponents
+            templateGalleryComponents
         };
     },
 
@@ -8512,11 +8472,10 @@ export default defineComponent({
         <div class="panel-flex-fill-body flex-row">
 
             <div class="gallerySidebar well">
-                <TextBox v-model="search" label="Search" />
                 <h4>Components</h4>
 
                 <ul class="list-unstyled mb-0">
-                    <li v-for="(component, key) in filteredControlGalleryComponents" :key="key" :class="{current: currentComponent.name === component.name}">
+                    <li v-for="(component, key) in controlGalleryComponents" :key="key" :class="{current: currentComponent.name === component.name}">
                         <a :href="'#' + key" @click="currentComponent = component">{{ convertComponentName(component.name) }}</a>
                     </li>
                 </ul>
