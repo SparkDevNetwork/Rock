@@ -150,7 +150,7 @@ namespace Rock.Utility
 
             if ( System.Web.Hosting.HostingEnvironment.VirtualPathProvider != null )
             {
-                string baseUrl = System.Web.VirtualPathUtility.ToAbsolute( "~/" );
+                string baseUrl = Rock.Configuration.RockApp.Current.HostingSettings.VirtualRootPath;
                 if (fileIdentifierParameter.StartsWith("Assets/"))
                 {
                     // If it's a relative path, just append it to the base URL
@@ -167,11 +167,11 @@ namespace Rock.Utility
                 // The hosting environment is not configured to resolve the file path.
                 if ( fileIdentifierParameter.StartsWith( "Assets/" ) )
                 {
-                    urlBuilder.Append( $"~/" + fileIdentifierParameter );
+                    urlBuilder.Append( $"/" + fileIdentifierParameter );
                 }
                 else
                 {
-                    urlBuilder.Append( $"~/GetImage.ashx?{fileIdentifierParameter}" );
+                    urlBuilder.Append( $"/GetImage.ashx?{fileIdentifierParameter}" );
                 }
 
             }

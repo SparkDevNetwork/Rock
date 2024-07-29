@@ -306,7 +306,7 @@ namespace Rock.Model
         {
             var photoUrl = new StringBuilder();
 
-            string baseUrl = VirtualPathUtility.ToAbsolute( "~/" );
+            string baseUrl = Rock.Configuration.RockApp.Current.HostingSettings.VirtualRootPath;
             string altText = personPhotoImageTagArgs.AltText;
             string className = personPhotoImageTagArgs.ClassName;
             int? photoId = personPhotoImageTagArgs.PhotoId;
