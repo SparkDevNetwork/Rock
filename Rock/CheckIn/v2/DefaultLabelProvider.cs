@@ -164,7 +164,7 @@ namespace Rock.CheckIn.v2
                 // Add any print failure messages.
                 if ( printErrorMessages != null )
                 {
-                    foreach ( var msg in errorMessages )
+                    foreach ( var msg in printErrorMessages )
                     {
                         messageCallback( msg );
                     }

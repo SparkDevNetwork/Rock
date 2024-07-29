@@ -13,6 +13,10 @@
                 <AttendanceCard v-for="attendance in aggregateAttendance"
                                 :attendance="attendance" />
             </div>
+
+            <div class="messages">
+                <div class="message" v-for="msg in session.messages" v-text="msg"></div>
+            </div>
         </MainPanel>
     </div>
 </template>

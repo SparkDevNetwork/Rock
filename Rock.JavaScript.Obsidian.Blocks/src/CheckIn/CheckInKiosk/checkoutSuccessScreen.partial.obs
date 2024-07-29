@@ -8,6 +8,10 @@
                 {{ attendance.location?.name }} at
                 {{ attendance.schedule?.name }}.
             </div>
+
+            <div class="messages">
+                <div class="message" v-for="msg in session.messages" v-text="msg"></div>
+            </div>
         </MainPanel>
     </div>
 </template>
