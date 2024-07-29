@@ -1024,7 +1024,7 @@ namespace Rock.Blocks.Security
             // to be set in the AccountEntryPersonInfoBag.
             if ( currentPerson == null )
             {
-                currentPerson = new Person();
+                currentPerson = new Person() { Email = passwordlessLoginState?.Email };
             }
 
             if ( showPhoneNumbers )
