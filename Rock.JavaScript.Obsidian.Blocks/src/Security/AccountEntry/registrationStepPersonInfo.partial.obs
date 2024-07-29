@@ -3,27 +3,32 @@
     <div>
         <fieldset>
             <legend>Your Information</legend>
-            <TextBox v-model="internalFirstName"
-                     :disabled="disabled"
-                     label="First Name"
-                     rules="required" />
-            <TextBox v-model="internalLastName"
-                     :disabled="disabled"
-                     label="Last Name"
-                     rules="required" />
-            <EmailBox v-if="!isEmailHidden"
-                      v-model="internalEmail"
-                      :disabled="disabled"
-                      label="Email"
-                      rules="required" />
-            <GenderPicker v-if="isGenderPickerShown"
-                          v-model="internalGender"
-                          :disabled="disabled"
-                          label="Gender" />
-            <BirthdayPicker v-model="internalBirthday"
-                            :disabled="disabled"
-                            label="Birthday"
-                            rules="required" />
+            <TextBox
+                v-model="internalFirstName"
+                :disabled="disabled"
+                label="First Name"
+                rules="required" />
+            <TextBox
+                v-model="internalLastName"
+                :disabled="disabled"
+                label="Last Name"
+                rules="required" />
+            <EmailBox
+                v-if="!isEmailHidden"
+                v-model="internalEmail"
+                :disabled="disabled"
+                label="Email"
+                rules="required" />
+            <GenderDropDownList
+                v-if="isGenderPickerShown"
+                v-model="internalGender"
+                :disabled="disabled" />
+            <BirthdayPicker
+                v-if="isBirthDateShown"
+                v-model="internalBirthday"
+                :disabled="disabled"
+                label="Birthday"
+                :rules="birthdayRules" />
         </fieldset>
 
         <fieldset v-if="internalArePhoneNumbersShown">
@@ -50,7 +55,8 @@
             @update:modelValue="onCampusChanged"
             :campusStatusFilter="campusStatusFilter"
             :campusTypeFilter="campusTypeFilter"
-            :showBlankItem="true" />
+            :showBlankItem="true"
+            :rules="campusRules" />
 
         <AttributeValuesContainer v-if="internalAttributes"
                                   v-model="internalAttributeValues"
@@ -112,8 +118,10 @@
     const isAddressShown = computed(() => props.config.isAddressShown);
     const isAddressRequired = computed(() => props.config.isAddressRequired);
     const isCampusPickerShown = computed(() => props.config.isCampusPickerShown);
+    const isCampusRequired = computed(() => props.config.isCampusRequired);
     const isEmailHidden = computed(() => props.config.isEmailHidden);
     const isGenderPickerShown = computed(() => props.config.isGenderPickerShown);
+    const isBirthDateShown = computed(() => props.config.isBirthDateShown);
     const campusStatusFilter = computed(() => props.config.campusStatusFilter ?? []);
     const campusTypeFilter = computed(() => props.config.campusTypeFilter ?? []);
 
@@ -181,6 +189,8 @@
     });
 
     const addressRules = computed<string>(() => isAddressRequired.value ? "required" : "");
+    const campusRules = computed<string>(() => isCampusRequired.value ? "required" : "");
+    const birthdayRules = computed<string>(() => isBirthDateShown.value ? "required" : "");
 
     const internalArePhoneNumbersShown = computed<boolean>(() => arePhoneNumbersShown.value && internalPhoneNumbers.value.some(p => !p.isHidden));
 

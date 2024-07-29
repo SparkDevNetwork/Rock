@@ -125,7 +125,7 @@ namespace Rock.Rest.v2
                 .Select( a => new TreeItemBag
                 {
                     Value = a.Guid.ToString(),
-                    Text = HttpUtility.HtmlEncode( options.DisplayPublicName ? a.PublicName : a.Name ),
+                    Text = options.DisplayPublicName ? a.PublicName : a.Name,
                     IsActive = a.IsActive,
                     IconCssClass = "fa fa-file-o"
                 } ).ToList();
@@ -255,7 +255,7 @@ namespace Rock.Rest.v2
                     .Select( a => new ListItemBag
                     {
                         Value = a.Guid.ToString(),
-                        Text = HttpUtility.HtmlEncode( ( options.DisplayPublicName ? a.PublicName : a.Name ) + ( a.GlCode.IsNotNullOrWhiteSpace() ? $" ({a.GlCode})" : "" ) ),
+                        Text = ( options.DisplayPublicName ? a.PublicName : a.Name ) + ( a.GlCode.IsNotNullOrWhiteSpace() ? $" ({a.GlCode})" : "" ),
                         Category = financialAccountService.GetDelimitedAccountHierarchy( a, FinancialAccountService.AccountHierarchyDirection.CurrentAccountToParent )
                     } )
                     .ToList();
@@ -295,7 +295,7 @@ namespace Rock.Rest.v2
                     .Select( a => new ListItemBag
                     {
                         Value = a.Guid.ToString(),
-                        Text = HttpUtility.HtmlEncode( options.DisplayPublicName ? a.PublicName : a.Name ),
+                        Text = options.DisplayPublicName ? a.PublicName : a.Name,
                         Category = financialAccountService.GetDelimitedAccountHierarchy( a, FinancialAccountService.AccountHierarchyDirection.CurrentAccountToParent )
                     } )
                     .ToList();

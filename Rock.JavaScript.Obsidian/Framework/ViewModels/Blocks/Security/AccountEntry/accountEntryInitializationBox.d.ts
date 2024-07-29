@@ -67,8 +67,14 @@ export type AccountEntryInitializationBox = {
     /** Gets or sets a value indicating whether the address fields are shown. */
     isAddressShown: boolean;
 
+    /** Gets or sets a value indicating whether the birth date is shown. */
+    isBirthDateShown: boolean;
+
     /** Indicating whether the campus picker is shown. */
     isCampusPickerShown: boolean;
+
+    /** Gets or sets a value indicating whether campus is required. */
+    isCampusRequired: boolean;
 
     /** Gets or sets a value indicating whether the email field is hidden. */
     isEmailHidden: boolean;
