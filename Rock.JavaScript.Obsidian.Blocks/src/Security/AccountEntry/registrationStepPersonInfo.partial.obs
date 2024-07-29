@@ -19,7 +19,7 @@
                 :disabled="disabled"
                 label="Email"
                 rules="required" />
-            <GenderDropDownList
+            <GenderPicker
                 v-if="isGenderPickerShown"
                 v-model="internalGender"
                 :disabled="disabled" />
