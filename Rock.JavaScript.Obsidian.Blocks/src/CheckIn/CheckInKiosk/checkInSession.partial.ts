@@ -144,6 +144,12 @@ export class CheckInSession {
     /** The attendance records that have been sent to the server and saved. */
     public readonly attendances: RecordedAttendanceBag[] = [];
 
+    /**
+     * Any messages that should be displayed. This is currently only used
+     * by the check-in and check-out success screens.
+     */
+    public readonly messages: string[] = [];
+
     /** `true` if the current operation is for checkout. */
     public readonly isCheckoutAction: boolean = false;
 
@@ -218,6 +224,7 @@ export class CheckInSession {
             this.possibleSchedules = configurationOrSession.possibleSchedules;
             this.allAttendeeSelections = clone(configurationOrSession.allAttendeeSelections);
             this.attendances = clone(configurationOrSession.attendances);
+            this.messages = clone(configurationOrSession.messages);
             this.isCheckoutAction = configurationOrSession.isCheckoutAction;
             this.checkedOutAttendances = configurationOrSession.checkedOutAttendances;
 
@@ -384,7 +391,8 @@ export class CheckInSession {
 
         return new CheckInSession(this, {
             attendances,
-            allAttendeeSelections: []
+            allAttendeeSelections: [],
+            messages: response.data.messages ?? []
         });
     }
 
@@ -528,7 +536,8 @@ export class CheckInSession {
         }
 
         return new CheckInSession(this, {
-            checkedOutAttendances: [...this.checkedOutAttendances, ...response.data.attendances]
+            checkedOutAttendances: [...this.checkedOutAttendances, ...response.data.attendances],
+            messages: response.data.messages ?? []
         });
     }
 
