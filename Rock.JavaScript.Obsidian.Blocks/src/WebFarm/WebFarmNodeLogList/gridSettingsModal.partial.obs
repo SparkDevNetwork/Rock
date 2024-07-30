@@ -8,44 +8,16 @@
 
         <div class="row">
             <div class="col-md-4">
-                <TextBox v-model="nodeName"
-                         label="Node Name" />
-            </div>
-
-            <div class="col-md-4">
-                <DropDownList v-model="severity"
-                              :items="severityTypes"
-                              label="Severity" />
-            </div>
-
-            <div class="col-md-4">
-                <DropDownList v-model="eventType"
-                              :items="eventTypes"
-                              label="Event Type" />
-            </div>
-
-            <div class="col-md-4">
                 <SlidingDateRangePicker v-model="dateRange"
                                         label="Date"
                                         :enabledSlidingDateRangeUnits="[RangeType.Previous, RangeType.Last, RangeType.Current, RangeType.Next, RangeType.Upcoming, RangeType.DateRange]"
                                         :enabledTimeUnits="[TimeUnit.Hour, TimeUnit.Day, TimeUnit.Week, TimeUnit.Month, TimeUnit.Year]" />
-            </div>
-
-            <div class="col-md-4">
-                <TextBox v-model="writerNodeName"
-                         label="Writer Node Name" />
-            </div>
-
-            <div class="col-md-4">
-                <TextBox v-model="text"
-                         label="Details" />
             </div>
         </div>
     </Modal>
 </template>
 
 <script setup lang="ts">
-    import TextBox from "@Obsidian/Controls/textBox.obs";
     import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
     import { RangeType, SlidingDateRange, TimeUnit, slidingDateRangeToString, parseSlidingDateRangeString } from "@Obsidian/Utility/slidingDateRange";
     import Modal from "@Obsidian/Controls/modal.obs";
@@ -54,8 +26,6 @@
     import { GridSettingsOptions } from "./types.partial";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { deepEqual } from "@Obsidian/Utility/util";
-    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
         modelValue: {
@@ -67,16 +37,6 @@
             type: Boolean as PropType<boolean>,
             required: true
         },
-
-        severityTypes: {
-            type: Object as PropType<ListItemBag[]>,
-            required: true,
-        },
-
-        eventTypes: {
-            type: Object as PropType<ListItemBag[]>,
-            required: true,
-        },
     });
 
     const emit = defineEmits<{
@@ -86,21 +46,11 @@
     }>();
 
     const dateRange = ref(parseSlidingDateRangeString(props.modelValue.dateRange ?? ""));
-    const nodeName = ref(props.modelValue.nodeName ?? "");
-    const writerNodeName = ref(props.modelValue.writerNodeName ?? "");
-    const severity = ref(props.modelValue.severity ?? "");
-    const eventType = ref(props.modelValue.eventType ?? "");
-    const text = ref(props.modelValue.text ?? "");
     const isVisible = useVModelPassthrough(props, "visible", emit);
 
     function onSave(): void {
         const value: GridSettingsOptions = {
             dateRange: dateRange.value ? slidingDateRangeToString(dateRange.value as SlidingDateRange) : "",
-            nodeName: nodeName.value,
-            writerNodeName: writerNodeName.value,
-            severity: severity.value,
-            eventType: eventType.value,
-            text: text.value
         };
 
         if (!deepEqual(value, props.modelValue, true)) {
@@ -112,11 +62,6 @@
 
     watch(() => props.modelValue, () => {
         dateRange.value = parseSlidingDateRangeString(props.modelValue.dateRange ?? "");
-        nodeName.value = props.modelValue.nodeName ?? "";
-        writerNodeName.value = props.modelValue.writerNodeName ?? "";
-        severity.value = props.modelValue.severity ?? "";
-        eventType.value = props.modelValue.eventType ?? "";
-        text.value = props.modelValue.text ?? "";
     });
 
     watch(isVisible, () => {
