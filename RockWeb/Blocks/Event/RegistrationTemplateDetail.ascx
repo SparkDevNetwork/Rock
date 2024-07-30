@@ -153,7 +153,7 @@
                                         Help="The cost per registrant." />
                                 </div>
                                 <div class="col-md-6">
-                                    <Rock:RockCheckBox ID="cbEnablePaymentPlans" runat="server" Label="Enable Payment Plans" AutoPostBack="true" OnCheckedChanged="cbEnablePaymentPlans_CheckedChanged" Enabled="false"
+                                    <Rock:RockCheckBox ID="cbEnablePaymentPlans" runat="server" Label="Enable Payment Plans" AutoPostBack="true" OnCheckedChanged="cbEnablePaymentPlans_CheckedChanged" Enabled="false" Visible="false"
                                         Help="Determines if individuals should be able to pay their registration costs in multiple, scheduled installments. Not all payment gateways support this feature." />
                                     <Rock:RockCheckBoxList ID="cblSelectablePaymentFrequencies" runat="server" Label="Selectable Payment Frequencies" Visible="false"
                                         Help="The payment frequencies that the individual can select from." RepeatDirection="Horizontal" />
