@@ -17,28 +17,8 @@
 
 export const enum PreferenceKey {
     FilterDateRange = "filter-date-range",
-
-    FilterNodeName = "filter-node-name",
-
-    FilterWriterNodeName = "filter-writer-node-name",
-
-    FilterSeverity = "filter-severity",
-
-    FilterEventType = "filter-event-type",
-
-    FilterText = "filter-text"
 }
 
 export type GridSettingsOptions = {
     dateRange?: string | null;
-
-    nodeName?: string | null;
-
-    writerNodeName?: string | null;
-
-    severity: string | null;
-
-    eventType: string | null;
-
-    text: string | null;
 };
