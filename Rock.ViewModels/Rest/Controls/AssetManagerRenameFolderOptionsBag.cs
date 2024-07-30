@@ -32,5 +32,10 @@ namespace Rock.ViewModels.Rest.Controls
         /// New name for the folder
         /// </summary>
         public string NewFolderName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the security grant token.
+        /// </summary>
+        public string SecurityGrantToken { get; set; }
     }
 }

@@ -19,8 +19,8 @@ using System.ComponentModel;
 
 using Rock.Attribute;
 using Rock.Model;
+using Rock.Security.SecurityGrantRules;
 using Rock.ViewModels.Blocks.Cms.AssetManager;
-using Rock.Web;
 
 namespace Rock.Blocks.Cms
 {
@@ -154,29 +154,34 @@ namespace Rock.Blocks.Cms
                 Height = GetAttributeValue( AttributeKey.Height ),
                 RootFolder = Rock.Security.Encryption.EncryptString( GetAttributeValue( AttributeKey.RootFolder ) ),
                 BrowseMode = GetAttributeValue( AttributeKey.BrowseMode ),
-                FileEditorPage = GetUrlFromLinkedPage( GetAttributeValue( AttributeKey.FileEditorPage ) ),
+                FileEditorPage = this.GetLinkedPageUrl( GetAttributeValue( AttributeKey.FileEditorPage ) ),
                 EnableZipUploader = GetAttributeValue( AttributeKey.ZipUploaderEnabled ).AsBoolean(),
+                SecurityGrantToken = GetSecurityGrantToken()
             };
 
             return box;
         }
 
-        /// <summary>
-        /// Builds and returns the URL for a linked <see cref="Rock.Model.Page"/> from a "linked page attribute".
-        /// </summary>
-        /// <param name="pageLink">The linked <see cref="Rock.Model.Page"/> in the format "Page.Guid,PageRoute.Guid" or "Page.Guid" if no route.</param>
-        /// <returns>A <see cref="System.String"/> representing the URL to the linked <see cref="Rock.Model.Page"/>.</returns>
-        private string GetUrlFromLinkedPage( string pageLink )
+        /// <inheritdoc/>
+        protected override string RenewSecurityGrantToken()
         {
-            var pageReference = new PageReference( pageLink, null );
-            if ( pageReference.PageId > 0 )
-            {
-                return pageReference.BuildUrl();
-            }
-            else
-            {
-                return string.Empty;
-            }
+            return GetSecurityGrantToken();
+        }
+
+        /// <summary>
+        /// Gets the security grant token that will be used by UI controls on
+        /// this block to ensure they have the proper permissions.
+        /// </summary>
+        /// <returns>A string that represents the security grant token.</string>
+        private string GetSecurityGrantToken()
+        {
+            var securityGrant = new Rock.Security.SecurityGrant();
+
+            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.VIEW ) );
+            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.EDIT ) );
+            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.DELETE ) );
+
+            return securityGrant.ToToken();
         }
 
         #endregion

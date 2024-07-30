@@ -31,4 +31,7 @@ export type AssetManagerExtractFileOptionsBag = {
 
     /** The path to the file that is to be extracted. */
     fileName?: string | null;
+
+    /** Gets or sets the security grant token. */
+    securityGrantToken?: string | null;
 };

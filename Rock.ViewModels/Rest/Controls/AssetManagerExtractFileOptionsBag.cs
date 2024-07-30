@@ -32,5 +32,10 @@ namespace Rock.ViewModels.Rest.Controls
         /// Encrypted path to the root of where the file is located.
         /// </summary>
         public string EncryptedRoot { get; set; }
+
+        /// <summary>
+        /// Gets or sets the security grant token.
+        /// </summary>
+        public string SecurityGrantToken { get; set; }
     }
 }

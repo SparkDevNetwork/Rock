@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+/** Contains extra configuration details for the Asset Manager block. */
 export type AssetManagerOptionsBag = {
     /** Select 'image' to show only image files. Select 'doc' to show all files. */
     browseMode?: string | null;
@@ -45,6 +46,9 @@ export type AssetManagerOptionsBag = {
 
     /** The root file manager folder to browse; encrypted */
     rootFolder?: string | null;
+
+    /** Gets or sets the security grant token. */
+    securityGrantToken?: string | null;
 
     /** Title shown at the top of the block */
     title?: string | null;

@@ -34,4 +34,7 @@ export type AssetManagerRenameFileOptionsBag = {
 
     /** The new name of the file. */
     newFileName?: string | null;
+
+    /** Gets or sets the security grant token. */
+    securityGrantToken?: string | null;
 };

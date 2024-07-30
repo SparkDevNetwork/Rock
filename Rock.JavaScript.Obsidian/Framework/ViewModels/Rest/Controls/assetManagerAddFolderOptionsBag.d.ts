@@ -31,4 +31,7 @@ export type AssetManagerAddFolderOptionsBag = {
 
     /** Name of the folder to be added. */
     newFolderName?: string | null;
+
+    /** Gets or sets the security grant token. */
+    securityGrantToken?: string | null;
 };

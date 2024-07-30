@@ -722,7 +722,6 @@
     <Compile Include="Rest\Controls\AssetManagerTreeItemBag.cs" />
     <Compile Include="Rest\Controls\AssetManagerGetFilesResultsBag.cs" />
     <Compile Include="Rest\Controls\AssetManagerGetFilesOptionsBag.cs" />
-    <Compile Include="Rest\Controls\AssetManagerAsset.cs" />
     <Compile Include="Rest\Controls\AssetManagerGetRootFoldersOptionsBag.cs" />
     <Compile Include="Rest\Controls\AssetManagerRenameFileOptionsBag.cs" />
     <Compile Include="Rest\Controls\AssetManagerDownloadFileOptionsBag.cs" />

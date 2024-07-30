@@ -29,6 +29,9 @@ export type AssetManagerMoveFolderOptionsBag = {
     /** A key that contains all the information needed to get the full asset that is being acted upon */
     assetFolderId?: string | null;
 
+    /** Gets or sets the security grant token. */
+    securityGrantToken?: string | null;
+
     /** The folder you want to move the selected folder into */
     targetFolder?: string | null;
 };

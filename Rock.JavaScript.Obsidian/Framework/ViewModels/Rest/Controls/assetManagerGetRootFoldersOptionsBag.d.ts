@@ -41,6 +41,9 @@ export type AssetManagerGetRootFoldersOptionsBag = {
     /** Root folder for the file manager (encrypted). */
     rootFolder?: string | null;
 
+    /** Gets or sets the security grant token. */
+    securityGrantToken?: string | null;
+
     /**
      * The key of the currently selected folder. In order for the client to
      * be able to use this key, we need to have the encrypted root of this

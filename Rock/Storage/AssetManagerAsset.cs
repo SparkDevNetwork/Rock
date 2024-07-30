@@ -18,10 +18,10 @@
 
 using System.Text.RegularExpressions;
 
-namespace Rock.ViewModels.Rest.Controls
+namespace Rock.Storage
 {
     /// <summary>
-    /// TODO
+    /// A simple model for the AssetManager control, representing an asset and each part of its path.
     /// </summary>
     public class AssetManagerAsset
     {

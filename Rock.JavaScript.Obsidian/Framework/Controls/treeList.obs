@@ -3,7 +3,7 @@
     <div style="overflow-x: hidden; max-width: 100%;">
         <ul class="rocktree">
             <TreeListItem v-for="child in internalItems"
-                          :key="child.value ?? ''"
+                          :key="child.value ?? undefined"
                           :item="child"
                           v-bind="{
                               modelValue,
@@ -56,7 +56,8 @@
 
         /**
          * List of items (by their `value` property) that should be expanded when the tree list is first loaded
-         * (after root is loaded).
+         * (after root is loaded). This allows us to auto-expand more than just the selected items and their
+         * parents.
          */
         initiallyExpanded: {
             type: Array as PropType<string[]>,
