@@ -318,17 +318,41 @@ namespace RockWeb
             {
                 throw new Rock.Web.FileUploadException( "Binary file type must be specified.", System.Net.HttpStatusCode.Forbidden );
             }
-            
+
             if ( !binaryFileType.IsAuthorized( Authorization.EDIT, currentPerson ) )
             {
                 throw new Rock.Web.FileUploadException( "Not authorized to upload this type of file.", System.Net.HttpStatusCode.Forbidden );
             }
 
-            if ( binaryFileType.MaxFileSizeBytes != null && uploadedFile.ContentLength > binaryFileType.MaxFileSizeBytes )
+            if ( binaryFileType.PreferredRequired )
             {
-                throw new Rock.Web.FileUploadException(
-                    $"The maximum file size for file type \"{binaryFileType.Name}\" is {Rock.Utility.FileUtilities.FileSizeSuffixFormatter( binaryFileType.MaxFileSizeBytes.Value )}",
-                    System.Net.HttpStatusCode.Forbidden );
+                // Check Max Size
+                if ( binaryFileType.MaxFileSizeBytes.HasValue && uploadedFile.ContentLength > binaryFileType.MaxFileSizeBytes.Value )
+                {
+                    throw new Rock.Web.FileUploadException(
+                        $"The maximum file size for file type \"{binaryFileType.Name}\" is {Rock.Utility.FileUtilities.FileSizeSuffixFormatter( binaryFileType.MaxFileSizeBytes.Value )}",
+                        System.Net.HttpStatusCode.Forbidden );
+                }
+
+                // Check Max Width/Height for images
+                if ( uploadedFile.ContentType.StartsWith( "image/" ) )
+                {
+                    using ( var image = System.Drawing.Image.FromStream( uploadedFile.InputStream ) )
+                    {
+                        if ( binaryFileType.MaxWidth.HasValue && binaryFileType.MaxWidth > 0 && image.Width > binaryFileType.MaxWidth.Value )
+                        {
+                            throw new Rock.Web.FileUploadException(
+                                $"The maximum width for file type \"{binaryFileType.Name}\" is {binaryFileType.MaxWidth.Value} pixels", System.Net.HttpStatusCode.Forbidden
+                                );
+                        }
+                        if ( binaryFileType.MaxHeight.HasValue && binaryFileType.MaxHeight > 0 && image.Height > binaryFileType.MaxHeight.Value )
+                        {
+                            throw new Rock.Web.FileUploadException(
+                               $"The maximum height for file type \"{binaryFileType.Name}\" is {binaryFileType.MaxHeight.Value} pixels", System.Net.HttpStatusCode.Forbidden
+                               );
+                        }
+                    }
+                }
             }
 
             char[] illegalCharacters = new char[] { '<', '>', ':', '"', '/', '\\', '|', '?', '*' };
@@ -473,9 +497,9 @@ namespace RockWeb
                 7/27/2022 - SMC
                 Moved to ScrubFileName() for consistent naming of all uploaded files.
             */
-            scrubbedFileName = scrubbedFileName.Replace(" ", "_");
+            scrubbedFileName = scrubbedFileName.Replace( " ", "_" );
 
-             // Remove Illegal Filename Characters
+            // Remove Illegal Filename Characters
             char[] illegalChars = { '#', '(', ')', '&', '%' };
             scrubbedFileName = string.Concat( scrubbedFileName.Split( illegalChars ) );
 
@@ -492,5 +516,6 @@ namespace RockWeb
             // Scrub characters identified by .NET as invalid.
             return Regex.Replace( untrustedFilePath.Trim(), "[" + Regex.Escape( string.Concat( Path.GetInvalidPathChars() ) ) + "]", string.Empty, RegexOptions.CultureInvariant );
         }
+
     }
 }
