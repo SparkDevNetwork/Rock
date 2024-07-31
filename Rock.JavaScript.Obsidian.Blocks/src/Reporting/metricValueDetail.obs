@@ -158,8 +158,6 @@
             box: metricValueEditBag.value
         });
 
-        console.log(result);
-
         if (result.isSuccess && result.data) {
             if (result.statusCode === 200 && typeof result.data === "string") {
                 window.location.href = makeUrlRedirectSafe(result.data);

@@ -335,7 +335,7 @@ namespace Rock.Blocks.Cms
                 EnableRss = entity.EnableRss,
                 IconCssClass = entity.IconCssClass,
                 IsIndexEnabled = entity.IsIndexEnabled,
-                IsStructuredContent = entity.IsStructuredContent,
+                IsStructuredContent = entity.Id == 0 || entity.IsStructuredContent,
                 IsTaggingEnabled = entity.IsTaggingEnabled,
                 ItemsManuallyOrdered = entity.ItemsManuallyOrdered,
                 ItemTagCategory = entity.ItemTagCategory.ToListItemBag(),
@@ -344,7 +344,7 @@ namespace Rock.Blocks.Cms
                 RequiresApproval = entity.RequiresApproval,
                 RootImageDirectory = entity.RootImageDirectory,
                 StructuredContentToolValue = entity.StructuredContentToolValue.ToListItemBag(),
-                TimeToLive = entity.TimeToLive
+                TimeToLive = entity.TimeToLive.ToString()
             };
         }
 
@@ -537,7 +537,7 @@ namespace Rock.Blocks.Cms
                 () => entity.StructuredContentToolValueId = box.Entity.StructuredContentToolValue.GetEntityId<DefinedValue>( rockContext ) );
 
             box.IfValidProperty( nameof( box.Entity.TimeToLive ),
-                () => entity.TimeToLive = box.Entity.TimeToLive );
+                () => entity.TimeToLive = box.Entity.TimeToLive.AsIntegerOrNull() );
 
             box.IfValidProperty( nameof( box.Entity.Settings ),
                 () => UpdateContentChannelSettings( box.Entity, entity ) );
