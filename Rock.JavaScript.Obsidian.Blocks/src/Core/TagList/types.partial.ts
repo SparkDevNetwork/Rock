@@ -24,8 +24,6 @@ export const enum NavigationUrlKey {
 export const enum PreferenceKey {
     FilterCategory = "filter-category",
 
-    FilterEntityName = "filter-entity-name",
-
     FilterScope = "filter-scope",
 
     FilterOwner = "filter-owner"
@@ -35,8 +33,6 @@ export type GridSettingsOptions = {
     owner?: ListItemBag | undefined;
 
     scopes: string[];
-
-    entityType?: ListItemBag | null;
 
     category?: ListItemBag | null;
 };
