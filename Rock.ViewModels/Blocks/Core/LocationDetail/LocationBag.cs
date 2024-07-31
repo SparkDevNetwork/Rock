@@ -30,7 +30,7 @@ namespace Rock.ViewModels.Blocks.Core.LocationDetail
         /// <summary>
         /// Gets or sets threshold that will prevent checkin (no option to override)
         /// </summary>
-        public int? FirmRoomThreshold { get; set; }
+        public string FirmRoomThreshold { get; set; }
 
         /// <summary>
         /// Gets or sets the image identifier.
@@ -76,7 +76,7 @@ namespace Rock.ViewModels.Blocks.Core.LocationDetail
         /// <summary>
         /// Gets or sets a threshold that will prevent checkin unless a manager overrides
         /// </summary>
-        public int? SoftRoomThreshold { get; set; }
+        public string SoftRoomThreshold { get; set; }
 
         /// <summary>
         /// Gets or sets the address fields.
