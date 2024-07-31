@@ -4527,7 +4527,15 @@ Sys.Application.add_load(function () {
 
                     StringBuilder sbScriptTagHTML = new StringBuilder();
                     sbScriptTagHTML.Append( $"<script id='{scriptId}' src='{src}'" );
-                    string additionalAttributesHtml = additionalAttributes?.Select( a => $"{a.Key}='{a.Value}'" ).ToList().AsDelimited( " " );
+                    string additionalAttributesHtml = additionalAttributes?
+                        .Select( a =>
+                            a.Value == null
+                                ? $"{a.Key}"
+                                : $"{a.Key}='{a.Value}'"
+                        )
+                        .ToList()
+                        .AsDelimited( " " );
+
                     if ( additionalAttributesHtml.IsNotNullOrWhiteSpace() )
                     {
                         sbScriptTagHTML.Append( $" {additionalAttributesHtml}" );
