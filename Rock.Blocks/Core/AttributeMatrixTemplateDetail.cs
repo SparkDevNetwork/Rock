@@ -35,16 +35,11 @@ namespace Rock.Blocks.Core
     /// <summary>
     /// Displays the details of a particular attribute matrix template.
     /// </summary>
-
     [DisplayName( "Attribute Matrix Template Detail" )]
     [Category( "Core" )]
     [Description( "Displays the details of a particular attribute matrix template." )]
     [IconCssClass( "fa fa-question" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
-
-    #region Block Attributes
-
-    #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "86759d9b-281c-4c1b-95e6-d4305731c03b" )]
     [Rock.SystemGuid.BlockTypeGuid( "96c5df9e-6f5c-4e55-92f1-61fe16a18563" )]
@@ -155,8 +150,8 @@ namespace Rock.Blocks.Core
                 Description = entity.Description,
                 FormattedLava = entity.Id == 0 ? AttributeMatrixTemplate.FormattedLavaDefault : entity.FormattedLava,
                 IsActive = entity.IsActive,
-                MaximumRows = entity.MaximumRows,
-                MinimumRows = entity.MinimumRows,
+                MaximumRows = entity.MaximumRows.ToString(),
+                MinimumRows = entity.MinimumRows.ToString(),
                 Name = entity.Name
             };
 
@@ -190,10 +185,10 @@ namespace Rock.Blocks.Core
                 () => entity.IsActive = box.Entity.IsActive );
 
             box.IfValidProperty( nameof( box.Entity.MaximumRows ),
-                () => entity.MaximumRows = box.Entity.MaximumRows );
+                () => entity.MaximumRows = box.Entity.MaximumRows.AsIntegerOrNull() );
 
             box.IfValidProperty( nameof( box.Entity.MinimumRows ),
-                () => entity.MinimumRows = box.Entity.MinimumRows );
+                () => entity.MinimumRows = box.Entity.MinimumRows.AsIntegerOrNull() );
 
             box.IfValidProperty( nameof( box.Entity.Name ),
                 () => entity.Name = box.Entity.Name );

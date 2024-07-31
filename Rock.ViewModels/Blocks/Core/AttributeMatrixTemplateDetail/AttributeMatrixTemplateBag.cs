@@ -43,12 +43,12 @@ namespace Rock.ViewModels.Blocks.Core.AttributeMatrixTemplateDetail
         /// <summary>
         /// Gets or sets the maximum rows.
         /// </summary>
-        public int? MaximumRows { get; set; }
+        public string MaximumRows { get; set; }
 
         /// <summary>
         /// Gets or sets the minimum rows.
         /// </summary>
-        public int? MinimumRows { get; set; }
+        public string MinimumRows { get; set; }
 
         /// <summary>
         /// Gets or sets the name.
