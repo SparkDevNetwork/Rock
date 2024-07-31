@@ -60,6 +60,7 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>Properties\AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Bus\BusStatus.cs" />
     <Compile Include="Bus\QueueList.cs" />
     <Compile Include="CheckIn\CheckInKiosk.cs" />
     <Compile Include="CheckIn\CheckInKioskSetup.cs" />
