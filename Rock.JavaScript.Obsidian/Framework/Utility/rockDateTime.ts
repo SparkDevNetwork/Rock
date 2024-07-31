@@ -606,42 +606,81 @@ export class RockDateTime {
      *
      * @returns A string that represents the amount of time that has elapsed.
      */
-    public toElapsedString(): string {
-        const now = RockDateTime.now();
+    public toElapsedString(currentDateTime?: RockDateTime): string {
+        const msPerSecond = 1000;
+        const msPerMinute= 1000 * 60;
         const msPerHour = 1000 * 60 * 60;
         const hoursPerDay = 24;
-        const daysPerMonth = 30.4167;
-        const daysPerYear = 365.25;
+        const daysPerYear = 365;
 
-        const totalMs = Math.abs(now.toMilliseconds() - this.toMilliseconds());
+        let start = new RockDateTime(this.dateTime);
+        let end = currentDateTime ?? RockDateTime.now();
+        let direction = "Ago";
+        let totalMs = end.toMilliseconds() - start.toMilliseconds();
+
+        if (totalMs < 0) {
+            direction = "From Now";
+            totalMs = Math.abs(totalMs);
+            start = end;
+            end = new RockDateTime(this.dateTime);
+        }
+
+        const totalSeconds = totalMs / msPerSecond;
+        const totalMinutes = totalMs / msPerMinute;
         const totalHours = totalMs / msPerHour;
         const totalDays = totalHours / hoursPerDay;
 
+        if (totalHours < 24) {
+            if (totalSeconds < 2) {
+                return `1 Second ${direction}`;
+            }
+
+            if (totalSeconds < 60) {
+                return `${Math.floor(totalSeconds)} Seconds ${direction}`;
+            }
+
+            if (totalMinutes < 2) {
+                return `1 Minute ${direction}`;
+            }
+
+            if (totalMinutes < 60) {
+                return `${Math.floor(totalMinutes)} Minutes ${direction}`;
+            }
+
+            if (totalHours < 2) {
+                return `1 Hour ${direction}`;
+            }
+
+            if (totalHours < 60) {
+                return `${Math.floor(totalHours)} Hours ${direction}`;
+            }
+        }
+
         if (totalDays < 2) {
-            return "1day";
+            return `1 Day ${direction}`;
         }
 
         if (totalDays < 31) {
-            return `${Math.floor(totalDays)}days`;
+            return `${Math.floor(totalDays)} Days ${direction}`;
         }
 
-        const totalMonths = totalDays / daysPerMonth;
+        const totalMonths = end.totalMonths(start);
 
         if (totalMonths <= 1) {
-            return "1mon";
+            return `1 Month ${direction}`;
         }
 
         if (totalMonths <= 18) {
-            return `${Math.round(totalMonths)}mon`;
+            return `${Math.round(totalMonths)} Months ${direction}`;
         }
 
-        const totalYears = totalDays / daysPerYear;
+        const totalYears = Math.floor(totalDays / daysPerYear);
 
         if (totalYears <= 1) {
-            return "1yr";
+            return `1 Year ${direction}`;
         }
 
-        return `${Math.round(totalYears)}yrs`;
+        return `${Math.round(totalYears)} Years ${direction}`;
     }
 
     /**
@@ -740,6 +779,15 @@ export class RockDateTime {
         else {
             return `${Math.floor(totalSeconds / 31536000)} years ago`;
         }
+    }
+
+    /**
+     * The total number of months between the two dates.
+     * @param otherDateTime The reference date and time.
+     * @returns An int that represents the number of months between the two dates.
+     */
+    public totalMonths(otherDateTime: RockDateTime): number {
+        return ((this.year * 12) + this.month) - ((otherDateTime.year * 12) + otherDateTime.month);
     }
 
     // #endregion
