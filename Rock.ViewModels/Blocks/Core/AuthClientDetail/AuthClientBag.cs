@@ -20,6 +20,9 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Core.AuthClientDetail
 {
+    /// <summary>
+    /// Auth Client Bag
+    /// </summary>
     public class AuthClientBag : EntityBagBase
     {
         /// <summary>

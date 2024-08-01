@@ -24,6 +24,7 @@
 import { AuthClientScopeBag } from "@Obsidian/ViewModels/Blocks/Core/AuthClientDetail/authClientScopeBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
+/** Auth Client Bag */
 export type AuthClientBag = {
     /** Gets or sets the attributes. */
     attributes?: Record<string, PublicAttributeBag> | null;

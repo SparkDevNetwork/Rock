@@ -21,6 +21,20 @@
 // </copyright>
 //
 
-/** Auth Client Detail Options Bag */
-export type AuthClientDetailOptionsBag = {
-};
+using Rock.Model;
+using Rock.SystemGuid;
+
+namespace Rock.Rest.Controllers
+{
+    /// <summary>
+    /// AIProviders REST API
+    /// </summary>
+    [RestControllerGuid( "5408FC80-9356-4E35-AC9A-2A6F99800B65" )]
+    public partial class AIProvidersController : Rock.Rest.ApiController<Rock.Model.AIProvider>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AIProvidersController"/> class.
+        /// </summary>
+        public AIProvidersController() : base( new Rock.Model.AIProviderService( new Rock.Data.RockContext() ) ) { } 
+    }
+}
