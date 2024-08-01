@@ -27,6 +27,8 @@ export const FieldType = {
     AchievementType: "593132CF-BA5D-462F-97F6-94DCC0BFFE6F",
     /** Address field type */
     Address: "0A495222-23B7-41D3-82C8-D484CDB75D17",
+    /** AI provider picker field type. */
+    AiProviderPicker: "2BAA190B-3EF7-47CE-AF70-C7613ED344AB",
     /** Assessment field type */
     AssessmentType: "C263513A-30BE-4823-ABF1-AC12A56F9644",
     /** Asset field type */
@@ -245,6 +247,8 @@ export const FieldType = {
     NoteType: "E3FF88AC-13F6-4DF8-8371-FC0D7FD9A571",
     /** Note Types field type */
     NoteTypes: "276CCA63-5670-48CA-8B5A-2AAC97E8EE5E",
+    /** Open AI Provider field type */
+    OpenAiProvider: "A0243B67-1F55-4C94-93D4-E21E8DA785C2",
     /** Page Reference field type */
     PageReference: "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108",
     /** Persisted Dataset field type */

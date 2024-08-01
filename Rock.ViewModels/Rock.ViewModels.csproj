@@ -61,8 +61,6 @@
     <Compile Include="Blocks\BlockActionContextBag.cs" />
     <Compile Include="Blocks\Bus\BusStatus\BusStatusBag.cs" />
     <Compile Include="Blocks\Bus\BusStatus\BusStatusOptionsBag.cs" />
-    <Compile Include="Blocks\Bus\QueueList\QueueListBag.cs" />
-    <Compile Include="Blocks\Bus\QueueList\QueueListOptionsBag.cs" />
     <Compile Include="Blocks\CheckIn\CheckInKiosk\ActiveAttendanceBag.cs" />
     <Compile Include="Blocks\CheckIn\CheckInKiosk\GetCurrentAttendanceResponseBag.cs" />
     <Compile Include="Blocks\CheckIn\CheckInKiosk\GetScheduledLocationsResponseBag.cs" />

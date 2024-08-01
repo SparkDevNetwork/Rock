@@ -207,6 +207,8 @@ export const DefinedType = {
     SchoolGrades: "24E5A79F-1E62-467A-AD5D-0D10A2328B4D",
     /** The section types defined type, which has values that determine the CSS class to apply to the section div. */
     SectionType: "A72D940B-2A69-44B8-931C-7FE99824D84C",
+    /** List of possible sentiments for classification. */
+    SentimentEmotions: "C9751C20-DA81-4521-81DE-0099D6F598BA",
     /** Used to manage the topic options for small groups. */
     SmallGroupTopic: "D4111631-6B42-1CBD-4019-427D6BC6F475",
     /** The Spiritual Gifts */

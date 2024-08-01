@@ -1,18 +1,3 @@
-/*
-<doc>
-	<summary>
- 		This stored procedure updates several attributes related to a person's
-		giving.
-	</summary>
-	
-	<remarks>	
-		For eRA we only consider adults for the critieria.
-	</remarks>
-	<code>
-		EXEC [dbo].[spCrm_FamilyAnalyticsGiving] 
-	</code>
-</doc>
-*/
 ALTER PROCEDURE [dbo].[spCrm_FamilyAnalyticsGiving]
 	
 AS

@@ -23,6 +23,8 @@
 
 /** System Categories */
 export const Category = {
+    /** AI Automation Guid */
+    AiAutomation: "571B1191-7F6A-4C9F-8953-1C5B14274F3F",
     /** Communication Segments Dataview Category Guid */
     DataviewCommunicationSegments: "FF7081F8-7223-43D4-BE28-CB030DC4E13B",
     /** Campus Category */

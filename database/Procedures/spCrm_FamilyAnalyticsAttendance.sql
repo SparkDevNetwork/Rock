@@ -1,19 +1,3 @@
-/*
-<doc>
-	<summary>
- 		This stored procedure updates several attributes related to a person's
-		attendance.
-	</summary>
-	
-	<remarks>	
-		For eRA we only consider adults for the critieria.
-	</remarks>
-	<code>
-		EXEC [dbo].[spCrm_FamilyAnalyticsAttendance] 
-	</code>
-</doc>
-*/
-
 ALTER PROCEDURE [dbo].[spCrm_FamilyAnalyticsAttendance]
 
 AS

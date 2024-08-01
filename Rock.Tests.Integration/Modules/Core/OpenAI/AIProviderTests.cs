@@ -91,7 +91,7 @@ namespace Rock.Tests.Integration.Modules.Core.AI
 
                 Assert.Fail( "Validation error expected, but not encountered." );
             }
-            catch (Exception ex)
+            catch
             {
                 // Validation exception expected.
             }
