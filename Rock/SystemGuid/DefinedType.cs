@@ -537,6 +537,11 @@ namespace Rock.SystemGuid
         public const string UTM_CAMPAIGN = "A2F452BB-39E8-40F8-9DAD-74DBD920FD2F";
 
         /// <summary>
+        /// List of possible sentiments for classification.
+        /// </summary>
+        public const string SENTIMENT_EMOTIONS = "C9751C20-DA81-4521-81DE-0099D6F598BA";
+
+        /// <summary>
         /// The statement generator lava template (Legacy)
         /// </summary>
         [Obsolete("Use FinancialStatementTemplate instead")]

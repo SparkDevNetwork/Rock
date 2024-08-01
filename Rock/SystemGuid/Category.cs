@@ -23,6 +23,15 @@ namespace Rock.SystemGuid
     /// </summary>
     public class Category
     {
+        #region AI Categories
+
+        /// <summary>
+        /// AI Automation Guid
+        /// </summary>
+        public const string AI_AUTOMATION = "571B1191-7F6A-4C9F-8953-1C5B14274F3F";
+
+        #endregion
+
         #region CMS Categories
 
         /// <summary>
