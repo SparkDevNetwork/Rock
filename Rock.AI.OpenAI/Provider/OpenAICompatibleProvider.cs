@@ -36,49 +36,57 @@ namespace Rock.AI.OpenAI.Provider
     /// Open AI Provider
     /// </summary>
     /// <seealso cref="Rock.AI.AIProviderComponent" />
-    [Description( "Provider to use the OpenAI API for use in Rock." )]
+    [Description( "Provider for an AI service that supports the OpenAI API." )]
     [Export( typeof( AIProviderComponent ) )]
-    [ExportMetadata( "ComponentName", "Open AI" )]
+    [ExportMetadata( "ComponentName", "Open AI Compatible Provider" )]
 
     [TextField(
-        "Secret Key",
-        Key = AttributeKey.SecretKey,
-        Description = "The secret key for the OpenAI API.",
+        "API URL",
+        Key = AttributeKey.ApiUrlKey,
+        Description = "The URL of the API service.",
         IsRequired = true,
         Order = 0 )]
     [TextField(
-        "OpenAI Organization Id",
-        Key = AttributeKey.Organization,
-        Description = "The OpenAI organization id (e.g. org-FJsnwh1iFFq6xxxxxxxxxxxx).",
+        "Secret Key",
+        Key = AttributeKey.SecretKey,
+        Description = "The secret key for the API Service.",
         IsRequired = true,
         Order = 1 )]
+    [TextField(
+        "Organization",
+        Key = AttributeKey.Organization,
+        Description = "The Organization name used to identify the API user.",
+        IsRequired = true,
+        Order = 2 )]
     [TextField( "Default Model",
         Description = "The default AI model to use if none is specified.",
         IsRequired = true,
         Key = AttributeKey.DefaultModel,
-        Order = 2 )]
+        Order = 3 )]
 
-    [Rock.SystemGuid.EntityTypeGuid( "8D3F25B1-4891-31AA-4FA6-365F5C808563" )]
-    internal class OpenAIProvider : AIProviderComponent
+    [Rock.SystemGuid.EntityTypeGuid( "F44CB16A-B85B-43DC-8289-AB7CB4941DCF" )]
+    internal class OpenAICompatibleProvider : AIProviderComponent
     {
         private static class AttributeKey
         {
-            public const string SecretKey = "SecretKey";
-            public const string Organization = "Organization";
+            public const string ApiUrlKey = "ApiUrl";
             public const string DefaultModel = "DefaultModel";
+            public const string Organization = "Organization";
+            public const string SecretKey = "SecretKey";
         }
 
-        /// <inheritdoc/>
+        public override int Order => 1;
+
+        /// <summary>
+        /// Gets the contents of the text completions.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
         public override async Task<TextCompletionsResponse> GetTextCompletions( AIProvider provider, TextCompletionsRequest request )
         {
-            var openAIApi = GetOpenAIApi( provider );
+            var aiApi = GetAIApi( provider );
 
-            if ( request.Model.IsNullOrWhiteSpace() )
-            {
-                request.Model = GetAttributeValue( provider, AttributeKey.DefaultModel );
-            }
-
-            var response = await openAIApi.GetTextCompletions( new OpenAITextCompletionsRequest( request ) );
+            var response = await aiApi.GetTextCompletions( new OpenAITextCompletionsRequest( request ) );
 
             if ( response == null )
             {
@@ -88,17 +96,21 @@ namespace Rock.AI.OpenAI.Provider
             return response.AsTextCompletionsResponse();
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Gets the contents of the chat completions.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
         public override async Task<ChatCompletionsResponse> GetChatCompletions( AIProvider provider, ChatCompletionsRequest request )
         {
-            var openAIApi = GetOpenAIApi( provider );
+            var aiApi = GetAIApi( provider );
             
             if ( request.Model.IsNullOrWhiteSpace() )
             {
                 request.Model = GetAttributeValue( provider, AttributeKey.DefaultModel );
             }
 
-            var response = await openAIApi.GetChatCompletions( new OpenAIChatCompletionsRequest( request ) );
+            var response = await aiApi.GetChatCompletions( new OpenAIChatCompletionsRequest( request ) );
 
             if ( response == null )
             {
@@ -108,12 +120,22 @@ namespace Rock.AI.OpenAI.Provider
             return response.AsChatCompletionsResponse();
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Processes a moderation request for the text provided.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
         public override async Task<ModerationsResponse> GetModerations( AIProvider provider, ModerationsRequest request )
         {
-            var openAIApi = GetOpenAIApi( provider );
+            var aiApi = GetAIApi( provider );
 
-            var response = await openAIApi.GetModerations( new OpenAIModerationsRequest( request ) );
+            if ( request.Model.IsNullOrWhiteSpace() )
+            {
+                request.Model = GetAttributeValue( AttributeKey.DefaultModel );
+            }
+
+            var response = await aiApi.GetModerations( new OpenAIModerationsRequest( request ) );
 
             if ( response == null )
             {
@@ -127,12 +149,14 @@ namespace Rock.AI.OpenAI.Provider
         /// Method to return an OpenAIApi object providing the connection information.
         /// </summary>
         /// <returns></returns>
-        private OpenAIApi GetOpenAIApi( AIProvider provider )
+        private OpenAIApi GetAIApi( AIProvider provider )
         {
             var key = GetAttributeValue( provider, AttributeKey.SecretKey );
             var organization = GetAttributeValue( provider, AttributeKey.Organization );
+            var host = GetAttributeValue( provider, AttributeKey.ApiUrlKey );
 
-            var api = new OpenAIApi( key, organization );
+            var api = new OpenAIApi( key, organization, host );
+
             return api;
         }
     }

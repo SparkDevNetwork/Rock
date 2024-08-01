@@ -17,28 +17,35 @@
 
 using Newtonsoft.Json;
 
-using Rock.AI.OpenAI.OpenAIApiClient.Enums;
-
-namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.ChatCompletions
+namespace Rock.AI.OpenAI.OpenAIApiClient.Classes
 {
     /// <summary>
-    /// The Choice data for the Response object for a completion.
+    /// The Error data returned in the response to a failed request.
     /// </summary>
-    internal class OpenAIChatCompletionsResponseChoiceMessage
+    internal class OpenAIChatError
     {
         #region Properties
 
         /// <summary>
-        /// The text reponse for the completion.
+        /// Unique identifier for the completion request.
         /// </summary>
-        [JsonProperty( "role" )]
-        public OpenAIChatMessageRole Role { get; set; }
+        [JsonProperty( "message" )]
+        public string ErrorMessage { get; set; }
 
         /// <summary>
-        /// The returned content of the completion.
+        /// This will always be the text of "text_completion"
         /// </summary>
-        [JsonProperty( "content" )]
-        public string Content { get; set; }
+        [JsonProperty( "type" )]
+        public string TypeCode { get; set; }
+
+        /// <summary>
+        /// Unix timestamp that indicates when the completion request was created.
+        /// </summary>
+        [JsonProperty( "code" )]
+        public string ErrorCode { get; set; }
+
+        [JsonProperty( "param" )]
+        public string AdditionalData { get; set; }
 
         #endregion
     }

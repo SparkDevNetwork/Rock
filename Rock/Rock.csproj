@@ -1232,6 +1232,7 @@
     <Compile Include="Model\CodeGenerated\AdaptiveMessageService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\AIProviderService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\CheckInLabelService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\AIProviderService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\ContentCollectionService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\ContentCollectionSourceService.CodeGenerated.cs" />
     <Compile Include="Jobs\UpdatePersonalizationData.cs" />

@@ -34,6 +34,11 @@ namespace Rock.SystemGuid
         public const string ADDRESS = "0A495222-23B7-41D3-82C8-D484CDB75D17";
 
         /// <summary>
+        /// AI provider picker field type.
+        /// </summary>
+        public const string AI_PROVIDER_PICKER = "2BAA190B-3EF7-47CE-AF70-C7613ED344AB";
+
+        /// <summary>
         /// Assessment field type
         /// </summary>
         public const string ASSESSMENT_TYPE = "C263513A-30BE-4823-ABF1-AC12A56F9644";
@@ -577,6 +582,11 @@ namespace Rock.SystemGuid
         /// Note Types field type
         /// </summary>
         public const string NOTE_TYPES = "276CCA63-5670-48CA-8B5A-2AAC97E8EE5E";
+
+        /// <summary>
+        /// Open AI Provider field type
+        /// </summary>
+        public const string OPEN_AI_PROVIDER = "A0243B67-1F55-4C94-93D4-E21E8DA785C2";
 
         /// <summary>
         /// Page Reference field type

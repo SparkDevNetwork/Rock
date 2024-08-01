@@ -24,6 +24,11 @@ namespace Rock.SystemGuid
     public class DefinedType
     {
         /// <summary>
+        /// AI Models.
+        /// </summary>
+        public const string AI_PROVIDER_MODELS = "0829EF1C-028C-44D6-AB8D-90F0905E030E";
+
+        /// <summary>
         /// Background check package types
         /// </summary>
         public const string BACKGROUND_CHECK_TYPES = "BC2FDF9A-93B8-4325-8DE9-2F7B1943BFDF";

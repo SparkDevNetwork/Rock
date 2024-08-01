@@ -15,13 +15,12 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Newtonsoft.Json;
+
 using Rock.AI.Classes.ChatCompletions;
-using Rock.AI.OpenAI.OpenAIApiClient.Attributes;
-using Rock.AI.OpenAI.OpenAIApiClient.Enums;
 using Rock.AI.OpenAI.Utilities;
 
 namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.ChatCompletions
@@ -35,44 +34,7 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.ChatCompletions
         /// The string representation of the model to use. 
         /// </summary>
         [JsonProperty( "model" )]
-        public string Model {
-            get
-            {
-                var modelProperties = ( OpenAIModelProperties ) System.Attribute.GetCustomAttribute( typeof( OpenAIModel ).GetField( OpenAIModel.ToString() ), typeof( OpenAIModelProperties ) );
-                return modelProperties.Label;
-            }
-            set
-            {
-                var modelItem = Enum.GetValues( typeof( OpenAIModel ) )
-                            .Cast<OpenAIModel>()
-                            .FirstOrDefault( m => ( ( OpenAIModelProperties ) System.Attribute.GetCustomAttribute( typeof( OpenAIModel ).GetField( m.ToString() ), typeof( OpenAIModelProperties ) ) ).Label == value );
-
-                // Set the model using the default if not found
-                if ( modelItem == OpenAIModel.Default )
-                {
-                    modelItem = OpenAIApi.OpenAIDefaultChatCompletionsModel;
-                }
-
-                OpenAIModel = modelItem;
-            }
-        }
-
-        /// <summary>
-        /// The OpenAI model.
-        /// </summary>
-        [JsonIgnore]
-        public OpenAIModel OpenAIModel {
-
-            get
-            {
-                return _openAIModel;
-            }
-
-            set {
-                _openAIModel = value;
-            }
-        }
-        private OpenAIModel _openAIModel = OpenAIApi.OpenAIDefaultTextCompletionsModel;
+        public string Model { get; set; }
 
         /// <summary>
         /// The prompt for the completion.
@@ -84,7 +46,8 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.ChatCompletions
         /// Max Tokens to allow. For now we'll default this to be the max size.
         /// </summary>
         [JsonProperty( "max_tokens", NullValueHandling = NullValueHandling.Ignore )]
-        public int MaxTokens {
+        public int MaxTokens
+        {
             get
             {
                 if ( _maxTokens != 0 )
@@ -92,20 +55,20 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.ChatCompletions
                     return _maxTokens;
                 }
 
-                // Get number of tokens in the messages content
+                // Estimate number of tokens in the messages content
                 var messagesContent = OpenAIUtilities.TokenCount( string.Join( " ", this.Messages.Select( m => m.Content ) ) );
                 var messagesRoles = OpenAIUtilities.TokenCount( string.Join( " ", this.Messages.Select( m => m.Role ) ) );
 
                 // Add a couple of extra tokens:
                 // When using the API, you should be aware that the total tokens count includes not only the tokens in your messages
                 // but also a few extra tokens for internal formatting purposes.
-                var messagesTokenCount = messagesContent + messagesRoles + ( 12 * this.Messages.Count);
+                var messagesTokenCount = messagesContent + messagesRoles + ( 12 * this.Messages.Count );
 
-                // Get the max size that the model supports.
-                var modelProperties = ( OpenAIModelProperties ) System.Attribute.GetCustomAttribute( typeof( OpenAIModel ).GetField( OpenAIModel.ToString() ), typeof( OpenAIModelProperties ) );
+                // As of July 2024 the most common output token max.
+                const int defaultMaxOutputTokens = 4096;
 
                 // Return the difference
-                return modelProperties.MaxTokens - messagesTokenCount;
+                return defaultMaxOutputTokens - messagesTokenCount;
             }
             set
             {
@@ -142,14 +105,14 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.ChatCompletions
         /// Convert a generic AI completion request to a OpenAI completion request.
         /// </summary>
         /// <param name="request"></param>
-        internal OpenAIChatCompletionsRequest ( ChatCompletionsRequest request )
+        internal OpenAIChatCompletionsRequest( ChatCompletionsRequest request )
         {
             this.Model = request.Model;
             this.Temperature = request.Temperature;
             this.MaxTokens = request.MaxTokens;
 
             // Convert messages
-            foreach( var message in request.Messages )
+            foreach ( var message in request.Messages )
             {
                 this.Messages.Add( new OpenAIChatCompletionsRequestMessage( message ) );
             }
