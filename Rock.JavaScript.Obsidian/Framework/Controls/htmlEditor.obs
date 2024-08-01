@@ -56,6 +56,8 @@
 
             <StylesheetsPlugin htmlCssReplacementSelector=".note-editor"
                                bodyCssReplacementSelector=".note-editing-area" />
+
+            <MetaTagsPlugin />
         </template>
     </RockFormField>
 </template>
@@ -90,6 +92,7 @@
     import FileBrowserPlugin from "./NoteEditor/fileBrowserPlugin.partial.obs";
     import ImageBrowserPlugin from "./NoteEditor/imageBrowserPlugin.partial.obs";
     import MergeFieldPlugin from "./NoteEditor/mergeFieldPlugin.partial.obs";
+    import MetaTagsPlugin from "./NoteEditor/metaTagsPlugin.partial.obs";
     import ParagraphPlugin from "./NoteEditor/paragraphPlugin.partial.obs";
     import PasteAsPlainTextPlugin from "./NoteEditor/pasteAsPlainTextPlugin.partial.obs";
     import StylesheetsPlugin from "./NoteEditor/stylesheetsPlugin.partial.obs";
