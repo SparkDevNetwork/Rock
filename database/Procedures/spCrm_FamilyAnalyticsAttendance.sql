@@ -32,6 +32,7 @@ BEGIN
 	DECLARE @cATTRIBUTE_FIRST_ATTENDED uniqueidentifier  = 'AB12B3B0-55B8-D6A5-4C1F-DB9CCB2C4342'
 	DECLARE @cATTRIBUTE_LAST_ATTENDED uniqueidentifier  = '5F4C6462-018E-D19C-4AB0-9843CB21C57E'
 	DECLARE @cATTRIBUTE_TIMES_ATTENDED_IN_DURATION uniqueidentifier  = '45A1E978-DC5B-CFA1-4AF4-EA098A24C914'
+	DECLARE @Now DATETIME = dbo.RockGetDate()
 
 	-- --------- END CONFIGURATION --------------
 
@@ -47,10 +48,8 @@ BEGIN
 	DECLARE @SundayEntryAttendanceDuration datetime = DATEADD(DAY,  (7 * @EntryAttendanceDurationWeeks * -1), @SundayDateStart)
 	
 
-
 	-- first checkin
-	DECLARE @FirstAttendedAttributeId int = (SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = @cATTRIBUTE_FIRST_ATTENDED)
-	DELETE FROM [AttributeValue] WHERE [AttributeId] = @FirstAttendedAttributeId;
+	DECLARE @FirstAttendedAttributeId int = (SELECT TOP 1 [Id] FROM dbo.[Attribute] WHERE [Guid] = @cATTRIBUTE_FIRST_ATTENDED);
 
 	WITH
 	  cteIndividual ([PersonId], [GivingGroupId], [FamilyRole])
@@ -72,11 +71,11 @@ BEGIN
 			[RecordStatusValueId] = @ActiveRecordStatusValueId -- record is active
 			AND [RecordTypeValueId] = @PersonRecordTypeValueId  -- person record type (not business)
 	  )
-	INSERT INTO AttributeValue ([EntityId], [AttributeId], [Value], [IsSystem], [Guid], [CreatedDateTime], [ValueAsDateTime], [IsPersistedValueDirty])
-	SELECT [PersonId], [AttributeId], [FirstAttendedDate], [IsSystem], [Guid], [CreateDate], [FirstAttendedDate], 1  FROM 
+	SELECT [PersonId], [FirstAttendedDate], av.[Id] AttributeValueId, av.[ValueAsDateTime] ExistingValue
+	INTO #firstAttended
+	FROM 
 		(SELECT 
 			i.[PersonId]
-			, @FirstAttendedAttributeId AS [AttributeId]
 			, CASE WHEN [FamilyRole] = 'Adult' THEN 
 					(SELECT 
 						MIN(A.[StartDateTime] )
@@ -90,7 +89,7 @@ BEGIN
 						AND pa.[PersonId] IN (SELECT [Id] FROM [dbo].[ufnCrm_FamilyMembersOfPersonId](i.[PersonId])))
 				ELSE
 					(SELECT 
-						MIN(a.StartDateTime )
+						MIN(a.[StartDateTime] )
 					FROM
 						[Attendance] a
 						INNER JOIN [AttendanceOccurrence] O ON O.[Id] = A.[OccurrenceId]
@@ -100,15 +99,46 @@ BEGIN
                         AND a.[DidAttend] = 1
 						AND pa.[PersonId] = i.[PersonId])
 			  END AS [FirstAttendedDate]
-			, 0 AS [IsSystem]
-			, newid() AS [Guid]
-			, getdate() AS [CreateDate]
 		FROM cteIndividual i ) AS a
+	LEFT JOIN [AttributeValue] av ON av.[EntityId] = a.[PersonId]
+	AND av.[AttributeId] = @FirstAttendedAttributeId
 	WHERE a.[FirstAttendedDate] IS NOT NULL
 
+	-- Update Existing values before inserting to reduce number of logical reads.
+	UPDATE av SET
+		av.[Value] = f.[FirstAttendedDate],
+		av.[ValueAsDateTime] = f.[FirstAttendedDate],
+		av.[IsPersistedValueDirty] = 1
+	FROM dbo.[AttributeValue] av
+	JOIN #firstAttended f on f.[AttributeValueId] = av.[Id]
+	WHERE f.[ExistingValue] IS NULL
+	OR f.[ExistingValue] <> f.[FirstAttendedDate]
+
+	-- Added new values.
+	INSERT dbo.[AttributeValue] ([EntityId]
+        , [AttributeId]
+        , [Value]
+        , [IsSystem]
+        , [Guid]
+        , [CreatedDateTime]
+        , [ValueAsDateTime]
+        , [IsPersistedValueDirty])
+	SELECT f.[PersonId]
+		, @FirstAttendedAttributeId
+		, f.[FirstAttendedDate]
+		, 0
+		, newid()
+		, @Now
+		, f.[FirstAttendedDate]
+		, 1
+	FROM #firstAttended f
+	WHERE f.[AttributeValueId] IS NULL
+
+	-- Remove the temp table.
+	DROP TABLE #firstAttended
+
 	-- last checkin
-	DECLARE @LastAttendedAttributeId int = (SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = @cATTRIBUTE_LAST_ATTENDED)
-	DELETE FROM [AttributeValue] WHERE [AttributeId] = @LastAttendedAttributeId;
+	DECLARE @LastAttendedAttributeId int = (SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = @cATTRIBUTE_LAST_ATTENDED);
 
 	WITH
 	  cteIndividual ([PersonId], [GivingGroupId], [FamilyRole])
@@ -130,11 +160,11 @@ BEGIN
 			[RecordStatusValueId] = @ActiveRecordStatusValueId -- record is active
 			AND [RecordTypeValueId] = @PersonRecordTypeValueId  -- person record type (not business)
 	  )
-	INSERT INTO AttributeValue ([EntityId], [AttributeId], [Value], [IsSystem], [Guid], [CreatedDateTime], [ValueAsDateTime], [IsPersistedValueDirty])
-	SELECT [PersonId], [AttributeId], [LastAttendedDate], [IsSystem], [Guid], [CreateDate], [LastAttendedDate], 1  FROM  
+	SELECT [PersonId], [LastAttendedDate], av.[Id] AttributeValueId, av.[ValueAsDateTime] ExistingValue
+	INTO #lastAttended
+	FROM 
 		(SELECT 
 			i.[PersonId]
-			, @LastAttendedAttributeId AS [AttributeId]
 			, CASE WHEN [FamilyRole] = 'Adult' THEN 
 					(SELECT 
 						MAX(a.StartDateTime )
@@ -158,11 +188,43 @@ BEGIN
                         AND a.[DidAttend] = 1
 						AND pa.[PersonId] = i.[PersonId])
 			  END AS [LastAttendedDate]
-			, 0 AS [IsSystem]
-			, newid() AS [Guid]
-			, getdate() AS [CreateDate]
 		FROM cteIndividual i ) AS a
+	LEFT JOIN dbo.[AttributeValue] av ON av.[EntityId] = a.[PersonId] 
+	AND av.[AttributeId] = @LastAttendedAttributeId
 	WHERE a.[LastAttendedDate] IS NOT NULL
+
+	-- Update Existing values before inserting to reduce number of logical reads.
+	UPDATE av SET
+		av.[Value] = f.[LastAttendedDate],
+		av.[ValueAsDateTime] = f.[LastAttendedDate],
+		av.[IsPersistedValueDirty] = 1
+	FROM dbo.[AttributeValue] av
+	JOIN #lastAttended f on f.[AttributeValueId] = av.[Id]
+	WHERE f.[ExistingValue] IS NULL
+	OR f.[ExistingValue] <> f.[LastAttendedDate]
+
+	-- Added new values.
+	INSERT dbo.[AttributeValue] ([EntityId]
+        , [AttributeId]
+        , [Value]
+        , [IsSystem]
+        , [Guid]
+        , [CreatedDateTime]
+        , [ValueAsDateTime]
+        , [IsPersistedValueDirty])
+	SELECT f.PersonId
+		, @LastAttendedAttributeId
+		, f.[LastAttendedDate]
+		, 0
+		, newid()
+		, @Now
+		, f.[LastAttendedDate]
+		, 1
+	FROM #lastAttended f
+	WHERE f.[AttributeValueId] IS NULL
+
+	-- Remove the temp table.
+	DROP TABLE #lastAttended
 
 	-- times checkedin
 	DECLARE @TimesAttendedAttributeId int = (SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = @cATTRIBUTE_TIMES_ATTENDED_IN_DURATION)
@@ -188,12 +250,11 @@ BEGIN
 			[RecordStatusValueId] = @ActiveRecordStatusValueId -- record is active
 			AND [RecordTypeValueId] = @PersonRecordTypeValueId  -- person record type (not business)
 	  )
-	INSERT INTO AttributeValue ([EntityId], [AttributeId], [Value], [IsSystem], [Guid], [CreatedDateTime], [ValueAsNumeric], [IsPersistedValueDirty])
-	SELECT [PersonId], [AttributeId], [CheckinCount], [IsSystem], [Guid], [CreateDate], [CheckinCount], 1
-    FROM 
+	SELECT [PersonId], [CheckinCount], av.[Id] AttributeValueId, av.[ValueAsDateTime] ExistingValue
+	INTO #checkInCount
+	FROM 
 		(SELECT 
 			i.[PersonId]
-			, @TimesAttendedAttributeId AS [AttributeId]
 			, CASE WHEN [FamilyRole] = 'Adult' THEN 
 					(SELECT 
 						COUNT(*)
@@ -219,11 +280,42 @@ BEGIN
                         AND a.[DidAttend] = 1
 						AND pa.[PersonId] = i.[PersonId])
 			  END AS [CheckinCount]
-			, 0 AS [IsSystem]
-			, newid() AS [Guid]
-			, getdate() AS [CreateDate]
 		FROM cteIndividual i ) AS a
+	LEFT JOIN dbo.[AttributeValue] av ON av.[EntityId] = a.[PersonId]
+	AND av.[AttributeId] = @TimesAttendedAttributeId
 	WHERE a.[CheckinCount] IS NOT NULL
 
+	-- Update Existing values before inserting to reduce number of logical reads.
+	UPDATE av SET
+		av.[Value] = f.[CheckinCount],
+		av.[ValueAsNumeric] = f.[CheckinCount],
+		av.[IsPersistedValueDirty] = 1
+	FROM dbo.[AttributeValue] av
+	JOIN #checkInCount f on f.[AttributeValueId] = av.[Id]
+	WHERE f.[ExistingValue] IS NULL
+	OR f.[ExistingValue] <> f.[CheckinCount]
+
+	-- Added new values.
+	INSERT dbo.[AttributeValue] ([EntityId]
+        , [AttributeId]
+        , [Value]
+        , [IsSystem]
+        , [Guid]
+        , [CreatedDateTime]
+        , [ValueAsNumeric]
+        , [IsPersistedValueDirty])
+	SELECT f.[PersonId]
+		, @TimesAttendedAttributeId
+		, f.[CheckinCount]
+		, 0
+		, newid()
+		, @Now
+		, f.[CheckinCount]
+		, 1
+	FROM #checkInCount f
+	WHERE f.[AttributeValueId] IS NULL
+
+	-- Remove the temp table.
+	DROP TABLE #checkInCount
 	
 END
