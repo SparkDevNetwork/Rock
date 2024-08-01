@@ -62,7 +62,7 @@ namespace Rock.Model
         /// <value>
         /// The URL.
         /// </value>
-        [Required( AllowEmptyStrings = true )]
+        [Required]
         [DataMember( IsRequired = true )]
         public string Url { get; set; }
 
