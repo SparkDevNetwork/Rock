@@ -3,8 +3,7 @@
                  :disabled="disabled"
                  :isDropDownOpenedOnShowMore="true"
                  label="Attachments"
-                 @openPopup="onOpenPopup"
-                 @showMore="onShowMore">
+                 @openPopup="onOpenPopup">
     </PopupPicker>
 
     <NotificationBox v-if="attachmentErrorMessage" alertType="warning">
@@ -82,10 +81,6 @@
                 group.click();
             }
         }
-    }
-
-    function onShowMore(): void {
-
     }
 
     //#endregion

@@ -333,7 +333,7 @@ namespace Rock.Blocks.Communication
         private string ImageFolderRoot => GetAttributeValue( AttributeKey.ImageRootFolder );
 
         /// <summary>
-        ///Should the attachment uploader be shown for email communications?
+        /// Should the attachment uploader be shown for email communications?
         /// </summary>
         private bool IsAttachmentUploaderShown => GetAttributeValue( AttributeKey.ShowAttachmentUploader ).AsBoolean();
 
@@ -951,7 +951,7 @@ namespace Rock.Blocks.Communication
                 IsBlockEditActionAuthorized = isBlockEditActionAuthorized,
                 IsCommunicationEditActionAuthorized = isCommunicationEditActionAuthorized,
                 CanViewBlock = ( communication.Status == CommunicationStatus.PendingApproval && this.EditPageParameter && isBlockApproveActionAuthorized )
-                    || (isEditableStatus && ( isCommunicationEditActionAuthorized || isCommunicationCreator ) ),
+                    || ( isEditableStatus && ( isCommunicationEditActionAuthorized || isCommunicationCreator ) ),
             };
         }
 
@@ -988,7 +988,7 @@ namespace Rock.Blocks.Communication
                 return CommunicationEntryMediumOptionsBaseBag.Unknown;
             }
 
-            var (_, medium) = GetMediumComponent( mediumGuid );
+            var ( _, medium ) = GetMediumComponent( mediumGuid );
 
             if ( medium == null )
             {
@@ -1073,7 +1073,7 @@ namespace Rock.Blocks.Communication
         /// <param name="mediumEntityTypeGuid">The medium type unique identifier.</param>
         private IMediumDataService GetMediumDataService( Guid mediumEntityTypeGuid )
         {
-            var (_, medium) = GetMediumComponent( mediumEntityTypeGuid );
+            var ( _, medium ) = GetMediumComponent( mediumEntityTypeGuid );
 
             if ( medium == null )
             {
@@ -1225,7 +1225,7 @@ namespace Rock.Blocks.Communication
         /// <param name="validMediumGuids">The valid medium unique identifiers.</param>
         private ( CommunicationEntryCommunicationBag Communication, CommunicationEntryMediumOptionsBaseBag MediumOptions ) GetCommunicationData( RockContext rockContext, Model.Communication communication, Person currentPerson, IEnumerable<Guid> validMediumGuids )
         {
-            if (communication == null)
+            if ( communication == null )
             {
                 // A new communication is being created.
                 communication = new Rock.Model.Communication
@@ -1315,7 +1315,7 @@ namespace Rock.Blocks.Communication
                 // Use the medium page parameter.
                 var mediumGuid = EntityTypeCache.Get( mediumId.Value, rockContext )?.Guid;
 
-                if ( mediumGuid.HasValue && validMediumGuids.Contains( mediumGuid.Value) )
+                if ( mediumGuid.HasValue && validMediumGuids.Contains( mediumGuid.Value ) )
                 {
                     // The supplied medium has a valid Guid so use it.
                     communicationBag.MediumEntityTypeGuid = mediumGuid.Value;
@@ -1526,7 +1526,7 @@ namespace Rock.Blocks.Communication
             communication.EnabledLavaCommands = this.EnabledLavaCommands;
             communication.IsBulkCommunication = bag.IsBulkCommunication;
 
-            var (_, medium) = GetMediumComponent( bag.MediumEntityTypeGuid );
+            var ( _, medium ) = GetMediumComponent( bag.MediumEntityTypeGuid );
             if ( medium != null )
             {
                 communication.CommunicationType = medium.CommunicationType;
