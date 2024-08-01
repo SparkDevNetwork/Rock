@@ -4,6 +4,7 @@
         <PageHeader title="Rock Solid"
                     :hasBack="hasBackButton"
                     :hideNavigation="!hasNavigation"
+                    :isOverrideMode="isOverrideMode"
                     @back="onBack"
                     @home="onHome" />
 
@@ -99,6 +100,7 @@
                                :configuration="configuration"
                                :supervisorData="supervisorData"
                                @updateActions="onUpdateActions($event, supervisorScreen.screen)"
+                               @enableOverride="onEnableOverride($event)"
                                @supervisorScreen="onSupervisorScreen"
                                @closeSupervisor="onCloseSupervisor" />
                 </template>
@@ -197,6 +199,12 @@
         }
 
         return `${configuration.value.kiosk.name} · ${configuration.value.template.name}`;
+    });
+
+    /** Kiosk is current in override mode which bypasses some filtering logic. */
+    const isOverrideMode = computed((): boolean => {
+        return currentSession.value.overridePinCode !== undefined
+            && currentSession.value.overridePinCode !== "";
     });
 
     /**
@@ -330,6 +338,22 @@
     function onConfigureClick(): void {
         previousScreens.value = [];
         currentScreen.value = SupervisorScreen.Login;
+    }
+
+    /**
+     * Called when the supervisor screen wants to enter override mode. Configure
+     * a new session in override mode.
+     *
+     * @param pinCode The PIN code to use when authorizing override mode to the REST APIs.
+     */
+    async function onEnableOverride(pinCode: string): Promise<void> {
+        // This is async, but we don't need to wait for it to complete.
+        currentSession.value.cancelSession();
+
+        currentSession.value = createNewSession().withStartOverride(pinCode);
+        previousScreens.value = [];
+
+        navigateToScreen(currentSession.value.currentScreen);
     }
 
     function onSupervisorScreen(screen: SupervisorScreen): void {

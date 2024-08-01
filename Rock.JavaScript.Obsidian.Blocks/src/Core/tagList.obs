@@ -103,8 +103,7 @@
     const gridSettings = ref<GridSettingsOptions>({
         owner: JSON.parse(preferences.getValue(PreferenceKey.FilterOwner) || "{}"),
         scopes: JSON.parse(preferences.getValue(PreferenceKey.FilterScope) || "[]"),
-        category: JSON.parse(preferences.getValue(PreferenceKey.FilterCategory) || "{}"),
-        entityType: JSON.parse(preferences.getValue(PreferenceKey.FilterEntityName) || "{}")
+        category: JSON.parse(preferences.getValue(PreferenceKey.FilterCategory) || "{}")
     });
 
     const scopeLabelColors: Record<string, string> = {
@@ -126,8 +125,7 @@
         const isOwnerFilterActive = isActiveScope("Personal") && !!gridSettings.value.owner?.value;
         return isOwnerFilterActive
             || gridSettings.value.scopes.length > 0
-            || !!gridSettings.value.category?.value
-            || !!gridSettings.value.entityType?.value;
+            || !!gridSettings.value.category?.value;
     });
 
     const isReorderColumnVisible = computed((): boolean => {
@@ -240,7 +238,6 @@
     watch(gridSettings, async () => {
         preferences.setValue(PreferenceKey.FilterScope, JSON.stringify(gridSettings.value.scopes));
         preferences.setValue(PreferenceKey.FilterCategory, JSON.stringify(gridSettings.value.category));
-        preferences.setValue(PreferenceKey.FilterEntityName, JSON.stringify(gridSettings.value.entityType));
 
         if (config.options?.isReorderColumnVisible && isActiveScope("Personal")) {
             preferences.setValue(PreferenceKey.FilterOwner, JSON.stringify(gridSettings.value.owner));

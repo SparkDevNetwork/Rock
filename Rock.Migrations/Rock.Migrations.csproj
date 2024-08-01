@@ -72,6 +72,34 @@
     <Compile Include="Migrations\202407182137238_CodeGenerated_20240718.designer.cs">
       <DependentUpon>202407182137238_CodeGenerated_20240718.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202407222116293_AddCommunicationPushOpenMessageJsonColumns.cs" />
+    <Compile Include="Migrations\202407222116293_AddCommunicationPushOpenMessageJsonColumns.Designer.cs">
+      <DependentUpon>202407222116293_AddCommunicationPushOpenMessageJsonColumns.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202407231435427_AddIsSuppressHistoryLoggingToAttribute.cs" />
+    <Compile Include="Migrations\202407231435427_AddIsSuppressHistoryLoggingToAttribute.Designer.cs">
+      <DependentUpon>202407231435427_AddIsSuppressHistoryLoggingToAttribute.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202407241832019_AddCommunicationEmailMetricsReminderColumns.cs" />
+    <Compile Include="Migrations\202407241832019_AddCommunicationEmailMetricsReminderColumns.Designer.cs">
+      <DependentUpon>202407241832019_AddCommunicationEmailMetricsReminderColumns.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202407261915042_AIModels.cs" />
+    <Compile Include="Migrations\202407261915042_AIModels.Designer.cs">
+      <DependentUpon>202407261915042_AIModels.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202407302203031_AddIsActionCompletedIfCriteriaUnmetProperty.cs" />
+    <Compile Include="Migrations\202407302203031_AddIsActionCompletedIfCriteriaUnmetProperty.designer.cs">
+      <DependentUpon>202407302203031_AddIsActionCompletedIfCriteriaUnmetProperty.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202408011753319_Rollup_20240801.cs" />
+    <Compile Include="Migrations\202408011753319_Rollup_20240801.designer.cs">
+      <DependentUpon>202408011753319_Rollup_20240801.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202408011847291_CodeGenerated_20240801.cs" />
+    <Compile Include="Migrations\202408011847291_CodeGenerated_20240801.designer.cs">
+      <DependentUpon>202408011847291_CodeGenerated_20240801.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.Designer.cs">
       <DependentUpon>202404221542135_Mobile_AdditionalSettingsJson.cs</DependentUpon>
@@ -2151,6 +2179,27 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202407182137238_CodeGenerated_20240718.resx">
       <DependentUpon>202407182137238_CodeGenerated_20240718.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202407222116293_AddCommunicationPushOpenMessageJsonColumns.resx">
+      <DependentUpon>202407222116293_AddCommunicationPushOpenMessageJsonColumns.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202407231435427_AddIsSuppressHistoryLoggingToAttribute.resx">
+      <DependentUpon>202407231435427_AddIsSuppressHistoryLoggingToAttribute.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202407241832019_AddCommunicationEmailMetricsReminderColumns.resx">
+      <DependentUpon>202407241832019_AddCommunicationEmailMetricsReminderColumns.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202407261915042_AIModels.resx">
+      <DependentUpon>202407261915042_AIModels.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202407302203031_AddIsActionCompletedIfCriteriaUnmetProperty.resx">
+      <DependentUpon>202407302203031_AddIsActionCompletedIfCriteriaUnmetProperty.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202408011753319_Rollup_20240801.resx">
+      <DependentUpon>202408011753319_Rollup_20240801.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202408011847291_CodeGenerated_20240801.resx">
+      <DependentUpon>202408011847291_CodeGenerated_20240801.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.resx">
       <DependentUpon>202404221542135_Mobile_AdditionalSettingsJson.cs</DependentUpon>

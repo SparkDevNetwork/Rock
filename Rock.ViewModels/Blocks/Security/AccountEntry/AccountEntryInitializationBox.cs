@@ -44,10 +44,16 @@ namespace Rock.ViewModels.Blocks.Security.AccountEntry
         /// </summary>
         public bool IsAddressRequired { get; set; }
 
+
         /// <summary>
         /// Gets or sets a value indicating whether the address fields are shown.
         /// </summary>
         public bool IsAddressShown { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the birth date is shown.
+        /// </summary>
+        public bool IsBirthDateShown { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the email field is hidden.
@@ -91,6 +97,11 @@ namespace Rock.ViewModels.Blocks.Security.AccountEntry
         /// Indicating whether the campus picker is shown.
         /// </summary>
         public bool IsCampusPickerShown { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether campus is required.
+        /// </summary>
+        public bool IsCampusRequired { get; set; }
 
         /// <summary>
         /// The registration state.

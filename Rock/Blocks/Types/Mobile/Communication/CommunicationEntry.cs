@@ -125,7 +125,6 @@ namespace Rock.Blocks.Types.Mobile.Communication
     [Rock.SystemGuid.BlockTypeGuid( "B0182DA2-82F7-4798-A48E-88EBE61F2109" )]
     public class CommunicationEntry : RockBlockType
     {
-
         #region Attribute Keys
 
         /// <summary>

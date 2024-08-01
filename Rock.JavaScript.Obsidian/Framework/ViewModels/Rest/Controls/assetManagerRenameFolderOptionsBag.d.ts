@@ -31,4 +31,7 @@ export type AssetManagerRenameFolderOptionsBag = {
 
     /** New name for the folder */
     newFolderName?: string | null;
+
+    /** Gets or sets the security grant token. */
+    securityGrantToken?: string | null;
 };

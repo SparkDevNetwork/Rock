@@ -26,5 +26,10 @@ namespace Rock.ViewModels.Rest.Controls
         /// A key that contains all the information needed to get the full asset that is being acted upon
         /// </summary>
         public string AssetFolderId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the security grant token.
+        /// </summary>
+        public string SecurityGrantToken { get; set; }
     }
 }

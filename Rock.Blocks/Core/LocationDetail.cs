@@ -169,8 +169,16 @@ namespace Rock.Blocks.Core
 
             if ( entity == null )
             {
-                box.ErrorMessage = $"The {Location.FriendlyTypeName} was not found.";
-                return;
+                var globalAttributesCache = GlobalAttributesCache.Get();
+
+                entity = new Location
+                {
+                    Id = 0,
+                    IsActive = true,
+                    ParentLocationId = PageParameter( PageParameterKey.ParentLocationId ).AsIntegerOrNull(),
+                    State = globalAttributesCache.OrganizationState,
+                    Country = globalAttributesCache.OrganizationCountry
+                };
             }
 
             var isViewable = entity.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson );
@@ -225,15 +233,16 @@ namespace Rock.Blocks.Core
             return new LocationBag
             {
                 IdKey = entity.IdKey,
-                FirmRoomThreshold = entity.FirmRoomThreshold,
+                FirmRoomThreshold = entity.FirmRoomThreshold.ToString(),
                 Image = entity.Image.ToListItemBag(),
+                ImageUrlParam = GetImageIdOrHash( entity.ImageId ),
                 IsActive = entity.IsActive,
                 IsGeoPointLocked = entity.IsGeoPointLocked,
                 LocationTypeValue = entity.LocationTypeValue.ToListItemBag(),
                 Name = entity.Name,
                 ParentLocation = entity.ParentLocation.ToListItemBag(),
                 PrinterDevice = entity.PrinterDevice.ToListItemBag(),
-                SoftRoomThreshold = entity.SoftRoomThreshold,
+                SoftRoomThreshold = entity.SoftRoomThreshold.ToString(),
                 Guid = entity.Guid,
                 AddressFields = new AddressControlBag
                 {
@@ -364,7 +373,7 @@ namespace Rock.Blocks.Core
             }
 
             box.IfValidProperty( nameof( box.Entity.FirmRoomThreshold ),
-                () => entity.FirmRoomThreshold = box.Entity.FirmRoomThreshold );
+                () => entity.FirmRoomThreshold = box.Entity.FirmRoomThreshold.AsIntegerOrNull() );
 
             box.IfValidProperty( nameof( box.Entity.Image ),
                 () => entity.ImageId = box.Entity.Image.GetEntityId<BinaryFile>( rockContext ) );
@@ -388,7 +397,7 @@ namespace Rock.Blocks.Core
                 () => entity.PrinterDeviceId = box.Entity.PrinterDevice.GetEntityId<Device>( rockContext ) );
 
             box.IfValidProperty( nameof( box.Entity.SoftRoomThreshold ),
-                () => entity.SoftRoomThreshold = box.Entity.SoftRoomThreshold );
+                () => entity.SoftRoomThreshold = box.Entity.SoftRoomThreshold.AsIntegerOrNull() );
 
             box.IfValidProperty( nameof( box.Entity.AddressFields ),
                 () =>
@@ -597,7 +606,8 @@ namespace Rock.Blocks.Core
                         State = location.State,
                         PostalCode = location.PostalCode,
                         Country = location.Country,
-                    }
+                    },
+                    GeoPointWellKnownText = location.GeoPoint?.AsText(),
                 };
 
                 return ActionOk( result );
@@ -720,12 +730,21 @@ namespace Rock.Blocks.Core
                     return ActionBadRequest( errorMessage );
                 }
 
+                var parentLocationId = entity.ParentLocationId;
                 entityService.Delete( entity );
                 rockContext.SaveChanges();
 
                 Rock.CheckIn.KioskDevice.Clear();
 
-                return ActionOk( this.GetParentPageUrl() );
+                var qryParams = new Dictionary<string, string>();
+                if ( parentLocationId != null )
+                {
+                    qryParams["LocationId"] = parentLocationId.ToString();
+                }
+
+                qryParams[PageParameterKey.ExpandedIds] = PageParameter( PageParameterKey.ExpandedIds );
+
+                return ActionOk( this.GetCurrentPageUrl( qryParams ) );
             }
         }
 

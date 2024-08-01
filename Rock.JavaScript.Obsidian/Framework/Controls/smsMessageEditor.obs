@@ -1,0 +1,403 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField v-model="internalValue"
+                   v-bind="formFieldProps"
+                   name="sms-message-editor"
+                   :disableLabel="!label && !!toolbarLabel"
+                   :formGroupClasses="`sms-message-editor ${formGroupClasses}`"
+                   :validationTitle="toolbarLabel ?? label">
+        <template #default="{ uniqueId, field }">
+            <div class="control-wrapper">
+                <div class="note-editor-container">
+                    <div class="note-editor note-frame panel panel-default">
+                        <div :id="assignToolbarId(uniqueId)"
+                             class="panel-heading note-toolbar"
+                             ref="toolbarElement"></div>
+
+                        <div class="note-editing-area">
+                            <div class="note-editable"
+                                 :id="assignEditorId(uniqueId)"
+                                 ref="editorElement">
+                            </div>
+                        </div>
+
+                        <div class="note-statusbar" ref="resizerElement" role="status">
+                            <div aria-label="Resize" class="note-resizebar">
+                                <div class="note-icon-bar"></div>
+                                <div class="note-icon-bar"></div>
+                                <div class="note-icon-bar"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <template v-if="toolbarLabel">
+                <ToolbarLabelPlugin ref="toolbarLabelPlugin">
+                    <RockLabel :class="`${hasRequiredRule ? ' required-indicator' : ''}`">{{ toolbarLabel }}</RockLabel>
+                </ToolbarLabelPlugin>
+
+                <ToolbarSpacerPlugin ref="toolbarSpacerPlugin" />
+            </template>
+
+            <MergeFieldPlugin :mergeFields="mergeFields" ref="mergeFieldPlugin" cssClass="btn btn-link" :isIconHidden="true" label="Personalize" />
+
+            <ToolbarCountDownPlugin v-if="isCountDownShown"
+                                    ref="toolbarCountDownPlugin"
+                                    :modelValue="internalValue"
+                                    :countDownMaxChars="countDownMaxChars" />
+        </template>
+    </RockFormField>
+</template>
+
+<style scoped>
+:deep(.tox.tox-tinymce-inline .tox-editor-header) {
+    border: none;
+}
+
+.note-editable {
+    height: v-bind(editorHeightCss);
+}
+
+.note-editor-container {
+    position: relative;
+}
+
+.note-editor .note-toolbar {
+    padding: 0;
+}
+
+:deep([data-css-class="float-right"]) {
+    color: red;
+}
+
+:deep(.note-toolbar-label) {
+    font-weight: 600;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType, computed, onMounted, onUnmounted, ref, watch, watchEffect } from "vue";
+    import MergeFieldPlugin from "./NoteEditor/mergeFieldPlugin.partial.obs";
+    import CountDownPlugin from "./NoteEditor/countDownPlugin.partial.obs";
+    import ToolbarCountDownPlugin from "./NoteEditor/toolbarCountDownPlugin.partial.obs";
+    import ToolbarLabelPlugin from "./NoteEditor/toolbarLabelPlugin.partial.obs";
+    import ToolbarSpacerPlugin from "./NoteEditor/toolbarSpacerPlugin.partial.obs";
+    import { providePluginsFeature } from "./NoteEditor/utils.partial";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import { tinymce, Editor, EditorEvent, Events, RawEditorOptions } from "@Obsidian/Libs/tinymce";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
+
+    type ToolbarConfig = "light" | "full";
+
+    const props = defineProps({
+        /** The SMS text value. */
+        modelValue: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        ...standardRockFormFieldProps,
+
+        /** Whether or not to disable the control. */
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * Merge fields available for selection.
+         * This should include either a list of entity type names (full name), or other non-object string values.
+         *
+         * Format for each string should be one of the following:
+         * @example
+         * "FieldName" // Label will be a case-delimited version of FieldName (i.e. "Field Name")
+         * "FieldName|Label" // Same as previous but with a custom label.
+         * "FieldName^EntityType" // Will evaluate the entity type and add a navigable tree for the object's properties and attributes. Label will be a case delimited version of FieldName (i.e. "Field Name").
+         * "FieldName^EntityType|Label" // Same as previous but with a custom label.
+         */
+        mergeFields: {
+            type: Array as PropType<string[] | undefined>,
+            required: false
+        },
+
+        /** Editor height in pixels (not including toolbar). */
+        editorHeight: {
+            type: Number as PropType<number>,
+            default: 600
+        },
+
+        /** When set to `true`, the code editor will be shown instead on initialization. */
+        startInCodeEditorMode: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * The toolbar mode.
+         * When set to "light", the toolbar will be a lighter more airy view.
+         * When set to "full", the toolbar will display the full monty.
+         */
+        toolbar: {
+            type: String as PropType<ToolbarConfig>,
+            default: "light"
+        },
+
+        /**
+         * The label to display in the toolbar.
+         */
+        toolbarLabel: {
+            type: String as PropType<string | null | undefined>,
+            required: false
+        },
+
+        isCountDownShown: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        countDownMaxChars: {
+            type: Number as PropType<number>,
+            default: 0
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string): void;
+    }>();
+
+    const formFieldProps = useStandardRockFormFieldProps(props);
+
+    // #region Values
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+    const editorId = ref<string>();
+    const editorElement = ref<HTMLElement>();
+    const toolbarId = ref<string>();
+    const toolbarElement = ref<HTMLElement>();
+    const tinyMceInstance = ref<Editor>();
+    // Keep track of the TinyMCE value to compare with the modelValue.
+    const tinyMceValue = ref<string>();
+    const resizerElement = ref<HTMLElement>();
+    const yOffset = ref<number>(0);
+    const isEditorShown = ref<boolean>(false);
+
+    // Plugins
+    const mergeFieldPlugin = ref<InstanceType<typeof MergeFieldPlugin> | undefined>();
+    const toolbarLabelPlugin = ref<InstanceType<typeof ToolbarLabelPlugin> | undefined>();
+    const toolbarSpacerPlugin = ref<InstanceType<typeof ToolbarSpacerPlugin> | undefined>();
+    const toolbarCountDownPlugin = ref<InstanceType<typeof ToolbarCountDownPlugin> | undefined>();
+    const pluginManager = providePluginsFeature({
+        editorInstance: computed(() => tinyMceInstance.value),
+        toolbarElement: computed(() => toolbarElement.value)
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    const editorHeightCss = computed<string>(() => `${props.editorHeight + yOffset.value}px`);
+    const hasRequiredRule = computed(() => {
+        if (Array.isArray(props.rules)) {
+            return props.rules.some(rule => rule === "required");
+        }
+        else {
+            return props.rules === "required";
+        }
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /** Returns the ID assigned to the editor SMS text element. */
+    function assignEditorId(uniquePart: string): string {
+        editorId.value = `sms-text-editor-container-${uniquePart}`;
+        return editorId.value;
+    }
+
+    /** Returns the ID assigned to the editor toolbar SMS text element. */
+    function assignToolbarId(uniquePart: string): string {
+        toolbarId.value = `sms-text-editor-toolbar-container-${uniquePart}`;
+        return toolbarId.value;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /** Event handler for the mouse being pressed while the pointer is inside the resize element. This starts the resize behavior. */
+    function onResizeStart(_event: MouseEvent): void {
+        document.addEventListener("mousemove", onResize);
+        document.addEventListener("mouseup", onResizeEnd, { once: true });
+    }
+
+    /** Event handler for the mouse being moved while the resizer is being dragged. This resizes the editor. */
+    function onResize(event: MouseEvent): void {
+        yOffset.value += event.movementY;
+    }
+
+    /** Event handler for the mouse being released while the resizer is being dragged. This ends the resize behavior. */
+    function onResizeEnd(_event: MouseEvent): void {
+        document.removeEventListener("mousemove", onResize);
+        resizerElement.value?.addEventListener("mousedown", onResizeStart, { once: true });
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    // Update the editor content when the model value changes externally.
+    watchEffect(() => {
+        if (tinyMceInstance.value && !isEditorShown.value && tinyMceValue.value !== internalValue.value) {
+            tinyMceInstance.value.setContent(internalValue.value);
+
+            // Get the new content from the editor after setting it
+            // just in case it gets manipulated by plugins.
+            tinyMceValue.value = tinyMceInstance.value.getContent({ format: "text" });
+        }
+    }, {
+        // "post" will cause the effect to initially execute after the DOM is updated (after the editor is initialized).
+        flush: "post"
+    });
+
+    // Clear the resize offset when the `editorHeight` prop changes.
+    watch(() => props.editorHeight, () => {
+        yOffset.value = 0;
+    });
+
+    // Disable the editor when the `disabled` prop changes.
+    watch(() => props.disabled, () => {
+        setEnabled(!props.disabled);
+    }, {
+        // "post" will cause the effect to initially execute after the DOM is updated (after the editor is initialized).
+        flush: "post"
+    });
+
+    /** Sets the enabled state of the editor. */
+    function setEnabled(isEnabled: boolean): void {
+        if (tinyMceInstance.value && !isEditorShown.value) {
+            // Enable/disable the toolbar and border.
+            tinyMceInstance.value.ui?.setEnabled(isEnabled);
+
+            // Enable/disable the content.
+            const editorBody = tinyMceInstance.value.getBody();
+            if (editorBody) {
+                editorBody.setAttribute("contenteditable", `${isEnabled}`);
+            }
+        }
+    }
+
+    // Initialize the editor.
+    onMounted(() => {
+        if (editorId.value && toolbarId.value) {
+            const editorOptions: RawEditorOptions = {
+                // Add the editor directly to the target element (instead of in an iframe)
+                // by configuring an inline editor with a fixed toolbar.
+                // An inline editor is preferred so the editor will inherit the Rock styles
+                // and have access to the same APIs loaded in the page.
+                // https://www.tiny.cloud/docs/tinymce/6/toolbar-configuration-options/#persistent-inline-editor-toolbar-options
+                selector: `#${editorId.value}`,
+                inline: true,
+                fixed_toolbar_container: `#${toolbarId.value}`,
+                toolbar_persist: true,
+                toolbar_mode: "wrap",
+
+                // The default skin CSS is loaded manually as an import in
+                // @Obsidian/Libs/tinymce.ts, so no need to specify one here.
+                skin: false,
+
+                // Content CSS is not needed since TinyMCE is loaded inline (instead of in an iframe)
+                // and will inherit global Rock styles.
+                content_css: false,
+
+                // Hide the header menu bar and the footer status bar (which includes the TinyMCE attribution).
+                menubar: false,
+                statusbar: false,
+
+                // Allow the editor to be resizable: true - vertical, false - none, 'both' - horizontal & vertical
+                resize: "both",
+
+                // Only include the built-in plugins that are needed to keep TinyMCE leaner.
+                plugins: "searchreplace emoticons",
+
+                // Define the toolbar buttons.
+                // They are displayed in the order in which they are defined
+                // and grouped using pipe (|) characters; e.g.,
+                // {
+                //   "ToolbarConfig": "spaceDelimitedButtonsInGroup1 | spaceDelimitedButtonsInGroup2 | ... | spaceDelimitedButtonsInGroupN"
+                // }
+                // If necessary, don't forget to add the related built-in plugins to the `plugins` option above
+                // or composed as child components if using custom plugins.
+                toolbar: `${toolbarLabelPlugin.value?.id} ${toolbarSpacerPlugin.value?.id} ${mergeFieldPlugin.value?.id} emoticons ${toolbarCountDownPlugin.value?.id}`,
+
+                // The callback that is executed when the editor is initialized.
+                setup: (editor): void => {
+                    // Keep track of the editor instance.
+                    tinyMceInstance.value = editor;
+
+                    // Add shortcuts that were available with the previous editor library.
+                    // Adding all valid shortcut combinations so we can overwrite shortcuts
+                    // that may have been assigned by other plugins.
+                    // https://www.tiny.cloud/docs/tinymce/6/shortcuts/
+                    // https://www.tiny.cloud/docs/tinymce/6/keyboard-shortcuts/
+
+                    // Insert list shortcuts.
+                    // https://www.tiny.cloud/docs/tinymce/6/lists/#commands
+                    editor.addShortcut("access+8,shift+alt+8,alt+shift+8", "Inserts an ordered list into the editor.", (): void => {
+                        editor.execCommand("InsertOrderedList", false, {
+                            "list-style-type": "decimal"
+                        });
+                    });
+                    editor.addShortcut("access+9,shift+alt+9,alt+shift+9", "Inserts an unordered list into the editor.", (): void => {
+                        editor.execCommand("InsertUnorderedList", false, {
+                            "list-style-type": "disc"
+                        });
+                    });
+
+                    // Handle behavior that should occur after the editor is initialized.
+                    editor.on("init", () => {
+                        if (tinyMceInstance.value) {
+                            // Set the initial value.
+                            if (tinyMceValue.value !== internalValue.value) {
+                                tinyMceInstance.value.setContent(internalValue.value);
+
+                                // Get the new content from the editor after setting it
+                                // just in case it gets manipulated by plugins.
+                                tinyMceValue.value = tinyMceInstance.value.getContent({ format: "text" });
+                            }
+
+                            // Set initial enabled state.
+                            setEnabled(!props.disabled);
+                        }
+                    });
+
+                    // Emit model updates when the editor content changes.
+                    // https://www.tiny.cloud/docs/tinymce/6/events/
+                    editor.on("change redo undo input", (_e: EditorEvent<Events.ChangeEvent>): void => {
+                        const newValue = editor.getContent({ format: "text" });
+
+                        if (tinyMceValue.value !== newValue) {
+                            tinyMceValue.value = newValue;
+                            internalValue.value = newValue;
+                        }
+                    });
+                }
+            };
+
+            tinymce.init(pluginManager.configureEditorOptions(editorOptions));
+        }
+
+        // Add vertical resizing.
+        resizerElement.value?.addEventListener("mousedown", onResizeStart, { once: true });
+    });
+
+    // #endregion
+
+    onUnmounted(() => {
+        if (tinyMceInstance.value) {
+            tinyMceInstance.value.destroy();
+        }
+    });
+</script>

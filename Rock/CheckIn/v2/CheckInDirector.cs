@@ -23,6 +23,7 @@ using System.Linq.Expressions;
 using Rock.Data;
 using Rock.Model;
 using Rock.Observability;
+using Rock.Security;
 using Rock.Utility;
 using Rock.ViewModels.CheckIn;
 using Rock.Web.Cache;
@@ -580,6 +581,58 @@ namespace Rock.CheckIn.v2
             attendanceService.DeleteRange( attendanceItems );
 
             RockContext.SaveChanges();
+        }
+
+        /// <summary>
+        /// Tries to authenticate the PIN code provided.
+        /// </summary>
+        /// <param name="pinCode">The PIN code to be authenticated.</param>
+        /// <param name="errorMessage">On return contains any error message that should be displayed.</param>
+        /// <returns><c>true</c> if the PIN code was valid and trusted; otherwise <c>false</c>.</returns>
+        public virtual bool TryAuthenticatePin( string pinCode, out string errorMessage )
+        {
+            var pinAuth = AuthenticationContainer.GetComponent( typeof( Rock.Security.Authentication.PINAuthentication ).FullName );
+
+            // Make sure PIN authentication is enabled.
+            if ( pinAuth == null || !pinAuth.IsActive )
+            {
+                errorMessage = "Sorry, we couldn't find an account matching that PIN.";
+                return false;
+            }
+
+            var userLoginService = new UserLoginService( RockContext );
+            var userLogin = userLoginService.GetByUserName( pinCode );
+
+            // Make sure this is a PIN auth user login.
+            if ( userLogin == null || !userLogin.EntityTypeId.HasValue || userLogin.EntityTypeId.Value != pinAuth.TypeId )
+            {
+                errorMessage = "Sorry, we couldn't find an account matching that PIN.";
+                return false;
+            }
+
+            // This should always return true, but just in case something changes
+            // in the future.
+            if ( !pinAuth.Authenticate( userLogin, null ) )
+            {
+                errorMessage = "Sorry, we couldn't find an account matching that PIN.";
+                return false;
+            }
+
+            if ( !( userLogin.IsConfirmed ?? true ) )
+            {
+                errorMessage = "Sorry, account needs to be confirmed.";
+                return false;
+            }
+            else if ( userLogin.IsLockedOut ?? false )
+            {
+                errorMessage = "Sorry, account is locked-out.";
+                return false;
+            }
+            else
+            {
+                errorMessage = string.Empty;
+                return true;
+            }
         }
 
         #endregion

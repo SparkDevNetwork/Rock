@@ -22,9 +22,14 @@ namespace Rock.SystemGuid
     public static class Layout
     {
         /// <summary>
-        /// Gets the Left Sidebar layout (Internal Site)
+        /// Gets the Left Sidebar layout (External Site)
         /// </summary>
         public const string LEFT_SIDEBAR = "325B7BFD-8B80-44FD-A951-4E4763DA6C0D";
+
+        /// <summary>
+        /// Gets the Left Sidebar layout (Internal Site)
+        /// </summary>
+        public const string LEFT_SIDEBAR_INTERNAL_SITE = "0cb60906-6b74-44fd-ab25-026050ef70eb";
 
         /// <summary>
         /// Gets the Full Width layout (External Site)

@@ -35,6 +35,7 @@ export type LocationDetailOptionsBag = {
     /** Gets or sets a value indicating whether the a PersonId was passed as a URL parameter */
     hasPersonId: boolean;
 
+    /** Gets or sets a value indicating whether the location has NamedLocationFeaturesEnabled set to true. */
     isPersonIdAvailable: boolean;
 
     /** Gets or sets the map style unique identifier. */

@@ -13,22 +13,12 @@
                                 multiple
                                 :entityTypeGuid="EntityType.ContentChannel" />
             </div>
-            <div class="col-md-4">
-                <DropDownList label="Type"
-                              v-model="type"
-                              :items="contentChannelTypeItems"
-                              :showBlankItem="true"
-                              :enhanceForLongLists="false"
-                              :grouped="false"
-                              :multiple="false" />
-            </div>
         </div>
     </Modal>
 </template>
 
 <script setup lang="ts">
     import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
-    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
     import { ref, PropType, watch } from "vue";
@@ -47,13 +37,7 @@
         visible: {
             type: Boolean as PropType<boolean>,
             required: true
-        },
-
-
-        contentChannelTypeItems: {
-            type: Array as PropType<ListItemBag[]>,
-            required: true
-        },
+        }
     });
 
     const emit = defineEmits<{
@@ -62,12 +46,10 @@
     }>();
 
     const categories = ref<ListItemBag[]>(props.modelValue.categories ?? []);
-    const type = ref(props.modelValue.type ?? "");
     const isVisible = useVModelPassthrough(props, "visible", emit);
 
     function onSave(): void {
         const value: GridSettingsOptions = {
-            type: type.value,
             categories: categories.value
         };
 
@@ -80,6 +62,5 @@
 
     watch(() => props.modelValue, () => {
         categories.value = props.modelValue.categories ?? [];
-        type.value = props.modelValue.type ?? "";
     });
 </script>

@@ -110,6 +110,7 @@
 
                             <h3>Contact Information</h3>
                             <hr class="mt-0" />
+                            <Rock:NotificationBox ID="nbAccountProtectionWarning" runat="server" NotificationBoxType="Warning" Visible="false" />
                             <asp:Panel ID="pnlPhoneNumbers" class="form-section" runat="server">
                                 <asp:Repeater ID="rContactInfo" runat="server">
                                     <ItemTemplate>

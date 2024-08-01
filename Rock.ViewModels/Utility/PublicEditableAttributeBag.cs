@@ -179,5 +179,10 @@ namespace Rock.ViewModels.Utility
         /// </summary>
         /// <value>The default value of the attribute.</value>
         public string DefaultValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if changes to the attribute values should be recorded into the generic History log table.
+        /// </summary>
+        public bool IsSuppressHistoryLogging { get; set; }
     }
 }

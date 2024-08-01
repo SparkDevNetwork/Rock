@@ -144,6 +144,12 @@ export class CheckInSession {
     /** The attendance records that have been sent to the server and saved. */
     public readonly attendances: RecordedAttendanceBag[] = [];
 
+    /**
+     * Any messages that should be displayed. This is currently only used
+     * by the check-in and check-out success screens.
+     */
+    public readonly messages: string[] = [];
+
     /** `true` if the current operation is for checkout. */
     public readonly isCheckoutAction: boolean = false;
 
@@ -165,6 +171,9 @@ export class CheckInSession {
 
     /** The API key to use to authorize requests from this session. */
     public readonly apiKey?: string;
+
+    /** The PIN code to use to request override access to the API. */
+    public readonly overridePinCode?: string;
 
     // #endregion
 
@@ -195,6 +204,7 @@ export class CheckInSession {
             this.configuration = configurationOrSession.configuration;
             this.http = configurationOrSession.http;
             this.apiKey = configurationOrSession.apiKey;
+            this.overridePinCode = configurationOrSession.overridePinCode;
             this.currentScreen = configurationOrSession.currentScreen;
             this.searchTerm = configurationOrSession.searchTerm;
             this.searchType = configurationOrSession.searchType;
@@ -214,6 +224,7 @@ export class CheckInSession {
             this.possibleSchedules = configurationOrSession.possibleSchedules;
             this.allAttendeeSelections = clone(configurationOrSession.allAttendeeSelections);
             this.attendances = clone(configurationOrSession.attendances);
+            this.messages = clone(configurationOrSession.messages);
             this.isCheckoutAction = configurationOrSession.isCheckoutAction;
             this.checkedOutAttendances = configurationOrSession.checkedOutAttendances;
 
@@ -380,7 +391,8 @@ export class CheckInSession {
 
         return new CheckInSession(this, {
             attendances,
-            allAttendeeSelections: []
+            allAttendeeSelections: [],
+            messages: response.data.messages ?? []
         });
     }
 
@@ -452,7 +464,8 @@ export class CheckInSession {
             configurationTemplateId: this.configuration.template.id,
             kioskId: this.configuration.kiosk.id,
             areaIds: this.configuration.areas?.filter(a => !!a.id).map(a => a.id as string),
-            familyId: familyId
+            familyId: familyId,
+            overridePinCode: this.overridePinCode
         };
 
         const response = await this.http.post<FamilyMembersResponseBag>(this.getApiUrl("/api/v2/checkin/FamilyMembers"), undefined, request);
@@ -523,7 +536,8 @@ export class CheckInSession {
         }
 
         return new CheckInSession(this, {
-            checkedOutAttendances: [...this.checkedOutAttendances, ...response.data.attendances]
+            checkedOutAttendances: [...this.checkedOutAttendances, ...response.data.attendances],
+            messages: response.data.messages ?? []
         });
     }
 
@@ -599,7 +613,8 @@ export class CheckInSession {
             kioskId: this.configuration.kiosk.id,
             areaIds: this.configuration.areas?.filter(a => !!a.id).map(a => a.id as string),
             familyId: this.currentFamilyId,
-            personId: attendeeId
+            personId: attendeeId,
+            overridePinCode: this.overridePinCode
         };
 
         const response = await this.http.post<AttendeeOpportunitiesResponseBag>(this.getApiUrl("/api/v2/checkin/AttendeeOpportunities"), undefined, request);
@@ -1018,7 +1033,9 @@ export class CheckInSession {
         }
 
         const attendeeGroups = this.attendeeOpportunities.groups
-            .filter(g => !g.abilityLevelId || g.abilityLevelId === this.selectedAbilityLevel?.id);
+            .filter(g => (this.overridePinCode !== undefined && this.overridePinCode !== "")
+                || !g.abilityLevelId
+                || g.abilityLevelId === this.selectedAbilityLevel?.id);
 
         if (this.configuration.template?.kioskCheckInType === KioskCheckInMode.Individual) {
             // In individual mode we need to filter the groups by the selected
@@ -1225,6 +1242,24 @@ export class CheckInSession {
         return new CheckInSession(this, {
             apiKey: apiKey
         });
+    }
+
+    /**
+     * Configures a new cloned check-in session for supervisor override with
+     * the specified PIN code.
+     *
+     * @param pinCode The PIN code used to authentication the supervisor.
+     *
+     * @returns A new check-in session instance.
+     */
+    public withStartOverride(pinCode: string): CheckInSession {
+        if (this.currentScreen !== Screen.Welcome) {
+            throw new InvalidCheckInStateError("Can only start override on welcome screen.");
+        }
+
+        return new CheckInSession(this, {
+            overridePinCode: pinCode
+        }).withScreen(Screen.Search);
     }
 
     // #endregion
@@ -1444,6 +1479,11 @@ export class CheckInSession {
             }
         }
 
+        // When in override mode, we don't ask for ability level.
+        if (this.overridePinCode !== undefined && this.overridePinCode !== "") {
+            return await newSession.withNextScreenFromAbilityLevelSelect();
+        }
+
         // If we have more than 1 ability level to pick from then show the
         // ability level screen.
         if (abilityLevels.length > 1) {
@@ -1624,8 +1664,13 @@ export class CheckInSession {
                 ?.groups
                 ?.filter(g => !!g.abilityLevelId) ?? [];
 
-            if (groupsWithAbilityLevels.length === 0) {
+            if (groupsWithAbilityLevels.length === 0 || this.overridePinCode) {
                 return familySession.withNextScreenFromAbilityLevelSelect();
+            }
+
+            // When in override mode, we don't ask for ability level.
+            if (this.overridePinCode !== undefined && this.overridePinCode !== "") {
+                return await familySession.withNextScreenFromAbilityLevelSelect();
             }
 
             return familySession.withScreen(Screen.AbilityLevelSelect);
@@ -1669,13 +1714,18 @@ export class CheckInSession {
             }
 
             // If there are no groups that filter by ability level then we
-            // can also skip the ability levle screen.
+            // can also skip the ability level screen.
             const groupsWithAbilityLevels = familySession.attendeeOpportunities
                 ?.groups
                 ?.filter(g => !!g.abilityLevelId) ?? [];
 
             if (groupsWithAbilityLevels.length === 0) {
                 return familySession.withNextScreenFromAbilityLevelSelect();
+            }
+
+            // When in override mode, we don't ask for ability level.
+            if (this.overridePinCode !== undefined && this.overridePinCode !== "") {
+                return await familySession.withNextScreenFromAbilityLevelSelect();
             }
 
             return familySession.withScreen(Screen.AbilityLevelSelect);

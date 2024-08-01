@@ -39,6 +39,7 @@ public class Program
         }
 
         builder.Services.Configure<CloudPrintOptions>( builder.Configuration );
+        builder.Services.AddSingleton<ProxyStatus>();
         builder.Services.AddHostedService<ProxyWorker>();
         builder.Services.AddHostedService<NamedPipeService>();
 

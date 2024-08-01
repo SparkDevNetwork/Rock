@@ -148,10 +148,10 @@
                                  help="The Content Channel Item Publishing Point will be used for the Item URL in the RSS feed." />
                         <div class="row">
                             <div class="col-md-4">
-                                <NumberBox v-model="timeToLive"
-                                           label="Time to Live (TTL)"
-                                           :minimumValue="0"
-                                           help="The number of minutes a feed can stay cached before it is refreshed from the source." />
+                                <TextBox v-model="timeToLive"
+                                         :rules="validateNumberValue"
+                                         label="Time to Live (TTL)"
+                                         help="The number of minutes a feed can stay cached before it is refreshed from the source." />
                             </div>
                         </div>
                     </div>
@@ -167,7 +167,8 @@
                                       help="When enabled, items can be tagged by editors however if categories (below) are used, the category must have 'Tag' security rights for people to use existing organizational tags." />
                         </div>
                         <div v-if="isTaggingEnabled" class="col-xs-6">
-                            <CategoryPicker :entityTypeGuid="EntityType.Tag"
+                            <CategoryPicker v-model="itemTagCategory"
+                                            :entityTypeGuid="EntityType.Tag"
                                             label="Tag Category"
                                             help="Remember to apply appropriate security (action level 'Tag') to these categories." />
                         </div>
@@ -195,7 +196,6 @@
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
-    import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import Grid, { EditColumn, TextColumn, DeleteColumn, BooleanColumn, ReorderColumn } from "@Obsidian/Controls/grid";
     import Modal from "@Obsidian/Controls/modal.obs";
     import ModalAlert from "@Obsidian/Controls/modalAlert.obs";
@@ -244,7 +244,7 @@
     const iconCssClass = propertyRef(props.modelValue.iconCssClass ?? "", "IconCssClass");
     const enableRss = propertyRef(props.modelValue.enableRss ?? "", "EnableRss");
     const channelUrl = propertyRef(props.modelValue.channelUrl ?? "", "ChannelUrl");
-    const timeToLive = propertyRef(props.modelValue.timeToLive, "TimeToLive");
+    const timeToLive = propertyRef(props.modelValue.timeToLive || "0", "TimeToLive");
     const itemUrl = propertyRef(props.modelValue.itemUrl ?? "", "ItemUrl");
     const isTaggingEnabled = propertyRef(props.modelValue.isTaggingEnabled, "IsTaggingEnabled");
     const itemTagCategory = propertyRef(props.modelValue.itemTagCategory ?? null, "ItemTagCategoryId");
@@ -357,6 +357,28 @@
             key: childContentChannel.value,
             name: childContentChannel.text
         };
+    }
+
+    function validateNumberValue(value: unknown): string | boolean {
+
+        const stringValue = value as string;
+
+        if (stringValue) {
+            if (!isValidNumber(stringValue)) {
+                return "must be a valid number.";
+            }
+        }
+
+        return true;
+    }
+
+    function isValidNumber(value: string | null | undefined): boolean {
+        if (!value) {
+            return false;
+        }
+
+        const num = Number(value);
+        return !isNaN(num) && isFinite(num);
     }
 
     // #endregion
@@ -520,7 +542,7 @@
         updateRefValue(iconCssClass, props.modelValue.iconCssClass ?? "");
         updateRefValue(enableRss, props.modelValue.enableRss);
         updateRefValue(channelUrl, props.modelValue.channelUrl ?? "");
-        updateRefValue(timeToLive, props.modelValue.timeToLive);
+        updateRefValue(timeToLive, props.modelValue.timeToLive ?? "");
         updateRefValue(itemUrl, props.modelValue.itemUrl ?? "");
         updateRefValue(isTaggingEnabled, props.modelValue.isTaggingEnabled);
         updateRefValue(itemTagCategory, props.modelValue.itemTagCategory ?? null);

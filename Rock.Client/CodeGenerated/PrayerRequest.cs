@@ -94,16 +94,25 @@ namespace Rock.Client
         /// <summary />
         public string LastName { get; set; }
 
+        /// <summary />
+        public long ModerationFlags { get; set; }
+
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
         public bool ModifiedAuditValuesAlreadyUpdated { get; set; }
 
         /// <summary />
+        public string OriginalRequest { get; set; }
+
+        /// <summary />
         public int? PrayerCount { get; set; }
 
         /// <summary />
         public int? RequestedByPersonAliasId { get; set; }
+
+        /// <summary />
+        public int? SentimentEmotionValueId { get; set; }
 
         /// <summary />
         public string Text { get; set; }
@@ -161,9 +170,12 @@ namespace Rock.Client
             this.IsUrgent = source.IsUrgent;
             this.LanguageValueId = source.LanguageValueId;
             this.LastName = source.LastName;
+            this.ModerationFlags = source.ModerationFlags;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
+            this.OriginalRequest = source.OriginalRequest;
             this.PrayerCount = source.PrayerCount;
             this.RequestedByPersonAliasId = source.RequestedByPersonAliasId;
+            this.SentimentEmotionValueId = source.SentimentEmotionValueId;
             this.Text = source.Text;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;

@@ -18,6 +18,7 @@
 using System.Collections.Generic;
 
 using Rock.Data;
+using Rock.Lava;
 using Rock.ViewModels.CheckIn.Labels;
 
 namespace Rock.CheckIn.v2.Labels
@@ -78,7 +79,9 @@ namespace Rock.CheckIn.v2.Labels
                 {
                     foreach ( var prop in LabelData.GetType().GetProperties() )
                     {
-                        mergeFields.Add( prop.Name, prop.GetValue( LabelData ) );
+                        var value = prop.GetValue( LabelData );
+
+                        mergeFields.Add( prop.Name, LavaDataWrapper.GetWrappedObject( value ) );
                     }
                 }
 

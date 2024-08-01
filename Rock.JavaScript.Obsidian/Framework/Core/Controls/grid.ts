@@ -341,6 +341,10 @@ export function booleanFilterMatches(needle: unknown, haystack: unknown): boolea
         return true;
     }
 
+    if (needleBag.method === BooleanFilterMethod.No && haystack === false) {
+        return true;
+    }
+
     return false;
 }
 

@@ -441,7 +441,7 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
                 if ( measurementClassificationValue != null )
                 {
                     measurementClassificationValue.LoadAttributes();
-                    var allowMultiple = measurementClassificationValue.GetAttributeValue( "AllowMultiple" ).AsBoolean();
+                    var allowMultiple = measurementClassificationValue.GetAttributeValue( "AllowMultipleMetrics" ).AsBoolean();
 
                     if ( !allowMultiple )
                     {

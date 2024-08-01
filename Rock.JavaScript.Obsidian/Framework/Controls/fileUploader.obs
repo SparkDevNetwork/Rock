@@ -27,7 +27,7 @@
 
                     <div class="fileupload-dropzone">
                         <span>{{ uploadButtonText }}</span>
-                        <input ref="fileInputElement" type="file" style="display: none;" @change="onFileChange" @remove="onFileRemove" />
+                        <input ref="fileInputElement" type="file" style="display: none;" @change="onFileChange" @remove="onFileRemove" :disabled="disabled" />
                     </div>
                 </div>
             </div>
@@ -89,11 +89,17 @@
         uploadUrl: {
             type: String,
             required: false
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: ListItemBag | undefined): void;
+        (e: "error", value: string): void;
     }>();
 
     const fileGuid = ref<Guid | null>(toGuidOrNull(props.modelValue?.value));
@@ -168,7 +174,7 @@
      * to be uploaded into Rock.
      */
     const onSelectFileClick = (): void => {
-        if (!isUploading.value) {
+        if (!isUploading.value && !props.disabled) {
             fileInputElement.value?.click();
         }
     };
@@ -177,13 +183,15 @@
      * Event handler for when the remove file button is clicked.
      */
     const onRemoveFileClick = (): void => {
-        // Required in order to clear and upload the same file again
-        if (fileInputElement.value) {
-            fileInputElement.value.value = "";
-        }
+        if (!props.disabled) {
+            // Required in order to clear and upload the same file again
+            if (fileInputElement.value) {
+                fileInputElement.value.value = "";
+            }
 
-        fileGuid.value = null;
-        fileName.value = "";
+            fileGuid.value = null;
+            fileName.value = "";
+        }
     };
 
     /**
@@ -266,5 +274,11 @@
         }
 
         emit("update:modelValue", newValue);
+    });
+
+    watch(uploadErrorMessage, error => {
+        if (error) {
+            emit("error", error);
+        }
     });
 </script>

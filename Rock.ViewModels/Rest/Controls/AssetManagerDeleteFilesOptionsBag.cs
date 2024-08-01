@@ -34,5 +34,10 @@ namespace Rock.ViewModels.Rest.Controls
         /// The list of IDs of files to be deleted
         /// </summary>
         public List<string> Files { get; set; }
+
+        /// <summary>
+        /// Gets or sets the security grant token.
+        /// </summary>
+        public string SecurityGrantToken { get; set; }
     }
 }

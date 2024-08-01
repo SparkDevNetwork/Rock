@@ -1,0 +1,146 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isShown"
+           title="Select File"
+           cancelText="Cancel"
+           saveText="OK"
+           :onSave="onOkClicked">
+        TODO: Add File Browser
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    /**
+     * FileBrowserPlugin - Adds a toolbar button for attaching a file.
+     *
+     * @example
+     * <!--
+     *      someEditorHost.obs - This example shows just enough code to wire up the plugin.
+     *      FYI, the Vue - Official extension complains if template and script tags are used in comments,
+     *      so using (template) and (script) for now.
+     * -->
+     * (template)
+     *   <div id="uniqueEditorId">
+     *     <FileBrowserPlugin ref="fileBrowserPlugin" />
+     *   </div>
+     * (/template)
+     *
+     * (script setup lang="ts")
+     *   import FileBrowserPlugin from "./NoteEditor/fileBrowserPlugin.partial.obs";
+     *   ...
+     *
+     *   const fileBrowserPlugin = ref<InstanceType<typeof FileBrowserPlugin> | undefined>();
+     *   ...
+     *
+     *   // The host must provide the plugins feature.
+     *   const pluginManager = providePluginsFeature({
+     *       editorInstance: computed(() => tinyMceInstance.value),
+     *       toolbarElement: computed(() => toolbarElement.value)
+     *   });
+     *   ...
+     *
+     *   // Initialize the editor.
+     *   onMounted(() => {
+     *     ...
+     *
+     *     tinymce.init({
+     *       // The file browser button can be placed anywhere in this configuration string.
+     *       // Here, the toolbar will display
+     *       // the file browser button, followed by a separator character,
+     *       // then the undo and redo buttons.
+     *       // Reference: https://www.tiny.cloud/docs/tinymce/6/toolbar-configuration-options/#example-grouped-toolbar
+     *       toolbar: `${fileBrowserPlugin.value?.id} | undo redo`
+     *     });
+     *
+     *     ...
+     *   });
+     * (/script)
+     */
+    import { ref, watch } from "vue";
+    import { getToolbarButton, usePluginHelper } from "./utils.partial";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import { Editor, Ui } from "@Obsidian/Libs/tinymce";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const id = "rockfilebrowser" as const;
+    const tooltip = "File Browser" as const;
+
+    defineExpose({
+        id
+    });
+
+    //#region Values
+
+    const { editorInstance, toolbarElement } = usePluginHelper();
+    const toolbarButtonElement = ref<HTMLElement | undefined>();
+    const isShown = ref<boolean>(false);
+    const file = ref<ListItemBag | undefined>();
+
+    //#endregion
+
+    //#region Computed Values
+
+    //#endregion
+
+    //#region Functions
+
+    /** Disposes the tooltip button. */
+    function disposeTooltipButton(): void {
+        // Nothing to dispose.
+    }
+
+    /** Initializes the plugin. */
+    function init(editor: Editor): void {
+        // Register toolbar buttons.
+        // Open the modal when the toolbar button is clicked.
+        editor.ui.registry.addToggleButton(id, {
+            // https://www.tiny.cloud/docs/tinymce/latest/editor-icon-identifiers/
+            icon: "new-document",
+            tooltip: tooltip,
+            onAction: (_api: Ui.Toolbar.ToolbarButtonInstanceApi): void => {
+                isShown.value = true;
+            },
+            onSetup: (_api: Ui.Toolbar.ToolbarToggleButtonInstanceApi): (api: Ui.Toolbar.ToolbarToggleButtonInstanceApi) => void => {
+                toolbarButtonElement.value = getToolbarButton(tooltip, toolbarElement.value) ?? undefined;
+
+                // Return a dispose callback.
+                return disposeTooltipButton;
+            },
+        });
+    }
+
+    //#endregion
+
+    //#region Event Handlers
+
+    /** Event handler for the OK button being clicked. */
+    function onOkClicked(): void {
+        const editor = editorInstance.value;
+
+        if (editor && file.value?.value) {
+            // TODO: Add the file to the editor assuming file.value is the file path.
+            // https://www.tiny.cloud/docs/tinymce/latest/editor-command-identifiers/#link:~:text=the%20current%20selection.-,CreateLink,-Inserts%20a%20link
+            editor.execCommand("CreateLink", false, file.value.value);
+        }
+
+        // Clear the selected file and close the modal.
+        file.value = undefined;
+        isShown.value = false;
+    }
+
+    //#endregion
+
+    //#region Watchers
+
+    // Register the plugin whenever the bound Editor changes.
+    watch(editorInstance, () => {
+        // Dispose the previous tooltip button if set.
+        disposeTooltipButton();
+
+        if (editorInstance.value) {
+            init(editorInstance.value);
+        }
+    });
+
+    //#endregion
+</script>

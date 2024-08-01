@@ -1,0 +1,136 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Switch :modelValue="isScheduled"
+            @update:modelValue="onSwitchIsScheduled"
+            :disabled="disabled"
+            :key="componentKey"
+            :text="scheduleSendText"
+            v-bind="$attrs" />
+
+    <Modal v-model="isScheduleSendModalOpen"
+           title="Schedule Send"
+           saveText="Save"
+           @save="onScheduleSendModalSave"
+           @closeModal="onScheduleSendModalClose">
+        <div class="schedule-send-modal">
+            <div>Please choose a date and time for scheduling your email delivery.</div>
+            <DateTimePicker v-model="tempScheduleSendIsoString" label="Schedule Date Time" />
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { PropType, computed, nextTick, ref } from "vue";
+    import DateTimePicker from "@Obsidian/Controls/dateTimePicker.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import Switch from "@Obsidian/Controls/switch.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+
+    const props = defineProps({
+        /**
+         * The schedule send datetime value in ISO 8601 format.
+         */
+        modelValue: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        /**
+         * Is this component disabled?
+         */
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string): void;
+    }>();
+
+    //#region Values
+
+    const internalScheduleSendIsoString = useVModelPassthrough(props, "modelValue", emit);
+    const isScheduleSendModalOpen = ref<boolean>(false);
+    const tempScheduleSendIsoString = ref<string>(internalScheduleSendIsoString.value);
+    const componentKey = ref<number>(0);
+
+    //#endregion
+
+    //#region Computed Values
+
+    const scheduleSendText = computed<string>(() => {
+        const dateTimeString = RockDateTime.parseISO(internalScheduleSendIsoString.value)?.toASPString("M/d/yyyy hh:mm tt");
+
+        return isScheduled.value && dateTimeString ? `Scheduled: ${dateTimeString}` : "Schedule Send";
+    });
+
+    const isScheduled = computed<boolean>(() => {
+        return !!RockDateTime.parseISO(internalScheduleSendIsoString.value);
+    });
+
+    //#endregion
+
+    //#region Event Handlers
+
+    function onSwitchIsScheduled(value: boolean): void {
+        if (value) {
+            // Open the scheduled send modal!
+            if (!isScheduleSendModalOpen.value) {
+                isScheduleSendModalOpen.value = true;
+            }
+            else {
+                isScheduleSendModalOpen.value = false;
+                nextTick(() => isScheduleSendModalOpen.value = true);
+            }
+        }
+        else {
+            // Clear the scheduled send value and close the modal if it's open.
+            internalScheduleSendIsoString.value = "";
+
+            if (isScheduleSendModalOpen.value) {
+                isScheduleSendModalOpen.value = false;
+            }
+        }
+    }
+
+    function onScheduleSendModalSave(): void {
+        const dateTime = RockDateTime.parseISO(tempScheduleSendIsoString.value ?? "");
+
+        if (!dateTime) {
+            // The date time was invalid.
+            // Set the switch to false and reset the send schedule values.
+            internalScheduleSendIsoString.value = "";
+            tempScheduleSendIsoString.value = "";
+        }
+        else {
+            // Save the temporary value.
+            internalScheduleSendIsoString.value = tempScheduleSendIsoString.value;
+        }
+
+        // Close the modal.
+        isScheduleSendModalOpen.value = false;
+    }
+
+    function onScheduleSendModalClose(): void {
+        // The modal was closed without saving the send schedule.
+        // Set the switch to false and reset the send schedule values.
+        internalScheduleSendIsoString.value = "";
+        tempScheduleSendIsoString.value = "";
+
+        // Force rerender in case the model value didn't actually change.
+        // Otherwise, the schedule send switch may be left in the on position.
+        forceRerender();
+    }
+
+    //#endregion
+
+    //#region Functions
+
+    function forceRerender(): void {
+        componentKey.value += 1;
+    }
+
+    //#endregion
+</script>

@@ -1,0 +1,229 @@
+<template>
+    <BreakpointObserver>
+        <Panel v-if="!config.isHidden"
+               :title="config.title ?? 'New Communication'"
+               titleIconCssClass="fa fa-comment-o"
+               type="block">
+
+            <template v-if="config.mode === Mode.Full && statusLabel" #subheaderRight>
+                <HighlightLabel :labelType="statusLabelCssClass">{{ statusLabel }}</HighlightLabel>
+            </template>
+
+            <template #default>
+                <div v-if="!areResultsShown">
+                    <TabbedBar v-if="mediums.length > 1"
+                               v-model="selectedMediumEntityTypeGuidOrEmptyString"
+                               :disabled="disabled"
+                               type="tabs"
+                               :tabs="mediums" />
+
+                    <div :class="['tabbed-content', mediums.length <= 1 ? '' : 'mt-4']">
+                        <KeepAlive v-if="selectedMediumEntityTypeGuidOrEmptyString && config.communication && config.mediumOptions">
+                            <Email v-if="selectedMedium === 'email'"
+                                   v-model:disabled="disabled"
+                                   v-model:recipients="recipients"
+                                   v-model:isBulkCommunication="isBulkCommunication"
+                                   v-model:scheduleSendIsoString="scheduleSendIsoString"
+                                   @saved="onSentOrSaved"
+                                   @sent="onSentOrSaved" />
+
+                            <Sms v-else-if="selectedMedium === 'sms'"
+                                 v-model:disabled="disabled"
+                                 v-model:recipients="recipients"
+                                 v-model:isBulkCommunication="isBulkCommunication"
+                                 v-model:scheduleSendIsoString="scheduleSendIsoString"
+                                 @saved="onSentOrSaved"
+                                 @sent="onSentOrSaved" />
+
+                            <PushNotification v-else-if="selectedMedium === 'push'"
+                                              v-model:disabled="disabled"
+                                              v-model:recipients="recipients"
+                                              v-model:isBulkCommunication="isBulkCommunication"
+                                              v-model:scheduleSendIsoString="scheduleSendIsoString"
+                                              @saved="onSentOrSaved"
+                                              @sent="onSentOrSaved" />
+
+                            <div v-else>
+                                Unknown communication medium (Guid: {{ selectedMediumEntityTypeGuidOrEmptyString }}).
+                                Options are
+                                <ul>
+                                    <li>{{ EntityType.CommunicationMediumEmail }}</li>
+                                    <li>{{ EntityType.CommunicationMediumSms }}</li>
+                                    <li>{{ EntityType.CommunicationMediumPushNotification }}</li>
+                                </ul>
+                            </div>
+                        </KeepAlive>
+                    </div>
+                </div>
+
+                <template v-else>
+                    <div id="pnlResult"
+                         ref="sentResultsDiv"
+                         class="js-pnl-result">
+
+                        <NotificationBox alertType="success">{{ resultMessage }}</NotificationBox>
+
+                        <EmailMetricsReminder v-if="config.areEmailMetricsReminderOptionsShown && selectedMedium === 'email' && communicationGuid"
+                                              :communicationGuid="communicationGuid" />
+
+                        <a v-if="isViewCommunicationShown" :href="viewCommunicationUrl">View Communication</a>
+                    </div>
+                </template>
+            </template>
+        </Panel>
+    </BreakpointObserver>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import BreakpointObserver from "./CommunicationEntry/breakpointObserver.partial.obs";
+    import Email from "./CommunicationEntry/communicationMediumEmail.partial.obs";
+    import PushNotification from "./CommunicationEntry/communicationMediumPushNotification.partial.obs";
+    import Sms from "./CommunicationEntry/communicationMediumSms.partial.obs";
+    import EmailMetricsReminder from "./CommunicationEntry/emailMetricsReminder.partial.obs";
+    import { MediumType } from "./CommunicationEntry/types.partial";
+    import { provideSelectedMediumType, provideTemplate } from "./CommunicationEntry/utils.partial";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import TabbedBar from "@Obsidian/Controls/tabbedBar.obs";
+    import { CommunicationStatus, CommunicationStatusDescription } from "@Obsidian/Enums/Communication/communicationStatus";
+    import { Mode } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntry/mode";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
+    import { areEqual } from "@Obsidian/Utility/guid";
+    import { Guid } from "@Obsidian/Types";
+    import { CommunicationEntryCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryCommunicationBag";
+    import { CommunicationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryInitializationBox";
+    import { CommunicationEntryRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryRecipientBag";
+    import { CommunicationEntrySendResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySendResponseBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const config = useConfigurationValues<CommunicationEntryInitializationBox>();
+    const reloadBlock = useReloadBlock();
+
+    defineProps();
+
+    //#region Values
+
+    const areResultsShown = ref<boolean>(false);
+    const status = ref<CommunicationStatus>(config.communication?.status ?? CommunicationStatus.Draft);
+    const sentResultsDiv = ref<HTMLElement | undefined>();
+    const mediums = computed<ListItemBag[]>(() => config.mediums ?? []);
+    const selectedMediumEntityTypeGuidOrEmptyString = ref<string>(config.mediumOptions?.mediumEntityTypeGuid ?? "");
+    const resultMessage = ref<string | null | undefined>("");
+    const isViewCommunicationShown = ref<boolean>(false);
+    const viewCommunicationUrl = ref<string>("#");
+    const disabled = ref<boolean>(false);
+    const recipients = ref<CommunicationEntryRecipientBag[]>(config.communication?.recipients ?? []);
+    const isBulkCommunication = ref<boolean>(config.communication?.isBulkCommunication ?? false);
+    const scheduleSendIsoString = ref<string>(config.communication?.futureSendDateTime ?? "");
+    const communicationGuid = ref<Guid | undefined>(config.communication?.communicationGuid ?? undefined);
+    const template = ref<CommunicationEntryCommunicationBag | null | undefined>(config.communication);
+
+    //#endregion
+
+    //#region Computed Values
+
+    const statusLabel = computed<string | null>(() => {
+        if (status.value === CommunicationStatus.Transient) {
+            return "Draft";
+        }
+        else {
+            return CommunicationStatusDescription[status.value];
+        }
+    });
+
+    const statusLabelCssClass = computed<"default" | "type" | "success" | "primary" | "danger" | "warning" | "info" | "custom" | "campus" | undefined>(() => {
+        switch (status.value) {
+            case CommunicationStatus.PendingApproval: {
+                return "warning";
+            }
+            case CommunicationStatus.Approved: {
+                return "success";
+            }
+            case CommunicationStatus.Denied: {
+                return "danger";
+            }
+            case CommunicationStatus.Transient:
+            case CommunicationStatus.Draft:
+            default: {
+                return "default";
+            }
+        }
+    });
+
+    const selectedMedium = computed<MediumType>(() => {
+        if (areEqual(selectedMediumEntityTypeGuidOrEmptyString.value, EntityType.CommunicationMediumEmail)) {
+            return "email";
+        }
+        else if (areEqual(selectedMediumEntityTypeGuidOrEmptyString.value, EntityType.CommunicationMediumSms)) {
+            return "sms";
+        }
+        else if (areEqual(selectedMediumEntityTypeGuidOrEmptyString.value, EntityType.CommunicationMediumPushNotification)) {
+            return "push";
+        }
+        else {
+            return "unknown";
+        }
+    });
+
+    //#endregion
+
+    //#region Functions
+
+    //#endregion
+
+    //#region Event Handlers
+
+    /** Event handler for the communication being sent. */
+    function onSentOrSaved(value: CommunicationEntrySendResponseBag): void {
+        const url = new URL(window.location.href);
+        const queryParams = url.searchParams;
+
+        // Remove the "edit" param.
+        const queryStringKeysToDelete: string[] = [];
+        for (const key of queryParams.keys()) {
+            if (key?.toLowerCase() === "edit") {
+                queryStringKeysToDelete.push(key);
+            }
+        }
+
+        for (const keyToDelete of queryStringKeysToDelete) {
+            queryParams.delete(keyToDelete);
+        }
+
+        // Add the "CommunicationId" param.
+        queryParams.set("CommunicationId", value.communicationId.toString());
+
+        if (value.redirectToViewMode) {
+            window.location.href = url.href;
+        }
+        else {
+            viewCommunicationUrl.value = url.href;
+
+            status.value = value.communicationStatus ?? CommunicationStatus.Draft;
+            resultMessage.value = value.message;
+            areResultsShown.value = true;
+            communicationGuid.value = value.communicationGuid;
+
+            // Only show the link to view the communcation if the current page has a detail block.
+            isViewCommunicationShown.value = value.hasDetailBlockOnCurrentPage;
+        }
+    }
+
+    //#endregion
+
+    //#region Watchers
+
+    //#endregion
+
+    //#region Hooks
+
+    //#endregion
+
+    provideSelectedMediumType(selectedMedium);
+    provideTemplate(template);
+    onConfigurationValuesChanged(reloadBlock);
+
+</script>

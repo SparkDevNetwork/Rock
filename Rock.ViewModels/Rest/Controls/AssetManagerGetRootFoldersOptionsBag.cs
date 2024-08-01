@@ -52,5 +52,10 @@ namespace Rock.ViewModels.Rest.Controls
         /// Whether local file system folders should be included in the result.
         /// </summary>
         public bool EnableFileManager { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets the security grant token.
+        /// </summary>
+        public string SecurityGrantToken { get; set; }
     }
 }

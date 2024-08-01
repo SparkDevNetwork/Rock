@@ -59,7 +59,8 @@
 
         /**
          * List of items (by their `value` property) that should be expanded when the tree list is first loaded
-         * (after root is loaded).
+         * (after root is loaded). This allows us to auto-expand more than just the selected items and their
+         * parents.
          */
         initiallyExpanded: {
             type: Array as PropType<string[]>,

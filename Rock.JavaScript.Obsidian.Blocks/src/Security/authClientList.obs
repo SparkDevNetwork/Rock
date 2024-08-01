@@ -10,7 +10,7 @@
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
-          title="OpenID Connect Client"
+          title="OpenID Connect Clients"
           itemTerm="Authentication Client"
           :entityTypeGuid="EntityType.AuthClient"
           stickyHeader

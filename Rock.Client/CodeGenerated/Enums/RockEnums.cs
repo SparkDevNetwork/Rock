@@ -1908,6 +1908,38 @@ namespace Rock.Client.Enums.WebFarm
 
 }
 
+namespace Rock.Client.Enums.Blocks.Communication.CommunicationEntry
+{
+    /// <summary>
+    /// </summary>
+    public enum MediumType
+    {
+        Unknown = 0x0,
+        Email = 0x1,
+        Sms = 0x2,
+        Push = 0x3,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum Mode
+    {
+        Full = 0x0,
+        Simple = 0x1,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum PushOpenActionType
+    {
+        NoAction = 0x0,
+        ShowDetails = 0x1,
+        LinkToMobilePage = 0x2,
+        LinkToUrl = 0x3,
+    }
+
+}
+
 namespace Rock.Client.Enums.Blocks.Engagement.SignUp
 {
     /// <summary>

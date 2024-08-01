@@ -22,11 +22,9 @@ export const enum NavigationUrlKey {
 }
 
 export const enum PreferenceKey {
-    FilterType = "Type",
     FilterCategories = "Categories"
 }
 
 export type GridSettingsOptions = {
-    type?: string | null;
     categories: ListItemBag[];
 };

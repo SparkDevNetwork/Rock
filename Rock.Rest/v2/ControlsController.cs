@@ -47,6 +47,7 @@ using Rock.Media;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Security;
+using Rock.Storage;
 using Rock.Storage.AssetStorage;
 using Rock.Utility;
 using Rock.Utility.CaptchaApi;
@@ -125,7 +126,7 @@ namespace Rock.Rest.v2
                 .Select( a => new TreeItemBag
                 {
                     Value = a.Guid.ToString(),
-                    Text = HttpUtility.HtmlEncode( options.DisplayPublicName ? a.PublicName : a.Name ),
+                    Text = options.DisplayPublicName ? a.PublicName : a.Name,
                     IsActive = a.IsActive,
                     IconCssClass = "fa fa-file-o"
                 } ).ToList();
@@ -255,7 +256,7 @@ namespace Rock.Rest.v2
                     .Select( a => new ListItemBag
                     {
                         Value = a.Guid.ToString(),
-                        Text = HttpUtility.HtmlEncode( ( options.DisplayPublicName ? a.PublicName : a.Name ) + ( a.GlCode.IsNotNullOrWhiteSpace() ? $" ({a.GlCode})" : "" ) ),
+                        Text = ( options.DisplayPublicName ? a.PublicName : a.Name ) + ( a.GlCode.IsNotNullOrWhiteSpace() ? $" ({a.GlCode})" : "" ),
                         Category = financialAccountService.GetDelimitedAccountHierarchy( a, FinancialAccountService.AccountHierarchyDirection.CurrentAccountToParent )
                     } )
                     .ToList();
@@ -295,7 +296,7 @@ namespace Rock.Rest.v2
                     .Select( a => new ListItemBag
                     {
                         Value = a.Guid.ToString(),
-                        Text = HttpUtility.HtmlEncode( options.DisplayPublicName ? a.PublicName : a.Name ),
+                        Text = options.DisplayPublicName ? a.PublicName : a.Name,
                         Category = financialAccountService.GetDelimitedAccountHierarchy( a, FinancialAccountService.AccountHierarchyDirection.CurrentAccountToParent )
                     } )
                     .ToList();
@@ -639,6 +640,13 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "9A96E14F-99DB-4F9A-95EB-DF17D3B5EE25" )]
         public IHttpActionResult AssetManagerGetRootFolders( [FromBody] AssetManagerGetRootFoldersOptionsBag options )
         {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            if ( !( grant?.IsAccessGranted( null, Authorization.VIEW ) ?? false ) )
+            {
+                return Unauthorized();
+            }
+
             var expandedFolders = new List<string>();
             var tree = new List<TreeItemBag>();
             var updatedExpandedFolders = new List<string>();
@@ -709,6 +717,13 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "68C50BAE-C50C-4143-B37F-58C80BF5E1BF" )]
         public IHttpActionResult AssetManagerGetChildren( [FromBody] AssetManagerBaseOptionsBag options )
         {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            if ( !( grant?.IsAccessGranted( null, Authorization.VIEW ) ?? false ) )
+            {
+                return Unauthorized();
+            }
+
             var parsedAsset = ParseAssetKey( options.AssetFolderId );
 
             if ( parsedAsset.ProviderId == null || parsedAsset.FullPath == null )
@@ -741,6 +756,13 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "D45422C0-5FCA-44C4-B9E1-4BA05E8D534D" )]
         public IHttpActionResult AssetManagerGetFiles( [FromBody] AssetManagerGetFilesOptionsBag options )
         {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            if ( !( grant?.IsAccessGranted( null, Authorization.VIEW ) ?? false ) )
+            {
+                return Unauthorized();
+            }
+
             var asset = ParseAssetKey( options.AssetFolderId );
 
             if ( asset.ProviderId == null || asset.FullPath == null )
@@ -789,6 +811,13 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "7625091B-D70A-4564-97C8-ED77AE5DB738" )]
         public IHttpActionResult AssetManagerDeleteFolder( [FromBody] AssetManagerBaseOptionsBag options )
         {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            if ( !( grant?.IsAccessGranted( null, Authorization.DELETE ) ?? false ) )
+            {
+                return Unauthorized();
+            }
+
             var asset = ParseAssetKey( options.AssetFolderId );
 
             if ( asset.ProviderId == null || asset.FullPath == null )
@@ -836,6 +865,13 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "B90D9215-57A4-45D3-9B70-A44AA2C9FE7B" )]
         public IHttpActionResult AssetManagerAddFolder( [FromBody] AssetManagerAddFolderOptionsBag options )
         {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            if ( !( grant?.IsAccessGranted( null, Authorization.EDIT ) ?? false ) )
+            {
+                return Unauthorized();
+            }
+
             if ( !IsValidAssetFolderName( options.NewFolderName ) || options.NewFolderName.IsNullOrWhiteSpace() )
             {
                 return null;
@@ -912,6 +948,13 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "8DF6054E-6F52-4A08-A7F5-C11F44B8465C" )]
         public IHttpActionResult AssetManagerRenameFolder( [FromBody] AssetManagerRenameFolderOptionsBag options )
         {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            if ( !( grant?.IsAccessGranted( null, Authorization.EDIT ) ?? false ) )
+            {
+                return Unauthorized();
+            }
+
             try
             {
                 var asset = ParseAssetKey( options.AssetFolderId );
@@ -940,12 +983,19 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "87A139A7-78B8-4CC9-8A3B-146A338A291F" )]
         public IHttpActionResult AssetManagerMoveFolder( [FromBody] AssetManagerMoveFolderOptionsBag options )
         {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            if ( !( grant?.IsAccessGranted( null, Authorization.EDIT ) ?? false ) )
+            {
+                return Unauthorized();
+            }
+
             try
             {
                 var asset = ParseAssetKey( options.AssetFolderId );
                 var baseFolderName = Path.GetFileName( asset.FullPath.TrimEnd( '/', '\\' ) );
                 var currentPhysicalPath = System.Web.HttpContext.Current.Server.MapPath( asset.FullPath );
-                var targetRootRelativePath = Path.Combine( asset.Root, options.TargetFolder, baseFolderName );
+                var targetRootRelativePath = Path.Combine( asset.Root, options.TargetFolder.TrimStart( '/', '\\' ), baseFolderName );
                 var targetPhyicalPath = System.Web.HttpContext.Current.Server.MapPath( targetRootRelativePath );
 
                 if ( !Directory.Exists( targetPhyicalPath ) && !File.Exists( targetPhyicalPath ) )
@@ -978,6 +1028,13 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "55ADD16B-0FC1-4F33-BB0A-03C29018866F" )]
         public IHttpActionResult AssetManagerDeleteFiles( [FromBody] AssetManagerDeleteFilesOptionsBag options )
         {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            if ( !( grant?.IsAccessGranted( null, Authorization.DELETE ) ?? false ) )
+            {
+                return Unauthorized();
+            }
+
             try
             {
                 if ( options.AssetStorageProviderId == 0 )
@@ -1022,8 +1079,15 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "C810774B-8B15-42D0-BAC2-85503AB23BC0" )]
         public IHttpActionResult AssetManagerDownloadFile( [FromUri] AssetManagerDownloadFileOptionsBag options )
         {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            if ( !( grant?.IsAccessGranted( null, Authorization.VIEW ) ?? false ) )
+            {
+                return Unauthorized();
+            }
+
             Stream stream;
-            string fileName = "";
+            string fileName;
 
             try
             {
@@ -1075,6 +1139,13 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "150AAF48-33C5-47F8-BD53-2CF3A75F88FB" )]
         public IHttpActionResult AssetManagerRenameFile( [FromBody] AssetManagerRenameFileOptionsBag options )
         {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            if ( !( grant?.IsAccessGranted( null, Authorization.EDIT ) ?? false ) )
+            {
+                return Unauthorized();
+            }
+
             try
             {
                 if ( options.AssetStorageProviderId == 0 )
@@ -1114,6 +1185,13 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "07CECA87-B9F9-4130-AC09-584AC9DBBE8C" )]
         public IHttpActionResult AssetManagerExtractFile( [FromBody] AssetManagerExtractFileOptionsBag options )
         {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            if ( !( grant?.IsAccessGranted( null, Authorization.EDIT ) ?? false ) )
+            {
+                return Unauthorized();
+            }
+
             if ( options == null || options.EncryptedRoot.IsNullOrWhiteSpace() || options.FileName.IsNullOrWhiteSpace() )
             {
                 return BadRequest();
@@ -1179,6 +1257,13 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "1008C9C5-E33E-43F6-BB02-D1BDF2CCE205" )]
         public IHttpActionResult AssetManagerGetListOfAllFolders( [FromBody] AssetManagerGetListOfAllFoldersOptionsBag options )
         {
+            var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+            if ( !( grant?.IsAccessGranted( null, Authorization.VIEW ) ?? false ) )
+            {
+                return Unauthorized();
+            }
+
             if ( options == null || options.EncryptedRoot.IsNullOrWhiteSpace() || options.SelectedFolder.IsNullOrWhiteSpace() )
             {
                 return BadRequest();
@@ -6981,6 +7066,7 @@ namespace Rock.Rest.v2
             var countryCodeRules = new Dictionary<string, List<PhoneNumberCountryCodeRulesConfigurationBag>>();
             var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
             string defaultCountryCode = null;
+            var countryCodes = new List<string>();
 
             if ( definedType != null )
             {
@@ -7006,6 +7092,7 @@ namespace Rock.Rest.v2
                     }
 
                     countryCodeRules.Add( countryCode, rules );
+                    countryCodes.Add( countryCode );
                 }
             }
 
@@ -7015,6 +7102,7 @@ namespace Rock.Rest.v2
                 {
                     Rules = countryCodeRules,
                     DefaultCountryCode = defaultCountryCode,
+                    CountryCodes = countryCodes,
                     SmsOptInText = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.SMS_OPT_IN_MESSAGE_LABEL )
                 } );
             }
@@ -7022,6 +7110,7 @@ namespace Rock.Rest.v2
             return Ok( new PhoneNumberBoxGetConfigurationResultsBag
             {
                 Rules = countryCodeRules,
+                CountryCodes = countryCodes,
                 DefaultCountryCode = defaultCountryCode
             } );
         }

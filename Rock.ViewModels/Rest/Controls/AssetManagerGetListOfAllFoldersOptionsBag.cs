@@ -32,5 +32,10 @@ namespace Rock.ViewModels.Rest.Controls
         /// The folder that we want to move. Don't show this folder or its children in the list.
         /// </summary>
         public string SelectedFolder { get; set; }
+
+        /// <summary>
+        /// Gets or sets the security grant token.
+        /// </summary>
+        public string SecurityGrantToken { get; set; }
     }
 }

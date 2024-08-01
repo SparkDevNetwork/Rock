@@ -1,7 +1,7 @@
 <template>
     <SectionHeader :title="componentName" :description="description" />
     <div class="galleryContent-mainRow mb-5 row">
-        <div v-if="$slots.default" :class="value === void 0 ? 'col-sm-12' : 'col-sm-6'">
+        <div v-if="$slots.default" :class="value === void 0 ? 'col-sm-12' : 'col-lg-6'">
             <h4 class="mt-0">Test Control</h4>
             <slot name="default" />
 
@@ -17,7 +17,7 @@
                 </TransitionVerticalCollapse>
             </div>
         </div>
-        <div v-if="value !== void 0" class="col-sm-6">
+        <div v-if="value !== void 0" class="col-lg-6">
             <div class="well">
                 <h4>Current Value<template v-if="hasMultipleValues">s</template></h4>
                 <template v-if="hasMultipleValues" v-for="value, key in formattedValue">

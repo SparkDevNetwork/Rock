@@ -72,7 +72,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 var selectableValues = ViewState["SelectableValues"] as string;
-                return selectableValues.IsNullOrWhiteSpace() ? selectableValues.SplitDelimitedValues().AsIntegerList().ToArray() : new int[0];
+                return selectableValues.IsNullOrWhiteSpace() ? new int[0] : selectableValues.SplitDelimitedValues().AsIntegerList().ToArray();
             }
 
             set

@@ -89,7 +89,14 @@
                     <tbody>
                         <tr v-for="file in files" :key="file.key">
                             <td>
-                                <CheckBox label="" v-model="selectedFileKeys" :value="file.key" />
+                                <div class="control-wrapper">
+                                    <div class="checkbox">
+                                        <label class="rock-checkbox-icon">
+                                            <input type="checkbox" v-model="selectedFileKeys" :value="file.key" />
+                                            <span class="label-text"><span class="sr-only">Select file: {{ file.name }}</span></span>
+                                        </label>
+                                    </div>
+                                </div>
                             </td>
                             <td>
                                 <img :src="file.iconPath" style="object-fit: cover; height: 58px; width: 44px;">
@@ -206,13 +213,13 @@
     import RockButton from "./rockButton.obs";
     import RockForm from "./rockForm.obs";
     import TextBox from "./textBox.obs";
-    import CheckBox from "./checkBox.obs";
     import TreeList from "./treeList.obs";
     import LoadingIndicator from "./loadingIndicator.obs";
     import DropDownMenu from "./dropDownMenu.obs";
     import DropDownList from "./dropDownList.obs";
     import NotificationBox from "./notificationBox.obs";
     import Modal from "./modal.obs";
+    import { useSecurityGrantToken } from "@Obsidian/Utility/block";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { AssetManagerTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
     import { AssetManagerTreeItemBag } from "@Obsidian/ViewModels/Rest/Controls/assetManagerTreeItemBag";
@@ -230,13 +237,13 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { TreeItemBag } from "@Obsidian/ViewModels/Utility/treeItemBag";
     import { useHttp } from "@Obsidian/Utility/http";
-    import { findFolder, folderNameComparator, isValidFolderName } from "@Obsidian/Utility/assetProvider";
+    import { findFolder, folderNameComparator, isValidFolderName } from "@Obsidian/Core/Utilities/assetProvider";
     import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
     import { RockDateTime, DateTimeFormat } from "@Obsidian/Utility/rockDateTime";
     import { confirm } from "@Obsidian/Utility/dialogs";
     import { ValidationRule } from "@Obsidian/ValidationRules";
     import { uploadAssetProviderFile, uploadContentFile } from "@Obsidian/Utility/http";
-    import * as Path from "@Obsidian/Utility/path";
+    import * as Path from "@Obsidian/Core/Utilities/path";
 
     const props = defineProps({
         modelValue: {
@@ -310,6 +317,7 @@
 
     const internalValue = useVModelPassthrough(props, "modelValue", emit);
     const { post } = useHttp();
+    const securityGrantToken = useSecurityGrantToken();
 
     // #region Styles
 
@@ -415,7 +423,8 @@
 
         const options: AssetManagerAddFolderOptionsBag = {
             assetFolderId: selectedFolder.value,
-            newFolderName: newFolderName.value
+            newFolderName: newFolderName.value,
+            securityGrantToken: securityGrantToken.value
         };
         const url = "/api/v2/Controls/AssetManagerAddFolder";
         const response = await post<AssetManagerTreeItemBag>(url, undefined, options);
@@ -467,7 +476,8 @@
             const newFolderName = renameFolderName.value;
             const options: AssetManagerRenameFolderOptionsBag = {
                 assetFolderId: selectedFolder.value,
-                newFolderName
+                newFolderName,
+                securityGrantToken: securityGrantToken.value
             };
             const url = "/api/v2/Controls/AssetManagerRenameFolder";
             const response = await post<string>(url, undefined, options);
@@ -516,7 +526,8 @@
         try {
             const options: AssetManagerGetListOfAllFoldersOptionsBag = {
                 encryptedRoot: props.encryptedRootFolder,
-                selectedFolder: parseFolderName(selectedFolder.value!).folderPath
+                selectedFolder: parseFolderName(selectedFolder.value!).folderPath,
+                securityGrantToken: securityGrantToken.value
             };
             const url = "/api/v2/Controls/AssetManagerGetListOfAllFolders";
             const response = await post<ListItemBag[]>(url, undefined, options);
@@ -542,7 +553,8 @@
         try {
             const options: AssetManagerMoveFolderOptionsBag = {
                 assetFolderId: selectedFolder.value,
-                targetFolder: selectedMoveFolder.value
+                targetFolder: selectedMoveFolder.value,
+                securityGrantToken: securityGrantToken.value
             };
             const url = "/api/v2/Controls/AssetManagerMoveFolder";
             const response = await post<string>(url, undefined, options);
@@ -586,7 +598,8 @@
         isFolderPaneActionLoading.value = true;
 
         const options: AssetManagerBaseOptionsBag = {
-            assetFolderId: selectedFolder.value
+            assetFolderId: selectedFolder.value,
+            securityGrantToken: securityGrantToken.value
         };
         const url = "/api/v2/Controls/AssetManagerDeleteFolder";
         const response = await post<boolean>(url, undefined, options);
@@ -677,6 +690,7 @@
         provider.enableAssetManager = props.enableAssetManager;
         provider.enableFileManager = props.enableFileManager;
         provider.encryptedRootFolder = props.encryptedRootFolder || "";
+        provider.securityGrantToken = securityGrantToken.value ?? "";
 
         return provider;
     }
@@ -825,6 +839,7 @@
                 file: file.key,
                 assetStorageProviderId: Number(providerId),
                 newFileName: renameFileName.value + Path.getExtension(file.name),
+                securityGrantToken: securityGrantToken.value
             };
 
             const response = await post<boolean>(url, undefined, options);
@@ -909,7 +924,8 @@
             const url = "/api/v2/Controls/AssetManagerExtractFile";
             const options: AssetManagerExtractFileOptionsBag = {
                 fileName,
-                encryptedRoot
+                encryptedRoot,
+                securityGrantToken: securityGrantToken.value
             };
 
             const response = await post<boolean>(url, undefined, options);
@@ -947,7 +963,8 @@
                 const url = "/api/v2/Controls/AssetManagerDeleteFiles";
                 const options: AssetManagerDeleteFilesOptionsBag = {
                     files,
-                    assetStorageProviderId: Number(providerId)
+                    assetStorageProviderId: Number(providerId),
+                    securityGrantToken: securityGrantToken.value
                 };
 
                 const response = await post<TreeItemBag>(url, undefined, options);
@@ -987,7 +1004,8 @@
 
         const options: AssetManagerGetFilesOptionsBag = {
             assetFolderId: selectedFolder.value,
-            browseMode: props.browseMode
+            browseMode: props.browseMode,
+            securityGrantToken: securityGrantToken.value
         };
         const url = "/api/v2/Controls/AssetManagerGetFiles";
         const response = await post<AssetManagerGetFilesResultsBag<FileAsset>>(url, undefined, options);
@@ -1019,7 +1037,7 @@
             type: "default",
             handler: () => {
                 // Since this returns a download stream, we never actually navigate away from the page
-                window.location.href = `/api/v2/Controls/AssetManagerDownloadFile?file=${encodeURI(file.key)}&assetStorageProviderId=${parseFolderName(selectedFolder.value ?? "").providerId}`;
+                window.location.href = `/api/v2/Controls/AssetManagerDownloadFile?file=${encodeURIComponent(file.key)}&assetStorageProviderId=${parseFolderName(selectedFolder.value ?? "").providerId}&securityGrantToken=${encodeURIComponent(securityGrantToken.value ?? "")}`;
             }
         }, {
             title: "Rename",

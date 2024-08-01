@@ -14,12 +14,6 @@
             </div>
 
             <div class="col-md-4">
-                <EntityTypePicker v-model="entityType"
-                                  label="Entity Type"
-                                  showBlankItem />
-            </div>
-
-            <div class="col-md-4">
                 <CheckBoxList v-model="scopes"
                               label="Scope"
                               :items="scopeItems"
@@ -38,7 +32,6 @@
 </template>
 
 <script setup lang="ts">
-    import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
     import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
@@ -70,7 +63,6 @@
     }>();
 
     const category = ref(props.modelValue.category);
-    const entityType = ref(props.modelValue.entityType);
     const scopes = ref(props.modelValue.scopes);
     const owner = ref(props.modelValue.owner);
     const isVisible = useVModelPassthrough(props, "visible", emit);
@@ -93,7 +85,6 @@
         const value: GridSettingsOptions = {
             category: category.value,
             scopes: scopes.value,
-            entityType: entityType.value,
             owner: owner.value
         };
 
@@ -107,7 +98,6 @@
     watch(() => props.modelValue, () => {
         category.value = props.modelValue.category;
         scopes.value = props.modelValue.scopes;
-        entityType.value = props.modelValue.entityType;
         owner.value = props.modelValue.owner;
     });
 

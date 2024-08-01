@@ -208,8 +208,14 @@
         });
 
         if (result.isSuccess && result.data) {
-            if (result.statusCode === 201 && typeof result.data === "string" && redirectAfterSave.value) {
-                window.location.href = makeUrlRedirectSafe(result.data);
+            if (result.statusCode === 200 && typeof result.data === "object") {
+                const parentPageUrl = config.navigationUrls?.[NavigationUrlKey.ParentPage];
+                if (redirectAfterSave.value && parentPageUrl) {
+                    window.location.href = makeUrlRedirectSafe(parentPageUrl);
+                }
+                else {
+                    appleTvPageEditBag.value = result.data;
+                }
             }
         }
         else {
