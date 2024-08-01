@@ -6,11 +6,8 @@
                 <TextBox v-model="name"
                          label="Name"
                          rules="required" />
-
-                <TextBox v-model="description"
-                         label="Description"
-                         textMode="multiline" />
-
+            </div>
+            <div class="col-md-6">
                 <CategoryPicker label="Parent Category"
                                 v-model="parentCategory"
                                 :multiple="false"
@@ -19,17 +16,24 @@
                                 :entityTypeQualifierValue="entityTypeQualifierValue"
                                 :rootCategoryGuid="rootCategoryGuid" />
             </div>
+            <div class="col-md-12">
+                <TextBox v-model="description"
+                         label="Description"
+                         textMode="multiline" />
+            </div>
             <div class="col-md-6">
                 <TextBox v-model="iconCssClass"
                          label="Icon CSS Class" />
-
+            </div>
+            <div class="col-md-6">
                 <ColorPicker v-model="highlightColor"
+                             class="form-control input-md"
                              label="Highlight Color" />
             </div>
         </div>
 
-        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
-</fieldset>
+        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode />
+    </fieldset>
 </template>
 
 <script setup lang="ts">

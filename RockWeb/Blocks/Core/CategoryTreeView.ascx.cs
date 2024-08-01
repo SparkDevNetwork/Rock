@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.Core
         IsRequired = false,
         Key = AttributeKey.EntityTypeQualifierProperty )]
 
-    [TextField( "Entity type Qualifier Value",
+    [TextField( "Entity Type Qualifier Value",
         IsRequired = false,
         Key = AttributeKey.EntityTypeQualifierValue )]
 
@@ -60,7 +60,7 @@ namespace RockWeb.Blocks.Core
         Key = AttributeKey.ShowUnnamedEntityItems )]
 
     [TextField( "Page Parameter Key",
-        Description = "The page parameter to look for",
+        Description = "The page parameter to use for determining the currently selected category integer identifier.",
         Key = AttributeKey.PageParameterKey )]
 
     [TextField( "Default Icon CSS Class",
