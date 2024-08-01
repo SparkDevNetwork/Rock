@@ -29,6 +29,8 @@ export const SystemCommunication = {
     AttendanceNotification: "CA794BD8-25C5-46D9-B7C2-AD8190AC27E6",
     /** Gets the template guid for the communication approval email */
     CommunicationApprovalEmail: "11D325F4-DAF3-4579-A9D8-6347CCC02341",
+    /** Gets the template guid for the Email Metrics Reminder system communication  */
+    CommunicationEmailMetricsReminder: "EAE6A169-C01C-4570-92A5-E465B566CFEF",
     /** Gets the template guid for  */
     CommunicationQueue: "2FC7D3E3-D85B-4265-8983-970345215DEA",
     /** Gets the template guid for the Exception Notification communication */

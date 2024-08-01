@@ -27,27 +27,15 @@ using System.Collections.Generic;
 namespace Rock.Client
 {
     /// <summary>
-    /// Base client model for WorkflowActionType that only includes the non-virtual fields. Use this for PUT/POSTs
+    /// Base client model for AIProvider that only includes the non-virtual fields. Use this for PUT/POSTs
     /// </summary>
-    public partial class WorkflowActionTypeEntity
+    public partial class AIProviderEntity
     {
         /// <summary />
         public int Id { get; set; }
 
         /// <summary />
-        public int ActivityTypeId { get; set; }
-
-        /// <summary />
-        public Guid? CriteriaAttributeGuid { get; set; }
-
-        /// <summary />
-        public Rock.Client.Enums.ComparisonType CriteriaComparisonType { get; set; }
-
-        /// <summary />
-        public string CriteriaValue { get; set; }
-
-        /// <summary />
-        public int EntityTypeId { get; set; }
+        public string Description { get; set; }
 
         /// <summary />
         public Guid? ForeignGuid { get; set; }
@@ -56,13 +44,10 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
-        public bool IsActionCompletedIfCriteriaUnmet { get; set; }
+        public bool IsActive { get; set; } = true;
 
         /// <summary />
-        public bool IsActionCompletedOnSuccess { get; set; }
-
-        /// <summary />
-        public bool IsActivityCompletedOnSuccess { get; set; }
+        public bool IsSystem { get; set; }
 
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
@@ -76,7 +61,7 @@ namespace Rock.Client
         public int Order { get; set; }
 
         /// <summary />
-        public int? WorkflowFormId { get; set; }
+        public int? ProviderComponentEntityTypeId { get; set; }
 
         /// <summary>
         /// Leave this as NULL to let Rock set this
@@ -105,26 +90,21 @@ namespace Rock.Client
         public int? ForeignId { get; set; }
 
         /// <summary>
-        /// Copies the base properties from a source WorkflowActionType object
+        /// Copies the base properties from a source AIProvider object
         /// </summary>
         /// <param name="source">The source.</param>
-        public void CopyPropertiesFrom( WorkflowActionType source )
+        public void CopyPropertiesFrom( AIProvider source )
         {
             this.Id = source.Id;
-            this.ActivityTypeId = source.ActivityTypeId;
-            this.CriteriaAttributeGuid = source.CriteriaAttributeGuid;
-            this.CriteriaComparisonType = source.CriteriaComparisonType;
-            this.CriteriaValue = source.CriteriaValue;
-            this.EntityTypeId = source.EntityTypeId;
+            this.Description = source.Description;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
-            this.IsActionCompletedIfCriteriaUnmet = source.IsActionCompletedIfCriteriaUnmet;
-            this.IsActionCompletedOnSuccess = source.IsActionCompletedOnSuccess;
-            this.IsActivityCompletedOnSuccess = source.IsActivityCompletedOnSuccess;
+            this.IsActive = source.IsActive;
+            this.IsSystem = source.IsSystem;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
             this.Order = source.Order;
-            this.WorkflowFormId = source.WorkflowFormId;
+            this.ProviderComponentEntityTypeId = source.ProviderComponentEntityTypeId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
@@ -136,15 +116,12 @@ namespace Rock.Client
     }
 
     /// <summary>
-    /// Client model for WorkflowActionType that includes all the fields that are available for GETs. Use this for GETs (use WorkflowActionTypeEntity for POST/PUTs)
+    /// Client model for AIProvider that includes all the fields that are available for GETs. Use this for GETs (use AIProviderEntity for POST/PUTs)
     /// </summary>
-    public partial class WorkflowActionType : WorkflowActionTypeEntity
+    public partial class AIProvider : AIProviderEntity
     {
         /// <summary />
-        public EntityType EntityType { get; set; }
-
-        /// <summary />
-        public WorkflowActionForm WorkflowForm { get; set; }
+        public EntityType ProviderComponentEntityType { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
