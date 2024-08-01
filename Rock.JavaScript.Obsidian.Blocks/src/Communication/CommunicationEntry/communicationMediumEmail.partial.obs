@@ -119,7 +119,7 @@
                                   :allowLava="config.isLavaEnabled"
                                   :allowMultiple="true"
                                   :disabled="disabled"
-                                  :help="`Any address in this field will be copied on the email sent to every recipient.${(config.isLavaEnabled ? ' Lava can be used to access recipient data. <span class=\'tip tip-lava\'></span>' : '')}`"
+                                  :help="`Any address in this field will be blind copied on the email sent to every recipient.${(config.isLavaEnabled ? ' Lava can be used to access recipient data. <span class=\'tip tip-lava\'></span>' : '')}`"
                                   label="BCC Addresses" />
                     </div>
                 </div>
