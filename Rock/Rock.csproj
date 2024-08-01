@@ -944,6 +944,9 @@
     <Compile Include="Cms\ContentCollection\Search\SearchResults.cs" />
     <Compile Include="Cms\ContentCollection\Search\SearchSortOrder.cs" />
     <Compile Include="Cms\ContentCollection\Search\SearchTerm.cs" />
+    <Compile Include="Cms\PageShortLinkSchedule.cs" />
+    <Compile Include="Cms\PageShortLinkScheduleData.cs" />
+    <Compile Include="Cms\UtmSettings.cs" />
     <Compile Include="Cms\Utm\UtmHelper.cs" />
     <Compile Include="Cms\Utm\UtmCookieData.cs" />
     <Compile Include="Cms\StructuredContent\BlockTypes\ChecklistRenderer.cs" />
@@ -2415,6 +2418,7 @@
     <Compile Include="Web\Cache\Entities\NamedScheduleCache.cs" />
     <Compile Include="Web\Cache\Entities\NamedLocationCache.cs" />
     <Compile Include="Web\Cache\Entities\NotificationMessageTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\PageShortLinkCache.cs" />
     <Compile Include="Web\Cache\Entities\RequestFilterCache.cs" />
     <Compile Include="Web\Cache\Entities\PersonalizationSegmentCache.cs" />
     <Compile Include="Web\Cache\Entities\SharedPersonalLinksCache.cs" />

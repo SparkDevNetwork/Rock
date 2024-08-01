@@ -51,6 +51,7 @@
     import RockValidation from "./rockValidation.obs";
     import { trackModalState } from "@Obsidian/Utility/page";
     import { FormError } from "@Obsidian/Utility/form";
+    import { isPromise } from "@Obsidian/Utility/promiseUtils";
 
     const props = defineProps({
         modelValue: {
@@ -101,13 +102,17 @@
         clickBackdropToClose: {
             type: Boolean as PropType<boolean>,
             default: false
-        }
+        },
+
+        onSave: {
+            type: Function as PropType<(() => void | PromiseLike<void>)>,
+            required: false
+        },
     });
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: boolean): void;
         (e: "closeModal"): void;
-        (e: "save"): void;
     }>();
 
     // #region Values
@@ -200,8 +205,14 @@
     /**
      * Event handler for when the form has been submitted.
      */
-    function onSubmit(): void {
-        emit("save");
+    async function onSubmit(): Promise<void> {
+        if (props.onSave) {
+            const result = props.onSave();
+
+            if (isPromise(result)) {
+                await result;
+            }
+        }
     }
 
     /**

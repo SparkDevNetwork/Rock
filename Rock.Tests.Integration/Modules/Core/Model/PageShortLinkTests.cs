@@ -17,6 +17,8 @@
 using System;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+using Rock.Cms;
 using Rock.Cms.Utm;
 using Rock.Data;
 using Rock.Model;
@@ -225,7 +227,7 @@ namespace Rock.Tests.Integration.Modules.Core.Model
             var mediumValueId = CoreDataManager.Current.GetDefinedValueIdOrNull( SystemGuid.DefinedType.UTM_MEDIUM, "email" );
             var campaignValueId = CoreDataManager.Current.GetDefinedValueIdOrNull( SystemGuid.DefinedType.UTM_CAMPAIGN, "Test Campaign C" );
 
-            var utmSettings = shortlink.GetAdditionalSettings<Rock.Model.PageShortLink.UtmSettings>();
+            var utmSettings = shortlink.GetAdditionalSettings<UtmSettings>();
 
             utmSettings.UtmSourceValueId = sourceValueId;
             utmSettings.UtmMediumValueId = mediumValueId;
@@ -240,7 +242,7 @@ namespace Rock.Tests.Integration.Modules.Core.Model
             // Retrieve the shortlink and verify the stored values.
             shortlink = EntityLookup.GetByIdentifier<PageShortLink>( _testShortLink1Guid );
 
-            utmSettings = shortlink.GetAdditionalSettings<Rock.Model.PageShortLink.UtmSettings>();
+            utmSettings = shortlink.GetAdditionalSettings<UtmSettings>();
 
             Assert.That.AreEqual( sourceValueId, utmSettings.UtmSourceValueId );
             Assert.That.AreEqual( mediumValueId, utmSettings.UtmMediumValueId );
@@ -314,7 +316,7 @@ namespace Rock.Tests.Integration.Modules.Core.Model
             var mediumValueId = CoreDataManager.Current.GetDefinedValueIdOrNull( SystemGuid.DefinedType.UTM_MEDIUM, mediumValue );
             var campaignValueId = CoreDataManager.Current.GetDefinedValueIdOrNull( SystemGuid.DefinedType.UTM_CAMPAIGN, campaignValue );
 
-            var utmSettings = shortlink.GetAdditionalSettings<Rock.Model.PageShortLink.UtmSettings>();
+            var utmSettings = shortlink.GetAdditionalSettings<UtmSettings>();
 
             utmSettings.UtmSourceValueId = sourceValueId;
             utmSettings.UtmMediumValueId = mediumValueId;
