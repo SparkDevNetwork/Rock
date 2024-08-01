@@ -99,8 +99,8 @@ namespace Rock.Blocks.Communication
         Order = 6 )]
 
     [CustomDropdownListField( "Mode",
-        "The mode to use ('Simple' mode will prevent users from searching/adding new people to communication).",
-        "Full,Simple",
+        Description = "The mode to use ('Simple' mode will prevent users from searching/adding new people to communication).",
+        ListSource = "Full,Simple",
         Key = AttributeKey.Mode,
         IsRequired = true,
         DefaultValue = "Full",
