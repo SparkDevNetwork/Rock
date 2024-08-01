@@ -178,14 +178,11 @@ namespace Rock.Cms.Utm
 
             inputValue = System.Uri.UnescapeDataString( inputValue.Trim() );
 
-            utmValueId = DefinedTypeCache.Get( definedTypeGuid.AsGuid() )
-                .GetDefinedValueFromValue( inputValue )?.Id;
+            var definedValue = DefinedTypeCache.Get( definedTypeGuid.AsGuid() )
+                .GetDefinedValueFromValue( inputValue );
 
-            // If no matching Defined Value, return the text value.
-            if ( utmValueId == null )
-            {
-                utmValueText = inputValue;
-            }
+            utmValueId = definedValue?.Id;
+            utmValueText = definedValue?.Value ?? string.Empty;
         }
 
         private static string GetUtmComponentNameFromDefinedValueOrText( Guid definedTypeGuid, int? definedValueId, string textValue )

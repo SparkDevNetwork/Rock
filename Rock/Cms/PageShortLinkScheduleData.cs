@@ -17,21 +17,20 @@
 
 using System.Collections.Generic;
 
-using Rock.ViewModels.Utility;
-
-namespace Rock.ViewModels.Blocks.Cms.PageShortLinkDetail
+namespace Rock.Cms
 {
     /// <summary>
-    /// 
+    /// The schedule data for <see cref="Model.PageShortLink"/>. This contains
+    /// all the information required to make a short link dynamic based on a
+    /// schedule.
     /// </summary>
-    public class PageShortLinkDetailOptionsBag
+    internal class PageShortLinkScheduleData
     {
         /// <summary>
-        /// Gets or sets the site options.
+        /// The ordered schedules for a <see cref="Model.PageShortLink"/>. The
+        /// first schedule that is active and matches the current date and time
+        /// will be used.
         /// </summary>
-        /// <value>
-        /// The site options.
-        /// </value>
-        public List<ListItemBag> SiteOptions { get; set; }
+        public List<PageShortLinkSchedule> Schedules { get; set; } = new List<PageShortLinkSchedule>();
     }
 }

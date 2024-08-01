@@ -24,6 +24,11 @@ namespace Rock.SystemGuid
     public class DefinedType
     {
         /// <summary>
+        /// Guid for Attendance record SourceValueId.
+        /// </summary>
+        public const string ATTENDANCE_SOURCE = "A27BF9DD-7AF0-47B4-8FE4-0B5E510381DB";
+
+        /// <summary>
         /// Background check package types
         /// </summary>
         public const string BACKGROUND_CHECK_TYPES = "BC2FDF9A-93B8-4325-8DE9-2F7B1943BFDF";

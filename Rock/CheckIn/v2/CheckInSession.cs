@@ -23,7 +23,6 @@ using Rock.Data;
 using Rock.Enums.CheckIn;
 using Rock.Model;
 using Rock.Observability;
-using Rock.Utility;
 using Rock.ViewModels.CheckIn;
 using Rock.Web.Cache;
 
@@ -75,6 +74,13 @@ namespace Rock.CheckIn.v2
         /// opportunities they can attend.
         /// </summary>
         public bool IsOverrideEnabled { get; set; }
+
+        /// <summary>
+        /// The value to use for <see cref="Attendance.SourceValueId"/>. This is
+        /// used to identify where the attendance record came from. If <c>null</c>
+        /// then the value for Kiosk will be used.
+        /// </summary>
+        public int? AttendanceSourceValueId { get; set; }
 
         /// <summary>
         /// Gets the opportunity filter provider to be used with this instance.

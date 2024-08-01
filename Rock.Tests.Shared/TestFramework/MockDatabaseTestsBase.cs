@@ -54,6 +54,8 @@ namespace Rock.Tests.Shared.TestFramework
             // Register a fake IRockLogger that discards all logged messages.
             var loggerMock = new Mock<IRockLogger>( MockBehavior.Loose );
             RockLogger.SetLoggerInternal( loggerMock.Object );
+
+            RockDateTime.Initialize();
         }
 
         /// <summary>
