@@ -92,6 +92,14 @@
     <Compile Include="Migrations\202407302203031_AddIsActionCompletedIfCriteriaUnmetProperty.designer.cs">
       <DependentUpon>202407302203031_AddIsActionCompletedIfCriteriaUnmetProperty.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202408011753319_Rollup_20240801.cs" />
+    <Compile Include="Migrations\202408011753319_Rollup_20240801.designer.cs">
+      <DependentUpon>202408011753319_Rollup_20240801.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202408011847291_CodeGenerated_20240801.cs" />
+    <Compile Include="Migrations\202408011847291_CodeGenerated_20240801.designer.cs">
+      <DependentUpon>202408011847291_CodeGenerated_20240801.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.Designer.cs">
       <DependentUpon>202404221542135_Mobile_AdditionalSettingsJson.cs</DependentUpon>
@@ -2186,6 +2194,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202407302203031_AddIsActionCompletedIfCriteriaUnmetProperty.resx">
       <DependentUpon>202407302203031_AddIsActionCompletedIfCriteriaUnmetProperty.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202408011753319_Rollup_20240801.resx">
+      <DependentUpon>202408011753319_Rollup_20240801.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202408011847291_CodeGenerated_20240801.resx">
+      <DependentUpon>202408011847291_CodeGenerated_20240801.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.resx">
       <DependentUpon>202404221542135_Mobile_AdditionalSettingsJson.cs</DependentUpon>
