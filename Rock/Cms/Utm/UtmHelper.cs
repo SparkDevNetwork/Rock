@@ -181,8 +181,15 @@ namespace Rock.Cms.Utm
             var definedValue = DefinedTypeCache.Get( definedTypeGuid.AsGuid() )
                 .GetDefinedValueFromValue( inputValue );
 
-            utmValueId = definedValue?.Id;
-            utmValueText = definedValue?.Value ?? string.Empty;
+            if ( definedValue == null )
+            {
+                utmValueText = inputValue;
+            }
+            else
+            {
+                utmValueId = definedValue?.Id;
+                utmValueText = definedValue?.Value ?? string.Empty;
+            }
         }
 
         private static string GetUtmComponentNameFromDefinedValueOrText( Guid definedTypeGuid, int? definedValueId, string textValue )
