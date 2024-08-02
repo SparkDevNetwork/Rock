@@ -3381,8 +3381,10 @@ END
                         gf.PostalCode.Select( p => p.Split( '-' )[0] ) ).Distinct();
                     var hasGivenCount = givingFamiliesForCampus.Count( gf => gf.PostalCode.Any() );
 
-                    campus.TitheMetric = ( postalCodesQuery.Where( p => postalCodes.Contains( p.PostalCode ) )
-                        .Sum( p => p.FamiliesMedianIncome ) / hasGivenCount ) * 0.1M;
+                    var summedIncome = postalCodesQuery.Where( p => postalCodes.Contains( p.PostalCode ) )
+                        .Sum( p => ( int? ) p.FamiliesMedianIncome ) ?? 0;
+
+                    campus.TitheMetric = ( summedIncome / hasGivenCount ) * 0.1M;
                 }
 
                 return rockContext.SaveChanges();
