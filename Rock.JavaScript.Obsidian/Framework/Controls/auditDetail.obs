@@ -96,7 +96,7 @@
 
     const createdRelativeTime = computed(() => auditBag.value?.createdRelativeTime);
 
-    const createdDateTime = computed(() => RockDateTime.parseISO(auditBag.value?.createdDateTime ?? "")?.toASPString("G"));
+    const createdDateTime = computed(() => RockDateTime.parseISO(auditBag.value?.createdDateTime ?? "")?.localDateTime.toASPString("G"));
 
     const modifiedByPersonId = computed(() => auditBag.value?.modifiedByPersonId);
 
@@ -104,7 +104,7 @@
 
     const modifiedRelativeTime = computed(() => auditBag.value?.modifiedRelativeTime);
 
-    const modifiedDateTime = computed(() => RockDateTime.parseISO(auditBag.value?.modifiedDateTime ?? "")?.toASPString("G"));
+    const modifiedDateTime = computed(() => RockDateTime.parseISO(auditBag.value?.modifiedDateTime ?? "")?.localDateTime.toASPString("G"));
 
     const showId = ref(true);
 
