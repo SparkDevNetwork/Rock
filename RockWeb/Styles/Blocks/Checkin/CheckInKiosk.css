@@ -18,8 +18,8 @@
     --tones-darkest: #425466;
     --tones-dark: #77889a;
     --tones-medium: #d8ddec;
-    --tones-light: #edf0f6;
-    --tones-lightest: #f5f7fc;
+    --tones-light: #e0e4ec;
+    --tones-lightest: #f2f4f9;
 
     --unit-xs: calc(var(--unit-md) * 0.25);
     --unit-sm: calc(var(--unit-md) * 0.5);
@@ -267,6 +267,7 @@
     grid-column: 1/2;
     border-radius: var(--unit-lg);
     position: relative;
+    overflow: hidden;
 }
 
 .check-in-page .welcome-screen .promotion {
@@ -292,13 +293,11 @@
 .check-in-page .welcome-screen .start-button {
     grid-row: 1/2;
     grid-column: 2/3;
-}
-
-.check-in-page .welcome-screen .start-button {
     width: 100%;
     height: 100%;
-    font-size: 64px;
-    font-weight: 600;
+    font-size: 110px;
+    font-weight: 700;
+    border-radius: var(--unit-lg);
 }
 
 .check-in-page .welcome-screen .scan-barcode-button {
@@ -308,17 +307,19 @@
     align-items: center;
     grid-row: 2/3;
     grid-column: 2/3;
-}
-
-.check-in-page .welcome-screen .scan-barcode-button {
     width: 100%;
     height: 100%;
     background-color: var(--tones-light);
     padding: 0;
+    border-radius: var(--unit-lg);
 }
 
 .check-in-page .welcome-screen .scan-barcode-button .title {
     font-size: 64px;
+}
+
+.check-in-page .welcome-screen .scan-barcode-button .subtitle {
+    font-size: 22px;
 }
 
 .check-in-page .welcome-screen.kiosk-closed,
