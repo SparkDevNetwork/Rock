@@ -2271,12 +2271,11 @@ WHERE [Guid] = 'D40A9C32-F179-4E5E-9B0D-CE208C5D1870'
             var categoryTreeViewInstanceGuid = "42E90A50-D8EC-4370-B970-83E48518BC26";
             var categoryDetailInstanceGuid = "4B617C53-556E-4A1C-882E-D86BBC7B2CBC";
             var categoryTreeViewBlockTypeGuid = "ADE003C7-649B-466A-872B-B8AC952E7841";
-            var internalSiteLayoutGuid = SystemGuid.Layout.LEFT_SIDEBAR_INTERNAL_SITE;
 
-            RockMigrationHelper.UpdatePageLayout( SystemGuid.Page.PRAYER_CATEGORIES, internalSiteLayoutGuid );
+            RockMigrationHelper.UpdatePageLayout( SystemGuid.Page.PRAYER_CATEGORIES, SystemGuid.Layout.LEFT_SIDEBAR_INTERNAL_SITE );
             RockMigrationHelper.DeleteBlock( categoryBlockTypeGuid );
-            RockMigrationHelper.AddBlock( true, SystemGuid.Page.PRAYER_CATEGORIES, internalSiteLayoutGuid, categoryTreeViewBlockTypeGuid, "Category Tree View", "Sidebar1", "", "", 0, categoryTreeViewInstanceGuid );
-            RockMigrationHelper.AddBlock( true, SystemGuid.Page.PRAYER_CATEGORIES, internalSiteLayoutGuid, SystemGuid.BlockType.OBSIDIAN_CATEGORY_DETAIL, "Category Detail", "Main", "", "", 0, categoryDetailInstanceGuid );
+            RockMigrationHelper.AddBlock( true, SystemGuid.Page.PRAYER_CATEGORIES, null, categoryTreeViewBlockTypeGuid, "Category Tree View", "Sidebar1", "", "", 0, categoryTreeViewInstanceGuid );
+            RockMigrationHelper.AddBlock( true, SystemGuid.Page.PRAYER_CATEGORIES, null, SystemGuid.BlockType.OBSIDIAN_CATEGORY_DETAIL, "Category Detail", "Main", "", "", 0, categoryDetailInstanceGuid );
 
             Sql( $@"
 -- Page and Block Type Guids.
