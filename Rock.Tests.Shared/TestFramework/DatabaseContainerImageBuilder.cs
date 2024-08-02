@@ -249,7 +249,7 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
             // tries to get to files within the RockWeb folder that we don't
             // have. So just run the bit we need manually.
             new Rock.Jobs.PostInstallDataMigrations().InsertAnalyticsSourceDateData( 300 );
-            ExecuteRockJob<Rock.Jobs.RockCleanup>();
+            ExecuteRockJob<Rock.Jobs.RockCleanup>( null, job => job.IsRunningFromUnitTest = true );
             ExecuteRockJob<Rock.Jobs.CalculateFamilyAnalytics>();
             ExecuteRockJob<Rock.Jobs.ProcessBIAnalytics>( new Dictionary<string, string>
             {
@@ -270,10 +270,12 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
         /// </summary>
         /// <typeparam name="TJob">The job class to be executed.</typeparam>
         /// <param name="settings">The settings to pass to the job.</param>
-        private static void ExecuteRockJob<TJob>( Dictionary<string, string> settings = null )
+        private static void ExecuteRockJob<TJob>( Dictionary<string, string> settings = null, Action<TJob> configure = null )
             where TJob : Rock.Jobs.RockJob, new()
         {
             var job = new TJob();
+
+            configure?.Invoke( job );
 
             TestHelper.Log( $"Job Started: {typeof( TJob ).Name}..." );
             job.ExecuteInternal( settings ?? new Dictionary<string, string>() );

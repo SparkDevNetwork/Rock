@@ -189,6 +189,13 @@ namespace Rock.Jobs
         private DateTime lastRunDateTime;
         private List<string> _enabledTaskKeys = null;
 
+        /// <summary>
+        /// This is used to disable certain features that don't play well with
+        /// running from inside a unit test. This includes things like network
+        /// operations or steps which modify on-disk content.
+        /// </summary>
+        internal bool IsRunningFromUnitTest { get; set; }
+
         /// <inheritdoc cref="RockJob.Execute()" />
         public override void Execute()
         {
@@ -3397,7 +3404,10 @@ END
         /// <returns>1 if the database was updated successfully.</returns>
         private int UpdateGeolocationDatabase()
         {
-            IpGeoLookup.Instance.UpdateDatabase();
+            if ( !IsRunningFromUnitTest )
+            {
+                IpGeoLookup.Instance.UpdateDatabase();
+            }
 
             return 1;
         }
