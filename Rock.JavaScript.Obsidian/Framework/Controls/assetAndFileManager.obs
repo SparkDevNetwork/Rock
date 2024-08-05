@@ -42,7 +42,6 @@
                 <TreeList v-model="selectedFolderArray"
                           :provider="itemProvider"
                           v-model:items="folders"
-                          disableDeselect
                           autoExpand
                           @treeitem-expanded="onTreeItemExpanded"
                           @treeitem-collapsed="onTreeItemCollapsed"
