@@ -308,7 +308,7 @@
     const panelTabIndex = computed((): string | undefined => isFullscreen.value ? "0" : undefined);
 
     /** True if the panel body should be displayed. */
-    const isPanelOpen = computed((): boolean => !props.hasCollapse || internalValue.value !== false || isFullscreen.value);
+    const isPanelOpen = computed((): boolean => !props.hasCollapse || internalValue.value !== false || isFullscreen.value || isDrawerOpen.value);
 
     const getHeaderSecondaryActionIconClass = (action: PanelAction): string => {
         if (action.iconCssClass) {

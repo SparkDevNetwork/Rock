@@ -30,6 +30,7 @@ using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Core.LocationDetail;
 using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -240,7 +241,7 @@ namespace Rock.Blocks.Core
                 IsGeoPointLocked = entity.IsGeoPointLocked,
                 LocationTypeValue = entity.LocationTypeValue.ToListItemBag(),
                 Name = entity.Name,
-                ParentLocation = entity.ParentLocation.ToListItemBag(),
+                ParentLocation = ToListItemBag( entity.ParentLocation ),
                 PrinterDevice = entity.PrinterDevice.ToListItemBag(),
                 SoftRoomThreshold = entity.SoftRoomThreshold.ToString(),
                 Guid = entity.Guid,
@@ -263,6 +264,17 @@ namespace Rock.Blocks.Core
                 GeoPoint_WellKnownText = entity.GeoPoint?.AsText(),
                 GeoFence_WellKnownText = entity.GeoFence?.AsText()
             };
+        }
+
+        /// <summary>
+        /// Converts the location to ListItemBag, the to string method of Location prefers the full address when available,
+        /// and since the ToListItemBag extension method calls ToString() this method is used to ensure the name is preferred.
+        /// </summary>
+        /// <param name="location">The parent location.</param>
+        /// <returns></returns>
+        private ListItemBag ToListItemBag(Location location)
+        {
+            return new ListItemBag() { Text = location.ToString( true ), Value = location.Guid.ToString() };
         }
 
         /// <summary>
@@ -352,7 +364,7 @@ namespace Rock.Blocks.Core
             if ( entity.Id == 0 && parentLocationId.HasValue )
             {
                 var parentLocation = new LocationService( rockContext ).Get( parentLocationId.Value );
-                bag.ParentLocation = parentLocation.ToListItemBag();
+                bag.ParentLocation = ToListItemBag( parentLocation );
             }
 
             return bag;
