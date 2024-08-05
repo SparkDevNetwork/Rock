@@ -176,6 +176,8 @@
         // If cached, don't re-fetch
         if (currentPage) {
             updatePage(props.multiple ? [currentPage] : currentPage);
+            // Wait until internalPageValue is updated before retrieving the tree again.
+            await nextTick();
             refreshProvider();
             return;
         }
