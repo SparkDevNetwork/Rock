@@ -21,7 +21,6 @@
 
         <DateTimeColumn v-if="config?.options?.showStartDateTimeColumn && config?.options?.includeTime"
                         headerClass="text-right"
-                        itemClass="justify-content-end text-right"
                         name="startDateTime"
                         :title="config?.options?.dateType == ContentChannelDateType.DateRange ? 'Start' : 'Active'"
                         field="startDateTime"
@@ -30,7 +29,6 @@
 
         <DateColumn v-if="config?.options?.showStartDateTimeColumn && !config?.options?.includeTime"
                     headerClass="text-right"
-                    itemClass="justify-content-end text-right"
                     name="startDateTime"
                     :title="config?.options?.dateType == ContentChannelDateType.DateRange ? 'Start' : 'Active'"
                     field="startDateTime"
@@ -49,7 +47,6 @@
 
         <DateTimeColumn v-if="config?.options?.showExpireDateTimeColumn && config?.options?.includeTime"
                         headerClass="text-right"
-                        itemClass="justify-content-end text-right"
                         name="expireDateTime"
                         title="Expire"
                         field="expireDateTime"
@@ -58,7 +55,6 @@
 
         <DateColumn v-if="config?.options?.showExpireDateTimeColumn && !config?.options?.includeTime"
                     headerClass="text-right"
-                    itemClass="justify-content-end text-right"
                     name="expireDateTime"
                     title="Expire"
                     field="expireDateTime"
