@@ -420,7 +420,7 @@ namespace RockWeb.Blocks.WorkFlow
         {
             if ( e.IsValid )
             {
-                cpCaptcha.Visible = false;
+                pnlCaptcha.Visible = false;
                 AddSubmitButtons( _actionType?.WorkflowForm );
             }
 
@@ -451,7 +451,7 @@ namespace RockWeb.Blocks.WorkFlow
             bool allowPassingWorkflowTypeId = !this.GetAttributeValue( AttributeKey.DisablePassingWorkflowTypeId ).AsBoolean();
 
             var disableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || !cpCaptcha.IsAvailable;
-            cpCaptcha.Visible = !disableCaptchaSupport;
+            pnlCaptcha.Visible = !disableCaptchaSupport;
 
             if ( workflowType == null )
             {
