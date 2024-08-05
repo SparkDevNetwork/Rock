@@ -400,7 +400,8 @@ namespace Rock.CheckIn.v2
             var relatedEntityQry = new RelatedEntityService( RockContext )
                 .Queryable()
                 .Where( a => a.SourceEntityTypeId == groupTypeEntityTypeId
-                    && a.TargetEntityTypeId == checkInLabelEntityTypeId );
+                    && a.TargetEntityTypeId == checkInLabelEntityTypeId
+                    && a.PurposeKey == RelatedEntityPurposeKey.AreaCheckInLabel );
 
             relatedEntityQry = CheckInDirector.WhereContains( relatedEntityQry, areaIds, a => a.SourceEntityId );
 
