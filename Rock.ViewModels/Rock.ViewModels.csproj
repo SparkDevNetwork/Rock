@@ -83,6 +83,8 @@
     <Compile Include="Blocks\Core\AuthClientDetail\AuthClientDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\AuthClientDetail\AuthClientScopeBag.cs" />
     <Compile Include="Blocks\Crm\PhotoVerifyList\PhotoVerifyListOptionsBag.cs" />
+    <Compile Include="Blocks\Core\TaggedItemList\TaggedItemListBag.cs" />
+    <Compile Include="Blocks\Core\TaggedItemList\TaggedItemListOptionsBag.cs" />
     <Compile Include="Blocks\Security\AuthScopeList\AuthScopeListOptionsBag.cs" />
     <Compile Include="Blocks\Security\AuthClientList\AuthClientListOptionsBag.cs" />
     <Compile Include="Blocks\Core\PersonSignalList\PersonSignalBag.cs" />

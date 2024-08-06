@@ -335,6 +335,7 @@
     <Folder Include="src\Communication\SystemPhoneNumberDetail\" />
     <Folder Include="src\Core\" />
     <Folder Include="src\Core\AssetStorageProviderDetail\" />
+    <Folder Include="src\Core\TaggedItemList\" />
     <Folder Include="src\Security\AuthScopeList\" />
     <Folder Include="src\Security\AuthClientList\" />
     <Folder Include="src\Core\BinaryFileDetail\" />
@@ -504,6 +505,7 @@
     <TypeScriptCompile Include="src\Communication\SnippetTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Communication\SystemPhoneNumberDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\attributes.ts" />
+    <TypeScriptCompile Include="src\Core\TaggedItemList\types.partial.ts" />
     <TypeScriptCompile Include="src\Security\AuthScopeList\types.partial.ts" />
     <TypeScriptCompile Include="src\Security\AuthClientList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\BinaryFileDetail\types.partial.ts" />
@@ -643,6 +645,7 @@
     <Compile Include="src\Cms\AdaptiveMessageDetail\editPanel.partial.obs" />
     <Compile Include="src\Cms\AdaptiveMessageDetail\viewPanel.partial.obs" />
     <Compile Include="src\WebFarm\webFarmNodeLogList.obs" />
+    <Compile Include="src\Core\taggedItemList.obs" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsToolsV2.targets" />
   <Target Name="InstallNodePackages" AfterTargets="BeforeCompile;BeforeClean" Inputs="package.json" Outputs="node_modules/.install-stamp">

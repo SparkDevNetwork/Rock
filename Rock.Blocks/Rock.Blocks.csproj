@@ -76,6 +76,7 @@
     <Compile Include="Communication\NcoaProcess.cs" />
     <Compile Include="Core\AuthClientDetail.cs" />
     <Compile Include="Crm\PhotoVerify.cs" />
+    <Compile Include="Core\TagReport.cs" />
     <Compile Include="Security\AuthScopeList.cs" />
     <Compile Include="Security\AuthClientList.cs" />
     <Compile Include="Core\PersonSignalList.cs" />
