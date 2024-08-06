@@ -1,21 +1,21 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <Block :title="config?.title ?? 'Asset Manager'" hasFullscreen>
-        <AssetAndFileManager v-model:openFolders="openFolders"
-                             v-model:selectedFolder="selectedFolder"
-                             :height="height"
-                             :browseMode="config?.browseMode as 'image' | 'doc' | undefined ?? 'doc'"
-                             :enableAssetManager="config?.enableAssetProviders ?? true"
-                             :enableFileManager="config?.enableFileManager ?? false"
-                             :enableZipUpload="config?.enableZipUploader ?? false"
-                             :encryptedRootFolder="config?.rootFolder ?? undefined"
-                             :editFilePage="config?.fileEditorPage ?? undefined" />
+        <FileAssetManager v-model:openFolders="openFolders"
+                          v-model:selectedFolder="selectedFolder"
+                          :height="height"
+                          :browseMode="config?.browseMode as 'image' | 'doc' | undefined ?? 'doc'"
+                          :enableAssetManager="config?.enableAssetProviders ?? true"
+                          :enableFileManager="config?.enableFileManager ?? false"
+                          :enableZipUpload="config?.enableZipUploader ?? false"
+                          :encryptedRootFolder="config?.rootFolder ?? undefined"
+                          :editFilePage="config?.fileEditorPage ?? undefined" />
     </Block>
 </template>
 
 <script setup lang="ts">
     import { computed, ref, watch } from "vue";
-    import AssetAndFileManager from "@Obsidian/Controls/assetAndFileManager.obs";
+    import FileAssetManager from "@Obsidian/Controls/fileAssetManager.obs";
     import Block from "@Obsidian/Templates/block";
     import { getSecurityGrant, provideSecurityGrant, useConfigurationValues, usePersonPreferences, onConfigurationValuesChanged, useReloadBlock } from "@Obsidian/Utility/block";
     import { PreferenceKey } from "./AssetManager/types.partial";

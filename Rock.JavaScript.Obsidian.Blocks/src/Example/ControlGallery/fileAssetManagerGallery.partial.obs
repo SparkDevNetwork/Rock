@@ -14,7 +14,7 @@
             This control is for internal use only.
         </NotificationBox>
 
-        <AssetAndFileManager :height="height" v-model="value" v-model:openFolders="openFolders" v-model:selectedFolder="selectedFolder" :enableAssetManager="enableAssetManager" :enableFileManager="enableFileManager" :enableZipUpload="enableZipUpload" :encryptedRootFolder="encryptedRootFolder" :editFilePage="editFilePage" />
+        <FileAssetManager :height="height" v-model="value" v-model:openFolders="openFolders" v-model:selectedFolder="selectedFolder" :enableAssetManager="enableAssetManager" :enableFileManager="enableFileManager" :enableZipUpload="enableZipUpload" :encryptedRootFolder="encryptedRootFolder" :editFilePage="editFilePage" />
 
         <template #settings>
             <div class="row">
@@ -127,7 +127,7 @@
 <script setup lang="ts">
     import { computed, ref } from "vue";
     import GalleryAndResult from "./galleryAndResult.partial.obs";
-    import AssetAndFileManager from "@Obsidian/Controls/assetAndFileManager.obs";
+    import FileAssetManager from "@Obsidian/Controls/fileAssetManager.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -154,13 +154,13 @@
     const isInternalNotificationVisible = ref(true);
     const isDangerNotificationVisible = ref(true);
 
-    const importCode = getSfcControlImportPath("assetAndFileManager");
+    const importCode = getSfcControlImportPath("fileAssetManager");
     const exampleCode = computed(() => {
         const enableAssetManagerProp = enableAssetManager.value ? " enableAssetManager" : "";
         const enableFileManagerProp = enableFileManager.value ? " enableFileManager" : "";
         const enableZipUploadProp = enableZipUpload.value ? " enableZipUpload" : "";
         const heightProp = isStaticHeight.value ? ` height="${height.value}"` : "";
         const rootFolderProp = enableFileManager.value ? ` encryptedRootFolder="${encryptedRootFolder.value}"` : "";
-        return `<AssetAndFileManager v-model="value"${rootFolderProp}${enableAssetManagerProp}${enableFileManagerProp}${enableZipUploadProp}${heightProp} />`;
+        return `<FileAssetManager v-model="value"${rootFolderProp}${enableAssetManagerProp}${enableFileManagerProp}${enableZipUploadProp}${heightProp} />`;
     });
 </script>

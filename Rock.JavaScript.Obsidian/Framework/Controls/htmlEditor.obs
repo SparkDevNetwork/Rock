@@ -42,20 +42,15 @@
 
             <PasteAsPlainTextPlugin ref="pasteAsPlainTextPlugin" />
 
-            <MergeFieldPlugin :mergeFields="mergeFields"
-                              ref="mergeFieldPlugin" />
+            <MergeFieldPlugin :mergeFields="mergeFields" ref="mergeFieldPlugin" />
 
-            <ImageBrowserPlugin v-if="false"
-                                ref="imageBrowserPlugin" />
+            <ImageBrowserPlugin ref="imageBrowserPlugin" />
 
-            <FileBrowserPlugin v-if="false"
-                               ref="fileBrowserPlugin" />
+            <FileBrowserPlugin ref="fileBrowserPlugin" />
 
-            <AssetManagerPlugin v-if="false"
-                                ref="assetManagerPlugin" />
+            <AssetManagerPlugin ref="assetManagerPlugin" />
 
-            <StylesheetsPlugin htmlCssReplacementSelector=".note-editor"
-                               bodyCssReplacementSelector=".note-editing-area" />
+            <StylesheetsPlugin htmlCssReplacementSelector=".note-editor" bodyCssReplacementSelector=".note-editing-area" />
 
             <MetaTagsPlugin />
         </template>
