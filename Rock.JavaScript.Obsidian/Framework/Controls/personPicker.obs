@@ -4,7 +4,7 @@
         <template #default="{ uniqueId, field }">
             <div class="control-wrapper">
                 <div class="picker picker-select person-picker">
-                    <a class="picker-label" href="#" @click.prevent.stop="onPickerClick">
+                    <a class="picker-label" href="#" @click.prevent.stop="togglePopup">
                         <i class="fa fa-user fa-fw"></i>
                         <span class="selected-name">{{ selectedName }}</span>
                         <button role="button" type="button" aria-label="Clear selection" v-if="showClear" class="btn picker-select-none" @click.prevent.stop="onClear">
@@ -105,7 +105,7 @@
     import TextBox from "./textBox.obs";
     import RockButton from "./rockButton.obs";
     import Tag from "./Internal/tag.obs";
-    import { nextTick } from "vue";
+    import { nextTick, onMounted } from "vue";
     import { useStore } from "@Obsidian/PageState";
     import { emptyGuid } from "@Obsidian/Utility/guid";
     import { useHttp } from "@Obsidian/Utility/http";
@@ -183,11 +183,18 @@
         expandSearchOptions: {
             type: Boolean,
             default: false
+        },
+
+        /** Have the picker open up in the Search Mode on click */
+        isSearchModeOpen: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: ListItemBag | undefined): void;
+        (e: "update:isSearchModeOpen", value: boolean): void;
     }>();
 
     const http = useHttp();
@@ -373,7 +380,7 @@
      * Event handler for when the user clicks on the picker. Show/hide the
      * popup.
      */
-    function onPickerClick(): void {
+    function togglePopup(): void {
         showPopup.value = !showPopup.value;
 
         if (showPopup.value) {
@@ -444,4 +451,20 @@
 
     // Watch for changes in our provided value and update the UI.
     watch(() => props.modelValue, () => internalValue.value = props.modelValue);
+    
+    watch(showPopup, () => {
+        emit("update:isSearchModeOpen", showPopup.value);
+    });
+
+    watch(() => props.isSearchModeOpen, () => {
+        if(props.isSearchModeOpen !== showPopup.value) {
+            togglePopup();
+        }
+    });
+
+    onMounted(() => {
+        if (props.isSearchModeOpen === true) {
+            togglePopup();
+        }
+    });
 </script>
