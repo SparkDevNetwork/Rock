@@ -124,6 +124,13 @@ namespace RockWeb.Blocks.CheckIn.Manager
         Description = "When enabled, a 'Move' button will be shown in 'Present' mode allowing the user to move people.",
         DefaultBooleanValue = true,
         Order = 11 )]
+
+    [BooleanField(
+        "Show Schedules That Aren't Currently Active",
+        Key = AttributeKey.ShowInactiveSchedules,
+        Description = "Should schedules that aren't currently active be shown when moving people.",
+        DefaultBooleanValue = true,
+        Order = 12 )]
     // END LPC CODE
 
     #endregion Block Attributes
@@ -158,6 +165,7 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
             // LPC CODE
             public const string EnableMoveButton = "EnableMoveButton";
+            public const string ShowInactiveSchedules = "ShowInactiveSchedules";
             // END LPC CODE
         }
 
@@ -1555,7 +1563,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
                 foreach ( var schedule in sortedScheduleList )
                 {
-                    if ( schedule.IsScheduleActive )
+                    bool showInactiveSchedules = GetAttributeValue( AttributeKey.ShowInactiveSchedules ).AsBoolean( true );
+                    if ( schedule.IsScheduleActive || showInactiveSchedules )
                     {
                         ddlMovePersonSchedule.Items.Add( new ListItem( schedule.Name, schedule.Id.ToString() ) );
                     }
