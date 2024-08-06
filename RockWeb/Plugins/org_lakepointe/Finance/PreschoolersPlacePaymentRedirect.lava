@@ -2,7 +2,7 @@
     Preschooler's place landing page for payemnt scheduling
 {% endcomment %}
 
-//- When updating: Update instanceId to the new Registration Instance Id
+{% comment %} When updating: Update instanceId to the new Registration Instance Id {% endcomment %}
 {% sql instanceId:'3597' personId:'{{ CurrentPerson.Id }}'%}
     SELECT r.Id
     FROM Registration r
@@ -13,11 +13,11 @@
 
 {% assign registrationCount = results | Size %}
 {% assign today = 'Now' | Date:'MM/dd/yyyy' | AsDateTime %}
-//- When updating: Update these two dates to the next year
+{% comment %} When updating: Update these two dates to the next year {% endcomment %}
 {% assign july1 = '7/1/2024' | Date:'MM/dd/yyyy' |  AsDateTime %}
 {% assign sept1 = '9/1/2024' | Date:'MM/dd/yyyy' |  AsDateTime %}
 
-//- If it's before July 1, set the start date for the payments to September 1
+{% comment %} If it's before July 1, set the start date for the payments to September 1 {% endcomment %}
 {% capture paymentDate %}{% if today < july1 %}&paymentDate={{ sept1 | UrlEncode }}{% endif %}{% endcapture %}
 
 {% if registrationCount == 0 %}
@@ -25,7 +25,7 @@
         <div class="col-xs-12">
             <div class="alert alert-warning">
                 <strong>Can not find registration</strong><br />
-                //- When updating: Make sure this contact info is still correct
+                {% comment %} When updating: Make sure this contact info is still correct {% endcomment %}
                 <p>We are not able to find your Preschooler's Place registration. Please contact Lori Ham at (469) 698-2300 or lori.ham@lakepointe.church for assistance.</p>
             </div>
         </div>
