@@ -822,6 +822,7 @@ namespace Rock.Blocks.Cms
             {
                 var sources = ContentCollectionSourceCache.All()
                     .Where( s => s.ContentCollectionId == contentCollection.Id )
+                    .OrderBy( s => s.Order )
                     .ToList();
 
                 foreach ( var source in sources )

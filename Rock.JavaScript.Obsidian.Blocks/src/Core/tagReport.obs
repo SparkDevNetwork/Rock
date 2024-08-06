@@ -83,7 +83,7 @@
     const entityTypeGuid = config.options?.entityTypeGuid ?? "";
     const isBlockHidden = config.options?.isBlockHidden ?? false;
     const isPersonTag = config.options?.isPersonTag ?? false;
-    const personKeyField = isPersonTag ? "entityId" : null;
+    const personKeyField = isPersonTag ? "entityId" : undefined;
     const tagId = config.options?.tagId ?? 0;
     const isSearchModeOpen = ref(true);
 
