@@ -75,14 +75,14 @@
     // #region Values
 
     const gridDataSource = ref<Promise<GridDataBag>>();
-    const addNextPersonCount = ref<number>(0); // key to refresh the personpicker so that it opens up in full screen for the next input.
+    const addNextPersonCount = ref<number> (0); // key to refresh the personpicker so that it opens up in full screen for the next input.
     let gridData: GridDataBag | undefined;
     const tagName = config.options?.tagName ?? "";
     const title = config.options?.title ?? "";
     const entityTypeName = config.options?.entityTypeName ?? "";
     const entityTypeGuid = config.options?.entityTypeGuid ?? "";
     const isBlockHidden = config.options?.isBlockHidden ?? false;
-    const isPersonTag = config.options?.isPersonTag;
+    const isPersonTag = config.options?.isPersonTag ?? false;
     const personKeyField = isPersonTag ? "entityId" : null;
     const tagId = config.options?.tagId ?? 0;
     const isSearchModeOpen = ref(true);
@@ -92,8 +92,8 @@
     // #region Functions
 
     /**
-     * Called when the grid is requesting the row data be loaded.
-     */
+    * Called when the grid is requesting the row data be loaded.
+    */
     async function loadGridData(): Promise<GridDataBag> {
         const result = await invokeBlockAction<GridDataBag>("GetGridData");
 
