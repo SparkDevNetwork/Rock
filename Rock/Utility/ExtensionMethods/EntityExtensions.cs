@@ -323,9 +323,11 @@ namespace Rock
                 CreatedByPersonId = model.CreatedByPersonAlias?.PersonId,
                 CreatedByName = model.CreatedByPersonAlias?.Person?.FullName,
                 CreatedRelativeTime = model.CreatedDateTime?.ToRelativeDateString(),
+                CreatedDateTime = model.CreatedDateTime,
                 ModifiedByPersonId = model.ModifiedByPersonAlias?.PersonId,
                 ModifiedByName = model.ModifiedByPersonAlias?.Person?.FullName,
-                ModifiedRelativeTime = model.ModifiedDateTime?.ToRelativeDateString()
+                ModifiedRelativeTime = model.ModifiedDateTime?.ToRelativeDateString(),
+                ModifiedDateTime = model.ModifiedDateTime
             };
         }
 

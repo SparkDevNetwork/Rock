@@ -52,14 +52,14 @@
                     <div class="row">
                         <div class="col-md-6">
                             <DefinedValuePicker
-                                v-model="utmSourceValue"
+                                v-model="utmSource"
                                 label="UTM Source"
                                 :definedTypeGuid="DefinedType.UtmSource"
                                 help="The UTM source parameter identifies the origin of your traffic, like a search engine, newsletter, or specific website, helping to pinpoint which platforms are directing visitors to your site."
                                 showBlankItem
                                 allowAdd />
                             <DefinedValuePicker
-                                v-model="utmCampaignValue"
+                                v-model="utmCampaign"
                                 label="UTM Campaign"
                                 :definedTypeGuid="DefinedType.UtmCampaign"
                                 help="The UTM campaign parameter tags your traffic with specific campaign names, enabling you to measure the performance of individual marketing campaigns and understand their impact on your traffic."
@@ -69,7 +69,7 @@
 
                         <div class="col-md-6">
                             <DefinedValuePicker
-                                v-model="utmMediumValue"
+                                v-model="utmMedium"
                                 label="UTM Medium"
                                 :definedTypeGuid="DefinedType.UtmMedium"
                                 help='The UTM medium parameter is used to identify the marketing or advertising medium that directed a user to your site. Examples include "email", "social", "cpc" (cost per click), or "organic" for non-paid search engine traffic.'
@@ -116,7 +116,7 @@
     import { PageShortLinkBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkDetail/pageShortLinkBag";
     import { PageShortLinkDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkDetail/pageShortLinkDetailOptionsBag";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const invokeBlockAction = useInvokeBlockAction();
     const config = useConfigurationValues<DetailBlockBox<PageShortLinkBag, PageShortLinkDetailOptionsBag>>();
@@ -127,11 +127,11 @@ import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validProperties
     const defaultDomainURL = propertyRef(config?.entity?.defaultDomainURL ?? "", "SiteId");
     const url = propertyRef(config?.entity?.url ?? "", "Url");
     const token = propertyRef(config?.entity?.token ?? "", "Token");
-    const utmSourceValue = propertyRef(config?.entity?.utmSourceValue ?? {}, "AdditionalSettingsJSON");
-    const utmMediumValue = propertyRef(config?.entity?.utmMediumValue ?? {}, "AdditionalSettingsJSON");
-    const utmCampaignValue = propertyRef(config?.entity?.utmCampaignValue ?? {}, "AdditionalSettingsJSON");
-    const utmTerm = propertyRef(config?.entity?.utmTerm ?? "", "AdditionalSettingsJSON");
-    const utmContent = propertyRef(config?.entity?.utmContent ?? "", "AdditionalSettingsJSON");
+    const utmSource = ref(config?.entity?.utmSettings?.utmSource ?? {});
+    const utmMedium = ref(config?.entity?.utmSettings?.utmMedium ?? {});
+    const utmCampaign = ref(config?.entity?.utmSettings?.utmCampaign ?? {});
+    const utmTerm = ref(config?.entity?.utmSettings?.utmTerm ?? "");
+    const utmContent = ref(config?.entity?.utmSettings?.utmContent ?? "");
     const errorMessage = ref("");
 
     // #region Computed Values
@@ -177,11 +177,13 @@ import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validProperties
         setPropertiesBoxValue(box, "site", selectedSite.value);
         setPropertiesBoxValue(box, "token", token.value);
         setPropertiesBoxValue(box, "url",url.value);
-        setPropertiesBoxValue(box, "utmSourceValue", utmSourceValue.value);
-        setPropertiesBoxValue(box, "utmMediumValue", utmMediumValue.value);
-        setPropertiesBoxValue(box, "utmCampaignValue", utmCampaignValue.value);
-        setPropertiesBoxValue(box, "utmTerm", utmTerm.value);
-        setPropertiesBoxValue(box, "utmContent", utmContent.value);
+        setPropertiesBoxValue(box, "utmSettings", {
+            utmSource: utmSource.value,
+            utmMedium: utmMedium.value,
+            utmCampaign: utmCampaign.value,
+            utmTerm: utmTerm.value,
+            utmContent: utmContent.value
+        });
 
         const result = await invokeBlockAction<string>("Save", {
             box

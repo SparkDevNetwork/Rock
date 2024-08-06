@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity.Spatial;
 using System.Linq;
 
 using Rock.Attribute;
@@ -29,6 +30,7 @@ using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Core.LocationDetail;
 using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -85,11 +87,15 @@ namespace Rock.Blocks.Core
         private static class PageParameterKey
         {
             public const string LocationId = "LocationId";
+            public const string ParentLocationId = "ParentLocationId";
+            public const string ExpandedIds = "ExpandedIds";
+            public const string PersonId = "PersonId";
         }
 
         private static class NavigationUrlKey
         {
             public const string ParentPage = "ParentPage";
+            public const string CurrentPage = "CurrentPage";
         }
 
         #endregion Keys
@@ -103,10 +109,11 @@ namespace Rock.Blocks.Core
             {
                 var box = new DetailBlockBox<LocationBag, LocationDetailOptionsBag>();
 
+                box.Options = GetBoxOptions( box.IsEditable, rockContext );
+
                 SetBoxInitialEntityState( box, rockContext );
 
                 box.NavigationUrls = GetBoxNavigationUrls();
-                box.Options = GetBoxOptions( box.IsEditable, rockContext );
                 box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<Location>();
 
                 return box;
@@ -128,7 +135,10 @@ namespace Rock.Blocks.Core
                 .OrderBy( d => d.Name ).ToListItemBagList();
 
             options.PrinterDeviceOptions = deviceItems;
-
+            options.HasPersonId = PageParameter( PageParameterKey.PersonId ).IsNotNullOrWhiteSpace();
+            options.HasParentLocationId = PageParameter( PageParameterKey.ParentLocationId ).IsNotNullOrWhiteSpace();
+            options.MapStyleGuid = GetAttributeValue( AttributeKey.MapStyle ).AsGuid();
+            options.IsPersonIdAvailable = PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull().HasValue;
             return options;
         }
 
@@ -159,12 +169,22 @@ namespace Rock.Blocks.Core
 
             if ( entity == null )
             {
-                box.ErrorMessage = $"The {Location.FriendlyTypeName} was not found.";
-                return;
+                var globalAttributesCache = GlobalAttributesCache.Get();
+
+                entity = new Location
+                {
+                    Id = 0,
+                    IsActive = true,
+                    ParentLocationId = PageParameter( PageParameterKey.ParentLocationId ).AsIntegerOrNull(),
+                    State = globalAttributesCache.OrganizationState,
+                    Country = globalAttributesCache.OrganizationCountry
+                };
             }
 
-            var isViewable = entity.IsAuthorized(Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson );
-            box.IsEditable = entity.IsAuthorized(Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson );
+            var isViewable = entity.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson );
+            box.IsEditable = entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson );
+            box.Options.PanelTitle = entity.ToString( true );
+            box.Options.CanAdministrate = entity.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
 
             entity.LoadAttributes( rockContext );
 
@@ -186,7 +206,7 @@ namespace Rock.Blocks.Core
                 // New entity is being created, prepare for edit mode by default.
                 if ( box.IsEditable )
                 {
-                    box.Entity = GetEntityBagForEdit( entity );
+                    box.Entity = GetEntityBagForEdit( entity, rockContext );
                     box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
@@ -213,16 +233,16 @@ namespace Rock.Blocks.Core
             return new LocationBag
             {
                 IdKey = entity.IdKey,
-                FirmRoomThreshold = entity.FirmRoomThreshold,
-                ImageId = entity.ImageId,
+                FirmRoomThreshold = entity.FirmRoomThreshold.ToString(),
+                Image = entity.Image.ToListItemBag(),
                 ImageUrlParam = GetImageIdOrHash( entity.ImageId ),
                 IsActive = entity.IsActive,
                 IsGeoPointLocked = entity.IsGeoPointLocked,
                 LocationTypeValue = entity.LocationTypeValue.ToListItemBag(),
                 Name = entity.Name,
-                ParentLocation = entity.ParentLocation.ToListItemBag(),
+                ParentLocation = ToListItemBag( entity.ParentLocation ),
                 PrinterDevice = entity.PrinterDevice.ToListItemBag(),
-                SoftRoomThreshold = entity.SoftRoomThreshold,
+                SoftRoomThreshold = entity.SoftRoomThreshold.ToString(),
                 Guid = entity.Guid,
                 AddressFields = new AddressControlBag
                 {
@@ -243,6 +263,17 @@ namespace Rock.Blocks.Core
                 GeoPoint_WellKnownText = entity.GeoPoint?.AsText(),
                 GeoFence_WellKnownText = entity.GeoFence?.AsText()
             };
+        }
+
+        /// <summary>
+        /// Converts the location to ListItemBag, the to string method of Location prefers the full address when available,
+        /// and since the ToListItemBag extension method calls ToString() this method is used to ensure the name is preferred.
+        /// </summary>
+        /// <param name="location">The parent location.</param>
+        /// <returns></returns>
+        private ListItemBag ToListItemBag(Location location)
+        {
+            return new ListItemBag() { Text = location.ToString( true ), Value = location.Guid.ToString() };
         }
 
         /// <summary>
@@ -315,8 +346,9 @@ namespace Rock.Blocks.Core
         /// Gets the bag for editing the specified entity.
         /// </summary>
         /// <param name="entity">The entity to be represented for edit purposes.</param>
+        /// <param name="rockContext">The rock Context for getting the Parent location if provided in URL.</param>
         /// <returns>A <see cref="LocationBag"/> that represents the entity.</returns>
-        private LocationBag GetEntityBagForEdit( Location entity )
+        private LocationBag GetEntityBagForEdit( Location entity, RockContext rockContext )
         {
             if ( entity == null )
             {
@@ -326,6 +358,13 @@ namespace Rock.Blocks.Core
             var bag = GetCommonEntityBag( entity );
 
             bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+            var parentLocationId = PageParameter( PageParameterKey.ParentLocationId ).AsIntegerOrNull();
+
+            if ( entity.Id == 0 && parentLocationId.HasValue )
+            {
+                var parentLocation = new LocationService( rockContext ).Get( parentLocationId.Value );
+                bag.ParentLocation = ToListItemBag( parentLocation );
+            }
 
             return bag;
         }
@@ -345,10 +384,10 @@ namespace Rock.Blocks.Core
             }
 
             box.IfValidProperty( nameof( box.Entity.FirmRoomThreshold ),
-                () => entity.FirmRoomThreshold = box.Entity.FirmRoomThreshold );
+                () => entity.FirmRoomThreshold = box.Entity.FirmRoomThreshold.AsIntegerOrNull() );
 
-            box.IfValidProperty( nameof( box.Entity.ImageId ),
-                () => entity.ImageId = box.Entity.ImageId );
+            box.IfValidProperty( nameof( box.Entity.Image ),
+                () => entity.ImageId = box.Entity.Image.GetEntityId<BinaryFile>( rockContext ) );
 
             box.IfValidProperty( nameof( box.Entity.IsActive ),
                 () => entity.IsActive = box.Entity.IsActive );
@@ -369,7 +408,7 @@ namespace Rock.Blocks.Core
                 () => entity.PrinterDeviceId = box.Entity.PrinterDevice.GetEntityId<Device>( rockContext ) );
 
             box.IfValidProperty( nameof( box.Entity.SoftRoomThreshold ),
-                () => entity.SoftRoomThreshold = box.Entity.SoftRoomThreshold );
+                () => entity.SoftRoomThreshold = box.Entity.SoftRoomThreshold.AsIntegerOrNull() );
 
             box.IfValidProperty( nameof( box.Entity.AddressFields ),
                 () =>
@@ -381,6 +420,12 @@ namespace Rock.Blocks.Core
                     entity.PostalCode = box.Entity.AddressFields.PostalCode;
                     entity.State = box.Entity.AddressFields.State;
                 } );
+
+            box.IfValidProperty( nameof( box.Entity.GeoPoint_WellKnownText ),
+                () => entity.GeoPoint = box.Entity.GeoPoint_WellKnownText.IsNullOrWhiteSpace() ? null : DbGeography.FromText( box.Entity.GeoPoint_WellKnownText ) );
+
+            box.IfValidProperty( nameof( box.Entity.GeoFence_WellKnownText ),
+                () => entity.GeoFence = box.Entity.GeoFence_WellKnownText.IsNullOrWhiteSpace() ? null : DbGeography.PolygonFromText( box.Entity.GeoFence_WellKnownText, DbGeography.DefaultCoordinateSystemId ) );
 
             box.IfValidProperty( nameof( box.Entity.AttributeValues ),
                 () =>
@@ -410,9 +455,35 @@ namespace Rock.Blocks.Core
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
+            var queryParams = new Dictionary<string, string>();
+            var parentLocationId = PageParameter( PageParameterKey.ParentLocationId );
+            var expandedIds = PageParameter( PageParameterKey.ExpandedIds );
+            var personId = PageParameter( PageParameterKey.PersonId );
+
+            if ( personId.IsNotNullOrWhiteSpace() )
+            {
+                queryParams.Add( PageParameterKey.PersonId, personId );
+            }
+            else
+            {
+                // If parentLocationId was passed in URL odds are block is in treeview mode.
+                // The parentLocationId is set as the currentId for the CurrentPage url so
+                // on cancel the page is reloaded with the parent location as the location.
+                if ( parentLocationId.IsNotNullOrWhiteSpace() )
+                {
+                    queryParams.Add( PageParameterKey.LocationId, parentLocationId );
+                }
+
+                if ( expandedIds.IsNotNullOrWhiteSpace() )
+                {
+                    queryParams.Add( PageParameterKey.ExpandedIds, expandedIds );
+                }
+            }
+
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
+                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl( queryParams ),
+                [NavigationUrlKey.CurrentPage] = this.GetCurrentPageUrl( queryParams ),
             };
         }
 
@@ -546,7 +617,8 @@ namespace Rock.Blocks.Core
                         State = location.State,
                         PostalCode = location.PostalCode,
                         Country = location.Country,
-                    }
+                    },
+                    GeoPointWellKnownText = location.GeoPoint?.AsText(),
                 };
 
                 return ActionOk( result );
@@ -573,7 +645,7 @@ namespace Rock.Blocks.Core
 
                 var box = new DetailBlockBox<LocationBag, LocationDetailOptionsBag>
                 {
-                    Entity = GetEntityBagForEdit( entity )
+                    Entity = GetEntityBagForEdit( entity, rockContext )
                 };
 
                 return ActionOk( box );
@@ -631,7 +703,19 @@ namespace Rock.Blocks.Core
                 entity = entityService.Get( entity.Id );
                 entity.LoadAttributes( rockContext );
 
-                return ActionOk( GetEntityBagForView( entity ) );
+                var personId = PageParameter( PageParameterKey.PersonId );
+
+                if ( personId.IsNotNullOrWhiteSpace() )
+                {
+                    return ActionOk( this.GetParentPageUrl( new Dictionary<string, string>
+                    {
+                        [PageParameterKey.PersonId] = personId
+                    } ) );
+                }
+                else
+                {
+                    return ActionOk( GetEntityBagForView( entity ) );
+                }
             }
         }
 
@@ -657,12 +741,21 @@ namespace Rock.Blocks.Core
                     return ActionBadRequest( errorMessage );
                 }
 
+                var parentLocationId = entity.ParentLocationId;
                 entityService.Delete( entity );
                 rockContext.SaveChanges();
 
                 Rock.CheckIn.KioskDevice.Clear();
 
-                return ActionOk( this.GetParentPageUrl() );
+                var qryParams = new Dictionary<string, string>();
+                if ( parentLocationId != null )
+                {
+                    qryParams["LocationId"] = parentLocationId.ToString();
+                }
+
+                qryParams[PageParameterKey.ExpandedIds] = PageParameter( PageParameterKey.ExpandedIds );
+
+                return ActionOk( this.GetCurrentPageUrl( qryParams ) );
             }
         }
 
@@ -693,7 +786,7 @@ namespace Rock.Blocks.Core
 
                 var refreshedBox = new DetailBlockBox<LocationBag, LocationDetailOptionsBag>
                 {
-                    Entity = GetEntityBagForEdit( entity )
+                    Entity = GetEntityBagForEdit( entity, rockContext )
                 };
 
                 var oldAttributeGuids = box.Entity.Attributes.Values.Select( a => a.AttributeGuid ).ToList();

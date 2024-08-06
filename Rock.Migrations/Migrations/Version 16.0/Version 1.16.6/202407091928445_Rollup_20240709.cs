@@ -29,6 +29,7 @@ namespace Rock.Migrations
         {
             AddCalendarBlockAttributesUp();
             AddNewLavaFilterToVolunteerGenerosityBuildScriptUp();
+            UpdateAppleDevicesDefinedType();
         }
 
         /// <summary>

@@ -22,6 +22,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
 using Rock.Attribute;
+using Rock.Model;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
@@ -351,6 +352,58 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
+        /// Gets the filter value.
+        /// </summary>
+        /// <param name="filterControl">The filter control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterMode">The filter mode.</param>
+        /// <returns></returns>
+        public override List<string> GetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues, FilterMode filterMode )
+        {
+            var values = new List<string>();
+
+            if ( filterControl != null )
+            {
+                try
+                {
+                    string compare = GetFilterCompareValue( filterControl.Controls[0].Controls[0], filterMode );
+                    if ( compare != "0" )
+                    {
+                        values.Add( compare );
+                    }
+
+                    ComparisonType? comparisonType = compare.ConvertToEnumOrNull<ComparisonType>();
+                    if ( comparisonType.HasValue )
+                    {
+                        if ( ( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType.Value ) )
+                        {
+                            // if using IsBlank or IsNotBlank, we don't care about the value, so don't try to grab it from the UI
+                            values.Add( string.Empty );
+                        }
+                        else
+                        {
+                            string value = GetFilterValueValue( filterControl.Controls[1].Controls[0], configurationValues );
+                            var filterValues = value.Split( new string[] { "\t" }, StringSplitOptions.None );
+                            if ( filterValues.All( a => a.IsNullOrWhiteSpace() ) )
+                            {
+                                return new List<string>();
+                            }
+
+                            values.Add( value );
+                        }
+                    }
+
+                }
+                catch
+                {
+                    // intentionally ignore error
+                }
+            }
+
+            return values;
+        }
+
+        /// <summary>
         /// Gets the filter value value.
         /// </summary>
         /// <param name="control">The control.</param>
@@ -370,7 +423,11 @@ namespace Rock.Field.Types
 
             if ( slidingDateRangePicker != null )
             {
-                slidingDateRangePickerValue = slidingDateRangePicker.DelimitedValues;
+                var selectedDateRange = slidingDateRangePicker.SelectedDateRange;
+                if ( selectedDateRange != null && ( selectedDateRange.Start.HasValue || selectedDateRange.End.HasValue ) )
+                {
+                    slidingDateRangePickerValue = slidingDateRangePicker.DelimitedValues;
+                }
             }
 
             // use Tab Delimited since slidingDateRangePicker is | delimited

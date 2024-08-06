@@ -390,6 +390,10 @@ namespace Rock.CheckIn.v2
                     {
                         recatt.AttendanceId = att.IdKey;
                     }
+
+                    // This is a temporary call until the legacy v1 check-in is
+                    // removed. This keeps the room counts in sync.
+                    KioskLocationAttendance.AddAttendance( att );
                 }
             }
 
@@ -496,20 +500,20 @@ namespace Rock.CheckIn.v2
                     null );
 
                 Activity.Current?.AddEvent( new ActivityEvent( "Add Attendance" ) );
-                attendance = new Attendance
-                {
-                    Occurrence = occurrence,
-                    OccurrenceId = occurrence.Id,
-                    PersonAliasId = request.Person.PrimaryAliasId,
-                    StartDateTime = request.StartDateTime,
-                    CampusId = request.Location.CampusId,
-                    DeviceId = request.Kiosk?.Id,
-                    SearchTypeValueId = GetSearchTypeValueId( request.SearchMode ),
-                    SearchValue = request.SearchTerm,
-                    SearchResultGroupId = request.FamilyId,
-                    AttendanceCodeId = request.AttendanceCode.Id,
-                    DidAttend = true
-                };
+                // Create it as a proxy so that navigation properties will work.
+                attendance = Session.RockContext.Set<Attendance>().Create();
+                attendance.Occurrence = occurrence;
+                attendance.OccurrenceId = occurrence.Id;
+                attendance.PersonAliasId = request.Person.PrimaryAliasId;
+                attendance.PersonAlias = request.Person.PrimaryAlias;
+                attendance.StartDateTime = request.StartDateTime;
+                attendance.CampusId = request.Location.CampusId;
+                attendance.DeviceId = request.Kiosk?.Id;
+                attendance.SearchTypeValueId = GetSearchTypeValueId( request.SearchMode );
+                attendance.SearchValue = request.SearchTerm;
+                attendance.SearchResultGroupId = request.FamilyId;
+                attendance.AttendanceCodeId = request.AttendanceCode.Id;
+                attendance.DidAttend = true;
 
                 attendanceService.Add( attendance );
 
@@ -526,6 +530,15 @@ namespace Rock.CheckIn.v2
             attendance.DeviceId = request.Kiosk?.Id;
             attendance.AttendanceCodeId = request.AttendanceCode.Id;
             attendance.Note = request.Note;
+
+            if ( Session.AttendanceSourceValueId.HasValue )
+            {
+                attendance.SourceValueId = Session.AttendanceSourceValueId.Value;
+            }
+            else
+            {
+                attendance.SourceValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.ATTENDANCE_SOURCE_KIOSK.AsGuid(), Session.RockContext )?.Id;
+            }
 
             if ( request.IsPending )
             {
@@ -710,7 +723,7 @@ namespace Rock.CheckIn.v2
         /// Updates the attendance record's present information.
         /// </summary>
         /// <param name="attendance">The attendance record.</param>
-        protected void UpdatePresentStatus( Attendance attendance)
+        protected void UpdatePresentStatus( Attendance attendance )
         {
             /*
                 7/16/2020 - JH

@@ -540,7 +540,8 @@ namespace Rock.CheckIn.v2
             var canCheckInFamilyMemberQry = groupMemberService
                 .Queryable()
                 .AsNoTracking()
-                .Where( gm => relationshipGroupIdQry.Contains( gm.GroupId ) );
+                .Where( gm => gm.GroupMemberStatus == GroupMemberStatus.Active
+                    && relationshipGroupIdQry.Contains( gm.GroupId ) );
 
             canCheckInFamilyMemberQry = CheckInDirector.WhereContains( canCheckInFamilyMemberQry, canCheckInRoleIds, gm => gm.GroupRoleId );
 

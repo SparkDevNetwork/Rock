@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -129,6 +129,15 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [DataMember]
         public string CriteriaValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the boolean value that determines if an action should be completed if criteria is unmet.
+        /// </summary>
+        /// <value>
+        /// The boolean value determining if an action should be completed if criteria is unmet.
+        /// </value>
+        [DataMember]
+        public bool IsActionCompletedIfCriteriaUnmet { get; set; }
 
         #endregion Entity Properties
 

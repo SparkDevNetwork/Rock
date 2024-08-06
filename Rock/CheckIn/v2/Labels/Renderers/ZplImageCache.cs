@@ -28,6 +28,11 @@ namespace Rock.CheckIn.v2.Labels.Renderers
         public byte[] ImageData { get; }
 
         /// <summary>
+        /// The string Hex encoded string that represents <see cref="ImageData"/>.
+        /// </summary>
+        public string ZplContent { get; }
+
+        /// <summary>
         /// The width of the image data in pixels.
         /// </summary>
         public int Width { get; }
@@ -48,6 +53,8 @@ namespace Rock.CheckIn.v2.Labels.Renderers
             ImageData = imageData;
             Width = width;
             Height = height;
+
+            ZplContent = ZplImageHelper.ByteArrayToHexViaLookup32( ImageData );
         }
     }
 }

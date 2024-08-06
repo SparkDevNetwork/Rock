@@ -1968,5 +1968,10 @@ namespace Rock.SystemGuid
         /// The EntityType Guid for <see cref="Rock.Model.CheckInLabel"/> 
         /// </summary>
         public const string CHECK_IN_LABEL = "8B651EB1-492F-46D0-821B-CA7355C6E6E7";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.AIProvider"/> 
+        /// </summary>
+        public const string AI_PROVIDER = "945A994F-F15E-43AC-B503-A54BDE70F77F";
     }
 }

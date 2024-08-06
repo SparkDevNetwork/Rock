@@ -11,6 +11,7 @@
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
                  entityTypeName="Streak"
+                 :isFullScreenVisible="false"
                  :isAuditHidden="false"
                  :isBadgesVisible="true"
                  :isDeleteVisible="isEditable"
@@ -41,8 +42,7 @@
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import EditPanel from "./StreakDetail/editPanel.partial.obs";
     import ViewPanel from "./StreakDetail/viewPanel.partial.obs";
-    import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
-    import { debounce } from "@Obsidian/Utility/util";
+    import { getSecurityGrant, provideSecurityGrant, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./StreakDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { StreakBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakDetail/streakBag";
@@ -74,8 +74,6 @@
         "personAlias",
         "streakType",
     ];
-
-    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(streakEditBag, validProperties, invokeBlockAction), undefined, true);
 
     // #endregion
 
@@ -132,6 +130,9 @@
     });
 
     const footerActions = computed((): PanelAction[] => {
+        if(panelMode.value != DetailPanelMode.View) {
+            return [];
+        }
         return [
                 {
                     iconCssClass: "fa fa-refresh",
@@ -290,13 +291,7 @@
      * @param propertyName The name of the C# property that was changed.
      */
     function onPropertyChanged(propertyName: string): void {
-        // If we don't have any qualified attribute properties or this property
-        // is not one of them then do nothing.
-        if (!config.qualifiedAttributeProperties || !config.qualifiedAttributeProperties.some(n => n.toLowerCase() === propertyName.toLowerCase())) {
-            return;
-        }
-
-        refreshAttributesDebounce();
+        return;
     }
 
     /**

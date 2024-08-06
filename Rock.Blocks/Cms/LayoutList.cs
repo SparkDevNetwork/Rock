@@ -12,15 +12,14 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-// </copyright>
-//
+// </copyright//
 
+using System.Web.Http;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.IO;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -31,23 +30,19 @@ using Rock.ViewModels.Blocks.Cms.LayoutList;
 using Rock.Web.Cache;
 using Rock;
 using Rock.Web;
+using System;
 
 namespace Rock.Blocks.Cms
 {
     /// <summary>
     /// Displays a list of layouts.
     /// </summary>
-
     [DisplayName( "Layout List" )]
     [Category( "CMS" )]
     [Description( "Displays a list of layouts." )]
     [IconCssClass( "fa fa-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
-
-    [LinkedPage( "Detail Page",
-        Description = "The page that will show the layout details.",
-        Key = AttributeKey.DetailPage )]
-
+    // [SupportedSiteTypes(Model.SiteType.Web)]
+    [LinkedPage( "Detail Page", Description = "The page that will show the layout details.", Key = AttributeKey.DetailPage )]
     [Rock.SystemGuid.EntityTypeGuid( "6e1d987d-de38-4440-b54f-717c102795fe" )]
     [Rock.SystemGuid.BlockTypeGuid( "6a10a280-65b8-4988-96b2-974fcd80604b" )]
     [CustomizedGrid]
@@ -61,6 +56,8 @@ namespace Rock.Blocks.Cms
         }
 
         private static class NavigationUrlKey
+
+
         {
             public const string DetailPage = "DetailPage";
         }
@@ -97,7 +94,6 @@ namespace Rock.Blocks.Cms
         private LayoutListOptionsBag GetBoxOptions()
         {
             var options = new LayoutListOptionsBag();
-
             return options;
         }
 
@@ -108,7 +104,6 @@ namespace Rock.Blocks.Cms
         private bool GetIsAddEnabled()
         {
             var entity = new Layout();
-
             return entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
         }
 
@@ -118,9 +113,14 @@ namespace Rock.Blocks.Cms
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
+            var siteId = PageParameter( PageParameterKey.SiteId );
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "LayoutId", "((Key))" )
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, new Dictionary<string, string>
+        {
+            { "LayoutId", "((Key))" },
+            { "SiteId", siteId }
+        } )
             };
         }
 
@@ -128,27 +128,34 @@ namespace Rock.Blocks.Cms
         protected override IQueryable<Layout> GetListQueryable( RockContext rockContext )
         {
             var siteId = PageParameter( PageParameterKey.SiteId ).AsIntegerOrNull();
-
             if ( siteId.HasValue )
             {
                 var site = new SiteService( rockContext ).Get( siteId.Value );
-
                 if ( site != null )
                 {
                     var layouts = new LayoutService( rockContext )
                         .Queryable()
                         .Include( l => l.Site )
                         .Where( l => l.SiteId == siteId );
-
                     return layouts;
-
                 }
             }
-
             // Return an empty queryable if no valid siteId is provided or site doesn't exist
             return new LayoutService( rockContext ).Queryable().Where( l => false );
         }
 
+        /// <inheritdoc/>
+        protected override IQueryable<Layout> GetOrderedListQueryable( IQueryable<Layout> queryable, RockContext rockContext )
+        {
+            return queryable.OrderBy( e => e.Name );
+        }
+
+        /// <summary>
+        /// Gets the list items with the file paths updated and missing files marked.
+        /// </summary>
+        /// <param name="queryable">The queryable.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>A list of layouts.</returns>
         protected override List<Layout> GetListItems( IQueryable<Layout> queryable, RockContext rockContext )
         {
             var layouts = queryable.ToList();
@@ -156,7 +163,20 @@ namespace Rock.Blocks.Cms
             {
                 if ( layout.Site != null && layout.FileName != null )
                 {
-                    layout.FileName = $"~/Themes/{layout.Site.Theme}/Layouts/{layout.FileName}.aspx";
+                    var virtualPath = $"~/Themes/{layout.Site.Theme}/Layouts/{layout.FileName}.aspx";
+                    // Check if the file exists
+                    var site = SiteCache.Get( layout.SiteId );
+                    if ( site != null )
+                    {
+                        var physicalRootFolder = AppDomain.CurrentDomain.BaseDirectory;
+                        var physicalPath = Path.Combine( physicalRootFolder, "Themes", site.Theme, "Layouts", $"{layout.FileName}.aspx" );
+
+                        layout.FileName = virtualPath;
+                        if ( !File.Exists( physicalPath ) )
+                        {
+                            layout.FileName += "|Missing";
+                        }
+                    }
                 }
             }
             return layouts;
@@ -204,25 +224,20 @@ namespace Rock.Blocks.Cms
             {
                 var entityService = new LayoutService( rockContext );
                 var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
-
                 if ( entity == null )
                 {
                     return ActionBadRequest( $"{Layout.FriendlyTypeName} not found." );
                 }
-
                 if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
-                    return ActionBadRequest( $"Not authorized to delete ${Layout.FriendlyTypeName}." );
+                    return ActionBadRequest( $"Not authorized to delete {Layout.FriendlyTypeName}." );
                 }
-
                 if ( !entityService.CanDelete( entity, out var errorMessage ) )
                 {
                     return ActionBadRequest( errorMessage );
                 }
-
                 entityService.Delete( entity );
                 rockContext.SaveChanges();
-
                 return ActionOk();
             }
         }

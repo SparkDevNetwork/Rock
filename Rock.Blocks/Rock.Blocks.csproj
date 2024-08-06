@@ -60,9 +60,11 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>Properties\AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Bus\BusStatus.cs" />
     <Compile Include="Bus\QueueList.cs" />
     <Compile Include="CheckIn\CheckInKiosk.cs" />
     <Compile Include="CheckIn\CheckInKioskSetup.cs" />
+    <Compile Include="CheckIn\CloudPrintMonitor.cs" />
     <Compile Include="CheckIn\Configuration\CheckInSimulator.cs" />
     <Compile Include="CheckIn\Configuration\LabelDesigner.cs" />
     <Compile Include="Cms\AdaptiveMessageAdaptationDetail.cs" />
@@ -72,6 +74,8 @@
     <Compile Include="Cms\LayoutList.cs" />
     <Compile Include="Cms\PageRouteList.cs" />
     <Compile Include="Communication\NcoaProcess.cs" />
+    <Compile Include="Core\AuthClientDetail.cs" />
+    <Compile Include="Crm\PhotoVerify.cs" />
     <Compile Include="Security\AuthScopeList.cs" />
     <Compile Include="Security\AuthClientList.cs" />
     <Compile Include="Core\PersonSignalList.cs" />
@@ -107,12 +111,13 @@
     <Compile Include="Engagement\ConnectionTypeList.cs" />
     <Compile Include="Event\RegistrationEntry\ExtensionMethods.cs" />
     <Compile Include="Finance\BenevolenceRequestList.cs" />
-	<Compile Include="Event\EventItemOccurrenceList.cs" />
+    <Compile Include="Event\EventItemOccurrenceList.cs" />
     <Compile Include="Finance\FinancialBatchList.cs" />
     <Compile Include="Engagement\StepProgramDetail.cs" />
     <Compile Include="Finance\FinancialGatewayDetail.cs" />
     <Compile Include="Engagement\StreakTypeExclusionDetail.cs" />
     <Compile Include="Finance\BusinessContactList.cs" />
+    <Compile Include="Event\RegistrationInstancePaymentList.cs" />
     <Compile Include="Finance\SavedAccountList.cs" />
     <Compile Include="Finance\FinancialPledgeDetail.cs" />
     <Compile Include="Finance\FundraisingDonationList.cs" />
@@ -203,6 +208,7 @@
     <Compile Include="RockObsidianDetailBlockType.cs" />
     <Compile Include="Engagement\Steps\StepFlow.cs" />
     <Compile Include="WebFarm\WebFarmNodeDetail.cs" />
+    <Compile Include="WebFarm\WebFarmNodeLogList.cs" />
     <Compile Include="WebFarm\WebFarmSettings.cs" />
     <Compile Include="Security\Login.cs" />
     <Compile Include="Utility\RealTimeDebugger.cs" />

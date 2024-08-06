@@ -124,6 +124,12 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<PageShortLink>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, PageShortLink.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<PersonalizationSegment>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, PersonalizationSegment.FriendlyTypeName );

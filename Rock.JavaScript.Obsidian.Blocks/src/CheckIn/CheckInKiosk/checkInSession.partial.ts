@@ -144,6 +144,12 @@ export class CheckInSession {
     /** The attendance records that have been sent to the server and saved. */
     public readonly attendances: RecordedAttendanceBag[] = [];
 
+    /**
+     * Any messages that should be displayed. This is currently only used
+     * by the check-in and check-out success screens.
+     */
+    public readonly messages: string[] = [];
+
     /** `true` if the current operation is for checkout. */
     public readonly isCheckoutAction: boolean = false;
 
@@ -162,6 +168,12 @@ export class CheckInSession {
 
     /** The object to use when making HTTP requests to the server. */
     public readonly http: HttpFunctions;
+
+    /** The API key to use to authorize requests from this session. */
+    public readonly apiKey?: string;
+
+    /** The PIN code to use to request override access to the API. */
+    public readonly overridePinCode?: string;
 
     // #endregion
 
@@ -191,6 +203,8 @@ export class CheckInSession {
             this.sessionGuid = configurationOrSession.sessionGuid;
             this.configuration = configurationOrSession.configuration;
             this.http = configurationOrSession.http;
+            this.apiKey = configurationOrSession.apiKey;
+            this.overridePinCode = configurationOrSession.overridePinCode;
             this.currentScreen = configurationOrSession.currentScreen;
             this.searchTerm = configurationOrSession.searchTerm;
             this.searchType = configurationOrSession.searchType;
@@ -210,6 +224,7 @@ export class CheckInSession {
             this.possibleSchedules = configurationOrSession.possibleSchedules;
             this.allAttendeeSelections = clone(configurationOrSession.allAttendeeSelections);
             this.attendances = clone(configurationOrSession.attendances);
+            this.messages = clone(configurationOrSession.messages);
             this.isCheckoutAction = configurationOrSession.isCheckoutAction;
             this.checkedOutAttendances = configurationOrSession.checkedOutAttendances;
 
@@ -228,6 +243,21 @@ export class CheckInSession {
     // #endregion
 
     // #region Private Support Functions
+
+    /**
+     * Gets the URL to make an authenticated request to the API.
+     *
+     * @param baseUrl The base URL to be requested.
+     *
+     * @returns A modified URL that should be sent to the server.
+     */
+    private getApiUrl(baseUrl: string): string {
+        if (this.apiKey) {
+            return `${baseUrl}?apiKey=${this.apiKey}`;
+        }
+
+        return baseUrl;
+    }
 
     /**
      * Creates a new check-in session object that will display the specified
@@ -306,7 +336,7 @@ export class CheckInSession {
             requests: attendanceRequests
         };
 
-        const response = await this.http.post<SaveAttendanceResponseBag>("/api/v2/checkin/SaveAttendance", undefined, request);
+        const response = await this.http.post<SaveAttendanceResponseBag>(this.getApiUrl("/api/v2/checkin/SaveAttendance"), undefined, request);
 
         if (!response.isSuccess || !response.data?.attendances) {
             throw new Error(response.errorMessage || UnexpectedErrorMessage);
@@ -336,7 +366,7 @@ export class CheckInSession {
             sessionGuid: this.sessionGuid
         };
 
-        const response = await this.http.post<ConfirmAttendanceResponseBag>("/api/v2/checkin/ConfirmAttendance", undefined, request);
+        const response = await this.http.post<ConfirmAttendanceResponseBag>(this.getApiUrl("/api/v2/checkin/ConfirmAttendance"), undefined, request);
 
         if (!response.isSuccess || !response.data?.attendances) {
             throw new Error(response.errorMessage || UnexpectedErrorMessage);
@@ -361,7 +391,8 @@ export class CheckInSession {
 
         return new CheckInSession(this, {
             attendances,
-            allAttendeeSelections: []
+            allAttendeeSelections: [],
+            messages: response.data.messages ?? []
         });
     }
 
@@ -403,7 +434,7 @@ export class CheckInSession {
             searchType: searchType
         };
 
-        const response = await this.http.post<SearchForFamiliesResponseBag>("/api/v2/checkin/SearchForFamilies", undefined, request);
+        const response = await this.http.post<SearchForFamiliesResponseBag>(this.getApiUrl("/api/v2/checkin/SearchForFamilies"), undefined, request);
 
         if (!response.isSuccess || !response.data?.families) {
             throw new Error(response.errorMessage || UnexpectedErrorMessage);
@@ -433,10 +464,11 @@ export class CheckInSession {
             configurationTemplateId: this.configuration.template.id,
             kioskId: this.configuration.kiosk.id,
             areaIds: this.configuration.areas?.filter(a => !!a.id).map(a => a.id as string),
-            familyId: familyId
+            familyId: familyId,
+            overridePinCode: this.overridePinCode
         };
 
-        const response = await this.http.post<FamilyMembersResponseBag>("/api/v2/checkin/FamilyMembers", undefined, request);
+        const response = await this.http.post<FamilyMembersResponseBag>(this.getApiUrl("/api/v2/checkin/FamilyMembers"), undefined, request);
 
         if (!response.isSuccess || !response.data?.people) {
             throw new Error(response.errorMessage || UnexpectedErrorMessage);
@@ -497,14 +529,15 @@ export class CheckInSession {
             attendanceIds: attendanceIds
         };
 
-        const response = await this.http.post<CheckoutResponseBag>("/api/v2/checkin/Checkout", undefined, request);
+        const response = await this.http.post<CheckoutResponseBag>(this.getApiUrl("/api/v2/checkin/Checkout"), undefined, request);
 
         if (!response.isSuccess || !response.data?.attendances) {
             throw new Error(response.errorMessage || UnexpectedErrorMessage);
         }
 
         return new CheckInSession(this, {
-            checkedOutAttendances: [...this.checkedOutAttendances, ...response.data.attendances]
+            checkedOutAttendances: [...this.checkedOutAttendances, ...response.data.attendances],
+            messages: response.data.messages ?? []
         });
     }
 
@@ -580,10 +613,11 @@ export class CheckInSession {
             kioskId: this.configuration.kiosk.id,
             areaIds: this.configuration.areas?.filter(a => !!a.id).map(a => a.id as string),
             familyId: this.currentFamilyId,
-            personId: attendeeId
+            personId: attendeeId,
+            overridePinCode: this.overridePinCode
         };
 
-        const response = await this.http.post<AttendeeOpportunitiesResponseBag>("/api/v2/checkin/AttendeeOpportunities", undefined, request);
+        const response = await this.http.post<AttendeeOpportunitiesResponseBag>(this.getApiUrl("/api/v2/checkin/AttendeeOpportunities"), undefined, request);
 
         if (!response.isSuccess || !response.data?.opportunities) {
             throw new Error(response.errorMessage || UnexpectedErrorMessage);
@@ -999,7 +1033,9 @@ export class CheckInSession {
         }
 
         const attendeeGroups = this.attendeeOpportunities.groups
-            .filter(g => !g.abilityLevelId || g.abilityLevelId === this.selectedAbilityLevel?.id);
+            .filter(g => (this.overridePinCode !== undefined && this.overridePinCode !== "")
+                || !g.abilityLevelId
+                || g.abilityLevelId === this.selectedAbilityLevel?.id);
 
         if (this.configuration.template?.kioskCheckInType === KioskCheckInMode.Individual) {
             // In individual mode we need to filter the groups by the selected
@@ -1181,6 +1217,51 @@ export class CheckInSession {
         return scheduleIndex === 0;
     }
 
+    /**
+     * Cancels the check-in session and deletes any pending attendance records.
+     */
+    public async cancelSession(): Promise<void> {
+        if (this.attendances.length > 0) {
+            try {
+                await this.http.doApiCall("DELETE", this.getApiUrl(`/api/v2/checkin/pendingAttendance/${this.sessionGuid}`));
+            }
+            catch {
+                // Intentionally ignoring errors.
+            }
+        }
+    }
+
+    /**
+     * Configures a new cloned check-in session to use the API key for requests.
+     *
+     * @param apiKey The API key to use for authorizing API requests.
+     *
+     * @returns A new check-in session instance.
+     */
+    public withApiKey(apiKey: string): CheckInSession {
+        return new CheckInSession(this, {
+            apiKey: apiKey
+        });
+    }
+
+    /**
+     * Configures a new cloned check-in session for supervisor override with
+     * the specified PIN code.
+     *
+     * @param pinCode The PIN code used to authentication the supervisor.
+     *
+     * @returns A new check-in session instance.
+     */
+    public withStartOverride(pinCode: string): CheckInSession {
+        if (this.currentScreen !== Screen.Welcome) {
+            throw new InvalidCheckInStateError("Can only start override on welcome screen.");
+        }
+
+        return new CheckInSession(this, {
+            overridePinCode: pinCode
+        }).withScreen(Screen.Search);
+    }
+
     // #endregion
 
     // #region Screen Switch Functions
@@ -1276,10 +1357,14 @@ export class CheckInSession {
      * @returns A new CheckInSession object.
      */
     private withNextScreenFromFamilySelect(forceCheckin: boolean = false): Promise<CheckInSession> {
+        const canCheckout = this.configuration.template?.isCheckoutAtKioskAllowed === true
+            && this.currentlyCheckedIn
+            && this.currentlyCheckedIn.length > 0;
+
         if (!this.getCurrentFamily() || !this.attendees) {
             return Promise.resolve(this.withScreen(Screen.Welcome));
         }
-        else if (!forceCheckin && this.currentlyCheckedIn && this.currentlyCheckedIn.length > 0) {
+        else if (!forceCheckin && canCheckout) {
             return Promise.resolve(this.withScreen(Screen.ActionSelect));
         }
 
@@ -1392,6 +1477,11 @@ export class CheckInSession {
                     }
                 });
             }
+        }
+
+        // When in override mode, we don't ask for ability level.
+        if (this.overridePinCode !== undefined && this.overridePinCode !== "") {
+            return await newSession.withNextScreenFromAbilityLevelSelect();
         }
 
         // If we have more than 1 ability level to pick from then show the
@@ -1574,8 +1664,13 @@ export class CheckInSession {
                 ?.groups
                 ?.filter(g => !!g.abilityLevelId) ?? [];
 
-            if (groupsWithAbilityLevels.length === 0) {
+            if (groupsWithAbilityLevels.length === 0 || this.overridePinCode) {
                 return familySession.withNextScreenFromAbilityLevelSelect();
+            }
+
+            // When in override mode, we don't ask for ability level.
+            if (this.overridePinCode !== undefined && this.overridePinCode !== "") {
+                return await familySession.withNextScreenFromAbilityLevelSelect();
             }
 
             return familySession.withScreen(Screen.AbilityLevelSelect);
@@ -1619,13 +1714,18 @@ export class CheckInSession {
             }
 
             // If there are no groups that filter by ability level then we
-            // can also skip the ability levle screen.
+            // can also skip the ability level screen.
             const groupsWithAbilityLevels = familySession.attendeeOpportunities
                 ?.groups
                 ?.filter(g => !!g.abilityLevelId) ?? [];
 
             if (groupsWithAbilityLevels.length === 0) {
                 return familySession.withNextScreenFromAbilityLevelSelect();
+            }
+
+            // When in override mode, we don't ask for ability level.
+            if (this.overridePinCode !== undefined && this.overridePinCode !== "") {
+                return await familySession.withNextScreenFromAbilityLevelSelect();
             }
 
             return familySession.withScreen(Screen.AbilityLevelSelect);

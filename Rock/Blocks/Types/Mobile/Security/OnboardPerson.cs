@@ -1056,6 +1056,7 @@ namespace Rock.Blocks.Types.Mobile.Security
                     DoNotAttendCampusGuid = DoNotAttendCampusGuid,
                     CreateLoginVisibility = CreateLoginVisibility,
                     ScreenSettings = GetScreenSettings(),
+                    HideCampusIfKnown = HideCampusIfKnown,
                     HeaderXaml = null
                 };
             }

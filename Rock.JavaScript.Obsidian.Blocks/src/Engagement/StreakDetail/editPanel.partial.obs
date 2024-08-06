@@ -25,14 +25,11 @@
                               rules="required" />
             </div>
         </div>
-
-        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
     </fieldset>
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import { PropType, watch } from "vue";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import PersonPicker from "@Obsidian/Controls/personPicker.obs";
@@ -62,8 +59,6 @@
 
     // #region Values
 
-    const attributes = ref(props.modelValue.attributes ?? {});
-    const attributeValues = ref(props.modelValue.attributeValues ?? {});
     const personAlias = propertyRef(props.modelValue.personAlias ?? undefined, "PersonAliasId");
     const location = propertyRef(props.modelValue.location ?? undefined, "LocationId");
     const enrollmentDate = propertyRef(props.modelValue.enrollmentDate ?? undefined, "EnrollmentDate");
@@ -89,8 +84,6 @@
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
-        updateRefValue(attributes, props.modelValue.attributes ?? {});
-        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
         updateRefValue(personAlias, props.modelValue.personAlias ?? undefined);
         updateRefValue(location, props.modelValue.location ?? undefined);
         updateRefValue(enrollmentDate, props.modelValue.enrollmentDate ?? undefined);
@@ -98,10 +91,9 @@
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
-    watch([attributeValues, ...propRefs], () => {
+    watch([...propRefs], () => {
         const newValue: StreakBag = {
             ...props.modelValue,
-            attributeValues: attributeValues.value,
             personAlias: personAlias.value,
             location: location.value,
             enrollmentDate: enrollmentDate.value

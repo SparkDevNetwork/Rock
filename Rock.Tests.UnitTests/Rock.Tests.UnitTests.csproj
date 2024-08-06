@@ -257,6 +257,7 @@
     <Compile Include="Rock\Utility\TimeIntervalTests.cs" />
     <Compile Include="Rock\Utility\MethodRetryTests.cs" />
     <Compile Include="Rock\Utility\WebRequestHelperTests.cs" />
+    <Compile Include="Rock\Web\Cache\PageShortLinkCacheTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

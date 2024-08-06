@@ -7,9 +7,10 @@
                            :iconCssClass="pickerIconClass"
                            :showClear="showClear"
                            :modelValue="internalValues"
-                           :fullWidth="fullWidth">
+                           :fullWidth="fullWidth"
+                           v-model:showPopup="showPopup">
 
-        <TreeList v-model="internalValues" :multiple="multiple" :items="items" :provider="provider" @update:items="onUpdateItems" :disableFolderSelection="disableFolderSelection" :autoExpand="autoExpand" :showChildCount="showChildCount" />
+        <TreeList v-model="internalValues" :multiple="multiple" :items="items" :provider="provider" @update:items="onUpdateItems" @update:modelValue="selectItemOnClick" :disableFolderSelection="disableFolderSelection" :autoExpand="autoExpand" :showChildCount="showChildCount" :isVisible="showPopup" />
 
         <template #innerLabel><span class="selected-names">{{ selectedNames }}</span></template>
 
@@ -234,6 +235,12 @@
         }
     });
 
+    // The picker should select on item click when we are not selecting multiple items.
+    const selectItemOnClick = (): void => {
+        if(!props.multiple) {
+            onSelect();
+        }
+    };
 
     /**
      * Helper function to flatten an array of items that contains child items

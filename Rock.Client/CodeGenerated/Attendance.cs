@@ -130,6 +130,9 @@ namespace Rock.Client
         public string SearchValue { get; set; }
 
         /// <summary />
+        public int? SourceValueId { get; set; }
+
+        /// <summary />
         public DateTime StartDateTime { get; set; }
 
         /// <summary>
@@ -196,6 +199,7 @@ namespace Rock.Client
             this.SearchResultGroupId = source.SearchResultGroupId;
             this.SearchTypeValueId = source.SearchTypeValueId;
             this.SearchValue = source.SearchValue;
+            this.SourceValueId = source.SourceValueId;
             this.StartDateTime = source.StartDateTime;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
@@ -235,6 +239,9 @@ namespace Rock.Client
 
         /// <summary />
         public DefinedValue SearchTypeValue { get; set; }
+
+        /// <summary />
+        public DefinedValue SourceValue { get; set; }
 
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 

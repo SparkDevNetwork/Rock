@@ -152,7 +152,7 @@ namespace Rock.CheckIn.v2.Labels
         /// <returns>A dictionary of data sources whose key is the data source key.</returns>
         public static IReadOnlyDictionary<string, FieldDataSource> GetCachedDataSources( LabelType labelType )
         {
-            return RockCache.GetOrAddExisting( $"{typeof( FieldSourceHelper )}:DataSources:{labelType}", () =>
+            return RockCache.GetOrAddExisting( $"{typeof( FieldSourceHelper )}:DataSources:{labelType}", null, () =>
             {
                 var dataSources = GetDataSources( labelType );
                 var sourceDictionary = new Dictionary<string, FieldDataSource>( dataSources.Count );
@@ -163,7 +163,7 @@ namespace Rock.CheckIn.v2.Labels
                 }
 
                 return sourceDictionary;
-            } ) as Dictionary<string, FieldDataSource>;
+            }, TimeSpan.FromMinutes( 1 ) ) as Dictionary<string, FieldDataSource>;
         }
 
         #region Person Label
@@ -1037,7 +1037,7 @@ namespace Rock.CheckIn.v2.Labels
                             Key = $"attribute:person:{entityField.AttributeGuid}",
                             Name = entityField.Title,
                             Category = "Attributes",
-                            ValueFunc = ( source, field, printRequest ) => source.Person.GetAttributeValue( entityField.AttributeGuid.Value )
+                            ValueFunc = ( source, field, printRequest ) => source.Person.GetAttributeTextValue( attributeCache.Key )
                         };
                     }
 

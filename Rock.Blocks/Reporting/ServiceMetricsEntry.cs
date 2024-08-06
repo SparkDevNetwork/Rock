@@ -272,10 +272,10 @@ namespace Rock.Blocks.Reporting
                 weeksAhead = bag.WeeksAhead.Value;
             }
 
-            var dates = new List<DateTime>();
+            var dates = new List<DateTimeOffset>();
 
             // Load Weeks
-            var sundayDate = RockDateTime.Today.SundayDate();
+            var sundayDate = RockDateTime.Today.SundayDate().ToRockDateTimeOffset();
             var daysBack = weeksBack * 7;
             var daysAhead = weeksAhead * 7;
             var startDate = sundayDate.AddDays( 0 - daysBack );
@@ -288,8 +288,8 @@ namespace Rock.Blocks.Reporting
 
             return ActionOk( dates.Select( weekend => new ListItemBag
             {
-                Value = weekend.ToISO8601DateString(),
-                Text = $"Sunday {weekend.ToShortDateString()}"
+                Value = weekend.ToString( "o" ),
+                Text = $"Sunday {weekend.DateTime.ToShortDateString()}"
             } ).ToList() );
         }
 
@@ -692,9 +692,12 @@ namespace Rock.Blocks.Reporting
             var scheduleGuid = scheduleId.HasValue ? new ScheduleService( new RockContext() ).GetGuid( scheduleId.Value ) : null;
             var defaultToCurrentWeek = GetAttributeValue( AttributeKey.DefaultToCurrentWeek ).AsBoolean();
 
-            // If the Campus and Schedule both have initial values,
+            // If configured to default to current week or the Campus and Schedule both have initial values,
             // then we will assume the current weekend.
-            var weekendDate = defaultToCurrentWeek || ( campusGuid.HasValue && scheduleGuid.HasValue ) ? RockDateTime.Today.SundayDate() : ( DateTime? )null;
+            var weekendDate =
+                defaultToCurrentWeek || ( campusGuid.HasValue && scheduleGuid.HasValue ) ?
+                RockDateTime.Today.SundayDate().ToRockDateTimeOffset() :
+                ( DateTimeOffset? ) null;
 
             return new ServiceMetricsEntryInitializationBox
             {

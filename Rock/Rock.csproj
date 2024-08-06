@@ -785,12 +785,14 @@
     <Compile Include="Bus\Consumer\RockConsumerAsync.cs" />
     <Compile Include="Bus\Exceptions\BusException.cs" />
     <Compile Include="Bus\Faults\ReceiveFaultObserver.cs" />
+    <Compile Include="Bus\Message\CloudPrintProxyStatusMessage.cs" />
     <Compile Include="Bus\Message\NewItemCacheAddedMessage.cs" />
     <Compile Include="Bus\Message\ClearReferencedEntityDependenciesMessage.cs" />
     <Compile Include="Bus\Message\CreditCardIsExpiringMessage.cs" />
     <Compile Include="Bus\Message\GiftWasGivenMessage.cs" />
     <Compile Include="Bus\Message\PageRouteWasUpdatedMessage.cs" />
     <Compile Include="Bus\Message\ScheduledGiftWasModifiedMessage.cs" />
+    <Compile Include="Bus\Queue\CloudPrintQueue.cs" />
     <Compile Include="Bus\Queue\ExpiringCardEventQueue.cs" />
     <Compile Include="Bus\Queue\PageRouteEventQueue.cs" />
     <Compile Include="Chart\ChartJs\ChartColorPaletteGenerator.cs" />
@@ -812,7 +814,8 @@
     <Compile Include="CheckIn\v2\AreaOpportunity.cs" />
     <Compile Include="CheckIn\v2\AttendanceSessionRequest.cs" />
     <Compile Include="CheckIn\v2\CheckInFieldFilterBuilder.cs" />
-    <Compile Include="CheckIn\v2\PrinterProxySocket.cs" />
+    <Compile Include="CheckIn\v2\CloudPrintProxyStatusConsumer.cs" />
+    <Compile Include="CheckIn\v2\CloudPrintSocket.cs" />
     <Compile Include="CheckIn\v2\DefaultLabelProvider.cs" />
     <Compile Include="CheckIn\v2\DefaultSaveProvider.cs" />
     <Compile Include="CheckIn\v2\Filters\BirthMonthOpportunityFilter.cs" />
@@ -918,6 +921,9 @@
     <Compile Include="Cms\ContentCollection\Search\SearchResults.cs" />
     <Compile Include="Cms\ContentCollection\Search\SearchSortOrder.cs" />
     <Compile Include="Cms\ContentCollection\Search\SearchTerm.cs" />
+    <Compile Include="Cms\PageShortLinkSchedule.cs" />
+    <Compile Include="Cms\PageShortLinkScheduleData.cs" />
+    <Compile Include="Cms\UtmSettings.cs" />
     <Compile Include="Cms\Utm\UtmHelper.cs" />
     <Compile Include="Cms\Utm\UtmCookieData.cs" />
     <Compile Include="Cms\StructuredContent\BlockTypes\ChecklistRenderer.cs" />
@@ -1107,6 +1113,7 @@
     <Compile Include="Jobs\IndexContentCollections.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostUpdateJob.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV161RemoveObsidianGroupScheduleToolboxBackButtons.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV167PopulateEntityIntentsFromAdditionalSettingsJson.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV166AddCommunicationRecipientIndex.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV166UpdateAchievementTypeTargetCount.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV16UpdateInteractionSessionStartDateKey.cs" />
@@ -1177,6 +1184,7 @@
     <Compile Include="Model\CodeGenerated\AdaptiveMessageAdaptationSegmentService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\AdaptiveMessageAdaptationService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\AdaptiveMessageService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\AIProviderService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\CheckInLabelService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\ContentCollectionService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\ContentCollectionSourceService.CodeGenerated.cs" />
@@ -1191,6 +1199,7 @@
     <Compile Include="Model\CMS\RequestFilter\RequestFilter.WebForms.cs" />
     <Compile Include="Model\CodeGenerated\ContentTopicDomainService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\ContentTopicService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\EntityIntentService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\InteractiveExperienceActionService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\InteractiveExperienceAnswerService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\InteractiveExperienceOccurrenceService.CodeGenerated.cs" />
@@ -1216,12 +1225,17 @@
     <Compile Include="Model\Communication\SystemPhoneNumber\SystemPhoneNumber.Logic.cs" />
     <Compile Include="Model\Communication\SystemPhoneNumber\SystemPhoneNumberService.cs" />
     <Compile Include="Model\Connection\ConnectionRequest\ConnectionState.cs" />
+    <Compile Include="Model\Core\AIProvider\AIProvider.cs" />
+    <Compile Include="Model\Core\AIProvider\AIProvider.Logic.cs" />
+    <Compile Include="Model\Core\AIProvider\AIProviderService.cs" />
     <Compile Include="Model\Core\AssetStorageProvider\AssetStorageProvider.Logic.cs" />
     <Compile Include="Model\Core\Attribute\Attribute.SaveHook.cs" />
     <Compile Include="Model\Core\AttributeQualifier\AttributeQualifier.SaveHook.cs" />
     <Compile Include="Model\Core\AttributeReferencedEntity\AttributeReferencedEntity.cs" />
     <Compile Include="Model\Core\AttributeValueReferencedEntity\AttributeValueReferencedEntity.cs" />
     <Compile Include="Model\Core\EntityIntent\EntityIntent.cs" />
+    <Compile Include="Model\Core\EntityIntent\EntityIntent.Logic.cs" />
+    <Compile Include="Model\Core\EntityIntent\EntityIntentService.cs" />
     <Compile Include="Model\Core\EntitySet\Options\AddEntitySetActionOptions.cs" />
     <Compile Include="Model\Core\Interaction\Interaction.Logic.cs" />
     <Compile Include="Model\Core\NoteType\NoteType.SaveHook.cs" />
@@ -2301,8 +2315,10 @@
     <Compile Include="Web\Cache\ClearReferencedEntityDependenciesConsumer.cs" />
     <Compile Include="Web\Cache\Entities\AdaptiveMessageAdaptationCache.cs" />
     <Compile Include="Web\Cache\Entities\AdaptiveMessageCache.cs" />
+    <Compile Include="Web\Cache\Entities\AIProviderCache.cs" />
     <Compile Include="Web\Cache\Entities\AssetStorageProviderCache.cs" />
     <Compile Include="Web\Cache\Entities\BinaryFileTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\EntityIntentCache.cs" />
     <Compile Include="Web\Cache\Entities\GroupCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentTopicDomainCache.cs" />
     <Compile Include="Web\Cache\Entities\ContentTopicCache.cs" />
@@ -2318,6 +2334,7 @@
     <Compile Include="Web\Cache\Entities\NamedScheduleCache.cs" />
     <Compile Include="Web\Cache\Entities\NamedLocationCache.cs" />
     <Compile Include="Web\Cache\Entities\NotificationMessageTypeCache.cs" />
+    <Compile Include="Web\Cache\Entities\PageShortLinkCache.cs" />
     <Compile Include="Web\Cache\Entities\RequestFilterCache.cs" />
     <Compile Include="Web\Cache\Entities\PersonalizationSegmentCache.cs" />
     <Compile Include="Web\Cache\Entities\SharedPersonalLinksCache.cs" />
@@ -4708,7 +4725,7 @@
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
-  <Import Project="..\Applications\PrinterProxy\Rock.PrinterProxy.Shared.Common\Rock.PrinterProxy.Shared.Common.projitems" Label="Shared" />
+  <Import Project="..\Applications\RockCloudPrint\Rock.CloudPrint.Shared.Common\Rock.CloudPrint.Shared.Common.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>REM Sets vbcscompiler.exe time to live to 10 seconds. Dev environment defaults to 600 secs which can cause issues when switching branches

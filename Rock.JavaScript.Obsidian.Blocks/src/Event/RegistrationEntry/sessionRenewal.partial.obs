@@ -2,35 +2,35 @@
 <template>
     <Dialog :modelValue="isModalVisible" :dismissible="false">
         <template #header>
-            <h4 v-if="isLoading || spotsSecured === null">{{ registrationEntryTerms.registrationTermTitleCase }} Timed Out</h4>
+            <h4 v-if="isLoading || spotsSecured === null">{{ registrationEntryTerms.registrationSingularTitleCase }} Timed Out</h4>
             <h4 v-else>Request Extension</h4>
         </template>
         <template #default>
             <LoadingIndicator v-if="isLoading" />
             <template v-else-if="hasWaitlist && spotsSecured === 0">
                 Due to high demand there is no longer space available.
-                You can continue, but your {{ registrationEntryTerms.registrantsTermLowerCase }} will be placed on the waitlist.
-                Do you wish to continue with the {{ registrationEntryTerms.registrationTermLowerCase }}?
+                You can continue, but your {{ registrationEntryTerms.registrantPluralLowerCase }} will be placed on the waitlist.
+                Do you wish to continue with the {{ registrationEntryTerms.registrationSingularLowerCase }}?
             </template>
             <template v-else-if="spotsSecured === 0">
-                Due to high demand there is no longer space available for this {{ registrationEntryTerms.registrantTermLowerCase }}.
+                Due to high demand there is no longer space available for this {{ registrationEntryTerms.registrantSingularLowerCase }}.
             </template>
             <template v-else-if="hasWaitlist && spotsSecured !== null">
-                Due to high demand there is no longer space available for all your {{ registrationEntryTerms.registrantsTermLowerCase }}.
+                Due to high demand there is no longer space available for all your {{ registrationEntryTerms.registrantPluralLowerCase }}.
                 Your last {{ waitlistRegistrantCountWord }}
-                {{ pluralConditional(waitlistRegistrantCount, registrationEntryTerms.registrantTermLowerCase, ` ${registrationEntryTerms.registrantsTermLowerCase}`) }}
+                {{ pluralConditional(waitlistRegistrantCount, registrationEntryTerms.registrantSingularLowerCase, ` ${registrationEntryTerms.registrantPluralLowerCase}`) }}
                 will be placed on the waitlist.
-                Do you wish to continue with the {{ registrationEntryTerms.registrationTermLowerCase }}?
+                Do you wish to continue with the {{ registrationEntryTerms.registrationSingularLowerCase }}?
             </template>
             <template v-else-if="spotsSecured !== null">
-                Due to high demand there is no longer space available for all your {{ registrationEntryTerms.registrantsTermLowerCase }}.
+                Due to high demand there is no longer space available for all your {{ registrationEntryTerms.registrantPluralLowerCase }}.
                 Only {{ nonWaitlistRegistrantCountWord }} {{ pluralConditional(nonWaitlistRegistrantCount, 'spot is', 'spots are') }} available.
-                Your {{ registrationEntryTerms.registrationTermLowerCase }} has been updated to only allow
-                {{ nonWaitlistRegistrantCountWord }} {{ pluralConditional(nonWaitlistRegistrantCount, registrationEntryTerms.registrantTermLowerCase, ` ${registrationEntryTerms.registrantsTermLowerCase}`) }}.
-                Do you wish to continue with the {{ registrationEntryTerms.registrationTermLowerCase }}?
+                Your {{ registrationEntryTerms.registrationSingularLowerCase }} has been updated to only allow
+                {{ nonWaitlistRegistrantCountWord }} {{ pluralConditional(nonWaitlistRegistrantCount, registrationEntryTerms.registrantSingularLowerCase, ` ${registrationEntryTerms.registrantPluralLowerCase}`) }}.
+                Do you wish to continue with the {{ registrationEntryTerms.registrationSingularLowerCase }}?
             </template>
             <template v-else>
-                Your {{ registrationEntryTerms.registrationTermLowerCase }} has timed out. Do you wish to request an extension in time?
+                Your {{ registrationEntryTerms.registrationSingularLowerCase }} has timed out. Do you wish to request an extension in time?
             </template>
         </template>
         <template v-if="!isLoading" #footer>
@@ -39,11 +39,11 @@
             </template>
             <template v-else-if="spotsSecured !== null">
                 <RockButton btnType="primary" @click="close">Yes</RockButton>
-                <RockButton btnType="link" @click="restart">No, cancel {{ registrationEntryTerms.registrationTermLowerCase }}</RockButton>
+                <RockButton btnType="link" @click="restart">No, cancel {{ registrationEntryTerms.registrationSingularLowerCase }}</RockButton>
             </template>
             <template v-else>
                 <RockButton btnType="primary" @click="requestRenewal">Yes</RockButton>
-                <RockButton btnType="link" @click="restart">No, cancel {{ registrationEntryTerms.registrationTermLowerCase }}</RockButton>
+                <RockButton btnType="link" @click="restart">No, cancel {{ registrationEntryTerms.registrationSingularLowerCase }}</RockButton>
             </template>
         </template>
     </Dialog>

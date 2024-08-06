@@ -57,17 +57,11 @@
                         <div class="row">
 
                             <div class="col-md-6">
-                                <Rock:NumberBox ID="nbMaxFileSizeBytes" runat="server" Label="Max File Size" Help="The max size allowed for the files in bytes. Leaving this blank will allow any size, 0 is not allowed." NumberType="Integer" AppendText="Bytes" Required="false" MinimumValue="1"/>
-                                <Rock:NumberBox ID="nbMaxWidth" runat="server" Label="Maximum Width" />
-                                <Rock:NumberBox ID="nbMaxHeight" runat="server" Label="Maximum Height" />
-                                <Rock:RockDropDownList ID="ddlPreferredColorDepth" runat="server" Label="Preferred Color Depth" Required="true" />
+                                <Rock:NumberBox ID="nbMaxFileSizeBytes" runat="server" Label="Max File Size" Help="The max size allowed for the files in bytes. Leaving this blank will allow any size, 0 is not allowed." NumberType="Integer" AppendText="Bytes" Required="false" MinimumValue="1" />
+                                <Rock:NumberBox ID="nbMaxWidth" runat="server" Label="Maximum Width" Help="Sets the maximum width for images in pixels. Leave this field blank for no limit." />
+                                <Rock:NumberBox ID="nbMaxHeight" runat="server" Label="Maximum Height" Help="Sets the maximum height in pixels. Leave this field blank for no limit." />
                                 <Rock:RockCheckBox ID="cbPreferredRequired" runat="server" Label="Preferred Settings Required" Help="Should the preferred settings for this file type be the required settings?" />
                             </div>
-                            <div class="col-md-6">
-                                <Rock:RockDropDownList ID="ddlPreferredFormat" runat="server" Label="Preferred Format" Required="true" />
-                                <Rock:RockDropDownList ID="ddlPreferredResolution" runat="server" Label="Preferred Resolution" Required="true" />
-                            </div>
-
                         </div>
 
                     </fieldset>

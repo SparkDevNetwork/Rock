@@ -77,12 +77,53 @@ namespace Rock.CheckIn.v2.Labels
             StaticText = values.GetValueOrNull( "staticText" );
             DynamicTextTemplate = values.GetValueOrNull( "dynamicTextTemplate" );
             FontSize = ( double ) ( values.GetValueOrNull( "fontSize" ).AsDecimalOrNull() ?? 12 );
-            // TODO: AdaptiveFontSize
+            AdaptiveFontSize = ParseAdaptiveFontSize( values.GetValueOrNull( "adaptiveFontSize" ) );
             HorizontalAlignment = values.GetValueOrNull( "horizontalAlignment" ).ConvertToEnumOrNull<HorizontalTextAlignment>() ?? HorizontalTextAlignment.Left;
             IsBold = values.GetValueOrNull( "isBold" ).AsBoolean();
             IsColorInverted = values.GetValueOrNull( "isColorInverted" ).AsBoolean();
             IsCondensed = values.GetValueOrNull( "isCondensed" ).AsBoolean();
             MaxLength = values.GetValueOrNull( "maxLength" ).AsInteger();
+        }
+
+        /// <summary>
+        /// <para>
+        /// Parses the adaptive font size string into one we can use.
+        /// </para>
+        /// <para>
+        /// This should be in a format like: <c>10=14;20=12;30=10</c>
+        /// </para>
+        /// </summary>
+        /// <param name="value">The raw string value representing the adaptive font sizes.</param>
+        /// <returns>A dictionary whose key is the string lenth and value is the font size; or <c>null</c>.</returns>
+        private Dictionary<int, double> ParseAdaptiveFontSize( string value )
+        {
+            if ( value.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            var sizePairs = value.Split( ';' );
+            var dict = new Dictionary<int, double>();
+
+            foreach ( var sizePair in sizePairs )
+            {
+                var pair = sizePair.Split( '=' );
+
+                if ( pair.Length != 2 )
+                {
+                    continue;
+                }
+
+                var lenValue = pair[0].AsIntegerOrNull();
+                var sizeValue = pair[1].AsDoubleOrNull();
+
+                if ( lenValue.HasValue && sizeValue.HasValue )
+                {
+                    dict.TryAdd( lenValue.Value, sizeValue.Value );
+                }
+            }
+
+            return dict;
         }
     }
 }

@@ -66,8 +66,8 @@ namespace Rock.Tests.UnitTests.Rock.Blocks.Mobile.Cms
                                     Title = "Day 1 Item 1: Pray",
                                     Content = "",
                                     Order = 0,
-                                    Attributes = new Dictionary<string, Web.Cache.AttributeCache>(),
-                                    AttributeValues = new Dictionary<string, Web.Cache.AttributeValueCache>()
+                                    Attributes = new Dictionary<string, global::Rock.Web.Cache.AttributeCache>(),
+                                    AttributeValues = new Dictionary<string, global::Rock.Web.Cache.AttributeValueCache>()
                                 }
                             },
                             new ContentChannelItemAssociation
@@ -80,8 +80,8 @@ namespace Rock.Tests.UnitTests.Rock.Blocks.Mobile.Cms
                                     Title = "Day 1 Item 2: Read Bible",
                                     Content = "",
                                     Order = 1,
-                                    Attributes = new Dictionary<string, Web.Cache.AttributeCache>(),
-                                    AttributeValues = new Dictionary<string, Web.Cache.AttributeValueCache>()
+                                    Attributes = new Dictionary<string, global::Rock.Web.Cache.AttributeCache>(),
+                                    AttributeValues = new Dictionary<string, global::Rock.Web.Cache.AttributeValueCache>()
                                 }
                             },
                             new ContentChannelItemAssociation
@@ -94,13 +94,13 @@ namespace Rock.Tests.UnitTests.Rock.Blocks.Mobile.Cms
                                     Title = "Day 1 Item 3: Exercise",
                                     Content = "",
                                     Order = 2,
-                                    Attributes = new Dictionary<string, Web.Cache.AttributeCache>(),
-                                    AttributeValues = new Dictionary<string, Web.Cache.AttributeValueCache>()
+                                    Attributes = new Dictionary<string, global::Rock.Web.Cache.AttributeCache>(),
+                                    AttributeValues = new Dictionary<string, global::Rock.Web.Cache.AttributeValueCache>()
                                 }
                             }
                         },
-                        Attributes = new Dictionary<string, Web.Cache.AttributeCache>(),
-                        AttributeValues = new Dictionary<string, Web.Cache.AttributeValueCache>()
+                        Attributes = new Dictionary<string, global::Rock.Web.Cache.AttributeCache>(),
+                        AttributeValues = new Dictionary<string, global::Rock.Web.Cache.AttributeValueCache>()
                     },
 
                     // Day 2
@@ -123,8 +123,8 @@ namespace Rock.Tests.UnitTests.Rock.Blocks.Mobile.Cms
                                     Title = "Day 2 Item 1: Pray",
                                     Content = "",
                                     Order = 0,
-                                    Attributes = new Dictionary<string, Web.Cache.AttributeCache>(),
-                                    AttributeValues = new Dictionary<string, Web.Cache.AttributeValueCache>()
+                                    Attributes = new Dictionary<string, global::Rock.Web.Cache.AttributeCache>(),
+                                    AttributeValues = new Dictionary<string, global::Rock.Web.Cache.AttributeValueCache>()
                                 }
                             },
                             new ContentChannelItemAssociation
@@ -137,8 +137,8 @@ namespace Rock.Tests.UnitTests.Rock.Blocks.Mobile.Cms
                                     Title = "Day 2 Item 2: Read Bible",
                                     Content = "",
                                     Order = 1,
-                                    Attributes = new Dictionary<string, Web.Cache.AttributeCache>(),
-                                    AttributeValues = new Dictionary<string, Web.Cache.AttributeValueCache>()
+                                    Attributes = new Dictionary<string, global::Rock.Web.Cache.AttributeCache>(),
+                                    AttributeValues = new Dictionary<string, global::Rock.Web.Cache.AttributeValueCache>()
                                 }
                             },
                             new ContentChannelItemAssociation
@@ -151,13 +151,13 @@ namespace Rock.Tests.UnitTests.Rock.Blocks.Mobile.Cms
                                     Title = "Day 2 Item 3: Exercise",
                                     Content = "",
                                     Order = 2,
-                                    Attributes = new Dictionary<string, Web.Cache.AttributeCache>(),
-                                    AttributeValues = new Dictionary<string, Web.Cache.AttributeValueCache>()
+                                    Attributes = new Dictionary<string, global::Rock.Web.Cache.AttributeCache>(),
+                                    AttributeValues = new Dictionary<string, global::Rock.Web.Cache.AttributeValueCache>()
                                 }
                             }
                         },
-                        Attributes = new Dictionary<string, Web.Cache.AttributeCache>(),
-                        AttributeValues = new Dictionary<string, Web.Cache.AttributeValueCache>()
+                        Attributes = new Dictionary<string, global::Rock.Web.Cache.AttributeCache>(),
+                        AttributeValues = new Dictionary<string, global::Rock.Web.Cache.AttributeValueCache>()
                     },
 
                     // Day 3
@@ -180,8 +180,8 @@ namespace Rock.Tests.UnitTests.Rock.Blocks.Mobile.Cms
                                     Title = "Day 3 Item 1: Pray",
                                     Content = "",
                                     Order = 0,
-                                    Attributes = new Dictionary<string, Web.Cache.AttributeCache>(),
-                                    AttributeValues = new Dictionary<string, Web.Cache.AttributeValueCache>()
+                                    Attributes = new Dictionary<string, global::Rock.Web.Cache.AttributeCache>(),
+                                    AttributeValues = new Dictionary<string, global::Rock.Web.Cache.AttributeValueCache>()
                                 }
                             },
                             new ContentChannelItemAssociation
@@ -194,8 +194,8 @@ namespace Rock.Tests.UnitTests.Rock.Blocks.Mobile.Cms
                                     Title = "Day 3 Item 2: Read Bible",
                                     Content = "",
                                     Order = 1,
-                                    Attributes = new Dictionary<string, Web.Cache.AttributeCache>(),
-                                    AttributeValues = new Dictionary<string, Web.Cache.AttributeValueCache>()
+                                    Attributes = new Dictionary<string, global::Rock.Web.Cache.AttributeCache>(),
+                                    AttributeValues = new Dictionary<string, global::Rock.Web.Cache.AttributeValueCache>()
                                 }
                             },
                             new ContentChannelItemAssociation
@@ -208,13 +208,13 @@ namespace Rock.Tests.UnitTests.Rock.Blocks.Mobile.Cms
                                     Title = "Day 3 Item 3: Exercise",
                                     Content = "",
                                     Order = 2,
-                                    Attributes = new Dictionary<string, Web.Cache.AttributeCache>(),
-                                    AttributeValues = new Dictionary<string, Web.Cache.AttributeValueCache>()
+                                    Attributes = new Dictionary<string, global::Rock.Web.Cache.AttributeCache>(),
+                                    AttributeValues = new Dictionary<string, global::Rock.Web.Cache.AttributeValueCache>()
                                 }
                             }
                         },
-                        Attributes = new Dictionary<string, Web.Cache.AttributeCache>(),
-                        AttributeValues = new Dictionary<string, Web.Cache.AttributeValueCache>()
+                        Attributes = new Dictionary<string, global::Rock.Web.Cache.AttributeCache>(),
+                        AttributeValues = new Dictionary<string, global::Rock.Web.Cache.AttributeValueCache>()
                     },
 
                     // Day 4
@@ -237,8 +237,8 @@ namespace Rock.Tests.UnitTests.Rock.Blocks.Mobile.Cms
                                     Title = "Day 4 Item 1: Pray",
                                     Content = "",
                                     Order = 0,
-                                    Attributes = new Dictionary<string, Web.Cache.AttributeCache>(),
-                                    AttributeValues = new Dictionary<string, Web.Cache.AttributeValueCache>()
+                                    Attributes = new Dictionary<string, global::Rock.Web.Cache.AttributeCache>(),
+                                    AttributeValues = new Dictionary<string, global::Rock.Web.Cache.AttributeValueCache>()
                                 }
                             },
                             new ContentChannelItemAssociation
@@ -251,13 +251,13 @@ namespace Rock.Tests.UnitTests.Rock.Blocks.Mobile.Cms
                                     Title = "Day 4 Item 2: Read Bible",
                                     Content = "",
                                     Order = 1,
-                                    Attributes = new Dictionary<string, Web.Cache.AttributeCache>(),
-                                    AttributeValues = new Dictionary<string, Web.Cache.AttributeValueCache>()
+                                    Attributes = new Dictionary<string, global::Rock.Web.Cache.AttributeCache>(),
+                                    AttributeValues = new Dictionary<string, global::Rock.Web.Cache.AttributeValueCache>()
                                 }
                             }
                         },
-                        Attributes = new Dictionary<string, Web.Cache.AttributeCache>(),
-                        AttributeValues = new Dictionary<string, Web.Cache.AttributeValueCache>()
+                        Attributes = new Dictionary<string, global::Rock.Web.Cache.AttributeCache>(),
+                        AttributeValues = new Dictionary<string, global::Rock.Web.Cache.AttributeValueCache>()
                     },
 
                     // Day 5
@@ -280,13 +280,13 @@ namespace Rock.Tests.UnitTests.Rock.Blocks.Mobile.Cms
                                     Title = "Day 5 Item 1: Pray",
                                     Content = "",
                                     Order = 0,
-                                    Attributes = new Dictionary<string, Web.Cache.AttributeCache>(),
-                                    AttributeValues = new Dictionary<string, Web.Cache.AttributeValueCache>()
+                                    Attributes = new Dictionary<string, global::Rock.Web.Cache.AttributeCache>(),
+                                    AttributeValues = new Dictionary<string, global::Rock.Web.Cache.AttributeValueCache>()
                                 }
                             }
                         },
-                        Attributes = new Dictionary<string, Web.Cache.AttributeCache>(),
-                        AttributeValues = new Dictionary<string, Web.Cache.AttributeValueCache>()
+                        Attributes = new Dictionary<string, global::Rock.Web.Cache.AttributeCache>(),
+                        AttributeValues = new Dictionary<string, global::Rock.Web.Cache.AttributeValueCache>()
                     }
                 }
             };
@@ -306,8 +306,8 @@ namespace Rock.Tests.UnitTests.Rock.Blocks.Mobile.Cms
                         {
                             Id = 1,
                             Order = 0,
-                            Attributes = new Dictionary<string, Web.Cache.AttributeCache>(),
-                            AttributeValues = new Dictionary<string, Web.Cache.AttributeValueCache>()
+                            Attributes = new Dictionary<string, global::Rock.Web.Cache.AttributeCache>(),
+                            AttributeValues = new Dictionary<string, global::Rock.Web.Cache.AttributeValueCache>()
                         }
                     },
                     new ContentChannelItemAssociation
@@ -317,8 +317,8 @@ namespace Rock.Tests.UnitTests.Rock.Blocks.Mobile.Cms
                         {
                             Id = 3,
                             Order = 1,
-                            Attributes = new Dictionary<string, Web.Cache.AttributeCache>(),
-                            AttributeValues = new Dictionary<string, Web.Cache.AttributeValueCache>()
+                            Attributes = new Dictionary<string, global::Rock.Web.Cache.AttributeCache>(),
+                            AttributeValues = new Dictionary<string, global::Rock.Web.Cache.AttributeValueCache>()
                         }
                     },
                     new ContentChannelItemAssociation
@@ -328,13 +328,13 @@ namespace Rock.Tests.UnitTests.Rock.Blocks.Mobile.Cms
                         {
                             Id = 2,
                             Order = 2,
-                            Attributes = new Dictionary<string, Web.Cache.AttributeCache>(),
-                            AttributeValues = new Dictionary<string, Web.Cache.AttributeValueCache>()
+                            Attributes = new Dictionary<string, global::Rock.Web.Cache.AttributeCache>(),
+                            AttributeValues = new Dictionary<string, global::Rock.Web.Cache.AttributeValueCache>()
                         }
                     }
                 },
-                Attributes = new Dictionary<string, Web.Cache.AttributeCache>(),
-                AttributeValues = new Dictionary<string, Web.Cache.AttributeValueCache>()
+                Attributes = new Dictionary<string, global::Rock.Web.Cache.AttributeCache>(),
+                AttributeValues = new Dictionary<string, global::Rock.Web.Cache.AttributeValueCache>()
             };
 
             var dailyChallenge = new CachedDailyChallenge( dayItem );
@@ -373,13 +373,13 @@ namespace Rock.Tests.UnitTests.Rock.Blocks.Mobile.Cms
                         {
                             Id = 1,
                             Order = 0,
-                            Attributes = new Dictionary<string, Web.Cache.AttributeCache>(),
-                            AttributeValues = new Dictionary<string, Web.Cache.AttributeValueCache>()
+                            Attributes = new Dictionary<string, global::Rock.Web.Cache.AttributeCache>(),
+                            AttributeValues = new Dictionary<string, global::Rock.Web.Cache.AttributeValueCache>()
                         }
                     },
                 },
-                Attributes = new Dictionary<string, Web.Cache.AttributeCache>(),
-                AttributeValues = new Dictionary<string, Web.Cache.AttributeValueCache>()
+                Attributes = new Dictionary<string, global::Rock.Web.Cache.AttributeCache>(),
+                AttributeValues = new Dictionary<string, global::Rock.Web.Cache.AttributeValueCache>()
             };
 
             var dailyChallenge = new CachedDailyChallenge( dayItem );
@@ -403,8 +403,8 @@ namespace Rock.Tests.UnitTests.Rock.Blocks.Mobile.Cms
                         {
                             Id = 1,
                             Order = 0,
-                            Attributes = new Dictionary<string, Web.Cache.AttributeCache>(),
-                            AttributeValues = new Dictionary<string, Web.Cache.AttributeValueCache>()
+                            Attributes = new Dictionary<string, global::Rock.Web.Cache.AttributeCache>(),
+                            AttributeValues = new Dictionary<string, global::Rock.Web.Cache.AttributeValueCache>()
                         }
                     },
                     new ContentChannelItemAssociation
@@ -414,13 +414,13 @@ namespace Rock.Tests.UnitTests.Rock.Blocks.Mobile.Cms
                         {
                             Id = 2,
                             Order = 0,
-                            Attributes = new Dictionary<string, Web.Cache.AttributeCache>(),
-                            AttributeValues = new Dictionary<string, Web.Cache.AttributeValueCache>()
+                            Attributes = new Dictionary<string, global::Rock.Web.Cache.AttributeCache>(),
+                            AttributeValues = new Dictionary<string, global::Rock.Web.Cache.AttributeValueCache>()
                         }
                     },
                 },
-                Attributes = new Dictionary<string, Web.Cache.AttributeCache>(),
-                AttributeValues = new Dictionary<string, Web.Cache.AttributeValueCache>()
+                Attributes = new Dictionary<string, global::Rock.Web.Cache.AttributeCache>(),
+                AttributeValues = new Dictionary<string, global::Rock.Web.Cache.AttributeValueCache>()
             };
 
             var dailyChallenge = new CachedDailyChallenge( dayItem );
@@ -448,8 +448,8 @@ namespace Rock.Tests.UnitTests.Rock.Blocks.Mobile.Cms
                         {
                             Id = 1,
                             Order = 0,
-                            Attributes = new Dictionary<string, Web.Cache.AttributeCache>(),
-                            AttributeValues = new Dictionary<string, Web.Cache.AttributeValueCache>()
+                            Attributes = new Dictionary<string, global::Rock.Web.Cache.AttributeCache>(),
+                            AttributeValues = new Dictionary<string, global::Rock.Web.Cache.AttributeValueCache>()
                         }
                     },
                     new ContentChannelItemAssociation
@@ -459,13 +459,13 @@ namespace Rock.Tests.UnitTests.Rock.Blocks.Mobile.Cms
                         {
                             Id = 2,
                             Order = 0,
-                            Attributes = new Dictionary<string, Web.Cache.AttributeCache>(),
-                            AttributeValues = new Dictionary<string, Web.Cache.AttributeValueCache>()
+                            Attributes = new Dictionary<string, global::Rock.Web.Cache.AttributeCache>(),
+                            AttributeValues = new Dictionary<string, global::Rock.Web.Cache.AttributeValueCache>()
                         }
                     },
                 },
-                Attributes = new Dictionary<string, Web.Cache.AttributeCache>(),
-                AttributeValues = new Dictionary<string, Web.Cache.AttributeValueCache>()
+                Attributes = new Dictionary<string, global::Rock.Web.Cache.AttributeCache>(),
+                AttributeValues = new Dictionary<string, global::Rock.Web.Cache.AttributeValueCache>()
             };
 
             var dailyChallenge = new CachedDailyChallenge( dayItem );

@@ -18,9 +18,11 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.CheckIn.v2;
 using Rock.CheckIn.v2.Labels;
 using Rock.Constants;
 using Rock.Data;
@@ -43,7 +45,7 @@ namespace Rock.Blocks.CheckIn.Configuration
     [Category( "Check-in > Configuration" )]
     [Description( "Displays the details of a particular check in label." )]
     [IconCssClass( "fa fa-question" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -197,6 +199,9 @@ namespace Rock.Blocks.CheckIn.Configuration
                 LabelFormat = entity.LabelFormat,
                 LabelSize = entity.GetLabelSizeDescription(),
                 LabelType = entity.LabelType,
+                LabelContent = entity.LabelFormat == LabelFormat.Zpl
+                    ? entity.Content
+                    : string.Empty,
                 Name = entity.Name,
                 PreviewImage = entity.PreviewImage != null
                     ? Convert.ToBase64String( entity.PreviewImage )
@@ -277,6 +282,12 @@ namespace Rock.Blocks.CheckIn.Configuration
 
             box.IfValidProperty( nameof( box.Bag.ConditionalPrintCriteria ),
                 () => entity.SetConditionalPrintCriteria( box.Bag.ConditionalPrintCriteria ) );
+
+            if ( entity.LabelFormat == LabelFormat.Zpl )
+            {
+                box.IfValidProperty( nameof( box.Bag.LabelContent ),
+                    () => entity.Content = box.Bag.LabelContent );
+            }
 
             box.IfValidProperty( nameof( box.Bag.AttributeValues ),
                 () =>
@@ -452,6 +463,90 @@ namespace Rock.Blocks.CheckIn.Configuration
             RockContext.SaveChanges();
 
             return ActionOk( this.GetParentPageUrl() );
+        }
+
+        /// <summary>
+        /// Generate the ZPL that can be used as a preview of how this label
+        /// will look.
+        /// </summary>
+        /// <param name="key">The key that identifies the label to preview.</param>
+        /// <param name="content">The ZPL content.</param>
+        /// <param name="attendanceId">The attendance identifer to use when rendering the preview. If not specified then a generic preview is generated.</param>
+        /// <returns>The result of the operation.</returns>
+        [BlockAction]
+        public BlockActionResult PreviewZpl( string key, string content, string attendanceId )
+        {
+            var entityService = new CheckInLabelService( RockContext );
+            var checkInLabel = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( checkInLabel == null )
+            {
+                return ActionBadRequest( $"{CheckInLabel.FriendlyTypeName} not found." );
+            }
+
+            if ( checkInLabel.LabelFormat != LabelFormat.Zpl )
+            {
+                return ActionBadRequest( "Incorrect label format." );
+            }
+
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to edit ${CheckInLabel.FriendlyTypeName}." );
+            }
+
+            if ( attendanceId.IsNullOrWhiteSpace() )
+            {
+                using ( var memoryStream = new MemoryStream() )
+                {
+                    var sw = System.Diagnostics.Stopwatch.StartNew();
+                    var labelData = LabelDesigner.GetPreviewLabelData( checkInLabel.LabelType, RequestContext.CurrentPerson, RockContext );
+                    var mergeFields = new Dictionary<string, object>();
+
+                    foreach ( var prop in labelData.GetType().GetProperties() )
+                    {
+                        mergeFields.Add( prop.Name, prop.GetValue( labelData ) );
+                    }
+
+                    var zpl = content.ResolveMergeFields( mergeFields );
+                    sw.Stop();
+
+                    return ActionOk( new
+                    {
+                        Content = zpl,
+                        Duration = sw.ElapsedMilliseconds
+                    } );
+                }
+            }
+            else
+            {
+                checkInLabel.Content = content;
+
+                var attendance = new AttendanceService( RockContext ).Get( attendanceId.AsInteger() );
+
+                if ( attendance == null )
+                {
+                    return ActionBadRequest( "Attendance record was not found." );
+                }
+
+                var attendanceLabel = new AttendanceLabel( attendance, RockContext );
+                var director = new CheckInDirector( RockContext );
+
+                var sw = System.Diagnostics.Stopwatch.StartNew();
+                var data = director.LabelProvider.RenderLabelUnconditionally( checkInLabel,
+                    attendanceLabel,
+                    new List<AttendanceLabel> { attendanceLabel },
+                    attendance.SearchResultGroup,
+                    null );
+                sw.Stop();
+
+                var zpl = System.Text.Encoding.UTF8.GetString( data.Data );
+
+                return ActionOk( new
+                {
+                    Content = zpl,
+                    Duration = sw.ElapsedMilliseconds
+                } );
+            }
         }
 
         #endregion

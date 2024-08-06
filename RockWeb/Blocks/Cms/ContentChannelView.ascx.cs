@@ -455,11 +455,29 @@ namespace RockWeb.Blocks.Cms
             if ( dataViewFilterId.HasValue )
             {
                 var oldDataViewFilter = dataViewFilterService.Get( dataViewFilterId.Value );
-                DeleteDataViewFilter( oldDataViewFilter, dataViewFilterService );
+
+                var blockEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.BLOCK ).ToIntSafe();
+                var contentChannelViewBlockTypeId = BlockTypeCache.GetId( Rock.SystemGuid.BlockType.CONTENT_CHANNEL_VIEW.AsGuid() ).ToIntSafe().ToString();
+
+                var countOfContentChannelViewsUsingFilterId = new AttributeValueService( rockContext )
+                    .GetByEntityTypeQualified( blockEntityTypeId, "BlockTypeId", contentChannelViewBlockTypeId )
+                    .Count( av => av.Attribute.Key == AttributeKey.FilterId && av.Value == dataViewFilterId.Value.ToString() );
+
+                if ( countOfContentChannelViewsUsingFilterId == 1 )
+                {
+                    // If we're the only block instance using this DataViewFilterId it's safe to delete the old one.
+                    DeleteDataViewFilter( oldDataViewFilter, dataViewFilterService );
+                }
+                else
+                {
+                    // If another ContentChannelView block uses the same DataViewFilter don't delete it.
+                    // In this case it likely means this block is a copy of, or was copied from another page/block.
+                    // Instead we'll create a new DataViewFilter and remove references to the existing one(s).
+                    dataViewFilter = CloneDataViewFilterWithoutIdentity( dataViewFilter );
+                }
             }
 
             dataViewFilterService.Add( dataViewFilter );
-
             rockContext.SaveChanges();
 
             SetAttributeValue( AttributeKey.Status, cblStatus.SelectedValuesAsInt.AsDelimited( "," ) );
@@ -1763,6 +1781,25 @@ $(document).ready(function() {
 
                 service.Delete( dataViewFilter );
             }
+        }
+
+        private DataViewFilter CloneDataViewFilterWithoutIdentity( DataViewFilter dataViewFilter )
+        {
+            var cloned = dataViewFilter.CloneWithoutIdentity();
+            var clonedChildren = new List<DataViewFilter>();
+
+            if ( dataViewFilter != null )
+            {
+                foreach ( var childFilter in dataViewFilter.ChildFilters.ToList() )
+                {
+                    clonedChildren.Add( CloneDataViewFilterWithoutIdentity( childFilter ));
+                }
+
+                cloned.ChildFilters = clonedChildren;
+                return cloned;
+            }
+
+            return dataViewFilter;
         }
 
         #endregion

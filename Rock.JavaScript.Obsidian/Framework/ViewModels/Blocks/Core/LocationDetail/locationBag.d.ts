@@ -26,6 +26,7 @@ import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlB
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
+/** Contains details of the location. */
 export type LocationBag = {
     /** Gets or sets the address fields. */
     addressFields?: AddressControlBag | null;
@@ -37,7 +38,7 @@ export type LocationBag = {
     attributeValues?: Record<string, string> | null;
 
     /** Gets or sets threshold that will prevent checkin (no option to override) */
-    firmRoomThreshold?: number | null;
+    firmRoomThreshold?: string | null;
 
     /** Gets or sets the formatted HTML address. */
     formattedHtmlAddress?: string | null;
@@ -61,7 +62,7 @@ export type LocationBag = {
     idKey?: string | null;
 
     /** Gets or sets the image identifier. */
-    imageId?: number | null;
+    image?: ListItemBag | null;
 
     /** Gets or sets the image identifier. */
     imageUrlParam?: string | null;
@@ -88,5 +89,5 @@ export type LocationBag = {
     printerDevice?: ListItemBag | null;
 
     /** Gets or sets a threshold that will prevent checkin unless a manager overrides */
-    softRoomThreshold?: number | null;
+    softRoomThreshold?: string | null;
 };

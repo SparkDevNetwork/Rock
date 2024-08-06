@@ -245,6 +245,8 @@ namespace RockWeb.Blocks.Security
             }
             else
             {
+                // Update the Warning text with the Invalid Email Caption attribute as it might have got changed.
+                lWarning.Text = GetAttributeValue( AttributeKey.InvalidEmailCaption );
                 pnlWarning.Visible = true;
             }
         }

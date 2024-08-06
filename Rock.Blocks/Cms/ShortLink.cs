@@ -22,10 +22,11 @@ using System.Linq;
 using Rock;
 using Rock.Attribute;
 using Rock.Blocks;
+using Rock.Cms;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Blocks;
-using Rock.ViewModels.Blocks.CMS.PageShortLinkDetail;
+using Rock.ViewModels.Blocks.Cms.PageShortLinkDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
@@ -199,34 +200,18 @@ namespace Rock.Blocks.Cms
                     entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson );
                 } );
 
-            var utmSettings = entity.GetAdditionalSettings<PageShortLink.UtmSettings>();
-
-            box.IfValidProperty( nameof( box.Bag.UtmSourceValue ), () =>
+            box.IfValidProperty( nameof( box.Bag.UtmSettings ), () =>
             {
-                utmSettings.UtmSourceValueId = DefinedValueCache.GetId( ( box.Bag.UtmSourceValue?.Value ).AsGuid() );
-            } );
+                var utmSettings = entity.GetAdditionalSettings<UtmSettings>();
 
-            box.IfValidProperty( nameof( box.Bag.UtmMediumValue ), () =>
-            {
-                utmSettings.UtmMediumValueId = DefinedValueCache.GetId( ( box.Bag.UtmMediumValue?.Value ).AsGuid() );
-            } );
+                utmSettings.UtmSourceValueId = DefinedValueCache.Get( ( box.Bag.UtmSettings.UtmSource?.Value ).AsGuid(), RockContext )?.Id;
+                utmSettings.UtmMediumValueId = DefinedValueCache.Get( ( box.Bag.UtmSettings.UtmMedium?.Value ).AsGuid(), RockContext )?.Id;
+                utmSettings.UtmCampaignValueId = DefinedValueCache.Get( ( box.Bag.UtmSettings.UtmCampaign?.Value ).AsGuid(), RockContext )?.Id;
+                utmSettings.UtmTerm = box.Bag.UtmSettings.UtmTerm;
+                utmSettings.UtmContent = box.Bag.UtmSettings.UtmContent;
 
-            box.IfValidProperty( nameof( box.Bag.UtmCampaignValue ), () =>
-            {
-                utmSettings.UtmCampaignValueId = DefinedValueCache.GetId( ( box.Bag.UtmCampaignValue?.Value ).AsGuid() );
+                entity.SetAdditionalSettings( utmSettings );
             } );
-
-            box.IfValidProperty( nameof( box.Bag.UtmTerm ), () =>
-            {
-                utmSettings.UtmTerm = box.Bag.UtmTerm;
-            } );
-
-            box.IfValidProperty( nameof( box.Bag.UtmContent ), () =>
-            {
-                utmSettings.UtmContent = box.Bag.UtmContent;
-            } );
-
-            entity.SetAdditionalSettings( utmSettings );
 
             return true;
         }

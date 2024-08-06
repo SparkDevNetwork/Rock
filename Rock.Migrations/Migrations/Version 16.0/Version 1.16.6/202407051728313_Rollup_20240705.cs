@@ -51,8 +51,7 @@ namespace Rock.Migrations
             { "CFE5C556-9E46-4A51-849D-FF5F4A899930", "1ABC8DE5-A64D-4E69-875A-4407D9A7B425" }, // Personal Link Section Detail
             { "E6E7333A-C4A6-4DE7-9A37-CC2641320C98", "E4302549-0BB8-4DDE-9B9A-70F0B665E76F" }, // Route Detail
             { "E92E3C51-EB14-414D-BC68-9061FEB92A22", "D7F40E20-89AF-4CD1-AA64-C6D84C81DCA7" }, // Route List
-            { "E08504ED-B84C-4115-A058-03AAB8E8A307", "2A5AE27F-F536-4ACC-B5EB-9263C4B92EF5" }, // "Pledge Detail
-            { "C5EC90C9-26C4-493A-84AC-4B5DEF9EA472", "762F09EA-0A11-4BC7-9A68-13F0E44217C1" } // Scheduled Job Detail
+            { "E08504ED-B84C-4115-A058-03AAB8E8A307", "2A5AE27F-F536-4ACC-B5EB-9263C4B92EF5" } // "Pledge Detail
                 },
                 migrationStrategy: "Chop",
                 jobGuid: SystemGuid.ServiceJob.DATA_MIGRATIONS_166_CHOP_OBSIDIAN_BLOCKS,

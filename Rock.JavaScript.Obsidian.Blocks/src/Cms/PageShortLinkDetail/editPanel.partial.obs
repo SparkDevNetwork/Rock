@@ -1,6 +1,11 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <fieldset>
+        <div class="text-right">
+            <Switch v-model="isScheduled"
+                    text="Enable Scheduled Redirects" />
+        </div>
+
         <div class="row">
             <div class="col-md-6">
                 <DropDownList v-model="site"
@@ -17,57 +22,102 @@
                          help="The token to use for the short link. Must be unique." />
             </div>
         </div>
+
         <TextBox v-model="url"
-                 label="URL"
+                 :label="urlLabel"
                  rules="required"
-                 help="The URL that short link will direct users to." />
+                 :help="urlHelp" />
+
         <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+
+        <template v-if="isScheduled">
+            <h2>Scheduled Redirects</h2>
+
+            <p>
+                Below, you can provide alternate URLs that will be activated
+                according to the schedule you set. The configuration above will
+                serve as the default when no scheduled links are active.
+            </p>
+
+            <Grid :data="scheduledRedirectsGridData" keyField="id" light liveUpdates>
+                <ReorderColumn @orderChanged="onScheduledRedirectOrderChanged" />
+
+                <TextColumn name="url"
+                            title="URL"
+                            field="url" />
+
+                <TextColumn name="schedule"
+                            title="Schedule"
+                            field="scheduleText" />
+
+                <TextColumn name="daterange"
+                            title="Date Range"
+                            field="scheduleRangeText" />
+
+                <EditColumn @click="onEditScheduledRedirectClick" />
+
+                <DeleteColumn @click="onDeleteScheduledRedirectClick" />
+            </Grid>
+
+            <div class="text-right">
+                <RockButton btnSize="sm"
+                            isSquare
+                            @click="onAddScheduledRedirectClick">
+                    <i class="fa fa-plus"></i>
+                </RockButton>
+            </div>
+        </template>
 
         <!-- The Advanced Settings Panel would be toggled on in v17-->
         <Panel v-show="false" title="Advanced Settings" hasCollapse>
             <div class="row">
                 <div class="col-md-6">
                     <DefinedValuePicker
-                        v-model="utmSourceValue"
-                        label="UTM Source"
-                        :definedTypeGuid="DefinedType.UtmSource"
-                        help="The UTM source parameter identifies the origin of your traffic, like a search engine, newsletter, or specific website, helping to pinpoint which platforms are directing visitors to your site."
-                        showBlankItem
-                        allowAdd />
+                                        v-model="utmSource"
+                                        label="UTM Source"
+                                        :definedTypeGuid="DefinedType.UtmSource"
+                                        help="The UTM source parameter identifies the origin of your traffic, like a search engine, newsletter, or specific website, helping to pinpoint which platforms are directing visitors to your site."
+                                        showBlankItem
+                                        allowAdd />
                     <DefinedValuePicker
-                        v-model="utmCampaignValue"
-                        label="UTM Campaign"
-                        :definedTypeGuid="DefinedType.UtmCampaign"
-                        help="The UTM campaign parameter tags your traffic with specific campaign names, enabling you to measure the performance of individual marketing campaigns and understand their impact on your traffic."
-                        showBlankItem
-                        allowAdd />
+                                        v-model="utmCampaign"
+                                        label="UTM Campaign"
+                                        :definedTypeGuid="DefinedType.UtmCampaign"
+                                        help="The UTM campaign parameter tags your traffic with specific campaign names, enabling you to measure the performance of individual marketing campaigns and understand their impact on your traffic."
+                                        showBlankItem
+                                        allowAdd />
                 </div>
 
                 <div class="col-md-6">
                     <DefinedValuePicker
-                        v-model="utmMediumValue"
-                        label="UTM Medium"
-                        :definedTypeGuid="DefinedType.UtmMedium"
-                        help='The UTM medium parameter is used to identify the marketing or advertising medium that directed a user to your site. Examples include "email", "social", "cpc" (cost per click), or "organic" for non-paid search engine traffic.'
-                        showBlankItem
-                        allowAdd />
+                                        v-model="utmMedium"
+                                        label="UTM Medium"
+                                        :definedTypeGuid="DefinedType.UtmMedium"
+                                        help='The UTM medium parameter is used to identify the marketing or advertising medium that directed a user to your site. Examples include "email", "social", "cpc" (cost per click), or "organic" for non-paid search engine traffic.'
+                                        showBlankItem
+                                        allowAdd />
                 </div>
             </div>
             <div class="row">
                 <div class="col-md-6">
                     <TextBox
-                        v-model="utmTerm"
-                        label="UTM Term"
-                        help="The UTM term parameter is used to track the keywords or terms in a paid search campaign, providing insights into which specific words or phrases are most effective in driving traffic to your website."/>
+                             v-model="utmTerm"
+                             label="UTM Term"
+                             help="The UTM term parameter is used to track the keywords or terms in a paid search campaign, providing insights into which specific words or phrases are most effective in driving traffic to your website." />
                 </div>
                 <div class="col-md-6">
                     <TextBox
-                        v-model="utmContent"
-                        label="UTM Content"
-                        help="The UTM content parameter helps differentiate between links that point to the same URL within the same ad or campaign, allowing you to test the effectiveness of various content elements, like text or images, in your marketing efforts."/>
+                             v-model="utmContent"
+                             label="UTM Content"
+                             help="The UTM content parameter helps differentiate between links that point to the same URL within the same ad or campaign, allowing you to test the effectiveness of various content elements, like text or images, in your marketing efforts." />
                 </div>
             </div>
         </Panel>
+
+        <EditScheduledRedirect v-if="isEditScheduledRedirectVisible"
+                               v-model="editScheduledRedirect"
+                               @close="isEditScheduledRedirectVisible = false"
+                               @save="onSaveScheduledRedirectClick" />
     </fieldset>
 </template>
 
@@ -77,17 +127,25 @@
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import Grid, { ReorderColumn, TextColumn, EditColumn, DeleteColumn } from "@Obsidian/Controls/grid";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import EditScheduledRedirect from "./editScheduledRedirect.partial.obs";
+    import Switch from "@Obsidian/Controls/switch.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
-    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import Panel from "@Obsidian/Controls/panel.obs";
     import { PageShortLinkBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkDetail/pageShortLinkBag";
     import { PageShortLinkDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkDetail/pageShortLinkDetailOptionsBag";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { ScheduledRedirect } from "./types.partial";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<PageShortLinkBag>,
+            type: Object as PropType<ValidPropertiesBox<PageShortLinkBag>>,
             required: true
         },
 
@@ -98,33 +156,38 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: PageShortLinkBag): void;
+        (e: "update:modelValue", value: ValidPropertiesBox<PageShortLinkBag>): void;
         (e: "propertyChanged", value: string): void;
     }>();
 
     // #region Values
 
-    const attributes = ref(props.modelValue.attributes ?? {});
-    const attributeValues = ref(props.modelValue.attributeValues ?? {});
-    const site = propertyRef(props?.modelValue?.site?.value ?? "", "SiteId");
-    const url = propertyRef(props.modelValue.url ?? "", "Url");
-    const token = propertyRef(props.modelValue.token ?? "", "Token");
-    const utmSourceValue = propertyRef(props.modelValue.utmSourceValue ?? {}, "AdditionalSettingsJSON");
-    const utmMediumValue = propertyRef(props.modelValue.utmMediumValue ?? {}, "AdditionalSettingsJSON");
-    const utmCampaignValue = propertyRef(props.modelValue.utmCampaignValue ?? {}, "AdditionalSettingsJSON");
-    const utmTerm = propertyRef(props.modelValue.utmTerm ?? "", "AdditionalSettingsJSON");
-    const utmContent = propertyRef(props.modelValue.utmContent ?? "", "AdditionalSettingsJSON");
+    const attributes = ref(props.modelValue.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue.bag?.attributeValues ?? {});
+    const site = propertyRef(props?.modelValue.bag?.site?.value ?? "", "SiteId");
+    const url = propertyRef(props.modelValue.bag?.url ?? "", "Url");
+    const token = propertyRef(props.modelValue.bag?.token ?? "", "Token");
+    const utmSource = ref(props.modelValue.bag?.utmSettings?.utmSource ?? {});
+    const utmMedium = ref(props.modelValue.bag?.utmSettings?.utmMedium ?? {});
+    const utmCampaign = ref(props.modelValue.bag?.utmSettings?.utmCampaign ?? {});
+    const utmTerm = ref(props.modelValue.bag?.utmSettings?.utmTerm ?? "");
+    const utmContent = ref(props.modelValue.bag?.utmSettings?.utmContent ?? "");
+
+    const isScheduled = ref((props.modelValue.bag?.scheduledRedirects ?? []).length > 0);
+    const scheduledRedirects = ref<ScheduledRedirect[]>(props.modelValue.bag?.scheduledRedirects
+        ?.map(sr => ({
+            ...sr,
+            id: newGuid()
+        })) ?? []);
+    const scheduledRedirectsGridData = ref<GridDataBag>({ rows: scheduledRedirects.value });
+    const isEditScheduledRedirectVisible = ref(false);
+    const editScheduledRedirect = ref<ScheduledRedirect>({ id: "" });
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
     const propRefs = [url,
         token,
-        site,
-        utmSourceValue,
-        utmMediumValue,
-        utmCampaignValue,
-        utmTerm,
-        utmContent];
+        site];
 
     // #endregion
 
@@ -134,47 +197,163 @@
         return props.options.siteOptions ?? [];
     });
 
+    const urlLabel = computed((): string => {
+        return isScheduled.value ? "Default URL" : "URL";
+    });
+
+    const urlHelp = computed((): string => {
+        return isScheduled.value
+            ? "The default URL that the short link will direct users to if no scheduled link is active."
+            : "The URL that the short link will direct users to.";
+    });
+
     // #endregion
 
     // #region Functions
+
+    function updateModelValue(): void {
+        const newValue: ValidPropertiesBox<PageShortLinkBag> = {
+            bag: { ...props.modelValue.bag } as PageShortLinkBag
+        };
+
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "url", url.value);
+        setPropertiesBoxValue(newValue, "token", token.value);
+        setPropertiesBoxValue(newValue, "site", { value: site.value });
+        setPropertiesBoxValue(newValue, "utmSettings", {
+            utmSource: utmSource.value,
+            utmMedium: utmMedium.value,
+            utmCampaign: utmCampaign.value,
+            utmTerm: utmTerm.value,
+            utmContent: utmContent.value
+        });
+        setPropertiesBoxValue(newValue, "scheduledRedirects", scheduledRedirects.value);
+
+        emit("update:modelValue", newValue);
+    }
 
     // #endregion
 
     // #region Event Handlers
 
+    /**
+     * Called when the individual clisk the button to add a new scheduled
+     * redirect row. Open the modal to begin editing.
+     */
+    function onAddScheduledRedirectClick(): void {
+        editScheduledRedirect.value = {
+            id: newGuid()
+        };
+
+        isEditScheduledRedirectVisible.value = true;
+    }
+
+    /**
+     * Called when the individual clicks the edit button for a scheduled
+     * redirect row. Open the modal to begin editing.
+     *
+     * @param id The row identifier to be edited.
+     */
+    function onEditScheduledRedirectClick(id: string): void {
+        const scheduledRedirect = scheduledRedirects.value.find(sr => sr.id === id);
+
+        if (!scheduledRedirect) {
+            return;
+        }
+
+        editScheduledRedirect.value = JSON.parse(JSON.stringify(scheduledRedirect));
+        isEditScheduledRedirectVisible.value = true;
+    }
+
+    /**
+     * Called when the individual clicks the delete button on a row of the
+     * scheduled redirects.
+     *
+     * @param id The identifier of the row to delete.
+     */
+    function onDeleteScheduledRedirectClick(id: string): void {
+        const index = scheduledRedirects.value.findIndex(ls => ls.id === id);
+
+        if (index >= 0) {
+            scheduledRedirects.value.splice(index, 1);
+        }
+    }
+
+    /**
+     * Called when the individual changes the order of a scheduled redirects. The
+     * grid will have already been updated, so we just need to update our
+     * local data to match.
+     *
+     * @param item The item that was moved.
+     * @param beforeItem The other item it was moved in front of.
+     *
+     * @returns `true` if the re-order operation was successful.
+     */
+    function onScheduledRedirectOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): boolean {
+        let index = scheduledRedirects.value.findIndex(ls => ls.id === item.id);
+        const scheduledRedirectsToMove = scheduledRedirects.value.splice(index, 1);
+
+        if (beforeItem === null) {
+            scheduledRedirects.value.splice(0, 0, ...scheduledRedirectsToMove);
+        }
+        else {
+            index = scheduledRedirects.value.findIndex(ls => ls.id === beforeItem.id);
+            scheduledRedirects.value.splice(index, 0, ...scheduledRedirectsToMove);
+        }
+
+        return true;
+    }
+
+    function onSaveScheduledRedirectClick(value: ScheduledRedirect): void {
+        const index = scheduledRedirects.value.findIndex(sr => sr.id === value.id);
+
+        if (index >= 0) {
+            scheduledRedirects.value.splice(index, 1, value);
+        }
+        else {
+            scheduledRedirects.value.push(value);
+        }
+
+        isEditScheduledRedirectVisible.value = false;
+    }
+
     // #endregion
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
-        updateRefValue(attributes, props.modelValue.attributes ?? {});
-        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
-        updateRefValue(site, props.modelValue.site?.value ?? "");
-        updateRefValue(url, props.modelValue.url ?? "");
-        updateRefValue(token, props.modelValue.token ?? "");
-        updateRefValue(utmSourceValue, props.modelValue.utmSourceValue ?? {});
-        updateRefValue(utmMediumValue, props.modelValue.utmMediumValue ?? {});
-        updateRefValue(utmCampaignValue, props.modelValue.utmCampaignValue ?? {});
-        updateRefValue(utmTerm, props.modelValue.utmTerm ?? "");
-        updateRefValue(utmContent, props.modelValue.utmContent ?? "");
+        updateRefValue(attributes, props.modelValue.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.bag?.attributeValues ?? {});
+        updateRefValue(site, props.modelValue.bag?.site?.value ?? "");
+        updateRefValue(url, props.modelValue.bag?.url ?? "");
+        updateRefValue(token, props.modelValue.bag?.token ?? "");
+        updateRefValue(utmSource, props.modelValue.bag?.utmSettings?.utmSource ?? {});
+        updateRefValue(utmMedium, props.modelValue.bag?.utmSettings?.utmMedium ?? {});
+        updateRefValue(utmCampaign, props.modelValue.bag?.utmSettings?.utmCampaign ?? {});
+        updateRefValue(utmTerm, props.modelValue.bag?.utmSettings?.utmTerm ?? "");
+        updateRefValue(utmContent, props.modelValue.bag?.utmSettings?.utmContent ?? "");
+
+        const newScheduledRedirects = props.modelValue.bag?.scheduledRedirects
+            ?.map(sr => ({
+                // Id first so it will be overwritten with existing id if we have one.
+                id: newGuid(),
+                ...sr
+            })) ?? [];
+
+        if (updateRefValue(scheduledRedirects, newScheduledRedirects)) {
+            isScheduled.value = newScheduledRedirects.length > 0;
+        }
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
-    watch([attributeValues, ...propRefs], () => {
-        const newValue: PageShortLinkBag = {
-            ...props.modelValue,
-            attributeValues: attributeValues.value,
-            url: url.value,
-            token: token.value,
-            site: { value: site.value },
-            utmSourceValue : utmSourceValue.value,
-            utmMediumValue : utmMediumValue.value,
-            utmCampaignValue: utmCampaignValue.value,
-            utmTerm: utmTerm.value,
-            utmContent: utmContent.value
-        };
+    watch([attributeValues, utmSource, utmMedium, utmCampaign, utmTerm, utmContent, ...propRefs], () => {
+        updateModelValue();
+    });
 
-        emit("update:modelValue", newValue);
+    watch(scheduledRedirects, () => {
+        updateModelValue();
+    }, {
+        deep: true
     });
 
     // Watch for any changes to props that represent properties and then

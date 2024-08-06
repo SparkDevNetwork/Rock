@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div style="overflow-x: hidden; max-width: 100%;">
-        <ul class="rocktree">
+        <ul ref="treeListRef" class="rocktree">
             <TreeListItem v-for="child in internalItems"
                           :modelValue="modelValue"
                           :item="child"
@@ -17,7 +17,7 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
+    import { PropType, ref, watch, nextTick } from "vue";
     import { ITreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
     import { TreeItemBag } from "@Obsidian/ViewModels/Utility/treeItemBag";
     import { isPromise } from "@Obsidian/Utility/promiseUtils";
@@ -62,7 +62,15 @@
         showChildCount: {
             type: Boolean,
             default: false
-        }
+        },
+
+        /**
+         * Used as a means of tracking the open state of the dropdown picker.
+         */
+         isVisible: {
+            type: Boolean as PropType<boolean>,
+            default: null
+        },
     });
 
     const emit = defineEmits<{
@@ -73,6 +81,8 @@
 
     /** The list of items currently being displayed in the tree list. */
     const internalItems = ref<TreeItemBag[]>(props.items ?? []);
+
+    const treeListRef = ref<HTMLElement>();
 
     /**
      * Get the root items from the provider as an asynchronous operation.
@@ -85,6 +95,9 @@
             internalItems.value = JSON.parse(JSON.stringify(rootItems)) as TreeItemBag[];
 
             emit("update:items", internalItems.value);
+
+            await nextTick();
+            scrollToSelectedItem();
         }
     };
 
@@ -127,6 +140,13 @@
         }
     };
 
+    const scrollToSelectedItem = ():void => {
+        const selectedElement = treeListRef.value?.querySelector(".rocktree-name.selected")?.firstChild as HTMLElement;
+        if (selectedElement) {
+            selectedElement.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+    };
+
     // Watch for a change in our passed items and update our internal list.
     watch(() => props.items, () => {
         // Only update if we don't have a provider.
@@ -143,6 +163,13 @@
     watch(() => props.provider, () => {
         if (props.provider) {
             getRootItems();
+        }
+    });
+
+    watch(() => props.isVisible, async () => {
+        if (props.isVisible) {
+            await nextTick();
+            scrollToSelectedItem();
         }
     });
 </script>

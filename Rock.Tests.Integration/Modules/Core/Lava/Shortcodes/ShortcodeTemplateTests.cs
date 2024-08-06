@@ -1162,7 +1162,7 @@ Another possibility would be to merge a word’s tree with a single large tree o
 </style>
 
 <div id='id-<<guid>>'>
-    <div class='embed-container'><iframe src='https://www.youtube.com/embed/8kpHK4YIwY4?rel=0&showinfo=0&controls=1&autoplay=0' frameborder='0' allowfullscreen></iframe></div>
+    <div class='embed-container'><iframe src='https://www.youtube.com/embed/8kpHK4YIwY4?rel=0&controls=1&autoplay=0&mute=0' frameborder='0' allowfullscreen></iframe></div>
 </div>
 ";
 

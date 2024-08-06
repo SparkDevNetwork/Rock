@@ -468,11 +468,13 @@ namespace RockWeb.Blocks.Core
             LocationService locationService = new LocationService( rockContext );
             Location location = GetLocation( locationService );
 
-            divAdvSettings.Visible = !_personId.HasValue;
-            cbIsActive.Visible = !_personId.HasValue;
-            geopFence.Visible = !_personId.HasValue;
-            nbSoftThreshold.Visible = !_personId.HasValue;
-            nbFirmThreshold.Visible = !_personId.HasValue;
+            var areNamedLocationFeaturesEnabled = !( _personId.HasValue || ( location.Id != 0 && string.IsNullOrEmpty( location.Name ) ) );
+
+            divAdvSettings.Visible = areNamedLocationFeaturesEnabled;
+            cbIsActive.Visible = areNamedLocationFeaturesEnabled;
+            geopFence.Visible = areNamedLocationFeaturesEnabled;
+            nbSoftThreshold.Visible = areNamedLocationFeaturesEnabled;
+            nbFirmThreshold.Visible = areNamedLocationFeaturesEnabled;
 
             if ( location.Id == 0 )
             {

@@ -428,6 +428,7 @@
     <Folder Include="src\Utility\SmsTestTransport\" />
     <Folder Include="src\WebFarm\" />
     <Folder Include="src\WebFarm\WebFarmNodeDetail\" />
+    <Folder Include="src\WebFarm\WebFarmNodeLogList\" />
     <Folder Include="src\WebFarm\WebFarmSettings\" />
     <Folder Include="src\WorkFlow\" />
     <Folder Include="src\WorkFlow\FormBuilder\" />
@@ -607,6 +608,7 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="src\Utility\starkDetail.ts" />
     <TypeScriptCompile Include="src\WebFarm\WebFarmNodeDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\WebFarm\WebFarmNodeLogList\types.partial.ts" />
     <TypeScriptCompile Include="src\WebFarm\WebFarmSettings\types.partial.ts" />
     <TypeScriptCompile Include="src\WorkFlow\FormBuilder\formBuilderDetail.ts" />
     <TypeScriptCompile Include="src\WorkFlow\FormBuilder\FormBuilderDetail\communicationsTab.partial.ts" />
@@ -640,6 +642,7 @@
     <Compile Include="src\Cms\adaptiveMessageDetail.obs" />
     <Compile Include="src\Cms\AdaptiveMessageDetail\editPanel.partial.obs" />
     <Compile Include="src\Cms\AdaptiveMessageDetail\viewPanel.partial.obs" />
+    <Compile Include="src\WebFarm\webFarmNodeLogList.obs" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsToolsV2.targets" />
   <Target Name="InstallNodePackages" AfterTargets="BeforeCompile;BeforeClean" Inputs="package.json" Outputs="node_modules/.install-stamp">
