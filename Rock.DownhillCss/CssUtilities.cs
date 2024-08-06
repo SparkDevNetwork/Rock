@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.DownhillCss.Utility;
+
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -173,9 +175,43 @@ namespace Rock.DownhillCss
                 {
                     var value = colorProperty.GetValue( Settings.ApplicationColors ).ToString();
 
+                    var colorName = colorProperty.Name;
+
+                    // Background
+                    cssStyles = cssStyles.Replace( $"?color-{colorName.ToLower()}-background", MixThemeColor( value, -10 ) );
+
+                    // Border
+                    cssStyles = cssStyles.Replace( $"?color-{colorName.ToLower()}-border", MixThemeColor( value, -9 ) );
+
+                    // Text
+                    cssStyles = cssStyles.Replace( $"?color-{colorName.ToLower()}-text", MixThemeColor( value, 6 ) );
+
+                    // If warning then also make a set for validation
+                    if ( colorName == "Warning" )
+                    {
+                        // Background
+                        cssStyles = cssStyles.Replace( $"?color-validation-background", MixThemeColor( value, -10 ) );
+
+                        // Border
+                        cssStyles = cssStyles.Replace( $"?color-validation-border", MixThemeColor( value, -9 ) );
+
+                        // Text
+                        cssStyles = cssStyles.Replace( $"?color-validation-text", MixThemeColor( value, 6 ) );
+                    }
+
+                    if ( Settings.SupplyTailwindCss || true )
+                    {
+                        foreach ( var color in ColorPalette.ColorMaps )
+                        {
+                            foreach ( var saturatedColor in color.ColorSaturations )
+                            {
+                                cssStyles = ReplaceCssVariable( cssStyles, $"?color-{color.Color.ToLower()}-{saturatedColor.Intensity}", saturatedColor.ColorValue.ToLower() );
+                            }
+                        }
+                    }
+
                     // Split the property names by capitalization
                     // and join them with a hyphen.
-                    var colorName = colorProperty.Name;
                     var colorNameHyphenated = GetHyphenatedPropertyName( colorName );
 
                     // Ex: ?color-interface-strongest
@@ -190,17 +226,6 @@ namespace Rock.DownhillCss
                     var value = extraCss.Value;
 
                     cssStyles = ReplaceCssVariable( cssStyles, key, value );
-                }
-
-                if ( Settings.SupplyTailwindCss || true )
-                {
-                    foreach ( var color in ColorPalette.ColorMaps )
-                    {
-                        foreach ( var saturatedColor in color.ColorSaturations )
-                        {
-                            cssStyles = ReplaceCssVariable( cssStyles, $"?color-{color.Color.ToLower()}-{saturatedColor.Intensity}", saturatedColor.ColorValue.ToLower() );
-                        }
-                    }
                 }
 
                 return cssStyles;
@@ -230,6 +255,58 @@ namespace Rock.DownhillCss
                 // Use regex to match the ? variable and replace it with the value.
                 // Add negative lookahead to ensure the variable is not followed by '-'.
                 return Regex.Replace( cssStyles, $@"\?{name}\b(?!-)", value );
+            }
+
+            /// <summary>
+            /// Creates the CSS for the alert component.
+            /// </summary>
+            /// <param name="colorName"></param>
+            /// <param name="frameworkCss"></param>
+            private static void CreateAlertByColor( string colorName, StringBuilder frameworkCss )
+            {
+                frameworkCss.AppendLine( $".alert.alert-{colorName} {{" );
+                frameworkCss.AppendLine( $"    border-color: ?color-{colorName.ToLower()};" );
+                frameworkCss.AppendLine( $"    background-color: ?color-{colorName.ToLower()};" );
+                frameworkCss.AppendLine( $"    color: ?color-{colorName.ToLower()};" );
+                frameworkCss.AppendLine( "}" );
+
+                frameworkCss.AppendLine( $".alert.alert-{colorName} .alert-heading {{" );
+                frameworkCss.AppendLine( $"    color: ?color-{colorName.ToLower()};" );
+                frameworkCss.AppendLine( "}" );
+
+                frameworkCss.AppendLine( $".alert.alert-{colorName} .alert-message {{" );
+                frameworkCss.AppendLine( $"    color: ?color-{colorName.ToLower()};" );
+                frameworkCss.AppendLine( "}" );
+            }
+
+            /// <summary>
+            /// Mixes the color of the theme.
+            /// </summary>
+            /// <param name="color">The color.</param>
+            /// <param name="level">The level.</param>
+            /// <returns></returns>
+            private static string MixThemeColor( string color, decimal level )
+            {
+                var mixcolor = "#ffffff";
+                if ( level > 0 )
+                {
+                    mixcolor = "#000000";
+                }
+
+                var originalColor = new RockColor( color );
+
+                var mixColor = RockColor.FromHex( mixcolor );
+
+                var mixPercent = ( int ) ( ( Math.Abs( level ) * .08m ) * 100 );
+
+                originalColor.Mix( mixColor, mixPercent );
+
+                if ( originalColor.Alpha < 1 )
+                {
+                    return originalColor.ToRGBA();
+                }
+
+                return originalColor.ToHex();
             }
 
             /// <summary>
@@ -349,6 +426,12 @@ namespace Rock.DownhillCss
                             {
                                 continue;
                             }
+
+                            CreateAlertByColor( colorName, _cssBuilder );
+                        }
+                        else if( Settings.MobileStyleFramework == MobileStyleFramework.Blended )
+                        {
+                            CreateAlertByColor( colorName, _cssBuilder );
                         }
                         else if ( Settings.MobileStyleFramework == MobileStyleFramework.Standard )
                         {
@@ -384,6 +467,9 @@ namespace Rock.DownhillCss
                             ["border-color"] = colorValue
                         } );
                     }
+
+                    // Create one more for validation
+                    CreateAlertByColor( "validation", _cssBuilder );
                 }
             }
 
@@ -1535,12 +1621,15 @@ icon {
     border-radius: 1000;
 }
 
+.alert {
+    margin: 0 0 12 0;
+}
+
 /*
     Control CSS
     -----------------------------------------------------------
 */
 /* MobileInsertMark - Used by Mobile Shell to insert it's own standard control CSS */
-
 /* Flyout Styling */
 
 .flyout-menu ^listview {
