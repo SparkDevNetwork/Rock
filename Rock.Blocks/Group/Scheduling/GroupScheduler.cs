@@ -1361,9 +1361,15 @@ namespace Rock.Blocks.Group.Scheduling
         /// <param name="settings">The resource settings.</param>
         private void SetGroupMemberFilterType( GroupSchedulerResourceSettingsBag settings )
         {
-            settings.ResourceGroupMemberFilterType = settings.ResourceListSourceType == ResourceListSourceType.GroupMatchingPreference
-                ? SchedulerResourceGroupMemberFilterType.ShowMatchingPreference
-                : SchedulerResourceGroupMemberFilterType.ShowAllGroupMembers;
+            if ( settings.ResourceListSourceType == ResourceListSourceType.GroupMatchingPreference
+                || settings.ResourceListSourceType == ResourceListSourceType.GroupMatchingAssignment )
+            {
+                settings.ResourceGroupMemberFilterType = SchedulerResourceGroupMemberFilterType.ShowMatchingPreference;
+            }
+            else
+            {
+                settings.ResourceGroupMemberFilterType = SchedulerResourceGroupMemberFilterType.ShowAllGroupMembers;
+            }
         }
 
         /// <summary>
