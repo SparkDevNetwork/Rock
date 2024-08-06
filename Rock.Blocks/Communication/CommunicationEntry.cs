@@ -1509,7 +1509,7 @@ namespace Rock.Blocks.Communication
             // Add any new recipients.
             foreach ( var newRecipient in bag.Recipients )
             {
-                if ( !currentRecipients.Value.Any( currentRecipient => currentRecipient.PersonAliasGuid != newRecipient.PersonAliasGuid ) )
+                if ( !currentRecipients.Value.Any( currentRecipient => currentRecipient.PersonAliasGuid == newRecipient.PersonAliasGuid ) )
                 {
                     var primaryPersonAlias = primaryPersonAliasQuery.FirstOrDefault( p => p.Guid == newRecipient.PersonAliasGuid );
                     if ( primaryPersonAlias != null )
