@@ -1890,7 +1890,8 @@ btnCopyToClipboard.ClientID );
             GroupSchedulerResourceListSourceType schedulerResourceListSourceType = ( GroupSchedulerResourceListSourceType ) btnResourceListSourceType.CommandArgument.AsInteger();
             SchedulerResourceGroupMemberFilterType schedulerResourceGroupMemberFilterType = SchedulerResourceGroupMemberFilterType.ShowAllGroupMembers;
 
-            if ( schedulerResourceListSourceType == GroupSchedulerResourceListSourceType.GroupMatchingPreference )
+            if ( schedulerResourceListSourceType == GroupSchedulerResourceListSourceType.GroupMatchingPreference
+                || schedulerResourceListSourceType == GroupSchedulerResourceListSourceType.GroupMatchingAssignment )
             {
                 schedulerResourceGroupMemberFilterType = SchedulerResourceGroupMemberFilterType.ShowMatchingPreference;
             }

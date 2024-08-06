@@ -246,7 +246,7 @@
             return `${formattedItem} (${formattedRemaining} remaining)`;
         }
 
-        return `${formattedItem}`;
+        return formattedItem;
     }
 
     // #endregion
