@@ -264,7 +264,7 @@ import MarkdownEditorGallery from "./ControlGallery/markdownEditorGallery.partia
 import JsonFieldsBuilderGallery from "./ControlGallery/jsonFieldsBuilderGallery.partial.obs";
 import HtmlEditorGallery from "./ControlGallery/htmlEditorGallery.partial.obs";
 import TextBoxGallery from "./ControlGallery/textBoxGallery.partial.obs";
-import AssetAndFileManagerGallery from "./ControlGallery/assetAndFileManagerGallery.partial.obs";
+import FileAssetManagerGallery from "./ControlGallery/fileAssetManagerGallery.partial.obs";
 import { Guid } from "@Obsidian/Types";
 
 
@@ -8144,7 +8144,7 @@ const controlGalleryComponents: Record<string, Component> = [
     JsonFieldsBuilderGallery,
     HtmlEditorGallery,
     TextBoxGallery,
-    AssetAndFileManagerGallery,
+    FileAssetManagerGallery,
 ]
     // Fix vue 3 SFC putting name in __name.
     .map(a => {
