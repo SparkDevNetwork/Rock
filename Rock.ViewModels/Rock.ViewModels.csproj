@@ -148,6 +148,7 @@
     <Compile Include="Blocks\Cms\PersonalLinkList\SavePersonalLinkRequestBag.cs" />
     <Compile Include="Blocks\Cms\PersonalLinkSectionList\PersonalLinkSectionListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageRouteList\PageRouteListOptionsBag.cs" />
+    <Compile Include="Blocks\Core\RestControllerList\RestControllerListOptionsBag.cs" />
     <Compile Include="Blocks\Core\PersonFollowingList\PersonFollowingListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageShortLinkDetail\ScheduledRedirectBag.cs" />
     <Compile Include="Blocks\Cms\PageShortLinkDetail\UtmSettingsBag.cs" />
