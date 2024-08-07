@@ -118,5 +118,13 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntry
         /// The email preference for this recipient.
         /// </value>
         public string EmailPreference { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether this is a nameless person.
+        /// <para>
+        /// Internal for server-side processing only.
+        /// </para>
+        /// </summary>
+        internal bool IsNameless { get; set; }
     }
 }

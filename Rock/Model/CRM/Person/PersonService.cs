@@ -2481,6 +2481,57 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Get the person associated with an email address.
+        /// If no person is found and <paramref name="createNamelessPersonIfNotFound" /> = <see langword="true"/>,
+        /// a Nameless person record will created which can later be matched to a person.
+        /// </summary>
+        /// <param name="emailAddress">The email address.</param>
+        /// <param name="createNamelessPersonIfNotFound">if set to <see langword="true"/>, creates a nameless person if a person is not found.</param>
+        /// <returns>The located person or a new nameless person.</returns>
+        internal Person GetPersonFromEmailAddress( string emailAddress, bool createNamelessPersonIfNotFound )
+        {
+            var recordTypeValueIdNameless = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() );
+
+            // Order so that non-nameless people with the email address are listed first,
+            // then sort by the oldest person record in case there are multiple people with the same email.
+            var person = Queryable(
+                new PersonQueryOptions
+                {
+                    IncludeDeceased = true,
+                    IncludeNameless = true
+                } )
+                .Where( pn => pn.Email == emailAddress )
+                .OrderByDescending( p => p.RecordTypeValueId != recordTypeValueIdNameless )
+                .ThenBy( pn => pn.Id )
+                .FirstOrDefault();
+
+            if ( person == null && createNamelessPersonIfNotFound )
+            {
+                using ( var nameLessPersonRockContext = new RockContext() )
+                {
+                    var emailUsername = emailAddress.Substring( 0, emailAddress.IndexOf( "@" ) );
+
+                    person = new Person
+                    {
+                        RecordTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() ),
+                        Email = emailAddress,
+
+                        // Set the first name and nickname to the username portion of the email address (text to the left of @).
+                        FirstName = emailUsername,
+                        NickName = emailUsername
+                    };
+
+                    new PersonService( nameLessPersonRockContext ).Add( person );
+                    nameLessPersonRockContext.SaveChanges();
+
+                    person = this.Get( person.Id );
+                }
+            }
+
+            return person;
+        }
+
+        /// <summary>
         /// Merges the nameless person <see cref="Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS"/> to existing person and saves changes to the database
         /// </summary>
         /// <param name="namelessPerson">The nameless person.</param>

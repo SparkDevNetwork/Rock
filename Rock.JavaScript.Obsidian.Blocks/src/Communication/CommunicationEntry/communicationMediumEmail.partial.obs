@@ -44,6 +44,18 @@
                 </div>
             </div>
 
+            <div class="row">
+                <div class="col-sm-12">
+                    <EmailBox v-if="config.areAdditionalEmailRecipientsAllowed"
+                              v-model="additionalEmailAddresses"
+                              :allowLava="false"
+                              :allowMultiple="true"
+                              :disabled="internalDisabled"
+                              help="Enter additional email addresses to receive this communication. Addresses can be separated by either a space or a comma. Please note that Lava-merging with Person fields is not available when entering email addresses."
+                              label="Additional Email Recipients" />
+                </div>
+            </div>
+
             <div class="row d-sm-flex">
                 <div class="col-sm-6">
                     <DropDownList v-if="config.mode === Mode.Full"
@@ -323,6 +335,7 @@
     const errorMessage = ref<string | null | undefined>();
     const isInvalidTransportNotificationDismissed = ref<boolean>(false);
     const isLoadingMediumOptions = ref<boolean>(true);
+    const additionalEmailAddresses = ref<string>(template.value?.additionalEmailAddresses?.join(", ") ?? "");
 
     //#endregion
 
@@ -442,6 +455,16 @@
 
     function isEmailMediumOptions(options: CommunicationEntryMediumOptionsBaseBag | null | undefined): options is CommunicationEntryEmailMediumOptionsBag {
         return options?.mediumType === MediumType.Email;
+    }
+
+    function splitDelimitedValues(delimitedValues: string): string[] | null {
+        if (!delimitedValues) {
+            return null;
+        }
+
+        const regex = /[\s|,;]+/g;
+
+        return delimitedValues.replace(regex, ",").split(",").filter(s => !!s);
     }
 
     //#endregion
@@ -597,7 +620,8 @@
                 recipients: props.recipients,
                 replyAddress: replyToAddress.value,
                 subject: subject.value,
-                communicationGuid: communicationGuid.value
+                communicationGuid: communicationGuid.value,
+                additionalEmailAddresses: splitDelimitedValues(additionalEmailAddresses.value)
             };
 
             const result = await invokeBlockAction<CommunicationEntrySaveResponseBag>("Save", { bag });
@@ -638,6 +662,7 @@
                 replyAddress: replyToAddress.value,
                 subject: subject.value,
                 communicationGuid: communicationGuid.value,
+                additionalEmailAddresses: splitDelimitedValues(additionalEmailAddresses.value)
             };
 
             const result = await invokeBlockAction<CommunicationEntrySendResponseBag>("Send", { bag });
@@ -679,7 +704,8 @@
                 recipients: props.recipients,
                 replyAddress: replyToAddress.value,
                 subject: subject.value,
-                communicationGuid: communicationGuid.value
+                communicationGuid: communicationGuid.value,
+                additionalEmailAddresses: splitDelimitedValues(additionalEmailAddresses.value)
             };
 
             const result = await invokeBlockAction<CommunicationEntryTestResponseBag>("Test", { bag });
