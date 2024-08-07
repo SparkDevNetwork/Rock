@@ -15,7 +15,6 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity.Spatial;
@@ -74,7 +73,7 @@ namespace Rock.Blocks.Core
 
     [Rock.SystemGuid.EntityTypeGuid( "862067b0-8764-452e-9b4f-dc3e0cf5f876" )]
     [Rock.SystemGuid.BlockTypeGuid( "d0203b97-5856-437e-8700-8846309f8eed" )]
-    public class LocationDetail : RockDetailBlockType
+    public class LocationDetail : RockEntityDetailBlockType<Location, LocationBag>
     {
         #region Keys
 
@@ -105,19 +104,15 @@ namespace Rock.Blocks.Core
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var box = new DetailBlockBox<LocationBag, LocationDetailOptionsBag>();
+            var box = new DetailBlockBox<LocationBag, LocationDetailOptionsBag>();
 
-                box.Options = GetBoxOptions( box.IsEditable, rockContext );
+            box.Options = GetBoxOptions( box.IsEditable );
 
-                SetBoxInitialEntityState( box, rockContext );
+            SetBoxInitialEntityState( box );
 
-                box.NavigationUrls = GetBoxNavigationUrls();
-                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<Location>();
+            box.NavigationUrls = GetBoxNavigationUrls();
 
-                return box;
-            }
+            return box;
         }
 
         /// <summary>
@@ -125,12 +120,11 @@ namespace Rock.Blocks.Core
         /// or edit the entity.
         /// </summary>
         /// <param name="isEditable"><c>true</c> if the entity is editable; otherwise <c>false</c>.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>The options that provide additional details to the block.</returns>
-        private LocationDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext )
+        private LocationDetailOptionsBag GetBoxOptions( bool isEditable )
         {
             var options = new LocationDetailOptionsBag();
-            var deviceItems = new Rock.Model.DeviceService( rockContext )
+            var deviceItems = new Rock.Model.DeviceService( RockContext )
                 .GetByDeviceTypeGuid( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_PRINTER.AsGuid() )
                 .OrderBy( d => d.Name ).ToListItemBagList();
 
@@ -148,10 +142,9 @@ namespace Rock.Blocks.Core
         /// valid after storing all the data from the client.
         /// </summary>
         /// <param name="location">The Location to be validated.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <param name="errorMessage">On <c>false</c> return, contains the error message.</param>
         /// <returns><c>true</c> if the Location is valid, <c>false</c> otherwise.</returns>
-        private bool ValidateLocation( Location location, RockContext rockContext, out string errorMessage )
+        private bool ValidateLocation( Location location, out string errorMessage )
         {
             errorMessage = null;
 
@@ -164,9 +157,9 @@ namespace Rock.Blocks.Core
         /// </summary>
         /// <param name="box">The box to be populated.</param>
         /// <param name="rockContext">The rock context.</param>
-        private void SetBoxInitialEntityState( DetailBlockBox<LocationBag, LocationDetailOptionsBag> box, RockContext rockContext )
+        private void SetBoxInitialEntityState( DetailBlockBox<LocationBag, LocationDetailOptionsBag> box )
         {
-            var entity = GetInitialEntity( rockContext );
+            var entity = GetInitialEntity();
 
             if ( entity == null )
             {
@@ -187,7 +180,7 @@ namespace Rock.Blocks.Core
             box.Options.PanelTitle = entity.ToString( true );
             box.Options.CanAdministrate = entity.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
 
-            entity.LoadAttributes( rockContext );
+            entity.LoadAttributes( RockContext );
 
             if ( entity.Id != 0 )
             {
@@ -195,7 +188,6 @@ namespace Rock.Blocks.Core
                 if ( isViewable )
                 {
                     box.Entity = GetEntityBagForView( entity );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
                 {
@@ -207,14 +199,15 @@ namespace Rock.Blocks.Core
                 // New entity is being created, prepare for edit mode by default.
                 if ( box.IsEditable )
                 {
-                    box.Entity = GetEntityBagForEdit( entity, rockContext );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
+                    box.Entity = GetEntityBagForEdit( entity );
                 }
                 else
                 {
                     box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( Location.FriendlyTypeName );
                 }
             }
+
+            PrepareDetailBox( box, entity );
         }
 
         /// <summary>
@@ -272,8 +265,12 @@ namespace Rock.Blocks.Core
         /// </summary>
         /// <param name="location">The parent location.</param>
         /// <returns></returns>
-        private ListItemBag ToListItemBag(Location location)
+        private ListItemBag ToListItemBag( Location location )
         {
+            if ( location == null )
+            {
+                return new ListItemBag();
+            }
             return new ListItemBag() { Text = location.ToString( true ), Value = location.Guid.ToString() };
         }
 
@@ -324,12 +321,8 @@ namespace Rock.Blocks.Core
             return (geoPointImageHtml, geoFenceImageHtml);
         }
 
-        /// <summary>
-        /// Gets the bag for viewing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for view purposes.</param>
-        /// <returns>A <see cref="LocationBag"/> that represents the entity.</returns>
-        private LocationBag GetEntityBagForView( Location entity )
+        /// <inheritdoc/>
+        protected override LocationBag GetEntityBagForView( Location entity )
         {
             if ( entity == null )
             {
@@ -343,13 +336,8 @@ namespace Rock.Blocks.Core
             return bag;
         }
 
-        /// <summary>
-        /// Gets the bag for editing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for edit purposes.</param>
-        /// <param name="rockContext">The rock Context for getting the Parent location if provided in URL.</param>
-        /// <returns>A <see cref="LocationBag"/> that represents the entity.</returns>
-        private LocationBag GetEntityBagForEdit( Location entity, RockContext rockContext )
+        /// <inheritdoc/>
+        protected override LocationBag GetEntityBagForEdit( Location entity )
         {
             if ( entity == null )
             {
@@ -363,77 +351,71 @@ namespace Rock.Blocks.Core
 
             if ( entity.Id == 0 && parentLocationId.HasValue )
             {
-                var parentLocation = new LocationService( rockContext ).Get( parentLocationId.Value );
+                var parentLocation = new LocationService( RockContext ).Get( parentLocationId.Value );
                 bag.ParentLocation = ToListItemBag( parentLocation );
             }
 
             return bag;
         }
 
-        /// <summary>
-        /// Updates the entity from the data in the save box.
-        /// </summary>
-        /// <param name="entity">The entity to be updated.</param>
-        /// <param name="box">The box containing the information to be updated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns><c>true</c> if the box was valid and the entity was updated, <c>false</c> otherwise.</returns>
-        private bool UpdateEntityFromBox( Location entity, DetailBlockBox<LocationBag, LocationDetailOptionsBag> box, RockContext rockContext )
+        /// <inheritdoc/>
+        protected override bool UpdateEntityFromBox( Location entity, ValidPropertiesBox<LocationBag> box )
         {
             if ( box.ValidProperties == null )
             {
                 return false;
             }
 
-            box.IfValidProperty( nameof( box.Entity.FirmRoomThreshold ),
-                () => entity.FirmRoomThreshold = box.Entity.FirmRoomThreshold.AsIntegerOrNull() );
+            box.IfValidProperty( nameof( box.Bag.FirmRoomThreshold ),
+                () => entity.FirmRoomThreshold = box.Bag.FirmRoomThreshold.AsIntegerOrNull() );
 
-            box.IfValidProperty( nameof( box.Entity.Image ),
-                () => entity.ImageId = box.Entity.Image.GetEntityId<BinaryFile>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.Image ),
+                () => entity.ImageId = box.Bag.Image.GetEntityId<BinaryFile>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.IsActive ),
-                () => entity.IsActive = box.Entity.IsActive );
+            box.IfValidProperty( nameof( box.Bag.IsActive ),
+                () => entity.IsActive = box.Bag.IsActive );
 
-            box.IfValidProperty( nameof( box.Entity.IsGeoPointLocked ),
-                () => entity.IsGeoPointLocked = box.Entity.IsGeoPointLocked );
+            box.IfValidProperty( nameof( box.Bag.IsGeoPointLocked ),
+                () => entity.IsGeoPointLocked = box.Bag.IsGeoPointLocked );
 
-            box.IfValidProperty( nameof( box.Entity.LocationTypeValue ),
-                () => entity.LocationTypeValueId = box.Entity.LocationTypeValue.GetEntityId<DefinedValue>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.LocationTypeValue ),
+                () => entity.LocationTypeValueId = box.Bag.LocationTypeValue.GetEntityId<DefinedValue>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.Name ),
-                () => entity.Name = box.Entity.Name );
+            box.IfValidProperty( nameof( box.Bag.Name ),
+                () => entity.Name = box.Bag.Name );
 
-            box.IfValidProperty( nameof( box.Entity.ParentLocation ),
-                () => entity.ParentLocationId = box.Entity.ParentLocation.GetEntityId<Location>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.ParentLocation ),
+                () => entity.ParentLocationId = box.Bag.ParentLocation.GetEntityId<Location>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.PrinterDevice ),
-                () => entity.PrinterDeviceId = box.Entity.PrinterDevice.GetEntityId<Device>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.PrinterDevice ),
+                () => entity.PrinterDeviceId = box.Bag.PrinterDevice.GetEntityId<Device>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.SoftRoomThreshold ),
-                () => entity.SoftRoomThreshold = box.Entity.SoftRoomThreshold.AsIntegerOrNull() );
+            box.IfValidProperty( nameof( box.Bag.SoftRoomThreshold ),
+                () => entity.SoftRoomThreshold = box.Bag.SoftRoomThreshold.AsIntegerOrNull() );
 
-            box.IfValidProperty( nameof( box.Entity.AddressFields ),
+            box.IfValidProperty( nameof( box.Bag.AddressFields ),
                 () =>
                 {
-                    entity.Street1 = box.Entity.AddressFields.Street1;
-                    entity.Street2 = box.Entity.AddressFields.Street2;
-                    entity.City = box.Entity.AddressFields.City;
-                    entity.Country = box.Entity.AddressFields.Country;
-                    entity.PostalCode = box.Entity.AddressFields.PostalCode;
-                    entity.State = box.Entity.AddressFields.State;
+                    entity.Street1 = box.Bag.AddressFields.Street1;
+                    entity.Street2 = box.Bag.AddressFields.Street2;
+                    entity.City = box.Bag.AddressFields.City;
+                    entity.Country = box.Bag.AddressFields.Country;
+                    entity.PostalCode = box.Bag.AddressFields.PostalCode;
+                    entity.State = box.Bag.AddressFields.State;
                 } );
 
-            box.IfValidProperty( nameof( box.Entity.GeoPoint_WellKnownText ),
-                () => entity.GeoPoint = box.Entity.GeoPoint_WellKnownText.IsNullOrWhiteSpace() ? null : DbGeography.FromText( box.Entity.GeoPoint_WellKnownText ) );
+            box.IfValidProperty( nameof( box.Bag.GeoPoint_WellKnownText ),
+                () => entity.GeoPoint = box.Bag.GeoPoint_WellKnownText.IsNullOrWhiteSpace() ? null : DbGeography.FromText( box.Bag.GeoPoint_WellKnownText ) );
 
-            box.IfValidProperty( nameof( box.Entity.GeoFence_WellKnownText ),
-                () => entity.GeoFence = box.Entity.GeoFence_WellKnownText.IsNullOrWhiteSpace() ? null : DbGeography.PolygonFromText( box.Entity.GeoFence_WellKnownText, DbGeography.DefaultCoordinateSystemId ) );
+            box.IfValidProperty( nameof( box.Bag.GeoFence_WellKnownText ),
+                () => entity.GeoFence = box.Bag.GeoFence_WellKnownText.IsNullOrWhiteSpace() ? null : DbGeography.PolygonFromText( box.Bag.GeoFence_WellKnownText, DbGeography.DefaultCoordinateSystemId ) );
 
-            box.IfValidProperty( nameof( box.Entity.AttributeValues ),
+            box.IfValidProperty( nameof( box.Bag.AttributeValues ),
                 () =>
                 {
-                    entity.LoadAttributes( rockContext );
+                    entity.LoadAttributes( RockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson );
                 } );
 
             return true;
@@ -445,9 +427,9 @@ namespace Rock.Blocks.Core
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <returns>The <see cref="Location"/> to be viewed or edited on the page.</returns>
-        private Location GetInitialEntity( RockContext rockContext )
+        protected override Location GetInitialEntity()
         {
-            return GetInitialEntity<Location, LocationService>( rockContext, PageParameterKey.LocationId );
+            return GetInitialEntity<Location, LocationService>( RockContext, PageParameterKey.LocationId );
         }
 
         /// <summary>
@@ -488,47 +470,10 @@ namespace Rock.Blocks.Core
             };
         }
 
-        /// <inheritdoc/>
-        protected override string RenewSecurityGrantToken()
+        // <inheritdoc/>
+        protected override bool TryGetEntityForEditAction( string idKey, out Location entity, out BlockActionResult error )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var entity = GetInitialEntity( rockContext );
-
-                if ( entity != null )
-                {
-                    entity.LoadAttributes( rockContext );
-                }
-
-                return GetSecurityGrantToken( entity );
-            }
-        }
-
-        /// <summary>
-        /// Gets the security grant token that will be used by UI controls on
-        /// this block to ensure they have the proper permissions.
-        /// </summary>
-        /// <returns>A string that represents the security grant token.</string>
-        private string GetSecurityGrantToken( Location entity )
-        {
-            var securityGrant = new Rock.Security.SecurityGrant();
-
-            securityGrant.AddRulesForAttributes( entity, RequestContext.CurrentPerson );
-
-            return securityGrant.ToToken();
-        }
-
-        /// <summary>
-        /// Attempts to load an entity to be used for an edit action.
-        /// </summary>
-        /// <param name="idKey">The identifier key of the entity to load.</param>
-        /// <param name="rockContext">The database context to load the entity from.</param>
-        /// <param name="entity">Contains the entity that was loaded when <c>true</c> is returned.</param>
-        /// <param name="error">Contains the action error result when <c>false</c> is returned.</param>
-        /// <returns><c>true</c> if the entity was loaded and passed security checks.</returns>
-        private bool TryGetEntityForEditAction( string idKey, RockContext rockContext, out Location entity, out BlockActionResult error )
-        {
-            var entityService = new LocationService( rockContext );
+            var entityService = new LocationService( RockContext );
             error = null;
 
             // Determine if we are editing an existing entity or creating a new one.
@@ -551,7 +496,7 @@ namespace Rock.Blocks.Core
                 return false;
             }
 
-            if ( !entity.IsAuthorized(Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 error = ActionBadRequest( $"Not authorized to edit ${Location.FriendlyTypeName}." );
                 return false;
@@ -635,22 +580,21 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                entity.LoadAttributes( rockContext );
-
-                var box = new DetailBlockBox<LocationBag, LocationDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity, rockContext )
-                };
-
-                return ActionOk( box );
+                return actionError;
             }
+
+            entity.LoadAttributes( RockContext );
+
+            var bag = GetEntityBagForEdit( entity );
+            var box = new ValidPropertiesBox<LocationBag>
+            {
+                Bag = bag,
+                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
+            };
+
+            return ActionOk( box );
         }
 
         /// <summary>
@@ -659,64 +603,67 @@ namespace Rock.Blocks.Core
         /// <param name="box">The box that contains all the information required to save.</param>
         /// <returns>A new entity bag to be used when returning to view mode, or the URL to redirect to after creating a new entity.</returns>
         [BlockAction]
-        public BlockActionResult Save( DetailBlockBox<LocationBag, LocationDetailOptionsBag> box )
+        public BlockActionResult Save( ValidPropertiesBox<LocationBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new LocationService( RockContext );
+
+            if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )
             {
-                var entityService = new LocationService( rockContext );
+                return actionError;
+            }
 
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
+            // Update the entity instance from the information in the bag.
+            if ( !UpdateEntityFromBox( entity, box ) )
+            {
+                return ActionBadRequest( "Invalid data." );
+            }
+
+            // Ensure everything is valid before saving.
+            if ( !ValidateLocation( entity, out var validationMessage ) )
+            {
+                return ActionBadRequest( validationMessage );
+            }
+
+            var isNew = entity.Id == 0;
+
+            RockContext.WrapTransaction( () =>
+            {
+                RockContext.SaveChanges();
+                entity.SaveAttributeValues( RockContext );
+            } );
+
+            Rock.CheckIn.KioskDevice.Clear();
+
+            if ( isNew )
+            {
+                return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
                 {
-                    return actionError;
-                }
+                    [PageParameterKey.LocationId] = entity.IdKey
+                } ) );
+            }
 
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
+            // Ensure navigation properties will work now.
+            entity = entityService.Get( entity.Id );
+            entity.LoadAttributes( RockContext );
+
+            var personId = PageParameter( PageParameterKey.PersonId );
+
+            if ( personId.IsNotNullOrWhiteSpace() )
+            {
+                return ActionOk( this.GetParentPageUrl( new Dictionary<string, string>
                 {
-                    return ActionBadRequest( "Invalid data." );
-                }
+                    [PageParameterKey.PersonId] = personId
+                } ) );
+            }
 
-                // Ensure everything is valid before saving.
-                if ( !ValidateLocation( entity, rockContext, out var validationMessage ) )
+            else
+            {
+                var bag = GetEntityBagForView( entity );
+                return ActionOk( new ValidPropertiesBox<LocationBag>
                 {
-                    return ActionBadRequest( validationMessage );
-                }
-
-                var isNew = entity.Id == 0;
-
-                rockContext.WrapTransaction( () =>
-                {
-                    rockContext.SaveChanges();
-                    entity.SaveAttributeValues( rockContext );
+                    Bag = bag,
+                    ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
                 } );
-
-                Rock.CheckIn.KioskDevice.Clear();
-
-                if ( isNew )
-                {
-                    return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
-                    {
-                        [PageParameterKey.LocationId] = entity.IdKey
-                    } ) );
-                }
-
-                // Ensure navigation properties will work now.
-                entity = entityService.Get( entity.Id );
-                entity.LoadAttributes( rockContext );
-
-                var personId = PageParameter( PageParameterKey.PersonId );
-
-                if ( personId.IsNotNullOrWhiteSpace() )
-                {
-                    return ActionOk( this.GetParentPageUrl( new Dictionary<string, string>
-                    {
-                        [PageParameterKey.PersonId] = personId
-                    } ) );
-                }
-                else
-                {
-                    return ActionOk( GetEntityBagForView( entity ) );
-                }
             }
         }
 
@@ -728,90 +675,33 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new LocationService( RockContext );
+
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                var entityService = new LocationService( rockContext );
-
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                var parentLocationId = entity.ParentLocationId;
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                Rock.CheckIn.KioskDevice.Clear();
-
-                var qryParams = new Dictionary<string, string>();
-                if ( parentLocationId != null )
-                {
-                    qryParams["LocationId"] = parentLocationId.ToString();
-                }
-
-                qryParams[PageParameterKey.ExpandedIds] = PageParameter( PageParameterKey.ExpandedIds );
-
-                return ActionOk( this.GetCurrentPageUrl( qryParams ) );
+                return actionError;
             }
-        }
 
-        /// <summary>
-        /// Refreshes the list of attributes that can be displayed for editing
-        /// purposes based on any modified values on the entity.
-        /// </summary>
-        /// <param name="box">The box that contains all the information about the entity being edited.</param>
-        /// <returns>A box that contains the entity and attribute information.</returns>
-        [BlockAction]
-        public BlockActionResult RefreshAttributes( DetailBlockBox<LocationBag, LocationDetailOptionsBag> box )
-        {
-            using ( var rockContext = new RockContext() )
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
             {
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                // Reload attributes based on the new property values.
-                entity.LoadAttributes( rockContext );
-
-                var refreshedBox = new DetailBlockBox<LocationBag, LocationDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity, rockContext )
-                };
-
-                var oldAttributeGuids = box.Entity.Attributes.Values.Select( a => a.AttributeGuid ).ToList();
-                var newAttributeGuids = refreshedBox.Entity.Attributes.Values.Select( a => a.AttributeGuid );
-
-                // If the attributes haven't changed then return a 204 status code.
-                if ( oldAttributeGuids.SequenceEqual( newAttributeGuids ) )
-                {
-                    return ActionStatusCode( System.Net.HttpStatusCode.NoContent );
-                }
-
-                // Replace any values for attributes that haven't changed with
-                // the value sent by the client. This ensures any unsaved attribute
-                // value changes are not lost.
-                foreach ( var kvp in refreshedBox.Entity.Attributes )
-                {
-                    if ( oldAttributeGuids.Contains( kvp.Value.AttributeGuid ) )
-                    {
-                        refreshedBox.Entity.AttributeValues[kvp.Key] = box.Entity.AttributeValues[kvp.Key];
-                    }
-                }
-
-                return ActionOk( refreshedBox );
+                return ActionBadRequest( errorMessage );
             }
+
+            var parentLocationId = entity.ParentLocationId;
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
+
+            Rock.CheckIn.KioskDevice.Clear();
+
+            var qryParams = new Dictionary<string, string>();
+            if ( parentLocationId != null )
+            {
+                qryParams["LocationId"] = parentLocationId.ToString();
+            }
+
+            qryParams[PageParameterKey.ExpandedIds] = PageParameter( PageParameterKey.ExpandedIds );
+
+            return ActionOk( this.GetCurrentPageUrl( qryParams ) );
         }
 
         #endregion
