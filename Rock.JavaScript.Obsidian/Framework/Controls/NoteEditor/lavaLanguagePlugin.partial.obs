@@ -52,16 +52,16 @@
     const openingLavaWrapperTagRegex = /^<p>/m;
     const closingLavaWrapperTagRegex = /<\/p>$/m;
 
-    const wrappedLavaObjectRegex = /<p>\s*\{\{.*}}\s*<\/p>/g;
+    const wrappedLavaObjectRegex = /<p>([\s]|(&nbsp;))*\{\{.*}}([\s]|(&nbsp;))*<\/p>/g;
     const lavaObjectRegex = /\{\{.*?}}/g;
 
-    const wrappedLavaTagRegex = /<p>\s*\{%.*%}\s*<\/p>/g;
+    const wrappedLavaTagRegex = /<p>([\s]|(&nbsp;))*\{%.*%}([\s]|(&nbsp;))*<\/p>/g;
     const lavaTagRegex = /\{%.*?%}/g;
 
-    const wrappedLavaShortcodeRegex = /<p>\s*\{\[.*]}\s*<\/p>/g;
+    const wrappedLavaShortcodeRegex = /<p>([\s]|(&nbsp;))*\{\[.*]}([\s]|(&nbsp;))*<\/p>/g;
     const lavaShortcodeRegex = /\{\[.*?]}/g;
 
-    const wrappedLavaShortcodeBlockRegex = /<p>\s*\[\[.*]]\s*<\/p>/g;
+    const wrappedLavaShortcodeBlockRegex = /<p>([\s]|(&nbsp;))*\[\[.*]]([\s]|(&nbsp;))*<\/p>/g;
     const lavaShortcodeBlockRegex = /\[\[.*?]]/g;
 
     const htmlEntitiesToSymbols: Record<string, string> = {
