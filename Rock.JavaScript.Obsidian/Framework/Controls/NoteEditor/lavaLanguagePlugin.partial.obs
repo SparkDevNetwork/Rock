@@ -54,8 +54,15 @@
 
     const wrappedLavaObjectRegex = /<p>\s*\{\{.*}}\s*<\/p>/g;
     const lavaObjectRegex = /\{\{.*?}}/g;
+
     const wrappedLavaTagRegex = /<p>\s*\{%.*%}\s*<\/p>/g;
     const lavaTagRegex = /\{%.*?%}/g;
+
+    const wrappedLavaShortcodeRegex = /<p>\s*\{\[.*]}\s*<\/p>/g;
+    const lavaShortcodeRegex = /\{\[.*?]}/g;
+
+    const wrappedLavaShortcodeBlockRegex = /<p>\s*\[\[.*]]\s*<\/p>/g;
+    const lavaShortcodeBlockRegex = /\[\[.*?]]/g;
 
     const htmlEntitiesToSymbols: Record<string, string> = {
         "&plus;": "+",
@@ -95,7 +102,7 @@
         getContentEventDispatcher.value = editor.on("GetContent", (e: EditorEvent<Events.GetContentEvent>) => {
             if (e.format === "html") {
                 // Only process Lava code if retrieving HTML content.
-                e.content = fixLavaObjects(fixLavaTags(e.content));
+                e.content = fixLavaShortcodeBlocks(fixLavaShortcodes(fixLavaObjects(fixLavaTags(e.content))));
             }
         });
     }
@@ -108,14 +115,42 @@
     }
 
     /**
-     * Removes HTML entities in an HTML string.
-     *
-     * Initially, this only removes a subset of math operators.
-     * Add more as needed.
+     * Fixes Lava in an HTML string.
      */
-    function removeHtmlEntities(html: string): string {
-        for (const htmlEntity in htmlEntitiesToSymbols) {
-            html = html.replace(htmlEntity, htmlEntitiesToSymbols[htmlEntity]);
+    function fixLava(html: string, wrappedLavaRegex: RegExp, lavaRegex: RegExp): string {
+        const linesWithLava = html.match(wrappedLavaRegex);
+        if (!linesWithLava) {
+            // Stop processing the HTML string since it doesn't contain any Lava.
+            return html;
+        }
+
+        for (const lineWithLava of linesWithLava) {
+            // Get all the Lava substrings in the current line.
+            const lavaValues = lineWithLava.match(lavaRegex);
+            if (!lavaValues) {
+                continue;
+            }
+
+            // First remove the wrapper HTML tag.
+            // e.g., "<p>{{ Person.FullName }}</p>" should be "{{ Person.FullName }}"
+            let processedLineWithLava = lineWithLava
+                .replace(openingLavaWrapperTagRegex, "")
+                .replace(closingLavaWrapperTagRegex, "");
+
+            // Then replace HTML entities with actual symbols.
+            // e.g., "{% if x &gt; 0 %}" should be "{% if x > 0 %}"
+            for (const lava of lavaValues) {
+                // Remove HTML entities.
+                let processedLava = removeHtmlEntities(lava);
+                if (processedLava !== lava) {
+                    processedLineWithLava = processedLineWithLava.replace(lava, processedLava);
+                }
+            }
+
+            // Only replace the line of HTML if it was modified.
+            if (processedLineWithLava !== lineWithLava) {
+                html = html.replace(lineWithLava, processedLineWithLava);
+            }
         }
 
         return html;
@@ -128,42 +163,29 @@
      * are wrapped in curly braces; e.g., "{{ Person.FullName | Capitalize }}".
      */
     function fixLavaObjects(html: string): string {
-        const linesWithLavaObjects = html.match(wrappedLavaObjectRegex);
-        if (!linesWithLavaObjects) {
-            // Stop processing the HTML string since it doesn't contain any Lava objects.
-            return html;
-        }
+        return fixLava(html, wrappedLavaObjectRegex, lavaObjectRegex);
+    }
 
-        for (const lineWithLavaObjects of linesWithLavaObjects) {
-            // Get all the Lava objects in the current line.
-            const lavaObjects = lineWithLavaObjects.match(lavaObjectRegex);
-            if (!lavaObjects) {
-                continue;
-            }
+    /**
+     * Fixes Lava shortcodes in an HTML string.
+     *
+     * Lava shortcodes (along with their parameters)
+     * are wrapped in a curly brace and a square bracket;
+     * e.g., "{[ googlemap height:'400px' scrollwheel:'false' draggable:'false' ]}".
+     */
+    function fixLavaShortcodes(html: string): string {
+        return fixLava(html, wrappedLavaShortcodeRegex, lavaShortcodeRegex);
+    }
 
-            // First remove the wrapper HTML tag.
-            // e.g., "<p>{{ Person.FullName }}</p>" should be "{{ Person.FullName }}"
-            let processedLineWithLavaObjects = lineWithLavaObjects
-                .replace(openingLavaWrapperTagRegex, "")
-                .replace(closingLavaWrapperTagRegex, "");
-
-            // Then replace HTML entities with actual symbols.
-            // e.g., "{% if x &gt; 0 %}" should be "{% if x > 0 %}"
-            for (const lavaObject of lavaObjects) {
-                // Remove HTML entities.
-                let processedLavaObject = removeHtmlEntities(lavaObject);
-                if (processedLavaObject !== lavaObject) {
-                    processedLineWithLavaObjects = processedLineWithLavaObjects.replace(lavaObject, processedLavaObject);
-                }
-            }
-
-            // Only replace the line of HTML if it was modified.
-            if (processedLineWithLavaObjects !== lineWithLavaObjects) {
-                html = html.replace(lineWithLavaObjects, processedLineWithLavaObjects);
-            }
-        }
-
-        return html;
+    /**
+     * Fixes Lava shortcode blocks in an HTML string.
+     *
+     * Lava shortcode blocks (along with their parameters)
+     * are wrapped in square brackets;
+     * e.g., "[[ marker location:'33.52764, -112.262571']][[ endmarker ]]".
+     */
+    function fixLavaShortcodeBlocks(html: string): string {
+        return fixLava(html, wrappedLavaShortcodeBlockRegex, lavaShortcodeBlockRegex);
     }
 
     /**
@@ -172,38 +194,18 @@
      * A Lava tag is Lava code wrapped in a curly brace and percent symbol; e.g., "{% if Person.Age > 18 %}".
      */
     function fixLavaTags(html: string): string {
-        const linesWithLavaTags = html.match(wrappedLavaTagRegex);
-        if (!linesWithLavaTags) {
-            // Stop processing the HTML string since it doesn't contain any Lava tags.
-            return html;
-        }
+        return fixLava(html, wrappedLavaTagRegex, lavaTagRegex);
+    }
 
-        for (const lineWithLavaTags of linesWithLavaTags) {
-            // Get all the Lava tags in the current line.
-            const lavaTags = lineWithLavaTags.match(lavaTagRegex);
-            if (!lavaTags) {
-                continue;
-            }
-
-            // First remove the wrapper HTML tag.
-            // e.g., "<p>{% if x &gt; 0 %}</p>" should be "{% if x &gt; 0 %}"
-            let processedLineWithLavaTags = lineWithLavaTags
-                .replace(openingLavaWrapperTagRegex, "")
-                .replace(closingLavaWrapperTagRegex, "");
-
-            // Then replace HTML entities with actual symbols.
-            // e.g., "{% if x &gt; 0 %}" should be "{% if x > 0 %}"
-            for (const lavaTag of lavaTags) {
-                let processedLavaTag = removeHtmlEntities(lavaTag);
-                if (processedLavaTag !== lavaTag) {
-                    processedLineWithLavaTags = processedLineWithLavaTags.replace(lavaTag, processedLavaTag);
-                }
-            }
-
-            // Only replace the line of HTML if it was modified.
-            if (processedLineWithLavaTags !== lineWithLavaTags) {
-                html = html.replace(lineWithLavaTags, processedLineWithLavaTags);
-            }
+    /**
+     * Removes HTML entities in an HTML string.
+     *
+     * Initially, this only removes a subset of math operators.
+     * Add more as needed.
+     */
+    function removeHtmlEntities(html: string): string {
+        for (const htmlEntity in htmlEntitiesToSymbols) {
+            html = html.replace(htmlEntity, htmlEntitiesToSymbols[htmlEntity]);
         }
 
         return html;
