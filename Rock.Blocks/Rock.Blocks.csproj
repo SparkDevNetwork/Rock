@@ -113,6 +113,7 @@
     <Compile Include="Event\RegistrationEntry\ExtensionMethods.cs" />
     <Compile Include="Finance\BenevolenceRequestList.cs" />
     <Compile Include="Event\EventItemOccurrenceList.cs" />
+    <Compile Include="Finance\BenevolenceTypeList.cs" />
     <Compile Include="Finance\FinancialBatchList.cs" />
     <Compile Include="Engagement\StepProgramDetail.cs" />
     <Compile Include="Finance\FinancialGatewayDetail.cs" />

@@ -163,6 +163,7 @@
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntrySuccessBag.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryVisibilityBag.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\SessionRenewalResultBag.cs" />
+    <Compile Include="Blocks\Finance\BenevolenceTypeList\BenevolenceTypeListOptionsBag.cs" />
     <Compile Include="Blocks\Finance\FinancialBatchList\FinancialBatchListOptionsBag.cs" />
     <Compile Include="Blocks\Finance\FinancialBatchList\SetBulkBatchStatusRequestBag.cs" />
     <Compile Include="Blocks\Finance\FinancialBatchList\SetBulkBatchStatusResponseBag.cs" />
