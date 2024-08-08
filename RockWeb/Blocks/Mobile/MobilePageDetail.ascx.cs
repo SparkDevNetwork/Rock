@@ -113,8 +113,6 @@ namespace RockWeb.Blocks.Mobile
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !IsPostBack )
             {
                 int pageId = PageParameter( PageParameterKeys.Page ).AsInteger();
@@ -152,6 +150,8 @@ namespace RockWeb.Blocks.Mobile
                     ProcessDragEvents();
                 }
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>

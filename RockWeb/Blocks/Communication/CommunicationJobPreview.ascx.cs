@@ -167,9 +167,9 @@ namespace RockWeb.Blocks.Communication
         #region Page Events
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             BuildUI();
+
+            base.OnLoad( e );
         }
 
         #endregion Page Events

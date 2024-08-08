@@ -180,14 +180,14 @@ namespace RockWeb.Blocks.Security
 
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             ValidateBlockConfigured();
 
             if ( Page.IsPostBack )
             {
                 nbWarningMessage.Visible = false;
             }
+
+            base.OnLoad( e );
         }
 
         private void ValidateBlockConfigured()

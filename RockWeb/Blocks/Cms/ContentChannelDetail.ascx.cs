@@ -151,8 +151,6 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             maContentChannelWarning.Hide();
 
             if ( !Page.IsPostBack )
@@ -193,6 +191,8 @@ namespace RockWeb.Blocks.Cms
                     rblLicenseType.Required = false;
                 } 
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>

@@ -726,8 +726,6 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             // Reset warning/error messages
             nbMain.Visible = false;
             nbWaitingList.Visible = false;
@@ -828,6 +826,8 @@ namespace RockWeb.Blocks.Event
                     FindMatchingRegistrationInstance();
                 }
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>

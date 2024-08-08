@@ -127,8 +127,6 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             var personPickerStartupScript = @"Sys.Application.add_load(function () {
 
                 // if the person picker is empty then open it for quick entry
@@ -141,6 +139,8 @@ namespace RockWeb.Blocks.Core
             });";
 
             this.Page.ClientScript.RegisterStartupScript( this.GetType(), "StartupScript", personPickerStartupScript, true );
+
+            base.OnLoad( e );
         }
 
         /// <summary>

@@ -1021,8 +1021,6 @@ mission. We are so grateful for your commitment.</p>
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 // Ensure that there is only one transaction processed by getting a unique guid when this block loads for the first time
@@ -1034,6 +1032,8 @@ mission. We are so grateful for your commitment.</p>
             {
                 RouteAction();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion Base Control Methods

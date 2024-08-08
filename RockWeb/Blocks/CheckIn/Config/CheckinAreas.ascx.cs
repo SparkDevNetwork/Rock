@@ -95,8 +95,6 @@ namespace RockWeb.Blocks.CheckIn.Config
 
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             nbDeleteWarning.Visible = false;
             nbInvalid.Visible = false;
             nbSaveSuccess.Visible = false;
@@ -149,6 +147,8 @@ namespace RockWeb.Blocks.CheckIn.Config
                     }
                 }
             }
+
+            base.OnLoad( e );
         }
 
         protected override object SaveViewState()

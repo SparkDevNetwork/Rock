@@ -135,8 +135,6 @@ namespace RockWeb.Blocks.Mobile
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !IsPostBack )
             {
                 ConfigureControls();
@@ -154,6 +152,8 @@ namespace RockWeb.Blocks.Mobile
                     ShowEdit( siteId );
                 }
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>

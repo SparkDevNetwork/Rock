@@ -184,7 +184,6 @@ namespace RockWeb.Blocks.Security
 
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
             nbAlert.Visible = false;
 
             // Go through the UA ignore list and don't load anything we don't care about or want.
@@ -192,6 +191,7 @@ namespace RockWeb.Blocks.Security
             {
                 if ( Request.UserAgent == null || Request.UserAgent.StartsWith( userAgentToIgnore ) )
                 {
+                    base.OnLoad( e );
                     return;
                 }
             }
@@ -204,6 +204,7 @@ namespace RockWeb.Blocks.Security
                     nbAlert.Text = "Missing or invalid MAC Address";
                     nbAlert.Visible = true;
                     ShowControls( false );
+                    base.OnLoad( e );
                     return;
                 }
 
@@ -213,6 +214,7 @@ namespace RockWeb.Blocks.Security
                     nbAlert.Text = "Missing or invalid Release Link";
                     nbAlert.Visible = true;
                     ShowControls( false );
+                    base.OnLoad( e );
                     return;
                 }
 
@@ -255,10 +257,13 @@ namespace RockWeb.Blocks.Security
                     else
                     {
                         Response.Redirect( CreateRedirectUrl( null ) );
+                        base.OnLoad( e );
                         return;
                     }
                 }
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>

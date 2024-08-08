@@ -475,8 +475,6 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             int? groupId = 0;
             if ( !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.GroupId ) ) )
             {
@@ -532,6 +530,8 @@ namespace RockWeb.Blocks.Groups
                     FollowingsHelper.SetFollowing( group, pnlFollowing, this.CurrentPerson );
                 }
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>

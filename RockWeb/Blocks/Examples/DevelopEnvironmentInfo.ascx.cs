@@ -55,8 +55,6 @@ namespace RockWeb.Blocks.Examples
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             ShowDebugSqlStatus();
 
             if ( !Page.IsPostBack )
@@ -81,6 +79,8 @@ Path: {2}",
                     System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment,
                     System.Web.Hosting.HostingEnvironment.ApplicationPhysicalPath );
             }
+
+            base.OnLoad( e );
         }
 
         private void ShowDebugSqlStatus()
