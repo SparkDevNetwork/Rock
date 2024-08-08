@@ -474,7 +474,7 @@ namespace RockWeb.Blocks.CheckIn
                 if ( lGroupRoleAndRelationship != null )
                 {
                     lGroupRoleAndRelationship.Text = familyPersonState.GroupRole;
-                    if ( familyPersonState.ChildRelationshipToAdult > 0 && _knownRelationshipLookup != null )
+                    if ( familyPersonState.ChildRelationshipToAdult > 0 && _knownRelationshipLookup != null && !familyPersonState.IsAdult )
                     {
                         var relationshipText = _knownRelationshipLookup.GetValueOrNull( familyPersonState.ChildRelationshipToAdult );
                         lGroupRoleAndRelationship.Text = string.Format( "{0}<br/>{1}", familyPersonState.GroupRole, relationshipText );
