@@ -45,20 +45,36 @@ namespace Rock.Blocks.Cms
     [LinkedPage( "Detail Page",
         Description = "The page that will show the site details.",
         Key = AttributeKey.DetailPage )]
-    [EnumsField(
-        "Site Type",
-        "Includes Items with the following Type.",
-        typeof( SiteType ),
-        false, "",
-        order: 1,
-        key: AttributeKey.SiteType )]
+
+    [EnumsField( "Site Type",
+        Description = "Includes Items with the following Type.",
+        EnumSourceType = typeof( SiteType ),
+        IsRequired = false,
+        Category = "",
+        Order = 1,
+        Key = AttributeKey.SiteType )]
+
+    [TextField( "Block Title",
+        Description = "The title to display for this block.",
+        IsRequired = false,
+        Category = "",
+        Order = 2,
+        Key = AttributeKey.BlockTitle )]
 
     [BooleanField( "Show Delete Column",
         Description = "Determines if the delete column should be shown.",
         DefaultBooleanValue = false,
         IsRequired = true,
         Key = AttributeKey.ShowDeleteColumn,
-        Order = 2 )]
+        Order = 3 )]
+
+    [BooleanField( "Show Site Icon",
+        Description = "Determines if the site icon should be shown.",
+        DefaultBooleanValue = true,
+        IsRequired = true,
+        Category = "",
+        Key = AttributeKey.ShowSiteIcon,
+        Order = 4 )]
 
     [Rock.SystemGuid.EntityTypeGuid( "12a8c8ae-7bbe-41d2-9448-8d7eae298099" )]
     [Rock.SystemGuid.BlockTypeGuid( "d27a9c0d-e118-4172-8f8e-368c973f5486" )]
@@ -69,9 +85,11 @@ namespace Rock.Blocks.Cms
 
         private static class AttributeKey
         {
-             public const string SiteType = "SiteType";
+            public const string SiteType = "SiteType";
             public const string ShowDeleteColumn = "ShowDeleteColumn";
             public const string DetailPage = "DetailPage";
+            public const string BlockTitle = "BlockTitle";
+            public const string ShowSiteIcon = "ShowSiteIcon";
         }
 
         private static class NavigationUrlKey
@@ -90,7 +108,7 @@ namespace Rock.Blocks.Cms
             var builder = GetGridBuilder();
 
             box.IsAddEnabled = GetIsAddEnabled();
-            box.IsDeleteEnabled = GetAttributeValue(AttributeKey.ShowDeleteColumn).AsBoolean();
+            box.IsDeleteEnabled = GetAttributeValue( AttributeKey.ShowDeleteColumn ).AsBoolean();
             box.ExpectedRowCount = null;
             box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions();
@@ -106,6 +124,15 @@ namespace Rock.Blocks.Cms
         private SiteListOptionsBag GetBoxOptions()
         {
             var options = new SiteListOptionsBag();
+
+            options.BlockTitle = GetAttributeValue( AttributeKey.BlockTitle );
+            options.ShowSiteIcon = GetAttributeValue( AttributeKey.ShowSiteIcon );
+            options.SiteType = GetAttributeValue( AttributeKey.SiteType )
+                .SplitDelimitedValues()
+                .Select( a => a.ConvertToEnumOrNull<SiteType>() )
+                .Where( a => a.HasValue )
+                .Select( a => a.Value )
+                .ToList();
 
             return options;
         }
@@ -158,8 +185,10 @@ namespace Rock.Blocks.Cms
                 .AddTextField( "name", a => a.Name )
                 .AddTextField( "description", a => a.Description )
                 .AddTextField( "theme", a => a.Theme )
+                .AddTextField( "domain", p => p.SiteDomains
+                    .Select( a => a.Domain ).JoinStringsWithCommaAnd() )
                 .AddTextField( "siteIconUrl", p => GetSiteIconUrl( p ) )
-                .AddTextField( "domains", p => p.SiteDomains.Select( a => a.Domain ).JoinStringsWithCommaAnd() )
+                .AddField( "isActive", a => a.IsActive )
                 .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
                 .AddAttributeFields( GetGridAttributes() );
         }
