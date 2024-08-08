@@ -74,8 +74,6 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 // Get any querystring variables
@@ -157,6 +155,8 @@ namespace RockWeb.Blocks.Event
             divCalendarItem.Attributes["class"] = GetDivClass( 3 );
             divEventOccurrence.Attributes["class"] = GetDivClass( 4 );
             divContentItem.Attributes["class"] = GetDivClass( 5 );
+
+            base.OnLoad( e );
         }
 
         /// <summary>

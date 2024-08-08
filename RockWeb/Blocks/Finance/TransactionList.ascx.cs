@@ -421,8 +421,6 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             nbClosedWarning.Visible = false;
             nbResult.Visible = false;
 
@@ -490,6 +488,7 @@ namespace RockWeb.Blocks.Finance
                 ScriptManager.RegisterStartupScript( _ddlMove, _ddlMove.GetType(), "moveTransaction", script, true );
             }
 
+            base.OnLoad( e );
         }
 
         /// <summary>

@@ -72,8 +72,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
             BuildDropDown();
+            base.OnLoad( e );
         }
 
         protected void Block_BlockUpdated( object sender, EventArgs e )

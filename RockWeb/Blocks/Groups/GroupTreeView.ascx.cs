@@ -326,8 +326,6 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 SetAllowedGroupTypes();
@@ -473,6 +471,8 @@ namespace RockWeb.Blocks.Groups
             hfCountsType.Value = ddlCountsType.SelectedValue;
             hfCampusFilter.Value = ddlCampuses.SelectedValue;
             hfIncludeNoCampus.Value = tglIncludeNoCampus.Checked.ToTrueFalse();
+
+            base.OnLoad( e );
         }
 
         /// <summary>

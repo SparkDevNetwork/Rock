@@ -305,8 +305,6 @@ namespace RockWeb.Blocks.WorkFlow
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             // If PostBack is triggered by captcha leave message notification as is.
             if ( this.Page.Request.Params["__EVENTARGUMENT"] != "TokenReceived" )
             {
@@ -323,6 +321,8 @@ namespace RockWeb.Blocks.WorkFlow
                     ProcessActionRequest();
                 }
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>

@@ -198,12 +198,12 @@ namespace RockWeb.Blocks.Farm
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 RenderState();
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>

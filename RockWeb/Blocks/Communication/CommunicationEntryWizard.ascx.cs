@@ -445,8 +445,6 @@ function onTaskCompleted( resultData )
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             this.OnPropertyChanged -= CommunicationEntryWizard_OnPropertyChanged;
             this.OnPropertyChanged += CommunicationEntryWizard_OnPropertyChanged;
 
@@ -469,6 +467,8 @@ function onTaskCompleted( resultData )
 
             // Reset the Task Activity controls on the page.
             SignalRTaskActivityUiHelper.SetTaskActivityControlMode( this.RockPage, SignalRTaskActivityUiHelper.ControlModeSpecifier.Hidden );
+
+            base.OnLoad( e );
         }
 
         /// <summary>

@@ -65,7 +65,6 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
             nbError.Visible = false;
 
             if ( !Page.IsPostBack &&
@@ -77,6 +76,7 @@ namespace RockWeb.Blocks.Groups
                 txtEmail.Text = CurrentPerson.Email;
             }
 
+            base.OnLoad( e );
         }
 
         #endregion

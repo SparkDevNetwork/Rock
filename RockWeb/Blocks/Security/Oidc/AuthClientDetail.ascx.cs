@@ -70,19 +70,20 @@ namespace RockWeb.Blocks.Security.Oidc
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 var clientId = PageParameter( PageParameterKeys.AuthClientId ).AsIntegerOrNull();
                 if ( clientId == null )
                 {
                     DisplayErrorMessage( "No Auth Scope Id was specified." );
+                    base.OnLoad( e );
                     return;
                 }
 
                 ShowDetail( clientId.Value );
             }
+
+            base.OnLoad( e );
         }
 
         #endregion

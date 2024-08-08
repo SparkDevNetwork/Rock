@@ -67,14 +67,14 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             nbEditError.Visible = false;
 
             if ( !Page.IsPostBack )
             {
                 ShowDetail( PageParameter( "TagId" ).AsInteger(), PageParameter( "EntityTypeId" ).AsIntegerOrNull() );
             }
+
+            base.OnLoad( e );
         }
 
         public override List<Rock.Web.UI.BreadCrumb> GetBreadCrumbs( Rock.Web.PageReference pageReference )

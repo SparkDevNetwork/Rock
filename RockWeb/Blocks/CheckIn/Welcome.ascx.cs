@@ -237,8 +237,6 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             hfLocalDeviceConfiguration.Value = this.LocalDeviceConfig.ToJson();
             hfKioskType.Value = CurrentCheckInState?.Kiosk?.Device?.KioskType?.ConvertToString( false );
 
@@ -292,6 +290,8 @@ namespace RockWeb.Blocks.CheckIn
                     }
                 }
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>

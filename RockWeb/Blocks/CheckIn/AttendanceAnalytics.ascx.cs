@@ -320,8 +320,6 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             // GroupTypesUI dynamically creates controls, so we need to rebuild it on every OnLoad()
             BuildGroupTypesUI( false );
 
@@ -356,6 +354,8 @@ namespace RockWeb.Blocks.CheckIn
                     LogAndShowException( exception );
                 }
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
