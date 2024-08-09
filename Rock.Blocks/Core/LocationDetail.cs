@@ -270,7 +270,12 @@ namespace Rock.Blocks.Core
             {
                 return new ListItemBag();
             }
-            return new ListItemBag() { Text = location.ToString( true ), Value = location.Guid.ToString() };
+
+            return new ListItemBag()
+            {
+                Text = location.ToString( true ),
+                Value = location.Guid.ToString()
+            };
         }
 
         /// <summary>
