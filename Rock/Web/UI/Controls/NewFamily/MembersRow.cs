@@ -32,7 +32,7 @@ namespace Rock.Web.UI.Controls
     {
         private RockRadioButtonList _rblRole;
         private DefinedValuePicker _dvpTitle;
-        private RockTextBox _tbFirstName;
+        private FirstNameTextBox _tbFirstName;
         private RockTextBox _tbNickName;
         private RockTextBox _tbMiddleName;
         private RockTextBox _tbLastName;
@@ -400,7 +400,7 @@ namespace Rock.Web.UI.Controls
         {
             _rblRole = new RockRadioButtonList();
             _dvpTitle = new DefinedValuePicker();
-            _tbFirstName = new RockTextBox();
+            _tbFirstName = new FirstNameTextBox();
             _tbNickName = new RockTextBox();
             _tbMiddleName = new RockTextBox();
             _tbLastName = new RockTextBox();
