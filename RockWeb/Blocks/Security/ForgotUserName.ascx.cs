@@ -297,7 +297,6 @@ namespace RockWeb.Blocks.Security
         /// </summary>
         private void EnableForm()
         {
-            tbEmail.Enabled = true;
             btnSend.Visible = true;
         }
 
