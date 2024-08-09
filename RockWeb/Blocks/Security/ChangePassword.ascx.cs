@@ -80,7 +80,6 @@ namespace RockWeb.Blocks.Security
         protected override void OnLoad( EventArgs e )
         {
             nbMessage.Visible = false;
-            cpCaptcha.Visible = !( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || !cpCaptcha.IsAvailable );
 
             if ( CurrentUser == null || ! CurrentUser.IsAuthenticated )
             {
@@ -234,9 +233,6 @@ namespace RockWeb.Blocks.Security
         /// </summary>
         private void EnableForm()
         {
-            tbOldPassword.Enabled = true;
-            tbPassword.Enabled = true;
-            tbPasswordConfirm.Enabled = true;
             btnChange.Visible = true;
         }
 

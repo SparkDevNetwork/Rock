@@ -12,7 +12,7 @@
         </asp:Panel>
 
         <fieldset>
-            <Rock:RockTextBox ID="tbEmail" runat="server" Label="Enter your email address" Required="true" DisplayRequiredIndicator="false" Enabled="false"></Rock:RockTextBox>
+            <Rock:RockTextBox ID="tbEmail" runat="server" Label="Enter your email address" Required="true" DisplayRequiredIndicator="false"></Rock:RockTextBox>
         </fieldset>
 
         <div class="actions">
