@@ -91,6 +91,13 @@ namespace RockWeb.Blocks.Security
             {
                 if ( !Page.IsPostBack )
                 {
+                    var disableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || !cpCaptcha.IsAvailable;
+                    if ( disableCaptchaSupport )
+                    {
+                        pnlCaptcha.Visible = false;
+                        EnableForm();
+                    }
+
                     if ( PageParameter( "ChangeRequired" ).AsBoolean() )
                     {
                         nbMessage.NotificationBoxType = NotificationBoxType.Info;
@@ -121,13 +128,6 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnChange_Click( object sender, EventArgs e )
         {
-            var disableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || !cpCaptcha.IsAvailable;
-            if ( !disableCaptchaSupport && !cpCaptcha.IsResponseValid() )
-            {
-                DisplayMessage( "There was an issue processing your request. Please try again. If the issue persists please contact us.", NotificationBoxType.Warning );
-                return;
-            }
-
             RockContext rockContext = new RockContext();
             var userLoginService = new UserLoginService( rockContext );
             var userLogin = userLoginService.GetByUserName( CurrentUser.UserName );
@@ -186,6 +186,25 @@ namespace RockWeb.Blocks.Security
             }
         }
 
+        /// <summary>
+        /// Handles the TokenReceived event of the CpCaptcha control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="Captcha.TokenReceivedEventArgs"/> instance containing the event data.</param>
+        protected void cpCaptcha_TokenReceived( object sender, Rock.Web.UI.Controls.Captcha.TokenReceivedEventArgs e )
+        {
+            pnlCaptcha.Visible = false;
+
+            if ( e.IsValid )
+            {
+                EnableForm();
+            }
+            else
+            {
+                DisplayMessage( "There was an issue processing your request. Please reload this page to try again. If the issue persists please contact us.", NotificationBoxType.Warning );
+            }
+        }
+
         #endregion
 
         #region Methods
@@ -210,7 +229,17 @@ namespace RockWeb.Blocks.Security
             nbMessage.Visible = true;
         }
 
-        #endregion
+        /// <summary>
+        /// Enables the form after CAPTCHA has been solved (or disabled).
+        /// </summary>
+        private void EnableForm()
+        {
+            tbOldPassword.Enabled = true;
+            tbPassword.Enabled = true;
+            tbPasswordConfirm.Enabled = true;
+            btnChange.Visible = true;
+        }
 
+        #endregion
     }
 }
