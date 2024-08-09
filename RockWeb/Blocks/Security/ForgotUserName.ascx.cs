@@ -119,10 +119,15 @@ namespace RockWeb.Blocks.Security
             pnlWarning.Visible = false;
             pnlSuccess.Visible = false;
 
-            cpCaptcha.Visible = !( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || !cpCaptcha.IsAvailable );
-
             if ( !Page.IsPostBack )
             {
+                var disableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || !cpCaptcha.IsAvailable;
+                if ( disableCaptchaSupport )
+                {
+                    pnlCaptcha.Visible = false;
+                    EnableForm();
+                }
+
                 lCaption.Text = GetAttributeValue( AttributeKey.HeadingCaption );
                 lWarning.Text = GetAttributeValue( AttributeKey.InvalidEmailCaption );
                 lSuccess.Text = GetAttributeValue( AttributeKey.SuccessCaption );
@@ -142,14 +147,6 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSend_Click( object sender, EventArgs e )
         {
-            var disableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || !cpCaptcha.IsAvailable;
-            if ( !disableCaptchaSupport && !cpCaptcha.IsResponseValid() )
-            {
-                lWarning.Text = "There was an issue processing your request. Please try again. If the issue persists please contact us.";
-                pnlWarning.Visible = true;
-                return;
-            }
-
             var url = LinkedPageUrl( AttributeKey.ConfirmationPage );
             if ( string.IsNullOrWhiteSpace( url ) )
             {
@@ -269,6 +266,38 @@ namespace RockWeb.Blocks.Security
 
                 return siteHostNames.Contains( hostName );
             }
+        }
+
+        /// <summary>
+        /// Handles the TokenReceived event of the CpCaptcha control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="Captcha.TokenReceivedEventArgs"/> instance containing the event data.</param>
+        protected void cpCaptcha_TokenReceived( object sender, Rock.Web.UI.Controls.Captcha.TokenReceivedEventArgs e )
+        {
+            pnlCaptcha.Visible = false;
+
+            if ( e.IsValid )
+            {
+                EnableForm();
+            }
+            else
+            {
+                lWarning.Text = "There was an issue processing your request. Please reload this page to try again. If the issue persists please contact us.";
+                pnlWarning.Visible = true;
+            }
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Enables the form after CAPTCHA has been solved (or disabled).
+        /// </summary>
+        private void EnableForm()
+        {
+            btnSend.Visible = true;
         }
 
         #endregion

@@ -412,10 +412,10 @@ namespace RockWeb.Blocks.WorkFlow
         }
 
         /// <summary>
-        /// Event raised after the Captcha control receives a token for a solved Captcha.
+        /// Handles the TokenReceived event of the CpCaptcha control.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="Captcha.TokenReceivedEventArgs"/> instance containing the event data.</param>
         protected void cpCaptcha_TokenReceived( object sender, Captcha.TokenReceivedEventArgs e )
         {
             if ( e.IsValid )
