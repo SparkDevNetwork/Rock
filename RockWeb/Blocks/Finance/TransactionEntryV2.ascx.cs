@@ -1075,7 +1075,6 @@ mission. We are so grateful for your commitment.</p>
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="Captcha.TokenReceivedEventArgs"/> instance containing the event data.</param>
-        /// <exception cref="NotImplementedException"></exception>
         private void CpCaptcha_TokenReceived( object sender, Captcha.TokenReceivedEventArgs e )
         {
             if ( e.IsValid )
