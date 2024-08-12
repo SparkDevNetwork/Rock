@@ -483,6 +483,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( !Page.IsPostBack )
             {
+                btnCopy.Visible = GetAttributeValue( AttributeKey.ShowCopyButton ).AsBoolean();
                 if ( groupId.HasValue )
                 {
                     ShowDetail( groupId.Value, PageParameter( PageParameterKey.ParentGroupId ).AsIntegerOrNull() );
@@ -491,8 +492,6 @@ namespace RockWeb.Blocks.Groups
                 {
                     pnlDetails.Visible = false;
                 }
-
-                btnCopy.Visible = GetAttributeValue( AttributeKey.ShowCopyButton ).AsBoolean();
             }
             else
             {
@@ -1374,6 +1373,13 @@ namespace RockWeb.Blocks.Groups
                     .Where( g => g.Id == groupId )
                     .FirstOrDefault();
 
+            if( group != null && !group.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+            {
+                nbEditModeMessage.Visible = true;
+                nbEditModeMessage.Text = "You are not authorized to copy the group";
+                return;
+            }
+
             if ( group != null )
             {
                 group.LoadAttributes( rockContext );
@@ -1566,8 +1572,8 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            btnCopy.Visible = GetAttributeValue( AttributeKey.ShowCopyButton ).AsBoolean();
             var currentGroup = GetGroup( hfGroupId.Value.AsInteger() );
+            btnCopy.Visible = GetAttributeValue( AttributeKey.ShowCopyButton ).AsBoolean() && currentGroup.IsAuthorized( Authorization.EDIT, CurrentPerson );
             if ( currentGroup != null )
             {
                 ShowReadonlyDetails( currentGroup );
@@ -1722,6 +1728,7 @@ namespace RockWeb.Blocks.Groups
                 btnEdit.Visible = false;
                 btnDelete.Visible = false;
                 btnArchive.Visible = false;
+                btnCopy.Visible = false;
                 ShowReadonlyDetails( group );
             }
             else
