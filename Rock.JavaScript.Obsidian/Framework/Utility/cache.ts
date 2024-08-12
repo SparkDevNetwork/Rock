@@ -16,33 +16,27 @@
 
 import { RockDateTime } from "./rockDateTime";
 
-//
+
 type CacheEntry<T> = {
     value: T;
     expiration: number;
 };
 
+const keyPrefix = "ObsidianCache_";
+
 /**
 * Stores the value using the given key. The cache will expire at the expiration or in
 * 1 minute if none is provided
-* @param key
-* @param value
-* @param expiration
+* @param key Unique key to store the value under
+* @param value Value to store
+* @param ttl Time to live in seconds (how long the cached value is valid for). Defaults to 60 if not provided.
 */
-function set<T>(key: string, value: T, expirationDT: RockDateTime | null = null): void {
-    let expiration: number;
-
-    if (expirationDT) {
-        expiration = expirationDT.toMilliseconds();
-    }
-    else {
-        // Default to one minute
-        expiration = RockDateTime.now().addMinutes(1).toMilliseconds();
-    }
+function set<T>(key: string, value: T, ttl: number = 60): void {
+    const expiration = RockDateTime.now().addSeconds(ttl).toMilliseconds();
 
     const cache: CacheEntry<T> = { expiration, value };
     const cacheJson = JSON.stringify(cache);
-    sessionStorage.setItem(key, cacheJson);
+    sessionStorage.setItem(keyPrefix + key, cacheJson);
 }
 
 /**
@@ -50,7 +44,7 @@ function set<T>(key: string, value: T, expirationDT: RockDateTime | null = null)
  * @param key
  */
 function get<T>(key: string): T | null {
-    const cacheJson = sessionStorage.getItem(key);
+    const cacheJson = sessionStorage.getItem(keyPrefix + key);
 
     if (!cacheJson) {
         return null;
@@ -69,6 +63,8 @@ function get<T>(key: string): T | null {
     return cache.value;
 }
 
+// Stores promises that are in flight so that if a second fetch is fired before the first resolves
+// (before value gets cached), just return the promise that's already in flight to prevent duplicate calls
 const promiseCache: Record<string, Promise<unknown> | undefined> = {};
 
 /**
@@ -80,9 +76,11 @@ const promiseCache: Record<string, Promise<unknown> | undefined> = {};
  *
  * @param key Key for identifying the cached values
  * @param fn Function that returns a Promise that we want to cache the value of
+ * @param ttl Time to live in seconds (how long the cached value is valid for)
  *
+ * @returns A function that wraps the given function, that can be called instead of the given function and that will use the cache when appropriate.
  */
-function cachePromiseFactory<T>(key: string, fn: () => Promise<T>, expiration: RockDateTime | null = null): () => Promise<T> {
+function cachePromiseFactory<T>(key: string, fn: () => Promise<T>, ttl?: number): () => Promise<T> {
     return async function (): Promise<T> {
         // If it's cached, grab it
         const cachedResult = get<T>(key);
@@ -101,7 +99,7 @@ function cachePromiseFactory<T>(key: string, fn: () => Promise<T>, expiration: R
 
         // Once it's resolved, cache the result
         promiseCache[key]?.then((result) => {
-            set(key, result, expiration);
+            set(key, result, ttl);
             delete promiseCache[key];
             return result;
         }).catch((e: Error) => {
@@ -118,5 +116,5 @@ function cachePromiseFactory<T>(key: string, fn: () => Promise<T>, expiration: R
 export default {
     set,
     get,
-    cachePromiseFactory: cachePromiseFactory
+    cachePromiseFactory
 };

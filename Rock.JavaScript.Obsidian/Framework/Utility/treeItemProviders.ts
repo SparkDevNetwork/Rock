@@ -1113,6 +1113,7 @@ export class AssetManagerTreeItemProvider implements ITreeItemProvider {
     public enableFileManager = false;
     public encryptedRootFolder = "";
     public securityGrantToken = "";
+    public userSpecificRoot = false;
 
     /**
      * @inheritdoc
@@ -1124,7 +1125,8 @@ export class AssetManagerTreeItemProvider implements ITreeItemProvider {
             enableAssetManager: this.enableAssetManager,
             enableFileManager: this.enableFileManager,
             rootFolder: this.encryptedRootFolder,
-            securityGrantToken: this.securityGrantToken
+            securityGrantToken: this.securityGrantToken,
+            userSpecificRoot: this.userSpecificRoot
         };
         const url = "/api/v2/Controls/AssetManagerGetRootFolders";
         const response = await post<{tree:TreeItemBag[], updatedExpandedFolders: string[]}>(url, undefined, options);

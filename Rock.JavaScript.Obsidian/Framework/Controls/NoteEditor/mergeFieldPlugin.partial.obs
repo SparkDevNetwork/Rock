@@ -131,9 +131,12 @@
 
     /** Initializes the plugin. */
     function init(editor: Editor): void {
+        editor.ui.registry.addIcon("merge-field", `<span style="font-weight: bold; font-size: 18px; top: -2px; position: relative;">{ }</span>`);
+
         editor.ui.registry.addButton(id, {
             // https://www.tiny.cloud/docs/tinymce/latest/editor-icon-identifiers/
-            icon: !props.isIconHidden ? "code-sample" : undefined,
+            icon: !props.isIconHidden ? "merge-field" : undefined,
+            // icon: !props.isIconHidden ? "code-sample" : undefined,
             text: props.label || undefined,
             tooltip: tooltip,
             onSetup: (_api: Ui.Toolbar.ToolbarButtonInstanceApi): (api: Ui.Toolbar.ToolbarButtonInstanceApi) => void => {

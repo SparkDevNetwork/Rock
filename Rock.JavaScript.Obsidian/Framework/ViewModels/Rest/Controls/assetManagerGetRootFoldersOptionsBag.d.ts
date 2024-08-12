@@ -50,4 +50,11 @@ export type AssetManagerGetRootFoldersOptionsBag = {
      * asset provider / folder match this key's encrypted root.
      */
     selectedFolder?: string | null;
+
+    /**
+     * If set to true, instead of using the given root directly, the root folder shown will be a
+     * folder under the given root that is named after the current person's username. If the folder
+     * does not exist, it will be created.
+     */
+    userSpecificRoot: boolean;
 };
