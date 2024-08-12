@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -1618,22 +1618,6 @@ namespace RockWeb.Blocks.Finance
                             .Where( d => accountGuids.Contains( d.Account.Guid ) );
                     }
 
-                    if ( sortProperty != null && sortProperty.Property == "_PERSONNAME_" )
-                    {
-                        if ( sortProperty.Direction == SortDirection.Ascending )
-                        {
-                            financialTransactionDetailQuery = financialTransactionDetailQuery
-                                .OrderBy( a => a.Transaction.AuthorizedPersonAlias.Person.LastName ).ThenBy( a => a.Transaction.AuthorizedPersonAlias.Person.NickName )
-                                .ThenByDescending( t => t.Transaction.FutureProcessingDateTime ).ThenByDescending( t => t.Transaction.TransactionDateTime ).ThenByDescending( t => t.TransactionId );
-                        }
-                        else
-                        {
-                            financialTransactionDetailQuery = financialTransactionDetailQuery
-                                .OrderByDescending( a => a.Transaction.AuthorizedPersonAlias.Person.LastName ).ThenByDescending( a => a.Transaction.AuthorizedPersonAlias.Person.NickName )
-                                .ThenByDescending( t => t.Transaction.FutureProcessingDateTime ).ThenByDescending( t => t.Transaction.TransactionDateTime ).ThenByDescending( t => t.TransactionId );
-                        }
-                    }
-
                     query = financialTransactionDetailQuery.Select( a => new FinancialTransactionRow
                     {
                         Id = a.TransactionId,
@@ -1641,6 +1625,8 @@ namespace RockWeb.Blocks.Finance
                         TransactionTypeValueId = a.Transaction.TransactionTypeValueId,
                         ScheduledTransactionId = a.Transaction.ScheduledTransactionId,
                         AuthorizedPersonAliasId = a.Transaction.AuthorizedPersonAliasId,
+                        AuthorizedPersonLastName = ( a.Transaction.AuthorizedPersonAlias == null ) ? string.Empty : a.Transaction.AuthorizedPersonAlias.Person.LastName,
+                        AuthorizedPersonNickName = ( a.Transaction.AuthorizedPersonAlias == null ) ? string.Empty : a.Transaction.AuthorizedPersonAlias.Person.NickName,
                         TransactionDateTime = a.Transaction.TransactionDateTime ?? a.Transaction.FutureProcessingDateTime.Value,
                         FutureProcessingDateTime = a.Transaction.FutureProcessingDateTime,
                         SourceTypeValueId = a.Transaction.SourceTypeValueId,
@@ -1714,20 +1700,6 @@ namespace RockWeb.Blocks.Finance
                         }
                     }
 
-                    if ( sortProperty != null && sortProperty.Property == "_PERSONNAME_" )
-                    {
-                        if ( sortProperty.Direction == SortDirection.Ascending )
-                        {
-                            financialTransactionQuery = financialTransactionQuery.OrderBy( a => a.AuthorizedPersonAlias.Person.LastName ).ThenBy( a => a.AuthorizedPersonAlias.Person.NickName )
-                                .ThenByDescending( t => t.FutureProcessingDateTime ).ThenByDescending( t => t.TransactionDateTime ).ThenByDescending( t => t.Id );
-                        }
-                        else
-                        {
-                            financialTransactionQuery = financialTransactionQuery.OrderByDescending( a => a.AuthorizedPersonAlias.Person.LastName ).ThenByDescending( a => a.AuthorizedPersonAlias.Person.NickName )
-                                .ThenByDescending( t => t.FutureProcessingDateTime ).ThenByDescending( t => t.TransactionDateTime ).ThenByDescending( t => t.Id );
-                        }
-                    }
-
                     query = financialTransactionQuery
                         .Select( a => new FinancialTransactionRow
                         {
@@ -1736,6 +1708,8 @@ namespace RockWeb.Blocks.Finance
                             TransactionTypeValueId = a.TransactionTypeValueId,
                             ScheduledTransactionId = a.ScheduledTransactionId,
                             AuthorizedPersonAliasId = a.AuthorizedPersonAliasId,
+                            AuthorizedPersonLastName = ( a.AuthorizedPersonAlias == null ) ? string.Empty : a.AuthorizedPersonAlias.Person.LastName,
+                            AuthorizedPersonNickName = ( a.AuthorizedPersonAlias == null ) ? string.Empty : a.AuthorizedPersonAlias.Person.NickName,
                             TransactionDateTime = a.TransactionDateTime ?? a.FutureProcessingDateTime.Value,
                             FutureProcessingDateTime = a.FutureProcessingDateTime,
                             TransactionDetails = a.TransactionDetails.Select( d => new DetailInfo { AccountId = d.AccountId, Amount = d.Amount, EntityId = d.EntityId, EntityTypeId = d.EntityTypeId } ),
@@ -1966,14 +1940,32 @@ namespace RockWeb.Blocks.Finance
                     }
                 }
 
-                // NOTE: We sort by _PERSONNAME_  above so don't do it here
                 if ( sortProperty != null )
-                {
-                    if ( sortProperty.Property != "_PERSONNAME_" )
-                    {
+	            {
+	                if ( sortProperty.Property == "_PERSONNAME_" )
+	                {
+	                    if ( sortProperty.Direction == SortDirection.Ascending )
+	                    {
+	                        query = query.OrderBy( a => a.AuthorizedPersonLastName )
+	                            .ThenBy( a => a.AuthorizedPersonNickName )
+	                            .ThenByDescending( a => a.FutureProcessingDateTime )
+	                            .ThenByDescending( a => a.TransactionDateTime )
+	                            .ThenByDescending( a => a.Id );
+	                    }
+	                    else
+	                    {
+                            query = query.OrderByDescending( a => a.AuthorizedPersonLastName )
+	                            .ThenByDescending( a => a.AuthorizedPersonNickName )
+	                            .ThenByDescending( a => a.FutureProcessingDateTime )
+	                            .ThenByDescending( a => a.TransactionDateTime )
+	                            .ThenByDescending( a => a.Id );
+	                    }
+	                }
+	                else
+	                {
                         query = query.Sort( sortProperty );
-                    }
-                }
+	                }
+	            }
                 else
                 {
 
@@ -2291,6 +2283,8 @@ namespace RockWeb.Blocks.Finance
         {
             public int Id { get; set; }
             public int? AuthorizedPersonAliasId { get; internal set; }
+            public string AuthorizedPersonLastName { get; set; }
+            public string AuthorizedPersonNickName { get; set; }
             public int? BatchId { get; internal set; }
             public int? ScheduledTransactionId { get; internal set; }
             public DateTime TransactionDateTime { get; internal set; }
