@@ -72,11 +72,11 @@
                                                        v-if="adult1.isFirstNameReadOnly"
                                                        label="First Name"
                                                        :modelValue="adult1.firstName" />
-                                    <TextBox v-else
-                                             v-model="adult1.firstName"
-                                             :disabled="isSaving || isNavigating"
-                                             label="First Name"
-                                             :rules="adult1RequiredRules" />
+                                    <FirstNameTextBox v-else
+                                                      v-model="adult1.firstName"
+                                                      :disabled="isSaving || isNavigating"
+                                                      label="First Name"
+                                                      :rules="adult1RequiredRules" />
                                 </div>
                                 <div class="col-sm-6">
                                     <StaticFormControl
@@ -275,11 +275,11 @@
                                                            v-if="adult2.isFirstNameReadOnly"
                                                            label="First Name"
                                                            :modelValue="adult2.firstName" />
-                                        <TextBox v-else
-                                                 v-model="adult2.firstName"
-                                                 :disabled="isSaving || isNavigating"
-                                                 label="First Name"
-                                                 :rules="isAdult2Entered ? adult2RequiredRules : ''" />
+                                        <FirstNameTextBox v-else
+                                                          v-model="adult2.firstName"
+                                                          :disabled="isSaving || isNavigating"
+                                                          label="First Name"
+                                                          :rules="isAdult2Entered ? adult2RequiredRules : ''" />
                                     </div>
                                     <div class="col-sm-6">
                                         <StaticFormControl
@@ -498,6 +498,7 @@
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import FirstNameTextBox from "@Obsidian/Controls/firstNameTextBox.obs";
     import Captcha from "@Obsidian/Controls/captcha.obs";
     import { CommunicationPreference } from "@Obsidian/Enums/Blocks/Crm/FamilyPreRegistration/communicationPreference";
     import { Gender } from "@Obsidian/Enums/Crm/gender";
