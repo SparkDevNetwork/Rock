@@ -26,7 +26,6 @@ namespace Rock.Rest.v2
     /// API controller for the /api/v2/Utilities endpoints.
     /// </summary>
     /// <seealso cref="Rock.Rest.ApiControllerBase" />
-    [RoutePrefix( "api/v2/Utilities" )]
     [Rock.SystemGuid.RestControllerGuid( "AE3ABE89-D40C-4EB6-BAAE-C477DAAD71AD" )]
     public partial class UtilitiesController : ApiControllerBase
     {
@@ -36,7 +35,7 @@ namespace Rock.Rest.v2
         /// <param name="options">The options that describe which folders to load and not load.</param>
         /// <returns>A List of <see cref="ListItemBag"/> objects that represent all the folders.</returns>
         [HttpPost]
-        [System.Web.Http.Route( "GetImageFileExtensions" )]
+        [System.Web.Http.Route( "api/v2/Utilities/GetImageFileExtensions" )]
         [Authenticate]
         [Rock.SystemGuid.RestActionGuid( "D0609BC8-CFDB-426C-A2A2-2685BEB63527" )]
         public IHttpActionResult GetImageFileExtensions()
