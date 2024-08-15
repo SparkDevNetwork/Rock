@@ -19,9 +19,6 @@ import { Workbook } from "exceljs";
 import { useHttp } from "./http";
 import Cache from "./cache";
 
-const http = useHttp();
-
-
 /**
  * Triggers an automatic download of the workbook so it can be saved to
  * the filesystem.
@@ -61,6 +58,7 @@ export async function downloadWorkbook(workbook: Workbook, title: string, format
  * file extension strings.
  */
 async function fetchImageFileExtensions(): Promise<string[] | null> {
+    const http = useHttp();
     const result = await http.post<string>("/api/v2/Utilities/GetImageFileExtensions");
 
     if (result.isSuccess && result.data) {
