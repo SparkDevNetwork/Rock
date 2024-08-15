@@ -32,6 +32,12 @@ const keyPrefix = "ObsidianCache_";
 * @param ttl Time to live in seconds (how long the cached value is valid for). Defaults to 60 if not provided.
 */
 function set<T>(key: string, value: T, ttl: number = 60): void {
+    // Can be removed in Rock v18
+    if (typeof ttl !== "number") {
+        ttl = 60;
+        console.warn("Cache.set has been changed to use a Time-To-Live instead of an expiration date/time. Please update your code to use a Time-To-Live.");
+    }
+
     const expiration = RockDateTime.now().addSeconds(ttl).toMilliseconds();
 
     const cache: CacheEntry<T> = { expiration, value };
@@ -82,6 +88,11 @@ const promiseCache: Record<string, Promise<unknown> | undefined> = {};
  */
 function cachePromiseFactory<T>(key: string, fn: () => Promise<T>, ttl?: number): () => Promise<T> {
     return async function (): Promise<T> {
+        // Can be removed in Rock v18
+        if (typeof ttl !== "number" || ttl !== undefined) {
+            console.warn("Cache.cachePromiseFactory has been changed to use a Time-To-Live instead of an expiration date/time. Please update your code to use a Time-To-Live.");
+        }
+
         // If it's cached, grab it
         const cachedResult = get<T>(key);
         if (cachedResult) {
