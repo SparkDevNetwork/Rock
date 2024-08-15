@@ -114,7 +114,7 @@ CT~~CD,~CC^~CT~
     ^FO97,333^GFA,193,708,12,:Z64:eJzN0bENgCAQBdAjFJSO4Ca6mdK5Fp1rOIIlJsqpBD6nMdaQmDwKz39foiqOYQu3vMIj7zBzyNQ8MRwILxtPvUtuFmqXPNLdV9jkD/SWNEyk/Ic74eF6fApz+4jxssOPx+gtrVPmPOe/MmhY5JT5rwWxV7OWfWUPsh/FM3qTfT56lv1r8V+qPSebmlQV:9688
 {% endif %}
 
-{% assign tClear = Person | Attribute:'Arena-29-259' %}
+{% assign tClear = Person | Attribute:'TeachingBeliefStatement' %}
 {% if tClear != '' %}
     ^FO181,333^GFA,209,792,12,:Z64:eJzF0kEKwyAQBdARFy5zBI/izWKPZm9S6AUC3WQR/K1OnBnIJimU/oU8MBM/KBHlhUYcNrFHFQfjCIhRko6qPfSbAJ2dXsZPPSsWSId4k79TVFK6ZoeWInWAx6jzyXLw1Lb9ym5jbt2rNW+mGjt1V3Ps3Nds1tnsVjMFzlfeGx58ZjazuUnnuI1w1zfwY3u5inP+U949460Z:5FD5
 {% endif %}
