@@ -662,7 +662,7 @@ namespace Rock.Rest.v2
                 }
             }
 
-            if ( options.EnableFileManager && options.RootFolder.IsNotNullOrWhiteSpace() )
+            if ( options.EnableFileManager )
             {
                 var (folder, expandedFileFolders) = GetRootFolder( options.RootFolder, expandedFolders, selectedFolder, options.UserSpecificRoot );
 
@@ -1344,14 +1344,14 @@ namespace Rock.Rest.v2
                     }
 
                     // Verify root ends with "/"
-                    root = root.EndsWith( "/" ) ? root : root + "/";
+                    root = root.EnsureTrailingForwardslash();
 
                     var partialPath = assetParts[2].Trim();
 
                     if ( partialPath != string.Empty )
                     {
                         // Verify path doesn't start with a "/" and does end with a "/"
-                        partialPath = partialPath.TrimStart( '/', '\\' ).TrimEnd( '/', '\\' ) + "/";
+                        partialPath = partialPath.TrimStart( '/', '\\' ).EnsureTrailingForwardslash();
                     }
 
                     return new AssetManagerAsset
@@ -1375,6 +1375,11 @@ namespace Rock.Rest.v2
         /// <returns>A (tree) list of all the child folders and an updated version of the given expanded folders list.</returns>
         private (AssetManagerTreeItemBag, List<string> updatedExpandedFolders) GetRootFolder( string encryptedRootFolder, List<string> expandedFolders, AssetManagerAsset selectedFolder, bool userSpecificRoot )
         {
+            if ( encryptedRootFolder.IsNullOrWhiteSpace() )
+            {
+                // Set root to default
+                encryptedRootFolder = Rock.Security.Encryption.EncryptString( "~/Content/" );
+            }
 
             var rootAssetKey = $"0,{encryptedRootFolder},,True";
             var parsedAsset = ParseAssetKey( rootAssetKey );
@@ -1396,8 +1401,6 @@ namespace Rock.Rest.v2
                 parsedAsset.Root = parsedAsset.Root.EnsureTrailingForwardslash() + username.EnsureTrailingForwardslash();
                 encryptedRootFolder = Rock.Security.Encryption.EncryptString( parsedAsset.Root );
                 parsedAsset.EncryptedRoot = encryptedRootFolder;
-
-                var root = Rock.Security.Encryption.DecryptString( encryptedRootFolder );
             }
 
             // If the selected folder is using this asset provider, then use its existing encrypted folder value instead or re-encrypting
