@@ -1137,10 +1137,16 @@ namespace Rock.Blocks.Communication
                 personAliasQuery = new PersonAliasService( rockContext ).GetPrimaryAliasQuery().AsNoTracking();
             }
 
-            // Filter person aliases.
+            // Filter person aliases by Guid.
             if ( options?.PersonAliasGuids?.Any() == true )
             {
                 personAliasQuery = personAliasQuery.Where( personAlias => options.PersonAliasGuids.Contains( personAlias.Guid ) );
+            }
+
+            // Filter person aliases by Id.
+            if ( options?.PersonAliasIds?.Any() == true )
+            {
+                personAliasQuery = personAliasQuery.Where( personAlias => options.PersonAliasIds.Contains( personAlias.Id ) );
             }
 
             // Limit the results.
@@ -1478,35 +1484,33 @@ namespace Rock.Blocks.Communication
             var personService = new PersonService( rockContext );
 
             var currentPersonAliasId = GetCurrentPerson().PrimaryAliasId;
+            var ( _, medium ) = GetMediumComponent( bag.MediumEntityTypeGuid );
             var newRecipients = new List<CommunicationEntryRecipientBag>( bag.Recipients );
 
-            // Get the recipients from the "additional email recipients".
-            if ( bag.AdditionalEmailAddresses?.Any() == true )
+            // Include additional email recipients.
+            if ( medium.CommunicationType == CommunicationType.Email && bag.AdditionalEmailAddresses?.Any() == true )
             {
-                var additionalEmailRecipients = new List<CommunicationEntryRecipientDto>();
+                var additionalEmailRecipientPersonAliasIds = new List<int>();
 
                 foreach ( var additionalEmailAddress in bag.AdditionalEmailAddresses )
                 {
-                    var person = personService.GetPersonFromEmailAddress( additionalEmailAddress, createNamelessPersonIfNotFound: true );
-                    additionalEmailRecipients.Add( new CommunicationEntryRecipientDto
+                    var additionalRecipientPerson = personService.GetPersonFromEmailAddress( additionalEmailAddress, createNamelessPersonIfNotFound: true );
+
+                    if ( additionalRecipientPerson?.PrimaryAliasId.HasValue == true )
                     {
-                        Person = person,
-                        Recipient = new CommunicationEntryRecipientBag
-                        {
-                            Email = person.Email,
-                            EmailPreference = person.EmailPreference.ToString(),
-                            IsEmailActive = person.IsEmailActive,
-                            IsPushAllowed = false,
-                            IsDeceased = false,
-                            PersonAliasGuid = person.PrimaryAlias.Guid,
-                            SmsNumber = null,
-                            // Set name using the full Person entity.
-                            // Name = person.FullName,
-                        },
-                    } );
+                        additionalEmailRecipientPersonAliasIds.Add( additionalRecipientPerson.PrimaryAliasId.Value );
+                    }
                 }
 
-                newRecipients.AddRange( ConvertToBags( additionalEmailRecipients ) );
+                if ( additionalEmailRecipientPersonAliasIds.Any() )
+                {
+                    var additionalEmailRecipients = GetRecipientBags( rockContext, new RecipientQueryOptions
+                    {
+                        PersonAliasIds = additionalEmailRecipientPersonAliasIds
+                    } );
+
+                    newRecipients.AddRange( additionalEmailRecipients );
+                }
             }
 
             Rock.Model.Communication communication = null;
@@ -1576,7 +1580,6 @@ namespace Rock.Blocks.Communication
             communication.EnabledLavaCommands = this.EnabledLavaCommands;
             communication.IsBulkCommunication = bag.IsBulkCommunication;
 
-            var ( _, medium ) = GetMediumComponent( bag.MediumEntityTypeGuid );
             if ( medium != null )
             {
                 communication.CommunicationType = medium.CommunicationType;
@@ -1860,6 +1863,8 @@ namespace Rock.Blocks.Communication
         private class RecipientQueryOptions
         {
             public IEnumerable<Guid> PersonAliasGuids { get; set; }
+
+            public IEnumerable<int> PersonAliasIds { get; set; }
 
             public int? CommunicationId { get; set; }
 
