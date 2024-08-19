@@ -153,8 +153,6 @@ namespace RockWeb.Blocks.WorkFlow
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             nbResult.Visible = false;
             if ( !Page.IsPostBack )
             {
@@ -170,6 +168,8 @@ namespace RockWeb.Blocks.WorkFlow
                     nbMessage.Text = EditModeMessage.NotAuthorizedToView( WorkflowType.FriendlyTypeName );
                 }
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>

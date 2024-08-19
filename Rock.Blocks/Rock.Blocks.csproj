@@ -86,6 +86,7 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>Properties\AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Bus\BusStatus.cs" />
     <Compile Include="Bus\ConsumerList.cs" />
     <Compile Include="Bus\QueueList.cs" />
     <Compile Include="CheckIn\CheckInKiosk.cs" />
@@ -96,7 +97,7 @@
     <Compile Include="Cms\AdaptiveMessageAdaptationDetail.cs" />
     <Compile Include="Cms\AdaptiveMessageDetail.cs" />
     <Compile Include="Cms\AdaptiveMessageList.cs" />
-    <Compile Include="Cms\AssetManager.cs" />
+    <Compile Include="Cms\FileAssetManager.cs" />
     <Compile Include="Cms\BlockTypeList.cs" />
     <Compile Include="Cms\ContentChannelDetail.cs" />
     <Compile Include="Cms\ContentChannelItemList.cs" />
@@ -105,6 +106,8 @@
     <Compile Include="Cms\ContentChannelTypeDetail.cs" />
     <Compile Include="Cms\MediaAccountList.cs" />
     <Compile Include="Cms\MediaFolderList.cs" />
+    <Compile Include="Communication\CommunicationEntry\ValidationContext.cs" />
+    <Compile Include="Communication\CommunicationEntry\ValidationContextExtensions.cs" />
     <Compile Include="Core\PersonSuggestionList.cs" />
     <Compile Include="Cms\PageSearch.cs" />
     <Compile Include="Core\DocumentTypeList.cs" />
@@ -144,6 +147,9 @@
     <Compile Include="Communication\NcoaProcess.cs" />
     <Compile Include="Core\AuthClientDetail.cs" />
     <Compile Include="Crm\PhotoVerify.cs" />
+    <Compile Include="Finance\FundraisingList.cs" />
+    <Compile Include="Core\TagReport.cs" />
+    <Compile Include="Engagement\StreakTypeExclusionList.cs" />
     <Compile Include="Security\AuthScopeList.cs" />
     <Compile Include="Security\AuthClientList.cs" />
     <Compile Include="Core\PersonSignalList.cs" />
@@ -155,12 +161,15 @@
     <Compile Include="Crm\PersonMergeRequestList.cs" />
     <Compile Include="Event\RegistrationInstanceLinkageList.cs" />
     <Compile Include="Event\RegistrationInstanceFeeList.cs" />
+    <Compile Include="Core\RestActionList.cs" />
     <Compile Include="Core\RestControllerList.cs" />
     <Compile Include="Cms\SiteList.cs" />
     <Compile Include="Communication\CommunicationList.cs" />
     <Compile Include="Communication\SmsPipelineList.cs" />
     <Compile Include="Communication\SystemCommunicationPreview.cs" />
     <Compile Include="Communication\SystemCommunicationList.cs" />
+    <Compile Include="Communication\CommunicationEntry.cs" />
+    <Compile Include="Communication\EmailPreferenceEntry.cs" />
     <Compile Include="Core\AssetStorageProviderList.cs" />
     <Compile Include="Core\AttributeMatrixTemplateDetail.cs" />
     <Compile Include="Core\AttributeMatrixTemplateList.cs" />
@@ -170,7 +179,6 @@
     <Compile Include="Core\BinaryFileTypeDetail.cs" />
     <Compile Include="Core\BinaryFileTypeList.cs" />
     <Compile Include="Core\CampusList.cs" />
-    <Compile Include="Communication\EmailPreferenceEntry.cs" />
     <Compile Include="Core\DefinedTypeList.cs" />
     <Compile Include="Core\DefinedTypeDetail.cs" />
     <Compile Include="Core\DeviceDetail.cs" />
@@ -220,6 +228,7 @@
     <Compile Include="Event\RegistrationEntry\ExtensionMethods.cs" />
     <Compile Include="Finance\BenevolenceRequestList.cs" />
     <Compile Include="Event\EventItemOccurrenceList.cs" />
+    <Compile Include="Finance\BenevolenceTypeList.cs" />
     <Compile Include="Finance\FinancialBatchList.cs" />
     <Compile Include="Engagement\StepProgramDetail.cs" />
     <Compile Include="Finance\FinancialGatewayDetail.cs" />

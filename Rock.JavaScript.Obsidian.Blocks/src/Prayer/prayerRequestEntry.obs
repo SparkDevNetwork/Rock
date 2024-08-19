@@ -12,11 +12,11 @@
                     <fieldset>
 
                         <div v-if="config.isRequesterInfoShown" class="prayer-requester">
-                            <TextBox v-model="firstName"
-                                     autocomplete="given-name"
-                                     :disabled="isSaving || isNavigating"
-                                     label="First Name"
-                                     rules="required" />
+                            <FirstNameTextBox v-model="firstName"
+                                              autocomplete="given-name"
+                                              :disabled="isSaving || isNavigating"
+                                              label="First Name"
+                                              rules="required" />
 
                             <TextBox v-model="lastName"
                                      autocomplete="family-name"
@@ -121,6 +121,7 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import FirstNameTextBox from "@Obsidian/Controls/firstNameTextBox.obs";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { PrayerRequestEntrySaveResponseBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerRequestEntry/prayerRequestEntrySaveResponseBag";
     import { PrayerRequestEntrySaveRequestBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerRequestEntry/prayerRequestEntrySaveRequestBag";

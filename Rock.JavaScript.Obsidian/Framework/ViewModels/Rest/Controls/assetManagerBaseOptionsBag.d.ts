@@ -25,4 +25,7 @@
 export type AssetManagerBaseOptionsBag = {
     /** A key that contains all the information needed to get the full asset that is being acted upon */
     assetFolderId?: string | null;
+
+    /** Gets or sets the security grant token. */
+    securityGrantToken?: string | null;
 };

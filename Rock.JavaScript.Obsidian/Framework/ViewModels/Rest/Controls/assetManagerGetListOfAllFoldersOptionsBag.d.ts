@@ -29,6 +29,16 @@ export type AssetManagerGetListOfAllFoldersOptionsBag = {
     /** The file manager's root folder, encrypted */
     encryptedRoot?: string | null;
 
+    /** Gets or sets the security grant token. */
+    securityGrantToken?: string | null;
+
     /** The folder that we want to move. Don't show this folder or its children in the list. */
     selectedFolder?: string | null;
+
+    /**
+     * If set to true, instead of using the given root directly, the root folder shown will be a
+     * folder under the given root that is named after the current person's username. If the folder
+     * does not exist, it will be created.
+     */
+    userSpecificRoot: boolean;
 };

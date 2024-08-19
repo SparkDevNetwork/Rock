@@ -67,5 +67,10 @@ namespace Rock.ViewModels.Blocks.Cms.AssetManager
         /// </summary>
         public bool EnableZipUploader { get; set; }
 
+        /// <summary>
+        /// Gets or sets the security grant token.
+        /// </summary>
+        public string SecurityGrantToken { get; set; }
+
     }
 }

@@ -417,8 +417,6 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             RouteAction();
 
             if ( !IsPostBack )
@@ -429,6 +427,8 @@ namespace RockWeb.Blocks.Groups
 
             // Add a navigate event to capture when someone presses the back button.
             this.RockPage.PageNavigate += RockPage_PageNavigate;
+
+            base.OnLoad( e );
         }
 
         private void RockPage_PageNavigate( object sender, HistoryEventArgs e )

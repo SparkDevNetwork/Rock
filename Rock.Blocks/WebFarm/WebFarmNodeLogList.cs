@@ -55,16 +55,6 @@ namespace Rock.Blocks.WebFarm
         private static class PreferenceKey
         {
             public const string FilterDateRange = "filter-date-range";
-
-            public const string FilterNodeName = "filter-node-name";
-
-            public const string FilterWriterNodeName = "filter-writer-node-name";
-
-            public const string FilterSeverity = "filter-severity";
-
-            public const string FilterEventType = "filter-event-type";
-
-            public const string FilterText = "filter-text";
         }
 
         #endregion Keys
@@ -73,21 +63,6 @@ namespace Rock.Blocks.WebFarm
 
         protected string FilterDateRange => GetBlockPersonPreferences()
             .GetValue( PreferenceKey.FilterDateRange );
-
-        protected string FilterNodeName => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterNodeName );
-
-        protected string FilterWriterNodeName => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterWriterNodeName );
-
-        protected string FilterSeverity => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterSeverity );
-
-        protected string FilterEventType => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterEventType );
-
-        protected string FilterText => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterText );
 
         #endregion
 
@@ -145,36 +120,6 @@ namespace Rock.Blocks.WebFarm
             if ( dateRange.End.HasValue )
             {
                 query = query.Where( l => l.EventDateTime < dateRange.End.Value );
-            }
-
-            // Filter the results by the severity
-            if ( !string.IsNullOrWhiteSpace( FilterSeverity ) && Enum.TryParse( FilterSeverity, out WebFarmNodeLog.SeverityLevel severityType ) )
-            {
-                query = query.Where( l => l.Severity == severityType );
-            }
-
-            // Filter the results by the event type
-            if ( !string.IsNullOrWhiteSpace( FilterEventType ) && Enum.TryParse( FilterEventType, out LogType eventType ) )
-            {
-                query = query.Where( l => l.EventType == eventType.ToString() );
-            }
-
-            // Filter the results by the node
-            if ( !string.IsNullOrEmpty( FilterNodeName ) )
-            {
-                query = query.Where( l => l.WebFarmNode.NodeName.Contains( FilterNodeName ) );
-            }
-
-            // Filter the results by the writer node
-            if ( !string.IsNullOrEmpty( FilterWriterNodeName ) )
-            {
-                query = query.Where( l => l.WriterWebFarmNode.NodeName.Contains( FilterWriterNodeName ) );
-            }
-
-            // Filter the results by the text
-            if ( !string.IsNullOrEmpty( FilterText ) )
-            {
-                query = query.Where( l => l.Message.Contains( FilterText ) );
             }
 
             return query.OrderByDescending( l => l.EventDateTime );

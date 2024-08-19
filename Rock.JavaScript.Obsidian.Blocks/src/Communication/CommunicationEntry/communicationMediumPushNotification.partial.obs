@@ -1,0 +1,758 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="errorMessage"
+                     heading="Please correct the following:"
+                     alertType="validation">
+        <ul>
+            <li>{{ errorMessage }}</li>
+        </ul>
+    </NotificationBox>
+
+    <template v-if="!mediumOptions">
+        <Delay :delayMs="250">
+            <LoadingIndicator v-if="isLoadingMediumOptions" />
+            <NotificationBox v-else
+                             alertType="danger">
+                <ul>
+                    <li>Unable to load</li>
+                </ul>
+            </NotificationBox>
+        </Delay>
+    </template>
+
+    <template v-else>
+        <RockForm v-model:submit="submitFormTrigger"
+                  @visibleValidationChanged="onFormValidationChanged"
+                  @submit="onFormSubmitted">
+            <div class="row">
+                <div class="col-xs-12">
+                    <RecipientPicker v-model="internalRecipients"
+                                     v-model:disabled="internalDisabled"
+                                     :isAddHidden="config.mode !== Mode.Full"
+                                     :isForBulkCommunication="isBulkCommunication"
+                                     label="Recipients"
+                                     mediumType="push"
+                                     :minimumRecipientCount="minimumRecipientCount" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-6">
+                    <DropDownList v-model="mobileApplicationGuidAsString"
+                                  blankValue="All Applications"
+                                  :items="mediumOptions.applications ?? []"
+                                  label="Application" />
+                </div>
+
+                <div class="col-xs-12 col-sm-6 d-sm-flex justify-content-sm-end">
+                    <ScheduleSend v-model="internalScheduleSendIsoString"
+                                  class="mr-sm-3"
+                                  :disabled="disabled"
+                                  :label="breakpointHelper.isSmOrLarger ? ' ' : ''" />
+
+                    <Switch v-model="internalIsBulkCommunication"
+                            :disabled="disabled"
+                            :label="breakpointHelper.isSmOrLarger ? ' ' : ''"
+                            text="Bulk Communication" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-6">
+                    <RockTextBox v-model="title" label="Title" :maxLength="100" />
+
+                    <SmsMessageEditor v-model="message"
+                                      :disabled="disabled"
+                                      :editorHeight="200"
+                                      :isCountDownShown="mediumOptions.characterLimit > 0"
+                                      :countDownMaxChars="mediumOptions.characterLimit"
+                                      :mergeFields="['GlobalAttribute', 'Rock.Model.Person']"
+                                      toolbarLabel="Message" />
+                </div>
+
+                <div class="col-sm-6">
+                    <RadioButtonList v-model="openAction"
+                                     help="Defines the open action for the message."
+                                     :horizontal="true"
+                                     :items="openActions"
+                                     label="Open Action" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-xs-12">
+                    <template v-if="openAction === OpenAction.LinkToUrl">
+                        <UrlLinkBox v-model="url" label="URL" />
+                    </template>
+
+                    <template v-else-if="openAction === OpenAction.SpecificPage">
+                        <PagePicker v-model="mobilePage"
+                                    label="Mobile Page"
+                                    :siteType="SiteType.Mobile" />
+
+                        <KeyValueList v-model="mobilePageQueryStringItems"
+                                      label="Mobile Page Query String"
+                                      keyPlaceholder="Key"
+                                      valuePlaceholder="Value" />
+                    </template>
+                    <template v-else-if="openAction === OpenAction.ShowDetails">
+                        <StructuredContentEditor v-model="pushOpenMessageJson" label="Additional Information" />
+                    </template>
+                </div>
+            </div>
+
+            <div class="actions">
+                <RockButton id="btnSubmit"
+                            :btnType="BtnType.Primary"
+                            :disabled="disabled"
+                            @click="() => onClickSend()">{{ sendButtonText }}</RockButton>
+
+                <RockButton v-if="config.mode === Mode.Full"
+                            id="btnTest"
+                            :btnType="BtnType.Link"
+                            :disabled="disabled"
+                            @click="() => onClickTest()">Send Test</RockButton>
+
+                <RockButton v-if="!(config.isEditMode && config.authorization?.isBlockApproveActionAuthorized && config.communication?.status === CommunicationStatus.PendingApproval) && config.mode === Mode.Full"
+                            id="btnSave"
+                            :btnType="BtnType.Link"
+                            :disabled="disabled"
+                            @click="() => onClickSave()">Save as Draft</RockButton>
+
+                <RockButton v-if="config.isEditMode && config.authorization?.isBlockApproveActionAuthorized && config.communication?.status === CommunicationStatus.PendingApproval"
+                            id="btnCancel"
+                            :btnType="BtnType.Link"
+                            :disabled="disabled"
+                            @click="() => onClickCancel()">Cancel</RockButton>
+            </div>
+        </RockForm>
+
+        <NotificationBox v-if="testResult?.messageHtml"
+                         :alertType="getAlertType(testResult.messageType)"
+                         class="margin-t-md"
+                         id="nbTestResult">
+            <span ref="testResultElement" v-html="testResult.messageHtml"></span>
+        </NotificationBox>
+    </template>
+</template>
+
+<script setup lang="ts">
+    import { computed, nextTick, onMounted, PropType, ref, watch } from "vue";
+    import Delay from "./delay.partial.obs";
+    import RecipientPicker from "./recipientPicker.partial.obs";
+    import ScheduleSend from "./scheduleSend.partial.obs";
+    import { getAlertType, removeQueryParams, scrollToTopOfWindow, useBreakpointHelper, useTemplate } from "./utils.partial";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import KeyValueList from "@Obsidian/Controls/keyValueList.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import PagePicker from "@Obsidian/Controls/pagePicker.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import SmsMessageEditor from "@Obsidian/Controls/smsMessageEditor.obs";
+    import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
+    import Switch from "@Obsidian/Controls/switch.obs";
+    import RockTextBox from "@Obsidian/Controls/textBox.obs";
+    import UrlLinkBox from "@Obsidian/Controls/urlLinkBox.obs";
+    import { MediumType } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntry/mediumType";
+    import { Mode } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntry/mode";
+    import { PushOpenActionType } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntry/pushOpenActionType";
+    import { SiteType } from "@Obsidian/Enums/Cms/siteType";
+    import { CommunicationStatus } from "@Obsidian/Enums/Communication/communicationStatus";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { Guid } from "@Obsidian/Types";
+    import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { CommunicationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryInitializationBox";
+    import { CommunicationEntryRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryRecipientBag";
+    import { CommunicationEntryMediumOptionsBaseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryMediumOptionsBaseBag";
+    import { CommunicationEntryPushMediumOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryPushMediumOptionsBag";
+    import { CommunicationEntryTestResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryTestResponseBag";
+    import { CommunicationEntrySendResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySendResponseBag";
+    import { CommunicationEntrySaveRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySaveRequestBag";
+    import { CommunicationEntrySaveResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySaveResponseBag";
+    import { CommunicationEntryTestRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryTestRequestBag";
+    import { CommunicationEntrySendRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySendRequestBag";
+    import { PageRouteValueBag } from "@Obsidian/ViewModels/Rest/Controls/pageRouteValueBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        isBulkCommunication: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        recipients: {
+            type: Array as PropType<CommunicationEntryRecipientBag[]>,
+            required: true
+        },
+
+        /** The schedule send datetime value in ISO 8601 format. */
+        scheduleSendIsoString: {
+            type: String as PropType<string>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        /** Emits an error message. */
+        (e: "error", value: string): void;
+        /** Emits a save result. */
+        (e: "saved", value: CommunicationEntrySendResponseBag): void;
+        /** Emits a send result. */
+        (e: "sent", value: CommunicationEntrySendResponseBag): void;
+        /** Emits a test result. */
+        (e: "tested", value: CommunicationEntryTestResponseBag): void;
+        /** Emits an event indicating the disabled state should be updated. */
+        (e: "update:disabled", value: boolean): void;
+        /** Emits an event indicating the recipients state should be updated. */
+        (e: "update:recipients", value: CommunicationEntryRecipientBag[]): void;
+        /** Emits an event indicating the isBulkCommunication state should be updated. */
+        (e: "update:isBulkCommunication", value: boolean): void;
+        /** Emits an event indicating the scheduleSendIsoString state should be updated. */
+        (e: "update:scheduleSendIsoString", value: string): void;
+    }>();
+
+    const config = useConfigurationValues<CommunicationEntryInitializationBox>();
+    const breakpointHelper = useBreakpointHelper();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    enum OpenAction {
+        OpenHomepage = "Open Homepage",
+        SpecificPage = "Specific Page",
+        ShowDetails = "Show Details",
+        NoAction = "No Action",
+        LinkToUrl = "Link to URL"
+    }
+
+    const template = useTemplate();
+
+    //#region Values
+
+    const internalRecipients = useVModelPassthrough(props, "recipients", emit);
+    const internalDisabled = useVModelPassthrough(props, "disabled", emit);
+    const internalIsBulkCommunication = useVModelPassthrough(props, "isBulkCommunication", emit);
+    const internalScheduleSendIsoString = useVModelPassthrough(props, "scheduleSendIsoString", emit);
+    const minimumRecipientCount = ref<number>(0);
+    const mediumOptions = ref<CommunicationEntryPushMediumOptionsBag | null>(isPushMediumOptions(config.mediumOptions) ? config.mediumOptions : null);
+    const isLoadingMediumOptions = ref<boolean>(true);
+    const errorMessage = ref<string | null | undefined>();
+    /** Programmatically submits the form when set to true. */
+    const submitFormTrigger = ref<boolean>(false);
+    const actionToExecuteOnSubmit = ref<() => PromiseLike<void>>();
+    const testResult = ref<CommunicationEntryTestResponseBag | null | undefined>();
+    const communicationGuid = ref<Guid>(template.value?.communicationGuid ?? emptyGuid);
+    const message = ref<string>(template.value?.pushMessage ?? "");
+    const disabledMessage = ref<string | null | undefined>();
+    const openAction = ref<string>(getOpenAction(template.value?.pushOpenAction));
+    const title = ref<string>(template.value?.pushTitle ?? "");
+    const mobileApplicationGuidAsString = ref<string>(template.value?.pushData?.mobileApplicationGuid ?? "");
+    const url = ref<string>(template.value?.pushData?.linkToPageUrl ?? "");
+    const mobilePage = ref<PageRouteValueBag | undefined>(template.value?.pushData?.mobilePage ?? undefined);
+    const mobilePageQueryStringItems = ref<KeyValueItem[] | undefined>(recordAsKeyValueItems(template.value?.pushData?.mobilePageQueryString ?? undefined));
+    const pushOpenMessageJson = ref<string>(template.value?.pushOpenMessageJson ?? "");
+
+    //#endregion
+
+    //#region Computed Values
+
+    const sendButtonText = computed<string>(() => {
+        if (config.isEditMode && config.authorization?.isBlockApproveActionAuthorized) {
+            // The block is in edit mode and the logged in person is authorized to approve.
+            return "Save";
+        }
+        else if (props.recipients.length > config.maximumRecipientsBeforeApprovalRequired) {
+            if (config.authorization?.isBlockApproveActionAuthorized) {
+                // The communication requires approval and the logged in person can approve it.
+                return "Send Communication";
+            }
+            else {
+                // The communication requires approval and the logged in person cannot approve it.
+                return "Submit Communication";
+            }
+        }
+        else {
+            // The communication does not require approval.
+            return "Send Communication";
+        }
+    });
+
+    const openActions = computed<ListItemBag[]>(() => {
+        if (mediumOptions.value?.isUsingRockMobilePushTransport) {
+            return [
+                {
+                    text: OpenAction.OpenHomepage,
+                    value: OpenAction.OpenHomepage
+                },
+                {
+                    text: OpenAction.SpecificPage,
+                    value: OpenAction.SpecificPage
+                },
+                {
+                    text: OpenAction.ShowDetails,
+                    value: OpenAction.ShowDetails
+                }
+            ];
+        }
+        else {
+            return [
+                {
+                    text: OpenAction.NoAction,
+                    value: OpenAction.NoAction
+                },
+                {
+                    text: OpenAction.LinkToUrl,
+                    value: OpenAction.LinkToUrl
+                }
+            ];
+        }
+    });
+
+    //#endregion
+
+    //#region Functions
+
+    /**
+     * Disables the component.
+     */
+    function disable(message: string): void {
+        disabledMessage.value = message;
+        internalDisabled.value = true;
+    }
+
+    /**
+     * Enables the component.
+     */
+    function enable(): void {
+        disabledMessage.value = null;
+        internalDisabled.value = false;
+    }
+
+    function raiseError(error: string): void {
+        errorMessage.value = error;
+        scrollToTopOfWindow();
+
+        emit("error", error);
+    }
+
+    function isPushMediumOptions(options: CommunicationEntryMediumOptionsBaseBag | null | undefined): options is CommunicationEntryPushMediumOptionsBag {
+        return options?.mediumType === MediumType.Push;
+    }
+
+    function raiseTested(testResponse: CommunicationEntryTestResponseBag): void {
+        testResult.value = testResponse;
+        emit("tested", testResponse);
+    }
+
+    function raiseSaved(response: CommunicationEntrySendResponseBag): void {
+        communicationGuid.value = response.communicationGuid;
+        emit("saved", response);
+        scrollToTopOfWindow();
+    }
+
+    function raiseSent(response: CommunicationEntrySendResponseBag): void {
+        communicationGuid.value = response.communicationGuid;
+        emit("sent", response);
+        scrollToTopOfWindow();
+    }
+
+    /**  */
+    async function setRecipientsNotRequired(): Promise<void> {
+        if (minimumRecipientCount.value !== 0) {
+            minimumRecipientCount.value = 0;
+            return await nextTick();
+        }
+        else {
+            // Nothing to do.
+        }
+    }
+
+    function getOpenAction(pushOpenAction: PushOpenActionType | null | undefined): OpenAction {
+        if (pushOpenAction ?? null !== null) {
+            switch (pushOpenAction) {
+                case PushOpenActionType.LinkToMobilePage:
+                    return OpenAction.SpecificPage;
+                case PushOpenActionType.LinkToUrl:
+                    return OpenAction.LinkToUrl;
+                case PushOpenActionType.ShowDetails:
+                    return OpenAction.ShowDetails;
+                case PushOpenActionType.NoAction:
+                default:
+                    return OpenAction.NoAction;
+            }
+        }
+        else if (mediumOptions.value?.isUsingRockMobilePushTransport) {
+            return OpenAction.OpenHomepage;
+        }
+        else {
+            return OpenAction.NoAction;
+        }
+    }
+
+    function recordAsKeyValueItems(record: Record<string, string> | undefined): KeyValueItem[] | undefined {
+        if (record === undefined) {
+            return undefined;
+        }
+
+        const items: KeyValueItem[] = [];
+
+        for (const key in record) {
+            if (key) {
+                items.push({
+                    key,
+                    value: record[key]
+                });
+            }
+        }
+
+        return items;
+    }
+
+    function keyValueItemsAsRecord(items: KeyValueItem[] | undefined): Record<string, string> | undefined {
+        if (items === undefined) {
+            return undefined;
+        }
+
+        const record: Record<string, string> = {};
+
+        for (const item of items) {
+            if (item.key && item.value) {
+                record[item.key] = item.value;
+            }
+        }
+
+        return record;
+    }
+
+    function getPushOpenActionData(): Pick<CommunicationEntrySaveRequestBag, "pushData" | "pushOpenAction"> {
+        switch (openAction.value) {
+            case OpenAction.LinkToUrl:
+                return {
+                    pushOpenAction: PushOpenActionType.LinkToUrl,
+                    pushData: {
+                        mobileApplicationGuid: toGuidOrNull(mobileApplicationGuidAsString.value),
+                        linkToPageUrl: url.value
+                    }
+                };
+            case OpenAction.OpenHomepage:
+                return {
+                    pushOpenAction: PushOpenActionType.LinkToMobilePage,
+                    // To open the homepage, do not specify a page.
+                    pushData: {
+                        mobileApplicationGuid: toGuidOrNull(mobileApplicationGuidAsString.value),
+                    }
+                };
+            case OpenAction.ShowDetails:
+                return {
+                    pushOpenAction: PushOpenActionType.ShowDetails,
+                    pushData: {
+                        mobileApplicationGuid: toGuidOrNull(mobileApplicationGuidAsString.value),
+                    }
+                };
+            case OpenAction.SpecificPage:
+                return {
+                    pushOpenAction: PushOpenActionType.LinkToMobilePage,
+                    pushData: {
+                        mobileApplicationGuid: toGuidOrNull(mobileApplicationGuidAsString.value),
+                        mobilePage: mobilePage.value,
+                        mobilePageQueryString: keyValueItemsAsRecord(mobilePageQueryStringItems.value)
+                    }
+                };
+            case OpenAction.NoAction:
+            default:
+                return {
+                    pushOpenAction: PushOpenActionType.NoAction,
+                    pushData: {
+                        mobileApplicationGuid: toGuidOrNull(mobileApplicationGuidAsString.value),
+                    }
+                };
+        }
+    }
+
+    /**
+     * Saves the communication.
+     */
+    async function save(): Promise<void> {
+        try {
+            disable("Saving communication...");
+
+            const bag: CommunicationEntrySaveRequestBag = {
+                isBulkCommunication: props.isBulkCommunication,
+                communicationGuid: communicationGuid.value,
+                mediumEntityTypeGuid: EntityType.CommunicationMediumPushNotification,
+                status: CommunicationStatus.Transient,
+                futureSendDateTime: props.scheduleSendIsoString,
+                pushMessage: message.value,
+                ...getPushOpenActionData(),
+                pushOpenMessageJson: pushOpenMessageJson.value,
+                pushTitle: title.value,
+                recipients: props.recipients,
+            };
+
+            const result = await invokeBlockAction<CommunicationEntrySaveResponseBag>("Save", { bag });
+
+            if (result.isError || !result.data) {
+                raiseError(result.errorMessage || "An error occurred while saving. Please try again.");
+            }
+            else {
+                raiseSaved(result.data);
+            }
+
+        }
+        finally {
+            enable();
+        }
+    }
+
+    /**
+     * Sends the communication.
+     */
+    async function send(): Promise<void> {
+        try {
+            disable("Sending communication...");
+
+            const bag: CommunicationEntrySendRequestBag = {
+                isBulkCommunication: props.isBulkCommunication,
+                communicationGuid: communicationGuid.value,
+                mediumEntityTypeGuid: EntityType.CommunicationMediumPushNotification,
+                status: CommunicationStatus.Transient,
+                futureSendDateTime: props.scheduleSendIsoString,
+                pushMessage: message.value,
+                ...getPushOpenActionData(),
+                pushOpenMessageJson: pushOpenMessageJson.value,
+                pushTitle: title.value,
+                recipients: props.recipients,
+            };
+
+            const result = await invokeBlockAction<CommunicationEntrySendResponseBag>("Send", { bag });
+
+            if (result.isError || !result.data) {
+                raiseError(result.errorMessage || "An error occurred while sending. Please try again.");
+            }
+            else {
+                raiseSent(result.data);
+            }
+
+        }
+        finally {
+            enable();
+        }
+    }
+
+    /**
+     * Sends the test communication
+     */
+    async function test(): Promise<void> {
+        try {
+            disable("Sending test communication...");
+
+            testResult.value = undefined;
+
+            const bag: CommunicationEntryTestRequestBag = {
+                isBulkCommunication: props.isBulkCommunication,
+                communicationGuid: communicationGuid.value,
+                mediumEntityTypeGuid: EntityType.CommunicationMediumPushNotification,
+                status: CommunicationStatus.Transient,
+                futureSendDateTime: props.scheduleSendIsoString,
+                pushMessage: message.value,
+                ...getPushOpenActionData(),
+                pushOpenMessageJson: pushOpenMessageJson.value,
+                pushTitle: title.value,
+                recipients: props.recipients,
+            };
+
+            const result = await invokeBlockAction<CommunicationEntryTestResponseBag>("Test", { bag });
+
+            if (result.isError || !result.data) {
+                raiseError(result.errorMessage || "An error occurred while sending a test communication. Please try again.");
+            }
+            else {
+                raiseTested(result.data);
+            }
+        }
+        finally {
+            enable();
+        }
+    }
+
+    /**
+     * Triggers form submission.
+     *
+     * This programmatic form submission is needed because
+     * form validation changes dynamically depending on which
+     * button is pressed.
+     */
+    async function submitForm(): Promise<void> {
+        if (!submitFormTrigger.value) {
+            submitFormTrigger.value = true;
+        }
+        else {
+            // Form is already submitted so resubmit it on the next tick.
+            submitFormTrigger.value = false;
+            await nextTick();
+            submitFormTrigger.value = true;
+        }
+    }
+
+    async function setRecipientsRequired(): Promise<void> {
+        if (minimumRecipientCount.value === 0) {
+            minimumRecipientCount.value = 1;
+            return await nextTick();
+        }
+        else {
+            // Nothing to do.
+        }
+    }
+
+    //#endregion
+
+    //#region Event Handlers
+
+    /**
+     * Event handler for the form validation being changed.
+     */
+    function onFormValidationChanged(errors: unknown[]): void {
+        if (errors?.length) {
+            scrollToTopOfWindow();
+        }
+    }
+
+    /**
+     * Event handler for the form being submitted.
+     *
+     * This happens *after* the form is validated. The `actionToExecuteOnSubmit` will be executed and then set to `undefined`.
+     */
+    async function onFormSubmitted(): Promise<void> {
+        const action = actionToExecuteOnSubmit.value;
+        actionToExecuteOnSubmit.value = undefined;
+
+        if (!action) {
+            return;
+        }
+
+        await action();
+    }
+
+    /**
+     * Saves the communication.
+     */
+    async function onClickSave(): Promise<void> {
+        // Recipients are not required when saving.
+        await setRecipientsNotRequired();
+        actionToExecuteOnSubmit.value = save;
+        await submitForm();
+    }
+
+    /**
+     * Cancels.
+     */
+    async function onClickCancel(): Promise<void> {
+        if (config.isEditMode && config.authorization?.isBlockApproveActionAuthorized) {
+            // Redirect back to the same page without the edit param.
+            const url = new URL(window.location.href);
+            removeQueryParams(url, "edit");
+            window.location.href = url.href;
+        }
+    }
+
+    /**
+     * Sends the communication.
+     */
+    async function onClickSend(): Promise<void> {
+        // Recipients are required when sending.
+        await setRecipientsRequired();
+        actionToExecuteOnSubmit.value = send;
+        await submitForm();
+    }
+
+    /**
+     * Sends the communication.
+     */
+    async function onClickTest(): Promise<void> {
+        // Recipients are required when sending a test.
+        await setRecipientsRequired();
+        actionToExecuteOnSubmit.value = test;
+        await submitForm();
+    }
+
+    //#endregion
+
+    //#region Watchers
+
+    /**
+     * Update controls whenever the template changes.
+     */
+    watch(template, template => {
+        if (!template) {
+            return;
+        }
+
+        title.value = template.pushTitle ?? "";
+        message.value = template.pushMessage ?? "";
+        if ((template.pushOpenAction ?? null) !== null) {
+            openAction.value = getOpenAction(template.pushOpenAction);
+        }
+
+        mobileApplicationGuidAsString.value = "";
+        pushOpenMessageJson.value = "";
+        mobilePageQueryStringItems.value = [];
+        url.value = "";
+
+        if (template.pushData) {
+            if (template.pushOpenAction === PushOpenActionType.ShowDetails) {
+                mobileApplicationGuidAsString.value = template.pushData.mobileApplicationGuid ?? "";
+                pushOpenMessageJson.value = template.pushOpenMessageJson ?? "";
+            }
+            else if (template.pushOpenAction === PushOpenActionType.LinkToMobilePage) {
+                mobilePage.value = template.pushData.mobilePage ?? undefined;
+                mobilePageQueryStringItems.value = recordAsKeyValueItems(template.pushData.mobilePageQueryString ?? undefined);
+            }
+            else if (template.pushOpenAction === PushOpenActionType.LinkToUrl) {
+                url.value = template.pushData.linkToPageUrl ?? "";
+            }
+        }
+    });
+
+    //#endregion
+
+    //#region Hooks
+
+    /**
+     * Load the options if they haven't been loaded yet.
+     * This is necessary when switching to a different medium (Email, Push, or SMS) after the block is loaded.
+     */
+    onMounted(async () => {
+        try {
+            isLoadingMediumOptions.value = true;
+
+            if (mediumOptions.value) {
+                return;
+            }
+
+            const response = await invokeBlockAction<CommunicationEntryPushMediumOptionsBag>("GetMediumOptions", {
+                mediumEntityTypeGuid: EntityType.CommunicationMediumPushNotification
+            });
+
+            if (!response?.data || response.isError || !isPushMediumOptions(response.data)) {
+                raiseError(response.errorMessage ?? "An error occurred while loading the communication. Please try again.");
+                return;
+            }
+
+            mediumOptions.value = response.data;
+        }
+        finally {
+            isLoadingMediumOptions.value = false;
+        }
+    });
+
+    //#endregion
+</script>

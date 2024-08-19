@@ -315,9 +315,28 @@ namespace Rock.Utility
 
         private void VerifyEnvironment()
         {
-            if ( LavaService.GetCurrentEngine() == null )
+            if ( _lavaEngine == null && LavaService.GetCurrentEngine() == null )
             {
                 throw new Exception( "SampleDataManager processing failed. The LavaService must be initialized to process sample data correctly." );
+            }
+        }
+
+        /// <summary>
+        /// Resolves the merge fields using either the lava engine we were
+        /// initialized with or the default environment engine.
+        /// </summary>
+        /// <param name="template">The template to be resolved.</param>
+        /// <param name="mergeFields">The merge fields.</param>
+        /// <returns>The rendered lava output.</returns>
+        private string ResolveMergeFields( string template, Dictionary<string, object> mergeFields )
+        {
+            if ( _lavaEngine != null )
+            {
+                return _lavaEngine.RenderTemplate( template, new LavaDataDictionary( mergeFields ) ).Text;
+            }
+            else
+            {
+                return template.ResolveMergeFields( mergeFields );
             }
         }
 
@@ -980,7 +999,7 @@ namespace Rock.Utility
 
                 // Merge lava fields
                 // LAVA additionalReminderDetails
-                var mergeObjects = new LavaDataDictionary();
+                var mergeFields = new Dictionary<string, object>();
                 DateTime? registrationStartsDate = null;
                 DateTime? registrationEndsDate = null;
                 DateTime? sendReminderDate = null;
@@ -989,32 +1008,32 @@ namespace Rock.Utility
 
                 if ( element.Attribute( "registrationStarts" ) != null )
                 {
-                    var renderResult = _lavaEngine.RenderTemplate( element.Attribute( "registrationStarts" ).Value, mergeObjects );
-                    registrationStartsDate = DateTime.Parse( renderResult.Text );
+                    var renderResult = ResolveMergeFields( element.Attribute( "registrationStarts" ).Value, mergeFields );
+                    registrationStartsDate = DateTime.Parse( renderResult );
                 }
 
                 if ( element.Attribute( "registrationEnds" ) != null )
                 {
-                    var renderResult = _lavaEngine.RenderTemplate( element.Attribute( "registrationEnds" ).Value, mergeObjects );
-                    registrationEndsDate = DateTime.Parse( renderResult.Text );
+                    var renderResult = ResolveMergeFields( element.Attribute( "registrationEnds" ).Value, mergeFields );
+                    registrationEndsDate = DateTime.Parse( renderResult );
                 }
 
                 if ( element.Attribute( "sendReminderDate" ) != null )
                 {
-                    var renderResult = _lavaEngine.RenderTemplate( element.Attribute( "sendReminderDate" ).Value, mergeObjects );
-                    sendReminderDate = DateTime.Parse( renderResult.Text );
+                    var renderResult = ResolveMergeFields( element.Attribute( "sendReminderDate" ).Value, mergeFields );
+                    sendReminderDate = DateTime.Parse( renderResult );
                 }
 
                 if ( element.Attribute( "additionalReminderDetails" ) != null )
                 {
-                    var renderResult = _lavaEngine.RenderTemplate( element.Attribute( "additionalReminderDetails" ).Value, mergeObjects );
-                    additionalReminderDetails = renderResult.Text;
+                    var renderResult = ResolveMergeFields( element.Attribute( "additionalReminderDetails" ).Value, mergeFields );
+                    additionalReminderDetails = renderResult;
                 }
 
                 if ( element.Attribute( "additionalConfirmationDetails" ) != null )
                 {
-                    var renderResult = _lavaEngine.RenderTemplate( element.Attribute( "additionalConfirmationDetails" ).Value, mergeObjects );
-                    additionalConfirmationDetails = renderResult.Text;
+                    var renderResult = ResolveMergeFields( element.Attribute( "additionalConfirmationDetails" ).Value, mergeFields );
+                    additionalConfirmationDetails = renderResult;
                 }
 
                 // Get the contact info

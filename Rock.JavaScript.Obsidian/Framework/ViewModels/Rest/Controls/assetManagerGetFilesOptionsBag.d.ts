@@ -31,4 +31,7 @@ export type AssetManagerGetFilesOptionsBag = {
 
     /** Either "image" or "doc". If "image", only return image files, otherwise all files. */
     browseMode?: string | null;
+
+    /** Gets or sets the security grant token. */
+    securityGrantToken?: string | null;
 };

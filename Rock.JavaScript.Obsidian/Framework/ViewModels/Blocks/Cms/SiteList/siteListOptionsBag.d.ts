@@ -21,6 +21,16 @@
 // </copyright>
 //
 
+import { SiteType } from "@Obsidian/Enums/Cms/siteType";
+
 /** The Site List Options Bag */
 export type SiteListOptionsBag = {
+    /** Gets or sets the block title. */
+    blockTitle?: string | null;
+
+    /** Boolean value that shows or hides the site icon  */
+    showSiteIcon?: string | null;
+
+    /** Gets or sets the site type. */
+    siteType?: SiteType[] | null;
 };

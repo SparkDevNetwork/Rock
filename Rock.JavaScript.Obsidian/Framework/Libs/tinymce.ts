@@ -41,13 +41,17 @@ import "tinymce/plugins/table";
 // The help plugin requires that the en internationalization file be imported as well.
 import "tinymce/plugins/help/js/i18n/keynav/en.js";
 import "tinymce/plugins/help";
+// https://www.tiny.cloud/docs/tinymce/latest/emoticons/
+// The emoticons plugin requires that the emojis.js file be imported as well.
+import "tinymce/plugins/emoticons/js/emojis.js";
+import "tinymce/plugins/emoticons";
 
 // CSS (import any skins needed)
 // Use TinyMCE's default skin for the toolbar and editor container (does not style the editor content).
 import "tinymce/skins/ui/oxide/skin.min.css";
-import tinymce, { Editor, EditorEvent, Events, Ui } from "tinymce";
+import tinymce, { Editor, EditorEvent, Events, Ui, EventDispatcher, RawEditorOptions } from "tinymce";
 // Use Rock styles the content within the editor.
 //import "tinymce/skins/content/default/content.css"; // Default styles for the editable content area.
 //import "tinymce/skins/ui/oxide/content.min.css"; // Styles for the editable content area.
 
-export { tinymce, Editor, EditorEvent, Events, Ui };
+export { tinymce, Editor, EditorEvent, EventDispatcher, Events, RawEditorOptions, Ui };

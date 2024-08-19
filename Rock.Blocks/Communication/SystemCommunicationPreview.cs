@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -183,9 +183,8 @@ namespace Rock.Blocks.Communication
 
                 var systemCommunicationPreviewInitializationBox = new SystemCommunicationPreviewInitializationBox
                 {
-
                     Title = systemCommunication.Title,
-                    From = systemCommunication.From.IsNullOrWhiteSpace() ? globalAttributes.GetValue( "OganizationEmail" ) : systemCommunication.From,
+                    From = systemCommunication.From.IsNullOrWhiteSpace() ? globalAttributes.GetValue( "OrganizationEmail" ) : systemCommunication.From,
                     FromName = systemCommunication.FromName.IsNullOrWhiteSpace() ? globalAttributes.GetValue( "OrganizationName" ) : systemCommunication.FromName,
                     Subject = subjectHtml,
                     Body = bodyHtml,

@@ -1,0 +1,73 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Block :title="config?.title ?? 'Asset Manager'" hasFullscreen>
+        <FileAssetManager v-model:openFolders="openFolders"
+                          v-model:selectedFolder="selectedFolder"
+                          :height="height"
+                          :browseMode="config?.browseMode as 'image' | 'doc' | undefined ?? 'doc'"
+                          :enableAssetManager="config?.enableAssetProviders ?? true"
+                          :enableFileManager="config?.enableFileManager ?? false"
+                          :enableZipUpload="config?.enableZipUploader ?? false"
+                          :encryptedRootFolder="config?.rootFolder ?? undefined"
+                          :editFilePage="config?.fileEditorPage ?? undefined" />
+    </Block>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import FileAssetManager from "@Obsidian/Controls/fileAssetManager.obs";
+    import Block from "@Obsidian/Templates/block";
+    import { getSecurityGrant, provideSecurityGrant, useConfigurationValues, usePersonPreferences, onConfigurationValuesChanged, useReloadBlock } from "@Obsidian/Utility/block";
+    import { PreferenceKey } from "./AssetManager/types.partial";
+    import { AssetManagerOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/AssetManager/assetManagerOptionsBag";
+
+    const config = useConfigurationValues<AssetManagerOptionsBag>();
+    const securityGrant = getSecurityGrant(config.securityGrantToken);
+
+    // #region Values
+
+    const preferences = usePersonPreferences().blockPreferences;
+    const openFolders = ref<string[]>(getOpenFoldersFromPreferences());
+    const selectedFolder = ref<string>(preferences.getValue(PreferenceKey.SelectedFolder));
+
+    // #endregion
+
+    // #region Computed Values
+
+    const height = computed(() => {
+        if (config.isStaticHeight && config.height) {
+            return config.height;
+        }
+        else {
+            return "flexible";
+        }
+    });
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(openFolders, () => {
+        preferences.setValue(PreferenceKey.OpenFolders, JSON.stringify(openFolders.value));
+        preferences.save();
+    });
+
+    watch(selectedFolder, () => {
+        preferences.setValue(PreferenceKey.SelectedFolder, selectedFolder.value ?? "");
+        preferences.save();
+    });
+
+    // #endregion
+
+    function getOpenFoldersFromPreferences(): string[] {
+        try {
+            return JSON.parse(preferences.getValue(PreferenceKey.OpenFolders)) ?? [];
+        }
+        catch (e) {
+            return [];
+        }
+    }
+
+    onConfigurationValuesChanged(useReloadBlock());
+    provideSecurityGrant(securityGrant);
+</script>

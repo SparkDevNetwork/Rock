@@ -187,6 +187,14 @@ namespace Rock.Communication
         public string PushOpenMessage { get; set; }
 
         /// <summary>
+        /// Gets or sets the push open message structured content JSON.
+        /// </summary>
+        /// <value>
+        /// The push open message structured content JSON.
+        /// </value>
+        public string PushOpenMessageJson { get; set; }
+
+        /// <summary>
         /// Gets or sets the push data.
         /// </summary>
         /// <value>
@@ -218,6 +226,7 @@ namespace Rock.Communication
             target.PushImageBinaryFileId = source.PushImageBinaryFileId;
             target.PushOpenAction = source.PushOpenAction;
             target.PushOpenMessage = source.PushOpenMessage;
+            target.PushOpenMessageJson = source.PushOpenMessageJson;
 
 #pragma warning disable CS0618 // Type or member is obsolete
             target.SMSFromDefinedValueId = source.SMSFromDefinedValueId;

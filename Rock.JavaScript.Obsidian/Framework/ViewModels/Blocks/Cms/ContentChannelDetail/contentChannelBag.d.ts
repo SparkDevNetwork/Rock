@@ -122,5 +122,5 @@ export type ContentChannelBag = {
     summaryAttributeGuid?: Guid | null;
 
     /** Gets or sets the number of minutes a feed can stay cached before refreshing it from the source. */
-    timeToLive?: number | null;
+    timeToLive?: string | null;
 };

@@ -144,6 +144,12 @@ export class CheckInSession {
     /** The attendance records that have been sent to the server and saved. */
     public readonly attendances: RecordedAttendanceBag[] = [];
 
+    /**
+     * Any messages that should be displayed. This is currently only used
+     * by the check-in and check-out success screens.
+     */
+    public readonly messages: string[] = [];
+
     /** `true` if the current operation is for checkout. */
     public readonly isCheckoutAction: boolean = false;
 
@@ -218,6 +224,7 @@ export class CheckInSession {
             this.possibleSchedules = configurationOrSession.possibleSchedules;
             this.allAttendeeSelections = clone(configurationOrSession.allAttendeeSelections);
             this.attendances = clone(configurationOrSession.attendances);
+            this.messages = clone(configurationOrSession.messages);
             this.isCheckoutAction = configurationOrSession.isCheckoutAction;
             this.checkedOutAttendances = configurationOrSession.checkedOutAttendances;
 
@@ -384,7 +391,8 @@ export class CheckInSession {
 
         return new CheckInSession(this, {
             attendances,
-            allAttendeeSelections: []
+            allAttendeeSelections: [],
+            messages: response.data.messages ?? []
         });
     }
 
@@ -528,7 +536,8 @@ export class CheckInSession {
         }
 
         return new CheckInSession(this, {
-            checkedOutAttendances: [...this.checkedOutAttendances, ...response.data.attendances]
+            checkedOutAttendances: [...this.checkedOutAttendances, ...response.data.attendances],
+            messages: response.data.messages ?? []
         });
     }
 
@@ -1319,7 +1328,7 @@ export class CheckInSession {
             return Promise.resolve(this.withScreen(Screen.Search));
         }
         else if (this.families.length === 1) {
-            return Promise.resolve(this.withScreen(Screen.PersonSelect));
+            return this.withNextScreenFromFamilySelect();
         }
 
         return Promise.resolve(this.withScreen(Screen.FamilySelect));
@@ -1347,16 +1356,16 @@ export class CheckInSession {
      *
      * @returns A new CheckInSession object.
      */
-    private withNextScreenFromFamilySelect(forceCheckin: boolean = false): Promise<CheckInSession> {
+    private async withNextScreenFromFamilySelect(forceCheckin: boolean = false): Promise<CheckInSession> {
         const canCheckout = this.configuration.template?.isCheckoutAtKioskAllowed === true
             && this.currentlyCheckedIn
             && this.currentlyCheckedIn.length > 0;
 
         if (!this.getCurrentFamily() || !this.attendees) {
-            return Promise.resolve(this.withScreen(Screen.Welcome));
+            return this.withScreen(Screen.Welcome);
         }
         else if (!forceCheckin && canCheckout) {
-            return Promise.resolve(this.withScreen(Screen.ActionSelect));
+            return this.withScreen(Screen.ActionSelect);
         }
 
         const isFamilyAutoMode = this.configuration.template?.kioskCheckInType === KioskCheckInMode.Family
@@ -1380,10 +1389,29 @@ export class CheckInSession {
                 allAttendeeSelections: newAttendeeSelections
             });
 
-            return Promise.resolve(copy.withScreen(Screen.PersonSelect));
+            return copy.withScreen(Screen.PersonSelect);
         }
 
-        return Promise.resolve(this.withScreen(Screen.PersonSelect));
+        if (this.configuration.template?.kioskCheckInType === KioskCheckInMode.Individual) {
+            const validAttendees = this.attendees
+                ?.filter(a => !a.isUnavailable)
+                ?? [];
+
+            // If there is only 1 person available for check-in and we are
+            // in individual mode, and registration is not allowed (meaning no
+            // chance to fix an incorrect family anyway) then automatically
+            // select this person and move on.
+            if (validAttendees.length === 1 && !this.configuration.kiosk?.isRegistrationModeEnabled) {
+                if (validAttendees[0].person?.id) {
+                    let newSession = this.withSelectedAttendees([validAttendees[0].person.id]);
+                    newSession = await newSession.withAttendee(validAttendees[0].person.id);
+
+                    return await newSession.withNextScreenFromPersonSelect();
+                }
+            }
+        }
+
+        return this.withScreen(Screen.PersonSelect);
     }
 
     /**

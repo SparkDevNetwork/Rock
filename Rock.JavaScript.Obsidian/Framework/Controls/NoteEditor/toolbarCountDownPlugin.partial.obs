@@ -1,0 +1,208 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Badge ref="badge" class="pull-right px-1" :badgeType="badgeType">
+        {{ countDownCharsRemaining }}
+    </Badge>
+</template>
+
+<script setup lang="ts">
+    /**
+     * ToolbarCountDownPlugin - Adds a count down to a note editor toolbar.
+     *
+     * @example
+     * <!--
+     *      someEditorHost.obs - This example shows just enough code to wire up the plugin.
+     *      FYI, the Vue - Official extension complains if template and script tags are used in comments,
+     *      so using (template) and (script) for now.
+     * -->
+     * (template)
+     *   <CountDownPlugin :modelValue="internalValue"
+     *                    :countDownMaxChars="countDownMaxChars" />
+     * (/template)
+     *
+     * (script setup lang="ts")
+     *   import ToolbarCountDownPlugin from "./NoteEditor/toolbarCountDownPlugin.partial.obs";
+     *   ...
+     *
+     *   const toolbarCountDownPlugin = ref<InstanceType<typeof ToolbarCountDownPlugin> | undefined>();
+     *   ...
+     *
+     *   // The host must provide the plugins feature.
+     *   const pluginManager = providePluginsFeature({
+     *       editorInstance: computed(() => tinyMceInstance.value),
+     *       toolbarElement: computed(() => toolbarElement.value)
+     *   });
+     *   ...
+     *
+     *   // Initialize the editor.
+     *   onMounted(() => {
+     *     ...
+     *
+     *     tinymce.init({
+     *       // The toolbar label can be placed anywhere in this configuration string.
+     *       // Here, the toolbar will display
+     *       // the count down on the left, followed by a separator character,
+     *       // then the undo and redo buttons.
+     *       // Reference: https://www.tiny.cloud/docs/tinymce/6/toolbar-configuration-options/#example-grouped-toolbar
+     *       toolbar: `${toolbarCountDownPlugin.value?.id} | undo redo`
+     *     });
+     *
+     *     ...
+     *   });
+     *   ...
+     * (/script)
+     */
+    import { computed, PropType, ref, watch } from "vue";
+    import { getToolbarButton, usePluginHelper } from "./utils.partial";
+    import Badge from "@Obsidian/Controls/badge.obs";
+    import { BadgeType } from "@Obsidian/Enums/Controls/badgeType";
+    import { Editor, Ui } from "@Obsidian/Libs/tinymce";
+    import { newGuid } from "@Obsidian/Utility/guid";
+
+    const props = defineProps({
+        modelValue: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        countDownMaxChars: {
+            type: Number as PropType<number>,
+            required: true
+        }
+    });
+
+    const id = `note-toolbar-count-down-${newGuid()}` as const;
+
+    defineExpose({
+        id
+    });
+
+    //#region Values
+
+    const badge = ref<InstanceType<typeof Badge> | undefined>();
+    const isInitialized = ref<boolean>(false);
+    const { editorInstance, toolbarElement } = usePluginHelper();
+    const toolbarButtonElement = ref<HTMLElement | undefined>();
+    const mutationObserver = new MutationObserver(removedWidthIfSet);
+
+    //#endregion
+
+    //#region Computed Values
+
+    const countDownCharsRemaining = computed<number>(() => {
+        // The countdown characters remaining can become negative.
+        // If max length is required, then add a max length rule.
+        return props.countDownMaxChars - props.modelValue.length;
+    });
+
+    const badgeType = computed<BadgeType | undefined>(() => {
+        if (countDownCharsRemaining.value >= 10) {
+            return;
+        }
+
+        if (countDownCharsRemaining.value >= 0) {
+            return BadgeType.Warning;
+        }
+
+        return BadgeType.Danger;
+    });
+
+    //#endregion
+
+    //#region Functions
+
+    /** Initializes the plugin. */
+    function init(editor: Editor, badge: InstanceType<typeof Badge>): void {
+        // Register toolbar buttons.
+        // This combines the functionality of the built-in `align` toolbar button
+        // and the `indent` toolbar button. It also updates the toolbar icon to
+        // reflect the alignment of the selected node.
+        editor.ui.registry.addButton(id, {
+            // Temporarily setting the tooltip to the plugin id to help find the button in `onSetup`.
+            tooltip: id,
+            onAction: (_api: Ui.Toolbar.ToolbarButtonInstanceApi): void => {
+                // Nothing to do.
+            },
+            onSetup: (_api: Ui.Toolbar.ToolbarButtonInstanceApi): (api: Ui.Toolbar.ToolbarButtonInstanceApi) => void => {
+                toolbarButtonElement.value = getToolbarButton(id, toolbarElement.value) ?? undefined;
+
+                const tb = toolbarButtonElement.value;
+                if (tb) {
+                    // Remove the temporary title (tooltip) used to find the element.
+                    tb.removeAttribute("title");
+
+                    tb.classList.add("note-toolbar-count-down", id);
+
+                    // Remove the "button" styles from the label.
+                    tb.style.pointerEvents = "none";
+
+                    // Remove "width" whenever it is set.
+                    mutationObserver.disconnect();
+                    mutationObserver.observe(tb, { attributes: true, attributeFilter: ["style"] });
+
+                    // Add the badge to the toolbar button.
+                    const tbFirstChild: Node | null = tb.firstChild;
+                    const newNode = badge.$el;
+                    if (newNode.nodeType === newNode.ELEMENT_NODE || newNode.nodeValue) {
+                        if (tbFirstChild?.nextSibling) {
+                            tb.insertBefore(newNode, tbFirstChild.nextSibling);
+                        }
+                        else {
+                            tb.append(newNode);
+                        }
+                    }
+
+                    if (tbFirstChild) {
+                        tb.firstChild?.remove();
+                    }
+                }
+
+                // Return a dispose callback.
+                return disposePlugin;
+            },
+            // This empty string is needed so the editor calculates the width properly.
+            text: ""
+        });
+
+        isInitialized.value = true;
+    }
+
+    function removedWidthIfSet(mutations: MutationRecord[], _observer: MutationObserver): void {
+        mutations.forEach((mutationRecord: MutationRecord): void => {
+            const el = <HTMLElement>mutationRecord.target;
+            if (mutationRecord.attributeName === "style" && el.style.width) {
+                // Prevent inline width styles from being added to the spacer element
+                // so it can grow dynamically with screen resizes.
+                el.style.width = "";
+            }
+        });
+    }
+
+    /** Disposes the plugin. */
+    function disposePlugin(): void {
+        // Nothing to dispose.
+        isInitialized.value = false;
+        mutationObserver.disconnect();
+    }
+
+    //#endregion
+
+    //#region Event Handlers
+
+    //#endregion
+
+    //#region Watchers
+
+    // Register the plugin whenever the bound Editor changes.
+    watch([editorInstance, badge], ([newEditor, newBadge], [oldEditor, _oldBadge]) => {
+        if (newEditor !== oldEditor && oldEditor) {
+            disposePlugin();
+        }
+
+        if (newEditor !== oldEditor && newEditor && newBadge) {
+            init(newEditor, newBadge);
+        }
+    });
+
+    //#endregion
+</script>

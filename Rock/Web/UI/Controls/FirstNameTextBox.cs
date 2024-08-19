@@ -96,7 +96,6 @@ namespace Rock.Web.UI.Controls
             _customValidator.Display = ValidatorDisplay.Dynamic;
             _customValidator.CssClass = "validation-error help-inline";
             _customValidator.ClientValidationFunction = "Rock.controls.firstNameTextBox.clientValidate";
-            _customValidator.ValidationGroup = this.ValidationGroup;
             _customValidator.ServerValidate += ServerValidation;
 
             this.Attributes["data-item-label"] = this.Label.IsNotNullOrWhiteSpace() ? this.Label : "FirstName";

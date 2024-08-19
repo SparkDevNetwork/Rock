@@ -21,6 +21,8 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
+
 /** The configuration options for an image field. */
 export type ImageFieldConfigurationBag = {
     /**
@@ -31,6 +33,12 @@ export type ImageFieldConfigurationBag = {
 
     /** The PNG image data encoded in base 64. */
     imageData?: string | null;
+
+    /**
+     * A unique value to identify this image data. Any time the image data
+     * is changed, this value must also be changed.
+     */
+    imageId?: Guid | null;
 
     /**
      * After the image has been converted to black and white, this value

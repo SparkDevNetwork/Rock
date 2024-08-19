@@ -16,7 +16,7 @@
             </div>
 
             <div v-else>
-                <TextBox label="First Name" v-model="firstName" />
+                <FirstNameTextBox label="First Name" v-model="firstName" />
                 <TextBox label="Last Name" v-model="lastName" />
                 <EmailBox label="Email" v-model="email" />
             </div>
@@ -56,6 +56,7 @@
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import FirstNameTextBox from "@Obsidian/Controls/firstNameTextBox.obs";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import DateRangePicker from "@Obsidian/Controls/dateRangePicker.obs";
     import { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";

@@ -1,0 +1,167 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="!isInitialized" ref="harness">
+        <slot></slot>
+    </div>
+</template>
+
+<script setup lang="ts">
+    /**
+     * ToolbarLabelPlugin - Adds a label to a note editor toolbar.
+     *
+     * @example
+     * <!--
+     *      someEditorHost.obs - This example shows just enough code to wire up the plugin.
+     *      FYI, the Vue - Official extension complains if template and script tags are used in comments,
+     *      so using (template) and (script) for now.
+     * -->
+     * (template)
+     *   <div id="uniqueEditorId">
+     *     <ToolbarLabelPlugin ref="toolbarLabelPlugin">Label Here</ToolbarLabelPlugin>
+     *   </div>
+     * (/template)
+     *
+     * (script setup lang="ts")
+     *   import ToolbarLabelPlugin from "./NoteEditor/toolbarLabelPlugin.partial.obs";
+     *   ...
+     *
+     *   const toolbarLabelPlugin = ref<InstanceType<typeof ToolbarLabelPlugin> | undefined>();
+     *   ...
+     *
+     *   // The host must provide the plugins feature.
+     *   const pluginManager = providePluginsFeature({
+     *       editorInstance: computed(() => tinyMceInstance.value),
+     *       toolbarElement: computed(() => toolbarElement.value)
+     *   });
+     *   ...
+     *
+     *   // Initialize the editor.
+     *   onMounted(() => {
+     *     ...
+     *
+     *     tinymce.init({
+     *       // The toolbar label can be placed anywhere in this configuration string.
+     *       // Here, the toolbar will display
+     *       // the label on the left, followed by a separator character,
+     *       // then the undo and redo buttons.
+     *       // Reference: https://www.tiny.cloud/docs/tinymce/6/toolbar-configuration-options/#example-grouped-toolbar
+     *       toolbar: `${toolbarLabelPlugin.value?.id} | undo redo`
+     *     });
+     *
+     *     ...
+     *   });
+     *   ...
+     * (/script)
+     */
+    import { ref, watch } from "vue";
+    import { getToolbarButton, usePluginHelper } from "./utils.partial";
+    import { Editor, Ui } from "@Obsidian/Libs/tinymce";
+    import { newGuid } from "@Obsidian/Utility/guid";
+
+    const id = `note-toolbar-label-${newGuid()}` as const;
+
+    defineExpose({
+        id
+    });
+
+    //#region Values
+
+    const harness = ref<HTMLElement | undefined>();
+    const isInitialized = ref<boolean>(false);
+    const { editorInstance, toolbarElement } = usePluginHelper();
+    const toolbarButtonElement = ref<HTMLElement | undefined>();
+
+    //#endregion
+
+    //#region Computed Values
+
+    //#endregion
+
+    //#region Functions
+
+    /** Initializes the plugin. */
+    function init(editor: Editor, harness: HTMLElement): void {
+        // Register toolbar buttons.
+        // This combines the functionality of the built-in `align` toolbar button
+        // and the `indent` toolbar button. It also updates the toolbar icon to
+        // reflect the alignment of the selected node.
+        editor.ui.registry.addButton(id, {
+            // Temporarily setting the tooltip to the plugin id to help find the button in `onSetup`.
+            tooltip: id,
+            onAction: (_api: Ui.Toolbar.ToolbarButtonInstanceApi): void => {
+                // Nothing to do.
+            },
+            onSetup: (_api: Ui.Toolbar.ToolbarButtonInstanceApi): (api: Ui.Toolbar.ToolbarButtonInstanceApi) => void => {
+                toolbarButtonElement.value = getToolbarButton(id, toolbarElement.value) ?? undefined;
+
+                const tb = toolbarButtonElement.value;
+
+                if (tb) {
+                    // Remove the temporary title (tooltip) used to find the element.
+                    tb.removeAttribute("title");
+
+                    tb.classList.add("note-toolbar-label", id);
+
+                    // Remove the "button" styles from the label.
+                    tb.style.pointerEvents = "none";
+
+                    // Add the slotted nodes to the toolbar button.
+                    let referenceNode: Node | null = tb.firstChild;
+                    const deleteFirstChildOnComplete = !!referenceNode;
+                    for (const newNode of harness.childNodes) {
+                        if (newNode.nodeType === newNode.ELEMENT_NODE || newNode.nodeValue) {
+                            if (!referenceNode) {
+                                tb.append(newNode);
+                                referenceNode = newNode;
+                            }
+                            if (referenceNode.nextSibling) {
+                                referenceNode = tb.insertBefore(newNode, referenceNode.nextSibling);
+                            }
+                            else {
+                                tb.append(newNode);
+                                referenceNode = newNode;
+                            }
+                        }
+                    }
+                    if (deleteFirstChildOnComplete) {
+                        tb.firstChild?.remove();
+                    }
+                }
+
+                // Return a dispose callback.
+                return disposePlugin;
+            },
+            // This empty string is needed so the editor calculates the width properly.
+            text: ""
+        });
+
+        isInitialized.value = true;
+    }
+
+    /** Disposes the plugin. */
+    function disposePlugin(): void {
+        // Nothing to dispose.
+        isInitialized.value = false;
+    }
+
+    //#endregion
+
+    //#region Event Handlers
+
+    //#endregion
+
+    //#region Watchers
+
+    // Register the plugin whenever the bound Editor changes.
+    watch([editorInstance, harness], ([newEditor, newHarness], [oldEditor, _oldHarness]) => {
+        if (newEditor !== oldEditor && oldEditor) {
+            disposePlugin();
+        }
+
+        if (newEditor !== oldEditor && newEditor && newHarness) {
+            init(newEditor, newHarness);
+        }
+    });
+
+    //#endregion
+</script>

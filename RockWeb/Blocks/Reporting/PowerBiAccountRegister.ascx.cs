@@ -52,8 +52,6 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 // check if PowerBI is making a call back
@@ -94,6 +92,8 @@ namespace RockWeb.Blocks.Reporting
                     txtRedirectUrl.Text = redirectUrl;
                 }
             }
+
+            base.OnLoad( e );
         }
 
         #endregion

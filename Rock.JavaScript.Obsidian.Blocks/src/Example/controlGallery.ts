@@ -48,7 +48,8 @@
 
 import { Component, computed, defineComponent, onMounted, onUnmounted, ref, watch } from "vue";
 import { buildExampleCode, convertComponentName, getControlImportPath, getSfcControlImportPath, getTemplateImportPath, displayStyleItems } from "./ControlGallery/utils.partial";
-import { onConfigurationValuesChanged, useReloadBlock } from "@Obsidian/Utility/block";
+import { getSecurityGrant, provideSecurityGrant, useConfigurationValues, onConfigurationValuesChanged, useReloadBlock } from "@Obsidian/Utility/block";
+import { ControlGalleryInitializationBox} from "@Obsidian/ViewModels/Blocks/Example/ControlGallery/controlGalleryInitializationBox";
 import GalleryAndResult from "./ControlGallery/galleryAndResult.partial.obs";
 import { BtnType } from "@Obsidian/Enums/Controls/btnType";
 import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
@@ -263,7 +264,7 @@ import MarkdownEditorGallery from "./ControlGallery/markdownEditorGallery.partia
 import JsonFieldsBuilderGallery from "./ControlGallery/jsonFieldsBuilderGallery.partial.obs";
 import HtmlEditorGallery from "./ControlGallery/htmlEditorGallery.partial.obs";
 import TextBoxGallery from "./ControlGallery/textBoxGallery.partial.obs";
-import AssetAndFileManagerGallery from "./ControlGallery/assetAndFileManagerGallery.partial.obs";
+import FileAssetManagerGallery from "./ControlGallery/fileAssetManagerGallery.partial.obs";
 import { Guid } from "@Obsidian/Types";
 
 
@@ -8143,18 +8144,18 @@ const controlGalleryComponents: Record<string, Component> = [
     JsonFieldsBuilderGallery,
     HtmlEditorGallery,
     TextBoxGallery,
-    AssetAndFileManagerGallery,
+    FileAssetManagerGallery,
 ]
     // Fix vue 3 SFC putting name in __name.
     .map(a => {
-        a.name = upperCaseFirstCharacter((a.__name ?? a.name).replace(/\.partial$/, ""));
+        a.name = upperCaseFirstCharacter((a.__name ?? a.name!).replace(/\.partial$/, ""));
         return a;
     })
     // Sort list by component name
-    .sort((a, b) => a.name.localeCompare(b.name))
+    .sort((a, b) => a.name!.localeCompare(b.name!))
     // Convert list to an object where the key is the component name and the value is the component
     .reduce((newList, comp) => {
-        newList[comp.name] = comp;
+        newList[comp.name!] = comp;
         return newList;
     }, {});
 
@@ -8390,9 +8391,9 @@ const templateGalleryComponents = [
         a.name = a.__name ?? a.name;
         return a;
     })
-    .sort((a, b) => a.name.localeCompare(b.name))
+    .sort((a, b) => a.name!.localeCompare(b.name!))
     .reduce((newList, comp) => {
-        newList[comp.name] = comp;
+        newList[comp.name!] = comp;
         return newList;
     }, {});
 
@@ -8408,12 +8409,21 @@ export default defineComponent({
     },
 
     setup() {
+        const config = useConfigurationValues<ControlGalleryInitializationBox>();
+        const securityGrant = getSecurityGrant(config.securityGrantToken);
+        provideSecurityGrant(securityGrant);
+
         onConfigurationValuesChanged(useReloadBlock());
 
         const currentComponent = ref<Component>(Object.values(controlGalleryComponents)[0]);
 
         function getComponentFromHash(): void {
             const hashComponent = new URL(document.URL).hash.replace("#", "");
+
+            if (!hashComponent) {
+                return;
+            }
+
             const component = controlGalleryComponents[hashComponent] ?? templateGalleryComponents[hashComponent];
 
             if (component) {
@@ -8421,9 +8431,9 @@ export default defineComponent({
             }
         }
 
-        onMounted(() => {
-            getComponentFromHash();
+        getComponentFromHash();
 
+        onMounted(() => {
             window.addEventListener("hashchange", getComponentFromHash);
         });
 

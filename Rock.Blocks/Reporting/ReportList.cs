@@ -37,17 +37,19 @@ namespace Rock.Blocks.Reporting
     [IconCssClass( "fa fa-list" )]
     //[SupportedSiteTypes( Model.SiteType.Web )]
 
-    [LinkedPage( "Detail Page",
-        Description = "The page that will show the report details.",
-        Key = AttributeKey.DetailPage )]
-
     [CategoryField( "Report Category",
         Description = "Category to use to list reports for.",
         AllowMultiple = false,
         EntityTypeName = "Rock.Model.Report",
         IsRequired = true,
         DefaultValue = AttributeDefaultValues.Organization,
-        Key = AttributeKey.ReportCategory )]
+        Key = AttributeKey.ReportCategory,
+        Order = 0 )]
+
+    [LinkedPage( "Detail Page",
+        Description = "The page that will show the report details.",
+        Key = AttributeKey.DetailPage,
+        Order = 1 )]
 
     [Rock.SystemGuid.EntityTypeGuid( "084e3594-e399-4639-8461-88333399cba2" )]
     [Rock.SystemGuid.BlockTypeGuid( "7c01525c-2fcc-4f0b-a9b5-25e8146af0d7" )]

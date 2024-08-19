@@ -187,19 +187,19 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !IsPostBack )
             {
                 if ( !_pushTransportEnabled )
                 {
                     nbNoMediumError.Visible = true;
-
+                    base.OnLoad( e );
                     return;
                 }
 
                 ShowTemplateSelection();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -565,6 +565,7 @@ namespace RockWeb.Blocks.Communication
                 PushMessage = communicationTemplate.PushMessage,
                 PushTitle = communicationTemplate.PushTitle,
                 PushOpenMessage = communicationTemplate.PushOpenMessage,
+                PushOpenMessageJson = communicationTemplate.PushOpenMessageJson,
                 PushOpenAction = communicationTemplate.PushOpenAction
             };
 

@@ -186,13 +186,13 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         /// <inheritdoc />
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 var businessId = PageParameter( "BusinessId" ).AsInteger();
                 ShowDetail( businessId );
             }
+
+            base.OnLoad( e );
         }
 
         /// <inheritdoc />

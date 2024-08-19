@@ -158,6 +158,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string COMMUNICATION_APPROVAL_EMAIL = "11D325F4-DAF3-4579-A9D8-6347CCC02341";
 
+        /// <summary>
+        /// Gets the template guid for the Email Metrics Reminder system communication 
+        /// </summary>
+        public const string COMMUNICATION_EMAIL_METRICS_REMINDER = "EAE6A169-C01C-4570-92A5-E465B566CFEF";
+
         #endregion
 
         #region Finance

@@ -154,8 +154,6 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 ShowDetail( PageParameter( "EventItemOccurrenceId" ).AsInteger() );
@@ -168,6 +166,8 @@ namespace RockWeb.Blocks.Event
                 eventItemOccurrence = eventItemOccurrence ?? new EventItemOccurrence();
                 ShowOccurrenceAttributes( eventItemOccurrence, false );
             }
+
+            base.OnLoad( e );
         }
 
         #endregion Control Methods

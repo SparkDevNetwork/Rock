@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -59,6 +59,8 @@
     <Compile Include="Blocks\CheckIn\Config\CheckinTypeDetail\CheckInRegistrationSettingsBag.cs" />
     <Compile Include="Blocks\CheckIn\Config\CheckinTypeDetail\CheckInSearchSettingsBag.cs" />
     <Compile Include="Blocks\BlockActionContextBag.cs" />
+    <Compile Include="Blocks\Bus\BusStatus\BusStatusBag.cs" />
+    <Compile Include="Blocks\Bus\BusStatus\BusStatusOptionsBag.cs" />
     <Compile Include="Blocks\CheckIn\CheckInKiosk\ActiveAttendanceBag.cs" />
     <Compile Include="Blocks\CheckIn\CheckInKiosk\GetCurrentAttendanceResponseBag.cs" />
     <Compile Include="Blocks\CheckIn\CheckInKiosk\GetScheduledLocationsResponseBag.cs" />
@@ -91,9 +93,15 @@
     <Compile Include="Blocks\Cms\ContentChannelTypeDetail\ContentChannelTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Cms\MediaAccountList\MediaAccountListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\MediaFolderList\MediaFolderListOptionsBag.cs" />
+    <Compile Include="Blocks\Communication\CommunicationEntry\CommunicationEntryPushMediumOptionsBag.cs" />
+    <Compile Include="Blocks\Communication\CommunicationEntry\CommunicationEntryPushNotificationOptionsBag.cs" />
+    <Compile Include="Blocks\Communication\CommunicationEntry\CommunicationEntrySaveMetricsReminderRequestBag.cs" />
     <Compile Include="Blocks\Core\PersonSuggestionList\PersonSuggestionListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageSearch\PageSearchPageBag.cs" />
     <Compile Include="Blocks\Cms\PageSearch\PageSearchBag.cs" />
+    <Compile Include="Blocks\Communication\CommunicationEntry\CommunicationEntryTestRequestBag.cs" />
+    <Compile Include="Blocks\Communication\CommunicationEntry\CommunicationEntrySaveRequestBag.cs" />
+    <Compile Include="Blocks\Communication\CommunicationEntry\CommunicationEntrySendRequestBag.cs" />
     <Compile Include="Blocks\Core\DocumentTypeList\DocumentTypeListOptionsBag.cs" />
     <Compile Include="Blocks\Crm\PhotoUpload\PersonPhotoBag.cs" />
     <Compile Include="Blocks\Crm\PhotoUpload\PhotoUploadInitializationBox.cs" />
@@ -140,7 +148,10 @@
     <Compile Include="Blocks\Cms\PersonalLinkList\SavePersonalLinkRequestBag.cs" />
     <Compile Include="Blocks\Cms\PersonalLinkSectionList\PersonalLinkSectionListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageRouteList\PageRouteListOptionsBag.cs" />
+    <Compile Include="Blocks\Core\RestControllerList\RestControllerListOptionsBag.cs" />
     <Compile Include="Blocks\Core\PersonFollowingList\PersonFollowingListOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\PageShortLinkDetail\ScheduledRedirectBag.cs" />
+    <Compile Include="Blocks\Cms\PageShortLinkDetail\UtmSettingsBag.cs" />
     <Compile Include="Blocks\Communication\NcoaProcess\NcoaProcessBag.cs" />
     <Compile Include="Blocks\Communication\NcoaProcess\NcoaProcessSavedSettingsBag.cs" />
     <Compile Include="Blocks\Communication\NcoaProcess\NcoaProcessPersonAddressBag.cs" />
@@ -148,6 +159,10 @@
     <Compile Include="Blocks\Core\AuthClientDetail\AuthClientDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\AuthClientDetail\AuthClientScopeBag.cs" />
     <Compile Include="Blocks\Crm\PhotoVerifyList\PhotoVerifyListOptionsBag.cs" />
+    <Compile Include="Blocks\Finance\FundraisingList\FundraisingListInitializationBox.cs" />
+    <Compile Include="Blocks\Core\TaggedItemList\TaggedItemListBag.cs" />
+    <Compile Include="Blocks\Core\TaggedItemList\TaggedItemListOptionsBag.cs" />
+    <Compile Include="Blocks\Engagement\StreakTypeExclusionList\StreakTypeExclusionListOptionsBag.cs" />
     <Compile Include="Blocks\Security\AuthScopeList\AuthScopeListOptionsBag.cs" />
     <Compile Include="Blocks\Security\AuthClientList\AuthClientListOptionsBag.cs" />
     <Compile Include="Blocks\Core\PersonSignalList\PersonSignalBag.cs" />
@@ -170,6 +185,17 @@
     <Compile Include="Blocks\Event\RegistrationInstanceFeeList\RegistrationInstanceFeeListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\SiteList\SiteListOptionsBag.cs" />
     <Compile Include="Blocks\Communication\CommunicationList\CommunicationListOptionsBag.cs" />
+    <Compile Include="Blocks\Communication\CommunicationEntry\CommunicationEntryInitializationBox.cs" />
+    <Compile Include="Blocks\Communication\CommunicationEntry\CommunicationEntrySaveResponseBag.cs" />
+    <Compile Include="Blocks\Communication\CommunicationEntry\CommunicationEntryTestResponseBag.cs" />
+    <Compile Include="Blocks\Communication\CommunicationEntry\CommunicationEntrySendResponseBag.cs" />
+    <Compile Include="Blocks\Communication\CommunicationEntry\CommunicationEntrySmsMediumOptionsBag.cs" />
+    <Compile Include="Blocks\Communication\CommunicationEntry\CommunicationEntryEmailMediumOptionsBag.cs" />
+    <Compile Include="Blocks\Communication\CommunicationEntry\CommunicationEntryMediumOptionsBaseBag.cs" />
+    <Compile Include="Blocks\Communication\CommunicationEntry\CommunicationEntryAuthorizationBag.cs" />
+    <Compile Include="Blocks\Communication\CommunicationEntry\CommunicationEntryCommunicationBag.cs" />
+    <Compile Include="Blocks\Communication\CommunicationEntry\CommunicationEntryGetRecipientsRequestBag.cs" />
+    <Compile Include="Blocks\Communication\CommunicationEntry\CommunicationEntryRecipientBag.cs" />
     <Compile Include="Blocks\Communication\EmailPreferenceEntry\EmailPreferenceEntrySaveRequestBag.cs" />
     <Compile Include="Blocks\Communication\EmailPreferenceEntry\EmailPreferenceEntryInitializationBox.cs" />
     <Compile Include="Blocks\Communication\EmailPreferenceEntry\EmailPreferenceEntrySaveResponseBag.cs" />
@@ -279,6 +305,7 @@
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntrySuccessBag.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryVisibilityBag.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\SessionRenewalResultBag.cs" />
+    <Compile Include="Blocks\Finance\BenevolenceTypeList\BenevolenceTypeListOptionsBag.cs" />
     <Compile Include="Blocks\Finance\FinancialBatchList\FinancialBatchListOptionsBag.cs" />
     <Compile Include="Blocks\Finance\FinancialBatchList\SetBulkBatchStatusRequestBag.cs" />
     <Compile Include="Blocks\Finance\FinancialBatchList\SetBulkBatchStatusResponseBag.cs" />
@@ -705,7 +732,6 @@
     <Compile Include="Rest\Controls\AssetManagerTreeItemBag.cs" />
     <Compile Include="Rest\Controls\AssetManagerGetFilesResultsBag.cs" />
     <Compile Include="Rest\Controls\AssetManagerGetFilesOptionsBag.cs" />
-    <Compile Include="Rest\Controls\AssetManagerAsset.cs" />
     <Compile Include="Rest\Controls\AssetManagerGetRootFoldersOptionsBag.cs" />
     <Compile Include="Rest\Controls\AssetManagerRenameFileOptionsBag.cs" />
     <Compile Include="Rest\Controls\AssetManagerDownloadFileOptionsBag.cs" />

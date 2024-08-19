@@ -132,7 +132,7 @@ namespace Rock.ViewModels.Blocks.Cms.ContentChannelDetail
         /// <summary>
         /// Gets or sets the number of minutes a feed can stay cached before refreshing it from the source.
         /// </summary>
-        public int? TimeToLive { get; set; }
+        public string TimeToLive { get; set; }
 
         /// <summary>
         /// Gets or sets the settings.

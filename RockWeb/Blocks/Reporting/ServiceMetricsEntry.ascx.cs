@@ -229,8 +229,6 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             nbMetricsSaved.Visible = false;
 
             if ( !Page.IsPostBack )
@@ -260,6 +258,8 @@ namespace RockWeb.Blocks.Reporting
                     BindMetrics();
                 }
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>

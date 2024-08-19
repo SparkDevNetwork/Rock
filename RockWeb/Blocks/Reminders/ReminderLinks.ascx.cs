@@ -144,13 +144,12 @@ namespace RockWeb.Blocks.Reminders
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 if ( !CurrentPersonAliasId.HasValue )
                 {
                     // If user is not logged in, do nothing.
+                    base.OnLoad( e );
                     return;
                 }
 
@@ -165,6 +164,8 @@ namespace RockWeb.Blocks.Reminders
             {
                 ShowDialog();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion Base Control Methods

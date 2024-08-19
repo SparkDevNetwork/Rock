@@ -76,9 +76,10 @@
     <Compile Include="OpenAIApiClient\Classes\TextCompletions\OpenAITextCompletionsResponse.cs" />
     <Compile Include="OpenAIApiClient\Classes\TextCompletions\OpenAITextCompletionsRequest.cs" />
     <Compile Include="OpenAIApiClient\Enums\OpenAIChatMessageRole.cs" />
-    <Compile Include="OpenAIApiClient\Enums\OpenAIModels.cs" />
     <Compile Include="OpenAIApiClient\OpenAIApi.cs" />
+    <Compile Include="OpenAIApiClient\OpenAIChatError.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Provider\OpenAICompatibleProvider.cs" />
     <Compile Include="Provider\OpenAIProvider.cs" />
     <Compile Include="Utilities\OpenAIUtilities.cs" />
   </ItemGroup>

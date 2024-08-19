@@ -1,9 +1,9 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div style="overflow-x: hidden; max-width: 100%;">
-        <ul class="rocktree">
+        <ul ref="treeListRef" class="rocktree">
             <TreeListItem v-for="child in internalItems"
-                          :key="child.value ?? ''"
+                          :key="child.value ?? undefined"
                           :item="child"
                           v-bind="{
                               modelValue,
@@ -12,7 +12,6 @@
                               autoExpand,
                               showChildCount,
                               provider,
-                              disableDeselect,
                               initiallyExpanded
                           }"
                           @update:modelValue="onUpdateSelectedValues"
@@ -23,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
+    import { PropType, ref, watch, nextTick } from "vue";
     import { ITreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
     import { TreeItemBag } from "@Obsidian/ViewModels/Utility/treeItemBag";
     import { isPromise } from "@Obsidian/Utility/promiseUtils";
@@ -56,7 +55,8 @@
 
         /**
          * List of items (by their `value` property) that should be expanded when the tree list is first loaded
-         * (after root is loaded).
+         * (after root is loaded). This allows us to auto-expand more than just the selected items and their
+         * parents.
          */
         initiallyExpanded: {
             type: Array as PropType<string[]>,
@@ -80,12 +80,12 @@
         },
 
         /**
-         * When using the tree list outside of a picker,
+         * Used as a means of tracking the open state of the dropdown picker.
          */
-        disableDeselect: {
-            type: Boolean,
-            default: false
-        }
+         isVisible: {
+            type: Boolean as PropType<boolean>,
+            default: null
+        },
     });
 
     const emit = defineEmits<{
@@ -97,6 +97,8 @@
 
     /** The list of items currently being displayed in the tree list. */
     const internalItems = ref<TreeItemBag[]>(props.items ?? []);
+
+    const treeListRef = ref<HTMLElement>();
 
     /**
      * Get the root items from the provider as an asynchronous operation.
@@ -121,6 +123,9 @@
             internalItems.value = JSON.parse(JSON.stringify(rootItems)) as TreeItemBag[];
 
             emit("update:items", internalItems.value);
+
+            await nextTick();
+            scrollToSelectedItem();
         }
     };
 
@@ -190,6 +195,13 @@
         emit("treeitem-collapsed", item);
     };
 
+    const scrollToSelectedItem = ():void => {
+        const selectedElement = treeListRef.value?.querySelector(".rocktree-name.selected")?.firstChild as HTMLElement;
+        if (selectedElement) {
+            selectedElement.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+    };
+
     // Watch for a change in our passed items and update our internal list.
     watch(() => props.items, () => {
         // Only update if we don't have a provider.
@@ -206,6 +218,13 @@
     watch(() => props.provider, () => {
         if (props.provider) {
             getRootItems();
+        }
+    });
+
+    watch(() => props.isVisible, async () => {
+        if (props.isVisible) {
+            await nextTick();
+            scrollToSelectedItem();
         }
     });
 </script>

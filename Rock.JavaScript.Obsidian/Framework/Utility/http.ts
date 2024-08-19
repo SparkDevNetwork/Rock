@@ -253,7 +253,7 @@ async function uploadFile(url: string, data: FormData, progress: UploadProgressC
  * @returns A ListItemBag that contains the scrubbed filename that was uploaded.
  */
 export async function uploadContentFile(file: File, encryptedRootFolder: string, folderPath: string, options?: UploadOptions): Promise<ListItemBag> {
-    const url = `${options?.baseUrl ?? "/FileUploader.ashx"}?rootFolder=${encryptedRootFolder}`;
+    const url = `${options?.baseUrl ?? "/FileUploader.ashx"}?rootFolder=${encodeURIComponent(encryptedRootFolder)}`;
     const formData = new FormData();
 
     formData.append("file", file);

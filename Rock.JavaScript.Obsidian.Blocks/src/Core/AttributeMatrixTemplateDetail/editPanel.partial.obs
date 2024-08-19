@@ -26,7 +26,13 @@
         <RockLabel>Item Attributes</RockLabel>
         <HelpBlock text="Item Attributes define the columns that each item row has" />
         <div class="grid">
-            <Grid :data="attributesGridData" keyField="key" itemTerm="Matrix Attribute" liveUpdates light @addItem="onAddAttribute">
+            <Grid :data="attributesGridData"
+                  keyField="guid"
+                  itemTerm="Matrix Attribute"
+                  liveUpdates
+                  light
+                  :entityTypeGuid="EntityType.Attribute"
+                  @addItem="onAddAttribute">
                 <ReorderColumn @orderChanged="onOrderChanged" />
                 <TextColumn field="name" name="attribute" title="Attribute" />
                 <TextColumn field="type" name="type" title="Type" />
@@ -50,10 +56,16 @@
         <Panel title="Advanced" class="mb-0" :isDrawerOpen="false" :hasCollapse="true">
             <div class="row">
                 <div class="col-md-6">
-                    <NumberBox v-model="minimumRows" :minimumValue="0" label="Minimum Rows" :disabled="!isEditable" />
+                    <TextBox label="Minimum Rows"
+                             v-model="minimumRows"
+                             :rules="validateNumberValue"
+                             :disabled="!isEditable" />
                 </div>
                 <div class="col-md-6">
-                    <NumberBox v-model="maximumRows" :minimumValue="0" label="Maximum Rows" :disabled="!isEditable" />
+                    <TextBox label="Maximum Rows"
+                             v-model="maximumRows"
+                             :rules="validateNumberValue"
+                             :disabled="!isEditable" />
                 </div>
             </div>
 
@@ -79,7 +91,6 @@
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import HelpBlock from "@Obsidian/Controls/helpBlock.obs";
-    import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
@@ -91,6 +102,8 @@
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { FieldType } from "@Obsidian/SystemGuids/fieldType";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { newGuid } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -121,8 +134,8 @@
     const name = propertyRef(props.modelValue.name ?? "", "Name");
     const description = propertyRef(props.modelValue.description ?? "", "Description");
     const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
-    const minimumRows = propertyRef(props.modelValue.minimumRows, "MinimumRows");
-    const maximumRows = propertyRef(props.modelValue.maximumRows, "MaximumRows");
+    const minimumRows = propertyRef(props.modelValue.minimumRows ?? "", "MinimumRows");
+    const maximumRows = propertyRef(props.modelValue.maximumRows ?? "", "MaximumRows");
     const formattedLava = propertyRef(props.modelValue.formattedLava ?? "", "FormattedLava");
 
     const templateAttributes = ref(props.modelValue.templateAttributes ?? []);
@@ -182,6 +195,28 @@
         }
 
     }
+
+    function validateNumberValue(value: unknown): string | boolean {
+
+        const stringValue = value as string;
+
+        if (stringValue) {
+            if (!isValidNumber(stringValue)) {
+                return "must be a valid number.";
+            }
+        }
+
+        return true;
+    }
+
+    function isValidNumber(value: string | null | undefined): boolean {
+        if (!value) {
+            return false;
+        }
+
+        const num = Number(value);
+        return !isNaN(num) && isFinite(num);
+    }
     // #endregion
 
     // #region Event Handlers
@@ -193,7 +228,7 @@
 
     const onEditAttribute = async (key: string): Promise<void> => {
         attributeErrors.value = [];
-        const selectedAttribute = templateAttributes.value.find(x => x.key === key);
+        const selectedAttribute = templateAttributes.value.find(x => x.guid === key);
         // If attribute exists set it as current attribute for editing.
         if (selectedAttribute) {
             templateAttribute.value = selectedAttribute;
@@ -207,12 +242,13 @@
     const onDeleteAttribute = async (key: string): Promise<void> => {
         // Close modal and remove deleted attribute from the current collection of attributes.
         isAttributeModalOpen.value = false;
-        templateAttributes.value = templateAttributes.value.filter(s => s.key !== key);
-        reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== key);
+        templateAttributes.value = templateAttributes.value.filter(s => s.guid !== key);
+        const deletedAttribute = templateAttributes.value.find(a => a.guid === key);
+        reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== deletedAttribute?.key);
 
         // Update the grid.
         if (attributesGridData.rows) {
-            const index = attributesGridData.rows.findIndex(r => r.key === key);
+            const index = attributesGridData.rows.findIndex(r => r.guid === key);
 
             if (index !== -1) {
                 attributesGridData.rows?.splice(index, 1);
@@ -228,14 +264,12 @@
             attributeErrors.value.push("There is already an existing property with the key value you entered or the key has illegal characters. Please select a different key value and use only letters, numbers and underscores.");
         }
         else {
-
-
             if (templateAttribute.value) {
-                const index = templateAttributes.value.findIndex(a => a.key === templateAttribute.value?.key);
+                const index = templateAttributes.value.findIndex(a => a.guid === templateAttribute.value?.guid);
                 if (index !== -1) {
                     // Get the updated attribute and rowItem.
-                    let editedAttribute = templateAttributes.value.find(a => a.key == templateAttribute.value?.key);
-                    let rowItem = attributesGridData.rows?.find(x => x.key == templateAttribute.value?.key);
+                    let editedAttribute = templateAttributes.value.find(a => a.guid == templateAttribute.value?.guid);
+                    let rowItem = attributesGridData.rows?.find(x => x.guid == templateAttribute.value?.guid);
 
                     if (editedAttribute) {
                         // Replace old attribute with updated attribute.
@@ -245,12 +279,13 @@
 
                     if (rowItem && attributesGridData.rows && editedAttribute) {
                         // Update GridRowItem so changes are reflected in the UI.
-                        const rowIndex = attributesGridData.rows.findIndex(r => r.key === templateAttribute.value?.key);
+                        const rowIndex = attributesGridData.rows.findIndex(r => r.guid === templateAttribute.value?.guid);
                         rowItem = convertToAttributeGridRowItem(editedAttribute);
                         attributesGridData.rows?.splice(rowIndex, 1, rowItem);
                     }
                 }
                 else {
+                    templateAttribute.value.guid = templateAttribute.value.guid ?? newGuid();
                     templateAttributes.value.push(templateAttribute.value);
 
                     // Add new RowItem to the grid to represent the newly added attribute.
@@ -292,8 +327,8 @@
         updateRefValue(name, props.modelValue.name ?? "");
         updateRefValue(description, props.modelValue.description ?? "");
         updateRefValue(isActive, props.modelValue.isActive ?? false);
-        updateRefValue(minimumRows, props.modelValue.minimumRows);
-        updateRefValue(maximumRows, props.modelValue.maximumRows);
+        updateRefValue(minimumRows, props.modelValue.minimumRows ?? "");
+        updateRefValue(maximumRows, props.modelValue.maximumRows ?? "");
         updateRefValue(formattedLava, props.modelValue.formattedLava ?? "");
         updateRefValue(templateAttributes, props.modelValue.templateAttributes ?? []);
     });

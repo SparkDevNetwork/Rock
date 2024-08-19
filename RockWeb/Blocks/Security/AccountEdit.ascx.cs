@@ -98,12 +98,12 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack && CurrentPerson != null )
             {
                 ShowDetails();
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>

@@ -476,8 +476,6 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             int? groupId = 0;
             if ( !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.GroupId ) ) )
             {
@@ -533,6 +531,8 @@ namespace RockWeb.Blocks.Groups
                     FollowingsHelper.SetFollowing( group, pnlFollowing, this.CurrentPerson );
                 }
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -4485,24 +4485,21 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void cbIsSecurityRole_CheckedChanged( object sender, EventArgs e )
         {
-            // Grouptype changed, so load up the new attributes and set controls to the default attribute values
-            if ( ddlGroupType.Visible )
+            var groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
+            if ( !groupId.HasValue )
             {
-                CurrentGroupTypeId = ddlGroupType.SelectedValueAsInt() ?? 0;
+                return;
             }
 
-            if ( CurrentGroupTypeId > 0 )
+            var groupType = CurrentGroupTypeCache;
+            var group = GetGroup( groupId.Value );
+            if ( group == null || groupType == null)
             {
-                var groupType = CurrentGroupTypeCache;
-
-                var group = new Group
-                {
-                    GroupTypeId = CurrentGroupTypeId,
-                    IsSecurityRole = cbIsSecurityRole.Checked || groupType.Guid == Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid()
-                };
-
-                ShowGroupTypeEditDetails( groupType, group, true );
+                return;
             }
+
+            group.IsSecurityRole = cbIsSecurityRole.Checked || groupType.Guid == Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid();
+            ShowGroupTypeEditDetails( groupType, group, true );
         }
 
         /// <summary>

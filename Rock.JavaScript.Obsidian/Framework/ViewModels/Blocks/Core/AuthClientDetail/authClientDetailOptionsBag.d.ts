@@ -21,5 +21,6 @@
 // </copyright>
 //
 
+/** Auth Client Detail Options Bag */
 export type AuthClientDetailOptionsBag = {
 };

@@ -24,8 +24,10 @@ using System.Threading.Tasks;
 using DDay.iCal;
 using Mono.CSharp;
 using Rock.Address;
+using Rock.Data;
 using Rock.Extension;
 using Rock.UniversalSearch;
+using Rock.Web.Cache;
 
 namespace Rock.AI.Provider
 {
@@ -88,5 +90,31 @@ namespace Rock.AI.Provider
         /// </value>
         [ImportMany( typeof( AIProviderComponent ) )]
         protected override IEnumerable<Lazy<AIProviderComponent, IComponentData>> MEFComponents { get; set; }
+
+        /// <summary>
+        /// Forces a reloading of all the components
+        /// </summary>
+        public override void Refresh()
+        {
+            base.Refresh();
+
+            // Create any attributes that need to be created
+            var providerEntityTypeId = EntityTypeCache.GetId( typeof( Rock.Model.AIProvider ) );
+
+            using ( var rockContext = new RockContext() )
+            {
+                foreach ( var component in this.Components )
+                {
+                    var componentType = component.Value.Value.GetType();
+                    var componentEntityTypeId = EntityTypeCache.GetId( componentType );
+
+                    Rock.Attribute.Helper.UpdateAttributes( componentType,
+                        providerEntityTypeId,
+                        "EntityTypeId",
+                        componentEntityTypeId.ToString(),
+                        rockContext );
+                }
+            }
+        }
     }
 }

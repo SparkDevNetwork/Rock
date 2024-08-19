@@ -1013,8 +1013,6 @@ mission. We are so grateful for your commitment.</p>
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             // Hide the messages on every postback
             nbMessage.Visible = false;
             nbSelectionMessage.Visible = false;
@@ -1026,6 +1024,7 @@ mission. We are so grateful for your commitment.</p>
 
             if ( !LoadGatewayOptions() )
             {
+                base.OnLoad( e );
                 return;
             }
 
@@ -1100,6 +1099,7 @@ mission. We are so grateful for your commitment.</p>
             divSaveAccount.Style[HtmlTextWriterStyle.Display] = cbSaveAccount.Checked ? "block" : "none";
 
             ResolveHeaderFooterTemplates();
+            base.OnLoad( e );
         }
 
         /// <summary>

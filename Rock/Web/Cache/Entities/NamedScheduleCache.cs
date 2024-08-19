@@ -60,6 +60,14 @@ namespace Rock.Web.Cache
         [DataMember]
         public TimeSpan StartTimeOfDay { get; private set; }
 
+        /// <inheritdoc cref="Rock.Model.Schedule.EffectiveStartDate"/>
+        [DataMember]
+        public DateTime? EffectiveStartDate { get; private set; }
+
+        /// <inheritdoc cref="Rock.Model.Schedule.EffectiveEndDate"/>
+        [DataMember]
+        public DateTime? EffectiveEndDate { get; private set; }
+
         /// <inheritdoc cref="Rock.Model.Schedule.Category" />
         public CategoryCache Category => this.CategoryId.HasValue ? CategoryCache.Get( CategoryId.Value ) : null;
 
@@ -117,6 +125,8 @@ namespace Rock.Web.Cache
             this.FriendlyScheduleText = schedule.ToFriendlyScheduleText();
             this.CalendarContent = schedule.iCalendarContent;
             this.StartTimeOfDay = schedule.StartTimeOfDay;
+            this.EffectiveStartDate = schedule.EffectiveStartDate;
+            this.EffectiveEndDate = schedule.EffectiveEndDate;
             this.CheckInStartOffsetMinutes = schedule.CheckInStartOffsetMinutes;
             this.CheckInEndOffsetMinutes = schedule.CheckInEndOffsetMinutes;
             this.IsCheckInEnabled = schedule.IsCheckInEnabled;
@@ -263,7 +273,7 @@ namespace Rock.Web.Cache
         /// <inheritdoc cref="Rock.Model.Schedule.GetICalOccurrences(DateTime, DateTime?, DateTime?)" />
         public IList<Ical.Net.DataTypes.Occurrence> GetICalOccurrences( DateTime beginDateTime, DateTime? endDateTime, DateTime? scheduleStartDateTimeOverride )
         {
-            return InetCalendarHelper.GetOccurrences( CalendarContent, beginDateTime, endDateTime, scheduleStartDateTimeOverride );
+            return Schedule.GetICalOccurrences( beginDateTime, endDateTime, scheduleStartDateTimeOverride, CategoryId, CalendarContent, () => GetCalendarEvent() );
         }
 
         #endregion Public Methods

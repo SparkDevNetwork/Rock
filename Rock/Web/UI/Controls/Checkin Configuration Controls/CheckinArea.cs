@@ -472,16 +472,13 @@ namespace Rock.Web.UI.Controls
                 }
                 _gCheckinLabels.RenderControl( writer );
 
-                if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+                writer.WriteLine( "<h3>Next Gen Check-in Labels</h3>" );
+                if ( NextGenCheckInLabels != null )
                 {
-                    writer.WriteLine( "<h3>Next Gen Check-in Labels</h3>" );
-                    if ( NextGenCheckInLabels != null )
-                    {
-                        _gNextGenCheckInLabels.DataSource = NextGenCheckInLabels;
-                        _gNextGenCheckInLabels.DataBind();
-                    }
-                    _gNextGenCheckInLabels.RenderControl( writer );
+                    _gNextGenCheckInLabels.DataSource = NextGenCheckInLabels;
+                    _gNextGenCheckInLabels.DataBind();
                 }
+                _gNextGenCheckInLabels.RenderControl( writer );
             }
         }
 

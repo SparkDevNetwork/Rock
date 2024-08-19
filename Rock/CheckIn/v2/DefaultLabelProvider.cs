@@ -164,7 +164,7 @@ namespace Rock.CheckIn.v2
                 // Add any print failure messages.
                 if ( printErrorMessages != null )
                 {
-                    foreach ( var msg in errorMessages )
+                    foreach ( var msg in printErrorMessages )
                     {
                         messageCallback( msg );
                     }
@@ -400,7 +400,8 @@ namespace Rock.CheckIn.v2
             var relatedEntityQry = new RelatedEntityService( RockContext )
                 .Queryable()
                 .Where( a => a.SourceEntityTypeId == groupTypeEntityTypeId
-                    && a.TargetEntityTypeId == checkInLabelEntityTypeId );
+                    && a.TargetEntityTypeId == checkInLabelEntityTypeId
+                    && a.PurposeKey == RelatedEntityPurposeKey.AreaCheckInLabel );
 
             relatedEntityQry = CheckInDirector.WhereContains( relatedEntityQry, areaIds, a => a.SourceEntityId );
 
@@ -495,75 +496,78 @@ namespace Rock.CheckIn.v2
         /// <returns>A new instance of <see cref="RenderedLabel"/> that contains either the data to be printed or an error message, will never be <see langword="null"/>.</returns>
         private RenderedLabel RenderLabel( Rock.Model.CheckInLabel label, object labelData, DeviceCache printer )
         {
-            if ( label.LabelFormat == LabelFormat.Zpl )
+            using ( var activity = ObservabilityHelper.StartActivity( label.Name ) )
             {
-                var mergeFields = new Dictionary<string, object>();
-
-                foreach ( var prop in labelData.GetType().GetProperties() )
+                if ( label.LabelFormat == LabelFormat.Zpl )
                 {
-                    mergeFields.Add( prop.Name, prop.GetValue( labelData ) );
-                }
+                    var mergeFields = new Dictionary<string, object>();
 
-                var zpl = label.Content.ResolveMergeFields( mergeFields );
-
-                return new RenderedLabel
-                {
-                    Data = Encoding.UTF8.GetBytes( zpl ),
-                    PrintTo = printer
-                };
-            }
-
-            // It is a designed label. Try to get the label data and if we
-            // can't then return an error.
-            var designedLabel = label.Content.FromJsonOrNull<DesignedLabelBag>();
-
-            if ( designedLabel == null )
-            {
-                return new RenderedLabel
-                {
-                    Error = "Invalid label data."
-                };
-            }
-
-            var hasCutter = printer?.GetAttributeValue( DeviceAttributeKey.DEVICE_HAS_CUTTER ).AsBoolean() ?? false;
-
-            var printRequest = new PrintLabelRequest
-            {
-                Capabilities = new PrinterCapabilities
-                {
-                    IsCutterSupported = hasCutter
-                },
-                RockContext = RockContext,
-                LabelData = labelData,
-                DataSources = FieldSourceHelper.GetCachedDataSources( label.LabelType ),
-                Label = designedLabel
-            };
-
-            var renderer = new ZplLabelRenderer();
-
-            using ( var memoryStream = new MemoryStream() )
-            {
-                renderer.BeginLabel( memoryStream, printRequest );
-
-                foreach ( var field in printRequest.Label.Fields )
-                {
-                    var labelField = new LabelField( field );
-
-                    if ( !labelField.IsMatch( labelData ) )
+                    foreach ( var prop in labelData.GetType().GetProperties() )
                     {
-                        continue;
+                        mergeFields.Add( prop.Name, prop.GetValue( labelData ) );
                     }
 
-                    renderer.WriteField( labelField );
+                    var zpl = label.Content.ResolveMergeFields( mergeFields );
+
+                    return new RenderedLabel
+                    {
+                        Data = Encoding.UTF8.GetBytes( zpl ),
+                        PrintTo = printer
+                    };
                 }
 
-                renderer.EndLabel();
+                // It is a designed label. Try to get the label data and if we
+                // can't then return an error.
+                var designedLabel = label.Content.FromJsonOrNull<DesignedLabelBag>();
 
-                return new RenderedLabel
+                if ( designedLabel == null )
                 {
-                    Data = memoryStream.ToArray(),
-                    PrintTo = printer
+                    return new RenderedLabel
+                    {
+                        Error = "Invalid label data."
+                    };
+                }
+
+                var hasCutter = printer?.GetAttributeValue( DeviceAttributeKey.DEVICE_HAS_CUTTER ).AsBoolean() ?? false;
+
+                var printRequest = new PrintLabelRequest
+                {
+                    Capabilities = new PrinterCapabilities
+                    {
+                        IsCutterSupported = hasCutter
+                    },
+                    RockContext = RockContext,
+                    LabelData = labelData,
+                    DataSources = FieldSourceHelper.GetCachedDataSources( label.LabelType ),
+                    Label = designedLabel
                 };
+
+                var renderer = new ZplLabelRenderer();
+
+                using ( var memoryStream = new MemoryStream() )
+                {
+                    renderer.BeginLabel( memoryStream, printRequest );
+
+                    foreach ( var field in printRequest.Label.Fields )
+                    {
+                        var labelField = new LabelField( field );
+
+                        if ( !labelField.IsMatch( labelData ) )
+                        {
+                            continue;
+                        }
+
+                        renderer.WriteField( labelField );
+                    }
+
+                    renderer.EndLabel();
+
+                    return new RenderedLabel
+                    {
+                        Data = memoryStream.ToArray(),
+                        PrintTo = printer
+                    };
+                }
             }
         }
 

@@ -162,13 +162,13 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 SetFilter();
                 BindCampusGrid();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion Base Control Methods

@@ -97,8 +97,6 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 ShowDetail( PageParameter( "TemplateId" ).AsInteger() );
@@ -114,6 +112,8 @@ namespace RockWeb.Blocks.Communication
                 CommunicationTemplateHelper.CreateDynamicLavaValueControls( lavaFieldsTemplateDictionary, lavaFieldsDefaultDictionary, phLavaFieldsControls );
                 btnUpdateTemplatePreview.Visible = lavaFieldsTemplateDictionary.Any();
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -267,6 +267,7 @@ namespace RockWeb.Blocks.Communication
             communicationTemplate.PushMessage = pushCommunication.PushMessage;
             communicationTemplate.PushOpenAction = pushCommunication.PushOpenAction;
             communicationTemplate.PushOpenMessage = pushCommunication.PushOpenMessage;
+            communicationTemplate.PushOpenMessageJson = pushCommunication.PushOpenMessageJson;
             communicationTemplate.PushTitle = pushCommunication.PushTitle;
 
             rockContext.SaveChanges();
@@ -392,6 +393,7 @@ namespace RockWeb.Blocks.Communication
                     PushMessage = communicationTemplate.PushMessage,
                     PushTitle = communicationTemplate.PushTitle,
                     PushOpenMessage = communicationTemplate.PushOpenMessage,
+                    PushOpenMessageJson = communicationTemplate.PushOpenMessageJson,
                     PushOpenAction = communicationTemplate.PushOpenAction
                 };
             }

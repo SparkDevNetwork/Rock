@@ -467,9 +467,7 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
-        {
-            base.OnLoad( e );
-            
+        {            
             this.OnPropertyChanged -= CommunicationEntry_OnPropertyChanged;
             this.OnPropertyChanged += CommunicationEntry_OnPropertyChanged;
 
@@ -542,6 +540,8 @@ namespace RockWeb.Blocks.Communication
                     this.Visible = false;
                 }
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -753,7 +753,7 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
-        /// Handles the Click event of the btnSubmit control.
+        /// Handles the Click event of the btnTest control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>

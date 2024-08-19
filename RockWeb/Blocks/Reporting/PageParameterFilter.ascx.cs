@@ -384,10 +384,10 @@ namespace RockWeb.Blocks.Reporting
                 LoadFilters();
             }
 
-            base.OnLoad( e );
-
             btnFilter.Visible = GetAttributeValue( AttributeKey.ShowFilterButton ).AsBoolean();
             btnResetFilters.Visible = GetAttributeValue( AttributeKey.ShowResetFiltersButton ).AsBoolean();
+
+            base.OnLoad( e );
         }
 
         protected override object SaveViewState()

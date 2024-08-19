@@ -1,0 +1,20 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-html="blockContent" />
+</template>
+
+<script setup lang="ts">
+    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
+    import { FundraisingListInitializationBox } from "@Obsidian/ViewModels/Blocks/Finance/FundraisingList/fundraisingListInitializationBox";
+    import { ref } from "vue";
+
+    const config = useConfigurationValues<FundraisingListInitializationBox>();
+
+    // #region Values
+
+    const blockContent = ref(config.blockContent ?? "");
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #endregion
+</script>
