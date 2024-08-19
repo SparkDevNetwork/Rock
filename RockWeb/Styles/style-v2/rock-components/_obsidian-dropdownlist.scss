@@ -1,0 +1,92 @@
+//
+// Drop Down Lists - Override default styles of ANT select component
+// --------------------------------------------------
+
+.ant-select {
+  &.form-control {
+    padding: 0;
+
+    .ant-select-selector {
+      height:           34px !important;
+      padding:          var(--spacing-small) var(--spacing-medium) !important;
+      border-radius:    var(--rounded-small) !important;
+      margin:           0 !important;
+      background-color: initial !important;
+      border:           none !important;
+      box-shadow:       none !important;
+
+      .ant-select-selection-item {
+        display:        inline-flex;
+        align-items:    center;
+      }
+    }
+  }
+
+  .input-group & {
+    &.ant-select-focused {
+      z-index:          3;
+    }
+  }
+
+  &.ant-select-focused:not(.ant-select-disabled).form-control {
+    border:       1px solid var(--color-info-strong);
+    outline:      none;
+    box-shadow:   var(--focus-state-shadow);
+  }
+
+  &.ant-select-focused:not(.ant-select-disabled).form-control .ant-select-selector {
+    border:       none;
+    outline:      none;
+    box-shadow:   none;
+  }
+
+  &.form-control .ant-select-arrow,
+  &.form-control .ant-select-clear {
+    width:        16px;
+    height:       16px;
+    font-size:    var(--font-size-h6);
+  }
+
+  // Prevent text from flowing undernearth caret indicator.
+  &.ant-select-single.form-control .ant-select-selection-item {
+    padding-right:  0px;
+    margin-right:   var(--spacing-medium);
+    transition:     margin-right 0s, padding-right 0s;
+  }
+
+  // Prevent text from flowing undernearth clear and caret indicators.
+  &.ant-select-single.ant-select-allow-clear.form-control .ant-select-selection-item {
+    margin-right:   36px;
+  }
+
+  // Prevent text from flowing undernearth caret indicator.
+  &.ant-select-multiple.form-control .ant-select-selection-overflow {
+    padding-right: var(--spacing-medium);
+  }
+
+  // Allow control height to grow in multi-select mode.
+  &.ant-select-multiple.form-control,
+  &.ant-select-multiple.form-control .ant-select-selector {
+    height: initial !important;
+    min-height:   34px;
+  }
+}
+
+// Prevent clear button from overlapping chevron arrow.
+.ant-select-clear {
+  right:          30px;
+}
+
+// Prevent the text from being truncated in dropdown lists.
+.ant-select {
+  &-dropdown {
+    .ant-select-item {
+      &-option {
+        &-content {
+          white-space:  normal;
+          word-wrap:    break-word;
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,290 @@
+
+
+// Picker Date (Rock Component)
+// from Rock\libs\bootstrap-datepicker\less\datepicker3.less
+
+
+// =============================================================
+// Table of Content           
+//  + Base style
+// =============================================================
+
+
+// ======================== BASE STYLE ========================
+.datepicker {
+  direction:      ltr;
+  border-radius:  var(--rounded-small);
+  &-inline {
+    width:        220px;
+  }
+
+  &-dropdown {
+    top:          0;
+    left:         0;
+    padding:      var(--spacing-tiny);
+    &::before {
+      position:   absolute;
+      display:    inline-block;
+      content:    "";
+      border-top: 0;
+      border-right:   7px solid transparent;
+      border-bottom:  7px solid $dropdown-border;
+      border-left:    7px solid transparent;
+    }
+    &::after {
+      position:       absolute;
+      display:        inline-block;
+      content:        "";
+      border-top:     0;
+      border-right:   6px solid transparent;
+      border-bottom:  6px solid var(--color-interface-softest);
+      border-left:    6px solid transparent;
+    }
+    &.datepicker-orient-left::before   { left: 6px; }
+    &.datepicker-orient-left::after    { left: 7px; }
+    &.datepicker-orient-right::before  { right: 6px; }
+    &.datepicker-orient-right::after   { right: 7px; }
+    &.datepicker-orient-bottom::before { top: -7px; }
+    &.datepicker-orient-bottom::after  { top: -6px; }
+    &.datepicker-orient-top::before {
+      bottom:         -7px;
+      border-top:     7px solid $dropdown-border;
+      border-bottom:  0;
+    }
+    &.datepicker-orient-top::after {
+      bottom:         -6px;
+      border-top:     6px solid var(--color-interface-softest);
+      border-bottom:  0;
+    }
+  }
+  table {
+    margin:                 0;
+    -webkit-user-select:    none;
+    -khtml-user-select:     none;
+    -moz-user-select:       none;
+    -ms-user-select:        none;
+    user-select:            none;
+    -webkit-touch-callout:  none;
+    tr {
+      td,
+      th {
+        width:        34px;
+        height:       34px;
+        padding:      0;
+        text-align:   center;
+        border:       0;
+        border-radius: var(--rounded-small)
+      }
+    }
+  }
+  // Inline display inside a table presents some problems with
+  // border and background colors.
+  .table-striped & table tr {
+    td,
+    th {
+      background-color: transparent;
+    }
+  }
+  table tr td {
+    &.old,
+    &.new {
+      color:        var(--color-interface-medium);
+    }
+    &.day:hover,
+    &.focused {
+      cursor:       pointer;
+      background:   var(--color-interface-soft);
+    }
+    &.disabled,
+    &.disabled:hover {
+      color:        var(--color-interface-medium);
+      cursor:       default;
+      background:   none;
+    }
+    &.highlighted {
+      color:          var(--color-interface-strongest);
+      background:     var(--color-info-soft);
+      border-radius:  0;
+
+      &.focused {
+        background:   var(--color-info-soft);
+      }
+
+      &.disabled,
+      &.disabled:active {
+        color:        var(--color-interface-medium);
+        background:   var(--color-info-soft);
+      }
+    }
+
+    &.today {
+      color:            var(--color-interface-strongest);
+      background-color: $datepicker-today-bg;
+
+      &:hover,
+      &:focus {
+        background:     $datepicker-today-focus;
+      }
+
+      &.focused {
+        background:     $datepicker-today-focus;
+      }
+
+      &.disabled,
+      &.disabled:active {
+        color:          var(--color-interface-medium);
+        background:     $datepicker-today-bg;
+      }
+    }
+
+    &.range {
+      color:          var(--color-interface-strongest);
+      background:     var(--color-interface-softer);
+      border-radius:  0;
+
+      &.focused,
+      &:hover {
+        background:   var(--color-interface-softer);
+      }
+
+      &.disabled,
+      &.disabled:active {
+        color:        var(--color-interface-medium);
+        background:   var(--color-interface-softer);
+      }
+    }
+
+    &.range-start {
+      border-top-right-radius:    0;
+      border-bottom-right-radius: 0;
+    }
+
+    &.range-end {
+      border-top-left-radius:     0;
+      border-bottom-left-radius:  0;
+    }
+
+    &.range.highlighted {
+      color:        var(--color-interface-strongest);
+      background:   var(--color-interface-softer);
+
+      &.focused {
+        background: var(--color-interface-softer);
+      }
+
+      &.disabled,
+      &.disabled:active {
+        color:      var(--color-interface-medium);
+        background: var(--color-interface-softer);
+      }
+    }
+
+    &.range.today {
+      color:          var(--color-interface-strongest);
+      background:     var(--color-interface-soft);
+
+      &:hover {
+        background:   var(--color-interface-soft);
+      }
+
+      &.disabled,
+      &.disabled:active {
+        color:        var(--color-interface-medium);
+        background:   var(--color-interface-soft);
+      }
+    }
+
+    &.selected,
+    &.selected.highlighted {
+      color:        var(--color-interface-softest);
+      text-shadow:  $datepicker-selected-text-shadow;
+      background:   var(--color-interface-medium);
+
+      &:hover {
+        background: var(--color-interface-medium);
+      }
+    }
+
+    &.active,
+    &.active.highlighted {
+      color:        var(--color-interface-softest);
+      text-shadow:  $datepicker-active-text-shadow;
+      background:   var(--color-primary);
+
+      &:hover,
+      &:focus {
+        background: var(--color-primary);
+      }
+    }
+
+    span {
+      display:      block;
+      float:        left;
+      width:        23%;
+      height:       54px;
+      margin:       1%;
+      line-height:  54px;
+      cursor:       pointer;
+      border-radius: var(--rounded-small);
+      &:hover,
+      &.focused {
+        background: var(--color-interface-soft);
+      }
+      &.disabled,
+      &.disabled:hover {
+        color:      var(--color-interface-medium);
+        cursor:     default;
+        background: none;
+      }
+      &.active,
+      &.active:hover,
+      &.active.disabled,
+      &.active.disabled:hover {
+        color:        var(--color-interface-softest);
+        text-shadow:  0 -1px 0 rgba(0,0,0,.25);
+        background:   var(--color-primary);
+      }
+      &.old,
+      &.new {
+        color:        var(--color-interface-medium);
+      }
+    }
+  }
+
+  .datepicker-switch {
+    width: 145px;
+  }
+
+  .datepicker-switch,
+  .prev,
+  .next,
+  tfoot tr th {
+    cursor: pointer;
+    &:hover {
+      background: var(--color-interface-soft);
+    }
+  }
+
+  .prev,
+  .next {
+    &.disabled {
+      visibility: hidden;
+    }
+  }
+
+  // Basic styling for calendar-week cells
+  .cw {
+    width:          12px;
+    padding:        0 2px 0 5px;
+    font-size:      10px;
+    vertical-align: middle;
+  }
+}
+
+.input-group.date .input-group-addon {
+  cursor: pointer;
+}
+// ====================== END BASE STYLE ======================
+
+
+

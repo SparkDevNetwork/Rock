@@ -90,7 +90,7 @@
 .input-group-addon {
   padding:            var(--spacing-small) var(--spacing-medium);
   font-size:          var(--font-size-regular);
-  font-weight:        400;
+  font-weight:        var(--font-weight-regular);
   line-height:        1;
   color:              var(--color-interface-strongest);
   text-align:         center;
@@ -243,7 +243,7 @@
   .form-control {
     flex: 1 1 auto;
     min-width: 90px;
-    max-width: floor(90px * 1.25);
+    max-width: 112px;
   }
 }
 

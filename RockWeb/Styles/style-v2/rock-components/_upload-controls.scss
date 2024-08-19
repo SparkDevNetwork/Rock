@@ -1,0 +1,397 @@
+
+
+// File Upload / Image Upload - styles for the 
+// file / image uploader (Rock Component)
+
+
+// =============================================================
+// Table of Content           
+//  + Image upload style
+//  + Picker asset style
+//  + File upload style
+// =============================================================
+
+
+// ======================== IMAGE UPLOAD STYLE ========================
+.imageupload-group,
+.fileupload-group {
+  position:         relative;
+  display:          table-cell;
+  padding:          2px;
+  margin-bottom:    var(--spacing-medium);
+  cursor:           pointer;
+  border:           1px solid var(--color-interface-soft);
+  border-radius:    var(--rounded-small);
+
+  .has-error & {
+    border-color:   var(--color-danger-strong);
+
+    &:focus-within {
+      border-color: var(--color-danger-strong);
+      box-shadow:   0 0 0 3px fade(var(--color-danger-strong), 20%);
+    }
+  }
+}
+
+.imageupload-group {
+
+  &:focus-within {
+    border-color:   var(--color-info-strong);
+    box-shadow:     $input-focus-box-shadow;
+  }
+
+  .imageupload-thumbnail {
+    position:       relative;
+
+    .imageupload-thumbnail-image {
+      width:                100%;
+      height:               100%;
+      background-position:  50%;
+      background-size:      cover;
+    }
+
+    .imageupload-remove {
+      position:             absolute;
+      right:                0;
+      bottom:               0;
+
+      a {
+        display:                block;
+        padding:                2px 6px;
+        color:                  var(--color-interface-softest);
+        cursor:                 pointer;
+        background-color:       var(--color-danger-strong);
+        border-top-left-radius: var(--rounded-small);
+      }
+    }
+  }
+
+  .imageupload-dropzone {
+    position:         relative;
+    width:            100%;
+    height:           30px;
+    padding-top:      var(--spacing-small);
+    margin-top:       2px;
+    line-height:      12px;
+    text-align:       center;
+    cursor:           pointer;
+    background-color: var(--color-interface-softer);
+    border:           1px solid var(--color-interface-soft);
+    border-radius:    0 0 var(--rounded-small) var(--rounded-small);
+
+    ::-webkit-file-upload-button {
+      cursor: pointer;
+    }
+
+    input {
+      position: absolute;
+      top:      0;
+      left:     0;
+      width:    100%;
+      height:   100%;
+      cursor:   pointer;
+      opacity:  0;
+    }
+
+    span {
+      width:      100%;
+      font-size:  13px;
+      color:      var(--color-interface-stronger);
+
+      &::before {
+        padding-right:  .25em;
+        font-family:    'FontAwesome';
+        font-weight:    var(--font-weight-black);
+        content:        "\f093";
+      }
+    }
+  }
+
+  .upload-progress {
+    position:     absolute;
+    top:          26px;
+    left:         28px;
+    z-index:      2;
+    text-align:   center;
+    opacity:      .3;
+  }
+}
+// ====================== END IMAGE UPLOAD STYLE======================
+
+
+// ======================== PICKER ASSET STYLE ========================
+.picker-asset {
+  position:             relative;
+  display:              inline-block;
+
+  .fileupload-thumbnail {
+    width:              100px;
+    height:             100px;
+    background-color:   var(--color-interface-softer); //TODO lighten by 2% when available
+    background-repeat:  no-repeat;
+    background-position:  50%;
+    background-size:      contain;
+  }
+
+  .fileupload-thumbnail-icon {
+    background-size:      40%;
+  }
+
+  .file-link {
+    height:               100px;
+
+    &::after {
+      display:            none;
+    }
+  }
+
+  .file-link-default {
+    &::after {
+      display:      block;
+      content:      "\f07c";
+    }
+  }
+
+  .picker-select-none {
+    position:         absolute;
+    right:            4px;
+    bottom:           35px;
+    z-index:          50;
+    display:          block;
+    padding:          2px 6px;
+    color:            var(--color-interface-softest);
+    cursor:           pointer;
+    background-color: var(--color-danger-strong);
+    border-top-left-radius: var(--rounded-small);
+  }
+}
+// ====================== END PICKER ASSET STYLE ======================
+
+
+// ======================== FILE UPLOAD STYLE ========================
+.fileupload-group {
+  &:focus-within {
+    border-color:   var(--color-info-strong);
+    box-shadow:     $input-focus-box-shadow;
+  }
+
+  .fileupload-remove {
+    position:       absolute;
+    right:          0;
+    bottom:         0;
+    z-index:        50;
+
+    a {
+      display:          block;
+      padding:          2px 6px;
+      color:            var(--color-interface-softest);
+      cursor:           pointer;
+      background-color: var(--color-danger-strong);
+      border-top-left-radius: var(--rounded-small);
+    }
+  }
+
+  .fileuploaddefault-button,
+  .fileupload-dropzone,
+  .fileupload-button {
+    position:           relative;
+    height:             30px;
+    padding-top:        var(--spacing-small);
+    line-height:        12px;
+    text-align:         center;
+    background-color:   var(--color-interface-softer);
+
+    ::-webkit-file-upload-button {
+      cursor:           pointer;
+    }
+
+    input {
+      position:         absolute;
+      top:              0;
+      left:             0;
+      width:            100%;
+      height:           100%;
+      cursor:           pointer;
+      opacity:          0;
+    }
+
+    span {
+      padding:    0 7px;
+      font-size:  var(--font-size-small);
+      color:      var(--color-interface-stronger);
+
+      &::before {
+        padding-right:  var(--spacing-tiny);
+        font-family:    'FontAwesome';
+        font-weight:    var(--font-weight-black);
+        content:        "\f093";
+      }
+    }
+  }
+
+  .fileupload-dropzone {
+    margin-top:     2px;
+    border-radius:  0 0 var(--rounded-small) var(--rounded-small);
+  }
+
+  .fileupload-button {
+    padding:            var(--spacing-tiny) var(--spacing-small);
+    background-color:   var(--color-primary);
+    border:             1px solid var(--color-primary); //TODO darken this by 5% when available
+    border-radius:      var(--rounded-small);
+
+    span {
+      color:            var(--color-interface-softest);
+    }
+  }
+
+  .fileuploaddefault-button {
+    width:          100px;
+    height:         25px;
+    padding:        var(--spacing-tiny);
+    margin-top:     2px;
+    background:     var(--color-interface-softest);
+    border:         1px solid var(--color-interface-softer);
+    border-radius:  var(--rounded-small);
+
+    &:hover {
+      color:            var(--color-interface-stronger);
+      background-color: var(--color-interface-softer);
+      border-color:     var(--color-interface-soft);
+    }
+
+    span {
+      color:          var(--color-interface-stronger);
+    }
+  }
+
+  .upload-progress {
+    position:   absolute;
+    top:        8px;
+    left:       35px;
+    z-index:    15;
+    font-size:  var(--font-size-xsmall);
+    opacity:    .3;
+  }
+
+  .upload-progress-sm {
+    position:   absolute;
+    top:        5px;
+    left:       5px;
+    z-index:    2;
+    opacity:    .3;
+  }
+}
+
+.fileupload-thumbnail {
+  position:     relative;
+
+  .file-link {
+    position:     relative;
+    z-index:      10;
+    display:      block;
+    width:        100px;
+    height:       50px;
+    padding-top:  2px;
+    overflow:     hidden;
+    font-size:    10px;
+    line-height:  1;
+    color:        var(--color-interface-stronger);
+    text-align:   center;
+    text-overflow:      ellipsis;
+    white-space:        nowrap;
+    background-color:   var(--color-interface-softer);
+    border-radius:      calc(var(--rounded-small) - 1);
+
+    &::after {
+      position:         absolute;
+      top:              50%;
+      left:             0;
+      z-index:          -1;
+      width:            100%;
+      font-family:      'FontAwesome';
+      font-size:        var(--font-size-h3);
+      font-weight:      var(--font-weight-black);
+      line-height:      0;
+      color:            var(--color-interface-softer); //TODO Darken by 15% when available.
+      content:          "\f15b";
+    }
+
+    &.file-exists::after {
+      content:          "\f15c";
+    }
+  }
+}
+
+.fileupload-group-lg .fileupload-group {
+  display:        block;
+  border-style:   dashed;
+  border-width:   2px;
+
+  &:focus-within {
+    border:       2px solid var(--color-info-strong);
+  }
+
+  .fileupload-thumbnail {
+    background-color:   var(--color-interface-softer);
+  }
+
+  .fileupload-dropzone {
+    position:     absolute;
+    top:          0;
+    right:        0;
+    bottom:       0;
+    left:         0;
+    z-index:      25;
+    display:      -ms-flexbox;
+    display:      flex;
+    -ms-flex-align:   end;
+    -ms-flex-pack:    center;
+    align-items:      flex-end;
+    justify-content:  center;
+    height:           100%;
+    padding:          2px;
+    margin:           0;
+    background-color: transparent;
+
+    span {
+      margin:       0 var(--spacing-medium) 11px;
+      font-size:    var(--font-size-small);
+      line-height:  1;
+
+      @media (min-width: $screen-small) {
+        margin-bottom:  52px;
+        font-size:      var(--font-size-h4);
+      }
+
+      &::before {
+        display: none;
+      }
+    }
+  }
+
+  .fileupload-thumbnail .file-link {
+    width:      100%;
+    height:     152px;
+    padding:    var(--spacing-medium);
+    font-size:  var(--font-size-small);
+
+    @media (min-width: $screen-small) {
+      height:   288px;
+      padding:  20px;
+    }
+
+    &::after {
+      font-size:  72px;
+      content:    "\f15c";
+
+      @media (min-width: $screen-small) {
+        font-size:  112px;
+      }
+    }
+  }
+}
+// ====================== END FILE UPLOAD STYLE ======================
+
+
+

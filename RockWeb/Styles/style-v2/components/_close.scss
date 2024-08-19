@@ -7,7 +7,7 @@
   font-weight:    var(--font-weight-bold);
   line-height:    var(--line-height-compact);
   color:          var(--color-interface-strongest);
-  filter:         alpha(opacity=#{calc(.2 * 100)});
+  filter:         alpha(opacity=20);
   text-shadow:    0 1px 0 var(--color-interface-softest);
   opacity:        .2;
 
@@ -16,7 +16,7 @@
     color:            var(--color-interface-strongest);
     text-decoration:  none;
     cursor:           pointer;
-    filter:           alpha(opacity=#{calc(.2 * 100)});
+    filter:           alpha(opacity=20);
     opacity:          .2;
   }
   

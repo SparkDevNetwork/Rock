@@ -1,0 +1,26 @@
+
+// Key Value Pair Control - styling for key/value
+// pair control (Rock Component)
+
+
+// =============================================================
+// Table of Content           
+//  + Base Style  
+// =============================================================
+
+
+// ======================== BASE STYLE ========================
+.key-value-rows {
+  .controls-row {
+    margin-bottom:  var(--spacing-small);
+    margin-right:   0;
+
+    &.controls-row-full-width {
+      display:      flex;
+      align-items:  center;
+    }
+  }
+}
+// ====================== END BASE STYLE ======================
+
+

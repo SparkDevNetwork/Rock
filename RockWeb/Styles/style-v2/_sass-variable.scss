@@ -23,6 +23,7 @@ $custom-radio-indicator-icon-checked: url("data:image/svg+xml;charset=utf8,%3Csv
 $caret-width-base:          4px;
 $zindex-dropdown:           1000;
 $dropdown-min-width:        160px;
+$dropdown-border:           rgba(0, 0, 0, .15);
 
 // Screen Sizes
 $screen-xsmall:             480px;
@@ -86,9 +87,25 @@ $ui-autocomplete-border:    #74a9d8;
 
 
 // Check Box
-$checkbox-columns-width: 130px;
+$checkbox-columns-width:    130px;
 
-$input-height-base: 34px;
+$input-height-base:         34px;
 
 // Smart Search
 $smartsearch-input-padding: 4px 4px 4px 25px;
+
+// Date Picker
+$datepicker-today-bg:       #ffbd42;
+$datepicker-today-focus:    #b87700;
+$datepicker-selected-text-shadow:   0 -1px 0 rgba(0,0,0,.25);
+$datepicker-active-text-shadow:     0 -1px 0 rgba(0,0,0,.25);
+$datepicker-disabled-text-shadow:   0 -1px 0 rgba(0,0,0,.25);
+
+
+// Upload Controls
+$input-focus-box-shadow: 0 0 0 3px var(--color-info-soft);
+
+// Brand Color
+$brand-facebook: #3B5998;
+$brand-twitter: #1da1f2;
+

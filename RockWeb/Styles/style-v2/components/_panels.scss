@@ -431,52 +431,6 @@
   margin: -(var(--spacing-medium));
   border-bottom: 1px solid var(--color-danger-soft);
 }
-
-.panel-settings-group {
-  display: flex;
-  flex-wrap: wrap;
-  margin: -(var(--spacing-medium));
-
-  > .form-group {
-    flex: 1 1 100%;
-    border-bottom: 1px solid var(--color-interface-soft);
-
-    &:first-child {
-      border-left: 0;
-    }
-
-    @media (min-width: $screen-small) {
-      flex: 1 1 auto;
-      border-left: 1px solid var(--color-interface-soft);
-    }
-  }
-
-  .control-label {
-    position: absolute;
-    z-index: 30;
-    padding: var(--spacing-small) var(--spacing-medium);
-    font-size: 12px;
-    font-weight: 400;
-    color: var(--color-interface-strong);
-    pointer-events: none;
-  }
-
-  .btn,
-  .btn-group,
-  .dropdown-menu {
-    width: 100%;
-  }
-
-  .btn {
-    display: flex;
-    justify-content: space-between;
-    padding-top: calc((var(--spacing-small) * 2) + 14px);
-    text-align: left;
-    background: transparent;
-    border: 0;
-    border-radius: 0 !important;
-  }
-}
 // =================== END PANEL SETTING ===================
 
 
@@ -1068,6 +1022,51 @@
 
     .form-group {
       margin-bottom:  0;
+    }
+  }
+  .panel-settings-group {
+    display: flex;
+    flex-wrap: wrap;
+    margin: -(var(--spacing-medium));
+  
+    > .form-group {
+      flex: 1 1 100%;
+      border-bottom: 1px solid var(--color-interface-soft);
+  
+      &:first-child {
+        border-left: 0;
+      }
+  
+      @media (min-width: $screen-small) {
+        flex: 1 1 auto;
+        border-left: 1px solid var(--color-interface-soft);
+      }
+    }
+  
+    .control-label {
+      position: absolute;
+      z-index: 30;
+      padding: var(--spacing-small) var(--spacing-medium);
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--color-interface-strong);
+      pointer-events: none;
+    }
+  
+    .btn,
+    .btn-group,
+    .dropdown-menu {
+      width: 100%;
+    }
+  
+    .btn {
+      display: flex;
+      justify-content: space-between;
+      padding-top: calc((var(--spacing-small) * 2) + 14px);
+      text-align: left;
+      background: transparent;
+      border: 0;
+      border-radius: 0 !important;
     }
   }
 }

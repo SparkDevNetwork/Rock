@@ -2,14 +2,11 @@
 
 
 // ====================================================================================================
-//  + Fully Polish: This means the file is formatted for ease of reading. 
-//                  This includes organizing and combining redundant code,
-//                  ensuring consistent indentation and spacing, and maintaining 
-//                  a clean and readable structure.
+//  + Fully Format: This means the file is formatted for ease of reading. 
 //  ---------------------------------------------------------------------------------------------------
 //  + ** work in progress **: This mean the opposite of the fully polish.
 //  ---------------------------------------------------------------------------------------------------
-//  + After you have "Fully Polish" or "** work in progress**" always have a full stop "." 
+//  + After you have "Fully Format" or "** work in progress**" always have a full stop "." 
 //    then follow by the note you want to leave for the file.
 // ====================================================================================================
 
@@ -17,61 +14,61 @@
 
 
 /* ==================== NORMALIZE ==================== */
-@import 'core/normalize';                   // Fully Polish. Normalize the html and all the elements
+@import 'core/normalize';                   // Fully Format. Normalize the html and all the elements
 
 /* ===================== VARIABLES =================== */
-@import 'sass-variable';                    // Fully Polish.
-@import 'css-variable';                     // Fully Polish.
+@import 'sass-variable';                    // Fully Format.
+@import 'css-variable';                     // Fully Format.
 
 /* ===================== LEGACY  =================== */
-@import 'legacy/carousel';                  // Fully Polish. **It is not working**. There are Some hard coded value. 
-@import 'legacy/jumbotron';                 // Fully Polish. When color-mix() use, go in the file there's TODO comments at where it is need ot be use.
-@import 'legacy/media';                     // Fully Polish. 
+@import 'legacy/carousel';                  // Fully Format. **It is not working**. There are Some hard coded value. 
+@import 'legacy/jumbotron';                 // Fully Format. When color-mix() use, go in the file there's TODO comments at where it is need ot be use.
+@import 'legacy/media';                     // Fully Format. 
 
 /* ===================== UTILITIES =================== */
 @import 'utilities/spacing-utilities';      // FULLY COPY AND PAST FROM bootstrap _utilities.less.
-@import 'utilities/typography-utilities';   // Fully Polish.
-@import 'utilities/color-utilities';        // Fully Polish.
-@import 'utilities/flex-utilities';         // Fully Polish.
-@import 'utilities/display-utilities';      // Fully Polish.
+@import 'utilities/typography-utilities';   // Fully Format.
+@import 'utilities/color-utilities';        // Fully Format.
+@import 'utilities/flex-utilities';         // Fully Format.
+@import 'utilities/display-utilities';      // Fully Format.
 
 /* ======================= CORE  ======================*/
-@import 'core/page-admin';                  // Fully Polish. There are Some hard coded value.
-@import 'core/layout-grid';                 // Fully Polish. Most of the value is hard coded because we are not using mixin.
-@import 'core/print';                       // Fully Polish.
+@import 'core/page-admin';                  // Fully Format. There are Some hard coded value.
+@import 'core/layout-grid';                 // Fully Format. Most of the value is hard coded because we are not using mixin.
+@import 'core/print';                       // Fully Format.
 
 /* ==================== COMPONENTS ==================== */
-@import 'components/alerts';                // Fully Polish. (but if we decided to add more color variable, go in and change the color.)
-@import 'components/buttons';               // Fully Polish. There are Some hard coded value.
-@import 'components/button-groups';         // Fully Polish. Rely Heavily on _buttons.scss.
-@import 'components/badges';                // Fully Polish. There are some stuff that have !important on it?
-@import 'components/labels';                // Fully Polish. When color-mix() use, go in the file there's TODO comments at where it is need ot be use.
-@import 'components/wells';                 // Fully Polish. When color-mix() use, go in the file there's TODO comments at where it is need ot be use.
-@import 'components/code';                  // Fully Polish. The naming is hard to understand.
-@import 'components/dropdowns';             // Fully Polish. There are Some hard coded value.
-@import 'components/close';                 // Fully Polish.
-@import 'components/list-group';            // Fully Polish. When color-mix() use, go in the file there's TODO comments at where it is need ot be use.
-@import 'components/modals';                // Fully Polish. There are Some hard coded value.
-@import 'components/pagination';            // Fully Polish.
-@import 'components/pager';                 // Fully Polish.
-@import 'components/forms';                 // Fully Polish. When color-mix() use, go in the file there's TODO comments at where it is need ot be use.
-@import 'components/tables';                // Fully Polish. Really hard to read. Have to be under forms.scss to override checkbox positioning.
-@import 'components/input-groups';          // Fully Polish. Need to move the pickers to the appropriat file.
-@import 'components/breadcrumbs';           // Fully Polish.
-@import 'components/thumbnails';            // Fully Polish.
-@import 'components/scaffolding';           // Fully Polish.
-@import 'components/panels';                // Fully Polish. There are Some hard coded value.
-@import 'components/popovers';              // Fully Polish. 
-@import 'components/progress-bars';         // Fully Polish. There are Some hard coded value.
-@import 'components/tooltip';               // Fully Polish.
-@import 'components/navs';                  // Fully polish.
-@import 'components/navbar';                // Fully Polish. There are Some hard coded value.
+@import 'components/alerts';                // Fully Format. There are Some hard coded value. When color-mix() use, go in the file there's TODO comments at where it is need ot be use.
+@import 'components/buttons';               // Fully Format. When color-mix() use, go in the file there's TODO comments at where it is need ot be use. There are Some hard coded value. Use fade a sass function.
+@import 'components/button-groups';         // Fully Format. Rely Heavily on _buttons.scss.
+@import 'components/badges';                // Fully Format. There are Some hard coded value. There are some stuff that have !important on it?
+@import 'components/labels';                // Fully Format. There are Some hard coded value. When color-mix() use, go in the file there's TODO comments at where it is need ot be use.
+@import 'components/wells';                 // Fully Format. There are Some hard coded value. When color-mix() use, go in the file there's TODO comments at where it is need ot be use.
+@import 'components/code';                  // Fully Format. There are Some hard coded value.
+@import 'components/dropdowns';             // Fully Format. There are Some hard coded value.
+@import 'components/close';                 // Fully Format.
+@import 'components/list-group';            // Fully Format. When color-mix() use, go in the file there's TODO comments at where it is need ot be use.
+@import 'components/modals';                // Fully Format. There are Some hard coded value.
+@import 'components/pagination';            // Fully Format.
+@import 'components/pager';                 // Fully Format.
+@import 'components/forms';                 // Fully Format. There are Some hard coded value. When color-mix() use, go in the file there's TODO comments at where it is need ot be use.
+@import 'components/tables';                // Fully Format. Really hard to read. There are Some hard coded value. Have to be under forms.scss to override checkbox positioning.
+@import 'components/input-groups';          // Fully Format. There are Some hard coded value. Need to move the pickers to the appropriat file.
+@import 'components/breadcrumbs';           // Fully Format.
+@import 'components/thumbnails';            // Fully Format.
+@import 'components/scaffolding';           // Fully Format. There are Some hard coded value.
+@import 'components/panels';                // Fully Format. There are Some hard coded value. When color-mix() use, go in the file there's TODO comments at where it is need ot be use.
+@import 'components/popovers';              // Fully Format. There are Some hard coded value.
+@import 'components/progress-bars';         // Fully Format. There are Some hard coded value.
+@import 'components/tooltip';               // Fully Format.
+@import 'components/navs';                  // Fully Format. There are Some hard coded value.
+@import 'components/navbar';                // Fully Format. There are Some hard coded value.
 
 /* ======================= ROCK COMPONENTS ======================*/
 @import 'rock-components/follow';
 @import 'rock-components/group-list';
 @import 'rock-components/labels';
-@import 'rock-components/pagelist';
+@import 'rock-components/pagelist';                 // Fully Format. There are Some hard coded value.
 @import 'rock-components/panel-helper';
 @import 'rock-components/person-list';
 @import 'rock-components/photo-frame';
@@ -93,8 +90,25 @@
 @import 'rock-components/progress-tracker';
 @import 'rock-components/typeahead-support';
 @import 'rock-components/image-cropper';
+@import 'rock-components/sliding-date-range';
+@import 'rock-components/paneled-list';
+@import 'rock-components/person-directory';
+@import 'rock-components/picker-date';
+@import 'rock-components/asset-manager';
+@import 'rock-components/update-panel-status';
+@import 'rock-components/upload-controls';
+@import 'rock-components/value-list';
+@import 'rock-components/vue-select';               // Fully Format. There are Some hard coded value.
+@import 'rock-components/paging-navigation';        // Fully Format.
+@import 'rock-components/list-extensions';          // Fully Format. There are Some hard coded value.
+@import 'rock-components/kpi';                      // Fully Format. There are Some hard coded value. 
+@import 'rock-components/key-value';                // Fully Format.
+@import 'rock-components/image-with-icon';          // Fully Format. There are Some hard coded value. 
+
+
+
 
 
 /* ======================= ANIMATION ======================*/
-@import 'components/component-animations';  //Fully Polish
+@import 'components/component-animations';  //Fully Format
 

@@ -1,0 +1,280 @@
+
+
+// KPI (ROCK COMPONENT) 
+
+
+// =============================================================
+// Table of Content
+//  + Base Style
+//  + State & Value
+//  + Label
+//  + Sizing
+// =============================================================
+
+
+// ======================== BASE STYLE ========================
+.kpi-container {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  margin: 0 calc(var(--spacing-small) * -1);
+
+  > .kpi {
+    min-width:                var(--kpi-min-width, 220px);
+    margin:                   var(--spacing-small);
+  }
+
+  @media (min-width: $screen-small) {
+    > .kpi {
+      max-width:              calc(var(--kpi-col-sm, 50%) - 16px);
+    }
+  }
+
+  @media (min-width: $screen-medium) {
+    > .kpi {
+      max-width:              calc(var(--kpi-col-md, 33.33333%) - 16px);
+    }
+    -ms-flex-pack:            distribute;
+    justify-content:          space-around;
+  }
+
+  @media (min-width: $screen-large) {
+    > .kpi {
+      max-width:              calc(var(--kpi-col-lg, 25%) - 16px);
+    }
+    -webkit-box-pack:         start;
+    -ms-flex-pack:            start;
+    justify-content:          flex-start;
+  }
+}
+
+.kpi-title {
+  margin-top:               0;
+  font-weight:              var(--font-weight-semibold);
+}
+
+.kpi {
+  position:                 relative;
+  display:                  flex;
+  flex-basis:               100%;
+  flex-grow:                1;
+  align-items:              center;
+  margin:                   0 var(--spacing-small) var(--spacing-medium);
+  overflow-y:               hidden;
+  font-size:                var(--font-size-h3);
+  color:                    var(--color-primary);
+  align-self:               flex-start;
+}
+
+.kpi-card {
+  background:               var(--color-interface-softest);
+  border:                   1px solid #000;
+  border-color:             currentColor;
+  border-radius:            var(--rounded-small);
+  align-self:               auto;
+}
+
+.kpi-icon {
+  position:                 relative;
+  display:                  inline-flex;
+  align-items:              center;
+  justify-content:         center;
+  // min-width: 50px;
+  max-width:                35%;
+  height:                   100%;
+  font-size:                32px;
+  vertical-align:           top;
+
+  .kpi-card & {
+    margin-left:            var(--spacing-medium);
+  }
+
+  .has-icon-bg & {
+    display:                block;
+    width:                  max-content;
+    margin-left:            0;
+
+    .kpi-content {
+      position:             absolute;
+      top:                  0;
+      right:                0;
+      bottom:               0;
+      left:                 0;
+      display:              flex;
+      align-items:          center;
+      justify-content:     center;
+    }
+  }
+
+  // Force 48px BG for kpi-sm
+  .has-icon-bg.kpi-sm > & {
+    display:                flex;
+    flex-grow:              1;
+    width:                  48px;
+    min-width:              48px;
+    max-width:              48px;
+  }
+
+  .svg-placeholder {
+    display:                none;
+    width:                  2em;
+    height:                 auto;
+    background:             currentColor;
+    border-radius:          var(--rounded-small);
+    opacity:                0;
+
+    .kpi-card > & {
+      //width: 100%;
+      height:               100%;
+      border-radius:        0;
+    }
+
+    .has-icon-bg & {
+      display:              block;
+      opacity:              .2;
+    }
+  }
+}
+// ====================== END BASE STYLE ======================
+
+
+// ======================== STAT & VALUE ========================
+.kpi-stat {
+  flex:                     1 1 0;
+  align-self:               flex-start;
+  min-width:                0;
+  padding:                  var(--spacing-small) 0;
+  overflow:                 hidden;
+
+  .kpi-icon + & {
+    align-self:             center;
+    padding:                var(--spacing-small) var(--spacing-medium);
+  }
+
+  .kpi-card & {
+    padding:                var(--spacing-small) var(--spacing-medium);
+  }
+}
+
+.stat-value {
+  display:                  inline-block;
+  font-size:                26px;
+  font-weight:              700;
+  line-height:              1;
+}
+
+.kpi-value {
+  display:                  block;
+  font-weight:              var(font-weight-bold);
+  line-height:              1;
+}
+
+.kpi-subvalue {
+  padding-left:             .4em;
+  font-size:                .6em;
+  font-weight:              var(--font-weight-regular);
+  color:                    var(--color-interface-soft);
+}
+// ====================== END STAT & VALUE ======================
+
+
+// ======================== LABEL ========================
+.kpi-label,
+.kpi-secondary-label {
+  display:                  block;
+  font-size:                .53846em;
+  line-height:              1.1;
+  color:                    var(--color-interface-strong);
+}
+
+.kpi-secondary-label {
+  font-size:                var(--font-size-xsmall);
+  line-height:              12px;
+  opacity:                  .7;
+}
+// ====================== END LABEL ======================
+
+
+
+
+// Firefox does not correctly render.
+@supports not (width: fit-content) {
+  .kpi-lg.has-icon-bg .kpi-icon {
+    min-width:              86px;
+  }
+
+  .has-icon-bg .kpi-icon {
+    min-width:              57px;
+    height:                 100%;
+
+    &::before {
+      position:             absolute;
+      top:                  0;
+      bottom:               0;
+      display:              block;
+      width:                100%;
+      content:              " ";
+      background:           currentColor;
+      opacity:              .2;
+    }
+
+    .svg-placeholder {
+      opacity:              0 !important;
+    }
+  }
+}
+
+
+// ======================== SIZING ========================
+.kpi-sm {
+  .kpi-icon {
+    font-size:              24px;
+  }
+
+  .kpi-stat {
+    padding:                var(--spacing-small) var(--spacing-medium);
+  }
+}
+
+.kpi-lg,
+.kpi-xl {
+  font-size:                30px;
+
+  .kpi-stat {
+    padding:                var(--spacing-medium) 10px;
+  }
+
+  .kpi-label {
+    padding:                var(--spacing-tiny) 0;
+    font-size:              var(--font-size-regular);
+    font-weight:            var(--font-weight-regular);
+  }
+
+  .kpi-icon {
+    overflow:               visible;
+    font-size:              48px;
+    text-align:             center;
+  }
+}
+
+.kpi-lg-label {
+  display:                  block;
+  font-size:                .53846em; 
+  line-height:              1.1;   
+  color:                    var(--color-interface-strong); 
+  padding:                  var(--spacing-tiny) 0;
+  font-size:                17px;
+}
+
+.kpi-xl {
+  font-size:                48px;
+
+  .kpi-icon {
+    font-size:              54px;
+  }
+}
+// ====================== END SIZING ======================
+
+

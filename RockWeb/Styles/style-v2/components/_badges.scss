@@ -14,7 +14,7 @@
 .badge {
   display:            inline-block;
   min-width:          10px;
-  padding:            3px 7px;
+  padding:            var(--spacing-tiny) 7px;
   font-size:          var(--font-size-small);
   font-weight:        var(--font-weight-bold);
   line-height:        var(--font-height-tight);
@@ -82,6 +82,15 @@
 
   .fa-circle::before {
     border-radius: 50%;
+  }
+}
+
+.badge-bar {
+  display:      flex;
+  align-items:  center;
+  
+  .badge {
+    background-color: inherit;
   }
 }
 // ======================== END BASE STYLE ========================

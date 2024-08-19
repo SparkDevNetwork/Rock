@@ -108,7 +108,7 @@
           right:      -6px;
 
           .label {
-            padding:        2px 8px;
+            padding:        2px var(--spacing-small);
             color:          var(--color-interface-softest);
             background:     var(--color-danger-soft);
             border-radius:  36px;

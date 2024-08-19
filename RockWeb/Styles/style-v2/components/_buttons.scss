@@ -4,7 +4,8 @@
 
 // =============================================================
 // Table of Content           
-//  + Base Style              
+//  + Base Style         
+//  + Outline     
 //  + Alternate Style    
 //  + Button Size     
 // =============================================================
@@ -77,7 +78,217 @@
     text-decoration:  none;
   }
 }
+
+.btn > .btn-icon {
+  position: relative;
+  top: -1px;
+  width: 1em;
+  height: 1em;
+  margin-left: .5em;
+  vertical-align: middle;
+}
+
+.btn.aspNetDisabled {
+  pointer-events:   none; // Future-proof disabling of clicks
+  cursor:           not-allowed;
+
+  opacity:          .65;
+  box-shadow:       none;
+}
+
+.btn-authentication {
+  width:            100%;
+  margin-bottom:    var(--spacing-small);
+  color:            var(--color-interface-strong);
+  background-color: var(--color-interface-softest);
+  border-color:     var(--color-interface-soft);
+
+  &.facebook,
+  &.google,
+  &.twitter {
+    background-color:   var(--color-interface-softest);
+    border-color:       var(--color-interface-soft);
+
+    &::before {
+      display:        inline-block;
+      margin-right:   12px;
+      font-family:    "@{fa-font-face} Brands";
+      font-weight:    var(--font-weight-regular);
+      content:        var(--social-icon);
+      flex:           0 0 1.25em;
+    }
+  }
+
+  &.facebook {
+    color:          var(--color-interface-softest);
+    --btn-bg:       $brand-facebook;
+    --btn-hover-bg: $brand-facebook; //TODO darken by 10% when available
+    --social-icon:  "\f39e";
+  }
+
+  &.google {
+    color: var(--color-interface-strong);
+    &:before {
+      background-image:     url("/Assets/Icons/googlesigninicon.svg");
+      background-size:      contain;
+      background-repeat:    no-repeat;
+      background-position:  center;
+      width:                1em;
+      height:               1em;
+      content: "  ";
+    }
+  }
+
+  &.twitter {
+    color:          var(--color-interface-softest);
+    --btn-bg:       $brand-twitter;
+    --btn-hover-bg: $brand-twitter; //TODO darken by 10% when available
+    --social-icon:  @fa-var-twitter;
+  }
+
+  &:hover {
+    background-color: var(--color-interface-softer);
+  }
+}
+
+.btn-authentication-v2 {
+  display:          inline-flex;
+  align-items:      center;
+  justify-content:  space-between;
+  white-space:      normal;
+
+  &:after {
+    content: " ";
+    flex: 0 1 1.25em;
+  }
+}
+
+.btn-pill {
+  border-radius: 999px;
+}
+
+.btn-overflow {
+  color:    var(--color-interface-medium);
+  &:hover,
+  &:focus {
+    color:  var(--color-interface-stronger);
+  }
+}
+
+.btn-minimal {
+  padding:          0;
+  color:            var(--color-interface-strong);
+  text-decoration:  none;
+}
 // ======================== END BASE BUTTON ========================
+
+
+// ========================== OUTLINE ==========================
+.btn-outline-default {
+  color:              var(--color-interface-softest);
+  background-color:   transparent;
+  border-color:       var(--color-interface-softest); // TODO: darken by 5% when available
+  
+  &:hover {
+    color:            var(--color-interface-stronger);
+    background-color: var(--color-interface-softest);
+    border-color:     var(--color-interface-softest);
+  }
+  
+  &:focus,
+  &.focus {
+    box-shadow:       0 0 0 3.2px fade(var(--color-interface-softest), 50%); // TODO: this uses fade, which is a Sass function
+  }
+  
+  &.disabled {
+    opacity:          0.5;
+  }
+}
+
+.btn-outline-primary {
+  color:              var(--color-primary);
+  background-color:   transparent;
+  border-color:       var(--color-primary); // TODO: darken by 5% when available
+  
+  &:hover {
+    color:            var(--color-interface-softest);
+    background-color: var(--color-primary);
+    border-color:     var(--color-primary);
+  }
+  
+  &:focus,
+  &.focus {
+    box-shadow:       0 0 0 3.2px fade(var(--color-primary), 50%); // TODO: this uses fade, which is a Sass function
+  }
+  
+  &.disabled {
+    opacity:          0.5;
+  }
+}
+
+.btn-outline-success {
+  color:              var(--color-success-strong);
+  background-color:   transparent;
+  border-color:       var(--color-success-strong); // TODO: darken by 5% when available
+  
+  &:hover {
+    color:            var(--color-interface-softest);
+    background-color: var(--color-success-strong);
+    border-color:     var(--color-success-strong);
+  }
+  
+  &:focus,
+  &.focus {
+    box-shadow:       0 0 0 3.2px fade(var(--color-success-strong), 50%); // TODO: this uses fade, which is a Sass function
+  }
+  
+  &.disabled {
+    opacity:          0.5;
+  }
+}
+
+.btn-outline-info {
+  color:              var(--color-info-strong);
+  background-color:   transparent;
+  border-color:       var(--color-info-strong); // TODO: darken by 5% when available
+  
+  &:hover {
+    color:            var(--color-interface-softest);
+    background-color: var(--color-info-strong);
+    border-color:     var(--color-info-strong);
+  }
+  
+  &:focus,
+  &.focus {
+    box-shadow:       0 0 0 3.2px fade(var(--color-info-strong), 50%); // TODO: this uses fade, which is a Sass function
+  }
+  
+  &.disabled {
+    opacity:          0.5;
+  }
+}
+
+.btn-outline-warning {
+  color:              var(--color-warning-strong);
+  background-color:   transparent;
+  border-color:       var(--color-warning-strong); // TODO: darken by 5% when available
+  
+  &:hover {
+    color:            var(--color-interface-softest);
+    background-color: var(--color-warning-strong);
+    border-color:     var(--color-warning-strong);
+  }
+  
+  &:focus,
+  &.focus {
+    box-shadow:       0 0 0 3.2px fade(var(--color-warning-strong), 50%); // TODO: this uses fade, which is a Sass function
+  }
+  
+  &.disabled {
+    opacity:          0.5;
+  }
+}
+// ======================== END OUTLINE ========================
 
 
 // ========================== ALTERNATIVE BUTTON ==========================
@@ -86,39 +297,39 @@
   background-color: var(--color-interface-softest);
   border-color:     var(--color-interface-medium);
  
-  btn:focus,
-  btn.focus {
+  &:focus,
+  &.focus {
     color:            var(--color-interface-stronger);
     background-color: var(--color-interface-soft);
     border-color:     var(--color-interface-medium);
   }
-  btn:hover {
+  &:hover {
     color:            var(--color-interface-stronger);
     background-color: var(--color-interface-soft);
     border-color:     var(--color-interface-medium);
   }
-  btn:active,
-  btn.active,
-  .open > .dropdown-toggle {
+  &:active,
+  &.active,
+  .open > .dropdown-toggle & {
     color:            var(--color-interface-stronger);
     background-color: var(--color-interface-medium);
     border-color:     var(--color-interface-soft);
     background-image: none;
  
-    btn:hover,
-    btn:focus,
-    btn.focus {
+    &:hover,
+    &:focus,
+    &.focus {
       color:            var(--color-interface-stronger);
       background-color: var(--color-interface-medium);
       border-color:     var(--color-interface-soft);
     }
   }
-  btn.disabled,
-  btn[disabled],
-  fieldset[disabled] btn {
-    btn:hover,
-    btn:focus,
-    btn.focus {
+  &.disabled,
+  &[disabled],
+  fieldset[disabled] & {
+    &:hover,
+    &:focus,
+    &.focus {
       background-color:   var(--color-interface-softest);
       border-color:       var(--color-interface-soft);
     }
@@ -135,40 +346,40 @@
   background-color: var(--color-primary);
   border-color:     var(--color-primary);
 
-  btn:focus,
-  btn.focus {
+  &:focus,
+  &.focus {
       color:            var(--color-interface-softest);
-      background-color: var(--color-primary);
+      background-color: var(--color-primary) !important;
       border-color:     var(--color-primary);
   }
-  btn:hover {
+  &:hover {
       color:            var(--color-primary);
       background-color: var(--color-interface-softest);
       border-color:     var(--color-primary);
 
   }
-  btn:active,
-  btn.active,
-  .open > .dropdown-toggle {    
+  &:active,
+  &.active,
+  .open > .dropdown-toggle & {    
       color:            var(--color-primary);
       background-color: var(--color-interface-softest);
       border-color:     var(--color-interface-softest);
       background-image: none;
 
-      btn:hover,
-      btn:focus,
-      btn.focus {
+      &:hover,
+      &:focus,
+      &.focus {
       color:            var(--color-primary);
       background-color: var(--color-interface-softest);
       border-color:     var(--color-interface-softest);
       }
   }
-  btn.disabled,
-  btn[disabled],
-  fieldset[disabled] btn {
-      btn:hover,
-      btn:focus,
-      btn.focus {
+  &.disabled,
+  &[disabled],
+  fieldset[disabled] & {
+    &:hover,
+    &:focus,
+    &.focus {
       background-color: var(--color-primary);
       border-color:     var(--color-primary);
       }
@@ -185,41 +396,41 @@
   background-color:   var(--color-success-strong);
   border-color:       var(--color-success-strong);
 
-  btn:focus,
-  btn.focus {
+  &:focus,
+  &.focus {
       color:            var(--color-interface-softest);
       background-color: var(--color-success-strong);
       border-color:     var(--color-success-strong);
   }
-  btn:hover {
+  &:hover {
       color:            var(--color-success-strong);
       background-color: var(--color-interface-softest);
       border-color:     var(--color-success-strong);
   }
-  btn:active,
-  btn.active,
-  .open > .dropdown-toggle {
+  &:active,
+  &.active,
+  .open > .dropdown-toggle & {
       color:            var(--color-interface-softest);
       background-color: var(--color-interface-softest);
       border-color:     var(--color-success-strong);
       background-image: none;
 
-      btn:hover,
-      btn:focus,
-      btn.focus {
-      color:            var(--color-success-strong);              
-      background-color: var(--color-interface-softest);
-      border-color:     var(--color-success-strong);
+      &:hover,
+      &:focus,
+      &.focus {
+        color:            var(--color-success-strong);              
+        background-color: var(--color-interface-softest);
+        border-color:     var(--color-success-strong);
       }
   }
-  btn.disabled,
-  btn[disabled],
-  fieldset[disabled] btn {
-      btn:hover,
-      btn:focus,
-      btn.focus {
-      background-color: var(--color-success-strong);
-      border-color:     var(--color-success-strong);
+  &.disabled,
+  &[disabled],
+  fieldset[disabled] & {
+      &:hover,
+      &:focus,
+      &.focus {
+        background-color: var(--color-success-strong);
+        border-color:     var(--color-success-strong);
       }
   }
 
@@ -234,39 +445,39 @@
   background-color: var(--color-info-strong);
   border-color:     var(--color-info-strong);
 
-  btn:focus,
-  btn.focus {
+  &:focus,
+  &.focus {
       color:            var(--color-interface-softest);
       background-color: var(--color-info-strong);
       border-color:     var(--color-info-strong);
   }
-  btn:hover {
+  &:hover {
       color:            var(--color-info-strong);
       background-color: var(--color-interface-softest);
       border-color:     var(--color-info-strong);
   }
-  btn:active,
-  btn.active,
-  .open > .dropdown-toggle {
+  &:active,
+  &.active,
+  .open > .dropdown-toggle & {
       color:            var(--color-info-strong);
       background-color: var(--color-interface-softest);
       border-color:     var(--color-info-strong);
       background-image: none;
 
-      btn:hover,
-      btn:focus,
-      btn.focus {
-      color:            var(--color-info-strong);
-      background-color: var(--color-interface-softest);
-      border-color:     var(--color-info-strong);
+      &:hover,
+      &:focus,
+      &.focus {
+        color:            var(--color-info-strong);
+        background-color: var(--color-interface-softest);
+        border-color:     var(--color-info-strong);
       }
   }
-  btn.disabled,
-  btn[disabled],
-  fieldset[disabled] btn {
-      btn:hover,
-      btn:focus,
-      btn.focus {
+  &.disabled,
+  &[disabled],
+  fieldset[disabled] & {
+    &:hover,
+    &:focus,
+    &.focus {
       background-color: var(--color-info-strong);
       border-color:     var(--color-info-strong);
       }
@@ -283,39 +494,39 @@
   background-color: var(--color-warning-strong);
   border-color:     var(--color-warning-strong);
 
-  btn:focus,
-  btn.focus {
+  &:focus,
+  &.focus {
       color:            var(--color-interface-softest);
       background-color: var(--color-warning-strong);
       border-color:     var(--color-warning-strong);
   }
-  btn:hover {
+  &:hover {
       color:            var(--color-warning-strong);
       background-color: var(--color-interface-softest);
       border-color:     var(--color-warning-strong);
   }
-  btn:active,
-  btn.active,
-  .open > .dropdown-toggle {
+  &:active,
+  &.active,
+  .open > .dropdown-toggle & {
       color:            var(--color-warning-strong);
       background-color: var(--color-interface-softest);
       border-color:     var(--color-warning-strong);
       background-image: none;
 
-      btn:hover,
-      btn:focus,
-      btn.focus {
+      &:hover,
+      &:focus,
+      &.focus {
       color:            var(--color-warning-strong);
       background-color: var(--color-interface-softest);
       border-color:     var(--color-warning-strong);
       }
   }
-  btn.disabled,
-  btn[disabled],
-  fieldset[disabled] btn {
-      btn:hover,
-      btn:focus,
-      btn.focus {
+  &.disabled,
+  &[disabled],
+  fieldset[disabled] & {
+    &:hover,
+    &:focus,
+    &.focus {
       background-color: var(--color-warning-strong);
       border-color:     var(--color-warning-strong);
       }
@@ -327,44 +538,45 @@
   }
 }
 
-.btn.btn-danger{
+.btn.btn-danger,
+.btn-danger-solid {
   color:            var(--color-interface-softest);
   background-color: var(--color-danger-strong);
   border-color:     var(--color-danger-strong);
 
-  btn:focus,
-  btn.focus {
+  &:focus,
+  &.focus {
       color:            var(--color-interface-softest);
       background-color: var(--color-danger-strong);
       border-color:     var(--color-danger-strong);
   }
-  btn:hover {
+  &:hover {
       color:            var(--color-danger-strong);
       background-color: var(--color-interface-softest);
       border-color:     var(--color-danger-strong);
   }
-  btn:active,
-  btn.active,
-  .open > .dropdown-toggle {
+  &:active,
+  &.active,
+  .open > .dropdown-toggle &{
       color:            var(--color-danger-strong);
       background-color: var(--color-interface-softest);
       background-image: none;
       border-color:     var(--color-danger-strong);
 
-      btn:hover,
-      btn:focus,
-      btn.focus {
+      &:hover,
+      &:focus,
+      &.focus {
       color:            var(--color-danger-strong);
       background-color: var(--color-interface-softest);
       border-color:     var(--color-danger-strong);
       }
   }
-  btn.disabled,
-  btn[disabled],
-  fieldset[disabled] btn {
-      btn:hover,
-      btn:focus,
-      btn.focus {
+  &.disabled,
+  &[disabled],
+  fieldset[disabled] & {
+    &:hover,
+    &:focus,
+    &.focus {
       background-color: var(--color-danger-strong);
       border-color:     var(--color-danger-strong);
       }
@@ -373,6 +585,104 @@
   .badge {
       color:            var(--color-danger-strong);
       background-color: var(--color-danger-strong);
+  }
+}
+
+.btn-action{
+  color:            var(--color-interface-softest);
+  background-color: var(--color-interface-stronger);
+  border-color:     var(--color-interface-stronger);
+
+  &:focus,
+  &.focus {
+    color:              var(--color-interface-softest);
+    background-color:   var(--color-interface-stronger);
+    border-color:       var(--color-interface-stronger);
+  }
+  &:hover {
+    color:            var(--color-interface-softest);
+    background-color: var(--color-interface-stronger);
+    border-color:     var(--color-danger-strong)
+  }
+  &:active,
+  &.active,
+  .open > .dropdown-toggle & {
+    color:              var(--color-interface-softest);
+    background-color:   var(--color-interface-stronger);
+    background-image:   none;
+    border-color:       var(--color-danger-strong);
+
+    &:hover,
+    &:focus,
+    &.focus {
+      color:            var(--color-interface-softest);
+      background-color: var(--color-interface-stronger);
+      border-color:     var(--color-interface-stronger)
+    }
+  }
+  &.disabled,
+  &[disabled],
+  fieldset[disabled] & {
+    &:hover,
+    &:focus,
+    &.focus {
+      background-color: var(--color-interface-stronger);
+      border-color: var(--color-interface-stronger);
+    }
+  }
+
+  .badge {
+    color: var(--color-interface-stronger);
+    background-color: var(--color-interface-softest);
+  }
+}
+
+.btn-security{
+  color:            var(--color-interface-stronger);
+  background-color: var(--color-interface-softest);
+  border-color:     var(--color-interface-soft);
+
+  &:focus,
+  &.focus {
+    color:            var(--color-interface-stronger);
+    background-color: var(--color-interface-softer);
+    border-color:     var(--color-interface-medium)
+  }
+  &:hover {
+    color:            var(--color-interface-stronger);
+    background-color: var(--color-interface-softer);
+    border-color:     var(--color-interface-soft)
+  }
+  &:active,
+  &.active,
+  .open > .dropdown-toggle & {
+    color:              var(--color-interface-stronger);
+    background-color:   var(--color-interface-softer);
+    background-image:   none;
+    border-color:       var(--color-interface-soft);
+
+    &:hover,
+    &:focus,
+    &.focus {
+      color:            var(--color-interface-stronger);
+      background-color: var(--color-interface-softest); //TODO darken by 17% when available
+      border-color:     var(--color-interface-medium)
+    }
+  }
+  &.disabled,
+  &[disabled],
+  fieldset[disabled] & {
+    &:hover,
+    &:focus,
+    &.focus {
+      background-color: var(--color-interface-softest);
+      border-color:     var(--color-interface-soft);
+    }
+  }
+
+  .badge {
+    color:            var(--color-interface-softest);
+    background-color: var(--color-interface-stronger);
   }
 }
 
@@ -431,6 +741,14 @@
   margin-top:   -1px;
   font-size:    var(--font-size-xsmall);
   line-height:  var(--line-height-tight);
+}
+
+.btn-tabled {
+  a {
+    &:hover {
+      text-decoration: underline;
+    }
+  }
 }
 // ======================== END ALTERNAVTIVE BUTTON ========================
  

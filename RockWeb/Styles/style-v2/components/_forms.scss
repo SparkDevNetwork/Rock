@@ -4,7 +4,7 @@
 // =============================================================
 // Table of Content           
 //  + Normalization
-//  + Form contorl
+//  + Form control
 //  + Form group, help block, form-inline
 //  + Check box, radio
 //  + Sizing Form control 
@@ -262,6 +262,56 @@ output {
   }
 }
 
+.form-no-margin {
+  margin: 0;
+}
+
+.form-right {
+  margin-bottom: var(--spacing-medium);
+  text-align: right;
+
+  &:before,
+  &:after {
+    display: table; 
+    content: " "; 
+  }
+  &:after {
+    clear: both;
+  }
+
+  .control-label {
+    display: block;
+  }
+
+  .input-group {
+    float: right;
+  }
+}
+
+.form-row {
+  margin-right: calc(var(--spacing-tiny) * -1);
+  margin-left:  calc(var(--spacing-tiny) * -1);
+
+  &:before,
+  &:after {
+    display: table; 
+    content: " "; 
+  }
+  &:after {
+    clear: both;
+  }
+
+  & > .col,
+  & > [class*="col-"] {
+    padding-right:  var(--spacing-tiny);
+    padding-left:   var(--spacing-tiny);
+  }
+
+  .form-control-group & {
+    margin-right: 0;
+    margin-left: 0;
+  }
+}
 // ===================== END FORM CONTROL =====================
 
 
@@ -565,6 +615,7 @@ a.warning {
   height:var(--line-height-normal)-large;
   line-height:var(--line-height-normal)-large;
 }
+
 .input-sm + .form-control-feedback,
 .input-group-sm + .form-control-feedback,
 .form-group-sm .form-control + .form-control-feedback {
@@ -597,6 +648,7 @@ a.warning {
     line-height: var(--line-height-normal)-sm;
   }
 }
+
 .form-group-lg {
   .form-control {
     height:var(--line-height-normal)-large;

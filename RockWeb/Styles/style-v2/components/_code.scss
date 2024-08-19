@@ -45,9 +45,9 @@ kbd {
 // Blocks of code
 pre {
   display:          block;
-  padding:          calc((20px - 1px) / 2px);
+  padding:          var(--spacing-small);
   margin:           0 0 var(--spacing-small);
-  font-size:        calc(var(--font-size-regular) - 1); // 14px to 13px
+  font-size:        calc(var(--font-size-small) - 1); // 14px to 13px
   line-height:      var(--line-height-normal);
   color:            var(--color-interface-stronger);
   word-break:       break-all;

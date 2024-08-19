@@ -1,0 +1,27 @@
+
+// Image Cropper - styles for image crop component (Rock Component)
+
+
+// =============================================================
+// Table of Content           
+//  + Base style
+// =============================================================
+
+
+// ======================== BASE STYLE ========================
+.image-with-icon-container {
+  > img {
+    margin-left:    var(--font-size-xsmall);
+    border-radius:  var(--rounded-small);
+  }
+
+  span.icon-stack-container.fa-stack {
+    bottom: 1.33em;
+    left: .5em;
+  }
+}
+// ====================== END BASE STYLE ======================
+
+
+
+

@@ -131,7 +131,7 @@
     > li {
       float:            none;
       > a {
-        margin-bottom:  5px;
+        margin-bottom:  var(--spacing-tiny);
         text-align:     center;
       }
     }
@@ -229,7 +229,7 @@
   > li {
     float: none;
     > a {
-      margin-bottom:  5px;
+      margin-bottom:  var(--spacing-tiny);
       text-align:     center;
     }
   }

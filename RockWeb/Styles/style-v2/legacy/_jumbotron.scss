@@ -24,7 +24,7 @@
   p {
     margin-bottom:  calc(var(--spacing-large) * 0.5);
     font-size:      calc(var(--font-size-h6) * 1.5);
-    font-weight:    200;
+    font-weight:    var(--font-weight-light);
   }
 
   > hr {

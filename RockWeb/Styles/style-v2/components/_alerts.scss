@@ -32,7 +32,7 @@
   }
 
   > p + p {
-    margin-top:     5px;
+    margin-top:     var(--spacing-tiny);
   }
 
   .help{
@@ -171,9 +171,8 @@
   }
 }
 
-//found in _rock-core.less doesn't know what it does 
 
-// .alert-warning .navigation-tip {
-//   color: @state-warning-bg;
-//   background-color: lighten(@state-warning-text, 10%);
-// }
+.alert-warning .navigation-tip {
+  color: var(--color-warning-soft);
+  background-color: var(--color-warning-strong); //TODO Lighten this by 10% when avaiable.
+}

@@ -453,7 +453,7 @@ tr.row-highlight {
     display: table-cell;
   }
 
-  @media screen and (min-width: 480px) {
+  @media screen and (min-width: $screen-small) {
     th[data-priority="2"],
     td[data-priority="2"] {
       display: table-cell;
@@ -545,7 +545,7 @@ tr.row-highlight {
 
 // ===================== TABLE GRID =====================
 .grid {
-  margin-bottom: 15px;
+  margin-bottom: var(--spacing-medium);
 
   .grid-table {
     border: 1px solid var(--color-interface-softer);
@@ -605,6 +605,7 @@ tr.row-highlight {
   }
 
   .btn-danger {
+    color: var(--color-interface-stronger);
     background: transparent;
     &:active,
     &:hover {
@@ -622,6 +623,59 @@ tr.row-highlight {
     }
   }
 }
+
+.grid-columncommand .btn-danger {
+  color:              var(--color-interface-stronger);
+  background-color:   var(--color-interface-softest);
+  border-color:       var(--color-interface-soft);
+  
+  &:focus,
+  &.focus {
+    color:            var(--color-interface-softest);
+    background-color: var(--color-danger-soft); // TODO darken by 10% when available
+    border-color:     var(--color-danger-stronger);
+  }
+  
+  &:hover {
+    color:            var(--color-interface-softest);
+    background-color: var(--color-danger-soft); // TODO darken by 10% when available
+    border-color:     var(--color-danger-stronger);
+  }
+  
+  &:active,
+  &.active,
+  .open > .dropdown-toggle & {
+    color:            var(--color-interface-softest); 
+    background-color: var(--color-danger-soft); // TODO: this uses darken, which is a Less function
+    background-image: none;
+    border-color:     var(--color-danger-stronger);
+
+    &:hover,
+    &:focus,
+    &.focus {
+      color:            var(--color-interface-softest);
+      background-color: var(--color-danger-medium);
+      border-color:     var(--color-danger-stronger);
+    }
+  }
+  
+  &.disabled,
+  &[disabled],
+  fieldset[disabled] & {
+    &:hover,
+    &:focus,
+    &.focus {
+      background-color: var(--color-interface-softest);
+      border-color:     var(--color-interface-soft);
+    }
+  }
+  
+  .badge {
+    color:            var(--color-interface-softest);
+    background-color: var(--color-interface-stronger);
+  }
+}
+
 
 // rwd responsive table override
 .grid-panel .table-responsive[data-pattern="priority-columns"],
