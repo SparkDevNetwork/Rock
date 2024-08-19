@@ -2433,7 +2433,7 @@ namespace Rock.Model
         /// of type. Then order by those with a matching number and SMS enabled; then further order
         /// by matching number with type == mobile; finally order by person Id to get the oldest
         /// person in the case of duplicate records. If no person is found and <paramref name="createNamelessPersonIfNotFound" /> = true, a
-        /// Nameless person record will created which can later be matched to a person
+        /// Nameless person record will be created which can later be matched to a person
         /// </summary>
         /// <param name="phoneNumber">The phone number.</param>
         /// <param name="createNamelessPersonIfNotFound">if set to <c>true</c> [create nameless person if not found].</param>
@@ -2483,7 +2483,7 @@ namespace Rock.Model
         /// <summary>
         /// Get the person associated with an email address.
         /// If no person is found and <paramref name="createNamelessPersonIfNotFound" /> = <see langword="true"/>,
-        /// a Nameless person record will created which can later be matched to a person.
+        /// a Nameless person record will be created which can later be matched to a person.
         /// </summary>
         /// <param name="emailAddress">The email address.</param>
         /// <param name="createNamelessPersonIfNotFound">if set to <see langword="true"/>, creates a nameless person if a person is not found.</param>
