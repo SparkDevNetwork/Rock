@@ -146,15 +146,14 @@ namespace Rock.Reporting.DataSelect.Person
                 height = selectionValues[1].AsIntegerOrNull() ?? height;
             }
 
-            string baseUrl = VirtualPathUtility.ToAbsolute( "~/" );
-
             // Construct the widthHeightHtmlParams strings
-            string widthHeightUrlParams = string.Format( "width={0}&height={1}", width, height );
+            string baseUrl = VirtualPathUtility.ToAbsolute( "~/" );
+            string widthHeightUrlParams = string.Format( "&width={0}&height={1}", width, height );
             string widthHeightHtmlParams = string.Format( " width='{0}' height='{1}' ", width, height );
-            string nophotoAdultFemaleHtml = $"<img src='{baseUrl}Assets/Images/person-no-photo-female.svg'{widthHeightHtmlParams} />";
-            string nophotoAdultMaleHtml = $"<img src='{baseUrl}Assets/Images/person-no-photo-male.svg'{widthHeightHtmlParams} />";
-            string nophotoChildFemaleHtml = $"<img src='{baseUrl}Assets/Images/person-no-photo-child-female.svg'{widthHeightHtmlParams} />";
-            string nophotoChildMaleHtml = $"<img src='{baseUrl}Assets/Images/person-no-photo-child-male.svg'{widthHeightHtmlParams} />";
+            string nophotoAdultFemaleHtml = "<img src='" + baseUrl + "Assets/Images/person-no-photo-female.svg'" + widthHeightHtmlParams + " />";
+            string nophotoAdultMaleHtml = "<img src='" + baseUrl + "Assets/Images/person-no-photo-male.svg'" + widthHeightHtmlParams + " />";
+            string nophotoChildFemaleHtml = "<img src='" + baseUrl + "Assets/Images/person-no-photo-child-female.svg'" + widthHeightHtmlParams + " />";
+            string nophotoChildMaleHtml = "<img src='" + baseUrl + "Assets/Images/person-no-photo-child-male.svg'" + widthHeightHtmlParams + " />";
 
             DateTime childBirthdateCutoff = RockDateTime.Now.Date.AddYears( -18 );
 
