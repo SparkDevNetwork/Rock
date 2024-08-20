@@ -33,6 +33,19 @@
     margin-bottom:      var(--spacing-tiny);
   }
 }
+
+.list-padded {
+  margin-top:           var(--spacing-medium);
+
+  li {
+    margin-top:         var(--spacing-medium);
+
+    &:first-child {
+      margin-top:       0;
+    }
+  }
+}
+
 // ====================== END BASE STYLE ======================
 
 

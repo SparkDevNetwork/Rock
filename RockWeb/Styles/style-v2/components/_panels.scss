@@ -685,11 +685,11 @@
 
 // ======================= PANEL BLOCK =======================
 .panel-block {
-  border-top-color: var(--color-interface-soft);
+  border-color: var(--color-interface-soft);
 
   // .panel-variant(@panel-border; @panel-heading-text-color; var(--color-interface-softer); @panel-heading-border;);
   & > .panel-heading {
-    color:                  var(--color-info-strong);
+    color:                  var(--color-interface-stronger);
     background-color:       var(--color-interface-softer);
     border-color:           var(--color-interface-softer);
 

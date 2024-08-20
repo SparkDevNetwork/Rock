@@ -15,7 +15,7 @@
 .btn {
   display:              inline-block;
   margin-bottom:        0; // For input.btn
-  font-weight:          var(--font-weight-bold);
+  font-weight:          var(--font-weight-medium);
   text-align:           center;
   white-space:          nowrap;
   vertical-align:       middle;
@@ -590,8 +590,8 @@
 
 .btn-action{
   color:            var(--color-interface-softest);
-  background-color: var(--color-interface-stronger);
-  border-color:     var(--color-interface-stronger);
+  background-color: var(--color-interface-strong);
+  border-color:     var(--color-interface-strong);
 
   &:focus,
   &.focus {
@@ -769,7 +769,7 @@
 }
 
 .btn-xs{
-  padding:        1px 5px;
+  padding:        var(--spacing-tiny) var(--spacing-small);
   font-size:      var(--font-size-xsmall);
   line-height:    var(--line-height-normal);
   border-radius:  var(--rounded-small);

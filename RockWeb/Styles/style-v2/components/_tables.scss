@@ -626,8 +626,8 @@ tr.row-highlight {
 
 .grid-columncommand .btn-danger {
   color:              var(--color-interface-stronger);
-  background-color:   var(--color-interface-softest);
-  border-color:       var(--color-interface-soft);
+  background-color:   transparent;
+  border-color:       transparent;
   
   &:focus,
   &.focus {
@@ -690,7 +690,7 @@ tr.row-highlight {
 .grid-filter {
   padding:            0;
   color:              var(--color-interface-stronger);
-  background-color:   var(--color-interface-softer);
+  // background-color:   var(--color-interface-);
   // border-bottom: 1px solid var(--color-interface-softer);
   //border-radius: var(--rounded-small);
 
@@ -1021,10 +1021,12 @@ td.grid-actions {
 
 .grid-select-cell {
   .photo-icon {
-    display:        inline-block;
-    width:          var(--spacing-large);
-    height:         var(--spacing-large);
-    vertical-align: top;
+    display:          inline-block;
+    width:            var(--spacing-large);
+    height:           var(--spacing-large);
+    vertical-align:   top;
+    margin-right:     var(--spacing-small);
+
   }
 
   .grid-img {

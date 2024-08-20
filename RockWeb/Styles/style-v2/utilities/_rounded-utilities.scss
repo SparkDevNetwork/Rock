@@ -1,0 +1,24 @@
+/* Border Radius Utility Classes */
+.rounded-tiny {
+    border-radius: var(--rounded-tiny);
+}
+
+.rounded-small {
+    border-radius: var(--rounded-small);
+}
+
+.rounded-medium {
+    border-radius: var(--rounded-medium);
+}
+
+.rounded-large {
+    border-radius: var(--rounded-large);
+}
+
+.rounded-xlarge {
+    border-radius: var(--rounded-xlarge);
+}
+
+.rounded-huge {
+    border-radius: var(--rounded-huge);
+}

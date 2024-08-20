@@ -1,0 +1,174 @@
+//
+// HTML Editor (summernote)
+// --------------------------------------------------
+
+// The HTML Editor height only includes the content body. Add additional space while the control is loading.
+.html-editor-container.loading {
+  box-sizing: content-box; // Use content-box to exclude padding from min-height total.
+  padding: 0 0 (var(--spacing-xlarge) + 10);
+}
+
+.note-editor.panel-default {
+  border-color: var(--color-primary);   //TODO ligthen by 35% when available
+}
+
+.note-editor.panel-default > .panel-heading {
+  background-color: var(--color-interface-softest);
+}
+
+.htmleditor-filebrowser .is-postback {
+  > .modal-header {
+    padding: 5px 15px;
+    margin: 0 -15px 15px;
+    margin-top: 0;
+    color: var(--color-interface-stronger);
+    background-color: var(--color-interface-strongest);
+  }
+
+  > .modal-footer {
+    padding: 8px 24px;
+    margin-right: -15px;
+    margin-left: -15px;
+    color: var(--color-primary);      //TODO darken by 20% when available.
+    background-color: var(--color-primary);      //TODO lighten by 20% when available.
+  }
+}
+
+.htmleditor-assetmanager .is-postback {
+  > .modal-header {
+    padding: 5px 15px;
+    margin: 0 -15px 15px;
+    margin-top: 0;
+    color: var(--color-interface-stronger);
+    background-color: var(--color-interface-strongest);
+  }
+
+  > .modal-footer {
+    padding: 8px 24px;
+    margin-right: -15px;
+    margin-left: -15px;
+    color: var(--color-primary);      //TODO darken by 20% when available.
+    background-color: var(--color-primary);      //TODO lighten by 20% when available.
+  }
+}
+
+.picker-folders,
+.picker-files {
+  -ms-flex-preferred-size: 0;
+  flex-basis: 0;
+  -ms-flex-positive: 1;
+  flex-grow: 1;
+  max-width: 100%;
+
+  @media (min-width: $screen-xsmall) {
+    float: left;
+  }
+
+  .scroll-container-vertical {
+    width: auto;
+
+    .viewport {
+      width: auto;
+    }
+  }
+}
+
+.picker-wrapper {
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+}
+
+.picker-folders {
+  max-width: 320px;
+  padding-right: 24px;
+  @media (max-width: calc($screen-xsmall - 1)) {
+    -ms-flex: 0 0 100%;
+    flex: 0 0 100%;
+    max-width: 100%;
+    padding-right: 0;
+    padding-bottom: 24px;
+  }
+
+  .actions {
+    margin-bottom: var(--spacing-medium);
+  }
+
+  @media (max-width: calc($screen-xsmall - 1)) {
+    .scroll-container-vertical .viewport {
+      height: 100px;
+    }
+  }
+}
+
+.picker-files {
+
+  .empty-folder-notification {
+    display: block;
+    text-align: center;
+  }
+
+  .assetmanager-actions .fileupload-group {
+    padding: 0;
+    border: 0;
+
+    .fileupload-button {
+      height: 33px;
+      padding: 7px 10px;
+      line-height: 1;
+    }
+  }
+
+  img.file-browser-image {
+    width: 80px;
+    height: 80px;
+  }
+}
+
+iframe.file-browser {
+  border: 0;
+}
+
+.structured-content-container {
+  min-height: 378px;
+  overflow: hidden;
+  background: var(--color-interface-softest);
+  border: 1px solid var(--color-interface-soft);
+  border-radius: var(--rounded-small);
+
+  @media (min-width: $screen-medium) {
+    background: var(--color-interface-softer); //TODO ligthen by 7% when available 
+  }
+
+  @media (min-width: $screen-large) {
+    min-height: 520px;
+    padding: 40px;
+  }
+
+  &:focus-within {
+    border: var(--focus-state-border);
+    box-shadow: var(--focus-state-shadow);
+  }
+
+  .codex-editor {
+    max-width: 800px;
+    margin: 0 auto;
+    background: var(--color-interface-softest);
+
+    @media (min-width: $screen-small) {
+      padding: 20px;
+    }
+
+    @media (min-width: $screen-large) {
+      padding: 50px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, .1), 0 10px 10px -5px rgba(0, 0, 0, .04);
+    }
+  }
+}
+
+// Fix Editor.JS Wrapping (Remove after codex-team/editor.js#1003)
+.codex-editor .ce-settings {
+  -webkit-box-sizing: content-box;
+  box-sizing: content-box;
+}

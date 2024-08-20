@@ -75,7 +75,7 @@
 
   .checkbox-inline:first-child,
   .radio-inline:first-child {
-    padding-left:   var(--spacing-large);
+    padding-left:   20px; //20px for aligning the checkbox column 
   }
 
   // Radio and Checkbox Label Text
@@ -118,7 +118,7 @@
 .radio-inline:first-child {
   // when inline checkbox lists wrap the first one on the first line sticks out more than subsequent lines.
   // padding-left = (.checkbox-inline + .checkbox-inline margin-left) + .checkbox-inline padding-left
-  padding-left:     30px;
+  padding-left:     20px;
 
   &.rock-checkbox-icon {
     padding-left:   0 !important;

@@ -33,7 +33,7 @@
       &:focus {
         z-index:          2;
         color:            var(--color-interface-stronger);
-        background-color: transparent;
+        background-color: var(--color-interface-softer);
         border-color:     var(--color-interface-soft);
       }
     }

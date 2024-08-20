@@ -1,7 +1,14 @@
-//
-// Drop Down Lists - Override default styles of ANT select component
-// --------------------------------------------------
 
+// Drop Down Lists - Override default styles of ANT select component (Rock Component)
+
+
+// =============================================================
+// Table of Content           
+//  + Base Style  
+// =============================================================
+
+
+// ======================== BASE STYLE ========================
 .ant-select {
   &.form-control {
     padding: 0;
@@ -90,3 +97,6 @@
     }
   }
 }
+// ====================== END BASE STYLE ======================
+
+
