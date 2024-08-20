@@ -227,12 +227,8 @@ export function useConfigurePaymentPlanFeature() {
                 : noopPaymentPlanFrequency;
 
         wipPaymentPlanConfiguration.value = getPaymentPlanConfiguration({
-            amountToPayToday:
-                RockCurrency.create(
-                    registrationEntryState.paymentPlan
-                        ? registrationEntryState.amountToPayToday
-                        : readonlyRegistrationCostSummary.value.minimumRemainingAmount,
-                    balanceDue.value.currencyInfo),
+            // Always initialize the one-time amount to the Amount To Pay Today value.
+            amountToPayToday: RockCurrency.create(registrationEntryState.amountToPayToday, balanceDue.value.currencyInfo),
             balanceDue: balanceDue.value,
             desiredAllowedPaymentPlanFrequencies: paymentPlanFrequencies.value,
             desiredNumberOfPayments: registrationEntryState.paymentPlan?.numberOfPayments ?? 0,
