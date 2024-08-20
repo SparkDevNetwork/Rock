@@ -1218,13 +1218,14 @@ formfield.required .required-indicator,
 }
 
 ^TabbedShell {
-    -maui-bar-background-color: ?color-interface-softer;
-    -rock-unselected-tab-color: ?color-interface-medium;
+    -maui-bar-background-color: ?color-interface-softest;
+    -rock-unselected-tab-color: ?color-interface-stronger;
     -rock-selected-tab-color: ?color-primary-strong;
 }
 
 ^TabbedShell.dark-mode {
     -maui-bar-background-color: ?color-interface-stronger;
+    -rock-unselected-tab-color: ?color-interface-softer;
     -rock-selected-tab-color: ?color-primary-strong;
 }
 
@@ -1250,8 +1251,8 @@ formfield.required .required-indicator,
 }
 
 .cover-sheet {
-  -maui-bar-background-color: ?color-interface-softer;
-  -maui-bar-text-color: ?color-interface-stronger;
+    -maui-bar-background-color: ?color-interface-softest;
+    -maui-bar-text-color: ?color-interface-stronger;
 }
 
 .dark-mode.cover-sheet {
@@ -1263,8 +1264,12 @@ formfield.required .required-indicator,
   padding: 0;
   margin: 0;
   background-color: transparent;
-  color: #007bf7;
+  color: ?color-primary-strong;
   font-size: 17;
+}
+
+.dark-mode.cover-sheet .cover-sheet-toolbar-button {
+  color: ?color-primary-soft;
 }
 
 .android.cover-sheet .cover-sheet-toolbar-button {
