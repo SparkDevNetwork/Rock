@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,6 +20,7 @@ using System.Collections.Specialized;
 using System.Data.Entity;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Web;
 using ImageResizer;
@@ -28,6 +29,7 @@ using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using System.Net.Http.Headers;
 
 namespace RockWeb
 {
@@ -46,6 +48,8 @@ namespace RockWeb
 
                 var data = context.Request.QueryString["data"];
                 var outputType = context.Request.QueryString["outputType"] ?? string.Empty;
+                var foregroundColor = context.Request.QueryString["foreground"] ?? "000000";
+                var backgroundColor = context.Request.QueryString["background"] ?? "ffffff";
 
                 if ( data.IsNullOrWhiteSpace() )
                 {
@@ -58,38 +62,20 @@ namespace RockWeb
                 // 
                 var pixelsPerModule = context.Request.QueryString["pixelsPerModule"].AsIntegerOrNull() ?? 20;
 
-                using ( QRCodeGenerator qrGenerator = new QRCodeGenerator() )
+                using ( var qrGenerator = new QRCodeGenerator() )
                 {
-                    // ECCLevel is the Error Correction setting. see https://www.qrcode.com/en/about/error_correction.html
-                    QRCodeData qrCodeData = qrGenerator.CreateQrCode( data, QRCodeGenerator.ECCLevel.Q );
-
-                    Stream responseStream;
-
-                    if ( outputType.Equals( "svg", StringComparison.OrdinalIgnoreCase ) )
-                    {
-                        var svgQRCode = new SvgQRCode( qrCodeData );
-                        context.Response.ContentType = "image/svg+xml";
-
-                        var svgXml = svgQRCode.GetGraphic( pixelsPerModule );
-                        responseStream = svgXml.ToMemoryStream();
-                    }
-                    else
-                    {
-                        context.Response.ContentType = "image/png";
-
-                        var pngByteQRCode = new PngByteQRCode( qrCodeData );
-                        responseStream = new MemoryStream( pngByteQRCode.GetGraphic( pixelsPerModule ) );
-                    }
+                    var qrCodeData = qrGenerator.CreateQrCode( data, QRCodeGenerator.ECCLevel.Q );
+                    var responseStream = GetResponseStream( qrCodeData, outputType, pixelsPerModule, backgroundColor, foregroundColor );
 
                     responseStream.CopyTo( context.Response.OutputStream );
-
+                    context.Response.ContentType = outputType.Equals( "svg", StringComparison.OrdinalIgnoreCase ) ? "image/svg+xml" : "image/png";
                     context.Response.Flush();
                     context.ApplicationInstance.CompleteRequest();
                 }
             }
-            catch ( Exception )
+            catch (Exception)
             {
-                if ( !context.Response.IsClientConnected )
+                if (!context.Response.IsClientConnected)
                 {
                     // if client disconnected, ignore
                 }
@@ -98,6 +84,63 @@ namespace RockWeb
                     throw;
                 }
             }
+        }
+
+        private Stream GetResponseStream( QRCodeData qrCodeData, string outputType, int pixelsPerModule, string backgroundColor, string foregroundColor )
+        {
+            if ( outputType.Equals( "svg", StringComparison.OrdinalIgnoreCase ) )
+            {
+                // Ensure colors for SVG have a hash using a ternary operator
+                foregroundColor = foregroundColor.StartsWith( "#" ) ? foregroundColor : "#" + foregroundColor;
+                backgroundColor = backgroundColor.StartsWith( "#" ) ? backgroundColor : "#" + backgroundColor;
+
+                var svgQRCode = new SvgQRCode( qrCodeData );
+                var svgXml = svgQRCode.GetGraphic( pixelsPerModule, foregroundColor, backgroundColor );
+                return svgXml.ToMemoryStream();
+            }
+            else
+            {
+                // For PNG, convert hex colors to byte arrays directly
+                byte[] lightColor = HexToByteArray( foregroundColor );
+                byte[] darkColor = HexToByteArray( backgroundColor );
+                var qrCodeImage = new PngByteQRCode( qrCodeData ).GetGraphic( pixelsPerModule, darkColor, lightColor );
+                return new MemoryStream( qrCodeImage );
+            }
+        }
+
+        private byte[] HexToByteArray( string hex )
+        {
+            if ( !Regex.IsMatch( hex, @"^#?([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$" ) )
+            {
+                throw new ArgumentException( "Color must be a valid 6 or 8 digit hex value." );
+            }
+
+            hex = hex.StartsWith( "#" ) ? hex.Substring( 1 ) : hex;
+
+            //RGBA
+            byte[] bytes;
+            if ( hex.Length == 6 )
+            {
+                bytes = new byte[]
+                {
+                    Convert.ToByte(hex.Substring( 0, 2 ), 16 ),
+                    Convert.ToByte(hex.Substring( 2, 2 ), 16 ),
+                    Convert.ToByte(hex.Substring( 4, 2 ), 16 ),
+                    255
+                };
+            }
+            else // 8 digits for RGBA
+            {
+                bytes = new byte[]
+                {
+                    Convert.ToByte( hex.Substring( 0, 2 ), 16 ),
+                    Convert.ToByte( hex.Substring( 2, 2 ), 16 ),
+                    Convert.ToByte( hex.Substring( 4, 2 ), 16 ),
+                    Convert.ToByte( hex.Substring( 6, 2 ), 16 )
+                };
+            }
+
+            return bytes;
         }
 
 
