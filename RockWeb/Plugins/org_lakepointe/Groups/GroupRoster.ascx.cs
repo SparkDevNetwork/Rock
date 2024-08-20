@@ -593,19 +593,22 @@ namespace RockWeb.Plugins.org_lakepointe.Groups
                 }
                 gmUpdateContext.SaveChanges();
 
-                // make sure the person is in a Member role if they're not already in a Member role or a role that includes "Prospect" (Prospect, Prospective Member) or "Guest"
                 var selectedMemberRoles = cblGroupMemberRole.SelectedValuesAsInt;
-                var memberRole = group.GroupType.Roles.Where( r => r.Name == "Member" ).FirstOrDefault();
-                if ( memberRole != null )
+                if ( group.GroupType.IsSchedulingEnabled == false )
                 {
-                    var isProspect = gmService.Queryable().Where( m =>
-                                                     m.GroupId == groupMember.GroupId &&
-                                                     m.PersonId == groupMember.PersonId &&
-                                                     ( m.GroupRole.Name.Contains( "Prospect" ) || m.GroupRole.Name.Contains( "Guest" ) ) )
-                                                .Any();
-                    if ( !isProspect )
+                    // make sure the person is in a Member role if they're not already in a Member role or a role that includes "Prospect" (Prospect, Prospective Member) or "Guest"
+                    var memberRole = group.GroupType.Roles.Where( r => r.Name == "Member" ).FirstOrDefault();
+                    if ( memberRole != null )
                     {
-                        selectedMemberRoles.Add( memberRole.Id );
+                        var isProspect = gmService.Queryable().Where( m =>
+                                                         m.GroupId == groupMember.GroupId &&
+                                                         m.PersonId == groupMember.PersonId &&
+                                                         ( m.GroupRole.Name.Contains( "Prospect" ) || m.GroupRole.Name.Contains( "Guest" ) ) )
+                                                    .Any();
+                        if ( !isProspect )
+                        {
+                            selectedMemberRoles.Add( memberRole.Id );
+                        }
                     }
                 }
 
