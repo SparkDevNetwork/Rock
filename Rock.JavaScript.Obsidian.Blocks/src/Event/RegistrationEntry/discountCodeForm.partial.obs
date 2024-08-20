@@ -3,15 +3,17 @@
     <div v-if="isDiscountPanelVisible || discountCodeInput" class="clearfix">
         <NotificationBox v-if="discountCodeWarningMessage" alertType="warning">{{ discountCodeWarningMessage }}</NotificationBox>
         <NotificationBox v-if="discountCodeSuccessMessage" alertType="success">{{ discountCodeSuccessMessage }}</NotificationBox>
-        <div class="form-group pull-right">
-            <label class="control-label">{{ registrationEntryTerms.discountCodeSingularTitleCase }}</label>
-            <div class="input-group">
-                <input type="text" :disabled="loading || !isDiscountCodeAllowed" class="form-control input-width-md input-sm" v-model="discountCodeInput" />
-                <RockButton v-if="isDiscountCodeAllowed" btnSize="sm" :isLoading="loading" class="margin-l-sm" @click="tryDiscountCode(false)">
+        <TextBox v-model="discountCodeInput"
+                 formGroupClasses="pull-right"
+                 inputClasses="input-width-md input-sm"
+                 :disabled="isDisabled"
+                 :label="registrationEntryTerms.discountCodeSingularTitleCase">
+            <template #inputGroupAppend>
+                <RockButton v-if="isDiscountCodeAllowed" btnSize="sm" :disabled="isDisabled" :isLoading="loading" class="margin-l-sm" @click="tryDiscountCode(false)">
                     Apply
                 </RockButton>
-            </div>
-        </div>
+            </template>
+        </TextBox>
     </div>
 </template>
 <script setup lang="ts">
@@ -19,6 +21,7 @@
     import { CurrentRegistrationEntryState, GetPersistSessionArgs, RegistrationEntryTerms, use } from "./utils.partial";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { Guid } from "@Obsidian/Types";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { toGuidOrNull } from "@Obsidian/Utility/guid";
@@ -55,6 +58,17 @@
     // #endregion
 
     // #region Computed Values
+
+    const isDisabled = computed<boolean>(() => {
+        return loading.value
+            || !isDiscountCodeAllowed.value
+
+            // Is a payment plan already set up?
+            || !!registrationEntryState.viewModel.session?.activePaymentPlan
+
+            // Is a payment plan being set up?
+            || !!registrationEntryState.paymentPlan;
+    });
 
     /** Should the discount panel be shown? */
     const isDiscountPanelVisible = computed<boolean>(() => {
