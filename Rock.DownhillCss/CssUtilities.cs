@@ -265,17 +265,17 @@ namespace Rock.DownhillCss
             private static void CreateAlertByColor( string colorName, StringBuilder frameworkCss )
             {
                 frameworkCss.AppendLine( $".alert.alert-{colorName} {{" );
-                frameworkCss.AppendLine( $"    border-color: ?color-{colorName.ToLower()};" );
-                frameworkCss.AppendLine( $"    background-color: ?color-{colorName.ToLower()};" );
-                frameworkCss.AppendLine( $"    color: ?color-{colorName.ToLower()};" );
+                frameworkCss.AppendLine( $"    border-color: ?color-{colorName.ToLower()}-border;" );
+                frameworkCss.AppendLine( $"    background-color: ?color-{colorName.ToLower()}-background;" );
+                frameworkCss.AppendLine( $"    color: ?color-{colorName.ToLower()}-text;" );
                 frameworkCss.AppendLine( "}" );
 
                 frameworkCss.AppendLine( $".alert.alert-{colorName} .alert-heading {{" );
-                frameworkCss.AppendLine( $"    color: ?color-{colorName.ToLower()};" );
+                frameworkCss.AppendLine( $"    color: ?color-{colorName.ToLower()}-text;" );
                 frameworkCss.AppendLine( "}" );
 
                 frameworkCss.AppendLine( $".alert.alert-{colorName} .alert-message {{" );
-                frameworkCss.AppendLine( $"    color: ?color-{colorName.ToLower()};" );
+                frameworkCss.AppendLine( $"    color: ?color-{colorName.ToLower()}-text;" );
                 frameworkCss.AppendLine( "}" );
             }
 
@@ -1202,7 +1202,7 @@ formfield.required .required-indicator,
 ^borderlessentry,
 ^datepicker,
 ^picker,
-^entry, o
+^entry,
 ^editor,
 ^personpicker {
     color: ?color-interface-strong;
