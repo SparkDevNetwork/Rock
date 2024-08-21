@@ -32,6 +32,9 @@ export type PublicEditableAttributeBag = {
     /** Gets or sets the abbreviated name of the attribute. */
     abbreviatedName?: string | null;
 
+    /** Gets or sets a color to visually distinguish this attribute. */
+    attributeColor?: string | null;
+
     /** Gets or sets the categories the attribute is associated with. */
     categories?: ListItemBag[] | null;
 
@@ -60,6 +63,9 @@ export type PublicEditableAttributeBag = {
      * this is a new attribute the value should be null.
      */
     guid?: Guid | null;
+
+    /** Gets or sets the CSS class for the icon to show as a distinguishing mark for this attribute. */
+    iconCssClass?: string | null;
 
     /** Gets or sets a value indicating whether the attribute is active. */
     isActive: boolean;

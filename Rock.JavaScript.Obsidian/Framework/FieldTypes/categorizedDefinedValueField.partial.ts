@@ -22,8 +22,7 @@ export const enum ConfigurationValueKey {
     DefinedType = "DefinedType",
     DefinedTypes = "DefinedTypes",
     DefinedTypeValues = "DefinedTypeValues",
-    SelectableDefinedValues = "SelectableDefinedValues",
-    ConfigurationMode = "ConfigurationMode"
+    SelectableDefinedValues = "SelectableDefinedValues"
 }
 
 // The edit component can be quite large, so load it only as needed.

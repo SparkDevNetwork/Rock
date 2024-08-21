@@ -21,6 +21,7 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Attribute;
 #endif
 using Rock.Data;
@@ -28,6 +29,7 @@ using Rock.Model;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
+
 using TreeNode = Rock.Web.UI.Controls.TreeNode;
 
 namespace Rock.Field.Types
@@ -47,7 +49,6 @@ namespace Rock.Field.Types
         private const string DEFINED_TYPES_KEY = "DefinedTypes";
         private const string DEFINED_TYPE_VALUES_KEY = "DefinedTypeValues";
         private const string SELECTABLE_VALUES_KEY = "SelectableDefinedValues";
-        private const string CONFIGURATION_MODE_KEY = "ConfigurationMode";
 
         /// <summary>
         /// The settings for this Field Type.
@@ -178,7 +179,7 @@ namespace Rock.Field.Types
         }
 
         /// <inheritdoc/>
-        public override string GetPublicValue(string privateValue, Dictionary<string, string> privateConfigurationValues)
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
             return GetTextValue( privateValue, privateConfigurationValues );
         }
@@ -209,7 +210,6 @@ namespace Rock.Field.Types
 
             privateConfigurationValues.Remove( DEFINED_TYPES_KEY );
             privateConfigurationValues.Remove( DEFINED_TYPE_VALUES_KEY );
-            privateConfigurationValues.Remove( CONFIGURATION_MODE_KEY );
 
             return privateConfigurationValues;
         }
@@ -280,8 +280,6 @@ namespace Rock.Field.Types
                 }
 
                 publicConfigurationValues.Add( DEFINED_TYPE_VALUES_KEY, definedValues.ToCamelCaseJson( false, true ) );
-
-                publicConfigurationValues[CONFIGURATION_MODE_KEY] = usage.ToString();
 
             }
 

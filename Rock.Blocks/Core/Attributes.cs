@@ -333,16 +333,16 @@ namespace Rock.Blocks.Core
 
                 if ( attributeValue != null && !attributeValue.Value.IsNullOrWhiteSpace() )
                 {
-                    return PublicAttributeHelper.GetPublicAttributeForView( attributeCache, attributeValue.Value );
+                    return PublicAttributeHelper.GetPublicAttributeForView( attributeCache, attributeValue.Value ?? string.Empty );
                 }
                 else
                 {
-                    return PublicAttributeHelper.GetPublicAttributeForView( attributeCache, attribute.DefaultValue );
+                    return PublicAttributeHelper.GetPublicAttributeForView( attributeCache, attribute.DefaultValue ?? string.Empty );
                 }
             }
             else
             {
-                return PublicAttributeHelper.GetPublicAttributeForView( attributeCache, attribute.DefaultValue );
+                return PublicAttributeHelper.GetPublicAttributeForView( attributeCache, attribute.DefaultValue ?? string.Empty );
             }
         }
 
