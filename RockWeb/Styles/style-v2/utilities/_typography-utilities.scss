@@ -100,6 +100,8 @@ h3, .h3 {
 }
 
 h4, .h4 {
+    margin-top:     12px;
+    margin-bottom:  12px;
     font-size: var(--font-size-h4);
 }
 
@@ -119,6 +121,7 @@ p, .p, .text-primary, .text-small {
 }
 
 p, .p, .text-primary {
+    margin: 0 0 12px;
     font-size:   var(--font-size-regular);
 }
 

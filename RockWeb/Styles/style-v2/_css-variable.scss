@@ -141,4 +141,45 @@
 
     // ========================== END VISUAL APPEARANCES ===========================
 
+
+// For the obsidian grid, sinces the style of the obsidian grid is embedded in the html and references these variable 
+// Theses variable is also located in _rock-core.less.
+
+  --theme-darkest: var(--color-interface-strongest);
+  --theme-dark: var(--color-interface-stronger);
+  --theme-medium: var(--color-interface-strong);
+  --theme-light: var(--color-interface-softer);
+  --theme-lightest: var(--color-interface-softer);
+
+  --theme-white: var(--color-interface-softest);
+  --theme-black: #343A40;
+
+  --text-color: @text-color;
+
+//   --color-primary: var(--color-primary);
+  --color-success: var(--color-success-strong);
+  --color-info: var(--color-info-strong);
+  --color-warning: var(--color-warning-strong);
+  --color-danger: var(--color-danger-strong);
+
+  --gutter-x: @grid-gutter-width;
+
+  --panel-border: @panel-border;
+  --panel-body-padding: @panel-body-padding;
+
+  --fa-font-face: @fa-font-face;
+  --fa-theme-weight: @fa-theme-weight;
+
+  --border-radius-base: var(--rounded-small);
+  --color-base-primary: @color-base-primary;
+  --focus-state-border: 1px solid @input-border-focus;
+  --focus-state-border-color: @input-border-focus;
+  --focus-state-shadow: @input-focus-box-shadow;
+  --input-bg-disabled: @input-bg-disabled;
+  --input-border: @input-border;
+  --input-border-radius: @input-border-radius;
+  --input-height-base: @input-height-base;
+  --input-padding: @padding-base-vertical @padding-base-horizontal;
+  --input-placeholder: @input-color-placeholder;
+
 }

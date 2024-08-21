@@ -1,0 +1,161 @@
+//
+// MODAL STYLES
+// --------------------------------------------------
+
+
+// Imports
+// -------------------------
+
+
+// Rock modal (page properties, etc.)
+// -------------------------
+
+body.rock-modal {
+  background: transparent;
+
+  .modal-content {
+    border: 0 !important;
+    box-shadow: none;
+    //background: transparent;
+  }
+}
+
+.modal-content.rock-modal,
+.rock-modal .modal-content {
+  background: transparent;
+  border: 0;
+  box-shadow: 0 12px 24px 0 rgba(0,0,0,.1);
+
+  .modal-header {
+    min-height: 34px;
+    padding: var(--spacing-small) var(--spacing-large);
+    color: var(--color-interface-softest);
+    background-color: var(--color-primary);
+
+    &:before,
+    &:after {
+      display: table; // 2
+      content: " "; // 1
+    }
+    &:after {
+      clear: both;
+    }
+
+    h3 {
+      margin-right: 12px;
+    }
+
+    a {
+      color: var(--color-interface-softest);
+      text-decoration: underline;
+    }
+
+    .close {
+      padding: 6px;
+      text-decoration: none;
+      color: var(--color-interface-softest);
+      text-shadow: none;
+    }
+
+    .label {
+      margin-top: 8px;
+    }
+
+    small {
+      display: block;
+      margin-top: var(--spacing-small);
+      color: var(--color-interface-softest); //TODO darken by 10% when available
+    }
+
+    @media screen and (min-width: $screen-small) {
+      h3 {
+        float: left;
+      }
+    }
+  }
+
+  .modal-body {
+    padding: var(--spacing-small) 12px 12px;
+    color: var(--color-interface-strongest);
+    text-align: left;
+    background-color: var(--color-interface-softest);
+
+    > .scroll-container {
+      width: 720px;
+
+      > .viewport {
+        width: 670px;
+      }
+    }
+
+    &.iframe {
+      overflow: hidden;
+    }
+  }
+
+  .modal-footer {
+    padding: var(--spacing-small) var(--spacing-large);
+    margin-top: 0;
+    color: var(--color-interface-softest);
+    background-color: var(--color-interface-softer);
+    border-radius: 0 0 var(--rounded-small) var(--rounded-small);
+  }
+}
+
+.rock-modal {
+
+  .modal-footer .btn {
+    float: right;
+    margin-left: 5px;
+  }
+}
+
+.rock-modal-frame {
+  border-radius: var(--rounded-large) !important;
+}
+
+// Fix for overflow scrolling on iOS
+.modal.modal-overflow {
+  top: $grid-gutter-width;
+  margin-bottom: $grid-gutter-width;
+}
+
+@supports (-webkit-overflow-scrolling: touch) {
+  // CSS specific to iOS devices
+  .modal.modal-overflow {
+    top: 1%;
+    height: calc(100% - 1px) !important;
+  }
+}
+
+#modal-popup_iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+
+// All modals
+// -------------------------
+
+// This next section is needed because we're using bootstrap-modal plugin to allow for responsive sized modals. Since they
+// hard code the opacity in their CSS we override it here.
+.modal-backdrop,
+.modal-backdrop.fade.in {
+  background: var(--color-interface-strongest);
+  filter: alpha(opacity=70);
+  opacity: .5;
+}
+
+// Fixes some appearance issues from switching standard BS modal to
+// responsive bootstrap-modal.
+
+.modal-dialog {
+  width: auto;
+  margin: 0;
+}
+
+.modal-content {
+  border: none;
+}

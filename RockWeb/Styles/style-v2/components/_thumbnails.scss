@@ -40,5 +40,14 @@
     padding:  var(--spacing-small);
     color:    var(--color-interface-stronger);
   }
+  
+}
+//
+// Images
+// --------------------------------------------------
+
+.thumbnail,
+.img-thumbnail {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .075);
 }
 // =================== END BASE STYLE ===================

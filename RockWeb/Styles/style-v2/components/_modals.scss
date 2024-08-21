@@ -21,9 +21,9 @@ body.modal-open,
 .modal {
   position:       fixed;
   top:            0;
-  right:          0;
-  bottom:         0;
-  left:           0;
+  right:          auto;
+  bottom:         auto;
+  left:           50%;
   z-index:        $zindex-modal;
   display:        none;
   overflow:       hidden;
@@ -90,14 +90,15 @@ body.modal-open,
 }
 
 .modal-body {
+  padding: var(--spacing-medium);
 	max-height: none;
 	overflow:   visible;
 }
 
 .modal-footer {
-  padding:    var(--spacing-large);
+  padding:    var(--spacing-medium);
   text-align: right; 
-  border-top: 1px solid var(--color-interface-softer);
+  border-top: 1px solid var(--color-interface-soft);
 
   &:before,
   &:after {

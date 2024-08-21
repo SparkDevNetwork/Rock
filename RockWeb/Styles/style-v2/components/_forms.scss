@@ -26,11 +26,11 @@ legend {
   width:      100%;
   padding:    0;
   margin-bottom:  var(--spacing-large);
-  font-size:      calc(var(--font-size-small) * 1.5);
+  font-size:      var(--font-size-h5);
+  font-weight:    var(--font-weight-medium);
   line-height:    inherit;
   border:         0;
-  border-bottom:  1px solid var(--color-interface-soft);
-  font-weight:    var(--font-weight-light);
+  border-bottom:  1px solid var(--color-interface-medium);
   color:          var(--color-interface-strongest);
   border-width:   0;
 }
@@ -318,7 +318,7 @@ output {
 // Select
 select.form-control {
   padding: var(--spacing-small) var(--spacing-xlarge) var(--spacing-small) var(--spacing-medium);
-  background-image: var(--color-interface-stronger);
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
   background-repeat: no-repeat;
   background-position: right var(--spacing-medium) center;
   background-size: var(--spacing-medium) 12px;
@@ -575,7 +575,7 @@ a.warning {
   height: 34px;
   padding: var(--spacing-small) var(--spacing-medium);
   font-size: var(--font-size-small);
-  line-height: var(--line-height-normal);
+  line-height: 16px; // Keep 16px to align with carot
   border-radius: var(--rounded-small);
 
   select & {
@@ -672,6 +672,49 @@ a.warning {
     font-size: var(--font-size-medium);
     line-height: var(--line-height-normal)-lg;
   }
+}
+.form-control.input-width-xs,
+.input-group.input-width-xs,
+.form-control-group.input-width-xs input {
+  width: 60px;
+}
+
+.form-control.input-width-sm,
+.input-group.input-width-sm,
+.form-control-group.input-width-sm input {
+  width: 90px;
+}
+
+.form-control.input-width-md,
+.input-group.input-width-md,
+.form-control-group.input-width-md input {
+  width: 150px;
+}
+
+.form-control.input-width-lg,
+.input-group.input-width-lg,
+.form-control-group.input-width-lg input {
+  width: 210px;
+}
+
+.form-control.input-width-xl,
+.input-group.input-width-xl,
+.form-control-group.input-width-xl input {
+  width: 270px;
+}
+
+.form-control.input-width-xxl,
+.input-group.input-width-xxl,
+.form-control-group.input-width-xxl input {
+  width: 530px;
+}
+
+.input-max-w-md {
+  max-width: 50px;
+}
+
+.input-max-w-xl {
+  max-width: 270px;
 }
 // ===================== END FORM CONTROL SIZING =====================
 
