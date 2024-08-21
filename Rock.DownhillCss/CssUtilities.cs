@@ -1219,13 +1219,12 @@ formfield.required .required-indicator,
 
 ^TabbedShell {
     -maui-bar-background-color: ?color-interface-softest;
-    -rock-unselected-tab-color: ?color-interface-stronger;
+    -rock-unselected-tab-color: ?color-interface-medium;
     -rock-selected-tab-color: ?color-primary-strong;
 }
 
 ^TabbedShell.dark-mode {
     -maui-bar-background-color: ?color-interface-stronger;
-    -rock-unselected-tab-color: ?color-interface-softer;
     -rock-selected-tab-color: ?color-primary-strong;
 }
 
@@ -1310,6 +1309,27 @@ formfield.required .required-indicator,
     -rock-outbound-text-color: ?color-interface-stronger;
     -rock-inbound-background-color: ?color-interface-stronger;
     -rock-inbound-text-color: ?color-interface-soft;
+}
+
+/* Hero Block */
+.hero .hero-title {
+    font-size: 24;
+    color: white;
+    -rock-text-shadow: 2 2 4 black;
+}
+
+.hero .hero-subtitle {
+    font-size: 18;
+    color: white;
+    -rock-text-shadow: 2 2 4 black;
+}
+
+.tablet .hero .hero-title {
+    font-size: 36;
+}
+
+.tablet .hero .hero-subtitle {
+    font-size: 28;
 }";
             private static string baseStylesWeb = @"";
 
