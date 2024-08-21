@@ -125,6 +125,9 @@ namespace Rock.Migrations
             UpdateTemplate( "F04B6154-1543-4632-89A2-1792F6CED9D6", Rock.SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_GROUP_SCHEDULE_TOOLBOX, _scheduleToolboxTemplate, "CD2629E5-8EB0-4D52-ACAB-8EDF9AF84814", _scheduleToolboxLegacyTemplate );
             UpdateTemplate( "DE3E57AC-E12B-4249-BB15-64C7A7780AC8", Rock.SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_GROUP_SCHEDULE_TOOLBOX_DECLINE_MODAL, _scheduleToolboxDeclineReasonTemplate, "92D39913-7D69-4B73-8FF9-72AC161BE381", _scheduleToolboxDeclineReasonLegacyTemplate );
 
+            // Schedule Sign-up
+            UpdateTemplate( "2204D103-A145-4003-9DA0-1C9461D6BAA1", Rock.SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_GROUP_SCHEDULE_SIGNUP_LANDING_PAGE, _scheduleSignUpLandingTemplate, "C4BFED3A-C2A1-4A68-A646-44C3B499C75A", _scheduleSignUpLandingLegacyTemplate );
+
             // Schedule Preference
             UpdateTemplate( "8DF04E4B-9ABF-477D-8CD2-D36FF06DBDB8", Rock.SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_GROUP_SCHEDULE_PREFERENCE_LANDING_PAGE, _schedulePreferenceLandingTemplate, "C3A98DBE-E977-499C-B823-0B3676731E48", _schedulePreferenceLandingLegacyTemplate );
 
@@ -1280,6 +1283,46 @@ namespace Rock.Migrations
             CommandParameter=""{{ group.Guid }}"" /> 
     </Grid> 
     {% endfor %} 
+</StackLayout>
+</StackLayout>";
+
+        private const string _scheduleSignUpLandingTemplate = @"<StackLayout StyleClass=""spacing-24"">
+    <VerticalStackLayout>
+        <Label StyleClass=""title1, bold, text-interface-strongest""
+            Text=""Serving Areas"" />
+    
+        <Label StyleClass=""footnote, text-interface-strong""
+            Text=""You are registered to serve in the following areas. Please select an area to update your scheduling preferences."" />
+    </VerticalStackLayout>
+    <StackLayout StyleClass=""spacing-8"">
+        {% for group in SchedulingGroupList %}
+            <Button StyleClass=""btn, btn-primary""
+                Text=""{{ group.Name | Escape }}""
+                Command=""{Binding ScheduleSignup.PushToSignupPage}""
+                CommandParameter=""{{ group.Guid }}"" /> 
+        {% endfor %} 
+    </StackLayout>
+</StackLayout>";
+        private const string _scheduleSignUpLandingLegacyTemplate = @"<StackLayout>
+<StackLayout Padding=""16"" HorizontalOptions=""Center"" VerticalOptions=""Center"">
+    <Label StyleClass=""h3"" 
+        Text=""Serving Areas""
+        />
+    <Label StyleClass=""""
+        Text=""You are registered to serve in the following areas. Please select an area to update your scheduling preferences."" />
+    {% if SchedulingGroupList == empty %}
+        <Rock:NotificationBox Text=""You are currently not enrolled in any groups with scheduling options. Contact a church administrator if you are interested!"" />
+    {% endif %}
+    
+    {% for group in SchedulingGroupList %}
+    <Grid> 
+        <Button StyleClass=""btn,btn-primary,group-selection-button"" Text=""{{ group.Name }}"" HorizontalOptions=""FillAndExpand""
+
+            Command=""{Binding ScheduleSignup.PushToSignupPage}""
+            CommandParameter=""{{ group.Guid }}"" />
+    </Grid> 
+    {% endfor %} 
+
 </StackLayout>
 </StackLayout>";
 
