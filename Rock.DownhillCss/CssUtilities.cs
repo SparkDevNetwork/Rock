@@ -1330,6 +1330,19 @@ formfield.required .required-indicator,
 
 .tablet .hero .hero-subtitle {
     font-size: 28;
+}
+
+/* HTML Parser CSS */
+^grid.ordered-list,
+^grid.unordered-list {
+    margin-bottom: 24;
+}
+
+^grid.ordered-list ^grid.ordered-list,
+^grid.ordered-list ^grid.unordered-list,
+^grid.unordered-list ^grid.ordered-list,
+^grid.unordered-list ^grid.unordered-list {
+    margin-bottom: 0;
 }";
             private static string baseStylesWeb = @"";
 
