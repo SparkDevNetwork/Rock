@@ -17,6 +17,9 @@
 
 namespace Rock.ViewModels.Blocks.Finance.BenevolenceTypeList
 {
+    /// <summary>
+    /// Represents options for a benevolence type list.
+    /// </summary>
     public class BenevolenceTypeListOptionsBag
     {
     }

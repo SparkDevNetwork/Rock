@@ -17,20 +17,44 @@
 
 namespace Rock.ViewModels.Blocks.Core.TaggedItemList
 {
+    /// <summary>
+    /// Represents options for a tagged item list.
+    /// </summary>
     public class TaggedItemListOptionsBag
     {
+        /// <summary>
+        /// Gets or sets the title.
+        /// </summary>
         public string Title { get; set; }
 
+        /// <summary>
+        /// Gets or sets the name of the tag.
+        /// </summary>
         public string TagName { get; set; }
 
+        /// <summary>
+        /// Gets or sets the name of the entity type.
+        /// </summary>
         public string EntityTypeName { get; set; }
 
+        /// <summary>
+        /// Gets or sets the globally unique identifier of the entity type.
+        /// </summary>
         public string EntityTypeGuid { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this is a person tag.
+        /// </summary>
         public bool IsPersonTag { get; internal set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the block is hidden.
+        /// </summary>
         public bool IsBlockHidden { get; set; }
 
+        /// <summary>
+        /// Gets or sets the tag identifier.
+        /// </summary>
         public int TagId { get; set; }
     }
 }

@@ -21,6 +21,26 @@
 // </copyright>
 //
 
-/** Represents options for a benevolence type list. */
-export type BenevolenceTypeListOptionsBag = {
+/** Represents options for a tagged item list. */
+export type TaggedItemListOptionsBag = {
+    /** Gets or sets the globally unique identifier of the entity type. */
+    entityTypeGuid?: string | null;
+
+    /** Gets or sets the name of the entity type. */
+    entityTypeName?: string | null;
+
+    /** Gets or sets a value indicating whether the block is hidden. */
+    isBlockHidden: boolean;
+
+    /** Gets or sets a value indicating whether this is a person tag. */
+    isPersonTag: boolean;
+
+    /** Gets or sets the tag identifier. */
+    tagId: number;
+
+    /** Gets or sets the name of the tag. */
+    tagName?: string | null;
+
+    /** Gets or sets the title. */
+    title?: string | null;
 };

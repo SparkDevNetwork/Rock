@@ -21,6 +21,25 @@
 // </copyright>
 //
 
-/** Represents options for a benevolence type list. */
-export type BenevolenceTypeListOptionsBag = {
+import { Guid } from "@Obsidian/Types";
+
+/** Represents a tagged item list bag. */
+export type TaggedItemListBag = {
+    /** Gets or sets the creation date and time. */
+    createdDateTime?: string | null;
+
+    /** Gets or sets the entity's globally unique identifier. */
+    entityGuid: Guid;
+
+    /** Gets or sets the entity identifier. */
+    entityId: number;
+
+    /** Gets or sets the name of the entity. */
+    entityName?: string | null;
+
+    /** Gets or sets the entity type identifier. */
+    entityTypeId: number;
+
+    /** Gets or sets the unique identifier. */
+    id: number;
 };

@@ -17,6 +17,9 @@
 
 namespace Rock.ViewModels.Blocks.Engagement.StreakTypeExclusionList
 {
+    /// <summary>
+    /// Represents options for a streak type exclusion list.
+    /// </summary>
     public class StreakTypeExclusionListOptionsBag
     {
         /// <summary>
