@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+/** Represents options for a streak type exclusion list. */
 export type StreakTypeExclusionListOptionsBag = {
     /** Gets or sets a value indicating whether this instance is block visible. */
     isBlockVisible: boolean;

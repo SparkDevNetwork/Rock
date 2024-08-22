@@ -17,13 +17,15 @@
 
 namespace Rock.ViewModels.Blocks.Core.TaggedItemList
 {
+    /// <summary>
+    /// Represents options for a tagged item list.
+    /// </summary>
     public class TaggedItemListOptionsBag
     {
         /// <summary>
         /// Gets the title.
         /// </summary>
         public string Title { get; set; }
-
 
         /// <summary>
         /// Gets the tag Name.
