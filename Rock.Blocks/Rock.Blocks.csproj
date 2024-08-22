@@ -137,7 +137,7 @@
     <Compile Include="Cms\PageShortLinkClickList.cs" />
     <Compile Include="Cms\PageShortLinkList.cs" />
     <Compile Include="Cms\BlockList.cs" />
-    <Compile Include="Cms\ShortLink.cs" />
+    <Compile Include="Cms\PageShortLinkDialog.cs" />
     <Compile Include="Cms\LayoutList.cs" />
     <Compile Include="Cms\PersistedDatasetList.cs" />
     <Compile Include="Cms\PersonalLinkList.cs" />

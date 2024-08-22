@@ -35,7 +35,7 @@ namespace Rock.Blocks.Cms
     /// <summary>
     ///
     /// </summary>
-    [DisplayName( "Shortened Links" )]
+    [DisplayName( "Page Short Link (dialog)" )]
     [Category( "Administration" )]
     [Description( "Displays a dialog for adding a short link to the current page." )]
     [SupportedSiteTypes( Model.SiteType.Web )]
@@ -53,7 +53,7 @@ namespace Rock.Blocks.Cms
 
     [Rock.SystemGuid.EntityTypeGuid( "026C6A93-5295-43E9-B67D-C3708ACB25B9" )]
     [Rock.SystemGuid.BlockTypeGuid( "C85551E8-A363-4AA6-9BFD-E6A1C9CEDE80" )]
-    public class ShortLink : RockBlockType
+    public class PageShortLinkDialog : RockBlockType
     {
         #region Keys
 
