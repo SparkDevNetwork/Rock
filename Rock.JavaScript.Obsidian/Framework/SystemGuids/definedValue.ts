@@ -388,6 +388,16 @@ export const DefinedValue = {
     NoncashAssetStocksandbonds: "B29D7D89-357F-47F9-BE7B-52AFF3892007",
     /** Non-Cash Asset Type: Vehicles. */
     NoncashAssetVehicles: "C1DCBE74-88FE-4876-8943-5783499CBBE0",
+    /**
+     * Open AI's high-intelligence flagship model for complex, multi-step tasks.
+     * GPT-4o is cheaper and faster than GPT-4 Turbo.
+     */
+    OpenAiGpt4o: "4A315E26-8FD9-4F4E-A178-7F7CB4D9BDB7",
+    /**
+     * Open AI's affordable and intelligent small model for fast, lightweight tasks.
+     * GPT-4o mini is cheaper and more capable than GPT-3.5 Turbo.
+     */
+    OpenAiGpt4oMini: "D29074BA-FE6D-483D-8C4C-B7114AA050A5",
     /** The PBX CDR medium value */
     PbxCdrMediumValue: "B3904B57-62A2-57AC-43EA-94D4DEBA3D51",
     /** Person Connection Status - Attendee */

@@ -25,6 +25,8 @@
 export const DefinedType = {
     /** Lists checklist items to be completed by the administrator after installs and updates. */
     AdministratorChecklist: "4BF34677-37E9-4E71-BD03-252B66C9373D",
+    /** AI Models. */
+    AiProviderModels: "0829EF1C-028C-44D6-AB8D-90F0905E030E",
     /** The apple device models */
     AppleDeviceModels: "DAE31F78-7AB9-4ACE-9EE1-C1E6A734562C",
     /** Guid for the Conflict Profile assessment. */

@@ -32,7 +32,6 @@ namespace Rock.Rest.v2
         /// <summary>
         /// Get a flat list of all the folders and subfolders in a given root folder, excluding a given folder and its children.
         /// </summary>
-        /// <param name="options">The options that describe which folders to load and not load.</param>
         /// <returns>A List of <see cref="ListItemBag"/> objects that represent all the folders.</returns>
         [HttpPost]
         [System.Web.Http.Route( "api/v2/Utilities/GetImageFileExtensions" )]
