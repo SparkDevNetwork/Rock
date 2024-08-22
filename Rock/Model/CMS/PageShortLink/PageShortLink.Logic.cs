@@ -16,16 +16,19 @@
 //
 using System;
 using System.Collections.Specialized;
+using System.Data.Entity;
 using System.Linq;
 using System.Text;
+
+using Rock.Cms;
 using Rock.Web.Cache;
 
 namespace Rock.Model
 {
-    public partial class PageShortLink
+    public partial class PageShortLink : ICacheable
     {
-        private static Random _random = new Random( Guid.NewGuid().GetHashCode() );
-        private static char[] alphaCharacters = new char[] { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' };
+        private static readonly Random _random = new Random( Guid.NewGuid().GetHashCode() );
+        private static readonly char[] alphaCharacters = new char[] { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' };
 
         /// <summary>
         /// Gets a random token.
@@ -59,157 +62,74 @@ namespace Rock.Model
         {
             get
             {
-                if ( this.Url.IsNullOrWhiteSpace() )
+                if ( Url.IsNullOrWhiteSpace() )
                 {
                     return string.Empty;
                 }
 
-                string protocolDomainAndPath;
-                string fragment;
-                NameValueCollection queryParameters;
-
-                ParseUrl( this.Url.RemoveCrLf().Trim(),
-                    out protocolDomainAndPath,
-                    out queryParameters,
-                    out fragment );
-
-                // Add UTM Parameters as lowercase values with URL Encoding.
-                var hasUtmValues = false;
-
                 var utmSettings = this.GetAdditionalSettings<UtmSettings>();
 
-                hasUtmValues = hasUtmValues | AddUtmValueToQueryString( queryParameters, "utm_source", SystemGuid.DefinedType.UTM_SOURCE.AsGuid(), utmSettings.UtmSourceValueId );
-                hasUtmValues = hasUtmValues | AddUtmValueToQueryString( queryParameters, "utm_medium", SystemGuid.DefinedType.UTM_MEDIUM.AsGuid(), utmSettings.UtmMediumValueId );
-                hasUtmValues = hasUtmValues | AddUtmValueToQueryString( queryParameters, "utm_campaign", SystemGuid.DefinedType.UTM_CAMPAIGN.AsGuid(), utmSettings.UtmCampaignValueId );
-
-                if ( utmSettings.UtmTerm.IsNotNullOrWhiteSpace() )
-                {
-                    queryParameters.Add( "utm_term", utmSettings.UtmTerm.Trim().ToLower() );
-                    hasUtmValues = true;
-                }
-
-                if ( utmSettings.UtmContent.IsNotNullOrWhiteSpace() )
-                {
-                    queryParameters.Add( "utm_content", utmSettings.UtmContent.Trim().ToLower() );
-                    hasUtmValues = true;
-                }
-
-                // If no UTM values, return the base URL.
-                if ( !hasUtmValues )
-                {
-                    return this.Url;
-                }
-
-                // Construct a new URL that includes the UTM query string parameters.
-                // The query parameters are stored in a HttpValueCollection, so the ToString() implementation returns a URL-encoded query string.
-                var urlWithUtm = protocolDomainAndPath + "?" + queryParameters.ToQueryStringEscaped();
-
-                if ( fragment.IsNotNullOrWhiteSpace() )
-                {
-                    urlWithUtm += fragment;
-                }
-
-                return urlWithUtm;
+                return PageShortLinkCache.GetUrlWithUtm( Url, utmSettings );
             }
         }
 
         #endregion Virtual Properties
 
+        #region ICacheable
+
         /// <summary>
-        /// Extract a set of query parameters from a Url.
-        /// If the input Url is not well-formed, this function attempts to parse for a query string
-        /// delimited by the first "?" character.
+        /// Gets the cache object associated with this Entity
         /// </summary>
-        /// <param name="url">The input Url.</param>
-        /// <param name="protocolDomainAndPath"></param>
-        /// <param name="queryParameters">The query parameters as a HttpValueCollection:NameValueCollection of Name/Value pairs.</param>
-        /// <param name="fragment">The fragment portion of the Url, including the leading '#' character if not empty.</param>
         /// <returns></returns>
-        private void ParseUrl( string url, out string protocolDomainAndPath, out NameValueCollection queryParameters, out string fragment )
+        public IEntityCache GetCacheObject()
         {
-            if ( url.IsNullOrWhiteSpace() )
-            {
-                protocolDomainAndPath = string.Empty;
-                queryParameters = new NameValueCollection();
-                fragment = string.Empty;
-                return;
-            }
-
-            // Create a builder for the Uri and attempt to parse the existing Url.
-            UriBuilder utmUri = null;
-            try
-            {
-                utmUri = new UriBuilder( url );
-            }
-            catch
-            {
-                // The Url is not well-formed.
-            }
-
-            if ( utmUri != null )
-            { 
-                fragment = utmUri.Fragment;
-                queryParameters = System.Web.HttpUtility.ParseQueryString( utmUri.Query );
-
-                utmUri.Query = string.Empty;
-                utmUri.Fragment = string.Empty;
-
-                protocolDomainAndPath = utmUri.Uri.ToString();
-            }
-            else
-            {
-                // The Url is not well-formed, so parse the query string and fragment segments, and leave the remainder unchanged.
-                // The parsing process assumes that although the Url has some incorrect parts, it is otherwise properly encoded.
-
-                // Remove the fragment portion of the Url if it exists.
-                var fragmentStartIndex = url.IndexOf( "#" );
-                if ( fragmentStartIndex >= 0 )
-                {
-                    fragment = url.Substring( fragmentStartIndex );
-                    url = url.Substring( 0, fragmentStartIndex );
-                }
-                else
-                {
-                    fragment = string.Empty;
-                }
-
-                // Parse the query string and base path.
-                string queryString;
-                var queryStartIndex = url.IndexOf( "?" ) + 1;
-                if ( queryStartIndex > 0 )
-                {
-                    protocolDomainAndPath = url.Substring( 0, queryStartIndex - 1 );
-                    queryString = url.Substring( queryStartIndex );
-                }
-                else
-                {
-                    protocolDomainAndPath = url;
-                    queryString = string.Empty;
-                }
-
-                queryParameters = System.Web.HttpUtility.ParseQueryString( queryString );
-            }
+            return PageShortLinkCache.Get( Id );
         }
 
-        private bool AddUtmValueToQueryString( NameValueCollection queryString, string parameterName, Guid definedTypeGuid, int? utmDefinedValueId )
+        /// <summary>
+        /// Updates any Cache Objects that are associated with this entity
+        /// </summary>
+        /// <param name="entityState">State of the entity.</param>
+        /// <param name="dbContext">The database context.</param>
+        public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
-            if ( !utmDefinedValueId.HasValue )
-            {
-                return false;
-            }
+            PageShortLinkCache.FlushItem( this.Id );
+        }
 
-            var utmValue = DefinedTypeCache.Get( definedTypeGuid )
-                ?.DefinedValues.FirstOrDefault( v => v.Id == utmDefinedValueId )
-                ?.Value
-                .Trim()
-                .ToLower();
-            if ( !utmValue.IsNullOrWhiteSpace() )
-            {
-                queryString.Set( parameterName, utmValue );
-                return true;
-            }
+        #endregion
 
-            return false;
+        /// <summary>
+        /// Determines if this instance has any scheduled URL data.
+        /// </summary>
+        /// <returns><c>true</c> if this instance has schedule data; otherwise <c>false</c>.</returns>
+        private bool HasSchedules()
+        {
+            var data = GetScheduleData();
+
+            return data.Schedules != null && data.Schedules.Count > 0;
+        }
+
+        /// <summary>
+        /// Gets the schedule data for this instance. If no schedule data has
+        /// been configured then an empty instance of <see cref="PageShortLinkScheduleData"/>
+        /// will be returned.
+        /// </summary>
+        /// <returns>An instance of <see cref="PageShortLinkScheduleData"/> that describes all the schedule details for this instance.</returns>
+        internal PageShortLinkScheduleData GetScheduleData()
+        {
+            return this.GetAdditionalSettings<PageShortLinkScheduleData>();
+        }
+
+        /// <summary>
+        /// Updates this instance to use the specified schedule data. If <c>null</c>
+        /// is passed then the instance will be returned to non-schedule mode. In
+        /// that case you must also set the <see cref="Url"/> property to a valid
+        /// value.
+        /// </summary>
+        /// <param name="data">The schedule data or <c>null</c> to return the instance to non-scheduled.</param>
+        internal void SetScheduleData( PageShortLinkScheduleData data )
+        {
+            this.SetAdditionalSettings( data );
         }
     }
 }

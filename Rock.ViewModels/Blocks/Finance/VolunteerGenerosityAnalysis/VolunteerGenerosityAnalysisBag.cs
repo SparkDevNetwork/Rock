@@ -101,7 +101,7 @@ namespace Rock.ViewModels.Blocks.Finance.VolunteerGenerosityAnalysis
         /// <summary>
         /// Gets or sets the person's bit mask
         /// </summary>
-        public string DonationMonthYearBitmask { get; set; }
+        public string DonationDateKeys { get; set; }
 
     }
 

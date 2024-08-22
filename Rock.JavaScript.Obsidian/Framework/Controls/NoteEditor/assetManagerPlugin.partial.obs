@@ -4,8 +4,9 @@
            title="Select Asset"
            cancelText="Cancel"
            saveText="OK"
-           :onSave="onOkClicked">
-        TODO: Add Asset Manager
+           :onSave="onOkClicked"
+           :isSaveButtonDisabled="isOkButtonDisabled">
+        <AssetManager v-model="asset" enableAssetManager />
     </Modal>
 </template>
 
@@ -56,11 +57,13 @@
      *   });
      * (/script)
      */
-    import { ref, watch } from "vue";
+    import { computed, ref, watch } from "vue";
     import { getToolbarButton, usePluginHelper } from "./utils.partial";
     import Modal from "@Obsidian/Controls/modal.obs";
+    import AssetManager from "@Obsidian/Controls/fileAssetManager.obs";
     import { Editor, Ui } from "@Obsidian/Libs/tinymce";
-    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { FileAsset } from "@Obsidian/ViewModels/Controls/fileAsset";
+    import { isImage } from "@Obsidian/Utility/file";
 
     const id = "rockassetmanager" as const;
     const tooltip = "Asset Manager" as const;
@@ -74,11 +77,15 @@
     const { editorInstance, toolbarElement } = usePluginHelper();
     const toolbarButtonElement = ref<HTMLElement | undefined>();
     const isShown = ref<boolean>(false);
-    const asset = ref<ListItemBag | undefined>();
+    const asset = ref<FileAsset[]>([]);
 
     //#endregion
 
     //#region Computed Values
+
+    const isOkButtonDisabled = computed<boolean>(() => {
+        return asset.value.length !== 1;
+    });
 
     //#endregion
 
@@ -91,11 +98,13 @@
 
     /** Initializes the plugin. */
     function init(editor: Editor): void {
+        editor.ui.registry.addIcon("asset-manager", '<svg xmlns="http://www.w3.org/2000/svg" height=18 width=18 viewBox="0 0 576 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M572.7 292.1L500.3 416.2A64 64 0 0 1 445 448H45c-18.5 0-30.1-20.1-20.7-36.1l72.4-124.2A64 64 0 0 1 152 256h400c18.5 0 30.1 20.1 20.7 36.1zM152 224h328v-48c0-26.5-21.5-48-48-48H272l-64-64H48C21.5 64 0 85.5 0 112v278l69.1-118.4C86.2 242.3 118 224 152 224z"/></svg>');
         // Register toolbar buttons.
         // Open the modal when the toolbar button is clicked.
         editor.ui.registry.addToggleButton(id, {
             // https://www.tiny.cloud/docs/tinymce/latest/editor-icon-identifiers/
-            icon: "browse",
+            icon: "asset-manager",
+            // icon: "browse",
             tooltip: tooltip,
             onAction: (_api: Ui.Toolbar.ToolbarButtonInstanceApi): void => {
                 isShown.value = true;
@@ -109,36 +118,27 @@
         });
     }
 
-    /** Determines whether the file has an image file extension. */
-    function isImage(fileName: string): boolean {
-        return !!fileName?.match(/.(jpg|jpeg|png|gif|svg)$/i);
-    }
-
     //#endregion
 
     //#region Event Handlers
 
     /** Event handler for the OK button being clicked. */
-    function onOkClicked(): void {
+    async function onOkClicked(): Promise<void> {
         const editor = editorInstance.value;
 
-        if (editor && asset.value?.value) {
-            // TODO: Add the file to the editor; possibly with the following format
-            // assuming file.value is the file path and the file.text is the file name.
-            if (isImage(asset.value.value)) {
-                // TODO: Add the image to the editor assuming file.value is the image path.
-                // https://www.tiny.cloud/docs/tinymce/latest/editor-command-identifiers/#link:~:text=cursor%20or%20selection.-,InsertImage,-Adds%20an%20image
-                editor.execCommand("InsertImage", false, asset.value.value);
+        if (editor && asset.value?.length > 0) {
+            if (await isImage(asset.value[0].uri)) {
+                // Possible commands: https://www.tiny.cloud/docs/tinymce/latest/editor-command-identifiers/
+                editor.execCommand("InsertHTML", false, `<img style="width:25%" src="${asset.value[0].uri}" alt="${asset.value[0].name}" />`);
             }
             else {
-                // TODO: Add the file to the editor assuming file.value is the file path.
-                // https://www.tiny.cloud/docs/tinymce/latest/editor-command-identifiers/#link:~:text=the%20current%20selection.-,CreateLink,-Inserts%20a%20link
-                editor.execCommand("CreateLink", false, asset.value.value);
+                // Possible commands: https://www.tiny.cloud/docs/tinymce/latest/editor-command-identifiers/
+                editor.execCommand("InsertHTML", false, `<a href="${asset.value[0].uri}">${asset.value[0].name}</a>`);
             }
         }
 
         // Clear the asset value and close the modal.
-        asset.value = undefined;
+        asset.value = [];
         isShown.value = false;
     }
 

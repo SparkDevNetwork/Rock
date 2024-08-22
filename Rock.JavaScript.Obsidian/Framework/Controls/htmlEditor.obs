@@ -4,6 +4,13 @@
                    :formGroupClasses="`html-editor ${formGroupClasses}`"
                    name="html-editor">
         <template #default="{ uniqueId, field }">
+            <NotificationBox v-if="isCodeEditorWarningShown && !isCodeEditorWarningDismissed"
+                             alertType="warning"
+                             :dismissible="true"
+                             @dismiss="isCodeEditorWarningDismissed = true">
+                The markup contains content that may not be compatible with the visual editor.
+            </NotificationBox>
+
             <div class="control-wrapper">
                 <div class="note-editor-container">
                     <div class="note-editor note-frame panel panel-default">
@@ -17,7 +24,8 @@
                                                   :editorHeight="editorHeight + yOffset"
                                                   :mergeFields="mergeFields"
                                                   ref="editSourceCodePlugin"
-                                                  :startInCodeEditorMode="startInCodeEditorMode">
+                                                  :startInCodeEditorMode="startInCodeEditorMode"
+                                                  @preventToggleOff="onPreventCodeEditorToggleOff">
                                 <template #default="{ isEditorShown }">
                                     <div v-show="!updateIsEditorShown(isEditorShown)"
                                          class="note-editable"
@@ -42,20 +50,23 @@
 
             <PasteAsPlainTextPlugin ref="pasteAsPlainTextPlugin" />
 
-            <MergeFieldPlugin :mergeFields="mergeFields"
-                              ref="mergeFieldPlugin" />
+            <MergeFieldPlugin :mergeFields="mergeFields" ref="mergeFieldPlugin" />
 
-            <ImageBrowserPlugin v-if="false"
-                                ref="imageBrowserPlugin" />
+            <ImageBrowserPlugin ref="imageBrowserPlugin"
+                                :encryptedRootFolder="encryptedImageRootFolder"
+                                :userSpecificRoot="userSpecificRoot" />
 
-            <FileBrowserPlugin v-if="false"
-                               ref="fileBrowserPlugin" />
+            <FileBrowserPlugin ref="fileBrowserPlugin"
+                               :encryptedRootFolder="encryptedDocumentRootFolder"
+                               :userSpecificRoot="userSpecificRoot" />
 
-            <AssetManagerPlugin v-if="false"
-                                ref="assetManagerPlugin" />
+            <AssetManagerPlugin ref="assetManagerPlugin" />
 
-            <StylesheetsPlugin htmlCssReplacementSelector=".note-editor"
-                               bodyCssReplacementSelector=".note-editing-area" />
+            <StylesheetsPlugin htmlCssReplacementSelector=".note-editor" bodyCssReplacementSelector=".note-editing-area" />
+
+            <MetaTagsPlugin />
+
+            <LavaLanguagePlugin />
         </template>
     </RockFormField>
 </template>
@@ -84,12 +95,15 @@
 
 <script setup lang="ts">
     import { PropType, computed, onMounted, onUnmounted, ref, watch, watchEffect } from "vue";
+    import NotificationBox from "./notificationBox.obs";
     import RockFormField from "./rockFormField.obs";
     import AssetManagerPlugin from "./NoteEditor/assetManagerPlugin.partial.obs";
     import EditSourceCodePlugin from "./NoteEditor/editSourceCodePlugin.partial.obs";
     import FileBrowserPlugin from "./NoteEditor/fileBrowserPlugin.partial.obs";
     import ImageBrowserPlugin from "./NoteEditor/imageBrowserPlugin.partial.obs";
+    import LavaLanguagePlugin from "./NoteEditor/lavaLanguagePlugin.partial.obs";
     import MergeFieldPlugin from "./NoteEditor/mergeFieldPlugin.partial.obs";
+    import MetaTagsPlugin from "./NoteEditor/metaTagsPlugin.partial.obs";
     import ParagraphPlugin from "./NoteEditor/paragraphPlugin.partial.obs";
     import PasteAsPlainTextPlugin from "./NoteEditor/pasteAsPlainTextPlugin.partial.obs";
     import StylesheetsPlugin from "./NoteEditor/stylesheetsPlugin.partial.obs";
@@ -104,6 +118,15 @@
         modelValue: {
             type: String as PropType<string>,
             required: true
+        },
+
+        /**
+         * One-way v-model for whether or not the editor is in code editor mode (vs Rich Text mode).
+         * Value will be emitted, but values passed in will be ignored.
+         */
+        isInCodeEditorMode: {
+            type: Boolean,
+            default: false
         },
 
         /** Custom classes to add to the form group. */
@@ -154,11 +177,39 @@
         toolbar: {
             type: String as PropType<ToolbarConfig>,
             default: "light"
+        },
+
+        /**
+         * The encrypted root folder path used for the file browser
+         */
+        encryptedDocumentRootFolder: {
+            type: String,
+            default: ""
+        },
+
+        /**
+         * The encrypted root folder path used for the image browser
+         */
+        encryptedImageRootFolder: {
+            type: String,
+            // ~/Content
+            default: ""
+        },
+
+        /**
+         * If set to true, instead of using the given root directly, the root folder shown will be a
+         * folder under the given root that is named after the current person's username. If the folder
+         * does not exist, it will be created.
+         */
+        userSpecificRoot: {
+            type: Boolean,
+            default: false
         }
     });
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: string): void;
+        (e: "update:isInCodeEditorMode", value: boolean): void;
     }>();
 
     // #region Values
@@ -169,6 +220,8 @@
     const toolbarId = ref<string | undefined>();
     const tinyMceInstance = ref<Editor | undefined>();
     const toolbarElement = ref<HTMLElement | undefined>();
+    const isCodeEditorWarningDismissed = ref<boolean>(false);
+    const isCodeEditorWarningShown = ref<boolean>(false);
 
     // Keep track of the TinyMCE value to compare with the modelValue.
     const tinyMceValue = ref<string | undefined>();
@@ -195,7 +248,9 @@
 
     // #region Computed Values
 
-    const editorHeightCss = computed<string>(() => `${props.editorHeight + yOffset.value}px`);
+    const editorHeightCss = computed<string>(() => {
+        return `${props.editorHeight + yOffset.value}px`;
+    });
 
     // #endregion
 
@@ -216,6 +271,7 @@
     /** Updates and returns the isEditorShown value. */
     function updateIsEditorShown(isShown: boolean): boolean {
         isEditorShown.value = isShown;
+        emit("update:isInCodeEditorMode", isShown);
         return isEditorShown.value;
     }
 
@@ -238,6 +294,12 @@
     function onResizeEnd(_event: MouseEvent): void {
         document.removeEventListener("mousemove", onResize);
         resizerElement.value?.addEventListener("mousedown", onResizeStart, { once: true });
+    }
+
+    /** Event handler for the code editor toggle off being prevented. */
+    function onPreventCodeEditorToggleOff(event: { isPrevented: boolean }): void {
+        isCodeEditorWarningDismissed.value = false;
+        isCodeEditorWarningShown.value = event.isPrevented;
     }
 
     // #endregion
@@ -361,7 +423,6 @@
                 // https://www.tiny.cloud/docs/tinymce/6/user-formatting-options/#style_formats
                 style_formats: [
                     { title: "Normal", format: "p" },
-                    // TODO There is a TinyMCE style that hides the left border for the <blockquote> format option.
                     { title: "Quote", block: "blockquote" },
                     { title: "Code", format: "pre" },
                     { title: "Heading 1", format: "h1" },

@@ -14,7 +14,7 @@
             This control is for internal use only.
         </NotificationBox>
 
-        <AssetAndFileManager :height="height" v-model="value" v-model:openFolders="openFolders" v-model:selectedFolder="selectedFolder" :enableAssetManager="enableAssetManager" :enableFileManager="enableFileManager" :enableZipUpload="enableZipUpload" :encryptedRootFolder="encryptedRootFolder" :editFilePage="editFilePage" />
+        <FileAssetManager :height="height" v-model="value" v-model:openFolders="openFolders" v-model:selectedFolder="selectedFolder" :enableAssetManager="enableAssetManager" :enableFileManager="enableFileManager" :enableZipUpload="enableZipUpload" :editFilePage="editFilePage" />
 
         <template #settings>
             <div class="row">
@@ -100,7 +100,7 @@
                         <td><code>encryptedRootFolder</code></td>
                         <td>String</td>
                         <td>""</td>
-                        <td>If <code>enableFileManager</code> is <code>true</code>, this is required. Specifies the root folder to fetch folders and files from. Must be encrypted.</td>
+                        <td>When <code>enableFileManager</code> is <code>true</code>, this specifies the root folder to fetch folders and files from. Must be encrypted (via the back end). When blank, it will default to <code>~/Content</code>.</td>
                     </tr>
                     <tr>
                         <td><code>editFilePage</code></td>
@@ -127,7 +127,7 @@
 <script setup lang="ts">
     import { computed, ref } from "vue";
     import GalleryAndResult from "./galleryAndResult.partial.obs";
-    import AssetAndFileManager from "@Obsidian/Controls/assetAndFileManager.obs";
+    import FileAssetManager from "@Obsidian/Controls/fileAssetManager.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -136,8 +136,8 @@
     import { FileAsset } from "@Obsidian/ViewModels/Controls/fileAsset";
 
     const value = ref<FileAsset[]>([]);
-    const openFolders = ref<string[]>(["0,EAAAABoMLQ7sxQnuAw5xJ6fMyNpOWavdmnjvI21yclYPMFnm,,True", "0,EAAAAE7cu51UBwj12ozhSL3ocnErk4IIkGrNdWKOW0qL/ReB,ExternalSite/"]);
-    const selectedFolder = ref<string>("0,EAAAAE7cu51UBwj12ozhSL3ocnErk4IIkGrNdWKOW0qL/ReB,ExternalSite/Icons/");
+    const openFolders = ref<string[]>([]);
+    const selectedFolder = ref<string>("");
 
     const isStaticHeight = ref(true);
     const staticHeight = ref("400px");
@@ -145,22 +145,17 @@
     const enableAssetManager = ref(true);
     const enableFileManager = ref(true);
     const enableZipUpload = ref(false);
-    // ~/
-    // const encryptedRootFolder = ref("EAAAAOkA/1SamAbdx1EJX3OXaY7FkiG6ha9rDeDXaRPjfGcr");
-    // ~/Content
-    const encryptedRootFolder = ref("EAAAADKu4UpeD3p9uFXZ5WLZMaToEPXLfHZ6a0U7LuvfyZUy");
     const editFilePage = ref("/admin/cms/file-manager/edit");
 
     const isInternalNotificationVisible = ref(true);
     const isDangerNotificationVisible = ref(true);
 
-    const importCode = getSfcControlImportPath("assetAndFileManager");
+    const importCode = getSfcControlImportPath("fileAssetManager");
     const exampleCode = computed(() => {
         const enableAssetManagerProp = enableAssetManager.value ? " enableAssetManager" : "";
         const enableFileManagerProp = enableFileManager.value ? " enableFileManager" : "";
         const enableZipUploadProp = enableZipUpload.value ? " enableZipUpload" : "";
         const heightProp = isStaticHeight.value ? ` height="${height.value}"` : "";
-        const rootFolderProp = enableFileManager.value ? ` encryptedRootFolder="${encryptedRootFolder.value}"` : "";
-        return `<AssetAndFileManager v-model="value"${rootFolderProp}${enableAssetManagerProp}${enableFileManagerProp}${enableZipUploadProp}${heightProp} />`;
+        return `<FileAssetManager v-model="value"${enableAssetManagerProp}${enableFileManagerProp}${enableZipUploadProp}${heightProp} />`;
     });
 </script>

@@ -6,9 +6,9 @@
                 <PersonPicker v-model="requestedByPersonAlias"
                               label="Requested By"
                               @update:modelValue="updatePersonName($event)" />
-                <TextBox v-model="firstName"
-                         label="First Name"
-                         rules="required" />
+                <FirstNameTextBox v-model="firstName"
+                                  label="First Name"
+                                  rules="required" />
                 <TextBox v-model="lastName"
                          label="Last Name"
                          :rules="isLastNameRequired" />
@@ -80,6 +80,7 @@
     import Toggle from "@Obsidian/Controls/toggle.obs";
     import { tooltip } from "@Obsidian/Utility/tooltip";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import FirstNameTextBox from "@Obsidian/Controls/firstNameTextBox.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";

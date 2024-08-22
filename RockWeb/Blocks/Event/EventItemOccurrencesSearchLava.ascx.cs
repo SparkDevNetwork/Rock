@@ -204,8 +204,6 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             // tell the browser to not cache this page so that it'll reload this page and apply the last search settings
             // when the user navigates back to it. If we don't do this, the browser will show the the initial full load of the page (without the results)
             this.Response.Cache.SetCacheability( System.Web.HttpCacheability.NoCache );
@@ -235,6 +233,8 @@ namespace RockWeb.Blocks.Event
 
                 ShowResults();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion

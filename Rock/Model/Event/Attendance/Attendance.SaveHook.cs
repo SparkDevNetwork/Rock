@@ -152,7 +152,12 @@ namespace Rock.Model
                     RockContext.ExecuteAfterCommit( () =>
                     {
                         // Use the fast queue for this because it is real-time.
-                        new SendAttendanceRealTimeNotificationsTransaction( Entity.Guid, State == EntityContextState.Deleted ).Enqueue( true );
+                        new SendAttendanceRealTimeNotificationsTransaction( Entity.Guid,
+                            State == EntityContextState.Deleted,
+                            Entity.DidAttend,
+                            Entity.PresentDateTime,
+                            Entity.EndDateTime,
+                            Entity.CheckInStatus ).Enqueue( true );
                     } );
                 }
 
@@ -253,6 +258,14 @@ namespace Rock.Model
                         return true;
                     }
                     else if ( Entity.PresentDateTime != ( DateTime? ) OriginalValues[nameof( Entity.PresentDateTime )] )
+                    {
+                        return true;
+                    }
+                    else if ( Entity.EndDateTime != ( DateTime? ) OriginalValues[nameof( Entity.EndDateTime )] )
+                    {
+                        return true;
+                    }
+                    else if ( Entity.CheckInStatus != ( CheckInStatus ) OriginalValues[nameof( Entity.CheckInStatus )] )
                     {
                         return true;
                     }

@@ -189,6 +189,13 @@ namespace Rock.Jobs
         private DateTime lastRunDateTime;
         private List<string> _enabledTaskKeys = null;
 
+        /// <summary>
+        /// This is used to disable certain features that don't play well with
+        /// running from inside a unit test. This includes things like network
+        /// operations or steps which modify on-disk content.
+        /// </summary>
+        internal bool IsRunningFromUnitTest { get; set; }
+
         /// <inheritdoc cref="RockJob.Execute()" />
         public override void Execute()
         {
@@ -3381,8 +3388,10 @@ END
                         gf.PostalCode.Select( p => p.Split( '-' )[0] ) ).Distinct();
                     var hasGivenCount = givingFamiliesForCampus.Count( gf => gf.PostalCode.Any() );
 
-                    campus.TitheMetric = ( postalCodesQuery.Where( p => postalCodes.Contains( p.PostalCode ) )
-                        .Sum( p => p.FamiliesMedianIncome ) / hasGivenCount ) * 0.1M;
+                    var summedIncome = postalCodesQuery.Where( p => postalCodes.Contains( p.PostalCode ) )
+                        .Sum( p => ( int? ) p.FamiliesMedianIncome ) ?? 0;
+
+                    campus.TitheMetric = ( summedIncome / hasGivenCount ) * 0.1M;
                 }
 
                 return rockContext.SaveChanges();
@@ -3395,7 +3404,10 @@ END
         /// <returns>1 if the database was updated successfully.</returns>
         private int UpdateGeolocationDatabase()
         {
-            IpGeoLookup.Instance.UpdateDatabase();
+            if ( !IsRunningFromUnitTest )
+            {
+                IpGeoLookup.Instance.UpdateDatabase();
+            }
 
             return 1;
         }

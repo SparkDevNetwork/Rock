@@ -33,11 +33,11 @@
                                v-if="child.isFirstNameReadOnly"
                                label="First Name"
                                :modelValue="child.firstName" />
-            <TextBox v-else
-                     v-model="child.firstName"
-                     :disabled="disabled"
-                     label="First Name"
-                     :rules="requiredRules" />
+            <FirstNameTextBox v-else
+                              v-model="child.firstName"
+                              :disabled="disabled"
+                              label="First Name"
+                              :rules="requiredRules" />
         </div>
 
         <div class="col-sm-6">
@@ -198,6 +198,7 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import FirstNameTextBox from "@Obsidian/Controls/firstNameTextBox.obs";
     import { CommunicationPreference } from "@Obsidian/Enums/Blocks/Crm/FamilyPreRegistration/communicationPreference";
     import { Gender } from "@Obsidian/Enums/Crm/gender";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
@@ -283,5 +284,5 @@
         childRequest.value = props.child;
     });
 
-    //#endregion
+        //#endregion
 </script>

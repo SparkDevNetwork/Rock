@@ -306,6 +306,17 @@ namespace Rock.Model
         [DataMember]
         public CheckInStatus CheckInStatus { get; set; } = CheckInStatus.Unknown;
 
+        /// <summary>
+        /// Gets or sets the Id of the Attendance Source <see cref="DefinedValue"/>
+        /// that is considered the source of this attendance record.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the Id of the Check-in Search Type <see cref="Rock.Model.DefinedValue"/> that was used to search for the person/family.
+        /// </value>
+        [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.ATTENDANCE_SOURCE )]
+        public int? SourceValueId { get; set; }
+
         #endregion
 
         #region Navigation Properties
@@ -435,6 +446,17 @@ namespace Rock.Model
         [DataMember]
         public virtual PersonAlias CheckedOutByPersonAlias { get; set; }
 
+        /// <summary>
+        /// Gets or sets the <see cref="DefinedValue "/> representing the source
+        /// of this attendance record.
+        /// </summary>
+        /// <value>
+        /// The <see cref="DefinedValue"/> representing the source of this
+        /// attendance record.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue SourceValue { get; set; }
+
         #endregion Navigation Properties
     }
 
@@ -462,6 +484,7 @@ namespace Rock.Model
             this.HasOptional( a => a.ScheduledByPersonAlias ).WithMany().HasForeignKey( p => p.ScheduledByPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.CheckedOutByPersonAlias ).WithMany().HasForeignKey( p => p.CheckedOutByPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.PresentByPersonAlias ).WithMany().HasForeignKey( p => p.PresentByPersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.SourceValue ).WithMany().HasForeignKey( a => a.SourceValueId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.AttendanceData ).WithRequired().WillCascadeOnDelete();
         }
     }

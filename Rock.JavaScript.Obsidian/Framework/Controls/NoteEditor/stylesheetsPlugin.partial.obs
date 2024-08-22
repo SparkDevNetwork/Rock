@@ -139,7 +139,7 @@
 
     /** Extracts <style> elements from an HTML string. */
     function getStyleSheetStrings(html: string): string[] {
-        return html.match(/<style.*>((?!<\/style>).)*<\/style>/sg) ?? [];
+        return html.match(/<style.*>(?:.|\s)*?<\/style>/g) ?? [];
     }
 
     /** Scopes CSS style rules by adding a prefix to each rule selector. */

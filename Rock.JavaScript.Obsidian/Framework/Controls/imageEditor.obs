@@ -31,7 +31,7 @@
                             <span style="opacity: 0.75">Uploading...</span>
                         </div>
                         <div class="image-container" :style="thumbnailStyle"></div>
-                        <div :class="{'options': !buttonCssClass}">
+                        <div :class="{ 'options': !buttonCssClass }">
                             <a aria-label="Select an Image File" title="Select an Image File" :class="buttonCssClass"><i :class="buttonIconCssClass" aria-hidden></i> {{ buttonText }}</a>
                             <a @click.prevent.stop="onRemoveFileClick" v-if="isDeleteVisible" aria-label="Clear Image" title="Clear Image"><i class="fa fa-times" aria-hidden></i></a>
                         </div>
@@ -67,6 +67,7 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import Cropper from "@Obsidian/Libs/cropper";
     import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { isImage } from "@Obsidian/Utility/file";
 
     const imgRef = ref<HTMLImageElement | null>(null);
     let cropper: Cropper | undefined | null;
@@ -188,6 +189,11 @@
 
     /** Take the file chosen in the file picker and bring it up to be cropped  */
     async function showCropperForSelectedFile(file: File): Promise<void> {
+        if (! await isImage(file.name)) {
+            errorMessage.value = "file type not allowed";
+            return;
+        }
+
         errorMessage.value = "";
         selectedImageUrl.value = "";
 

@@ -102,14 +102,14 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 ShowDetails();
             }
 
             lTitle.Text = ( "Edit System Configuration" ).FormatAsHtmlTitle();
+
+            base.OnLoad( e );
         }
 
         /// <summary>

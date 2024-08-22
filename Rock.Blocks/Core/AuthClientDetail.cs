@@ -349,8 +349,8 @@ namespace Rock.Blocks.Core
                     Name = ac.Scope.Name,
                     PublicName = ac.Scope.PublicName
                 } )
-                .OrderBy( ac => ac.Name )
-                .ThenBy( ac => ac.Name )
+                .OrderBy( ac => ac.PublicName )
+                .ThenBy( ac => ac.ClaimName )
                 .ToList();
 
             return activeClaims;
@@ -440,21 +440,11 @@ namespace Rock.Blocks.Core
                 return ActionBadRequest( validationMessage );
             }
 
-            var isNew = entity.Id == 0;
-
             RockContext.WrapTransaction( () =>
             {
                 RockContext.SaveChanges();
                 entity.SaveAttributeValues( RockContext );
             } );
-
-            if ( isNew )
-            {
-                return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
-                {
-                    [PageParameterKey.AuthClientId] = entity.IdKey
-                } ) );
-            }
 
             // Ensure navigation properties will work now.
             entity = entityService.Get( entity.Id );

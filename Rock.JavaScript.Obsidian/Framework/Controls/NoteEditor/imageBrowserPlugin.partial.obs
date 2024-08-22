@@ -4,8 +4,9 @@
            title="Select Image"
            cancelText="Cancel"
            saveText="OK"
-           :onSave="onOkClicked">
-        TODO: Add Image Browser
+           :onSave="onOkClicked"
+           :isSaveButtonDisabled="isOkButtonDisabled">
+        <FileManager v-model="image" :encryptedRootFolder="encryptedRootFolder" enableFileManager browseMode="image" :userSpecificRoot="userSpecificRoot" />
     </Modal>
 </template>
 
@@ -56,11 +57,30 @@
      *   });
      * (/script)
      */
-    import { ref, watch } from "vue";
+    import { computed, ref, watch } from "vue";
     import { getToolbarButton, usePluginHelper } from "./utils.partial";
     import Modal from "@Obsidian/Controls/modal.obs";
+    import FileManager from "@Obsidian/Controls/fileAssetManager.obs";
     import { Editor, Ui } from "@Obsidian/Libs/tinymce";
-    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { FileAsset } from "@Obsidian/ViewModels/Controls/fileAsset";
+
+    defineProps({
+        /** The encrypted root folder path used for the local file browser */
+        encryptedRootFolder: {
+            type: String,
+            default: ""
+        },
+
+        /**
+         * If set to true, instead of using the given root directly, the root folder shown will be a
+         * folder under the given root that is named after the current person's username. If the folder
+         * does not exist, it will be created.
+         */
+        userSpecificRoot: {
+            type: Boolean,
+            default: false
+        }
+    });
 
     const id = "rockimagebrowser" as const;
     const tooltip = "Image Browser" as const;
@@ -74,11 +94,15 @@
     const { editorInstance, toolbarElement } = usePluginHelper();
     const toolbarButtonElement = ref<HTMLElement | undefined>();
     const isShown = ref<boolean>(false);
-    const image = ref<ListItemBag | undefined>();
+    const image = ref<FileAsset[]>([]);
 
     //#endregion
 
     //#region Computed Values
+
+    const isOkButtonDisabled = computed<boolean>(() => {
+        return image.value.length !== 1;
+    });
 
     //#endregion
 
@@ -117,14 +141,13 @@
     function onOkClicked(): void {
         const editor = editorInstance.value;
 
-        if (editor && image.value?.value) {
-            // TODO: Add the image to the editor assuming image.value is the image path.
-            // https://www.tiny.cloud/docs/tinymce/latest/editor-command-identifiers/#link:~:text=cursor%20or%20selection.-,InsertImage,-Adds%20an%20image
-            editor.execCommand("InsertImage", false, image.value.value);
+        if (editor && image.value?.length == 1) {
+            // Possible commands: https://www.tiny.cloud/docs/tinymce/latest/editor-command-identifiers/
+            editor.execCommand("InsertHTML", false, `<img style="width:25%" src="${image.value[0].uri}" alt="${image.value[0].name}" />`);
         }
 
         // Clear the selected image and close the modal.
-        image.value = undefined;
+        image.value = [];
         isShown.value = false;
     }
 

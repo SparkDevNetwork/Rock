@@ -17,7 +17,6 @@
 
 import { computed, ref, watch } from "vue";
 import { GetNextDayOption, PaymentPlanConfiguration, PaymentPlanConfigurationOptions, PaymentPlanFrequency, TransactionFrequency } from "./types.partial";
-import { RegistrationEntryCreatePaymentPlanRequestBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryCreatePaymentPlanRequestBag";
 import { RockCurrency } from "@Obsidian/Utility/rockCurrency";
 import { CurrentRegistrationEntryState, RegistrationCostSummary, use } from "./utils.partial";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
@@ -30,10 +29,6 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 // so that the summary component can repopulate the payment plan modal with the previous data.
 const wipPaymentPlanConfiguration = ref<PaymentPlanConfiguration | null | undefined>();
 const finalPaymentPlanConfiguration = ref<PaymentPlanConfiguration | null | undefined>();
-const prePaymentPlanData = ref<{
-    amountToPayToday: number;
-    paymentPlan: RegistrationEntryCreatePaymentPlanRequestBag | null;
-} | null | undefined>();
 const balanceDue = ref<RockCurrency | undefined>();
 
 /**
@@ -127,13 +122,6 @@ export function useConfigurePaymentPlanFeature() {
 
     /** Configures the registration with the payment plan. */
     function configure(paymentPlanConfig: PaymentPlanConfiguration): void {
-        // Capture current registration data so it can be restored
-        // if the new payment plan is canceled.
-        prePaymentPlanData.value = {
-            amountToPayToday: registrationEntryState.amountToPayToday,
-            paymentPlan: registrationEntryState.paymentPlan,
-        };
-
         // Keep track of the configuration.
         finalPaymentPlanConfiguration.value = paymentPlanConfig;
         wipPaymentPlanConfiguration.value = null;
@@ -216,20 +204,11 @@ export function useConfigurePaymentPlanFeature() {
         });
     }
 
-    /** Removes the new payment plan from the registration, and restores previously entered payment data. */
+    /** Removes the new payment plan from the registration. */
     function cancel(): void {
         wipPaymentPlanConfiguration.value = null;
         finalPaymentPlanConfiguration.value = null;
         registrationEntryState.paymentPlan = null;
-
-        // Restore info. This should coincide with the data that was saved in `configure()`.
-        const dataToRestore = prePaymentPlanData.value;
-        prePaymentPlanData.value = null;
-
-        if (dataToRestore) {
-            registrationEntryState.amountToPayToday = dataToRestore.amountToPayToday;
-            registrationEntryState.paymentPlan = dataToRestore.paymentPlan;
-        }
     }
 
     /** Initializes the "work in progress" payment plan configuration from current registration values. */
@@ -248,12 +227,8 @@ export function useConfigurePaymentPlanFeature() {
                 : noopPaymentPlanFrequency;
 
         wipPaymentPlanConfiguration.value = getPaymentPlanConfiguration({
-            amountToPayToday:
-                RockCurrency.create(
-                    registrationEntryState.paymentPlan
-                        ? registrationEntryState.amountToPayToday
-                        : readonlyRegistrationCostSummary.value.minimumRemainingAmount,
-                    balanceDue.value.currencyInfo),
+            // Always initialize the one-time amount to the Amount To Pay Today value.
+            amountToPayToday: RockCurrency.create(registrationEntryState.amountToPayToday, balanceDue.value.currencyInfo),
             balanceDue: balanceDue.value,
             desiredAllowedPaymentPlanFrequencies: paymentPlanFrequencies.value,
             desiredNumberOfPayments: registrationEntryState.paymentPlan?.numberOfPayments ?? 0,

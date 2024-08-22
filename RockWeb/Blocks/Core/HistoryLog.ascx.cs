@@ -109,7 +109,6 @@ namespace RockWeb.Blocks.Core
         {
             nbMessage.Visible = false;
 
-            base.OnLoad( e );
             _entity = this.ContextEntity();
             if ( _entity != null )
             {
@@ -133,6 +132,8 @@ namespace RockWeb.Blocks.Core
                     }
                 }
             }
+            
+	        base.OnLoad( e );
         }
 
         #endregion

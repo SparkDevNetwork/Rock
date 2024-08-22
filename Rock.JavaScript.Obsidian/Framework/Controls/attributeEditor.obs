@@ -80,6 +80,15 @@
         <Panel title="Advanced Settings" hasCollapse>
             <div class="row">
                 <div class="col-md-6">
+
+                    <TextBox v-if="isIconCssClassVisible"
+                             label="Icon CSS Class"
+                             v-model="iconCssClass" />
+
+                    <ColorPicker label="Attribute Color"
+                                 v-model="attributeColor"
+                                 help="The color used to visually distinguish this attribute." />
+
                     <CheckBox label="Enable History"
                               v-model="isHistoryEnabled"
                               help="If selected, changes to the value of this attribute will be stored in attribute value history."
@@ -136,6 +145,7 @@
     import { computed, PropType, ref, watch } from "vue";
     import CheckBox from "./checkBox.obs";
     import TextBox from "./textBox.obs";
+    import ColorPicker from "./colorPicker.obs";
     import { FieldTypeEditorUpdateAttributeConfigurationOptionsBag } from "@Obsidian/ViewModels/Controls/fieldTypeEditorUpdateAttributeConfigurationOptionsBag";
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
     import CategoryPicker from "./categoryPicker.obs";
@@ -180,6 +190,11 @@
             default: false
         },
 
+        isIconCssClassVisible: {
+            type: Boolean,
+            default: true
+        },
+
         reservedKeyNames: {
             type: Array as PropType<string[]>,
             default: []
@@ -206,6 +221,8 @@
     const isAnalyticsEnabled = ref(props.modelValue?.isAnalytic ?? false);
     const isAnalyticsHistoryEnabled = ref(props.modelValue?.isAnalyticHistory ?? false);
     const isSuppressHistoryLogging = ref(props.modelValue?.isSuppressHistoryLogging ?? false);
+    const attributeColor = ref(props.modelValue?.attributeColor ?? "");
+    const iconCssClass = ref(props.modelValue?.iconCssClass ?? "");
     const preHtml = ref(props.modelValue?.preHtml ?? "");
     const postHtml = ref(props.modelValue?.postHtml ?? "");
     const categories = ref([...(props.modelValue?.categories ?? [])]);
@@ -258,6 +275,8 @@
         isAnalyticsHistoryEnabled,
         isHistoryEnabled,
         isIndexingEnabled,
+        iconCssClass,
+        attributeColor,
         preHtml,
         postHtml,
         categories,
@@ -280,6 +299,8 @@
                 isAnalyticHistory: isAnalyticsHistoryEnabled.value,
                 isEnableHistory: isHistoryEnabled.value,
                 isIndexEnabled: isIndexingEnabled.value,
+                iconCssClass: iconCssClass.value,
+                attributeColor: attributeColor.value,
                 preHtml: preHtml.value,
                 postHtml: postHtml.value,
                 categories: [...categories.value],

@@ -21,5 +21,11 @@
 // </copyright>
 //
 
+/** The options bag for the RestActionList block. */
 export type RestActionListOptionsBag = {
+    /** Gets or sets the controller name. */
+    controllerName?: string | null;
+
+    /** Gets or sets the obsolete warning. */
+    obsoleteWarning?: string | null;
 };

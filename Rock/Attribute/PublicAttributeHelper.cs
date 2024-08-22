@@ -19,7 +19,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 
 using Rock.Field;
 using Rock.ViewModels.Utility;
@@ -82,6 +81,8 @@ namespace Rock.Attribute
                 IsSuppressHistoryLogging = attribute.IsSuppressHistoryLogging,
                 FieldTypeGuid = fieldTypeCache.ControlFieldTypeGuid,
                 RealFieldTypeGuid = fieldTypeCache.Guid,
+                IconCssClass = attribute.IconCssClass,
+                AttributeColor = attribute.AttributeColor,
                 Categories = attribute.Categories
                     .Select( c => new ListItemBag
                     {

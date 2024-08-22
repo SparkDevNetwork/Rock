@@ -148,7 +148,10 @@
     <Compile Include="Blocks\Cms\PersonalLinkList\SavePersonalLinkRequestBag.cs" />
     <Compile Include="Blocks\Cms\PersonalLinkSectionList\PersonalLinkSectionListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageRouteList\PageRouteListOptionsBag.cs" />
+    <Compile Include="Blocks\Core\RestControllerList\RestControllerListOptionsBag.cs" />
     <Compile Include="Blocks\Core\PersonFollowingList\PersonFollowingListOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\PageShortLinkDetail\ScheduledRedirectBag.cs" />
+    <Compile Include="Blocks\Cms\PageShortLinkDetail\UtmSettingsBag.cs" />
     <Compile Include="Blocks\Communication\NcoaProcess\NcoaProcessBag.cs" />
     <Compile Include="Blocks\Communication\NcoaProcess\NcoaProcessSavedSettingsBag.cs" />
     <Compile Include="Blocks\Communication\NcoaProcess\NcoaProcessPersonAddressBag.cs" />
@@ -156,6 +159,10 @@
     <Compile Include="Blocks\Core\AuthClientDetail\AuthClientDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\AuthClientDetail\AuthClientScopeBag.cs" />
     <Compile Include="Blocks\Crm\PhotoVerifyList\PhotoVerifyListOptionsBag.cs" />
+    <Compile Include="Blocks\Finance\FundraisingList\FundraisingListInitializationBox.cs" />
+    <Compile Include="Blocks\Core\TaggedItemList\TaggedItemListBag.cs" />
+    <Compile Include="Blocks\Core\TaggedItemList\TaggedItemListOptionsBag.cs" />
+    <Compile Include="Blocks\Engagement\StreakTypeExclusionList\StreakTypeExclusionListOptionsBag.cs" />
     <Compile Include="Blocks\Security\AuthScopeList\AuthScopeListOptionsBag.cs" />
     <Compile Include="Blocks\Security\AuthClientList\AuthClientListOptionsBag.cs" />
     <Compile Include="Blocks\Core\PersonSignalList\PersonSignalBag.cs" />
@@ -298,6 +305,7 @@
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntrySuccessBag.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\RegistrationEntryVisibilityBag.cs" />
     <Compile Include="Blocks\Event\RegistrationEntry\SessionRenewalResultBag.cs" />
+    <Compile Include="Blocks\Finance\BenevolenceTypeList\BenevolenceTypeListOptionsBag.cs" />
     <Compile Include="Blocks\Finance\FinancialBatchList\FinancialBatchListOptionsBag.cs" />
     <Compile Include="Blocks\Finance\FinancialBatchList\SetBulkBatchStatusRequestBag.cs" />
     <Compile Include="Blocks\Finance\FinancialBatchList\SetBulkBatchStatusResponseBag.cs" />

@@ -16,7 +16,8 @@
 //
 
 import { Workbook } from "exceljs";
-
+import { useHttp } from "./http";
+import Cache from "./cache";
 
 /**
  * Triggers an automatic download of the workbook so it can be saved to
@@ -50,4 +51,37 @@ export async function downloadWorkbook(workbook: Workbook, title: string, format
     document.body.removeChild(element);
 
     setTimeout(() => URL.revokeObjectURL(url), 100);
+}
+
+/**
+ * Fetch the global attribute configuration for image file extensions from the server as an array of
+ * file extension strings.
+ */
+async function fetchImageFileExtensions(): Promise<string[] | null> {
+    const http = useHttp();
+    const result = await http.post<string>("/api/v2/Utilities/GetImageFileExtensions");
+
+    if (result.isSuccess && result.data) {
+        return result.data.split(",");
+    }
+
+    return null;
+}
+
+/**
+ * Fetch the global attribute configuration for image file extensions from the server as an array of
+ * file extension strings.
+ *
+ * Cacheable version of fetchImageFileExtensions
+ */
+export const getImageFileExtensions = Cache.cachePromiseFactory("imageFileExtensions", fetchImageFileExtensions);
+
+/**
+ * Determine, based on the file's extension and the list of image file extensions (from the
+ * server's configuration), whether the file is an image.
+ */
+export async function isImage(filename: string): Promise<boolean> {
+    const imageExtensions = await getImageFileExtensions();
+    const extension = filename.split(".").pop();
+    return !!extension && (imageExtensions?.includes(extension.toLowerCase()) ?? false);
 }

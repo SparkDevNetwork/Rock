@@ -69,8 +69,6 @@ namespace RockWeb.Blocks.Finance
         /// <inheritdoc />
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !IsPostBack )
             {
                 hfBusinessId.Value = PageParameter( "BusinessId" );
@@ -81,6 +79,8 @@ namespace RockWeb.Blocks.Finance
             {
                 mdAddContact.Show();
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>

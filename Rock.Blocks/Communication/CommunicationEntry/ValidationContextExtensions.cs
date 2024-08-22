@@ -19,178 +19,72 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
+using Rock.Communication;
+
 namespace Rock.Blocks.Communication
 {
     /// <summary>
-    /// Extension methods to validate any type of target value.
+    /// Validation extension methods.
     /// </summary>
     internal static class ValidationContextExtensions
     {
+        #region Common Methods
+        
         /// <summary>
-        /// Validates the <paramref name="target"/> with the <paramref name="validator"/>.
+        /// Begins a new validation context for the target values.
         /// </summary>
         /// <typeparam name="TTarget">The validation target type.</typeparam>
-        /// <param name="target">The target to validation.</param>
+        /// <param name="targets">The targets to validate.</param>
+        /// <param name="friendlyName">The validation target friendly name that will be used in error messages if validation fails.</param>
+        /// <returns>A new <see cref="ValidationContext{TTarget}"/> instance.</returns>
+        internal static ValidationContext<TTarget> ValidateEach<TTarget>( this IEnumerable<TTarget> targets, string friendlyName = null )
+        {
+            return new ValidationContext<TTarget>
+            {
+                Targets = targets,
+                FriendlyName = friendlyName
+            };
+        }
+        
+        /// <summary>
+        /// Begins a new validation context for the target value.
+        /// </summary>
+        /// <typeparam name="TTarget">The validation target type.</typeparam>
+        /// <param name="target">The target to validate.</param>
+        /// <param name="friendlyName">The validation target friendly name that will be used in error messages if validation fails.</param>
+        /// <returns>A new <see cref="ValidationContext{TTarget}"/> instance.</returns>
+        internal static ValidationContext<TTarget> Validate<TTarget>( this TTarget target, string friendlyName = null )
+        {
+            return new ValidationContext<TTarget>
+            {
+                Targets = new[] { target },
+                FriendlyName = friendlyName
+            };
+        }
+        
+        /// <summary>
+        /// Validates that the <paramref name="validator"/> returns <see langword="true"/>.
+        /// </summary>
+        /// <typeparam name="TTarget">The validation target type.</typeparam>
+        /// <param name="validationContext">The target to validation.</param>
         /// <param name="validator">The validator.</param>
-        /// <param name="errorMessageBuilder">The delegate used to generate an error message if validation fails.</param>
         /// <param name="validationResult">Set to <see cref="ValidationResult.Success"/> if valid; otherwise a validation result with an error message.</param>
         /// <returns><see langword="true"/> if valid; otherwise <see langword="false"/>.</returns>
-        private static bool Validate<TTarget>( this TTarget target, Func<TTarget, bool> validator, Func<TTarget, string> errorMessageBuilder, out ValidationResult validationResult )
+        internal static bool IsTrue<TTarget>( this IValidationContext<TTarget> validationContext, Func<TTarget, bool> validator, out ValidationResult validationResult )
         {
-            if ( validator( target ) )
-            {
-                validationResult = ValidationResult.Success;
-                return true;
-            }
-            else
-            {
-                validationResult = new ValidationResult( errorMessageBuilder( target ) );
-                return false;
-            }
+            validationContext.SetValidator( new IsValidDelegator<TTarget>( validator ) );
+            return validationContext.Validate( out validationResult );
         }
 
-        /// <summary>
-        /// Validates that the target value is <see langword="true"/>.
-        /// </summary>
-        /// <param name="validationContext">The validation context.</param>
-        /// <param name="validationResult">Set to <see cref="ValidationResult.Success"/> if valid; otherwise a validation result with an error message.</param>
-        /// <returns><see langword="true"/> if valid; otherwise <see langword="false"/>.</returns>
-        internal static bool IsTrue( this ValidationContext<bool> validationContext, out ValidationResult validationResult )
-        {
-            return validationContext.WithDefaultErrorMessage( o => $"{o.FriendlyName} must be true." )
-                .Validate( o => o.Target, validationContext.ErrorMessageBuilder, out validationResult );
-        }
-        
-        /// <summary>
-        /// Validates that the target value is <see langword="false"/>.
-        /// </summary>
-        /// <param name="validationContext">The validation context.</param>
-        /// <param name="validationResult">Set to <see cref="ValidationResult.Success"/> if valid; otherwise a validation result with an error message.</param>
-        /// <returns><see langword="true"/> if valid; otherwise <see langword="false"/>.</returns>
-        internal static bool IsFalse( this ValidationContext<bool> validationContext, out ValidationResult validationResult )
-        {
-            return validationContext.WithDefaultErrorMessage( o => $"{o.FriendlyName} must be false." )
-                .Validate( o => !o.Target, validationContext.ErrorMessageBuilder, out validationResult );
-        }
-        
-        /// <summary>
-        /// Validates that the target value is not <see langword="null"/>.
-        /// </summary>
-        /// <param name="validationContext">The validation context.</param>
-        /// <param name="validationResult">Set to <see cref="ValidationResult.Success"/> if valid; otherwise a validation result with an error message.</param>
-        /// <returns><see langword="true"/> if valid; otherwise <see langword="false"/>.</returns>
-        internal static bool IsNotNull<TTarget>( this ValidationContext<TTarget> validationContext, out ValidationResult validationResult ) where TTarget : class
-        {
-            return validationContext.WithDefaultErrorMessage( o => $"{o.FriendlyName} is required." )
-                .Validate( o => o.Target != null, validationContext.ErrorMessageBuilder, out validationResult );
-        }
-        
-        /// <summary>
-        /// Validates that the target value is not <see langword="null"/>.
-        /// </summary>
-        /// <param name="validationContext">The validation context.</param>
-        /// <param name="validationResult">Set to <see cref="ValidationResult.Success"/> if valid; otherwise a validation result with an error message.</param>
-        /// <returns><see langword="true"/> if valid; otherwise <see langword="false"/>.</returns>
-        internal static bool IsNotNull<TTarget>( this ValidationContext<TTarget?> validationContext, out ValidationResult validationResult ) where TTarget : struct
-        {
-            return validationContext.WithDefaultErrorMessage( o => $"{o.FriendlyName} is required." )
-                .Validate( o => o.Target.HasValue, validationContext.ErrorMessageBuilder, out validationResult );
-        }
-        
-        /// <summary>
-        /// Validates that the target value is not <see langword="null"/> or white space.
-        /// </summary>
-        /// <param name="validationContext">The validation context.</param>
-        /// <param name="validationResult">Set to <see cref="ValidationResult.Success"/> if valid; otherwise a validation result with an error message.</param>
-        /// <returns><see langword="true"/> if valid; otherwise <see langword="false"/>.</returns>
-        internal static bool IsNotNullOrWhiteSpace( this ValidationContext<string> validationContext, out ValidationResult validationResult )
-        {
-            return validationContext.WithDefaultErrorMessage( o => $"{o.FriendlyName} is required." )
-                .Validate( o => o.Target.IsNotNullOrWhiteSpace(), validationContext.ErrorMessageBuilder, out validationResult );
-        }
-        
-        /// <summary>
-        /// Validates that the target value is now or a future date time.
-        /// </summary>
-        /// <param name="validationContext">The validation context.</param>
-        /// <param name="validationResult">Set to <see cref="ValidationResult.Success"/> if valid; otherwise a validation result with an error message.</param>
-        /// <returns><see langword="true"/> if valid; otherwise <see langword="false"/>.</returns>
-        internal static bool IsNowOrFutureDateTime( this ValidationContext<DateTimeOffset> validationContext, out ValidationResult validationResult )
-        {
-            return validationContext.WithDefaultErrorMessage( o => $"{o.FriendlyName} must be a future date/time." )
-                .Validate( o => o.Target.DateTime.CompareTo( RockDateTime.Now ) >= 0, validationContext.ErrorMessageBuilder, out validationResult );
-        }
-        
-        /// <summary>
-        /// Validates that the target value is not an empty collection.
-        /// </summary>
-        /// <param name="validationContext">The validation context.</param>
-        /// <param name="validationResult">Set to <see cref="ValidationResult.Success"/> if valid; otherwise a validation result with an error message.</param>
-        /// <returns><see langword="true"/> if valid; otherwise <see langword="false"/>.</returns>
-        internal static bool IsNotEmpty<TTargetItem>( this ValidationContext<IEnumerable<TTargetItem>> validationContext, out ValidationResult validationResult )
-        {
-            return validationContext.WithDefaultErrorMessage( o => $"At least one {o.FriendlyName.Singularize()} is required." )
-                .Validate( o => o.Target?.Any() == true, validationContext.ErrorMessageBuilder, out validationResult );
-        }
-        
-        /// <summary>
-        /// Validates that the target value is not an empty collection.
-        /// </summary>
-        /// <param name="validationContext">The validation context.</param>
-        /// <param name="validationResult">Set to <see cref="ValidationResult.Success"/> if valid; otherwise a validation result with an error message.</param>
-        /// <returns><see langword="true"/> if valid; otherwise <see langword="false"/>.</returns>
-        internal static bool IsNotEmpty<TTargetItem>( this ValidationContext<List<TTargetItem>> validationContext, out ValidationResult validationResult )
-        {
-            return validationContext.WithDefaultErrorMessage( o => $"At least one {o.FriendlyName.Singularize()} is required." )
-                .Validate( o => o.Target?.Any() == true, validationContext.ErrorMessageBuilder, out validationResult );
-        }
-        
-        /// <summary>
-        /// Validates that the target value is not an empty <see cref="Guid"/>.
-        /// </summary>
-        /// <param name="validationContext">The validation context.</param>
-        /// <param name="validationResult">Set to <see cref="ValidationResult.Success"/> if valid; otherwise a validation result with an error message.</param>
-        /// <returns><see langword="true"/> if valid; otherwise <see langword="false"/>.</returns>
-        internal static bool IsNotEmpty( this ValidationContext<Guid> validationContext, out ValidationResult validationResult )
-        {
-            return validationContext.WithDefaultErrorMessage( o => $"{o.FriendlyName} is required." )
-                .Validate( o => !o.Target.IsEmpty(), validationContext.ErrorMessageBuilder, out validationResult );
-        }
-        
-        /// <summary>
-        /// Validates that the target value is greater than or equal to <paramref name="minValue"/>.
-        /// </summary>
-        /// <param name="validationContext">The validation context.</param>
-        /// <param name="minValue">The minimum valid value.</param>
-        /// <param name="validationResult">Set to <see cref="ValidationResult.Success"/> if valid; otherwise a validation result with an error message.</param>
-        /// <returns><see langword="true"/> if valid; otherwise <see langword="false"/>.</returns>
-        internal static bool IsGreaterThanOrEqualTo( this ValidationContext<int> validationContext, int minValue, out ValidationResult validationResult )
-        {
-            return validationContext.WithDefaultErrorMessage( o => $"{o.FriendlyName} must be greater than or equal to {minValue}." )
-                .Validate( o => o.Target >= minValue, validationContext.ErrorMessageBuilder, out validationResult );
-        }
-        
-        /// <summary>
-        /// Validates that the target value is <see langword="null"/> or has a length that is less than or equal to <paramref name="maxLength"/>.
-        /// </summary>
-        /// <param name="validationContext">The validation context.</param>
-        /// <param name="validationResult">Set to <see cref="ValidationResult.Success"/> if valid; otherwise a validation result with an error message.</param>
-        /// <returns><see langword="true"/> if valid; otherwise <see langword="false"/>.</returns>
-        internal static bool HasMaxLength( this ValidationContext<string> validationContext, int maxLength, out ValidationResult validationResult )
-        {
-            return validationContext.WithDefaultErrorMessage( o => $"{o.FriendlyName} must be less than or equal to {maxLength} characters." )
-                .Validate( o => o.Target == null || o.Target.Length <= maxLength, validationContext.ErrorMessageBuilder, out validationResult );
-        }
-        
         /// <summary>
         /// Overrides the error message builder of the validation context.
         /// </summary>
         /// <param name="validationContext">The validation context.</param>
         /// <param name="errorMessageBuilder">The error message builder.</param>
         /// <returns>The modified <paramref name="validationContext"/>.</returns>
-        internal static ValidationContext<TTarget> WithErrorMessage<TTarget>( this ValidationContext<TTarget> validationContext, Func<ValidationContext<TTarget>, string> errorMessageBuilder )
+        internal static IValidationContext<TTarget> WithErrorMessage<TTarget>( this IValidationContext<TTarget> validationContext, Func<TTarget, string, string> errorMessageBuilder )
         {
-            validationContext.ErrorMessageBuilder = errorMessageBuilder;
+            validationContext.SetErrorMessageBuilder( new GetValidationErrorMessageDelegator<TTarget>( () => validationContext.FriendlyName, errorMessageBuilder ) );
             return validationContext;
         }
 
@@ -201,26 +95,254 @@ namespace Rock.Blocks.Communication
         /// <param name="validationContext">The validation target.</param>
         /// <param name="errorMessageBuilder">The default error message builder.</param>
         /// <returns>The modified <paramref name="validationContext"/>.</returns>
-        private static ValidationContext<TTarget> WithDefaultErrorMessage<TTarget>( this ValidationContext<TTarget> validationContext, Func<ValidationContext<TTarget>, string> errorMessageBuilder )
+        private static IValidationContext<TTarget> WithDefaultErrorMessage<TTarget>( this IValidationContext<TTarget> validationContext, Func<TTarget, string, string> errorMessageBuilder )
         {
-            if ( validationContext.ErrorMessageBuilder == null )
+            if ( !validationContext.HasErrorMessageBuilder )
             {
-                validationContext.ErrorMessageBuilder = errorMessageBuilder;
+                validationContext.SetErrorMessageBuilder( new GetValidationErrorMessageDelegator<TTarget>( () => validationContext.FriendlyName, errorMessageBuilder ) );
             }
 
             return validationContext;
         }
 
+        #endregion
+
+        #region Boolean Validation Methods
+
         /// <summary>
-        /// Begins a new validation context for the target value.
+        /// Validates that the target value is <see langword="true"/>.
         /// </summary>
-        /// <typeparam name="TTarget">The validation target type.</typeparam>
-        /// <param name="target">The target to validate.</param>
-        /// <param name="friendlyName">The validation target friendly name that will be used in error messages if validation fails.</param>
-        /// <returns>A new <see cref="ValidationContext{TTarget}"/> instance.</returns>
-        internal static ValidationContext<TTarget> Validate<TTarget>( this TTarget target, string friendlyName )
+        /// <param name="validationContext">The validation context.</param>
+        /// <param name="validationResult">Set to <see cref="ValidationResult.Success"/> if valid; otherwise a validation result with an error message.</param>
+        /// <returns><see langword="true"/> if valid; otherwise <see langword="false"/>.</returns>
+        internal static bool IsTrue( this IValidationContext<bool> validationContext, out ValidationResult validationResult )
         {
-            return new ValidationContext<TTarget>( target, friendlyName );
+            return validationContext.WithDefaultErrorMessage( ( _, friendlyName ) => $"{friendlyName ?? "Field"} must be true." )
+                .IsTrue( target => target, out validationResult );
         }
+
+        #endregion
+
+        #region Class Validation Methods
+
+        /// <summary>
+        /// Validates that the target value is not <see langword="null"/>.
+        /// </summary>
+        /// <param name="validationContext">The validation context.</param>
+        /// <param name="validationResult">Set to <see cref="ValidationResult.Success"/> if valid; otherwise a validation result with an error message.</param>
+        /// <returns><see langword="true"/> if valid; otherwise <see langword="false"/>.</returns>
+        internal static bool IsNotNull<TTarget>( this IValidationContext<TTarget> validationContext, out ValidationResult validationResult ) where TTarget : class
+        {
+            return validationContext.WithDefaultErrorMessage( ( _, friendlyName ) => $"{friendlyName ?? "Field"} is required." )
+                .IsTrue( target => target != null, out validationResult );
+        }
+
+        #endregion
+
+        #region Collection (IEnumerable, List, Array) Validation Methods
+                
+        /// <summary>
+        /// Validates that the target value is not an empty collection.
+        /// </summary>
+        /// <param name="validationContext">The validation context.</param>
+        /// <param name="validationResult">Set to <see cref="ValidationResult.Success"/> if valid; otherwise a validation result with an error message.</param>
+        /// <returns><see langword="true"/> if valid; otherwise <see langword="false"/>.</returns>
+        internal static bool IsNotEmpty<TTargetItem>( this IValidationContext<IEnumerable<TTargetItem>> validationContext, out ValidationResult validationResult )
+        {
+            return validationContext.WithDefaultErrorMessage( ( _, friendlyName ) => $"At least one {friendlyName?.Singularize() ?? "item"} is required." )
+                .IsTrue( target => target?.Any() == true, out validationResult );
+        }
+
+        /// <summary>
+        /// Validates that the target value is null or an empty collection.
+        /// </summary>
+        /// <param name="validationContext">The validation context.</param>
+        /// <param name="validationResult">Set to <see cref="ValidationResult.Success"/> if valid; otherwise a validation result with an error message.</param>
+        /// <returns><see langword="true"/> if valid; otherwise <see langword="false"/>.</returns>
+        internal static bool IsNullOrEmpty<TTargetItem>( this IValidationContext<IEnumerable<TTargetItem>> validationContext, out ValidationResult validationResult )
+        {
+            return validationContext.WithDefaultErrorMessage( ( _, friendlyName ) => $"{friendlyName?.Singularize() ?? "item"} should be empty." )
+                .IsTrue( target => target?.Any() != true, out validationResult );
+        }
+
+        #endregion
+
+        #region Date (DateTime, DateTimeOffset) Validation Methods
+
+        /// <summary>
+        /// Validates that the target value is now or a future date time.
+        /// </summary>
+        /// <param name="validationContext">The validation context.</param>
+        /// <param name="validationResult">Set to <see cref="ValidationResult.Success"/> if valid; otherwise a validation result with an error message.</param>
+        /// <returns><see langword="true"/> if valid; otherwise <see langword="false"/>.</returns>
+        internal static bool IsNowOrFuture( this IValidationContext<DateTimeOffset> validationContext, out ValidationResult validationResult )
+        {
+            return validationContext.WithDefaultErrorMessage( ( _, friendlyName ) => $"{friendlyName ?? "Field"} must be a future date/time." )
+                .IsTrue( target => target.DateTime.CompareTo( RockDateTime.Now ) >= 0, out validationResult );
+        }
+
+        #endregion
+
+        #region Guid Validation Methods
+
+        /// <summary>
+        /// Validates that the target value is not an empty <see cref="Guid"/>.
+        /// </summary>
+        /// <param name="validationContext">The validation context.</param>
+        /// <param name="validationResult">Set to <see cref="ValidationResult.Success"/> if valid; otherwise a validation result with an error message.</param>
+        /// <returns><see langword="true"/> if valid; otherwise <see langword="false"/>.</returns>
+        internal static bool IsNotEmpty( this IValidationContext<Guid> validationContext, out ValidationResult validationResult )
+        {
+            return validationContext.WithDefaultErrorMessage( ( _, friendlyName ) => $"{friendlyName ?? "Field"} is required." )
+                .IsTrue( target => !target.IsEmpty(), out validationResult );
+        }
+        
+        /// <summary>
+        /// Validates that the target value is neither <see langword="null"/> nor an empty Guid.
+        /// </summary>
+        /// <param name="validationContext">The validation context.</param>
+        /// <param name="validationResult">Set to <see cref="ValidationResult.Success"/> if valid; otherwise a validation result with an error message.</param>
+        /// <returns><see langword="true"/> if valid; otherwise <see langword="false"/>.</returns>
+        internal static bool IsNotNullOrEmpty( this IValidationContext<Guid?> validationContext, out ValidationResult validationResult )
+        {
+            return validationContext.WithDefaultErrorMessage( ( _, friendlyName ) => $"{friendlyName ?? "Field"} is required." )
+                .IsTrue( target => target.HasValue && !target.Value.IsEmpty(), out validationResult );
+        }
+
+        #endregion
+
+        #region Number (int, decimal, double, etc.) Validation Methods
+
+        /// <summary>
+        /// Validates that the target value is greater than or equal to <paramref name="minValue"/>.
+        /// </summary>
+        /// <param name="validationContext">The validation context.</param>
+        /// <param name="minValue">The minimum valid value.</param>
+        /// <param name="validationResult">Set to <see cref="ValidationResult.Success"/> if valid; otherwise a validation result with an error message.</param>
+        /// <returns><see langword="true"/> if valid; otherwise <see langword="false"/>.</returns>
+        internal static bool IsGreaterThanOrEqualTo( this IValidationContext<int> validationContext, int minValue, out ValidationResult validationResult )
+        {
+            return validationContext.WithDefaultErrorMessage( ( _, friendlyName ) => $"{friendlyName ?? "Field"} must be greater than or equal to {minValue}." )
+                .IsTrue( target => target >= minValue, out validationResult );
+        }
+
+        #endregion
+
+        #region String Validation Methods
+        
+        /// <summary>
+        /// Validates that the target value is <see langword="null"/> or has a length that is less than or equal to <paramref name="maxLength"/>.
+        /// </summary>
+        /// <param name="validationContext">The validation context.</param>
+        /// <param name="maxLength">The maximum length allowed for the string.</param>
+        /// <param name="validationResult">Set to <see cref="ValidationResult.Success"/> if valid; otherwise a validation result with an error message.</param>
+        /// <returns><see langword="true"/> if valid; otherwise <see langword="false"/>.</returns>
+        internal static bool HasMaxLength( this IValidationContext<string> validationContext, int maxLength, out ValidationResult validationResult )
+        {
+            return validationContext.WithDefaultErrorMessage( ( _, friendlyName ) => $"{friendlyName ?? "Field"} must be less than or equal to {maxLength} characters." )
+                .IsTrue( target => target == null || target.Length <= maxLength, out validationResult );
+        }
+
+        /// <summary>
+        /// Validates that the target value is <see langword="null"/> or white space.
+        /// </summary>
+        /// <param name="validationContext">The validation context.</param>
+        /// <param name="validationResult">Set to <see cref="ValidationResult.Success"/> if valid; otherwise a validation result with an error message.</param>
+        /// <returns><see langword="true"/> if valid; otherwise <see langword="false"/>.</returns>
+        internal static bool IsNullOrWhiteSpace( this IValidationContext<string> validationContext, out ValidationResult validationResult )
+        {
+            return validationContext.WithDefaultErrorMessage( ( _, friendlyName ) => $"{friendlyName ?? "Field"} should be empty." )
+                .IsTrue( target => target.IsNullOrWhiteSpace(), out validationResult );
+        }
+        
+        /// <summary>
+        /// Validates that the target value is not <see langword="null"/> or white space.
+        /// </summary>
+        /// <param name="validationContext">The validation context.</param>
+        /// <param name="validationResult">Set to <see cref="ValidationResult.Success"/> if valid; otherwise a validation result with an error message.</param>
+        /// <returns><see langword="true"/> if valid; otherwise <see langword="false"/>.</returns>
+        internal static bool IsNotNullOrWhiteSpace( this IValidationContext<string> validationContext, out ValidationResult validationResult )
+        {
+            return validationContext.WithDefaultErrorMessage( ( _, friendlyName ) => $"{friendlyName ?? "Field"} is required." )
+                .IsTrue( target => target.IsNotNullOrWhiteSpace(), out validationResult );
+        }
+        
+        /// <summary>
+        /// Validates that the target is a valid email address.
+        /// </summary>
+        /// <param name="validationContext">The validation context.</param>
+        /// <param name="validationResult">Set to <see cref="ValidationResult.Success"/> if valid; otherwise a validation result with an error message.</param>
+        /// <returns><see langword="true"/> if valid; otherwise <see langword="false"/>.</returns>
+        internal static bool IsEmailAddress( this IValidationContext<string> validationContext, out ValidationResult validationResult )
+        {
+            return validationContext.WithDefaultErrorMessage( ( _, friendlyName ) => $"{friendlyName ?? "Field"} is an invalid email address." )
+                .IsTrue( EmailAddressFieldValidator.IsValid, out validationResult );
+        }
+
+        #endregion
+
+        #region Struct Validation Methods
+
+        /// <summary>
+        /// Validates that the target value is <see langword="null"/>.
+        /// </summary>
+        /// <param name="validationContext">The validation context.</param>
+        /// <param name="validationResult">Set to <see cref="ValidationResult.Success"/> if valid; otherwise a validation result with an error message.</param>
+        /// <returns><see langword="true"/> if valid; otherwise <see langword="false"/>.</returns>
+        internal static bool IsNull<TTarget>( this IValidationContext<TTarget?> validationContext, out ValidationResult validationResult ) where TTarget : struct
+        {
+            return validationContext.WithDefaultErrorMessage( ( _, friendlyName ) => $"{friendlyName ?? "Field"} is required." )
+                .IsTrue( target => !target.HasValue, out validationResult );
+        }
+
+        /// <summary>
+        /// Validates that the target value is not <see langword="null"/>.
+        /// </summary>
+        /// <param name="validationContext">The validation context.</param>
+        /// <param name="validationResult">Set to <see cref="ValidationResult.Success"/> if valid; otherwise a validation result with an error message.</param>
+        /// <returns><see langword="true"/> if valid; otherwise <see langword="false"/>.</returns>
+        internal static bool IsNotNull<TTarget>( this IValidationContext<TTarget?> validationContext, out ValidationResult validationResult ) where TTarget : struct
+        {
+            return validationContext.WithDefaultErrorMessage( ( _, friendlyName ) => $"{friendlyName ?? "Field"} is required." )
+                .IsTrue( target => target.HasValue, out validationResult );
+        }
+
+        #endregion
+
+        #region Helper Classes
+        
+        private class GetValidationErrorMessageDelegator<TTarget> : IGetValidationErrorMessage<TTarget>
+        {
+            private readonly Func<string> _getFriendlyName;
+            private readonly Func<TTarget, string, string> _getErrorMessage;
+
+            public GetValidationErrorMessageDelegator( Func<string> getFriendlyName, Func<TTarget, string, string> getErrorMessage )
+            {
+                _getFriendlyName = getFriendlyName;
+                _getErrorMessage = getErrorMessage;
+            }
+
+            public string GetValidationErrorMessage( TTarget target )
+            {
+                return _getErrorMessage( target, _getFriendlyName() );
+            }
+        }
+
+        private class IsValidDelegator<TTarget> : IIsValid<TTarget>
+        {
+            private readonly Func<TTarget, bool> _validator;
+
+            public IsValidDelegator( Func<TTarget, bool> validator )
+            {
+                _validator = validator;
+            }
+
+            public bool IsValid( TTarget target )
+            {
+                return _validator( target );
+            }
+        }
+
+        #endregion
     }
 }

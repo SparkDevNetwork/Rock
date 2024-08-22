@@ -25,10 +25,14 @@
 export const DefinedType = {
     /** Lists checklist items to be completed by the administrator after installs and updates. */
     AdministratorChecklist: "4BF34677-37E9-4E71-BD03-252B66C9373D",
+    /** AI Models. */
+    AiProviderModels: "0829EF1C-028C-44D6-AB8D-90F0905E030E",
     /** The apple device models */
     AppleDeviceModels: "DAE31F78-7AB9-4ACE-9EE1-C1E6A734562C",
     /** Guid for the Conflict Profile assessment. */
     AssessmentConflictProfile: "EE7E089E-DF81-4407-8BFA-AD865FA5427A",
+    /** Guid for Attendance record SourceValueId. */
+    AttendanceSource: "A27BF9DD-7AF0-47B4-8FE4-0B5E510381DB",
     /** Background check package types */
     BackgroundCheckTypes: "BC2FDF9A-93B8-4325-8DE9-2F7B1943BFDF",
     /** Guid for the types of Benevolence Request status (e.g. pending, active, answered, etc.) */

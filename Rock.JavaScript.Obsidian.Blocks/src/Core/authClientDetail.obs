@@ -10,12 +10,13 @@
                  :title="panelTitle"
                  :labels="blockLabels"
                  :entityKey="entityKey"
-                 :isAuditHidden="false"
+                 :isAuditHidden="isAuditHidden"
                  :isBadgesVisible="true"
                  :isDeleteVisible="isEditable"
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
                  :isSecurityHidden="true"
+                 :isFullScreenVisible="false"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
                  @edit="onEdit"
@@ -75,6 +76,13 @@
      */
     const panelName = computed((): string => {
         return authClientViewBag.value?.name ?? "";
+    });
+
+    /**
+    * Show audit details if is existing entity.
+    */
+    const isAuditHidden = computed((): boolean => {
+        return !authClientViewBag.value?.idKey;
     });
 
     /**

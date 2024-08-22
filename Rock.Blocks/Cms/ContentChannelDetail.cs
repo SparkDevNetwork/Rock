@@ -31,6 +31,7 @@ using Rock.UniversalSearch;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.ContentChannelDetail;
 using Rock.ViewModels.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Cms
@@ -46,7 +47,7 @@ namespace Rock.Blocks.Cms
 
     [Rock.SystemGuid.EntityTypeGuid( "c7c776c4-f1db-477d-87e3-62f8f82ba773" )]
     [Rock.SystemGuid.BlockTypeGuid( "2bad2ab9-86ad-480e-bf38-c54f2c5c03a8" )]
-    public class ContentChannelDetail : RockDetailBlockType
+    public class ContentChannelDetail : RockDetailBlockType, IBreadCrumbBlock
     {
         // This is a cache backing field and should not be accessed directly , instead use the GetItemAttributes method to access this field. 
         private List<Rock.Model.Attribute> _itemAttributes;
@@ -90,6 +91,25 @@ namespace Rock.Blocks.Cms
 
                 return box;
             }
+        }
+
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            int? contentChannelId = pageReference.GetPageParameter( PageParameterKey.ContentChannelId ).AsIntegerOrNull();
+            var breadCrumbs = new List<IBreadCrumb>();
+
+            if ( contentChannelId != null )
+            {
+                var contentChannelName = new ContentChannelService( new RockContext() ).GetSelect( contentChannelId.Value, c => c.Name );
+                var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageReference.Parameters );
+                breadCrumbs.Add( new BreadCrumbLink( contentChannelName ?? "New Content Channel", breadCrumbPageRef ) );
+            }
+
+            return new BreadCrumbResult
+            {
+                BreadCrumbs = breadCrumbs
+            };
         }
 
         /// <summary>

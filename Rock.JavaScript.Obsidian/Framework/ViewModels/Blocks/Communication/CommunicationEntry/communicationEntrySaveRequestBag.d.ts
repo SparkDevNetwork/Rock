@@ -30,6 +30,9 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** Bag containing the information for the Communication Entry block to save a communication. */
 export type CommunicationEntrySaveRequestBag = {
+    /** Gets or sets the additional email addresses to receive the communication. */
+    additionalEmailAddresses?: string[] | null;
+
     /** Gets or sets the BCC email addresses. */
     bccAddresses?: string | null;
 

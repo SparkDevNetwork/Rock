@@ -531,6 +531,15 @@ namespace Rock.CheckIn.v2
             attendance.AttendanceCodeId = request.AttendanceCode.Id;
             attendance.Note = request.Note;
 
+            if ( Session.AttendanceSourceValueId.HasValue )
+            {
+                attendance.SourceValueId = Session.AttendanceSourceValueId.Value;
+            }
+            else
+            {
+                attendance.SourceValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.ATTENDANCE_SOURCE_KIOSK.AsGuid(), Session.RockContext )?.Id;
+            }
+
             if ( request.IsPending )
             {
                 attendance.CheckInStatus = Enums.Event.CheckInStatus.Pending;

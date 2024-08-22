@@ -535,7 +535,6 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
             if ( CurrentPerson == null )
             {
                 pnlView.Visible = false;
@@ -560,6 +559,8 @@ namespace RockWeb.Blocks.Cms
             {
                 var handled = HandleLavaPostback( this.Request.Params["__EVENTTARGET"], this.Request.Params["__EVENTARGUMENT"] );
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>

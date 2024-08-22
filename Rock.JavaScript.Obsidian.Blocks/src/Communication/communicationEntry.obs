@@ -24,24 +24,24 @@
                                    v-model:recipients="recipients"
                                    v-model:isBulkCommunication="isBulkCommunication"
                                    v-model:scheduleSendIsoString="scheduleSendIsoString"
-                                   @saved="onSentOrSaved"
-                                   @sent="onSentOrSaved" />
+                                   @saved="onSaved"
+                                   @sent="onSent($event, true)" />
 
                             <Sms v-else-if="selectedMedium === 'sms'"
                                  v-model:disabled="disabled"
                                  v-model:recipients="recipients"
                                  v-model:isBulkCommunication="isBulkCommunication"
                                  v-model:scheduleSendIsoString="scheduleSendIsoString"
-                                 @saved="onSentOrSaved"
-                                 @sent="onSentOrSaved" />
+                                 @saved="onSaved"
+                                 @sent="onSent" />
 
                             <PushNotification v-else-if="selectedMedium === 'push'"
                                               v-model:disabled="disabled"
                                               v-model:recipients="recipients"
                                               v-model:isBulkCommunication="isBulkCommunication"
                                               v-model:scheduleSendIsoString="scheduleSendIsoString"
-                                              @saved="onSentOrSaved"
-                                              @sent="onSentOrSaved" />
+                                              @saved="onSaved"
+                                              @sent="onSent" />
 
                             <div v-else>
                                 Unknown communication medium (Guid: {{ selectedMediumEntityTypeGuidOrEmptyString }}).
@@ -63,7 +63,7 @@
 
                         <NotificationBox alertType="success">{{ resultMessage }}</NotificationBox>
 
-                        <EmailMetricsReminder v-if="config.areEmailMetricsReminderOptionsShown && selectedMedium === 'email' && communicationGuid"
+                        <EmailMetricsReminder v-if="isEmailMetricsReminderShown && config.areEmailMetricsReminderOptionsShown && selectedMedium === 'email' && communicationGuid"
                                               :communicationGuid="communicationGuid" />
 
                         <a v-if="isViewCommunicationShown" :href="viewCommunicationUrl">View Communication</a>
@@ -113,6 +113,7 @@
     const selectedMediumEntityTypeGuidOrEmptyString = ref<string>(config.mediumOptions?.mediumEntityTypeGuid ?? "");
     const resultMessage = ref<string | null | undefined>("");
     const isViewCommunicationShown = ref<boolean>(false);
+    const isEmailMetricsReminderShown = ref<boolean>(false);
     const viewCommunicationUrl = ref<string>("#");
     const disabled = ref<boolean>(false);
     const recipients = ref<CommunicationEntryRecipientBag[]>(config.communication?.recipients ?? []);
@@ -176,8 +177,10 @@
 
     //#region Event Handlers
 
-    /** Event handler for the communication being sent. */
-    function onSentOrSaved(value: CommunicationEntrySendResponseBag): void {
+    /**
+     * Event handler for the communication being saved.
+     */
+    function onSaved(value: CommunicationEntrySendResponseBag): void {
         const url = new URL(window.location.href);
         const queryParams = url.searchParams;
 
@@ -206,6 +209,45 @@
             resultMessage.value = value.message;
             areResultsShown.value = true;
             communicationGuid.value = value.communicationGuid;
+
+            // Only show the link to view the communcation if the current page has a detail block.
+            isViewCommunicationShown.value = value.hasDetailBlockOnCurrentPage;
+        }
+    }
+
+    /**
+     * Event handler for the communication being sent.
+     */
+    function onSent(value: CommunicationEntrySendResponseBag, showEmailMetricsReminderOptions: boolean = false): void {
+        const url = new URL(window.location.href);
+        const queryParams = url.searchParams;
+
+        // Remove the "edit" param.
+        const queryStringKeysToDelete: string[] = [];
+        for (const key of queryParams.keys()) {
+            if (key?.toLowerCase() === "edit") {
+                queryStringKeysToDelete.push(key);
+            }
+        }
+
+        for (const keyToDelete of queryStringKeysToDelete) {
+            queryParams.delete(keyToDelete);
+        }
+
+        // Add the "CommunicationId" param.
+        queryParams.set("CommunicationId", value.communicationId.toString());
+
+        if (value.redirectToViewMode) {
+            window.location.href = url.href;
+        }
+        else {
+            viewCommunicationUrl.value = url.href;
+
+            status.value = value.communicationStatus ?? CommunicationStatus.Draft;
+            resultMessage.value = value.message;
+            areResultsShown.value = true;
+            communicationGuid.value = value.communicationGuid;
+            isEmailMetricsReminderShown.value = showEmailMetricsReminderOptions;
 
             // Only show the link to view the communcation if the current page has a detail block.
             isViewCommunicationShown.value = value.hasDetailBlockOnCurrentPage;

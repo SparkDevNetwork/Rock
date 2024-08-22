@@ -39,6 +39,25 @@ namespace Rock.SystemGuid
 
         #endregion
 
+        #region Attendance
+
+        /// <summary>
+        /// The attendance record came from a legacy kiosk.
+        /// </summary>
+        public const string ATTENDANCE_SOURCE_LEGACY_KIOSK = "0B25A627-679B-4B73-AA84-305DEF24815A";
+
+        /// <summary>
+        /// The attendance record came from a kiosk.
+        /// </summary>
+        public const string ATTENDANCE_SOURCE_KIOSK = "9A21D7EB-BCB5-4466-B62F-70EC5008B6B9";
+
+        /// <summary>
+        /// The attendance record came from a mobile check-in.
+        /// </summary>
+        public const string ATTENDANCE_SOURCE_MOBILE = "972E8841-A3C9-4DDD-BD24-A414C0290331";
+
+        #endregion
+
         #region Block Template
 
         /// <summary>

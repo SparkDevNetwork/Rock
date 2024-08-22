@@ -42,7 +42,6 @@
                 <TreeList v-model="selectedFolderArray"
                           :provider="itemProvider"
                           v-model:items="folders"
-                          disableDeselect
                           autoExpand
                           @treeitem-expanded="onTreeItemExpanded"
                           @treeitem-collapsed="onTreeItemCollapsed"
@@ -280,10 +279,20 @@
             default: false
         },
 
-        /** The encrypted root folder used for the local file browser */
+        /** The encrypted root folder path used for the local file browser. */
         encryptedRootFolder: {
             type: String,
             default: ""
+        },
+
+        /**
+         * If set to true, instead of using the given root directly, the root folder shown will be a
+         * folder under the given root that is named after the current person's username. If the folder
+         * does not exist, it will be created.
+         */
+        userSpecificRoot: {
+            type: Boolean,
+            default: false
         },
 
         enableZipUpload: {
@@ -526,6 +535,7 @@
         try {
             const options: AssetManagerGetListOfAllFoldersOptionsBag = {
                 encryptedRoot: props.encryptedRootFolder,
+                userSpecificRoot: props.userSpecificRoot,
                 selectedFolder: parseFolderName(selectedFolder.value!).folderPath,
                 securityGrantToken: securityGrantToken.value
             };
@@ -691,6 +701,7 @@
         provider.enableFileManager = props.enableFileManager;
         provider.encryptedRootFolder = props.encryptedRootFolder || "";
         provider.securityGrantToken = securityGrantToken.value ?? "";
+        provider.userSpecificRoot = props.userSpecificRoot;
 
         return provider;
     }
@@ -739,7 +750,7 @@
         }
     });
 
-    watch(() => [props.enableAssetManager, props.enableFileManager, props.encryptedRootFolder], () => {
+    watch(() => [props.enableAssetManager, props.enableFileManager, props.encryptedRootFolder, props.userSpecificRoot], () => {
         itemProvider.value = initializeTreeProvider();
     });
 

@@ -115,8 +115,6 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             pnlEntry.Visible = true;
             pnlWarning.Visible = false;
             pnlSuccess.Visible = false;
@@ -134,6 +132,8 @@ namespace RockWeb.Blocks.Security
                 lWarning.Text = GetAttributeValue( AttributeKey.InvalidEmailCaption );
                 lSuccess.Text = GetAttributeValue( AttributeKey.SuccessCaption );
             }
+
+            base.OnLoad( e );
         }
 
         #endregion

@@ -28,7 +28,7 @@ namespace Rock.Blocks.Cms
     /// Manage files stored on a remote server or 3rd party cloud storage
     /// </summary>
 
-    [DisplayName( "Asset Manager" )]
+    [DisplayName( "File Asset Manager" )]
     [Category( "CMS" )]
     [Description( "Browse and manage files on the web server or stored on a remote server or 3rd party cloud storage" )]
     [IconCssClass( "fa fa-question" )]
@@ -116,7 +116,7 @@ namespace Rock.Blocks.Cms
 
     [Rock.SystemGuid.EntityTypeGuid( "e357ad54-1725-48b8-997c-23c2587800fb" )]
     [Rock.SystemGuid.BlockTypeGuid( "535500a7-967f-4da3-8fca-cb844203cb3d" )]
-    public class AssetManager : RockBlockType
+    public class FileAssetManager : RockBlockType
     {
         #region Keys
 

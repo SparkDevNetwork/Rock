@@ -79,8 +79,6 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             nbMessage.Visible = false;
 
             if ( CurrentUser == null || ! CurrentUser.IsAuthenticated )
@@ -114,6 +112,8 @@ namespace RockWeb.Blocks.Security
                     }
                 }
             }
+
+            base.OnLoad( e );
         }
 
         #endregion

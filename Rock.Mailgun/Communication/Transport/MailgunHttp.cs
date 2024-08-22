@@ -59,7 +59,7 @@ namespace Rock.Communication.Transport
 
     [TextField( "Domain",
         Key = AttributeKey.Domain,
-        Description = "The email domain (e.g. rocksolidchurchdemo.com). This should match the domain name as listed in your Mailgun account.",
+        Description = "A comma-delimited list of email domains (e.g., rocksolidchurchdemo.com, rockdemo.com) authorized for sending emails. When the 'From' email address domain matches one of these domains, it will be utilized as the Mailgun \"domain\" in the REST API call; otherwise the first value will be used. These should match the sending domain(s) as listed in your Mailgun account.",
         DefaultValue = "",
         Order = 2,
         IsRequired = true )]
@@ -274,7 +274,6 @@ namespace Rock.Communication.Transport
         private RestRequest GetRestRequestFromRockEmailMessage( RockEmailMessage rockEmailMessage )
         {
             var restRequest = new RestRequest( GetAttributeValue( AttributeKey.Resource ), Method.POST );
-            restRequest.AddParameter( "domain", GetAttributeValue( AttributeKey.Domain ), ParameterType.UrlSegment );
 
             // To
             rockEmailMessage.GetRecipients().ForEach( r => restRequest.AddParameter( "to", new MailAddress( r.To, r.Name ).ToString() ) );
@@ -290,6 +289,17 @@ namespace Rock.Communication.Transport
 
             var safeSenderDomains = GetSafeDomains();
             var fromDomain = GetEmailDomain( rockEmailMessage.FromEmail );
+            var configuredDomains = GetAttributeValue( "Domain" ).SplitDelimitedValues();
+
+            // Now find a matching domain or use the first one in the list if no match was found.
+            var matchingDomain = configuredDomains.FirstOrDefault( d => string.Equals( d, fromDomain, StringComparison.OrdinalIgnoreCase ) );
+            if ( matchingDomain is null )
+            {
+                matchingDomain = configuredDomains.FirstOrDefault();
+            } 
+
+            restRequest.AddParameter( "domain", matchingDomain, ParameterType.UrlSegment );
+
             if ( safeSenderDomains.Contains( fromDomain ) )
             {
                 restRequest.AddParameter( "h:Sender", fromEmailAddress.ToString() );

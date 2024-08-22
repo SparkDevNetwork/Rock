@@ -67,8 +67,6 @@ namespace RockWeb.Blocks.Follow
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             nbSaved.Visible = false;
             _rockContext = new RockContext();
 
@@ -76,6 +74,8 @@ namespace RockWeb.Blocks.Follow
             {
                 GetData();
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>

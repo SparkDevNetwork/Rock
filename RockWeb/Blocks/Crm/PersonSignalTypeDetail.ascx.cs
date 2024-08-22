@@ -57,8 +57,6 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 lActionTitle.Text = ActionTitle.Add( SignalType.FriendlyTypeName ).FormatAsHtmlTitle();
@@ -66,6 +64,8 @@ namespace RockWeb.Blocks.Crm
                 SignalTypeId = PageParameter( "SignalTypeId" ).AsInteger();
                 ShowDetail();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion

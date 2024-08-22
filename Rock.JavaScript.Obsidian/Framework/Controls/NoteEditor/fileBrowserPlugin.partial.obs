@@ -4,8 +4,9 @@
            title="Select File"
            cancelText="Cancel"
            saveText="OK"
-           :onSave="onOkClicked">
-        TODO: Add File Browser
+           :onSave="onOkClicked"
+           :isSaveButtonDisabled="isOkButtonDisabled">
+        <FileManager v-model="file" :encryptedRootFolder="encryptedRootFolder" enableFileManager :userSpecificRoot="userSpecificRoot" />
     </Modal>
 </template>
 
@@ -56,11 +57,30 @@
      *   });
      * (/script)
      */
-    import { ref, watch } from "vue";
+    import { computed, ref, watch } from "vue";
     import { getToolbarButton, usePluginHelper } from "./utils.partial";
     import Modal from "@Obsidian/Controls/modal.obs";
+    import FileManager from "@Obsidian/Controls/fileAssetManager.obs";
     import { Editor, Ui } from "@Obsidian/Libs/tinymce";
-    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { FileAsset } from "@Obsidian/ViewModels/Controls/fileAsset";
+
+    defineProps({
+        /** The encrypted root folder path used for the local file browser */
+        encryptedRootFolder: {
+            type: String,
+            default: ""
+        },
+
+        /**
+         * If set to true, instead of using the given root directly, the root folder shown will be a
+         * folder under the given root that is named after the current person's username. If the folder
+         * does not exist, it will be created.
+         */
+        userSpecificRoot: {
+            type: Boolean,
+            default: false
+        }
+    });
 
     const id = "rockfilebrowser" as const;
     const tooltip = "File Browser" as const;
@@ -74,11 +94,15 @@
     const { editorInstance, toolbarElement } = usePluginHelper();
     const toolbarButtonElement = ref<HTMLElement | undefined>();
     const isShown = ref<boolean>(false);
-    const file = ref<ListItemBag | undefined>();
+    const file = ref<FileAsset[]>([]);
 
     //#endregion
 
     //#region Computed Values
+
+    const isOkButtonDisabled = computed<boolean>(() => {
+        return file.value.length !== 1;
+    });
 
     //#endregion
 
@@ -91,11 +115,13 @@
 
     /** Initializes the plugin. */
     function init(editor: Editor): void {
+        editor.ui.registry.addIcon("file-browser", '<svg xmlns="http://www.w3.org/2000/svg" height=18 width=18 viewBox="0 0 384 512"><!--!Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M288 248v28c0 6.6-5.4 12-12 12H108c-6.6 0-12-5.4-12-12v-28c0-6.6 5.4-12 12-12h168c6.6 0 12 5.4 12 12zm-12 72H108c-6.6 0-12 5.4-12 12v28c0 6.6 5.4 12 12 12h168c6.6 0 12-5.4 12-12v-28c0-6.6-5.4-12-12-12zm108-188.1V464c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48V48C0 21.5 21.5 0 48 0h204.1C264.8 0 277 5.1 286 14.1L369.9 98c9 8.9 14.1 21.2 14.1 33.9zm-128-80V128h76.1L256 51.9zM336 464V176H232c-13.3 0-24-10.7-24-24V48H48v416h288z"/></svg>');
         // Register toolbar buttons.
         // Open the modal when the toolbar button is clicked.
         editor.ui.registry.addToggleButton(id, {
             // https://www.tiny.cloud/docs/tinymce/latest/editor-icon-identifiers/
-            icon: "new-document",
+            // icon: "new-document",
+            icon: "file-browser",
             tooltip: tooltip,
             onAction: (_api: Ui.Toolbar.ToolbarButtonInstanceApi): void => {
                 isShown.value = true;
@@ -117,14 +143,13 @@
     function onOkClicked(): void {
         const editor = editorInstance.value;
 
-        if (editor && file.value?.value) {
-            // TODO: Add the file to the editor assuming file.value is the file path.
-            // https://www.tiny.cloud/docs/tinymce/latest/editor-command-identifiers/#link:~:text=the%20current%20selection.-,CreateLink,-Inserts%20a%20link
-            editor.execCommand("CreateLink", false, file.value.value);
+        if (editor && file.value?.length > 0) {
+            // Possible commands: https://www.tiny.cloud/docs/tinymce/latest/editor-command-identifiers/
+            editor.execCommand("InsertHTML", false, `<a href="${file.value[0].uri}">${file.value[0].name}</a>`);
         }
 
         // Clear the selected file and close the modal.
-        file.value = undefined;
+        file.value = [];
         isShown.value = false;
     }
 

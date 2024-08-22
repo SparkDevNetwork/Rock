@@ -240,5 +240,10 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntry
         /// The status.
         /// </value>
         public CommunicationStatus Status { get; set; }
+
+        /// <summary>
+        /// Gets or sets the additional email addresses to receive the communication.
+        /// </summary>
+        public List<string> AdditionalEmailAddresses { get; set; }
     }
 }
