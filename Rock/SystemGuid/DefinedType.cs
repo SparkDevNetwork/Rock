@@ -24,11 +24,6 @@ namespace Rock.SystemGuid
     public class DefinedType
     {
         /// <summary>
-        /// AI Models.
-        /// </summary>
-        public const string AI_PROVIDER_MODELS = "0829EF1C-028C-44D6-AB8D-90F0905E030E";
-
-        /// <summary>
         /// Guid for Attendance record SourceValueId.
         /// </summary>
         public const string ATTENDANCE_SOURCE = "A27BF9DD-7AF0-47B4-8FE4-0B5E510381DB";

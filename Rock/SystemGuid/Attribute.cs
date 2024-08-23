@@ -1045,11 +1045,6 @@ namespace Rock.SystemGuid
         public const string CATEGORY_TREEVIEW_SEARCH_RESULTS = "7287F9CD-CDB2-43BA-8E80-E5F7A618415E";
 
         /// <summary>
-        /// The AI model to use for requests.
-        /// </summary>
-        public const string AI_AUTOMATION_AI_MODEL = "185B32D2-4D2D-43C9-A4F7-CABA31735940";
-
-        /// <summary>
         /// The AI service to use for the Category.
         /// </summary>
         public const string AI_AUTOMATION_AI_PROVIDER = "6A1991F6-AB4A-4B92-9790-0E2ED62C079F";
