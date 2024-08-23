@@ -282,7 +282,7 @@
 
     if (config.options?.hasPersonId) {
         panelMode.value = DetailPanelMode.Add;
-        locationEditBag.value = { bag: locationViewBag.value } ?? {} as LocationBag;
+        locationEditBag.value = { bag: locationViewBag.value } ?? { bag: {} as LocationBag };
     }
 
     // Handle any initial error conditions or the need to go into edit mode.
