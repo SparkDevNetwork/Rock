@@ -30,6 +30,8 @@
         <Column name="contactInformation"
                 title="Contact Information"
                 :filter="textValueFilter"
+                :filterValue="getRowContactInformationFilterValue"
+                :quickFilterValue="getRowContactInformationFilterValue"
                 visiblePriority="xs"
                 width="20%">
             <template #format="{ row }">
@@ -51,6 +53,8 @@
         <Column name="address"
                 title="Address"
                 :filter="textValueFilter"
+                :filterValue="getRowAddressFilterValue"
+                :quickFilterValue="getRowAddressFilterValue"
                 visiblePriority="md">
             <template #format="{ row }">
                 <div>
@@ -86,7 +90,7 @@
                     width="5%" />
     </Grid>
     <GridSettingsModal v-model="gridSettings"
-                       v-model:visible="isGridSettingsVisible" />
+                        v-model:visible="isGridSettingsVisible" />
 </template>
 
 <script setup lang="ts">
@@ -96,7 +100,7 @@
     import { BusinessListOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/BusinessList/businessListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { computed, reactive, ref, watch, watchEffect } from "vue";
-    import { GridSettingsOptions, NavigationUrlKey, PreferenceKey } from "./BusinessList/types.partial";
+    import { GridSettingsOptions, NavigationUrlKey, PreferenceKey, Row } from "./BusinessList/types.partial";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import GridSettingsModal from "./BusinessList/gridSettingsModal.partial.obs";
 
@@ -180,6 +184,27 @@
     // #endregion
 
     // #region Functions
+
+    /**
+     * Gets the filter value text to use for the contact information column.
+     *
+     * @param row The row to be filtered.
+     */
+    function getRowContactInformationFilterValue(row: Record<string, unknown>): string {
+        const r = row as Row;
+        return `${r.phoneNumber ?? ""} ${r.email ?? ""}`;
+    }
+
+    /**
+     * Gets the filter value text to use for the address column.
+     *
+     * @param row The row to be filtered.
+     */
+    function getRowAddressFilterValue(row: Record<string, unknown>): string {
+        const r = row as Row;
+        return `${r.street ?? ""} ${r.city ?? ""} ${r.state ?? ""} ${r.zip ?? ""}`;
+    }
+
 
     /**
      * Called when the grid is requesting the row data be loaded.
