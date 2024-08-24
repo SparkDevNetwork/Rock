@@ -222,7 +222,7 @@ namespace Rock.Blocks.Event
                 var instanceName = box.InstanceName;
 
                 if ( instanceName.IsNullOrWhiteSpace() && ( box.RegistrationInstanceNotFoundMessage?.Contains( " closed on " ) == true
-                    || box.RegistrationInstanceNotFoundMessage?.Contains(" does not open ") == true ) )
+                    || box.RegistrationInstanceNotFoundMessage?.Contains( " does not open " ) == true ) )
                 {
                     // The view model did not have a name filled in even though
                     // we found the registration instance. Get the instance name
@@ -898,7 +898,7 @@ namespace Rock.Blocks.Event
                             .Select( r => new
                             {
                                 r.PaymentPlanFinancialScheduledTransactionId
-                            })
+                            } )
                             .FirstOrDefault();
 
                         if ( registrationData == null )
@@ -944,6 +944,38 @@ namespace Rock.Blocks.Event
                         }
                     }
                 }
+            }
+        }
+
+        [BlockAction]
+        public BlockActionResult GetScheduledPaymentDates( RegistrationEntryGetScheduledPaymentDatesRequestBag bag )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var context = GetContext( rockContext, out var errorMessage );
+                if ( errorMessage.IsNotNullOrWhiteSpace() )
+                {
+                    return ActionBadRequest( errorMessage );
+                }
+
+                var scheduledTransactionFrequencyValueId = DefinedValueCache.GetId( bag.ScheduledTransactionFrequencyValueGuid );
+                if ( !scheduledTransactionFrequencyValueId.HasValue )
+                {
+                    return ActionBadRequest( "Payment frequency is required" );
+                }
+
+                var financialGateway = new FinancialGatewayService( rockContext ).Get( context.RegistrationSettings.FinancialGatewayId ?? 0 );
+                var gateway = financialGateway?.GetGatewayComponent();
+
+                if ( gateway == null )
+                {
+                    // This will only occur if the gateway isn't configured on the registration template.
+                    return ActionBadRequest( "Unable to get scheduled payment dates" );
+                }
+
+                var paymentDates = gateway.GetScheduledPaymentDates( scheduledTransactionFrequencyValueId.Value, bag.PaymentStartDate, bag.NumberOfPayments ) ?? new List<DateTime>();
+
+                return ActionOk( paymentDates );
             }
         }
 
