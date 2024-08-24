@@ -203,6 +203,7 @@
         const newValue: ValidPropertiesBox<FinancialGatewayBag> = {
             bag: { ...props.modelValue } as FinancialGatewayBag
         };
+        setPropertiesBoxValue(newValue, "attributes", attributes.value),
         setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value),
         setPropertiesBoxValue(newValue, "description", description.value),
         setPropertiesBoxValue(newValue, "isActive", isActive.value),
