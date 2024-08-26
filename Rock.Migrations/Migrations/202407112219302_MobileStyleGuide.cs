@@ -174,7 +174,10 @@ namespace Rock.Migrations
             UpdateTemplate( "4482BB6D-9C02-48D0-8475-4BA0948131A0", SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_CALENDAR_EVENT_LIST, _calendarEventListTemplate, "E3A4AA4E-2A61-4E63-B636-93B86E493D95", _calendarEventListLegacyTemplate );
 
             // Calendar Event Item Occurrence
-            UpdateTemplate( "", SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_CALENDAR_EVENT_ITEM_OCCURRENCE_VIEW, _calendarEventItemOccurrenceTemplate, "", _calendarEventItemOccurrenceLegacyTemplate );
+            UpdateTemplate( "5114DB6E-40CC-4455-99B8-C109B7BB52D1", SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_CALENDAR_EVENT_ITEM_OCCURRENCE_VIEW, _calendarEventItemOccurrenceTemplate, "6593D4EB-2B7A-4C24-8D30-A02991D26BC0", _calendarEventItemOccurrenceLegacyTemplate );
+
+            // Event Item Occurrence List by Audience
+            UpdateTemplate( "EA866D37-4E8F-4956-AB80-055F72151302", SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_EVENT_ITEM_OCCURRENCE_LIST_BY_AUDIENCE, _eventItemOccurrenceListByAudienceLavaTemplate, "323D1996-C27F-4B48-B0C7-82FDA440D950", _eventItemOccurrenceListByAudienceLavaLegacyTemplate )
         }
 
         #region CMS Blocks
@@ -3075,6 +3078,57 @@ namespace Rock.Migrations
             {% endif %}
         {% endfor %}
     {% endif %}
+</StackLayout>";
+
+        private const string _eventItemOccurrenceListByAudienceLavaTemplate = @"<StackLayout>
+    <Label StyleClass=""title1, bold, text-interface-strongest"" Text=""{{ ListTitle | Escape }}"" />
+
+    {% for occurrence in EventItemOccurrences %}
+    <Rock:StyledBorder StyleClass=""bg-interface-softest, border, border-interface-soft, rounded, p-16, my-4"">
+        <Grid ColumnDefinitions=""*, Auto"">
+            <StackLayout Spacing=""0"">
+                <Label StyleClass=""body, bold, text-interface-stronger"" Text=""{{ occurrence.EventItem.Name | Escape }}"" />
+                <Label StyleClass=""footnote, text-interface-strong"" Text=""({{ occurrence.Schedule.iCalendarContent | DatesFromICal | First | Date: 'M/d ' }})"" LineBreakMode=""NoWrap"" />
+            </StackLayout>
+
+            <Rock:Icon IconClass=""chevron-right""
+                StyleClass=""text-interface-medium, caption2""
+                VerticalOptions=""Center""
+                Grid.Column=""1"" />
+        </Grid>
+    
+        {% if occurrence.EventItem.DetailsUrl != '' %}
+            <Rock:StyledBorder.GestureRecognizers>
+                <TapGestureRecognizer Command=""{Binding OpenExternalBrowser}"" CommandParameter=""{{ occurrence.EventItem.DetailsUrl | Escape }}"" />
+            </Rock:StyledBorder.GestureRecognizers>
+        {% elseif EventDetailPage != null %}
+            <Rock:StyledBorder.GestureRecognizers>
+                <TapGestureRecognizer Command=""{Binding PushPage}"" CommandParameter=""{{ EventDetailPage }}?EventOccurrenceId={{ occurrence.Id }}&amp;EventOccurrenceGuid={{ occurrence.Guid }}"" />
+            </Rock:StyledBorder.GestureRecognizers>
+        {% endif %}
+    </Rock:StyledBorder>
+    {% endfor %}
+</StackLayout>";
+        private const string _eventItemOccurrenceListByAudienceLavaLegacyTemplate = @"<StackLayout>
+    <Label StyleClass=""h1,mb-4"" Text=""{{ ListTitle | Escape }}"" />
+    {% for occurrence in EventItemOccurrences %}
+    <Frame HasShadow=""false"" StyleClass=""calendar-event"">
+        <StackLayout Spacing=""0"">
+            <Label StyleClass=""calendar-event-title"" Text=""{{ occurrence.EventItem.Name | Escape }}"" />
+            <Label StyleClass=""calendar-event-text text-sm"" Text=""({{ occurrence.Schedule.iCalendarContent | DatesFromICal | First | Date: 'M/d ' }})"" LineBreakMode=""NoWrap"" />
+        </StackLayout>
+    
+        {% if occurrence.EventItem.DetailsUrl != '' %}
+            <Frame.GestureRecognizers>
+                <TapGestureRecognizer Command=""{Binding OpenExternalBrowser}"" CommandParameter=""{{ occurrence.EventItem.DetailsUrl | Escape }}"" />
+            </Frame.GestureRecognizers>
+        {% elseif EventDetailPage != null %}
+            <Frame.GestureRecognizers>
+                <TapGestureRecognizer Command=""{Binding PushPage}"" CommandParameter=""{{ EventDetailPage }}?EventOccurrenceId={{ occurrence.Id }}&amp;EventOccurrenceGuid={{ occurrence.Guid }}"" />
+            </Frame.GestureRecognizers>
+        {% endif %}
+    </Frame>
+    {% endfor %}
 </StackLayout>";
 
         #endregion
