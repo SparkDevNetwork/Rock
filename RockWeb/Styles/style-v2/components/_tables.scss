@@ -190,6 +190,10 @@ td.wrap-contents {
   word-break:       break-all;
 }
 
+.table {
+  margin-bottom: 0;
+}
+
 // Add Border to last row
 .table-inline:not(.table-hide-last-border) > tbody > tr:last-child > td {
   border-bottom: 1px solid var(--color-interface-soft);
@@ -239,7 +243,7 @@ td.wrap-contents {
 .table-striped {
   > tbody > tr:nth-of-type(odd) {
     color:            var(--color-interface-stronger);
-    background-color: var(--color-interface-softest); // TODO darken the ui soft by 3%
+    background-color: var(--color-interface-softest); //TODO darken the ui soft by 3%
   }
   > tbody > tr:nth-of-type(even) {
     color:            var(--color-interface-softest);
@@ -327,7 +331,7 @@ td.wrap-contents {
   &.active:hover > td,
   &:hover > .active,
   &.active:hover > th {
-    background-color: var(--color-interface-softer); // TODO darken by 5% 
+    background-color: var(--color-interface-softer); //TODO darken by 5% 
   }
 }
 
@@ -581,6 +585,58 @@ tr.row-highlight {
   }
 }
 
+.grid-columncommand .btn-danger {
+  color:              var(--color-interface-stronger);
+  background-color:   transparent;
+  border-color:       transparent;
+  
+  &:focus,
+  &.focus {
+    color:            var(--color-interface-softest);
+    background-color: var(--color-danger-soft); //TODO darken by 10% when available
+    border-color:     var(--color-danger-stronger);
+  }
+  
+  &:hover {
+    color:            var(--color-interface-softest);
+    background-color: var(--color-danger-soft); //TODO darken by 10% when available
+    border-color:     var(--color-danger-stronger);
+  }
+  
+  &:active,
+  &.active,
+  .open > .dropdown-toggle & {
+    color:            var(--color-interface-softest); 
+    background-color: var(--color-danger-soft); //TODO this uses darken, which is a Less function
+    background-image: none;
+    border-color:     var(--color-danger-stronger);
+
+    &:hover,
+    &:focus,
+    &.focus {
+      color:            var(--color-interface-softest);
+      background-color: var(--color-danger-medium);
+      border-color:     var(--color-danger-stronger);
+    }
+  }
+  
+  &.disabled,
+  &[disabled],
+  fieldset[disabled] & {
+    &:hover,
+    &:focus,
+    &.focus {
+      background-color: var(--color-interface-softest);
+      border-color:     var(--color-interface-soft);
+    }
+  }
+  
+  .badge {
+    color:            var(--color-interface-softest);
+    background-color: var(--color-interface-stronger);
+  }
+}
+
 .grid-columncommand {
   .btn {
     width:    34px;
@@ -623,59 +679,6 @@ tr.row-highlight {
     }
   }
 }
-
-.grid-columncommand .btn-danger {
-  color:              var(--color-interface-stronger);
-  background-color:   transparent;
-  border-color:       transparent;
-  
-  &:focus,
-  &.focus {
-    color:            var(--color-interface-softest);
-    background-color: var(--color-danger-soft); // TODO darken by 10% when available
-    border-color:     var(--color-danger-stronger);
-  }
-  
-  &:hover {
-    color:            var(--color-interface-softest);
-    background-color: var(--color-danger-soft); // TODO darken by 10% when available
-    border-color:     var(--color-danger-stronger);
-  }
-  
-  &:active,
-  &.active,
-  .open > .dropdown-toggle & {
-    color:            var(--color-interface-softest); 
-    background-color: var(--color-danger-soft); // TODO: this uses darken, which is a Less function
-    background-image: none;
-    border-color:     var(--color-danger-stronger);
-
-    &:hover,
-    &:focus,
-    &.focus {
-      color:            var(--color-interface-softest);
-      background-color: var(--color-danger-medium);
-      border-color:     var(--color-danger-stronger);
-    }
-  }
-  
-  &.disabled,
-  &[disabled],
-  fieldset[disabled] & {
-    &:hover,
-    &:focus,
-    &.focus {
-      background-color: var(--color-interface-softest);
-      border-color:     var(--color-interface-soft);
-    }
-  }
-  
-  .badge {
-    color:            var(--color-interface-softest);
-    background-color: var(--color-interface-stronger);
-  }
-}
-
 
 // rwd responsive table override
 .grid-panel .table-responsive[data-pattern="priority-columns"],
@@ -878,6 +881,56 @@ td.grid-actions {
   }
 }
 
+.table{
+
+  .grid-icon img {
+    width:     100%;
+    max-width: 120px;
+  }
+
+  > thead > tr.grid-header-bold {
+    th {
+      color:            var(--color-interface-stronger);;
+      vertical-align:   top !important;
+      background-color: var(--color-interface-softest);;
+      border-color:     var(--color-interface-softest); //TODO lighten ui softest by 5%
+    }
+  }
+
+  > tbody > tr.grid-row-bold {
+    td {
+      color:            var(--color-interface-stronger);;
+      vertical-align:   top !important;
+      background-color: var(--color-interface-softest);;
+    }
+
+    &:hover td {
+      color:            var(--color-interface-stronger) !important;
+      background-color: var(--color-interface-softest); //TODO lightne ui softest by 10%
+    }
+  }
+
+
+
+  > tbody > tr > td.grid-field,
+  > thead > tr > th.grid-select-field,
+  > tbody > tr > td.grid-select-field {
+    padding: 0 12px;
+    vertical-align: middle;
+  }
+
+  > tbody > tr.grid-section-header {
+    > td,
+    &:hover > td {
+      font-size:        var(--font-size-h5);
+      font-weight:      var(--font-weight-bold);
+      color:            var(--color-interface-stronger);
+      background-color: var(--color-interface-softest);
+    }
+  }
+
+}
+
 .grid-table {
   font-size: var(--font-size-regular);
   td,
@@ -959,7 +1012,7 @@ td.grid-actions {
       padding-top:  var(--spacing-medium);
 
       a {
-        color:  var(--color-interface-strong); // TODO lighten the ui stronger by 20% when color-mix() is available
+        color:  var(--color-interface-strong); //TODO lighten the ui stronger by 20% when color-mix() is available
       }
     }
   }
@@ -967,56 +1020,6 @@ td.grid-actions {
   > tbody > tr > td.grid-columncommand {
     padding: var(--spacing-small);
   }
-}
-
-.table{
-
-  .grid-icon img {
-    width:     100%;
-    max-width: 120px;
-  }
-
-  > thead > tr.grid-header-bold {
-    th {
-      color:            var(--color-interface-stronger);;
-      vertical-align:   top !important;
-      background-color: var(--color-interface-softest);;
-      border-color:     var(--color-interface-softest); // TODO lighten ui softest by 5%
-    }
-  }
-
-  > tbody > tr.grid-row-bold {
-    td {
-      color:            var(--color-interface-stronger);;
-      vertical-align:   top !important;
-      background-color: var(--color-interface-softest);;
-    }
-
-    &:hover td {
-      color:            var(--color-interface-stronger) !important;
-      background-color: var(--color-interface-softest); //TODO lightne ui softest by 10%
-    }
-  }
-
-
-
-  > tbody > tr > td.grid-field,
-  > thead > tr > th.grid-select-field,
-  > tbody > tr > td.grid-select-field {
-    padding: 0 12px;
-    vertical-align: middle;
-  }
-
-  > tbody > tr.grid-section-header {
-    > td,
-    &:hover > td {
-      font-size:        var(--font-size-h5);
-      font-weight:      var(--font-weight-bold);
-      color:            var(--color-interface-stronger);
-      background-color: var(--color-interface-softest);
-    }
-  }
-
 }
 
 .grid-select-cell {
@@ -1045,7 +1048,7 @@ td.grid-actions {
 
 .table > tbody > tr.is-inactive-person {
   > td {
-    color: var(--color-interface-medium); // TODO lightne ui medium by 30%
+    color: var(--color-interface-medium); //TODO lightne ui medium by 30%
   }
 }
 

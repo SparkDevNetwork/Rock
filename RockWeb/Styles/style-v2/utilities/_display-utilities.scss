@@ -65,6 +65,14 @@
     display: block !important;
 }
 
+// Moved from _align.less
+.align-baseline    { vertical-align: baseline !important; } // Browser default
+.align-top         { vertical-align: top !important; }
+.align-middle      { vertical-align: middle !important; }
+.align-bottom      { vertical-align: bottom !important; }
+.align-text-top    { vertical-align: text-top !important; }
+.align-text-bottom { vertical-align: text-bottom !important; }
+
 @media (min-width: $screen-small) {
 .d-sm-none {
     display: none !important;

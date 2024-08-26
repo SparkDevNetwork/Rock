@@ -139,6 +139,46 @@ h6.condensed {
   margin-bottom: 0;
 }
 
+//Moved from bootstrap type.less
+.text-muted {
+    color: var(--color-interface-strong);
+}
+.text-primary {
+    color: var(--color-primary);
+    a &:hover,
+    a &:focus {
+    color: var(--color-primary); //TODO Darken by 10% 
+    }
+}
+.text-success {
+    color: var(--color-success-strong);
+    a &:hover,
+    a &:focus {
+    color: var(--color-success-strong); //TODO Darken by 10% 
+    }
+}
+.text-info {
+    color: var(--color-info-strong);
+    a &:hover,
+    a &:focus {
+    color: var(--color-info-strong); //TODO Darken by 10% 
+    }
+}
+.text-warning {
+    color: var(--color-warning-strong);
+    a &:hover,
+    a &:focus {
+    color: var(--color-warning-strong); //TODO Darken by 10% 
+    }
+}
+.text-danger {
+    color: var(--color-danger-strong);
+    a &:hover,
+    a &:focus {
+    color: var(--color-danger-strong); //TODO Darken by 10% 
+    }
+}
+
 @media (min-width: 576px) {
     .text-sm-left {
         text-align: left !important;

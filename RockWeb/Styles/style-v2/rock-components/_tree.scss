@@ -98,7 +98,7 @@ ul.rocktree,
 ul.rocktree-children {
   padding:          0;
   margin-bottom:    $grid-gutter-width;
-  font-size:        var(--font-size-xsmall);
+  font-size:        var(--font-size-small);
   line-height:      30px;
   list-style-type:  none;
 }
@@ -113,7 +113,7 @@ ul.rocktree-children {
     display:      flex;
     flex-wrap:    wrap;
     align-items:  center;
-    color:        var(--color-interface-strong);
+    color:        var(--color-interface-strongest);
     white-space:  nowrap;
 
     // Only lighten the name, not the children of the item.

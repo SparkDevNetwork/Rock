@@ -117,7 +117,7 @@ output {
   display: block;
   width: 100%;
   height: 38px; // Make inputs at least the height of their button counterpart (base line-height + padding + border)
-  padding: var(--spacing-small) var(--spacing-medium);
+  padding: 6px 12px; //Need to hard code for the zoom function on the group scheduler.
   font-size: var(--font-size-regular);
   line-height: var(--line-height-normal);
   color: var(--color-interface-stronger);

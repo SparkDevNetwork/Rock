@@ -53,9 +53,9 @@
         width:          36px;
         height:         36px;
         padding:        9px 7px;
-        color:          var(--color-interface-medium);
+        color:          var(--color-interface-soft);
         background:     var(--color-interface-softest);
-        border:         1px solid var(--color-interface-medium);
+        border:         1px solid var(--color-interface-soft);
         border-radius:  60px;
       }
     }
@@ -65,13 +65,13 @@
 
     &::before {
       position:         absolute;
-      top:              var(--spacing-medium); /* Same as above */
-      left:             -50%;
-      width:            22px; /* 22px = icon width */
+      top:              18px; //Hard coded because it need to be exact
+      left:             -49%; // Original Value was "-50%"
+      width:            calc(100% - 36px);  // Fix the decorative line that run from one wizard to another.
       height:           1px;
       margin-left:      var(--spacing-medium); /* 11px = 1/2 icon width */
       content:          "";
-      background-color: var(--color-interface-medium);
+      background-color: var(--color-interface-soft);
     }
 
     &.active {

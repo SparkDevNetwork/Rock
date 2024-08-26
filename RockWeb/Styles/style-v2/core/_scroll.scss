@@ -1,0 +1,123 @@
+/*
+    Used to manage styles related to Rock's internal scrollbar
+
+*/
+
+
+// basic scroll styles
+.scroll-container {
+  clear: both;
+
+  .viewport {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .overview {
+    position: absolute;
+    top: 0;
+    left: 0;
+    list-style: none;
+  }
+
+  .track {
+    position: relative;
+    padding: 0;
+    background-color: var(--color-interface-soft);
+    border-radius: 4px;
+  }
+
+  .thumb {
+    position: absolute;
+    overflow: hidden;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -khtml-user-select: none;
+    user-select: none;
+    background-color: var(--color-interface-soft);
+    border-radius: 120px;
+    // keeps the thumb from being selectable like text
+
+    -webkit-touch-callout: none;
+  }
+
+  .disable {
+    display: none;
+  }
+}
+
+// styles for verticle scrollers
+.scroll-container-vertical {
+  width: 520px;
+
+  .viewport {
+    width: 500px;
+    height: 375px;
+  }
+
+  .overview {
+    width: 100%;
+  }
+
+  .scrollbar {
+    position: relative;
+    float: right;
+    width: 15px;
+    height: 120px;
+  }
+
+  .track {
+    width: 1px;
+    height: 100%;
+    border-radius: 4px;
+  }
+
+  .thumb {
+    top: 0;
+    width: 13px;
+    height: 20px;
+    margin-left: -6px;
+  }
+}
+
+// styles for horizonal scrollers
+.scroll-container-horizontal {
+  width: 100%;
+  margin: 0;
+
+  .viewport {
+    width: 100%;
+    min-height: 200px;
+  }
+
+  .scrollbar {
+    position: relative;
+    width: 100%;
+    height: 15px;
+    padding: 0 15px;
+  }
+
+  .track {
+    width: 100%;
+    height: 1px;
+    padding: 0 1px;
+  }
+
+  .thumb {
+    width: 20px;
+    height: 13px;
+    margin-top: -6px;
+    border-radius: 10px;
+  }
+}
+
+// styles for scrollers in panels
+
+.noSelect {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}

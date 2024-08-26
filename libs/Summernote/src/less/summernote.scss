@@ -56,8 +56,7 @@ $background-color: #f5f5f5;
   }
 }
 
-/* Frame mode layout
-------------------------------------------*/
+/* Frame mode layout */
 .note-editor.note-frame {
   border: 1px solid $border-color;
 
@@ -145,8 +144,7 @@ $background-color: #f5f5f5;
   }
 }
 
-/* Popover
-------------------------------------------*/
+/* Popover */
 .note-popover.popover {
   max-width: none;
   .popover-content {
@@ -309,8 +307,7 @@ $background-color: #f5f5f5;
   }
 }
 
-/* Dialog
-------------------------------------------*/
+/* Dialog */
 .note-dialog {
   &>div {
     display: none; /* BS2's hide pacth. */
@@ -335,16 +332,14 @@ $background-color: #f5f5f5;
   }
 }
 
-/* Placeholder
-------------------------------------------*/
+/* Placeholder */
 .note-placeholder {
   position: absolute;
   display: none;
   color: gray;
 }
 
-/* Handle
-------------------------------------------*/
+/* Handle */
 .note-handle {
   /* control selection */
   .note-control-selection {

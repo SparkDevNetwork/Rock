@@ -64,7 +64,7 @@
   display: flex;
   align-items: center;
   width: 100%;
-  padding: 6px 12px 6px 8px;
+  padding: 6px 12px 6px var(----spacing-small);
   font-size: .875rem;
   font-weight: var(--font-weight-medium);
   line-height: 1.25;
@@ -104,7 +104,7 @@
   min-width: 56px;
 
   .progress-step-link {
-    padding: 4px 14px;
+    padding: var(--spacing-tiny) 14px;
     font-size: var(--font-size-h4);
   }
 
@@ -152,7 +152,7 @@
 }
 
 .remaining-time-title {
-  font-size: 12px;
+  font-size: var(--font-size-xsmall);
   line-height: 14px;
   color: var(--color-interface-medium);
   white-space: nowrap;

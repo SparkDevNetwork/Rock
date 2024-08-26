@@ -295,7 +295,7 @@
 .btn.btn-default {
   color:            var(--color-interface-stronger);
   background-color: var(--color-interface-softest);
-  border-color:     var(--color-interface-medium);
+  border-color:     var(--color-interface-soft);
  
   &:focus,
   &.focus {
@@ -353,25 +353,25 @@
       border-color:     var(--color-primary);
   }
   &:hover {
-      color:            var(--color-primary);
-      background-color: var(--color-interface-softest);
+      color:            var(--color-interface-softest);
+      background-color: var(--color-primary);
       border-color:     var(--color-primary);
 
   }
   &:active,
   &.active,
   .open > .dropdown-toggle & {    
-      color:            var(--color-primary);
-      background-color: var(--color-interface-softest);
+      color:            var(--color-interface-softest);
+      background-color: var(--color-primary);         //TODO change when primary hover is available.
       border-color:     var(--color-interface-softest);
       background-image: none;
 
       &:hover,
       &:focus,
       &.focus {
-      color:            var(--color-primary);
-      background-color: var(--color-interface-softest);
-      border-color:     var(--color-interface-softest);
+      color:            var(--color-interface-softest);
+      background-color: var(--color-primary);
+      border-color:     var(--color-primary);
       }
   }
   &.disabled,
@@ -602,7 +602,7 @@
   &:hover {
     color:            var(--color-interface-softest);
     background-color: var(--color-interface-stronger);
-    border-color:     var(--color-danger-strong)
+    border-color:     var(--color-interface-strongest);
   }
   &:active,
   &.active,
@@ -610,7 +610,7 @@
     color:              var(--color-interface-softest);
     background-color:   var(--color-interface-stronger);
     background-image:   none;
-    border-color:       var(--color-danger-strong);
+    border-color:        var(--color-interface-strongest);
 
     &:hover,
     &:focus,
@@ -699,7 +699,7 @@
   &.btn-sm {
     width: 34px;
     height: 34px;
-    padding: calc(var(--spacing-small) - 2) 0;
+    padding: 6px 0;
   }
 
   i.fa {
@@ -771,7 +771,7 @@
 .btn-xs{
   padding:        var(--spacing-tiny) var(--spacing-small);
   font-size:      var(--font-size-xsmall);
-  line-height:    var(--line-height-normal);
+  line-height:    16px;
   border-radius:  var(--rounded-small);
 }
 // ======================== END BUTTON SIZE ========================

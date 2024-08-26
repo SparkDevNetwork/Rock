@@ -34,6 +34,7 @@
   }
 }
 
+// Nothing is using this class
 .htmleditor-assetmanager .is-postback {
   > .modal-header {
     padding: 5px 15px;
@@ -83,7 +84,7 @@
 .picker-folders {
   max-width: 320px;
   padding-right: 24px;
-  @media (max-width: calc($screen-xsmall - 1)) {
+  @media (max-width: $screen-xsmall) {
     -ms-flex: 0 0 100%;
     flex: 0 0 100%;
     max-width: 100%;
@@ -95,7 +96,7 @@
     margin-bottom: var(--spacing-medium);
   }
 
-  @media (max-width: calc($screen-xsmall - 1)) {
+  @media (max-width: $screen-xsmall) {
     .scroll-container-vertical .viewport {
       height: 100px;
     }

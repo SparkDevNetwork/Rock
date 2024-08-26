@@ -8,8 +8,6 @@
 
 */
 
-// Fullscreen Toggle
-
 .rock-fullscreen-toggle {
   position: absolute;
   top: 0;
@@ -206,7 +204,6 @@
     white-space: nowrap;
   }
 }
-
 
 .load-more-container {
   margin: 16px;
@@ -612,6 +609,7 @@
   margin-top: 12px;
 }
 
+//Panha: use by scheduleBuilder.js
 .recurrence-pattern-specific-date {
 
   &:before,
@@ -633,7 +631,6 @@
     margin-left: 12px;
   }
 }
-
 
 .recurrence-pattern-daily,
 .recurrence-pattern-monthly,
@@ -664,7 +661,6 @@
     }
   }
 }
-
 
 .exclusions {
   .add-exclusion {

@@ -67,6 +67,10 @@ box-sizing: inherit;
   margin-right: calc(($grid-gutter-width / -2));
   margin-left:  calc(($grid-gutter-width / -2));
 }
+.row {
+  margin-right: calc(($grid-gutter-width / -2));
+  margin-left:  calc(($grid-gutter-width / -2));
+}
 
 // bootstrap 3
 .row-no-gutters {

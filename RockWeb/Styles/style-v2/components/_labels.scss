@@ -134,3 +134,9 @@
   // ======================== END ALTERNATIVE STYLE ========================
 
 
+  .label {
+    display: inline-flex;
+    padding: .5em 1em;
+    font-weight: 500; // make the font light
+    gap: .5em;
+  }

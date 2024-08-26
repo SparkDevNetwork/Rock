@@ -22,3 +22,78 @@
     }
   }
 }
+
+
+.loginstatus {
+  margin: 0;
+
+  & > li {
+    min-width: inherit;
+    @media (max-width: $screen-medium) {
+      position: static;
+    }
+
+    > a {
+      display: flex;
+      align-items: center;
+      padding: 0 18px;
+      color: currentColor;
+
+      @media (max-width: $screen-medium) {
+        padding: 0 8px;
+        .fa-caret-down {
+          display: none;
+        }
+      }
+
+      .profile-photo {
+        float: left;
+        width: 32px;
+        height: 32px;
+        background-repeat: no-repeat;
+        background-size: cover;
+        border-radius: 50%;
+        @media (min-width: $screen-small) {
+          width: 40px;
+          height: 40px;
+          margin-right: 12px;
+        }
+
+        &[style*="no-photo"] {
+          opacity: .4;
+        }
+      }
+
+      span {
+        display: none;
+      }
+
+      .fa-caret-down::before {
+        content: "\f078";
+      }
+
+      &:hover,
+      &:focus {
+        background-color: transparent;
+      }
+    }
+
+    .dropdown-menu {
+      right: 0;
+      left: auto;
+      @media (max-width: $screen-small) {
+        position: absolute;
+        top: var(--top-header-height);
+        left: 0;
+        z-index: 1000;
+        background-color: var(--color-primary);
+
+        & > li > a {
+          color: var(--navbar-top-color);
+        }
+      }
+    }
+  }
+}
+
+

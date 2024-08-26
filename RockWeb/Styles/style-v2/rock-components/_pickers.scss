@@ -1,0 +1,468 @@
+//
+// Pickers - used to pick complex data types
+// --------------------------------------------------
+
+.picker-select {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.picker {
+  @media (min-width: $screen-small) {
+    position: relative;
+    width: 250px; // needed when floated right to keep the picker from shifting when the (x) appears to allow delete
+    max-width: 100%;
+  }
+
+  .picker-search-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+
+  .picker-search-action {
+    display: block;
+    float: right;
+    padding: 0 3px;
+    margin-left: 3px;
+    font-size: var(--font-size-xsmall);
+
+    &.active {
+      background-color: var(--color-interface-softest) //TODO darken by 10% when available
+    }
+  }
+
+  .picker-mode-options {
+    margin-bottom: 12px;
+  }
+
+  .picker-label {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: var(--spacing-small) var(--spacing-medium);
+    font-size: var(--font-size-regular);
+    line-height: 20px;
+    color: var(--color-interface-stronger);
+    cursor: pointer;
+    background-color: var(--color-interface-softest);
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-small);
+    gap: 6px;
+
+    &:hover {
+      text-decoration: none;
+    }
+
+    span {
+      flex: 1 1 0;
+      min-height: 20px;
+      overflow: hidden;
+      line-height: inherit;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .has-error & {
+      border-color: var(--color-danger-strong);
+
+      &.active {
+        border-color: var(--color-danger-strong);
+        box-shadow: 0 0 0 3px var(--color-danger-strong); //TODO fade by 20% when available
+      }
+    }
+  }
+
+  &.picker-fullwidth,
+  &.picker-fullwidth .picker-label {
+    width: 100%;
+  }
+
+  .input-group-sm {
+    // Always display 100% width. Override for when displaying picker in .inline-form
+    width: 100%;
+
+    > .form-control,
+    > .input-group-addon {
+      height: 30px;
+      padding: 6px var(--spacing-medium);
+    }
+
+    > .input-group-btn > .btn {
+      height: 30px;
+      padding-top: 6px;
+      padding-bottom: 6px;
+    }
+  }
+
+  .picker-select-none {
+    padding: 1px 6px;
+    font-size: 12px;
+    background: transparent;
+    color: fade(var(--color-interface-strongest), 20%);
+    border-radius: 50%;
+    outline: none;
+
+    &:hover,
+    &:focus {
+      background: fade(var(--color-interface-strongest), 10%);
+      color: inherit;
+    }
+  }
+
+  .scroll-container-picker {
+    width: 100%;
+
+    .viewport {
+      width: calc(100% - 15px);
+    }
+
+    .scrollbar {
+      width: 5px;
+    }
+  }
+
+  .scroll-container-native {
+    width: calc(100% + 16px);
+    padding: 8px;
+    margin: -8px;
+    overflow-y: auto;
+  }
+
+  .scroll-container-native,
+  .scroll-container-picker .viewport,
+  .scroll-container-picker .scrollbar {
+    height: 380px;
+    @media (max-device-height: 480px) {
+      max-height: 200px;
+    }
+  }
+
+  dl {
+    margin-bottom: 4px;
+  }
+
+  hr {
+    margin: 8px calc(var(--spacing-small) * -1) 4px;
+  }
+
+  h4 {
+    margin: 0;
+    font-size: var(--font-size-xsmall);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  .picker-menu {
+    width: 400px;
+    max-height: none; // Added to fix issue where picker paints incorrectly in modals.
+    padding: var(--spacing-small);
+    will-change: height;
+
+    @media (max-width: $screen-small) {
+      position: static;
+      max-width: 100%;
+    }
+  }
+
+  &.picker-menu-right {
+    .picker-menu {
+      right: 0;
+      left: auto;
+    }
+  }
+
+  .treeview .search-item {
+    margin-bottom: 16px;
+    margin-left: 4px;
+  }
+
+  .picker-actions {
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-small);
+    margin: var(--spacing-small) -var(--spacing-small) -var(--spacing-small) -var(--spacing-small);
+    font-size: var(--font-size-small);
+    background-color: var(--color-interface-softest);
+    border-top: 1px solid var(--color-interface-softer);
+    border-radius: 0 0 var(--rounded-small) var(--rounded-small);
+    gap: 0 4px;
+
+    .pull-right {
+      margin-left: auto;
+    }
+
+    .btn {
+      width: auto;
+    }
+
+    .rock-checkbox-icon i {
+      width: 1rem;
+      margin-right: 0;
+      font-size: inherit;
+    }
+
+    .btn-select-all {
+      order: 10;
+    }
+  }
+
+  .picker-select-item {
+    margin-left: 3px;
+
+    .radio {
+      margin-right: 0;
+    }
+
+    label,
+    .label-text {
+      display: block;
+    }
+  }
+
+  .personpicker-search-panel {
+    .input-group {
+      margin: 0 0 4px;
+    }
+
+    .input-group-addon {
+      width: 85px;
+      text-align: left;
+    }
+  }
+
+  .personpicker-results {
+    container-type: inline-size;
+  }
+
+  .personpicker-item {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px 16px;
+    background: var(--color-interface-softest);
+    border: 1px solid var(--color-interface-soft);
+    padding: var(--spacing-small);
+    margin-bottom: var(--spacing-small);
+    cursor: pointer;
+    border-radius: var(--rounded-small);
+    align-items: center;
+
+    &:focus-visible {
+      outline: var(--color-primary) auto 1px;
+    }
+
+    .main .data {
+      align-self: center;
+    }
+
+    .main,
+    .address-email,
+    .phones {
+      grid-column: span 2;
+    }
+
+    .taglist {
+      flex-direction: column-reverse;
+      align-items: end;
+    }
+
+    .item-meta .taglist {
+      display: none;
+    }
+  }
+
+  @media (min-width: 420px) {
+    .personpicker-item {
+      .address-email,
+      .phones {
+        grid-column: span 1;
+      }
+
+      .item-meta {
+        display: grid;
+        grid-template-columns: 1fr max-content;
+        gap: 24px;
+      }
+    }
+  }
+
+  @media (min-width: 480px) {
+    .personpicker-item {
+      grid-template-columns: 1fr 1fr;
+      .main {
+        grid-column: span 1;
+        grid-row: span 2;
+
+        .taglist {
+          display: none;
+        }
+      }
+
+      .item-meta {
+        display: block;
+        .taglist {
+          display: flex;
+          float: right;
+          margin-left: 4px;
+        }
+      }
+
+      .address-email,
+      .phones {
+        // put both into second column in the first row
+        grid-column: 2 / span 1;
+      }
+    }
+  }
+
+  @media (min-width: 820px) {
+    .personpicker-item {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+      grid-template-rows: 1fr;
+      gap: 0 16px;
+
+      .item-meta {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: minmax(0, 4fr) minmax(min-content, 2fr) minmax(min-content, 100px);
+        height: 100%;
+        align-items: center;
+      }
+
+      .taglist,
+      .address-email,
+      .phones {
+        grid-column: span 1;
+      }
+
+      .taglist {
+        order: 3;
+        align-self: start;
+      }
+    }
+  }
+
+  @media (min-width: 1020px) {
+    .personpicker-item {
+      .item-meta {
+        grid-template-columns: minmax(0, 4fr) minmax(min-content, 2fr) minmax(min-content, 200px);
+      }
+
+      .taglist {
+        flex-direction: row;
+      }
+    }
+  }
+
+  // details used for pickers like person picker to show the details of the selected item
+  .picker-select-item-details {
+    @media (min-width: $screen-small) {
+      margin-left: 29px;
+    }
+
+    .person-image {
+      float: left;
+      width: 70px;
+      height: 70px;
+      margin-right: 8px;
+      background-position: 50%;
+      background-size: cover;
+      border: 1px solid var(--color-interface-softer);
+      border-radius: 50%;
+    }
+
+    .label.pull-right {
+      position: absolute;
+      right: 0;
+      display: inline-block;
+      max-width: 40%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .contents {
+      float: left;
+      width: calc(100% - 78px);
+
+      h5 {
+        margin-bottom: 2px;
+      }
+    }
+  }
+
+  &.picker-geography {
+    .picker-menu {
+      width: 520px;
+    }
+  }
+
+  &.picker-person {
+    .picker-select-none {
+      display: none;
+    }
+
+    .show-hover {
+      display: block;
+      // visibility: hidden;
+      color: transparent
+    }
+
+    .picker-label:hover .show-hover,
+    .picker-label:focus .show-hover,
+    .show-hover:focus {
+      // visibility: visible;
+      color: inherit;
+    }
+
+    .picker-select-list {
+      padding: 0;
+      list-style: none;
+    }
+
+    .picker-select-item-details {
+      position: relative;
+
+      label {
+        position: absolute;
+        top: 0;
+        right: 0;
+      }
+
+      img {
+        width: 65px;
+      }
+    }
+  }
+
+  &.picker-novalue {
+    // used for pickers that do not retain values to remove the extra spacing needed for the 'x'
+    .picker-label {
+      width: 100%;
+      max-width: 100%;
+    }
+  }
+
+  &.picker-mergefield {
+    width: 370px;
+    max-width: 100%;
+  }
+
+  &.picker-lg {
+    @media (min-width: $screen-small) {
+      position: relative;
+      width: 350px;
+    }
+  }
+}
+
+// Campus Account Amount Picker
+.campus-account-amount-picker {
+  &,
+  .amount-input,
+  .campus-dropdown,
+  .account-dropdown {
+    margin-bottom: var(--spacing-medium);
+  }
+}
+

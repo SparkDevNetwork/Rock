@@ -139,3 +139,14 @@ hr {
 [role="button"] {
   cursor: pointer;
 }
+
+// add to remove margin 
+ul,ol {
+  margin-top: 0;
+  margin-bottom: 12px
+}
+
+ul ul,ol ul,ul ol,ol ol {
+  margin-bottom: 0
+}
+

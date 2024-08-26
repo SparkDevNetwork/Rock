@@ -30,7 +30,7 @@
   color:        var(--color-interface-stronger);
   text-align:   center;
   cursor:       pointer;
-  border-left:  1px solid $panel-border;
+  border-left:  1px solid var(--color-interface-soft);
   opacity:      .4;
   transition:   color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
 
@@ -41,8 +41,34 @@
 
   &.following {
     color:            var(--color-interface-softest);
-    background-color: $panel-border;
+    background-color: var(--color-interface-soft);
     opacity:          1;
+  }
+}
+
+//Panha: Move from rock theme.less
+.panel-follow-status {
+  width: 50px;
+  padding: 0;
+
+  &::before {
+    display: grid;
+    place-items: center;
+    height: 100%;
+  }
+
+  .panel-more & {
+    position: relative;
+    width: 28px;
+    padding: 2px 0;
+    border: 0;
+    opacity: 1;
+
+    &.following {
+      font-weight: 900;
+      color: var(--color-primary);
+      background: transparent;
+    }
   }
 }
 // ====================== END BASE STYLE ========================

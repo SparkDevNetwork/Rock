@@ -297,7 +297,7 @@
   }
   .badge {
     color:              var(--color-interface-softer);
-    background-color:   var(--color-interface-stronger);
+    background-color:   var(--color-interface-strong);
   }
 }
 & > .panel-footer {
@@ -519,8 +519,8 @@
   border-color: var(--color-info-soft);
 
   & > .panel-heading {
-    color: var(--color-info-strong);
-    background-color: var(--color-info-soft);
+    color: var(--color-interface-strongest);
+    background-color: var(--color-interface-softer);
     border-color:  var(--color-info-soft);
 
     + .panel-collapse > .panel-body {
@@ -562,7 +562,7 @@
   }
 
   > .panel-body {
-    border-top: 1px solid var(--color-info-strong);
+    border-top: 1px solid var(--color-interface-softer);
   }
 }
 // ===================== END PANEL WIDGET =====================
@@ -602,7 +602,7 @@
     align-items:  center;
     flex-wrap:    wrap;
     .actions {
-      margin:     -var(--spacing-tiny) 0 -var(--spacing-tiny) auto;
+      margin:     calc(var(--spacing-tiny) * -1) 0 calc(var(--spacing-tiny) * -1) auto;
       a {
         margin-left: var(--spacing-tiny);
       }
@@ -735,16 +735,16 @@
   .panel-body {
     .panel-fullwidth,
     .grid.grid-panel {
-      margin:           0 -var(--spacing-medium);
+      margin:           0 calc(var(--spacing-medium) * -1);
       // TODO: WAS NEEDED FOR BORDER RADIUS TRIM
       // overflow: hidden;
 
       &:first-child {
-        margin-top:     -var(--spacing-medium);
+        margin-top:     calc(var(--spacing-medium) * -1);
       }
 
       &:last-child {
-        margin-bottom:  -var(--spacing-medium);
+        margin-bottom:  calc(var(--spacing-medium) * -1);
         // TODO: This doesn't work without overflow hidden
         // border-radius: 0 0 @border-radius-base @border-radius-base;
       }
@@ -839,7 +839,7 @@
 // ======================= PANEL COLUMNS =======================
 .panel-body-columns {
   padding: 0;
-  margin: -var(--spacing-medium);
+  margin: calc(var(--spacing-medium) * -1);
 
   > [class*="col-"] {
     padding: var(--spacing-medium);
@@ -885,7 +885,7 @@
   .analytics-details {
     > .grid-filter {
       padding:    var(--spacing-medium);
-      margin:     -var(--spacing-medium) -var(--spacing-medium) var(--spacing-medium) -var(--spacing-medium);
+      margin:     calc(var(--spacing-medium) * -1) calc(var(--spacing-medium) * -1) var(--spacing-medium) calc(var(--spacing-medium) * -1)
     }
   }
 
