@@ -72,40 +72,6 @@ namespace Rock.Blocks.Group
 
         #endregion Keys
 
-        #region Properties
-
-        /// <summary>
-        /// Gets purpose guid with which to filter the results.
-        /// </summary>
-        /// <value>
-        /// The name of the account.
-        /// </value>
-        protected Guid? FilterPurpose => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterPurpose )
-            .FromJsonOrNull<ListItemBag>()?.Value?.AsGuidOrNull();
-
-        /// <summary>
-        /// If yes only system group types are returned.
-        /// </summary>
-        /// <value>
-        /// The name of the account.
-        /// </value>
-        protected bool? FilterSystemGroupTypes => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterSystemGroupTypes )
-            .AsBooleanOrNull();
-
-        /// <summary>
-        /// If yes only group types with ShowInNavigation set to true are returned.
-        /// </summary>
-        /// <value>
-        /// The name of the account.
-        /// </value>
-        protected bool? FilterShowInNavigation => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterShowInNavigation )
-            .AsBooleanOrNull();
-
-        #endregion
-
         #region Methods
 
         /// <inheritdoc/>
@@ -159,24 +125,7 @@ namespace Rock.Blocks.Group
         /// <inheritdoc/>
         protected override IQueryable<GroupType> GetListQueryable( RockContext rockContext )
         {
-            var queryable = base.GetListQueryable( rockContext );
-
-            if ( FilterPurpose.HasValue )
-            {
-                queryable = queryable.Where( t => t.GroupTypePurposeValue.Guid == FilterPurpose.Value );
-            }
-
-            if ( FilterSystemGroupTypes.HasValue )
-            {
-                queryable = FilterSystemGroupTypes.Value ? queryable.Where( t => t.IsSystem ) : queryable.Where( t => !t.IsSystem );
-            }
-
-            if ( FilterShowInNavigation.HasValue )
-            {
-                queryable = FilterShowInNavigation.Value ? queryable.Where( t => t.ShowInNavigation ) : queryable.Where( t => !t.ShowInNavigation );
-            }
-
-            return queryable;
+            return new GroupTypeService( rockContext ).Queryable();
         }
 
         /// <inheritdoc/>

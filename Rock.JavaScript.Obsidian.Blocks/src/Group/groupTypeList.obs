@@ -7,9 +7,6 @@
           :entityTypeGuid="EntityType.GroupType"
           stickyHeader
           liveUpdates
-          gridSettings
-          :gridSettingsActive="hasSettingsFilters"
-          @gridSettingsClick="onClickGridSetting"
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           @selectItem="onSelectItem">
 
@@ -25,7 +22,7 @@
         <TextColumn name="purpose"
                     title="Purpose"
                     field="purpose"
-                    :filter="textValueFilter"
+                    :filter="pickExistingValueFilter"
                     width="15%"
                     visiblePriority="md" />
 
@@ -52,20 +49,17 @@
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
 
-    <GridSettingsModal v-model="gridSettings"
-                       v-model:visible="isGridSettingsVisible" />
 </template>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { BooleanColumn, TextColumn, textValueFilter, numberValueFilter, booleanValueFilter, DeleteColumn, ReorderColumn, SecurityColumn, NumberColumn } from "@Obsidian/Controls/grid";
+    import Grid, { BooleanColumn, TextColumn, textValueFilter, numberValueFilter, booleanValueFilter, pickExistingValueFilter, DeleteColumn, ReorderColumn, SecurityColumn, NumberColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { GroupTypeListOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupTypeList/groupTypeListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./GroupTypeList/types.partial";
-    import { GridSettingsOptions, PreferenceKey } from "./GroupTypeList/types.partial";
     import GridSettingsModal from "./GroupTypeList/gridSettingsModal.partial.obs";
     import { computed, reactive, ref, watch } from "vue";
 
@@ -77,24 +71,6 @@
 
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
-
-    const isGridSettingsVisible = ref(false);
-    const gridSettings = ref<GridSettingsOptions>({
-        purpose: JSON.parse(preferences.getValue(PreferenceKey.FilterPurpose) || "{}"),
-        showInNavigation: preferences.getValue(PreferenceKey.FilterShowInNavigation),
-        systemGroupType: preferences.getValue(PreferenceKey.FilterSystemGroupTypes),
-    });
-
-    // #endregion
-
-    // #region Computed Values
-
-    /** `true` if the grid settings is performing any filtering. */
-    const hasSettingsFilters = computed((): boolean => {
-        return !!gridSettings.value.purpose?.value
-            || !!gridSettings.value.showInNavigation
-            || !!gridSettings.value.systemGroupType;
-    });
 
     // #endregion
 
@@ -118,15 +94,6 @@
     // #endregion
 
     // #region Event Handlers
-
-    /**
-    * Called when the grid setting icon is clicked, displays the block filters.
-    *
-    */
-    function onClickGridSetting(): void {
-        isGridSettingsVisible.value = true;
-    }
-
 
     /**
      * Called when a row has been selected by the individual.
@@ -189,16 +156,6 @@
     }
 
     // #endregion
-
-    watch(gridSettings, async () => {
-        preferences.setValue(PreferenceKey.FilterPurpose, JSON.stringify(gridSettings.value.purpose));
-        preferences.setValue(PreferenceKey.FilterShowInNavigation, gridSettings.value.showInNavigation ?? "");
-        preferences.setValue(PreferenceKey.FilterSystemGroupTypes, gridSettings.value.systemGroupType ?? "");
-
-        await preferences.save();
-
-        gridDataSource.value = loadGridData();
-    });
 
     gridDataSource.value = loadGridData();
 </script>
