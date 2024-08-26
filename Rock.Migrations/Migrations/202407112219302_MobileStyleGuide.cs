@@ -169,6 +169,12 @@ namespace Rock.Migrations
 
             // Live Experience Occurrences
             UpdateTemplate( "B26B0C69-8B11-4C5B-B24A-AB57A433FC33", SystemGuid.DefinedValue.BLOCK_TEMPLATE_LIVE_EXPERIENCE_OCCURRENCES, _liveExperienceOccurrencesTemplate, "0C75B833-E710-45AE-B3B2-3FAC97A79BB2", _liveExperienceOccurrencesLegacyTemplate );
+            
+            // Calendar Event List
+            UpdateTemplate( "4482BB6D-9C02-48D0-8475-4BA0948131A0", SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_CALENDAR_EVENT_LIST, _calendarEventListTemplate, "E3A4AA4E-2A61-4E63-B636-93B86E493D95", _calendarEventListLegacyTemplate );
+
+            // Calendar Event Item Occurrence
+            UpdateTemplate( "", SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_CALENDAR_EVENT_ITEM_OCCURRENCE_VIEW, _calendarEventItemOccurrenceTemplate, "", _calendarEventItemOccurrenceLegacyTemplate );
         }
 
         #region CMS Blocks
@@ -2776,6 +2782,298 @@ namespace Rock.Migrations
 
     {% if GeoLocationRecommended == true %}
         <Button Text=""Provide Location"" StyleClass=""btn,btn-secondary"" />
+    {% endif %}
+</StackLayout>";
+
+        private const string _calendarEventListTemplate = @"<Rock:StyledBorder>
+    <StackLayout>
+        <Label StyleClass=""body, bold, text-interface-stronger""
+            Text=""{Binding Name}"" />
+        
+        {% if Item.EndDateTime == null %}
+            <Label StyleClass=""footnote, text-interface-strong"" 
+                Text=""{{ Item.StartDateTime | Date:'h:mm tt' }}"" 
+                LineBreakMode=""NoWrap"" />
+        {% else %}
+            <Label StyleClass=""footnote, text-interface-strong"" 
+                Text=""{{ Item.StartDateTime | Date:'h:mm tt' }} - {{ Item.EndDateTime | Date:'h:mm tt' }}"" 
+                LineBreakMode=""NoWrap"" />
+        {% endif %}
+
+        <Grid ColumnDefinitions=""*, Auto""
+            StyleClass=""mt-16"">
+            <Label StyleClass=""caption1, text-interface-strong"" 
+                Text=""{{ Item.Audiences | Select:'Name' | Join:', ' | Escape }}"" />
+
+            <Label StyleClass=""caption1, text-interface-strong""
+                Text=""{{ Item.Campus | Escape }}""
+                HorizontalTextAlignment=""End"" 
+                LineBreakMode=""NoWrap"" />
+        </Grid>
+    </StackLayout>
+</Rock:StyledBorder>";
+        private const string _calendarEventListLegacyTemplate = @"<Frame HasShadow=""false"" StyleClass=""calendar-event"">
+    <StackLayout Spacing=""0"">
+        <Label StyleClass=""calendar-event-title"" Text=""{Binding Name}"" />
+        {% if Item.EndDateTime == null %}
+            <Label StyleClass=""calendar-event-text"" Text=""{{ Item.StartDateTime | Date:'h:mm tt' }}"" LineBreakMode=""NoWrap"" />
+        {% else %}
+            <Label StyleClass=""calendar-event-text"" Text=""{{ Item.StartDateTime | Date:'h:mm tt' }} - {{ Item.EndDateTime | Date:'h:mm tt' }}"" LineBreakMode=""NoWrap"" />
+        {% endif %}
+        <StackLayout Orientation=""Horizontal"">
+            <Label HorizontalOptions=""FillAndExpand"" StyleClass=""calendar-event-audience"" Text=""{{ Item.Audiences | Select:'Name' | Join:', ' | Escape }}"" />
+            <Label StyleClass=""calendar-event-campus"" Text=""{{ Item.Campus | Escape }}"" HorizontalTextAlignment=""End"" LineBreakMode=""NoWrap"" />
+        </StackLayout>
+    </StackLayout>
+</Frame>";
+
+        private const string _calendarEventItemOccurrenceTemplate = @"<VerticalStackLayout Spacing=""24"">
+    <VerticalStackLayout Spacing=""8"">
+        {% if Event.Photo.Guid %}
+            <Rock:Image Source=""{{ 'Global' | Attribute:'PublicApplicationRoot' }}/GetImage.ashx?Guid={{ Event.Photo.Guid }}"" 
+                Aspect=""AspectFill"" 
+                Ratio=""4:2"">
+                <Rock:RoundedTransformation CornerRadius=""12""  />
+            </Rock:Image>    
+        {% endif %}
+
+        <Label StyleClass=""title1, text-interface-strongest, bold"" 
+            Text=""{{ Event.Name | Escape }}""  />    
+
+        
+        <Rock:Html StyleClass=""body, text-interface-stronger"">
+            {{ Event.Description | Escape }}
+        </Rock:Html>
+    </VerticalStackLayout>
+
+    <Rock:FieldContainer FieldLayout=""Individual"">
+        {% assign scheduledDates = EventItemOccurrence.Schedule.iCalendarContent | DatesFromICal:'all' %}
+        {% assign scheduleListing = '' %}
+        {% for scheduledDate in scheduledDates %}
+            {% if forloop.index <= 5 %}
+                {% assign scheduleDateTime = scheduledDate | Date:'dddd, MMMM d, yyyy @ h:mm tt' %}
+                {% assign scheduleListing = scheduleListing | Append:scheduleDateTime | Append:'&#xa;'  %}
+            {% endif %}
+
+        {% endfor %}
+        
+        <Rock:Literal Label=""Date / Time"" Text=""{{ scheduleListing | ReplaceLast:'&#xa;', '' }}"" />
+    
+        {% if EventItemOccurrence.Location != '' %}
+            <Rock:Literal Label=""Location"" Text=""{{ EventItemOccurrence.Location }}"" />
+        {% endif %}
+
+        {% if EventItemOccurrence.ContactPersonAliasId != null or EventItemOccurrence.ContactEmail != '' or EventItemOccurrence.ContactPhone != '' %}
+            {% if EventItemOccurrence.ContactPersonAliasId != null %}
+                <Rock:Literal Label=""Contact"" Text=""{{ EventItemOccurrence.ContactPersonAlias.Person.FullName | Escape }}"" />
+            {% endif %}
+            {% if EventItemOccurrence.ContactEmail != '' %}
+                <Rock:Literal Label=""Contact Email"" Text=""{{ EventItemOccurrence.ContactEmail | Escape }}"" />
+            {% endif %}
+            {% if EventItemOccurrence.ContactPhone != '' %}
+                <Rock:Literal Label=""Contact Phone"" Text=""{{ EventItemOccurrence.ContactPhone | Escape }}"" />
+            {% endif %}
+        {% endif %}
+    </Rock:FieldContainer>
+            
+    {% assign showRegistration = false %}
+    {% assign eventItemOccurrenceLinkages = EventItemOccurrence.Linkages %}
+    
+    {% assign eventItemOccurrenceLinkagesCount = eventItemOccurrenceLinkages | Size %}
+    {% if eventItemOccurrenceLinkagesCount > 0 %}
+        {% for eventItemOccurrenceLinkage in eventItemOccurrenceLinkages %}
+            {% assign daysTillStartDate = 'Now' | DateDiff:eventItemOccurrenceLinkage.RegistrationInstance.StartDateTime,'m' %}
+            {% assign daysTillEndDate = 'Now' | DateDiff:eventItemOccurrenceLinkage.RegistrationInstance.EndDateTime,'m' %}
+            {% assign showRegistration = true %}
+            {% assign registrationMessage = '' %}
+    
+            {% if daysTillStartDate and daysTillStartDate > 0 %}
+                {% assign showRegistration = false %}
+                {% if eventItemOccurrenceLinkagesCount == 1 %}
+                  {% capture registrationMessage %}Registration opens on {{ eventItemOccurrenceLinkage.RegistrationInstance.StartDateTime | Date:'dddd, MMMM d, yyyy' }}{% endcapture %}
+                {% else %}
+                  {% capture registrationMessage %}Registration for {{ eventItemOccurrenceLinkage.PublicName }} opens on {{ eventItemOccurrenceLinkage.RegistrationInstance.StartDateTime | Date:'dddd, MMMM d, yyyy' }}{% endcapture %}
+                {% endif %}
+            {% endif %}
+    
+            {% if daysTillEndDate and daysTillEndDate < 0 %}
+                {% assign showRegistration = false %}
+                {% if eventItemOccurrenceLinkagesCount == 1 %}
+                  {% capture registrationMessage %}Registration closed on {{ eventItemOccurrenceLinkage.RegistrationInstance.EndDateTime | Date:'dddd, MMMM d, yyyy' }}{% endcapture %}
+                {% else %}
+                  {% capture registrationMessage %}Registration for {{ eventItemOccurrenceLinkage.PublicName }} closed on {{ eventItemOccurrenceLinkage.RegistrationInstance.EndDateTime | Date:'dddd, MMMM d, yyyy' }}{% endcapture %}
+                {% endif %}
+            {% endif %}
+    
+            {% if showRegistration == true %}
+                {% assign statusLabel = RegistrationStatusLabels[eventItemOccurrenceLinkage.RegistrationInstanceId] %}
+                {% if eventItemOccurrenceLinkagesCount == 1 %}
+                  {% assign registrationButtonText = statusLabel %}
+                {% else %}
+                  {% assign registrationButtonText = statusLabel | Plus:' for ' | Plus:eventItemOccurrenceLinkage.PublicName %}
+                {% endif %}
+    
+                {% if statusLabel == 'Full' %}
+                    {% if eventItemOccurrenceLinkagesCount == 1 %}
+                      {% assign registrationButtonText = 'Registration Full' %}
+                    {% else %}
+                      {% assign registrationButtonText = eventItemOccurrenceLinkage.PublicName | Plus: ' (Registration Full) ' %}
+                    {% endif %}
+                    <Label StyleClass=""body, bold, text-interface-stronger"">{{ registrationButtonText }}</Label>
+                {% else %}
+                    {% if eventItemOccurrenceLinkage.UrlSlug != '' %}
+                        <Button Text=""{{ registrationButtonText | Escape }}"" Command=""{Binding OpenExternalBrowser}"" StyleClass=""btn, btn-primary"">
+                            <Button.CommandParameter>
+                                <Rock:OpenExternalBrowserParameters Url=""{{ RegistrationUrl }}"">
+                                    <Rock:Parameter Name=""RegistrationInstanceId"" Value=""{{ eventItemOccurrenceLinkage.RegistrationInstanceId }}"" />
+                                    <Rock:Parameter Name=""Slug"" Value=""{{eventItemOccurrenceLinkage.UrlSlug}}"" />
+                                </Rock:OpenExternalBrowserParameters>
+                            </Button.CommandParameter>
+                        </Button>
+                    {% else %}
+                        <Button Text=""{{ registrationButtonText | Escape }}"" Command=""{Binding OpenExternalBrowser}"" StyleClass=""btn, btn-primary"">
+                            <Button.CommandParameter>
+                                <Rock:OpenExternalBrowserParameters Url=""{{ RegistrationUrl }}"">
+                                    <Rock:Parameter Name=""RegistrationInstanceId"" Value=""{{ eventItemOccurrenceLinkage.RegistrationInstanceId }}"" />
+                                    <Rock:Parameter Name=""EventOccurrenceId"" Value=""{{ eventItemOccurrenceLinkage.EventItemOccurrenceId }}"" />
+                                </Rock:OpenExternalBrowserParameters>
+                            </Button.CommandParameter>
+                        </Button>
+                    {% endif %}
+                {% endif %}
+            {% else %}
+              <Label StyleClass=""body, bold, text-interface-stronger"" Text=""Registration Information"" />
+              <Label StyleClass=""body, text-interface-strong"" Text=""{{ registrationMessage | Escape }}"" />
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+</VerticalStackLayout>";
+        private const string _calendarEventItemOccurrenceLegacyTemplate = @"<StackLayout Spacing=""0"">
+    
+    {% if Event.Photo.Guid %}
+        <Rock:Image Source=""{{ 'Global' | Attribute:'PublicApplicationRoot' }}/GetImage.ashx?Guid={{ Event.Photo.Guid }}"" 
+            Aspect=""AspectFill"" 
+            Ratio=""4:2""
+            Margin=""0,0,0,16"">
+            <Rock:RoundedTransformation CornerRadius=""12""  />
+        </Rock:Image>
+    {% endif %}
+    
+    <Label StyleClass=""h1"" 
+        Text=""{{ Event.Name | Escape }}""  />
+    
+    <Rock:FieldContainer FieldLayout=""Individual"">
+        {% assign scheduledDates = EventItemOccurrence.Schedule.iCalendarContent | DatesFromICal:'all' %}
+        {% assign scheduleListing = '' %}
+        {% for scheduledDate in scheduledDates %}
+            {% if forloop.index <= 5 %}
+                {% assign scheduleDateTime = scheduledDate | Date:'dddd, MMMM d, yyyy @ h:mm tt' %}
+                {% assign scheduleListing = scheduleListing | Append:scheduleDateTime | Append:'&#xa;'  %}
+            {% endif %}
+
+        {% endfor %}
+        
+        <Rock:Literal Label=""Date / Time"" Text=""{{ scheduleListing | ReplaceLast:'&#xa;', '' }}"" />
+    
+        {% if EventItemOccurrence.Location != '' %}
+            <Rock:Literal Label=""Location"" Text=""{{ EventItemOccurrence.Location }}"" />
+        {% endif %}
+    </Rock:FieldContainer>
+    
+    <Rock:Html StyleClass=""text"">
+        {{ Event.Description | Escape }}
+    </Rock:Html>
+    
+    {% if EventItemOccurrence.Note != '' %}
+        <Label Text=""Note"" StyleClass=""text, font-weight-bold"" />
+        <Rock:Html StyleClass=""text"">{{ EventItemOccurrence.Note | Escape }}</Rock:Html>
+    {% endif %}
+
+    
+    {% if EventItemOccurrence.ContactPersonAliasId != null or EventItemOccurrence.ContactEmail != '' or EventItemOccurrence.ContactPhone != '' %}
+        {% if EventItemOccurrence.ContactPersonAliasId != null %}
+            <Label Text=""Contact"" StyleClass=""title"" />
+            <Label Text=""{{ EventItemOccurrence.ContactPersonAlias.Person.FullName }}"" />
+        {% endif %}
+        {% if EventItemOccurrence.ContactEmail != '' %}
+            <Label Text=""{{ EventItemOccurrence.ContactEmail }}"" />
+        {% endif %}
+        {% if EventItemOccurrence.ContactPhone != '' %}
+            <Label Text=""{{ EventItemOccurrence.ContactPhone }}"" />
+        {% endif %}
+    {% endif %}
+    
+    
+    {% assign showRegistration = false %}
+    {% assign eventItemOccurrenceLinkages = EventItemOccurrence.Linkages %}
+    
+    {% assign eventItemOccurrenceLinkagesCount = eventItemOccurrenceLinkages | Size %}
+    {% if eventItemOccurrenceLinkagesCount > 0 %}
+        {% for eventItemOccurrenceLinkage in eventItemOccurrenceLinkages %}
+            {% assign daysTillStartDate = 'Now' | DateDiff:eventItemOccurrenceLinkage.RegistrationInstance.StartDateTime,'m' %}
+            {% assign daysTillEndDate = 'Now' | DateDiff:eventItemOccurrenceLinkage.RegistrationInstance.EndDateTime,'m' %}
+            {% assign showRegistration = true %}
+            {% assign registrationMessage = '' %}
+    
+            {% if daysTillStartDate and daysTillStartDate > 0 %}
+                {% assign showRegistration = false %}
+                {% if eventItemOccurrenceLinkagesCount == 1 %}
+                  {% capture registrationMessage %}Registration opens on {{ eventItemOccurrenceLinkage.RegistrationInstance.StartDateTime | Date:'dddd, MMMM d, yyyy' }}{% endcapture %}
+                {% else %}
+                  {% capture registrationMessage %}Registration for {{ eventItemOccurrenceLinkage.PublicName }} opens on {{ eventItemOccurrenceLinkage.RegistrationInstance.StartDateTime | Date:'dddd, MMMM d, yyyy' }}{% endcapture %}
+                {% endif %}
+            {% endif %}
+    
+            {% if daysTillEndDate and daysTillEndDate < 0 %}
+                {% assign showRegistration = false %}
+                {% if eventItemOccurrenceLinkagesCount == 1 %}
+                  {% capture registrationMessage %}Registration closed on {{ eventItemOccurrenceLinkage.RegistrationInstance.EndDateTime | Date:'dddd, MMMM d, yyyy' }}{% endcapture %}
+                {% else %}
+                  {% capture registrationMessage %}Registration for {{ eventItemOccurrenceLinkage.PublicName }} closed on {{ eventItemOccurrenceLinkage.RegistrationInstance.EndDateTime | Date:'dddd, MMMM d, yyyy' }}{% endcapture %}
+                {% endif %}
+            {% endif %}
+    
+            {% if showRegistration == true %}
+                {% assign statusLabel = RegistrationStatusLabels[eventItemOccurrenceLinkage.RegistrationInstanceId] %}
+                {% if eventItemOccurrenceLinkagesCount == 1 %}
+                  {% assign registrationButtonText = statusLabel %}
+                {% else %}
+                  {% assign registrationButtonText = statusLabel | Plus:' for ' | Plus:eventItemOccurrenceLinkage.PublicName %}
+                {% endif %}
+    
+                {% if statusLabel == 'Full' %}
+                    {% if eventItemOccurrenceLinkagesCount == 1 %}
+                      {% assign registrationButtonText = 'Registration Full' %}
+                    {% else %}
+                      {% assign registrationButtonText = eventItemOccurrenceLinkage.PublicName | Plus: ' (Registration Full) ' %}
+                    {% endif %}
+                    <Label StyleClass=""text"">{{ registrationButtonText }}</Label>
+                {% else %}
+                    {% if eventItemOccurrenceLinkage.UrlSlug != '' %}
+                        <Button Text=""{{ registrationButtonText | Escape }}"" Command=""{Binding OpenExternalBrowser}"" StyleClass=""btn, btn-primary, mt-24"">
+                            <Button.CommandParameter>
+                                <Rock:OpenExternalBrowserParameters Url=""{{ RegistrationUrl }}"">
+                                    <Rock:Parameter Name=""RegistrationInstanceId"" Value=""{{ eventItemOccurrenceLinkage.RegistrationInstanceId }}"" />
+                                    <Rock:Parameter Name=""Slug"" Value=""{{eventItemOccurrenceLinkage.UrlSlug}}"" />
+                                </Rock:OpenExternalBrowserParameters>
+                            </Button.CommandParameter>
+                        </Button>
+                    {% else %}
+                        <Button Text=""{{ registrationButtonText | Escape }}"" Command=""{Binding OpenExternalBrowser}"" StyleClass=""btn, btn-primary, mt-24"">
+                            <Button.CommandParameter>
+                                <Rock:OpenExternalBrowserParameters Url=""{{ RegistrationUrl }}"">
+                                    <Rock:Parameter Name=""RegistrationInstanceId"" Value=""{{ eventItemOccurrenceLinkage.RegistrationInstanceId }}"" />
+                                    <Rock:Parameter Name=""EventOccurrenceId"" Value=""{{ eventItemOccurrenceLinkage.EventItemOccurrenceId }}"" />
+                                </Rock:OpenExternalBrowserParameters>
+                            </Button.CommandParameter>
+                        </Button>
+                    {% endif %}
+                {% endif %}
+            {% else %}
+              <Label StyleClass=""font-weight-bold"" Text=""Registration Information"" />
+              <Label StyleClass=""text"" Text=""{{ registrationMessage | Escape }}"" />
+            {% endif %}
+        {% endfor %}
     {% endif %}
 </StackLayout>";
 

@@ -59,7 +59,7 @@ namespace Rock.Blocks.Types.Mobile.Events
         Description = "The template to use when rendering event items.",
         TemplateBlockValueGuid = SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_CALENDAR_EVENT_LIST,
         IsRequired = true,
-        DefaultValue = "",
+        DefaultValue = "4482BB6D-9C02-48D0-8475-4BA0948131A0",
         Key = AttributeKeys.EventTemplate,
         Order = 2 )]
 
