@@ -26,7 +26,7 @@
                     </div>
                 </div>
 
-                <TextBox label="Name" v-model="businessName" />
+                <TextBox label="Name" v-model="businessName" rules="required" />
 
                 <div class="panel panel-section">
                     <div class="panel-heading">
@@ -54,7 +54,7 @@
                                 <CheckBox label="Unlisted" v-model="isUnlisted" />
                             </div>
                         </div>
-                        <EmailBox label="Email" v-model="email" />
+                        <EmailBox label="Email" v-model="email" rules="email" />
                         <RadioButtonList label="Email Preference" v-model="emailPreference" :items="emailPreferences" horizontal :repeatColumns="0" />
                     </div>
                 </div>
@@ -67,34 +67,25 @@
                        :isFullscreenPageOnly="true">
                     <RockLabel help="Search keys provide alternate ways to search for an individual.">Search Keys</RockLabel>
 
-                    <div class="table-responsive">
-                        <table class="grid-table table table-bordered table-striped table-hover">
-                            <thead>
-                                <tr align="left">
-                                    <th data-priority="1" scope="col">Search Type</th>
-                                    <th data-priority="1" scope="col">Search Value</th>
-                                    <th class="grid-columncommand" data-priority="1" scope="col">&nbsp;</th>
-                                </tr>
-                            </thead>
+                    <Grid light
+                          liveUpdates
+                          keyField="key"
+                          itemTerm="Search Key"
+                          :data="searchKeyGridData"
+                          @addItem="onAddSearchKey">
 
-                            <tbody>
-                                <tr v-if="searchKeys.length > 0" v-for="searchKey in searchKeys" align="left">
-                                    <td data-priority="1">{{ searchKey.searchType?.text }}</td>
-                                    <td data-priority="1">{{ searchKey.searchValue }}</td>
-                                    <td class="grid-columncommand" data-priority="1" align="center">
-                                        <a title="Delete" @click.prevent.stop="onDeleteSearchKey(searchKey)"><i class="fa fa-times"></i></a>
-                                    </td>
-                                </tr>
+                        <TextColumn name="searchType"
+                                    field="searchType"
+                                    title="Search Type"
+                                    visiblePriority="xs" />
 
-                                <div v-else>
-                                    No Search Keys Found
-                                </div>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="grid-actions border-bottom border-panel">
-                        <RockButton class="btn-add btn-grid-action" btnType="link" @click="onAddSearchKey"><i class="fa fa-plus-circle fa-fw"></i></RockButton>
-                    </div>
+                        <TextColumn name="searchValue"
+                                    field="searchValue"
+                                    title="Search Value"
+                                    visiblePriority="xs" />
+
+                        <DeleteColumn :onClick="onDeleteSearchKey" disableConfirmation />
+                    </Grid>
                 </Panel>
 
                 <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
@@ -122,7 +113,7 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, computed, ref, watch } from "vue";
+    import { PropType, computed, ref, watch, reactive } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
@@ -144,8 +135,10 @@
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import { emptyGuid } from "@Obsidian/Utility/guid";
+    import { newGuid } from "@Obsidian/Utility/guid";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import Grid, { TextColumn, DeleteColumn } from "@Obsidian/Controls/grid";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
 
     const props = defineProps({
         modelValue: {
@@ -172,15 +165,15 @@
     const recordStatus = propertyRef(props.modelValue?.bag?.recordStatus ?? {}, "RecordStatusValueId");
     const recordStatusReason = propertyRef(props.modelValue?.bag?.recordStatusReason ?? {}, "RecordStatusReasonValueId");
     const email = propertyRef(props.modelValue?.bag?.emailAddress ?? "", "Email");
-    const emailPreference = propertyRef(props.modelValue?.bag?.emailPreference ?? "", "EmailPreference");
+    const emailPreference = propertyRef(props.modelValue?.bag?.emailPreference ?? "EmailAllowed", "EmailPreference");
     const phoneNumber = ref(props.modelValue?.bag?.phoneNumber ?? "");
     const countryCode = ref(props.modelValue?.bag?.countryCode ?? "");
     const address = ref(props.modelValue?.bag?.address ?? {});
     const campus = propertyRef(props.modelValue?.bag?.campus ?? {}, "CampusId");
     const saveFormerAddress = ref(props.modelValue?.bag?.saveFormerAddressAsPreviousAddress ?? false);
     const isSms = ref(props.modelValue?.bag?.isSmsChecked ?? false);
-    const isUnlisted = ref(props.modelValue?.bag?.isUnlistedChecked ??  false);
-    const searchKeys = ref(props.options.searchKeys ?? []);
+    const isUnlisted = ref(props.modelValue?.bag?.isUnlistedChecked ?? false);
+    const searchKeys = ref(props.modelValue?.bag?.searchKeys ?? []);
     const searchKeyTypeList = ref(props.options.searchTypesList ?? []);
     const searchKeyType = ref("");
     const searchKeyValue = ref("");
@@ -198,12 +191,26 @@
     // #endregion
 
     // #region Computed Values
+
     const isReasonVisible = computed((): boolean => {
         return recordStatus.value.value?.toUpperCase() == DefinedValue.PersonRecordStatusInactive;
     });
+
+    const searchKeyGridData: GridDataBag = reactive<GridDataBag>({
+        rows: searchKeys.value.map((searchKey: SearchKeyBag) => toRowItem(searchKey))
+    });
+
     // #endregion
 
     // #region Functions
+
+    function toRowItem(searchKey: SearchKeyBag): Record<string, unknown> {
+        return {
+            key: searchKey.guid,
+            searchType: searchKey.searchType?.text,
+            searchValue: searchKey.searchValue
+        };
+    }
 
     // #endregion
 
@@ -215,20 +222,32 @@
 
     const onSaveSearchKey = (): void => {
         isModalOpen.value = false;
-        const searchType = searchKeyTypeList.value.find(x => x.value === searchKeyType.value);
-        searchKeys.value.push({ guid: emptyGuid, searchType: searchType, searchValue: searchKeyValue.value });
 
+        // Create new value.
+        const searchType = searchKeyTypeList.value.find(x => x.value === searchKeyType.value);
+        const searchKey = { guid: newGuid(), searchType: searchType, searchValue: searchKeyValue.value } as SearchKeyBag;
+
+        // Update Grid.
+        searchKeys.value.push(searchKey);
+        const rowItem = toRowItem(searchKey);
+        searchKeyGridData.rows?.push(rowItem);
+
+        // Clear saved values.
         searchKeyValue.value = "";
         searchKeyType.value = "";
     };
 
-    const onDeleteSearchKey = async (searchKey: SearchKeyBag): Promise<void> => {
+    const onDeleteSearchKey = (key: string): void => {
         isModalOpen.value = false;
-        if (!searchKey.guid) {
-            searchKeys.value = searchKeys.value.filter(s => s.searchType?.value !== searchKey.searchType?.value && s.searchValue !== searchKey.searchValue);
-        }
-        else {
-            searchKeys.value = searchKeys.value.filter(s => s.guid != searchKey.guid);
+        searchKeys.value = searchKeys.value.filter(s => s.guid !== key);
+
+        // Update the grid.
+        if (searchKeyGridData.rows) {
+            const index = searchKeyGridData.rows.findIndex(r => r.key === key);
+
+            if (index !== -1) {
+                searchKeyGridData.rows?.splice(index, 1);
+            }
         }
     };
 
@@ -253,22 +272,22 @@
         const newValue: ValidPropertiesBox<BusinessDetailBag> = {
             bag: { ...props.modelValue.bag } as BusinessDetailBag
         };
-        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value),
-        setPropertiesBoxValue(newValue, "businessName", businessName.value),
-        setPropertiesBoxValue(newValue, "recordStatus", recordStatus.value),
-        setPropertiesBoxValue(newValue, "recordStatusReason", recordStatusReason.value),
-        setPropertiesBoxValue(newValue, "emailAddress", email.value),
-        setPropertiesBoxValue(newValue, "campus", campus.value),
-        setPropertiesBoxValue(newValue, "emailPreference", emailPreference.value),
-        setPropertiesBoxValue(newValue, "phoneNumber", phoneNumber.value),
-        setPropertiesBoxValue(newValue, "saveFormerAddressAsPreviousAddress", saveFormerAddress.value),
-        setPropertiesBoxValue(newValue, "isSmsChecked", isSms.value),
-        setPropertiesBoxValue(newValue, "isUnlistedChecked", isUnlisted.value),
-        setPropertiesBoxValue(newValue, "address", address.value),
-        setPropertiesBoxValue(newValue, "searchKeys", searchKeys.value),
-        setPropertiesBoxValue(newValue, "countryCode", countryCode.value),
+            setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value),
+            setPropertiesBoxValue(newValue, "businessName", businessName.value),
+            setPropertiesBoxValue(newValue, "recordStatus", recordStatus.value),
+            setPropertiesBoxValue(newValue, "recordStatusReason", recordStatusReason.value),
+            setPropertiesBoxValue(newValue, "emailAddress", email.value),
+            setPropertiesBoxValue(newValue, "campus", campus.value),
+            setPropertiesBoxValue(newValue, "emailPreference", emailPreference.value),
+            setPropertiesBoxValue(newValue, "phoneNumber", phoneNumber.value),
+            setPropertiesBoxValue(newValue, "saveFormerAddressAsPreviousAddress", saveFormerAddress.value),
+            setPropertiesBoxValue(newValue, "isSmsChecked", isSms.value),
+            setPropertiesBoxValue(newValue, "isUnlistedChecked", isUnlisted.value),
+            setPropertiesBoxValue(newValue, "address", address.value),
+            setPropertiesBoxValue(newValue, "searchKeys", searchKeys.value),
+            setPropertiesBoxValue(newValue, "countryCode", countryCode.value),
 
-        emit("update:modelValue", newValue);
+            emit("update:modelValue", newValue);
     }, { deep: true });
 
     // Watch for any changes to props that represent properties and then

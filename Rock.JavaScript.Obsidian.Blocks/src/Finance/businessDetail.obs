@@ -5,25 +5,31 @@
     <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
 
     <Panel if="!blockError" :title="panelName">
-
         <template #headerActions>
             <span v-if="businessDetailViewBag?.recordStatus?.value" :class="statusClass">{{ status }}</span>
-            <span v-if="showActions" class="action panel-action-context clickable" style="position: relative;" ref="headerSecondaryActionMenu">
-                <button type="button" class="btn btn-default" data-toggle="dropdown" @click="onActionContextDropdownClick">
+            <div v-if="showActions" :class="customActionClass" style="position: relative;">
+                <button type="button" class="btn btn-default" data-toggle="dropdown" aria-expanded="false" @click="onActionContextDropdownClick">
                     Actions <i class="fa fa-caret-down"></i>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-right" v-html="customActions">
 
                 </ul>
-            </span>
+            </div>
+        </template>
+
+        <template v-if="panelMode == DetailPanelMode.View && showBadges" #subheaderRight>
+            <BadgeList :entityTypeGuid="EntityType.Person" :entityKey="entityKey" :badgeTypeGuids="badgeTypeGuids" />
         </template>
 
         <template v-if="panelMode === DetailPanelMode.View">
+            {{ customActionClass }}
             <ViewPanel :modelValue="businessDetailViewBag" :options="options" />
         </template>
 
         <template v-else>
-            <EditPanel v-model="businessDetailEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
+            <RockForm v-model:submit="submitForm" @submit="onSave">
+                <EditPanel v-model="businessDetailEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
+            </RockForm>
         </template>
 
         <template #footerActions>
@@ -35,7 +41,7 @@
                         :btnSize="BtnSize.Default"
                         :btnType="BtnType.Primary"
                         :isLoading="isSaving"
-                        @click="onSave">
+                        @click="onSaveClick">
                 Save
             </RockButton>
             <RockButton v-if="panelMode === DetailPanelMode.Edit"
@@ -43,7 +49,6 @@
                         @click="onCancelEdit"
                         autoDisable>Cancel</RockButton>
         </template>
-
     </Panel>
 </template>
 
@@ -57,7 +62,8 @@
     import EditPanel from "./BusinessDetail/editPanel.partial.obs";
     import ViewPanel from "./BusinessDetail/viewPanel.partial.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
-    import { useConfigurationValues, useInvokeBlockAction, useEntityDetailBlock } from "@Obsidian/Utility/block";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import { useConfigurationValues, useInvokeBlockAction, useEntityDetailBlock, onConfigurationValuesChanged, useReloadBlock } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./BusinessDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { BusinessDetailBag } from "@Obsidian/ViewModels/Blocks/Finance/BusinessDetail/businessDetailBag";
@@ -65,6 +71,8 @@
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
     import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import BadgeList from "@Obsidian/Controls/badgeList.obs";
 
     const config = useConfigurationValues<DetailBlockBox<BusinessDetailBag, BusinessDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -74,12 +82,13 @@
     const blockError = ref("");
     const errorMessage = ref("");
     const isSaving = ref(false);
+    const submitForm = ref(false);
+    const customActionClassList = ref(["action", "panel-action-context", "clickable"]);
 
     const businessDetailViewBag = ref(config.entity);
     const businessDetailEditBag = ref<ValidPropertiesBox<BusinessDetailBag>>({
         bag: {} as BusinessDetailBag
     });
-    const headerSecondaryActionMenu = ref<HTMLElement | null>(null);
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
     const customActions = businessDetailViewBag.value?.customActions;
@@ -130,20 +139,45 @@
     });
 
     const options = computed((): BusinessDetailOptionsBag => {
-        return config.options ?? {};
+        return config.options ?? {} as BusinessDetailOptionsBag;
     });
 
     const showActions = computed((): boolean => {
         return customActions !== null && panelMode.value === DetailPanelMode.View;
     });
 
-    // #endregion
+    /**
+    * The identifier key value for this entity.
+    */
+    const entityKey = computed((): string => {
+        return businessDetailViewBag.value?.idKey ?? "";
+    });
 
-    // #region Functions
+    const badgeTypeGuids = computed((): string[] => {
+        return businessDetailViewBag.value?.badgeTypeGuids ?? [];
+    });
+
+    const showBadges = computed((): boolean => {
+        const badgeTypeGuids = businessDetailViewBag.value?.badgeTypeGuids ?? [];
+        return badgeTypeGuids.length > 0;
+    });
+
+    const customActionClass = computed((): string => {
+        return customActionClassList.value.join(" ");
+    });
+
 
     // #endregion
 
     // #region Event Handlers
+
+    /**
+    * Event handler for the Save button being clicked.
+    * Alerts the form to begin validation and submit form if no errors are found
+    */
+    const onSaveClick = (): void => {
+        submitForm.value = true;
+    };
 
     /**
      * Event handler for the Cancel button being clicked while in Edit mode.
@@ -209,14 +243,20 @@
         else {
             errorMessage.value = result.errorMessage ?? "Unknown error while trying to save Business.";
         }
+
+        submitForm.value = false;
     }
 
     /**
      * Event Handler for the Custom actions dropdown click. Toggles between opening and closing the dropdown list.
      */
-    function onActionContextDropdownClick(): void {
-        if (headerSecondaryActionMenu.value) {
-            headerSecondaryActionMenu.value.classList.toggle("open");
+    function onActionContextDropdownClick(event: MouseEvent): void {
+        event.stopPropagation();
+        if (!customActionClassList.value.includes("open")) {
+            customActionClassList.value.push("open");
+        }
+        else {
+            customActionClassList.value = customActionClassList.value.filter(c => c !== "open");
         }
     }
 
@@ -234,4 +274,7 @@
         businessDetailEditBag.value = { bag: config.entity };
         panelMode.value = DetailPanelMode.Add;
     }
+
+    onConfigurationValuesChanged(useReloadBlock());
+
 </script>
