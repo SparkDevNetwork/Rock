@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -59,7 +59,6 @@ namespace RockWeb
                     return;
                 }
 
-                // 
                 var pixelsPerModule = context.Request.QueryString["pixelsPerModule"].AsIntegerOrNull() ?? 20;
 
                 using ( var qrGenerator = new QRCodeGenerator() )
@@ -73,9 +72,9 @@ namespace RockWeb
                     context.ApplicationInstance.CompleteRequest();
                 }
             }
-            catch (Exception)
+            catch ( Exception )
             {
-                if (!context.Response.IsClientConnected)
+                if ( !context.Response.IsClientConnected )
                 {
                     // if client disconnected, ignore
                 }
@@ -86,6 +85,16 @@ namespace RockWeb
             }
         }
 
+        /// <summary>
+        /// Generates a stream containing the QR code graphic based on the provided data and output type.
+        /// </summary>
+        /// <param name="qrCodeData">The QR code data to be rendered.</param>
+        /// <param name="outputType">The type of output to generate ("svg" or "png").</param>
+        /// <param name="pixelsPerModule">The number of pixels per module in the QR code graphic.</param>
+        /// <param name="backgroundColor">The background color for the QR code, in hex format.</param>
+        /// <param name="foregroundColor">The foreground color for the QR code, in hex format.</param>
+        /// <returns>A <see cref="Stream"/> containing the generated QR code graphic.</returns>
+        /// <exception cref="ArgumentException">Thrown when the output type is not recognized or when color hex values are invalid.</exception>
         private Stream GetResponseStream( QRCodeData qrCodeData, string outputType, int pixelsPerModule, string backgroundColor, string foregroundColor )
         {
             if ( outputType.Equals( "svg", StringComparison.OrdinalIgnoreCase ) )
@@ -101,13 +110,19 @@ namespace RockWeb
             else
             {
                 // For PNG, convert hex colors to byte arrays directly
-                byte[] lightColor = HexToByteArray( foregroundColor );
-                byte[] darkColor = HexToByteArray( backgroundColor );
+                var lightColor = HexToByteArray( backgroundColor );
+                var darkColor = HexToByteArray( foregroundColor );
                 var qrCodeImage = new PngByteQRCode( qrCodeData ).GetGraphic( pixelsPerModule, darkColor, lightColor );
                 return new MemoryStream( qrCodeImage );
             }
         }
 
+        /// <summary>
+        /// Converts a hex color string to a byte array representing the RGBA color.
+        /// </summary>
+        /// <param name="hex">The hex color string (6 or 8 digits, with or without a leading '#').</param>
+        /// <returns>A byte array representing the RGBA color.</returns>
+        /// <exception cref="ArgumentException">Thrown when the hex color string is not a valid 6 or 8 digit hex value.</exception>
         private byte[] HexToByteArray( string hex )
         {
             if ( !Regex.IsMatch( hex, @"^#?([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$" ) )
