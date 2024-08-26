@@ -88,6 +88,7 @@
     <Compile Include="Blocks\Core\TaggedItemList\TaggedItemListBag.cs" />
     <Compile Include="Blocks\Core\TaggedItemList\TaggedItemListOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\StreakTypeExclusionList\StreakTypeExclusionListOptionsBag.cs" />
+    <Compile Include="Blocks\Engagement\StreakMapEditor\StreakMapEditorBag.cs" />
     <Compile Include="Blocks\Security\AuthScopeList\AuthScopeListOptionsBag.cs" />
     <Compile Include="Blocks\Security\AuthClientList\AuthClientListOptionsBag.cs" />
     <Compile Include="Blocks\Core\PersonSignalList\PersonSignalBag.cs" />
