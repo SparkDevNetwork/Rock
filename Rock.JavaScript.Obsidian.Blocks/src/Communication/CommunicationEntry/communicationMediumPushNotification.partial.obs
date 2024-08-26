@@ -26,13 +26,22 @@
                   @submit="onFormSubmitted">
             <div class="row">
                 <div class="col-xs-12">
-                    <RecipientPicker v-model="internalRecipients"
+                    <RecipientPicker v-if="!config.communication || !internalCommunicationListGroupGuid"
+                                     v-model="internalRecipients"
                                      v-model:disabled="internalDisabled"
                                      :isAddHidden="config.mode !== Mode.Full"
                                      :isForBulkCommunication="isBulkCommunication"
                                      label="Recipients"
                                      mediumType="push"
                                      :minimumRecipientCount="minimumRecipientCount" />
+                    <template v-else>
+                        <RockLabel>Recipients</RockLabel>
+                        <StaticFormControl :modelValue="`Communication List: ${config.communication.communicationListName} (${config.communication.communicationListRecipientCount} individuals)`">
+                            <template #default="{ value }">
+                                {{ value }} <RockButton btnType="link" btnSize="sm" @click="onConvertListToRecipients">Convert List to Recipients</RockButton>
+                            </template>
+                        </StaticFormControl>
+                    </template>
                 </div>
             </div>
 
@@ -150,7 +159,9 @@
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import SmsMessageEditor from "@Obsidian/Controls/smsMessageEditor.obs";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
     import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
     import Switch from "@Obsidian/Controls/switch.obs";
     import RockTextBox from "@Obsidian/Controls/textBox.obs";
@@ -200,6 +211,11 @@
         scheduleSendIsoString: {
             type: String as PropType<string>,
             required: true
+        },
+
+        communicationListGroupGuid: {
+            type: String as PropType<Guid | null | undefined>,
+            required: true
         }
     });
 
@@ -220,6 +236,8 @@
         (e: "update:isBulkCommunication", value: boolean): void;
         /** Emits an event indicating the scheduleSendIsoString state should be updated. */
         (e: "update:scheduleSendIsoString", value: string): void;
+        /** Emits an event indicating the communication list unique identifier should be updated. */
+        (e: "update:communicationListGroupGuid", value: Guid | null | undefined): void;
     }>();
 
     const config = useConfigurationValues<CommunicationEntryInitializationBox>();
@@ -242,6 +260,7 @@
     const internalDisabled = useVModelPassthrough(props, "disabled", emit);
     const internalIsBulkCommunication = useVModelPassthrough(props, "isBulkCommunication", emit);
     const internalScheduleSendIsoString = useVModelPassthrough(props, "scheduleSendIsoString", emit);
+    const internalCommunicationListGroupGuid = useVModelPassthrough(props, "communicationListGroupGuid", emit);
     const minimumRecipientCount = ref<number>(0);
     const mediumOptions = ref<CommunicationEntryPushMediumOptionsBag | null>(isPushMediumOptions(config.mediumOptions) ? config.mediumOptions : null);
     const isLoadingMediumOptions = ref<boolean>(true);
@@ -488,6 +507,7 @@
             const bag: CommunicationEntrySaveRequestBag = {
                 isBulkCommunication: props.isBulkCommunication,
                 communicationGuid: communicationGuid.value,
+                communicationListGroupGuid: internalCommunicationListGroupGuid.value,
                 mediumEntityTypeGuid: EntityType.CommunicationMediumPushNotification,
                 status: CommunicationStatus.Transient,
                 futureSendDateTime: props.scheduleSendIsoString,
@@ -523,6 +543,7 @@
             const bag: CommunicationEntrySendRequestBag = {
                 isBulkCommunication: props.isBulkCommunication,
                 communicationGuid: communicationGuid.value,
+                communicationListGroupGuid: internalCommunicationListGroupGuid.value,
                 mediumEntityTypeGuid: EntityType.CommunicationMediumPushNotification,
                 status: CommunicationStatus.Transient,
                 futureSendDateTime: props.scheduleSendIsoString,
@@ -560,6 +581,7 @@
             const bag: CommunicationEntryTestRequestBag = {
                 isBulkCommunication: props.isBulkCommunication,
                 communicationGuid: communicationGuid.value,
+                communicationListGroupGuid: internalCommunicationListGroupGuid.value,
                 mediumEntityTypeGuid: EntityType.CommunicationMediumPushNotification,
                 status: CommunicationStatus.Transient,
                 futureSendDateTime: props.scheduleSendIsoString,
@@ -616,6 +638,15 @@
     //#endregion
 
     //#region Event Handlers
+
+    /**
+     * Converts the communication list to a regular list of recipients.
+     */
+    function onConvertListToRecipients(): void {
+        // We already have the communication list recipients in memory.
+        // Just remove the unique identifier link and trigger a UI update.
+        internalCommunicationListGroupGuid.value = null;
+    }
 
     /**
      * Event handler for the form validation being changed.

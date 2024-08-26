@@ -34,7 +34,8 @@
                   @submit="onFormSubmitted">
             <div class="row">
                 <div class="col-sm-12">
-                    <RecipientPicker v-model="internalRecipients"
+                    <RecipientPicker v-if="!config.communication || !internalCommunicationListGroupGuid"
+                                     v-model="internalRecipients"
                                      v-model:disabled="internalDisabled"
                                      :isAddHidden="config.mode !== Mode.Full"
                                      :isForBulkCommunication="isBulkCommunication"
@@ -42,6 +43,14 @@
                                      mediumType="sms"
                                      :minimumRecipientCount="minimumRecipientCount"
                                      :recipientManagerDisabledMessage="disabledMessage" />
+                    <template v-else>
+                        <RockLabel>Recipients</RockLabel>
+                        <StaticFormControl :modelValue="`Communication List: ${config.communication.communicationListName} (${config.communication.communicationListRecipientCount} individuals)`">
+                            <template #default="{ value }">
+                                {{ value }} <RockButton btnType="link" btnSize="sm" @click="onConvertListToRecipients">Convert List to Recipients</RockButton>
+                            </template>
+                        </StaticFormControl>
+                    </template>
                 </div>
             </div>
 
@@ -138,7 +147,9 @@
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import SmsMessageEditor from "@Obsidian/Controls/smsMessageEditor.obs";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
     import Switch from "@Obsidian/Controls/switch.obs";
     import { MediumType } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntry/mediumType";
     import { Mode } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntry/mode";
@@ -181,6 +192,11 @@
         scheduleSendIsoString: {
             type: String as PropType<string>,
             required: true
+        },
+
+        communicationListGroupGuid: {
+            type: String as PropType<Guid | null | undefined>,
+            required: true
         }
     });
 
@@ -201,6 +217,8 @@
         (e: "update:recipients", value: CommunicationEntryRecipientBag[]): void;
         /** Emits an event indicating the scheduleSendIsoString state should be updated. */
         (e: "update:scheduleSendIsoString", value: string): void;
+        /** Emits an event indicating the communication list unique identifier should be updated. */
+        (e: "update:communicationListGroupGuid", value: Guid | null | undefined): void;
     }>();
 
     const config = useConfigurationValues<CommunicationEntryInitializationBox>();
@@ -214,6 +232,7 @@
     const internalDisabled = useVModelPassthrough(props, "disabled", emit);
     const internalIsBulkCommunication = useVModelPassthrough(props, "isBulkCommunication", emit);
     const internalScheduleSendIsoString = useVModelPassthrough(props, "scheduleSendIsoString", emit);
+    const internalCommunicationListGroupGuid = useVModelPassthrough(props, "communicationListGroupGuid", emit);
     const disabledMessage = ref<string | null | undefined>();
     const testResultElement = ref<HTMLElement | undefined>();
     const fromNumberGuidOrEmptyString = ref<string>("");
@@ -266,6 +285,15 @@
     //#endregion
 
     //#region Event Handlers
+
+    /**
+     * Converts the communication list to a regular list of recipients.
+     */
+    function onConvertListToRecipients(): void {
+        // We already have the communication list recipients in memory.
+        // Just remove the unique identifier link and trigger a UI update.
+        internalCommunicationListGroupGuid.value = null;
+    }
 
     function onAttachmentError(error: string): void {
         attachmentErrorMessage.value = error;
@@ -435,6 +463,7 @@
 
             const bag: CommunicationEntrySendRequestBag = {
                 communicationGuid: communicationGuid.value,
+                communicationListGroupGuid: internalCommunicationListGroupGuid.value,
                 isBulkCommunication: internalIsBulkCommunication.value,
                 mediumEntityTypeGuid: EntityType.CommunicationMediumSms,
                 recipients: internalRecipients.value,
@@ -467,6 +496,7 @@
 
             const bag: CommunicationEntryTestRequestBag = {
                 communicationGuid: communicationGuid.value,
+                communicationListGroupGuid: internalCommunicationListGroupGuid.value,
                 isBulkCommunication: internalIsBulkCommunication.value,
                 mediumEntityTypeGuid: EntityType.CommunicationMediumSms,
                 recipients: internalRecipients.value,
@@ -499,6 +529,7 @@
 
             const bag: CommunicationEntrySaveRequestBag = {
                 communicationGuid: communicationGuid.value,
+                communicationListGroupGuid: internalCommunicationListGroupGuid.value,
                 futureSendDateTime: internalScheduleSendIsoString.value,
                 isBulkCommunication: internalIsBulkCommunication.value,
                 mediumEntityTypeGuid: EntityType.CommunicationMediumSms,
