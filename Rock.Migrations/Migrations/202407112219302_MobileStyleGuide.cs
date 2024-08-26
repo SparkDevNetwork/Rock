@@ -158,7 +158,11 @@ namespace Rock.Migrations
             // My Prayer Requests
             UpdateTemplate( "2E867AB7-700D-41A7-85D0-7FA1E6FD4662", SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_MY_PRAYER_REQUESTS, _myPrayerRequestsTemplate, "DED26289-4746-4233-A5BD-D4095248023D", _myPrayerRequestsLegacyTemplate );
 
+            // Prayer Card View
+            UpdateTemplate( "5A2574BB-ED27-4EFB-B5DA-675F73AEDD29", SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_PRAYER_PRAYER_CARD_VIEW, _prayerCardViewTemplate, "757935E7-AB6D-47B6-A6C4-1CA5920C922E", _prayerCardViewLegacyTemplate );
+
             // Notes
+            UpdateTemplate( "1EB6DCE4-69F1-44B9-A674-E1C67E216B2A", SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_NOTES, _notesTemplate, "C9134085-D433-444D-9803-8E5CE1B053DE", _notesLegacyTemplate );
 
             // Search 
             UpdateTemplate( "351A873D-B82E-4700-99ED-5A6D5B3E4149", SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_CORE_SEARCH, _searchTemplate, "50FABA2A-B23C-46CD-A634-2F54BC1AE8C3", _searchLegacyTemplate );
@@ -828,7 +832,6 @@ namespace Rock.Migrations
         </TapGestureRecognizer>
     </Grid.GestureRecognizers>
 </Grid>";
-
         private string _searchLegacyTemplate = @"{% assign photoUrl = null %}
 {% assign itemName = null %}
 {% assign itemText = null %}
@@ -917,6 +920,219 @@ namespace Rock.Migrations
             </TapGestureRecognizer.CommandParameter>
         </TapGestureRecognizer>
     </StackLayout.GestureRecognizers>
+</StackLayout>";
+
+        private string _notesTemplate = @"<StackLayout StyleClass=""spacing-8"">
+    //- Header
+    <Grid ColumnDefinitions=""*, Auto"">
+        <Label Text=""Notes""
+            StyleClass=""title2, bold, text-interface-strongest""
+            Grid.Column=""0"" />
+
+        <Rock:IconButton Grid.Column=""1""
+            IconClass=""fa fa-ellipsis-h""
+            FontSize=""14""
+            CornerRadius=""12""
+            IconFamily=""FontAwesome""
+            HeightRequest=""24""
+            WidthRequest=""24""
+            Rock:ContextMenu.ShowMenuOnClick=""True""
+            StyleClass=""btn, btn-outline-primary, bg-interface-softer, border-2, p-0"">
+            <Rock:ContextMenu.Menu>
+                <DataTemplate>
+                    <Rock:Menu>
+                        <Rock:MenuGroup Title=""Note Actions"">
+                            <Rock:MenuAction Title=""View All"" 
+                                Command=""{Binding ShowAllNotes}""
+                                SystemIcon=""{OnPlatform iOS=square.grid.2x2}"" />
+
+                            <Rock:MenuAction Title=""Add Note"" 
+                                Command=""{Binding AddNote}""
+                                SystemIcon=""{OnPlatform iOS=plus}"" />
+                        </Rock:MenuGroup>
+                    </Rock:Menu>
+                </DataTemplate>
+            </Rock:ContextMenu.Menu>
+        </Rock:IconButton>
+    </Grid>
+
+    //- Content
+    <Rock:StyledBorder StyleClass=""border, border-interface-soft, bg-interface-softest, rounded, p-16"" 
+        VerticalOptions=""Start"">
+        <VerticalStackLayout>
+            {% assign size = Notes | Size %}
+            {% if size == 0 %}
+                <Label Text=""No Notes Found""
+                    StyleClass=""body, text-interface-stronger"" />
+            {% endif %}
+            {% for note in Notes %}
+                <Grid RowDefinitions=""64, Auto""
+                    ColumnDefinitions=""Auto, *""
+                    StyleClass=""gap-column-8"">
+        
+                    <!-- Avatar -->
+                    <Rock:Avatar Source=""{{ note.PhotoUrl | Escape }}""
+                        Grid.Row=""0""
+                        Grid.Column=""0""
+                        VerticalOptions=""Center""
+                        ShowStroke=""true""
+                        HorizontalOptions=""Center"" />
+                    <!-- Name and date are inline -->
+                    <Grid ColumnDefinitions=""*, Auto""
+                        RowDefinitions=""Auto, *""
+                        Grid.Row=""0""
+                        Grid.Column=""1""
+                        VerticalOptions=""Center"">
+                        <Label Text=""{{ note.Name | Escape }}""
+                            StyleClass=""body, bold, text-interface-stronger""
+                            MaxLines=""1""
+                            LineBreakMode=""TailTruncation"" />
+                        <!-- Date -->
+                        <HorizontalStackLayout Grid.Column=""1""
+                            Spacing=""4""
+                            VerticalOptions=""Start"">
+                            <Label StyleClass=""caption2, text-interface-medium""
+                                Text=""{{ note.Date | Date:'sd' }}""
+                                VerticalOptions=""Start"" />
+                            <Rock:Icon IconClass=""chevron-right""
+                                StyleClass=""text-interface-medium, caption2""
+                                VerticalOptions=""Start"" />
+                        </HorizontalStackLayout>
+                        
+                        <Label Text=""{{ note.Text | StripHtml | Escape }}""
+                            Grid.Row=""1""
+                            Grid.ColumnSpan=""2""
+                            StyleClass=""footnote, text-interface-strong""
+                            MaxLines=""2""
+                            LineBreakMode=""TailTruncation"" />
+                    </Grid>
+                    <!-- Divider -->
+                    {% unless forloop.last %}
+                        <Rock:Divider Grid.Row=""1"" 
+                            Grid.Column=""0"" 
+                            Grid.ColumnSpan=""3""
+                            VerticalOptions=""Center""
+                            StyleClass=""my-8"" />
+                    {% endunless %}
+                    {% if DetailPage %}
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer Command=""{Binding EditNote}"" CommandParameter=""{{ note.Guid }}"" />
+                        </Grid.GestureRecognizers>
+                    {% endif %}
+                </Grid>
+            {% endfor %}
+        </VerticalStackLayout>
+    </Rock:StyledBorder>
+</StackLayout>";
+        private string _notesLegacyTemplate = @"<StackLayout StyleClass=""notes-container"" Spacing=""0"">
+    <FlexLayout JustifyContent=""SpaceBetween""
+        StyleClass=""px-12"">
+        <Label StyleClass=""h3""
+            Text=""Notes""
+        />
+        {% if ListPage != null %}
+            <Button StyleClass=""btn,btn-link"" 
+                Text=""See All""
+                HorizontalOptions=""End""
+                Padding=""0""
+                Command=""{Binding PushPage}""
+                CommandParameter=""{{ ListPage }}?PersonGuid={{ PageParameter.PersonGuid | Escape }}"">
+            </Button>
+        {% else %}
+            <Button StyleClass=""btn,btn-link"" 
+                Text=""See All""
+                HorizontalOptions=""End""
+                Padding=""0""
+                Command=""{Binding ShowAllNotes}"">
+            </Button>
+        {% endif %}
+    </FlexLayout>
+
+    {% for note in Notes %}
+            <Frame Margin=""0""
+                BackgroundColor=""White""
+                HasShadow=""false""
+                Padding=""12""
+                HeightRequest=""64""
+                StyleClass=""note-container"">
+                <StackLayout Orientation=""Horizontal""
+                    Spacing=""0"">
+                    <Rock:Image StyleClass=""note-author-image""
+                        VerticalOptions=""Start""
+                        Aspect=""AspectFit""
+                        Margin=""0, 4, 14, 0""
+                        BackgroundColor=""#e4e4e4""
+                        Source=""{{ note.PhotoUrl | Escape}}"">
+                        <Rock:CircleTransformation />
+                    </Rock:Image>
+                    
+                    <StackLayout Spacing=""0"" 
+                        HorizontalOptions=""FillAndExpand"">
+                        <StackLayout Orientation=""Horizontal"">
+                            <Label StyleClass=""note-author""
+                                Text=""{{ note.Name | Escape }}""
+                                LineBreakMode=""TailTruncation""
+                                HorizontalOptions=""FillAndExpand"" />
+
+                            <Grid ColumnSpacing=""4"" 
+                                RowSpacing=""0""
+                                ColumnDefinitions=""*, Auto""
+                            >
+                            {% if note.Date != null %}
+                                <Label StyleClass=""note-date""
+                                    Text=""{{ note.Date | HumanizeDateTime }}""
+                                    HorizontalTextAlignment=""End"" 
+                                    HorizontalOptions=""End""
+                                    VerticalTextAlignment=""Start""
+                                    Grid.Column=""0""  />
+                            {% endif %}
+					{% if note.CanEdit %}
+                                <Rock:Icon IconClass=""chevron-right""
+                                    VerticalTextAlignment=""Start""
+                                    Grid.Column=""1"" 
+                                    StyleClass=""note-read-more-icon""
+                                    />
+					{% endif %}
+                            </Grid>
+                        </StackLayout>
+                            <Label StyleClass=""note-text""
+                                Grid.Column=""0""
+                                MaxLines=""2""
+                                LineBreakMode=""TailTruncation"" 
+                                Text=""{{ note.Text | StripHtml | Escape }}"" /> 
+
+                    </StackLayout>
+                </StackLayout>
+                {% if note.CanEdit %}
+                <Frame.GestureRecognizers>
+                    <TapGestureRecognizer Command=""{Binding EditNote}"" 
+                     CommandParameter=""{{ note.Guid }}"" />
+                </Frame.GestureRecognizers>
+                {% endif %}
+            </Frame>
+        <BoxView HorizontalOptions=""FillAndExpand""
+            HeightRequest=""1""
+            Color=""#cccccc""
+        />
+    {% endfor %}
+    
+    {% if CurrentPerson != null %}
+        <FlexLayout JustifyContent=""SpaceBetween""
+            StyleClass=""px-12"">
+            <ContentView />
+            <Rock:Icon 
+                HorizontalOptions=""End""
+                IconClass=""plus""
+                HorizontalTextAlignment=""End""
+                StyleClass=""btn,btn-link""
+                Padding=""0, 4, 0, 0""
+                VerticalTextAlignment=""Center"">
+                    <Rock:Icon.GestureRecognizers>
+                        <TapGestureRecognizer Command=""{Binding AddNote}"" />
+                    </Rock:Icon.GestureRecognizers>
+            </Rock:Icon>
+        </FlexLayout>
+    {% endif %}
 </StackLayout>";
 
         #endregion
@@ -2421,6 +2637,98 @@ namespace Rock.Migrations
         {% endfor %}
     </StackLayout>
 {% endif %}";
+
+        private const string _prayerCardViewTemplate = @"<VerticalStackLayout Spacing=""16"">
+    {% assign size = PrayerRequestItems | Size %}
+    {% if size == 0 %}
+    <Label Text=""No Prayer Requests Found""
+        StyleClass=""body, text-interface-stronger"" />
+    {% else %}
+        {% for item in PrayerRequestItems %}
+            <Rock:StyledBorder StyleClass=""border, border-interface-soft, bg-interface-softest, rounded, p-16"">
+                <VerticalStackLayout Spacing=""16"">
+                    <VerticalStackLayout Spacing=""4"">
+                        <Label Text=""{{ item.FirstName | Escape }} {{ item.LastName | Escape }}"" 
+                            StyleClass=""title2, bold, text-interface-stronger"" />
+
+                        <Rock:Tag Text=""{{ item.Category.Name | Escape }}"" 
+                            Type=""Info"" />
+                    </VerticalStackLayout>
+
+                    <Label StyleClass=""prayer-card-text"">{{ item.Text | XamlWrap }}</Label>
+
+                    <Button x:Name=""PrayedBtn{{ forloop.index }}""
+                        IsVisible=""false""
+                        StyleClass=""btn,btn-primary,prayer-card-prayed-button""
+                        HorizontalOptions=""End""
+                        Text=""Prayed""
+                        IsEnabled=""false"" />
+
+                    <Button x:Name=""PrayBtn{{ forloop.index }}""
+                        StyleClass=""btn,btn-primary,prayer-card-pray-button""
+                        HorizontalOptions=""End""
+                        Text=""Pray""
+                        Command=""{Binding AggregateCommand}"">
+                        <Button.CommandParameter>
+                            <Rock:AggregateCommandParameters>
+                                <Rock:CommandReference Command=""{Binding PrayForRequest}""
+                                    CommandParameter=""{Rock:PrayForRequestParameters Guid={{ item.Guid }}, WorkflowTypeGuid='{{ PrayedWorkflowType }}'}"" />
+
+                                <Rock:CommandReference Command=""{Binding SetViewProperty}""
+                                    CommandParameter=""{Rock:SetViewPropertyParameters View={x:Reference PrayedBtn{{ forloop.index }}}, Name=IsVisible, Value=true}"" />
+
+                                <Rock:CommandReference Command=""{Binding SetViewProperty}""
+                                    CommandParameter=""{Rock:SetViewPropertyParameters View={x:Reference PrayBtn{{ forloop.index }}}, Name=IsVisible, Value=false}"" />
+                            </Rock:AggregateCommandParameters>
+                        </Button.CommandParameter>
+                    </Button>
+                </VerticalStackLayout>
+            </Rock:StyledBorder>
+        {% endfor %}
+    {% endif %}
+</VerticalStackLayout>";
+        private const string _prayerCardViewLegacyTemplate = @"<Rock:ResponsiveLayout>
+{% for item in PrayerRequestItems %}
+    <Rock:ResponsiveColumn Medium=""6"">
+        <Frame StyleClass=""prayer-card-container"" HasShadow=""false"">
+            <StackLayout>
+                <Label Text=""{{ item.FirstName | Escape }} {{ item.LastName | Escape }}"" StyleClass=""prayer-card-name"" />
+
+                <ContentView StyleClass=""prayer-card-category"" HorizontalOptions=""Start"">
+                    <Label Text=""{{ item.Category.Name | Escape }}"" />
+                </ContentView>
+
+                <Label StyleClass=""prayer-card-text"">{{ item.Text | XamlWrap }}</Label>
+
+                <Button x:Name=""PrayedBtn{{ forloop.index }}""
+                    IsVisible=""false""
+                    StyleClass=""btn,btn-primary,prayer-card-prayed-button""
+                    HorizontalOptions=""End""
+                    Text=""Prayed""
+                    IsEnabled=""false"" />
+                <Button x:Name=""PrayBtn{{ forloop.index }}""
+                    StyleClass=""btn,btn-primary,prayer-card-pray-button""
+                    HorizontalOptions=""End""
+                    Text=""Pray""
+                    Command=""{Binding AggregateCommand}"">
+                    <Button.CommandParameter>
+                        <Rock:AggregateCommandParameters>
+                            <Rock:CommandReference Command=""{Binding PrayForRequest}""
+                                CommandParameter=""{Rock:PrayForRequestParameters Guid={{ item.Guid }}, WorkflowTypeGuid='{{ PrayedWorkflowType }}'}"" />
+
+                            <Rock:CommandReference Command=""{Binding SetViewProperty}""
+                                CommandParameter=""{Rock:SetViewPropertyParameters View={x:Reference PrayedBtn{{ forloop.index }}}, Name=IsVisible, Value=true}"" />
+
+                            <Rock:CommandReference Command=""{Binding SetViewProperty}""
+                                CommandParameter=""{Rock:SetViewPropertyParameters View={x:Reference PrayBtn{{ forloop.index }}}, Name=IsVisible, Value=false}"" />
+                        </Rock:AggregateCommandParameters>
+                    </Button.CommandParameter>
+                </Button>
+            </StackLayout>
+        </Frame>
+    </Rock:ResponsiveColumn>
+{% endfor %}
+</Rock:ResponsiveLayout>";
 
         #endregion
 
