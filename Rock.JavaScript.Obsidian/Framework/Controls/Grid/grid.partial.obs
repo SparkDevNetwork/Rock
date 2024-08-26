@@ -2135,7 +2135,11 @@
         saveSortPreferences();
     });
 
-    watch([currentPage, pageSize], () => {
+    watch([currentPage, pageSize], (newValues, oldValues) => {
+        // If the page size changed, reset to the first page.
+        if (newValues[1] !== oldValues[1] && currentPage.value !== 1) {
+            currentPage.value = 1;
+        }
         updateVisibleRows();
         updatePageCount();
     });

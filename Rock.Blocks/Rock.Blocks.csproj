@@ -150,6 +150,7 @@
     <Compile Include="Finance\FundraisingList.cs" />
     <Compile Include="Core\TagReport.cs" />
     <Compile Include="Engagement\StreakTypeExclusionList.cs" />
+    <Compile Include="Engagement\StreakMapEditor.cs" />
     <Compile Include="Security\AuthScopeList.cs" />
     <Compile Include="Security\AuthClientList.cs" />
     <Compile Include="Core\PersonSignalList.cs" />

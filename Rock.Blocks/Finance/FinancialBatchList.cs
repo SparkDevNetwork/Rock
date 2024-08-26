@@ -414,7 +414,7 @@ namespace Rock.Blocks.Finance
                 .AddTextField( "name", a => a.Batch.Name )
                 .AddTextField( "note", a => a.Batch.Note )
                 .AddField( "accounts", a => a.Accounts )
-                .AddField( "accountSystemCode", a => a.Batch.AccountingSystemCode )
+                .AddField( "accountingSystemCode", a => a.Batch.AccountingSystemCode )
                 .AddField( "controlAmount", a => a.Batch.ControlAmount )
                 .AddField( "controlItemCount", a => a.Batch.ControlItemCount )
                 .AddTextField( "campus", a => a.Batch.CampusId.HasValue ? CampusCache.Get( a.Batch.CampusId.Value )?.Name : null )
