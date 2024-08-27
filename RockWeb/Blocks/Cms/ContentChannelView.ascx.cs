@@ -439,6 +439,9 @@ namespace RockWeb.Blocks.Cms
                 return;
             }
 
+            // Clone here before the IsValid call to ensure the DataViewFilter has a valid Guid.
+            dataViewFilter = CloneDataViewFilterWithoutIdentity( dataViewFilter );
+
             if ( !dataViewFilter.IsValid )
             {
                 // Controls will render the error messages                    
@@ -460,17 +463,13 @@ namespace RockWeb.Blocks.Cms
                     .GetByEntityTypeQualified( blockEntityTypeId, "BlockTypeId", contentChannelViewBlockTypeId )
                     .Count( av => av.Attribute.Key == AttributeKey.FilterId && av.Value == dataViewFilterId.Value.ToString() );
 
+                // If another ContentChannelView block uses the same DataViewFilter don't delete it.
+                // In this case it likely means this block is a copy of, or was copied from another page/block.
+                // Instead we'll create a new DataViewFilter and remove references to the existing one(s).
                 if ( countOfContentChannelViewsUsingFilterId == 1 )
                 {
                     // If we're the only block instance using this DataViewFilterId it's safe to delete the old one.
                     DeleteDataViewFilter( oldDataViewFilter, dataViewFilterService );
-                }
-                else
-                {
-                    // If another ContentChannelView block uses the same DataViewFilter don't delete it.
-                    // In this case it likely means this block is a copy of, or was copied from another page/block.
-                    // Instead we'll create a new DataViewFilter and remove references to the existing one(s).
-                    dataViewFilter = CloneDataViewFilterWithoutIdentity( dataViewFilter );
                 }
             }
 
