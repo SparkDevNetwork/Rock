@@ -126,7 +126,7 @@ namespace Rock.Model
                 }
 
                 activity?.AddTag( "rock.persisted_dataset.build_duration", ( int ) Math.Floor( timeToBuildStopwatch.Elapsed.TotalMilliseconds ) );
-                activity?.AddTag( "rock.persisted_dataset.result_size", ResultData.Length );
+                activity?.AddTag( "rock.persisted_dataset.result_size", ResultData?.Length ?? 0 );
 
                 return result;
             }

@@ -56,13 +56,13 @@ export type GroupRequirementTypeBag = {
     doesNotMeetWorkflowType?: ListItemBag | null;
 
     /** Gets or sets the number of days before the requirement is due. */
-    dueDateOffsetInDays?: number | null;
+    dueDateOffsetInDays?: string | null;
 
     /** Gets or sets the type of due date. */
     dueDateType?: string | null;
 
     /** Gets or sets the number of days after the requirement is met before it expires (If CanExpire is true). NULL means never expires */
-    expireInDays?: number | null;
+    expireInDays?: string | null;
 
     /** Gets or sets the icon CSS class. */
     iconCssClass?: string | null;

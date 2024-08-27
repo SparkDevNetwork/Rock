@@ -53,7 +53,7 @@ export const EditComponent = defineComponent({
         });
 
         const isEditMode = computed((): boolean => {
-            return props.configurationValues[ConfigurationValueKey.ConfigurationMode] === "Edit";
+            return props.dataEntryMode !== "defaultValue";
         });
 
         watch(() => props.modelValue, () => {
@@ -136,7 +136,6 @@ export const ConfigurationComponent = defineComponent({
             newValue[ConfigurationValueKey.SelectableDefinedValues] = JSON.stringify(selectableDefinedValues.value ?? "");
             newValue[ConfigurationValueKey.DefinedTypeValues] = props.modelValue[ConfigurationValueKey.DefinedTypeValues];
             newValue[ConfigurationValueKey.DefinedTypes] = props.modelValue[ConfigurationValueKey.DefinedTypes];
-            newValue[ConfigurationValueKey.ConfigurationMode] = props.modelValue[ConfigurationValueKey.ConfigurationMode];
 
             // Compare the new value and the old value.
             const anyValueChanged = newValue[ConfigurationValueKey.DefinedType] !== (props.modelValue[ConfigurationValueKey.DefinedType] ?? "")

@@ -104,6 +104,18 @@
     <Compile Include="Migrations\202408012144211_AddSchedulesToShortLinks.Designer.cs">
       <DependentUpon>202408012144211_AddSchedulesToShortLinks.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202408221651228_Rollup_20240822.cs" />
+    <Compile Include="Migrations\202408221651228_Rollup_20240822.designer.cs">
+      <DependentUpon>202408221651228_Rollup_20240822.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202408221726136_CodeGenerated_20240822.cs" />
+    <Compile Include="Migrations\202408221726136_CodeGenerated_20240822.designer.cs">
+      <DependentUpon>202408221726136_CodeGenerated_20240822.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202408271607508_MobileStyleGuide.cs" />
+    <Compile Include="Migrations\202408271607508_MobileStyleGuide.Designer.cs">
+      <DependentUpon>202408271607508_MobileStyleGuide.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.Designer.cs">
       <DependentUpon>202404221542135_Mobile_AdditionalSettingsJson.cs</DependentUpon>
@@ -2207,6 +2219,15 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202408012144211_AddSchedulesToShortLinks.resx">
       <DependentUpon>202408012144211_AddSchedulesToShortLinks.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202408221651228_Rollup_20240822.resx">
+      <DependentUpon>202408221651228_Rollup_20240822.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202408221726136_CodeGenerated_20240822.resx">
+      <DependentUpon>202408221726136_CodeGenerated_20240822.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202408271607508_MobileStyleGuide.resx">
+      <DependentUpon>202408271607508_MobileStyleGuide.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.6\202404221542135_Mobile_AdditionalSettingsJson.resx">
       <DependentUpon>202404221542135_Mobile_AdditionalSettingsJson.cs</DependentUpon>

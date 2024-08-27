@@ -20,15 +20,3 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 export const enum NavigationUrlKey {
     DetailPage = "DetailPage"
 }
-
-export type GridSettingsOptions = {
-    purpose?: ListItemBag | null;
-    systemGroupType?: string | null;
-    showInNavigation?: string | null;
-};
-
-export const enum PreferenceKey {
-    FilterPurpose = "filter-purpose",
-    FilterSystemGroupTypes = "filter-system-group-types",
-    FilterShowInNavigation = "filter-show-in-navigation"
-}

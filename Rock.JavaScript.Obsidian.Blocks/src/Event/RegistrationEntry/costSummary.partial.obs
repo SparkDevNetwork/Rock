@@ -106,7 +106,7 @@
                     </div>
 
                     <div v-if="isPaymentPlanConfigurationSupported && !isPaymentPlanConfigured && !registrationEntryState.viewModel.session?.activePaymentPlan" class="form-group">
-                        <RockButton btnType="default" btnSize="sm" @click="onOpenConfigurePaymentPlanModal">Set Up Payment Plan</RockButton>
+                        <RockButton btnType="default" btnSize="sm" @click="onOpenConfigurePaymentPlanModal" :disabled="registrationEntryState.amountToPayToday >= discountedTotal">Set Up Payment Plan</RockButton>
                     </div>
                 </template>
 

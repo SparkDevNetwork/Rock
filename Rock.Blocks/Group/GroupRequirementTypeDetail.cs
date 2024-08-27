@@ -204,9 +204,9 @@ namespace Rock.Blocks.Group
                 Description = entity.Description,
                 DoesNotMeetWorkflowLinkText = entity.DoesNotMeetWorkflowLinkText,
                 DoesNotMeetWorkflowType = entity.DoesNotMeetWorkflowType.ToListItemBag(),
-                DueDateOffsetInDays = entity.DueDateOffsetInDays,
+                DueDateOffsetInDays = entity.DueDateOffsetInDays?.ToString(),
                 DueDateType = entity.DueDateType.ToString(),
-                ExpireInDays = entity.ExpireInDays,
+                ExpireInDays = entity.ExpireInDays?.ToString(),
                 IconCssClass = entity.IconCssClass,
                 Name = entity.Name,
                 NegativeLabel = entity.NegativeLabel,
@@ -322,10 +322,12 @@ TIP: When calculating for a specific Person, a <strong>Person</strong> merge fie
                 () => entity.DueDateType = box.Entity.DueDateType.ConvertToEnum<DueDateType>() );
 
             box.IfValidProperty( nameof( box.Entity.DueDateOffsetInDays ),
-                () => entity.DueDateOffsetInDays = box.Entity.DueDateType == DueDateType.DaysAfterJoining.ToString() ? box.Entity.DueDateOffsetInDays : null );
+                () => entity.DueDateOffsetInDays = box.Entity.DueDateType == nameof( DueDateType.DaysAfterJoining ) || box.Entity.DueDateType == nameof( DueDateType.GroupAttribute )
+                ? box.Entity.DueDateOffsetInDays.AsIntegerOrNull()
+                : null );
 
             box.IfValidProperty( nameof( box.Entity.ExpireInDays ),
-                () => entity.ExpireInDays = entity.CanExpire ? box.Entity.ExpireInDays : null );
+                () => entity.ExpireInDays = entity.CanExpire ? box.Entity.ExpireInDays.AsIntegerOrNull() : null );
 
             box.IfValidProperty( nameof( box.Entity.IconCssClass ),
                 () => entity.IconCssClass = box.Entity.IconCssClass );

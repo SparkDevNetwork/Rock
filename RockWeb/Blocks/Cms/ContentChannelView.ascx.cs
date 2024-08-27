@@ -427,13 +427,13 @@ namespace RockWeb.Blocks.Cms
         {
             var dataViewFilter = ReportingHelper.GetFilterFromControls( phFilters );
 
-            // update Guids since we are creating a new dataFilter and children and deleting the old one
-            SetNewDataFilterGuids( dataViewFilter );
-
             if ( !Page.IsValid )
             {
                 return;
             }
+
+            // Clone here before the IsValid call to ensure the DataViewFilter has a valid Guid.
+            dataViewFilter = CloneDataViewFilterWithoutIdentity( dataViewFilter );
 
             if ( !dataViewFilter.IsValid )
             {
@@ -456,17 +456,13 @@ namespace RockWeb.Blocks.Cms
                     .GetByEntityTypeQualified( blockEntityTypeId, "BlockTypeId", contentChannelViewBlockTypeId )
                     .Count( av => av.Attribute.Key == AttributeKey.FilterId && av.Value == dataViewFilterId.Value.ToString() );
 
+                // If another ContentChannelView block uses the same DataViewFilter don't delete it.
+                // In this case it likely means this block is a copy of, or was copied from another page/block.
+                // Instead we'll create a new DataViewFilter and remove references to the existing one(s).
                 if ( countOfContentChannelViewsUsingFilterId == 1 )
                 {
                     // If we're the only block instance using this DataViewFilterId it's safe to delete the old one.
                     DeleteDataViewFilter( oldDataViewFilter, dataViewFilterService );
-                }
-                else
-                {
-                    // If another ContentChannelView block uses the same DataViewFilter don't delete it.
-                    // In this case it likely means this block is a copy of, or was copied from another page/block.
-                    // Instead we'll create a new DataViewFilter and remove references to the existing one(s).
-                    dataViewFilter = CloneDataViewFilterWithoutIdentity( dataViewFilter );
                 }
             }
 
@@ -1752,18 +1748,6 @@ $(document).ready(function() {
             }
         }
 
-        private void SetNewDataFilterGuids( DataViewFilter dataViewFilter )
-        {
-            if ( dataViewFilter != null )
-            {
-                dataViewFilter.Guid = Guid.NewGuid();
-                foreach ( var childFilter in dataViewFilter.ChildFilters )
-                {
-                    SetNewDataFilterGuids( childFilter );
-                }
-            }
-        }
-
         private void DeleteDataViewFilter( DataViewFilter dataViewFilter, DataViewFilterService service )
         {
             if ( dataViewFilter != null )
@@ -1782,18 +1766,13 @@ $(document).ready(function() {
             var cloned = dataViewFilter.CloneWithoutIdentity();
             var clonedChildren = new List<DataViewFilter>();
 
-            if ( dataViewFilter != null )
+            foreach ( var childFilter in dataViewFilter.ChildFilters.ToList() )
             {
-                foreach ( var childFilter in dataViewFilter.ChildFilters.ToList() )
-                {
-                    clonedChildren.Add( CloneDataViewFilterWithoutIdentity( childFilter ));
-                }
-
-                cloned.ChildFilters = clonedChildren;
-                return cloned;
+                clonedChildren.Add( CloneDataViewFilterWithoutIdentity( childFilter ));
             }
 
-            return dataViewFilter;
+            cloned.ChildFilters = clonedChildren;
+            return cloned;
         }
 
         #endregion

@@ -15,10 +15,6 @@
 // </copyright>
 //
 
-export type GridSettingsOptions = {
-    name?: string | null;
-};
-
 export const enum PreferenceKey {
-    FilterName = "Name"
+    DateRange = "date-range",
 }

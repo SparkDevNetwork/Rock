@@ -21,5 +21,6 @@
 // </copyright>
 //
 
+/** Represents options for a benevolence type list. */
 export type BenevolenceTypeListOptionsBag = {
 };

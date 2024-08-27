@@ -89,13 +89,10 @@ namespace Rock.Blocks.Cms
 
             if ( sectionId.HasValue )
             {
-                using ( var rockContext = new RockContext() )
-                {
-                    var personalLinkSection = new PersonalLinkSectionService( rockContext ).Queryable().FirstOrDefault( a => a.Id == sectionId.Value );
-                    options.PersonalLinkSectionName = personalLinkSection?.Name;
-                    options.IsBlockVisible = personalLinkSection != null;
-                    options.IsPersonalLinkSectionShared = personalLinkSection?.IsShared ?? false;
-                }
+                var personalLinkSection = new PersonalLinkSectionService( RockContext ).Queryable().FirstOrDefault( a => a.Id == sectionId.Value );
+                options.PersonalLinkSectionName = personalLinkSection?.Name;
+                options.IsBlockVisible = personalLinkSection != null;
+                options.IsPersonalLinkSectionShared = personalLinkSection?.IsShared ?? false;
             }
 
             return options;

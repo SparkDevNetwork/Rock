@@ -41,7 +41,7 @@ namespace Rock.Blocks.Reporting
     [DisplayName( "Merge Template Detail" )]
     [Category( "Core" )]
     [Description( "Displays the details of a particular merge template." )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 

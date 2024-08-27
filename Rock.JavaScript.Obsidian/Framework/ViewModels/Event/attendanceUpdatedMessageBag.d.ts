@@ -22,6 +22,7 @@
 //
 
 import { AttendanceStatus } from "@Obsidian/Enums/Event/attendanceStatus";
+import { CheckInStatus } from "@Obsidian/Enums/Event/checkInStatus";
 import { RSVP } from "@Obsidian/Enums/Event/rsvp";
 import { Guid } from "@Obsidian/Types";
 
@@ -32,6 +33,9 @@ import { Guid } from "@Obsidian/Types";
 export type AttendanceUpdatedMessageBag = {
     /** Gets or sets the attendance unique identifier. */
     attendanceGuid: Guid;
+
+    /** Gets or sets the check in status of the attendance record. */
+    checkInStatus: CheckInStatus;
 
     /** Gets or sets the unique identifier of the group the person attended. */
     groupGuid?: Guid | null;

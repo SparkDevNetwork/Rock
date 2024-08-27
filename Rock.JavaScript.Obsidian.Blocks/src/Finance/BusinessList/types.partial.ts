@@ -30,3 +30,16 @@ export type GridSettingsOptions = {
 
     active?: string | null;
 };
+
+export type Row = {
+    id: number;
+    businessName: string;
+    phoneNumber: string;
+    email: string;
+    street: string;
+    city: string;
+    state: string;
+    zip: string;
+    contacts: string;
+    campus: string;
+};

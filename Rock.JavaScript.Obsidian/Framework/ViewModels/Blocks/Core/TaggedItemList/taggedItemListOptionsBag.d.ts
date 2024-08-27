@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+/** Represents options for a tagged item list. */
 export type TaggedItemListOptionsBag = {
     /** Gets the Entity Type GUID. */
     entityTypeGuid?: string | null;

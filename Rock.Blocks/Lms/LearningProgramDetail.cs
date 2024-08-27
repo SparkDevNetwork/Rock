@@ -364,11 +364,11 @@ namespace Rock.Blocks.Lms
             box.IfValidProperty( nameof( box.Bag.CompletionWorkflowType ),
                 () => entity.CompletionWorkflowTypeId = box.Bag.CompletionWorkflowType.GetEntityId<WorkflowType>( RockContext ) );
 
-            var isMovingToOnDemandMode =
-                box.Bag.ConfigurationMode != entity.ConfigurationMode &&
-                box.Bag.ConfigurationMode == Enums.Lms.ConfigurationMode.OnDemandLearning;
-
             // We're unable to move to academic calendar mode from On-Demand due to the fact that none of the current participants will have records.
+            var isMovingToOnDemandMode =
+                entity.Id > 0 &&
+                entity.ConfigurationMode == ConfigurationMode.AcademicCalendar &&
+                box.Bag.ConfigurationMode == ConfigurationMode.OnDemandLearning;
             if ( isMovingToOnDemandMode )
             {
                 throw new ApplicationException( "Unable to move from Academic Calendar mode to On-Demand mode." );

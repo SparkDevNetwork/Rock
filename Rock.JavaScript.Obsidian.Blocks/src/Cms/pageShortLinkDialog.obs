@@ -13,14 +13,10 @@
                 <div class="row">
                     <div class="col">
                         <div class="clearfix">
-                            <a class="pull-right clickable text-info"
-                                data-toggle="tooltip"
-                                data-placement="bottom"
-                                data-trigger="hover"
-                                data-delay="250"
-                                title="Copy to Clipboard" @click="onClick">
-                                    {{linkText}}
-                            </a>
+                            <span class="pull-right">
+                                {{linkText}}
+                                <CopyButton :value="linkText" tooltip="Copy" btnSize="xs" />
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -108,6 +104,7 @@
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import CopyButton from "@Obsidian/Controls/copyButton.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";

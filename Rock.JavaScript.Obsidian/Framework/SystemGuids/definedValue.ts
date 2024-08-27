@@ -23,6 +23,12 @@
 
 /** Static Guids used by the Rock application */
 export const DefinedValue = {
+    /** The attendance record came from a kiosk. */
+    AttendanceSourceKiosk: "9A21D7EB-BCB5-4466-B62F-70EC5008B6B9",
+    /** The attendance record came from a legacy kiosk. */
+    AttendanceSourceLegacyKiosk: "0B25A627-679B-4B73-AA84-305DEF24815A",
+    /** The attendance record came from a mobile check-in. */
+    AttendanceSourceMobile: "972E8841-A3C9-4DDD-BD24-A414C0290331",
     /** Benevolence Approved */
     BenevolenceApproved: "18D3A2DA-F2BA-49AE-83EB-7E60DCD18A3B",
     /** Benevolence Denied */
@@ -382,6 +388,16 @@ export const DefinedValue = {
     NoncashAssetStocksandbonds: "B29D7D89-357F-47F9-BE7B-52AFF3892007",
     /** Non-Cash Asset Type: Vehicles. */
     NoncashAssetVehicles: "C1DCBE74-88FE-4876-8943-5783499CBBE0",
+    /**
+     * Open AI's high-intelligence flagship model for complex, multi-step tasks.
+     * GPT-4o is cheaper and faster than GPT-4 Turbo.
+     */
+    OpenAiGpt4o: "4A315E26-8FD9-4F4E-A178-7F7CB4D9BDB7",
+    /**
+     * Open AI's affordable and intelligent small model for fast, lightweight tasks.
+     * GPT-4o mini is cheaper and more capable than GPT-3.5 Turbo.
+     */
+    OpenAiGpt4oMini: "D29074BA-FE6D-483D-8C4C-B7114AA050A5",
     /** The PBX CDR medium value */
     PbxCdrMediumValue: "B3904B57-62A2-57AC-43EA-94D4DEBA3D51",
     /** Person Connection Status - Attendee */

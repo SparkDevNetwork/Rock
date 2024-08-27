@@ -121,6 +121,18 @@ namespace Rock.Blocks.Communication
                 .IsTrue( target => target, out validationResult );
         }
 
+        /// <summary>
+        /// Validates that the target value is <see langword="true"/>.
+        /// </summary>
+        /// <param name="validationContext">The validation context.</param>
+        /// <param name="validationResult">Set to <see cref="ValidationResult.Success"/> if valid; otherwise a validation result with an error message.</param>
+        /// <returns><see langword="true"/> if valid; otherwise <see langword="false"/>.</returns>
+        internal static bool IsTrue( this IValidationContext<bool?> validationContext, out ValidationResult validationResult )
+        {
+            return validationContext.WithDefaultErrorMessage( ( _, friendlyName ) => $"{friendlyName ?? "Field"} must be true." )
+                .IsTrue( target => target == true, out validationResult );
+        }
+
         #endregion
 
         #region Class Validation Methods

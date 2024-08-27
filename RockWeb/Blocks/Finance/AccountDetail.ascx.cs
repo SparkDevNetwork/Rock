@@ -189,14 +189,32 @@ namespace RockWeb.Blocks.Finance
                 accountId = new FinancialAccountService( new RockContext() ).GetId( account.Guid ) ?? 0;
             }
 
-            var accountParticipantsPersonAliasIdsByPurposeKey = AccountParticipantState.GroupBy( a => a.PurposeKey ).ToDictionary( k => k.Key, v => v.Select( x => x.PersonAliasId ).ToList() );
-            foreach ( var purposeKey in accountParticipantsPersonAliasIdsByPurposeKey.Keys )
+            if ( AccountParticipantState.Count > 0 )
             {
-                var accountParticipantsPersonAliasIds = accountParticipantsPersonAliasIdsByPurposeKey.GetValueOrNull( purposeKey );
-                if ( accountParticipantsPersonAliasIds?.Any() == true )
+                var accountParticipantsPersonAliasIdsByPurposeKey = AccountParticipantState.GroupBy( a => a.PurposeKey ).ToDictionary( k => k.Key, v => v.Select( x => x.PersonAliasId ).ToList() );
+                foreach ( var purposeKey in accountParticipantsPersonAliasIdsByPurposeKey.Keys )
                 {
-                    var accountParticipants = new PersonAliasService( rockContext ).GetByIds( accountParticipantsPersonAliasIds ).ToList();
-                    accountService.SetAccountParticipants( accountId, accountParticipants, purposeKey );
+                    var accountParticipantsPersonAliasIds = accountParticipantsPersonAliasIdsByPurposeKey.GetValueOrNull( purposeKey );
+                    if ( accountParticipantsPersonAliasIds?.Any() == true )
+                    {
+                        var accountParticipants = new PersonAliasService( rockContext ).GetByIds( accountParticipantsPersonAliasIds ).ToList();
+                        accountService.SetAccountParticipants( accountId, accountParticipants, purposeKey );
+                    }
+                }
+            }
+            else if( accountId != 0 )
+            {
+                // If this is an update and no participants were sent back from the client delete existing participants if any.
+                var existingParticipants = GetAccountParticipantStateFromDatabase()
+                    .GroupBy( a => a.PurposeKey )
+                    .ToDictionary( k =>
+                        k.Key,
+                        v => v.Select( x => x.PersonAliasId )
+                    .ToList() );
+
+                foreach ( var purposeKey in existingParticipants.Keys )
+                {
+                    accountService.SetAccountParticipants( accountId, new List<PersonAlias>(), purposeKey );
                 }
             }
 

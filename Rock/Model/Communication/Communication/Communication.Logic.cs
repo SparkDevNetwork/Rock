@@ -647,11 +647,16 @@ INNER JOIN @DuplicateRecipients dr
 
                 using ( var bulkDeleteActivity = ObservabilityHelper.StartActivity( "COMMUNICATION: Prepare Recipient List > Refresh Communication Recipient List > Bulk Delete Old Members" ) )
                 {
-                    // Get all pending communication recipients that are no longer in the list of group members and delete them from the recipients.
+                    // Get all pending communication recipients that are no longer
+                    // in the list of group members and delete them from the recipients.
+                    // Do not remove nameless recipients that may have been added by the
+                    // Communication Entry block's Additional Email Recipients feature.
+                    var namelessPersonRecordTypeId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() );
                     var missingMemberInList = recipientsQry
                         .Where( a =>
                             a.Status == CommunicationRecipientStatus.Pending
                             && !qryCommunicationListMembers.Any( r => r.PersonId == a.PersonAlias.PersonId )
+                            && a.PersonAlias.Person.RecordTypeValueId != namelessPersonRecordTypeId
                         );
 
                     /*

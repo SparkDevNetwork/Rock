@@ -456,9 +456,10 @@ namespace Rock.Blocks.Cms
                 var mediaFolderKey = pageReference.GetPageParameter( PageParameterKey.MediaFolderId );
                 var pageParameters = new Dictionary<string, string>();
                 var additionalParameters = new Dictionary<string, string>();
+                var mediaFolderId = Rock.Utility.IdHasher.Instance.GetId( mediaFolderKey ) ?? mediaFolderKey.AsInteger();
 
                 var data = new MediaFolderService( rockContext )
-                    .GetSelect( mediaFolderKey, mf => new
+                    .GetSelect( mediaFolderId, mf => new
                     {
                         mf.Name,
                         mf.MediaAccountId
@@ -532,7 +533,8 @@ namespace Rock.Blocks.Cms
 
                 if ( entity.MediaAccountId == 0 )
                 {
-                    entity.MediaAccountId = RequestContext.GetPageParameter( PageParameterKey.MediaAccountId ).AsInteger();
+                    var mediaAccountKey = RequestContext.GetPageParameter( PageParameterKey.MediaAccountId );
+                    entity.MediaAccountId = Rock.Utility.IdHasher.Instance.GetId( mediaAccountKey ) ?? mediaAccountKey.AsInteger();
                 }
 
                 // Update the entity instance from the information in the bag.

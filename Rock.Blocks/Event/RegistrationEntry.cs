@@ -222,7 +222,7 @@ namespace Rock.Blocks.Event
                 var instanceName = box.InstanceName;
 
                 if ( instanceName.IsNullOrWhiteSpace() && ( box.RegistrationInstanceNotFoundMessage?.Contains( " closed on " ) == true
-                    || box.RegistrationInstanceNotFoundMessage?.Contains(" does not open ") == true ) )
+                    || box.RegistrationInstanceNotFoundMessage?.Contains( " does not open " ) == true ) )
                 {
                     // The view model did not have a name filled in even though
                     // we found the registration instance. Get the instance name
@@ -772,6 +772,29 @@ namespace Rock.Blocks.Event
                 // If we already have a saved registrant get it, otherwise a null registrant will get any default values.
                 var registrant = new RegistrationRegistrantService( rockContext ).Get( registrantGuid );
 
+                // Load the group member for the registrant if there are any group member attribute form fields.
+                // If the group member is not found, the default field values will be used.
+                GroupMember groupMember = null;
+                if ( forms.Any( form => form.Fields.Any( field => field.FieldSource == RegistrationFieldSource.GroupMemberAttribute ) ) )
+                {
+                    // Get the group member from the registrant if one has already been saved.
+                    groupMember = registrant?.GroupMember;
+
+                    // If the registrant or registrant's group membership has not been saved yet,
+                    // try getting the group member for the registrant person.
+                    if ( groupMember == null && person != null )
+                    {
+                        var groupId = GetRegistrationGroupId( rockContext, GetRegistrationInstanceId( rockContext ) );
+
+                        if ( groupId.HasValue )
+                        {
+                            groupMember = new GroupMemberService( rockContext )
+                                .GetByGroupIdAndPersonId( groupId.Value, person.Id )
+                                .FirstOrDefault();
+                        }
+                    }
+                }
+
                 // Populate the field values
                 foreach ( var form in forms )
                 {
@@ -795,6 +818,11 @@ namespace Rock.Blocks.Event
                         {
                             var registrantAttributeValue = GetEntityCurrentClientAttributeValue( rockContext, registrant, field );
                             fieldValues.TryAdd( fieldViewModel.Guid, registrantAttributeValue );
+                        }
+                        else if ( fieldViewModel.FieldSource == RegistrationFieldSource.GroupMemberAttribute )
+                        {
+                            var groupMemberAttributeValue = GetEntityCurrentClientAttributeValue( rockContext, groupMember, field );
+                            fieldValues.TryAdd( fieldViewModel.Guid, groupMemberAttributeValue );
                         }
                     }
                 }
@@ -870,7 +898,7 @@ namespace Rock.Blocks.Event
                             .Select( r => new
                             {
                                 r.PaymentPlanFinancialScheduledTransactionId
-                            })
+                            } )
                             .FirstOrDefault();
 
                         if ( registrationData == null )
@@ -916,6 +944,38 @@ namespace Rock.Blocks.Event
                         }
                     }
                 }
+            }
+        }
+
+        [BlockAction]
+        public BlockActionResult GetScheduledPaymentDates( RegistrationEntryGetScheduledPaymentDatesRequestBag bag )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var context = GetContext( rockContext, out var errorMessage );
+                if ( errorMessage.IsNotNullOrWhiteSpace() )
+                {
+                    return ActionBadRequest( errorMessage );
+                }
+
+                var scheduledTransactionFrequencyValueId = DefinedValueCache.GetId( bag.ScheduledTransactionFrequencyValueGuid );
+                if ( !scheduledTransactionFrequencyValueId.HasValue )
+                {
+                    return ActionBadRequest( "Payment frequency is required" );
+                }
+
+                var financialGateway = new FinancialGatewayService( rockContext ).Get( context.RegistrationSettings.FinancialGatewayId ?? 0 );
+                var gateway = financialGateway?.GetGatewayComponent();
+
+                if ( gateway == null )
+                {
+                    // This will only occur if the gateway isn't configured on the registration template.
+                    return ActionBadRequest( "Unable to get scheduled payment dates" );
+                }
+
+                var paymentDates = gateway.GetScheduledPaymentDates( scheduledTransactionFrequencyValueId.Value, bag.PaymentStartDate, bag.NumberOfPayments ) ?? new List<DateTime>();
+
+                return ActionOk( paymentDates );
             }
         }
 
