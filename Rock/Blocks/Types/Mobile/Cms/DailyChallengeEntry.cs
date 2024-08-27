@@ -64,7 +64,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
         Description = "The template to use when rendering the block.",
         TemplateBlockValueGuid = SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_DAILY_CHALLENGE_ENTRY,
         IsRequired = true,
-        DefaultValue = "08009450-92A5-4D4A-8E31-FCC1E4CBDF16",
+        DefaultValue = "3DA15C4B-BD5B-44AF-97CD-E9F5FD97B55A",
         Key = AttributeKeys.Template,
         Order = 3 )]
 
