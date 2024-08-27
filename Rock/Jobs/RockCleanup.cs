@@ -337,7 +337,7 @@ namespace Rock.Jobs
             RunCleanupTask( "stale anonymous visitor", () => RemoveStaleAnonymousVisitorRecord() );
 
             RunCleanupTask( "update campus tithe metric", () => UpdateCampusTitheMetric() );
-            
+
             RunCleanupTask( "update geolocation database", () => UpdateGeolocationDatabase() );
 
             /*
@@ -868,17 +868,18 @@ namespace Rock.Jobs
 
             // Update people who have names with extra spaces between words (Issue #2990). See notes in Asana on query performance. Note
             // that values with more than two spaces could take multiple runs to correct.
-            using( var nameCleanupRockContext = CreateRockContext() )
+            using ( var nameCleanupRockContext = CreateRockContext() )
             {
                 var peopleWithExtraSpaceNames = new PersonService( nameCleanupRockContext ).Queryable()
                     .Where( p => p.NickName.Contains( "  " ) || p.LastName.Contains( "  " ) || p.FirstName.Contains( "  " ) || p.MiddleName.Contains( "  " ) );
 
-                nameCleanupRockContext.BulkUpdate( peopleWithExtraSpaceNames, x => new Person {
-                                                                NickName = x.NickName.Replace( "  ", " " ),
-                                                                LastName = x.LastName.Replace( "  ", " " ),
-                                                                FirstName = x.FirstName.Replace( "  ", " " ),
-                                                                MiddleName = x.MiddleName.Replace( "  ", " " )
-                                                            } );
+                nameCleanupRockContext.BulkUpdate( peopleWithExtraSpaceNames, x => new Person
+                {
+                    NickName = x.NickName.Replace( "  ", " " ),
+                    LastName = x.LastName.Replace( "  ", " " ),
+                    FirstName = x.FirstName.Replace( "  ", " " ),
+                    MiddleName = x.MiddleName.Replace( "  ", " " )
+                } );
             }
 
             return resultCount;
@@ -1326,7 +1327,7 @@ namespace Rock.Jobs
                 }
             }
 
-            validationMessages.Add( $"Path \"{ directoryPath }\" does not match the required pattern \"*\\App_Data\\*\\Cache\\*\"." );
+            validationMessages.Add( $"Path \"{directoryPath}\" does not match the required pattern \"*\\App_Data\\*\\Cache\\*\"." );
             return false;
         }
 
@@ -3422,11 +3423,18 @@ END
                             .GroupBy( x => x.PrimaryFamilyId )
                             .Count();
 
-                        var totalMedianIncome = postalCodesQuery
-                            .Where( p => postalCodes.Contains( p.PostalCode ) )
-                            .Sum( p => ( int? ) p.FamiliesMedianIncome ) ?? 0;
+                        if ( hasGivenCount > 0 )
+                        {
+                            var totalMedianIncome = postalCodesQuery
+                                .Where( p => postalCodes.Contains( p.PostalCode ) )
+                                .Sum( p => ( int? ) p.FamiliesMedianIncome ) ?? 0;
 
-                        campus.TitheMetric = ( totalMedianIncome / hasGivenCount ) * 0.1M;
+                            campus.TitheMetric = ( totalMedianIncome / hasGivenCount ) * 0.1M;
+                        }
+                        else
+                        {
+                            campus.TitheMetric = null;
+                        }
                     }
                 }
 
