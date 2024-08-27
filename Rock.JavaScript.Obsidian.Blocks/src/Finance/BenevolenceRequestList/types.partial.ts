@@ -23,36 +23,19 @@ export const enum NavigationUrlKey {
 }
 
 export const enum PreferenceKey {
-    FilterStartDateUpperValue = "filter-start-date-upper-value",
-    FilterStartDateLowerValue = "filter-start-date-lower-value",
-    FilterCampus = "filter-campus",
     FilterFirstName = "filter-first-name",
     FilterLastName = "filter-last-name",
-    FilterGovernmentId = "filter-government-id",
-    FilterCaseWorker = "filter-case-worker",
     FilterResult = "filter-result",
-    FilterRequestStatus = "filter-request-status",
     FilterBenevolenceTypes = "filter-benevolence-types"
 }
 
 export type GridSettingsOptions = {
-    startDateUpperValue?: string | null;
-
-    startDateLowerValue?: string | null;
-
-    campus?: ListItemBag | null;
 
     firstName?: string | null;
 
     lastName?: string | null;
 
-    governmentId?: string | null;
-
-    caseWorker?: string | null;
-
     result?: ListItemBag | null;
-
-    requestStatus?: ListItemBag | null;
 
     benevolenceTypes: string[];
 };
@@ -64,5 +47,7 @@ export const enum ColumnKey {
 
     TotalAmount = "Total Amount",
 
-    TotalResults = "Total Results"
+    TotalResults = "Total Results",
+
+    Campus = "Campus"
 }
