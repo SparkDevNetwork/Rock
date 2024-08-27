@@ -40,7 +40,7 @@ namespace Rock.DownhillCss
         /// <value>
         /// The primary.
         /// </value>
-        [Obsolete( "These are replaced by interface colors in Rock v16.4." )]
+        [Obsolete( "These are replaced by interface colors in Rock v16.7." )]
         public string Primary { get; set; } = "#007bff";
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace Rock.DownhillCss
         /// <value>
         /// The secondary.
         /// </value>
-        [Obsolete( "These are replaced by interface colors in Rock v16.4." )]
+        [Obsolete( "These are replaced by interface colors in Rock v16.7." )]
         public string Secondary { get; set; } = "#6c757d";
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace Rock.DownhillCss
         /// <value>
         /// The success.
         /// </value>
-        [Obsolete( "These are replaced by interface colors in Rock v16.4." )]
+        [Obsolete( "These are replaced by interface colors in Rock v16.7." )]
         public string Success { get; set; } = "#28a745";
 
         /// <summary>
@@ -67,7 +67,7 @@ namespace Rock.DownhillCss
         /// <value>
         /// The danger.
         /// </value>
-        [Obsolete( "These are replaced by interface colors in Rock v16.4." )]
+        [Obsolete( "These are replaced by interface colors in Rock v16.7." )]
         public string Danger { get; set; } = "#dc3545";
 
         /// <summary>
@@ -76,7 +76,7 @@ namespace Rock.DownhillCss
         /// <value>
         /// The warning.
         /// </value>
-        [Obsolete( "These are replaced by interface colors in Rock v16.4." )]
+        [Obsolete( "These are replaced by interface colors in Rock v16.7." )]
         public string Warning { get; set; } = "#ffc107";
 
         /// <summary>
@@ -85,7 +85,7 @@ namespace Rock.DownhillCss
         /// <value>
         /// The information.
         /// </value>
-        [Obsolete( "These are replaced by interface colors in Rock v16.4." )]
+        [Obsolete( "These are replaced by interface colors in Rock v16.7." )]
         public string Info { get; set; } = "#17a2b8";
 
         /// <summary>
@@ -94,7 +94,7 @@ namespace Rock.DownhillCss
         /// <value>
         /// The light.
         /// </value>
-        [Obsolete( "These are replaced by interface colors in Rock v16.4." )]
+        [Obsolete( "These are replaced by interface colors in Rock v16.7." )]
         public string Light { get; set; } = "#f8f9fa";
 
         /// <summary>
@@ -103,7 +103,7 @@ namespace Rock.DownhillCss
         /// <value>
         /// The dark.
         /// </value>
-        [Obsolete( "These are replaced by interface colors in Rock v16.4." )]
+        [Obsolete( "These are replaced by interface colors in Rock v16.7." )]
         public string Dark { get; set; } = "#343a40";
 
         /// <summary>
@@ -112,7 +112,7 @@ namespace Rock.DownhillCss
         /// <value>
         /// The white.
         /// </value>
-        [Obsolete( "These are replaced by interface colors in Rock v16.4." )]
+        [Obsolete( "These are replaced by interface colors in Rock v16.7." )]
         public string White { get; set; } = "#ffffff";
 
         /// <summary>
@@ -121,7 +121,7 @@ namespace Rock.DownhillCss
         /// <value>
         /// The brand.
         /// </value>
-        [Obsolete( "These are replaced by interface colors in Rock v16.4." )]
+        [Obsolete( "These are replaced by interface colors in Rock v16.7." )]
         public string Brand { get; set; } = "#007bff";
 
         #endregion
