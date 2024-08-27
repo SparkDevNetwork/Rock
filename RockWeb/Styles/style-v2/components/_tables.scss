@@ -544,6 +544,10 @@ tr.row-highlight {
     }
   }
 }
+
+.table-responsive[data-pattern="priority-columns"] {
+  position: static; // the default for this is relative, but this causes the scrollbar to always show until you resize the window, then it goes away
+}
 // ===================== END RESPONSIVE TABLES =====================
 
 
@@ -686,10 +690,6 @@ tr.row-highlight {
   border: 0;
 }
 
-.table-responsive[data-pattern="priority-columns"] {
-  position: static; // the default for this is relative, but this causes the scrollbar to always show until you resize the window, then it goes away
-}
-
 .grid-filter {
   padding:            0;
   color:              var(--color-interface-stronger);
@@ -806,12 +806,6 @@ td.grid-col-actions {
 }
 
 .grid-actions {
-  padding:          var(--spacing-tiny) var(--spacing-small);
-  margin:           0 0 0 2px;
-  font-size:        var(--font-size-regular);
-  border:           0;
-  box-shadow:       none;
-  transition:       color 250ms;
   text-align:       right;
   background-color: var(--color-interface-softest);
 
@@ -828,6 +822,12 @@ td.grid-col-actions {
   }
 
   .btn-grid-action {
+    padding:          var(--spacing-tiny) var(--spacing-small);
+    margin:           0 0 0 2px;
+    font-size:        var(--font-size-regular);
+    border:           0;
+    box-shadow:       none;
+    transition:       color 250ms;
     color:            var(--color-interface-medium);
     background-color: transparent;
     border-color:     transparent;

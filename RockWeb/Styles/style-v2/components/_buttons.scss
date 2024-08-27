@@ -762,9 +762,9 @@
 }
 
 .btn-sm{
-  padding:        var(--spacing-tiny) var(--spacing-small);
+  padding:        var(--spacing-small) 12px; // Need to hard code for to match the bottom left button of the `Learning Program Detail` bLock
   font-size:      var(--font-size-small);
-  line-height:    var(--line-height-normal);
+  line-height:    16px; // Need to hard code if match the button size with the search bar 
   border-radius:  var(--rounded-small);
 }
 

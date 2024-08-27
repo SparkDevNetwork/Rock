@@ -88,7 +88,7 @@
 }
 
 .input-group-addon {
-  padding:            6px 12px; //Need to hard code for the zoom function on the group scheduler.
+  padding:            6px 12px; // Need to hard code for the zoom function on the group scheduler.
   font-size:          var(--font-size-regular);
   font-weight:        var(--font-weight-regular);
   line-height:        1;
@@ -104,7 +104,7 @@
     align-items:        center;
     justify-content:    center;
     height:             38px;
-    margin:             -7px -13px; //Need to hard code for the zoom function on the group scheduler.
+    margin:             -7px -13px; // Need to hard code for the zoom function on the group scheduler.
     border-radius:      var(--rounded-small);
 
     &:focus {

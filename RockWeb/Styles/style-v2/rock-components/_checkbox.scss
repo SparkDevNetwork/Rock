@@ -6,7 +6,7 @@
 // Table of Content           
 //  + In-Columns  
 //  + Radio & Checkbox Inline
-//  + Assessment
+//  + Custom Controls
 // =============================================================
 
 
@@ -75,7 +75,7 @@
 
   .checkbox-inline:first-child,
   .radio-inline:first-child {
-    padding-left:   20px; //20px for aligning the checkbox column 
+    padding-left:   28px; // Need to hard code for label padding aligning
   }
 
   // Radio and Checkbox Label Text
@@ -131,173 +131,190 @@
 // ====================== END RADIO & CHECKBOX INLINE ======================
 
 
-// ======================== ASSESSMENT ========================
-.assessment {
-   // radio buttons & checkboxes - fancy styling
-   .radio,
-   .checkbox {
-     min-height:    var(--spacing-large);
-     margin-top:    var(--spacing-tiny);
-     margin-bottom: var(--spacing-tiny);
- 
-     // Bootstrap subtracts -5px for .radio + .radio and .checkbox + .checkbox
- 
-     label { // Override forms.less
-       padding-left: 0;
-     }
-   }
- 
-   // Fix to Show Checkbox in Summernote Modals
-   .modal-body > .checkbox label input {
-     z-index: 0;
-     opacity: 1;
-   }
- 
-   .radio-inline,
-   .checkbox-inline {
-     padding-right: 16px;
-     padding-left: 30px;
-     margin-left: 0;
-     label {
-       margin-bottom: 0;
-     }
-   }
- 
-   .form-align,
-   .form-horizontal {
-     .radio,
-     .checkbox,
-     .radio-inline,
-     .checkbox-inline {
-       padding-top: 0;
-       margin-top: var(--spacing-tiny) !important;
-       margin-bottom: var(--spacing-tiny) !important;
-     }
- 
-     .radio-inline + .radio-inline,
-     .checkbox-inline + .checkbox-inline {
-       margin-top: var(--spacing-tiny);
-     }
-   }
- 
-   .radio,
-   .checkbox,
-   .radio-inline,
-   .checkbox-inline {
-     padding-left: (var(--spacing-small) + var(--spacing-large));
- 
-     &.deselected {
-       opacity: .5;
-     }
- 
-     // Custom control indicators
-     //
-     // Build the custom controls out of pseudo-elements.
-     .label-text {
- 
-       // Background-color and (when enabled) gradient
-       &::before {
-         position: absolute;
-         top: var(--spacing-tiny);
-         left: 0;
-         display: block;
-         width: var(--spacing-large);
-         height: var(--spacing-large);
-         pointer-events: none;
-         content: "";
-         -webkit-user-select: none;
-         -moz-user-select: none;
-         -ms-user-select: none;
-         user-select: none;
-         background-color: var(--color-interface-softest);
-         border: $custom-control-indicator-border-width solid var(--color-interface-soft);
-         border-radius: .25rem;
-       }
- 
-       // Foreground (icon)
-       &::after {
-         position: absolute;
-         top: var(--spacing-tiny);
-         left: 0;
-         display: block;
-         width: var(--spacing-large);
-         height: var(--spacing-large);
-         content: "";
-         background: no-repeat center / 50%;
-       }
-     }
- 
-    input {
+// ======================== CUSTOM CONTROLS ========================
+
+// radio buttons & checkboxes - fancy styling
+.radio,
+.checkbox {
+  min-height:    var(--spacing-large);
+  margin-top:    var(--spacing-tiny);
+  margin-bottom: var(--spacing-tiny);
+
+  // Bootstrap subtracts -5px for .radio + .radio and .checkbox + .checkbox
+
+  label { // Override forms.less
+    padding-left: 0;
+  }
+}
+
+// Fix to Show Checkbox in Summernote Modals
+.modal-body > .checkbox label input {
+  z-index: 0;
+  opacity: 1;
+}
+
+.radio-inline,
+.checkbox-inline {
+  padding-right: 16px;
+  padding-left: 30px;
+  margin-left: 0;
+  label {
+    margin-bottom: 0;
+  }
+}
+
+.form-align,
+.form-horizontal {
+  .radio,
+  .checkbox,
+  .radio-inline,
+  .checkbox-inline {
+    padding-top: 0;
+    margin-top: var(--spacing-tiny) !important;
+    margin-bottom: var(--spacing-tiny) !important;
+  }
+
+  .radio-inline + .radio-inline,
+  .checkbox-inline + .checkbox-inline {
+    margin-top: var(--spacing-tiny);
+  }
+}
+
+.radio,
+.checkbox,
+.radio-inline,
+.checkbox-inline {
+  padding-left: 28px; // Need to hard code to push the checkbox label out
+
+  &.deselected {
+    opacity: .5;
+  }
+
+  // Custom control indicators
+  //
+  // Build the custom controls out of pseudo-elements.
+  .label-text {
+
+    // Background-color and (when enabled) gradient
+    &::before {
       position: absolute;
-      z-index: -1; // Put the input behind the label so it doesn't overlay text
-      opacity: 0;
-
-      &:checked ~ .label-text::before {
-        background-color: var(--color-primary);
-        border-color: var(--color-primary);
-      }
-
-      &:focus ~ .label-text::before {
-        // the mixin is not used here to make sure there is feedback
-        box-shadow: $custom-control-indicator-focus-box-shadow;
-      }
-
-      &:active ~ .label-text::before {
-        color: var(--color-interface-softest);
-        background-color: #f39c62; //TODO this is hard coded
-      }
-
-      &:disabled {
-        ~ .label-text {
-          color: var(--color-interface-strong);
-
-          &::before {
-            background-color: var(--color-interface-soft);
-          }
-        }
-      }
-
-      &:checked:disabled ~ .label-text::before {
-        background-color: var(--color-primary);
-        opacity: .5;
-      }
+      top: 2px;
+      left: 0;
+      display: block;
+      width: 20px;
+      height: 20px;
+      pointer-events: none;
+      content: "";
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      background-color: var(--color-interface-softest);
+      border: $custom-control-indicator-border-width solid var(--color-interface-soft);
+      border-radius: .25rem;
     }
 
-   }
- 
-   .radio-inline + .radio-inline,
-   .checkbox-inline + .checkbox-inline {
-     margin-left: 0;
-   }
- 
-   .checkbox,
-   .checkbox-inline {
-     input:checked ~ .label-text::after {
-       background-image: $custom-checkbox-indicator-icon-checked;
-     }
-   }
- 
-   .radio,
-   .radio-inline {
-     .label-text::before {
-       border-radius: 50%;
-     }
- 
-     input:checked ~ .label-text::after {
-       background-image: $custom-radio-indicator-icon-checked;
-     }
-   }
- 
-   .rock-checkbox-icon {
-     padding-left: 0;
-     i {
-       width: var(--spacing-large);
-       margin-right: 23px - 20px;
-       font-size: var(--spacing-large) + 2px;
-       text-align: center;
-     }
-   }
+    // Foreground (icon)
+    &::after {
+      position: absolute;
+      top: 2px;
+      left: 0;
+      display: block;
+      width: 20px;
+      height: 20px;
+      content: "";
+      background: no-repeat center / 50%;
+    }
+  }
+
+input {
+  position: absolute;
+  z-index: -1; // Put the input behind the label so it doesn't overlay text
+  opacity: 0;
+
+  &:checked ~ .label-text::before {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+  }
+
+  &:focus ~ .label-text::before {
+    // the mixin is not used here to make sure there is feedback
+    box-shadow: $custom-control-indicator-focus-box-shadow;
+  }
+
+  &:active ~ .label-text::before {
+    color: var(--color-interface-softest);
+    background-color: #f39c62; //TODO this is hard coded
+  }
+
+  &:disabled {
+    ~ .label-text {
+      color: var(--color-interface-strong);
+
+      &::before {
+        background-color: var(--color-interface-soft);
+      }
+    }
+  }
+
+  &:checked:disabled ~ .label-text::before {
+    background-color: var(--color-primary);
+    opacity: .5;
+  }
 }
-// ====================== END ASSESSMENT ======================
+
+}
+
+.radio-inline + .radio-inline,
+.checkbox-inline + .checkbox-inline {
+  margin-left: 0;
+}
+
+.checkbox,
+.checkbox-inline {
+  input:checked ~ .label-text::after {
+    background-image: $custom-checkbox-indicator-icon-checked;
+  }
+}
+
+.radio,
+.radio-inline {
+  .label-text::before {
+    border-radius: 50%;
+  }
+
+  input:checked ~ .label-text::after {
+    background-image: $custom-radio-indicator-icon-checked;
+  }
+}
+
+.rock-checkbox-icon {
+  padding-left: 0;
+  i {
+    width: var(--spacing-large);
+    margin-right: 23px - 20px;
+    font-size: var(--spacing-large) + 2px;
+    text-align: center;
+  }
+}
+
+
+// ====================== END CUSTOM CONTROLS ======================
+
+.checkbox-inline:first-child,
+.radio-inline:first-child {
+  // when inline checkbox lists wrap the first one on the first line sticks out more than subsequent lines.
+  // padding-left = (.checkbox-inline + .checkbox-inline margin-left) + .checkbox-inline padding-left
+  padding-left: 30px;
+
+  &.rock-checkbox-icon {
+    padding-left: 0 !important;
+
+    i {
+      width: 30px;
+    }
+  }
+}
+
 
 

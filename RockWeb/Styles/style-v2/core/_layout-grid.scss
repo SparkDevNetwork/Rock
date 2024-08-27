@@ -62,14 +62,24 @@ box-sizing: inherit;
 .form-row {
   display:        -ms-flexbox;
   display:        flex;
-  -ms-flex-wrap:  wrap;
-  flex-wrap:      wrap;
+  // Comment out to fix the wrapping of the kpi in the `Learning Program Detail` Block.
+  // -ms-flex-wrap:  wrap;
+  // flex-wrap:      wrap;
   margin-right: calc(($grid-gutter-width / -2));
   margin-left:  calc(($grid-gutter-width / -2));
 }
+
 .row {
   margin-right: calc(($grid-gutter-width / -2));
   margin-left:  calc(($grid-gutter-width / -2));
+  &:before,
+  &:after {
+    display: table;
+    content: " "; 
+  }
+  &:after {
+    clear: both;
+  }
 }
 
 // bootstrap 3

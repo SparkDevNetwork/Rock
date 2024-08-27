@@ -48,7 +48,7 @@
   }
   /* The main panel content spans 3 of the 4 columns of the 1st row. */
   > .panel {
-    grid-column:  2 e("/") span 3;
+    grid-column:  2 / span 3;
     grid-row:     1;
     border:       0;
     box-shadow:   none;
@@ -62,7 +62,7 @@
   }
   /* The footer spans all 4 columns of the 2nd row. */
   .sidebar-footer {
-    grid-column:  1 e("/") span 4;
+    grid-column:  1 / span 4;
     grid-row:     2;
     /* The actions footer items uses a sub grid with a single row and 2 columns. */
     > div.actions {
