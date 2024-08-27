@@ -199,6 +199,9 @@ namespace Rock.DownhillCss
                         cssStyles = cssStyles.Replace( $"?color-validation-text", MixThemeColor( value, 6 ) );
                     }
 
+                    // In the future, we could add a setting
+                    // to disable tailwind colors. For now,
+                    // just always include them.
                     if ( Settings.SupplyTailwindCss || true )
                     {
                         foreach ( var color in ColorPalette.ColorMaps )
