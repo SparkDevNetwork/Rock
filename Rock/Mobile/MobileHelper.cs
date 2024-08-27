@@ -358,12 +358,7 @@ namespace Rock.Mobile
 
             settings.AdditionalCssToParse = additionalDownhill;
 
-            var cssStyles = CssUtilities.BuildFramework( settings ); // append custom css but parse it for downhill variables
-
-            if ( additionalSettings.CssStyle.IsNotNullOrWhiteSpace() )
-            {
-                cssStyles += CssUtilities.ParseCss( additionalSettings.CssStyle, settings );
-            }
+            var cssStyles = CssUtilities.BuildFramework( settings, additionalSettings.CssStyle );
 
             // Run Lava on CSS to enable color utilities
             cssStyles = cssStyles.ResolveMergeFields( Lava.LavaHelper.GetCommonMergeFields( null, null, new Lava.CommonMergeFieldsOptions() ) );
@@ -397,8 +392,11 @@ namespace Rock.Mobile
                 Auth0ClientId = additionalSettings.Auth0ClientId,
                 Auth0ClientDomain = additionalSettings.Auth0Domain,
                 EntraTenantId = additionalSettings.EntraTenantId,
-                EntraClientId = additionalSettings.EntraClientId
+                EntraClientId = additionalSettings.EntraClientId,
             };
+
+            package.UseStandardStyles = additionalSettings.DownhillSettings.MobileStyleFramework == MobileStyleFramework.Standard || additionalSettings.DownhillSettings.MobileStyleFramework == MobileStyleFramework.Blended;
+            package.UseLegacyStyles = additionalSettings.DownhillSettings.MobileStyleFramework == MobileStyleFramework.Legacy || additionalSettings.DownhillSettings.MobileStyleFramework == MobileStyleFramework.Blended;
 
             //
             // Setup the appearance settings.
@@ -413,18 +411,51 @@ namespace Rock.Mobile
             package.AppearanceSettings.NavigationBarActionsXaml = additionalSettings.NavigationBarActionXaml;
             package.AppearanceSettings.LockedPhoneOrientation = additionalSettings.LockedPhoneOrientation;
             package.AppearanceSettings.LockedTabletOrientation = additionalSettings.LockedTabletOrientation;
+
+            var applicationColors = additionalSettings.DownhillSettings.ApplicationColors;
+
+            // Interface Colors
+            package.AppearanceSettings.PaletteColors.Add( "interface-strongest", applicationColors.InterfaceStrongest );
+            package.AppearanceSettings.PaletteColors.Add( "interface-stronger", applicationColors.InterfaceStronger );
+            package.AppearanceSettings.PaletteColors.Add( "interface-strong", applicationColors.InterfaceStrong );
+            package.AppearanceSettings.PaletteColors.Add( "interface-medium", applicationColors.InterfaceMedium );
+            package.AppearanceSettings.PaletteColors.Add( "interface-soft", applicationColors.InterfaceSoft );
+            package.AppearanceSettings.PaletteColors.Add( "interface-softer", applicationColors.InterfaceSofter );
+            package.AppearanceSettings.PaletteColors.Add( "interface-softest", applicationColors.InterfaceSoftest );
+
+            // Accent Colors
+            package.AppearanceSettings.PaletteColors.Add( "app-primary-soft", applicationColors.PrimarySoft );
+            package.AppearanceSettings.PaletteColors.Add( "app-primary-strong", applicationColors.PrimaryStrong );
+            package.AppearanceSettings.PaletteColors.Add( "app-secondary-soft", applicationColors.SecondarySoft );
+            package.AppearanceSettings.PaletteColors.Add( "app-secondary-strong", applicationColors.SecondaryStrong );
+            package.AppearanceSettings.PaletteColors.Add( "app-brand-soft", applicationColors.BrandSoft );
+            package.AppearanceSettings.PaletteColors.Add( "app-brand-strong", applicationColors.BrandStrong );
+
+            // Functional Colors
+            package.AppearanceSettings.PaletteColors.Add( "app-success-soft", applicationColors.SuccessSoft );
+            package.AppearanceSettings.PaletteColors.Add( "app-success-strong", applicationColors.SuccessStrong );
+            package.AppearanceSettings.PaletteColors.Add( "app-info-soft", applicationColors.InfoSoft );
+            package.AppearanceSettings.PaletteColors.Add( "app-info-strong", applicationColors.InfoStrong );
+            package.AppearanceSettings.PaletteColors.Add( "app-danger-soft", applicationColors.DangerSoft );
+            package.AppearanceSettings.PaletteColors.Add( "app-danger-strong", applicationColors.DangerStrong );
+            package.AppearanceSettings.PaletteColors.Add( "app-warning-soft", applicationColors.WarningSoft );
+            package.AppearanceSettings.PaletteColors.Add( "app-warning-strong", applicationColors.WarningStrong );
+
+            //
+            // Legacy colors.
+            //
             package.AppearanceSettings.PaletteColors.Add( "text-color", additionalSettings.DownhillSettings.TextColor );
             package.AppearanceSettings.PaletteColors.Add( "heading-color", additionalSettings.DownhillSettings.HeadingColor );
             package.AppearanceSettings.PaletteColors.Add( "background-color", additionalSettings.DownhillSettings.BackgroundColor );
-            package.AppearanceSettings.PaletteColors.Add( "app-primary", additionalSettings.DownhillSettings.ApplicationColors.Primary );
-            package.AppearanceSettings.PaletteColors.Add( "app-secondary", additionalSettings.DownhillSettings.ApplicationColors.Secondary );
-            package.AppearanceSettings.PaletteColors.Add( "app-success", additionalSettings.DownhillSettings.ApplicationColors.Success );
-            package.AppearanceSettings.PaletteColors.Add( "app-info", additionalSettings.DownhillSettings.ApplicationColors.Info );
-            package.AppearanceSettings.PaletteColors.Add( "app-danger", additionalSettings.DownhillSettings.ApplicationColors.Danger );
-            package.AppearanceSettings.PaletteColors.Add( "app-warning", additionalSettings.DownhillSettings.ApplicationColors.Warning );
-            package.AppearanceSettings.PaletteColors.Add( "app-light", additionalSettings.DownhillSettings.ApplicationColors.Light );
-            package.AppearanceSettings.PaletteColors.Add( "app-dark", additionalSettings.DownhillSettings.ApplicationColors.Dark );
-            package.AppearanceSettings.PaletteColors.Add( "app-brand", additionalSettings.DownhillSettings.ApplicationColors.Brand );
+            package.AppearanceSettings.PaletteColors.Add( "app-primary", additionalSettings.DownhillSettings.ApplicationColors.PrimaryStrong );
+            package.AppearanceSettings.PaletteColors.Add( "app-secondary", additionalSettings.DownhillSettings.ApplicationColors.SecondaryStrong );
+            package.AppearanceSettings.PaletteColors.Add( "app-success", additionalSettings.DownhillSettings.ApplicationColors.SuccessStrong );
+            package.AppearanceSettings.PaletteColors.Add( "app-info", additionalSettings.DownhillSettings.ApplicationColors.InfoStrong );
+            package.AppearanceSettings.PaletteColors.Add( "app-danger", additionalSettings.DownhillSettings.ApplicationColors.DangerStrong );
+            package.AppearanceSettings.PaletteColors.Add( "app-warning", additionalSettings.DownhillSettings.ApplicationColors.WarningStrong );
+            package.AppearanceSettings.PaletteColors.Add( "app-light", additionalSettings.DownhillSettings.ApplicationColors.InterfaceSoftest );
+            package.AppearanceSettings.PaletteColors.Add( "app-dark", additionalSettings.DownhillSettings.ApplicationColors.InterfaceStrongest );
+            package.AppearanceSettings.PaletteColors.Add( "app-brand", additionalSettings.DownhillSettings.ApplicationColors.BrandStrong );
 
             //
             // Setup the deep link settings.
@@ -433,10 +464,7 @@ namespace Rock.Mobile
 
             if ( site.FavIconBinaryFileId.HasValue )
             {
-                package.AppearanceSettings.LogoUrl = FileUrlHelper.GetImageUrl( site.FavIconBinaryFileId.Value, new GetImageUrlOptions
-                {
-                    PublicAppRoot = applicationRoot
-                } );
+                package.AppearanceSettings.LogoUrl = FileUrlHelper.GetImageUrl( site.FavIconBinaryFileId.Value );
             }
 
             //

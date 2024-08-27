@@ -51,7 +51,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
     [BlockTemplateField( "Request Template",
         Description = "The template used to render the connection requests.",
         TemplateBlockValueGuid = SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_CONNECTION_CONNECTION_REQUEST_LIST,
-        DefaultValue = "787BFAA8-FF61-49BA-80DD-67074DC362C2",
+        DefaultValue = "2E36BC98-A18A-4524-8AC1-F14A1AC9DE2F",
         IsRequired = true,
         Key = AttributeKey.RequestTemplate,
         Order = 1 )]
