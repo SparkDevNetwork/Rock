@@ -22,7 +22,7 @@ using Rock.Data;
 namespace Rock.Migrations
 {
     /// <summary>
-    ///
+    /// This migration will update the XAML templates for all mobile blocks to follow the new style guide.
     /// </summary>
     public partial class MobileStyleGuide : Rock.Migrations.RockMigration
     {
@@ -36,8 +36,6 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            throw new System.Exception( "not ready yet!" );
-
             MobileSitesUp();
             MobileTemplatesUp();
         }
@@ -47,6 +45,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
+            MobileTemplatesDown();
         }
 
         /// <summary>
@@ -177,7 +176,86 @@ namespace Rock.Migrations
             UpdateTemplate( "5114DB6E-40CC-4455-99B8-C109B7BB52D1", SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_CALENDAR_EVENT_ITEM_OCCURRENCE_VIEW, _calendarEventItemOccurrenceTemplate, "6593D4EB-2B7A-4C24-8D30-A02991D26BC0", _calendarEventItemOccurrenceLegacyTemplate );
 
             // Event Item Occurrence List by Audience
-            UpdateTemplate( "EA866D37-4E8F-4956-AB80-055F72151302", SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_EVENT_ITEM_OCCURRENCE_LIST_BY_AUDIENCE, _eventItemOccurrenceListByAudienceLavaTemplate, "323D1996-C27F-4B48-B0C7-82FDA440D950", _eventItemOccurrenceListByAudienceLavaLegacyTemplate )
+            UpdateTemplate( "EA866D37-4E8F-4956-AB80-055F72151302", SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_EVENT_ITEM_OCCURRENCE_LIST_BY_AUDIENCE, _eventItemOccurrenceListByAudienceLavaTemplate, "323D1996-C27F-4B48-B0C7-82FDA440D950", _eventItemOccurrenceListByAudienceLavaLegacyTemplate );
+        }
+
+        /// <summary>
+        /// Downgrades the XAML templates for the mobile blocks to follow the legacy style guide.
+        /// </summary>
+        private void MobileTemplatesDown()
+        {
+            // Daily Challenge Entry
+            DowngradeTemplate( "3DA15C4B-BD5B-44AF-97CD-E9F5FD97B55A", Rock.SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_DAILY_CHALLENGE_ENTRY, "08009450-92A5-4D4A-8E31-FCC1E4CBDF16", _dailyChallengeEntryLegacyTemplate );
+
+            // Communication View
+            DowngradeTemplate( "528EA8BC-4E9D-4F17-9920-9E11F3A4FC5E", Rock.SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_COMMUNICATION_VIEW, "3DA15C4B-BD5B-44AF-97CD-E9F5FD97B55A", _communicationViewLegacyTemplate );
+
+            // Connection Type List
+            DowngradeTemplate( "F9F29166-A080-4179-A210-AE42CC473D6F", Rock.SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_CONNECTION_CONNECTION_TYPE_LIST, "E0D00422-7895-4081-9C06-16DE9BF48E1A", _connectionTypeListLegacyTemplate );
+
+            // Connection Opportunity List
+            DowngradeTemplate( "A7D8FB47-A779-4427-B41D-2C0F0E6DB0FF", Rock.SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_CONNECTION_CONNECTION_OPPORTUNITY_LIST, "1FB8E236-DF34-4BA2-B5C6-CA8B542ABC7A", _connectionOpportunityListLegacyTemplate );
+
+            // Conection Request List
+            DowngradeTemplate( "2E36BC98-A18A-4524-8AC1-F14A1AC9DE2F", Rock.SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_CONNECTION_CONNECTION_REQUEST_LIST, "787BFAA8-FF61-49BA-80DD-67074DC362C2", _connectionRequestListLegacyTemplate );
+
+            // Schedule Toolbox
+            DowngradeTemplate( "F04B6154-1543-4632-89A2-1792F6CED9D6", Rock.SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_GROUP_SCHEDULE_TOOLBOX, "CD2629E5-8EB0-4D52-ACAB-8EDF9AF84814", _scheduleToolboxLegacyTemplate );
+            DowngradeTemplate( "DE3E57AC-E12B-4249-BB15-64C7A7780AC8", Rock.SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_GROUP_SCHEDULE_TOOLBOX_DECLINE_MODAL, "92D39913-7D69-4B73-8FF9-72AC161BE381", _scheduleToolboxDeclineReasonLegacyTemplate );
+
+            // Schedule Sign-up
+            DowngradeTemplate( "2204D103-A145-4003-9DA0-1C9461D6BAA1", Rock.SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_GROUP_SCHEDULE_SIGNUP_LANDING_PAGE, "C4BFED3A-C2A1-4A68-A646-44C3B499C75A", _scheduleSignUpLandingLegacyTemplate );
+
+            // Schedule Preference
+            DowngradeTemplate( "8DF04E4B-9ABF-477D-8CD2-D36FF06DBDB8", Rock.SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_GROUP_SCHEDULE_PREFERENCE_LANDING_PAGE, "C3A98DBE-E977-499C-B823-0B3676731E48", _schedulePreferenceLandingLegacyTemplate );
+
+            // Schedule Unavailability
+            DowngradeTemplate( "FCFB9F90-9C94-4405-BBF9-DF62DC85DEFD", Rock.SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_GROUP_SCHEDULE_UNAVAILABILITY, "1A699B18-AB29-4CD5-BC02-AF55159D5DA6", _scheduleUnavailabilityLegacyTemplate );
+
+            // Group Member List
+            DowngradeTemplate( "A57595B6-3F19-43B7-B3A5-D5E7BB041C66", SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_GROUP_MEMBER_LIST, "674CF1E3-561C-430D-B4A8-39957AC1BCF1", _groupMemberListLegacyTemplate );
+
+            // Group Member View
+            DowngradeTemplate( "74760472-3516-480D-B96B-1F77AAEF0862", SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_GROUP_MEMBER_VIEW, "F093A516-6D95-429E-8EEB-1DFB0303DF71", _groupMemberViewLegacyTemplate );
+
+            // Group Members
+            DowngradeTemplate( "493F4ED9-11B9-4E9B-90FE-AD2BF207367B", Rock.SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_GROUP_MEMBERS, "13470DDB-5F8C-4EA2-93FD-B738F37C9AFC", _groupMembersLegacyTemplate );
+
+            // Group View
+            DowngradeTemplate( "95FF4A7D-6512-4C5F-9A01-523E42CA10D6", SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_GROUP_VIEW, "6207AF10-B6C9-40B5-8AA5-4C11FA6D0966", _groupViewLegacyTemplate );
+
+            // Group Finder
+            DowngradeTemplate( "4EA2A456-8164-48DA-851A-1F8979EB8B8E", SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_GROUPS_GROUP_FINDER, "CC117DBB-5C3C-4A32-8ABA-88A7493C7F70", _groupFinderLegacyTemplate );
+
+            // Prayer Session Startup
+            DowngradeTemplate( "C0FCA573-D341-4B33-B097-3FB7028B3816", SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_PRAYER_SESSION, "2B0F4548-8DA7-4236-9BF9-5FA3C07D762F", _prayerSessionLegacyTemplate );
+
+            // Answer to Prayer
+            DowngradeTemplate( "D0B57F68-DD15-4C91-84B9-A9D421937980", SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_ANSWER_TO_PRAYER, "91C29610-1D77-49A8-A46B-5A35EC67C551", _answerToPrayerLegacyTemplate );
+
+            // My Prayer Requests
+            DowngradeTemplate( "2E867AB7-700D-41A7-85D0-7FA1E6FD4662", SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_MY_PRAYER_REQUESTS, "DED26289-4746-4233-A5BD-D4095248023D", _myPrayerRequestsLegacyTemplate );
+
+            // Prayer Card View
+            DowngradeTemplate( "5A2574BB-ED27-4EFB-B5DA-675F73AEDD29", SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_PRAYER_PRAYER_CARD_VIEW, "757935E7-AB6D-47B6-A6C4-1CA5920C922E", _prayerCardViewLegacyTemplate );
+
+            // Notes
+            DowngradeTemplate( "1EB6DCE4-69F1-44B9-A674-E1C67E216B2A", SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_NOTES, "C9134085-D433-444D-9803-8E5CE1B053DE", _notesLegacyTemplate );
+
+            // Search 
+            DowngradeTemplate( "351A873D-B82E-4700-99ED-5A6D5B3E4149", SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_CORE_SEARCH, "50FABA2A-B23C-46CD-A634-2F54BC1AE8C3", _searchLegacyTemplate );
+
+            // Live Experience Occurrences
+            DowngradeTemplate( "B26B0C69-8B11-4C5B-B24A-AB57A433FC33", SystemGuid.DefinedValue.BLOCK_TEMPLATE_LIVE_EXPERIENCE_OCCURRENCES, "0C75B833-E710-45AE-B3B2-3FAC97A79BB2", _liveExperienceOccurrencesLegacyTemplate );
+
+            // Calendar Event List
+            DowngradeTemplate( "4482BB6D-9C02-48D0-8475-4BA0948131A0", SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_CALENDAR_EVENT_LIST, "E3A4AA4E-2A61-4E63-B636-93B86E493D95", _calendarEventListLegacyTemplate );
+
+            // Calendar Event Item Occurrence
+            DowngradeTemplate( "5114DB6E-40CC-4455-99B8-C109B7BB52D1", SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_CALENDAR_EVENT_ITEM_OCCURRENCE_VIEW, "6593D4EB-2B7A-4C24-8D30-A02991D26BC0", _calendarEventItemOccurrenceLegacyTemplate );
+
+            // Event Item Occurrence List by Audience
+            DowngradeTemplate( "EA866D37-4E8F-4956-AB80-055F72151302", SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_EVENT_ITEM_OCCURRENCE_LIST_BY_AUDIENCE, "323D1996-C27F-4B48-B0C7-82FDA440D950", _eventItemOccurrenceListByAudienceLavaLegacyTemplate );
         }
 
         #region CMS Blocks
@@ -430,28 +508,6 @@ namespace Rock.Migrations
         #endregion
 
         #region Connection Blocks 
-
-        /// <summary>
-        /// Called to downgrade the ConnectionTypeListBlock default templates.
-        /// </summary>
-        private void ConnectionTypeListBlockDown()
-        {
-            RockMigrationHelper.DeleteTemplateBlockTemplate( "F9F29166-A080-4179-A210-AE42CC473D6F" );
-            RockMigrationHelper.DeleteTemplateBlockTemplate( "E0D00422-7895-4081-9C06-16DE9BF48E1A" );
-
-            //
-            // Add back the new default legacy template.
-            // Need to do it this way since the block now points to the new guid as the default.
-            //
-            RockMigrationHelper.AddOrUpdateTemplateBlockTemplate(
-                "F9F29166-A080-4179-A210-AE42CC473D6F",
-                Rock.SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_CONNECTION_CONNECTION_TYPE_LIST,
-                "Default",
-                _connectionTypeListLegacyTemplate,
-                _standardIconSvg,
-                "standard-template.svg",
-                "image/svg+xml" );
-        }
 
         private const string _connectionTypeListTemplate = @"<Rock:StyledBorder StyleClass=""border, border-interface-soft, bg-interface-softest, rounded, p-16"">
     <VerticalStackLayout>
@@ -3167,7 +3223,31 @@ namespace Rock.Migrations
                 "image/svg+xml" );
         }
 
-        #endregion
+        /// <summary>
+        /// Downgrades a template by deleting the new template and legacy template, and then adding the legacy template back in.
+        /// </summary>
+        /// <param name="newTemplateGuid">The GUID of the new template being generated.</param>
+        /// <param name="templateBlockGuid">The GUID of the block template.</param>
+        /// <param name="legacyTemplateGuid">The GUID of the legacy template.</param>
+        /// <param name="legacyTemplateXaml">The XAML of the legacy template.</param>
+        private void DowngradeTemplate( string newTemplateGuid, string templateBlockGuid, string legacyTemplateGuid, string legacyTemplateXaml )
+        {
+            // Delete the new default and legacy template.
+            RockMigrationHelper.DeleteTemplateBlockTemplate( newTemplateGuid );
+            RockMigrationHelper.DeleteTemplateBlockTemplate( legacyTemplateGuid );
 
+            // Add the new "default" template.. Which is really the legacy template.. because
+            // down methods are super weird.
+            RockMigrationHelper.AddOrUpdateTemplateBlockTemplate(
+                newTemplateGuid,
+                templateBlockGuid,
+                "Default",
+                legacyTemplateXaml,
+                _standardIconSvg,
+                "standard-template.svg",
+                "image/svg+xml" );
+        }
+
+        #endregion
     }
 }
