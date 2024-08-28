@@ -8,6 +8,7 @@ GO
 08/22/2023 Jeff McClure - Updated to include all of the serving hours a person might be serving in the last record set.  Column: ServingHours
 09/26/2023 Jeff McClure - Updated to exclude inactive groups from all sections
 03/01/2024 Steve Swaringen - Update Belongs to Groups Requiring Belongs to also check for missing group requirements
+06/18/2024 shanedlp - Updated to include 2024 Summer Blast Volunteer Check-In Groups(684) and Placement Groups(674)
 
 Test:
 
@@ -85,13 +86,14 @@ SELECT g.[Name] AS [Group], c.[Name] AS [Campus],
   END AS [GroupMemberStatus]
   , CASE
 	WHEN r.GroupMemberId IS NULL THEN 
-		'<a href="/GroupMember/' + CAST(r.GroupMemberId AS NVARCHAR) + '" target="_blank"><span style="color: Green;"><i class="fal fa-check-square"></i></span></a>'
+		'<span style="color: Green;"><i class="fal fa-check-square"></i></span>'
 	ELSE 
 		'<a href="/GroupMember/' + CAST(r.GroupMemberId AS NVARCHAR) + '" target="_blank"><span style="color: Red;"><i class="fal fa-times-square"></i></span></a>'
   END AS [MeetsRequirements]
+  ,r.GroupMemberId
  FROM dbo.[Group] g  
  JOIN dbo.[GroupType] gt ON gt.Id = g.GroupTypeId AND gt.AttendanceRule = 2  
- JOIN dbo.[GroupMember] gm ON gm.GroupId = g.Id  
+ JOIN dbo.[GroupMember] gm ON gm.GroupId = g.Id AND gm.GroupMemberStatus <> 0 AND gm.IsArchived = 0  
  JOIN dbo.[PersonAlias] pa ON pa.PersonId = gm.PersonId AND pa.Guid = TRY_CAST(@Person AS UNIQUEIDENTIFIER) 
  LEFT JOIN dbo.[Campus] c ON c.Id = g.CampusId
  LEFT JOIN (
@@ -143,7 +145,7 @@ WITH ServeTimes AS (
 			LEFT JOIN dbo.DefinedValue dv ON dv.guid = TRY_CAST(c.Value AS UNIQUEIDENTIFIER) 
 	WHERE  1=1
 	AND a.EntityTypeId = 90
-	AND a.EntityTypeQualifierValue IN (N'621',N'622',N'623',N'624',N'625') --List GroupTypeIds in string form
+	AND a.EntityTypeQualifierValue IN (N'621',N'622',N'623',N'624',N'625',N'674',N'684') --List GroupTypeIds in string form
 	AND a.[KEY] Like N'ServingHour%'
 	GROUP BY gm.personid, gm.GroupId, gm.GroupRoleId
 )
@@ -165,7 +167,7 @@ WITH ServeTimes AS (
   st.ServeTimes
  FROM GroupMember gm  
  JOIN PersonAlias pa ON pa.PersonId = gm.PersonId AND pa.Guid = TRY_CAST(@Person AS UNIQUEIDENTIFIER)  
- JOIN [Group] g ON g.Id = gm.GroupId AND g.IsActive = 1 AND (g.GroupTypeId IN (424, 431, 432, 404, 477, 549, 550, 576, 577, 537, 584, 586, 587, 621, 622, 623, 624, 625) OR g.Id IN (905913))  
+ JOIN [Group] g ON g.Id = gm.GroupId AND g.IsActive = 1 AND (g.GroupTypeId IN (424, 431, 432, 404, 477, 549, 550, 576, 577, 537, 584, 586, 587, 621, 622, 623, 624, 625, 674, 684) OR g.Id IN (905913))  
  JOIN [GroupMemberRequirement] gmr ON gmr.GroupMemberId = gm.Id  
  JOIN [GroupRequirement] gr ON gr.Id = gmr.GroupRequirementId  
  JOIN [GroupRequirementType] grt ON grt.Id = gr.GroupRequirementTypeId  
@@ -174,3 +176,4 @@ WITH ServeTimes AS (
 	AND st.GroupId = g.Id
 	AND st.GroupRoleId = gm.GroupRoleId
 End
+GO
