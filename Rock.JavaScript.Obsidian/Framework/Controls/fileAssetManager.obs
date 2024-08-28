@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div id="pnlAssetManager" class="picker-wrapper align-items-stretch flex-nowrap" :style="wrapperStyles">
+    <div id="pnlAssetManager" class="picker-wrapper align-items-stretch flex-nowrap styled-scroll" :style="wrapperStyles">
         <div class="picker-folders d-flex flex-column bg-body p-3 mh-100 position-relative flex-shrink-0">
 
             <div class="mb-3 d-flex flex-shrink-0">
@@ -84,10 +84,10 @@
             <div v-if="fileListScrolled" class="scroll-shadow"><!-- Intentionally Empty... just used to create a shadow when the container below is scrolled --></div>
 
             <div class="overflow-y-auto mh-100 flex-grow-1 d-flex align-items-start" ref="fileScrollContainer">
-                <table v-if="files.length > 0" class="table table-responsive table-borderless assetmanager-files">
+                <table v-if="files.length > 0" class="table table-responsive assetmanager-files">
                     <tbody>
                         <tr v-for="file in files" :key="file.key">
-                            <td>
+                            <td class="grid-selector">
                                 <div class="control-wrapper">
                                     <div class="checkbox">
                                         <label class="rock-checkbox-icon">
@@ -97,10 +97,10 @@
                                     </div>
                                 </div>
                             </td>
-                            <td>
+                            <td class="grid-thumbnail">
                                 <img :src="file.iconPath" style="object-fit: cover; height: 58px; width: 44px;">
                             </td>
-                            <td>
+                            <td class="grid-filename">
                                 <span v-show="shownFileRenameForm != file.key">{{ file.name }}</span>
                                 <RockForm v-if="shownFileRenameForm == file.key" @submit="() => renameFile(file)" @keyup.esc="hideRenameFileForm">
                                     <div class="d-flex align-items-center">
@@ -110,14 +110,14 @@
                                     </div>
                                 </RockForm>
                             </td>
-                            <td data-priority="3">
-                                {{ formatDate(file.lastModifiedDateTime) }}
+                            <td class="grid-modified" data-priority="3">
+                                <small>{{ formatDate(file.lastModifiedDateTime) }}</small>
                             </td>
-                            <td>
-                                {{ file.formattedFileSize }}
+                            <td class="grid-filesize">
+                                <small>{{ file.formattedFileSize }}</small>
                             </td>
-                            <td>
-                                <DropDownMenu :items="getFileDropDownMenuItems(file)" align="right" class="d-flex">
+                            <td class="grid-actions">
+                                <DropDownMenu :items="getFileDropDownMenuItems(file)" align="right" class="d-flex justify-content-end">
                                     <template #anchor="anchorAttrs">
                                         <RockButton type="button" btnType="link" class="text-body" v-bind="anchorAttrs"><i class="fa fa-ellipsis-v"></i></RockButton>
                                     </template>
@@ -168,6 +168,12 @@
 </template>
 
 <style scoped>
+
+#pnlAssetManager {
+    height: 100%;
+    min-height: 600px;
+}
+
 .assetmanager-files th,
 .assetmanager-files td {
     vertical-align: middle;
@@ -183,9 +189,41 @@
     z-index: 1;
 }
 
-.table-borderless th,
-.table-borderless td {
-    border: 0;
+/* Add rollover effect so that images that are white with transparent backgrounds can be determined */
+.assetmanager-files tr:hover {
+    background-color: var( --color-interface-softer);
+    transition: background-color 0.3s ease-in-out;
+}
+
+/* Add widths to each column so that the filename column will flex in size */
+.assetmanager-files {
+    table-layout: fixed;
+}
+
+.assetmanager-files td.grid-selector {
+    width: 50px;
+}
+
+.assetmanager-files td.grid-thumbnail {
+    width: 60px;
+}
+
+.assetmanager-files td.grid-filename {
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.assetmanager-files td.grid-modified {
+    width: 150px;
+}
+
+.assetmanager-files td.grid-filesize {
+    width: 80px;
+}
+
+.assetmanager-files td.grid-actions {
+    width: 40px;
+    background-color: transparent;
 }
 
 .loader-overlay {
