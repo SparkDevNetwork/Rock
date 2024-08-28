@@ -21,20 +21,26 @@
 // </copyright>
 //
 
-import { ClientLabelBag } from "@Obsidian/ViewModels/CheckIn/Labels/clientLabelBag";
-import { RecordedAttendanceBag } from "@Obsidian/ViewModels/CheckIn/recordedAttendanceBag";
+import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
 
-/**
- * The response that will be returned by the ConfirmAttendance check-in
- * REST endpoint.
- */
-export type ConfirmAttendanceResponseBag = {
-    /** Gets or sets the attendance records that were created or updated. */
-    attendances?: RecordedAttendanceBag[] | null;
+/** A registration from the check-in kiosk for a family. */
+export type RegistrationFamilyBag = {
+    /**
+     * The main address of the family. Currently this is the home address
+     * but in the future that may be updated to allow the configuration of
+     * the address type.
+     */
+    address?: AddressControlBag | null;
 
-    /** The labels that need to be printed by the client device. */
-    labels?: ClientLabelBag[] | null;
+    /** Attribute values on the family to be displayed or edited. */
+    attributeValues?: Record<string, string> | null;
 
-    /** Gets or sets the messages for this check-in operation. */
-    messages?: string[] | null;
+    /** The name of the primary family that the adults will be members of. */
+    familyName?: string | null;
+
+    /**
+     * The encrypted identifier of the family. When saving, this value
+     * should be an empty string if this is a new family to be created.
+     */
+    id?: string | null;
 };

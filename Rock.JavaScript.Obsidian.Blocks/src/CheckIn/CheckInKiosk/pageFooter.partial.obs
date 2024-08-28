@@ -1,7 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <footer class="check-in-panel page-footer">
-        <RockButton btnType="link"
+        <RockButton v-if="!hideConfigure"
+                    btnType="link"
                     class="configure-button"
                     @click="onConfigureClick">
             <i class="fa fa-cog"></i>
@@ -37,6 +38,14 @@
         title: {
             type: String as PropType<string>,
             required: true
+        },
+
+        /**
+         * Hides the configure gear button so it is not visible.
+         */
+        hideConfigure: {
+            type: Boolean as PropType<boolean>,
+            default: false
         },
 
         /**

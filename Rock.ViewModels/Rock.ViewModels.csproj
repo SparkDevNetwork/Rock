@@ -62,6 +62,7 @@
     <Compile Include="Blocks\Bus\BusStatus\BusStatusBag.cs" />
     <Compile Include="Blocks\Bus\BusStatus\BusStatusOptionsBag.cs" />
     <Compile Include="Blocks\CheckIn\CheckInKiosk\ActiveAttendanceBag.cs" />
+    <Compile Include="Blocks\CheckIn\CheckInKiosk\EditFamilyResponseBag.cs" />
     <Compile Include="Blocks\CheckIn\CheckInKiosk\GetCurrentAttendanceResponseBag.cs" />
     <Compile Include="Blocks\CheckIn\CheckInKiosk\GetScheduledLocationsResponseBag.cs" />
     <Compile Include="Blocks\CheckIn\CheckInKiosk\KioskConfigurationBag.cs" />
@@ -69,6 +70,8 @@
     <Compile Include="Blocks\CheckIn\CheckInKiosk\PromotionBag.cs" />
     <Compile Include="Blocks\CheckIn\CheckInKiosk\ReprintAttendanceBag.cs" />
     <Compile Include="Blocks\CheckIn\CheckInKiosk\SavedKioskConfigurationBag.cs" />
+    <Compile Include="Blocks\CheckIn\CheckInKiosk\SaveFamilyOptionsBag.cs" />
+    <Compile Include="Blocks\CheckIn\CheckInKiosk\SaveFamilyResponseBag.cs" />
     <Compile Include="Blocks\CheckIn\CheckInKiosk\ScheduledLocationBag.cs" />
     <Compile Include="Blocks\CheckIn\CheckInKiosk\WebKioskBag.cs" />
     <Compile Include="Blocks\CheckIn\Configuration\CheckInSimulator\CheckInSimulatorOptionsBag.cs" />
@@ -695,6 +698,7 @@
     <Compile Include="CheckIn\KioskStatusBag.cs" />
     <Compile Include="CheckIn\Labels\AttendeePhotoFieldConfigurationBag.cs" />
     <Compile Include="CheckIn\Labels\BarcodeFieldConfigurationBag.cs" />
+    <Compile Include="CheckIn\Labels\ClientLabelBag.cs" />
     <Compile Include="CheckIn\Labels\DataFormatterOptionBag.cs" />
     <Compile Include="CheckIn\Labels\DesignedLabelBag.cs" />
     <Compile Include="CheckIn\Labels\CustomFieldInputBag.cs" />
@@ -713,6 +717,8 @@
     <Compile Include="CheckIn\AttendeeBag.cs" />
     <Compile Include="CheckIn\FamilyBag.cs" />
     <Compile Include="CheckIn\RecordedAttendanceBag.cs" />
+    <Compile Include="CheckIn\RegistrationFamilyBag.cs" />
+    <Compile Include="CheckIn\RegistrationPersonBag.cs" />
     <Compile Include="CheckIn\SavedCheckInConfigurationBag.cs" />
     <Compile Include="CheckIn\SavedCheckInConfigurationSettingsBag.cs" />
     <Compile Include="CheckIn\ScheduleOpportunityBag.cs" />

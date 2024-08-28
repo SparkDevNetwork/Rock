@@ -21,12 +21,14 @@
                               :configuration="configuration"
                               :session="currentSession"
                               @next="onNextScreen"
+                              @editFamily="onEditFamily"
                               @updateActions="onUpdateActions($event, Screen.Search)" />
 
                 <FamilySelectScreen v-if="currentScreen === Screen.FamilySelect"
                                     :configuration="configuration"
                                     :session="currentSession"
                                     @next="onNextScreen"
+                                    @editFamily="onEditFamily"
                                     @updateActions="onUpdateActions($event, Screen.FamilySelect)" />
 
                 <ActionSelectScreen v-if="currentScreen === Screen.ActionSelect"
@@ -45,6 +47,7 @@
                                     :configuration="configuration"
                                     :session="currentSession"
                                     @next="onNextScreen"
+                                    @editFamily="onEditFamily"
                                     @updateActions="onUpdateActions($event, Screen.PersonSelect)" />
 
                 <AutoModeOpportunitySelectScreen v-if="currentScreen === Screen.AutoModeOpportunitySelect"
@@ -104,10 +107,24 @@
                                @supervisorScreen="onSupervisorScreen"
                                @closeSupervisor="onCloseSupervisor" />
                 </template>
+
+                <template v-for="registrationScreen in registrationScreens">
+                    <component v-if="registrationScreen.screen === currentScreen"
+                               :key="registrationScreen.screen"
+                               :is="registrationScreen.component"
+                               :configuration="configuration"
+                               :registrationData="registrationData"
+                               @updateActions="onUpdateActions($event, registrationScreen.screen)"
+                               @enableOverride="onEnableOverride($event)"
+                               @registrationScreen="onRegistrationScreen"
+                               @checkInFamily="onRegistrationCheckInFamily"
+                               @closeRegistration="onCloseRegistration" />
+                </template>
             </ContentTransition>
         </section>
 
         <PageFooter :title="footerStatusText"
+                    :hideConfigure="isConfigureHidden"
                     :actions="currentScreenActions"
                     @configure="onConfigureClick" />
     </div>
@@ -116,10 +133,6 @@
 <script setup lang="ts">
     import AbilityLevelSelectScreen from "./CheckInKiosk/abilityLevelSelectScreen.partial.obs";
     import ActionSelectScreen from "./CheckInKiosk/actionSelectScreen.partial.obs";
-    import SupervisorActionsScreen from "./CheckInKiosk/supervisorActionsScreen.partial.obs";
-    import SupervisorLoginScreen from "./CheckInKiosk/supervisorLoginScreen.partial.obs";
-    import SupervisorReprintScreen from "./CheckInKiosk/supervisorReprintScreen.partial.obs";
-    import SupervisorScheduleLocationsScreen from "./CheckInKiosk/supervisorScheduleLocationsScreen.partial.obs";
     import AreaSelectScreen from "./CheckInKiosk/areaSelectScreen.partial.obs";
     import CheckoutSelectScreen from "./CheckInKiosk/checkoutSelectScreen.partial.obs";
     import CheckoutSuccessScreen from "./CheckInKiosk/checkoutSuccessScreen.partial.obs";
@@ -130,19 +143,26 @@
     import PageFooter from "./CheckInKiosk/pageFooter.partial.obs";
     import PageHeader from "./CheckInKiosk/pageHeader.partial.obs";
     import PersonSelectScreen from "./CheckInKiosk/personSelectScreen.partial.obs";
+    import RegistrationEditFamilyScreen from "./CheckInKiosk/registrationEditFamilyScreen.partial.obs";
+    import RegistrationEditIndividualScreen from "./CheckInKiosk/registrationEditIndividualScreen.partial.obs";
     import ScheduleSelectScreen from "./CheckInKiosk/scheduleSelectScreen.partial.obs";
     import SearchScreen from "./CheckInKiosk/searchScreen.partial.obs";
     import SuccessScreen from "./CheckInKiosk/successScreen.partial.obs";
+    import SupervisorActionsScreen from "./CheckInKiosk/supervisorActionsScreen.partial.obs";
+    import SupervisorLoginScreen from "./CheckInKiosk/supervisorLoginScreen.partial.obs";
+    import SupervisorReprintScreen from "./CheckInKiosk/supervisorReprintScreen.partial.obs";
+    import SupervisorScheduleLocationsScreen from "./CheckInKiosk/supervisorScheduleLocationsScreen.partial.obs";
     import WelcomeScreen from "./CheckInKiosk/welcomeScreen.partial.obs";
     import ContentTransition from "./CheckInKiosk/contentTransition.partial.obs";
     import { Component as VueComponent, computed, onBeforeUnmount, onMounted, ref, shallowRef } from "vue";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { provideKioskState } from "./CheckInKiosk/utils.partial";
-    import { SupervisorScreen, SupervisorScreenData, KioskButton, Screen } from "./CheckInKiosk/types.partial";
+    import { SupervisorScreen, SupervisorScreenData, KioskButton, Screen, RegistrationScreen, RegistrationScreenData } from "./CheckInKiosk/types.partial";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
     import { CheckInSession } from "./CheckInKiosk/checkInSession.partial";
     import { useHttp } from "@Obsidian/Utility/http";
     import { SavedKioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/savedKioskConfigurationBag";
+    import { FamilySearchMode } from "@Obsidian/Enums/CheckIn/familySearchMode";
 
     const blockConfiguration = useConfigurationValues<Record<string, unknown>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -152,8 +172,10 @@
 
     provideKioskState(kioskState);
 
+    // #region Values
+
     const configuration = ref<KioskConfigurationBag>({});
-    const currentScreen = ref<Screen | SupervisorScreen>(Screen.None);
+    const currentScreen = ref<Screen | SupervisorScreen | RegistrationScreen>(Screen.None);
     const currentScreenActions = ref<KioskButton[]>([]);
     const currentSession = shallowRef<CheckInSession>(createNewSession());
     const previousScreens = shallowRef<CheckInSession[]>([]);
@@ -182,6 +204,22 @@
         }
     ]);
 
+    const registrationData = ref<RegistrationScreenData>({} as RegistrationScreenData);
+    const registrationScreens = ref<{ screen: RegistrationScreen, component: VueComponent }[]>([
+        {
+            screen: RegistrationScreen.EditFamily,
+            component: RegistrationEditFamilyScreen
+        },
+        {
+            screen: RegistrationScreen.EditIndividual,
+            component: RegistrationEditIndividualScreen
+        }
+    ]);
+
+    // #endregion
+
+    // #region Computed Values
+
     const hasNavigation = computed((): boolean => {
         return currentScreen.value !== Screen.Welcome;
     });
@@ -206,6 +244,18 @@
         return currentSession.value.overridePinCode !== undefined
             && currentSession.value.overridePinCode !== "";
     });
+
+    /**
+     * The configure button should be hidden if we are in the configure
+     * screens already.
+     */
+    const isConfigureHidden = computed((): boolean => {
+        return currentScreen.value >= SupervisorScreen.Login;
+    });
+
+    // #endregion
+
+    // #region Functions
 
     /**
      * Reads configuration from local storage. This is set by the setup block
@@ -273,7 +323,7 @@
         }
     }
 
-    function onUpdateActions(actions: KioskButton[], source: Screen | SupervisorScreen): void {
+    function onUpdateActions(actions: KioskButton[], source: Screen | SupervisorScreen | RegistrationScreen): void {
         if (currentScreen.value === source) {
             currentScreenActions.value = actions;
         }
@@ -299,6 +349,7 @@
     }
 
     function onBack(): void {
+        console.log(previousScreens.value);
         currentSession.value = previousScreens.value[previousScreens.value.length - 1];
 
         var newPreviousScreens: CheckInSession[] = [...previousScreens.value];
@@ -330,6 +381,10 @@
             navigateToScreen(Screen.Welcome);
         }
     }
+
+    // #endregion
+
+    // #region Supervisor Functions
 
     /**
      * Called when the configure button is clicked. Show the supervisor login
@@ -367,6 +422,51 @@
     function onCloseSupervisor(): void {
         navigateToScreen(Screen.Welcome);
     }
+
+    // #endregion
+
+    // #region Registration Functions
+
+    /**
+     * Called when the supervisor wants to edit the current family.
+     */
+    function onEditFamily(data: RegistrationScreenData): void {
+        previousScreens.value = [];
+        registrationData.value = data;
+        currentScreen.value = RegistrationScreen.EditFamily;
+    }
+
+    function onRegistrationScreen(screen: RegistrationScreen): void {
+        currentScreen.value = screen;
+    }
+
+    async function onRegistrationCheckInFamily(familyId: string): Promise<void> {
+        const blankSession = createNewSession();
+
+        let session = await blankSession.withFamilySearch(familyId, FamilySearchMode.FamilyId);
+
+        if (!session.families || session.families.length === 0) {
+            return onNextScreen(createNewSession());
+        }
+
+        session = await session.withFamily(familyId);
+        session = await session.withNextScreen();
+
+        // Make the back button go back to the welcome screen.
+        currentSession.value = blankSession;
+
+        onNextScreen(session);
+    }
+
+    /**
+     * Called when the registration screen should be closed. This will return
+     * to the welcome screen.
+     */
+    function onCloseRegistration(): void {
+        navigateToScreen(Screen.Welcome);
+    }
+
+    // #endregion
 
     // Read our check-in configuration and then start up.
     readConfigurationFromLocalStorage();

@@ -14,40 +14,34 @@
 // limitations under the License.
 // </copyright>
 //
-
-namespace Rock.Enums.CheckIn
+namespace Rock.ViewModels.Blocks.CheckIn.CheckInKiosk
 {
     /// <summary>
-    /// The different ways a family search can be performed in check-in.
+    /// The response object for the SaveFamily action.
     /// </summary>
-    public enum FamilySearchMode
+    public class SaveFamilyResponseBag
     {
         /// <summary>
-        /// Search for family based on phone number.
+        /// The encrypted identifier of the family that was either updated
+        /// or newly created.
         /// </summary>
-        PhoneNumber = 0,
+        public string FamilyId { get; set; }
 
         /// <summary>
-        /// Search for family based on name.
+        /// Determines if check-in after a successful registration should
+        /// be allowed.
         /// </summary>
-        Name = 1,
+        public bool IsCheckInAllowed { get; set; }
 
         /// <summary>
-        /// Search by phone and name at the same time. If the input has at
-        /// least one non-numeric character the search will assume to be
-        /// name. Otherwise phone number will be used.
+        /// Determines if the save operation was successful or not.
         /// </summary>
-        NameAndPhone = 2,
+        public bool IsSuccess { get; set; }
 
         /// <summary>
-        /// Search for family based on a barcode, proximity card, etc.
+        /// If the save operation was not successful then this will contain
+        /// an error message describing what went wrong.
         /// </summary>
-        ScannedId = 3,
-
-        /// <summary>
-        /// Search for family based on a Family Id. This must currently be
-        /// the encrypted IdKey value.
-        /// </summary>
-        FamilyId = 4
+        public string ErrorMessage { get; set; }
     }
 }

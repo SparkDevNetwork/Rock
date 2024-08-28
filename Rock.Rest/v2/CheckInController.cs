@@ -32,6 +32,8 @@ using Rock.Rest.Filters;
 using Rock.Utility;
 using Rock.ViewModels.Rest.CheckIn;
 using Rock.Web.Cache;
+using Rock.ViewModels.CheckIn.Labels;
+
 
 
 #if WEBFORMS
@@ -366,19 +368,30 @@ namespace Rock.Rest.v2
                 var director = new CheckInDirector( _rockContext );
                 var session = director.CreateSession( configuration );
                 var sessionRequest = new AttendanceSessionRequest( options.Session );
+                List<ClientLabelBag> clientLabelBags = null;
 
                 var result = session.SaveAttendance( sessionRequest, options.Requests, kiosk, RockRequestContext.ClientInformation.IpAddress );
 
                 if ( !options.Session.IsPending )
                 {
                     var cts = new CancellationTokenSource( 5000 );
-                    await director.LabelProvider.RenderAndPrintCheckInLabelsAsync( result, kiosk, new LabelPrintProvider(), cts.Token );
+                    var clientLabels = await director.LabelProvider.RenderAndPrintCheckInLabelsAsync( result, kiosk, new LabelPrintProvider(), cts.Token );
+
+                    clientLabelBags = clientLabels
+                        .Where( l => l.Data != null && l.Error.IsNullOrWhiteSpace() )
+                        .Select( l => new ClientLabelBag
+                        {
+                            PrinterAddress = l.PrintTo.IPAddress,
+                            Data = Convert.ToBase64String( l.Data )
+                        } )
+                        .ToList();
                 }
 
                 return Ok( new SaveAttendanceResponseBag
                 {
                     Messages = result.Messages,
-                    Attendances = result.Attendances
+                    Attendances = result.Attendances,
+                    Labels = clientLabelBags
                 } );
             }
             catch ( CheckInMessageException ex )
@@ -426,12 +439,22 @@ namespace Rock.Rest.v2
                 var result = session.ConfirmAttendance( options.SessionGuid );
 
                 var cts = new CancellationTokenSource( 5000 );
-                await director.LabelProvider.RenderAndPrintCheckInLabelsAsync( result, kiosk, new LabelPrintProvider(), cts.Token );
+                var clientLabels = await director.LabelProvider.RenderAndPrintCheckInLabelsAsync( result, kiosk, new LabelPrintProvider(), cts.Token );
+
+                var clientLabelBags = clientLabels
+                    .Where( l => l.Data != null && l.Error.IsNullOrWhiteSpace() )
+                    .Select( l => new ClientLabelBag
+                    {
+                        PrinterAddress = l.PrintTo.IPAddress,
+                        Data = Convert.ToBase64String( l.Data )
+                    } )
+                    .ToList();
 
                 return Ok( new ConfirmAttendanceResponseBag
                 {
                     Messages = result.Messages,
-                    Attendances = result.Attendances
+                    Attendances = result.Attendances,
+                    Labels = clientLabelBags
                 } );
             }
             catch ( CheckInMessageException ex )

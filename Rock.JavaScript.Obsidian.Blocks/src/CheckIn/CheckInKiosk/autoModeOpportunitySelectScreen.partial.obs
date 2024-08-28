@@ -8,7 +8,7 @@
                 <RockButton v-for="opportunity in opportunities"
                             btnType="primary"
                             class="location-button"
-                            :disabled="isConflictingOpportunitySelected(opportunity)"
+                            :disabled="isConflictingOpportunitySelected(opportunity) || isProcessing"
                             @click="onOpportunityClick(opportunity)">
                     <span class="selection">
                         <i v-if="isOpportunitySelected(opportunity)" class="fa fa-check-square"></i>
@@ -27,13 +27,13 @@
 <script setup lang="ts">
     import MainPanel from "./mainPanel.partial.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import { computed, PropType, ref } from "vue";
+    import { computed, onBeforeUnmount, PropType, ref } from "vue";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
-    import { alert } from "@Obsidian/Utility/dialogs";
+    import { CancellationTokenSource } from "@Obsidian/Utility/cancellation";
     import { CheckInSession } from "./checkInSession.partial";
     import { KioskButton } from "./types.partial";
     import { OpportunitySelectionBag } from "@Obsidian/ViewModels/CheckIn/opportunitySelectionBag";
-    import { UnexpectedErrorMessage } from "./utils.partial";
+    import { alert, UnexpectedErrorMessage } from "./utils.partial";
 
     const props = defineProps({
         configuration: {
@@ -55,6 +55,8 @@
     // #region Values
 
     const selectedOpportunities = ref(props.session.currentAttendeeId ? props.session.getAttendeeSelections(props.session.currentAttendeeId) : []);
+    const isProcessing = ref(false);
+    const cancellationTokenSource = new CancellationTokenSource();
 
     // #endregion
 
@@ -210,6 +212,8 @@
      */
     async function onNextClick(): Promise<void> {
         try {
+            isProcessing.value = true;
+
             let newSession = props.session.withStashedCurrentAttendeeSelections(selectedOpportunities.value);
 
             newSession = await newSession.withAttendee(null);
@@ -217,11 +221,16 @@
             emit("next", await newSession.withNextScreen());
         }
         catch (error) {
-            await alert(error instanceof Error ? error.message : UnexpectedErrorMessage);
+            await alert(error instanceof Error ? error.message : UnexpectedErrorMessage, cancellationTokenSource.token);
+        }
+        finally {
+            isProcessing.value = false;
         }
     }
 
     // #endregion
+
+    onBeforeUnmount(() => cancellationTokenSource.cancel());
 
     updateActions();
 </script>
