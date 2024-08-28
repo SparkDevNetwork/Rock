@@ -32,5 +32,13 @@ namespace Rock.Bus.Queue
         /// The name.
         /// </value>
         public override string Name => "rock-cloud-print-queue";
+
+        /// <summary>
+        /// Creates a new instance of <see cref="CloudPrintQueue"/>.
+        /// </summary>
+        public CloudPrintQueue()
+        {
+            TimeToLiveSeconds = 10;
+        }
     }
 }
