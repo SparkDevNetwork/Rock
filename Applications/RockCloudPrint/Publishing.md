@@ -37,3 +37,26 @@ Now the MSI needs to be code signed.
 ```
 signtool.exe /f SparkDevelopmentNetwork.cer /d "Rock Cloud Print" Rock.CloudPrint.Installer\bin\x64\Rock.CloudPrint.Installer.msi
 ```
+
+## Docker Image
+
+A local docker image can be built with the following command (Docker Desktop must be running):
+
+```
+cd Rock.CloudPrint.Service
+dotnet publish --os linux --arch x64 /t:PublishContainer
+```
+
+For additional information on how we can publish this to the docker registry: https://learn.microsoft.com/en-us/dotnet/core/docker/publish-as-container?pivots=dotnet-8-0#containerregistry
+
+For beta testing, you can then save the docker image with:
+
+```
+docker save rock-cloudprint-service -o rock-cloudprint-service.tar
+```
+
+This file can then be loaded into another computer with:
+
+```
+docker load -i rock-cloudprint-service.tar
+```
