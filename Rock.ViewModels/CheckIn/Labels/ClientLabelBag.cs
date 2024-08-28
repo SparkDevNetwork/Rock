@@ -14,22 +14,24 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Collections.Generic;
 
-using Rock.ViewModels.CheckIn;
-using Rock.ViewModels.CheckIn.Labels;
-
-namespace Rock.ViewModels.Rest.CheckIn
+namespace Rock.ViewModels.CheckIn.Labels
 {
     /// <summary>
-    /// The response that will be returned by the ConfirmAttendance check-in
-    /// REST endpoint.
+    /// Defines the structure of a label that should be printed by the client
+    /// instead of the server.
     /// </summary>
-    public class ConfirmAttendanceResponseBag : CheckInResultBag
+    public class ClientLabelBag
     {
         /// <summary>
-        /// The labels that need to be printed by the client device.
+        /// The address of the printer. This should be either an IP address or
+        /// an IP address and port number.
         /// </summary>
-        public List<ClientLabelBag> Labels { get; set; }
+        public string PrinterAddress { get; set; }
+
+        /// <summary>
+        /// The data to be printed encoded in base-64 format.
+        /// </summary>
+        public string Data { get; set; }
     }
 }

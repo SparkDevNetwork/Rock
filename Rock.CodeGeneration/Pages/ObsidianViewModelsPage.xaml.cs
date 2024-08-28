@@ -11,6 +11,7 @@ using System.Windows.Controls;
 
 using Rock.CodeGeneration.FileGenerators;
 using Rock.CodeGeneration.Utility;
+using Rock.ViewModels.Utility;
 
 namespace Rock.CodeGeneration.Pages
 {
@@ -113,6 +114,11 @@ namespace Rock.CodeGeneration.Pages
                     }
 
                     return IsSupportedPropertyType( type.GetGenericArguments()[1], validTypes );
+                }
+
+                if ( type.GetGenericTypeDefinition() == typeof( ValidPropertiesBox<> ) )
+                {
+                    return validTypes.Contains( type.GetGenericArguments()[0] );
                 }
             }
 

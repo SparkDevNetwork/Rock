@@ -34,6 +34,7 @@ using Rock.Model;
 using Rock.Web.Cache;
 
 using CheckInLabel = Rock.CheckIn.CheckInLabel;
+using Rock.ViewModels.CheckIn.Labels;
 
 namespace Rock.Utility
 {
@@ -51,6 +52,7 @@ namespace Rock.Utility
         public static List<string> PrintLabels( List<CheckInLabel> labels )
         {
             var messages = new List<string>();
+            var cloudLabels = new List<RenderedLabel>();
 
             Socket socket = null;
             string currentIp = string.Empty;
@@ -66,6 +68,26 @@ namespace Rock.Utility
                 {
                     if ( !string.IsNullOrWhiteSpace( label.PrinterAddress ) )
                     {
+                        string printContent = ZebraPrint.MergeLabelFields( labelCache.FileContent, label.MergeFields ).TrimEnd();
+
+                        // Check if this label needs to be cloud printed.
+                        if ( label.PrinterDeviceId.HasValue )
+                        {
+                            var printerCache = DeviceCache.Get( label.PrinterDeviceId.Value );
+
+                            if ( printerCache != null && printerCache.ProxyDeviceId.HasValue )
+                            {
+                                cloudLabels.Add( new RenderedLabel
+                                {
+                                    PrintFrom = PrintFrom.Server,
+                                    Data = System.Text.Encoding.UTF8.GetBytes( printContent ),
+                                    PrintTo = printerCache
+                                } );
+
+                                continue;
+                            }
+                        }
+
                         if ( label.PrinterAddress != currentIp )
                         {
                             if ( socket != null && socket.Connected )
@@ -76,8 +98,6 @@ namespace Rock.Utility
 
                             socket = ZebraPrint.OpenSocket( label.PrinterAddress );
                         }
-
-                        string printContent = ZebraPrint.MergeLabelFields( labelCache.FileContent, label.MergeFields ).TrimEnd();
 
                         // If the "enable label cutting" feature is enabled, then we are going to
                         // control which mode the printer is in. In this case, we will remove any
@@ -116,6 +136,30 @@ namespace Rock.Utility
             {
                 socket.Shutdown( SocketShutdown.Both );
                 socket.Close();
+            }
+
+            // If we have any labels that need to be printed via cloud print
+            // then do so now.
+            if ( cloudLabels.Any() )
+            {
+                try
+                {
+                    var printProvider = new LabelPrintProvider();
+                    var cts = new CancellationTokenSource( 5000 );
+
+                    var task = Task.Run( async () => await printProvider.PrintLabelsAsync( cloudLabels, cts.Token ) );
+
+                    task.Wait();
+
+                    if ( task.Result.Any() )
+                    {
+                        messages.AddRange( task.Result );
+                    }
+                }
+                catch ( Exception ex )
+                {
+                    messages.Add( ex.Message );
+                }
             }
 
             return messages;
@@ -166,14 +210,15 @@ namespace Rock.Utility
         /// identifiers.
         /// </summary>
         /// <param name="attendanceIds">The attendance identifiers to reprint.</param>
-        /// <param name="printer">The printer device for server based printing.</param>
+        /// <param name="kiosk">The kiosk device requesting the re-print.</param>
         /// <param name="errorMessages">On return contains any error messages.</param>
+        /// <param name="clientLabels">On return contains any labels that need to be printed on the client.</param>
         /// <returns><c>true</c> if any labels were found to be printed.</returns>
         [RockInternal( "1.16.7", true )]
-        public static bool TryReprintNextGenLabels( List<int> attendanceIds, DeviceCache printer, out List<string> errorMessages )
+        public static bool TryReprintNextGenLabels( List<int> attendanceIds, DeviceCache kiosk, out List<string> errorMessages, out List<ClientLabelBag> clientLabels )
         {
             var director = new CheckIn.v2.CheckInDirector( new RockContext() );
-            var labels = director.LabelProvider.RenderLabels( attendanceIds, null, false );
+            var labels = director.LabelProvider.RenderLabels( attendanceIds, kiosk, false );
 
             errorMessages = labels.Where( l => l.Error.IsNotNullOrWhiteSpace() )
                 .Select( l => l.Error )
@@ -181,15 +226,24 @@ namespace Rock.Utility
 
             if ( !labels.Any() )
             {
+                clientLabels = new List<ClientLabelBag>();
                 return false;
             }
 
+            var printer = DeviceCache.Get( kiosk.PrinterDeviceId ?? 0 );
             labels = labels.Where( l => l.Error.IsNullOrWhiteSpace() ).ToList();
             foreach ( var label in labels )
             {
                 label.PrintTo = printer;
-                label.PrintFrom = PrintFrom.Server;
             }
+
+            clientLabels = labels.Where( l => l.PrintFrom == PrintFrom.Client )
+                .Select( l => new ClientLabelBag
+                {
+                    PrinterAddress = l.PrintTo.IPAddress,
+                    Data = Convert.ToBase64String( l.Data )
+                } )
+                .ToList();
 
             // Print the labels with a 5 second timeout.
             var cts = new CancellationTokenSource( 5_000 );
@@ -197,7 +251,8 @@ namespace Rock.Utility
 
             try
             {
-                var printerErrors = Task.Run( async () => await printProvider.PrintLabelsAsync( labels, cts.Token ) ).Result;
+                var serverLabels = labels.Where( l => l.PrintFrom == PrintFrom.Server );
+                var printerErrors = Task.Run( async () => await printProvider.PrintLabelsAsync( serverLabels, cts.Token ) ).Result;
 
                 errorMessages.AddRange( printerErrors );
             }

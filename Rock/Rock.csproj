@@ -818,8 +818,11 @@
     <Compile Include="CheckIn\v2\CloudPrintSocket.cs" />
     <Compile Include="CheckIn\v2\DefaultLabelProvider.cs" />
     <Compile Include="CheckIn\v2\DefaultSaveProvider.cs" />
+    <Compile Include="CheckIn\v2\FamilyRegistration.cs" />
+    <Compile Include="CheckIn\v2\FamilyRegistrationSaveResult.cs" />
     <Compile Include="CheckIn\v2\Filters\BirthMonthOpportunityFilter.cs" />
     <Compile Include="CheckIn\v2\Filters\LocationClosedOpportunityFilter.cs" />
+    <Compile Include="CheckIn\v2\IValidPropertiesBoxExtensions.cs" />
     <Compile Include="CheckIn\v2\Labels\AttendanceLabel.cs" />
     <Compile Include="CheckIn\v2\Labels\AttendanceLabelData.cs" />
     <Compile Include="CheckIn\v2\Labels\AttendeePhotoFieldConfiguration.cs" />

@@ -21,20 +21,26 @@
 // </copyright>
 //
 
-import { ClientLabelBag } from "@Obsidian/ViewModels/CheckIn/Labels/clientLabelBag";
-import { RecordedAttendanceBag } from "@Obsidian/ViewModels/CheckIn/recordedAttendanceBag";
+/** The response object for the SaveFamily action. */
+export type SaveFamilyResponseBag = {
+    /**
+     * If the save operation was not successful then this will contain
+     * an error message describing what went wrong.
+     */
+    errorMessage?: string | null;
 
-/**
- * The response that will be returned by the ConfirmAttendance check-in
- * REST endpoint.
- */
-export type ConfirmAttendanceResponseBag = {
-    /** Gets or sets the attendance records that were created or updated. */
-    attendances?: RecordedAttendanceBag[] | null;
+    /**
+     * The encrypted identifier of the family that was either updated
+     * or newly created.
+     */
+    familyId?: string | null;
 
-    /** The labels that need to be printed by the client device. */
-    labels?: ClientLabelBag[] | null;
+    /**
+     * Determines if check-in after a successful registration should
+     * be allowed.
+     */
+    isCheckInAllowed: boolean;
 
-    /** Gets or sets the messages for this check-in operation. */
-    messages?: string[] | null;
+    /** Determines if the save operation was successful or not. */
+    isSuccess: boolean;
 };

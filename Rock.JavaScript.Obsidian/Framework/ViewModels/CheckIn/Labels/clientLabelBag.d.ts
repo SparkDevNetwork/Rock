@@ -21,20 +21,17 @@
 // </copyright>
 //
 
-import { ClientLabelBag } from "@Obsidian/ViewModels/CheckIn/Labels/clientLabelBag";
-import { RecordedAttendanceBag } from "@Obsidian/ViewModels/CheckIn/recordedAttendanceBag";
-
 /**
- * The response that will be returned by the ConfirmAttendance check-in
- * REST endpoint.
+ * Defines the structure of a label that should be printed by the client
+ * instead of the server.
  */
-export type ConfirmAttendanceResponseBag = {
-    /** Gets or sets the attendance records that were created or updated. */
-    attendances?: RecordedAttendanceBag[] | null;
+export type ClientLabelBag = {
+    /** The data to be printed encoded in base-64 format. */
+    data?: string | null;
 
-    /** The labels that need to be printed by the client device. */
-    labels?: ClientLabelBag[] | null;
-
-    /** Gets or sets the messages for this check-in operation. */
-    messages?: string[] | null;
+    /**
+     * The address of the printer. This should be either an IP address or
+     * an IP address and port number.
+     */
+    printerAddress?: string | null;
 };

@@ -14,7 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
+
 using Rock.ViewModels.CheckIn;
+using Rock.ViewModels.CheckIn.Labels;
 
 namespace Rock.ViewModels.Rest.CheckIn
 {
@@ -24,5 +27,9 @@ namespace Rock.ViewModels.Rest.CheckIn
     /// </summary>
     public class SaveAttendanceResponseBag : CheckInResultBag
     {
+        /// <summary>
+        /// The labels that need to be printed by the client device.
+        /// </summary>
+        public List<ClientLabelBag> Labels { get; set; }
     }
 }

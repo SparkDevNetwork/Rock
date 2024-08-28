@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using Rock;
 using Rock.CodeGeneration.Utility;
 using Rock.CodeGeneration.XmlDoc;
+using Rock.ViewModels.Utility;
 
 namespace Rock.CodeGeneration.FileGenerators
 {
@@ -562,6 +563,19 @@ namespace Rock.CodeGeneration.FileGenerators
 
                     tsType = $"{itemType}[]";
                     imports.AddRange( itemImports );
+                    isNullable = isNullable || !isRequired;
+                }
+                else if ( genericTypeDefinition == typeof( ValidPropertiesBox<> ) )
+                {
+                    var (valueType, valueImports) = GetTypeScriptType( type.GetGenericArguments()[0], true );
+
+                    tsType = $"ValidPropertiesBox<{valueType}>";
+                    imports.AddRange( valueImports );
+                    imports.Add( new TypeScriptImport
+                    {
+                        SourcePath = "@Obsidian/ViewModels/Utility/validPropertiesBox",
+                        NamedImport = "ValidPropertiesBox"
+                    } );
                     isNullable = isNullable || !isRequired;
                 }
             }
