@@ -57,7 +57,7 @@
 
         <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="3" />
 
-        <Panel title="Step Attributes" :hasCollapse="true" :isDrawerOpen="true">
+        <Panel title="Step Attributes" :hasCollapse="true">
             <Grid :definition="props.modelValue.stepTypeAttributesGridDefinition ?? undefined"
                   :data="attributesGridDataSource"
                   light
@@ -102,7 +102,7 @@
             </Modal>
         </Panel>
 
-        <Panel title="Workflows" :hasCollapse="true" :isDrawerOpen="true">
+        <Panel title="Workflows" :hasCollapse="true">
 
             <Grid :definition="props.modelValue.workflowTriggerGridDefinition ?? undefined"
                   :data="workflowTriggersGridDataSource"
@@ -167,7 +167,7 @@
             </Modal>
         </Panel>
 
-        <Panel title="Advanced Settings" :hasCollapse="true" :isDrawerOpen="false">
+        <Panel title="Advanced Settings" :hasCollapse="true">
             <div class="row">
                 <div class="col-md-2">
                     <DataViewPicker v-if="audienceDataView.value"

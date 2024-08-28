@@ -18,6 +18,7 @@
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
                  :isSecurityHidden="!isEditable"
+                 :isFullScreenVisible="false"
                  :footerSecondaryActions="footerSecondaryActions"
                  additionalDeleteMessage="This will also delete the associated step participants."
                  @cancelEdit="onCancelEdit"
