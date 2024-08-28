@@ -176,7 +176,7 @@
       }
 
       &:hover::before {
-        color: var(--color-interface-strong); //TODO darken by 20% when 
+        color: var(--color-interface-strong); // TODO darken by 20% when 
       }
     }
 
@@ -329,7 +329,7 @@
         }
 
         &:hover::after {
-          color: var(--color-interface-strong); //TODO darken by 20% when 
+          color: var(--color-interface-strong); // TODO darken by 20% when 
         }
       }
     }
@@ -352,7 +352,7 @@
 .chosen-container-active {
   .chosen-single {
     border: 1px solid var(--color-primary);
-    box-shadow: 0 0 0 2px var(--color-primary); //TODO lighten by 32%
+    box-shadow: 0 0 0 2px var(--color-primary); // TODO lighten by 32%
     transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
   }
 
@@ -361,14 +361,14 @@
     border: 1px solid var(--color-primary);
     border-bottom-right-radius: 0;
     border-bottom-left-radius: 0;
-    box-shadow: 0 0 0 2px var(--color-primary); //TODO lighten by 32%
+    box-shadow: 0 0 0 2px var(--color-primary); // TODO lighten by 32%
     transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
   }
   .chosen-choices {
     border: 1px solid var(--color-primary);
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
-    box-shadow: 0 0 0 2px var(--color-primary); //TODO lighten by 32%
+    box-shadow: 0 0 0 2px var(--color-primary); // TODO lighten by 32%
     transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
 
     .search-field .chosen-search-input {

@@ -127,7 +127,7 @@
   .fileupload-thumbnail {
     width:              100px;
     height:             100px;
-    background-color:   var(--color-interface-softer); //TODO lighten by 2% when available
+    background-color:   var(--color-interface-softer); // TODO lighten by 2% when available
     background-repeat:  no-repeat;
     background-position:  50%;
     background-size:      contain;
@@ -237,7 +237,7 @@
   .fileupload-button {
     padding:            var(--spacing-tiny) var(--spacing-small);
     background-color:   var(--color-primary);
-    border:             1px solid var(--color-primary); //TODO darken this by 5% when available
+    border:             1px solid var(--color-primary); // TODO darken this by 5% when available
     border-radius:      var(--rounded-small);
 
     span {

@@ -88,7 +88,7 @@
       color:        inherit;
     }
     .list-group-item-text {
-      color:        var(--color-primary); //TODO lighten by 40% when color-mix() is available
+      color:        var(--color-primary); // TODO lighten by 40% when color-mix() is available
     }
   }
 }
@@ -146,7 +146,7 @@ button.list-group-item {
     &:hover,
     &:focus {
       color:              var(--color-success-strong);
-      background-color:   var(--color-success-soft); //TODO darken by 5% when css color-mix() is available.
+      background-color:   var(--color-success-soft); // TODO darken by 5% when css color-mix() is available.
     }
     &.active,
     &.active:hover,
@@ -172,7 +172,7 @@ button.list-group-item {
     &:hover,
     &:focus {
       color:              var(--color-info-strong);
-      background-color:   var(--color-info-soft); //TODO darken by 5% when css color-mix() is available.
+      background-color:   var(--color-info-soft); // TODO darken by 5% when css color-mix() is available.
     }
     &.active,
     &.active:hover,
@@ -198,7 +198,7 @@ button.list-group-item {
     &:hover,
     &:focus {
       color:                var(--color-warning-strong);
-      background-color:     var(--color-warning-soft); //TODO darken by 5% when css color-mix() is available.
+      background-color:     var(--color-warning-soft); // TODO darken by 5% when css color-mix() is available.
     }
     &.active,
     &.active:hover,
@@ -224,7 +224,7 @@ button.list-group-item {
     &:hover,
     &:focus {
       color:              var(--color-danger-strong);
-      background-color:   var(--color-danger-soft); //TODO darken by 5% when css color-mix() is available.
+      background-color:   var(--color-danger-soft); // TODO darken by 5% when css color-mix() is available.
     }
     &.active,
     &.active:hover,

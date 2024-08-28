@@ -244,7 +244,7 @@ input {
 
   &:active ~ .label-text::before {
     color: var(--color-interface-softest);
-    background-color: #f39c62; //TODO this is hard coded
+    background-color: #f39c62; // TODO this is hard coded
   }
 
   &:disabled {

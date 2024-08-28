@@ -41,7 +41,7 @@ caption {
 }
 
 // th {
-//   // text-align: left; //TODO commented out for the tr to be center 
+//   // text-align: left; // TODO commented out for the tr to be center 
 // }
 
 .table {
@@ -243,7 +243,7 @@ td.wrap-contents {
 .table-striped {
   > tbody > tr:nth-of-type(odd) {
     color:            var(--color-interface-stronger);
-    background-color: var(--color-interface-softest); //TODO darken the ui soft by 3%
+    background-color: var(--color-interface-softest); // TODO darken the ui soft by 3%
   }
   > tbody > tr:nth-of-type(even) {
     color:            var(--color-interface-softest);
@@ -331,7 +331,7 @@ td.wrap-contents {
   &.active:hover > td,
   &:hover > .active,
   &.active:hover > th {
-    background-color: var(--color-interface-softer); //TODO darken by 5% 
+    background-color: var(--color-interface-softer); // TODO darken by 5% 
   }
 }
 
@@ -353,7 +353,7 @@ td.wrap-contents {
   &.success:hover > td,
   &:hover > .success,
   &.success:hover > th {
-    background-color: var(--color-success-soft); //TODO Darken by 5%
+    background-color: var(--color-success-soft); // TODO Darken by 5%
   }
 }
 
@@ -375,7 +375,7 @@ td.wrap-contents {
   &.info:hover > td,
   &:hover > .info,
   &.info:hover > th {
-    background-color: var(--color-info-soft); //TODO Darken by 5%
+    background-color: var(--color-info-soft); // TODO Darken by 5%
   }
 }
 
@@ -397,7 +397,7 @@ td.wrap-contents {
   &.warning:hover > td,
   &:hover > .warning,
   &.warning:hover > th {
-    background-color: var(--color-warning-soft); //TODO Darken by 5%
+    background-color: var(--color-warning-soft); // TODO Darken by 5%
   }
 }
 
@@ -419,7 +419,7 @@ td.wrap-contents {
   &.danger:hover > td,
   &:hover > .danger,
   &.danger:hover > th {
-    background-color: var(--color-danger-soft); //TODO Darken by 5%
+    background-color: var(--color-danger-soft); // TODO Darken by 5%
   }
 }
 
@@ -597,13 +597,13 @@ tr.row-highlight {
   &:focus,
   &.focus {
     color:            var(--color-interface-softest);
-    background-color: var(--color-danger-soft); //TODO darken by 10% when available
+    background-color: var(--color-danger-soft); // TODO darken by 10% when available
     border-color:     var(--color-danger-stronger);
   }
   
   &:hover {
     color:            var(--color-interface-softest);
-    background-color: var(--color-danger-soft); //TODO darken by 10% when available
+    background-color: var(--color-danger-soft); // TODO darken by 10% when available
     border-color:     var(--color-danger-stronger);
   }
   
@@ -611,7 +611,7 @@ tr.row-highlight {
   &.active,
   .open > .dropdown-toggle & {
     color:            var(--color-interface-softest); 
-    background-color: var(--color-danger-soft); //TODO this uses darken, which is a Less function
+    background-color: var(--color-danger-soft); // TODO this uses darken, which is a Less function
     background-image: none;
     border-color:     var(--color-danger-stronger);
 
@@ -660,7 +660,7 @@ tr.row-highlight {
     &:focus,
     &:hover,
     &:active {
-      background-color: var(--color-danger-softer); //TODO darken ui softest it by 10%
+      background-color: var(--color-danger-softer); // TODO darken ui softest it by 10%
     }
   }
 
@@ -670,7 +670,7 @@ tr.row-highlight {
     &:active,
     &:hover {
       color:        var(--color-danger-strong);
-      background:   var(--color-danger-soft); //TODO fade by 10%
+      background:   var(--color-danger-soft); // TODO fade by 10%
       border-color: transparent;
     }
 
@@ -738,8 +738,8 @@ tr.row-highlight {
   .grid-filter-entry,
   .grid-filter-overview fieldset {
     padding:        var(--spacing-medium);
-    padding-top:    37px;   //TODO this is harded coded 
-    border-bottom:  1px solid var(--color-interface-softer); //TODO darken softer by 10%
+    padding-top:    37px;   // TODO this is harded coded 
+    border-bottom:  1px solid var(--color-interface-softer); // TODO darken softer by 10%
   }
 
   .picker .picker-label {
@@ -893,7 +893,7 @@ td.grid-actions {
       color:            var(--color-interface-stronger);;
       vertical-align:   top !important;
       background-color: var(--color-interface-softest);;
-      border-color:     var(--color-interface-softest); //TODO lighten ui softest by 5%
+      border-color:     var(--color-interface-softest); // TODO lighten ui softest by 5%
     }
   }
 
@@ -906,7 +906,7 @@ td.grid-actions {
 
     &:hover td {
       color:            var(--color-interface-stronger) !important;
-      background-color: var(--color-interface-softest); //TODO lightne ui softest by 10%
+      background-color: var(--color-interface-softest); // TODO lightne ui softest by 10%
     }
   }
 
@@ -976,7 +976,7 @@ td.grid-actions {
     }
 
     &.grid-columncommand {
-      width:      34px; //TODO Harded coded sizing
+      width:      34px; // TODO Harded coded sizing
       min-width:  34px;
       vertical-align: middle;
     }
@@ -1012,7 +1012,7 @@ td.grid-actions {
       padding-top:  var(--spacing-medium);
 
       a {
-        color:  var(--color-interface-strong); //TODO lighten the ui stronger by 20% when color-mix() is available
+        color:  var(--color-interface-strong); // TODO lighten the ui stronger by 20% when color-mix() is available
       }
     }
   }
@@ -1042,13 +1042,13 @@ td.grid-actions {
 // ======================= TABLE STATES =====================
 .table > tbody > tr.is-inactive {
   > td {
-    color: var(--color-interface-medium); //TODO lightent ui medium by 30%
+    color: var(--color-interface-medium); // TODO lightent ui medium by 30%
   }
 }
 
 .table > tbody > tr.is-inactive-person {
   > td {
-    color: var(--color-interface-medium); //TODO lightne ui medium by 30%
+    color: var(--color-interface-medium); // TODO lightne ui medium by 30%
   }
 }
 

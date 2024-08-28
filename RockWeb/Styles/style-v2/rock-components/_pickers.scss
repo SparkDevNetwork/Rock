@@ -29,7 +29,7 @@
     font-size: var(--font-size-xsmall);
 
     &.active {
-      background-color: var(--color-interface-softest) //TODO darken by 10% when available
+      background-color: var(--color-interface-softest) // TODO darken by 10% when available
     }
   }
 
@@ -69,7 +69,7 @@
 
       &.active {
         border-color: var(--color-danger-strong);
-        box-shadow: 0 0 0 3px var(--color-danger-strong); //TODO fade by 20% when available
+        box-shadow: 0 0 0 3px var(--color-danger-strong); // TODO fade by 20% when available
       }
     }
   }

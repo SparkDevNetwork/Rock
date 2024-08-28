@@ -122,7 +122,7 @@
   &.facebook {
     color:          var(--color-interface-softest);
     --btn-bg:       $brand-facebook;
-    --btn-hover-bg: $brand-facebook; //TODO darken by 10% when available
+    --btn-hover-bg: $brand-facebook; // TODO darken by 10% when available
     --social-icon:  "\f39e";
   }
 
@@ -142,7 +142,7 @@
   &.twitter {
     color:          var(--color-interface-softest);
     --btn-bg:       $brand-twitter;
-    --btn-hover-bg: $brand-twitter; //TODO darken by 10% when available
+    --btn-hover-bg: $brand-twitter; // TODO darken by 10% when available
     --social-icon:  @fa-var-twitter;
   }
 
@@ -362,7 +362,7 @@
   &.active,
   .open > .dropdown-toggle & {    
       color:            var(--color-interface-softest);
-      background-color: var(--color-primary);         //TODO change when primary hover is available.
+      background-color: var(--color-primary);         // TODO change when primary hover is available.
       border-color:     var(--color-interface-softest);
       background-image: none;
 
@@ -665,7 +665,7 @@
     &:focus,
     &.focus {
       color:            var(--color-interface-stronger);
-      background-color: var(--color-interface-softest); //TODO darken by 17% when available
+      background-color: var(--color-interface-softest); // TODO darken by 17% when available
       border-color:     var(--color-interface-medium)
     }
   }
@@ -737,7 +737,7 @@
 }
 
 .btn-label {
-  padding:      5px 5px 4px; //TODO Doesn't use variable 
+  padding:      5px 5px 4px; // TODO Doesn't use variable 
   margin-top:   -1px;
   font-size:    var(--font-size-xsmall);
   line-height:  var(--line-height-tight);

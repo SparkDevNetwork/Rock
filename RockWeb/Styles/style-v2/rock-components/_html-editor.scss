@@ -9,7 +9,7 @@
 }
 
 .note-editor.panel-default {
-  border-color: var(--color-primary);   //TODO ligthen by 35% when available
+  border-color: var(--color-primary);   // TODO ligthen by 35% when available
 }
 
 .note-editor.panel-default > .panel-heading {
@@ -29,8 +29,8 @@
     padding: 8px 24px;
     margin-right: -15px;
     margin-left: -15px;
-    color: var(--color-primary);      //TODO darken by 20% when available.
-    background-color: var(--color-primary);      //TODO lighten by 20% when available.
+    color: var(--color-primary);      // TODO darken by 20% when available.
+    background-color: var(--color-primary);      // TODO lighten by 20% when available.
   }
 }
 
@@ -48,8 +48,8 @@
     padding: 8px 24px;
     margin-right: -15px;
     margin-left: -15px;
-    color: var(--color-primary);      //TODO darken by 20% when available.
-    background-color: var(--color-primary);      //TODO lighten by 20% when available.
+    color: var(--color-primary);      // TODO darken by 20% when available.
+    background-color: var(--color-primary);      // TODO lighten by 20% when available.
   }
 }
 
@@ -139,7 +139,7 @@ iframe.file-browser {
   border-radius: var(--rounded-small);
 
   @media (min-width: $screen-medium) {
-    background: var(--color-interface-softer); //TODO ligthen by 7% when available 
+    background: var(--color-interface-softer); // TODO ligthen by 7% when available 
   }
 
   @media (min-width: $screen-large) {

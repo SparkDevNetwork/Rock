@@ -799,7 +799,7 @@
   .criteria-exists {
     color: var(--color-interface-softest);
     background-color: var(--color-warning-strong);
-    border: 1px solid var(--color-warning-strong); //TODO darken by 5% when available
+    border: 1px solid var(--color-warning-strong); // TODO darken by 5% when available
   }
 
   .conditional-run-criteria {
@@ -944,7 +944,7 @@
   &.active {
     color: var(--color-interface-softest) !important;
     background: var(--color-primary) !important;
-    border-color: var(--color-primary) !important; //TODO darken by 5% when available 
+    border-color: var(--color-primary) !important; // TODO darken by 5% when available 
   }
 }
 

@@ -352,7 +352,7 @@ body.rock-modal {
     small {
       display:    block;
       margin-top: var(--spacing-small);
-      color:      var(--color-interface-medium) //TODO Darken the ui softest by 10% when color-mix() is avaialable
+      color:      var(--color-interface-medium) // TODO Darken the ui softest by 10% when color-mix() is avaialable
     }
 
     @media screen and (min-width: $screen-small) {

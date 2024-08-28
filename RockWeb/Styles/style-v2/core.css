@@ -320,7 +320,7 @@ th {
   --theme-darkest: var(--color-interface-strongest);
   --theme-dark: var(--color-interface-stronger);
   --theme-medium: var(--color-interface-strong);
-  --theme-light: var(--color-interface-softer);
+  --theme-light: var(--color-interface-soft);
   --theme-lightest: var(--color-interface-softer);
   --theme-white: var(--color-interface-softest);
   --theme-black: #343A40;
@@ -3215,7 +3215,7 @@ pre code {
   min-width: 160px;
   padding: var(--spacing-tiny) 0;
   margin: 2px 0 0;
-  font-size: var(--font-size-medium);
+  font-size: var(--font-size-regular);
   text-align: left;
   list-style: none;
   background-color: var(--color-interface-softest);
@@ -3232,7 +3232,7 @@ pre code {
   clear: both;
   font-weight: var(--font-weight-regular);
   line-height: var(--line-height-normal);
-  color: var(--color-interface-stronger);
+  color: var(--color-interface-strong);
   white-space: nowrap;
   text-decoration: none;
 }
@@ -10192,7 +10192,7 @@ ul.rocktree-children {
 .checkbox input:focus ~ .label-text::before,
 .radio-inline input:focus ~ .label-text::before,
 .checkbox-inline input:focus ~ .label-text::before {
-  box-shadow: 0 0 0 1px var(--color-interface-softest), 0 0 0 3px fade(var(color-primary), 20%);
+  box-shadow: 0 0 0 1px #fff, 0 0 0 3px rgba(238, 119, 37, 0.2);
 }
 .radio input:active ~ .label-text::before,
 .checkbox input:active ~ .label-text::before,

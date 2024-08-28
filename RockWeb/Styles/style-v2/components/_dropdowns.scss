@@ -42,7 +42,7 @@
   min-width:        $dropdown-min-width;
   padding:          var(--spacing-tiny) 0;
   margin:           2px 0 0;
-  font-size:        var(--font-size-medium);
+  font-size:        var(--font-size-regular);
   text-align:       left;
   list-style:       none;
   background-color: var(--color-interface-softest);
@@ -60,7 +60,7 @@
     clear:            both;
     font-weight:      var(--font-weight-regular);
     line-height:      var(--line-height-normal);
-    color:            var(--color-interface-stronger);
+    color:            var(--color-interface-strong);
     white-space:      nowrap;
     text-decoration:  none;
 
@@ -224,7 +224,7 @@
   .dropdown-menu {
     top:            auto;
     bottom:         100%;
-    margin-bottom:  2px; //TODO Harded coded
+    margin-bottom:  2px; // TODO Harded coded
   }
 }
 
