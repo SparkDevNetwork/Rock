@@ -299,7 +299,7 @@ export async function printLabels(labels: ClientLabelBag[]): Promise<string[]> {
                 return [error];
             }
             else if (typeof error === "object" && error && "Error" in error) {
-                return [error["Error"]];
+                return [error["Error"] as string];
             }
             else {
                 return ["Unknown error printing label."];
