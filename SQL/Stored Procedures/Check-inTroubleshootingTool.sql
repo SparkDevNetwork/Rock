@@ -9,11 +9,12 @@ GO
 09/26/2023 Jeff McClure - Updated to exclude inactive groups from all sections
 03/01/2024 Steve Swaringen - Update Belongs to Groups Requiring Belongs to also check for missing group requirements
 06/18/2024 shanedlp - Updated to include 2024 Summer Blast Volunteer Check-In Groups(684) and Placement Groups(674)
+08/28/2024 Jon Corey - Updated "Serving Teams" section to pull all groups with requirements and to filter out archived/inactive groups and members
 
 Test:
 
 DECLARE @PersonId INT = 260979 --<----Change this to any personid
-DECLARE @Person NVARCHAR(36) = (SELECT GUID FROM PersonAlias pa WHERE AliasPersonId = @PersonId)
+DECLARE @Person NVARCHAR(36) = (SELECT GUID FROM PersonAlias pa WHERE PersonId = @PersonId)
 DECLARE @Campus NVARCHAR(36) = (SELECT c.guid FROM Campus c JOIN Person p ON p.PrimaryCampusId = c.id WHERE p.Id = @PersonId)
 SELECT @Person AS PersonAliasGuid, @Campus AS CampusId 
 EXEC [dbo].[_org_lakepointe_spReport_Checkin_Dashboard_v2] 	
@@ -136,44 +137,26 @@ IF @Campus != ''
 -- Serving Teams  
 IF @Campus != ''
 Begin
-WITH ServeTimes AS (
-	SELECT gm.personid AS PersonId, gm.GroupId, gm.GroupRoleId, STRING_AGG(dv.Value, ' | ') AS ServeTimes
-	FROM GroupMember gm
-	LEFT JOIN AttributeValue av ON gm.Id = av.EntityId
-	LEFT JOIN Attribute a ON a.Id = av.AttributeId
-		CROSS APPLY STRING_SPLIT(value, ',') c
-			LEFT JOIN dbo.DefinedValue dv ON dv.guid = TRY_CAST(c.Value AS UNIQUEIDENTIFIER) 
-	WHERE  1=1
-	AND a.EntityTypeId = 90
-	AND a.EntityTypeQualifierValue IN (N'621',N'622',N'623',N'624',N'625',N'674',N'684') --List GroupTypeIds in string form
-	AND a.[KEY] Like N'ServingHour%'
-	GROUP BY gm.personid, gm.GroupId, gm.GroupRoleId
-)
- SELECT g.Id AS [GroupId], g.Name AS [GroupName],  
-  CASE  
-   WHEN gm.GroupMemberStatus = 0 THEN 'Inactive'  
-   WHEN gm.GroupMemberStatus = 1 THEN 'Active'  
-   WHEN gm.GroupMemberStatus = 2 THEN 'Pending'  
-  END AS [GroupMemberStatus],  
-  CASE  
-   WHEN gm.IsArchived = 0 THEN ''  
-   WHEN gm.IsArchived = 1 THEN 'Archived'  
-  END AS [Archived],  
-  CASE WHEN gmr.RequirementMetDateTime IS NULL THEN '0' ELSE '1' END AS [GroupRequirementMet],   
-  grt.Name AS [Requirement],  
-  CASE WHEN gmr.RequirementMetDateTime IS NULL THEN grt.NegativeLabel ELSE grt.PositiveLabel END AS [GroupRequirementStatus],  
-  gtr.Name AS [GroupRole],  
-  gm.Id AS [GroupMemberId],
-  st.ServeTimes
- FROM GroupMember gm  
- JOIN PersonAlias pa ON pa.PersonId = gm.PersonId AND pa.Guid = TRY_CAST(@Person AS UNIQUEIDENTIFIER)  
- JOIN [Group] g ON g.Id = gm.GroupId AND g.IsActive = 1 AND (g.GroupTypeId IN (424, 431, 432, 404, 477, 549, 550, 576, 577, 537, 584, 586, 587, 621, 622, 623, 624, 625, 674, 684) OR g.Id IN (905913))  
- JOIN [GroupMemberRequirement] gmr ON gmr.GroupMemberId = gm.Id  
- JOIN [GroupRequirement] gr ON gr.Id = gmr.GroupRequirementId  
- JOIN [GroupRequirementType] grt ON grt.Id = gr.GroupRequirementTypeId  
- JOIN [GroupTypeRole] gtr ON gtr.Id = gm.GroupRoleId
- LEFT JOIN ServeTimes st ON st.PersonId = pa.PersonId
-	AND st.GroupId = g.Id
-	AND st.GroupRoleId = gm.GroupRoleId
+SELECT
+	g.[Name] as [GroupName],
+	gtr.[Name] AS [GroupRole],
+	CASE WHEN gmr.[RequirementMetDateTime] IS NULL THEN 0 ELSE 1 END AS [GroupRequirementMet],
+	grt.[Name] as [Requirement],
+	CASE WHEN gmr.[RequirementMetDateTime] IS NULL THEN grt.[NegativeLabel] ELSE grt.[PositiveLabel] END AS [GroupRequirementStatus]
+FROM [GroupMember] gm
+JOIN [PersonAlias] pa ON pa.[PersonId] = gm.[PersonId]
+JOIN [Person] p ON p.[Id] = pa.[PersonId]
+JOIN [Group] g ON g.[Id] = gm.[GroupId]
+JOIN [GroupTypeRole] gtr ON gtr.[Id] = gm.[GroupRoleId]
+JOIN [GroupMemberRequirement] gmr ON gmr.[GroupMemberId] = gm.[Id]
+JOIN [GroupRequirement] gr ON gr.[Id] = gmr.[GroupRequirementId]
+JOIN [GroupRequirementType] grt ON grt.[Id] = gr.[GroupRequirementTypeId]
+WHERE pa.[Guid] = @Person
+	AND gm.[GroupMemberStatus] != 0 AND gm.[IsArchived] = 0
+	AND g.[IsActive] = 1 AND g.[IsArchived] = 0
+	AND (gr.[GroupId] = g.[Id] OR gr.[GroupTypeId] = g.[GroupTypeId])
+	AND (gr.[GroupRoleId] IS NULL OR gr.[GroupRoleId] = gm.[GroupRoleId])
+	AND (gr.[AppliesToAgeClassification] IS NULL OR gr.[AppliesToAgeClassification] = 0 OR gr.[AppliesToAgeClassification] = p.[AgeClassification])
+ORDER BY gm.[GroupId], grt.[Id]
 End
 GO
