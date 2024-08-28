@@ -19,11 +19,13 @@ using System.Threading.Tasks;
 
 using Rock.Attribute;
 using Rock.Bus.Queue;
+using Rock.CheckIn.v2.Labels;
 
 namespace Rock.Bus.Message
 {
     /// <summary>
-    /// Cache Update Message
+    /// This command is used to request the proxy status from whichever server
+    /// is handling cloud print proxy connections.
     /// </summary>
     [RockInternal( "1.16.7", true )]
     public class CloudPrintProxyStatusMessage : ICommandMessage<CloudPrintQueue>
