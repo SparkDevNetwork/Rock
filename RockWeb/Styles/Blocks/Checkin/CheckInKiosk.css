@@ -190,6 +190,11 @@
     font-weight: 600;
 }
 
+.check-in-page .btn-toggle .btn {
+    font-size: var(--font-size-btn-primary);
+    font-weight: 600;
+}
+
 /*
  * Styles for the pager footer.
  */

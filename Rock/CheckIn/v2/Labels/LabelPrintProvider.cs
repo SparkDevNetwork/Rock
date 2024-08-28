@@ -23,6 +23,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Rock.Bus.Message;
 using Rock.Web.Cache;
 
 namespace Rock.CheckIn.v2.Labels
@@ -134,8 +135,12 @@ namespace Rock.CheckIn.v2.Labels
                         }
                         else
                         {
-                            // TODO: Print over bus.
-                            messages.Add( "Unable to print label without proxy." );
+                            var response = await CloudPrintLabelMessage.RequestAsync( printerDevice.ProxyDeviceId.Value, printerDevice.Id, labelContent, cancellationToken );
+
+                            if ( response.Message.IsNotNullOrWhiteSpace() )
+                            {
+                                messages.Add( response.Message );
+                            }
                         }
                     }
                     else
@@ -149,9 +154,13 @@ namespace Rock.CheckIn.v2.Labels
                         }
                     }
                 }
-                catch
+                catch ( TaskCanceledException )
                 {
-                    return new List<string> { "Unable to print label" };
+                    return new List<string> { "Timed out waiting for labels to print." };
+                }
+                catch ( Exception ex )
+                {
+                    return new List<string> { $"Unable to print label: {ex.Message}" };
                 }
             }
 

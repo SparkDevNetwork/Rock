@@ -7,6 +7,7 @@
                 <RockButton v-for="attendance in attendances"
                             btnType="primary"
                             class="attendee-button"
+                            :disabled="isProcessing"
                             @click="onAttendanceClick(attendance)">
                     <span class="selection">
                         <i v-if="isAttendanceSelected(attendance)" class="fa fa-check-square"></i>
@@ -33,11 +34,11 @@
 <script setup lang="ts">
     import MainPanel from "./mainPanel.partial.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import { computed, CSSProperties, PropType, ref, watch } from "vue";
+    import { computed, CSSProperties, onBeforeUnmount, PropType, ref, watch } from "vue";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
-    import { alert } from "@Obsidian/Utility/dialogs";
+    import { CancellationTokenSource } from "@Obsidian/Utility/cancellation";
     import { CheckInSession } from "./checkInSession.partial";
-    import { UnexpectedErrorMessage } from "./utils.partial";
+    import { alert, UnexpectedErrorMessage } from "./utils.partial";
     import { KioskButton } from "./types.partial";
     import { AttendanceBag } from "@Obsidian/ViewModels/CheckIn/attendanceBag";
 
@@ -61,6 +62,8 @@
     // #region Values
 
     const selections = ref<string[]>(props.session.currentlyCheckedIn?.map(a => a.id as string) ?? []);
+    const isProcessing = ref(false);
+    const cancellationTokenSource = new CancellationTokenSource();
 
     // #endregion
 
@@ -146,16 +149,23 @@
      */
     async function onNextClick(): Promise<void> {
         try {
+            isProcessing.value = true;
+
             let newSession = await props.session.withCheckoutAttendances(selections.value);
 
             emit("next", await newSession.withNextScreen());
         }
         catch (error) {
-            await alert(error instanceof Error ? error.message : UnexpectedErrorMessage);
+            await alert(error instanceof Error ? error.message : UnexpectedErrorMessage, cancellationTokenSource.token);
+        }
+        finally {
+            isProcessing.value = false;
         }
     }
 
     // #endregion
+
+    onBeforeUnmount(() => cancellationTokenSource.cancel());
 
     watch([selections], () => {
         updateActions();

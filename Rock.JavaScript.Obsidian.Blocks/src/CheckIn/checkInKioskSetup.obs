@@ -145,6 +145,7 @@
         </section>
 
         <PageFooter title=""
+                    hideConfigure
                     :actions="customActions" />
     </div>
 </template>
