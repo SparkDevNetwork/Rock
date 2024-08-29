@@ -6,18 +6,20 @@
 
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
-                 :name="panelName"
+                 name="Achievement Attempt"
+                 :title="panelName"
                  :labels="blockLabels"
                  :headerActions="headerActions"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
-                 entityTypeName="AchievementAttempt"
-                 :isAuditHidden="false"
-                 :isBadgesVisible="true"
+                 entityTypeName="Achievement Attempt"
+                 :isAuditHidden="true"
+                 :isBadgesVisible="false"
                  :isDeleteVisible="isEditable"
                  :isEditVisible="isEditable"
-                 :isFollowVisible="true"
-                 :isSecurityHidden="false"
+                 :isFollowVisible="false"
+                 :isSecurityHidden="true"
+                 :isFullScreenVisible="false"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
                  @edit="onEdit"
@@ -88,7 +90,7 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return achievementAttemptViewBag.value?.achievementType?.text ?? "";
+        return `${achievementAttemptViewBag.value?.achievementType?.text ?? "Achievement"} Attempt`;
     });
 
     /**
