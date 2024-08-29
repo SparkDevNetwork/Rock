@@ -229,7 +229,7 @@
 
     /** The filtered fields to show on the current form augmented to remove pre/post HTML from non-visible fields */
     const currentFormFieldsAugmented = computed<RegistrationEntryFormFieldBag[]>(() => {
-        const fields = JSON.parse(JSON.stringify(currentFormFields.value)) as RegistrationEntryFormFieldBag[];
+        const fields = JSON.parse(JSON.stringify(currentFormFields.value ?? null)) as RegistrationEntryFormFieldBag[];
 
         fields.forEach(value => {
             if (value.fieldSource != fieldSources.personField) {
@@ -440,7 +440,7 @@
                 }
             }
             else if (field.personFieldType === RegistrationPersonFieldType.Address) {
-                const valueAsAddress = JSON.parse(JSON.stringify(originalFieldValue)) as AddressControlBag;
+                const valueAsAddress = JSON.parse(JSON.stringify(originalFieldValue ?? null)) as AddressControlBag;
                 if (valueAsAddress?.city
                     || valueAsAddress?.country
                     || valueAsAddress?.locality
