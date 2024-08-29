@@ -2966,7 +2966,7 @@ namespace Rock.Blocks.Event
                             {
                                 var newEthnicityValueGuid = fieldValue.ToStringSafe().AsGuidOrNull();
                                 var newEthnicityValueId = newEthnicityValueGuid.HasValue ? DefinedValueCache.Get( newEthnicityValueGuid.Value )?.Id : null;
-                                var oldEthnicityValueId = person.ConnectionStatusValueId;
+                                var oldEthnicityValueId = person.EthnicityValueId;
                                 person.EthnicityValueId = newEthnicityValueId;
                                 History.EvaluateChange( personChanges, "Ethnicity", DefinedValueCache.GetName( oldEthnicityValueId ), DefinedValueCache.GetName( person.EthnicityValueId ) );
                             }
