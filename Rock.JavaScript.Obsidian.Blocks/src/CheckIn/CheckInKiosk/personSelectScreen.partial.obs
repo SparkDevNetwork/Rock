@@ -6,7 +6,7 @@
             <div class="button-list">
                 <RockButton v-for="attendee in attendees"
                             btnType="primary"
-                            class="attendee-button"
+                            class="attendee-button illustrated-button"
                             :disabled="attendee.isUnavailable || isProcessing"
                             @click="onAttendeeClick(attendee)">
                     <span v-if="isFamilyMode" class="selection">

@@ -170,9 +170,11 @@ namespace Rock.Blocks.Engagement
             using ( var rockContext = GetRockContext() )
             {
                 var box = new DetailBlockBox<StepTypeBag, StepTypeDetailOptionsBag>();
+                var stepProgramKey = PageParameter( PageParameterKey.StepProgramId );
+                var stepTypeKey = PageParameter( PageParameterKey.StepTypeId );
 
-                var stepProgramId = PageParameter( PageParameterKey.StepProgramId ).AsInteger();
-                var stepTypeId = PageParameter( PageParameterKey.StepTypeId ).AsInteger();
+                var stepProgramId = !PageCache.Layout.Site.DisablePredictableIds ? Rock.Utility.IdHasher.Instance.GetId( stepProgramKey ) ?? stepProgramKey.AsInteger() : 0;
+                var stepTypeId = !PageCache.Layout.Site.DisablePredictableIds ? Rock.Utility.IdHasher.Instance.GetId( stepTypeKey ) ?? stepTypeKey.AsInteger() : 0;
 
                 if ( stepProgramId == 0 && stepTypeId == 0 )
                 {
@@ -337,7 +339,6 @@ namespace Rock.Blocks.Engagement
 
             var defaultDateRange = GetDefaultDateRange();
 
-            bag.ShowChart = GetAttributeValue( AttributeKey.ShowChart ).AsBoolean();
             bag.Kpi = GetKpi( defaultDateRange );
             bag.DefaultDateRange = GetSlidingDateRangeBag( defaultDateRange );
 
@@ -355,6 +356,8 @@ namespace Rock.Blocks.Engagement
                     bag.ChartData = chartFactory.GetChartDataJson( args );
                 }
             }
+
+            bag.ShowChart = GetAttributeValue( AttributeKey.ShowChart ).AsBoolean();
 
             return bag;
         }

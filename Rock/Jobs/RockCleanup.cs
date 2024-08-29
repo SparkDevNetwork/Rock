@@ -3348,97 +3348,140 @@ END
         {
             using ( var rockContext = CreateRockContext() )
             {
-                var endDate = RockDateTime.Now.Date.AddDays( 1 );
-                var startDate = RockDateTime.Now.AddMonths( -12 ).Date;
-                var givingFamilies = new List<CampusGivingFamily>();
-
-                var totalTransactions = new FinancialTransactionDetailService( rockContext )
-                    .Queryable()
-                    .AsNoTracking()
-                    .Count( ftd => ftd.Account.IsTaxDeductible
-                        && ftd.Transaction.TransactionDateTime >= startDate
-                        && ftd.Transaction.TransactionDateTime <= endDate );
-
-                var groupLocations = new GroupLocationService( rockContext )
-                    .Queryable()
-                    .Where( gl => gl.GroupLocationTypeValue.Guid.ToString() == SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME && gl.IsMappedLocation )
-                    .Select( gl => new { gl.GroupId, gl.Location.PostalCode } )
-                    .ToList();
-
-                // Process transactions in batches since some organizations can have millions of transactions.
-                const int batchSize = 1000;
-                for ( int i = 0; i < totalTransactions; i += batchSize )
+                var outputParam = new System.Data.SqlClient.SqlParameter( "@UpdatedCampusCount", System.Data.SqlDbType.Int )
                 {
-                    var queryContext = new RockContext();
-                    queryContext.Configuration.AutoDetectChangesEnabled = false;
+                    Direction = System.Data.ParameterDirection.Output
+                };
 
-                    var transactionsBatchQuery = new FinancialTransactionDetailService( queryContext )
-                        .Queryable()
-                        .Include( ftd => ftd.Transaction )
-                        .Include( ftd => ftd.Transaction.AuthorizedPersonAlias )
-                        .Include( ftd => ftd.Transaction.AuthorizedPersonAlias.Person )
-                        .Where( ftd => ftd.Account.IsTaxDeductible
-                            && ftd.Transaction.TransactionDateTime >= startDate
-                            && ftd.Transaction.TransactionDateTime <= endDate )
-                        .OrderBy( ftd => ftd.Transaction.TransactionDateTime )
-                        .Skip( i )
-                        .Take( batchSize )
-                        .ToList();
+                var updateQuery = @"
+DECLARE @startDate DATETIME = DATEADD(MONTH, -12, dbo.RockGetDate());
+DECLARE @endDate DATETIME = dbo.RockGetDate();
 
-                    var givingFamiliesBatch = transactionsBatchQuery
-                        .GroupBy( ftd => ftd.Transaction.AuthorizedPersonAlias.Person.PrimaryFamilyId )
-                        .Select( ftd => new CampusGivingFamily()
-                        {
-                            PrimaryFamilyId = ftd.Key,
-                            CampusId = ftd.FirstOrDefault().Transaction.AuthorizedPersonAlias.Person.PrimaryCampusId,
-                            PostalCodes = groupLocations.Where( gl => gl.GroupId == ftd.FirstOrDefault().Transaction.AuthorizedPersonAlias.Person.PrimaryFamilyId )
-                                .Select( gl => gl.PostalCode )
-                                .ToList()
-                        } ).ToList();
+IF OBJECT_ID('tempdb..#BatchedTransactions') IS NOT NULL
+BEGIN
+	DROP TABLE #BatchedTransactions
+END
 
-                    givingFamilies.AddRange( givingFamiliesBatch );
+IF OBJECT_ID('tempdb..#GivingFamilies') IS NOT NULL
+BEGIN
+	DROP TABLE #GivingFamilies
+END
 
-                    this.UpdateLastStatusMessage( $"Processed {transactionsBatchQuery.Count} out of {totalTransactions} transactions for Campus Tithe Metric update." );
-                }
+IF OBJECT_ID('tempdb..#GroupLocations') IS NOT NULL
+BEGIN
+	DROP TABLE #GroupLocations
+END
 
-                var campusIds = givingFamilies.Where( gf => gf.CampusId.HasValue )
-                    .Select( gf => gf.CampusId.Value )
-                    .Distinct();
-                var campuses = new CampusService( rockContext ).GetByIds( campusIds.ToList() ).ToList();
-                var postalCodesQuery = rockContext.Set<AnalyticsSourcePostalCode>().AsQueryable();
+-- Temporary Table for the Families and their Postal Codes.
+CREATE TABLE #GroupLocations (
+    GroupId INT,
+    PostalCode NVARCHAR(MAX)
+);
 
-                // Calculate tithe metric for each campus.
-                foreach ( var campusId in campusIds )
-                {
-                    var campus = campuses.Find( c => c.Id == campusId );
+-- Temporary table for the TransactionDetails within the time frame we are interested in, so we don't have to scan countless rows when processing.
+CREATE TABLE #BatchedTransactions (
+	[PrimaryFamilyId] INT,
+	[PrimaryCampusId] INT,
+    PostalCode NVARCHAR(MAX)
+);
 
-                    if ( campus != null )
-                    {
-                        var givingFamiliesForCampus = givingFamilies.Where( gf => gf.CampusId == campusId ).ToList();
-                        var postalCodes = givingFamiliesForCampus.SelectMany( gf => gf.PostalCodes.Select( p => p.Split( '-' )[0] ) ).Distinct().ToList();
+-- Temporary table for the families who have given and their postal codes.
+CREATE TABLE #GivingFamilies (
+    PrimaryFamilyId INT,
+    CampusId INT,
+    PostalCodes NVARCHAR(MAX)
+);
 
-                        // Because the processing was handled in batches, group by family id for count since different transactions
-                        // from the same family can be processed in different batches.
-                        var hasGivenCount = givingFamiliesForCampus.Where( x => x.PostalCodes.Any() )
-                            .GroupBy( x => x.PrimaryFamilyId )
-                            .Count();
+-- Store families and their Postal Codes.
+INSERT INTO #GroupLocations ([GroupId], [PostalCode])
+SELECT 
+    [gl].[GroupId],
+    [l].[PostalCode]
+FROM 
+    [dbo].[GroupLocation] gl
+INNER JOIN 
+    [dbo].[DefinedValue] dv ON [gl].[GroupLocationTypeValueId] = dv.Id
+INNER JOIN 
+    [dbo].[Location] l ON [gl].[LocationId] = [l].[Id]
+WHERE 
+    [dv].[Guid] = '8C52E53C-2A66-435A-AE6E-5EE307D9A0DC'
+    AND [gl].[IsMappedLocation] = 1;
 
-                        if ( hasGivenCount > 0 )
-                        {
-                            var totalMedianIncome = postalCodesQuery
-                                .Where( p => postalCodes.Contains( p.PostalCode ) )
-                                .Sum( p => ( int? ) p.FamiliesMedianIncome ) ?? 0;
+-- Store TransactionDetails and the AuthorizedPerson details.
+INSERT INTO #BatchedTransactions
+SELECT DISTINCT
+    [p].[PrimaryFamilyId],
+    [p].[PrimaryCampusId],
+	gl.[PostalCode]
+FROM 
+    [dbo].[FinancialTransactionDetail] ftd
+INNER JOIN 
+    [dbo].[FinancialTransaction] ft ON [ftd].[TransactionId] = [ft].[Id]
+INNER JOIN 
+    [dbo].[PersonAlias] pa ON [ft].[AuthorizedPersonAliasId] = [pa].[Id]
+INNER JOIN 
+    [dbo].[Person] p ON [pa].[PersonId] = [p].[Id]
+LEFT JOIN 
+    #GroupLocations gl ON [p].[PrimaryFamilyId] = [gl].[GroupId]
+WHERE 
+    [ftd].[AccountId] IN (SELECT Id FROM [dbo].[FinancialAccount] WHERE [IsTaxDeductible] = 1)
+    AND [ft].[TransactionDateTime] BETWEEN @startDate AND @endDate
 
-                            campus.TitheMetric = ( totalMedianIncome / hasGivenCount ) * 0.1M;
-                        }
-                        else
-                        {
-                            campus.TitheMetric = null;
-                        }
-                    }
-                }
+-- Store families who have given within the specified time frame.
+INSERT INTO #GivingFamilies ([PrimaryFamilyId], [CampusId], [PostalCodes])
+SELECT 
+    [ftd].[PrimaryFamilyId],
+    [ftd].[PrimaryCampusId] AS CampusId,
+    STRING_AGG([ftd].[PostalCode], ',') AS PostalCodes
+FROM #BatchedTransactions ftd
+GROUP BY 
+    [ftd].[PrimaryFamilyId], [ftd].[PrimaryCampusId];
 
-                return rockContext.SaveChanges();
+DECLARE @campusId INT;
+DECLARE @postalCodes NVARCHAR(MAX);
+DECLARE @hasGivenCount INT;
+DECLARE @totalMedianIncome INT;
+
+DECLARE campus_cursor CURSOR FOR
+SELECT DISTINCT CampusId FROM #GivingFamilies WHERE CampusId IS NOT NULL;
+DECLARE @CampusCount INT = (SELECT COUNT(DISTINCT CampusId) FROM #GivingFamilies WHERE CampusId IS NOT NULL);
+
+OPEN campus_cursor;
+FETCH NEXT FROM campus_cursor INTO @campusId;
+
+WHILE @@FETCH_STATUS = 0
+BEGIN
+    SELECT @postalCodes = STRING_AGG(PostalCodes, ',')
+    FROM #GivingFamilies
+    WHERE CampusId = @campusId;
+
+    SELECT @hasGivenCount = COUNT(DISTINCT PrimaryFamilyId)
+    FROM #GivingFamilies
+    WHERE CampusId = @campusId AND PostalCodes IS NOT NULL;
+
+    SELECT @totalMedianIncome = SUM(FamiliesMedianIncome)
+    FROM AnalyticsSourcePostalCode
+    WHERE PostalCode IN (SELECT value FROM STRING_SPLIT(@postalCodes, ','));
+
+	UPDATE CAMPUS 
+    SET TitheMetric = (@totalMedianIncome / @hasGivenCount) * 0.1
+	WHERE Id = @campusId
+
+    FETCH NEXT FROM campus_cursor INTO @campusId;
+END
+
+CLOSE campus_cursor;
+DEALLOCATE campus_cursor;
+
+DROP TABLE #GivingFamilies;
+DROP TABLE #GroupLocations;
+DROP TABLE #BatchedTransactions;
+
+SET @UpdatedCampusCount = @CampusCount;
+";
+                rockContext.Database.ExecuteSqlCommand( updateQuery, outputParam );
+
+                return ( int ) outputParam.Value;
             }
         }
 
@@ -3558,36 +3601,6 @@ END
             /// If set to null, all expired files are removed.
             /// </summary>
             public int? CacheMaximumFilesToRemove;
-        }
-
-        /// <summary>
-        /// Data transfer object for computing Campus Tithe metric.
-        /// </summary>
-        private class CampusGivingFamily
-        {
-            /// <summary>
-            /// Gets or sets the campus id.
-            /// </summary>
-            /// <value>
-            /// The campus identifier.
-            /// </value>
-            public int? CampusId { get; set; }
-
-            /// <summary>
-            /// Gets or sets the primary family id.
-            /// </summary>
-            /// <value>
-            /// The primary family identifier.
-            /// </value>
-            public int? PrimaryFamilyId { get; set; }
-
-            /// <summary>
-            /// Gets or sets the family's postal codes.
-            /// </summary>
-            /// <value>
-            /// The postal codes.
-            /// </value>
-            public List<string> PostalCodes { get; set; }
         }
     }
 }

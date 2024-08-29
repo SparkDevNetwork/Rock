@@ -19,7 +19,7 @@
         <TextColumn name="achiever"
                     title="Achiever"
                     field="achiever"
-                    :filter="textValueFilter"
+                    :filter="pickExistingValueFilter"
                     visiblePriority="xs"
                     width="17%" />
 
@@ -46,11 +46,13 @@
         <BooleanColumn name="isSuccessful"
                        title="Successful"
                        field="isSuccessful"
+                       :filter="booleanValueFilter"
                        visiblePriority="md" />
 
         <BooleanColumn name="isClosed"
                        title="Closed"
                        field="isClosed"
+                       :filter="booleanValueFilter"
                        visiblePriority="md" />
 
         <Column name="progress"
@@ -96,7 +98,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { TextColumn, BooleanColumn, dateValueFilter, textValueFilter, DeleteColumn, Column, DateColumn } from "@Obsidian/Controls/grid";
+    import Grid, { TextColumn, BooleanColumn, dateValueFilter, textValueFilter, pickExistingValueFilter, booleanValueFilter, DeleteColumn, Column, DateColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { AchievementAttemptListOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/AchievementAttemptList/achievementAttemptListOptionsBag";

@@ -8,17 +8,19 @@
 
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
-                 :name="panelName"
+                 name="WorkflowTrigger"
+                 :title="panelTitle"
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
                  entityTypeName="WorkflowTrigger"
-                 :isAuditHidden="false"
-                 :isBadgesVisible="true"
+                 :isAuditHidden="true"
+                 :isBadgesVisible="false"
                  :isDeleteVisible="isEditable"
                  :isEditVisible="isEditable"
-                 :isFollowVisible="true"
-                 :isSecurityHidden="false"
+                 :isFollowVisible="false"
+                 :isSecurityHidden="true"
+                 :isFullScreenVisible="false"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
                  @edit="onEdit"
@@ -86,8 +88,15 @@
     /**
      * The entity name to display in the block panel.
      */
-    const panelName = computed((): string => {
-        return config.entity?.workflowName ?? "";
+    const panelTitle= computed((): string => {
+        switch (panelMode.value) {
+            case DetailPanelMode.Add :
+                return "Add Workflow Trigger";
+            case DetailPanelMode.Edit :
+                return "Edit Workflow Trigger";
+            default:
+                return "Workflow Trigger";
+        }
     });
 
     /**
@@ -128,10 +137,6 @@
     const isEditable = computed((): boolean => {
         return config.isEditable === true && workflowTriggerBag.value?.isSystem !== true;
     });
-
-    // #endregion
-
-    // #region Functions
 
     // #endregion
 

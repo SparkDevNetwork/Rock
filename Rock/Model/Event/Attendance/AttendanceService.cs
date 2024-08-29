@@ -1536,12 +1536,12 @@ namespace Rock.Model
                         scheduleTemplateLookup = new Dictionary<int, Schedule>();
                     }
 
-                    TimeSpan occurrenceScheduledTime = scheduleOccurrenceDateList.First().TimeOfDay;
-
                     List<int> matchingScheduleGroupMemberIdList = new List<int>();
 
-                    // get first scheduled occurrence for the selected "sunday week", which would be from the start of the configured RockDateTime.FirstDayOfWeek
-                    var beginDateTime = occurrenceFirstDayOfWeek;
+                    // Look for at least one scheduled occurrence for each resource's preferred schedule template, within the
+                    // current "Sunday week", to determine if they can be scheduled. While the end date for this "Sunday week"
+                    // will be the same for all resources, the begin date can vary per resource, so we'll set it below.
+                    DateTime beginDateTime;
                     var endDateTime = occurrenceLastDayOfWeek.AddDays( 1 );
 
                     foreach ( var groupMember in resourceList )
@@ -1563,8 +1563,28 @@ namespace Rock.Model
                                 ? groupMember.ScheduleStartDate.Value
                                 : RockDateTime.Today;
 
-                            var scheduleStartDateTimeOverride = scheduleStartDate.Add( occurrenceScheduledTime );
-                            var matches = schedule.GetICalOccurrences( beginDateTime, endDateTime, scheduleStartDateTimeOverride );
+                            // Compare the resource's preferred start date against this "Sunday week".
+                            if ( scheduleStartDate > occurrenceFirstDayOfWeek )
+                            {
+                                if ( scheduleStartDate > occurrenceLastDayOfWeek )
+                                {
+                                    // Don't include this resource, as their preferred start date is after the "Sunday week"
+                                    // that's currently being scheduled.
+                                    continue;
+                                }
+
+                                // Set the begin date to match their preferred start date, to ensure we don't schedule
+                                // them for any occurrences before then.
+                                beginDateTime = scheduleStartDate;
+                            }
+                            else
+                            {
+                                // Their preferred start date has been met, so just set the begin date to the first day
+                                // of this "Sunday week".
+                                beginDateTime = occurrenceFirstDayOfWeek;
+                            }
+
+                            var matches = InetCalendarHelper.GetOccurrencesExcludingStartDate( schedule.iCalendarContent, beginDateTime, endDateTime );
                             if ( matches.Any() )
                             {
                                 matchingScheduleGroupMemberIdList.Add( groupMember.GroupMemberId );

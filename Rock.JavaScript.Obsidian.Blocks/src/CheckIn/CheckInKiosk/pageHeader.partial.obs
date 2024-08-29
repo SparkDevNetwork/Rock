@@ -10,6 +10,7 @@
 
         <RockButton v-if="!hideNavigation && hasBack"
                     btnType="default"
+                    btnSize="sm"
                     class="back-button"
                     @click="onBack">
             <i class="fa fa-chevron-left"></i>

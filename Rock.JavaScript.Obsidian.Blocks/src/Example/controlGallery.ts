@@ -3213,13 +3213,16 @@ const scheduleBuilderGallery = defineComponent({
     name: "ScheduleBuilderGallery",
     components: {
         GalleryAndResult,
+        CheckBox,
         ScheduleBuilder
     },
     setup() {
         return {
             value: ref(""),
+            hideStartDateTime: ref(false),
+            hideDuration: ref(false),
             importCode: getControlImportPath("scheduleBuilder"),
-            exampleCode: `<ScheduleBuilder label="Schedule Builder" v-model="value" />`
+            exampleCode: `<ScheduleBuilder label="Schedule Builder" v-model="value" :hideStartDateTime="false" :hideDuration="false" />`
         };
     },
     template: `
@@ -3230,9 +3233,19 @@ const scheduleBuilderGallery = defineComponent({
     enableReflection
     displayAsRaw>
     <ScheduleBuilder label="Schedule Builder"
-        v-model="value" />
+        v-model="value"
+        :hideStartDateTime="hideStartDateTime"
+        :hideDuration="hideDuration" />
 
     <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Hide Start Date / Time" v-model="hideStartDateTime" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Hide Duration" v-model="hideDuration" />
+            </div>
+        </div>
     </template>
 </GalleryAndResult>`
 });

@@ -133,7 +133,7 @@
 
 .grid-obsidian > .grid-heading > .grid-title-heading > .grid-title {
     flex-grow: 1;
-    font-size: 22px;
+    font-size: var(--font-size-h5);
     font-weight: 500;
     line-height: 1;
     padding-left: 24px;

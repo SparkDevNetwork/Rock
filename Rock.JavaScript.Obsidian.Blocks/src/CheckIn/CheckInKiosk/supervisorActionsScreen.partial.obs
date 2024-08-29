@@ -13,7 +13,7 @@
                     <span v-if="location.isOpen" class="label label-success">Open</span>
                     <span v-else class="label label-danger">Closed</span>
                     <span class="title">{{ location.name }}</span>
-                    <span class="count">{{ location.currentCount }}</span>
+                    <span class="subtitle">{{ location.currentCount }}</span>
                 </RockButton>
             </div>
         </MainPanel>
