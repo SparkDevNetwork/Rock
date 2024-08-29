@@ -36,9 +36,9 @@
   }
 
   &.ant-select-focused:not(.ant-select-disabled).form-control {
-    border:       1px solid var(--color-info-strong);
+    border:       1px solid var(--color-primary);
     outline:      none;
-    box-shadow:   var(--focus-state-shadow);
+    box-shadow:   0 0 0 2px #fad5bc; // Need to hard code for the shadow around when ant select is active.
   }
 
   &.ant-select-focused:not(.ant-select-disabled).form-control .ant-select-selector {

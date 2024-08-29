@@ -459,9 +459,9 @@
   &:active,
   &.active,
   .open > .dropdown-toggle & {
-      color:            var(--color-info-strong);
-      background-color: var(--color-interface-softest);
-      border-color:     var(--color-info-strong);
+      color:            var(--color-interface-softest);
+      background-color: var(--color-info-strong);
+      border-color:     var(--color-info-strong); 
       background-image: none;
 
       &:hover,
@@ -508,7 +508,7 @@
   &:active,
   &.active,
   .open > .dropdown-toggle & {
-      color:            var(--color-warning-strong);
+      color:            var(--color-interface-softest);
       background-color: var(--color-interface-softest);
       border-color:     var(--color-warning-strong);
       background-image: none;
@@ -558,7 +558,7 @@
   &:active,
   &.active,
   .open > .dropdown-toggle &{
-      color:            var(--color-danger-strong);
+      color:            var(--color-interface-softest);
       background-color: var(--color-interface-softest);
       background-image: none;
       border-color:     var(--color-danger-strong);
@@ -716,22 +716,22 @@
   }
 
   .btn-success.active {
-    background-color: var(--color-success-soft);
+    background-color: var(--color-success-strong);
     border-color:     var(--color-success-strong);
   }
 
   .btn-info.active {
-    background-color: var(--color-info-soft);
+    background-color: var(--color-info-strong);
     border-color:     var(--color-info-strong);
   }
 
   .btn-warning.active {
-    background-color: var(--color-warning-soft);
+    background-color: var(--color-warning-strong);
     border-color:     var(--color-warning-strong);
   }
 
   .btn-danger.active {
-    background-color: var(--color-danger-soft);
+    background-color: var(--color-danger-strong);
     border-color:     var(--color-danger-strong);
   }
 }

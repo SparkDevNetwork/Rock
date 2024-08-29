@@ -21,9 +21,9 @@
     > span {
       position:           relative;
       float:              left; // Collapse white-space
-      padding:            var(--spacing-small) var(--spacing-xlarge);
+      padding:            var(--spacing-small) 12px; // Need to hard code to fix spacing for the pagination 
       margin-left:        -1px;
-      line-height:        var(--line-height-normal);
+      line-height:        16px; // Need to hard code to fix spacing for the pagination 
       color:              var(--color-interface-stronger);
       text-decoration:    none;
       background-color:   var(--color-interface-softest);

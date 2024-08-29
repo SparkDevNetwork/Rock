@@ -1,1 +1,143 @@
-// Go to grid.partial.obs and moved all the styling over to this file.
+
+
+
+
+
+
+
+// !! ****IMPORTANT**** !!
+
+// Move all the styling from grid.partial.obs to this file.
+//  Start by placing it at the top and test the styles. 
+//  If issues arise, try moving it to the bottom of the existing
+//  style classes.
+
+
+
+.grid-actions {
+    text-align:       right;
+    background-color: var(--color-interface-softest);
+  
+    .btn {
+      margin-left: var(--spacing-small);
+    }
+    
+    &:hover {
+      color: var(--color-interface-strong);
+    }
+  
+    .btn-add:hover {
+      color: var(--color-success-soft);
+    }
+  
+    .btn-grid-action {
+      padding:          var(--spacing-tiny) var(--spacing-small);
+      margin:           0 0 0 2px;
+      font-size:        var(--font-size-regular);
+      border:           0;
+      box-shadow:       none;
+      transition:       color 250ms;
+      color:            var(--color-interface-medium);
+      background-color: transparent;
+      border-color:     transparent;
+    }
+  
+    .btn-grid-custom-action {
+      margin-bottom: 8px;
+    }
+}
+
+.grid-columncommand .btn-danger {
+    color:              var(--color-interface-stronger);
+    background-color:   transparent;
+    border-color:       transparent;
+    
+    &:focus,
+    &.focus {
+      color:            var(--color-interface-softest);
+      background-color: var(--color-danger-soft); // TODO darken by 10% when available
+      border-color:     var(--color-danger-stronger);
+    }
+    
+    &:hover {
+      color:            var(--color-interface-softest);
+      background-color: var(--color-danger-soft); // TODO darken by 10% when available
+      border-color:     var(--color-danger-stronger);
+    }
+    
+    &:active,
+    &.active,
+    .open > .dropdown-toggle & {
+      color:            var(--color-interface-softest); 
+      background-color: var(--color-danger-soft); // TODO this uses darken, which is a Less function
+      background-image: none;
+      border-color:     var(--color-danger-stronger);
+  
+      &:hover,
+      &:focus,
+      &.focus {
+        color:            var(--color-interface-softest);
+        background-color: var(--color-danger-medium);
+        border-color:     var(--color-danger-stronger);
+      }
+    }
+    
+    &.disabled,
+    &[disabled],
+    fieldset[disabled] & {
+      &:hover,
+      &:focus,
+      &.focus {
+        background-color: var(--color-interface-softest);
+        border-color:     var(--color-interface-soft);
+      }
+    }
+    
+    .badge {
+      color:            var(--color-interface-softest);
+      background-color: var(--color-interface-stronger);
+    }
+}
+
+.grid-columncommand {
+    .btn {
+        width:    34px;
+        padding:  var(--spacing-small) 0;
+    }
+
+    .btn-default,
+    .btn-security,
+    .btn-danger {
+        background-color: transparent;
+        border-color:     transparent;
+        box-shadow:       none;
+    }
+
+    .btn-default,
+    .btn-security {
+        &:focus,
+        &:hover,
+        &:active {
+        background-color: var(--color-danger-softer); // TODO darken ui softest it by 10%
+        }
+    }
+
+    .btn-danger {
+        color: var(--color-interface-stronger);
+        background: transparent;
+        &:active,
+        &:hover {
+        color:        var(--color-danger-strong);
+        background:   var(--color-danger-soft); // TODO fade by 10%
+        border-color: transparent;
+        }
+
+        &:focus,
+        &:active &:active:hover,
+        &:active:focus {
+        color:        var(--color-danger-strong);
+        background:   var(--color-danger-soft);
+        border-color: var(--color-danger-strnog);
+        }
+    }
+}

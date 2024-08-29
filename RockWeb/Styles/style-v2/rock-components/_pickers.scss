@@ -181,7 +181,7 @@
     display: flex;
     align-items: center;
     padding: var(--spacing-small);
-    margin: var(--spacing-small) -var(--spacing-small) -var(--spacing-small) -var(--spacing-small);
+    margin: var(--spacing-small) calc(var(--spacing-small)* -1) calc(var(--spacing-small) * -1) calc(var(--spacing-small) * -1);
     font-size: var(--font-size-small);
     background-color: var(--color-interface-softest);
     border-top: 1px solid var(--color-interface-softer);
@@ -453,6 +453,39 @@
       position: relative;
       width: 350px;
     }
+  }
+}
+
+// Moved from Rock theme.less
+.picker-label,
+input[type="text"],
+textarea,
+.form-control {
+  &:focus {
+    border: 1px solid var(--color-primary);
+    outline: none;
+    box-shadow: 0 0 0 2px #fad5bc;; // Need to hard code for the shadow around when picker is active.
+  }
+}
+
+// Moved from _rock-obsidian.less
+.picker.picker-obsidian {
+  width: initial;
+
+  > .picker-label {
+    max-width: initial;
+  }
+
+  .picker-select-none {
+    display: none;
+  }
+
+  &.picker-show-clear .picker-select-none {
+    display: block;
+  }
+
+  &.picker-full-width {
+    max-width: initial;
   }
 }
 

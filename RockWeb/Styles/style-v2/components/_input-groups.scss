@@ -231,29 +231,28 @@
 // ===================== END BORDER =====================
 
 
-// TODO WILL BE MOVE TO PICKER FILE ===============================================================
-.date-parts-picker {
-  // display: flex;
-  // flex-wrap: wrap;
+// These were moved to _picker-date.scss
+// .date-parts-picker {
+//   // display: flex;
+//   // flex-wrap: wrap;
 
-  .control-label {
-    width: 100%;
-  }
+//   .control-label {
+//     width: 100%;
+//   }
 
-  .form-control {
-    flex: 1 1 auto;
-    min-width: 90px;
-    max-width: 112px;
-  }
-}
+//   .form-control {
+//     flex: 1 1 auto;
+//     min-width: 90px;
+//     max-width: 112px;
+//   }
+// }
 
-.month-year-picker .separator,
-.month-day-picker .separator {
-  // @separator-margin: ((@input-height-base - @font-size-lg) / 2);
-  // margin: @separator-margin 6px @separator-margin 0;
-  font-size: var(--font-size-h5);
-  line-height: 1;
-  // color: @text-muted;
-}
-// ====================================================================================
+// .month-year-picker .separator,
+// .month-day-picker .separator {
+//   // @separator-margin: ((@input-height-base - @font-size-lg) / 2);
+//   // margin: @separator-margin 6px @separator-margin 0;
+//   font-size: var(--font-size-h5);
+//   line-height: 1;
+//   // color: @text-muted;
+// }
 
