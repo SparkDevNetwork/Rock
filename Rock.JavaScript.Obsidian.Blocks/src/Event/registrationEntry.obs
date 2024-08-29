@@ -493,8 +493,9 @@
             registrationEntryState.value.currentStep = Step.RegistrationEndForm;
         }
         else {
+            const lastRegistrantIndex = (registrationEntryState.value.registrants?.length ?? 0) - 1;
             const lastFormIndex = (registrationEntryState.value.viewModel.registrantForms?.length ?? 0) - 1;
-
+            registrationEntryState.value.currentRegistrantIndex = lastRegistrantIndex;
             registrationEntryState.value.currentRegistrantFormIndex = lastFormIndex;
             registrationEntryState.value.currentStep = Step.PerRegistrantForms;
         }

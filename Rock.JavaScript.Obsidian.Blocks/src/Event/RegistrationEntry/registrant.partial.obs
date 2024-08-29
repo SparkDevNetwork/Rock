@@ -176,8 +176,10 @@
             return true;
         }
 
-        // Allow back to intro page if this is not an existing registration
-        if (!registrationEntryState.viewModel.isExistingRegistration) {
+        // Allow back to intro page if this is not an existing registration.
+        const isFirstRegistrant = registrationEntryState.currentRegistrantIndex === 0;
+        const isFirstForm = currentFormIndex.value === 0;
+        if (!registrationEntryState.viewModel.isExistingRegistration || !(isFirstRegistrant && isFirstForm)) {
             return true;
         }
 
