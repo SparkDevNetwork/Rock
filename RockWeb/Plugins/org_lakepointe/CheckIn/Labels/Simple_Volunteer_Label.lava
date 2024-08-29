@@ -1,8 +1,30 @@
 {%- comment -%} Simple Volunteer Label for All Campuses {%- endcomment -%}
 
-{%- comment -%}
-    Zebra 200 DPI Label
-{%- endcomment -%}
+{% comment %} Determine Group Information {% endcomment %}
+
+{% assign yccCheckin = false %}
+
+{% for gt in Person.GroupTypes %}
+    {%  for g in gt.Groups %}
+        {% assign groupObject = g.Id | GroupById %}
+
+        {% assign selected = groupObject | Property:'Selected' %}
+        {% if selected == true %}
+            {% continue %}
+        {% endif %}
+
+        {% if gt.Id == 565 %}
+            {% assign yccCheckin = true %}
+        {% endif %}
+
+    {% endfor %}
+{% endfor %}
+
+{% assign personAge = Person | Property:'Age' %}
+{% comment %} Only print adult label for Young Christians Class if attendee is an adult {% endcomment %}
+{% if yccCheckin == true and personAge < 18 %}
+    {% return %}
+{% endif %}
 
 {%- comment -%}
     LABEL HEADER FOR PRINTER
@@ -15,11 +37,12 @@
     Print Name
 {%- endcomment -%}
 ^FO7,67^FB786,1,0,C^A0N,100,100^FH\^FD{{ Person.NickName }}^FS
+^FO7,175^FB786,1,0,C^A0N,60,60^FH\^FD{{ Person.LastName }}^FS
 
 {%- comment -%}
     Print Group Information
 {%- endcomment -%}
-^FO7,275^FB786,1,0,C^A0N,40,40^FH\^FD{{Group.Id | GroupById | Property:'Name'}}^FS
+^FO7,300^FB786,1,0,C^A0N,40,40^FH\^FD{{Group.Id | GroupById | Property:'Name'}}^FS
 
 {%- comment -%}
     LABEL END FOR PRINTER
