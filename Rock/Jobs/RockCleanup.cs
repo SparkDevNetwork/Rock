@@ -3367,9 +3367,9 @@ BEGIN
 	DROP TABLE #GivingFamilies
 END
 
-IF OBJECT_ID('tempdb..#GivingFamilies') IS NOT NULL
+IF OBJECT_ID('tempdb..#GroupLocations') IS NOT NULL
 BEGIN
-	DROP TABLE #GivingFamilies
+	DROP TABLE #GroupLocations
 END
 
 -- Temporary Table for the Families and their Postal Codes.
