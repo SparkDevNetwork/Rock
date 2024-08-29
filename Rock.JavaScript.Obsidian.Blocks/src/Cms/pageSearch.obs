@@ -125,18 +125,24 @@
         preferences.setValue(PreferenceKey.SelectedCategoryIndex, currentCategoryIndex.value.toString());
         preferences.setValue(PreferenceKey.SelectedCategoryTitle, currentCategoryTitle.value ?? "All");
         await preferences.save();
+        const searchBox = searchContainer.value?.querySelector("input") as HTMLInputElement | null;
+        searchBox?.focus();
     }
 
     async function toggleSortOrder(isAlphabetical: boolean): Promise<void> {
         isSortedAlphabetically.value = isAlphabetical;
         preferences.setValue(PreferenceKey.IsSortedAlphabetically, isSortedAlphabetically.value.toString());
         await preferences.save();
+        const searchBox = searchContainer.value?.querySelector("input") as HTMLInputElement | null;
+        searchBox?.focus();
     }
 
     const filteredSettings = (category: PageSearchPageBag): PageSearchPageBag[] => {
         if (category.children) {
             return category.children.filter(c => c.parentPageId === category.id && c.title?.toLowerCase().includes(searchText.value.toLowerCase()));
         }
+        const searchBox = searchContainer.value?.querySelector("input") as HTMLInputElement | null;
+        searchBox?.focus();
         return [];
     };
 
