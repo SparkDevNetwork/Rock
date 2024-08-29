@@ -348,7 +348,7 @@
 
             for (const dataset of datasets) {
                 let legendItem = {
-                    text: dataset.label,
+                    text: dataset.label ?? "Unknown",
                     fillStyle: dataset.borderColor,
                     datasetIndex: datasets.indexOf(dataset),
                     lineWidth: 0
