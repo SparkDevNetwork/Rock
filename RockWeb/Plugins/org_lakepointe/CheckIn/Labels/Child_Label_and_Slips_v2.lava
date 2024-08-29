@@ -7,6 +7,7 @@
 
 {% assign isNursery = false %}
 {% assign isSelfReleaseEligible = false %}
+{% assign yccCheckin = false %}
 {% assign memo = '' %}
 
 {% for gt in Person.GroupTypes %}
@@ -20,6 +21,10 @@
 
         {% if gt.Id == 626 or gt.Id == 627 or gt.Id == 340 %}
             {% assign isSelfReleaseEligible = true %}
+        {% endif %}
+
+        {% if gt.Id == 565 %}
+            {% assign yccCheckin = true %}
         {% endif %}
 
         {% if isNursery == false %}
@@ -61,6 +66,7 @@
 
 {% comment %} Determine Person Information {% endcomment %}
 
+{% assign personAge = Person | Property:'Age' %}
 {% assign personAllergy = Person | Attribute:'Allergy' %}
 {% assign personMedicalAlert = Person | Attribute:'Arena-16-81' %}
 {% assign personLegalNotes = Person | Attribute:'LegalNotes' %}
@@ -69,6 +75,10 @@
 {% assign personSelfRelease = Person | Attribute:'Arena-16-384' %}
 {% assign personGrade = Person | Property:'GradeFormatted' %}
 
+{% comment %} Only print child labels for Young Christians Class if attendee is a child {% endcomment %}
+{% if yccCheckin == true and personAge >= 18 %}
+    {% return %}
+{% endif %}
 
 {% comment %} Child Label {% endcomment %}
 
