@@ -2198,6 +2198,13 @@ namespace Rock.Blocks.Event
 
                     return mobilePhone?.Number;
 
+                case RegistrationPersonFieldType.Race:
+                    var race = person.RaceValueId.HasValue ? DefinedValueCache.Get( person.RaceValueId.Value ) : null;
+                    return race?.Guid.ToString() ?? string.Empty;
+
+                case RegistrationPersonFieldType.Ethnicity:
+                    var ethnicity = person.EthnicityValueId.HasValue ? DefinedValueCache.Get( person.EthnicityValueId.Value ) : null;
+                    return ethnicity?.Guid.ToString() ?? string.Empty;
             }
 
             return null;
