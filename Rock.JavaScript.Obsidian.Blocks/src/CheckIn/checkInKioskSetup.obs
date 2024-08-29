@@ -29,7 +29,7 @@
                     <ContentTransition>
                         <div v-if="isSavedConfigurationsVisible" class="saved-configurations">
                             <div class="header">
-                                <h2>Saved Configurations</h2>
+                                <h4>Saved Configurations</h4>
 
                                 <RockButton btnType="default"
                                             btnSize="sm"
@@ -52,7 +52,7 @@
 
                         <div v-if="isCustomConfigurationVisible" class="custom-configuration">
                             <div class="header">
-                                <h2>Check-in Setup Options</h2>
+                                <h4>Check-in Setup Options</h4>
 
                                 <RockButton btnType="default"
                                             class="save-new-configuration-button"

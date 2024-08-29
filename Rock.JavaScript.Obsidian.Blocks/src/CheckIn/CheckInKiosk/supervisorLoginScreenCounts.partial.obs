@@ -2,18 +2,18 @@
     <div class="current-counts">
         <div v-for="columnCounts in columns" class="current-counts-column">
             <template v-if="!showCountsByLocation" v-for="area in columnCounts">
-                <h1>{{ area.name }}</h1>
+                <h3>{{ area.name }}</h3>
                 <template v-for="group in area.children">
-                    <h2 class="count-row">
+                    <h4 class="count-row">
                         <span class="title">{{ group.name }}</span>
-                        <span class="count">{{ group.count }}</span>
-                    </h2>
+                        <span class="subtitle">{{ group.count }}</span>
+                    </h4>
 
                     <ul v-if="group.children.length > 0">
                         <li v-for="location in group.children">
                             <div class="count-row">
                                 <span class="title">{{ location.name }}</span>
-                                <span class="count">{{ location.count }}</span>
+                                <span class="subtitle">{{ location.count }}</span>
                             </div>
                         </li>
                     </ul>
@@ -22,16 +22,16 @@
 
             <template v-else>
                 <div v-for="location in columnCounts">
-                    <h2 class="count-row">
+                    <h4 class="count-row">
                         <span class="title">{{ location.name }}</span>
-                        <span class="count">{{ location.count }}</span>
-                    </h2>
+                        <span class="subtitle">{{ location.count }}</span>
+                    </h4>
 
                     <ul v-if="location.children.length > 0">
                         <li v-for="group in location.children">
                             <div class="count-row">
                                 <span class="title">{{ group.name }}</span>
-                                <span class="count">{{ group.count }}</span>
+                                <span class="subtitle">{{ group.count }}</span>
                             </div>
                         </li>
                     </ul>

@@ -42,7 +42,7 @@ import { SaveAttendanceOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/save
 import { SaveAttendanceResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/saveAttendanceResponseBag";
 import { SearchForFamiliesOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/searchForFamiliesOptionsBag";
 import { SearchForFamiliesResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/searchForFamiliesResponseBag";
-import { IRockCheckInNative, Screen } from "./types.partial";
+import { Screen } from "./types.partial";
 import { InvalidCheckInStateError, UnexpectedErrorMessage, clone, isAnyIdInList, printLabels } from "./utils.partial";
 import { AttendanceRequestBag } from "@Obsidian/ViewModels/CheckIn/attendanceRequestBag";
 import { RecordedAttendanceBag } from "@Obsidian/ViewModels/CheckIn/recordedAttendanceBag";

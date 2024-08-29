@@ -6,9 +6,8 @@
                    :person="currentPerson">
             <div class="button-list">
                 <RockButton v-for="schedule in schedules"
-                            btnType="primary"
-                            class="schedule-button"
-                            :class="{ checked: isSelected(schedule) }"
+                            :btnType="isSelected(schedule) ? 'primary' : 'default'"
+                            class="schedule-button illustrated-button"
                             :disabled="isProcessing"
                             @click="onScheduleClick(schedule)">
                     <span class="selection">
