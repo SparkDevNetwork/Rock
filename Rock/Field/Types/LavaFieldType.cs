@@ -15,9 +15,11 @@
 // </copyright>
 //
 using System.Collections.Generic;
+
 #if WEBFORMS
 using System.Web.UI;
 #endif
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -29,29 +31,21 @@ namespace Rock.Field.Types
     /// </summary>
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.LAVA )]
-    public class LavaFieldType : CodeEditorFieldType
+    public class LavaFieldType : CodeEditorFieldType, IEntityContextFieldType
     {
         #region Formatting
 
         /// <inheritdoc/>
         public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            string newValue = privateValue;
-
-            if ( privateValue.IsLavaTemplate() )
-            {
-                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
-                newValue = privateValue.ResolveMergeFields( mergeFields ).Trim();
-            }
-
-            return newValue;
+            return GetTextValue( privateValue, null, privateConfigurationValues );
         }
 
         /// <inheritdoc/>
         public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
             // Default method tries to HTML encode which we don't want to do.
-            return GetTextValue( privateValue, privateConfigurationValues );
+            return GetHtmlValue( privateValue, null, privateConfigurationValues );
         }
 
         #endregion
@@ -63,6 +57,86 @@ namespace Rock.Field.Types
         {
             // Lava could cause a different result with each render.
             return false;
+        }
+
+        #endregion
+
+        #region IEntityContextFieldType
+
+        /// <inheritdoc/>
+        public string GetTextValue( string privateValue, int entityTypeId, int entityId, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( !privateValue.IsLavaTemplate() )
+            {
+                return privateValue;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var entity = Reflection.GetIEntityForEntityType( entityTypeId, entityId, rockContext );
+
+                return GetTextValue( privateValue, entity, privateConfigurationValues );
+            }
+        }
+
+        /// <inheritdoc/>
+        public string GetTextValue( string privateValue, IEntity entity, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( !privateValue.IsLavaTemplate() )
+            {
+                return privateValue;
+            }
+
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+
+            if ( entity != null )
+            {
+                mergeFields.Add( "Entity", entity );
+            }
+
+            return privateValue.ResolveMergeFields( mergeFields ).Trim();
+        }
+
+        /// <inheritdoc/>
+        public string GetHtmlValue( string privateValue, int entityTypeId, int entityId, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, entityTypeId, entityId, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public string GetHtmlValue( string privateValue, IEntity entity, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, entity, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public string GetCondensedTextValue( string privateValue, int entityTypeId, int entityId, Dictionary<string, string> privateConfigurationValues )
+        {
+            var value = GetTextValue( privateValue, entityTypeId, entityId, privateConfigurationValues );
+
+            return value?.Truncate( CondensedTruncateLength );
+        }
+
+        /// <inheritdoc/>
+        public string GetCondensedTextValue( string privateValue, IEntity entity, Dictionary<string, string> privateConfigurationValues )
+        {
+            var value = GetTextValue( privateValue, entity, privateConfigurationValues );
+
+            return value?.Truncate( CondensedTruncateLength );
+        }
+
+        /// <inheritdoc/>
+        public string GetCondensedHtmlValue( string privateValue, int entityTypeId, int entityId, Dictionary<string, string> privateConfigurationValues )
+        {
+            // Don't truncate since we might end up with an un-closed tag.
+            return GetHtmlValue( privateValue, entityTypeId, entityId, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public string GetCondensedHtmlValue( string privateValue, IEntity entity, Dictionary<string, string> privateConfigurationValues )
+        {
+            // Don't truncate since we might end up with an un-closed tag.
+            return GetHtmlValue( privateValue, entity, privateConfigurationValues );
         }
 
         #endregion

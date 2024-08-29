@@ -357,6 +357,28 @@ namespace Rock
         }
 
         /// <summary>
+        /// Gets the specified entity.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="dbContext">The database context.</param>
+        /// <returns></returns>
+        public static IEntity GetIEntityForEntityType( int entityTypeId, int entityId, Data.DbContext dbContext = null )
+        {
+            var type = EntityTypeCache.Get( entityTypeId )?.GetEntityType();
+
+            if ( type == null )
+            {
+                return null;
+            }
+
+            var serviceInstance = GetServiceForEntityType( type, dbContext ?? new RockContext() );
+            var getMethod = serviceInstance?.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
+
+            return getMethod?.Invoke( serviceInstance, new object[] { entityId } ) as IEntity;
+        }
+
+        /// <summary>
         /// Gets the type of the entity identifier for entity.
         /// </summary>
         /// <param name="entityTypeId">The entity type identifier.</param>
