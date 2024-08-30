@@ -171,10 +171,10 @@
 
                             <div class="row">
                                 <div class="col-md-6" style="min-height:auto;">
-                                    <Rock:DataTextBox ID="tbFirstName" runat="server" SourceTypeName="Rock.Model.Person" PropertyName="NickName" Label="First Name" Required="true" ValidationGroup="vgEditPerson" />
+                                    <Rock:DataTextBox ID="tbFirstName" runat="server" SourceTypeName="Rock.Model.Person" PropertyName="NickName" Label="First Name" Required="true" ValidationGroup="vgEditPerson" NoSpecialCharacters="true" NoEmojisOrSpecialFonts="true" />
                                 </div>
                                 <div class="col-md-6" style="min-height:auto;">
-                                    <Rock:DataTextBox ID="tbLastName" runat="server" SourceTypeName="Rock.Model.Person" PropertyName="LastName" Label="Last Name" Required="true" ValidationGroup="vgEditPerson" />
+                                    <Rock:DataTextBox ID="tbLastName" runat="server" SourceTypeName="Rock.Model.Person" PropertyName="LastName" Label="Last Name" Required="true" ValidationGroup="vgEditPerson" NoSpecialCharacters="true" NoEmojisOrSpecialFonts="true" />
                                 </div>
                             </div>
 

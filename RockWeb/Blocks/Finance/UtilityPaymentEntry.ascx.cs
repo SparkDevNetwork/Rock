@@ -37,6 +37,7 @@ using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Rock.Constants;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -3063,6 +3064,16 @@ mission. We are so grateful for your commitment.</p>
                 if ( string.IsNullOrWhiteSpace( txtFirstName.Text ) || string.IsNullOrWhiteSpace( txtLastName.Text ) )
                 {
                     errorMessages.Add( "Make sure to enter both a first and last name" );
+                }
+
+                if ( System.Text.RegularExpressions.Regex.IsMatch( txtFirstName.Text, RegexPatterns.SpecialCharacterRemovalPattern ) || System.Text.RegularExpressions.Regex.IsMatch( txtLastName.Text, RegexPatterns.SpecialCharacterRemovalPattern ) )
+                {
+                    errorMessages.Add( "Make sure to enter a first and last name that does not contain special characters such as quotes, parentheses, etc." );
+                }
+
+                if ( System.Text.RegularExpressions.Regex.IsMatch( txtFirstName.Text, RegexPatterns.EmojiAndSpecialFontRemovalPattern ) || System.Text.RegularExpressions.Regex.IsMatch( txtLastName.Text, RegexPatterns.EmojiAndSpecialFontRemovalPattern ) )
+                {
+                    errorMessages.Add( "Make sure to enter a first and last name that does not contain emojis or special fonts." );
                 }
 
                 if ( !txtFirstName.IsValid )

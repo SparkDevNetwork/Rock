@@ -50,15 +50,15 @@
                             </asp:Panel>
                             <div class="row form-row">
                                 <div class="col-md-6">
-                                    <Rock:DataTextBox ID="tbFirstName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="FirstName" Required="true" />
+                                    <Rock:DataTextBox ID="tbFirstName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="FirstName" Required="true" NoSpecialCharacters="true" NoEmojisOrSpecialFonts="true" />
                                 </div>
                                 <div class="col-md-6">
-                                    <Rock:DataTextBox ID="tbLastName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="LastName" Required="true" />
+                                    <Rock:DataTextBox ID="tbLastName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="LastName" Required="true" NoSpecialCharacters="true" NoEmojisOrSpecialFonts="true" />
                                 </div>
                             </div>
                             <div class="row form-row">
                                 <div class="col-md-6">
-                                    <Rock:DataTextBox ID="tbNickName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="NickName" />
+                                    <Rock:DataTextBox ID="tbNickName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="NickName" NoSpecialCharacters="true" NoEmojisOrSpecialFonts="true" />
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:DefinedValuePicker ID="dvpSuffix" CssClass="input-width-md" runat="server" Label="Suffix" />

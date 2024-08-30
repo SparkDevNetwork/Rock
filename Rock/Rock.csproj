@@ -1084,6 +1084,7 @@
     <Compile Include="Configuration\IConnectionStringProvider.cs" />
     <Compile Include="Configuration\WebFormsConnectionStringProvider.cs" />
     <Compile Include="Core\InteractionInfo.cs" />
+    <Compile Include="Constants\RegexPatterns.cs" />
     <Compile Include="Core\NotificationMessageTypeComponent.cs" />
     <Compile Include="Core\NotificationMessageTypeContainer.cs" />
     <Compile Include="Core\NotificationMessageTypes\ConnectionRequestMention.cs" />

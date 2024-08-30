@@ -2592,7 +2592,8 @@ Sys.Application.add_load(function () {
                     CountryValueId = geolocation?.CountryValueId,
                     PostalCode = geolocation?.PostalCode,
                     Latitude = geolocation?.Latitude,
-                    Longitude = geolocation?.Longitude
+                    Longitude = geolocation?.Longitude,
+                    InteractionChannelCustom1 = Activity.Current?.TraceId.ToString()
                 };
 
                 // If we have a UTM cookie, add the information to the interaction.
