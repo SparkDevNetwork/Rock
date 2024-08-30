@@ -74,6 +74,42 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="DataTextBox" /> will allow special characters. This property is meant to be used when dealing with Person names.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if special characters are not allowed; otherwise, <c>false</c>.
+        /// </value>
+        public override bool NoSpecialCharacters
+        {
+            get
+            {
+                return base.NoSpecialCharacters;
+            }
+            set
+            {
+                base.NoSpecialCharacters = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="DataTextBox" /> will allow emojis or special fonts. This property is meant to be used when dealing with Person names.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if emojis or special fonts are not allowed; otherwise, <c>false</c>.
+        /// </value>
+        public override bool NoEmojisOrSpecialFonts
+        {
+            get
+            {
+                return base.NoEmojisOrSpecialFonts;
+            }
+            set
+            {
+                base.NoEmojisOrSpecialFonts = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the name of the entity property.
         /// </summary>
         /// <value>

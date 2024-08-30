@@ -16,8 +16,8 @@
             </div>
 
             <div v-else>
-                <TextBox label="First Name" v-model="firstName" />
-                <TextBox label="Last Name" v-model="lastName" />
+                <TextBox label="First Name" v-model="firstName" :rules="['nospecialcharacters', 'noemojisorspecialfonts']" />
+                <TextBox label="Last Name" v-model="lastName" :rules="['nospecialcharacters', 'noemojisorspecialfonts']" />
                 <EmailBox label="Email" v-model="email" rules="required" />
             </div>
 

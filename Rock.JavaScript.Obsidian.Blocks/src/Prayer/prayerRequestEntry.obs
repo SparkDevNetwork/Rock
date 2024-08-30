@@ -16,13 +16,13 @@
                                      autocomplete="given-name"
                                      :disabled="isSaving || isNavigating"
                                      label="First Name"
-                                     rules="required" />
+                                     :rules="['required', 'nospecialcharacters', 'noemojisorspecialfonts']" />
 
                             <TextBox v-model="lastName"
                                      autocomplete="family-name"
                                      :disabled="isSaving || isNavigating"
                                      label="Last Name"
-                                     :rules="config.isLastNameRequired ? 'required' : ''" />
+                                     :rules="config.isLastNameRequired ? ['required', 'nospecialcharacters', 'noemojisorspecialfonts'] : ['nospecialcharacters', 'noemojisorspecialfonts']" />
 
                             <EmailBox v-model="email"
                                       autocomplete="email"
