@@ -1251,11 +1251,23 @@ namespace Rock.Blocks.Event
             History.EvaluateChange( registrationChanges, "Discount Code", context.Registration.DiscountCode, args.DiscountCode );
             context.Registration.DiscountCode = args.DiscountCode;
 
-            var discountPercentage = context.Discount?.RegistrationTemplateDiscount.DiscountPercentage ?? 0;
+            /*
+                8/29/2024 - JMH
+
+                Discount handling logic is as follows:
+
+                1. If a discount code is provided, use it.
+                2. If not, check for an existing admin-applied discount in context.Registration.
+                3. If neither is available, apply a 0 discount (no discount).
+               
+                https://github.com/SparkDevNetwork/Rock/issues/5691
+                https://github.com/SparkDevNetwork/Rock/issues/5885
+             */
+            var discountPercentage = context.Discount?.RegistrationTemplateDiscount.DiscountPercentage ?? context.Registration?.DiscountPercentage ?? 0;
             History.EvaluateChange( registrationChanges, "Discount Percentage", context.Registration.DiscountPercentage, discountPercentage );
             context.Registration.DiscountPercentage = discountPercentage;
 
-            var discountAmount = context.Discount?.RegistrationTemplateDiscount.DiscountAmount ?? 0;
+            var discountAmount = context.Discount?.RegistrationTemplateDiscount.DiscountAmount ?? context.Registration?.DiscountAmount ?? 0;
             History.EvaluateChange( registrationChanges, "Discount Amount", context.Registration.DiscountAmount, discountAmount );
             context.Registration.DiscountAmount = discountAmount;
 
