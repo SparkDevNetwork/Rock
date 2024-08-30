@@ -14,22 +14,6 @@
             </div>
 
             <div class="col-md-4">
-                <DropDownList v-model="status"
-                              label="Status"
-                              :items="statusItems"
-                              :showBlankItem="false" />
-            </div>
-
-            <div class="col-md-4">
-                <DropDownList v-model="approvalStatus"
-                              label="Approval Status"
-                              :items="approvalStatusItems"
-                              :showBlankItem="false" />
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-md-4">
                 <CheckBoxList v-model="campuses"
                               label="Campuses"
                               :items="campusItems"
@@ -45,11 +29,11 @@
                                     :columnCount="2" />
             </div>
         </div>
+
     </Modal>
 </template>
 
 <script setup lang="ts">
-    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";
     import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
@@ -96,35 +80,6 @@
     const campuses = ref(props.modelValue.campuses);
     const audiences = ref(props.modelValue.audiences);
     const isVisible = useVModelPassthrough(props, "visible", emit);
-    const statusItems = [
-        {
-            text: "All",
-            value: "All"
-        },
-        {
-            text: "Active",
-            value: "Active"
-        },
-        {
-            text: "Inactive",
-            value: "Inactive"
-        },
-    ] as ListItemBag[];
-
-    const approvalStatusItems = [
-        {
-            text: "All",
-            value: "All"
-        },
-        {
-            text: "Approved",
-            value: "Approved"
-        },
-        {
-            text: "Not Approved",
-            value: "Not Approved"
-        },
-    ] as ListItemBag[];
 
     function onSave(): void {
         const value: GridSettingsOptions = {

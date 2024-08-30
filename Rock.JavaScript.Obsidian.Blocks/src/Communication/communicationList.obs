@@ -30,7 +30,8 @@
 
         <Column name="status"
                 title="Status"
-                :filter="textValueFilter"
+                field="status"
+                :filter="pickExistingValueFilter"
                 :filterValue="getStatusFilterValue"
                 visiblePriority="md">
             <template #format="{ row }">
@@ -46,7 +47,7 @@
                 title="Details"
                 visiblePriority="md">
             <template #format="{ row }">
-                <div class="text-lg">
+                <div class="text-md">
                     <div v-if="row.sender">
                         Created on {{ dateTimeText(row.createdDateTime) }} by
                         <a class='' :href="getPersonLink(row)">{{ formatName(row.sender) }}</a>
@@ -66,6 +67,7 @@
         <DateTimeColumn name="sendDateTime"
                         title="Sent"
                         field="sendDateTime"
+                        itemClass="grid-item-pull-left"
                         :filter="dateValueFilter"
                         visiblePriority="xs" />
 
@@ -110,10 +112,17 @@
                        :statusItems="config.options?.statusItems ?? []" />
 </template>
 
+<style>
+.grid-item-pull-left {
+    flex-direction: column;
+    align-items: end;
+}
+</style>
+
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { dateValueFilter, TextColumn, textValueFilter, Column, DateTimeColumn, ButtonColumn, DeleteColumn } from "@Obsidian/Controls/grid";
+    import Grid, { dateValueFilter, TextColumn, textValueFilter, pickExistingValueFilter, Column, DateTimeColumn, ButtonColumn, DeleteColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { CommunicationListOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationList/communicationListOptionsBag";
