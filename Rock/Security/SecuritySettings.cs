@@ -88,7 +88,7 @@ namespace Rock.Security
         /// </summary>
         /// <value>The passwordless sign in daily IP throttle.</value>
         [Required]
-        [Range(1, int.MaxValue, ErrorMessage = "Passwordless Sign In Daily IP Throttle must be greater than zero" )]
+        [Range( 1, int.MaxValue, ErrorMessage = "Passwordless Sign In Daily IP Throttle must be greater than zero" )]
         public int PasswordlessSignInDailyIpThrottle { get; set; }
 
         /// <summary>
@@ -103,7 +103,7 @@ namespace Rock.Security
         /// </summary>
         /// <value>The duration of the passwordless sign in session in minutes.</value>
         [Required]
-        [Range(1, int.MaxValue, ErrorMessage = "Passwordless Session Duration must be greater than zero" )]
+        [Range( 1, int.MaxValue, ErrorMessage = "Passwordless Session Duration must be greater than zero" )]
         public int PasswordlessSignInSessionDuration { get; set; }
 
         /// <summary>
@@ -111,6 +111,14 @@ namespace Rock.Security
         /// </summary>
         /// <value>The toggle option to disable predictable ids for GetFile, GetImage, and GetAvatar endpoints.</value>
         public bool DisablePredictableIds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the date time used to reject authentication cookies that were issued before then.
+        /// </summary>
+        /// <value>
+        /// Any authentication cookies issued before this date and time will be rejected. This must not be a future date.
+        /// </value>
+        public DateTime? RejectAuthenticationCookiesIssuedBefore { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SecuritySettings"/> class.

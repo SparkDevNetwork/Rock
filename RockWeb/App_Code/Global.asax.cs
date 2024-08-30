@@ -35,6 +35,7 @@ using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
 using Rock.Observability;
+using Rock.Security;
 using Rock.Transactions;
 using Rock.Utility;
 using Rock.Utility.Settings;
@@ -475,6 +476,40 @@ namespace RockWeb
         protected void Application_BeginRequest( object sender, EventArgs e )
         {
             Context.AddOrReplaceItem( "Request_Start_Time", RockDateTime.Now );
+
+            try
+            {
+                var cookie = Request.Cookies[System.Web.Security.FormsAuthentication.FormsCookieName];
+
+                if ( cookie != null )
+                {
+                    var rejectAuthenticationCookiesIssuedBefore = new SecuritySettingsService()
+                        .SecuritySettings?
+                        .RejectAuthenticationCookiesIssuedBefore;
+
+                    // Ensure the rejection date and time are not set in the future, 
+                    // as this will block all logins until the date is in the past.
+                    if ( rejectAuthenticationCookiesIssuedBefore.HasValue
+                         && rejectAuthenticationCookiesIssuedBefore.Value <= RockDateTime.Now )
+                    {
+                        var ticket = System.Web.Security.FormsAuthentication.Decrypt( cookie.Value );
+
+                        if ( ticket != null && ticket.IssueDate < rejectAuthenticationCookiesIssuedBefore.Value )
+                        {
+                            // This runs before the person is authenticated, so removing the cookie
+                            // prevents them from being authenticated.
+                            this.Request.Cookies.Remove( System.Web.Security.FormsAuthentication.FormsCookieName );
+                        }
+                    }
+                }
+            }
+            catch ( Exception ex )
+            {
+                // If invalid cookie data is received, write the exception to the
+                // debug console for developers to see during testing.
+                // Otherwise, ignore this exception and avoid logging it to keep the logs clean.
+                Debug.WriteLine( ex.Message );
+            }
 
             WebRequestHelper.SetThreadCultureFromRequest( HttpContext.Current?.Request );
         }
