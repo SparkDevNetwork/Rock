@@ -22,7 +22,7 @@
 //
 
 import { CampusScheduleBag } from "@Obsidian/ViewModels/Blocks/Core/CampusDetail/campusScheduleBag";
-import { CampusTopicsBag } from "@Obsidian/ViewModels/Blocks/Core/CampusDetail/campusTopicsBag";
+import { CampusTopicBag } from "@Obsidian/ViewModels/Blocks/Core/CampusDetail/campusTopicBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 /**
@@ -85,5 +85,5 @@ export type CampusBag = {
     phoneNumberCountryCode?: string | null;
 
     /** Gets or sets the campus topics. */
-    campusTopics?: CampusTopicsBag[] | null;
+    campusTopics?: CampusTopicBag[] | null;
 };
