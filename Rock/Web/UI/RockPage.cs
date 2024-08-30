@@ -2586,7 +2586,8 @@ Sys.Application.add_load(function () {
                 {
                     InteractionTimeToServe = _tsDuration.TotalSeconds,
                     InteractionChannelCustomIndexed1 = Request.UrlReferrerNormalize(),
-                    InteractionChannelCustom2 = Request.UrlReferrerSearchTerms()
+                    InteractionChannelCustom2 = Request.UrlReferrerSearchTerms(),
+                    InteractionChannelCustom1 = Activity.Current?.TraceId.ToString()
                 };
 
                 // If we have a UTM cookie, add the information to the interaction.

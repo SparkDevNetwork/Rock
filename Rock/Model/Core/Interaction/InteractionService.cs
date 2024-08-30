@@ -18,6 +18,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -483,6 +484,7 @@ namespace Rock.Model
                 InteractionData = interactionInfo.PageRequestUrl,
                 InteractionTimeToServe = interactionInfo.PageRequestTimeToServe,
                 InteractionChannelCustomIndexed1 = interactionInfo.UrlReferrerHostAddress,
+                InteractionChannelCustom1 = interactionInfo.TraceId,
                 InteractionChannelCustom2 = interactionInfo.UrlReferrerSearchTerms,
                 InteractionSummary = title,
                 UserAgent = interactionInfo.UserAgent,
@@ -926,7 +928,8 @@ namespace Rock.Model
                 UrlReferrerSearchTerms = interactionInfo.UrlReferrerSearchTerms,
                 UserAgent = interactionInfo.UserAgent,
                 UserHostAddress = interactionInfo.UserHostAddress,
-                BrowserSessionGuid = interactionInfo.BrowserSessionGuid
+                BrowserSessionGuid = interactionInfo.BrowserSessionGuid,
+                TraceId = Activity.Current?.TraceId.ToString()
             };
 
             return actionInfo;
@@ -981,6 +984,12 @@ namespace Rock.Model
         /// Gets the query search terms of the client's previous request that linked to the current URL.
         /// </summary>
         public string UrlReferrerSearchTerms { get; set; }
+
+        /// <summary>
+        /// The trace identifier from Observability. This allows correlation
+        /// between page interactions and observability trace logs.
+        /// </summary>
+        public string TraceId { get; set; }
 
         /// <summary>
         /// The unique identifier of the user initiating this interaction.
