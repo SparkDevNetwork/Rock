@@ -33,6 +33,7 @@ using Rock.ViewModels.Blocks.Lms.LearningProgramDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Blocks.Lms
 {
@@ -428,7 +429,19 @@ namespace Rock.Blocks.Lms
         /// <returns>The <see cref="LearningProgram"/> to be viewed or edited on the page.</returns>
         protected override LearningProgram GetInitialEntity()
         {
-            return GetInitialEntity<LearningProgram, LearningProgramService>( RockContext, PageParameterKey.LearningProgramId );
+            var initialEntity = GetInitialEntity<LearningProgram, LearningProgramService>( RockContext, PageParameterKey.LearningProgramId );
+
+            if (initialEntity.Id == 0 )
+            {
+                const string infoColor = "#007aff";
+                initialEntity.IsActive = true;
+                var defaultSystemCommunication = new SystemCommunicationService( RockContext ).Get( SystemGuid.SystemCommunication.LEARNING_ACTIVITY_NOTIFICATIONS.AsGuid() );
+                initialEntity.SystemCommunicationId = defaultSystemCommunication.Id;
+                initialEntity.SystemCommunication = defaultSystemCommunication;
+                initialEntity.HighlightColor = infoColor;
+            }
+
+            return initialEntity;
         }
 
         /// <summary>

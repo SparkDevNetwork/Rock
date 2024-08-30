@@ -353,6 +353,8 @@ namespace Rock.Blocks.Lms
             box.IfValidProperty( nameof( box.Bag.Name ),
                 () => entity.Name = box.Bag.Name );
 
+            var publicName = box.Bag.PublicName ?? box.Bag.Name;
+
             box.IfValidProperty( nameof( box.Bag.PublicName ),
                 () => entity.PublicName = box.Bag.PublicName );
 

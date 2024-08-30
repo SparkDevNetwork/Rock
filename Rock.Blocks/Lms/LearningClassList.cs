@@ -80,7 +80,7 @@ namespace Rock.Blocks.Lms
     [CustomDropdownListField(
         "Display Mode",
         Key = AttributeKey.DisplayMode,
-        Description = "Select 'Show only Acadmemic Calendar Mode' to show the block only when the configuration mode is 'Academic Calendar'.",
+        Description = "Select 'Show only Academic Calendar Mode' to show the block only when the configuration mode is 'Academic Calendar'.",
         ListSource = DisplayModeListSource,
         IsRequired = true,
         DefaultValue = "AcademicCalendarOnly",
@@ -101,7 +101,7 @@ namespace Rock.Blocks.Lms
         #region Keys
 
         private const string ShowHideListSource = "Yes^Show,No^Hide";
-        private const string DisplayModeListSource = "AcademicCalendarOnly^Show only Acadmemic Calendar Mode,Always^Always show";
+        private const string DisplayModeListSource = "AcademicCalendarOnly^Show only Academic Calendar Mode,Always^Always show";
 
         private static class DisplayMode
         {
@@ -178,7 +178,7 @@ namespace Rock.Blocks.Lms
             // or the program context entity is academic calendar mode.
             var isProgramAcademicCalendarMode = program?.ConfigurationMode == ConfigurationMode.AcademicCalendar;
             var showOnlyForAcademicCalendarMode = GetAttributeValue( AttributeKey.DisplayMode ).ToStringSafe() == DisplayMode.AcademicCalendarOnly;
-            options.ShowBlock = !isNewCourse && !isNewProgram && ( !showOnlyForAcademicCalendarMode || !isProgramAcademicCalendarMode );
+            options.ShowBlock = !isNewCourse && !isNewProgram && ( !showOnlyForAcademicCalendarMode || isProgramAcademicCalendarMode );
 
             return options;
         }

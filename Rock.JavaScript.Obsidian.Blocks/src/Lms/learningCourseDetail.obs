@@ -51,7 +51,7 @@
     import EditPanel from "./LearningCourseDetail/editPanel.partial.obs";
     import ViewPanel from "./LearningCourseDetail/viewPanel.partial.obs";
     import ImageWithIcon from "@Obsidian/Controls/imageWithIcon.obs";
-    import LearningClassSecondaryLists from "../Lms/LearningClassSecondaryLists/LearningClassSecondaryLists.partial.obs";
+    import LearningClassSecondaryLists from "./LearningClassSecondaryLists/learningClassSecondaryLists.partial.obs";
     import { onConfigurationValuesChanged, useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./LearningCourseDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
@@ -211,12 +211,8 @@
     async function onSave(): Promise<boolean | string> {
         errorMessage.value = "";
 
-        const data: ValidPropertiesBox<LearningCourseBag> = {
-            bag: learningCourseEditBag.value.bag
-        };
-
         const result = await invokeBlockAction<ValidPropertiesBox<LearningCourseBag> | string>("Save", {
-            box: data
+            box: learningCourseEditBag.value
         });
 
         if (result.isSuccess && result.data) {

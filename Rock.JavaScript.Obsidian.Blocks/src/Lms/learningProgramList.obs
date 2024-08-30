@@ -43,7 +43,7 @@
                 width="15%"
                 visiblePriority="lg">
             <template #format="{ row }">
-                <span class="label label-default category-label" :style="'color: ' + row.categoryColor">
+                <span class="label label-default" :style="'color: ' + row.categoryColor">
                     {{ row.category }}
                 </span>
             </template>
@@ -79,11 +79,6 @@
     min-height: 100%;
     align-items: center;
     justify-content: center;
-}
-
-.category-label {
-    scale: 1.3;
-    align-self: center
 }
 </style>
 
