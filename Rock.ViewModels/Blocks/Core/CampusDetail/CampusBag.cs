@@ -111,5 +111,17 @@ namespace Rock.ViewModels.Blocks.Core.CampusDetail
         /// </summary>
         /// <value>The URL.</value>
         public string Url { get; set; }
+
+        /// <summary>
+        /// Get or sets the Country Code of the Phone Number
+        /// </summary>
+        /// <value>The Phone Number Country Code.</value>
+        public string PhoneNumberCountryCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the campus topics. The Campus Topic is a Defined Value.
+        /// </summary>
+        /// <value>The campus topics.</value>
+        public List<CampusTopicBag> CampusTopics { get; set; }
     }
 }
