@@ -243,7 +243,7 @@
         timeZoneId,
         url,
         openedDate,
-        closedDate];
+        closedDate,
         phoneNumberCountryCode];
 
     // #endregion
@@ -293,6 +293,10 @@
      * Called when the "+" add button on the Campus Topics grid is clicked.
      */
      function onAddTopicClick(): void {
+        campusTopicGuid.value = null;
+        campusTopicType.value = null;
+        campusTopicEmail.value = "";
+        isCampusTopicPublic.value = false;
         isTopicsModalVisible.value = true;
     }
 
@@ -343,7 +347,7 @@
         campusTopicGuid.value = campusTopic?.guid ?? null;
         campusTopicType.value = campusTopic?.type ?? null;
         campusTopicEmail.value = campusTopic?.email ?? "";
-        isCampusTopicPublic.value = campusTopic.isPublic ?? false;
+        isCampusTopicPublic.value = campusTopic?.isPublic ?? false;
         isTopicsModalVisible.value = true;
     };
 
@@ -383,10 +387,10 @@
         // The `editingTopic` variable happens to be null if a new topic is being added.
         // The "if block" contains the logic to add the new topic if needed.
 
-        let editingTopic = campusTopics.value.find(c => c.type.value == campusTopicType.value?.value ?? false) || null;
+        let editingTopic = campusTopics.value.find(c => c.type?.value === campusTopicType.value?.value ?? false) || null;
 
         if(editingTopic === null && campusTopicGuid.value !== null) {
-            editingTopic = campusTopics.value.find(c => c.guid == campusTopicGuid.value ?? false) || null;
+            editingTopic = campusTopics.value.find(c => c.guid === campusTopicGuid.value ?? false) || null;
         }
 
         if (editingTopic === null) {
