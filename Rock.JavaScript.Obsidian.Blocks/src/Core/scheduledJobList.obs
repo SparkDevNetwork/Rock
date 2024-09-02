@@ -10,9 +10,6 @@
           stickyHeader
           liveUpdates
           :showLaunchWorkflow="false"
-          gridSettings
-          :gridSettingsActive="hasSettingsFilters"
-          @gridSettingsClick="onGridSettingsClick"
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           @selectItem="onSelectItem">
 
@@ -82,6 +79,7 @@
         <Column name="history"
                 width="52px"
                 title="History"
+                disableSort
                 itemClass="grid-columncommand">
             <template #format="{ row }">
                 <button v-if="row.guid !== ServiceJob.JobPulse"
@@ -96,6 +94,7 @@
         <Column name="runJob"
                 width="52px"
                 title="Run Now"
+                disableSort
                 itemClass="grid-columncommand">
             <template #format="{ row }">
                 <button v-if="row.guid !== ServiceJob.JobPulse"
@@ -109,13 +108,10 @@
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
-
-    <GridSettingsModal v-model="gridSettings"
-                       v-model:visible="isGridSettingsVisible" />
 </template>
 
 <script setup lang="ts">
-    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { ServiceJob } from "@Obsidian/SystemGuids/serviceJob";
     import Grid, { BooleanColumn, dateValueFilter, TextColumn, textValueFilter, DeleteColumn, DateTimeColumn, Column } from "@Obsidian/Controls/grid";
@@ -123,34 +119,16 @@
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { ScheduledJobListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/ScheduledJobList/scheduledJobListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { NavigationUrlKey, PreferenceKey, GridSettingsOptions } from "./ScheduledJobList/types.partial";
-    import { computed, reactive, ref, watch } from "vue";
-    import GridSettingsModal from "./ScheduledJobList/gridSettingsModal.partial.obs";
+    import { NavigationUrlKey } from "./ScheduledJobList/types.partial";
+    import { reactive, ref } from "vue";
 
     const config = useConfigurationValues<ListBlockBox<ScheduledJobListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const preferences = usePersonPreferences().blockPreferences;
 
     // #region Values
 
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
-
-    const isGridSettingsVisible = ref(false);
-    const gridSettings = ref<GridSettingsOptions>({
-        name: preferences.getValue(PreferenceKey.FilterName),
-        isActive: preferences.getValue(PreferenceKey.FilterIsActive),
-    });
-
-    // #endregion
-
-    // #region Computed Values
-
-    /** `true` if the grid settings is performing any filtering. */
-    const hasSettingsFilters = computed((): boolean => {
-        return !!gridSettings.value.name
-            || !!gridSettings.value.isActive;
-    });
 
     // #endregion
 
@@ -294,24 +272,6 @@
             }
         }
     }
-
-    /**
-    * Called when the grid setting icon is clicked, displays the block filters.
-    */
-    function onGridSettingsClick(): void {
-        isGridSettingsVisible.value = true;
-    }
-
-    // #endregion
-
-    watch(gridSettings, async () => {
-        preferences.setValue(PreferenceKey.FilterName, gridSettings.value.name ?? "");
-        preferences.setValue(PreferenceKey.FilterIsActive, gridSettings.value.isActive ?? "");
-
-        await preferences.save();
-
-        gridDataSource.value = loadGridData();
-    });
 
     gridDataSource.value = loadGridData();
 </script>
