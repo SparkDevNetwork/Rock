@@ -4,6 +4,7 @@
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Financial Statement Template"
+          title="Statement Templates"
           :entityTypeGuid="EntityType.FinancialStatementTemplate"
           stickyHeader
           liveUpdates
@@ -27,7 +28,7 @@
         <BooleanColumn name="isActive"
                        title="Active"
                        field="isActive"
-                       width="57px"
+                       width="157px"
                        :filter="booleanValueFilter"
                        visiblePriority="xs" />
 

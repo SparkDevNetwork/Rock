@@ -52,7 +52,7 @@ namespace Rock.ViewModels.Blocks.Lms.LearningClassList
         public bool ShowSemesterColumn { get; set; }
 
         /// <summary>
-        /// Gets or sets whether the block should be shown.
+        /// Gets or sets whether the secondary lists block should be shown.
         /// </summary>
         public bool ShowBlock { get; set; }
 

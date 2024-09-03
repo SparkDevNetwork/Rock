@@ -24,11 +24,8 @@
                 width="50%"
                 visiblePriority="xs">
             <template #format="{ row }">
-                <div class="col-md-1 flex-column">
-                    <span class="fa-stack">
-                        <i class="fa fa-circle fa-stack-2x" :style="'color: oklch(from ' + row.highlightColor + ' calc(l + .33) c h);'"></i>
-                        <i :style="'color: ' + row.highlightColor" :class="row.iconCssClass + ' fa-stack-1x'"></i>
-                    </span>
+                <div class="col-md-1 d-flex flex-column align-items-center justify-content-center">
+                    <span v-html="getRowBadge(row)"></span>
                 </div>
                 <div class="col-md-11">
                     <span class="text-semibold">{{ row.name }}</span>
@@ -43,7 +40,7 @@
                 width="15%"
                 visiblePriority="lg">
             <template #format="{ row }">
-                <span class="label label-default category-label" :style="'color: ' + row.categoryColor">
+                <span class="label label-default" :style="'color: ' + row.categoryColor">
                     {{ row.category }}
                 </span>
             </template>
@@ -71,22 +68,6 @@
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
 </template>
-
-<style scoped>
-.flex-column {
-    display: flex;
-    flex-direction: column;
-    min-height: 100%;
-    align-items: center;
-    justify-content: center;
-}
-
-.category-label {
-    scale: 1.3;
-    align-self: center
-}
-</style>
-
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
@@ -97,6 +78,7 @@
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./LearningProgramList/types.partial";
     import { reactive, ref } from "vue";
+    import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
 
     const config = useConfigurationValues<ListBlockBox<LearningProgramListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -110,6 +92,18 @@
     // #endregion
 
     // #region Functions
+
+    function getRowBadge(row: Record<string, unknown>): string {
+        const baseColor = row.highlightColor as string;
+        const pair = RockColor.calculateColorPair(new RockColor(baseColor));
+        const iconCssClass = row.iconCssClass as string;
+
+        return `
+            <span class="fa-stack">
+                <i class="fa fa-circle fa-stack-2x" style="color: ${pair.backgroundColor.toRgba()}"></i>
+                <i style="color: ${pair.foregroundColor.toRgba()}" class="${iconCssClass} fa-stack-1x"></i>
+            </span>`;
+    }
 
     /**
      * Called when the grid is requesting the row data be loaded.

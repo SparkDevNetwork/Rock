@@ -13,8 +13,8 @@
 
                 <fieldset>
                     <asp:Panel ID="pnlRequester" CssClass="prayer-requester" runat="server">
-                        <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" Required="true" />
-                        <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" Required="false" />
+                        <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" Required="true" NoSpecialCharacters="true" NoEmojisOrSpecialFonts="true" />
+                        <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" Required="false" NoSpecialCharacters="true" NoEmojisOrSpecialFonts="true" />
                         <Rock:EmailBox ID="tbEmail" runat="server" Label="Email" Required="false" />
                         <Rock:PhoneNumberBox ID="pnbPhone" runat="server" Label="Mobile Phone" />
                         <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />

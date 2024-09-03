@@ -18,16 +18,13 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Entity;
 using System.Linq;
 
+using Rock;
 using Rock.Attribute;
-using Rock.Blocks.Types.Mobile.Crm;
 using Rock.Data;
-using Rock.Financial;
 using Rock.Model;
 using Rock.Obsidian.UI;
-using Rock.Security;
 using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Fundraising.FundraisingDonationList;
@@ -35,7 +32,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
-namespace Rock.Blocks.Fundraising
+namespace Rock.Blocks.Finance
 {
     /// <summary>
     /// Displays a list of financial transaction details.
@@ -106,7 +103,7 @@ namespace Rock.Blocks.Fundraising
         #region Fields
 
         private Dictionary<int, GroupMember> _groupMembers;
-        private Rock.Model.Group _group;
+        private Model.Group _group;
 
         #endregion Fields
 
@@ -162,9 +159,9 @@ namespace Rock.Blocks.Fundraising
             // Get the donations for the entire opportunity group or for just the
             // one individual being viewed.
             //
-            if ( RequestContext.GetContextEntity<Rock.Model.Group>() != null )
+            if ( RequestContext.GetContextEntity<Model.Group>() != null )
             {
-                _group = RequestContext.GetContextEntity<Rock.Model.Group>();
+                _group = RequestContext.GetContextEntity<Model.Group>();
 
                 groupMemberIds = groupMemberService.Queryable()
                     .Where( m => m.GroupId == _group.Id )
@@ -201,9 +198,9 @@ namespace Rock.Blocks.Fundraising
             // Get the donations for the entire opportunity group or for just the
             // one individual being viewed.
             //
-            if ( RequestContext.GetContextEntity<Rock.Model.Group>() != null )
+            if ( RequestContext.GetContextEntity<Model.Group>() != null )
             {
-                var group = RequestContext.GetContextEntity<Rock.Model.Group>();
+                var group = RequestContext.GetContextEntity<Model.Group>();
 
                 _groupMembers = new GroupMemberService( rockContext ).Queryable()
                     .Where( m => m.GroupId == group.Id )
@@ -284,13 +281,13 @@ namespace Rock.Blocks.Fundraising
         /// Gets the group from the current context entity, if the context entity is a Group Member their group is returned.
         /// </summary>
         /// <returns></returns>
-        private Rock.Model.Group GetContextEntityGroup()
+        private Model.Group GetContextEntityGroup()
         {
             if ( _group == null )
             {
-                if ( RequestContext.GetContextEntity<Rock.Model.Group>() != null )
+                if ( RequestContext.GetContextEntity<Model.Group>() != null )
                 {
-                    _group = RequestContext.GetContextEntity<Rock.Model.Group>();
+                    _group = RequestContext.GetContextEntity<Model.Group>();
                 }
                 else
                 {
@@ -308,12 +305,12 @@ namespace Rock.Blocks.Fundraising
         /// <returns>
         ///   <c>true</c> if [is context group fundraising group type]; otherwise, <c>false</c>.
         /// </returns>
-        /// <exception cref="System.NotImplementedException"></exception>
+        /// <exception cref="NotImplementedException"></exception>
         private bool IsContextGroupFundraisingGroupType()
         {
             var rockContext = new RockContext();
             var group = GetContextEntityGroup();
-            var groupTypeIdFundraising = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FUNDRAISINGOPPORTUNITY.AsGuid() ).Id;
+            var groupTypeIdFundraising = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_FUNDRAISINGOPPORTUNITY.AsGuid() ).Id;
             var fundraisingGroupTypeIdList = new GroupTypeService( rockContext ).Queryable()
                 .Where( a => a.Id == groupTypeIdFundraising || a.InheritedGroupTypeId == groupTypeIdFundraising )
                 .Select( a => a.Id )

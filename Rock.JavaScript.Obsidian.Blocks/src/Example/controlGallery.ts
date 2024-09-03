@@ -125,7 +125,7 @@ import { DefinedType } from "@Obsidian/SystemGuids/definedType";
 import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
 import { EntityType } from "@Obsidian/SystemGuids/entityType";
 import { FieldType } from "@Obsidian/SystemGuids/fieldType";
-import { SlidingDateRange, rangeTypeOptions } from "@Obsidian/Utility/slidingDateRange";
+import { SlidingDateRange, rangeTypeOptions, RangeType } from "@Obsidian/Utility/slidingDateRange";
 import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
 import { sleep } from "@Obsidian/Utility/promiseUtils";
 import { upperCaseFirstCharacter } from "@Obsidian/Utility/stringUtils";
@@ -2174,20 +2174,32 @@ const slidingDateRangePickerGallery = defineComponent({
     },
     setup() {
         const value = ref<SlidingDateRange | null>(null);
+        const rangeTypeNameHash = Object.fromEntries(rangeTypeOptions.map(rt => [rt.value, rt.text]));
+        const rangeTypes = ref<RangeType[]>([]);
+        const rangeTypeNames = computed(() => {
+            return rangeTypes.value.map(rt => `RangeType.${rangeTypeNameHash[rt]}`);
+        });
+
+        const previewLocation = ref("Top");
+
+        const exampleCode = computed(() => {
+            const rangeTypeProp = rangeTypes.value.length > 0 ? `, :enabledSlidingDateRangeUnits="[${rangeTypeNames.value.join(", ")}]"` : "";
+            return `<SlidingDateRangePicker v-model="value" label="Sliding Date Range"${rangeTypeProp} previewLocation="${previewLocation.value}" />`;
+        });
 
         return {
             value,
             rangeTypeOptions: rangeTypeOptions,
-            rangeTypes: ref(null),
-            previewLocation: ref("Right"),
+            rangeTypes,
+            previewLocation,
             previewLocationOptions: [
                 {
-                    text: "Right (Default)",
-                    value: "Right"
+                    text: "Top (Default)",
+                    value: "Top"
                 },
                 {
-                    text: "Top",
-                    value: "Top"
+                    text: "Right",
+                    value: "Right"
                 },
                 {
                     text: "None",
@@ -2197,7 +2209,7 @@ const slidingDateRangePickerGallery = defineComponent({
             importCode: getSfcControlImportPath("slidingDateRangePicker") +
                 "\n// If Customizing Date Range Types" +
                 "\nimport { RangeType } from \"@Obsidian/Utility/slidingDateRange\";",
-            exampleCode: `<SlidingDateRangePicker v-model="value" label="Sliding Date Range" :enabledSlidingDateRangeUnits="[RangeType.Current, RangeType.Previous, RangeType.Next]" previewLocation="Right" />`
+            exampleCode
         };
     },
     template: `

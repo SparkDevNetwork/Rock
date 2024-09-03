@@ -7,6 +7,7 @@
                     <div class="row">
                         <div class="col-md-6">
                             <TextBox v-model="name"
+                                     @blur="onNameBlur"
                                      label="Name"
                                      rules="required" />
 
@@ -29,9 +30,9 @@
                                        help="The maximum number of students a class can have." />
 
                             <WorkflowTypePicker
-                                       v-model="completionWorkflowType"
-                                       label="Completion Workflow Type"
-                                       help="The workflow to launch when an individual completes the course." />
+                                                v-model="completionWorkflowType"
+                                                label="Completion Workflow Type"
+                                                help="The workflow to launch when an individual completes the course." />
 
                             <CheckBox
                                       v-model="allowHistoricalAccess"
@@ -43,13 +44,18 @@
 
                         </div>
                         <div class="col-md-6">
-                            <CheckBox
-                                      v-model="isActive"
-                                      label="Active" />
+                            <div class="col-md-6">
+                                <CheckBox
+                                          v-model="isActive"
+                                          label="Active" />
+                            </div>
 
-                            <CheckBox
-                                      v-model="isPublic"
-                                      label="Public" />
+                            <div class="col-md-6">
+                                <CheckBox
+                                          v-model="isPublic"
+                                          label="Public" />
+
+                            </div>
 
                             <CategoryPicker
                                             v-model="category"
@@ -66,58 +72,45 @@
                                      label="Summary"
                                      textMode="multiline" />
 
-                            <div class="course-requirements-container">
-                                <h4>Requirements</h4>
-                                <div class="course-requirements-list" v-if="courseRequirements?.length > 0">
-                                    <div class="row text-muted course-requirements-row" v-for="(req, index) in courseRequirements">
+                            <Grid
+                                  :data="courseRequirementsGridData"
+                                  keyfield="idKey"
+                                  light>
+                                <Column name="requiredLearningCourseName"
+                                        title="Requirements"
+                                        field="requiredLearningCourseName"
+                                        :filter="textValueFilter"
+                                        width="100%"
+                                        visiblePriority="xs">
+                                    <template #format="{ row }">
                                         <div class="col-xs-12 col-md-7">
-                                            <span v-if="req.requiredLearningCourseName">
-                                                {{ req.requiredLearningCourseName }}
-                                            </span>
-                                            <span v-if="req.requiredLearningCourseCode">
-                                                - {{ req.requiredLearningCourseCode }}
+                                            <span class="text-muted ml-1">
+                                                {{ row.requiredLearningCourseName }} - {{ row.requiredLearningCourseCode }}
                                             </span>
                                         </div>
-                                        <div class="col-xs-12 col-md-3">
-                                            {{ RequirementTypeDescription[req.requirementType ?? ""] ?? "" }}
-                                        </div>
-                                        <div class="col-xs-12 col-md-2">
-                                            <button aria-label="Remove this requirement" class="btn btn-default btn-square remove-answer-button" @click.prevent="courseRequirements.splice(index, 1)">
+                                        <span class="col-xs-12 col-md-3">
+                                            {{ RequirementTypeDescription[row.requirementType ?? ""] ?? "" }}
+                                        </span>
+                                        <div class="col-xs-12 col-md-2 text-right">
+                                            <button aria-label="Remove this requirement" class="btn btn-default btn-square remove-answer-button" @click.prevent="removeRequirement(row)">
                                                 <i class="fa fa-times" aria-hidden="true"></i>
                                             </button>
                                         </div>
-                                    </div>
-                                </div>
-
-                                <button @click="onOpenCourseRequirementModalClick" type="button" class="btn btn-add course-requirements-add-button" title="Add a new course requirement.">
-                                    <i class="fa fa-plus fa-fw"></i>
-                                </button>
-                            </div>
-
-                            <Modal v-model="showAddCourseRequirementModal"
-                                   :title="'Add Requirement for ' + name"
-                                   @save="onAddRequirementClicked"
-                                   :isSaveButtonDisabled="!addRequirementType"
-                                   saveText="Add Requirement">
+                                    </template>
+                                </Column>
+                                <template #gridFooterAppend>
+                                    <button @click="onOpenCourseRequirementModalClick" type="button" class="btn btn-add pull-right" title="Add a new course requirement.">
+                                        <i class="fa fa-plus fa-fw"></i>
+                                    </button>
+                                </template>
+                            </Grid>
+                            <Modal v-model="showAddCourseRequirementModal" :title="'Add Requirement for ' + name" @save="onAddRequirementClicked" :isSaveButtonDisabled="!addRequirementType" saveText="Add Requirement">
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <RadioButtonList
-                                                         v-model="addRequirementType"
-                                                         label="Requirement Type"
-                                                         horizontal
-                                                         rules="required"
-                                                         :items="requirementTypes" />
+                                        <RadioButtonList v-model="addRequirementType" label="Requirement Type" horizontal rules="required" :items="requirementTypes" />
                                     </div>
                                     <div class="col-md-6">
-                                        <DropDownList
-                                                      v-model="requiredCourse"
-                                                      :enhanceForLongLists="courseOptions.length > 10"
-                                                      :grouped="false"
-                                                      :items="courseOptions"
-                                                      rules="required"
-                                                      label="Course"
-                                                      :multiple="false"
-                                                      :showBlankItem="false" />
+                                        <DropDownList v-model="requiredCourse" :enhanceForLongLists="courseOptions.length > 10" :grouped="false" :items="courseOptions" rules="required" label="Course" :multiple="false" :showBlankItem="false" />
                                     </div>
                                 </div>
                             </Modal>
@@ -128,28 +121,14 @@
                 </fieldset>
             </div>
             <div v-else-if="item === 'Description'">
-                <StructuredContentEditor
-                                         v-model="description" />
+                <StructuredContentEditor v-model="description" />
             </div>
         </template>
     </TabbedContent>
 </template>
 
-<style scoped>
-.course-requirements-add-button {
-    float: right;
-    margin-top: .6em;
-}
-
-.course-requirements-row {
-    border-bottom: 1px solid lightgray;
-    padding-bottom: .5rem;
-    padding-top: .5rem;
-}
-</style>
-
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
+    import { computed, PropType, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
@@ -173,6 +152,8 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import Grid, { Column, textValueFilter } from "@Obsidian/Controls/Grid";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -240,13 +221,19 @@
         , summary
         , category
         , imageBinaryFile
-        , description
-        , courseRequirements
+        , description,
+        courseRequirements
     ];
 
     // #endregion
 
     // #region Computed Values
+
+    const courseRequirementsGridData = computed((): GridDataBag => {
+        return {
+            rows: [...courseRequirements.value]
+        };
+    });
 
     // #endregion
 
@@ -255,6 +242,18 @@
     // #endregion
 
     // #region Event Handlers
+
+    function removeRequirement(row: Record<string, unknown>): void {
+        const index = courseRequirements.value.findIndex(cr => cr.idKey === row.idKey);
+        courseRequirements.value.splice(index, 1);
+        courseRequirements.value = Array.from(courseRequirements.value);
+    }
+
+    function onNameBlur(): void {
+        if (!publicName.value) {
+            publicName.value = name.value;
+        }
+    }
 
     /**
      * Called when the Add requirement button has been clicked by the indivual.
@@ -268,7 +267,7 @@
 
             if (courseListItemsResult.isSuccess && courseListItemsResult.data) {
                 courseOptions.value = courseListItemsResult.data;
-                courseOptions.value.unshift({value: null, text: ""});
+                courseOptions.value.unshift({ value: null, text: "" });
                 showAddCourseRequirementModal.value = true;
             }
         }
@@ -287,6 +286,7 @@
 
         if (result.isSuccess && result.data) {
             courseRequirements.value.push(result.data);
+            courseRequirements.value = Array.from(courseRequirements.value);
             showAddCourseRequirementModal.value = false;
         }
     }
@@ -312,7 +312,6 @@
         updateRefValue(enableAnnouncements, props.modelValue.bag?.enableAnnouncements ?? false);
         updateRefValue(courseRequirements, props.modelValue.bag?.courseRequirements ?? []);
         updateRefValue(imageBinaryFile, props.modelValue.bag?.imageBinaryFile ?? null);
-        updateRefValue(courseRequirements, props.modelValue.bag?.courseRequirements ?? []);
     });
 
     // Determines which values we want to track changes on (defined in the

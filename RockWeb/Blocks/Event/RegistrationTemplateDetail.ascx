@@ -161,11 +161,11 @@
                             </div>
                             <div class="row">
                                 <div class="col-md-6">
-                                    <Rock:CurrencyBox ID="cbMinimumInitialPayment" runat="server" Label="Minimum Initial Payment"
+                                    <Rock:CurrencyBox ID="cbMinimumInitialPayment" runat="server" Label="Minimum Initial Payment" DisablePlaceholder="true"
                                         Help="The minimum amount required per registrant. Leave value blank if full amount is required." />
                                 </div>
                                 <div class="col-md-6">
-                                    <Rock:CurrencyBox ID="cbDefaultPaymentAmount" runat="server" Label="Default Payment Amount"
+                                    <Rock:CurrencyBox ID="cbDefaultPaymentAmount" runat="server" Label="Default Payment Amount" DisablePlaceholder="true"
                                         Help="The default payment amount per registrant. Leave value blank to default to the full amount. NOTE: This requires that a Minimum Initial Payment is greater than 0." />
                                 </div>
                             </div>

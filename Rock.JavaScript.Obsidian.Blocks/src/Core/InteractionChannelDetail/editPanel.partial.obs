@@ -12,21 +12,27 @@
                           label="Active" />
             </div>
             <div class="col-md-6">
-                <NumberBox label="Engagement Strength" v-model="engagementStrength" />
+                <TextBox label="Engagement Strength"
+                         v-model="engagementStrength"
+                         :rules="validateIntegerValue" />
             </div>
             <div class="col-md-6">
-                <NumberBox label="Retention Duration" v-model="retentionDuration">
+                <TextBox label="Retention Duration"
+                         v-model="retentionDuration"
+                         :rules="validateIntegerValue">
                     <template v-slot:inputGroupAppend>
                         <span class="input-group-addon">days</span>
                     </template>
-                </NumberBox>
+                </TextBox>
             </div>
             <div class="col-md-6">
-                <NumberBox label="Component Cache Duration" v-model="componentCacheDuration" >
+                <TextBox label="Component Cache Duration"
+                         v-model="componentCacheDuration"
+                         :rules="validateIntegerValue">
                     <template v-slot:inputGroupAppend>
                         <span class="input-group-addon">minutes</span>
                     </template>
-                </NumberBox>
+                </TextBox>
             </div>
             <div class="col-md-6">
                 <TextBox label="Interaction Custom 1 Label" v-model="interactionCustom1Label" />
@@ -90,7 +96,6 @@
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
-    import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
@@ -120,9 +125,9 @@
     const attributeValues = ref(props.modelValue.attributeValues ?? {});
     const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
     const name = propertyRef(props.modelValue.name ?? "", "Name");
-    const engagementStrength = propertyRef(props.modelValue.engagementStrength, "EngagementStrength");
-    const retentionDuration = propertyRef(props.modelValue.retentionDuration, "RetentionDuration");
-    const componentCacheDuration = propertyRef(props.modelValue.componentCacheDuration, "ComponentCacheDuration");
+    const engagementStrength = propertyRef(props.modelValue.engagementStrength ?? "", "EngagementStrength");
+    const retentionDuration = propertyRef(props.modelValue.retentionDuration ?? "", "RetentionDuration");
+    const componentCacheDuration = propertyRef(props.modelValue.componentCacheDuration ?? "", "ComponentCacheDuration");
     const interactionCustom1Label = propertyRef(props.modelValue.interactionCustom1Label ?? "", "InteractionCustom1Label");
     const interactionCustom2Label = propertyRef(props.modelValue.interactionCustom2Label ?? "", "InteractionCustom2Label");
     const interactionCustomIndexed1Label = propertyRef(props.modelValue.interactionCustomIndexed1Label ?? "", "InteractionCustomIndexed1Label");
@@ -148,11 +153,29 @@
 
     // #region Functions
 
+    function validateIntegerValue(value: unknown): string | boolean {
+
+        const stringValue = value as string;
+
+        if (stringValue) {
+            const num = Number(value);
+            if (!isValidNumber(num)) {
+                return "must be a valid number.";
+            }
+            else if (num < 0) {
+                return "must have a value of 0 or more.";
+            }
+        }
+
+        return true;
+    }
+
+    function isValidNumber(num: number): boolean {
+        return !isNaN(num) && isFinite(num);
+    }
+
     // #endregion
 
-    // #region Event Handlers
-
-    // #endregion
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
@@ -160,9 +183,9 @@
         updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
         updateRefValue(isActive, props.modelValue.isActive ?? false);
         updateRefValue(name, props.modelValue.name ?? "");
-        updateRefValue(engagementStrength, props.modelValue.engagementStrength);
-        updateRefValue(retentionDuration, props.modelValue.retentionDuration);
-        updateRefValue(componentCacheDuration, props.modelValue.componentCacheDuration);
+        updateRefValue(engagementStrength, props.modelValue.engagementStrength ?? "");
+        updateRefValue(retentionDuration, props.modelValue.retentionDuration ?? "");
+        updateRefValue(componentCacheDuration, props.modelValue.componentCacheDuration ?? "");
         updateRefValue(interactionCustom1Label, props.modelValue.interactionCustom1Label ?? "");
         updateRefValue(interactionCustom2Label, props.modelValue.interactionCustom2Label ?? "");
         updateRefValue(interactionCustomIndexed1Label, props.modelValue.interactionCustomIndexed1Label ?? "");

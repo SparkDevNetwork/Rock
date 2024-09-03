@@ -8,7 +8,7 @@
                          alertType="warning"></NotificationBox>
 
         <div v-else>
-            <div class="form-group" v-if="currentPerson">
+            <div class="form-group" v-if="currentPerson.text">
                 <RockLabel>Name</RockLabel>
                 <div>
                     {{ currentPerson.text }}
@@ -16,9 +16,9 @@
             </div>
 
             <div v-else>
-                <FirstNameTextBox label="First Name" v-model="firstName" />
-                <TextBox label="Last Name" v-model="lastName" />
-                <EmailBox label="Email" v-model="email" />
+                <FirstNameTextBox label="First Name" v-model="firstName" :rules="['nospecialcharacters', 'noemojisorspecialfonts']" />
+                <TextBox label="Last Name" v-model="lastName" :rules="['nospecialcharacters', 'noemojisorspecialfonts']" />
+                <EmailBox label="Email" v-model="email" rules="required" />
             </div>
 
             <DropDownList v-if="selectGroupTypeGuidOrEmptyString"
@@ -136,7 +136,7 @@
         updateRefValue(attributes, props.modelValue.attributes ?? {});
         updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
         updateRefValue(startDate, props.modelValue.startDate ?? "");
-        updateRefValue(endDate, props.modelValue.startDate ?? "");
+        updateRefValue(endDate, props.modelValue.endDate ?? "");
         updateRefValue(totalAmount, props.modelValue.totalAmount ?? null);
         updateRefValue(groupGuidOrEmptyString, props.modelValue.group?.value ?? "");
         updateRefValue(pledgeFrequencyValue, props.modelValue.pledgeFrequencyValue?.value ?? "");
@@ -148,7 +148,7 @@
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
-    watch([attributeValues, selectedDateRange, ...propRefs], () => {
+    watch([attributeValues, selectedDateRange, firstName, lastName, email, ...propRefs], () => {
         const newValue: FinancialPledgeEntryBag = {
             ...props.modelValue,
             attributeValues: attributeValues.value,
@@ -159,6 +159,9 @@
             pledgeFrequencyValue: {
                 value: pledgeFrequencyValue.value
             },
+            firstName: firstName.value,
+            lastName: lastName.value,
+            email: email.value,
             startDate: selectedDateRange.value?.lowerValue,
             endDate: selectedDateRange.value?.upperValue,
             personAlias: personAlias.value,

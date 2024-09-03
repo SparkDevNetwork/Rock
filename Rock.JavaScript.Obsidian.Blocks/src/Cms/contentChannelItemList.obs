@@ -117,7 +117,7 @@
             </template>
         </Column>
 
-        <AttributeColumns :attributes="config?.gridDefinition?.attributeFields ?? []" :filter="null" />
+        <AttributeColumns :attributes="config?.gridDefinition?.attributeFields ?? []" :filter="undefined" />
 
         <LabelColumn v-if="config?.options?.showStatusColumn"
                      name="status"

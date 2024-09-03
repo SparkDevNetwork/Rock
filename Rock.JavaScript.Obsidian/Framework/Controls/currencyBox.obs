@@ -50,6 +50,11 @@
 
         currencyCodeDefinedValueGuid: {
             type: String as PropType<Guid | null | undefined>,
+        },
+
+        disablePlaceholder: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 
@@ -63,11 +68,16 @@
 
     const http = useHttp();
 
-    const placeholder = computed(() => {
-        return (0).toLocaleString("en-US", {
-            minimumFractionDigits: decimalPlaces.value,
-            maximumFractionDigits: decimalPlaces.value
-        });
+    const placeholder = computed<string>(() => {
+        if (!props.disablePlaceholder) {
+            return (0).toLocaleString("en-US", {
+                minimumFractionDigits: decimalPlaces.value,
+                maximumFractionDigits: decimalPlaces.value
+            });
+        }
+        else {
+            return "";
+        }
     });
 
     // #region Functions

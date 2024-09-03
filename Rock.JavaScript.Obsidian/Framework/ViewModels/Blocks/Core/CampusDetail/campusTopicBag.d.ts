@@ -21,11 +21,20 @@
 // </copyright>
 //
 
-/** The additional configuration options for the Financial Account List block. */
-export type FinancialAccountListOptionsBag = {
-    /** Gets or sets the grid title. */
-    gridTitle?: string | null;
+import { Guid } from "@Obsidian/Types";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-    /** Gets or sets a value indicating whether the block should be visible. */
-    isBlockVisible: boolean;
+/** Class CampusTopicsBag. */
+export type CampusTopicBag = {
+    /** Gets or sets the unique identifier. */
+    guid?: Guid | null;
+
+    /** Gets or sets the type of the Campus Topic. */
+    type?: ListItemBag | null;
+
+    /** Gets or sets the email. */
+    email?: string | null;
+
+    /** Gets or sets a value indicating whether this instance is public. */
+    isPublic?: boolean;
 };
