@@ -4,9 +4,8 @@
     "composite": true,
     "module": "ESNext"
   },
-  "include": [ "./*.ts", "./**/*.ts" ],
+  "include": [ "./*.ts" ],
   "references": [
-    { "path": "../Utility" },
-    { "path": "../Core" },
+    { "path": "../Utility" }
   ]
 }

@@ -22,7 +22,7 @@ import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 import { isNullOrWhiteSpace, containsHtmlTag } from "@Obsidian/Utility/stringUtils";
 import { isUrl } from "@Obsidian/Utility/url";
 import { containsRequiredRule, defineRule, normalizeRules, parseRule, rulesPropType, validateValue } from "@Obsidian/Utility/validationRules";
-import { getSpecialCharacterPattern, getEmojiPattern, getSpecialFontPattern } from "@Obsidian/Core/Utilities/regexPatterns";
+import { getSpecialCharacterPattern, getEmojiPattern, getSpecialFontPattern } from "@Obsidian/Utility/regexPatterns";
 
 // For backwards compatibility:
 export {
