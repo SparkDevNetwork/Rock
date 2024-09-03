@@ -29,5 +29,13 @@ namespace Rock.ViewModels.Blocks.Finance.FinancialAccountList
         /// The grid title.
         /// </value>
         public string GridTitle { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the block should be visible.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the block is visible; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsBlockVisible { get; set; }
     }
 }

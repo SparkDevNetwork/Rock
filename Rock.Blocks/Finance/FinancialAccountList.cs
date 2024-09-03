@@ -159,7 +159,8 @@ namespace Rock.Blocks.Finance
 
             var options = new FinancialAccountListOptionsBag
             {
-                GridTitle = parentAccountId.HasValue ? "Child Accounts".FormatAsHtmlTitle() : "Accounts".FormatAsHtmlTitle()
+                GridTitle = parentAccountId.HasValue ? "Child Accounts".FormatAsHtmlTitle() : "Accounts".FormatAsHtmlTitle(),
+                IsBlockVisible = parentAccountId.HasValue && parentAccountId > 0
             };
 
             return options;
