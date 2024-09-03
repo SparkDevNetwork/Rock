@@ -548,7 +548,16 @@ namespace Rock.Tests.Integration.Modules.Core.Model
             var calendarService = new EventCalendarService( rockContext );
             var calendarString = calendarService.CreateICalendar( args );
 
-            ValidateCalendarFeedForSpecificDatesRecurrence( calendarString, specificDates, duration );
+            var events = CalendarCollection.Load( calendarString )?.FirstOrDefault()?.Events;
+
+            Assert.AreEqual( specificDates.Count, events.Count, "Unexpected event count." );
+
+            foreach ( var specificDate in specificDates )
+            {
+                var calendarEvent = events.FirstOrDefault( x => x.Start.Value == specificDate );
+                Assert.IsNotNull( calendarEvent, $"Event with date/time not found: {specificDate:G}" );
+                Assert.AreEqual( duration, calendarEvent.Duration, "Event has unexpected duration." );
+            }
 
             LogHelper.Log( $"** ICalendar Document Output:\n{calendarString}" );
         }
@@ -615,7 +624,16 @@ namespace Rock.Tests.Integration.Modules.Core.Model
             var calendarService = new EventCalendarService( rockContext );
             var calendarString = calendarService.CreateICalendar( args );
 
-            ValidateCalendarFeedForSpecificDatesRecurrence( calendarString, specificDates, null );
+            var events = CalendarCollection.Load( calendarString )?.FirstOrDefault()?.Events;
+
+            Assert.AreEqual( specificDates.Count, events.Count, "Unexpected event count." );
+
+            foreach ( var specificDate in specificDates )
+            {
+                var calendarEvent = events.FirstOrDefault( x => x.Start.Value == specificDate );
+                Assert.IsNotNull( calendarEvent, $"Event with date/time not found: {specificDate:G}" );
+                Assert.IsTrue( calendarEvent.IsAllDay, "Event should be 'all day' but is not." );
+            }
 
             LogHelper.Log( $"** ICalendar Document Output:\n{calendarString}" );
         }
@@ -680,80 +698,6 @@ namespace Rock.Tests.Integration.Modules.Core.Model
             rockContext.SaveChanges();
 
             return testEvent1;
-        }
-
-        /// <summary>
-        /// Validates the format and content of a calendar feed that contains a recurrence pattern for specific dates.
-        /// This VCALENDAR configuration requires that a very specific set of rules be observed to maintain compatibility with
-        /// these major calendar applications: Outlook 365, Outlook Web, Google Calendar, Apple iCalendar.
-        /// </summary>
-        /// <param name="calendarString"></param>
-        /// <param name="specificDates"></param>
-        private void ValidateCalendarFeedForSpecificDatesRecurrence( string calendarString, List<DateTime> specificDates, TimeSpan? eventDuration )
-        {
-            var day1Date = specificDates.First();
-
-            // Verify that the Calendar feed content has the necessary elements.
-
-            // 1. The calendar must contain an RRULE to establish the link between the event instances.
-            //    The rule should specify a basic daily recurrence for the same number of days as the number of specific dates.
-            //    This establishes the set of events, which will then be rescheduled to the specific dates using the RECURRENCE-ID.
-            var ruleText = $"*RRULE:FREQ=DAILY;COUNT={specificDates.Count}*";
-            Assert.That.MatchesWildcard( ruleText, calendarString );
-
-            // 2. The calendar must contain a rescheduled event for each day in the recurrence pattern.
-            //    The rescheduled events must be listed in reverse chronological order.
-            //    The RECCURRENCE-ID must exactly match the format of the DTSTART value for one of the scheduled events
-            //    in the original recurrence pattern to correctly identify the event to be rescheduled.
-            //    The DTSTART property of VEVENT(n) should be set to the value of specificDates(n).
-            //    If this is an all-day event, the DTSTART property must be specified with no time component, in the following format:
-            //    RECURRENCE-ID;TZID=*;VALUE=DATE:YYYYMMDD
-
-            // Match the first event. This event is the template for the subsequent rescheduled events.
-            var matchRegex = "(.*)BEGIN:VEVENT(.*)END:VEVENT";
-
-            // Match rescheduled events in reverse chronological order.
-            for ( int i = specificDates.Count - 1; i >= 0; i-- )
-            {
-                string dtStartPattern;
-                string recurrenceIdText;
-                var rescheduledToDate = specificDates[i];
-                var rescheduledFromDate = day1Date.AddDays( i );
-                if ( eventDuration.HasValue )
-                {
-                    dtStartPattern = $"DTSTART;TZID=(.*):{rescheduledToDate:yyyyMMdd}";
-                    recurrenceIdText = $"RECURRENCE-ID;TZID=(.*):{rescheduledFromDate:yyyyMMddTHHmmss}";
-                }
-                else
-                {
-                    // An all-day event must specify DTSTART and RECURRENCE-ID using the "VALUE=DATE:YYYYMMDD" format.
-                    // If any other format is used, Outlook Web interprets the event as occurring at 12:00am with 0s duration.
-                    dtStartPattern = $"DTSTART;TZID=(.*);VALUE=DATE:{rescheduledToDate:yyyyMMdd}[^Tt0123456789]";
-                    recurrenceIdText = $"RECURRENCE-ID;TZID=(.*);VALUE=DATE:{rescheduledFromDate:yyyyMMdd}[^Tt0123456789]";
-                }
-
-                matchRegex += $"(.*)BEGIN:VEVENT(.*){dtStartPattern}(.*){recurrenceIdText}(.*)END:VEVENT";
-            }
-
-            Assert.That.IsTrue( Regex.IsMatch( calendarString, matchRegex, RegexOptions.Singleline ),
-                $"Specific Dates are not in the required format." );
-
-            // 3. The rescheduled events must have a higher SEQUENCE number than the initial event.
-            //    This ensures that they will supersede the previous event definition.
-            var sequenceMatches = Regex.Matches( calendarString, @"^SEQUENCE:(\d*)\s*$", RegexOptions.Multiline );
-            var sequence1 = -1;
-            foreach ( Match sequenceMatch in sequenceMatches )
-            {
-                if ( sequence1 == -1 )
-                {
-                    sequence1 = sequenceMatch.Groups[1].Value.AsInteger();
-                }
-                else
-                {
-                    var sequenceN = sequenceMatch.Groups[1].Value.AsInteger();
-                    Assert.That.IsTrue( sequenceN > sequence1, $"SEQUENCE is invalid. [Expected: >{sequenceN}, Actual: {sequence1}]" );
-                }
-            }
         }
 
         /// <summary>

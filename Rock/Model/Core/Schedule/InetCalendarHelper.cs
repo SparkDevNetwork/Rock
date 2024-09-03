@@ -65,8 +65,8 @@ namespace Rock.Model
             var calendarList = CalendarCollection.Load( stringReader );
             CalendarEvent calendarEvent = null;
 
-            //// iCal is stored as a list of Calendar's each with a list of Events, etc.  
-            //// We just need one Calendar and one Event
+            // iCal is stored as a list of calendars, each with a list of events.
+            // Since Rock's schedule entity represents a single event, we just need one calendar and one event.
             if ( calendarList.Count() > 0 )
             {
                 var calendar = calendarList[0] as Calendar;
@@ -239,10 +239,10 @@ namespace Rock.Model
         {
             var occurrenceLookupKey = $"{startDateTime.ToShortDateTimeString()}__{endDateTime?.ToShortDateTimeString()}__ExcludeStartDate__{iCalendarContent.Trim()}".XxHash();
 
-            var cachedOccurences = _iCalOccurrencesCache.Get( occurrenceLookupKey ) as Occurrence[];
-            if ( cachedOccurences != null )
+            var cachedOccurrences = _iCalOccurrencesCache.Get( occurrenceLookupKey ) as Occurrence[];
+            if ( cachedOccurrences != null )
             {
-                return cachedOccurences;
+                return cachedOccurrences;
             }
 
             var iCalEvent = CreateCalendarEvent( iCalendarContent );
@@ -264,7 +264,7 @@ namespace Rock.Model
 
                 https://github.com/rianjs/ical.net/issues/431
 
-                Furthermore, the iCal.NET library is no longer maintainted, so it's clear we cannot count on this
+                Furthermore, the iCal.NET library is no longer maintained, so it's clear we cannot count on this
                 issue being fixed on their end any time soon.
 
                 Workaround #1:
