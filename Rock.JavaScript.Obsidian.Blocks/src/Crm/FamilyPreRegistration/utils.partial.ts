@@ -15,7 +15,6 @@
 // </copyright>
 //
 
-import { getEmojiPattern, getSpecialCharacterPattern, getSpecialFontPattern } from "@Obsidian/Core/Utilities/regexPatterns";
 import { ChildRequestBag, PersonRequestBag, PropertiesOfType } from "./types.partial";
 import { CommunicationPreference, CommunicationPreferenceDescription } from "@Obsidian/Enums/Blocks/Crm/FamilyPreRegistration/communicationPreference";
 import { Gender } from "@Obsidian/Enums/Crm/gender";
@@ -23,6 +22,7 @@ import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
 import { getDay, getMonth, getYear } from "@Obsidian/Utility/dateKey";
 import { emptyGuid } from "@Obsidian/Utility/guid";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+import { getEmojiPattern, getSpecialCharacterPattern, getSpecialFontPattern } from "@Obsidian/Utility/regexPatterns";
 import { ValidationResult, ValidationRuleFunction } from "@Obsidian/ValidationRules";
 import { FamilyPreRegistrationPersonBag } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationPersonBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
