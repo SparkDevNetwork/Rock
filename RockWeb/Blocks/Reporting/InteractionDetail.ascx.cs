@@ -139,7 +139,7 @@ namespace RockWeb.Blocks.Reporting
                 var interaction = new InteractionService( rockContext ).Get( interactionId );
 
                 IEntity interactionEntity = null;
-                if ( interaction.EntityId.HasValue )
+                if ( interaction?.EntityId.HasValue == true )
                 {
                     interactionEntity = GetInteractionEntity( rockContext, interaction );
                 }
