@@ -202,7 +202,7 @@
       > .action {
         padding: 10px;
         margin: 2px;
-        color: var(--color-interface-medium);
+        color: var(--color-interface-strong);
         transition: color .2s, background-color .2s, border-radius .2s;
 
         &:hover {
@@ -242,10 +242,121 @@
     margin: var(--spacing-medium) calc(var(--spacing-medium) * -1) calc(var(--spacing-medium) * -1) calc(var(--spacing-medium) * -1);
   }
 }
-
-
 // ====================== END PANEL WITH SIDEBAR ======================
 
+
+.panel-block {
+  position: relative;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  min-width: 0;
+
+  > .panel-heading {
+    border-bottom: 1px solid var(--color-interface-softer);
+    background-color: var(--color-interface-softest);
+    border-bottom-color: var(--color-interface-soft);
+    padding-left: var(--spacing-large);
+    height: 56px; // to match the NextGen grid
+
+    & .panel-title {
+      font-size: var(--font-size-h5);
+    }
+  }
+
+  > .panel-body {
+    -ms-flex: 1 1 auto;
+    flex: 1 1 auto;
+  }
+
+  .is-fullscreen & {
+    height: 100vh !important;
+    margin: 0;
+    overflow: auto;
+    background-color: var(--color-interface-softest);
+    border-radius: 0;
+
+    .panel-block {
+      height: auto !important;
+      margin-bottom: 24px;
+      overflow: visible;
+    }
+  }
+
+  .wizard {
+    padding: 16px 0;
+    margin: 0;
+    background: var(--color-interface-softest);
+    border-bottom: 1px solid var(--color-interface-softer);
+  }
+
+
+  .treeview-actions {
+    display: flex;
+    margin: -6px -12px -6px 0 !important;
+
+    .btn-link {
+      width: 28px;
+      padding: 6px 0;
+      margin-bottom: 0;
+      font-size: var(--font-size-small);
+      color: var(--color-interface-medium);
+      border: 0;
+
+      &:hover {
+        color: var(--color-link);
+      }
+
+      &.aspNetDisabled {
+        cursor: not-allowed !important;
+        opacity: .4 !important;
+      }
+    }
+  }
+}
+
+.panel-block,
+.panel-section,
+.panel-note {
+  > .panel-heading {
+    display: -ms-flexbox;
+    display: flex;
+    align-content: center;
+    align-items: center;
+
+    .row {
+      width: 100%;
+    }
+
+    > .panel-title {
+      margin-right: auto;
+    }
+
+    .filter-toggle {
+      margin-top: 0;
+    }
+
+    > .panel-labels,
+    > .pull-right {
+      margin-left: auto;
+      text-align: right;
+    }
+
+    > .panel-labels {
+      margin-top: -8px;
+      margin-bottom: -8px;
+
+      .btn {
+        vertical-align: baseline;
+      }
+    }
+
+    > .description {
+      display: block;
+    }
+  }
+}
 
 
 

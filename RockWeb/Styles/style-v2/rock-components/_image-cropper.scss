@@ -18,7 +18,7 @@
   .image-container {
     width: 150px;
     height: 150px;
-    border: 3px solid $ui-autocomplete-border;
+    border: 3px solid var(--color-interface-softer);
   }
 
   .options {

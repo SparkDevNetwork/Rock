@@ -227,7 +227,7 @@ td.wrap-contents {
     > tr {
       > th,
       > td {
-        border: 0;
+        border: 1px solid var(--color-interface-soft);
       }
     }
   }
@@ -590,7 +590,7 @@ tr.row-highlight {
 }
 
 .grid-columncommand .btn-danger {
-  color:              var(--color-interface-stronger);
+  color:              var(--color-interface-medium);
   background-color:   transparent;
   border-color:       transparent;
   
@@ -665,7 +665,7 @@ tr.row-highlight {
   }
 
   .btn-danger {
-    color: var(--color-interface-stronger);
+    color: var(--color-interface-medium);
     background: transparent;
     &:active,
     &:hover {
@@ -725,7 +725,7 @@ tr.row-highlight {
     background: var(--color-interface-softest);
 
     &.is-open {
-      background: var(--color-interface-softer);
+      background: var(--color-interface-softest);
     }
   }
 
@@ -749,6 +749,23 @@ tr.row-highlight {
 
 .grid-filter-entry legend + .control-group {
   margin-top: 0;
+}
+
+.grid-filter {
+  .btn-filter-toggle {
+    top: 1px;
+    left: 18px;
+    padding: 4px;
+    margin: 0;
+
+    &.is-open {
+      background: var(--color-interface-softest);
+    }
+  }
+
+  &.has-criteria .btn-filter-toggle {
+    background: var(--color-interface-softer);
+  }
 }
 
 // pagination
@@ -805,6 +822,7 @@ td.grid-col-actions {
   text-align: right;
 }
 
+// Moved to _grid-obisidian.scss
 .grid-actions {
   text-align:       right;
   background-color: var(--color-interface-softest);
@@ -818,11 +836,11 @@ td.grid-col-actions {
   }
 
   .btn-add:hover {
-    color: var(--color-success-soft);
+    color: var(--color-success-strong);
   }
 
   .btn-grid-action {
-    padding:          var(--spacing-tiny) var(--spacing-small);
+    padding:          5px 7px; // Need to hard coded so that the action btn in the group scheduler takes more space, for the "filter options" button to fit in 
     margin:           0 0 0 2px;
     font-size:        var(--font-size-regular);
     border:           0;
@@ -989,7 +1007,7 @@ td.grid-actions {
   > tfoot {
     > tr:first-child > td,
     & {
-      border-top: 1px solid var(--color-interface-softer);
+      border-top: 1px solid var(--color-interface-soft);
     }
 
     > tr > td,

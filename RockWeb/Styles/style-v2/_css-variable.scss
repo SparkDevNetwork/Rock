@@ -142,8 +142,8 @@
   // ========================== END VISUAL APPEARANCES ===========================
 
 
-// For the obsidian grid, sinces the style of the obsidian grid is embedded in the html and references these variable 
-// Theses variable is also located in _rock-core.less.
+  // For the obsidian grid, sinces the style of the obsidian grid is embedded in the html and references these variable 
+  // Theses variable is also located in _rock-core.less.
 
   --theme-darkest: var(--color-interface-strongest);
   --theme-dark: var(--color-interface-stronger);
@@ -156,7 +156,7 @@
 
   --text-color: @text-color;
 
-//   --color-primary: var(--color-primary);
+  //   --color-primary: var(--color-primary);
   --color-success: var(--color-success-strong);
   --color-info: var(--color-info-strong);
   --color-warning: var(--color-warning-strong);

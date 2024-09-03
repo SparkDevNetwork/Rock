@@ -52,8 +52,8 @@ pre {
   color:            var(--color-interface-stronger);
   word-break:       break-all;
   word-wrap:        break-word;
-  background-color: var(--color-interface-soft);
-  border:           1px solid var(--color-interface-medium);
+  background-color: var(--color-interface-softer);
+  border:           1px solid var(--color-interface-soft);
   border-radius:    var(--rounded-small);
 
   // Account for some code outputs that place code tags in pre tags

@@ -317,7 +317,7 @@ output {
 
 // Select
 select.form-control {
-  padding: var(--spacing-small) var(--spacing-xlarge) var(--spacing-small) var(--spacing-medium);
+  padding: 6px 36px 6px 12px;
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
   background-repeat: no-repeat;
   background-position: right var(--spacing-medium) center;
@@ -371,9 +371,10 @@ select.form-control {
   margin-bottom:  var(--spacing-medium);
   font-size:      var(--font-size-regular);
   line-height:    var(--line-height-normal);
-  .form-group {
-    margin-top:   var(--spacing-medium)
-  }
+  // Commented out to make the drop space out properly at Rock:LocationPicker
+  // .form-group {
+  //   margin-top:   var(--spacing-medium)
+  // }
 }
 
 .help-block {
@@ -919,6 +920,179 @@ a.warning {
     }
   }
 }
+
+// Moved from _form.less `\RockWeb\Styles\_forms.less`
+.form-horizontal {
+  .form-group {
+    .form-control-group,
+    .form-control {
+      float: left;
+    }
+  }
+
+  &[class*="label-"] {
+    .form-group {
+      label {
+        position: relative;
+        min-height: 1px;
+        padding-right: 15px;
+        padding-left: 15px;
+
+        position: relative;
+        min-height: 1px;
+        padding-right: calc(30px / 2);
+        padding-left: calc(30px / 2);
+
+        @media (min-width: $screen-small) {
+          float: left;
+          width: calc((2 / 12) * 100%);
+        }
+
+        @media (min-width: $screen-small) {
+          padding-top: 7px;
+          padding-bottom: 7px;
+          margin-bottom: 0; // Override the `<label>/<legend>` default
+          line-height: var(--line-height-normal);
+          text-align: right;
+        }
+      }
+
+      .control-wrapper {
+        position: relative;
+        min-height: 1px;
+        padding-right: calc(30px / 2);
+        padding-left: calc(30px / 2);
+      
+        @media (min-width: $screen-small) {
+          float: left;
+          width: calc((10 / 12) * 100%);
+        }
+      }
+    }
+  }
+
+  &.label-md {
+    .form-group {
+      label {
+        position: relative;
+        min-height: 1px;
+        padding-right: calc(30px / 2);
+        padding-left: calc(30px / 2);
+      
+        @media (min-width: $screen-small) {
+          float: left;
+          width: calc((4 / 12) * 100%);
+        }
+      }
+      .control-wrapper {
+        position: relative;
+        min-height: 1px;
+        padding-right: calc(30px / 2);
+        padding-left: calc(30px / 2);
+      
+        @media (min-width: $screen-small) {
+          float: left;
+          width: calc((8 / 12) * 100%);
+        }
+      }
+    }
+  }
+
+  &.label-lg {
+    .form-group {
+      label {
+        position: relative;
+        min-height: 1px;
+        padding-right: calc(30px / 2);
+        padding-left: calc(30px / 2);
+
+        @media (min-width: $screen-small) {
+          float: left;
+          width: calc((6 / 12) * 100%);
+        }
+      }
+      .control-wrapper {
+        position: relative;
+        min-height: 1px;
+        padding-right: calc(30px / 2);
+        padding-left: calc(30px / 2);
+
+        @media (min-width: $screen-small) {
+          float: left;
+          width: calc((6 / 12) * 100%);
+        }
+      }
+    }
+  }
+
+  &.label-xl {
+    .form-group {
+      label {
+        position: relative;
+        min-height: 1px;
+        padding-right: calc(30px / 2);
+        padding-left: calc(30px / 2);
+      
+        @media (min-width: $screen-small) {
+          float: left;
+          width: calc((8 / 12) * 100%);
+        }
+      }
+      .control-wrapper {
+        position: relative;
+        min-height: 1px;
+        padding-right: calc(30px / 2);
+        padding-left: calc(30px / 2);
+      
+        @media (min-width: $screen-small) {
+          float: left;
+          width: calc((4 / 12) * 100%);
+        }
+      }
+    }
+  }
+
+  &.label-auto {
+    .form-group {
+      display: -ms-flexbox;
+      display: flex;
+      -ms-flex-wrap: wrap;
+      flex-wrap: wrap;
+      -ms-flex-pack: end;
+      justify-content: flex-end;
+      margin-right: -15px;
+      margin-left: -15px;
+
+      .control-label {
+        width: auto;
+        min-width: 180px;
+        padding-top: 7px;
+        padding-bottom: 7px;
+        margin-bottom: 0; // Override the `<label>/<legend>` default
+        line-height: var(--line-height-normal);
+        text-align: right;
+      }
+      .control-wrapper {
+        -ms-flex: 0 0 auto;
+        flex: 0 0 auto;
+        width: auto;
+        max-width: 100%;
+      }
+    }
+  }
+
+  &.label-min-w-0 {
+    .control-label {
+      min-width: 0 !important;
+    }
+  }
+}
+.list-items-rows .controls-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+}
+// ===============
 // ===================== END HORIZONTAL FORMS =====================
 
 

@@ -1,0 +1,333 @@
+//
+// Base styles
+//
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0; // See https://github.com/twbs/bootstrap/pull/22740#issuecomment-305868106
+  // LESS PORT: Less doesn’t strip “empty” property values so we have to check for a value first.
+  @if $card-height != "" {
+    height: $card-height;
+  }
+  word-wrap: break-word;
+  background-color: var(--color-interface-softest);
+  background-clip: border-box;
+  border: 1px solid var(--color-interface-softer);
+  border-radius: var(--rounded-small);
+
+  > hr {
+    margin-right: 0;
+    margin-left: 0;
+  }
+
+  > .list-group:first-child {
+    .list-group-item:first-child {
+      border-top-left-radius: var(--rounded-small);
+      border-top-right-radius: var(--rounded-small);
+    }
+  }
+
+  > .list-group:last-child {
+    .list-group-item:last-child {
+      border-bottom-right-radius: var(--rounded-small);
+      border-bottom-left-radius: var(--rounded-small);
+    }
+  }
+}
+
+.card-body {
+  // Enable `flex-grow: 1` for decks and groups so that card blocks take up
+  // as much space as possible, ensuring footers are aligned to the bottom.
+  flex: 1 1 auto;
+  // Workaround for the image size bug in IE
+  // See: https://github.com/twbs/bootstrap/pull/28855
+  min-height: 1px;
+  padding: 18px;
+  @if $card-color != "" {
+    height: $card-color;
+  }
+}
+
+.card-title {
+  margin-top: 0;
+  margin-bottom: .75rem;
+}
+
+.card-subtitle {
+  margin-top: calc(-.75rem / 2);
+  margin-bottom: 0;
+}
+
+.card-text:last-child {
+  margin-bottom: 0;
+}
+
+.card-link {
+  &:hover {
+    text-decoration: none;
+  }
+
+  + .card-link {
+    margin-left: 1.25rem;
+  }
+}
+
+//
+// Optional textual caps
+//
+
+.card-header {
+  padding: .75rem 1.25rem;
+  margin-top: 0; // DH: Remove BS3 margin-top of <hN>
+  margin-bottom: 0; // Removes the default margin-bottom of <hN>
+  @if $card-cap-color != "" {
+    height: $card-cap-color;
+  }
+  background-color: rgba(0,0,0,.03);
+  border-bottom: 1px solid var(--color-interface-soft);
+
+  &:first-child {
+    border-radius: 3px 3px 0 0;
+  }
+
+  + .list-group {
+    .list-group-item:first-child {
+      border-top: 0;
+    }
+  }
+}
+
+.card-footer {
+  padding: .75rem 1.25rem;
+  background-color: rgba(0,0,0,.03);
+  border-top: 1px solid var(--color-interface-soft);
+
+  &:last-child {
+    border-radius: 0 0 3px 3px;
+  }
+}
+
+
+//
+// Header navs
+//
+
+.card-header-tabs {
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  margin-right: calc(-1.25rem / 2);
+  margin-bottom: -.75rem;
+  margin-left: calc(-1.25rem / 2);
+  border-bottom: 0;
+
+  // @if $nav-tabs-link-active-bg != $card-bg {
+  //   .nav-link.active {
+  //     background-color: $card-bg;
+  //     border-bottom-color: $card-bg;
+  //   }
+  // }
+}
+
+.card-header-pills {
+  margin-right: calc(-1.25rem / 2);
+  margin-left: calc(-1.25rem / 2);
+}
+
+// Card image
+.card-img-overlay {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 1.25rem;
+}
+
+.card-img,
+.card-img-top,
+.card-img-bottom {
+  flex-shrink: 0; // For IE: https://github.com/twbs/bootstrap/issues/29396
+  width: 100%; // Required because we use flexbox and this inherently applies align-self: stretch
+}
+
+.card-img,
+.card-img-top {
+  border-top-left-radius: 3px;
+  border-top-right-radius: 3px;
+}
+
+.card-img,
+.card-img-bottom {
+  border-bottom-right-radius: 3px;
+  border-bottom-left-radius: 3px;
+}
+
+
+// Card deck
+
+.card-deck {
+  .card {
+    margin-bottom: var(--spacing-medium);
+  }
+
+  @media (min-width: 576px) {
+    //@include media-breakpoint-up(sm) {
+    display: flex;
+    flex-flow: row wrap;
+    margin-right: calc(var(--spacing-medium) * -1);
+    margin-left: calc(var(--spacing-medium) * -1);
+
+    .card {
+      // Flexbugs #4: https://github.com/philipwalton/flexbugs#flexbug-4
+      flex: 1 0 0%;
+      margin-right: var(--spacing-medium);
+      margin-bottom: 0; // Override the default
+      margin-left: var(--spacing-medium);
+    }
+  }
+}
+
+
+//
+// Card groups
+//
+.card-group {
+  // The child selector allows nested `.card` within `.card-group`
+  // to display properly.
+  > .card {
+    margin-bottom: calc($grid-gutter-width / 2);
+  }
+
+  @media (min-width: 576px) {
+    //@include media-breakpoint-up(sm) {
+    display: flex;
+    flex-flow: row wrap;
+    // The child selector allows nested `.card` within `.card-group`
+    // to display properly.
+    > .card {
+      // Flexbugs #4: https://github.com/philipwalton/flexbugs#flexbug-4
+      flex: 1 0 0%;
+      margin-bottom: 0;
+
+      + .card {
+        margin-left: 0;
+        border-left: 0;
+      }
+
+      // commented out sinces enable-rounded is false
+      // & when (@enable-rounded) {
+      //   &:not(:last-child) {
+      //     color: #101010;
+      //     border-top-right-radius: 0;
+      //     border-bottom-right-radius: 0;
+
+      //     .card-img-top,
+      //     .card-header {
+      //       // stylelint-disable-next-line property-blacklist
+      //       border-top-right-radius: 0;
+      //     }
+      //     .card-img-bottom,
+      //     .card-footer {
+      //       // stylelint-disable-next-line property-blacklist
+      //       border-bottom-right-radius: 0;
+      //     }
+      //   }
+
+      //   &:not(:first-child) {
+      //     border-top-left-radius: 0;
+      //     border-bottom-left-radius: 0;
+
+      //     .card-img-top,
+      //     .card-header {
+      //       // stylelint-disable-next-line property-blacklist
+      //       border-top-left-radius: 0;
+      //     }
+      //     .card-img-bottom,
+      //     .card-footer {
+      //       // stylelint-disable-next-line property-blacklist
+      //       border-bottom-left-radius: 0;
+      //     }
+      //   }
+      // }
+    }
+  }
+}
+
+
+//
+// Accordion
+//
+
+.accordion {
+  > .card {
+    overflow: hidden;
+
+    &:not(:last-of-type) {
+      border-bottom: 0;
+      border-bottom-right-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+
+    &:not(:first-of-type) {
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
+    }
+
+    > .card-header {
+      margin-bottom: -1px;
+      border-radius: 0;
+    }
+  }
+}
+
+.card-sm {
+  .card-body {
+    padding: .75rem .75rem;
+  }
+}
+
+.card-schedule {
+  min-height: 84px;
+  margin-bottom: var(--spacing-medium);
+  border-radius: 6px;
+
+  .card-body {
+    padding-right: 0;
+  }
+
+  .card-title {
+    font-size: var(--font-size-h5);
+  }
+
+  .schedule-date {
+    font-weight: var(--font-weight-semibold);
+  }
+
+  .schedule-occurrence,
+  .schedule-occurrence-schedule {
+    display: block;
+  }
+
+  .schedule-confirm {
+    display: flex;
+    flex-basis: 180px;
+    flex-wrap: wrap;
+    align-items: center;
+    align-self: center;
+    justify-content: flex-end;
+    margin-right: .75rem;
+
+    .btn-primary,
+    .btn-success {
+      margin: 4px 0 4px 8px;
+    }
+  }
+
+  &.schedule-unavailable {
+    background: var(--color-interface-soft);
+  }
+}

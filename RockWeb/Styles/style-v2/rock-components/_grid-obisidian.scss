@@ -2,9 +2,6 @@
 
 
 
-
-
-
 // !! ****IMPORTANT**** !!
 
 // Move all the styling from grid.partial.obs to this file.
@@ -27,11 +24,11 @@
     }
   
     .btn-add:hover {
-      color: var(--color-success-soft);
+      color: #16c98d; // Need to hard code to  make the UI looks better.
     }
   
     .btn-grid-action {
-      padding:          var(--spacing-tiny) var(--spacing-small);
+      padding:          5px 7px; // Need to hard coded so that the action btn in the group scheduler takes more space, for the "filter options" button to fit in 
       margin:           0 0 0 2px;
       font-size:        var(--font-size-regular);
       border:           0;
@@ -48,7 +45,7 @@
 }
 
 .grid-columncommand .btn-danger {
-    color:              var(--color-interface-stronger);
+    color:              var(--color-interface-medium);
     background-color:   transparent;
     border-color:       transparent;
     
@@ -123,7 +120,7 @@
     }
 
     .btn-danger {
-        color: var(--color-interface-stronger);
+        color: var(--color-interface-medium);
         background: transparent;
         &:active,
         &:hover {

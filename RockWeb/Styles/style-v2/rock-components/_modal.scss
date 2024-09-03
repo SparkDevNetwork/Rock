@@ -159,3 +159,57 @@ body.rock-modal {
 .modal-content {
   border: none;
 }
+
+// Moved from _form.less `\RockWeb\Styles\_forms.less`
+dl:not(.dl-horizontal) {
+  dt {
+    margin-top: var(--spacing-medium);
+    margin-bottom: 2px;
+    font-weight: var(--font-weight-bold);
+
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+
+  dd {
+    margin-left: 0;
+  }
+}
+// ==================
+
+// Moved from _blocks-connections.less `\RockWeb\Styles\_blocks-connections.less`
+.connection-request-board {
+
+  .modal-content.rock-modal .modal-header {
+    color: var(--color-interface-stronger);
+    background: var(--color-interface-softer);
+  }
+
+  .modal-content.rock-modal .modal-body {
+    padding: 12px 24px;
+  }
+
+  .modal-content.rock-modal .modal-header .close {
+    color: var(--color-interface-medium);
+  }
+
+  .modal-content.rock-modal .modal-header small {
+    margin-top: 5px;
+    font-size: 100%;
+  }
+
+  .modal-content.rock-modal .modal-header .label {
+    margin-top: 0;
+  }
+}
+// ==================
+
+// Moved from rock theme.less
+.static-control-label,
+.static-control .control-label,
+dl:not(.dl-horizontal) dt{
+  font-size:    var(--font-size-small);
+  font-weight:  400;
+  color:        var(--color-interface-medium);
+}

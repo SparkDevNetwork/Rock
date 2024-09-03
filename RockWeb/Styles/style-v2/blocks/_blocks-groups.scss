@@ -1,0 +1,344 @@
+/*
+    Used to manage styles for specific blocks.
+
+    1. Group Viewer - styles for the group viewer block.
+    2. Group Scheduler v2 - styles for the Obsidian group scheduler block.
+*/
+
+// 1. Group Viewer
+// -------------------------
+.group-location-map {
+  margin-bottom: var(--spacing-large);
+
+  .address {
+    margin-top: var(--spacing-small);
+  }
+
+  img {
+    width: 100%;
+  }
+}
+
+.description {
+  margin-bottom: varj(--spacing-large);
+
+  &:empty {
+    display: none;
+  }
+}
+
+.resource-list {
+  @media (min-width: $screen-medium) {
+    top: 16px;
+    max-height: calc(100vh - 112px);
+  }
+}
+
+// 2. Group Scheduler v2
+// -------------------------
+.group-scheduler-v2 {
+  .panel-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: #fff;
+    border-bottom: 0;
+  }
+
+  .panel-toolbar-mobile {
+    padding: 4px 15px;
+  }
+
+  .panel-body {
+    padding: 0;
+  }
+
+  .panel-body-alert {
+    padding: 16px 16px 0;
+  }
+
+  .snap-container {
+    display: flex;
+    flex: 1 1 auto;
+    width: 100%;
+    min-height: 100%;
+    padding: 18px 0 24px;
+    overflow: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+  }
+
+  .occurrence-date {
+    position: relative;
+    flex: 0 0 calc(100% * var(--schedule-count));
+
+    @media (min-width: $screen-medium) {
+      flex-basis: calc(50% * var(--schedule-count));
+      height: fit-content;
+      padding: 0 var(--spacing-large);
+      border-right: 4px solid #d4d4d4;
+    }
+
+    @media (min-width: $screen-medium) {
+      flex-basis: auto;
+    }
+
+    &:first-child {
+      padding-left: 0;
+    }
+
+    &:last-child {
+      padding-right: 0;
+      border-right: none;
+    }
+  }
+
+  .occurrence-date-title {
+    position: sticky;
+    left: 12px;
+    display: inline-block;
+    margin: 0 12px 12px;
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  .schedules {
+    display: flex;
+    flex-direction: row;
+  }
+
+  .schedule-column {
+    scroll-snap-align: start;
+    width: calc(100% / var(--schedule-count));
+    padding: 0 15px;
+
+    @media (min-width: $screen-medium) {
+      width: 360px;
+      padding: 0 12px 12px;
+    }
+  }
+
+  .card-sched {
+    margin-bottom: 12px;
+
+    .location {
+      margin-bottom: 16px;
+    }
+
+    .card-body {
+      padding: 12px;
+
+      .location:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  .list-group-sched {
+    margin: 0;
+
+    .list-group-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 0 8px 10px;
+      background-color: #fcfbfc;
+
+      &.status-pending,
+      &.status-declined,
+      &.status-confirmed {
+        border-left: 6px solid var(--color-interface-soft);
+      }
+
+      &.status-declined {
+        border-left-color: var(--color-danger-strong);
+      }
+
+      &.status-confirmed {
+        border-left-color: var(--color-success-strong);
+      }
+
+      &::before,
+      &::after {
+        display: none;
+      }
+
+      .resource-name {
+        display: flex;
+        flex: 1;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .resource-role {
+        font-size: 12px;
+      }
+
+      .btn-overflow {
+        padding: 0 12px;
+        color: var(--color-interface-soft);
+
+        &:hover {
+          color: fade(var(--color-interface-soft), 75%);
+        }
+      }
+    }
+  }
+
+  .progress {
+    position: relative;
+    height: 14px;
+    overflow: visible;
+    background: transparent;
+    border: 1px solid currentColor;
+    border-radius: 50px;
+    box-shadow: none;
+
+    .indicator {
+      position: absolute;
+      top: -1px;
+      bottom: -1px;
+      width: 5px;
+
+      &::before,
+      &::after {
+        position: absolute;
+        left: 0;
+        width: 2px;
+        height: 3px;
+        content: "";
+        background: currentColor;
+        box-shadow: inset 0 0 0 2px rgba(0, 0, 0, .25);
+      }
+
+      &::before {
+        top: -1px;
+      }
+
+      &::after {
+        bottom: -1px;
+      }
+    }
+  }
+
+  .progress-bar {
+    position: absolute;
+    left: 0;
+    border-radius: 50px;
+    box-shadow: none;
+  }
+
+
+  .avatar {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+  }
+
+  .schedule-header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px;
+    margin-bottom: 24px;
+    border: 1px solid #eee;
+    border-radius: 4px;
+
+    &::before {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      display: none;
+      width: 5px;
+      height: 1.75em;
+      content: "";
+      background-color: var(--color-interface-medium);
+      border-radius: 0 5px 5px 0;
+      transform: translateY(-50%);
+    }
+
+    .page {
+      color: var(--color-link);
+    }
+
+    @media (min-width: $screen-medium) {
+      &::before {
+        display: block;
+      }
+
+      .page {
+        display: none;
+      }
+    }
+  }
+
+  .circle-plus {
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    margin-right: 12px;
+    font-size: 16px;
+    color: var(--color-interface-medium);
+    background: #fff;
+    border: 1px solid #c7c7c7;
+    border-radius: 50%;
+
+    &:hover {
+      color: darken(#9e9ea0, 10%);
+    }
+
+    &:active {
+      color: darken(#9e9ea0, 20%);
+      border-color: darken(#c7c7c7, 10%);
+    }
+  }
+
+  .resource-notes {
+    font-size: var(--font-size-xsmall);
+    color: var(--color-interface-soft);
+
+    .resource-notes-header {
+      font-weight: var(--font-weight-semibold);
+    }
+
+
+    &.resource-disabled {
+      opacity: .75;
+    }
+  }
+
+  .tooltip-section + .tooltip-section {
+    margin-top: 8px;
+  }
+}
+
+.featured-content {
+  .group-scheduler-v2 {
+    @media screen and (max-width: $screen-medium - 1 ) {
+      .panel.panel-block {
+        height: auto;
+      }
+    }
+
+    .panel-body {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-height: var(--block-min-height,calc(100vh - 290px));
+      overflow: auto;
+    }
+  }
+
+  .is-fullscreen & {
+    .group-scheduler-v2 {
+      height: 100vh;
+      border-radius: 0;
+      outline: 0;
+      box-shadow: none;
+    }
+  }
+}

@@ -24,7 +24,7 @@
   background-image:     none; // Reset unusual Firefox-on-Android default style; see https://github.com/necolas/normalize.css/issues/214
   border:               1px solid transparent;
   padding:              var(--spacing-small) var(--spacing-medium);
-  font-size:            var(--font-size-small);
+  font-size:            var(--font-size-regular);
   line-height:          var(--line-height-normal);
   border-radius:        var(--rounded-small);
   transition:           color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
@@ -183,117 +183,9 @@
 // ======================== END BASE BUTTON ========================
 
 
-// ========================== OUTLINE ==========================
-.btn-outline-default {
-  color:              var(--color-interface-softest);
-  background-color:   transparent;
-  border-color:       var(--color-interface-softest); // TODO: darken by 5% when available
-  
-  &:hover {
-    color:            var(--color-interface-stronger);
-    background-color: var(--color-interface-softest);
-    border-color:     var(--color-interface-softest);
-  }
-  
-  &:focus,
-  &.focus {
-    box-shadow:       0 0 0 3.2px fade(var(--color-interface-softest), 50%); // TODO: this uses fade, which is a Sass function
-  }
-  
-  &.disabled {
-    opacity:          0.5;
-  }
-}
-
-.btn-outline-primary {
-  color:              var(--color-primary);
-  background-color:   transparent;
-  border-color:       var(--color-primary); // TODO: darken by 5% when available
-  
-  &:hover {
-    color:            var(--color-interface-softest);
-    background-color: var(--color-primary);
-    border-color:     var(--color-primary);
-  }
-  
-  &:focus,
-  &.focus {
-    box-shadow:       0 0 0 3.2px fade(var(--color-primary), 50%); // TODO: this uses fade, which is a Sass function
-  }
-  
-  &.disabled {
-    opacity:          0.5;
-  }
-}
-
-.btn-outline-success {
-  color:              var(--color-success-strong);
-  background-color:   transparent;
-  border-color:       var(--color-success-strong); // TODO: darken by 5% when available
-  
-  &:hover {
-    color:            var(--color-interface-softest);
-    background-color: var(--color-success-strong);
-    border-color:     var(--color-success-strong);
-  }
-  
-  &:focus,
-  &.focus {
-    box-shadow:       0 0 0 3.2px fade(var(--color-success-strong), 50%); // TODO: this uses fade, which is a Sass function
-  }
-  
-  &.disabled {
-    opacity:          0.5;
-  }
-}
-
-.btn-outline-info {
-  color:              var(--color-info-strong);
-  background-color:   transparent;
-  border-color:       var(--color-info-strong); // TODO: darken by 5% when available
-  
-  &:hover {
-    color:            var(--color-interface-softest);
-    background-color: var(--color-info-strong);
-    border-color:     var(--color-info-strong);
-  }
-  
-  &:focus,
-  &.focus {
-    box-shadow:       0 0 0 3.2px fade(var(--color-info-strong), 50%); // TODO: this uses fade, which is a Sass function
-  }
-  
-  &.disabled {
-    opacity:          0.5;
-  }
-}
-
-.btn-outline-warning {
-  color:              var(--color-warning-strong);
-  background-color:   transparent;
-  border-color:       var(--color-warning-strong); // TODO: darken by 5% when available
-  
-  &:hover {
-    color:            var(--color-interface-softest);
-    background-color: var(--color-warning-strong);
-    border-color:     var(--color-warning-strong);
-  }
-  
-  &:focus,
-  &.focus {
-    box-shadow:       0 0 0 3.2px fade(var(--color-warning-strong), 50%); // TODO: this uses fade, which is a Sass function
-  }
-  
-  &.disabled {
-    opacity:          0.5;
-  }
-}
-// ======================== END OUTLINE ========================
-
-
 // ========================== ALTERNATIVE BUTTON ==========================
 .btn.btn-default {
-  color:            var(--color-interface-stronger);
+  color:            var(--color-interface-medium);
   background-color: var(--color-interface-softest);
   border-color:     var(--color-interface-soft);
  
@@ -353,8 +245,8 @@
       border-color:     var(--color-primary);
   }
   &:hover {
-      color:            var(--color-interface-softest);
-      background-color: var(--color-primary);
+      color:            var(--color-primary);
+      background-color: var(--color-interface-softest);
       border-color:     var(--color-primary);
 
   }
@@ -369,8 +261,8 @@
       &:hover,
       &:focus,
       &.focus {
-      color:            var(--color-interface-softest);
-      background-color: var(--color-primary);
+      color:            var(--color-primary);
+      background-color: var(--color-interface-softest);
       border-color:     var(--color-primary);
       }
   }
@@ -590,34 +482,34 @@
 
 .btn-action{
   color:            var(--color-interface-softest);
-  background-color: var(--color-interface-strong);
-  border-color:     var(--color-interface-strong);
+  background-color: var(--color-interface-medium);
+  border-color:     var(--color-interface-medium);
 
   &:focus,
   &.focus {
     color:              var(--color-interface-softest);
-    background-color:   var(--color-interface-stronger);
-    border-color:       var(--color-interface-stronger);
+    background-color:   var(--color-interface-strong);
+    border-color:       var(--color-interface-strong);
   }
   &:hover {
     color:            var(--color-interface-softest);
-    background-color: var(--color-interface-stronger);
-    border-color:     var(--color-interface-strongest);
+    background-color: var(--color-interface-strong);
+    border-color:     var(--color-interface-strong);
   }
   &:active,
   &.active,
   .open > .dropdown-toggle & {
     color:              var(--color-interface-softest);
-    background-color:   var(--color-interface-stronger);
+    background-color:   var(--color-interface-strong);
     background-image:   none;
-    border-color:        var(--color-interface-strongest);
+    border-color:        var(--color-interface-strong);
 
     &:hover,
     &:focus,
     &.focus {
       color:            var(--color-interface-softest);
-      background-color: var(--color-interface-stronger);
-      border-color:     var(--color-interface-stronger)
+      background-color: var(--color-interface-strong);
+      border-color:     var(--color-interface-strong)
     }
   }
   &.disabled,
@@ -626,8 +518,8 @@
     &:hover,
     &:focus,
     &.focus {
-      background-color: var(--color-interface-stronger);
-      border-color: var(--color-interface-stronger);
+      background-color: var(--color-interface-strong);
+      border-color: var(--color-interface-strong);
     }
   }
 
@@ -638,7 +530,7 @@
 }
 
 .btn-security{
-  color:            var(--color-interface-stronger);
+  color:            var(--color-interface-medium);
   background-color: var(--color-interface-softest);
   border-color:     var(--color-interface-soft);
 
@@ -688,7 +580,7 @@
 
 .btn-square {
   width: 38px; // TODO Hard coded width
-  padding: var(--spacing-small) 0;
+  padding: 6px 0; // Need to hard code to match the numberincrement button height of the other element next it (LocationList) 
 
   &.btn-xs {
     width: 26px;
@@ -751,7 +643,115 @@
   }
 }
 // ======================== END ALTERNAVTIVE BUTTON ========================
- 
+
+
+// ========================== OUTLINE ==========================
+.btn-outline-default {
+  color:              var(--color-interface-softest);
+  background-color:   transparent;
+  border-color:       var(--color-interface-softest); // TODO: darken by 5% when available
+  
+  &:hover {
+    color:            var(--color-interface-stronger);
+    background-color: var(--color-interface-softest);
+    border-color:     var(--color-interface-softest);
+  }
+  
+  &:focus,
+  &.focus {
+    box-shadow:       0 0 0 3.2px fade(var(--color-interface-softest), 50%); // TODO: this uses fade, which is a Sass function
+  }
+  
+  &.disabled {
+    opacity:          0.5;
+  }
+}
+
+.btn-outline-primary {
+  color:              var(--color-primary);
+  background-color:   transparent;
+  border-color:       var(--color-primary); // TODO: darken by 5% when available
+  
+  &:hover {
+    color:            var(--color-interface-softest);
+    background-color: var(--color-primary);
+    border-color:     var(--color-primary);
+  }
+  
+  &:focus,
+  &.focus {
+    box-shadow:       0 0 0 3.2px fade(var(--color-primary), 50%); // TODO: this uses fade, which is a Sass function
+  }
+  
+  &.disabled {
+    opacity:          0.5;
+  }
+}
+
+.btn-outline-success {
+  color:              var(--color-success-strong);
+  background-color:   transparent;
+  border-color:       var(--color-success-strong); // TODO: darken by 5% when available
+  
+  &:hover {
+    color:            var(--color-interface-softest);
+    background-color: var(--color-success-strong);
+    border-color:     var(--color-success-strong);
+  }
+  
+  &:focus,
+  &.focus {
+    box-shadow:       0 0 0 3.2px fade(var(--color-success-strong), 50%); // TODO: this uses fade, which is a Sass function
+  }
+  
+  &.disabled {
+    opacity:          0.5;
+  }
+}
+
+.btn-outline-info {
+  color:              var(--color-info-strong);
+  background-color:   transparent;
+  border-color:       var(--color-info-strong); // TODO: darken by 5% when available
+  
+  &:hover {
+    color:            var(--color-interface-softest);
+    background-color: var(--color-info-strong);
+    border-color:     var(--color-info-strong);
+  }
+  
+  &:focus,
+  &.focus {
+    box-shadow:       0 0 0 3.2px fade(var(--color-info-strong), 50%); // TODO: this uses fade, which is a Sass function
+  }
+  
+  &.disabled {
+    opacity:          0.5;
+  }
+}
+
+.btn-outline-warning {
+  color:              var(--color-warning-strong);
+  background-color:   transparent;
+  border-color:       var(--color-warning-strong); // TODO: darken by 5% when available
+  
+  &:hover {
+    color:            var(--color-interface-softest);
+    background-color: var(--color-warning-strong);
+    border-color:     var(--color-warning-strong);
+  }
+  
+  &:focus,
+  &.focus {
+    box-shadow:       0 0 0 3.2px fade(var(--color-warning-strong), 50%); // TODO: this uses fade, which is a Sass function
+  }
+  
+  &.disabled {
+    opacity:          0.5;
+  }
+}
+// ======================== END OUTLINE ========================
+
 
 // ======================== BUTTON SIZE ========================
 .btn-lg{

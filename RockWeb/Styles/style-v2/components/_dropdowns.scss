@@ -228,6 +228,49 @@
   }
 }
 
+
+.dropdown-menu {
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,.1);
+  max-height: 85vh;
+  overflow-y: auto;
+
+  &.datepicker-dropdown {
+    max-height: none;
+    overflow-y: visible;
+    font-size: var(--font-size-regular);
+  }
+
+  // Added to Support Right Aligned Dropdowns
+  .dropdown-right & {
+    right: 0;
+    left: auto;
+  }
+
+  .btn-link {
+    width:        100%;
+    padding:      5px 16px;
+    line-height:  var(--line-height-normal);
+    color:        var(--color-interface-strong);
+    text-align:   left;
+    border:       0;
+
+    &:hover,
+    &:focus {
+      color: var(--color-interface-strong); // Darken by 5% when available
+      text-decoration: none;
+      background-color: var(--color-interface-softer);
+    }
+  }
+
+  .dropdown-item-danger {
+    color: var(--color-danger-strong);
+    &:hover {
+      color: #fff;
+      background-color: var(--color-danger-strong);
+    }
+  }
+}
+
 @media (min-width: $screen-small) {
   .navbar-right {
     .dropdown-menu {

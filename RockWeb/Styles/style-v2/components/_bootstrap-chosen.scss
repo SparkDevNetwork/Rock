@@ -50,7 +50,7 @@
     margin: 8px 0;
     overflow-x: hidden;
     overflow-y: auto;
-    color: var(--color-interface-soft);
+    color: var(--color-interface-strong);
     -webkit-overflow-scrolling: touch;
 
     li {
@@ -283,7 +283,7 @@
 
       .chosen-search-input {
         width: 100% !important;
-        height: 44px;
+        height: 36px;
         padding: 0 0 0 .75rem;
         margin: 0;
         color: var(--color-interface-medium);
@@ -301,16 +301,18 @@
     .search-choice {
       position: relative;
       padding: 4px 24px 4px 4px;
-      margin: calc(calc(calc(44px - var(--font-size-xsmall) - 8px) / 2px) - 1px) 0 0 8px;
+      margin: 6px 0 0 8px;
       font-size: var(--font-size-xsmall);
       line-height: 1;
       color: var(--color-interface-stronger);
       cursor: default;
-      background-color: var(--color-interface-strong)-lightest;
+      background-color: var(--color-interface-softer);
       background-clip: padding-box;
       border: 1px solid var(--color-interface-soft);
-      border-top-left-radius: var(--rounded-small);
-      border-bottom-right-radius: var(--rounded-small);
+      border-top-left-radius: var(--rounded-tiny);
+      border-bottom-right-radius: var(--rounded-tiny);
+      border-top-right-radius: var(--rounded-tiny);
+      border-bottom-left-radius: var(--rounded-tiny);
 
       .search-choice-close {
         &::after {
@@ -352,7 +354,7 @@
 .chosen-container-active {
   .chosen-single {
     border: 1px solid var(--color-primary);
-    box-shadow: 0 0 0 2px var(--color-primary); // TODO lighten by 32%
+    box-shadow: 0 0 0 2px #fad5bc;
     transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
   }
 
@@ -361,14 +363,14 @@
     border: 1px solid var(--color-primary);
     border-bottom-right-radius: 0;
     border-bottom-left-radius: 0;
-    box-shadow: 0 0 0 2px var(--color-primary); // TODO lighten by 32%
+    box-shadow: 0 0 0 2px #fad5bc;
     transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
   }
   .chosen-choices {
     border: 1px solid var(--color-primary);
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
-    box-shadow: 0 0 0 2px var(--color-primary); // TODO lighten by 32%
+    box-shadow: 0 0 0 2px #fad5bc; 
     transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
 
     .search-field .chosen-search-input {

@@ -84,7 +84,7 @@ p, .p, .text-primary, .text-small {
 /* HEADING */
 h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
     font-weight: var(--font-weight-semibold);
-    line-height: var(--line-height-compact) !important;
+    line-height: var(--line-height-compact);
 }
 
 h1, .h1 {
@@ -141,7 +141,7 @@ h6.condensed {
 
 //Moved from bootstrap type.less
 .text-muted {
-    color: var(--color-interface-strong);
+    color: var(--color-interface-medium);
 }
 .text-primary {
     color: var(--color-primary);
@@ -178,6 +178,78 @@ h6.condensed {
     color: var(--color-danger-strong); // TODO Darken by 10% 
     }
 }
+
+// Moved from type.less 'RockWeb\Styles\Bootstrap\type.less'
+small,
+.small {
+  font-size: 87%;
+}
+
+dl {
+    margin-top: 0; // Remove browser default
+    margin-bottom: calc(var(--font-size-regular) * var(--line-height-normal));
+}
+
+dt,
+dd {
+    line-height: var(--line-height-normal);
+}
+
+dt {
+    font-weight: 700;
+}
+
+dd {
+    margin-left: 0; // Undo browser default
+}
+
+.list-unstyled {
+    padding-left: 0;
+    list-style: none;
+}
+
+.list-inline {
+    padding-left: 0;
+    list-style: none;
+    margin-left: -5px;
+  
+    > li {
+      display: inline-block;
+      padding-right: 5px;
+      padding-left: 5px;
+    }
+}
+
+blockquote {
+    padding: calc(var(--spacing-large)/ 2) var(--spacing-large);
+    margin: 0 0 var(--spacing-large);
+    font-size: var(--font-size-small);
+    border-left: 5px solid var(--color-interface-softer);
+  
+    p,
+    ul,
+    ol {
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  
+    // Note: Deprecated small and .small as of v3.1.0
+    // Context: https://github.com/twbs/bootstrap/issues/11660
+    footer,
+    small,
+    .small {
+      display: block;
+      font-size: 80%; // back to default font-size
+      line-height: var(--line-height-normal);
+      color: var(--color-interface-medium);
+  
+      &:before {
+        content: "\2014 \00A0"; // em dash, nbsp
+      }
+    }
+  }
+// ================
 
 @media (min-width: 576px) {
     .text-sm-left {

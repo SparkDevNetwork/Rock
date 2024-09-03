@@ -29,7 +29,7 @@
   margin-bottom:      var(--spacing-large);
   background-color:   var(--color-interface-softest);
   border:             1px solid transparent;
-  border-radius:      var(--rounded-small);
+  border-radius:      4px; // Need to hard code because the inner content was leaking out.
   box-shadow:         0 1px 1px rgba(0, 0, 0, .05);
 }
 
@@ -438,7 +438,7 @@
 .panel-toolbar {
   padding: var(--spacing-small) var(--spacing-medium);
   font-size: var(--font-size-xsmall);
-  border-bottom: 1px solid #dbdbdb;
+  border-bottom: 1px solid var(--color-interface-soft);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -516,7 +516,7 @@
 // ======================= PANEL WIDGET =======================
 .panel-widget {
   // .panel-variant(@panel-widget-border; @panel-widget-text; @panel-widget-heading-bg; @panel-widget-heading-border;);
-  border-color: var(--color-info-soft);
+  border-color: var(--color-interface-soft);
 
   & > .panel-heading {
     color: var(--color-interface-strongest);

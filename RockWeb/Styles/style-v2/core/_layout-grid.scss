@@ -54,7 +54,7 @@ box-sizing: inherit;
     margin-right:   auto;
     margin-left:    auto;
 }
-  // ======================== END CONTAINER ========================
+// ======================== END CONTAINER ========================
 
 
   // ========================== ROW ==========================
@@ -62,7 +62,7 @@ box-sizing: inherit;
 .form-row {
   display:        -ms-flexbox;
   display:        flex;
-  // Comment out to fix the wrapping of the kpi in the `Learning Program Detail` Block.
+  // Commented out to fix the wrapping of the kpi in the `Learning Program Detail` Block.
   // -ms-flex-wrap:  wrap;
   // flex-wrap:      wrap;
   margin-right: calc(($grid-gutter-width / -2));
