@@ -49,13 +49,18 @@
                         </div>
 
                         <div class="col-md-6">
-                            <CheckBox
+                            <div class="col-md-6">
+                                <CheckBox
                                       v-model="isActive"
                                       label="Active" />
+                            </div>
 
-                            <CheckBox
+                            <div class="col-md-6">
+                                <CheckBox
                                       v-model="isPublic"
                                       label="Public" />
+
+                            </div>
                             <ColorPicker
                                          v-model="highlightColor"
                                          label="Highlight Color"

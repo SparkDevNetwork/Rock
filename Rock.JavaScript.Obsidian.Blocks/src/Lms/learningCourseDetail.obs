@@ -35,7 +35,7 @@
         </template>
     </DetailBlock>
 
-    <LearningClassSecondaryLists v-if="!isAcademicMode && panelMode === DetailPanelMode.View"
+    <LearningClassSecondaryLists v-if="isOnDemandMode && panelMode === DetailPanelMode.View"
                                  :isEditable="isEditable"
                                  :navigationUrls="config.navigationUrls"
                                  v-model="learningCourseViewBag" />
@@ -82,7 +82,7 @@
     const entityTypeGuid = EntityType.LearningCourse;
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
-    const isAcademicMode = ref(config.options?.configurationMode === ConfigurationMode.AcademicCalendar);
+    const isOnDemandMode = ref(config.options?.configurationMode === ConfigurationMode.OnDemandLearning);
 
     const imageGuid = ref<string>(learningCourseViewBag.value?.imageBinaryFile?.value ?? "");
     const iconCssClass = ref<string>(learningCourseViewBag.value?.programIconCssClass ?? "");

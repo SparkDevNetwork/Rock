@@ -52,7 +52,7 @@
                               :grouped="false"
                               :items="gradingSystems"
                               :multiple="false"
-                              :disabled="isEditingExisting"
+                              :disabled="!canEditGradingSystem"
                               rules="required"
                               :showBlankItem="false" />
             </div>
@@ -64,7 +64,7 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, watch } from "vue";
+    import { computed, PropType, watch } from "vue";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
@@ -79,6 +79,7 @@
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import numberUtils from "@Obsidian/Utility/numberUtils";
 
     const props = defineProps({
         modelValue: {
@@ -114,7 +115,6 @@
 
     const semesters = props.options.semesters ?? [];
     const gradingSystems = props.options.gradingSystems ?? [];
-    const isEditingExisting = (props.modelValue.bag?.idKey ?? "").length > 0;
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -133,6 +133,14 @@
     // #endregion
 
     // #region Computed Values
+
+    const canEditGradingSystem = computed(() => {
+        const isNew = (props.modelValue.bag?.idKey ?? "").length === 0;
+        const studentCount = numberUtils.toNumberOrNull(props.modelValue.bag?.studentCount);
+        const hasStudents = studentCount != null && studentCount > 0;
+
+        return !hasStudents || isNew;
+    });
 
     // #endregion
 
