@@ -4445,6 +4445,22 @@ The logged-in person's information will be used to complete the registrar inform
                         } );
                 }
             }
+
+            /*
+                9/3/2024 - JMH
+
+                The "Minimum Initial Payment" field cannot be left blank if "Payment Plans" are enabled.
+                If the "Minimum Initial Payment" is blank, full payment is required, making payment plans unnecessary.
+                To avoid this conflict, require a value in the "Minimum Initial Payment" field when "Payment Plans" are enabled.
+             */            
+            if ( paymentPlansFeatureData.GetValueIfFeatureSupportedOrDefault( p => p.IsPaymentPlanAllowed ) )
+            {
+                cbMinimumInitialPayment.Required = true;
+            }
+            else
+            {
+                cbMinimumInitialPayment.Required = false;
+            }
         }
 
         private PaymentPlansFeatureData GetPaymentPlansFeatureDataFromControls( RockContext rockContext )
