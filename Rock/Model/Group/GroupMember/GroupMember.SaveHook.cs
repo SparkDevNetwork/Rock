@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -43,6 +44,15 @@ namespace Rock.Model
             protected override void PreSave()
             {
                 var rockContext = ( RockContext ) this.RockContext;
+
+                // If we're adding a new group member
+                // ensure we're not duplicating an existing record.
+                if (this.State == EntityContextState.Added )
+                {
+                    // If there's an existing record - use that record and discard the added one.
+                    UpdateEntityFromExistingIfDuplicated( rockContext );
+                }
+
                 if ( this.State != EntityContextState.Deleted
                      && Entity.IsArchived == false
                      && Entity.GroupMemberStatus != GroupMemberStatus.Inactive )
@@ -131,121 +141,8 @@ namespace Rock.Model
                         }
                 }
 
-                Group group = Entity.Group;
-                if ( group == null )
-                {
-                    group = new GroupService( rockContext ).Get( Entity.GroupId );
-                }
-
-                if ( group != null )
-                {
-                    this.Entity.GroupTypeId = group.GroupTypeId;
-                    string oldGroupName = group.Name;
-                    if ( oldGroupId.HasValue && oldGroupId.Value != group.Id )
-                    {
-                        var oldGroup = new GroupService( rockContext ).Get( oldGroupId.Value );
-                        if ( oldGroup != null )
-                        {
-                            oldGroupName = oldGroup.Name;
-                        }
-                    }
-
-                    HistoryChanges = new List<HistoryItem>();
-                    if ( newPersonId.HasValue )
-                    {
-                        HistoryChanges.Add( new HistoryItem()
-                        {
-                            PersonId = newPersonId.Value,
-                            Caption = group.Name,
-                            GroupId = group.Id,
-                            Group = group
-                        } );
-                    }
-
-                    if ( oldPersonId.HasValue )
-                    {
-                        HistoryChanges.Add( new HistoryItem()
-                        {
-                            PersonId = oldPersonId.Value,
-                            Caption = oldGroupName,
-                            GroupId = oldGroupId
-                        } );
-                    }
-
-                    if ( newPersonId.HasValue && newGroupId.HasValue &&
-                        ( !oldPersonId.HasValue || oldPersonId.Value != newPersonId.Value || !oldGroupId.HasValue || oldGroupId.Value != newGroupId.Value ) )
-                    {
-                        // New Person in group
-                        var historyItem = HistoryChanges.First( h => h.PersonId == newPersonId.Value && h.GroupId == newGroupId.Value );
-
-                        historyItem.PersonHistoryChangeList.AddChange( History.HistoryVerb.AddedToGroup, History.HistoryChangeType.Record, $"'{group.Name}' Group" );
-                        History.EvaluateChange( historyItem.PersonHistoryChangeList, $"{historyItem.Caption} Role", ( int? ) null, Entity.GroupRole, Entity.GroupRoleId, rockContext );
-                        History.EvaluateChange( historyItem.PersonHistoryChangeList, $"{historyItem.Caption} Note", string.Empty, Entity.Note );
-                        History.EvaluateChange( historyItem.PersonHistoryChangeList, $"{historyItem.Caption} Status", null, Entity.GroupMemberStatus );
-                        History.EvaluateChange( historyItem.PersonHistoryChangeList, $"{historyItem.Caption} Communication Preference", null, Entity.CommunicationPreference );
-                        History.EvaluateChange( historyItem.PersonHistoryChangeList, $"{historyItem.Caption} Guest Count", ( int? ) null, Entity.GuestCount );
-
-                        var addedMemberPerson = Entity.Person ?? new PersonService( rockContext ).Get( Entity.PersonId );
-
-                        // add the Person's Name as ValueName and Caption (just in case the groupmember record is deleted later)
-                        historyItem.GroupMemberHistoryChangeList.AddChange( History.HistoryVerb.AddedToGroup, History.HistoryChangeType.Record, $"{addedMemberPerson?.FullName}" ).SetCaption( $"{addedMemberPerson?.FullName}" );
-                        History.EvaluateChange( historyItem.GroupMemberHistoryChangeList, $"Role", ( int? ) null, Entity.GroupRole, Entity.GroupRoleId, rockContext );
-                        History.EvaluateChange( historyItem.GroupMemberHistoryChangeList, $"Note", string.Empty, Entity.Note );
-                        History.EvaluateChange( historyItem.GroupMemberHistoryChangeList, $"Status", null, Entity.GroupMemberStatus );
-                        History.EvaluateChange( historyItem.GroupMemberHistoryChangeList, $"Communication Preference", null, Entity.CommunicationPreference );
-                        History.EvaluateChange( historyItem.GroupMemberHistoryChangeList, $"Guest Count", ( int? ) null, Entity.GuestCount );
-                    }
-
-                    if ( newPersonId.HasValue && oldPersonId.HasValue && oldPersonId.Value == newPersonId.Value &&
-                         newGroupId.HasValue && oldGroupId.HasValue && oldGroupId.Value == newGroupId.Value )
-                    {
-                        // Updated same person in group
-                        var historyItem = HistoryChanges.First( h => h.PersonId == newPersonId.Value && h.GroupId == newGroupId.Value );
-                        History.EvaluateChange( historyItem.PersonHistoryChangeList, $"{historyItem.Caption} Role", OriginalValues[nameof( Entity.GroupRoleId )].ToStringSafe().AsIntegerOrNull(), Entity.GroupRole, Entity.GroupRoleId, rockContext );
-                        History.EvaluateChange( historyItem.PersonHistoryChangeList, $"{historyItem.Caption} Note", OriginalValues[nameof( Entity.Note )].ToStringSafe(), Entity.Note );
-                        History.EvaluateChange( historyItem.PersonHistoryChangeList, $"{historyItem.Caption} Status", OriginalValues[nameof( Entity.GroupMemberStatus )].ToStringSafe().ConvertToEnum<GroupMemberStatus>(), Entity.GroupMemberStatus );
-                        History.EvaluateChange( historyItem.PersonHistoryChangeList, $"{historyItem.Caption} Communication Preference", OriginalValues[nameof( Entity.CommunicationPreference )].ToStringSafe().ConvertToEnum<CommunicationType>(), Entity.CommunicationPreference );
-                        History.EvaluateChange( historyItem.PersonHistoryChangeList, $"{historyItem.Caption} Guest Count", OriginalValues[nameof( Entity.GuestCount )].ToStringSafe().AsIntegerOrNull(), Entity.GuestCount );
-                        History.EvaluateChange( historyItem.PersonHistoryChangeList, $"{historyItem.Caption} Archived", OriginalValues[nameof( Entity.IsArchived )].ToStringSafe().AsBoolean(), Entity.IsArchived );
-
-                        // If the groupmember was Archived, make sure it is the first GroupMember History change (since they get summarized when doing a HistoryLog and Timeline
-                        bool origIsArchived = OriginalValues[nameof( GroupMember.IsArchived )].ToStringSafe().AsBoolean();
-
-                        if ( origIsArchived != Entity.IsArchived )
-                        {
-                            var memberPerson = Entity.Person ?? new PersonService( rockContext ).Get( Entity.PersonId );
-                            if ( Entity.IsArchived == true )
-                            {
-                                // GroupMember changed to Archived
-                                historyItem.GroupMemberHistoryChangeList.AddChange( History.HistoryVerb.RemovedFromGroup, History.HistoryChangeType.Record, $"{memberPerson?.FullName}" ).SetCaption( $"{memberPerson?.FullName}" );
-                            }
-                            else
-                            {
-                                // GroupMember changed to Not archived
-                                historyItem.GroupMemberHistoryChangeList.AddChange( History.HistoryVerb.AddedToGroup, History.HistoryChangeType.Record, $"{memberPerson?.FullName}" ).SetCaption( $"{memberPerson?.FullName}" );
-                            }
-                        }
-
-                        History.EvaluateChange( historyItem.GroupMemberHistoryChangeList, $"Role", OriginalValues[nameof( GroupMember.GroupRoleId )].ToStringSafe().AsIntegerOrNull(), Entity.GroupRole, Entity.GroupRoleId, rockContext );
-                        History.EvaluateChange( historyItem.GroupMemberHistoryChangeList, $"Note", OriginalValues[nameof( GroupMember.Note )].ToStringSafe(), Entity.Note );
-                        History.EvaluateChange( historyItem.GroupMemberHistoryChangeList, $"Status", OriginalValues[nameof( GroupMember.GroupMemberStatus )].ToStringSafe().ConvertToEnum<GroupMemberStatus>(), Entity.GroupMemberStatus );
-                        History.EvaluateChange( historyItem.GroupMemberHistoryChangeList, $"Communication Preference", OriginalValues[nameof( GroupMember.CommunicationPreference )].ToStringSafe().ConvertToEnum<CommunicationType>(), Entity.CommunicationPreference );
-                        History.EvaluateChange( historyItem.GroupMemberHistoryChangeList, $"Guest Count", OriginalValues[nameof( GroupMember.GuestCount )].ToStringSafe().AsIntegerOrNull(), Entity.GuestCount );
-                    }
-
-                    if ( oldPersonId.HasValue && oldGroupId.HasValue &&
-                        ( !newPersonId.HasValue || newPersonId.Value != oldPersonId.Value || !newGroupId.HasValue || newGroupId.Value != oldGroupId.Value ) )
-                    {
-                        // Removed a person/groupmember in group
-                        var historyItem = HistoryChanges.First( h => h.PersonId == oldPersonId.Value && h.GroupId == oldGroupId.Value );
-
-                        historyItem.PersonHistoryChangeList.AddChange( History.HistoryVerb.RemovedFromGroup, History.HistoryChangeType.Record, $"{oldGroupName} Group" );
-
-                        var deletedMemberPerson = Entity.Person ?? new PersonService( rockContext ).Get( Entity.PersonId );
-
-                        historyItem.GroupMemberHistoryChangeList.AddChange( History.HistoryVerb.RemovedFromGroup, History.HistoryChangeType.Record, $"{deletedMemberPerson?.FullName}" ).SetCaption( $"{deletedMemberPerson?.FullName}" );
-                    }
-                }
+                // Populate the history list for the PostSave hook.
+                SetHistory( rockContext, oldGroupId, newGroupId, oldPersonId, newPersonId );
 
                 _preSaveChangesOldGroupId = oldGroupId;
 
@@ -449,6 +346,215 @@ namespace Rock.Model
                 }
 
                 updateGroupMemberMsg.Send();
+            }
+
+            /// <summary>
+            /// Add any necesary history records for the modifications.
+            /// </summary>
+            /// <param name="rockContext">The context to use for queries and change tracking.</param>
+            /// <param name="oldGroupId">The identifier of the previous/old <see cref="Group"/>.</param>
+            /// <param name="newGroupId">The identifier of the current/new <see cref="Group"/>.</param>
+            /// <param name="oldPersonId">The identifier of the previous/old <see cref="Person"/>.</param>
+            /// <param name="newPersonId">The identifier of the current/new <see cref="Person"/>.</param>
+            private void SetHistory( RockContext rockContext, int? oldGroupId, int? newGroupId, int? oldPersonId, int? newPersonId )
+            {
+                Group group = Entity.Group;
+                if ( group == null )
+                {
+                    group = new GroupService( rockContext ).Get( Entity.GroupId );
+                }
+
+                if ( group != null )
+                {
+                    this.Entity.GroupTypeId = group.GroupTypeId;
+                    string oldGroupName = group.Name;
+                    if ( oldGroupId.HasValue && oldGroupId.Value != group.Id )
+                    {
+                        var oldGroup = new GroupService( rockContext ).Get( oldGroupId.Value );
+                        if ( oldGroup != null )
+                        {
+                            oldGroupName = oldGroup.Name;
+                        }
+                    }
+
+                    HistoryChanges = new List<HistoryItem>();
+                    if ( newPersonId.HasValue )
+                    {
+                        HistoryChanges.Add( new HistoryItem()
+                        {
+                            PersonId = newPersonId.Value,
+                            Caption = group.Name,
+                            GroupId = group.Id,
+                            Group = group
+                        } );
+                    }
+
+                    if ( oldPersonId.HasValue )
+                    {
+                        HistoryChanges.Add( new HistoryItem()
+                        {
+                            PersonId = oldPersonId.Value,
+                            Caption = oldGroupName,
+                            GroupId = oldGroupId
+                        } );
+                    }
+
+                    if ( newPersonId.HasValue && newGroupId.HasValue &&
+                        ( !oldPersonId.HasValue || oldPersonId.Value != newPersonId.Value || !oldGroupId.HasValue || oldGroupId.Value != newGroupId.Value ) )
+                    {
+                        // New Person in group
+                        var historyItem = HistoryChanges.First( h => h.PersonId == newPersonId.Value && h.GroupId == newGroupId.Value );
+
+                        historyItem.PersonHistoryChangeList.AddChange( History.HistoryVerb.AddedToGroup, History.HistoryChangeType.Record, $"'{group.Name}' Group" );
+                        History.EvaluateChange( historyItem.PersonHistoryChangeList, $"{historyItem.Caption} Role", ( int? ) null, Entity.GroupRole, Entity.GroupRoleId, rockContext );
+                        History.EvaluateChange( historyItem.PersonHistoryChangeList, $"{historyItem.Caption} Note", string.Empty, Entity.Note );
+                        History.EvaluateChange( historyItem.PersonHistoryChangeList, $"{historyItem.Caption} Status", null, Entity.GroupMemberStatus );
+                        History.EvaluateChange( historyItem.PersonHistoryChangeList, $"{historyItem.Caption} Communication Preference", null, Entity.CommunicationPreference );
+                        History.EvaluateChange( historyItem.PersonHistoryChangeList, $"{historyItem.Caption} Guest Count", ( int? ) null, Entity.GuestCount );
+
+                        var addedMemberPerson = Entity.Person ?? new PersonService( rockContext ).Get( Entity.PersonId );
+
+                        // add the Person's Name as ValueName and Caption (just in case the groupmember record is deleted later)
+                        historyItem.GroupMemberHistoryChangeList.AddChange( History.HistoryVerb.AddedToGroup, History.HistoryChangeType.Record, $"{addedMemberPerson?.FullName}" ).SetCaption( $"{addedMemberPerson?.FullName}" );
+                        History.EvaluateChange( historyItem.GroupMemberHistoryChangeList, $"Role", ( int? ) null, Entity.GroupRole, Entity.GroupRoleId, rockContext );
+                        History.EvaluateChange( historyItem.GroupMemberHistoryChangeList, $"Note", string.Empty, Entity.Note );
+                        History.EvaluateChange( historyItem.GroupMemberHistoryChangeList, $"Status", null, Entity.GroupMemberStatus );
+                        History.EvaluateChange( historyItem.GroupMemberHistoryChangeList, $"Communication Preference", null, Entity.CommunicationPreference );
+                        History.EvaluateChange( historyItem.GroupMemberHistoryChangeList, $"Guest Count", ( int? ) null, Entity.GuestCount );
+                    }
+
+                    if ( newPersonId.HasValue && oldPersonId.HasValue && oldPersonId.Value == newPersonId.Value &&
+                         newGroupId.HasValue && oldGroupId.HasValue && oldGroupId.Value == newGroupId.Value )
+                    {
+                        // Updated same person in group
+                        var historyItem = HistoryChanges.First( h => h.PersonId == newPersonId.Value && h.GroupId == newGroupId.Value );
+                        History.EvaluateChange( historyItem.PersonHistoryChangeList, $"{historyItem.Caption} Role", OriginalValues[nameof( Entity.GroupRoleId )].ToStringSafe().AsIntegerOrNull(), Entity.GroupRole, Entity.GroupRoleId, rockContext );
+                        History.EvaluateChange( historyItem.PersonHistoryChangeList, $"{historyItem.Caption} Note", OriginalValues[nameof( Entity.Note )].ToStringSafe(), Entity.Note );
+                        History.EvaluateChange( historyItem.PersonHistoryChangeList, $"{historyItem.Caption} Status", OriginalValues[nameof( Entity.GroupMemberStatus )].ToStringSafe().ConvertToEnum<GroupMemberStatus>(), Entity.GroupMemberStatus );
+                        History.EvaluateChange( historyItem.PersonHistoryChangeList, $"{historyItem.Caption} Communication Preference", OriginalValues[nameof( Entity.CommunicationPreference )].ToStringSafe().ConvertToEnum<CommunicationType>(), Entity.CommunicationPreference );
+                        History.EvaluateChange( historyItem.PersonHistoryChangeList, $"{historyItem.Caption} Guest Count", OriginalValues[nameof( Entity.GuestCount )].ToStringSafe().AsIntegerOrNull(), Entity.GuestCount );
+                        History.EvaluateChange( historyItem.PersonHistoryChangeList, $"{historyItem.Caption} Archived", OriginalValues[nameof( Entity.IsArchived )].ToStringSafe().AsBoolean(), Entity.IsArchived );
+
+                        // If the groupmember was Archived, make sure it is the first GroupMember History change (since they get summarized when doing a HistoryLog and Timeline
+                        bool origIsArchived = OriginalValues[nameof( GroupMember.IsArchived )].ToStringSafe().AsBoolean();
+
+                        if ( origIsArchived != Entity.IsArchived )
+                        {
+                            var memberPerson = Entity.Person ?? new PersonService( rockContext ).Get( Entity.PersonId );
+                            if ( Entity.IsArchived == true )
+                            {
+                                // GroupMember changed to Archived
+                                historyItem.GroupMemberHistoryChangeList.AddChange( History.HistoryVerb.RemovedFromGroup, History.HistoryChangeType.Record, $"{memberPerson?.FullName}" ).SetCaption( $"{memberPerson?.FullName}" );
+                            }
+                            else
+                            {
+                                // GroupMember changed to Not archived
+                                historyItem.GroupMemberHistoryChangeList.AddChange( History.HistoryVerb.AddedToGroup, History.HistoryChangeType.Record, $"{memberPerson?.FullName}" ).SetCaption( $"{memberPerson?.FullName}" );
+                            }
+                        }
+
+                        History.EvaluateChange( historyItem.GroupMemberHistoryChangeList, $"Role", OriginalValues[nameof( GroupMember.GroupRoleId )].ToStringSafe().AsIntegerOrNull(), Entity.GroupRole, Entity.GroupRoleId, rockContext );
+                        History.EvaluateChange( historyItem.GroupMemberHistoryChangeList, $"Note", OriginalValues[nameof( GroupMember.Note )].ToStringSafe(), Entity.Note );
+                        History.EvaluateChange( historyItem.GroupMemberHistoryChangeList, $"Status", OriginalValues[nameof( GroupMember.GroupMemberStatus )].ToStringSafe().ConvertToEnum<GroupMemberStatus>(), Entity.GroupMemberStatus );
+                        History.EvaluateChange( historyItem.GroupMemberHistoryChangeList, $"Communication Preference", OriginalValues[nameof( GroupMember.CommunicationPreference )].ToStringSafe().ConvertToEnum<CommunicationType>(), Entity.CommunicationPreference );
+                        History.EvaluateChange( historyItem.GroupMemberHistoryChangeList, $"Guest Count", OriginalValues[nameof( GroupMember.GuestCount )].ToStringSafe().AsIntegerOrNull(), Entity.GuestCount );
+                    }
+
+                    if ( oldPersonId.HasValue && oldGroupId.HasValue &&
+                        ( !newPersonId.HasValue || newPersonId.Value != oldPersonId.Value || !newGroupId.HasValue || newGroupId.Value != oldGroupId.Value ) )
+                    {
+                        // Removed a person/groupmember in group
+                        var historyItem = HistoryChanges.First( h => h.PersonId == oldPersonId.Value && h.GroupId == oldGroupId.Value );
+
+                        historyItem.PersonHistoryChangeList.AddChange( History.HistoryVerb.RemovedFromGroup, History.HistoryChangeType.Record, $"{oldGroupName} Group" );
+
+                        var deletedMemberPerson = Entity.Person ?? new PersonService( rockContext ).Get( Entity.PersonId );
+
+                        historyItem.GroupMemberHistoryChangeList.AddChange( History.HistoryVerb.RemovedFromGroup, History.HistoryChangeType.Record, $"{deletedMemberPerson?.FullName}" ).SetCaption( $"{deletedMemberPerson?.FullName}" );
+                    }
+                }
+            }
+
+            /// <summary>
+            /// If there's already a GroupMember record for this person, group, and role,
+            /// update the Entity so that the existing record is used instead of a new record created.
+            /// </summary>
+            /// <param name="rockContext">The RockContext to use for queries and context tracking.</param>
+            private void UpdateEntityFromExistingIfDuplicated( RockContext rockContext )
+            {
+                // Check for the existence of any duplicate GroupMember
+                // records for this person, group and role.
+                // Do not track these entities since we may need to hijack the entity.
+                var otherExistingGroupMembers = new GroupMemberService( rockContext )
+                    .GetPersonGroupRoles( Entity.GroupId, Entity.PersonId, Entity.GroupRoleId )
+                    .AsNoTracking();
+
+                // If a new group member was added, but they already have a group member record
+                // use the existing record to prevent duplication.
+                if ( otherExistingGroupMembers.Any() )
+                {
+                    // Copy over the identity and other properties of the original record.
+                    var existingGroupMember = otherExistingGroupMembers.FirstOrDefault();
+
+                    // Always copy these properties to the new record.
+                    Entity.Id = existingGroupMember.Id;
+                    Entity.Guid = existingGroupMember.Guid;
+                    Entity.CreatedByPersonAliasId = existingGroupMember.CreatedByPersonAliasId;
+                    Entity.CreatedDateTime = existingGroupMember.CreatedDateTime;
+                    Entity.DateTimeAdded = existingGroupMember.DateTimeAdded;
+                    Entity.ForeignGuid = existingGroupMember.ForeignGuid;
+                    Entity.ForeignId = existingGroupMember.ForeignId;
+                    Entity.ForeignKey = existingGroupMember.ForeignKey;
+                    Entity.IsNotified = existingGroupMember.IsNotified;
+
+                    // Only copy of these properties if they're not explicitly set by the new record.
+                    if ( !Entity.GroupOrder.HasValue )
+                    {
+                        Entity.GroupOrder = existingGroupMember.GroupOrder;
+                    }
+
+                    if ( Entity.Note.IsNullOrWhiteSpace() )
+                    {
+                        Entity.Note = existingGroupMember.Note;
+                    }
+
+                    if ( !Entity.ScheduleReminderEmailOffsetDays.HasValue )
+                    {
+                        Entity.ScheduleReminderEmailOffsetDays = existingGroupMember.ScheduleReminderEmailOffsetDays;
+                    }
+
+                    if ( !Entity.ScheduleStartDate.HasValue )
+                    {
+                        Entity.ScheduleStartDate = existingGroupMember.ScheduleStartDate;
+                    }
+
+                    if ( !Entity.ScheduleTemplateId.HasValue )
+                    {
+                        Entity.ScheduleTemplateId = existingGroupMember.ScheduleTemplateId;
+                    }
+
+                    if ( Entity.CommunicationPreference == CommunicationType.RecipientPreference )
+                    {
+                        Entity.CommunicationPreference = existingGroupMember.CommunicationPreference;
+                    }
+
+                    // If the new record is inactive and the old record has an inactive date time then copy that over.
+                    if ( Entity.GroupMemberStatus == GroupMemberStatus.Inactive && existingGroupMember.InactiveDateTime.HasValue )
+                    {
+                        Entity.InactiveDateTime = existingGroupMember.InactiveDateTime;
+                    }
+
+                    // Clear out any relationships that should be treated as extinct.
+                    if ( Entity.IsArchived == false )
+                    {
+                        Entity.IsArchived = false;
+                        Entity.ArchivedByPersonAliasId = null;
+                        Entity.ArchivedDateTime = null;
+                    }
+
+                    // Update the state to be Modified.
+                    rockContext.Entry( Entity ).State = System.Data.Entity.EntityState.Modified;
+                }
             }
         }
     }

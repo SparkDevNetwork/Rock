@@ -1745,13 +1745,13 @@ DECLARE @LessActiveGroupMembersIdsToDelete TABLE (id INT);
 DECLARE @GroupMembersIdsToArchive TABLE (id INT);
 
 -- In the case when the old person and the new person are in the same group with the same role,
--- delete the groupmember record for the new person if it is 'less active' (Active > Pending > Inactive) then the old person. 
+-- delete the groupmember record for the new person if it is 'less active' (Active > Pending > Inactive) than the old person. 
 -- That will get that record out of the way so that the 'old' group member record can be assigned to the new person
 INSERT INTO @LessActiveGroupMembersIdsToDelete
 SELECT gmn.id
-FROM [GroupMember] GMO
-INNER JOIN [GroupTypeRole] GTR ON GTR.[Id] = GMO.[GroupRoleId]
-INNER JOIN [GroupMember] GMN ON GMN.[GroupId] = GMO.[GroupId]
+FROM [dbo].[GroupMember] GMO
+INNER JOIN [dbo].[GroupTypeRole] GTR ON GTR.[Id] = GMO.[GroupRoleId]
+INNER JOIN [dbo].[GroupMember] GMN ON GMN.[GroupId] = GMO.[GroupId]
 	AND GMN.[PersonId] = @NewId
 	AND (
 		GTR.[MaxCount] <= 1
@@ -1772,7 +1772,7 @@ WHERE GMO.[PersonId] = @OldId
 		)
 
 -- NULL out RegistrationRegistrant Records for the @LessActiveGroupMembersIdsToDelete
-UPDATE [RegistrationRegistrant]
+UPDATE [dbo].[RegistrationRegistrant]
 SET [GroupMemberId] = NULL
 WHERE [GroupMemberId] IN (
 		SELECT [Id]
@@ -1780,7 +1780,7 @@ WHERE [GroupMemberId] IN (
 		)
 
 -- Delete the GroupMemberAssignment Records for the @LessActiveGroupMembersIdsToDelete
-DELETE FROM [GroupMemberAssignment]
+DELETE FROM [dbo].[GroupMemberAssignment]
 WHERE [GroupMemberId] IN (
 		SELECT [Id]
 		FROM @LessActiveGroupMembersIdsToDelete
@@ -1805,10 +1805,10 @@ WHERE Id IN (
 -- already in the group with the same role (except for groupmember records that we are going to archive)
 UPDATE GMO
 	SET [PersonId] = @NewId
-FROM [GroupMember] GMO
-	INNER JOIN [GroupTypeRole] GTR
+FROM [dbo].[GroupMember] GMO
+	INNER JOIN [dbo].[GroupTypeRole] GTR
 		ON GTR.[Id] = GMO.[GroupRoleId]
-	LEFT OUTER JOIN [GroupMember] GMN
+	LEFT OUTER JOIN [dbo].[GroupMember] GMN
 		ON GMN.[GroupId] = GMO.[GroupId]
 		AND GMN.[PersonId] = @NewId
 		AND (GTR.[MaxCount] <= 1 OR GMN.[GroupRoleId] = GMO.[GroupRoleId])
@@ -1817,34 +1817,34 @@ WHERE GMO.[PersonId] = @OldId
 	and GMO.Id NOT IN (SELECT [Id] FROM @GroupMembersIdsToArchive)
 
 -- Update any registrant groups that point to a group member about to be deleted 
-UPDATE [RegistrationRegistrant]
+UPDATE [dbo].[RegistrationRegistrant]
 SET [GroupMemberId] = NULL 
 WHERE [GroupMemberId] IN (
 	SELECT [Id]
-	FROM [GroupMember]
+	FROM [dbo].[GroupMember]
 	WHERE [PersonId] = @OldId
 )
 
 
 -- Delete any Group Assignments that point to a group member about to be deleted
-DELETE FROM [GroupMemberAssignment]
+DELETE FROM [dbo].[GroupMemberAssignment]
 WHERE [GroupMemberId] IN (
 	SELECT [Id]
-	FROM [GroupMember]
+	FROM [dbo].[GroupMember]
 	WHERE [PersonId] = @OldId
 )
 
 
 -- If there is GroupMemberHistory, we can't delete, so add any other GroupMemberIds for the old PersonId to our @GroupMembersIdsToArchive list
 INSERT INTO @GroupMembersIdsToArchive 
-	SELECT [Id]	FROM [GroupMember] WHERE [PersonId] = @OldId AND Id IN (SELECT GroupMemberId FROM GroupMemberHistorical)
+	SELECT [Id]	FROM [dbo].[GroupMember] WHERE [PersonId] = @OldId AND Id IN (SELECT GroupMemberId FROM [dbo].[GroupMemberHistorical])
 
-UPDATE [GroupMember] 
+UPDATE [dbo].[GroupMember] 
 	SET [IsArchived] = 1, [PersonId] = @NewId
 	WHERE [Id] IN (SELECT [Id] FROM @GroupMembersIdsToArchive)
 
 -- Delete any group members not updated (already existed with new id)
-DELETE [GroupMember]
+DELETE [dbo].[GroupMember]
 WHERE [PersonId] = @OldId
 ";
 

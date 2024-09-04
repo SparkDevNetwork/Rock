@@ -209,14 +209,19 @@ namespace Rock.Model
             errorMessage = string.Empty;
             var groupService = new GroupService( rockContext );
 
-            // If the group member record is changing (new person, role, archive status, active status) check if there are any duplicates of this Person and Role for this group (besides the current record).
-            var duplicateGroupMembers = new GroupMemberService( rockContext ).GetByGroupIdAndPersonId( this.GroupId, this.PersonId ).Where( a => a.GroupRoleId == this.GroupRoleId && this.Id != a.Id );
-            if ( duplicateGroupMembers.Any() )
+            // If the group member record is changing (new person, role, archive status, active status)
+            // check if there are any duplicates of this Person and Role for this group (besides the current record).
+            // Include Deceased and archived records to be thorough.
+            var hasDuplicateMember = new GroupMemberService( rockContext )
+                .GetPersonGroupRoles( this.GroupId , this.PersonId, this.GroupRoleId, this.Id )
+                .Any();
+
+            if ( hasDuplicateMember )
             {
                 var person = this.Person ?? new PersonService( rockContext ).GetNoTracking( this.PersonId );
 
                 var groupRole = groupType.Roles.Where( a => a.Id == this.GroupRoleId ).FirstOrDefault();
-                errorMessage = $"{person} already belongs to the {groupRole.Name.ToLower()} role for this {groupType.GroupTerm.ToLower()} in GroupId ({ this.GroupId }), and cannot be added again with the same role";
+                errorMessage = $"{person} already belongs to the {groupRole.Name.ToLower()} role for this {groupType.GroupTerm.ToLower()} in GroupId ({this.GroupId}), and cannot be added again with the same role";
 
                 return false;
             }

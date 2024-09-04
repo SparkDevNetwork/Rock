@@ -230,6 +230,37 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Returns a collection of <see cref="Rock.Model.GroupMember">GroupMembers</see> 
+        /// matching the specified <paramref name="groupId"/>, <paramref name="personId"/>,
+        /// <paramref name="groupRoleId"/> and optionally excludes the GroupMember
+        /// with the specified <paramref name="exceptId"/>.
+        /// </summary>
+        /// <remarks>
+        /// <para>This method is useful when searching for duplicate GroupMembers based on the parameters.</para>
+        /// NOTE - Deceased and Archived records will be included.
+        /// </remarks>
+        /// <param name="groupId">The identifier of the <see cref="Group"/> to search possible duplicates for.</param>
+        /// <param name="personId">The identifier of the <see cref="Person"/> to search possible duplicates for.</param>
+        /// <param name="groupRoleId">The identifier of the <see cref="GroupTypeRole"/> to search possible duplicates for.</param>
+        /// <param name="exceptId">Optional identifier of the GroupMember.Id to exclude from the result.</param>
+        /// <returns></returns>
+        public IQueryable<GroupMember> GetPersonGroupRoles( int groupId, int personId, int groupRoleId, int exceptId = 0 )
+        {
+            var query = Queryable( true, true ).Where( a =>
+                a.GroupRoleId == groupRoleId &&
+                a.PersonId == personId &&
+                a.GroupId == groupId
+            );
+
+            if ( exceptId > 0 )
+            {
+                query = query.Where( a => a.Id != exceptId );
+            }
+
+            return query;
+        }
+
+        /// <summary>
         /// Returns the first <see cref="Rock.Model.GroupMember"/> that matches the Id of the <see cref="Rock.Model.Group"/>,
         /// the Id of the <see cref="Rock.Model.Person"/>, and the Id of the <see cref="Rock.Model.GroupTypeRole"/>
         /// </summary>
@@ -990,6 +1021,236 @@ namespace Rock.Model
             }
 
             return groupPlacementGroupMemberList;
+        }
+
+        /// <summary>
+        /// Merges duplicate <see cref="GroupMember"/> records based on the same PersonId, GroupId, and GroupRoleId.
+        /// <para>
+        /// The "surviving" GroupMember is the first record found when sorted by
+        /// GroupMemberStatus ( where Active > Pending > Inactive ),
+        /// then by IsArchived = false and
+        /// lastly by most recent ModifiedDateTime
+        /// </para>
+        /// <para>
+        ///<see cref="RegistrationRegistrant"/>, <see cref="GroupMemberAssignment"/> and <see cref="GroupMemberHistorical"/>
+        /// records are updated to point to the "surviving" GroupMember.
+        /// </para>
+        /// <para>
+        ///<see cref="GroupMemberRequirement"/> and GroupMember.<see cref="AttributeValue"/> records
+        ///will retain only the most recent record for each GroupMember.
+        /// </para>
+        /// <para>
+        /// If a deleted <see cref="GroupMember"/> has a Note it's appended to the "surviving" GroupMember's Note.
+        /// </para>
+        /// </summary>
+        /// <returns>The number of GroupMember records that were deleted.</returns>
+        public int MergeDuplicates()
+        {
+            using ( var rockContext = this.Context as RockContext )
+            {
+                var groupMembersDeletedCount = new System.Data.SqlClient.SqlParameter( "@groupMembersDeletedCount", System.Data.SqlDbType.Int )
+                {
+                    Direction = System.Data.ParameterDirection.Output
+                };
+
+                var updateQuery = @"
+IF OBJECT_ID('tempdb..#dupeGroupMember') IS NOT NULL
+BEGIN
+	DROP TABLE #dupeGroupMember
+END
+
+DECLARE 
+	@inactiveGroupMemberStatus INT = 0,
+	@activeGroupMemberStatus INT = 1,
+	@pendingGroupMemberStatus INT = 2;
+
+-- Group by PersonId, GroupId and GroupRoleId
+-- Keep the record which is sorted first in the RowKeepPriority field (partitioned by same grouping).
+-- Delete all other KeepPriorities for the PersonId, GroupId and GroupRoleId.
+SELECT 
+	dupe.[PersonId], 
+	dupe.[GroupId], 
+	dupe.[GroupRoleId], 
+	MAX(IIF([RowKeepPriority] = 1, [GroupMemberId], NULL)) [IdToKeep],
+	MAX(IIF([RowKeepPriority] > 1, [GroupMemberId], NULL)) [IdToDelete]
+INTO #dupeGroupMember
+FROM (
+	SELECT 
+		gm.Id [GroupMemberId], 
+		d.PersonId, 
+		d.GroupId, 
+		d.GroupRoleId, 
+	
+	-- If we ever want to change the logic for which GroupMember survives the merge
+	-- we can update the logic in the [KeepPriority] so that the record to keep is sorted to the top.
+	ROW_NUMBER() OVER (
+		PARTITION BY gm.[PersonId], gm.[GroupId], gm.[GroupRoleId]
+		ORDER BY CASE gm.GroupMemberStatus 
+				WHEN @activeGroupMemberStatus THEN 0 
+				WHEN @pendingGroupMemberStatus THEN 1
+				WHEN @inactiveGroupMemberStatus THEN 2
+				ELSE 3
+			END, 
+			gm.IsArchived,
+			gm.ModifiedDateTime DESC
+	) [RowKeepPriority]
+	FROM (
+		-- Get the list of all duplicate group members.
+		SELECT [PersonId], [GroupId], [GroupRoleId]
+		FROM [dbo].[GroupMember]
+		GROUP BY [PersonId], [GroupId], [GroupRoleId]
+		HAVING COUNT(*) > 1
+	) d
+	JOIN GroupMember gm 
+		ON gm.[PersonId] = d.[PersonId]
+		AND gm.[GroupId] = d.[GroupId]
+		AND gm.[GroupRoleId] = d.[GroupRoleId]
+) dupe
+GROUP BY dupe.[PersonId],
+	dupe.[GroupId],
+	dupe.[GroupRoleId]
+
+-- Point RegristrationRegistrant's from the GroupMember.Id that'll be deleted to the one that will be retained.
+UPDATE rr SET
+	[GroupMemberId] = d.[IdToKeep]
+FROM #dupeGroupMember d
+INNER JOIN [dbo].[RegistrationRegistrant] rr ON d.[IdToDelete] = rr.[GroupMemberId]
+
+-- Point GroupMemberAssignment's from the GroupMember.Id that'll be deleted to the one that will be retained.
+UPDATE gma SET
+	GroupMemberId = d.[IdToKeep]
+FROM #dupeGroupMember d
+INNER JOIN [dbo].[GroupMemberAssignment] gma ON d.[IdToDelete] = gma.GroupMemberId
+
+-- Point GroupMemberHistorical's from the GroupMember.Id that'll be deleted to the one that will be retained.
+UPDATE gmh SET
+	GroupMemberId = d.[IdToKeep]
+FROM #dupeGroupMember d
+INNER JOIN [dbo].[GroupMemberHistorical] gmh ON d.[IdToDelete] = gmh.GroupMemberId
+
+/*
+	Create a temp table of the GroupMemberRequirements that need to be deleted and those that need to be updated.
+*/
+IF OBJECT_ID('tempdb..#groupMemberRequirementModification') IS NOT NULL
+BEGIN
+	DROP TABLE #groupMemberRequirementModification
+END
+
+-- Identify any GroupMemberRequirements which should be deleted or updated.
+SELECT 
+	gmr.Id [Id], 
+	IIF(gmr.Id = [RequirementIdToKeep], 0, 1) ShouldDelete, 
+	d.IdToKeep [GroupMemberIdToKeep]
+INTO #groupMemberRequirementModification
+FROM [GroupMemberRequirement] gmr 
+INNER JOIN #dupeGroupMember d ON gmr.[GroupMemberId] IN (d.IdToDelete, d.IdToKeep)
+INNER JOIN (
+	SELECT d.[PersonId], d.[GroupId], d.[GroupRoleId], MAX(gmr1.Id) [RequirementIdToKeep]
+	FROM [GroupMemberRequirement] gmr1
+	INNER JOIN #dupeGroupMember d ON gmr1.[GroupMemberId] IN (d.IdToDelete, d.IdToKeep)
+	GROUP BY d.[PersonId], d.[GroupId], d.[GroupRoleId]
+) dupeRequirement 
+	ON [dupeRequirement].[PersonId] = d.[PersonId]
+	AND [dupeRequirement].[GroupId] = d.[GroupId]
+	AND [dupeRequirement].[GroupRoleId] = d.[GroupRoleId]
+
+DELETE gmr
+FROM #groupMemberRequirementModification m
+INNER JOIN [dbo].[GroupMemberRequirement] gmr ON gmr.Id = m.Id
+WHERE m.ShouldDelete = 1
+
+UPDATE gmr SET
+	gmr.GroupMemberId = m.GroupMemberIdToKeep
+FROM #groupMemberRequirementModification m
+INNER JOIN [dbo].[GroupMemberRequirement] gmr ON gmr.Id = m.Id
+WHERE m.ShouldDelete = 0
+	AND gmr.[GroupMemberId] <> [GroupMemberIdToKeep]
+
+/*
+	Create a temp table of the AttributeValues that need to be deleted and those that need to be updated.
+*/
+IF OBJECT_ID('tempdb..#attributeValueModification') IS NOT NULL
+BEGIN
+	DROP TABLE #attributeValueModification
+END
+
+DECLARE @groupMemberEntityTypeId INT = (SELECT TOP 1 Id FROM EntityType WHERE [Guid] = '49668B95-FEDC-43DD-8085-D2B0D6343C48');
+
+SELECT 
+	[av].Id [AttributeValueId], 
+	av.[AttributeId], 
+	av.[EntityId] [GroupMemberId],
+	d.[PersonId], 
+	d.[GroupId], 
+	d.[GroupRoleId], 
+	IIF(av.[ModifiedDateTime] = [MostRecentModifiedDateTime], 0, 1) [ShouldDelete], 
+	d.[IdToKeep] [GroupMemberIdToKeep]
+INTO #attributeValueModification
+FROM [dbo].[AttributeValue] av
+INNER JOIN #dupeGroupMember d ON av.[EntityId] IN (d.IdToDelete, d.IdToKeep)
+INNER JOIN (
+	SELECT 
+		av.[AttributeId], 
+		av.[EntityId] [GroupMemberId], 
+		d.[PersonId], 
+		d.[GroupId], 
+		d.[GroupRoleId], 
+		MAX(av.ModifiedDateTime) MostRecentModifiedDateTime
+	FROM [dbo].[AttributeValue] av
+	INNER JOIN [dbo].[Attribute] a ON a.[Id] = av.[AttributeId]
+	INNER JOIN [dbo].[#dupeGroupMember] d ON av.EntityId IN (d.IdToDelete, d.IdToKeep)
+	WHERE a.EntityTypeId = @groupMemberEntityTypeId
+	GROUP BY av.[AttributeId], av.[EntityId], d.[PersonId], d.[GroupId], d.[GroupRoleId]
+) dupeAttributeValue 
+	ON [dupeAttributeValue].[AttributeId] = av.[AttributeId]
+	AND [dupeAttributeValue].[PersonId] = d.[PersonId]
+	AND [dupeAttributeValue].[GroupId] = d.[GroupId]
+	AND [dupeAttributeValue].[GroupRoleId] = d.[GroupRoleId]
+
+DELETE av
+FROM #attributeValueModification m
+INNER JOIN [dbo].[AttributeValue] av ON av.Id = m.[AttributeValueId]
+WHERE m.ShouldDelete = 1
+
+UPDATE av SET
+	av.EntityId = m.GroupMemberIdToKeep
+FROM #attributeValueModification m
+INNER JOIN [dbo].[AttributeValue] av ON av.Id = m.[AttributeValueId]
+WHERE m.ShouldDelete = 0
+	AND av.[EntityId] <> [GroupMemberIdToKeep]
+
+-- If any of the records to delete include a note - append it to the surviving record's Note field.
+UPDATE gmKeep SET
+	Note = 
+		IIF(
+			gmKeep.[Note] IS NULL OR gmKeep.[Note] = '',
+			gmDelete.Note,
+			ISNULL(gmKeep.[Note], '') + ' 
+--------------------------------------------------------------------------------
+						From Merged GroupMember Note
+--------------------------------------------------------------------------------
+' + gmDelete.[Note] )
+FROM #dupeGroupMember d
+JOIN [dbo].[GroupMember] gmDelete ON gmDelete.Id = d.IdToDelete
+JOIN [dbo].[GroupMember] gmKeep ON gmKeep.Id = d.IdToKeep
+WHERE gmDelete.[Note] IS NOT NULL 
+	AND gmDelete.Note <> ''
+
+DELETE gm
+FROM #dupeGroupMember d
+JOIN [dbo].[GroupMember] gm ON gm.Id = d.IdToDelete
+
+SELECT @groupMembersDeletedCount = COUNT(*) FROM #dupeGroupMember;
+
+-- Remove the temp tables.
+DROP TABLE #dupeGroupMember
+DROP TABLE #groupMemberRequirementModification
+DROP TABLE #attributeValueModification
+";
+                rockContext.Database.ExecuteSqlCommand( updateQuery, groupMembersDeletedCount );
+
+                return ( int ) groupMembersDeletedCount.Value;
+            }
         }
 
         /// <summary>

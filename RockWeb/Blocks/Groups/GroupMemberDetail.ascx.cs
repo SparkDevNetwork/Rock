@@ -1494,30 +1494,6 @@ namespace RockWeb.Blocks.Groups
         }
 
         /// <summary>
-        /// Handles the Click event of the btnDontRestoreArchiveGroupmember control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnDontRestoreArchiveGroupmember_Click( object sender, EventArgs e )
-        {
-            // if they said Don't Restore, save the group member without prompting to restore
-            if ( SaveGroupMember( false ) )
-            {
-                if ( cvGroupMember.IsValid )
-                {
-                    NavigateToParentPage();
-                }
-            }
-
-            if ( !cvGroupMember.IsValid )
-            {
-                nbRestoreError.Text = cvGroupMember.ErrorMessage;
-                nbRestoreError.Visible = true;
-                return;
-            }
-        }
-
-        /// <summary>
         /// Handles the Click event of the btnCancelRestore control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>

@@ -217,6 +217,8 @@ namespace Rock.Jobs
             lastRunDateTime = args.LastExecutionDateTime ?? RockDateTime.Now.AddDays( -1 );
             _enabledTaskKeys = args.EnabledTaskKeys;
 
+            RunCleanupTask( "group member de-duplication", () => this.MergeDuplicateGroupMembers() );
+
             /* 
                 IMPORTANT!! MDP 2020-05-05
 
@@ -3483,6 +3485,11 @@ SET @UpdatedCampusCount = @CampusCount;
 
                 return ( int ) outputParam.Value;
             }
+        }
+
+        private int MergeDuplicateGroupMembers()
+        {
+            return new GroupMemberService( this.CreateRockContext() ).MergeDuplicates();
         }
 
         /// <summary>

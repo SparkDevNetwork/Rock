@@ -140,7 +140,6 @@
                         </Content>
                         <Footer>
                             <asp:LinkButton ID="btnRestoreArchivedGroupMember" runat="server" CssClass="btn btn-primary" Text="Restore" OnClick="btnRestoreArchivedGroupMember_Click" />
-                            <asp:LinkButton ID="btnDontRestoreArchiveGroupmember" runat="server" CssClass="btn btn-default" Text="Don't Restore" OnClick="btnDontRestoreArchiveGroupmember_Click" />
                             <asp:LinkButton ID="btnCancelRestore" runat="server" CssClass="btn btn-link" Text="Cancel" OnClick="btnCancelRestore_Click" />
                         </Footer>
                     </Rock:ModalDialog>
