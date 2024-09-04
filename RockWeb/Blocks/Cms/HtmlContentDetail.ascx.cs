@@ -331,8 +331,14 @@ namespace RockWeb.Blocks.Cms
             // are assumed to be intentional.
             if ( GetAttributeValue( AttributeKey.ValidateMarkup ).AsBoolean() )
             {
+                var temp = newContent;
+                if ( LavaHelper.IsLavaTemplate( newContent ) )
+                {
+                    temp = newContent.SanitizeLava();
+                }
+
                 HtmlDocument doc = new HtmlDocument();
-                doc.LoadHtml( newContent );
+                doc.LoadHtml( temp );
 
                 if ( doc.ParseErrors.Count() > 0 && !nbInvalidHtml.Visible )
                 {
