@@ -102,13 +102,13 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !IsPostBack )
             {
                 BindWorkflowGrid();
                 ShowDetail( benevolenceTypeIdPageParameter );
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -415,9 +415,10 @@ namespace RockWeb.Blocks.Finance
             int workflowTypeId = wpWorkflowType.SelectedValueAsId().Value;
             var workflowType = new WorkflowTypeService( rockContext ).Get( workflowTypeId );
 
-            var findWorkFlow = rockContext.BenevolenceWorkflows?.FirstOrDefault( w => w.BenevolenceTypeId == benevolenceTypeIdPageParameter
-           & w.TriggerType == triggerType
-           & w.WorkflowTypeId == workflowTypeId );
+            var findWorkFlow = new BenevolenceWorkflowService( rockContext ).Queryable()
+                .FirstOrDefault( w => w.BenevolenceTypeId == benevolenceTypeIdPageParameter
+                    && w.TriggerType == triggerType
+                    && w.WorkflowTypeId == workflowTypeId );
 
             var existingWorkflow = findWorkFlow != null && findWorkFlow.QualifierValue.Md5Hash() == workflowQualifier.Md5Hash();
 

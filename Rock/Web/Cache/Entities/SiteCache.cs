@@ -97,7 +97,19 @@ namespace Rock.Web.Cache
                     return ConfiguredTheme;
                 }
 
-                var cookieName = $"Site:{ Id }:theme";
+                // FileManager, RockFileBrowser, RockImageBrowser and RockMergeField
+                // controls need to use paths from the main internal site, but themed
+                // as other sites (potentially). To avoid updating the site theme cookie
+                // in these cases we use a different query string parameter.
+                var editorTheme = request["EditorTheme"];
+                if (
+                    editorTheme.IsNotNullOrWhiteSpace() &&
+                    System.IO.Directory.Exists( httpContext.Server.MapPath( "~/Themes/" + editorTheme ) ) )
+                {
+                    return editorTheme;
+                }
+
+                var cookieName = $"Site:{Id}:theme";
                 var cookie = request.Cookies[cookieName];
 
                 var theme = request["theme"];
@@ -487,6 +499,8 @@ namespace Rock.Web.Cache
 
         /// <inheritdoc cref="Site.EnablePageViewGeoTracking" />
         [DataMember]
+        [RockObsolete( "1.17" )]
+        [Obsolete( "Geolocation lookups are now performed on all interactions, regardless of this setting." )]
         public bool EnablePageViewGeoTracking { get; private set; }
 
         /// <inheritdoc cref="Site.DisablePredictableIds" />
@@ -575,7 +589,9 @@ namespace Rock.Web.Cache
             ThumbnailFileUrl = site.ThumbnailFileUrl;
             LatestVersionDateTime = site.LatestVersionDateTime;
             EnableExclusiveRoutes = site.EnableExclusiveRoutes;
+#pragma warning disable CS0618 // Type or member is obsolete
             EnablePageViewGeoTracking = site.EnablePageViewGeoTracking;
+#pragma warning restore CS0618 // Type or member is obsolete
             DisablePredictableIds = site.DisablePredictableIds;
             EnableVisitorTracking = site.EnableVisitorTracking;
             EnablePersonalization = site.EnablePersonalization;
@@ -718,16 +734,6 @@ namespace Rock.Web.Cache
         #region Static Methods
 
         /// <summary>
-        /// Flushes this instance.
-        /// </summary>
-        [Obsolete("This will not work with a distributed cache system such as Redis. Flush the Site from the cache instead.", true)]
-        [RockObsolete("1.10")]
-        public static void RemoveSiteDomains()
-        {
-            _siteDomains = new ConcurrentDictionary<string, int?>();
-        }
-
-        /// <summary>
         /// Returns site based on domain
         /// </summary>
         /// <param name="host">The host.</param>
@@ -752,7 +758,7 @@ namespace Rock.Web.Cache
                 }
                 else
                 {
-                    _siteDomains.AddOrUpdate( host, (int?)null, ( k, v ) => (int?)null );
+                    _siteDomains.AddOrUpdate( host, ( int? ) null, ( k, v ) => ( int? ) null );
                 }
             }
 

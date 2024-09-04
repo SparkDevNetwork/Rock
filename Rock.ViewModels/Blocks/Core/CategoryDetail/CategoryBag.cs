@@ -76,6 +76,9 @@ namespace Rock.ViewModels.Blocks.Core.CategoryDetail
         /// </summary>
         public Guid? RootCategoryGuid { get; set; }
 
-
+        /// <summary>
+        /// Gets or sets if the delete option should be shown on the remote device.
+        /// </summary>
+        public bool IsDeletable { get; set; }
     }
 }

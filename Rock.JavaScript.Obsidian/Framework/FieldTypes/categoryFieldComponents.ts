@@ -22,6 +22,8 @@ import TextBox from "@Obsidian/Controls/textBox.obs";
 import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
 import { ConfigurationValueKey } from "./categoryField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { Guid } from "@Obsidian/Types";
+import { toGuidOrNull } from "@Obsidian/Utility/guid";
 
 export const EditComponent = defineComponent({
     name: "CategoryField.Edit",
@@ -44,9 +46,9 @@ export const EditComponent = defineComponent({
             emit("update:modelValue", JSON.stringify(internalValue.value));
         });
 
-        const entityTypeGuid = computed((): string | null | undefined => {
+        const entityTypeGuid = computed<Guid | null>(() => {
             const entityType = JSON.parse(props.configurationValues[ConfigurationValueKey.EntityTypeName] ?? "{}") as ListItemBag;
-            return entityType?.value;
+            return toGuidOrNull(entityType?.value);
         });
 
         return {
@@ -149,7 +151,7 @@ export const ConfigurationComponent = defineComponent({
 
     template: `
 <div>
-    <EntityTypePicker label="Entity Type" v-model="entityType" help="The type of entity to display categories for." />
+    <EntityTypePicker label="Entity Type" v-model="entityType" help="The type of entity to display categories for." showBlankItem />
     <TextBox v-model="qualifierColumn" label="Qualifier Column" help="Entity column qualifier."/>
     <TextBox v-model="qualifierValue" label="Qualifier Value" text="Yes" help="Entity column value." />
 </div>

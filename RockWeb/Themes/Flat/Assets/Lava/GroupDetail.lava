@@ -1,3 +1,28 @@
+{% comment %}
+    This is the default lava template for the GroupDetail block
+    Available Lava Fields:
+
+    Group - The Group that we are viewing
+    CurrentPerson - The Person that we are viewing (and the person that is logged in)
+
+    AllowedActions.View - If this is true, the current user is allowed to view the page
+    AllowedActions.ManageMembers - If this is true, the current user can edit or delete group members and send communications
+    AllowedActions.Edit - If this is true, the current user can edit or delete the group and its members and also send communications
+    AllowedActions.Administrate - If this is true, the current user is allowed to view the page
+
+    LinkedPages.PersonDetailPage - Path to page for more information on a group member
+    LinkedPages.RosterPage - Path to page to view the roster
+    LinkedPages.AttendancePage - Path page to manage the group's attendance
+    LinkedPages.CommunicationPage - Path to the communication page for sending emails to the group members
+    LinkedPages.AlternateCommunicationPage - Path to the communication page for sending an alternate communication to the group members
+
+    CurrentPage.Path - The URL to the current page
+    CurrentPage.Id - The current page's Id
+
+    ButtonVisibility.ShowEmailGroupLeadersButton - If this is true, the Email Group Leaders button should be visible
+    ButtonVisibility.ShowEmailGroupLeadersButton - If this is true, the Email Roster Parents button should be visible
+{% endcomment %}
+
 {% if AllowedActions.View == true or AllowedActions.Edit == true or AllowedActions.Administrate == true %}
 
 	{% assign countActive = -1 %}
@@ -313,8 +338,21 @@
 					</a>
 				{% endif %}
 			{% endif %}
+            {% if ButtonVisibility.ShowEmailGroupLeadersButton == true %}
+                {% if AllowedActions.Edit == true or AllowedActions.ManageMembers == true %}
+                    <a href="#" onclick="{{ '' | Postback:'EmailGroupLeaders' }}" class="btn btn-default btn-xs">
+                        <i class="fa fa-envelope-o"></i> Email Group Leaders
+                    </a>
+                {% endif %}
+            {% endif %}
+            {% if ButtonVisibility.ShowEmailRosterParentsButton == true %}
+                {% if AllowedActions.Edit == true or AllowedActions.ManageMembers == true %}
+                    <a href="#" onclick="{{ '' | Postback:'EmailRosterParents' }}" class="btn btn-default btn-xs">
+                        <i class="fa fa-envelope-o"></i> Email Roster Parents
+                    </a>
+                {% endif %}
+            {% endif %}
 		</div>
-		</p>
 	{% endif %}
 
 {% else %}

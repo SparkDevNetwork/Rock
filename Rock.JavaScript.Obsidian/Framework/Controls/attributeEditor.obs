@@ -5,7 +5,8 @@
             <div class="col-md-6">
                 <TextBox v-model="attributeName"
                          label="Name"
-                         rules="required" />
+                         rules="required"
+                         @blur="populateAttributeKey" />
             </div>
 
             <div class="col-md-6">
@@ -79,9 +80,23 @@
         <Panel title="Advanced Settings" hasCollapse>
             <div class="row">
                 <div class="col-md-6">
+
+                    <TextBox v-if="isIconCssClassVisible"
+                             label="Icon CSS Class"
+                             v-model="iconCssClass" />
+
+                    <ColorPicker label="Attribute Color"
+                                 v-model="attributeColor"
+                                 help="The color used to visually distinguish this attribute." />
+
                     <CheckBox label="Enable History"
                               v-model="isHistoryEnabled"
                               help="If selected, changes to the value of this attribute will be stored in attribute value history."
+                              text="Yes" />
+
+                    <CheckBox label="Suppress History Logging"
+                              v-model="isSuppressHistoryLogging"
+                              help="If selected, changes to the attribute values will not be recorded into the generic History log table."
                               text="Yes" />
 
                     <CheckBox v-if="isAllowSearchVisible"
@@ -130,6 +145,7 @@
     import { computed, PropType, ref, watch } from "vue";
     import CheckBox from "./checkBox.obs";
     import TextBox from "./textBox.obs";
+    import ColorPicker from "./colorPicker.obs";
     import { FieldTypeEditorUpdateAttributeConfigurationOptionsBag } from "@Obsidian/ViewModels/Controls/fieldTypeEditorUpdateAttributeConfigurationOptionsBag";
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
     import CategoryPicker from "./categoryPicker.obs";
@@ -137,6 +153,7 @@
     import StaticFormControl from "./staticFormControl.obs";
     import Panel from "./panel.obs";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -145,8 +162,7 @@
         },
 
         attributeEntityTypeGuid: {
-            type: String as PropType<Guid>,
-            default: ""
+            type: String as PropType<Guid | undefined>
         },
 
         isAnalyticsVisible: {
@@ -174,6 +190,11 @@
             default: false
         },
 
+        isIconCssClassVisible: {
+            type: Boolean,
+            default: true
+        },
+
         reservedKeyNames: {
             type: Array as PropType<string[]>,
             default: []
@@ -199,11 +220,14 @@
     const isIndexingEnabled = ref(props.modelValue?.isIndexEnabled ?? false);
     const isAnalyticsEnabled = ref(props.modelValue?.isAnalytic ?? false);
     const isAnalyticsHistoryEnabled = ref(props.modelValue?.isAnalyticHistory ?? false);
+    const isSuppressHistoryLogging = ref(props.modelValue?.isSuppressHistoryLogging ?? false);
+    const attributeColor = ref(props.modelValue?.attributeColor ?? "");
+    const iconCssClass = ref(props.modelValue?.iconCssClass ?? "");
     const preHtml = ref(props.modelValue?.preHtml ?? "");
     const postHtml = ref(props.modelValue?.postHtml ?? "");
     const categories = ref([...(props.modelValue?.categories ?? [])]);
     const fieldTypeValue = ref<FieldTypeEditorUpdateAttributeConfigurationOptionsBag>({
-        fieldTypeGuid: props.modelValue?.fieldTypeGuid ?? "",
+        fieldTypeGuid: props.modelValue?.realFieldTypeGuid || props.modelValue?.fieldTypeGuid || emptyGuid,
         configurationValues: { ...(props.modelValue?.configurationValues ?? {}) },
         defaultValue: props.modelValue?.defaultValue ?? ""
     });
@@ -221,6 +245,21 @@
 
     const attributeGuid = computed((): Guid | undefined | null => props.modelValue?.guid);
 
+    function populateAttributeKey(): void {
+        // if the attribute key hasn't been filled in yet, populate it with the attribute name minus whitespace
+        if (attributeKey.value.trim() == "" && attributeName.value.trim() != "") {
+            let keyValue = attributeName.value.trim().replace(/[^a-zA-Z0-9_.-]/g, "");
+            let newKeyValue = keyValue;
+
+            let i = 1;
+            while (props.reservedKeyNames.includes(newKeyValue)) {
+                newKeyValue = keyValue + i++;
+            }
+
+            attributeKey.value = newKeyValue;
+        }
+    }
+
     watch([
         attributeName,
         abbreviatedName,
@@ -236,10 +275,13 @@
         isAnalyticsHistoryEnabled,
         isHistoryEnabled,
         isIndexingEnabled,
+        iconCssClass,
+        attributeColor,
         preHtml,
         postHtml,
         categories,
-        fieldTypeValue],
+        fieldTypeValue,
+        isSuppressHistoryLogging],
         () => {
             const newModelValue: PublicEditableAttributeBag = {
                 ...(props.modelValue ?? { isSystem: false }),
@@ -257,12 +299,15 @@
                 isAnalyticHistory: isAnalyticsHistoryEnabled.value,
                 isEnableHistory: isHistoryEnabled.value,
                 isIndexEnabled: isIndexingEnabled.value,
+                iconCssClass: iconCssClass.value,
+                attributeColor: attributeColor.value,
                 preHtml: preHtml.value,
                 postHtml: postHtml.value,
                 categories: [...categories.value],
                 fieldTypeGuid: fieldTypeValue.value.fieldTypeGuid,
                 configurationValues: { ...fieldTypeValue.value.configurationValues },
-                defaultValue: fieldTypeValue.value.defaultValue
+                defaultValue: fieldTypeValue.value.defaultValue,
+                isSuppressHistoryLogging: isSuppressHistoryLogging.value
             };
 
             emit("update:modelValue", newModelValue);

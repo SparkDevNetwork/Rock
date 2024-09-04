@@ -66,6 +66,9 @@ namespace Rock.Client
         /// <summary />
         public int RegistrationTemplateId { get; set; }
 
+        /// <summary />
+        public int? SignatureDocumentId { get; set; }
+
         /// <summary>
         /// Leave this as NULL to let Rock set this
         /// </summary>
@@ -109,6 +112,7 @@ namespace Rock.Client
             this.PersonAliasId = source.PersonAliasId;
             this.RegistrationId = source.RegistrationId;
             this.RegistrationTemplateId = source.RegistrationTemplateId;
+            this.SignatureDocumentId = source.SignatureDocumentId;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;
             this.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

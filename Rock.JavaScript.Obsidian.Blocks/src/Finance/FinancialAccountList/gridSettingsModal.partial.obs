@@ -1,0 +1,121 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Settings"
+           saveText="Save"
+           @save="onSave">
+        <SectionHeader title="Filters" />
+
+        <div class="row">
+            <div class="col-md-4">
+                <TextBox v-model="name"
+                         label="Name" />
+            </div>
+
+            <div class="col-md-4">
+                <CampusPicker v-model="campus"
+                              label="Campus"
+                              includeInactive
+                              forceVisible
+                              showBlankItem />
+            </div>
+
+            <div class="col-md-4">
+                <DropDownList v-model="isPublic"
+                              label="Public"
+                              :items="yesNoOptions" />
+            </div>
+
+            <div class="col-md-4">
+                <DropDownList v-model="isActive"
+                              label="Active"
+                              :items="yesNoOptions" />
+            </div>
+
+            <div class="col-md-4">
+                <DropDownList v-model="isTaxDeductible"
+                              label="Tax Deductible"
+                              :items="yesNoOptions" />
+            </div>
+
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
+    import { ref, PropType, watch } from "vue";
+    import { GridSettingsOptions } from "./types.partial";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GridSettingsOptions): void;
+        (e: "update:visible", value: boolean): void;
+        (e: "close"): void;
+    }>();
+
+    const name = ref(props.modelValue.name ?? "");
+    const campus = ref(props.modelValue.campus ?? null);
+    const isActive = ref(props.modelValue.isActive ?? "");
+    const isPublic = ref(props.modelValue.isPublic ?? "");
+    const isTaxDeductible = ref(props.modelValue.isTaxDeductible ?? "");
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+    const yesNoOptions = [
+        {
+            text: "Yes",
+            value: "Yes"
+        },
+        {
+            text: "No",
+            value: "No"
+        }
+    ] as ListItemBag[];
+
+    function onSave(): void {
+        const value: GridSettingsOptions = {
+            name: name.value,
+            campus: campus.value,
+            isActive: isActive.value,
+            isPublic: isPublic.value,
+            isTaxDeductible: isTaxDeductible.value
+        };
+
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
+
+        isVisible.value = false;
+    }
+
+    watch(() => props.modelValue, () => {
+        name.value = props.modelValue.name ?? "";
+        campus.value = props.modelValue.campus ?? null;
+        isActive.value = props.modelValue.isActive ?? "";
+        isPublic.value = props.modelValue.isPublic ?? "";
+        isTaxDeductible.value = props.modelValue.isTaxDeductible ?? "";
+    });
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            emit("close");
+        }
+    });
+</script>

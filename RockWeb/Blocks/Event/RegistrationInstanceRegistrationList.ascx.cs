@@ -180,12 +180,12 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 ShowDetail();
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -383,12 +383,22 @@ namespace RockWeb.Blocks.Event
                 var lBalance = e.Row.FindControl( "lBalance" ) as Literal;
                 if ( lBalance != null )
                 {
-                    decimal balanceDue = registration.DiscountedCost - totalPaid;
+                    var balanceDue = registration.DiscountedCost - totalPaid;
                     lBalance.Visible = _instanceHasCost || discountedCost > 0.0M;
+
+                    var isPaymentPlanActive = registration.IsPaymentPlanActive;
+
                     string balanceCssClass;
                     if ( balanceDue > 0.0m )
                     {
-                        balanceCssClass = "label-danger";
+                        if ( !isPaymentPlanActive )
+                        {
+                            balanceCssClass = "label-danger";
+                        }
+                        else
+                        {
+                            balanceCssClass = "label-warning";
+                        }
                     }
                     else if ( balanceDue < 0.0m )
                     {
@@ -399,10 +409,13 @@ namespace RockWeb.Blocks.Event
                         balanceCssClass = "label-success";
                     }
 
-                    lBalance.Text = string.Format(@"<span class='label {0}'>{1}</span><input type='hidden' class='js-has-payments' value='{2}' />",
-                        balanceCssClass,
-                        balanceDue.FormatAsCurrency(),
-                        hasPayments.ToTrueFalse() );
+                    var paymentPlanIcon = string.Empty;
+                    if ( isPaymentPlanActive )
+                    {
+                        paymentPlanIcon = "<i class='fa fa-calendar-day'></i>";
+                    }
+
+                    lBalance.Text = $"<span class='label {balanceCssClass}'>{balanceDue.FormatAsCurrency()}{paymentPlanIcon}</span><input type='hidden' class='js-has-payments' value='{hasPayments.ToTrueFalse()}' />";
                 }
             }
         }
@@ -589,7 +602,7 @@ namespace RockWeb.Blocks.Event
                     }
 
                     var qry = new RegistrationService( rockContext )
-                        .Queryable( "PersonAlias.Person,Registrants.PersonAlias.Person,Registrants.Fees.RegistrationTemplateFee,Campus" )
+                        .Queryable( "PersonAlias.Person,Registrants.PersonAlias.Person,Registrants.Fees.RegistrationTemplateFee,Campus,PaymentPlanFinancialScheduledTransaction" )
                         .AsNoTracking()
                         .Where( r =>
                             r.RegistrationInstanceId == instanceId.Value &&

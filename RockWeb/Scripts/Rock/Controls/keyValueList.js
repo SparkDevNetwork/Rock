@@ -30,23 +30,37 @@
         raiseKeyValueList();
     }
 
+    function removeKeyValue(e) {
+        var $rows = $(e).closest('span.key-value-rows');
+        $(e).closest('div.controls-row').remove();
+        Rock.controls.modal.updateSize($(e));
+        updateKeyValues($rows);
+    }
+
     Sys.Application.add_load(function () {
 
         $('a.key-value-add').on('click', function (e) {
             e.preventDefault();
             var $keyValueList = $(this).closest('.key-value-list');
             $keyValueList.find('.key-value-rows').append($keyValueList.find('.js-value-html').val());
-            updateKeyValues($(this));
             Rock.controls.modal.updateSize($(this));
+            $('a.key-value-remove').off('click');
+            $('a.key-value-remove').on('click', function (e) {
+                e.preventDefault();
+                removeKeyValue(this);
+            });
+            $('.js-key-value-input').off('change');
+            $('.js-key-value-input').on('change', function (e) {
+                e.preventDefault();
+                updateKeyValues($(this));
+            });
+            updateKeyValues($(this));
         });
 
         $('a.key-value-remove').off('click');
         $('a.key-value-remove').on('click', function (e) {
             e.preventDefault();
-            var $rows = $(this).closest('span.key-value-rows');
-            $(this).closest('div.controls-row').remove();
-            updateKeyValues($rows);
-            Rock.controls.modal.updateSize($(this));
+            removeKeyValue(this);
         });
 
         $('.js-key-value-input').off('change');

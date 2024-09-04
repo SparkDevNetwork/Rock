@@ -4,13 +4,6 @@
 
         <ValueDetailList :modelValue="topValues" />
 
-        <div class="row">
-            <div class="col-md-12">
-                <NotificationBox v-if="rebuildActionSuccessMessage" alertType="info">{{ rebuildActionSuccessMessage }}</NotificationBox>
-                <NotificationBox v-if="notificationMessage" alertType="info">{{ notificationMessage }}</NotificationBox>
-            </div>
-        </div>
-
         <div class="row d-flex flex-wrap">
             <div v-if="!hideControls" class="col-xs-12 col-sm-6">
                 <h5>Successful Attempts</h5>
@@ -29,6 +22,10 @@
                             :isLoading="isRefreshLoading">
                     <i class="fa fa-refresh"></i>
                 </RockButton>
+            </div>
+
+            <div class="col-md-12">
+                <NotificationBox v-if="notificationMessage" alertType="info">{{ notificationMessage }}</NotificationBox>
             </div>
 
             <div v-if="!hideChart" style="height: 350px;" class="col-xs-12">
@@ -67,7 +64,10 @@
             required: true
         },
 
-        rebuildActionSuccessMessage: String
+        rebuildActionSuccessMessage: {
+            type: Object as PropType<string | null>,
+            required: false
+        },
     });
 
     const invokeBlockAction = useInvokeBlockAction();
@@ -143,6 +143,10 @@
     // Watch for changes to the rebuild success message and refresh the chart if the achievement type is rebuild succcessfully.
     watch(() => props.rebuildActionSuccessMessage, async () => {
         if (props.rebuildActionSuccessMessage) {
+            filterDate.value = {
+                rangeType: RangeType.Current,
+                timeUnit: TimeUnit.Year
+            };
             await onRefresh();
         }
     });
@@ -157,7 +161,7 @@
         isRefreshLoading.value = true;
         try {
             const result = await invokeBlockAction<{ chartData: string }>("RefreshChart", {
-                dateRange: slidingDateRangeToString(filterDate.value)
+                dateRange: filterDate.value ? slidingDateRangeToString(filterDate.value) : ""
             });
 
             if (result.isSuccess && result.data) {
@@ -167,7 +171,12 @@
             else {
                 chartData.value = {} as ChartData;
                 hideChart.value = true;
-                notificationMessage.value = result.errorMessage ?? "Unknown error while trying to refresh chart.";
+                if (result.statusCode == 404) {
+                    notificationMessage.value = result.errorMessage ?? "";
+                }
+                else {
+                    notificationMessage.value = result.errorMessage ?? "Unknown error while trying to refresh chart.";
+                }
             }
         }
         finally {

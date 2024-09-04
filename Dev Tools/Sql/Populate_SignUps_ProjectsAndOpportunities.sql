@@ -1,6 +1,6 @@
 
 /********************************************************************************************************************
- Sign-Ups - Add/remove Projects and Opportunities sample data.
+ Sign-Ups - Add/remove sample data.
 
  NOTE: This script assumes Sample Data (Power Tools > Sample Data) has been added for Rock version 1.15.0 or higher.
 *********************************************************************************************************************/
@@ -1392,7 +1392,8 @@ BEGIN -- region INSERT/DELETE records
                 BEGIN
                     INSERT INTO [GroupMemberAssignment]
                     (
-                        [GroupMemberId]
+                        [GroupId]
+                        , [GroupMemberId]
                         , [LocationId]
                         , [ScheduleId]
                         , [CreatedDateTime]
@@ -1403,7 +1404,8 @@ BEGIN -- region INSERT/DELETE records
                     )
                     VALUES
                     (
-                        @GroupMemberId
+                        @GroupId
+                        , @GroupMemberId
                         , @LocationId
                         , @ScheduleId
                         , @Now

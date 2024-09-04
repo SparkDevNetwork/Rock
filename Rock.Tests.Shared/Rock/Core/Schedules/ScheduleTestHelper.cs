@@ -52,18 +52,31 @@ namespace Rock.Tests
                 throw new ArgumentException( nameof( dates ) );
             }
 
-            // Get the template calendar event.
-            var firstDate = dates.First().Date.Add( startTime.GetValueOrDefault() );
-            firstDate = DateTime.SpecifyKind( firstDate, DateTimeKind.Unspecified );
+            if ( ( startTime.HasValue || eventDuration.HasValue ) && !( startTime.HasValue && eventDuration.HasValue ) )
+            {
+                throw new Exception( "If StartTime or Duration is specified, both must be provided." );
+            }
 
-            //var startDateTime = dates.First().Add( startTime.GetValueOrDefault() );
+            // Get the template calendar event.
+            var firstDate = dates.First().Date;
+            if ( startTime.HasValue )
+            {
+                firstDate = firstDate.Add( startTime.Value );
+            }
+
+            firstDate = DateTime.SpecifyKind( firstDate, DateTimeKind.Unspecified );
 
             var calendarEvent = GetCalendarEvent( firstDate, eventDuration );
 
             var recurrenceDates = new PeriodList();
             foreach ( var datetime in dates )
             {
-                recurrenceDates.Add( new CalDateTime( datetime ) );
+                var startDateTime = datetime.Date;
+                if ( startTime.HasValue )
+                {
+                    startDateTime = startDateTime.Add( startTime.Value );
+                }
+                recurrenceDates.Add( new CalDateTime( startDateTime ) );
             }
 
             calendarEvent.RecurrenceDates.Add( recurrenceDates );
@@ -108,21 +121,29 @@ namespace Rock.Tests
                 throw new Exception( "The Event Start Date must have a Kind of Unspecified. Calendar Events do not store timezone information." );
             }
 
-            //eventDuration = eventDuration ?? new TimeSpan( 1, 0, 0 );
             var calendarEvent = new CalendarEvent
             {
                 DtStamp = new CalDateTime( eventStartDate.Year, eventStartDate.Month, eventStartDate.Day )
             };
 
-            var dtStart = new CalDateTime( eventStartDate );
-            dtStart.HasTime = true;
-            calendarEvent.DtStart = dtStart;
-
-            if ( eventDuration != null )
+            if ( eventDuration.HasValue )
             {
+                var dtStart = new CalDateTime( eventStartDate );
+                dtStart.HasTime = true;
+                calendarEvent.DtStart = dtStart;
+
                 var dtEnd = dtStart.Add( eventDuration.Value );
                 dtEnd.HasTime = true;
                 calendarEvent.DtEnd = dtEnd;
+            }
+            else
+            {
+                // If duration is not specified, assume this is an all-day event and ignore the start time.
+                var dtStart = new CalDateTime( eventStartDate.Year, eventStartDate.Month, eventStartDate.Day );
+                dtStart.HasTime = false;
+                calendarEvent.DtStart = dtStart;
+
+                calendarEvent.IsAllDay = true;
             }
 
             return calendarEvent;

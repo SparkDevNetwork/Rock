@@ -1,0 +1,279 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid v-if="config.options?.isBlockVisible"
+          :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          :title="itemTerm"
+          itemTerm="Defined Value"
+          :entityTypeGuid="EntityType.DefinedValue"
+          stickyHeader
+          liveUpdates
+          :showLaunchWorkflow="false"
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          @selectItem="onSelectItem">
+
+        <ReorderColumn @orderChanged="onOrderChanged" />
+
+        <TextColumn name="value"
+                    title="Value"
+                    field="value"
+                    :filter="textValueFilter"
+                    width="5%"
+                    visiblePriority="xs" />
+
+        <TextColumn v-if="config.options?.isCategorizedValuesEnabled"
+                    name="category"
+                    title="Category"
+                    field="category"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <TextColumn name="description"
+                    title="Description"
+                    field="description"
+                    :filter="textValueFilter"
+                    visiblePriority="md"
+                    width="45%"/>
+
+        <BooleanColumn name="isActive"
+                       title="Active"
+                       field="isActive"
+                       width="120"
+                       visiblePriority="xs" />
+
+        <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
+
+        <SecurityColumn v-if="config.options?.isSecurityOnValuesEnabled" />
+
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+    </Grid>
+
+    <Modal v-model="isModalOpen" title="Defined Value" saveText="Save" @save="onSaveDefinedValue">
+        <legend>
+            {{ modalTitle }}
+        </legend>
+        <fieldset>
+            <TextBox v-model="value"
+                     label="Value"
+                     rules="required" />
+
+            <TextBox v-model="description"
+                     label="Description"
+                     textMode="multiline" />
+
+            <CheckBox v-model="isActive"
+                      label="Active" />
+
+            <CategoryPicker v-if="config.options?.isCategorizedValuesEnabled"
+                            v-model="category"
+                            label="Category Picker"
+                            :multiple="false"
+                            :entityTypeGuid="EntityType.DefinedValue"
+                            entityTypeQualifierColumn="DefinedTypeId"
+                            :entityTypeQualifierValue="config.options?.entityTypeQualifierValue ?? ''"
+                            help="The category for the defined value. This will be used for the selection of the defined value." />
+
+            <AttributeValuesContainer v-model="attributeValues"
+                                      :attributes="attributes"
+                                      :showCategoryLabel="false"
+                                      :isEditMode="true" />
+
+        </fieldset>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { AttributeColumns, BooleanColumn, TextColumn, textValueFilter, DeleteColumn, ReorderColumn, SecurityColumn } from "@Obsidian/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import { DefinedValueListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/DefinedValueList/definedValueListOptionsBag";
+    import { DefinedValueBag } from "@Obsidian/ViewModels/Blocks/Core/DefinedValueList/definedValueBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { computed, reactive, ref, watch } from "vue";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+
+    const config = useConfigurationValues<ListBlockBox<DefinedValueListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+    const isModalOpen = ref(false);
+    const idKey = ref("");
+    const value = ref("");
+    const category = ref<ListItemBag | undefined>();
+    const description = ref("");
+    const isActive = ref(false);
+    const attributes = ref<Record<string, PublicAttributeBag>>({});
+    const attributeValues = ref<Record<string, string>>({});
+
+    // #endregion
+
+    //# region Computed Values
+
+    const itemTerm = computed((): string => {
+        return config.options?.definedTypeName ? config.options?.definedTypeName : "Defined Value";
+    });
+
+    const modalTitle = computed((): string => {
+        const operation = idKey.value ? "Edit" : "Add";
+        return `${operation} defined value for ${config.options?.definedTypeName}`;
+    });
+
+    //# endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    async function onSelectItem(key: string): Promise<void> {
+
+        const result = await invokeBlockAction<DefinedValueBag>("Edit", {
+            key
+        });
+
+        if (result.isSuccess && result.data) {
+            idKey.value = result.data.idKey ?? "";
+            value.value = result.data.value ?? "";
+            description.value = result.data.description ?? "";
+            category.value = result.data.category ?? {};
+            isActive.value = result.data.isActive;
+            attributes.value = result.data.attributes ?? {};
+            attributeValues.value = result.data.attributeValues ?? {};
+
+            isModalOpen.value = true;
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to edit defined value.");
+        }
+    }
+
+    /**
+     * Called when a row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete defined value.");
+        }
+    }
+
+    /**
+     * Called when the Add button has been clicked by the indivual.
+     */
+    async function onAddItem(): Promise<void> {
+        await onSelectItem("");
+    }
+
+    /**
+     * Called when a row has been dragged from one position to a new position.
+     *
+     * @param item The item that was moved to a new position.
+     * @param beforeItem The item that the first item was dropped before.
+     *
+     * @returns `true` if the operation succeeded; otherwise `false`.
+     */
+    async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        const result = await invokeBlockAction<string>("ReorderItem", {
+            key: item["idKey"],
+            beforeKey: beforeItem?.["idKey"] ?? null
+        });
+
+        return result.isSuccess;
+    }
+
+    /**
+    * Sends a request to the server the save the Defined Value.
+    */
+    async function onSaveDefinedValue(): Promise<void> {
+        const bag: DefinedValueBag = {
+            idKey: idKey.value,
+            value: value.value,
+            category: category.value,
+            description: description.value,
+            isActive: isActive.value,
+            attributes: attributes.value,
+            attributeValues: attributeValues.value
+        };
+
+        const result = await invokeBlockAction<string>("Save", {
+            bag
+        });
+
+        if (result.isSuccess) {
+            gridDataSource.value = loadGridData();
+            isModalOpen.value = false;
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to save Defined Value.");
+        }
+    }
+
+    /**
+    * Resets the Defined Value Modal values.
+    */
+    function resetModal(): void {
+        idKey.value = "";
+        value.value = "";
+        description.value = "";
+        category.value = {};
+        isActive.value = false;
+        attributes.value = {};
+        attributeValues.value = {};
+    }
+
+    // #endregion
+
+    watch(isModalOpen, () => {
+        if (!isModalOpen) {
+            resetModal();
+        }
+    });
+
+    gridDataSource.value = loadGridData();
+</script>

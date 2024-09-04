@@ -23,6 +23,12 @@
 
 /** Static Guids used by the Rock application */
 export const DefinedValue = {
+    /** The attendance record came from a kiosk. */
+    AttendanceSourceKiosk: "9A21D7EB-BCB5-4466-B62F-70EC5008B6B9",
+    /** The attendance record came from a legacy kiosk. */
+    AttendanceSourceLegacyKiosk: "0B25A627-679B-4B73-AA84-305DEF24815A",
+    /** The attendance record came from a mobile check-in. */
+    AttendanceSourceMobile: "972E8841-A3C9-4DDD-BD24-A414C0290331",
     /** Benevolence Approved */
     BenevolenceApproved: "18D3A2DA-F2BA-49AE-83EB-7E60DCD18A3B",
     /** Benevolence Denied */
@@ -238,6 +244,8 @@ export const DefinedValue = {
     InteractionchanneltypeCommunication: "55004F5C-A8ED-7CB7-47EE-5988E9F8E0A8",
     /** Interaction Channel Type: Content Channel */
     InteractionchanneltypeContentchannel: "F1A19D09-E010-EEB3-465A-940A6F023CEB",
+    /** Interaction Channel Type: Interaction Intents */
+    InteractionchanneltypeInteractionIntents: "A64DA89B-F634-4D58-ADC7-32243F84224B",
     /** Interaction Channel Type: System Events */
     InteractionchanneltypeSystemEvents: "5919214F-9C59-4913-BE4E-0DFB6A05F528",
     /** Interaction Channel Type: UrlShortener */
@@ -380,6 +388,16 @@ export const DefinedValue = {
     NoncashAssetStocksandbonds: "B29D7D89-357F-47F9-BE7B-52AFF3892007",
     /** Non-Cash Asset Type: Vehicles. */
     NoncashAssetVehicles: "C1DCBE74-88FE-4876-8943-5783499CBBE0",
+    /**
+     * Open AI's high-intelligence flagship model for complex, multi-step tasks.
+     * GPT-4o is cheaper and faster than GPT-4 Turbo.
+     */
+    OpenAiGpt4o: "4A315E26-8FD9-4F4E-A178-7F7CB4D9BDB7",
+    /**
+     * Open AI's affordable and intelligent small model for fast, lightweight tasks.
+     * GPT-4o mini is cheaper and more capable than GPT-3.5 Turbo.
+     */
+    OpenAiGpt4oMini: "D29074BA-FE6D-483D-8C4C-B7114AA050A5",
     /** The PBX CDR medium value */
     PbxCdrMediumValue: "B3904B57-62A2-57AC-43EA-94D4DEBA3D51",
     /** Person Connection Status - Attendee */
@@ -504,6 +522,12 @@ export const DefinedValue = {
     StructureContentEditorDefault: "09B25845-B879-4E69-87E9-003F9380B8DD",
     /** Structure Content Editor Message Notes */
     StructureContentEditorMessageNotes: "31C63FB9-1365-4EEF-851D-8AB9A188A06C",
+    /** Check-in */
+    ThemePurposeCheckin: "2BBB1A44-708E-4469-80DE-4AAE6227BEF8",
+    /** Website Legacy */
+    ThemePurposeWebsiteLegacy: "4E1477FD-B105-4E4B-99BB-E5F1B964DC94",
+    /** Website Nextgen */
+    ThemePurposeWebsiteNextgen: "B177E07F-7E07-4D7B-AFA7-9DE163797659",
     /** Every two weeks */
     TransactionFrequencyBiweekly: "72990023-0D43-4554-8D32-28461CAB8920",
     /** A Frequency of First and Fifteenth */

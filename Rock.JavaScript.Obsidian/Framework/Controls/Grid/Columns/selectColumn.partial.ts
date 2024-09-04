@@ -20,6 +20,10 @@ import { Component, defineComponent, PropType } from "vue";
 import SelectCell from "../Cells/selectCell.partial.obs";
 import SelectHeaderCell from "../Cells/selectHeaderCell.partial.obs";
 
+/**
+ * Displays a checkbox that can be used to select the row for bulk operations
+ * performed by grid actions.
+ */
 export default defineComponent({
     props: {
         ...standardColumnProps,
@@ -52,6 +56,11 @@ export default defineComponent({
         width: {
             type: String as PropType<string>,
             default: "56px"
-        }
+        },
+
+        columnType: {
+            type: String as PropType<string>,
+            default: "select"
+        },
     }
 });

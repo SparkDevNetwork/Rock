@@ -939,6 +939,17 @@ namespace RockWeb.Blocks.Communication
             // Get the base query, excluding items that are current being processed.
             var qryCommunications = new CommunicationService( rockContext ).Queryable().Where( c => c.Status != CommunicationStatus.Transient );
 
+            var unAuthorizedToViewSystemPhoneNumberIds = SystemPhoneNumberCache.All()
+                .Where( sp => !sp.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
+                .Select( sp => sp.Id )
+                .ToList();
+
+            // Apply Filter: SystemPhoneNumber Authorization
+            if ( unAuthorizedToViewSystemPhoneNumberIds.Count > 0 )
+            {
+                qryCommunications = qryCommunications.Where( c => !c.SmsFromSystemPhoneNumberId.HasValue || !unAuthorizedToViewSystemPhoneNumberIds.Contains( c.SmsFromSystemPhoneNumberId.Value ) );
+            }
+
             // Apply Filter: Subject
             if ( !string.IsNullOrWhiteSpace( subject ) )
             {
@@ -1078,13 +1089,13 @@ namespace RockWeb.Blocks.Communication
             mergeValues.Add( "Communication", item );
 
             // Add Page Links.
-            AddMergeFieldForPageLink( mergeValues, "DetailUrl", LinkedPageUrl( AttributeKey.CommunicationDetailPage ), $"CommunicationId={ item.Id }" );
+            AddMergeFieldForPageLink( mergeValues, "DetailUrl", LinkedPageUrl( AttributeKey.CommunicationDetailPage ), $"CommunicationId={item.Id}" );
             AddMergeFieldForPageLink( mergeValues, "ListSegmentDetailUrlTemplate", LinkedPageUrl( AttributeKey.CommunicationSegmentDetailPage ), "DataViewId=@segmentId" );
 
             if ( includeDetailInfo )
             {
-                AddMergeFieldForPageLink( mergeValues, "TemplateDetailUrl", LinkedPageUrl( AttributeKey.CommunicationTemplateDetailPage ), $"TemplateId={ item.Detail.CommunicationTemplateId }" );
-                AddMergeFieldForPageLink( mergeValues, "ListDetailUrl", LinkedPageUrl( AttributeKey.CommunicationListDetailPage ), $"GroupId={ item.Detail.CommunicationListId }" );
+                AddMergeFieldForPageLink( mergeValues, "TemplateDetailUrl", LinkedPageUrl( AttributeKey.CommunicationTemplateDetailPage ), $"TemplateId={item.Detail.CommunicationTemplateId}" );
+                AddMergeFieldForPageLink( mergeValues, "ListDetailUrl", LinkedPageUrl( AttributeKey.CommunicationListDetailPage ), $"GroupId={item.Detail.CommunicationListId}" );
             }
 
             // Create the "More" PostBack link and arguments.
@@ -1122,7 +1133,7 @@ namespace RockWeb.Blocks.Communication
 
                 if ( !string.IsNullOrWhiteSpace( pageLinkQueryParameters ) )
                 {
-                    url += $"?{ pageLinkQueryParameters }";
+                    url += $"?{pageLinkQueryParameters}";
                 }
 
                 mergeValues.Add( pageLinkKey, url );
@@ -1210,7 +1221,7 @@ namespace RockWeb.Blocks.Communication
                     var file = _gridBinaryFileService.Get( info.Detail.InternalPushImageFileId.ToIntSafe( 0 ) );
                     if ( file != null )
                     {
-                        info.Detail.Attachments = new List<string>() { $"{System.Web.VirtualPathUtility.ToAbsolute( "~" )}GetImage.ashx?id={ file.Id }" };
+                        info.Detail.Attachments = new List<string>() { FileUrlHelper.GetImageUrl( file.Id ) };
                     }
                 }
             }
@@ -1226,7 +1237,7 @@ namespace RockWeb.Blocks.Communication
                         var file = _gridBinaryFileService.Get( attachment.BinaryFileId );
                         if ( file != null )
                         {
-                            info.Detail.Attachments.Add( $"{System.Web.VirtualPathUtility.ToAbsolute( "~" )}GetFile.ashx?id={ file.Id }" );
+                            info.Detail.Attachments.Add( FileUrlHelper.GetFileUrl( file.Id ) );
                         }
                     }
                 }
@@ -1584,7 +1595,7 @@ namespace RockWeb.Blocks.Communication
 
             #region Internal Fields used to store data for further processing.
 
-            internal Interaction InternalInteraction {get;set;}
+            internal Interaction InternalInteraction { get; set; }
 
             #endregion
         }

@@ -43,9 +43,6 @@ namespace Rock
             var dictionary = new System.Collections.Generic.Dictionary<string, string>();
             string[] nameValues = str.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
 
-            // url decode array items just in case they were UrlEncoded (See KeyValueListFieldType and the KeyValueList controls)
-            nameValues = nameValues.Select( s => HttpUtility.UrlDecode( s ) ).ToArray();
-
             // If we haven't found any pipes, check for commas
             if ( nameValues.Count() == 1 && nameValues[0] == str )
             {
@@ -57,7 +54,12 @@ namespace Rock
                 string[] nameAndValue = nameValue.Split( new char[] { '^' }, 2 );
                 if ( nameAndValue.Count() == 2 )
                 {
-                    dictionary[nameAndValue[0]] = nameAndValue[1];
+                    // URL Decode the key and value separately. This is to match
+                    // what actually happens in the JavaScript control. Otherwise
+                    // we can run into cases where we broke the value be decoding
+                    // everything at once.
+                    // (See KeyValueListFieldType and the KeyValueList controls)
+                    dictionary[HttpUtility.UrlDecode( nameAndValue[0] )] = HttpUtility.UrlDecode( nameAndValue[1] );
                 }
             }
 

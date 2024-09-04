@@ -16,8 +16,8 @@
 //
 
 using Newtonsoft.Json;
+
 using Rock.AI.Classes.ChatCompletions;
-using Rock.AI.Classes.TextCompletions;
 using Rock.AI.OpenAI.Utilities;
 
 namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.ChatCompletions

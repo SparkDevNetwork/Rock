@@ -120,8 +120,6 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 var calendarEventId = PageParameter( "EventCalendarId" ).AsInteger();
@@ -157,6 +155,8 @@ namespace RockWeb.Blocks.Event
 
                 ShowDialog();
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -590,7 +590,7 @@ namespace RockWeb.Blocks.Event
         protected void dlgContentChannel_SaveClick( object sender, EventArgs e )
         {
             ListItem li = ddlContentChannel.SelectedItem;
-            ContentChannelsState.AddOrIgnore( li.Value.AsGuid(), li.Text );
+            ContentChannelsState.TryAdd( li.Value.AsGuid(), li.Text );
 
             BindContentChannelsGrid();
 

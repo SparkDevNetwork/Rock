@@ -58,6 +58,7 @@
                                 </time>
                             </a>
                         </span>
+                        <div class="note-details text-muted">{{ note.isPinned ? "Pinned to Top" : "" }}</div>
                     </div>
 
                     <span v-if="note.isPrivate" class="label label-warning mr-3">Private</span>
@@ -96,7 +97,7 @@
                 <TransitionVerticalCollapse>
                     <div v-if="isAddNoteVisible">
                         <NoteEditor v-model="editNoteBag"
-                                    :noteTypes="noteOptions.selectableNoteTypes"
+                                    :noteTypes="noteTypes"
                                     :showAlert="noteOptions.showAlert"
                                     :showDate="noteOptions.showCreateDate"
                                     :showPrivate="noteOptions.showPrivate"
@@ -113,7 +114,7 @@
         <TransitionVerticalCollapse>
             <div v-if="isEditingNote">
                 <NoteEditor v-model="editNoteBag"
-                            :noteTypes="noteOptions.selectableNoteTypes"
+                            :noteTypes="noteTypes"
                             :showAlert="noteOptions.showAlert"
                             :showDate="noteOptions.showCreateDate"
                             :showPrivate="noteOptions.showPrivate"
@@ -179,7 +180,7 @@
     import { computed, inject, onBeforeUnmount, onMounted, PropType, ref } from "vue";
     import { ExpandedNoteBag, NoteOptions } from "./types.partial";
     import { noteOptionsSymbol, toCssClass, useEmitter } from "./utils.partial";
-    import { setPropertiesBoxValue, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { setPropertiesBoxValue, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { NoteBag } from "@Obsidian/ViewModels/Blocks/Core/Notes/noteBag";
@@ -208,16 +209,18 @@
     }>();
 
     const invokeBlockAction = useInvokeBlockAction();
+    const reloadBlock = useReloadBlock();
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const noteOptions = inject<NoteOptions>(noteOptionsSymbol)!;
+    const noteTypes = ref(noteOptions.noteTypes);
 
     // #region Values
 
     const isChildNotesVisible = ref(noteOptions.autoExpandReplies);
     const isAddNoteVisible = ref(false);
     const isEditingNote = ref(false);
-    const editNoteBag = ref<NoteEditBag>({ isAlert: false, isPrivate: false });
+    const editNoteBag = ref<NoteEditBag>({ isAlert: false, isPrivate: false, isPinned : false });
     const isSavingNote = ref(false);
 
     const emitter = useEmitter();
@@ -313,7 +316,7 @@
         const createdDateTime = RockDateTime.parseISO(props.note.createdDateTime ?? "");
 
         if (createdDateTime) {
-            text = createdDateTime.localDateTime.humanizeElapsed();
+            text = createdDateTime.localDateTime.toElapsedString();
         }
 
         return text;
@@ -331,7 +334,7 @@
         const editedDateTime = RockDateTime.parseISO(props.note.editedDateTime ?? "");
 
         if (editedDateTime && (!createdDateTime || editedDateTime.isLaterThan(createdDateTime))) {
-            let editedText = editedDateTime.localDateTime.humanizeElapsed();
+            let editedText = editedDateTime.localDateTime.toElapsedString();
 
             if (props.note.editedByName && props.note.editedByName !== props.note.createdByName) {
                 editedText += ` by ${props.note.editedByName}`;
@@ -441,6 +444,41 @@
         return datetime?.toASPString("MMMM d, yyyy, h:mm tt");
     }
 
+    /**
+     * Gets the note type that is appropriate for the current note.
+     * A top-level note defaults to the first selectable type, whereas a child note
+     * must have the same type as the parent note.
+     *
+     * @param parentNoteTypeIdKey The note type of the parent note, or `null`
+     * if this is a top-level note.
+     *
+     * @returns The identifier of the note type that should be assigned to the
+     * current note.
+     */
+    function getNoteTypeForCurrentNote(parentNoteTypeIdKey: string | undefined | null): string | null | undefined {
+        const noteTypeIdKey = parentNoteTypeIdKey ?? noteOptions.selectableNoteTypes[0].idKey;
+        return noteTypeIdKey;
+    }
+
+    /**
+     * Configures the available note types for the current note.
+     * A top-level note can have any selectable type, whereas a child note
+     * must have the same type as the parent.
+     *
+     * @param requiredNoteTypeIdKey The required note type, or `null`
+     * if the note type is user-selectable.
+     */
+    function configureAvailableNoteTypes(requiredNoteTypeIdKey: string | undefined | null): void {
+        // If a note type is not required, use the default configuration.
+        if (requiredNoteTypeIdKey === null) {
+            return;
+        }
+
+        // Restrict the note type selection to the required note type.
+        // The note type selector will not be displayed to the user.
+        noteTypes.value = noteOptions.selectableNoteTypes.filter(t => t.idKey === requiredNoteTypeIdKey);
+    }
+
     // #endregion
 
     // #region Event Handlers
@@ -466,6 +504,10 @@
         // Inform other components on this block that we are beginning an
         // edit operation.
         emitter.emit("beginEdit", subscriberKey);
+
+        // If this is a child note, the note type cannot be modified.
+        const noteTypeIdKey = props.note.parentNoteIdKey === null ? null : props.note.noteTypeIdKey;
+        configureAvailableNoteTypes(noteTypeIdKey);
 
         editNoteBag.value = result.data;
         isAddNoteVisible.value = false;
@@ -518,12 +560,17 @@
         // edit operation.
         emitter.emit("beginEdit", subscriberKey);
 
+        // Get the note type of the current note, and ensure that the reply has the same note type.
+        const noteTypeIdKey = getNoteTypeForCurrentNote(props.note.noteTypeIdKey);
+        configureAvailableNoteTypes(noteTypeIdKey);
+
         // Initialize the UI to display a blank note.
         editNoteBag.value = {
-            noteTypeIdKey: noteOptions.selectableNoteTypes[0].idKey,
+            noteTypeIdKey: noteTypeIdKey,
             text: "",
             isAlert: false,
             isPrivate: false,
+            isPinned: false,
             attributeValues: {}
         };
 
@@ -564,6 +611,7 @@
             setPropertiesBoxValue(request, "text", editNoteBag.value.text);
             setPropertiesBoxValue(request, "isAlert", editNoteBag.value.isAlert);
             setPropertiesBoxValue(request, "isPrivate", editNoteBag.value.isPrivate);
+            setPropertiesBoxValue(request, "isPinned", editNoteBag.value.isPinned);
             setPropertiesBoxValue(request, "attributeValues", editNoteBag.value.attributeValues);
 
             if (editNoteBag.value.createdDateTime) {
@@ -574,7 +622,7 @@
 
             // Make sure we can actually display the note. If we can't find the
             // note type then display an error instead.
-            const type = noteOptions.noteTypes?.find(nt => nt.idKey === result.data?.noteTypeIdKey);
+            const type = noteTypes.value?.find(nt => nt.idKey === result.data?.noteTypeIdKey);
 
             if (!result.isSuccess || !result.data || !type) {
                 await alert(result.errorMessage ?? "Unable to save the note.");
@@ -606,14 +654,34 @@
                         }
                     }
 
+                    // If not pinned to top, put it at the top of the list after all
+                    // other pinned to top and alerts.
+                    if (!expandedNote.isPinned) {
+                        while (index < notes.length && notes[index].isPinned) {
+                            index++;
+                        }
+                    }
+
                     notes.splice(index, 0, expandedNote);
                 }
                 else {
                     let index = 0;
 
-                    // If an alert, put it at as the last alert item.
-                    if (expandedNote.isAlert) {
+                    // If an alert and pinned item, put it at as the last alert and pinned item.
+                    if (expandedNote.isAlert && expandedNote.isPinned) {
+                        while (index < notes.length && (notes[index].isAlert && notes[index].isPinned)) {
+                            index++;
+                        }
+                    }
+                    // If an alert but not a pinned item, put it at as the last alert item.
+                    else if (expandedNote.isAlert && !expandedNote.isPinned) {
                         while (index < notes.length && notes[index].isAlert) {
+                            index++;
+                        }
+                    }
+                    // If not an alert but a pinned item, put it at as the last item.
+                    else if (!expandedNote.isAlert && expandedNote.isPinned) {
+                        while (index < notes.length && (notes[index].isAlert || notes[index].isPinned)) {
                             index++;
                         }
                     }
@@ -634,6 +702,7 @@
             // Inform other components in this block that we are done with
             // our edit operation.
             emitter.emit("endEdit", subscriberKey);
+            reloadBlock();
         }
     }
 

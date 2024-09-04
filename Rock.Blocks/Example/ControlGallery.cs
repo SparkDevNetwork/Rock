@@ -16,8 +16,11 @@
 //
 
 using System.ComponentModel;
+
 using Rock.Attribute;
 using Rock.Model;
+using Rock.Security.SecurityGrantRules;
+using Rock.ViewModels.Blocks.Example.ControlGallery;
 
 namespace Rock.Blocks.Example
 {
@@ -32,11 +35,55 @@ namespace Rock.Blocks.Example
     [IconCssClass( "fa fa-flask" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
+    [BooleanField( "Show Reflection",
+        Description = "When enabled, a Show Reflection option will be enabled that will add a second control to demonstrate two-way databinding.  This is typically only useful to developers when they are developing a new control.",
+        DefaultValue = "false",
+        Order = 0,
+        Key = AttributeKey.ShowReflection )]
+
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.OBSIDIAN_EXAMPLE_CONTROL_GALLERY )]
-    [Rock.SystemGuid.BlockTypeGuid( "6FAB07FF-D4C6-412B-B13F-7B881ECBFAD0")]
+    [Rock.SystemGuid.BlockTypeGuid( "6FAB07FF-D4C6-412B-B13F-7B881ECBFAD0" )]
     public class ControlGallery : RockBlockType
     {
+        public static class AttributeKey
+        {
+            public const string ShowReflection = "ShowReflection";
+        }
+
         /// <inheritdoc/>
         public override string ObsidianFileUrl => base.ObsidianFileUrl.ReplaceIfEndsWith( ".obs", string.Empty );
+
+        /// <inheritdoc/>
+        public override object GetObsidianBlockInitialization()
+        {
+            var box = new ControlGalleryInitializationBox();
+
+            box.ShowReflection = GetAttributeValue( AttributeKey.ShowReflection ).AsBoolean();
+            box.SecurityGrantToken = GetSecurityGrantToken();
+
+            return box;
+        }
+
+        /// <inheritdoc/>
+        protected override string RenewSecurityGrantToken()
+        {
+            return GetSecurityGrantToken();
+        }
+
+        /// <summary>
+        /// Gets the security grant token that will be used by UI controls on
+        /// this block to ensure they have the proper permissions.
+        /// </summary>
+        /// <returns>A string that represents the security grant token.</string>
+        private string GetSecurityGrantToken()
+        {
+            var securityGrant = new Rock.Security.SecurityGrant();
+
+            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.VIEW ) );
+            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.EDIT ) );
+            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.DELETE ) );
+
+            return securityGrant.ToToken();
+        }
     }
 }

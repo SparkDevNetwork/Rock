@@ -1,0 +1,258 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid v-if="isBlockVisible"
+          :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Link"
+          :title="gridTitle"
+          :entityTypeGuid="EntityType.PersonalLink"
+          stickyHeader
+          liveUpdates
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined">
+
+        <SectionHeader title="Filters" />
+
+        <ReorderColumn @orderChanged="onOrderChanged" />
+
+        <TextColumn name="name"
+                    title="Link Name"
+                    field="name"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <TextColumn name="url"
+                    title="Link URL"
+                    field="url"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <EditColumn :rowDisabled="isEditRowDisabled" @click="onEditClick" />
+        <DeleteColumn :rowDisabled="isDeleteRowDisabled" @click="onDeleteClick" />
+    </Grid>
+
+    <ModalAlert v-model="isAlertVisible" :type="ModalAlertType.Information">{{ alertMessage }}</ModalAlert>
+
+    <Modal v-model="isPersonalLinkModalVisible"
+           :title="saveLinkTitle"
+           saveText="Save"
+           @save="startSavePersonalLink">
+
+        <RockForm v-model:submit="submitPersonalLink" @submit="onSavePersonalLink">
+            <TextBox v-model="personalLinkName" label="Link Name" rules="required" />
+            <UrlLinkBox v-model="personalLinkUrl" label="Link URL" rules="required" />
+        </RockForm>
+
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { TextColumn, textValueFilter, DeleteColumn, EditColumn, ReorderColumn } from "@Obsidian/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { PersonalLinkListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PersonalLinkList/personalLinkListOptionsBag";
+    import { SavePersonalLinkRequestBag } from "@Obsidian/ViewModels/Blocks/Cms/PersonalLinkList/savePersonalLinkRequestBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { reactive, ref, computed } from "vue";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import UrlLinkBox from "@Obsidian/Controls/urlLinkBox.obs";
+    import ModalAlert from "@Obsidian/Controls/modalAlert.obs";
+    import { ModalAlertType } from "@Obsidian/Enums/Controls/modalAlertType";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+
+    const config = useConfigurationValues<ListBlockBox<PersonalLinkListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const personalLinkSectionName = ref(config.options?.personalLinkSectionName);
+    const isPersonalLinkSectionShared = ref(config.options?.isPersonalLinkSectionShared ?? false);
+    const isBlockVisible = ref(config.options?.isBlockVisible ?? false);
+    const gridDataSource = ref<Promise<GridDataBag>>();
+
+    const alertMessage = ref("");
+    const isAlertVisible = ref(false);
+
+    const personalLinkIdKey = ref("");
+    const personalLinkName = ref("");
+    const personalLinkUrl = ref("");
+    const saveLinkTitle = ref("Add Personal Link");
+    const isPersonalLinkModalVisible = ref(false);
+    const submitPersonalLink = ref(false);
+
+    let gridData: GridDataBag | undefined;
+
+    // #endregion
+
+    // #region Computed
+
+    const gridTitle = computed((): string => {
+        return isPersonalLinkSectionShared ? `Links for ${personalLinkSectionName.value}` : `Personal Links for ${personalLinkSectionName.value}`;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+
+        if (gridData && gridData.rows) {
+            const row = gridData.rows.find(r => r["idKey"] === key);
+            if (row) {
+                const result = await invokeBlockAction<string>("Delete", {
+                    key
+                });
+
+                if (result.isSuccess) {
+                    const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                    if (index !== -1) {
+                        gridData.rows?.splice(index, 1);
+                    }
+                }
+                else {
+                    await alert(result.errorMessage ?? "Unknown error while trying to delete personal link.");
+                }
+            }
+        }
+    }
+
+    /**
+     * Called when a row's edit button has been clicked by the individual.
+     */
+    function onEditClick(key: string): void {
+        if (gridData && gridData.rows) {
+            const row = gridData.rows.find(r => r["idKey"] === key);
+
+            if (row) {
+                const personalLink = {
+                    idKey: row["idKey"] as string,
+                    name: row["name"] as string,
+                    url: row["url"] as string,
+                } as SavePersonalLinkRequestBag;
+                showPersonalLinkModal(personalLink);
+            }
+        }
+    }
+
+    /**
+     * Called when the Add button has been clicked by the indivual.
+     */
+    function onAddItem(): void {
+        const personalLink = {} as SavePersonalLinkRequestBag;
+        showPersonalLinkModal(personalLink);
+    }
+
+    /**
+     * Called when a row has been dragged from one position to a new position.
+     *
+     * @param item The item that was moved to a new position.
+     * @param beforeItem The item that the first item was dropped before.
+     *
+     * @returns `true` if the operation succeeded; otherwise `false`.
+     */
+    async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        const result = await invokeBlockAction<string>("ReorderItem", {
+            key: item["idKey"],
+            beforeKey: beforeItem?.["idKey"] ?? null
+        });
+
+        return result.isSuccess;
+    }
+
+    /**
+    * Request that the Personal Link form attempt to validate and submit.
+    */
+    function startSavePersonalLink(): void {
+        submitPersonalLink.value = true;
+    }
+
+    /**
+     * Performs the save operation for a personal link.
+     */
+    async function onSavePersonalLink(): Promise<void> {
+
+        const bag: SavePersonalLinkRequestBag = {
+            idKey: personalLinkIdKey.value,
+            name: personalLinkName.value,
+            url: personalLinkUrl.value
+        };
+
+        const result = await invokeBlockAction<string>("SavePersonalLink", {
+            bag: bag
+        });
+
+        if (!result.isSuccess) {
+            return alert(result.errorMessage ?? "Unable to save personal link.");
+        }
+
+        isPersonalLinkModalVisible.value = false;
+        submitPersonalLink.value = false;
+        // Reload the grid data
+        gridDataSource.value = loadGridData();
+    }
+
+    /**
+    * Returns true if the current user cannot delete the row.
+    */
+    function isDeleteRowDisabled(row: Record<string, unknown>): boolean {
+        const canDelete = row["canDelete"] as boolean;
+        return !canDelete;
+    }
+
+    /**
+    * Returns true if the current user cannot edit the contents of the row.
+    */
+    function isEditRowDisabled(row: Record<string, unknown>): boolean {
+        const canEdit = row["canEdit"] as boolean;
+        return !canEdit;
+    }
+
+    /**
+    * Displays an alert with the provided message.
+    */
+    function showAlert(message: string): void {
+        alertMessage.value = message;
+        isAlertVisible.value = true;
+    }
+
+    function showPersonalLinkModal(personalLink: SavePersonalLinkRequestBag): void {
+        personalLinkIdKey.value = personalLink.idKey ?? "";
+        personalLinkName.value = personalLink.name ?? "";
+        personalLinkUrl.value = personalLink.url ?? "";
+        saveLinkTitle.value = personalLink.idKey ? "Edit Personal Link" : "Add Personal Link";
+        isPersonalLinkModalVisible.value = true;
+    }
+
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>

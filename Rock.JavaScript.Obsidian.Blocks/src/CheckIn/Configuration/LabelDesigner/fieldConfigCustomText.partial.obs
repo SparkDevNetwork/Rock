@@ -1,0 +1,122 @@
+<template>
+    <div class="form-group">
+        <div class="btn-group btn-group-sm">
+            <RockButton :btnType="!isDynamicText ? 'primary' : 'default'"
+                        @click="onFixedTextClick">Fixed Text</RockButton>
+            <RockButton :btnType="isDynamicText ? 'primary' : 'default'"
+                        @click="onDynamicTextClick">Dynamic Text</RockButton>
+        </div>
+    </div>
+
+    <TextBox v-if="!isDynamicText"
+             label="Text"
+             v-model="staticText" />
+
+    <div v-if="isDynamicText" class="form-group">
+        <RockButton @click="onEditLavaTemplateClick">
+            <i class="fa fa-edit"></i>
+            Edit Lava Template
+        </RockButton>
+    </div>
+
+    <FieldConfigText :labelManager="labelManager"
+                     :showPlaceholder="isDynamicText"
+                     :showAdaptiveFontSize="isDynamicText" />
+
+    <Modal v-model="isEditLavaTemplateVisible" title="Dynamic Text Template" saveText="Save" @save="onEditLavaTemplateSave">
+        <CodeEditor label="Lava Template"
+                    v-model="editDynamicText"
+                    mode="lava" />
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import FieldConfigText from "./fieldConfigText.partial.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { asBoolean } from "@Obsidian/Utility/booleanUtils";
+    import { PropType, ref, watch } from "vue";
+    import { LabelUndoManager } from "./undoManager.partial";
+    import { TextFieldConfigurationBag } from "@Obsidian/ViewModels/CheckIn/Labels/textFieldConfigurationBag";
+
+    const props = defineProps({
+        labelManager: {
+            type: Object as PropType<LabelUndoManager>,
+            required: true
+        }
+    });
+
+    const isDynamicText = ref(false);
+    const staticText = ref("");
+    const dynamicText = ref("");
+
+    const isEditLavaTemplateVisible = ref(false);
+    const editDynamicText = ref("");
+
+    /**
+     * Set the internal values to match those from the selected field.
+     */
+    function setInternalValues(): void {
+        const configuration = (props.labelManager.selectedField.value
+            ?.configurationValues ?? {}) as TextFieldConfigurationBag;
+
+        isDynamicText.value = asBoolean(configuration.isDynamicText);
+        staticText.value = configuration.staticText ?? "";
+        dynamicText.value = configuration.dynamicTextTemplate ?? "";
+    }
+
+    /**
+     * Event handler for when the Fixed Text button is clicked.
+     */
+    function onFixedTextClick(): void {
+        isDynamicText.value = false;
+    }
+
+    /**
+     * Event handler for when the Dynamic Text button is clicked.
+     */
+    function onDynamicTextClick(): void {
+        isDynamicText.value = true;
+    }
+
+    /**
+     * Event handler for when the Edit Lava Template button is clicked. Open
+     * the modal with the code editor to allow the user to set the lava template
+     * that will be used to render this text field.
+     */
+    function onEditLavaTemplateClick(): void {
+        editDynamicText.value = dynamicText.value;
+        isEditLavaTemplateVisible.value = true;
+    }
+
+    /**
+     * Event handler for when the Save button is clicked in the lava template
+     * modal. Save the value from the editor into our local value.
+     */
+    function onEditLavaTemplateSave(): void {
+        dynamicText.value = editDynamicText.value;
+        isEditLavaTemplateVisible.value = false;
+    }
+
+    // Watch for changes in the UI that require an update to the label.
+    watch([isDynamicText, staticText, dynamicText], () => {
+        props.labelManager.mutateSelectedField(field => {
+            field.configurationValues = field.configurationValues ?? {};
+
+            const fieldConfig = field.configurationValues as TextFieldConfigurationBag;
+
+            fieldConfig.isDynamicText = isDynamicText.value ? "true" : "false";
+            fieldConfig.staticText = staticText.value;
+            fieldConfig.dynamicTextTemplate = dynamicText.value;
+        });
+    });
+
+    // Watch for changes on the label that need to be reflected in the UI.
+    watch(props.labelManager.selectedField, () => {
+        setInternalValues();
+    });
+
+    setInternalValues();
+</script>

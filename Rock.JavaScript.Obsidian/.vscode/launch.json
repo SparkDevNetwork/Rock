@@ -46,7 +46,7 @@
                 "--runTestsByPath",
                 "${jest.testFile}"
             ],
-            "cwd": "c:\\GitHub\\Rock-develop\\Rock.JavaScript.Obsidian",
+            "cwd": "${workspaceFolder:Rock.JavaScript.Obsidian}",
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen",
             "disableOptimisticBPs": true,

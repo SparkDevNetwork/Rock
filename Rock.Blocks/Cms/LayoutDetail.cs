@@ -28,7 +28,9 @@ using Rock.Model;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.LayoutDetail;
 using Rock.ViewModels.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 
 namespace Rock.Blocks.Cms
 {
@@ -41,7 +43,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays the details of a particular layout." )]
     [IconCssClass( "fa fa-question" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    // [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -49,7 +51,7 @@ namespace Rock.Blocks.Cms
 
     [Rock.SystemGuid.EntityTypeGuid( "b85c080a-f645-430a-b0d4-8eee689f4265" )]
     [Rock.SystemGuid.BlockTypeGuid( "64c3b64a-cdb3-4e5f-bc54-0e3d50aac564" )]
-    public class LayoutDetail : RockDetailBlockType
+    public class LayoutDetail : RockDetailBlockType, IBreadCrumbBlock
     {
         #region Keys
 
@@ -82,6 +84,32 @@ namespace Rock.Blocks.Cms
                 box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<Layout>();
 
                 return box;
+            }
+        }
+
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var key = pageReference.GetPageParameter( PageParameterKey.LayoutId );
+                var pageParameters = new Dictionary<string, string>();
+
+                var name = new LayoutService( rockContext )
+                    .GetSelect( key, l => l.Name );
+
+                if ( name != null )
+                {
+                    pageParameters.Add( PageParameterKey.LayoutId, key );
+                }
+
+                var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageParameters );
+                var breadCrumb = new BreadCrumbLink( name ?? "New Layout", breadCrumbPageRef );
+
+                return new BreadCrumbResult
+                {
+                    BreadCrumbs = new List<IBreadCrumb> { breadCrumb }
+                };
             }
         }
 

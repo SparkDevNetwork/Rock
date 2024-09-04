@@ -132,10 +132,7 @@ namespace Rock.Blocks
         [BlockAction]
         public virtual BlockActionResult GetGridData()
         {
-            using ( var rockContext = new RockContext() )
-            {
-                return ActionOk( GetGridDataBag( rockContext ) );
-            }
+            return ActionOk( GetGridDataBag( RockContext ) );
         }
 
         /// <summary>

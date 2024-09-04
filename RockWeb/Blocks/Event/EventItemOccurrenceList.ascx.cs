@@ -147,7 +147,7 @@ namespace RockWeb.Blocks.Event
                     copyField.HeaderStyle.HorizontalAlign = HorizontalAlign.Center;
                     copyField.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
                     gCalendarItemOccurrenceList.Columns.Add( copyField );
-                    copyField.Click += gCalendarItemOccurrenceList_Copy;
+                    copyField.Click += gCalendarItemOccurrenceList_Copy;  
 
                     var deleteField = new DeleteField();
                     gCalendarItemOccurrenceList.Columns.Add( deleteField );
@@ -162,13 +162,13 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 SetFilter();
                 BindCampusGrid();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion Base Control Methods
@@ -436,7 +436,7 @@ namespace RockWeb.Blocks.Event
 
                 var dateCol = gCalendarItemOccurrenceList.Columns.OfType<BoundField>().Where( c => c.DataField == "Date" ).FirstOrDefault();
 
-                // if a date range was specified, need to get all dates for items and filter based on any that have an occurrence withing the date range
+                // if a date range was specified, need to get all dates for items and filter based on any that have an occurrence within the date range
                 DateTime? lowerDateRange = drpDate.LowerValue;
                 DateTime? upperDateRange = drpDate.UpperValue;
                 if ( lowerDateRange.HasValue || upperDateRange.HasValue )

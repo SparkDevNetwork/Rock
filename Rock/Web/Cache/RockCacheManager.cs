@@ -20,6 +20,8 @@ using System.Collections.Generic;
 using CacheManager.Core;
 using CacheManager.Core.Internal;
 
+using Microsoft.Extensions.Logging;
+
 using Rock.Bus;
 using Rock.Bus.Message;
 using Rock.Logging;
@@ -35,6 +37,7 @@ namespace Rock.Web.Cache
     /// </remarks>
     /// <typeparam name="T"></typeparam>
     /// <seealso cref="IRockCacheManager" />
+    [RockLoggingCategory]
     public sealed class RockCacheManager<T> : IRockCacheManager
     {
         private static RockCacheManager<T> instance;
@@ -43,6 +46,10 @@ namespace Rock.Web.Cache
         private static readonly object _obj = new object();
 
         private static BaseCacheManager<T> _cacheManager;
+
+        private readonly Lazy<ILogger> _logger;
+
+        private ILogger Logger => _logger.Value;
 
         static RockCacheManager()
         {
@@ -54,6 +61,7 @@ namespace Rock.Web.Cache
         /// </summary>
         private RockCacheManager()
         {
+            _logger = new Lazy<ILogger>( () => RockLogger.LoggerFactory.CreateLogger<RockCacheManager<T>>() );
         }
 
         /// <summary>
@@ -74,16 +82,6 @@ namespace Rock.Web.Cache
                 return instance;
             }
         }
-
-        /// <summary>
-        /// Gets the cache.
-        /// </summary>
-        /// <value>
-        /// The cache.
-        /// </value>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Do not access the cache manager directly. Instead use the method available on this class." )]
-        public BaseCacheManager<T> Cache => CacheManager;
 
         /// <summary>
         /// Gets the cache.
@@ -238,7 +236,7 @@ namespace Rock.Web.Cache
 
             // This is somewhat temporary. In the future this should be updated
             // to use it's own domain.
-            RockLogger.Log.WriteToLog( RockLogLevel.Debug, RockLogDomains.Other, $"Cache was cleared for {typeof(T).Name}. StackTrace: {Environment.StackTrace}" );
+            Logger.LogDebug( $"Cache was cleared for {typeof(T).Name}. StackTrace: {Environment.StackTrace}" );
         }
 
         /// <summary>
@@ -251,7 +249,7 @@ namespace Rock.Web.Cache
             {
                 // We already took care of Clearing the cache for our instance, so
                 // we can ignore this message.
-                RockLogger.Log.Debug( RockLogDomains.Bus, $"Cache ClearMessage was from ourselves( {message.SenderNodeName} ). Skipping. {message.ToDebugString()}." );
+                Logger.LogDebug( $"Cache ClearMessage was from ourselves( {message.SenderNodeName} ). Skipping. {message.ToDebugString()}." );
                 return;
             }
 
@@ -307,7 +305,7 @@ namespace Rock.Web.Cache
             {
                 // We already took care of Clearing the cache for our instance, so
                 // we can ignore this message.
-                RockLogger.Log.Debug( RockLogDomains.Bus, $"Cache RemoveMessage was from ourselves( {message.SenderNodeName} ). Skipping. {message.ToDebugString()}." );
+                Logger.LogDebug( $"Cache RemoveMessage was from ourselves( {message.SenderNodeName} ). Skipping. {message.ToDebugString()}." );
                 return;
             }
 
@@ -373,12 +371,12 @@ namespace Rock.Web.Cache
 
             if ( item is List<string> )
             {
-                RockCache.StringConcurrentCacheKeyReferences.AddOrIgnore( cacheReferenceItem.ToString(), cacheReferenceItem );
+                RockCache.StringConcurrentCacheKeyReferences.TryAdd( cacheReferenceItem.ToString(), cacheReferenceItem );
             }
 
             if ( item is List<object> )
             {
-                RockCache.ObjectConcurrentCacheKeyReferences.AddOrIgnore( cacheReferenceItem.ToString(), cacheReferenceItem );
+                RockCache.ObjectConcurrentCacheKeyReferences.TryAdd( cacheReferenceItem.ToString(), cacheReferenceItem );
             }
         }
 

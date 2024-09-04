@@ -1,0 +1,145 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Rest Action"
+          :entityTypeGuid="EntityType.RestAction"
+          stickyHeader
+          liveUpdates
+          :showLaunchWorkflow="false"
+          @selectItem="onSelectItem">
+
+        <TextColumn name="method"
+                    title="Method"
+                    field="method"
+                    width="100px"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <TextColumn name="path"
+                    title="Relative Path"
+                    field="path"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <Column name="cacheHeader"
+                title=""
+                width="50px"
+                visiblePriority="xs">
+            <template #format="{ row }">
+                <span v-if="row.hasCacheHeader" class="text-success fa fa-tachometer-alt"></span>
+            </template>
+        </Column>
+
+        <SecurityColumn />
+    </Grid>
+
+    <GridSettingsModal v-model:visible="showActionSettingsModal" :actionTitle="selectedActionPath" :actionCacheSettings="selectedActionCacheSettings" @save="saveActionSettings" />
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { TextColumn, textValueFilter, SecurityColumn, Column } from "@Obsidian/Controls/grid";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { RestActionListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/RestActionList/restActionListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { reactive, ref } from "vue";
+    import { RockCacheabilityBag } from "@Obsidian/ViewModels/Controls/rockCacheabilityBag";
+    import GridSettingsModal from "./RestActionList/gridSettingsModal.partial.obs";
+
+    const config = useConfigurationValues<ListBlockBox<RestActionListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const showActionSettingsModal = ref(false);
+    const selectedActionId = ref<number>(0);
+    const selectedActionPath = ref<string>("");
+    const selectedActionCacheSettings = ref<RockCacheabilityBag | null>(null);
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Saves the action settings.
+     * @param payload The payload to save.
+     * @returns A promise that resolves when the action settings have been saved.
+     */
+    async function saveActionSettings(payload): Promise<void> {
+        const model = {
+            controllerActionId: selectedActionId.value,
+            cacheControlHeaderSettings: payload.cacheSettings
+        };
+
+        const result = await invokeBlockAction("SaveActionSettings", { model });
+
+        if (result.isSuccess) {
+            showActionSettingsModal.value = false;
+            gridDataSource.value = loadGridData();
+        }
+        else {
+            console.error("Error saving action settings", result.errorMessage);
+        }
+    }
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     * @returns The grid data.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     * @param key The key of the row that was selected.
+     * @returns The selected item.
+     */
+    function onSelectItem(key): void {
+        const action = gridData?.rows?.find(r => r.idKey === key);
+        if (action && action.method === "GET") {
+            selectedActionId.value = key;
+            selectedActionPath.value = action.path as string;
+
+            let parsedSettings;
+
+            try {
+                parsedSettings = JSON.parse(action.cacheControlHeaderSettings as string);
+            }
+            catch (e) {
+                console.log("No cache settings found or invalid JSON", e);
+                parsedSettings = null;
+            }
+
+            selectedActionCacheSettings.value = {
+                rockCacheabilityType: parsedSettings?.RockCacheablityType ?? 2,
+                maxAge: parsedSettings?.MaxAge ? { value: parsedSettings.MaxAge.Value || 0, unit: parsedSettings.MaxAge.Unit || 0 } : null,
+                sharedMaxAge: parsedSettings?.SharedMaxAge ? { value: parsedSettings.SharedMaxAge.Value || 0, unit: parsedSettings.SharedMaxAge.Unit || 0 } : null
+            };
+
+            showActionSettingsModal.value = true;
+        }
+    }
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>

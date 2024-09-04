@@ -1,0 +1,347 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <TabbedContent :tabs="courseDetailTabs">
+        <template #tabpane="{ item }">
+            <div v-if="item === 'Overview'">
+                <fieldset>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <TextBox v-model="name"
+                                     @blur="onNameBlur"
+                                     label="Name"
+                                     rules="required" />
+
+                            <TextBox v-model="publicName"
+                                     label="Public Name" />
+
+                            <TextBox v-model="courseCode"
+                                     class="input-width-md"
+                                     label="Course Code"
+                                     rules="required" />
+
+                            <NumberBox v-model="credits"
+                                       class="input-width-sm"
+                                       label="Credits"
+                                       rules="required" />
+
+                            <NumberBox v-model="maxStudents"
+                                       class="input-width-sm"
+                                       label="Maximum Students"
+                                       help="The maximum number of students a class can have." />
+
+                            <WorkflowTypePicker
+                                                v-model="completionWorkflowType"
+                                                label="Completion Workflow Type"
+                                                help="The workflow to launch when an individual completes the course." />
+
+                            <CheckBox
+                                      v-model="allowHistoricalAccess"
+                                      label="Allow Historical Access" />
+
+                            <CheckBox
+                                      v-model="enableAnnouncements"
+                                      label="Enable Announcements" />
+
+                        </div>
+                        <div class="col-md-6">
+                            <div class="col-md-6">
+                                <CheckBox
+                                          v-model="isActive"
+                                          label="Active" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <CheckBox
+                                          v-model="isPublic"
+                                          label="Public" />
+
+                            </div>
+
+                            <CategoryPicker
+                                            v-model="category"
+                                            label="Category"
+                                            :entityTypeGuid="EntityType.LearningCourse"
+                                            :multiple="false" />
+
+                            <ImageUploader v-model="imageBinaryFile"
+                                           label="Image"
+                                           :binaryFileTypeGuid="imageFileTypeGuid" />
+
+                            <TextBox
+                                     v-model="summary"
+                                     label="Summary"
+                                     textMode="multiline" />
+
+                            <Grid
+                                  :data="courseRequirementsGridData"
+                                  keyfield="idKey"
+                                  light>
+                                <Column name="requiredLearningCourseName"
+                                        title="Requirements"
+                                        field="requiredLearningCourseName"
+                                        :filter="textValueFilter"
+                                        width="100%"
+                                        visiblePriority="xs">
+                                    <template #format="{ row }">
+                                        <div class="col-xs-12 col-md-7">
+                                            <span class="text-muted ml-1">
+                                                {{ row.requiredLearningCourseName }} - {{ row.requiredLearningCourseCode }}
+                                            </span>
+                                        </div>
+                                        <span class="col-xs-12 col-md-3">
+                                            {{ RequirementTypeDescription[row.requirementType ?? ""] ?? "" }}
+                                        </span>
+                                        <div class="col-xs-12 col-md-2 text-right">
+                                            <button aria-label="Remove this requirement" class="btn btn-default btn-square remove-answer-button" @click.prevent="removeRequirement(row)">
+                                                <i class="fa fa-times" aria-hidden="true"></i>
+                                            </button>
+                                        </div>
+                                    </template>
+                                </Column>
+                                <template #gridFooterAppend>
+                                    <button @click="onOpenCourseRequirementModalClick" type="button" class="btn btn-add pull-right" title="Add a new course requirement.">
+                                        <i class="fa fa-plus fa-fw"></i>
+                                    </button>
+                                </template>
+                            </Grid>
+                            <Modal v-model="showAddCourseRequirementModal" :title="'Add Requirement for ' + name" @save="onAddRequirementClicked" :isSaveButtonDisabled="!addRequirementType" saveText="Add Requirement">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <RadioButtonList v-model="addRequirementType" label="Requirement Type" horizontal rules="required" :items="requirementTypes" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <DropDownList v-model="requiredCourse" :enhanceForLongLists="courseOptions.length > 10" :grouped="false" :items="courseOptions" rules="required" label="Course" :multiple="false" :showBlankItem="false" />
+                                    </div>
+                                </div>
+                            </Modal>
+                        </div>
+                    </div>
+
+                    <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+                </fieldset>
+            </div>
+            <div v-else-if="item === 'Description'">
+                <StructuredContentEditor v-model="description" />
+            </div>
+        </template>
+    </TabbedContent>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
+    import TabbedContent from "@Obsidian/Controls/tabbedContent.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import ImageUploader from "@Obsidian/Controls/imageuploader.obs";
+    import { RequirementTypeDescription } from "@Obsidian/Enums/Lms/requirementType";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
+    import { setPropertiesBoxValue, useInvokeBlockAction, watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { LearningCourseBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningCourseDetail/learningCourseBag";
+    import { LearningCourseDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningCourseDetail/learningCourseDetailOptionsBag";
+    import { LearningCourseRequirementBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningCourseRequirement/learningCourseRequirementBag";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import Grid, { Column, textValueFilter } from "@Obsidian/Controls/Grid";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<LearningCourseBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<LearningCourseDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<LearningCourseBag>): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const courseDetailTabs: Array<string> = ["Overview", "Description"];
+    const imageFileTypeGuid = BinaryFiletype.Default;
+    const showAddCourseRequirementModal = ref(false);
+
+    // Manually exclude 'Corequisite'. This functionality will be added at a later time.
+    const requirementTypes = enumToListItemBag(RequirementTypeDescription).filter(l => l.text !== "Corequisite");
+
+    const addRequirementType = ref<string>();
+    const requiredCourse = ref<string>("");
+    const courseOptions = ref<ListItemBag[]>([]);
+
+    const attributes = ref(props.modelValue.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue.bag?.attributeValues ?? {});
+    const summary = propertyRef(props.modelValue.bag?.summary ?? "", "Summary");
+    const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue.bag?.isActive ?? false, "IsActive");
+    const isPublic = propertyRef(props.modelValue.bag?.isPublic ?? false, "IsPublic");
+    const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
+    const category = propertyRef(props.modelValue.bag?.category ?? null, "Category");
+    const publicName = propertyRef(props.modelValue.bag?.publicName ?? "", "PublicName");
+    const courseCode = propertyRef(props.modelValue.bag?.courseCode ?? "", "CourseCode");
+    const credits = propertyRef(props.modelValue.bag?.credits ?? 0, "Credits");
+    const maxStudents = propertyRef(props.modelValue.bag?.maxStudents, "MaxStudents");
+    const completionWorkflowType = propertyRef(props.modelValue.bag?.completionWorkflowType ?? null, "CompletionWorkflowType");
+    const allowHistoricalAccess = propertyRef(props.modelValue.bag?.allowHistoricalAccess ?? false, "AllowHistoricalAccess");
+    const enableAnnouncements = propertyRef(props.modelValue.bag?.enableAnnouncements ?? false, "EnableAnnouncements");
+    const imageBinaryFile = propertyRef(props.modelValue.bag?.imageBinaryFile ?? null, "ImageBinaryFile");
+    const courseRequirements = propertyRef(props.modelValue.bag?.courseRequirements ?? [], "CourseRequirements");
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [
+        name
+        , publicName
+        , courseCode
+        , credits
+        , maxStudents
+        , allowHistoricalAccess
+        , enableAnnouncements
+        , completionWorkflowType
+        , isActive
+        , isPublic
+        , summary
+        , category
+        , imageBinaryFile
+        , description,
+        courseRequirements
+    ];
+
+    // #endregion
+
+    // #region Computed Values
+
+    const courseRequirementsGridData = computed((): GridDataBag => {
+        return {
+            rows: [...courseRequirements.value]
+        };
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function removeRequirement(row: Record<string, unknown>): void {
+        const index = courseRequirements.value.findIndex(cr => cr.idKey === row.idKey);
+        courseRequirements.value.splice(index, 1);
+        courseRequirements.value = Array.from(courseRequirements.value);
+    }
+
+    function onNameBlur(): void {
+        if (!publicName.value) {
+            publicName.value = name.value;
+        }
+    }
+
+    /**
+     * Called when the Add requirement button has been clicked by the indivual.
+     */
+    async function onOpenCourseRequirementModalClick(): Promise<void> {
+        const hasCourseOptions = courseOptions.value.length > 0;
+        if (!hasCourseOptions) {
+            const courseListItemsResult = await invokeBlockAction<ListItemBag[]>("GetActiveCourses", {
+                key: props.modelValue.bag?.idKey
+            });
+
+            if (courseListItemsResult.isSuccess && courseListItemsResult.data) {
+                courseOptions.value = courseListItemsResult.data;
+                courseOptions.value.unshift({ value: null, text: "" });
+                showAddCourseRequirementModal.value = true;
+            }
+        }
+        else {
+            showAddCourseRequirementModal.value = true;
+        }
+
+    }
+
+    async function onAddRequirementClicked(): Promise<void> {
+        const result = await invokeBlockAction<LearningCourseRequirementBag>("GetCourseRequirementDetail", {
+            key: props.modelValue.bag?.idKey,
+            guid: requiredCourse.value,
+            requirementType: addRequirementType.value
+        });
+
+        if (result.isSuccess && result.data) {
+            courseRequirements.value.push(result.data);
+            courseRequirements.value = Array.from(courseRequirements.value);
+            showAddCourseRequirementModal.value = false;
+        }
+    }
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.bag?.attributeValues ?? {});
+        updateRefValue(summary, props.modelValue.bag?.summary ?? "");
+        updateRefValue(description, props.modelValue.bag?.description ?? "");
+        updateRefValue(isActive, props.modelValue.bag?.isActive ?? false);
+        updateRefValue(isPublic, props.modelValue.bag?.isPublic ?? false);
+        updateRefValue(name, props.modelValue.bag?.name ?? "");
+        updateRefValue(category, props.modelValue.bag?.category ?? null);
+        updateRefValue(publicName, props.modelValue.bag?.publicName ?? "");
+        updateRefValue(courseCode, props.modelValue.bag?.courseCode ?? "");
+        updateRefValue(credits, props.modelValue.bag?.credits ?? 0);
+        updateRefValue(maxStudents, props.modelValue.bag?.maxStudents);
+        updateRefValue(completionWorkflowType, props.modelValue.bag?.completionWorkflowType ?? null);
+        updateRefValue(allowHistoricalAccess, props.modelValue.bag?.allowHistoricalAccess ?? false);
+        updateRefValue(enableAnnouncements, props.modelValue.bag?.enableAnnouncements ?? false);
+        updateRefValue(courseRequirements, props.modelValue.bag?.courseRequirements ?? []);
+        updateRefValue(imageBinaryFile, props.modelValue.bag?.imageBinaryFile ?? null);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, ...propRefs], () => {
+        const newValue: ValidPropertiesBox<LearningCourseBag> = {
+            bag: { ...props.modelValue.bag } as LearningCourseBag
+        };
+
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "summary", summary.value);
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "isActive", isActive.value);
+        setPropertiesBoxValue(newValue, "isPublic", isPublic.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "category", category.value);
+        setPropertiesBoxValue(newValue, "publicName", publicName.value);
+        setPropertiesBoxValue(newValue, "courseCode", courseCode.value);
+        setPropertiesBoxValue(newValue, "credits", credits.value);
+        setPropertiesBoxValue(newValue, "maxStudents", maxStudents.value);
+        setPropertiesBoxValue(newValue, "completionWorkflowType", completionWorkflowType.value);
+        setPropertiesBoxValue(newValue, "allowHistoricalAccess", allowHistoricalAccess.value);
+        setPropertiesBoxValue(newValue, "enableAnnouncements", enableAnnouncements.value);
+        setPropertiesBoxValue(newValue, "imageBinaryFile", imageBinaryFile.value);
+        setPropertiesBoxValue(newValue, "courseRequirements", courseRequirements.value);
+
+        emit("update:modelValue", newValue);
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

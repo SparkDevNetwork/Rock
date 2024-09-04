@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>6519c205-3304-4d09-86bc-16be8a0d9c41</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>Rock.CloudPrint.Shared</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)CloudPrintMessage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CloudPrintMessagePing.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CloudPrintMessagePrint.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CloudPrintMessageResponse.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CloudPrintMessageType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CloudPrintResponsePing.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ProxyWebSocket.cs" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,154 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Prayer Comment"
+          :entityTypeGuid="EntityType.Note"
+          stickyHeader
+          liveUpdates
+          gridSettings
+          :showLaunchWorkflow="false"
+          :gridSettingsActive="hasSettingsFilters"
+          @gridSettingsClick="isGridSettingsVisible = true"
+          :onAddItem="undefined"
+          @selectItem="onSelectItem">
+
+        <DateTimeColumn name="time"
+                        title="Time"
+                        field="time"
+                        visiblePriority="xs"
+                        width="10%" />
+        <PersonColumn name="createdBy"
+                      title="From"
+                      field="createdBy"
+                      :filter="pickExistingValueFilter"
+                      visiblePriority="xs" />
+
+        <TextColumn name="text"
+                    title="Comment"
+                    field="text"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+    </Grid>
+
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible" />
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { PersonColumn, pickExistingValueFilter, TextColumn, DateTimeColumn, textValueFilter, DeleteColumn } from "@Obsidian/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { PrayerCommentListOptionsBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerCommentList/prayerCommentListOptionsBag";
+    import GridSettingsModal from "./PrayerCommentList/gridSettingsModal.partial.obs";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { NavigationUrlKey } from "./PrayerRequestList/types.partial";
+    import { PreferenceKey, GridSettingsOptions } from "./PrayerCommentList/types.partial";
+    import { computed, reactive, ref, watch } from "vue";
+
+    const config = useConfigurationValues<ListBlockBox<PrayerCommentListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+    // #region Values
+
+    const isGridSettingsVisible = ref(false);
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+    const gridSettings = ref<GridSettingsOptions>({
+        dateRange: preferences.getValue(PreferenceKey.FilterDateRange),
+        category: preferences.getValue(PreferenceKey.FilterCategory)?.length > 0 ?
+            JSON.parse(preferences.getValue(PreferenceKey.FilterCategory)) :
+            undefined,
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Returns `true` if the grid settings filters are active; otherwise `false`.
+     */
+    /** `true` if the grid settings is performing any filtering. */
+    const hasSettingsFilters = computed((): boolean => {
+        return !!gridSettings.value.category ||
+            !!gridSettings.value.dateRange;
+    });
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            if (gridData && gridData.rows) {
+                let rowItem = gridData.rows?.find(x => x["idKey"] == key);
+
+                if (rowItem) {
+                    window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key)+ `&PrayerRequestId=${rowItem?.prayerRequestIdKey}`;
+                }
+            }
+        }
+    }
+
+    /**
+     * Called when a row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete note.");
+        }
+    }
+
+    // #endregion
+
+    watch(gridSettings, async () => {
+        const category = JSON.stringify(gridSettings.value.category ?? "");
+        preferences.setValue(PreferenceKey.FilterDateRange, gridSettings.value.dateRange ?? "");
+        preferences.setValue(PreferenceKey.FilterCategory, category);
+
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
+    });
+
+    gridDataSource.value = loadGridData();
+</script>

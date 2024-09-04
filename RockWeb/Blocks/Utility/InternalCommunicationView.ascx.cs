@@ -93,8 +93,6 @@ namespace RockWeb.Blocks.Utility
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 ShowView();
@@ -103,6 +101,8 @@ namespace RockWeb.Blocks.Utility
             {
                 _currentPage = hfCurrentPage.Value.AsInteger();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -268,9 +268,18 @@ namespace RockWeb.Blocks.Utility
 
                 // Get metrics
                 var metricCategories = Rock.Attribute.MetricCategoriesFieldAttribute.GetValueAsGuidPairs( GetAttributeValue( "Metrics" ) );
-
                 var metricGuids = metricCategories.Select( a => a.MetricGuid ).ToList();
-                metrics = new MetricService( rockContext ).GetByGuids( metricGuids )
+
+                // Get Partitioned metrics
+                var partitionedMetricGuids = new MetricValuePartitionService( rockContext ).Queryable()
+                        .Where( mvp => metricGuids.Contains( mvp.MetricValue.Metric.Guid ) && mvp.EntityId.HasValue )
+                        .Select( mvp => mvp.MetricValue.Metric.Guid )
+                        .Distinct()
+                        .ToList();
+                var nonPartitionedMetricGuids = metricGuids.Except( partitionedMetricGuids ).ToList();
+                var metricService = new MetricService( rockContext );
+
+                metrics = metricService.GetByGuids( nonPartitionedMetricGuids )
                                 .Select( m => new MetricResult
                                 {
                                     Id = m.Id,
@@ -281,6 +290,45 @@ namespace RockWeb.Blocks.Utility
                                     LastRunDateTime = m.MetricValues.OrderByDescending( v => v.MetricValueDateTime ).Select( v => v.MetricValueDateTime ).FirstOrDefault(),
                                     LastValue = m.MetricValues.OrderByDescending( v => v.MetricValueDateTime ).Select( v => v.YValue ).FirstOrDefault()
                                 } ).ToList();
+
+                // If metric is partitioned get sum of values from last run.
+                foreach ( var metricGuid in partitionedMetricGuids )
+                {
+                    var lastRunDateTime = metricService.GetSelect( metricGuid, m => m.LastRunDateTime )?.Date;
+                    MetricResult metricResult;
+
+                    if ( lastRunDateTime.HasValue )
+                    {
+                        metricResult = metricService.Queryable()
+                            .Where( m => m.Guid == metricGuid )
+                            .Select( m => new MetricResult
+                            {
+                                Id = m.Id,
+                                Title = m.Title,
+                                Description = m.Description,
+                                IconCssClass = m.IconCssClass,
+                                UnitsLabel = m.YAxisLabel,
+                                LastRunDateTime = m.MetricValues.OrderByDescending( v => v.MetricValueDateTime ).Select( v => v.MetricValueDateTime ).FirstOrDefault(),
+                                LastValue = m.MetricValues.Where( v => DbFunctions.TruncateTime( v.MetricValueDateTime ) == lastRunDateTime.Value ).Sum( v => v.YValue )
+                            } ).FirstOrDefault();
+                    }
+                    else
+                    {
+                        metricResult = metricService.Queryable().Where( m => m.Guid == metricGuid )
+                            .Select( m => new MetricResult
+                            {
+                                Id = m.Id,
+                                Title = m.Title,
+                                Description = m.Description,
+                                IconCssClass = m.IconCssClass,
+                                UnitsLabel = m.YAxisLabel,
+                                LastRunDateTime = m.MetricValues.OrderByDescending( v => v.MetricValueDateTime ).Select( v => v.MetricValueDateTime ).FirstOrDefault(),
+                                LastValue = m.MetricValues.OrderByDescending( v => v.MetricValueDateTime ).Select( v => v.YValue ).FirstOrDefault()
+                            } ).FirstOrDefault();
+                    }
+
+                    metrics.Add( metricResult );
+                }
 
                 // Get metric values for each metric if requested 
                 if ( metricValueCount > 0 )

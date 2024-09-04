@@ -44,6 +44,9 @@ namespace Rock.Client
         public bool AllowIndexing { get; set; } = true;
 
         /// <summary />
+        public Rock.Client.Enums.Cms.BotGuardianLevel BotGuardianLevel { get; set; }
+
+        /// <summary />
         public int? ChangePasswordPageId { get; set; }
 
         /// <summary />
@@ -83,6 +86,8 @@ namespace Rock.Client
         public bool EnableMobileRedirect { get; set; }
 
         /// <summary />
+        // Made Obsolete in Rock "1.17"
+        [Obsolete( "Geolocation lookups are now performed on all interactions, regardless of this setting.", false )]
         public bool EnablePageViewGeoTracking { get; set; }
 
         /// <summary />
@@ -213,6 +218,7 @@ namespace Rock.Client
             this.AdditionalSettings = source.AdditionalSettings;
             this.AllowedFrameDomains = source.AllowedFrameDomains;
             this.AllowIndexing = source.AllowIndexing;
+            this.BotGuardianLevel = source.BotGuardianLevel;
             this.ChangePasswordPageId = source.ChangePasswordPageId;
             this.ChangePasswordPageRouteId = source.ChangePasswordPageRouteId;
             this.CommunicationPageId = source.CommunicationPageId;
@@ -226,7 +232,9 @@ namespace Rock.Client
             this.EnabledForShortening = source.EnabledForShortening;
             this.EnableExclusiveRoutes = source.EnableExclusiveRoutes;
             this.EnableMobileRedirect = source.EnableMobileRedirect;
+            #pragma warning disable 612, 618
             this.EnablePageViewGeoTracking = source.EnablePageViewGeoTracking;
+            #pragma warning restore 612, 618
             this.EnablePageViews = source.EnablePageViews;
             this.EnablePersonalization = source.EnablePersonalization;
             this.EnableVisitorTracking = source.EnableVisitorTracking;

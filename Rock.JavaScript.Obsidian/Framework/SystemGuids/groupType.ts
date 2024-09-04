@@ -39,6 +39,8 @@ export const GroupType = {
     GrouptypeGeneral: "8400497B-C52F-40AE-A529-3FCCB9587101",
     /** Know relationship group type guid */
     GrouptypeKnownRelationships: "E0C5A0E2-B7B3-4EF4-820D-BBF7F9A374EF",
+    /** Learning Management System (LMS) Class group type guid */
+    GrouptypeLmsClass: "4BBC41E2-0A37-4289-B7A7-756B9FE8F775",
     /** Organization Unit group type guid */
     GrouptypeOrganizationUnit: "AAB2E9F4-E828-4FEE-8467-73DC9DAB784C",
     /** Peer network group type guid */

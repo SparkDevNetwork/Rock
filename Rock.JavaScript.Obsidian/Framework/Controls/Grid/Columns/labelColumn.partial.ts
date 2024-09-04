@@ -57,6 +57,11 @@ function getTextValue(row: Record<string, unknown>, column: ColumnDefinition): s
     return `${value}`;
 }
 
+/**
+ * Displays a value as a pill label. The style can be customized on a per value
+ * basis. So you can, for example, have "success" type values show a green
+ * label and "failure" type values show a red label.
+ */
 export default defineComponent({
     props: {
         ...standardColumnProps,
@@ -89,6 +94,11 @@ export default defineComponent({
         exportValue: {
             type: Function as PropType<ExportValueFunction>,
             default: getTextValue
+        },
+
+        columnType: {
+            type: String as PropType<string>,
+            default: "label"
         },
 
         /**

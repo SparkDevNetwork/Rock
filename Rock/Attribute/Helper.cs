@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.Common;
 using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Linq;
@@ -549,7 +548,7 @@ This can be due to multiple threads updating the same attribute at the same time
                         PropertyInfo propertyInfo = entityType.GetProperty( propertyName ) ?? entityType.GetProperties().Where( a => a.Name.Equals( propertyName, StringComparison.OrdinalIgnoreCase ) ).FirstOrDefault();
                         if ( propertyInfo != null )
                         {
-                            propertyValues.AddOrIgnore( propertyName, propertyInfo.GetValue( entity, null ) );
+                            propertyValues.TryAdd( propertyName, propertyInfo.GetValue( entity, null ) );
                         }
                     }
 
@@ -595,7 +594,7 @@ This can be due to multiple threads updating the same attribute at the same time
                 foreach ( var attribute in allAttributes )
                 {
                     // Add a placeholder for this item's value for each attribute
-                    attributeValues.AddOrIgnore( attribute.Key, null );
+                    attributeValues.TryAdd( attribute.Key, null );
                 }
 
                 // If loading attributes for a saved item, read the item's value(s) for each attribute 
@@ -618,9 +617,42 @@ This can be due to multiple threads updating the same attribute at the same time
                         var predicate = LinqPredicateBuilder.False<AttributeValue>();
                         foreach ( var inheritedAttribute in inheritedAttributes )
                         {
-                            predicate = predicate.Or( v => v.Attribute.EntityTypeId == inheritedAttribute.Key
-                                     && v.EntityId.HasValue
-                                     && inheritedAttribute.Value.Contains( v.EntityId.Value ) );
+                            // a Linq query that uses 'Contains' can't be cached
+                            // in the EF Plan Cache, so instead of doing a
+                            // Contains, build a List of OR conditions. This can
+                            // save 15-20ms per call (and still ends up with the
+                            // exact same SQL).
+                            // https://learn.microsoft.com/en-us/ef/ef6/fundamentals/performance/perf-whitepaper?redirectedfrom=MSDN#41-using-ienumerabletcontainstt-value
+                            var attributeValueParameterExpression = Expression.Parameter( typeof( AttributeValue ), "v" );
+                            var entityIdPropertyExpression = Expression.Property( attributeValueParameterExpression, "EntityId" );
+                            entityIdPropertyExpression = Expression.Property( entityIdPropertyExpression, "Value" );
+                            Expression<Func<AttributeValue, bool>> inheritedEntityIdExpression = null;
+
+                            foreach ( var alternateEntityId in inheritedAttribute.Value )
+                            {
+                                var alternateEntityIdConstant = Expression.Constant( alternateEntityId );
+                                var equalityExpression = Expression.Equal( entityIdPropertyExpression, alternateEntityIdConstant );
+                                var expr = Expression.Lambda<Func<AttributeValue, bool>>( equalityExpression, attributeValueParameterExpression );
+
+                                if ( inheritedEntityIdExpression != null )
+                                {
+                                    inheritedEntityIdExpression = inheritedEntityIdExpression.Or( expr );
+                                }
+                                else
+                                {
+                                    inheritedEntityIdExpression = expr;
+                                }
+                            }
+
+                            // Build the expression for this attribute. This is effectively:
+                            // .Where( v => v.Attribute.EntityTypeId == inheritedAttribute.Key
+                            //    && v.EntityId.HasValue
+                            //    && inheritedAttribute.Value.Contains( v.EntityId.Value ) );
+                            var expression = LinqPredicateBuilder.Create<AttributeValue>( v => v.Attribute.EntityTypeId == inheritedAttribute.Key
+                                     && v.EntityId.HasValue );
+                            expression = expression.And( inheritedEntityIdExpression );
+
+                            predicate = predicate.Or( expression );
                         }
 
                         attributeValueQuery = attributeValueService.Queryable().AsNoTracking().Where( predicate );
@@ -706,7 +738,7 @@ This can be due to multiple threads updating the same attribute at the same time
             }
 
             entity.Attributes = new Dictionary<string, Rock.Web.Cache.AttributeCache>();
-            allAttributes.ForEach( a => entity.Attributes.AddOrIgnore( a.Key, a ) );
+            allAttributes.ForEach( a => entity.Attributes.TryAdd( a.Key, a ) );
 
             entity.AttributeValues = attributeValues;
         }
@@ -900,7 +932,7 @@ This can be due to multiple threads updating the same attribute at the same time
                         var propertyInfo = entityType.GetProperty( propertyName ) ?? entityType.GetProperties().Where( a => a.Name.Equals( propertyName, StringComparison.OrdinalIgnoreCase ) ).FirstOrDefault();
                         if ( propertyInfo != null )
                         {
-                            propertyValues.AddOrIgnore( propertyName.ToLower(), propertyInfo.GetValue( entity, null ).ToStringSafe() );
+                            propertyValues.TryAdd( propertyName.ToLower(), propertyInfo.GetValue( entity, null ).ToStringSafe() );
                         }
                     }
 
@@ -944,7 +976,7 @@ This can be due to multiple threads updating the same attribute at the same time
                 // Add the value for each attribute defined on the entity type.
                 foreach ( var attribute in entityAttributes )
                 {
-                    if ( allAttributeValues.TryGetValue( ( entity.Id, attribute.Id ), out var value ) )
+                    if ( allAttributeValues.TryGetValue( (entity.Id, attribute.Id), out var value ) )
                     {
                         var attributeValueCache = new AttributeValueCache( attribute.Id, value.EntityId, value.Value, value.PersistedTextValue, value.PersistedHtmlValue, value.PersistedCondensedTextValue, value.PersistedCondensedHtmlValue, value.IsPersistedValueDirty );
 
@@ -992,7 +1024,7 @@ This can be due to multiple threads updating the same attribute at the same time
                 }
 
                 entity.Attributes = new Dictionary<string, Rock.Web.Cache.AttributeCache>();
-                entityAttributes.ForEach( a => entity.Attributes.AddOrIgnore( a.Key, a ) );
+                entityAttributes.ForEach( a => entity.Attributes.TryAdd( a.Key, a ) );
 
                 entity.AttributeValues = attributeValues;
             }
@@ -1066,7 +1098,7 @@ This can be due to multiple threads updating the same attribute at the same time
                     // If the qualifier value is blank, that means the qualification
                     // is simply "does this property exist".
                     var needle = string.IsNullOrEmpty( a.EntityTypeQualifierValue )
-                        ? a.EntityTypeQualifierValue.ToLower()
+                        ? a.EntityTypeQualifierColumn.ToLower()
                         : string.Format( "{0}|{1}", a.EntityTypeQualifierColumn.ToLower(), a.EntityTypeQualifierValue );
 
                     return entityQualifications.Contains( needle );
@@ -1170,7 +1202,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
                 .ToList();
             }
 
-            return items.ToDictionary( i => ( i.RealEntityId, i.AttributeId ), i => i );
+            return items.ToDictionary( i => (i.RealEntityId, i.AttributeId), i => i );
         }
 
         #endregion
@@ -1340,7 +1372,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
                 newAttribute.Order = attributeService.Queryable().Max( a => a.Order ) + 1;
             }
 
-            var fieldTypeCache = FieldTypeCache.Get( attribute.FieldTypeGuid ?? Guid.Empty );
+            var fieldTypeCache = FieldTypeCache.Get( attribute.RealFieldTypeGuid ?? attribute.FieldTypeGuid ?? Guid.Empty );
 
             // For now, if they try to make changes to an attribute that is using
             // an unknown field type we just can't do it. Even if they only change
@@ -1371,6 +1403,9 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
             newAttribute.PostHtml = attribute.PostHtml;
             newAttribute.FieldTypeId = fieldTypeCache.Id;
             newAttribute.DefaultValue = fieldTypeCache.Field.GetPrivateEditValue( attribute.DefaultValue, configurationValues );
+            newAttribute.IsSuppressHistoryLogging = attribute.IsSuppressHistoryLogging;
+            newAttribute.IconCssClass = attribute.IconCssClass;
+            newAttribute.AttributeColor = attribute.AttributeColor;
 
             var categoryGuids = attribute.Categories?.Select( c => c.Value.AsGuid() ).ToList();
             newAttribute.Categories.Clear();
@@ -1871,7 +1906,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
 
             attributeValue.UpdateValueAsProperties( rockContext );
 
-            var valueAsBooleanParameter = new SqlParameter( "@ValueAsBoolean", (object) attributeValue.ValueAsBoolean ?? DBNull.Value );
+            var valueAsBooleanParameter = new SqlParameter( "@ValueAsBoolean", ( object ) attributeValue.ValueAsBoolean ?? DBNull.Value );
             var valueAsDateTimeParameter = new SqlParameter( "@ValueAsDateTime", ( object ) attributeValue.ValueAsDateTime ?? DBNull.Value );
             var valueAsNumericParameter = new SqlParameter( "@ValueAsNumeric", ( object ) attributeValue.ValueAsNumeric ?? DBNull.Value );
             var valueAsPersonIdParameter = new SqlParameter( "@ValueAsPersonId", ( object ) attributeValue.ValueAsPersonId ?? DBNull.Value );
@@ -2337,7 +2372,7 @@ WHERE [AV].[AttributeId] = @AttributeId
             // We only need to add rows if we have any referenced entities.
             if ( referenceDictionary.Any() )
             {
-                foreach (var kvpReference in referenceDictionary )
+                foreach ( var kvpReference in referenceDictionary )
                 {
                     var valueId = kvpReference.Key;
                     var referencedEntities = kvpReference.Value;
@@ -2800,10 +2835,10 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
         /// <param name="addEditControlsOptions">The add edit controls options.</param>
         public static void AddEditControlsForCategory( string categoryName, IHasAttributes item, Control parentControl, string validationGroup, bool setValue, AttributeAddEditControlsOptions addEditControlsOptions )
         {
-            int? numberOfColumns = addEditControlsOptions?.NumberOfColumns;
-            List<AttributeCache> excludedAttributes = addEditControlsOptions?.ExcludedAttributes ?? new List<AttributeCache>();
-            List<AttributeCache> attributes = addEditControlsOptions?.IncludedAttributes ?? item.Attributes.Select( a => a.Value ).Where( a => a.Categories.Any( ( CategoryCache c ) => c.Name == categoryName ) ).ToList();
-            bool showCategoryLabel = addEditControlsOptions?.ShowCategoryLabel ?? true;
+            var numberOfColumns = addEditControlsOptions?.NumberOfColumns;
+            var excludedAttributes = addEditControlsOptions?.ExcludedAttributes ?? new List<AttributeCache>();
+            var attributes = addEditControlsOptions?.IncludedAttributes ?? item.Attributes.Select( a => a.Value ).Where( a => a.Categories.Any( ( CategoryCache c ) => c.Name == categoryName ) ).ToList();
+            var showCategoryLabel = addEditControlsOptions?.ShowCategoryLabel ?? true;
 
             // ensure valid number of columns
             if ( numberOfColumns.HasValue )
@@ -2818,34 +2853,112 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
                 }
             }
 
-            bool parentIsDynamic = parentControl is DynamicControlsPanel || parentControl is DynamicPlaceholder;
-            HtmlGenericControl fieldSet = parentIsDynamic ? new DynamicControlsHtmlGenericControl( "fieldset" ) : new HtmlGenericControl( "fieldset" );
-
-            parentControl.Controls.Add( fieldSet );
+            var parentIsDynamic = parentControl is DynamicControlsPanel || parentControl is DynamicPlaceholder;
+            var fieldSet = parentIsDynamic ? new DynamicControlsHtmlGenericControl( "fieldset" ) : new HtmlGenericControl( "fieldset" );
             fieldSet.Controls.Clear();
-            if ( showCategoryLabel && !string.IsNullOrEmpty( categoryName ) )
+
+            if ( addEditControlsOptions.ShowCategoryPanels )
             {
-                HtmlGenericControl legend = new HtmlGenericControl( "h4" );
+                var panel = new HtmlGenericControl( "div" );
+                panel.AddCssClass( "panel" );
+                panel.AddCssClass( "panel-section" );
+                parentControl.Controls.Add( panel );
 
-                if ( numberOfColumns.HasValue )
+                // Add the category header.
+                if ( showCategoryLabel )
                 {
-                    HtmlGenericControl row = new HtmlGenericControl( "div" );
-                    row.AddCssClass( "row" );
-                    fieldSet.Controls.Add( row );
+                    var panelHeader = new HtmlGenericControl( "div" );
+                    panelHeader.AddCssClass( "panel-heading" );
 
-                    HtmlGenericControl col = new HtmlGenericControl( "div" );
-                    col.AddCssClass( "col-md-12" );
-                    row.Controls.Add( col );
+                    var panelTitle = new HtmlGenericControl( "h4" );
+                    panelTitle.AddCssClass( "panel-title" );
+                    panelTitle.InnerText = categoryName.IsNotNullOrWhiteSpace() ? categoryName.Trim() : addEditControlsOptions.DefaultCategoryName;
 
-                    col.Controls.Add( legend );
+                    HtmlGenericControl panelDescription = null;
+
+                    if ( addEditControlsOptions.CategoryDescription.IsNotNullOrWhiteSpace() )
+                    {
+                        panelDescription = new HtmlGenericControl( "span" );
+                        panelDescription.AddCssClass( "description" );
+                        panelDescription.InnerText = addEditControlsOptions.CategoryDescription.Trim();
+                    }
+
+                    if ( numberOfColumns.HasValue )
+                    {
+                        var row = new HtmlGenericControl( "div" );
+                        row.AddCssClass( "row" );
+                        panelHeader.Controls.Add( row );
+
+                        var col = new HtmlGenericControl( "div" );
+                        col.AddCssClass( "col-md-12" );
+                        row.Controls.Add( col );
+
+                        col.Controls.Add( panelTitle );
+
+                        if ( panelDescription != null )
+                        {
+                            col.Controls.Add( panelDescription );
+                        }
+                    }
+                    else
+                    {
+                        if ( panelDescription != null )
+                        {
+                            // Wrap the title and description in a div before adding to the header
+                            // so they will be on separate lines.
+                            var div = new HtmlGenericControl( "div" );
+                            div.Controls.Add( panelTitle );
+                            div.Controls.Add( panelDescription );
+
+                            panelHeader.Controls.Add( div );
+                        }
+                        else
+                        {
+                            // No need to wrap the title in another div when there is no description.
+                            panelHeader.Controls.Add( panelTitle );
+                        }
+                    }
+
+                    panel.Controls.Add( panelHeader );
                 }
-                else
+
+                var panelBody = new HtmlGenericControl( "div" );
+                panelBody.AddCssClass( "panel-body" );
+                panel.Controls.Add( panelBody );
+
+                // The fieldset should be placed in the panel body.
+                panelBody.Controls.Add( fieldSet );
+            }
+            else
+            {
+                // Add the category header.
+                if ( showCategoryLabel && categoryName.IsNotNullOrWhiteSpace() )
                 {
-                    fieldSet.Controls.Add( legend );
+                    var legend = new HtmlGenericControl( "h4" );
+
+                    if ( numberOfColumns.HasValue )
+                    {
+                        var row = new HtmlGenericControl( "div" );
+                        row.AddCssClass( "row" );
+                        fieldSet.Controls.Add( row );
+
+                        var col = new HtmlGenericControl( "div" );
+                        col.AddCssClass( "col-md-12" );
+                        col.Controls.Add( legend );
+
+                        row.Controls.Add( col );
+                    }
+                    else
+                    {
+                        fieldSet.Controls.Add( legend );
+                    }
+
+                    legend.Controls.Clear();
+                    legend.InnerText = categoryName.Trim();
                 }
 
-                legend.Controls.Clear();
-                legend.InnerText = categoryName.Trim();
+                // The fieldset should be placed directly in the parent control.
+                parentControl.Controls.Add( fieldSet );
             }
 
             HtmlGenericControl attributeRow = parentIsDynamic ? new DynamicControlsHtmlGenericControl( "div" ) : new HtmlGenericControl( "div" );
@@ -3095,7 +3208,7 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
                     Control control = parentControl?.FindControl( string.Format( "attribute_field_{0}", attributeKeyValue.Value.Id ) );
                     if ( control != null )
                     {
-                        result.AddOrIgnore( attributeKeyValue.Value, control );
+                        result.TryAdd( attributeKeyValue.Value, control );
                     }
                 }
             }
@@ -3368,5 +3481,29 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
         ///   <c>true</c> if [show category label]; otherwise, <c>false</c>.
         /// </value>
         public bool ShowCategoryLabel { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether attribute categories should be rendered as panels.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if attribute categories should be rendered as panels; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowCategoryPanels { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default category name that is displayed when a category does not have a name or when the category is missing.
+        /// </summary>
+        /// <value>
+        ///   The default category name.
+        /// </value>
+        public string DefaultCategoryName { get; internal set; }
+
+        /// <summary>
+        /// Gets or sets the attribute category description.
+        /// </summary>
+        /// <value>
+        ///   The attribute category description.
+        /// </value>
+        public string CategoryDescription { get; set; }
     }
 }

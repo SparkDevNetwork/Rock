@@ -34,7 +34,7 @@ namespace Rock.Model
         #region Properties
 
         /// <summary>
-        /// Gets the full phone number (country code and number). This should really only be used for queries and comparisons. 
+        /// Gets the full phone number (country code and number). This should really only be used for queries and comparisons.
         /// NOTE: If <seealso cref="Number"/> is a partial number (for example, no area code), then FullNumber isn't really the full number, and neither is NumberFormatted.
         /// </summary>
         /// <value>
@@ -234,7 +234,7 @@ namespace Rock.Model
 
             number = number.Trim();
 
-            if ( number.StartsWith("+") )
+            if ( number.StartsWith( "+" ) )
             {
                 // The number starts with a "+", so extract the country code.
                 var matches = Regex.Match( number, @"\+(\d+)[^\d]+(.*)" );

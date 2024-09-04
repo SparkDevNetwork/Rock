@@ -128,31 +128,7 @@ namespace Rock.Financial
         public string AccountNumberMasked { get; set; }
 
         private string _nameOnCardEncrypted = null;
-        /// <summary>
-        /// Gets or sets the name on card encrypted.
-        /// </summary>
-        /// <value>
-        /// The name on card encrypted.
-        /// </value>
-        [Obsolete("Use NameOnCard")]
-        [RockObsolete( "1.12.4" )]
-        public string NameOnCardEncrypted
-        {
-            get
-            {
-                // We are only checking null here because empty string is valid.
-                if ( _nameOnCard == null )
-                {
-                    return _nameOnCardEncrypted;
-                }
-                return Encryption.EncryptString( _nameOnCard );
-            }
-            set
-            {
-                _nameOnCardEncrypted = value;
-            }
-        }
-
+ 
         private string _nameOnCard = null;
         /// <summary>
         /// Gets or sets the name on card.
@@ -179,54 +155,6 @@ namespace Rock.Financial
 
         private string _expirationMonthEncrypted = null;
         private string _expirationYearEncrypted = null;
-
-        /// <summary>
-        /// Gets or sets the expiration month encrypted. Use <seealso cref="ExpirationMonth"/> to get the unencrypted version of Month.
-        /// </summary>
-        /// <value>
-        /// The expiration month encrypted.
-        /// </value>
-        [Obsolete( "Use ExpirationMonth" )]
-        [RockObsolete( "1.12.4" )]
-        public string ExpirationMonthEncrypted
-        {
-            get
-            {
-                if ( _expirationMonth == null )
-                {
-                    return _expirationMonthEncrypted;
-                }
-                return Encryption.EncryptString( _expirationMonth.Value.ToString() );
-            }
-            set
-            {
-                _expirationMonthEncrypted = value;
-            }
-        }
-
-        /// <summary>
-        /// Important Note: that this could be a 2 digit or 4 digit year, so use <seealso cref="ExpirationYear"/> to get the unencrypted version of this which will always return a 4 digit year.
-        /// </summary>
-        /// <value>
-        /// The expiration year encrypted.
-        /// </value>
-        [Obsolete( "Use ExpirationYear" )]
-        [RockObsolete( "1.12.4" )]
-        public string ExpirationYearEncrypted
-        {
-            get
-            {
-                if ( _expirationYear == null )
-                {
-                    return _expirationYearEncrypted;
-                }
-                return Encryption.EncryptString( _expirationYear.Value.ToString() );
-            }
-            set
-            {
-                _expirationYearEncrypted = value;
-            }
-        }
 
         private int? _expirationMonth = null;
         private int? _expirationYear = null;
@@ -284,7 +212,7 @@ namespace Rock.Financial
             }
             else
             {
-                return System.Globalization.CultureInfo.CurrentCulture.Calendar.ToFourDigitYear( year.Value );
+                return RockDateTime.ToFourDigitYearForCreditCardExpiration( year.Value );
             }
         }
         /// <summary>

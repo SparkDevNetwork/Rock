@@ -38,7 +38,7 @@
                     </p>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnEdit" runat="server" AccessKey="e" ToolTip="Alt+e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
+                        <asp:LinkButton ID="btnEdit" runat="server" data-shortcut-key="e" ToolTip="Alt+e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
                         <span class="pull-right">
@@ -98,6 +98,24 @@
                                 Help="If enabled, connection request blocks will have an additional setting allowing security to be applied to individual requests. A special rule is also applied, which automatically allows an assigned connector to view or edit their requests when the connector doesn't have security to the connection opportunity or type. Enabling this setting will noticeably impact performance when there are a significant amount of requests." />
                         </div>
                     </div>
+
+                    <Rock:PanelWidget ID="wpConnectionTypeAttributes" runat="server" Title="Connection Type Attributes" CssClass="connection-type-attribute-panel">
+                        <div class="grid">
+                            <Rock:Grid ID="gConnectionTypeAttributes" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Connection Type Attribute">
+                                <Columns>
+                                    <Rock:ReorderField />
+                                    <Rock:RockBoundField DataField="Name" HeaderText="Name" />
+                                    <Rock:RockBoundField DataField="Description" HeaderText="Description" />
+                                    <Rock:BoolField DataField="IsRequired" HeaderText="Required" />
+                                    <Rock:SecurityField TitleField="Name" />
+                                    <Rock:EditField OnClick="gConnectionTypeAttributes_Edit" />
+                                    <Rock:DeleteField OnClick="gConnectionTypeAttributes_Delete" />
+                                </Columns>
+                            </Rock:Grid>
+                        </div>
+                        <Rock:AttributeValuesContainer ID="avcEditAttributes" runat="server" />
+                    </Rock:PanelWidget>
+
                     <Rock:PanelWidget ID="wpConnectionRequestAttributes" runat="server" Title="Connection Request Attributes" CssClass="connection-request-attribute-panel">
                         <Rock:NotificationBox ID="nbConnectionRequestAttributes" runat="server" NotificationBoxType="Info"
                             Text="Connection Request Attributes apply to all of the connection requests in every Opportunity of this type.  Each connection request will have their own value for these attributes" />
@@ -173,8 +191,8 @@
                     </Rock:PanelWidget>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                        <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                        <asp:LinkButton ID="btnSave" runat="server" data-shortcut-key="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                        <asp:LinkButton ID="btnCancel" runat="server" data-shortcut-key="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                     </div>
                 </div>
             </div>
@@ -190,9 +208,15 @@
             </Content>
         </Rock:ModalDialog>
 
-        <Rock:ModalDialog ID="dlgAttribute" runat="server" Title="Connection Opportunity Attributes" OnSaveClick="dlgConnectionTypeAttribute_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Attributes">
+        <Rock:ModalDialog ID="dlgAttribute" runat="server" Title="Connection Opportunity Attributes" OnSaveClick="dlgConnectionOpportunityAttribute_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="Attributes">
             <Content>
                 <Rock:AttributeEditor ID="edtAttributes" runat="server" ShowActions="false" ValidationGroup="Attributes" />
+            </Content>
+        </Rock:ModalDialog>
+
+        <Rock:ModalDialog ID="dlgConnectionTypeAttribute" runat="server" Title="Connection Type Attributes" OnSaveClick="dlgConnectionTypeAttribute_SaveClick" OnCancelScript="clearActiveDialog();" ValidationGroup="ConnectionTypeAttributes">
+            <Content>
+                <Rock:AttributeEditor ID="edtConnectionTypeAttributes" runat="server" ShowActions="false" ValidationGroup="ConnectionTypeAttributes" />
             </Content>
         </Rock:ModalDialog>
 
@@ -272,8 +296,8 @@
                          </div>
                          <Rock:RockDropDownList ID="ddlMoveTo" runat="server" Label="Move To" Required="true" ValidationGroup="vgConnectionStatusAutomation" DataTextField="Name" DataValueField="Guid" />
                          <div class="actions">
-                             <asp:LinkButton ID="lbSaveAutomation" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save Automation" CssClass="btn btn-xs btn-default" OnClick="lbSaveAutomation_Click"  ValidationGroup="vgConnectionStatusAutomation" />
-                             <asp:LinkButton ID="lbCancelAutomation" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-xs btn-link" CausesValidation="false" OnClick="lbCancelAutomation_Click" />
+                             <asp:LinkButton ID="lbSaveAutomation" runat="server" data-shortcut-key="s" ToolTip="Alt+s" Text="Save Automation" CssClass="btn btn-xs btn-default" OnClick="lbSaveAutomation_Click"  ValidationGroup="vgConnectionStatusAutomation" />
+                             <asp:LinkButton ID="lbCancelAutomation" runat="server" data-shortcut-key="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-xs btn-link" CausesValidation="false" OnClick="lbCancelAutomation_Click" />
                          </div>
                     </Rock:RockControlWrapper>
 

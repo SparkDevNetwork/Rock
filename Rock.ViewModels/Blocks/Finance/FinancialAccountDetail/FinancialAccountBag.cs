@@ -21,6 +21,10 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Finance.FinancialAccountDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.ViewModels.Utility.EntityBagBase" />
     public class FinancialAccountBag : EntityBagBase
     {
         /// <summary>
@@ -102,5 +106,21 @@ namespace Rock.ViewModels.Blocks.Finance.FinancialAccountDetail
         /// The account participants.
         /// </value>
         public List<FinancialAccountParticipantBag> AccountParticipants { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Image that can be used when displaying this Financial Account
+        /// </summary>
+        /// <value>
+        /// The image binary file.
+        /// </value>
+        public ListItemBag ImageBinaryFile { get; set; }
+
+        /// <summary>
+        /// Gets or sets the image URL.
+        /// </summary>
+        /// <value>
+        /// The image URL.
+        /// </value>
+        public string ImageUrl { get; set; }
     }
 }

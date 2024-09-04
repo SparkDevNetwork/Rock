@@ -212,7 +212,7 @@
 
                         <Rock:PanelWidget ID="wpGroupMemberAttributes" runat="server" Title="Member Attributes" CssClass="group-type-attribute-panel">
                             <Rock:NotificationBox ID="nbGroupMemberAttributes" runat="server" NotificationBoxType="Info"
-                                Text="Member Attributes apply to members in this group.  Each member will have their own value for these attributes" />
+                                Text="Member Attributes apply to members in this group. Each member will have their own value for these attributes." />
                             <Rock:RockControlWrapper ID="rcwGroupMemberAttributesInherited" runat="server" Label="Inherited Group Member Attributes">
                                 <div class="grid">
                                     <Rock:Grid ID="gGroupMemberAttributesInherited" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="true" RowItemText="Inherited Member Attribute">
@@ -314,8 +314,8 @@
                         </Rock:PanelWidget>
 
                         <div class="actions">
-                            <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                            <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                            <asp:LinkButton ID="btnSave" runat="server" data-shortcut-key="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                            <asp:LinkButton ID="btnCancel" runat="server" data-shortcut-key="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                         </div>
 
                     </div>
@@ -328,7 +328,7 @@
                         <asp:Literal ID="lContent" runat="server"></asp:Literal>
 
                         <div class="actions">
-                            <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" ToolTip="Alt+m" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
+                            <asp:LinkButton ID="btnEdit" runat="server" data-shortcut-key="e" AccessKey="m" ToolTip="Alt+e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
                             <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                             <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
                             <asp:LinkButton ID="btnArchive" runat="server" Text="Archive" CssClass="btn btn-link js-archive-group" OnClick="btnArchive_Click" CausesValidation="false" />
@@ -347,7 +347,39 @@
                     </fieldset>
                 </div>
             </div>
-
+            
+            <Rock:ModalDialog ID="mdCopyGroup" runat="server" ValidationGroup="vgCopyGroup" Title="Copy Group" OnSaveClick="mdCopyGroup_SaveClick" SaveButtonText="Copy" Visible="false">
+                <Content>
+                    <Rock:NotificationBox ID="mdCopyWarning" runat="server" NotificationBoxType="Warning" Text="
+                        This action will copy the selected group and (optionally) it's child groups. Group members will not be copied.<br />
+                        The following items will be included for every copied group:<br />
+                        <ul>
+                            <li>
+                                Group member attributes configuration
+                            </li>
+                            <li>
+                                Group attributes configuration and their values
+                            </li>
+                            <li>
+                                Schedules
+                            </li>
+                            <li>
+                                Authorization (both authorizations to the group and access to other entities based on membership to the group)
+                            </li>
+                            <li>
+                                Locations (except when the location is a group member address)
+                            </li>
+                            <li>
+                                Group requirements
+                            </li>
+                            <li>
+                                Group syncs
+                            </li>
+                        </ul>"
+                        />
+                    <Rock:RockCheckBox ID="cbCopyGroupIncludeChildGroups" runat="server" Text="Include Child Groups" Checked="true" />
+                </Content>
+            </Rock:ModalDialog>
         </asp:Panel>
 
         <asp:HiddenField ID="hfActiveDialog" runat="server" />

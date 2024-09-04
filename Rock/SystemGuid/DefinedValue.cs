@@ -23,6 +23,25 @@ namespace Rock.SystemGuid
     /// </summary>
     public static class DefinedValue
     {
+        #region Attendance
+
+        /// <summary>
+        /// The attendance record came from a legacy kiosk.
+        /// </summary>
+        public const string ATTENDANCE_SOURCE_LEGACY_KIOSK = "0B25A627-679B-4B73-AA84-305DEF24815A";
+
+        /// <summary>
+        /// The attendance record came from a kiosk.
+        /// </summary>
+        public const string ATTENDANCE_SOURCE_KIOSK = "9A21D7EB-BCB5-4466-B62F-70EC5008B6B9";
+
+        /// <summary>
+        /// The attendance record came from a mobile check-in.
+        /// </summary>
+        public const string ATTENDANCE_SOURCE_MOBILE = "972E8841-A3C9-4DDD-BD24-A414C0290331";
+
+        #endregion
+
         #region Block Template
 
         /// <summary>
@@ -948,7 +967,7 @@ namespace Rock.SystemGuid
 
         /// <summary>
         /// Interaction Channel Type: UrlShortener
-        /// </summary>        
+        /// </summary>
         public const string INTERACTIONCHANNELTYPE_URLSHORTENER = "371066D5-C5F9-4783-88C8-D9AC8DC67468";
 
         /// <summary>
@@ -980,6 +999,11 @@ namespace Rock.SystemGuid
         /// Interaction Channel Type: Challenge Progress
         /// </summary>
         public const string INTERACTIONCHANNELTYPE_CHALLENGE_PROGRESS = "6AA529BD-9FA5-43AD-A98E-B8DF5F997146";
+
+        /// <summary>
+        /// Interaction Channel Type: Interaction Intents
+        /// </summary>
+        public const string INTERACTIONCHANNELTYPE_INTERACTION_INTENTS = "A64DA89B-F634-4D58-ADC7-32243F84224B";
 
         /// <summary>
         /// The PBX CDR medium value
@@ -1468,6 +1492,25 @@ namespace Rock.SystemGuid
         /// Project Type = Project Due
         /// </summary>
         public const string PROJECT_TYPE_PROJECT_DUE = "C999D489-5B8F-4892-BCC3-90DFFBC524F5";
+
+        #endregion
+
+        #region Theme Purpose
+
+        /// <summary>
+        /// Check-in
+        /// </summary>
+        public const string THEME_PURPOSE_CHECKIN = "2BBB1A44-708E-4469-80DE-4AAE6227BEF8";
+
+        /// <summary>
+        /// Website Legacy
+        /// </summary>
+        public const string THEME_PURPOSE_WEBSITE_LEGACY = "4E1477FD-B105-4E4B-99BB-E5F1B964DC94";
+
+        /// <summary>
+        /// Website Nextgen
+        /// </summary>
+        public const string THEME_PURPOSE_WEBSITE_NEXTGEN = "B177E07F-7E07-4D7B-AFA7-9DE163797659";
 
         #endregion
     }

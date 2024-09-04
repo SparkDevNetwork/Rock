@@ -162,6 +162,7 @@ namespace Rock.Model
             target.AdditionalSettings = source.AdditionalSettings;
             target.AllowedFrameDomains = source.AllowedFrameDomains;
             target.AllowIndexing = source.AllowIndexing;
+            target.BotGuardianLevel = source.BotGuardianLevel;
             target.ChangePasswordPageId = source.ChangePasswordPageId;
             target.ChangePasswordPageRouteId = source.ChangePasswordPageRouteId;
             target.CommunicationPageId = source.CommunicationPageId;
@@ -175,7 +176,9 @@ namespace Rock.Model
             target.EnabledForShortening = source.EnabledForShortening;
             target.EnableExclusiveRoutes = source.EnableExclusiveRoutes;
             target.EnableMobileRedirect = source.EnableMobileRedirect;
+            #pragma warning disable 612, 618
             target.EnablePageViewGeoTracking = source.EnablePageViewGeoTracking;
+            #pragma warning restore 612, 618
             target.EnablePageViews = source.EnablePageViews;
             target.EnablePersonalization = source.EnablePersonalization;
             target.EnableVisitorTracking = source.EnableVisitorTracking;

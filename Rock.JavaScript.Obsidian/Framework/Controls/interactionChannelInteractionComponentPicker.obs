@@ -33,6 +33,7 @@
     import { useHttp } from "@Obsidian/Utility/http";
     import { InteractionChannelInteractionComponentPickerGetChannelFromComponentOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/interactionChannelInteractionComponentPickerGetChannelFromComponentOptionsBag";
     import { useSecurityGrantToken } from "@Obsidian/Utility/block";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { deepEqual } from "@Obsidian/Utility/util";
 
     const props = defineProps({
@@ -47,6 +48,11 @@
             default: null
         },
 
+        interactionChannel: {
+            type: Object as PropType<ListItemBag | null>,
+            default: null
+        },
+
         disabled: {
             type: Boolean,
             default: false
@@ -55,18 +61,19 @@
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: ListItemBag | null): void
+        (e: "update:interactionChannel", value: ListItemBag | null): void
     }>();
 
     // #region Values
 
     const internalValue = ref<ListItemBag | null>(props.modelValue);
-    const internalChannelValue = ref<ListItemBag | null>(null);
+    const internalChannelValue = ref<ListItemBag | null>(props.interactionChannel);
 
     const securityGrantToken = useSecurityGrantToken();
     const http = useHttp();
 
-    const internalChannelGuid = computed(() => {
-        return (props.defaultInteractionChannelGuid || internalChannelValue.value?.value) ?? "";
+    const internalChannelGuid = computed<Guid | null>(() => {
+        return toGuidOrNull(props.defaultInteractionChannelGuid) ?? toGuidOrNull(internalChannelValue.value?.value);
     });
     let skipWatcher = false;
 
@@ -93,9 +100,13 @@
         }
     });
 
-    watch(internalChannelValue, () => {
+    watch(internalChannelValue, (val) => {
         if (!skipWatcher) {
             internalValue.value = null;
+        }
+
+        if (!deepEqual(val, props.interactionChannel, false)) {
+            emit("update:interactionChannel", val);
         }
     });
 
@@ -105,7 +116,7 @@
 
     async function getChannelFromComponent(): Promise<void> {
         const options: InteractionChannelInteractionComponentPickerGetChannelFromComponentOptionsBag = {
-            interactionComponentGuid: props.modelValue?.value,
+            interactionComponentGuid: toGuidOrNull(props.modelValue?.value) ?? emptyGuid,
             securityGrantToken: securityGrantToken.value
         };
 

@@ -25,7 +25,7 @@ namespace Rock
     /// <summary>
     /// Extension methods for <see cref="RockBlockType"/>
     /// </summary>
-    internal static class RockBlockTypeExtensions
+    public static class RockBlockTypeExtensions
     {
         /// <summary>
         /// Builds and returns the URL for a linked <see cref="Rock.Model.Page"/>
@@ -124,7 +124,7 @@ namespace Rock
                     continue;
                 }
 
-                parameters.AddOrIgnore( qp.Key, qp.Value );
+                parameters.TryAdd( qp.Key, qp.Value );
             }
 
             var pageReference = new Rock.Web.PageReference( block.PageCache.Guid.ToString(), parameters );

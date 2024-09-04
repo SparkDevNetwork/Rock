@@ -135,8 +135,6 @@ namespace RockWeb.Blocks.WorkFlow
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             nbNotAuthorized.Visible = false;
 
             if ( !Page.IsPostBack )
@@ -154,6 +152,8 @@ namespace RockWeb.Blocks.WorkFlow
                     ShowAttributeValues();
                 }
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -870,7 +870,7 @@ namespace RockWeb.Blocks.WorkFlow
 
         private void BindLog()
         {
-            var logEntries = new RockContext().WorkflowLogs
+            var logEntries = new RockContext().Set<WorkflowLog>()
                 .Where( l => l.WorkflowId == Workflow.Id )
                 .OrderBy( l => l.Id ) // Do not sort by DateTime as many actions can occur in the same millisecond.
                 .ToList();

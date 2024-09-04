@@ -22,7 +22,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
+
+using Rock.Attribute;
 using Rock.Data;
+using Rock.Enums.Cms;
 using Rock.Lava;
 using Rock.Security;
 using Rock.Utility;
@@ -41,7 +44,7 @@ namespace Rock.Model
     [Table( "Page" )]
     [DataContract]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.PAGE )]
-    public partial class Page : Model<Page>, IOrdered, ICacheable
+    public partial class Page : Model<Page>, IOrdered, ICacheable, IHasAdditionalSettings
     {
         #region Entity Properties
 
@@ -65,6 +68,13 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [DataMember]
         public string PageTitle { get; set; }
+
+
+        /// <summary>
+        /// Gets or sets the Bot Guardian Level for the Page.
+        /// </summary>
+        [DataMember]
+        public BotGuardianLevel BotGuardianLevel { get; set; } = BotGuardianLevel.Inherit;
 
         /// <summary>
         /// Gets or sets the browser title to use for the page.
@@ -386,8 +396,15 @@ namespace Rock.Model
         /// <value>
         /// The additional settings.
         /// </value>
+        [Obsolete( "Use AdditionalSettingsJson instead." )]
+        [RockObsolete( "1.16" )]
         [DataMember]
         public string AdditionalSettings { get; set; }
+
+        /// <inheritdoc/>
+        [RockInternal( "1.16.4" )]
+        [DataMember]
+        public string AdditionalSettingsJson { get; set; }
 
         /// <summary>
         /// Gets or sets the median page load time in seconds. Typically calculated from a set of

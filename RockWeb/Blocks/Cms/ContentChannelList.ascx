@@ -21,7 +21,7 @@
 
                     <Rock:ModalAlert ID="mdGridWarning" runat="server" />
 
-                    <Rock:Grid ID="gContentChannels" runat="server" EmptyDataText="No Channels Found" RowItemText="Channel" AllowSorting="true" TooltipField="Description" OnRowSelected="gContentChannels_Edit">
+                    <Rock:Grid ID="gContentChannels" runat="server" EmptyDataText="No Channels Found" RowItemText="Channel" AllowSorting="true" TooltipField="Description" OnRowSelected="gContentChannels_Edit" CssClass="js-grid-content-channel-list" ShowConfirmDeleteDialog="false" OnRowDataBound="gContentChannels_RowDataBound">
                         <Columns>
                             <Rock:RockBoundField DataField="Name" HeaderText="Channel" SortExpression="Name" />
                             <Rock:RockBoundField DataField="ContentChannelType" HeaderText="Type" SortExpression="ContentChannelType" />

@@ -434,6 +434,17 @@ namespace Rock.Data
         /// <returns></returns>
         public object GetValue( string key )
         {
+            return OnGetValue( key );
+        }
+
+        /// <summary>
+        /// Override this method to return a value for a key that does not correspond to the name of a declared property,
+        /// or to return an alternate value for an existing property.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        protected virtual object OnGetValue( string key )
+        {
             return this[key];
         }
 

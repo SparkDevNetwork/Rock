@@ -16,213 +16,14 @@
 //
 
 import { Guid } from "@Obsidian/Types";
-import { GatewayControlBag } from "@Obsidian/ViewModels/Controls/gatewayControlBag";
+import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrantBag";
+import { RegistrarBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrarBag";
+import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
+import { RegistrationEntrySuccessBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntrySuccessBag";
+import { RegistrationEntryCreatePaymentPlanRequestBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryCreatePaymentPlanRequestBag";
+import { RockCurrency } from "@Obsidian/Utility/rockCurrency";
+import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
-import { SavedFinancialAccountListItemBag } from "@Obsidian/ViewModels/Finance/savedFinancialAccountListItemBag";
-import { FilterExpressionType } from "@Obsidian/Core/Reporting/filterExpressionType";
-import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
-
-export const enum RegistrationPersonFieldType {
-    FirstName = 0,
-    LastName = 1,
-    Campus = 2,
-    Address = 3,
-    Email = 4,
-    Birthdate = 5,
-    Gender = 6,
-    MaritalStatus = 7,
-    MobilePhone = 8,
-    HomePhone = 9,
-    WorkPhone = 10,
-    Grade = 11,
-    ConnectionStatus = 12,
-    MiddleName = 13,
-    AnniversaryDate = 14,
-    Race = 15,
-    Ethnicity = 16
-}
-
-export const enum RegistrationFieldSource {
-    PersonField = 0,
-    PersonAttribute = 1,
-    GroupMemberAttribute = 2,
-    RegistrantAttribute = 4
-}
-
-export const enum RegistrarOption {
-    PromptForRegistrar = 0,
-    PrefillFirstRegistrant = 1,
-    UseFirstRegistrant = 2,
-    UseLoggedInPerson = 3
-}
-
-export const enum RegistrantsSameFamily {
-    No = 0,
-    Yes = 1,
-    Ask = 2
-}
-
-export type SessionRenewalResult = {
-    spotsSecured: number;
-    expirationDateTime: string;
-};
-
-export type RegistrationEntryBlockViewModel = {
-    currentPersonFamilyGuid?: Guid | null;
-    timeoutMinutes: number | null;
-    registrantsSameFamily: RegistrantsSameFamily;
-    maxRegistrants: number;
-    registrationAttributeTitleStart: string;
-    registrationAttributeTitleEnd: string;
-    instructionsHtml: string;
-    registrantTerm: string;
-    registrationTerm: string;
-    pluralRegistrationTerm: string;
-    pluralRegistrantTerm: string;
-    pluralFeeTerm: string;
-    registrantForms: RegistrationEntryBlockFormViewModel[];
-    fees: RegistrationEntryBlockFeeViewModel[];
-    familyMembers: RegistrationEntryBlockFamilyMemberViewModel[];
-    registrationAttributesStart: PublicAttributeBag[];
-    registrationAttributesEnd: PublicAttributeBag[];
-    forceEmailUpdate: boolean;
-    registrarOption: RegistrarOption;
-    cost: number;
-    gatewayControl: GatewayControlBag;
-    isRedirectGateway: boolean;
-    spotsRemaining: number | null;
-    waitListEnabled: boolean;
-    instanceName: string;
-    amountDueToday: number | null;
-    initialAmountToPay: number | null;
-    session: RegistrationEntryBlockSession | null;
-    isUnauthorized: boolean;
-    hasDiscountsAvailable: boolean;
-    redirectGatewayUrl: string;
-    loginRequiredToRegister: boolean;
-    successViewModel: RegistrationEntryBlockSuccessViewModel | null;
-    allowRegistrationUpdates: boolean;
-    isExistingRegistration: boolean;
-    startAtBeginning: boolean;
-    gatewayGuid: Guid | null;
-    campuses: ListItemBag[];
-    maritalStatuses: ListItemBag[];
-    connectionStatuses: ListItemBag[];
-    grades: ListItemBag[];
-    enableSaveAccount: boolean;
-    savedAccounts: SavedFinancialAccountListItemBag[] | null;
-    registrationInstanceNotFoundMessage: string | null;
-    races: ListItemBag[];
-    ethnicities: ListItemBag[];
-    showSmsOptIn: boolean;
-
-    isInlineSignatureRequired: boolean;
-    isSignatureDrawn: boolean;
-    signatureDocumentTerm?: string | null;
-    signatureDocumentTemplateName?: string | null;
-
-    hideProgressBar: boolean;
-};
-
-export type RegistrationEntryBlockFamilyMemberViewModel = {
-    guid: Guid;
-    familyGuid: Guid;
-    fullName: string;
-    fieldValues: Record<Guid, unknown>;
-};
-
-export type RegistrationEntryBlockFeeViewModel = {
-    name: string;
-    guid: Guid;
-    allowMultiple: boolean;
-    isRequired: boolean;
-    items: RegistrationEntryBlockFeeItemViewModel[];
-    discountApplies: boolean;
-    hideWhenNoneRemaining?: boolean;
-};
-
-export type RegistrationEntryBlockFeeItemViewModel = {
-    name: string;
-    guid: Guid;
-    cost: number;
-    originalCountRemaining: number | null;
-    countRemaining: number | null;
-};
-
-export type RegistrationEntryBlockFormViewModel = {
-    fields: RegistrationEntryBlockFormFieldViewModel[];
-};
-
-export type RegistrationEntryBlockFormFieldViewModel = {
-    fieldSource: RegistrationFieldSource;
-    personFieldType: RegistrationPersonFieldType;
-    isRequired: boolean;
-    isSharedValue: boolean;
-    attribute: PublicAttributeBag | null;
-    visibilityRuleType: FilterExpressionType;
-    visibilityRules: RegistrationEntryBlockFormFieldRuleViewModel[];
-    preHtml: string;
-    postHtml: string;
-    showOnWaitList: boolean;
-    guid: Guid;
-};
-
-export type RegistrationEntryBlockFormFieldRuleViewModel = {
-    comparedToRegistrationTemplateFormFieldGuid: Guid;
-    comparisonValue: ComparisonValue;
-};
-
-export type RegistrantInfo = {
-    isOnWaitList: boolean;
-
-    /** The family guid that this person is to be a part of */
-    familyGuid: Guid;
-
-    /** If the person were an existing person, this is his/her guid */
-    personGuid: Guid | null;
-
-    fieldValues: Record<Guid, unknown>;
-    cost: number;
-    feeItemQuantities: Record<Guid, number>;
-    signatureData?: string | null;
-
-    guid: Guid;
-};
-
-export type RegistrarInfo = {
-    nickName: string;
-    lastName: string;
-    email: string;
-    updateEmail: boolean;
-    familyGuid: Guid | null;
-};
-
-export type RegistrationEntryBlockSuccessViewModel = {
-    titleHtml: string;
-    messageHtml: string;
-    transactionCode: string;
-    gatewayPersonIdentifier: string;
-};
-
-export type RegistrationEntryBlockArgs = {
-    registrationGuid: Guid | null;
-    registrationSessionGuid: Guid | null;
-    registrants: RegistrantInfo[];
-    fieldValues: Record<Guid, unknown> | null;
-    registrar: RegistrarInfo | null;
-    savedAccountGuid: Guid | null;
-    gatewayToken: string | null;
-    discountCode: string | null;
-    amountToPayNow: number;
-};
-
-export type RegistrationEntryBlockSession = RegistrationEntryBlockArgs & {
-    discountAmount: number;
-    discountPercentage: number;
-    previouslyPaid: number;
-    discountMaxRegistrants: number;
-};
 
 export const enum Step {
     Intro = "intro",
@@ -241,26 +42,117 @@ export type RegistrantBasicInfo = {
     guid: Guid;
 };
 
+export type RegistrationCostSummaryInfo = {
+    paidAmount: number;
+    remainingAmount: number;
+    minimumRemainingAmount: number;
+};
+
+export type PaymentPlanFrequency = {
+    transactionFrequency: TransactionFrequency;
+    startPaymentDate: RockDateTime;
+    paymentDeadlineDate: RockDateTime;
+    maxNumberOfPayments: number;
+    listItemBag: ListItemBag;
+    /** Returns the desired date if it is valid; otherwise, the next valid date is returned or null if there are no valid dates. */
+    getValidTransactionDate(desiredDate: RockDateTime): RockDateTime | null;
+    /** Returns the next valid date following the previous date or null if there are no valid dates. */
+    getNextTransactionDate(previousDate: RockDateTime): RockDateTime | null;
+    getNPaymentsOfAmountMessage(numberOfPayments: number, amountPerPayment: RockCurrency): string;
+};
+
 export type RegistrationEntryState = {
     steps: Record<Step, Step>;
-    viewModel: RegistrationEntryBlockViewModel;
+    viewModel: RegistrationEntryInitializationBox;
     currentStep: string;
     firstStep: string;
     navBack: boolean;
     currentRegistrantIndex: number;
     currentRegistrantFormIndex: number;
-    registrants: RegistrantInfo[];
+    registrants: RegistrantBag[];
     registrationFieldValues: Record<Guid, unknown>;
-    registrar: RegistrarInfo;
+    registrar: RegistrarBag;
     gatewayToken: string;
     savedAccountGuid: Guid | null;
     discountCode: string;
     discountAmount: number;
     discountPercentage: number;
     discountMaxRegistrants: number;
-    successViewModel: RegistrationEntryBlockSuccessViewModel | null;
+    successViewModel: RegistrationEntrySuccessBag | null;
     amountToPayToday: number;
     sessionExpirationDateMs: number | null;
     registrationSessionGuid: Guid;
     ownFamilyGuid: Guid;
+    paymentPlan: RegistrationEntryCreatePaymentPlanRequestBag | null;
+};
+
+export type PaymentPlanConfiguration = {
+    balanceDue: RockCurrency;
+    paymentPlanFrequencies: PaymentPlanFrequency[];
+    paymentPlanFrequency: PaymentPlanFrequency;
+    startDate: RockDateTime;
+    endDate: RockDateTime;
+    amountToPayToday: RockCurrency;
+    amountToPayTodayAdjustment: RockCurrency;
+    amountToPayTodayPlusAdjustment: RockCurrency;
+    numberOfPayments: number;
+    amountPerPayment: RockCurrency;
+    minAmountToPayToday: RockCurrency;
+};
+
+export type PaymentPlanConfigurationOptions = {
+    balanceDue: RockCurrency;
+    desiredAllowedPaymentPlanFrequencies: PaymentPlanFrequency[];
+    desiredPaymentPlanFrequency: PaymentPlanFrequency;
+    desiredStartDate: RockDateTime;
+    endDate: RockDateTime;
+    amountToPayToday: RockCurrency;
+    desiredNumberOfPayments: number;
+    minAmountToPayToday: RockCurrency;
+};
+
+export type PersonGuid = Guid; // Not the registrant guid.
+export type FormFieldGuid = Guid;
+export type FormFieldValue = unknown;
+
+export type TransactionFrequency = {
+    readonly definedValueGuid: Guid;
+
+    /** Determines if this transaction frequency matches the definedValueGuid. */
+    hasDefinedValueGuid(guid: Guid): boolean;
+
+    /**
+     * Gets the number of transactions between the first and second dates, inclusively.
+     *
+     * Assuming each transaction can pay as little as 1 cent (for USD), the amountToPay will also limit the max number of transactions; e.g., an amountToPay of $0.25 can only have a maximum of 25 transactions.
+     */
+    getMaxNumberOfTransactionsBetweenDates(firstDateTime: RockDateTime, secondDateTime: RockDateTime, amountToPay: RockCurrency): number;
+
+    /** Returns the desired date if it is valid; otherwise, the next valid date is returned or null if there are no valid dates. */
+    getValidTransactionDate(firstDateTime: RockDateTime, secondDateTime: RockDateTime, desiredDate: RockDateTime): RockDateTime | null;
+
+    /** Returns the next valid date following the previous date or null if there are no valid dates. */
+    getNextTransactionDate(firstDateTime: RockDateTime, secondDateTime: RockDateTime, previousDate: RockDateTime): RockDateTime | null;
+
+    maxNumberOfPaymentsForOneYear: number;
+
+    /** Gets a string in the format, "Two Weekly Payments of $146.50". */
+    getNPaymentsOfAmountMessage(numberOfPayments: number, amount: RockCurrency): string;
+};
+
+export type GetNextDayOption = "end-of-month";
+
+export type RegistrationEntryTerminology = {
+    discountCodeSingularLowerCase: string;
+    discountCodeSingularTitleCase: string;
+    feePluralLowerCase: string;
+    feePluralTitleCase: string;
+    feeSingularLowerCase: string;
+    registrantPluralLowerCase: string;
+    registrantSingularLowerCase: string;
+    registrantSingularTitleCase: string;
+    registrationPluralLowerCase: string;
+    registrationSingularLowerCase: string;
+    registrationSingularTitleCase: string;
+    signatureDocumentSingularTitleCase: string;
 };

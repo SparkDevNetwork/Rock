@@ -158,6 +158,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string COMMUNICATION_APPROVAL_EMAIL = "11D325F4-DAF3-4579-A9D8-6347CCC02341";
 
+        /// <summary>
+        /// Gets the template guid for the Email Metrics Reminder system communication 
+        /// </summary>
+        public const string COMMUNICATION_EMAIL_METRICS_REMINDER = "EAE6A169-C01C-4570-92A5-E465B566CFEF";
+
         #endregion
 
         #region Finance
@@ -248,6 +253,15 @@ namespace Rock.SystemGuid
         /// Gets the template guid for Sign-Up Group Registration Confirmations.
         /// </summary>
         public const string SIGNUP_GROUP_REGISTRATION_CONFIRMATION = "B546C11D-6C92-400F-BA56-AAA22D7BAC01";
+
+        #endregion
+
+        #region Learning Management System (LMS)
+
+        /// <summary>
+        /// Gets the template guid for the Learning Activity Notifications system communication.
+        /// </summary>
+        public const string LEARNING_ACTIVITY_NOTIFICATIONS = "d40a9c32-f179-4e5e-9b0d-ce208c5d1870";
 
         #endregion
     }

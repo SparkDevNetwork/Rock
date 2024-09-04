@@ -1,0 +1,125 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div>
+        <NotificationBox v-if="showRegistrationFullNotification" class="text-left" alertType="warning">
+            <strong>{{ registrationEntryTerms.registrationSingularTitleCase }} Full</strong>
+            <p>
+                No payment was processed. Due to high demand there is no longer space available for this {{ registrationEntryTerms.registrationSingularLowerCase }}.
+            </p>
+        </NotificationBox>
+        <NotificationBox v-if="showSomeRegistrantsWaitListedNotification" class="text-left" alertType="warning">
+            <strong>Unfortunately</strong>
+            <p>{{ someRegistrantsWaitListedMessage }}</p>
+        </NotificationBox>
+        <NotificationBox v-if="showAllRegistrantsWaitListedNotification" class="text-left" alertType="warning">
+            <strong>Unfortunately</strong>
+            <p>{{ allRegistrantsWaitListedMessage }}</p>
+        </NotificationBox>
+        <div v-html="messageHtml"></div>
+        <SaveFinancialAccountForm v-if="gatewayGuid && transactionCode && gatewayPersonIdentifier && enableSaveAccount"
+                                  :gatewayGuid="gatewayGuid"
+                                  :transactionCode="transactionCode"
+                                  :gatewayPersonIdentifier="gatewayPersonIdentifier"
+                                  saveAccountCheckBoxLabel="Save account information for future payments"
+                                  class="well">
+            <template #header>
+                <h3>Make Payments Even Easier</h3>
+            </template>
+        </SaveFinancialAccountForm>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed } from "vue";
+    import { CurrentRegistrationEntryState, RegistrationEntryTerms, use } from "./utils.partial";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import SaveFinancialAccountForm from "@Obsidian/Controls/saveFinancialAccountForm.obs";
+    import { Guid } from "@Obsidian/Types";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { pluralConditional } from "@Obsidian/Utility/stringUtils";
+
+    const registrationEntryState = use(CurrentRegistrationEntryState);
+    const registrationEntryTerms = use(RegistrationEntryTerms);
+
+    // #region Computed Values
+
+    const registeredCount = computed<number>(() => {
+        return registrationEntryState.successViewModel?.registeredCount ?? 0;
+    });
+
+    /** The number of these registrants that will be placed on a waitlist because of capacity rules */
+    const waitListedCount = computed<number>(() => {
+        return registrationEntryState.successViewModel?.waitListedCount ?? 0;
+    });
+
+    /** The registrants wait-listed phrase: Ex: "camper was" or "2 campers were" */
+    const allRegistrantsWaitListedMessage = computed<string>(() => {
+        const {
+            registrantSingularLowerCase,
+            registrantPluralLowerCase
+        } = registrationEntryTerms.value;
+        return `No payment was processed. Due to high demand there is no longer space available. The ${pluralConditional(waitListedCount.value, `${registrantSingularLowerCase} was`, `${waitListedCount.value} ${registrantPluralLowerCase} were`)} added to the waitlist.`;
+    });
+
+    const someRegistrantsWaitListedMessage = computed<string>(() => {
+        const {
+            registrationSingularLowerCase,
+            registrantSingularLowerCase,
+            registrantPluralLowerCase
+        } = registrationEntryTerms.value;
+
+        return `This ${registrationSingularLowerCase} only had capacity for ${pluralConditional(registeredCount.value, `1 ${registrantSingularLowerCase}`, `${registeredCount.value} ${registrantPluralLowerCase}`)}. The first ${pluralConditional(registeredCount.value, `${registrantSingularLowerCase} you added was`, `${registeredCount.value} ${registrantPluralLowerCase} you added were`)} registered for ${registrationEntryState.viewModel.instanceName}. The remaining ${pluralConditional(waitListedCount.value, `${registrantSingularLowerCase} was`, `${waitListedCount.value} ${registrantPluralLowerCase} were`)} added to the waitlist.`;
+    });
+
+    /** Should the "registration full" notification be shown? */
+    const showRegistrationFullNotification = computed<boolean>(() => {
+        // Show if there are no spots remaining and no one was wait-listed nor registered.
+        return registrationEntryState.successViewModel?.spotsRemaining === 0
+            && registeredCount.value === 0
+            && waitListedCount.value === 0;
+    });
+
+    /** Should the "all registrants wait-listed" notification be shown? */
+    const showAllRegistrantsWaitListedNotification = computed<boolean>(() => {
+        // Show if there are no spots remaining and all people were wait-listed (no one was registered).
+        return registrationEntryState.successViewModel?.spotsRemaining === 0
+            && waitListedCount.value > 0
+            && registeredCount.value === 0;
+    });
+
+    /** Should the "some registrants wait-listed" notification be shown? */
+    const showSomeRegistrantsWaitListedNotification = computed<boolean>(() => {
+        // Show if there are no spots remaining and some people were wait-listed and registered.
+        return registrationEntryState.successViewModel?.spotsRemaining === 0
+            && waitListedCount.value > 0
+            && registeredCount.value > 0;
+    });
+
+    /** The success lava markup */
+    const messageHtml = computed<string>(() => {
+        return registrationEntryState.successViewModel?.messageHtml || `You have successfully completed this ${registrationEntryTerms.value.registrationSingularLowerCase}`;
+    });
+
+    /** The financial gateway record's guid */
+    const gatewayGuid = computed<Guid | null>(() => {
+        return toGuidOrNull(registrationEntryState.viewModel.gatewayGuid);
+    });
+
+    /** The transaction code that can be used to create a saved account */
+    const transactionCode = computed<string>(() => {
+        return registrationEntryState.viewModel.isRedirectGateway ?
+            "" :
+            registrationEntryState.successViewModel?.transactionCode || "";
+    });
+
+    /** The token returned for the payment method */
+    const gatewayPersonIdentifier = computed<string>(() => {
+        return registrationEntryState.successViewModel?.gatewayPersonIdentifier || "";
+    });
+
+    const enableSaveAccount = computed<boolean>(() => {
+        return registrationEntryState.viewModel.enableSaveAccount && registrationEntryState.savedAccountGuid === null;
+    });
+
+    // #endregion
+</script>

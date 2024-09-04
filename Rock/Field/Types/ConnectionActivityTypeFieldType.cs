@@ -35,6 +35,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of Connection Activity Types.
     /// The selected value is stored as a Guid.
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CONNECTION_ACTIVITY_TYPE )]
     public class ConnectionActivityTypeFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
@@ -109,38 +110,39 @@ namespace Rock.Field.Types
         {
             var configurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
 
-            int? connectionTypeFilterId = null;
-
-            using ( var rockContext = new RockContext() )
+            if ( usage != ConfigurationValueUsage.View )
             {
-                if ( configurationValues.ContainsKey( CONNECTION_TYPE_FILTER ) )
+                using ( var rockContext = new RockContext() )
                 {
-                    connectionTypeFilterId = configurationValues[CONNECTION_TYPE_FILTER].AsIntegerOrNull();
-                    var connectionType = ConnectionTypeCache.Get( connectionTypeFilterId ?? 0 );
-
-                    if ( connectionType != null )
+                    if ( configurationValues.ContainsKey( CONNECTION_TYPE_FILTER ) )
                     {
-                        configurationValues[CONNECTION_TYPE_FILTER] = connectionType.ToListItemBag().ToCamelCaseJson( false, true );
+                        var connectionTypeFilterId = configurationValues[CONNECTION_TYPE_FILTER].AsIntegerOrNull();
+                        var connectionType = ConnectionTypeCache.Get( connectionTypeFilterId ?? 0 );
+
+                        if ( connectionType != null )
+                        {
+                            configurationValues[CONNECTION_TYPE_FILTER] = connectionType.ToListItemBag().ToCamelCaseJson( false, true );
+                        }
                     }
-                }
 
                 var includeInactive = configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) && configurationValues[INCLUDE_INACTIVE_KEY].AsBoolean();
-                var query = new ConnectionActivityTypeService( new RockContext() )
+                var query = new ConnectionActivityTypeService( rockContext )
                     .Queryable()
                     .Where( ca => ca.IsActive || includeInactive )
                     .AsNoTracking();
 
-                var clientValues = query.OrderBy( o => o.ConnectionType.Name )
-                    .ThenBy( o => o.Name )
-                    .Select( o => new ListItemBag()
-                    {
-                        Value = o.Guid.ToString().ToUpper(),
-                        Text = o.Name,
-                        Category = o.ConnectionType.Name
-                    } )
-                    .ToList();
+                    var clientValues = query.OrderBy( o => o.ConnectionType.Name )
+                        .ThenBy( o => o.Name )
+                        .Select( o => new ListItemBag()
+                        {
+                            Value = o.Guid.ToString().ToUpper(),
+                            Text = o.Name,
+                            Category = o.ConnectionType.Name
+                        } )
+                        .ToList();
 
-                configurationValues[CLIENT_VALUES] = clientValues.ToCamelCaseJson( false, true );
+                    configurationValues[CLIENT_VALUES] = clientValues.ToCamelCaseJson( false, true );
+                }
             }
 
             return configurationValues;
@@ -470,6 +472,24 @@ namespace Rock.Field.Types
             var editControl = control as ListControl;
             if ( editControl != null )
             {
+                var includeInactive = configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) && configurationValues[INCLUDE_INACTIVE_KEY].Value.AsBoolean();
+                if ( !includeInactive )
+                {
+                    var listItem = editControl.Items.FindByValue( value );
+                    if ( listItem == null )
+                    {
+                        var valueGuid = value.AsGuid();
+                        var activityType = new ConnectionActivityTypeService( new RockContext() )
+                           .Queryable().AsNoTracking()
+                           .Where( o => o.Guid == valueGuid )
+                           .FirstOrDefault();
+                        if ( activityType != null )
+                        {
+                            editControl.Items.Add( new ListItem( activityType.Name, activityType.Guid.ToString().ToUpper() ) );
+                        }
+                    }
+                }
+
                 editControl.SetValue( value );
             }
         }

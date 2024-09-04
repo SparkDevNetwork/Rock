@@ -6,8 +6,8 @@
                 {{ name }} Step Type
             </h3>
             <div class="row">
-                <div class="col-md-6 description">
-                    {{ description }}
+                <div class="col-md-6">
+                    <div class="description">{{ description }}</div>
                 </div>
                 <div class="col-xs-12 col-sm-6 d-flex align-items-start justify-content-end">
                     <SlidingDateRangePicker v-model="filterDate"
@@ -27,8 +27,8 @@
             </div>
             <div v-html="kpi"></div>
             <div>
-                <NotificationBox v-if="notificationMessage" alertType="info">{{ notificationMessage }}</NotificationBox>
-                <div v-if="showChart" style="height: 350px;" class="col-md-12">
+                <NotificationBox v-if="showChart && notificationMessage" alertType="info">{{ notificationMessage }}</NotificationBox>
+                <div v-if="showChart && !notificationMessage" style="height: 350px;" class="col-md-12">
                     <Chart type="line" :data="chartData" :options="options" />
                 </div>
             </div>
@@ -71,7 +71,7 @@
     const chartData = ref<ChartData>(JSON.parse(props.modelValue?.chartData ?? "{}"));
     const kpi = ref(props.modelValue?.kpi ?? "");
     const showChart = ref(props.modelValue?.showChart);
-    const notificationMessage = ref("");
+    const notificationMessage = ref(props.modelValue?.chartData ? "" : "There are no Steps matching the current filter.");
     const filterDate = ref(props.modelValue?.defaultDateRange as SlidingDateRange);
     const isRefreshLoading = ref(false);
     const options = ref<ChartOptions>({
@@ -128,7 +128,7 @@
         notificationMessage.value = "";
 
         const result = await invokeBlockAction<StepTypeBag>("RefreshChart", {
-            dateRange: slidingDateRangeToString(filterDate.value as SlidingDateRange)
+            dateRange: filterDate.value ? slidingDateRangeToString(filterDate.value as SlidingDateRange) : "DateRange||||"
         });
 
         isRefreshLoading.value = false;
@@ -138,11 +138,11 @@
 
             if (result.data.chartData) {
                 chartData.value = JSON.parse(result.data.chartData ?? "{}") as ChartData;
-                showChart.value = true;
+                showChart.value = result.data.showChart;
             }
             else {
                 notificationMessage.value = "There are no Steps matching the current filter.";
-                showChart.value = false;
+                showChart.value = result.data.showChart;
             }
         }
         else {

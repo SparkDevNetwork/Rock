@@ -1,9 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField
-                   :modelValue="fileGuid"
-                   formGroupClasses="file-uploader"
-                   name="fileuploader">
+    <RockFormField :modelValue="fileGuid" formGroupClasses="file-uploader" name="fileuploader">
         <template #default="{ uniqueId, field }">
             <div class="control-wrapper">
                 <NotificationBox v-if="uploadErrorMessage" alertType="warning">
@@ -11,7 +8,7 @@
                     <span>{{ uploadErrorMessage }}</span>
                 </NotificationBox>
 
-                <div ref="dropZoneElement" :id="uniqueId" class="fileupload-group" @click="onSelectFileClick">
+                <div ref="dropZoneElement" :id="uniqueId" class="fileupload-group" @click="onSelectFileClick" :title="toolTip">
                     <div class="fileupload-thumbnail">
                         <a v-if="fileUrl" :class="thumbnailClass" :href="fileUrl" target="_blank" rel="noopener noreferrer" @click.stop>{{ fileName }}</a>
                         <span v-else :class="thumbnailClass"></span>
@@ -30,7 +27,7 @@
 
                     <div class="fileupload-dropzone">
                         <span>{{ uploadButtonText }}</span>
-                        <input ref="fileInputElement" type="file" style="display: none;" @change="onFileChange" @remove="onFileRemove" />
+                        <input ref="fileInputElement" type="file" style="display: none;" @change="onFileChange" @remove="onFileRemove" :disabled="disabled" />
                     </div>
                 </div>
             </div>
@@ -46,6 +43,7 @@
     import { uploadBinaryFile } from "@Obsidian/Utility/http";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import RockFormField from "./rockFormField.obs";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -71,14 +69,40 @@
         showDeleteButton: {
             type: Boolean as PropType<boolean>,
             default: true
+        },
+
+        toolTip: {
+            type: String,
+            required: false
+        },
+
+        parentEntityTypeId: {
+            type: Number,
+            required: false
+        },
+
+        parentEntityId: {
+            type: Number,
+            required: false
+        },
+
+        uploadUrl: {
+            type: String,
+            required: false
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: ListItemBag | undefined): void;
+        (e: "error", value: string): void;
     }>();
 
-    const fileGuid = ref<Guid>(props.modelValue?.value ?? "");
+    const fileGuid = ref<Guid | null>(toGuidOrNull(props.modelValue?.value));
     const fileName = ref(props.modelValue?.text ?? "");
 
     // Variables related to the progress of uploading a new file.
@@ -126,10 +150,13 @@
                 isTemporary: props.uploadAsTemporary,
                 progress: (progress, total, percent) => {
                     uploadProgressText.value = `${percent}%`;
-                }
+                },
+                parentEntityTypeId: props.parentEntityTypeId,
+                parentEntityId: props.parentEntityId,
+                baseUrl: props.uploadUrl
             });
 
-            fileGuid.value = result.value ?? "";
+            fileGuid.value = toGuidOrNull(result.value);
             fileName.value = result.text ?? "";
         }
         catch (e) {
@@ -147,7 +174,7 @@
      * to be uploaded into Rock.
      */
     const onSelectFileClick = (): void => {
-        if (!isUploading.value) {
+        if (!isUploading.value && !props.disabled) {
             fileInputElement.value?.click();
         }
     };
@@ -156,8 +183,15 @@
      * Event handler for when the remove file button is clicked.
      */
     const onRemoveFileClick = (): void => {
-        fileGuid.value = "";
-        fileName.value = "";
+        if (!props.disabled) {
+            // Required in order to clear and upload the same file again
+            if (fileInputElement.value) {
+                fileInputElement.value.value = "";
+            }
+
+            fileGuid.value = null;
+            fileName.value = "";
+        }
     };
 
     /**
@@ -184,7 +218,7 @@
             return;
         }
 
-        fileGuid.value = "";
+        fileGuid.value = null;
         fileName.value = "";
     };
 
@@ -224,7 +258,7 @@
 
     // Watch for changes to the model value and update our internal values.
     watch(() => props.modelValue, () => {
-        fileGuid.value = props.modelValue?.value ?? "";
+        fileGuid.value = toGuidOrNull(props.modelValue?.value);
         fileName.value = props.modelValue?.text ?? "";
     });
 
@@ -240,5 +274,11 @@
         }
 
         emit("update:modelValue", newValue);
+    });
+
+    watch(uploadErrorMessage, error => {
+        if (error) {
+            emit("error", error);
+        }
     });
 </script>

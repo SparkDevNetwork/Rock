@@ -25,6 +25,8 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
+using Rock.Utility;
 
 namespace Rock.Web.UI.Controls
 {
@@ -736,9 +738,20 @@ namespace Rock.Web.UI.Controls
 
             if ( BinaryFileId != null || !string.IsNullOrWhiteSpace( this.UploadedContentFilePath ) )
             {
+                var securitySettings = new SecuritySettingsService().SecuritySettings;
+                bool disablePredictableIds = securitySettings.DisablePredictableIds;
+
                 if ( IsBinaryFile )
                 {
-                    _aFileName.HRef = string.Format( "{0}GetFile.ashx?id={1}", ResolveUrl( "~" ), BinaryFileId );
+                    if ( disablePredictableIds )
+                    {
+                        _aFileName.HRef = string.Format( "{0}GetFile.ashx?fileIdKey={1}", ResolveUrl( "~" ), IdHasher.Instance.GetHash( BinaryFileId.Value ) );
+                    }
+                    else
+                    {
+                        _aFileName.HRef = string.Format( "{0}GetFile.ashx?id={1}", ResolveUrl( "~" ), BinaryFileId );
+                    }
+
                     _aFileName.InnerText = new BinaryFileService( new RockContext() ).Queryable().Where( f => f.Id == BinaryFileId ).Select( f => f.FileName ).FirstOrDefault();
                 }
                 else
@@ -826,6 +839,9 @@ namespace Rock.Web.UI.Controls
         private void RegisterStartupScript()
         {
             int? maxUploadBytes = null;
+            var securitySettings = new SecuritySettingsService().SecuritySettings;
+            bool disablePredictableIds = securitySettings.DisablePredictableIds;
+
             try
             {
                 HttpRuntimeSection section = ConfigurationManager.GetSection( "system.web/httpRuntime" ) as HttpRuntimeSection;
@@ -859,6 +875,7 @@ namespace Rock.Web.UI.Controls
                     isBinaryFile: '{(this.IsBinaryFile ? "T" : "F")}',
                     rootFolder: '{Rock.Security.Encryption.EncryptString( this.RootFolder )}',
                     uploadUrl: '{this.UploadUrl}',
+                    disablePredictableIds: {disablePredictableIds.ToString().ToLower()},
                     submitFunction: function (e, data) {{
                         {this.SubmitFunctionClientScript}
                     }},

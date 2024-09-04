@@ -10,14 +10,14 @@
                 <div class="controls rockcheckboxlist" :class="containerClasses">
                     <template v-if="horizontal">
                         <label v-for="item in items" class="checkbox-inline" :for="uniqueIdForItem(uniqueId, item)">
-                            <input v-bind="field" :disabled="disabled" :id="uniqueIdForItem(uniqueId, item)" :name="uniqueId" type="checkbox" :value="valueForItem(item)" v-model="internalValue" />
+                            <input v-bind="field" :disabled="((disabled || item.disabled) as boolean)" :id="uniqueIdForItem(uniqueId, item)" :name="uniqueId" type="checkbox" :value="valueForItem(item)" v-model="internalValue" />
                             <span class="label-text">{{ textForItem(item) }}</span>
                         </label>
                     </template>
                     <template v-else>
                         <div v-for="item in items" class="checkbox">
                             <label :for="uniqueIdForItem(uniqueId, item)" :class="labelClasses(item)">
-                                <input v-bind="field" :disabled="disabled" :id="uniqueIdForItem(uniqueId, item)" :name="uniqueId" type="checkbox" :value="valueForItem(item)" v-model="internalValue" />
+                                <input v-bind="field" :disabled="((disabled || item.disabled) as boolean)" :id="uniqueIdForItem(uniqueId, item)" :name="uniqueId" type="checkbox" :value="valueForItem(item)" v-model="internalValue" />
                                 <span class="label-text">{{ textForItem(item) }}</span>
                             </label>
                         </div>
@@ -30,7 +30,6 @@
 </template>
 
 <script setup lang="ts">
-    import { Guid } from "@Obsidian/Types";
     import { computed, PropType, ref, watch } from "vue";
     import { updateRefValue } from "@Obsidian/Utility/component";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -89,7 +88,7 @@
     const valueForItem = (item: ListItemBag): string => item.value ?? "";
     const textForItem = (item: ListItemBag): string => item.text ?? "";
 
-    const uniqueIdForItem = (uniqueId: Guid, item: ListItemBag): string => `${uniqueId}-${(item.value ?? "").replace(" ", "-")}`;
+    const uniqueIdForItem = (uniqueId: string, item: ListItemBag): string => `${uniqueId}-${(item.value ?? "").replace(" ", "-")}`;
 
     const containerClasses = computed(() => {
         const classes: string[] = [];

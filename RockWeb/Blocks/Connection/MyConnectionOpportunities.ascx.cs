@@ -258,8 +258,6 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 var preferences = GetBlockPersonPreferences();
@@ -278,6 +276,8 @@ namespace RockWeb.Blocks.Connection
 
                 RockPage.AddScriptLink( "~/Scripts/jquery.visible.min.js" );
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>

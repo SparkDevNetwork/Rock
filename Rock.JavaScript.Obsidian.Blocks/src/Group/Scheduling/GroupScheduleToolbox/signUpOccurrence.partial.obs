@@ -1,0 +1,254 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="signUpOccurrence" :class="occurrenceCssClass">
+        <div class="flex-fill d-flex flex-column flex-sm-row flex-wrap justify-content-sm-between align-items-sm-center">
+            <CheckBox v-model="isChecked"
+                      label=""
+                      :text="text"
+                      :title="title"
+                      :disabled="disabled || isSavingSignUp"
+                      @update:modelValue="onSignUpChanged">
+                <template v-if="peopleNeededText" #textAppend>
+                    <span class="text-muted small schedule-signup-people-needed">
+                        {{ peopleNeededText }}
+                    </span>
+                </template>
+            </CheckBox>
+
+            <DropDownList v-if="isLocationListVisible"
+                          v-model="selectedLocationGuid"
+                          label=""
+                          inputClasses="input-sm"
+                          :items="locationItems"
+                          :showBlankItem="false"
+                          :disabled="disabled || isSavingSignUp"
+                          @update:modelValue="onSignUpChanged" />
+        </div>
+
+        <div :class="checkCssClass">
+            <i class='fa fa-check'></i>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.schedule-toolbox-sign-up-occurrence {
+    border-radius: 6px;
+    padding: 0 12px;
+    margin-left: 12px;
+    background-color: transparent;
+    transition: background-color 1s linear;
+
+    &.sign-up-save-success {
+        background-color: #EEFDF8;
+        transition: background-color 0s linear;
+    }
+}
+
+.schedule-toolbox-sign-up-occurrence-check {
+    margin-left: 12px;
+    transition: color 0s linear;
+
+    &.not-signed-up {
+        color: transparent !important;
+        transition: color 1s linear;
+    }
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, inject, nextTick, PropType, ref } from "vue";
+    import { SaveSignUpErrorMessage, SelectedGroup, SelectedPersonGuid } from "./types.partial";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { pluralize } from "@Obsidian/Utility/stringUtils";
+    import { SaveSignUpRequestBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/saveSignUpRequestBag";
+    import { SaveSignUpResponseBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/saveSignUpResponseBag";
+    import { SignUpOccurrenceBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/signUpOccurrenceBag";
+    import { SignUpOccurrenceLocationBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/signUpOccurrenceLocationBag";
+    import { SignUpsBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/signUpsBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { Guid } from "@Obsidian/Types";
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const props = defineProps({
+        occurrence: {
+            type: Object as PropType<SignUpOccurrenceBag>,
+            required: true
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "updatedSignUps", signUps: SignUpsBag | null | undefined): void
+    }>();
+
+    // #region Values
+
+    /** The selected person unique identifier (or empty string if none selected). */
+    const selectedPersonGuidOrEmptyString = inject(SelectedPersonGuid, ref(""));
+
+    const selectedGroup = inject(SelectedGroup);
+
+    const signUpOccurrence = ref<SignUpOccurrenceBag | null | undefined>(props.occurrence);
+
+    const isChecked = ref(false);
+    let oldIsChecked = isChecked.value;
+
+    const selectedLocationGuid = ref<Guid>(getFirstLocationOrEmptyGuid(props.occurrence));
+    let oldSelectedLocationGuid = selectedLocationGuid.value;
+
+    const isSavingSignUp = ref(false);
+    const saveSignUpErrorMessage = inject(SaveSignUpErrorMessage, ref(""));
+
+    const postSaveLocationItemCount = ref(0);
+
+    const areSuccessStylesVisible = ref(false);
+    let successStylesTimeoutID: NodeJS.Timeout;
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const occurrenceCssClass = computed((): string => {
+        return `d-flex align-items-center schedule-toolbox-sign-up-occurrence${areSuccessStylesVisible.value ? " sign-up-save-success" : ""}`;
+    });
+
+    const text = computed((): string => {
+        return signUpOccurrence.value?.formattedScheduleName ?? "";
+    });
+
+    const peopleNeededText = computed((): string => {
+        let peopleNeededCount = signUpOccurrence.value?.peopleNeededCount ?? 0;
+        if (peopleNeededCount > 0 && isChecked.value) {
+            peopleNeededCount--;
+        }
+
+        return peopleNeededCount > 0
+            ? `(${peopleNeededCount} ${pluralize("people", peopleNeededCount)} needed)`
+            : "";
+    });
+
+    const title = computed((): string => {
+        return signUpOccurrence.value?.scheduleName ?? "";
+    });
+
+    const locationItems = computed((): ListItemBag[] => {
+        return signUpOccurrence.value?.locations
+            ?.filter((location: SignUpOccurrenceLocationBag) => location?.locationName && location?.locationGuid)
+            .map((location: SignUpOccurrenceLocationBag) => ({
+                text: location.locationName,
+                value: location.locationGuid
+            })) ?? [];
+    });
+
+    const isLocationListVisible = computed((): boolean => {
+        return postSaveLocationItemCount.value > 1 && isChecked.value;
+    });
+
+    const checkCssClass = computed((): string => {
+        return `text-success schedule-toolbox-sign-up-occurrence-check${!areSuccessStylesVisible.value ? " not-signed-up" : ""}`;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Gets the first occurrence location Guid or an empty guid if not found.
+     *
+     * @param occurrence The occurrence from which to get the first location guid.
+     */
+    function getFirstLocationOrEmptyGuid(occurrence: SignUpOccurrenceBag | null | undefined): Guid {
+        return occurrence?.locations?.length
+            ? toGuidOrNull(occurrence.locations[0].locationGuid) ?? emptyGuid
+            : emptyGuid;
+    }
+
+    /**
+     * Restores the old values after a save failure.
+     */
+    function restoreOldValues(): void {
+        isChecked.value = oldIsChecked;
+        selectedLocationGuid.value = oldSelectedLocationGuid;
+
+        nextTick(() => {
+            // Wait for DOM updates to complete before setting this back to false
+            // so we don't repeatedly call the block action method.
+            isSavingSignUp.value = false;
+        });
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Handles the 'update:modelValue' event of the sign-up occurrence controls.
+     */
+    async function onSignUpChanged(): Promise<void> {
+        if (isSavingSignUp.value) {
+            return;
+        }
+
+        clearTimeout(successStylesTimeoutID);
+
+        isSavingSignUp.value = true;
+        saveSignUpErrorMessage.value = "";
+
+        const bag: SaveSignUpRequestBag = {
+            selectedPersonGuid: toGuidOrNull(selectedPersonGuidOrEmptyString.value) ?? emptyGuid,
+            selectedGroupGuid: toGuidOrNull(selectedGroup?.value?.guid) ?? emptyGuid,
+            selectedScheduleGuid: toGuidOrNull(signUpOccurrence.value?.scheduleGuid) ?? emptyGuid,
+            selectedLocationGuid: toGuidOrNull(selectedLocationGuid.value) ?? emptyGuid,
+            occurrenceDateTime: signUpOccurrence.value?.occurrenceDateTime,
+            isSigningUp: isChecked.value
+        };
+
+        const result = await invokeBlockAction<SaveSignUpResponseBag>("SaveSignUp", { bag });
+
+        if (!result.isSuccess) {
+            saveSignUpErrorMessage.value = result.errorMessage || `Unknown error while trying to ${isChecked.value ? "save" : "delete"} sign-up.`;
+            restoreOldValues();
+            return;
+        }
+
+        if (result.data?.saveError) {
+            saveSignUpErrorMessage.value = result.data.saveError;
+            emit("updatedSignUps", result.data.signUps);
+            restoreOldValues();
+            return;
+        }
+
+        if (isChecked.value) {
+            // It's possible that the occurrence's current locations / selected location
+            // are different than what was submitted; update local refs just in case.
+            signUpOccurrence.value = result.data?.signUpOccurrence;
+            selectedLocationGuid.value = result.data?.selectedLocationGuid ?? emptyGuid;
+            postSaveLocationItemCount.value = locationItems.value.length;
+        }
+        else {
+            postSaveLocationItemCount.value = 0;
+        }
+
+        // Update the "old" values for next time.
+        oldIsChecked = isChecked.value;
+        oldSelectedLocationGuid = isChecked.value
+            ? selectedLocationGuid.value
+            : getFirstLocationOrEmptyGuid(signUpOccurrence.value);
+
+        areSuccessStylesVisible.value = true;
+        successStylesTimeoutID = setTimeout(() => areSuccessStylesVisible.value = false, 1000);
+
+        isSavingSignUp.value = false;
+    }
+
+    // #endregion Event Handlers
+</script>

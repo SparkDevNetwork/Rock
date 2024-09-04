@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
 import { AccountEntryPersonInfoBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryPersonInfoBag";
 import { AccountEntryPhoneNumberBag } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryPhoneNumberBag";
 import { AccountEntryRegisterResponseBox } from "@Obsidian/ViewModels/Blocks/Security/AccountEntry/accountEntryRegisterResponseBox";
@@ -39,8 +40,17 @@ export type AccountEntryInitializationBox = {
     /** Gets or sets the campus picker label. */
     campusPickerLabel?: string | null;
 
+    /** Campus status defined value guids that limit which campuses are included in the list of available campuses in the campus picker. */
+    campusStatusFilter?: Guid[] | null;
+
+    /** Campus type defined value guids that limit which campuses are included in the list of available campuses in the campus picker. */
+    campusTypeFilter?: Guid[] | null;
+
     /** The caption when a confirmation email was sent to a selected, duplicate person. */
     confirmationSentCaption?: string | null;
+
+    /** If set to true if the Captcha verification step should not be performed. */
+    disableCaptchaSupport: boolean;
 
     /** The email address of the registering user. */
     email?: string | null;
@@ -57,8 +67,14 @@ export type AccountEntryInitializationBox = {
     /** Gets or sets a value indicating whether the address fields are shown. */
     isAddressShown: boolean;
 
+    /** Gets or sets a value indicating whether the birth date is shown. */
+    isBirthDateShown: boolean;
+
     /** Indicating whether the campus picker is shown. */
     isCampusPickerShown: boolean;
+
+    /** Gets or sets a value indicating whether campus is required. */
+    isCampusRequired: boolean;
 
     /** Gets or sets a value indicating whether the email field is hidden. */
     isEmailHidden: boolean;

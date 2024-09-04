@@ -144,47 +144,53 @@ namespace Rock.Model
         {
             AddLogEntry( "Processing..." );
 
-            errorMessages = new List<string>();
-
-            foreach ( var action in this.ActiveActions )
+            using ( var diagnosticActivity = Observability.ObservabilityHelper.StartActivity( $"WORKFLOW: Activity '{ActivityTypeCache?.Name}'" ) )
             {
-                List<string> actionErrorMessages;
-                bool actionSuccess = action.Process( rockContext, entity, out actionErrorMessages );
-                if ( actionErrorMessages.Any() )
+                diagnosticActivity?.AddTag( "rock.workflow.activitytype.id", ActivityTypeId );
+                diagnosticActivity?.AddTag( "rock.workflow.activitytype.name", ActivityTypeCache?.Name ?? string.Empty );
+
+                errorMessages = new List<string>();
+
+                foreach ( var action in this.ActiveActions )
                 {
-                    errorMessages.Add( string.Format( "Error in Activity: {0}; Action: {1} ({2} action type)", this.ActivityTypeCache.Name, action.ActionTypeCache.Name, action.ActionTypeCache.WorkflowAction.EntityType.FriendlyName ) );
-                    errorMessages.AddRange( actionErrorMessages );
+                    List<string> actionErrorMessages;
+                    bool actionSuccess = action.Process( rockContext, entity, out actionErrorMessages );
+                    if ( actionErrorMessages.Any() )
+                    {
+                        errorMessages.Add( string.Format( "Error in Activity: {0}; Action: {1} ({2} action type)", this.ActivityTypeCache.Name, action.ActionTypeCache.Name, action.ActionTypeCache.WorkflowAction.EntityType.FriendlyName ) );
+                        errorMessages.AddRange( actionErrorMessages );
+                    }
+
+                    // If action was not successful, exit
+                    if ( !actionSuccess )
+                    {
+                        break;
+                    }
+
+                    // If action completed this activity, exit
+                    if ( !this.IsActive )
+                    {
+                        break;
+                    }
+
+                    // If action completed this workflow, exit
+                    if ( this.Workflow == null || !this.Workflow.IsActive )
+                    {
+                        break;
+                    }
                 }
 
-                // If action was not successful, exit
-                if ( !actionSuccess )
+                this.LastProcessedDateTime = RockDateTime.Now;
+
+                AddLogEntry( "Processing Complete" );
+
+                if ( !this.ActiveActions.Any() )
                 {
-                    break;
+                    MarkComplete();
                 }
 
-                // If action completed this activity, exit
-                if ( !this.IsActive )
-                {
-                    break;
-                }
-
-                // If action completed this workflow, exit
-                if ( this.Workflow == null || !this.Workflow.IsActive )
-                {
-                    break;
-                }
+                return errorMessages.Count == 0;
             }
-
-            this.LastProcessedDateTime = RockDateTime.Now;
-
-            AddLogEntry( "Processing Complete" );
-
-            if ( !this.ActiveActions.Any() )
-            {
-                MarkComplete();
-            }
-
-            return errorMessages.Count == 0;
         }
 
         /// <summary>

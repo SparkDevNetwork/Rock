@@ -37,7 +37,7 @@ namespace Rock.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Allows user to set their email preference or unsubscribe from a communication list." )]
     [IconCssClass( "fa fa-question" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    // [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -45,7 +45,7 @@ namespace Rock.Blocks.Communication
         "Unsubscribe from Lists Text",
         Description = "Text to display for the 'Unsubscribe me from the following lists:' option.",
         IsRequired = false,
-        DefaultValue = "Only unsubscribe me from the following lists",
+        DefaultValue = "Only unsubscribe me from the following lists.",
         NumberOfRows = 3,
         AllowHtml = true,
         Order = 0,
@@ -54,7 +54,7 @@ namespace Rock.Blocks.Communication
         "Update Email Address Text",
         Description = "Text to display for the 'Update Email Address' option.",
         IsRequired = false,
-        DefaultValue = "Update my email address.",
+        DefaultValue = "I'd like to update my email address instead of unsubscribing.",
         NumberOfRows = 3,
         AllowHtml = true,
         Order = 1,
@@ -63,7 +63,7 @@ namespace Rock.Blocks.Communication
         "Emails Allowed Text",
         Description = "Text to display for the 'Emails Allowed' option.",
         IsRequired = false,
-        DefaultValue = "I am still involved with {{ 'Global' | Attribute:'OrganizationName' }}, and wish to receive all emails.",
+        DefaultValue = "My intention was not to unsubscribe; I would like to continue receiving all communications.",
         Order = 2,
         NumberOfRows = 3,
         AllowHtml = true,
@@ -72,7 +72,7 @@ namespace Rock.Blocks.Communication
         "No Mass Emails Text",
         Description = "Text to display for the 'No Mass Emails' option.",
         IsRequired = false,
-        DefaultValue = "I am still involved with {{ 'Global' | Attribute:'OrganizationName' }}, but do not wish to receive mass emails (personal emails are fine).",
+        DefaultValue = "I do not wish to receive any mass emails from {{ 'Global' | Attribute:'OrganizationName' }}.",
         Order = 3,
         NumberOfRows = 3,
         AllowHtml = true,
@@ -81,7 +81,7 @@ namespace Rock.Blocks.Communication
         "No Emails Text",
         Description = "Text to display for the 'No Emails' option.",
         IsRequired = false,
-        DefaultValue = "I am still involved with {{ 'Global' | Attribute:'OrganizationName' }}, but do not want to receive emails of ANY kind.",
+        DefaultValue = "I am still involved with {{ 'Global' | Attribute:'OrganizationName' }}, but I prefer not to receive any email communications.",
         Order = 4,
         NumberOfRows = 3,
         AllowHtml = true,
@@ -153,8 +153,8 @@ namespace Rock.Blocks.Communication
 
     #endregion Block Attributes
 
-    [Rock.SystemGuid.EntityTypeGuid( "28265232-b692-4099-9533-4d7646bda2c1" )]
-    [Rock.SystemGuid.BlockTypeGuid( "476fba19-005c-4ff4-996b-ca1b165e5bc8" )]
+    [Rock.SystemGuid.EntityTypeGuid( "28265232-B692-4099-9533-4D7646BDA2C1" )]
+    [Rock.SystemGuid.BlockTypeGuid( "476FBA19-005C-4FF4-996B-CA1B165E5BC8" )]
     public class EmailPreferenceEntry : RockBlockType
     {
         #region Keys
@@ -213,7 +213,6 @@ We have unsubscribed you from the following lists:
         private const string NO_EMAILS = "No Emails";
         private const string NOT_INVOLVED = "Not Involved";
 
-        private Person _person = null;
         private Model.Communication _communication = null;
 
         #endregion
@@ -244,42 +243,82 @@ We have unsubscribed you from the following lists:
             var mergeFields = RequestContext.GetCommonMergeFields();
             var box = new EmailPreferenceEntryInitializationBox();
             var communication = GetCommunication( rockContext );
-            var person = GetPerson( rockContext );
+            var ( person, isFromPageParameter ) = GetPerson( rockContext );
 
             if ( communication != null )
             {
                 mergeFields.Add( "Communication", communication );
             }
 
-            var key = PageParameter( PageParameterKey.Person );
-            if ( !string.IsNullOrWhiteSpace( key ) )
-            {
-                var service = new PersonService( rockContext );
-                person = service.GetByPersonActionIdentifier( key, "Unsubscribe" );
-                if ( person == null )
-                {
-                    person = new PersonService( rockContext ).GetByUrlEncodedKey( key );
-                }
-            }
-
-            if ( person == null && GetCurrentPerson() != null )
-            {
-                person = GetCurrentPerson();
-            }
-
             box.AllowInactivatingFamily = SetAllowInactivatingFamilyVisibility( person );
 
-            if ( person != null )
-            {
-                SetEmailPreferenceData( rockContext, box, mergeFields );
-            }
-            else
+            if ( person == null )
             {
                 box.EmailPreferenceUpdateAlertType = nameof( NotificationBoxType.Danger ).ToLower();
                 box.EmailPreferenceUpdateMessage = "Unfortunately, we're unable to update your email preference, as we're not sure who you are.";
+                return box;
             }
 
+            /*
+                5/31/2024 - JMH
+
+                Some individuals were being unsubscribed from email automatically
+                without clicking an unsubscribe button in their email.       
+
+                Per the spec, https://datatracker.ietf.org/doc/html/rfc8058#section-3.2,
+                an email client must send a POST request with the key-value pair, list-unsubscribe=one-click
+                in order to perform a one-click unsubscription. It also states that an email client
+                "...MUST NOT perform a POST on the HTTPS URI without user consent...".
+
+                If an email client is following the spec, then it isn't likely that
+                POST requests are being sent without user consent (clicking an unsubscribe button);
+                however, an email client can still send HEAD, GET, OPTIONS or other requests to this URL.
+                Since this block didn't differentiate between requests, it would always unsubscribe a person automatically
+                regardless of the request type.
+
+                To prevent unintentional unsubscriptions, only unsubscribe a person from email
+                automatically if responding to a one-click unsubscribe request. 
+            */
+            var isPersonAutoUnsubscribed = false;
+            if ( isFromPageParameter && IsOneClickUnsubscribeRequest() )
+            {
+                var service = new PersonService( rockContext );
+
+                if ( communication?.ListGroupId.HasValue == true )
+                {
+                    // Auto-unsubscribe from a specific communication list.
+                    var communicationListsQuery = new GroupService( rockContext )
+                        .GetQueryableByKey( communication.ListGroupId.ToString() )
+                        .IsCommunicationList();
+                    service.UnsubscribeFromEmail( person, communicationListsQuery );
+                }
+                else
+                {
+                    // Auto-unsubscribe from all email.
+                    service.UnsubscribeFromEmail( person );
+                }
+
+                rockContext.SaveChanges();
+
+                isPersonAutoUnsubscribed = true;
+            }
+
+            SetEmailPreferenceData( rockContext, box, mergeFields, person, isPersonAutoUnsubscribed );
+
             return box;
+        }
+
+        /// <summary>
+        /// Determines if the current request is a one-click unsubscribe request.
+        /// </summary>
+        /// <returns><see langword="true"/> if the current request is a one-click unsubscribe request; otherwise, <see langword="false"/> is returned.</returns>
+        private bool IsOneClickUnsubscribeRequest()
+        {
+            // See https://datatracker.ietf.org/doc/html/rfc8058#section-3.2 for email client spec
+            // and https://datatracker.ietf.org/doc/html/rfc8058#section-8 for example POST requests.
+            return this.RequestContext.HttpMethod == "POST"
+                && this.RequestContext.Form != null
+                && this.RequestContext.Form.Get( "List-Unsubscribe" )?.Equals( "One-Click", StringComparison.OrdinalIgnoreCase ) == true;
         }
 
         /// <summary>
@@ -288,10 +327,10 @@ We have unsubscribed you from the following lists:
         /// <param name="rockContext">The rock context.</param>
         /// <param name="box">The box.</param>
         /// <param name="mergeFields">The merge fields.</param>
-        private void SetEmailPreferenceData( RockContext rockContext, EmailPreferenceEntryInitializationBox box, Dictionary<string, object> mergeFields )
+        /// <param name="isPersonUnsubscribed">Whether the person is unsubscribed.</param>
+        private void SetEmailPreferenceData( RockContext rockContext, EmailPreferenceEntryInitializationBox box, Dictionary<string, object> mergeFields, Person person, bool isPersonUnsubscribed )
         {
             var availableOptions = GetAttributeValue( AttributeKey.AvailableOptions ).SplitDelimitedValues( false );
-            var person = GetPerson( rockContext );
 
             var isUnsubscribeVisible = availableOptions.Contains( UNSUBSCRIBE );
             box.UnsubscribeText = isUnsubscribeVisible ? GetAttributeValue( AttributeKey.UnsubscribefromListsText ).ResolveMergeFields( mergeFields ) : null;
@@ -341,7 +380,20 @@ We have unsubscribed you from the following lists:
                     return name;
                 } ).ToList();
 
-                box.UnsubscribeFromListOptions = viewableCommunicationLists.ToListItemBagList();
+                // Call ToListItemBagList( Func<...> ) passing this function for setting the ListItemBag's Text value using
+                // the "PublicName" attribute name if it exists.
+                box.UnsubscribeFromListOptions = viewableCommunicationLists.ToListItemBagList( e =>
+                    {
+                        var a = ( ( Rock.Model.Group ) e );
+                        var name = a.GetAttributeValue( AttributeKey.PublicName );
+                        if ( name.IsNullOrWhiteSpace() )
+                        {
+                            name = a.Name;
+                        }
+
+                        return name;
+                    }
+                );
             }
 
             box.EmailsAllowedText = availableOptions.Contains( EMAILS_ALLOWED ) ? GetAttributeValue( AttributeKey.EmailsAllowedText ).ResolveMergeFields( mergeFields ) : null;
@@ -361,63 +413,74 @@ We have unsubscribed you from the following lists:
                 {
                     box.EmailPreference = UNSUBSCRIBE;
                     box.UnsubscribeFromList = new List<ViewModels.Utility.ListItemBag>() { box.UnsubscribeFromListOptions.Find( l => l.Value == communication.ListGroup.Guid.ToString() ) };
+                    box.SuccessfullyUnsubscribedText = isPersonUnsubscribed ? $"You have been successfully unsubscribed from the \"{GetName(communication.ListGroup)}\" communication list. If you would like to be removed from all communications see the options below." : null;
                 }
-                else
+
+                var anyOptionChecked = false;
+                switch ( person.EmailPreference )
                 {
-                    bool anyOptionChecked = false;
-                    switch ( person.EmailPreference )
+                    case EmailPreference.EmailAllowed:
                     {
-                        case EmailPreference.EmailAllowed:
+                        if ( box.EmailsAllowedText.IsNotNullOrWhiteSpace() )
                         {
-                            if ( box.EmailsAllowedText.IsNotNullOrWhiteSpace() )
+                            box.EmailPreference = EMAILS_ALLOWED;
+                            anyOptionChecked = true;
+                        }
+                        break;
+                    }
+                    case EmailPreference.NoMassEmails:
+                    {
+                        if ( box.NoMassEmailsText.IsNotNullOrWhiteSpace() )
+                        {
+                            box.EmailPreference = NO_MASS_EMAILS;
+                            anyOptionChecked = true;
+                        }
+
+                        if ( isPersonUnsubscribed )
+                        {
+                            // Only update the unsubscribed message if it hasn't already been set.
+                            box.SuccessfullyUnsubscribedText = box.SuccessfullyUnsubscribedText ?? $"You have been successfully unsubscribed from all mass communications sent by {GlobalAttributesCache.Value( "OrganizationName" )}.";
+                        }
+                        break;
+                    }
+                    case EmailPreference.DoNotEmail:
+                    {
+                        if ( person.RecordStatusValueId != DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ).Id )
+                        {
+                            if ( box.NoEmailsText.IsNotNullOrWhiteSpace() )
                             {
-                                box.EmailPreference = EMAILS_ALLOWED;
+                                box.EmailPreference = NO_EMAILS;
                                 anyOptionChecked = true;
                             }
-                            break;
                         }
-                        case EmailPreference.NoMassEmails:
+                        else
                         {
-                            if ( box.NoMassEmailsText.IsNotNullOrWhiteSpace() )
+                            if ( box.NotInvolvedText.IsNotNullOrWhiteSpace() )
                             {
-                                box.EmailPreference = NO_MASS_EMAILS;
+                                box.EmailPreference = NOT_INVOLVED;
                                 anyOptionChecked = true;
                             }
-                            break;
+
+                            if ( person.RecordStatusReasonValueId.HasValue )
+                            {
+                                box.InActiveReason = person.RecordStatusReasonValue.Guid.ToString();
+                            }
+
+                            box.InActiveNote = person.ReviewReasonNote;
                         }
-                        case EmailPreference.DoNotEmail:
+
+                        if ( isPersonUnsubscribed )
                         {
-                            if ( person.RecordStatusValueId != DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ).Id )
-                            {
-                                if ( box.NoEmailsText.IsNotNullOrWhiteSpace() )
-                                {
-                                    box.EmailPreference = NO_EMAILS;
-                                    anyOptionChecked = true;
-                                }
-                            }
-                            else
-                            {
-                                if ( box.NotInvolvedText.IsNotNullOrWhiteSpace() )
-                                {
-                                    box.EmailPreference = NOT_INVOLVED;
-                                    anyOptionChecked = true;
-                                }
-
-                                if ( person.RecordStatusReasonValueId.HasValue )
-                                {
-                                    box.InActiveReason = person.RecordStatusReasonValue.Guid.ToString();
-                                }
-
-                                box.InActiveNote = person.ReviewReasonNote;
-                            }
-                            break;
+                            // Only update the unsubscribed message if it hasn't already been set.
+                            box.SuccessfullyUnsubscribedText = box.SuccessfullyUnsubscribedText ?? $"You have been successfully unsubscribed from all communications sent by {GlobalAttributesCache.Value( "OrganizationName" )}.";
                         }
+                        break;
                     }
+                }
 
-                    if ( !anyOptionChecked && box.UpdateEmailAddressText.IsNotNullOrWhiteSpace() )
-                    {
-                        box.EmailPreference = UPDATE_EMAIL_ADDRESS;
-                    }
+                if ( !anyOptionChecked && box.UpdateEmailAddressText.IsNotNullOrWhiteSpace() )
+                {
+                    box.EmailPreference = UPDATE_EMAIL_ADDRESS;
                 }
 
                 box.Email = person.Email;
@@ -497,10 +560,9 @@ We have unsubscribed you from the following lists:
             }
         }
 
-        private EmailPreferenceEntrySaveResponseBag UnsubscribeFromLists( RockContext rockContext, EmailPreferenceEntrySaveRequestBag bag )
+        private EmailPreferenceEntrySaveResponseBag UnsubscribeFromLists( RockContext rockContext, EmailPreferenceEntrySaveRequestBag bag, Person person )
         {
             var responseBag = GetSuccessResponseBag();
-            var person = GetPerson( rockContext );
             var communication = GetCommunication( rockContext );
 
             if ( person == null )
@@ -516,6 +578,9 @@ We have unsubscribed you from the following lists:
                 responseBag.ErrorMessage = "Please select the lists that you want to unsubscribe from.";
                 return responseBag;
             }
+            
+            // Make sure the person can receive emails.
+            person.EmailPreference = EmailPreference.EmailAllowed;
 
             var unsubscribedGroups = new List<Rock.Model.Group>();
 
@@ -593,7 +658,7 @@ We have unsubscribed you from the following lists:
         /// <summary>
         /// Updates the person email
         /// </summary>
-        private EmailPreferenceEntrySaveResponseBag UpdateEmail( RockContext rockContext, string email )
+        private EmailPreferenceEntrySaveResponseBag UpdateEmail( RockContext rockContext, string email, Person person )
         {
             var responseBag = new EmailPreferenceEntrySaveResponseBag()
             {
@@ -601,7 +666,6 @@ We have unsubscribed you from the following lists:
                 ErrorMessage = "Unfortunately, we're unable to update your email preference, as we're not sure who you are."
             };
 
-            var person = GetPerson( rockContext );
             if ( person != null )
             {
                 var service = new PersonService( rockContext );
@@ -610,6 +674,9 @@ We have unsubscribed you from the following lists:
                 if ( trackedPerson != null )
                 {
                     trackedPerson.Email = email;
+
+                    // Make sure the person can receive emails.
+                    trackedPerson.EmailPreference = EmailPreference.EmailAllowed;
 
                     rockContext.SaveChanges();
 
@@ -625,31 +692,31 @@ We have unsubscribed you from the following lists:
         /// </summary>
         /// <param name="rockContext"></param>
         /// <returns></returns>
-        private Person GetPerson( RockContext rockContext )
+        private (Person person, bool isFromPageParameter) GetPerson( RockContext rockContext )
         {
-            if ( _person != null )
+            // Return the person associated with the page parameter first,
+            // as they likely got to this page from an unsubscribe link to unsubscribe.
+            // If there is none, then use the authenticated person,
+            // as they likely navigated to this page to modify their preferences.
+            Person person = null;
+            var key = PageParameter( PageParameterKey.Person );
+            if ( !string.IsNullOrWhiteSpace( key ) )
             {
-                return _person;
+                var service = new PersonService( rockContext );
+                person = service.GetByPersonActionIdentifier( key, "Unsubscribe" );
+                if ( person == null )
+                {
+                    person = service.GetByUrlEncodedKey( key );
+                }
+            }
+
+            if ( person != null )
+            {
+                return ( person, true );
             }
             else
             {
-                var key = PageParameter( PageParameterKey.Person );
-                if ( !string.IsNullOrWhiteSpace( key ) )
-                {
-                    var service = new PersonService( rockContext );
-                    _person = service.GetByPersonActionIdentifier( key, "Unsubscribe" );
-                    if ( _person == null )
-                    {
-                        _person = new PersonService( rockContext ).GetByUrlEncodedKey( key );
-                    }
-                }
-
-                if ( _person == null && GetCurrentPerson() != null )
-                {
-                    _person = GetCurrentPerson();
-                }
-
-                return _person;
+                return ( GetCurrentPerson(), false );
             }
         }
 
@@ -669,6 +736,27 @@ We have unsubscribed you from the following lists:
             return _communication;
         }
 
+        /// <summary>
+        /// Gets the name of a communication list (group) using the Public Name if it exists.
+        /// </summary>
+        /// <param name="group"></param>
+        /// <returns></returns>
+        private string GetName( Rock.Model.Group communicationList )
+        {
+            if ( communicationList == null )
+            {
+                return string.Empty;
+            }
+
+            communicationList.LoadAttributes();
+            var name = communicationList.GetAttributeValue( AttributeKey.PublicName );
+            if ( name.IsNullOrWhiteSpace() )
+            {
+                name = communicationList.Name;
+            }
+
+            return name;
+        }
         #endregion Methods
 
         #region Block Actions
@@ -684,11 +772,11 @@ We have unsubscribed you from the following lists:
             using ( var rockContext = new RockContext() )
             {
                 var responseBag = GetSuccessResponseBag();
-                var person = GetPerson( rockContext );
+                var ( person, _ ) = GetPerson( rockContext );
 
                 if ( bag.EmailPreference == UNSUBSCRIBE )
                 {
-                    responseBag = UnsubscribeFromLists( rockContext, bag );
+                    responseBag = UnsubscribeFromLists( rockContext, bag, person );
 
                     if ( responseBag.ErrorMessage.IsNullOrWhiteSpace() )
                     {
@@ -732,7 +820,7 @@ We have unsubscribed you from the following lists:
                     }
                     else
                     {
-                        responseBag = UpdateEmail( rockContext, bag.Email );
+                        responseBag = UpdateEmail( rockContext, bag.Email, person );
                     }
 
                     return ActionOk( responseBag );

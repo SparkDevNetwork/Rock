@@ -101,9 +101,6 @@ namespace RockWeb.Blocks.Utility
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
-
             if ( !Page.IsPostBack )
             {
                 // Added for your convenience.
@@ -111,6 +108,8 @@ namespace RockWeb.Blocks.Utility
                 // To show the created/modified by date time details in the PanelDrawer do something like this:
                 // pdAuditDetails.SetEntity( <YOUROBJECT>, ResolveRockUrl( "~" ) );
             }
+
+            base.OnLoad( e );
         }
 
         #endregion

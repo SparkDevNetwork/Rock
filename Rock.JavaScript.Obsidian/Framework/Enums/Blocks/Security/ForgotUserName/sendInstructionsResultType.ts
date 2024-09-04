@@ -30,7 +30,11 @@ export const SendInstructionsResultType = {
     EmailInvalid: 1,
 
     /** Indicates that change password is not supported for account(s) associated with requested email. */
-    ChangePasswordNotSupported: 2
+    ChangePasswordNotSupported: 2,
+
+    /** Indicates that the captcha was not solved successfully. */
+    /** @deprecated No longer used and will be removed in the future. */
+    CaptchaInvalid: 3
 } as const;
 
 /** The send instructions result type for the Forgot UserName block. */
@@ -39,7 +43,10 @@ export const SendInstructionsResultTypeDescription: Record<number, string> = {
 
     1: "Email Invalid",
 
-    2: "Change Password Not Supported"
+    2: "Change Password Not Supported",
+
+    /** @deprecated No longer used and will be removed in the future. */
+    3: "Captcha Invalid"
 };
 
 /** The send instructions result type for the Forgot UserName block. */

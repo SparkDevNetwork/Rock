@@ -22,6 +22,8 @@ using System.Web.Configuration;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+using Rock.Security;
+using Rock.Utility;
 
 namespace Rock.Web.UI.Controls
 {
@@ -663,7 +665,8 @@ namespace Rock.Web.UI.Controls
 
             if ( IsBinaryFile && BinaryFileId.HasValue )
             {
-                thumbnailImageUrl = System.Web.VirtualPathUtility.ToAbsolute( "~/GetImage.ashx?id=" + BinaryFileId.ToString() );
+                thumbnailImageUrl = FileUrlHelper.GetImageUrl( BinaryFileId.Value );
+
                 _aRemove.Style[HtmlTextWriterStyle.Display] = "block";
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Href, thumbnailImageUrl );
@@ -715,9 +718,9 @@ namespace Rock.Web.UI.Controls
             writer.RenderEndTag();
 
             writer.Write( @"
-                <div class='js-upload-progress upload-progress' style='display:none'>
-                    <i class='fa fa-refresh fa-3x fa-spin'></i>                    
-                </div>" );
+        <div class='js-upload-progress upload-progress' style='display:none'>
+            <i class='fa fa-refresh fa-3x fa-spin'></i>                    
+        </div>" );
 
             writer.AddAttribute( "class", "imageupload-dropzone" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -765,8 +768,11 @@ namespace Rock.Web.UI.Controls
             var postBackRemovedScript = doImageRemovedPostback ? this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this, "ImageRemoved" ), true ) : "";
             postBackRemovedScript = postBackRemovedScript.Replace( '\'', '"' );
 
+            var securitySettings = new SecuritySettingsService().SecuritySettings;
+            bool disablePredictableIds = securitySettings.DisablePredictableIds;
+
             var script =
-$@"
+            $@"
 Rock.controls.imageUploader.initialize({{
     controlId: '{_fileUpload.ClientID}',
     fileId: '{this.BinaryFileId}',
@@ -780,6 +786,7 @@ Rock.controls.imageUploader.initialize({{
     isBinaryFile: '{( this.IsBinaryFile ? "T" : "F" )}',
     rootFolder: '{Rock.Security.Encryption.EncryptString( this.RootFolder )}',
     noPictureUrl: '{this.NoPictureUrl}',
+    disablePredictableIds: {disablePredictableIds.ToString().ToLower()},
     submitFunction: function (e, data) {{
         {this.SubmitFunctionClientScript}
     }},

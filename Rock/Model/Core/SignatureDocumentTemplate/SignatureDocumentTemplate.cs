@@ -151,6 +151,18 @@ namespace Rock.Model
         [DataMember]
         public int? CompletionSystemCommunicationId { get; set; }
 
+        /// <summary>
+        /// Determines if documents of this type should be considered valid for future eligibility needs.
+        /// </summary>
+        [DataMember]
+        public bool IsValidInFuture { get; set; }
+
+        /// <summary>
+        /// The number of days a signed document of this type is valid once it is signed.
+        /// </summary>
+        [DataMember]
+        public int? ValidityDurationInDays { get; set; }
+
         #endregion
 
         #region Navigation Properties

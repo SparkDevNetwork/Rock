@@ -29,7 +29,7 @@
         </asp:Panel>
 
             <div class="actions">
-                <Rock:BootstrapButton ID="lbHowManyNext" runat="server" AccessKey="n" ToolTip="Alt+n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="lbHowManyNext_Click" />
+                <Rock:BootstrapButton ID="lbHowManyNext" runat="server" data-shortcut-key="arrowright" Text="Next" ToolTip="Alt+🡆" DataLoadingText="Next" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="lbHowManyNext_Click" />
             </div>
     </asp:Panel>
     <%-- Prompt for any Registration Attributes that should be prompted for before entering registrations--%>
@@ -47,8 +47,8 @@
 
         <Rock:AttributeValuesContainer ID="avcRegistrationAttributesStart" runat="server" />
         <div class="actions">
-            <asp:LinkButton ID="btnRegistrationAttributesStartPrev" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default" CausesValidation="false" OnClick="btnRegistrationAttributesStartPrev_Click" />
-            <Rock:BootstrapButton ID="btnRegistrationAttributesStartNext" runat="server" AccessKey="n" ToolTip="Alt+n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="btnRegistrationAttributesStartNext_Click" />
+            <asp:LinkButton ID="btnRegistrationAttributesStartPrev" runat="server" data-shortcut-key="arrowleft" Text="Previous" ToolTip="Alt+🡄" CssClass="btn btn-default" CausesValidation="false" OnClick="btnRegistrationAttributesStartPrev_Click" />
+            <Rock:BootstrapButton ID="btnRegistrationAttributesStartNext" runat="server" data-shortcut-key="arrowright" Text="Next" ToolTip="Alt+🡆" DataLoadingText="Next" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="btnRegistrationAttributesStartNext_Click" />
         </div>
     </asp:Panel>
 
@@ -104,8 +104,8 @@
         </asp:Panel>
 
         <div class="actions">
-            <asp:LinkButton ID="lbRegistrantPrev" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default" CausesValidation="false" OnClick="lbRegistrantPrev_Click"  />
-            <Rock:BootstrapButton ID="lbRegistrantNext" runat="server" AccessKey="n" ToolTip="Alt+n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="lbRegistrantNext_Click" />
+            <asp:LinkButton ID="lbRegistrantPrev" runat="server" data-shortcut-key="arrowleft" Text="Previous" ToolTip="Alt+🡄" CssClass="btn btn-default" CausesValidation="false" OnClick="lbRegistrantPrev_Click"  />
+            <Rock:BootstrapButton ID="lbRegistrantNext" runat="server" data-shortcut-key="arrowright" Text="Next" ToolTip="Alt+🡆" DataLoadingText="Next" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="lbRegistrantNext_Click" />
         </div>
 
     </asp:Panel>
@@ -125,8 +125,8 @@
 
         <Rock:AttributeValuesContainer ID="avcRegistrationAttributesEnd" runat="server" />
         <div class="actions">
-            <asp:LinkButton ID="btnRegistrationAttributesEndPrev" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default" CausesValidation="false" OnClick="btnRegistrationAttributesEndPrev_Click" />
-            <Rock:BootstrapButton ID="btnRegistrationAttributesEndNext" runat="server" AccessKey="n" ToolTip="Alt+n" Text="Next" DataLoadingText="Next" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="btnRegistrationAttributesEndNext_Click" />
+            <asp:LinkButton ID="btnRegistrationAttributesEndPrev" runat="server" data-shortcut-key="arrowleft" Text="Previous" ToolTip="Alt+🡄" CssClass="btn btn-default" CausesValidation="false" OnClick="btnRegistrationAttributesEndPrev_Click" />
+            <Rock:BootstrapButton ID="btnRegistrationAttributesEndNext" runat="server" data-shortcut-key="arrowright" Text="Next" ToolTip="Alt+🡆" DataLoadingText="Next" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="btnRegistrationAttributesEndNext_Click" />
         </div>
     </asp:Panel>
 
@@ -230,35 +230,33 @@
                 <asp:Repeater ID="rptFeeSummary" runat="server">
                     <HeaderTemplate>
                         <div class="row hidden-xs fee-header">
-                            <div class="col-sm-6">
+                            <div class="<%# (RegistrationState.DiscountPercentage > 0.0m || RegistrationState.DiscountAmount > 0.0m) ? "col-sm-6" : "col-sm-9" %>">
                                 <strong>Description</strong>
-                            </div>
-
-                            <div runat="server" class="col-sm-3 fee-value" visible='<%# (RegistrationState.DiscountPercentage > 0.0m || RegistrationState.DiscountAmount > 0.0m) %>'>
-                                <strong>Discounted Amount</strong>
                             </div>
 
                             <div class="col-sm-3 fee-value">
                                 <strong>Amount</strong>
                             </div>
 
+                            <div runat="server" class="col-sm-3 fee-value" visible='<%# (RegistrationState.DiscountPercentage > 0.0m || RegistrationState.DiscountAmount > 0.0m) %>'>
+                                <strong>Discounted Amount</strong>
+                            </div>
                         </div>
                     </HeaderTemplate>
                     <ItemTemplate>
                         <div class="row fee-row-<%# Eval("Type").ToString().ToLower() %>">
-                            <div class="col-sm-6 fee-caption">
+                            <div class="<%# (RegistrationState.DiscountPercentage > 0.0m || RegistrationState.DiscountAmount > 0.0m) ? "col-sm-6 fee-caption" : "col-sm-9 fee-caption" %>">
                                 <%# Eval("Description") %>
-                            </div>
-
-                            <div runat="server" class="col-sm-3 fee-value" visible='<%# (RegistrationState.DiscountPercentage > 0.0m || RegistrationState.DiscountAmount > 0.0m) %>'>
-                                <Rock:HelpBlock runat="server" Text='This item is not eligible for the discount.' Visible='<%# ((RegistrationState.DiscountPercentage > 0.0m || RegistrationState.DiscountAmount > 0.0m) && ((decimal)Eval("Cost") == (decimal)Eval("DiscountedCost")) && ((decimal)Eval("Cost") > 0.0m)) %>'></Rock:HelpBlock>
-                                <span class="visible-xs-inline">Discounted Amount:</span> <%# Rock.ExtensionMethods.FormatAsCurrency((decimal)Eval("DiscountedCost")) %>
                             </div>
 
                             <div class="col-sm-3 fee-value">
                                 <span class="visible-xs-inline">Amount:</span> <%# Rock.ExtensionMethods.FormatAsCurrency((decimal)Eval("Cost")) %>
                             </div>
 
+                            <div runat="server" class="col-sm-3 fee-value" visible='<%# (RegistrationState.DiscountPercentage > 0.0m || RegistrationState.DiscountAmount > 0.0m) %>'>
+                                <Rock:HelpBlock runat="server" Text='This item is not eligible for the discount.' Visible='<%# ((RegistrationState.DiscountPercentage > 0.0m || RegistrationState.DiscountAmount > 0.0m) && ((decimal)Eval("Cost") == (decimal)Eval("DiscountedCost")) && ((decimal)Eval("Cost") > 0.0m)) %>'></Rock:HelpBlock>
+                                <span class="visible-xs-inline">Discounted Amount:</span> <%# Rock.ExtensionMethods.FormatAsCurrency((decimal)Eval("DiscountedCost")) %>
+                            </div>
                         </div>
                     </ItemTemplate>
                 </asp:Repeater>
@@ -327,9 +325,9 @@
         </asp:Panel>
 
         <div class="actions">
-            <asp:LinkButton ID="lbSummaryPrev" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default" CausesValidation="false" OnClick="lbSummaryPrev_Click" />
-            <Rock:BootstrapButton ID="lbSummaryNext" runat="server" AccessKey="n" ToolTip="Alt+n" Text="Finish" DataLoadingText="Next" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="lbSummaryNext_Click" />
-            <asp:LinkButton ID="lbPaymentPrev" runat="server" AccessKey="p" ToolTip="Alt+p" Text="Previous" CssClass="btn btn-default" CausesValidation="false" OnClick="lbPaymentPrev_Click" />
+            <asp:LinkButton ID="lbSummaryPrev" runat="server" data-shortcut-key="arrowleft" Text="Previous" ToolTip="Alt+🡄" CssClass="btn btn-default" CausesValidation="false" OnClick="lbSummaryPrev_Click" />
+            <Rock:BootstrapButton ID="lbSummaryNext" runat="server" data-shortcut-key="arrowright" Text="Finsih" ToolTip="Alt+🡆" DataLoadingText="Finish" CssClass="btn btn-primary pull-right" CausesValidation="true" OnClick="lbSummaryNext_Click" />
+            <asp:LinkButton ID="lbPaymentPrev" runat="server" data-shortcut-key="arrowleft" Text="Previous" ToolTip="Alt+🡄" CssClass="btn btn-default" CausesValidation="false" OnClick="lbPaymentPrev_Click" />
             <asp:Label ID="aStep2Submit" runat="server" ClientIDMode="Static" CssClass="btn btn-primary pull-right js-step2-submit" Text="Finish" />
         </div>
 

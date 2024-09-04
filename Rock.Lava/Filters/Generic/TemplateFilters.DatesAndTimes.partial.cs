@@ -206,6 +206,8 @@ namespace Rock.Lava.Filters
                         return ( Int64 ) difference.TotalHours;
                     case "m":
                         return ( Int64 ) difference.TotalMinutes;
+                    case "w":
+                        return ( Int64 )( difference.TotalDays / 7 );
                     case "M":
                         return ( Int64 ) GetMonthsBetween( startDto.Value, endDto.Value );
                     case "Y":

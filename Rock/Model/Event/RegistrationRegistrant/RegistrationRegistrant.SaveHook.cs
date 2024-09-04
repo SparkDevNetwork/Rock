@@ -36,19 +36,24 @@ namespace Rock.Model
                 if ( this.State == EntityContextState.Added )
                 {
                     var registrationRegistrant = this.Entity as RegistrationRegistrant;
-                    int? registrationTemplateId = null;
-                    if ( registrationRegistrant.Registration != null && registrationRegistrant.Registration.RegistrationInstance != null )
+                    int? registrationTemplateId = registrationRegistrant.RegistrationTemplateId;
+
+                    // If the Registration Template foreign key is not assigned, populate it now.
+                    if ( registrationTemplateId == null || registrationTemplateId == 0 )
                     {
-                        registrationTemplateId = registrationRegistrant.Registration.RegistrationInstance.RegistrationTemplateId;
-                    }
-                    else
-                    {
-                        var rockContext = ( RockContext ) this.RockContext;
-                        registrationTemplateId = new RegistrationService( rockContext )
-                            .Queryable()
-                            .Where( a => a.Id == registrationRegistrant.RegistrationId && a.RegistrationInstance != null )
-                            .Select( a => a.RegistrationInstance.RegistrationTemplateId )
-                            .FirstOrDefault();
+                        if ( registrationRegistrant.Registration != null && registrationRegistrant.Registration.RegistrationInstance != null )
+                        {
+                            registrationTemplateId = registrationRegistrant.Registration.RegistrationInstance.RegistrationTemplateId;
+                        }
+                        else
+                        {
+                            var rockContext = ( RockContext ) this.RockContext;
+                            registrationTemplateId = new RegistrationService( rockContext )
+                                .Queryable()
+                                .Where( a => a.Id == registrationRegistrant.RegistrationId && a.RegistrationInstance != null )
+                                .Select( a => a.RegistrationInstance.RegistrationTemplateId )
+                                .FirstOrDefault();
+                        }
                     }
 
                     if ( registrationTemplateId.HasValue )

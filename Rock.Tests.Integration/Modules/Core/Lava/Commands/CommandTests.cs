@@ -18,15 +18,17 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rock.Bus.Queue;
+
 using Rock.Data;
 using Rock.Lava;
 using Rock.Lava.Fluid;
 using Rock.Lava.RockLiquid;
 using Rock.Model;
+using Rock.Tests.Shared.Lava;
 
-namespace Rock.Tests.Integration.Core.Lava
+namespace Rock.Tests.Integration.Modules.Core.Lava.Commands
 {
     /// <summary>
     /// Tests for Lava-specific commands implemented as Liquid custom blocks and tags.
@@ -51,7 +53,7 @@ namespace Rock.Tests.Integration.Core.Lava
             var expectedOutput = @"
 <script>
     (function(){
-        alert('Message 1');    
+        alert('Message 1');
     })();
 </script>
 <script>
@@ -395,7 +397,7 @@ findme-interactiontest3
             var expectedOutput = @"
 <script>
     (function(){
-        alert('Hello world!');    
+        alert('Hello world!');
     })();
 </script>
 ";
@@ -674,107 +676,6 @@ Brian;Daniel;Nancy;William;
         }
 
         #endregion
-
-        #region WorkflowActivate
-
-        [TestMethod]
-        public void WorkflowActivateBlock_CommandNotEnabled_ReturnsConfigurationErrorMessage()
-        {
-            var input = @"
-{% workflowactivate workflowtype:'8fedc6ee-8630-41ed-9fc5-c7157fd1eaa4' %}
-  Activated new workflow with the id of #{{ Workflow.Id }}.
-{% endworkflowactivate %}
-";
-
-            // TODO: If the security check fails, the content of the block is still returned with the error message.
-            // Is this correct behavior, or should the content of the block be hidden?
-            var expectedOutput = "The Lava command 'workflowactivate' is not configured for this template.";
-
-            TestHelper.AssertTemplateOutput( expectedOutput, input );
-        }
-
-        [TestMethod]
-        public void WorkflowActivateBlock_ActivateSupportWorkflow_CreatesNewWorkflow()
-        {
-            // Activate Workflow: IT Support
-            var input = @"
-{% workflowactivate workflowtype:'51FE9641-FB8F-41BF-B09E-235900C3E53E' %}
-  Activated new workflow with the name '{{ Workflow.Name }}'.
-{% endworkflowactivate %}
-";
-
-            var expectedOutput = @"Activated new workflow with the name 'IT Support'.";
-
-            var options = new LavaTestRenderOptions() { EnabledCommands = "WorkflowActivate" };
-
-            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
-        }
-
-        [TestMethod]
-        public void WorkflowActivateBlock_WithDelimiterInWorkflowName_EvaluatesWorkflowNameCorrectly()
-        {
-            var mergeFields = new LavaDataDictionary
-            {
-                { "WorkflowName", "Ted's Workflow" },
-                { "ItSupportWorkflowTypeGuid", "51FE9641-FB8F-41BF-B09E-235900C3E53E" }
-            };
-
-            // Activate Workflow: IT Support
-            var input = @"
-{% workflowactivate workflowtype:'{{ItSupportWorkflowTypeGuid}}' workflowname:'{{WorkflowName}}' %}
-  Activated new workflow with the name '{{ Workflow.Name }}'.
-{% endworkflowactivate %}
-";
-
-            var expectedOutput = @"Activated new workflow with the name 'Ted's Workflow'.";
-
-            var options = new LavaTestRenderOptions() { EnabledCommands = "WorkflowActivate", MergeFields = mergeFields };
-
-            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
-        }
-
-        [TestMethod]
-        public void WorkflowActivateBlock_InternalVariablesAreScopedToBlock()
-        {
-            /* The WorkflowActivate tag injects additional variables into a child scope of the render context
-             * that are only intended for use within the block: Workflow, Activity, Error.
-             * These variables should not modify existing variables defined outside the block.
-             */
-
-            var mergeFields = new LavaDataDictionary
-            {
-                { "ItSupportWorkflowTypeGuid", "51FE9641-FB8F-41BF-B09E-235900C3E53E" }
-            };
-
-            var input = @"
-{% assign counter = 0 %}
-{% assign Workflow = 'Request 0' %}
-Outer Workflow Value: {{ Workflow }}
-{% workflowactivate workflowtype:'{{ItSupportWorkflowTypeGuid}}' workflowname:'Request 1' %}
-    {% assign counter = counter | Plus:1 %}
-    Workflow {{ counter }}: {{ Workflow.Name }}
-{% endworkflowactivate %}
-{% workflowactivate workflowtype:'{{ItSupportWorkflowTypeGuid}}' workflowname:'Request 2' %}
-    {% assign counter = counter | Plus:1 %}
-    Workflow {{ counter }}: {{ Workflow.Name }}
-{% endworkflowactivate %}
-Outer Workflow Value: {{ Workflow }}
-";
-
-            var expectedOutput = @"
-Outer Workflow Value: Request 0
-Workflow 1: Request 1
-Workflow 2: Request 2
-Outer Workflow Value: Request 0
-";
-
-            var options = new LavaTestRenderOptions() { EnabledCommands = "WorkflowActivate", MergeFields = mergeFields };
-
-            TestHelper.AssertTemplateOutput( expectedOutput, input, options );
-        }
-
-        #endregion
-
 
         /// <summary>
         /// The "return" tag can be used at the root level of a document.

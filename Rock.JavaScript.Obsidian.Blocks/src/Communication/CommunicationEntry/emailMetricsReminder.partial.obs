@@ -1,0 +1,114 @@
+<template>
+    <div v-if="!isReminderSaved" class="well">
+        <h3 class="title">Track Your Message's Impact</h3>
+        <p>Gain valuable insights into your message's reach and engagement with our Email Metrics Reminder. Select your preferred timeframe, and we'll send you an email reminder to review your opens and clicks metrics effortlessly.</p>
+
+        <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+
+        <RockForm @submit="onClickSaveReminder">
+            <InlineCheckBox v-model="isMetricsReminderEnabled" label="Enable Metrics Reminder" />
+            <template v-if="isMetricsReminderEnabled">
+                <NumberUpDown v-model="daysUntilReminder" label="Days Until Reminder" />
+                <RockButton type="submit" :btnType="BtnType.Primary">Save Reminder</RockButton>
+            </template>
+        </RockForm>
+    </div>
+    <div v-else class="well">
+        <h3 class="title">Email Metrics Reminder Enabled</h3>
+        <p>You will receive a reminder email in {{ daysUntilReminder }} {{ daysUntilReminder === 1 ? "day" : "days" }} to assess the impact of your message in terms of opens and click-throughs.</p>
+
+        <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+
+        <RockForm @submit="onClickCancelReminder">
+            <RockButton type="submit">Cancel Reminder</RockButton>
+        </RockForm>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref } from "vue";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { Guid } from "@Obsidian/Types";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { CommunicationEntrySaveMetricsReminderRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySaveMetricsReminderRequestBag";
+
+    const props = defineProps({
+        communicationGuid: {
+            type: String as PropType<Guid>,
+            required: true
+        }
+    });
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const isCancelingReminder = ref<boolean>(false);
+    const isSavingReminder = ref<boolean>(false);
+    const isReminderSaved = ref<boolean>(false);
+    const isMetricsReminderEnabled = ref<boolean>(false);
+    const daysUntilReminder = ref<number>(5);
+    const errorMessage = ref<string | null | undefined>();
+
+    // #endregion
+
+    // #region Event Handlers
+
+    async function onClickSaveReminder(): Promise<void> {
+        try {
+            isSavingReminder.value = true;
+            errorMessage.value = null;
+
+            const bag: CommunicationEntrySaveMetricsReminderRequestBag = {
+                communicationGuid: props.communicationGuid,
+                daysUntilReminder: daysUntilReminder.value
+            };
+
+            const result = await invokeBlockAction(
+                "SaveMetricsReminder",
+                { bag }
+            );
+
+            if (result?.isSuccess) {
+                isReminderSaved.value = true;
+            }
+            else {
+                errorMessage.value = result?.errorMessage || "An error occurred while saving email metrics reminder.";
+            }
+        }
+        finally {
+            isSavingReminder.value = false;
+        }
+    }
+
+    async function onClickCancelReminder(): Promise<void> {
+        try {
+            isCancelingReminder.value = true;
+            errorMessage.value = null;
+
+            const result = await invokeBlockAction<unknown>(
+                "CancelMetricsReminder",
+                {
+                    communicationGuid: props.communicationGuid
+                }
+            );
+
+            if (result?.isSuccess) {
+                isReminderSaved.value = false;
+            }
+            else {
+                errorMessage.value = result?.errorMessage || "An error occurred while canceling email metrics reminder.";
+            }
+        }
+        finally {
+            isCancelingReminder.value = false;
+        }
+    }
+
+    // #endregion
+</script>

@@ -29,13 +29,14 @@
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
     import { useHttp } from "@Obsidian/Utility/http";
     import RockFormField from "./rockFormField.obs";
     import CodeEditor from "./codeEditor.obs";
     import { Guid } from "@Obsidian/Types";
-    import { emptyGuid } from "@Obsidian/Utility/guid";
     import { BlockTemplatePickerGetBlockTemplatesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/blockTemplatePickerGetBlockTemplatesOptionsBag";
     import { BlockTemplatePickerGetBlockTemplatesResultsBag } from "@Obsidian/ViewModels/Rest/Controls/blockTemplatePickerGetBlockTemplatesResultsBag";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         ...standardRockFormFieldProps,
@@ -52,7 +53,7 @@
             default: null
         },
 
-        /** GUID of the template block that the  */
+        /** GUID of the template block defined value with a built-in support for BlockTemplateFields.*/
         templateBlockValueGuid: {
             type: String as PropType<Guid | null>,
             default: null
@@ -70,14 +71,14 @@
     const loadedItems = ref<BlockTemplatePickerGetBlockTemplatesResultsBag[]>([]);
 
     const http = useHttp();
-    const view = ref<"CUSTOM" | "SELECT">(props.templateBlockValueGuid ? "SELECT" : "CUSTOM");
+    const view = ref<"CUSTOM" | "SELECT">(props.templateKey !== emptyGuid ? "SELECT" : "CUSTOM");
 
     /**
      * Loads the items from the server.
      */
     async function loadOptions(): Promise<void> {
         const options: BlockTemplatePickerGetBlockTemplatesOptionsBag = {
-            templateBlockValueGuid: props.templateBlockValueGuid
+            templateBlockValueGuid: toGuidOrNull(props.templateBlockValueGuid)
         };
         const result = await http.post<BlockTemplatePickerGetBlockTemplatesResultsBag[]>("/api/v2/Controls/BlockTemplatePickerGetBlockTemplates", undefined, options);
 
@@ -115,7 +116,7 @@
 
     watch(view, () => {
         if (view.value == "CUSTOM") {
-            internalkey.value = null;
+            internalkey.value = emptyGuid;
         }
         else {
             let item = loadedItems.value[0];

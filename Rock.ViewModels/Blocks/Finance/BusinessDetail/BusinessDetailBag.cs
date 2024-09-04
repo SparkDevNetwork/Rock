@@ -17,6 +17,7 @@
 
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
+using System;
 using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Finance.BusinessDetail
@@ -42,6 +43,14 @@ namespace Rock.ViewModels.Blocks.Finance.BusinessDetail
         /// The address as HTML.
         /// </value>
         public string AddressAsHtml { get; set; }
+
+        /// <summary>
+        /// Gets or sets the email tag.
+        /// </summary>
+        /// <value>
+        /// The email tag.
+        /// </value>
+        public string EmailTag { get; set; }
 
         /// <summary>
         /// Gets or sets the address.
@@ -154,5 +163,13 @@ namespace Rock.ViewModels.Blocks.Finance.BusinessDetail
         /// The custom actions.
         /// </value>
         public string CustomActions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the badge type guids.
+        /// </summary>
+        /// <value>
+        /// The badge type guids.
+        /// </value>
+        public List<Guid> BadgeTypeGuids { get; set; }
     }
 }

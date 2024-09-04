@@ -291,17 +291,6 @@ namespace Rock.Model
         /// Uses Reflection to find all IEntity entities (all models), ISecured Types (could be a model or a component), and IRockBlockTypes.
         /// Then ensures that the <seealso cref="Rock.Model.EntityType" /> table is synced up to match.
         /// </summary>
-        [Obsolete( "Use the RegisterEntityTypes() that doesn't have any parameters (physWebAppPath is never used)" )]
-        [RockObsolete( "1.11" )]
-        public static void RegisterEntityTypes( string physWebAppPath )
-        {
-            RegisterEntityTypes();
-        }
-
-        /// <summary>
-        /// Uses Reflection to find all IEntity entities (all models), ISecured Types (could be a model or a component), and IRockBlockTypes.
-        /// Then ensures that the <seealso cref="Rock.Model.EntityType" /> table is synced up to match.
-        /// </summary>
         public static void RegisterEntityTypes()
         {
             List<Type> reflectedTypes = new List<Type>();
@@ -320,7 +309,7 @@ namespace Rock.Model
             foreach ( var reflectedType in reflectedTypes )
             {
                 var entityType = CreateFromType( reflectedType );
-                entityTypesFromReflection.AddOrIgnore( reflectedType.FullName, entityType );
+                entityTypesFromReflection.TryAdd( reflectedType.FullName, entityType );
             };
 
             using ( var rockContext = new RockContext() )

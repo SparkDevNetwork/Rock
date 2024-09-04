@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,6 +20,8 @@ using System.ComponentModel.Composition;
 using System.Linq;
 
 using Rock.Data;
+using Rock.Enums;
+using Rock.Enums.Core;
 using Rock.Model;
 
 namespace Rock.Search.Person
@@ -28,9 +30,9 @@ namespace Rock.Search.Person
     /// Searches for people with matching phones
     /// </summary>
     [Description( "Person Phone Search" )]
-    [Export(typeof(SearchComponent))]
-    [ExportMetadata("ComponentName", "Person Phone")]
-    [Rock.SystemGuid.EntityTypeGuid( "5F92ECC3-4EBD-4C41-A691-C03F1DA4F7BF")]
+    [Export( typeof( SearchComponent ) )]
+    [ExportMetadata( "ComponentName", "Person Phone" )]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.SEARCH_COMPONENT_PERSON_PHONE )]
     public class Phone : SearchComponent
     {
 
@@ -49,6 +51,11 @@ namespace Rock.Search.Person
                 return defaults;
             }
         }
+
+        /// <summary>
+        /// The preferred keyboard mode for this search component
+        /// </summary>
+        public override KeyboardInputMode PreferredKeyboardMode => KeyboardInputMode.Telephone;
 
         /// <inheritdoc/>
         public override IOrderedQueryable<object> SearchQuery( string searchTerm )

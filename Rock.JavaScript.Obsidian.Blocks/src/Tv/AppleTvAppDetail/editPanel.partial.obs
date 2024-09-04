@@ -25,6 +25,7 @@
 
                 <NumberBox v-if="enablePageViews"
                            v-model="pageViewRetentionPeriod"
+                           :minimumValue="0"
                            label="Page View Retention Period"
                            help="The number of days to keep page views logged. Leave blank to keep page views logged indefinitely." />
 
@@ -42,10 +43,6 @@
                          label="API Key"
                          rules="required"
                          help="The API key that will be used to secure your TV application." />
-
-                <CheckBox v-model="enablePageViewGeoTracking"
-                          label="Enable Page View Geo Tracking"
-                          help="Enabling this feature will allow the PopulateInteractionSessionData job to begin performing geolocation lookup on the IP addresses in the Interaction Session data. This also requires setting up a IP Address Location Service found under System Settings." />
             </div>
         </div>
 
@@ -91,7 +88,6 @@
     const description = propertyRef(props.modelValue.description ?? "", "Description");
     const isActive = propertyRef(props.modelValue.isActive, "IsActive");
     const enablePageViews = propertyRef(props.modelValue.enablePageViews, "EnablePageViews");
-    const enablePageViewGeoTracking = propertyRef(props.modelValue.enablePageViewGeoTracking, "EnablePageViewGeoTracking");
     const loginPage = propertyRef(props.modelValue.loginPage ?? {}, "LoginPageId");
     const applicationStyles = ref(props.modelValue.applicationStyles ?? "");
     const applicationJavascript = ref(props.modelValue.applicationJavascript ?? "");
@@ -101,7 +97,7 @@
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
-    const propRefs = [name, description, isActive, enablePageViews, loginPage, enablePageViewGeoTracking];
+    const propRefs = [name, description, isActive, enablePageViews, loginPage];
 
     // #endregion
 
@@ -125,7 +121,6 @@
         updateRefValue(description, props.modelValue.description ?? "");
         updateRefValue(isActive, props.modelValue.isActive);
         updateRefValue(enablePageViews, props.modelValue.enablePageViews);
-        updateRefValue(enablePageViewGeoTracking, props.modelValue.enablePageViewGeoTracking);
         updateRefValue(loginPage, props.modelValue.loginPage ?? {});
         updateRefValue(applicationStyles, props.modelValue.applicationStyles ?? "");
         updateRefValue(applicationJavascript, props.modelValue.applicationJavascript ?? "");
@@ -143,7 +138,6 @@
             description: description.value,
             isActive: isActive.value,
             enablePageViews: enablePageViews.value,
-            enablePageViewGeoTracking: enablePageViewGeoTracking.value,
             loginPage: loginPage.value,
             applicationStyles: applicationStyles.value,
             applicationJavascript: applicationJavascript.value,

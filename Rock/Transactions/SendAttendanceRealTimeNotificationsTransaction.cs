@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Rock.Enums.Event;
 using Rock.Model;
 using Rock.RealTime;
 using Rock.RealTime.Topics;
@@ -29,20 +30,24 @@ namespace Rock.Transactions
     /// Sends any real-time notifications for attendance records that have
     /// been recently created, modified or deleted.
     /// </summary>
-    internal class SendAttendanceRealTimeNotificationsTransaction : AggregateAsyncTransaction<(Guid Guid, bool IsDeleted)>
+    internal class SendAttendanceRealTimeNotificationsTransaction : AggregateAsyncTransaction<(Guid Guid, bool IsDeleted, bool? DidAttend, DateTime? PresentDateTime, DateTime? EndDateTime, CheckInStatus CheckInStatus)>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="SendAttendanceRealTimeNotificationsTransaction"/> class.
         /// </summary>
         /// <param name="attendanceGuid">The attendance unique identifier.</param>
         /// <param name="isDeleted">if set to <c>true</c> then the attendance record was deleted.</param>
-        public SendAttendanceRealTimeNotificationsTransaction( Guid attendanceGuid, bool isDeleted )
-            : base( (attendanceGuid, isDeleted) )
+        /// <param name="didAttend">Matches the value of <see cref="Attendance.DidAttend"/>.</param>
+        /// <param name="presentDateTime">Matches the value of <see cref="Attendance.PresentDateTime"/>.</param>
+        /// <param name="endDateTime">Matches the value of <see cref="Attendance.EndDateTime"/>.</param>
+        /// <param name="checkInStatus">Matches the value of <see cref="Attendance.CheckInStatus"/>.</param>
+        public SendAttendanceRealTimeNotificationsTransaction( Guid attendanceGuid, bool isDeleted, bool? didAttend, DateTime? presentDateTime, DateTime? endDateTime, CheckInStatus checkInStatus )
+            : base( (attendanceGuid, isDeleted, didAttend, presentDateTime, endDateTime, checkInStatus) )
         {
         }
 
         /// <inheritdoc/>
-        protected override async Task ExecuteAsync( IList<(Guid Guid, bool IsDeleted)> items )
+        protected override async Task ExecuteAsync( IList<(Guid Guid, bool IsDeleted, bool? DidAttend, DateTime? PresentDateTime, DateTime? EndDateTime, CheckInStatus CheckInStatus)> items )
         {
             // Get the distinct set of items that were deleted.
             var deletedItemGuids = items
@@ -82,7 +87,7 @@ namespace Rock.Transactions
 
             var modifiedNotificationTask = Task.Run( async () =>
             {
-                await AttendanceService.SendAttendanceUpdatedRealTimeNotificationsAsync( itemGuids );
+                await AttendanceService.SendAttendanceUpdatedRealTimeNotificationsAsync( itemGuids, items );
             } );
 
             await Task.WhenAll( deletedNotificationTask, modifiedNotificationTask );

@@ -1,0 +1,185 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="isDiscountPanelVisible || discountCodeInput" class="clearfix">
+        <NotificationBox v-if="discountCodeWarningMessage" alertType="warning">{{ discountCodeWarningMessage }}</NotificationBox>
+        <NotificationBox v-if="discountCodeSuccessMessage" alertType="success">{{ discountCodeSuccessMessage }}</NotificationBox>
+        <TextBox v-model="discountCodeInput"
+                 formGroupClasses="pull-right"
+                 inputClasses="input-width-md input-sm"
+                 :disabled="isDisabled"
+                 :label="registrationEntryTerms.discountCodeSingularTitleCase">
+            <template #inputGroupAppend>
+                <RockButton v-if="isDiscountCodeAllowed" btnSize="sm" :disabled="isDisabled" :isLoading="loading" class="margin-l-sm" @click="tryDiscountCode(false)">
+                    Apply
+                </RockButton>
+            </template>
+        </TextBox>
+    </div>
+</template>
+<script setup lang="ts">
+    import { computed, onMounted, ref, watch } from "vue";
+    import { CurrentRegistrationEntryState, GetPersistSessionArgs, RegistrationEntryTerms, use } from "./utils.partial";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { Guid } from "@Obsidian/Types";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { asFormattedString } from "@Obsidian/Utility/numberUtils";
+    import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
+
+    type CheckDiscountCodeResult = {
+        discountCode: string;
+        registrationUsagesRemaining: number | null;
+        discountAmount: number;
+        discountPercentage: number;
+        discountMaxRegistrants: number;
+    };
+
+    const getPersistSessionArgs = use(GetPersistSessionArgs);
+    const invokeBlockAction = useInvokeBlockAction();
+    const registrationEntryState = use(CurrentRegistrationEntryState);
+    const registrationEntryTerms = use(RegistrationEntryTerms);
+
+    // #region Values
+
+    /** Is there an AJAX call in-flight? */
+    const loading = ref<boolean>(false);
+
+    /** The bound value to the discount code input */
+    const discountCodeInput = ref<string>("");
+
+    /** A warning message about the discount code that is a result of a failed AJAX call */
+    const discountCodeWarningMessage = ref<string>("");
+
+    /** The success message displayed once a discount code has been applied */
+    const discountCodeSuccessMessage = ref<string>("");
+
+    // #endregion
+
+    // #region Computed Values
+
+    const isDisabled = computed<boolean>(() => {
+        return loading.value
+            || !isDiscountCodeAllowed.value
+
+            // Is a payment plan already set up?
+            || !!registrationEntryState.viewModel.session?.activePaymentPlan
+
+            // Is a payment plan being set up?
+            || !!registrationEntryState.paymentPlan;
+    });
+
+    /** Should the discount panel be shown? */
+    const isDiscountPanelVisible = computed<boolean>(() => {
+        return config.value.hasDiscountsAvailable;
+    });
+
+    /** Disable the textbox and hide the apply button */
+    const isDiscountCodeAllowed = computed<boolean>(() => {
+        const args = getPersistSessionArgs();
+        if (args.discountCode && args.discountCode.length > 0 && args.registrationGuid != null) {
+            return false;
+        }
+
+        return true;
+    });
+
+    /** This is the data sent from the C# code behind when the block initialized. */
+    const config = computed<RegistrationEntryInitializationBox>(() => {
+        return registrationEntryState.viewModel;
+    });
+
+    // #endregion
+
+    /** Send a user input discount code to the server so the server can check and send back
+     *  the discount amount. */
+    async function tryDiscountCode(isAutoApply: boolean): Promise<void> {
+        loading.value = true;
+        try {
+            const request: {
+                code: string | null | undefined;
+                registrantCount: number;
+                registrationGuid: Guid | null | undefined;
+                isAutoApply: boolean;
+            } = {
+                code: discountCodeInput.value,
+                registrantCount: registrationEntryState.registrants.length,
+                registrationGuid: toGuidOrNull(config.value.session?.registrationGuid),
+                isAutoApply: isAutoApply ?? false
+            };
+
+            const result = await invokeBlockAction<CheckDiscountCodeResult>("CheckDiscountCode", request);
+
+            if (result.isError || !result.data) {
+                if (!isAutoApply) {
+                    if (result.errorMessage != null && result.errorMessage != "") {
+                        discountCodeWarningMessage.value = result.errorMessage;
+                    }
+                    else if (discountCodeInput.value != "") {
+                        discountCodeWarningMessage.value = `'${discountCodeInput.value}' is not a valid ${registrationEntryTerms.value.discountCodeSingularTitleCase}.`;
+                    }
+                }
+            }
+            else {
+                discountCodeWarningMessage.value = "";
+                discountCodeInput.value = discountCodeInput.value == "" ? result.data.discountCode : discountCodeInput.value;
+                registrationEntryState.discountAmount = result.data.discountAmount;
+                registrationEntryState.discountPercentage = result.data.discountPercentage;
+                registrationEntryState.discountCode = result.data.discountCode;
+                registrationEntryState.discountMaxRegistrants = result.data.discountMaxRegistrants;
+
+                if (!isAutoApply || registrationEntryState.registrants.some(r => !r.isOnWaitList)) {
+                    discountCodeSuccessMessage.value = getDiscountCodeSuccessMessage();
+                }
+                else {
+                    discountCodeSuccessMessage.value = "";
+                }
+            }
+        }
+        finally {
+            loading.value = false;
+        }
+    }
+
+    function getDiscountCodeSuccessMessage(): string {
+        const discountAmount = registrationEntryState.discountAmount;
+        const discountPercent = registrationEntryState.discountPercentage;
+        const discountMaxRegistrants = registrationEntryState.discountMaxRegistrants ?? 0;
+        const registrantCount = registrationEntryState.registrants.length;
+
+        if (!discountPercent && !discountAmount) {
+            return "";
+        }
+
+        const discountText = discountPercent ?
+            `${asFormattedString(discountPercent * 100, 0)}%` :
+            `$${asFormattedString(discountAmount, 2)}`;
+        const {
+            registrantSingularLowerCase,
+            registrantPluralLowerCase,
+            discountCodeSingularLowerCase
+        } = registrationEntryTerms.value;
+
+        if (discountMaxRegistrants != 0 && registrantCount > discountMaxRegistrants) {
+            const registrantTerm = discountMaxRegistrants == 1 ? registrantSingularLowerCase : registrantPluralLowerCase;
+            return `Your ${discountText} ${discountCodeSingularLowerCase} was successfully applied to the maximum allowed number of ${discountMaxRegistrants} ${registrantTerm}`;
+        }
+
+        return `Your ${discountText} ${discountCodeSingularLowerCase} for all ${registrantPluralLowerCase} was successfully applied.`;
+    }
+
+    // #endregion
+
+    watch(() => registrationEntryState.discountCode, () => {
+        discountCodeInput.value = registrationEntryState.discountCode;
+    }, {
+        immediate: true
+    });
+
+    // #endregion
+
+    onMounted(async () => {
+        await tryDiscountCode(true);
+    });
+</script>

@@ -1,0 +1,71 @@
+<template>
+    <Modal v-model="isVisible"
+           title="Properties Updated"
+           :cancelText="'OK'"
+           @close="onClose">
+
+       <Grid
+            itemTerm="Property"
+            :data="gridData">
+            <TextColumn name="property"
+                        field="property"
+                        title="Property"
+                        visiblePriority="xs" />
+
+            <TextColumn name="originalValue"
+                        field="originalValue"
+                        title="Original Value"
+                        visiblePriority="xs" />
+
+            <TextColumn name="currentValue"
+                        field="currentValue"
+                        title="New Value"
+                        visiblePriority="xs" />
+
+       </Grid>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { ref, watch, PropType, computed } from "vue";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { AuditDetail } from "./types.partial";
+    import Grid from "@Obsidian/Controls/grid";
+
+    const isVisible = ref(false);
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<AuditDetail[]>,
+            required: true,
+            default: []
+        }
+    });
+
+    const emit = defineEmits({
+        "update:modelValue": (_) => true,
+    });
+
+    watch(() => props.modelValue, (newValue) => {
+        if (newValue) {
+            isVisible.value = true;
+        }
+        else {
+            isVisible.value = false;
+        }
+    });
+
+    const gridData = computed((): GridDataBag => ({
+        rows: props.modelValue.map((auditDetail: AuditDetail) => ({
+            property: auditDetail.property,
+            originalValue: auditDetail.originalValue,
+            currentValue: auditDetail.currentValue
+        }))
+    }));
+
+    function onClose(): void {
+        isVisible.value = false;
+        emit("update:modelValue", []);
+    }
+</script>

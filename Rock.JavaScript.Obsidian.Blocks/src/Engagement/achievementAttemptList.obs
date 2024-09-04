@@ -1,0 +1,280 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid v-if="config.options?.canViewBlock"
+          :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          :itemTerm="itemTerm"
+          :entityTypeGuid="EntityType.AchievementAttempt"
+          stickyHeader
+          liveUpdates
+          :showLaunchWorkflow="false"
+          :exportTitle="config.options?.achievementType?.text || 'Achievement'"
+          gridSettings
+          :gridSettingsActive="hasSettingsFilters"
+          @gridSettingsClick="onGridSettingsClick"
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          @selectItem="onSelectItem">
+
+        <TextColumn name="achiever"
+                    title="Achiever"
+                    field="achiever"
+                    :filter="pickExistingValueFilter"
+                    visiblePriority="xs"
+                    width="17%" />
+
+        <TextColumn v-if="!config.options?.achievementType?.value"
+                    name="achievement"
+                    title="Achievement"
+                    field="achievement"
+                    :filter="textValueFilter"
+                    visiblePriority="md"
+                    width="30%" />
+
+        <DateColumn name="startDate"
+                    title="Start Date"
+                    field="startDate"
+                    :filter="dateValueFilter"
+                    visiblePriority="md" />
+
+        <DateColumn name="endDate"
+                    title="End Date"
+                    field="endDate"
+                    :filter="dateValueFilter"
+                    visiblePriority="md" />
+
+        <BooleanColumn name="isSuccessful"
+                       title="Successful"
+                       field="isSuccessful"
+                       :filter="booleanValueFilter"
+                       visiblePriority="md" />
+
+        <BooleanColumn name="isClosed"
+                       title="Closed"
+                       field="isClosed"
+                       :filter="booleanValueFilter"
+                       visiblePriority="md" />
+
+        <Column name="progress"
+                title="Progress"
+                field="progress"
+                itemClass="progress-cell"
+                width="10%"
+                visiblePriority="xs">
+            <template #format="{ row }">
+                <div class="progress m-0">
+                    <div :class="`progress-bar ${getProgressBarClass(row.progress)}`" role="progressbar" :style="`width:${getProgressBarWidth(row.progress)}%;`">
+                        {{ getInsideProgress(row.progress) }}
+                    </div>
+                    <span class="pl-1">{{ getOutsideProgress(row.progress) }}</span>
+                </div>
+            </template>
+        </Column>
+
+        <Column name="achiever"
+                visiblePriority="md"
+                itemClass="grid-columncommand"
+                width="57px">
+            <template #format="{ row }">
+                <a v-if="row.personId" class='btn btn-default btn-sm' :href="`/person/${row.personId}`"><i class='fa fa-user'></i></a>
+                <span v-else>{{ row.achiever }}</span>
+            </template>
+        </Column>
+
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+    </Grid>
+
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible"
+                       :showAchievementTypePicker="!config.options?.achievementType?.value" />
+</template>
+
+<style>
+.progress-cell {
+    display: block;
+}
+</style>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { TextColumn, BooleanColumn, dateValueFilter, textValueFilter, pickExistingValueFilter, booleanValueFilter, DeleteColumn, Column, DateColumn } from "@Obsidian/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { AchievementAttemptListOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/AchievementAttemptList/achievementAttemptListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { NavigationUrlKey, GridSettingsOptions, PreferenceKey } from "./AchievementAttemptList/types.partial";
+    import { computed, reactive, ref, watch } from "vue";
+    import GridSettingsModal from "./AchievementAttemptList/gridSettingsModal.partial.obs";
+
+    const config = useConfigurationValues<ListBlockBox<AchievementAttemptListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const isGridSettingsVisible = ref(false);
+    const gridSettings = ref<GridSettingsOptions>({
+        startDateFrom: preferences.getValue(makeKeyUniqueToAchievementType(PreferenceKey.FilterAttemptStartDateRangeFrom)),
+        startDateTo: preferences.getValue(makeKeyUniqueToAchievementType(PreferenceKey.FilterAttemptStartDateRangeTo)),
+        status: preferences.getValue(makeKeyUniqueToAchievementType(PreferenceKey.FilterStatus)),
+        achieverName: preferences.getValue(makeKeyUniqueToAchievementType(PreferenceKey.FilterAchieverName)),
+        achievementType: config.options?.achievementType?.value ? null : JSON.parse(preferences.getValue(makeKeyUniqueToAchievementType(PreferenceKey.FilterAchievementType)) || "{}"),
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    const itemTerm = computed((): string => {
+        return `${config.options?.achievementType?.text || "Achievement"} Attempts`.trim();
+    });
+
+    /** `true` if the grid settings is performing any filtering. */
+    const hasSettingsFilters = computed((): boolean => {
+        return !!gridSettings.value.startDateFrom
+            || !!gridSettings.value.startDateTo
+            || !!gridSettings.value.status
+            || !!gridSettings.value.achieverName
+            || !!gridSettings.value.achievementType?.value;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    /**
+     * Determines the appropriate css class to use for the progress bar in the grid.
+     * @param progress The progress made by the achiever.
+     */
+    function getProgressBarClass(progress: number): string {
+        return progress >= 100 ? "progress-bar-success" : "";
+    }
+
+    /**
+    * Determines the width of the progress bar in the grid based on the progress.
+    * @param progress The progress made by the achiever.
+    */
+    function getProgressBarWidth(progress: number): number {
+        return progress < 0 ? 0 : (progress > 100 ? 100 : progress);
+    }
+
+    /**
+    * Determines the inside fill of the progress bar.
+    * @param progress The progress made by the achiever.
+    */
+    function getInsideProgress(progress: number): string | null {
+        const insideProgress = progress >= 50 ? progress : null;
+        return insideProgress ? `${insideProgress}%` : null;
+    }
+
+    /**
+    * Determines the outside fill of the progress bar.
+    * @param progress The progress made by the achiever.
+    */
+    function getOutsideProgress(progress: number): string | null {
+        const outsideProgress = progress < 50 ? progress : null;
+        return outsideProgress ? `${outsideProgress}%` : null;
+    }
+
+    /**
+    * Makes the key unique to the current achievement type.
+    *
+    * @param row The preference key.
+    */
+    function makeKeyUniqueToAchievementType(key: string): string {
+        if (config.options?.achievementType?.value) {
+            return `${config.options?.achievementType?.value}-${key}`;
+        }
+        return key;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+        }
+    }
+
+    /**
+     * Called when a row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete achievement attempt.");
+        }
+    }
+
+    /**
+     * Called when the Add button has been clicked by the indivual.
+     */
+    function onAddItem(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
+        }
+    }
+
+    /**
+    * Called when the grid setting icon is clicked, displays the block filters.
+    *
+    */
+    function onGridSettingsClick(): void {
+        isGridSettingsVisible.value = true;
+    }
+
+    // #endregion
+
+    watch(gridSettings, async () => {
+        preferences.setValue(makeKeyUniqueToAchievementType(PreferenceKey.FilterAttemptStartDateRangeFrom), gridSettings.value.startDateFrom ?? "");
+        preferences.setValue(makeKeyUniqueToAchievementType(PreferenceKey.FilterAttemptStartDateRangeTo), gridSettings.value.startDateTo ?? "");
+        preferences.setValue(makeKeyUniqueToAchievementType(PreferenceKey.FilterStatus), gridSettings.value.status ?? "");
+        preferences.setValue(makeKeyUniqueToAchievementType(PreferenceKey.FilterAchieverName), gridSettings.value.achieverName ?? "");
+        preferences.setValue(makeKeyUniqueToAchievementType(PreferenceKey.FilterAchievementType), JSON.stringify(gridSettings.value.achievementType));
+
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
+    });
+
+    gridDataSource.value = loadGridData();
+</script>

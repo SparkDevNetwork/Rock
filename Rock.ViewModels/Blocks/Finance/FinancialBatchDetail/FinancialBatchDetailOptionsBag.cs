@@ -17,6 +17,8 @@
 
 using System.Collections.Generic;
 
+using Rock.ViewModels.Utility;
+
 namespace Rock.ViewModels.Blocks.Finance.FinancialBatchDetail
 {
     /// <summary>
@@ -77,5 +79,20 @@ namespace Rock.ViewModels.Blocks.Finance.FinancialBatchDetail
         /// The message to be shown on the frontend if the batch is automated.
         /// </summary>
         public string AutomatedToolTip { get; } = "This is an automated batch. The system will automatically set this batch to OPEN when all transactions have been downloaded.";
+
+        /// <summary>
+        /// Whether the Account Totals section is configured to be hidden.
+        /// </summary>
+        public bool IsAccountTotalsHidden { get; set; }
+
+        /// <summary>
+        /// The Defined Type Guid for the Batch Name Defined Type Picker if the Defined Type is specified.
+        /// </summary>
+        public string BatchNameDefinedTypeGuid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the CurrencyInfo
+        /// </summary>
+        public CurrencyInfoBag CurrencyInfo { get; set; }
     }
 }

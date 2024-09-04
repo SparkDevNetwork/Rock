@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,6 +20,7 @@ using System.ComponentModel.Composition;
 using System.Linq;
 
 using Rock.Data;
+using Rock.Enums.Core;
 using Rock.Model;
 
 namespace Rock.Search.Person
@@ -30,7 +31,7 @@ namespace Rock.Search.Person
     [Description( "Person Email Search" )]
     [Export(typeof(SearchComponent))]
     [ExportMetadata("ComponentName", "Person Email")]
-    [Rock.SystemGuid.EntityTypeGuid( "00095C10-72C9-4C82-844E-AE8B146DE4F1")]
+    [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.SEARCH_COMPONENT_PERSON_EMAIL )]
     public class Email : SearchComponent
     {
 
@@ -49,6 +50,11 @@ namespace Rock.Search.Person
                 return defaults;
             }
         }
+
+        /// <summary>
+        /// The preferred keyboard mode for this search component.
+        /// </summary>
+        public override KeyboardInputMode PreferredKeyboardMode => KeyboardInputMode.Email;
 
         /// <summary>
         /// Gets the search result entity queryable that matches the search term.

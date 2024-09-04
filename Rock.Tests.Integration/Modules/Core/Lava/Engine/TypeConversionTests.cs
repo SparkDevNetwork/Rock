@@ -14,16 +14,20 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Lava;
 using Rock.Lava.Fluid;
+using Rock.Tests.Shared;
+using Rock.Tests.Shared.Lava;
 
-namespace Rock.Tests.Integration.Core.Lava
+namespace Rock.Tests.Integration.Modules.Core.Lava.Engine
 {
     /// <summary>
     /// Tests that verify the correct handling of various data types in the Lava Engine and associated Liquid framework.
     /// </summary>
     [TestClass]
+    [TestCategory( TestFeatures.Lava )]
     public class TypeConversionTests
     {
         private LavaIntegrationTestHelper _TestHelper = LavaIntegrationTestHelper.CurrentInstance;
@@ -32,6 +36,7 @@ namespace Rock.Tests.Integration.Core.Lava
         /// Verifies the resolution of a specific Issue.
         /// </summary>
         [TestMethod]
+        [Ignore( "Expected output needs to be re-written to work with multiple locale settings for date formats." )]
         public void TimeSpan_TimeSpanValue_IsCorrectlyParsedAndRendered()
         {
             /* The Fluid Lava Engine incorrectly renders the Schedule.StartTimeOfDay property as a UTC DateTime rather than a TimeSpan.
@@ -40,14 +45,6 @@ namespace Rock.Tests.Integration.Core.Lava
              * Resolution: This issue is caused because the Fluid Engine converts and stores the TimeSpan as a DateTime value.
              * This issue has been fixed by adding a specific Fluid value converter for the TimeSpan type.
              */
-
-            var engineOptions = new LavaEngineConfigurationOptions
-            {
-                InitializeDynamicShortcodes = false
-            };
-            var engine = LavaService.NewEngineInstance( typeof( FluidEngine ), engineOptions );
-
-            LavaIntegrationTestHelper.SetEngineInstance( engine );
 
             var template = @"
 Standard Date Format: {{ '2023-10-01 15:30:00' | Date:'hh:mm tt' }}
@@ -81,7 +78,8 @@ StartTimeOfDay (Formatted): 10:30 AM +11:00
             var options = new LavaTestRenderOptions
             {
                 EnabledCommands = "RockEntity",
-                IgnoreWhiteSpace = true
+                IgnoreWhiteSpace = true,
+                LavaEngineTypes = new List<System.Type> { typeof(FluidEngine) }
             };
 
             _TestHelper.AssertTemplateOutput( expectedOutput, template, options );

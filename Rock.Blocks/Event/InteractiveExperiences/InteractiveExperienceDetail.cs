@@ -572,7 +572,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                 Schedule = new ListItemBag
                 {
                     Value = experienceSchedule.Schedule.iCalendarContent,
-                    Text = experienceSchedule.Schedule.ToString()
+                    Text = experienceSchedule.Schedule.ToString( true )
                 },
                 EnableMinutesBefore = experienceSchedule.Schedule.CheckInStartOffsetMinutes,
                 Campuses = experienceSchedule.InteractiveExperienceScheduleCampuses

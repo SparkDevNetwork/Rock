@@ -64,11 +64,19 @@
         <div class="well">
             <div class="row">
                 <div class="col-md-6">
-                    <ComponentPicker label="Achievement Event"
+                    <ComponentPicker v-if="isComponentPickerEnabled"
+                                     label="Achievement Event"
                                      v-model="achievementEntityType"
                                      containerType="Rock.Achievement.AchievementContainer"
                                      help="The achievement events allow different methods for calculating a successful achievement."
                                      rules="required" />
+                    <TextBox v-else
+                             label="Achievement Event"
+                             v-model="achievementEvent"
+                             containerType="Rock.Achievement.AchievementContainer"
+                             help="The achievement events allow different methods for calculating a successful achievement."
+                             rules="required"
+                             :disabled="true" />
                 </div>
                 <div class="col-md-6 mt-4">
                     <p>{{ componentDescription }}</p>
@@ -118,7 +126,8 @@
         </Panel>
 
         <Panel :hasCollapse="true" title="Advanced Settings">
-            <CheckBoxList label="Prerequisite Achievements"
+            <CheckBoxList v-if="isPrerequisiteAchievementsVisible"
+                          label="Prerequisite Achievements"
                           v-model="prerequisites"
                           help="The achievements that must be earned prior to this achievement."
                           :items="availablePrerequisites"
@@ -281,13 +290,18 @@
     const isStepTypeAndStepStatusVisibile = computed((): boolean => {
         return achievementStepProgram.value?.value ? true : false;
     });
-    // #endregion
 
-    // #region Functions
+    const isPrerequisiteAchievementsVisible = computed((): boolean => {
+        return availablePrerequisites.value && availablePrerequisites.value.length > 0;
+    });
 
-    // #endregion
+    const isComponentPickerEnabled = computed((): boolean => {
+        return !props.modelValue.idKey;
+    });
 
-    // #region Event Handlers
+    const achievementEvent = computed((): string => {
+        return achievementEntityType.value.text ?? "";
+    });
 
     // #endregion
 
@@ -339,7 +353,13 @@
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
-    watch([attributeValues, prerequisites, ...propRefs], () => {
+    watch([attributeValues, prerequisites, achievementStepProgram, addStepOnSuccess, ...propRefs], () => {
+        let maximumAccomplishmentsAllowed = maxAccomplishmentsAllowed.value;
+
+        if (allowOverAchievement.value) {
+            maximumAccomplishmentsAllowed = 1;
+        }
+
         const newValue: AchievementTypeBag = {
             ...props.modelValue,
             attributeValues: attributeValues.value,
@@ -349,7 +369,7 @@
             isPublic: isPublic.value,
             category: category.value,
             allowOverAchievement: allowOverAchievement.value,
-            maxAccomplishmentsAllowed: maxAccomplishmentsAllowed.value,
+            maxAccomplishmentsAllowed: maximumAccomplishmentsAllowed,
             achievementIconCssClass: achievementIconCssClass.value,
             highlightColor: highlightColor.value,
             achievementEntityType: achievementEntityType.value,
@@ -363,7 +383,9 @@
             customSummaryLavaTemplate: customSummaryLavaTemplate.value,
             imageBinaryFile: imageBinaryFile.value,
             alternateImageBinaryFile: alternateImageBinaryFile.value,
-            prerequisites: prerequisites.value
+            prerequisites: prerequisites.value,
+            stepProgram: achievementStepProgram.value,
+            addStepOnSuccess: addStepOnSuccess.value
         };
 
         emit("update:modelValue", newValue);

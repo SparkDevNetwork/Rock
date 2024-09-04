@@ -1,0 +1,95 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Settings"
+           saveText="Save"
+           @save="onSave">
+        <SectionHeader title="Filters" />
+
+        <div class="row">
+            <div class="col-md-4">
+                <TextBox v-model="name"
+                         label="Name" />
+            </div>
+
+            <div class="col-md-4">
+                <DropDownList v-model="isActive"
+                              label="Active Status"
+                              :items="isActiveOptions" />
+            </div>
+
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import { ref, PropType, watch } from "vue";
+    import { GridSettingsOptions } from "./types.partial";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GridSettingsOptions): void;
+        (e: "update:visible", value: boolean): void;
+        (e: "close"): void;
+    }>();
+
+    const name = ref(props.modelValue.name ?? "");
+    const isActive = ref(props.modelValue.isActive ?? "");
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+    const isActiveOptions = [
+        {
+            text: "[All]",
+            value: ""
+        },
+        {
+            text: "Active",
+            value: "active"
+        },
+        {
+            text: "Inactive",
+            value: "inactive"
+        }
+    ] as ListItemBag[];
+
+    function onSave(): void {
+        const value: GridSettingsOptions = {
+            name: name.value,
+            isActive: isActive.value
+        };
+
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
+
+        isVisible.value = false;
+    }
+
+    watch(() => props.modelValue, () => {
+        name.value = props.modelValue.name ?? "";
+        isActive.value = props.modelValue.isActive ?? "";
+    });
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            emit("close");
+        }
+    });
+</script>

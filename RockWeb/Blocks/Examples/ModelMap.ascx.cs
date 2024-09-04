@@ -91,8 +91,6 @@ namespace RockWeb.Blocks.Examples
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 Guid? categoryGuid = null;
@@ -134,6 +132,8 @@ namespace RockWeb.Blocks.Examples
 
                 ShowData( categoryGuid, entityTypeId );
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -245,7 +245,7 @@ namespace RockWeb.Blocks.Examples
                                 .Select( s => s.Split( '^' ) )
                                 .Where( s => s.Length == 2 ) )
                 {
-                    categoryIcons.AddOrIgnore( keyVal[0], keyVal[1] );
+                    categoryIcons.TryAdd( keyVal[0], keyVal[1] );
                 }
             }
 
@@ -366,8 +366,17 @@ namespace RockWeb.Blocks.Examples
 
                         var xmlComments = GetXmlComments();
 
-                        var mClass = new MClass();
-                        mClass.Name = type.Name;
+                        var mClass = new MClass()
+                        {
+                            IsObsolete = type.CustomAttributes.Any( a => a.AttributeType == typeof( ObsoleteAttribute ) ) || type.CustomAttributes.Any( a => a.AttributeType == typeof( RockObsolete ) )
+                        };
+
+                        if ( mClass.IsObsolete )
+                        {
+                            mClass.ObsoleteMessage = GetObsoleteMessage( type );
+                        }
+
+                        mClass.Name += type.Name;
                         mClass.Comment = GetComments( type, xmlComments );
 
                         PropertyInfo[] properties = type.GetProperties( BindingFlags.Public | BindingFlags.Instance )
@@ -384,7 +393,7 @@ namespace RockWeb.Blocks.Examples
                                 IsInherited = p.DeclaringType != type,
                                 IsVirtual = p.GetGetMethod( true ) != null && p.GetGetMethod( true ).IsVirtual && !p.GetGetMethod( true ).IsFinal,
                                 IsLavaInclude = p.IsDefined( typeof( LavaIncludeAttribute ) ) || p.IsDefined( typeof( LavaVisibleAttribute ) ) || p.IsDefined( typeof( DataMemberAttribute ) ),
-                                IsObsolete = p.IsDefined( typeof( ObsoleteAttribute ) ),
+                                IsObsolete = p.IsDefined( typeof( ObsoleteAttribute ) ) || p.IsDefined( typeof( RockObsolete ) ),
                                 ObsoleteMessage = GetObsoleteMessage( p ),
                                 NotMapped = p.IsDefined( typeof( NotMappedAttribute ) ),
                                 Required = p.IsDefined( typeof( RequiredAttribute ) ),
@@ -423,7 +432,7 @@ namespace RockWeb.Blocks.Examples
                             mClass.Properties.Add( property );
                         }
 
-                        MethodInfo[] methods = type.GetMethods( BindingFlags.Public | BindingFlags.Instance )
+                        MethodInfo[] methods = type.GetMethods( BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static )
                             .Where( m => !m.IsSpecialName && ( m.MemberType == MemberTypes.Method || m.MemberType == MemberTypes.Property ) )
                             .ToArray();
                         foreach ( MethodInfo m in methods.OrderBy( i => i.Name ).ToArray() )
@@ -438,7 +447,7 @@ namespace RockWeb.Blocks.Examples
                                 Id = m.MetadataToken,
                                 Signature = string.Format( "{0}({1})", m.Name, param ),
                                 Comment = GetComments( m, xmlComments ),
-                                IsObsolete = m.IsDefined( typeof( ObsoleteAttribute ) ),
+                                IsObsolete = m.IsDefined( typeof( ObsoleteAttribute ) ) || m.IsDefined( typeof( RockObsolete ) ),
                                 ObsoleteMessage = GetObsoleteMessage( m )
                             } );
                         }
@@ -447,7 +456,7 @@ namespace RockWeb.Blocks.Examples
                         pageReference.QueryString = new System.Collections.Specialized.NameValueCollection();
                         pageReference.QueryString["EntityType"] = entityType.Guid.ToString();
 
-                        lClassName.Text = mClass.Name;
+                        lClassName.Text = mClass.IsObsolete ? $"<span>{mClass.Name}</span><p><i class='fa fa-ban fa-fw text-danger' title='no longer supported'></i><i>{mClass.ObsoleteMessage}</i></p>" : mClass.Name;
                         lActualTableName.Text = "";
 
                         // Check if there is a TableAttribute.
@@ -756,11 +765,59 @@ namespace RockWeb.Blocks.Examples
 
             try
             {
+                if ( p.IsDefined( typeof( RockObsolete ) ) )
+                {
+                    var rockObsoleteMessage = p.CustomAttributes.Where( a => a.AttributeType == typeof( RockObsolete ) ).Select( r => r.ConstructorArguments.FirstOrDefault() ).FirstOrDefault();
+                    if ( Rock.Utility.RockSemanticVersion.TryParse( rockObsoleteMessage.Value.ToStringSafe(), out Rock.Utility.RockSemanticVersion version ) )
+                    {
+                        message = $"[Obsoleted in v{version.Minor}";
+                        message += version.Patch > 0 ? $".{version.Patch}] " : "] ";
+                    }
+                }
+
                 var msg = p.CustomAttributes.Where( a => a.AttributeType == typeof( ObsoleteAttribute ) ).Select( r => r.ConstructorArguments.FirstOrDefault() ).FirstOrDefault();
+
                 if ( msg != null )
                 {
-                    message = msg.Value.ToStringSafe();
+                    message += msg.Value.ToStringSafe();
                 }
+            }
+            catch
+            {
+            }
+
+            return message;
+        }
+
+        /// <summary>
+        /// Gets the comments from the data in the assembly's XML file for the
+        /// given type.
+        /// </summary>
+        /// <param name="type">The type instance.</param>
+        /// <returns>an XmlComment object</returns>
+        private string GetObsoleteMessage( Type type )
+        {
+            if ( !type.CustomAttributes.Any( a => a.AttributeType == typeof( ObsoleteAttribute ) ) )
+            {
+                return null;
+            }
+
+            string message = string.Empty;
+
+            try
+            {
+                if ( type.CustomAttributes.Any( a => a.AttributeType == typeof( RockObsolete ) ) )
+                {
+                    var rockObsoleteMessage = type.CustomAttributes.Where( a => a.AttributeType == typeof( RockObsolete ) ).Select( r => r.ConstructorArguments.FirstOrDefault() ).FirstOrDefault();
+                    if ( Rock.Utility.RockSemanticVersion.TryParse( rockObsoleteMessage.Value.ToStringSafe(), out Rock.Utility.RockSemanticVersion version ) )
+                    {
+                        message = $"[Obsoleted in v{version.Minor}";
+                        message += version.Patch > 0 ? $".{version.Patch}] " : "] ";
+                    }
+                }
+
+                var msg = type.CustomAttributes.Where( a => a.AttributeType == typeof( ObsoleteAttribute ) ).Select( r => r.ConstructorArguments.FirstOrDefault() ).FirstOrDefault();
+                message += msg.Value.ToStringSafe();
             }
             catch
             {
@@ -922,6 +979,10 @@ namespace RockWeb.Blocks.Examples
         public List<MProperty> Properties { get; set; }
 
         public List<MMethod> Methods { get; set; }
+
+        public bool IsObsolete { get; set; }
+
+        public string ObsoleteMessage { get; set; }
 
         public MClass()
         {

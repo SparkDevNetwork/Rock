@@ -22,8 +22,7 @@ using System.Data.Entity.Infrastructure.Interception;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using Rock.Bus;
-using Rock.Lava.RockLiquid.Blocks;
+
 using Rock.Observability;
 using Rock.Web.Cache.NonEntities;
 
@@ -284,41 +283,11 @@ namespace Rock.Data.Interception
             // Create observability activity
             var activity = ObservabilityHelper.StartActivity( "Database Command", ActivityKind.Client );
 
-            // Check if there is an activity before we make calls to get observability information. If there is no observability configuration
-            // then there will not be an activity.
-            if ( activity != null )
+            // Update the activity with information about the query.
+            DbCommandObservabilityCache.UpdateActivity( activity, command.CommandText, command, cmd =>
             {
-                var observabilityInfo = DbCommandObservabilityCache.Get( command.CommandText );
-
-                activity.DisplayName = $"DB: {observabilityInfo.Prefix} ({observabilityInfo.CommandHash})";
-                activity.AddTag( "db.system", "mssql" );
-                activity.AddTag( "db.query", command.CommandText );
-                activity.AddTag( "rock-otel-type", "rock-db" );
-                activity.AddTag( "rock-db-hash", observabilityInfo.CommandHash );
-
-                // Check if this query should get additional observability telemetry
-                if ( DbCommandObservabilityCache.TargetedQueryHashes.Contains( observabilityInfo.CommandHash ) )
-                {
-                    // Append stack trace 
-                    activity.AddTag( "rock-db-stacktrace", System.Environment.StackTrace );
-
-                    // Append parameters
-                    var parameters = new StringBuilder();
-                    foreach ( DbParameter parm in command.Parameters )
-                    {
-                        var keyValue = GetSqlParameterKeyValue( parm );
-
-                        parameters.Append( $"{keyValue.Key}: {keyValue.Value}{Environment.NewLine}" );
-                    }
-
-                    activity.AddTag( "rock-db-parameters", parameters.ToString() );
-                }
-
-                // Add observability metric
-                var tags = RockMetricSource.CommonTags;
-                tags.Add( "operation", observabilityInfo.CommandType );
-                RockMetricSource.DatabaseQueriesCounter.Add( 1, tags );
-            }
+                return cmd.Parameters.Cast<DbParameter>().Select( GetSqlParameterKeyValue );
+            } );
 
             if ( context is RockContext rockContext )
             {
@@ -373,7 +342,7 @@ namespace Rock.Data.Interception
 
                 // Complete the observability activity if it is the correct
                 // activity.
-                if ( activity != null && activity.GetTagItem( "rock-db-hash" ) is string activityHash && queryHash == activityHash )
+                if ( activity != null && activity.GetTagItem( "rock.db.hash" ) is string activityHash && queryHash == activityHash )
                 {
                     activity.Dispose();
                 }
@@ -428,7 +397,7 @@ namespace Rock.Data.Interception
         /// </summary>
         /// <param name="parm"></param>
         /// <returns></returns>
-        private (string Key, string Value) GetSqlParameterKeyValue( DbParameter parm )
+        private KeyValuePair<string, string> GetSqlParameterKeyValue( DbParameter parm )
         {
             var key = parm.ParameterName.AddStringAtBeginningIfItDoesNotExist( "@" );
 
@@ -440,7 +409,7 @@ namespace Rock.Data.Interception
                 value = "'" + value.Replace( "'", "''" ) + "'";
             }
 
-            return (key, value);
+            return new KeyValuePair<string, string>( key, value );
         }
 
         #endregion

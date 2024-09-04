@@ -33,7 +33,7 @@ namespace Rock.Chart
     ///
     /// NOTE: For future development, this factory should be superseded by new factories that are style-specific - ChartJsLineChartDataFactory and ChartJsBarChartDataFactory.
     /// Each chart style may need to process specific data types in a different way.
-    /// Refer to the ChartJsPieChartDataFactory for an example of the preferred implementation - it handles category and time series
+    /// Refer to the ChartJsPieChartDataFactory for an example of the preferred implementation - it handles both category and time series data.
     /// </remarks>
     public class ChartJsTimeSeriesDataFactory<TDataPoint> : ChartJsDataFactory
             where TDataPoint : IChartJsTimeSeriesDataPoint
@@ -99,6 +99,14 @@ namespace Rock.Chart
                        && _Datasets.SelectMany( x => x.DataPoints ).Any();
             }
         }
+
+        /// <summary>
+        /// Gets or sets the date format string.
+        /// </summary>
+        /// <value>
+        /// The date format string.
+        /// </value>
+        public string DateFormatString { get; set; }
 
         #endregion
 
@@ -319,12 +327,13 @@ namespace Rock.Chart
             var categories = GetTimescaleCategories( this.TimeScale );
             var categoryNames = categories.Select( x => x.Category ).ToList();
             var colorGenerator = new ChartColorPaletteGenerator( this.ChartColors );
+            var labels = new List<string>();
 
             var jsDatasets = new List<object>();
             foreach ( var dataset in datasets )
             {
                 // Create a sequence of datapoints, ensuring there is a value for each of the categories.
-                var dataPoints = GetDataPointsForAllCategories( dataset, categoryNames );
+                var dataPoints = GetDataPointsForAllCategories( dataset, categoryNames, args.IncludeNullDatapoints );
                 var borderColorString = dataset.BorderColor;
                 var fillColorString = dataset.FillColor;
 
@@ -340,10 +349,12 @@ namespace Rock.Chart
                     data = dataPoints
                 };
 
+                labels.AddRange( dataPoints.ConvertAll( d => d.x as string ) );
+
                 jsDatasets.Add( jsDataset );
             }
 
-            var chartData = new { datasets = jsDatasets, labels = categoryNames };
+            var chartData = new { datasets = jsDatasets, labels = categoryNames.Where( c => labels.Contains( c ) ) };
 
             return chartData;
         }
@@ -476,11 +487,25 @@ namespace Rock.Chart
 
                 while ( thisDate < lastDateNextDay )
                 {
-                    var categoryDataPoint = new ChartJsCategorySeriesDataPoint() { Category = thisDate.ToString( DateFormatStringDayMonthYear ), SortKey = thisDate.ToString( "yyyyMMdd" ) };
+                    var categoryDataPoint = new ChartJsCategorySeriesDataPoint() { Category = thisDate.ToString( DateFormatString ?? DateFormatStringDayMonthYear ), SortKey = thisDate.ToString( "yyyyMMdd" ) };
 
                     categoryDataPoints.Add( categoryDataPoint );
 
                     thisDate = thisDate.AddDays( 1 );
+                }
+            }
+            else if ( timeScale == ChartJsTimeSeriesTimeScaleSpecifier.Week )
+            {
+                // To test for the last date of the reporting period, get the next week.
+                var lastDateNextWeek = endDate.AddDays( 7 );
+
+                while ( thisDate < lastDateNextWeek )
+                {
+                    var categoryDataPoint = new ChartJsCategorySeriesDataPoint() { Category = thisDate.ToString( DateFormatString ?? DateFormatStringDayMonthYear ), SortKey = thisDate.ToString( "yyyyMMdd" ) };
+
+                    categoryDataPoints.Add( categoryDataPoint );
+
+                    thisDate = thisDate.AddDays( 7 );
                 }
             }
             else if ( timeScale == ChartJsTimeSeriesTimeScaleSpecifier.Month )
@@ -490,7 +515,7 @@ namespace Rock.Chart
 
                 while ( thisDate < lastDateNextDay )
                 {
-                    var categoryDataPoint = new ChartJsCategorySeriesDataPoint() { Category = thisDate.ToString( DateFormatStringMonthYear ), SortKey = thisDate.ToString( "yyyyMM" ) };
+                    var categoryDataPoint = new ChartJsCategorySeriesDataPoint() { Category = thisDate.ToString( DateFormatString ?? DateFormatStringMonthYear ), SortKey = thisDate.ToString( "yyyyMM" ) };
 
                     categoryDataPoints.Add( categoryDataPoint );
 
@@ -522,10 +547,11 @@ namespace Rock.Chart
         /// <summary>
         /// Get a sequence of datapoints corresponding to a specific category, ensuring there is a value for each of the categories.
         /// </summary>
-        /// <param name="dataset"></param>
-        /// <param name="categoryNames"></param>
+        /// <param name="dataset">The dataset</param>
+        /// <param name="categoryNames">The list of category names</param>
+        /// <param name="includeNullDatapoints">If set to true categories without corresponding datapoints will be included with a value of zero</param>
         /// <returns></returns>
-        private List<dynamic> GetDataPointsForAllCategories( ChartJsCategorySeriesDataset dataset, List<string> categoryNames )
+        private List<dynamic> GetDataPointsForAllCategories( ChartJsCategorySeriesDataset dataset, List<string> categoryNames, bool includeNullDatapoints = true )
         {
             var dataValues = new List<dynamic>();
 
@@ -533,14 +559,31 @@ namespace Rock.Chart
             {
                 var datapoint = dataset.DataPoints.FirstOrDefault( x => x.Category == categoryName );
 
-                var dataValue = new
+                if ( !includeNullDatapoints )
                 {
-                    x = categoryName,
-                    y = datapoint?.Value ?? 0,
-                    customData = datapoint
-                };
+                    if ( datapoint != null )
+                    {
+                        var dataValue = new
+                        {
+                            x = categoryName,
+                            y = datapoint.Value,
+                            customData = datapoint
+                        };
 
-                dataValues.Add( dataValue );
+                        dataValues.Add( dataValue );
+                    }
+                }
+                else
+                {
+                    var dataValue = new
+                    {
+                        x = categoryName,
+                        y = datapoint?.Value ?? 0,
+                        customData = datapoint
+                    };
+
+                    dataValues.Add( dataValue );
+                }
             }
 
             return dataValues;
@@ -566,13 +609,13 @@ namespace Rock.Chart
                 datasetQuantized.BorderColor = dataset.BorderColor;
                 datasetQuantized.FillColor = dataset.FillColor;
 
-                if ( timeScale == ChartJsTimeSeriesTimeScaleSpecifier.Day )
+                if ( timeScale == ChartJsTimeSeriesTimeScaleSpecifier.Day || timeScale == ChartJsTimeSeriesTimeScaleSpecifier.Week )
                 {
                     var quantizedDataPoints = datapoints
                         .GroupBy( x => new { Day = x.DateTime } )
                         .Select( x => new ChartJsCategorySeriesDataPoint
                         {
-                            Category = x.Key.Day.ToString( DateFormatStringDayMonthYear ),
+                            Category = x.Key.Day.ToString( DateFormatString ?? DateFormatStringDayMonthYear ),
                             Value = x.Sum( y => y.Value ),
                             SortKey = x.Key.Day.ToString( "yyyyMMdd" ),
                         } )
@@ -587,7 +630,7 @@ namespace Rock.Chart
                         .GroupBy( x => new { Month = new DateTime( x.DateTime.Year, x.DateTime.Month, 1 ) } )
                         .Select( x => new ChartJsCategorySeriesDataPoint
                         {
-                            Category = x.Key.Month.ToString( DateFormatStringMonthYear ),
+                            Category = x.Key.Month.ToString( DateFormatString ?? DateFormatStringMonthYear ),
                             Value = x.Sum( y => y.Value ),
                             SortKey = x.Key.Month.ToString( "yyyyMM" ),
                         } )
@@ -799,6 +842,11 @@ namespace Rock.Chart
         Day = 1,
 
         /// <summary>
+        /// Week time scale
+        /// </summary>
+        Week = 2,
+
+        /// <summary>
         /// Month time scale
         /// </summary>
         Month = 3,
@@ -823,7 +871,15 @@ namespace Rock.Chart
         /// </summary>
         public sealed class GetJsonArgs : ChartJsDataFactory.GetJsonArgs
         {
-            // Add any arguments specific to this chart factory here.
+            // Add any arguments specific to this chart factory here.            
+
+            /// <summary>
+            /// Gets or sets a value indicating whether null data points should be included.
+            /// </summary>
+            /// <value>
+            ///   <c>true</c> if [include null datapoints]; otherwise, <c>false</c>.
+            /// </value>
+            public bool IncludeNullDatapoints { get; set; } = true;
         }
     }
 

@@ -18,20 +18,16 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Entity;
 using System.Linq;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
-using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.AdaptiveMessageList;
 using Rock.Web.Cache;
 using static Rock.Blocks.Cms.AdaptiveMessageList;
-using static Rock.Blocks.Finance.FinancialBatchList;
 
 namespace Rock.Blocks.Cms
 {
@@ -166,6 +162,7 @@ namespace Rock.Blocks.Cms
                 .WithBlock( this, blockOptions )
                 .AddTextField( "idKey", a => a.AdaptiveMessage.IdKey )
                 .AddTextField( "name", a => a.AdaptiveMessage.Name )
+                .AddTextField( "description", a => a.AdaptiveMessage.Description )
                 .AddField( "isActive", a => a.AdaptiveMessage.IsActive )
                 .AddTextField( "key", a => a.AdaptiveMessage.Key )
                 .AddField( "categories", p => p.AdaptiveMessage.Categories.Select( a => a.Name ).ToList() )
@@ -217,7 +214,7 @@ namespace Rock.Blocks.Cms
 
                 if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
-                    return ActionBadRequest( $"Not authorized to delete ${AdaptiveMessage.FriendlyTypeName}." );
+                    return ActionBadRequest( $"Not authorized to delete {AdaptiveMessage.FriendlyTypeName}." );
                 }
 
                 if ( !entityService.CanDelete( entity, out var errorMessage ) )

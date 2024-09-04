@@ -8,7 +8,7 @@
             <div class="panel-heading">
                 <h1 class="panel-title">
                     <i class="fa fa-tv"></i> 
-                    <asp:Literal ID="lBlockTitle" runat="server" Text="New Application" />
+                    <asp:Literal ID="lBlockTitle" runat="server" Text="New Page" />
                 </h1>
 
                 <div class="panel-labels">

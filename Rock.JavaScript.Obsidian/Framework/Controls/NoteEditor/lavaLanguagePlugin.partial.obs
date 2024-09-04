@@ -1,0 +1,233 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<script setup lang="ts">
+    /**
+     * LavaLanguagePlugin - Adds Lava Language support to a note editor.
+     *
+     * This plugin prevents TinyMCE from wrapping Lava text in <p> tags
+     * and also prevents encoding special math operators as HTML entities.
+     *
+     * Note: This plugin does not add a toolbar button.
+     *
+     * @example
+     * <!--
+     *      someEditorHost.obs - This example shows just enough code to wire up the plugin.
+     *      FYI, the Vue - Official extension complains if template and script tags are used in comments,
+     *      so using (template) and (script) for now.
+     * -->
+     * (template)
+     *   <div id="uniqueWrapperId">
+     *     <div id="uniqueEditorId">
+     *       <LavaLanguagePlugin />
+     *     </div>
+     *   </div>
+     * (/template)
+     *
+     * (script setup lang="ts")
+     *   import LavaLanguagePlugin from "./NoteEditor/lavaLanguagePlugin.partial.obs";
+     *
+     *   // The host must provide the plugins feature.
+     *   const pluginManager = providePluginsFeature({
+     *       editorInstance: computed(() => tinyMceInstance.value),
+     *       toolbarElement: computed(() => toolbarElement.value)
+     *   });
+     * (/script)
+     */
+    import { ref, watch } from "vue";
+    import { usePluginHelper } from "./utils.partial";
+    import { Editor, EditorEvent, EventDispatcher, Events } from "@Obsidian/Libs/tinymce";
+    import { newGuid } from "@Obsidian/Utility/guid";
+
+    const id = `lava-language-${newGuid()}` as const;
+
+    defineExpose({
+        id
+    });
+
+    const { editorInstance } = usePluginHelper();
+
+    // By default, the current version of TinyMCE will automatically
+    // wrap text in a <p> tag.
+    // If this changes in the future, only these two regex values would
+    // need to be updated.
+    const openingLavaWrapperTagRegex = /^<p>/m;
+    const closingLavaWrapperTagRegex = /<\/p>$/m;
+
+    const wrappedLavaObjectRegex = /<p>([\s]|(&nbsp;))*\{\{.*}}([\s]|(&nbsp;))*<\/p>/g;
+    const lavaObjectRegex = /\{\{.*?}}/g;
+
+    const wrappedLavaTagRegex = /<p>([\s]|(&nbsp;))*\{%.*%}([\s]|(&nbsp;))*<\/p>/g;
+    const lavaTagRegex = /\{%.*?%}/g;
+
+    const wrappedLavaShortcodeRegex = /<p>([\s]|(&nbsp;))*\{\[.*]}([\s]|(&nbsp;))*<\/p>/g;
+    const lavaShortcodeRegex = /\{\[.*?]}/g;
+
+    const wrappedLavaShortcodeBlockRegex = /<p>([\s]|(&nbsp;))*\[\[.*]]([\s]|(&nbsp;))*<\/p>/g;
+    const lavaShortcodeBlockRegex = /\[\[.*?]]/g;
+
+    const htmlEntitiesToSymbols: Record<string, string> = {
+        "&plus;": "+",
+        "&minus;": "−",
+        "&times;": "×",
+        "&divide;": "÷",
+        "&equals;": "=",
+        "&ne;": "≠",
+        "&plusmn;": "±",
+        "&not;": "¬",
+        "&lt;": "<",
+        "&gt;": ">",
+        "&le;": "≤",
+        "&ge;": "≥",
+        "&lE;": "≦",
+        "&gE;": "≧",
+    };
+
+    //#region Values
+
+    const getContentEventDispatcher = ref<EventDispatcher<Events.EditorEventMap> | undefined>();
+
+    //#endregion
+
+    //#region Computed Values
+
+    //#endregion
+
+    //#region Functions
+
+    /**
+     * Initializes the plugin.
+     */
+    function init(editor: Editor): void {
+        // Remove wrapper elements around Lava code that are automatically added by TinyMCE when
+        // returning the value to components.
+        getContentEventDispatcher.value = editor.on("GetContent", (e: EditorEvent<Events.GetContentEvent>) => {
+            if (e.format === "html") {
+                // Only process Lava code if retrieving HTML content.
+                e.content = fixLavaShortcodeBlocks(fixLavaShortcodes(fixLavaObjects(fixLavaTags(e.content))));
+            }
+        });
+    }
+
+    /** Disposes the tooltip button. */
+    function dispose(): void {
+        if (getContentEventDispatcher.value) {
+            getContentEventDispatcher.value.off();
+        }
+    }
+
+    /**
+     * Fixes Lava in an HTML string.
+     */
+    function fixLava(html: string, wrappedLavaRegex: RegExp, lavaRegex: RegExp): string {
+        const linesWithLava = html.match(wrappedLavaRegex);
+        if (!linesWithLava) {
+            // Stop processing the HTML string since it doesn't contain any Lava.
+            return html;
+        }
+
+        for (const lineWithLava of linesWithLava) {
+            // Get all the Lava substrings in the current line.
+            const lavaValues = lineWithLava.match(lavaRegex);
+            if (!lavaValues) {
+                continue;
+            }
+
+            // First remove the wrapper HTML tag.
+            // e.g., "<p>{{ Person.FullName }}</p>" should be "{{ Person.FullName }}"
+            let processedLineWithLava = lineWithLava
+                .replace(openingLavaWrapperTagRegex, "")
+                .replace(closingLavaWrapperTagRegex, "");
+
+            // Then replace HTML entities with actual symbols.
+            // e.g., "{% if x &gt; 0 %}" should be "{% if x > 0 %}"
+            for (const lava of lavaValues) {
+                // Remove HTML entities.
+                let processedLava = removeHtmlEntities(lava);
+                if (processedLava !== lava) {
+                    processedLineWithLava = processedLineWithLava.replace(lava, processedLava);
+                }
+            }
+
+            // Only replace the line of HTML if it was modified.
+            if (processedLineWithLava !== lineWithLava) {
+                html = html.replace(lineWithLava, processedLineWithLava);
+            }
+        }
+
+        return html;
+    }
+
+    /**
+     * Fixes Lava objects/variables in an HTML string.
+     *
+     * Lava objects/variables (along with their properties and filters)
+     * are wrapped in curly braces; e.g., "{{ Person.FullName | Capitalize }}".
+     */
+    function fixLavaObjects(html: string): string {
+        return fixLava(html, wrappedLavaObjectRegex, lavaObjectRegex);
+    }
+
+    /**
+     * Fixes Lava shortcodes in an HTML string.
+     *
+     * Lava shortcodes (along with their parameters)
+     * are wrapped in a curly brace and a square bracket;
+     * e.g., "{[ googlemap height:'400px' scrollwheel:'false' draggable:'false' ]}".
+     */
+    function fixLavaShortcodes(html: string): string {
+        return fixLava(html, wrappedLavaShortcodeRegex, lavaShortcodeRegex);
+    }
+
+    /**
+     * Fixes Lava shortcode blocks in an HTML string.
+     *
+     * Lava shortcode blocks (along with their parameters)
+     * are wrapped in square brackets;
+     * e.g., "[[ marker location:'33.52764, -112.262571']][[ endmarker ]]".
+     */
+    function fixLavaShortcodeBlocks(html: string): string {
+        return fixLava(html, wrappedLavaShortcodeBlockRegex, lavaShortcodeBlockRegex);
+    }
+
+    /**
+     * Fixes Lava tags in an HTML string.
+     *
+     * A Lava tag is Lava code wrapped in a curly brace and percent symbol; e.g., "{% if Person.Age > 18 %}".
+     */
+    function fixLavaTags(html: string): string {
+        return fixLava(html, wrappedLavaTagRegex, lavaTagRegex);
+    }
+
+    /**
+     * Removes HTML entities in an HTML string.
+     *
+     * Initially, this only removes a subset of math operators.
+     * Add more as needed.
+     */
+    function removeHtmlEntities(html: string): string {
+        for (const htmlEntity in htmlEntitiesToSymbols) {
+            html = html.replace(htmlEntity, htmlEntitiesToSymbols[htmlEntity]);
+        }
+
+        return html;
+    }
+
+    //#endregion
+
+    //#region Event Handlers
+
+    //#endregion
+
+    //#region Watchers
+
+    // Register the plugin whenever the bound Editor changes.
+    watch(editorInstance, () => {
+        // Dispose any dependencies.
+        dispose();
+
+        if (editorInstance.value) {
+            init(editorInstance.value);
+        }
+    });
+
+    //#endregion
+</script>

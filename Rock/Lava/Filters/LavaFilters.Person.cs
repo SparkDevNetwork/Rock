@@ -1115,7 +1115,7 @@ namespace Rock.Lava
         /// <returns>A single Campus, or a list of Campuses in ascending order of distance from the target Person.</returns>
         public static object NearestCampus( ILavaRenderContext context, object input, object maximumCount = null )
         {
-            var resultSetSize = InputParser.TryConvertInteger( maximumCount, 1, 0 ) ?? 0;
+            var resultSetSize = InputParser.ConvertToIntegerOrDefault( maximumCount, 1, 0 ) ?? 0;
             if ( resultSetSize <= 0 )
             {
                 return null;
@@ -1521,6 +1521,24 @@ namespace Rock.Lava
             }
 
             return role.IsPersonInRole( person.Guid );
+        }
+
+        /// <summary>
+        /// Gets a Person the by person action identifier.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="action">The action.</param>
+        /// <returns><see cref="Person"/></returns>
+        public static Person PersonByPersonActionIdentifier( ILavaRenderContext context, object input, string action )
+        {
+            var rockContext = LavaHelper.GetRockContextFromLavaContext( context );
+            var personService = new PersonService( rockContext );
+            var encryptedKey = input.ToString();
+
+            var person = personService.GetByPersonActionIdentifier( encryptedKey, action );
+
+            return person;
         }
     }
 }

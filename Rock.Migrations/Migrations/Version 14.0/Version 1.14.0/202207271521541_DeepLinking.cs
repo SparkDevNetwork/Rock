@@ -43,10 +43,12 @@ namespace Rock.Migrations
             //  Site: Rock RMS
             RockMigrationHelper.AddPage( true, parentPageGuid, "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Deep Links", "Manage your deep link routes.", "07E421F9-BF0E-4BBB-A594-743C8678EE88", "" );
 
+#pragma warning disable CS0618 // Type or member is obsolete
             // Add Page Route
             //   Page:Deep Links
             //   Route:admin/cms/mobile-applications/{SiteId}/deeplinks
             RockMigrationHelper.AddPageRoute( "07E421F9-BF0E-4BBB-A594-743C8678EE88", "admin/cms/mobile-applications/{SiteId}/deeplinks", "07D9E32F-1756-4E54-A3CA-4A29E6FB7A8E" );
+#pragma warning restore CS0618 // Type or member is obsolete
 
             // Add Block 
             //  Block Name: Mobile Deep Link Detail

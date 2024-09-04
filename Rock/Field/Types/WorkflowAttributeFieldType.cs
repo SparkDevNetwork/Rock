@@ -22,6 +22,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 #endif
 using Rock.Attribute;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -31,7 +32,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of attributes for a specific workflow Type
     /// </summary>
     [Serializable]
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.WORKFLOW_ATTRIBUTE )]
     public class WorkflowAttributeFieldType : FieldType
     {
@@ -40,6 +41,52 @@ namespace Rock.Field.Types
         private const string ATTRIBUTE_FIELD_TYPES_KEY = "attributefieldtypes";
         private const string WORKFLOW_TYPE_ATTRIBUTES_KEY = "WorkflowTypeAttributes";
         private const string ACTIVITY_TYPE_ATTRIBUTES_KEY = "ActivityTypeAttributes";
+        private const string CLIENT_VALUES_KEY = "values";
+
+        /// <inheritdoc />
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
+        {
+            var configurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
+
+            if ( usage != ConfigurationValueUsage.View )
+            {
+                var filteredFieldTypes = new List<string>();
+                var attributeFieldTypes = new List<ListItemBag>();
+
+                if ( configurationValues.ContainsKey( ATTRIBUTE_FIELD_TYPES_KEY ) )
+                {
+                    filteredFieldTypes = configurationValues[ATTRIBUTE_FIELD_TYPES_KEY]
+                        .Split( "|".ToCharArray(), StringSplitOptions.RemoveEmptyEntries ).ToList();
+                }
+
+                var attributes = GetContextAttributes();
+                if ( attributes != null )
+                {
+                    foreach ( var attribute in attributes )
+                    {
+                        var fieldType = FieldTypeCache.Get( attribute.Value.FieldTypeId );
+                        if ( !filteredFieldTypes.Any() || filteredFieldTypes.Contains( fieldType.Class, StringComparer.OrdinalIgnoreCase ) )
+                        {
+                            attributeFieldTypes.Add( new ListItemBag() { Text = attribute.Value.Name, Value = attribute.Key.ToString() } );
+                        }
+                    }
+                }
+
+                configurationValues[CLIENT_VALUES_KEY] = attributeFieldTypes.ToCamelCaseJson( false, true );
+            }
+
+            return configurationValues;
+        }
+
+        /// <inheritdoc />
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            var configurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
+
+            configurationValues.Remove( CLIENT_VALUES_KEY );
+
+            return configurationValues;
+        }
 
         #endregion
 

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -85,10 +85,10 @@ namespace Rock.Tests.Integration
                 foreach ( var attributeArgs in args )
                 {
                     var fieldType = FieldTypeCache.Get( attributeArgs.FieldTypeIdentifier, allowIntegerIdentifier: true );
-                    Assert.That.IsNotNull( fieldType, "Field Type is invalid." );
+                    Assert.That.IsNotNull( fieldType, $"Invalid Field Type [FieldTypeIdentifier={attributeArgs.FieldTypeIdentifier}" );
 
                     var entityType = EntityTypeCache.Get( attributeArgs.EntityTypeIdentifier, allowIntegerIdentifier: true );
-                    Assert.That.IsNotNull( entityType, "Entity Type is invalid." );
+                    Assert.That.IsNotNull( entityType, $"Invalid Entity Type [EntityTypeIdentifier={attributeArgs.EntityTypeIdentifier}" );
 
                     var name = attributeArgs.Name;
                     if ( string.IsNullOrWhiteSpace( name ) )

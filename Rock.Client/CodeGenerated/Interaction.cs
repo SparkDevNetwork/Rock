@@ -38,6 +38,9 @@ namespace Rock.Client
         public string Campaign { get; set; }
 
         /// <summary />
+        public int? CampaignValueId { get; set; }
+
+        /// <summary />
         public string ChannelCustom1 { get; set; }
 
         /// <summary />
@@ -85,6 +88,9 @@ namespace Rock.Client
         /// <summary />
         public string Medium { get; set; }
 
+        /// <summary />
+        public int? MediumValueId { get; set; }
+
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
@@ -107,6 +113,9 @@ namespace Rock.Client
 
         /// <summary />
         public string Source { get; set; }
+
+        /// <summary />
+        public int? SourceValueId { get; set; }
 
         /// <summary />
         public string Term { get; set; }
@@ -145,6 +154,7 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.Campaign = source.Campaign;
+            this.CampaignValueId = source.CampaignValueId;
             this.ChannelCustom1 = source.ChannelCustom1;
             this.ChannelCustom2 = source.ChannelCustom2;
             this.ChannelCustomIndexed1 = source.ChannelCustomIndexed1;
@@ -161,6 +171,7 @@ namespace Rock.Client
             this.InteractionSummary = source.InteractionSummary;
             this.InteractionTimeToServe = source.InteractionTimeToServe;
             this.Medium = source.Medium;
+            this.MediumValueId = source.MediumValueId;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Operation = source.Operation;
             this.PersonalDeviceId = source.PersonalDeviceId;
@@ -168,6 +179,7 @@ namespace Rock.Client
             this.RelatedEntityId = source.RelatedEntityId;
             this.RelatedEntityTypeId = source.RelatedEntityTypeId;
             this.Source = source.Source;
+            this.SourceValueId = source.SourceValueId;
             this.Term = source.Term;
             this.CreatedDateTime = source.CreatedDateTime;
             this.ModifiedDateTime = source.ModifiedDateTime;

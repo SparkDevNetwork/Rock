@@ -450,12 +450,12 @@ ORDER BY [Text]",
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 SetStart();
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -645,6 +645,26 @@ ORDER BY [Text]",
                 if ( tbOtherLastName.Text.IsNullOrWhiteSpace() )
                 {
                     errors.Add( "Last Name is required." );
+                }
+
+                if ( System.Text.RegularExpressions.Regex.IsMatch( tbOtherFirstName.Text, RegexPatterns.SpecialCharacterRemovalPattern ) )
+                {
+                    errors.Add( "First Name cannot contain special characters such as quotes, parentheses, etc." );
+                }
+
+                if ( System.Text.RegularExpressions.Regex.IsMatch( tbOtherLastName.Text, RegexPatterns.SpecialCharacterRemovalPattern ) )
+                {
+                    errors.Add( "Last Name cannot contain special characters such as quotes, parentheses, etc." );
+                }
+
+                if ( System.Text.RegularExpressions.Regex.IsMatch( tbOtherFirstName.Text, RegexPatterns.EmojiAndSpecialFontRemovalPattern ) )
+                {
+                    errors.Add( "First Name cannot contain emojis or special fonts." );
+                }
+
+                if ( System.Text.RegularExpressions.Regex.IsMatch( tbOtherLastName.Text, RegexPatterns.EmojiAndSpecialFontRemovalPattern ) )
+                {
+                    errors.Add( "Last Name cannot contain emojis or special fonts." );
                 }
 
                 if ( bpOtherBirthDay.Visible && GetAttributeValue( AttributeKey.OtherPersonBirthdayRequired ).AsBoolean() && !bpOtherBirthDay.SelectedDate.HasValue )

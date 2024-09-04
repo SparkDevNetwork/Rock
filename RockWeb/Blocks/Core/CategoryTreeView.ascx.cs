@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.Core
         IsRequired = false,
         Key = AttributeKey.EntityTypeQualifierProperty )]
 
-    [TextField( "Entity type Qualifier Value",
+    [TextField( "Entity Type Qualifier Value",
         IsRequired = false,
         Key = AttributeKey.EntityTypeQualifierValue )]
 
@@ -60,7 +60,7 @@ namespace RockWeb.Blocks.Core
         Key = AttributeKey.ShowUnnamedEntityItems )]
 
     [TextField( "Page Parameter Key",
-        Description = "The page parameter to look for",
+        Description = "The page parameter to use for determining the currently selected category integer identifier.",
         Key = AttributeKey.PageParameterKey )]
 
     [TextField( "Default Icon CSS Class",
@@ -84,7 +84,7 @@ namespace RockWeb.Blocks.Core
         Key = AttributeKey.ExcludeCategories )]
 
     [LinkedPage( "Search Results Page",
-        Description = "The age to display search results on",
+        Description = "The page to display search results on",
         IsRequired = false,
         Key = AttributeKey.SearchResultsPage )]
 
@@ -178,8 +178,6 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             mdCategoryTreeConfig.Visible = false;
 
             bool canEditBlock = IsUserAuthorized( Authorization.EDIT );
@@ -410,6 +408,8 @@ namespace RockWeb.Blocks.Core
                     }
                 }
             }
+
+            base.OnLoad( e );
         }
 
         protected void tglHideInactiveItems_CheckedChanged( object sender, EventArgs e )

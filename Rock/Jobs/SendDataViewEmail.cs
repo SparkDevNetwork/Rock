@@ -28,6 +28,7 @@ using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
@@ -60,14 +61,13 @@ namespace Rock.Jobs
                 return;
             }
 
-            var rockContext = new RockContext();
-            var dataView = new DataViewService( rockContext ).Get( ( Guid ) dataViewGuid );
+            var dataView = DataViewCache.Get( ( Guid ) dataViewGuid );
 
             List<IEntity> resultSet;
             Exception dataViewException = null;
             try
             {
-                var dataViewGetQueryArgs = new DataViewGetQueryArgs
+                var dataViewGetQueryArgs = new GetQueryableOptions
                 {
                     DatabaseTimeoutSeconds = GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180
                 };
@@ -83,7 +83,7 @@ namespace Rock.Jobs
                 if ( sqlTimeoutException != null )
                 {
                     var exceptionMessage = $"The dataview did not complete in a timely manner. You can try again or adjust the timeout setting of this job.";
-                    dataViewException = new RockDataViewFilterExpressionException( dataView.DataViewFilter, exceptionMessage, sqlTimeoutException );
+                    dataViewException = new RockDataViewFilterExpressionException( ( IDataViewFilterDefinition ) dataView.DataViewFilter, exceptionMessage, sqlTimeoutException );
                 }
 
                 HttpContext context2 = HttpContext.Current;

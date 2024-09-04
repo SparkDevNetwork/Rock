@@ -32,6 +32,7 @@ namespace Rock.Field.Types
     /// Field used to configure and display the social Network accounts
     /// </summary>
     [Serializable]
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.SOCIAL_MEDIA_ACCOUNT )]
     public class SocialMediaAccountFieldType : FieldType

@@ -43,6 +43,9 @@ function getExportValue(row: Record<string, unknown>, column: ColumnDefinition):
     return value;
 }
 
+/**
+ * Displays a simple column that will render a plain text string in the cell.
+ */
 export default defineComponent({
     props: {
         ...standardColumnProps,
@@ -60,6 +63,11 @@ export default defineComponent({
         exportValue: {
             type: Function as PropType<ExportValueFunction>,
             default: getExportValue
-        }
+        },
+
+        columnType: {
+            type: String as PropType<string>,
+            default: "text"
+        },
     }
 });

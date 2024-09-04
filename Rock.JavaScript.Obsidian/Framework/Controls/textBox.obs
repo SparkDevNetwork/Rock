@@ -1,6 +1,10 @@
 ﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField v-model="internalValue" :formGroupClasses="'rock-text-box ' + formGroupClasses" name="textbox">
+    <RockFormField v-model="internalValue"
+                   name="textbox"
+                   v-bind="fieldProps"
+                   :rules="augmentedRules"
+                   :formGroupClasses="'rock-text-box ' + formGroupClasses">
         <template #pre>
             <em v-if="showCountDown" class="pull-right badge" :class="countdownClass">
                 {{ charsRemaining }}
@@ -10,10 +14,68 @@
             <div class="control-wrapper">
                 <slot name="prepend" :isInputGroupSupported="true" />
                 <div :class="controlContainerClass">
-                    <slot name="inputGroupPrepend" :isInputGroupSupported="true" />
-                    <textarea v-if="isTextarea" v-model="internalValue" :rows="rows" cols="20" :maxlength="maxLength" :id="uniqueId" class="form-control" v-bind="field"></textarea>
-                    <input v-else v-model="internalValue" :id="uniqueId" :type="type" :class="formControlClass" v-bind="field" :maxlength="maxLength" :placeholder="placeholder" :autocomplete="disableAutocomplete ? null : 'off'" />
-                    <slot name="inputGroupAppend" :isInputGroupSupported="true" />
+                    <template v-if="isTextarea">
+                        <slot name="inputGroupPrepend" :isInputGroupSupported="true" />
+                        <textarea :value="internalValue"
+                                  :rows="rows"
+                                  cols="20"
+                                  :maxlength="!canExceedMaxLength ? maxLength : undefined"
+                                  :id="uniqueId"
+                                  class="form-control"
+                                  v-bind="field"
+                                  @input="onInput"
+                                  @change="onChange"></textarea>
+                        <slot name="inputGroupAppend" :isInputGroupSupported="true" />
+                    </template>
+                    <template v-else-if="isClearable">
+                        <template v-if="$slots.inputGroupPrepend || $slots.inputGroupAppend">
+                            <slot name="inputGroupPrepend" :isInputGroupSupported="true" />
+                            <input :value="internalValue"
+                                   :id="uniqueId"
+                                   :type="type"
+                                   class="form-control"
+                                   :class="formControlClass"
+                                   style="display: table-cell;"
+                                   v-bind="field"
+                                   :maxlength="!canExceedMaxLength ? maxLength : undefined"
+                                   :placeholder="placeholder"
+                                   @input="onInput"
+                                   @change="onChange" />
+                            <i v-if="internalValue"
+                               class="fa fa-times text-muted clear-icon clear-position-with-slots"
+                               @click="onClear"></i>
+                            <slot name="inputGroupAppend" :isInputGroupSupported="true" />
+                        </template>
+                        <template v-else>
+                            <div class="input-container">
+                                <input :value="internalValue"
+                                       :id="uniqueId"
+                                       :type="type"
+                                       :class="formControlClass"
+                                       v-bind="field"
+                                       :maxlength="!canExceedMaxLength ? maxLength : undefined"
+                                       :placeholder="placeholder"
+                                       @input="onInput"
+                                       @change="onChange" />
+                                <i v-if="internalValue"
+                                   class="fa fa-times text-muted clear-icon"
+                                   @click="onClear"></i>
+                            </div>
+                        </template>
+                    </template>
+                    <template v-else>
+                        <slot name="inputGroupPrepend" :isInputGroupSupported="true" />
+                        <input :value="internalValue"
+                               :id="uniqueId"
+                               :type="type"
+                               :class="formControlClass"
+                               v-bind="field"
+                               :maxlength="!canExceedMaxLength ? maxLength : undefined"
+                               :placeholder="placeholder"
+                               @input="onInput"
+                               @change="onChange" />
+                        <slot name="inputGroupAppend" :isInputGroupSupported="true" />
+                    </template>
                 </div>
                 <slot name="append" :isInputGroupSupported="true" />
             </div>
@@ -22,15 +84,22 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, useSlots } from "vue";
+    import { computed, ref, useSlots, watch } from "vue";
     import { PropType } from "vue";
-    import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import RockFormField from "./rockFormField.obs";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+    import type { ValidationRule } from "@Obsidian/Types/validationRules";
+    import { normalizeRules } from "@Obsidian/ValidationRules";
 
     const props = defineProps({
         modelValue: {
             type: String as PropType<string>,
             required: true
+        },
+        /** Internal use to track what modifier flags were applied to modelValue. */
+        modelModifiers: {
+            type: Object as PropType<Record<string, boolean>>,
+            default: () => ({})
         },
         type: {
             type: String as PropType<string>,
@@ -56,10 +125,6 @@
             type: String as PropType<string>,
             default: ""
         },
-        formGroupClasses: {
-            type: String as PropType<string>,
-            default: ""
-        },
         rows: {
             type: Number as PropType<number>,
             default: 3
@@ -71,7 +136,26 @@
         size: {
             type: String as PropType<"small" | "medium" | "large">,
             default: "medium"
-        }
+        },
+        allowHtml: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+        isClearable: {
+            type: Boolean as PropType<boolean>,
+            default: false,
+        },
+        /**
+         * If `true`, then the max length can be exceeded; i.e., the max length is not enforced.
+         *
+         * This was added so showCountDown can display the remaining characters without limiting the
+         * the textbox to a max number of characters.
+         */
+        canExceedMaxLength: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+        ...standardRockFormFieldProps
     });
 
     const emit = defineEmits<{
@@ -80,7 +164,8 @@
 
     const slots = useSlots();
 
-    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+    const internalValue = ref(props.modelValue);
+    const fieldProps = useStandardRockFormFieldProps(props);
 
     const isTextarea = computed((): boolean => {
         return props.textMode?.toLowerCase() === "multiline";
@@ -122,4 +207,77 @@
             "input-lg": props.size == "large"
         };
     });
+
+    const augmentedRules = computed((): ValidationRule[] => {
+        const rules = normalizeRules(props.rules);
+
+        if (!props.allowHtml) {
+            rules.push("nohtml");
+        }
+
+        return rules;
+    });
+
+    /**
+     * Event handler for the input field having any modification to the value
+     * happen. This is basically called on every key press.
+     *
+     * @param e The object that describes the event.
+     */
+    function onInput(e: Event): void {
+        if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+            internalValue.value = e.target.value;
+        }
+
+        // Lazy models do not get every single key press.
+        if (!props.modelModifiers.lazy) {
+            emit("update:modelValue", internalValue.value);
+        }
+    }
+
+    /**
+     * Event handler for the input field when the changed value is "committed".
+     * This is basically called when the focus leaves the input field.
+     *
+     * @param e The object that describes the event.
+     */
+    function onChange(e: Event): void {
+        if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+            internalValue.value = e.target.value;
+        }
+
+        // Only send the update if we didn't send it in the onInput handler.
+        if (props.modelModifiers.lazy) {
+            emit("update:modelValue", internalValue.value);
+        }
+    }
+
+    function onClear(): void {
+        internalValue.value = "";
+        emit("update:modelValue", internalValue.value);
+    }
+
+    watch(() => props.modelValue, () => {
+        internalValue.value = props.modelValue;
+    });
 </script>
+
+<style scoped>
+.input-container {
+    display: flex;
+    align-items: center;
+}
+
+.clear-icon {
+    margin-left: -34px;
+    cursor: pointer;
+    padding: 10px;
+}
+
+.clear-position-with-slots {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 3;
+}
+</style>

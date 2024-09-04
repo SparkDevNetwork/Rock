@@ -25,6 +25,7 @@ using System.Web.UI;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -33,7 +34,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Stored as a List of Metric.Guid|MetricCategory.Guid (MetricCategory.Guid included so we can preserve which category the metric was selected from)
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.METRIC_CATEGORIES )]
     public class MetricCategoriesFieldType : FieldType, IEntityReferenceFieldType
     {
@@ -70,6 +71,85 @@ namespace Rock.Field.Types
         #endregion
 
         #region Edit Control
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var jsonValue = publicValue.FromJsonOrNull<List<ListItemBag>>();
+
+            if ( jsonValue != null )
+            {
+                var guids = jsonValue.ConvertAll( l => l.Value.AsGuid() );
+                using ( var rockContext = new RockContext() )
+                {
+                    var guidPairList = new MetricCategoryService( rockContext ).GetByGuids( guids )
+                        .Select( mc => new
+                        {
+                            MetricGuid = mc.Metric.Guid,
+                            CategoryGuid = mc.Category.Guid,
+                        } ).ToList();
+
+                    if ( guidPairList.Any() )
+                    {
+                        return guidPairList.ConvertAll( s => string.Format( "{0}|{1}", s.MetricGuid, s.CategoryGuid ) )
+                            .AsDelimited( "," );
+                    }
+                }
+            }
+
+            return base.GetPrivateEditValue( publicValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var metricCategories = new List<ListItemBag>();
+            var guidPairs = Rock.Attribute.MetricCategoriesFieldAttribute.GetValueAsGuidPairs( privateValue );
+
+            using ( var rockContext = new RockContext() )
+            {
+                var metricCategoryService = new MetricCategoryService( new RockContext() );
+
+                foreach ( var guidPair in guidPairs )
+                {
+                    // first try to get each metric from the category that it was selected from
+                    var metricCategory = metricCategoryService.Queryable()
+                        .Where( a => a.Metric.Guid == guidPair.MetricGuid && a.Category.Guid == guidPair.CategoryGuid )
+                        .Select( a => new ListItemBag()
+                        {
+                            Text = a.Metric.Title,
+                            Value = a.Guid.ToString()
+                        } )
+                        .FirstOrDefault();
+
+                    if ( metricCategory == null )
+                    {
+                        // if the metric isn't found in the original category, just the first one, ignoring category
+                        metricCategory = metricCategoryService.Queryable()
+                            .Where( a => a.Metric.Guid == guidPair.MetricGuid )
+                            .Select( a => new ListItemBag()
+                            {
+                                Text = a.Metric.Title,
+                                Value = a.Guid.ToString()
+                            } )
+                            .FirstOrDefault();
+                    }
+
+                    if ( metricCategory != null )
+                    {
+                        metricCategories.Add( metricCategory );
+                    }
+                }
+
+                return metricCategories.ToCamelCaseJson( false, true );
+            }
+        }
 
         #endregion
 

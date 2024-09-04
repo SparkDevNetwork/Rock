@@ -1,0 +1,261 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <TabbedContent :tabs="tabs" v-model:selectedTab="selectedTab" :class="visibleCssClass" >
+        <template #tabpane="{ item }">
+            <div v-if="item === 'Learning Plan'">
+                <LearningPlanGrid :isAddEnabled="isEditable"
+                                  :isDeleteEnabled="isEditable"
+                                  getDataActionName="GetLearningPlan"
+                                  @addClick="onAddActivityClick"
+                                  @rowClick="onActivityRowClick"
+                                  @deleteClick="onDeleteActivityClick"
+                                  @reorderClick="onReorderActivity" />
+            </div>
+            <div v-else-if="item === 'Students'">
+                <StudentGrid :isAddEnabled="isEditable"
+                             :isDeleteEnabled="isEditable"
+                             @addClick="onAddParticipantClick"
+                             @rowClick="onParticipantClick"
+                             @deleteClick="onDeleteParticipantClick" />
+            </div>
+            <div v-else-if="item === 'Facilitators'">
+                <FacilitatorGrid :isAddEnabled="isEditable"
+                                 :isDeleteEnabled="isEditable"
+                                 @addClick="onAddParticipantClick"
+                                 @rowClick="onParticipantClick"
+                                 @deleteClick="onDeleteParticipantClick" />
+            </div>
+            <div v-else-if="item === 'Content'">
+                <ContentPageGrid :isAddEnabled="isEditable"
+                                 :isDeleteEnabled="isEditable"
+                                 @addClick="onAddContentPageClick"
+                                 @rowClick="onContentPageClick"
+                                 @deleteClick="onDeleteContentPageClick" />
+            </div>
+
+            <div v-else-if="item === 'Announcements'">
+                <AnnouncementGrid :isAddEnabled="isEditable"
+                                 :isDeleteEnabled="isEditable"
+                                 @addClick="onAddAnnouncementClick"
+                                 @rowClick="onAnnouncementClick"
+                                 @deleteClick="onDeleteAnnouncementClick" />
+            </div>
+        </template>
+    </TabbedContent>
+</template>
+
+<script setup lang="ts">
+    import TabbedContent from "@Obsidian/Controls/tabbedContent.obs";
+    import LearningPlanGrid from "./learningPlanGrid.partial.obs";
+    import StudentGrid from "./studentGrid.partial.obs";
+    import FacilitatorGrid from "./facilitatorGrid.partial.obs";
+    import AnnouncementGrid from "./announcementGrid.partial.obs";
+    import ContentPageGrid from "./contentPageGrid.partial.obs";
+    import { useBlockBrowserBus, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { NavigationUrlKey } from "./types.partial";
+    import { PropType, ref, watch } from "vue";
+    import { BlockMessages } from "@Obsidian/Utility/browserBus";
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // Use the browser bus to listen for changes to edit mode for any blocks on the page.
+    const browserBus = useBlockBrowserBus();
+    const visibleCssClass = ref("show");
+
+    // When another block on the page begins editing hide this block.
+    browserBus.subscribe(BlockMessages.BeginEdit, () => {
+        visibleCssClass.value = "hidden";
+    });
+
+    // When another block begins editing show this block.
+    browserBus.subscribe(BlockMessages.EndEdit, () => {
+        visibleCssClass.value = "show";
+    });
+
+    // #region Values
+
+    const props = defineProps({
+        navigationUrls: {
+            type: Object as PropType<Record<string, string> | null>,
+            required: false
+        },
+        isEditable: {
+            type: Boolean as PropType<boolean>,
+            default: () => false
+        },
+        showAbsences: {
+            type: Boolean as PropType<boolean>,
+            default: () => false
+        }
+    });
+
+    const isEditable = ref(props.isEditable ?? false);
+    const navigationUrls = ref(props.navigationUrls ?? {});
+
+    const tabs: Array<string> = ["Learning Plan", "Students", "Facilitators", "Content", "Announcements"];
+
+    // Open the selected tab if one is specified.
+    const params = new URLSearchParams(window.location.search);
+    const selectedTab = ref(params.get("selection") ?? "");
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    async function invokeDeleteBlockAction(key: string, gridData: GridDataBag | undefined, blockActionName: string, entityName: string): Promise<void> {
+        const result = await invokeBlockAction<string>(blockActionName, {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+        }
+        else {
+            alert(result.errorMessage ?? `Unknown error while trying to delete ${entityName}.`);
+        }
+    }
+
+    function navigateToPage(navigationUrlKey: string, key: string | null): void {
+        if (navigationUrls.value[navigationUrlKey]) {
+            const idKey = !key ? "0" : key;
+            window.location.href = navigationUrls.value[navigationUrlKey].replace("((Key))", idKey);
+        }
+    }
+
+    function updateUrlWithSelectedTab(): void {
+        const queryParams = new URLSearchParams(window.location.search);
+        queryParams.set("tab", selectedTab.value ?? "");
+        history.pushState(null, "", "?" + queryParams.toString());
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when the Add activity button has been clicked by the individual.
+     */
+    function onActivityRowClick(key: string | null): void {
+        navigateToPage(NavigationUrlKey.ActivityDetailPage, key);
+    }
+
+    /**
+     * Called when the Add activity button has been clicked by the individual.
+     */
+    function onAddActivityClick(): void {
+        navigateToPage(NavigationUrlKey.ActivityDetailPage, "0?autoEdit=true&returnUrl=" + window.location);
+    }
+
+    /**
+     * Called when the Add announcement button has been clicked by the individual.
+     */
+     function onAddAnnouncementClick(): void {
+        navigateToPage(NavigationUrlKey.AnnouncementDetailPage, "0?autoEdit=true&returnUrl=" + window.location);
+    }
+
+    /**
+     * Called when the Add content page button has been clicked by the individual.
+     */
+     function onAddContentPageClick(): void {
+        navigateToPage(NavigationUrlKey.ContentPageDetailPage, "0?autoEdit=true&returnUrl=" + window.location);
+    }
+
+    /**
+     * Called when the Add student or facilitator button has been clicked by the individual.
+     */
+     function onAddParticipantClick(): void {
+        navigateToPage(NavigationUrlKey.ParticipantDetailPage, "0?autoEdit=true&returnUrl=" + window.location);
+    }
+
+    /**
+     * Called when an announcement row has been clicked by the individual.
+     */
+     function onAnnouncementClick(key: string | null): void {
+        navigateToPage(NavigationUrlKey.AnnouncementDetailPage, `${key}?returnUrl=${window.location}`);
+    }
+
+    /**
+     * Called when a content page row has been clicked by the individual.
+     */
+     function onContentPageClick(key: string | null): void {
+        navigateToPage(NavigationUrlKey.ContentPageDetailPage, `${key}?returnUrl=${window.location}`);
+    }
+
+    /**
+     * Called when a student or facilitator row has been clicked by the individual.
+     */
+    function onParticipantClick(key: string | null): void {
+        navigateToPage(NavigationUrlKey.ParticipantDetailPage, key);
+    }
+
+    /**
+     * Called when an activity row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+    async function onDeleteActivityClick(key: string, gridData: GridDataBag | undefined): Promise<void> {
+        invokeDeleteBlockAction(key, gridData, "DeleteActivity", "activity");
+    }
+
+    /**
+     * Called when an activity row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+     async function onDeleteAnnouncementClick(key: string, gridData: GridDataBag | undefined): Promise<void> {
+        invokeDeleteBlockAction(key, gridData, "DeleteAnnouncement", "announcement");
+    }
+
+    /**
+     * Called when an activity row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+     async function onDeleteContentPageClick(key: string, gridData: GridDataBag | undefined): Promise<void> {
+        invokeDeleteBlockAction(key, gridData, "DeleteContentPage", "content page");
+    }
+
+    /**
+     * Called when a student or faciliator row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+    async function onDeleteParticipantClick(key: string, gridData: GridDataBag | undefined): Promise<void> {
+        invokeDeleteBlockAction(key, gridData, "DeleteParticipant", "participant");
+    }
+
+    /**
+     * Called when an activity row has been dragged from one position to a new position.
+     *
+     * @param item The item that was moved to a new position.
+     * @param beforeItem The item that the first item was dropped before.
+     *
+     * @returns `true` if the operation succeeded; otherwise `false`.
+     */
+     async function onReorderActivity(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        const result = await invokeBlockAction<string>("ReorderActivity", {
+            key: item["idKey"],
+            beforeKey: beforeItem?.["idKey"] ?? null
+        });
+
+        return result.isSuccess;
+    }
+
+    // #endregion
+
+    // #region Watches
+
+    watch(selectedTab, () => {
+        updateUrlWithSelectedTab();
+    });
+
+    // #endregion
+
+</script>

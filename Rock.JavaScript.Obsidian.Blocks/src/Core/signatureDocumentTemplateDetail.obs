@@ -18,6 +18,7 @@
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
                  :isSecurityHidden="!canAdministrate"
+                 :isFullScreenVisible="false"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
                  @edit="onEdit"
@@ -77,7 +78,9 @@
         "name",
         "providerEntityType",
         "providerTemplateKey",
-        "signatureType"
+        "signatureType",
+        "isValidInFuture",
+        "validityDurationInDays"
     ];
 
     const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(signatureDocumentTemplateEditBag, validProperties, invokeBlockAction), undefined, true);

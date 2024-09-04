@@ -1,0 +1,213 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :data="gridDataSource"
+          keyField="idKey"
+          title="Learning Plan"
+          :entityTypeGuid="EntityType.LearningActivity"
+          :expectedRowCount="5"
+          :isCountMessageVisible="false"
+          tooltipField="name"
+          stickyHeader
+          liveUpdates
+          @selectItem="onSelectItem"
+          :onAddItem="isAddEnabled ? onAddItemClicked : undefined">
+
+        <ReorderColumn @orderChanged="(n, o) => $emit('reorderClick', n, o)" />
+
+        <TextColumn name="name"
+                    title="Name"
+                    field="name"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <Column
+                name="assignTo"
+                title="Assign To"
+                field="assignTo"
+                :filter="pickExistingValueFilter"
+                visiblePriority="xs">
+            <template #format="{ row }">
+                <span :class="assignToIcons[row.assignTo] + ' fa-2x ml-4'" :style="'color: ' + assignToColors[row.assignTo]"></span>
+            </template>
+        </Column>
+
+        <Column
+                name="componentName"
+                title="Type"
+                field="componentName"
+                :filter="pickExistingValueFilter"
+                visiblePriority="xs">
+            <template #format="{ row }">
+                <span class="label label-default component-label" :style="'background-color: oklch(from ' + row.componentHighlightColor + ' calc(l + .60) c h);'">
+                    <span :style="'color: ' + row.componentHighlightColor"><i :class="row.componentIconCssClass"></i> &nbsp;{{ row.componentName }}</span>
+                </span>
+            </template>
+        </Column>
+
+        <Column
+                name="dates"
+                title="Dates"
+                field="dates"
+                :filter="textValueFilter"
+                visiblePriority="sm">
+            <template #format="{ row }">
+                <span :class="row.isPastDue ? 'text-warning' : ''">{{ row.dates }}</span>
+            </template>
+        </Column>
+
+        <Column
+                name="completions"
+                title="Completions"
+                field="completions"
+                :filter="numberValueFilter"
+                :filterValue="getCompletionsRowValue"
+                visiblePriority="sm">
+            <template #format="{ row }">
+                <span v-html="getCompletionsHtml(row)"></span>
+            </template>
+        </Column>
+
+        <NumberColumn name="points"
+                      title="Points"
+                      field="points"
+                      :filter="numberValueFilter"
+                      visiblePriority="xs" />
+
+        <Column
+                name="badges"
+                title=""
+                visiblePriority="md">
+            <template #format="{ row }">
+                <span v-if="row.isAttentionNeeded" class="fa-stack mr-3">
+                    <i class="fa fa-square fa-stack-2x fa-2x" style="color: #a9551d"></i>
+                    <i :class="row.isAttentionNeeded ? 'fa fa-chart-bar fw fa-stack-1x' : 'fw'" style="color: white"></i>
+                </span>
+
+                <span :class="row.hasStudentComments ? 'fa fa-comment-alt fw fa-2x' : 'fw'" style="color: #2f699f"></span>
+            </template>
+        </Column>
+
+        <DeleteColumn v-if="isDeleteEnabled" @click="(r) => $emit('deleteClick', r, gridData)" />
+    </Grid>
+</template>
+
+<script setup lang="ts">
+    import { PropType, reactive, ref } from "vue";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { Column, NumberColumn, numberValueFilter, TextColumn, textValueFilter, DeleteColumn, ReorderColumn, pickExistingValueFilter } from "@Obsidian/Controls/grid";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const assignToIcons: Array<string> = ["fa fa-user-graduate", "fa fa-chalkboard-teacher"];
+    const assignToColors: Array<string> = ["#2f699f", "#a9551d"];
+
+    const emit = defineEmits<{
+        (e: "deleteClick", idKey: string, gridData: GridDataBag | undefined): void;
+        (e: "rowClick", idKey: string): void;
+        (e: "addClick"): void;
+        (e: "reorderClick", newValue: Record<string, unknown>, oldValue: Record<string, unknown> | null): void;
+    }>();
+
+    const props = defineProps({
+
+        isAddEnabled: {
+            type: Object as PropType<boolean>,
+            required: true,
+            default: false
+        },
+
+        isDeleteEnabled: {
+            type: Object as PropType<boolean>,
+            required: true,
+            default: false
+        },
+
+        getDataActionName: {
+            type: Object as PropType<string>,
+            required: true,
+            default: "GetGridData"
+        }
+    });
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const isAddEnabled = ref(props.isAddEnabled);
+    const isDeleteEnabled = ref(props.isDeleteEnabled);
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        emit("rowClick", key);
+    }
+
+
+    function onAddItemClicked(): void {
+        emit("addClick");
+    }
+
+    function getCompletionsHtml(row: Record<string, unknown>): string {
+        const completedCount = row?.completedCount as number;
+        const count = row?.count as number;
+
+        // If there are no completions don't show a label.
+        if (!count || !completedCount) {
+            return "";
+        }
+
+        const percentComplete = Math.round(completedCount / count * 100);
+        if (completedCount === 0) {
+            return "";
+        }
+
+        const labelType = percentComplete === 100 ? "success" : "warning";
+        return `<span class="label label-${labelType}">${percentComplete}%</span>`;
+    }
+
+    function getCompletionsRowValue(row: Record<string, unknown>): number {
+        const completedCount = row?.completedCount as number;
+        const count = row?.count as number;
+
+        // If there are no completions don't show a label.
+        if (!count || !completedCount || completedCount === 0) {
+            return 0;
+        }
+
+        const percentComplete = Math.round(completedCount / count * 100);
+        return percentComplete;
+    }
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>(props.getDataActionName);
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load learning plan grid data.");
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>

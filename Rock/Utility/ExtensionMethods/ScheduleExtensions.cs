@@ -17,6 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
+using Rock.CheckIn;
 using Rock.Model;
 
 namespace Rock
@@ -26,26 +28,6 @@ namespace Rock
     /// </summary>
     public static partial class ExtensionMethods
     {
-        /// <summary>
-        /// Sorts the list of Schedules by the day/time they are scheduled (then by Name, Id). For example: Saturday 4pm, Saturday 6pm, Sunday 9am, Sunday 11am, Sunday 1pm
-        /// </summary>
-        /// <param name="scheduleList">The schedule list.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Use OrderByOrderAndNextScheduledDateTime instead" )]
-        public static List<Schedule> OrderByNextScheduledDateTime( this List<Schedule> scheduleList )
-        {
-            // Calculate the Next Start Date Time based on the start of the week so that schedule columns are in the correct order
-            var occurrenceDate = RockDateTime.Now.SundayDate().AddDays( 1 );
-            List<Schedule> sortedScheduleList = scheduleList
-                .OrderBy( a => a.GetNextStartDateTime( occurrenceDate ) )
-                .ThenBy( a => a.Name )
-                .ThenBy( a => a.Id )
-                .ToList();
-
-            return sortedScheduleList;
-        }
-
         /// <summary>
         /// Orders the schedules by <seealso cref="Schedule.Order" /> and then sorts the list of Schedules by the day/time they are scheduled for the current Sunday week
         /// For example: Saturday 4pm, Saturday 6pm, Sunday 9am, Sunday 11am, Sunday 1pm
@@ -64,6 +46,27 @@ namespace Rock
                 .ToList();
 
             return sortedScheduleList;
+        }
+
+        /// <summary>
+        /// Orders the check-in schedules by <see cref="Schedule.Order"/>, then next start date time, then name, then ID.
+        /// </summary>
+        /// <param name="checkInSchedules">The check-in schedules to order.</param>
+        /// <param name="beginDateTime">The optional begin date time to use when checking for the next start date time.
+        /// If no value is provided, <see cref="RockDateTime.Now"/> will be used.</param>
+        /// <returns>The check-in schedules, ordered by <see cref="Schedule.Order"/>, then next start date time, then name, then ID.</returns>
+        public static IEnumerable<CheckInSchedule> OrderByOrderAndNextScheduledDateTime( this IEnumerable<CheckInSchedule> checkInSchedules, DateTime? beginDateTime = null )
+        {
+            if ( !beginDateTime.HasValue )
+            {
+                beginDateTime = RockDateTime.Now;
+            }
+
+            return checkInSchedules?
+                .OrderBy( a => a.Schedule?.Order )
+                .ThenBy( a => a.Schedule?.GetNextStartDateTime( beginDateTime.Value ) )
+                .ThenBy( a => a.Schedule?.Name )
+                .ThenBy( a => a.Schedule?.Id );
         }
     }
 }

@@ -229,8 +229,6 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( CurrentCheckInState == null )
             {
                 NavigateToHomePage();
@@ -246,6 +244,8 @@ namespace RockWeb.Blocks.CheckIn
                     CancelFamilyEdit( false );
                 }
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -474,7 +474,7 @@ namespace RockWeb.Blocks.CheckIn
                 if ( lGroupRoleAndRelationship != null )
                 {
                     lGroupRoleAndRelationship.Text = familyPersonState.GroupRole;
-                    if ( familyPersonState.ChildRelationshipToAdult > 0 && _knownRelationshipLookup != null )
+                    if ( familyPersonState.ChildRelationshipToAdult > 0 && _knownRelationshipLookup != null && !familyPersonState.IsAdult )
                     {
                         var relationshipText = _knownRelationshipLookup.GetValueOrNull( familyPersonState.ChildRelationshipToAdult );
                         lGroupRoleAndRelationship.Text = string.Format( "{0}<br/>{1}", familyPersonState.GroupRole, relationshipText );

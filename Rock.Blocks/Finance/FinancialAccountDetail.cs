@@ -56,6 +56,7 @@ namespace Rock.Blocks.Finance
         {
             public const string FinancialAccountId = "AccountId";
             public const string ExpandedIds = "ExpandedIds";
+            public const string ParentAccountId = "ParentAccountId";
         }
 
         private static class NavigationUrlKey
@@ -198,7 +199,8 @@ namespace Rock.Blocks.Finance
                 PublicName = entity.PublicName,
                 StartDate = entity.StartDate,
                 Url = entity.Url,
-                AccountParticipants = GetAccountParticipantStateFromDatabase( entity.Id )
+                AccountParticipants = GetAccountParticipantStateFromDatabase( entity.Id ),
+                ImageBinaryFile = entity.ImageBinaryFile.ToListItemBag(),
             };
         }
 
@@ -216,6 +218,7 @@ namespace Rock.Blocks.Finance
 
             var bag = GetCommonEntityBag( entity );
 
+            bag.ImageUrl = entity.ImageBinaryFileId.HasValue ? RequestContext.ResolveRockUrl( $"~/GetImage.ashx?id={entity.ImageBinaryFileId}" ) : string.Empty;
             bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
 
             return bag;
@@ -296,6 +299,9 @@ namespace Rock.Blocks.Finance
             box.IfValidProperty( nameof( box.Entity.Url ),
                 () => entity.Url = box.Entity.Url );
 
+            box.IfValidProperty( nameof( box.Entity.ImageBinaryFile ),
+                () => entity.ImageBinaryFileId = box.Entity.ImageBinaryFile.GetEntityId<BinaryFile>( rockContext ) );
+
             box.IfValidProperty( nameof( box.Entity.AttributeValues ),
                 () =>
                 {
@@ -315,7 +321,15 @@ namespace Rock.Blocks.Finance
         /// <returns>The <see cref="FinancialAccount"/> to be viewed or edited on the page.</returns>
         private FinancialAccount GetInitialEntity( RockContext rockContext )
         {
-            return GetInitialEntity<FinancialAccount, FinancialAccountService>( rockContext, PageParameterKey.FinancialAccountId );
+            var entity = GetInitialEntity<FinancialAccount, FinancialAccountService>( rockContext, PageParameterKey.FinancialAccountId );
+
+            var parentAccountId = PageParameter( PageParameterKey.ParentAccountId ).AsIntegerOrNull();
+            if ( entity != null && entity.Id == 0 && parentAccountId.HasValue )
+            {
+                entity.ParentAccount = new FinancialAccountService( rockContext ).Get( parentAccountId.Value );
+            }
+
+            return entity;
         }
 
         /// <summary>
@@ -405,7 +419,6 @@ namespace Rock.Blocks.Finance
         /// <summary>
         /// Gets the account participants state from database.
         /// </summary>
-        /// <param name="purposeKeys">The purpose keys.</param>
         /// <returns>List&lt;AccountParticipantInfo&gt;.</returns>
         private List<FinancialAccountParticipantBag> GetAccountParticipantStateFromDatabase( int accountId )
         {
@@ -493,17 +506,38 @@ namespace Rock.Blocks.Finance
                     entity.SaveAttributeValues( rockContext );
                 } );
 
-                var accountParticipantsPersonAliasIdsByPurposeKey = box.Entity.AccountParticipants.GroupBy( a => a.PurposeKey )
-                    .ToDictionary( k => k.Key,
-                    v => v.Select( x => x.PersonAlias.GetEntityId<PersonAlias>( rockContext ) ?? 0 )
-                    .ToList() );
-                foreach ( var purposeKey in accountParticipantsPersonAliasIdsByPurposeKey.Keys )
+                if ( box.Entity.AccountParticipants.Count > 0 )
                 {
-                    var accountParticipantsPersonAliasIds = accountParticipantsPersonAliasIdsByPurposeKey.GetValueOrNull( purposeKey );
-                    if ( accountParticipantsPersonAliasIds?.Any() == true )
+                    var accountParticipantsPersonAliasIdsByPurposeKey = box.Entity.AccountParticipants
+                        .GroupBy( a => a.PurposeKey )
+                        .ToDictionary( k =>
+                            k.Key,
+                            v => v.Select( x => x.PersonAlias.GetEntityId<PersonAlias>( rockContext ) ?? 0 )
+                        .ToList() );
+
+                    foreach ( var purposeKey in accountParticipantsPersonAliasIdsByPurposeKey.Keys )
                     {
-                        var accountParticipants = new PersonAliasService( rockContext ).GetByIds( accountParticipantsPersonAliasIds ).ToList();
-                        entityService.SetAccountParticipants( entity.Id, accountParticipants, purposeKey );
+                        var accountParticipantsPersonAliasIds = accountParticipantsPersonAliasIdsByPurposeKey.GetValueOrNull( purposeKey );
+                        if ( accountParticipantsPersonAliasIds?.Any() == true )
+                        {
+                            var accountParticipants = new PersonAliasService( rockContext ).GetByIds( accountParticipantsPersonAliasIds ).ToList();
+                            entityService.SetAccountParticipants( entity.Id, accountParticipants, purposeKey );
+                        }
+                    }
+                }
+                else if ( !isNew )
+                {
+                    // If this is an update and no participants were sent back from the client delete existing participants if any.
+                    var existingParticipants = GetAccountParticipantStateFromDatabase( entity.Id )
+                        .GroupBy( a => a.PurposeKey )
+                        .ToDictionary( k =>
+                            k.Key,
+                            v => v.Select( x => x.PersonAlias.GetEntityId<PersonAlias>( rockContext ) ?? 0 )
+                        .ToList() );
+
+                    foreach ( var purposeKey in existingParticipants.Keys )
+                    {
+                        entityService.SetAccountParticipants( entity.Id, new List<PersonAlias>(), purposeKey );
                     }
                 }
 
@@ -548,10 +582,19 @@ namespace Rock.Blocks.Finance
                     return ActionBadRequest( errorMessage );
                 }
 
+                var parentAccountId = entity.ParentAccountId;
                 entityService.Delete( entity );
                 rockContext.SaveChanges();
 
-                return ActionOk( this.GetParentPageUrl() );
+                var qryParams = new Dictionary<string, string>();
+                if ( parentAccountId != null )
+                {
+                    qryParams["AccountId"] = parentAccountId.ToString();
+                }
+
+                qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
+
+                return ActionOk( this.GetCurrentPageUrl( qryParams ) );
             }
         }
 

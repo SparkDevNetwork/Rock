@@ -167,8 +167,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( Person != null && Person.Id != 0 )
             {
                 upRelationships.Visible = true;
@@ -188,6 +186,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 upRelationships.Visible = false;
             }
+
+            base.OnLoad( e );
         }
 
         #endregion Base Control Methods
@@ -420,7 +420,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             }
                             else
                             {
-                                lAccessWarning.Text = string.Format( "<div class='alert alert-info'>You do not have security rights to view {0}.", group.Name.Pluralize() );
+                                lAccessWarning.Text = string.Format( "<div class='alert alert-info'>You do not have security rights to view {0}.</div>", group.Name.Pluralize() );
                             }
                         }
                         else

@@ -13,7 +13,7 @@
                 <strong v-if="errorTitle">{{ errorTitle }}:</strong>
                 {{ errorMessage }}
             </NotificationBox>
-            <InlineCheckBox label="Save account information for future gifts" v-model="doSave" />
+            <InlineCheckBox :label="saveAccountCheckBoxLabel" v-model="doSave" />
             <RockForm v-if="doSave" @submit="onSubmit">
                 <TextBox label="Name for the account" rules="required" v-model="savedAccountName" />
                 <template v-if="isLoginCreationNeeded">
@@ -46,6 +46,7 @@
     import { SaveFinancialAccountFormSaveAccountResultBag } from "@Obsidian/ViewModels/Rest/Controls/saveFinancialAccountFormSaveAccountResultBag";
     import { CurrentPersonBag } from "@Obsidian/ViewModels/Crm/currentPersonBag";
     import { useHttp } from "@Obsidian/Utility/http";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const store = useStore();
 
@@ -61,6 +62,10 @@
         gatewayPersonIdentifier: {
             type: String as PropType<string>,
             required: true
+        },
+        saveAccountCheckBoxLabel: {
+            type: String as PropType<string>,
+            default: "Save account information for future gifts"
         }
     });
 
@@ -110,8 +115,8 @@
 
         isLoading.value = true;
 
-        const options: Partial<SaveFinancialAccountFormSaveAccountOptionsBag> = {
-            gatewayGuid: props.gatewayGuid,
+        const options: SaveFinancialAccountFormSaveAccountOptionsBag = {
+            gatewayGuid: toGuidOrNull(props.gatewayGuid) ?? emptyGuid,
             password: password.value,
             savedAccountName: savedAccountName.value,
             transactionCode: props.transactionCode,

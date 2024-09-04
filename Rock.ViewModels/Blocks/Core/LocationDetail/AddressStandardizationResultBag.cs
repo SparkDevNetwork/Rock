@@ -41,5 +41,13 @@ namespace Rock.ViewModels.Blocks.Core.LocationDetail
         /// </summary>
         /// <value>The geocode attempted result.</value>
         public string GeocodeAttemptedResult { get; set; }
+
+        /// <summary>
+        /// Gets or sets the geo point well known text.
+        /// </summary>
+        /// <value>
+        /// The geo point well known text.
+        /// </value>
+        public string GeoPointWellKnownText { get; set; }
     }                 
 }

@@ -16,7 +16,7 @@
 
         <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
 
-</fieldset>
+    </fieldset>
 </template>
 
 <script setup lang="ts">
@@ -27,10 +27,11 @@
     import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
     import { GroupRequirementTypeBag } from "@Obsidian/ViewModels/Blocks/Group/GroupRequirementTypeDetail/groupRequirementTypeBag";
     import { GroupRequirementTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupRequirementTypeDetail/groupRequirementTypeDetailOptionsBag";
+    import { asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
 
     const props = defineProps({
-    modelValue: {
-    type: Object as PropType<GroupRequirementTypeBag | null>,
+        modelValue: {
+            type: Object as PropType<GroupRequirementTypeBag | null>,
             required: false
         },
 
@@ -65,6 +66,22 @@
             valueBuilder.addTextValue("Description", props.modelValue.description);
         }
 
+        if (props.modelValue.summary) {
+            valueBuilder.addTextValue("Summary", props.modelValue.summary);
+        }
+
+        valueBuilder.addTextValue("Can Expire", asTrueOrFalseString(props.modelValue.requirementCheckType));
+
+        let duedate = props.options.dueDateOptions?.find(d => d.value == props.modelValue?.dueDateType)?.text;
+        if (duedate) {
+
+            if (props.modelValue?.dueDateOffsetInDays) {
+                duedate += ` (${props.modelValue?.dueDateOffsetInDays} days)`;
+            }
+
+            valueBuilder.addTextValue("Due Date", duedate);
+        }
+
         return valueBuilder.build();
     });
 
@@ -90,13 +107,13 @@
         return valueBuilder.build();
     });
 
-    // #endregion
+        // #endregion
 
-    // #region Functions
+        // #region Functions
 
-    // #endregion
+        // #endregion
 
-    // #region Event Handlers
+        // #region Event Handlers
 
-    // #endregion
+        // #endregion
 </script>

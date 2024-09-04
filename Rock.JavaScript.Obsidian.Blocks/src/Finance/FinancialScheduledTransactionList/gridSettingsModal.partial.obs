@@ -1,0 +1,116 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Settings"
+           saveText="Save"
+           @save="onSave">
+        <SectionHeader title="Filters" />
+
+        <div class="row">
+            <div class="col-md-4">
+                <NumberRangeBox label="Amount Range" v-model="amountRange" />
+            </div>
+            <div class="col-md-4">
+                <DefinedValuePicker v-model="frequency"
+                                    label="Frequency"
+                                    :definedTypeGuid="DefinedType.FinancialFrequency"
+                                    :displayStyle="PickerDisplayStyle.Condensed"
+                                    :columnCount="2" />
+            </div>
+            <div class="col-md-4">
+                <DateRangePicker v-model="dateRange"
+                                 label="Date Range"
+                                 :disallowPastDateSelection="false" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <AccountPicker v-model="account"
+                               label="Accounts" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox v-model="includeActiveSchedules" label="Include Active Schedules" text="Yes" />
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";
+    import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
+    import AccountPicker from "@Obsidian/Controls/accountPicker.obs";
+    import DateRangePicker from "@Obsidian/Controls/dateRangePicker.obs";
+    import NumberRangeBox from "@Obsidian/Controls/numberRangeBox.obs";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import { ref, PropType, watch } from "vue";
+    import { GridSettingsOptions } from "./types.partial";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { deepEqual } from "@Obsidian/Utility/util";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GridSettingsOptions): void;
+        (e: "update:visible", value: boolean): void;
+        (e: "close"): void;
+    }>();
+
+    const account = ref(props.modelValue.account);
+    const includeActiveSchedules = ref(props.modelValue.includeInactiveSchedules ?? "");
+    const frequency = ref(props.modelValue.frequency ?? null);
+    const dateRange = ref<DateRangeParts | undefined>({
+        lowerValue: props.modelValue.startDate,
+        upperValue: props.modelValue.endDate
+    });
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+    const amountRange = ref(props.modelValue.amountRange);
+
+    function onSave(): void {
+        const value: GridSettingsOptions = {
+            includeInactiveSchedules: includeActiveSchedules.value,
+            amountRange: amountRange.value,
+            account: account.value,
+            frequency: frequency.value,
+            startDate: dateRange.value?.lowerValue,
+            endDate: dateRange.value?.upperValue,
+
+        };
+
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
+
+        isVisible.value = false;
+    }
+
+    watch(() => props.modelValue, () => {
+        frequency.value = props.modelValue.frequency ?? null;
+        includeActiveSchedules.value = props.modelValue.includeInactiveSchedules ?? "";
+        account.value = props.modelValue.account;
+        dateRange.value = {
+            lowerValue: props.modelValue.startDate,
+            upperValue: props.modelValue.endDate
+        };
+        amountRange.value = props.modelValue.amountRange;
+    });
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            emit("close");
+        }
+    });
+</script>

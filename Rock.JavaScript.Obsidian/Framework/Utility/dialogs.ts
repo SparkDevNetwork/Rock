@@ -16,21 +16,44 @@
 //
 
 import { Guid } from "@Obsidian/Types";
+import { ICancellationToken } from "./cancellation";
 import { trackModalState } from "./page";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/naming-convention
 declare const Rock: any;
 
-type DialogOptions = {
+/** The options that describe the dialog. */
+export type DialogOptions = {
+    /** The text to display inside the dialog. */
     message: string;
+
+    /** A list of buttons to display, rendered left to right. */
     buttons: ButtonOptions[];
+
+    /**
+     * An optional container element for the dialog. If not specified then one
+     * will be chosen automatically.
+     */
     container?: string | Element;
+
+    /**
+     * An optional cancellation token that will dismiss the dialog automatically
+     * and return `cancel` as the button clicked.
+     */
+    cancellationToken?: ICancellationToken;
 };
 
-type ButtonOptions = {
+/** The options that describe a single button in the dialog. */
+export type ButtonOptions = {
+    /** The key that uniquely identifies this button. */
     key: string;
+
+    /** The text to display in the button. */
     label: string;
+
+    /** The CSS classes to assign to the button, such as `btn btn-primary`. */
     className: string;
+    autoFocus?: boolean;
 };
 
 /**
@@ -147,11 +170,12 @@ function createBackdrop(): HTMLElement {
  *
  * @returns The key of the button that was clicked, or "cancel" if the cancel button was clicked.
  */
-function showDialog(options: DialogOptions): Promise<string> {
+export function showDialog(options: DialogOptions): Promise<string> {
     return new Promise<string>(resolve => {
         let timer: NodeJS.Timeout | null = null;
         const container = document.fullscreenElement || document.body;
         const body = document.createElement("div");
+        let autoFocus: null | HTMLElement = null;
         body.innerText = options.message;
 
         const buttons: HTMLElement[] = [];
@@ -203,6 +227,9 @@ function showDialog(options: DialogOptions): Promise<string> {
             btn.addEventListener("click", () => {
                 clearDialog(button.key);
             });
+            if (button.autoFocus) {
+                autoFocus = btn;
+            }
             buttons.push(btn);
         }
 
@@ -223,9 +250,18 @@ function showDialog(options: DialogOptions): Promise<string> {
         container.appendChild(backdrop);
         modal.style.marginTop = `-${modal.offsetHeight / 2.0}px`;
 
+        if (autoFocus) {
+            autoFocus.focus();
+        }
+
         // Show the backdrop and the modal.
         backdrop.classList.add("in");
         modal.classList.add("in");
+
+        // Handle dismissal of the dialog by cancellation token.
+        options.cancellationToken?.onCancellationRequested(() => {
+            clearDialog("cancel");
+        });
     });
 }
 
@@ -265,7 +301,8 @@ export async function confirm(message: string): Promise<boolean> {
             {
                 key: "ok",
                 label: "OK",
-                className: "btn btn-primary"
+                className: "btn btn-primary",
+                autoFocus: true
             },
             {
                 key: "cancel",

@@ -18,11 +18,13 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
+using System.Data.Entity.Core;
 using System.Data.Entity.Core.Objects;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Web;
 
@@ -402,7 +404,7 @@ namespace Rock.Data
                     }
                 }
 
-                throw new SystemException( $"Entity Validation Error: { validationErrors.AsDelimited( "; " ) }" );
+                throw new SystemException( $"Entity Validation Error: {validationErrors.AsDelimited( "; " )}" );
             }
         }
 
@@ -439,14 +441,21 @@ namespace Rock.Data
                 personAliasId = personAlias.Id;
             }
 
-            var preSavedEntities = new HashSet<Guid>();
+            // This triggers the change detection, so it must be called before
+            // we check for the implied relationship changes.
+            var entries = dbContext.ChangeTracker.Entries().ToList();
+
+            // Check for any many-to-many relationships that were added or
+            // deleted and flag the related entities as modified.
+            DetectImpliedRelationshipChanges( dbContext );
 
             // First loop through all models calling the PreSaveChanges
+            var preSavedEntities = new HashSet<Guid>();
             var updatedItems = new Dictionary<IEntity, ContextItem>();
 
             try
             {
-                foreach ( var entry in dbContext.ChangeTracker.Entries()
+                foreach ( var entry in entries
                     .Where( c =>
                         c.Entity is IEntity &&
                         ( c.State == EntityState.Added || c.State == EntityState.Modified || c.State == EntityState.Deleted ) ) )
@@ -719,7 +728,10 @@ namespace Rock.Data
 
                     if ( item.Entity is IModel model )
                     {
+                        ExecuteAfterCommit( () =>
+                        {
                             model.PostSaveChanges( this );
+                        } );
                     }
                 }
             }
@@ -728,9 +740,11 @@ namespace Rock.Data
                 // At this point, even if a workflow trigger fails or a legacy
                 // PostSaveChanges() call fails, the save still worked so call
                 // all post save hooks with success state.
-                CallPostSaveHooks( updatedItems );
-
-                tcsPostSave.SetResult( true );
+                ExecuteAfterCommit( () =>
+                {
+                    CallPostSaveHooks( updatedItems );
+                    tcsPostSave.SetResult( true );
+                } );
             }
 
             List<ITransaction> indexTransactions = new List<ITransaction>();
@@ -998,7 +1012,7 @@ namespace Rock.Data
             {
                 var entityType = EntityTypeCache.Get<T>();
                 if ( entityType != null )
-                { 
+                {
                     isAchievementsEnabled = entityType.IsAchievementsEnabled == true
                         && AchievementTypeCache.HasActiveAchievementTypesForEntityTypeId( entityType.Id );
                 }
@@ -1132,46 +1146,68 @@ namespace Rock.Data
 
             // Look at each trigger for this entity and for the given trigger type
             // and see if it's a match.
-            foreach ( var trigger in WorkflowTriggersCache.Triggers( entity.TypeName, triggerType ).Where( t => t.IsActive == true ) )
-            {
-                bool match = true;
+            var triggers = WorkflowTriggersCache.Triggers( entity.TypeName, triggerType )
+                .Where( t => t.IsActive == true )
+                .ToList();
 
-                // If a qualifier column was given, then we need to check the previous or current qualifier value
-                // otherwise it's just an automatic match.
-                if ( !string.IsNullOrWhiteSpace( trigger.EntityTypeQualifierColumn ) )
+            if ( !triggers.Any() )
+            {
+                return true;
+            }
+
+            // Determine if this trigger type is one that happens immediately
+            // or after the save is completed in the background.
+            var isImmediate = triggerType == WorkflowTriggerType.PreSave
+                || triggerType == WorkflowTriggerType.PreDelete
+                || triggerType == WorkflowTriggerType.ImmediatePostSave;
+
+            var matchingTriggers = triggers
+                .Where( trigger =>
                 {
-                    // Get and cache the properties https://lotsacode.wordpress.com/2010/04/13/reflection-type-getproperties-and-performance/
-                    // (Note: its possible that none of the triggers need them, so future TODO could be to
-                    // bypass all this in that case.
-                    if ( properties == null )
+                    // If a qualifier column was given, then we need to check the previous or current qualifier value
+                    // otherwise it's just an automatic match.
+                    if ( !string.IsNullOrWhiteSpace( trigger.EntityTypeQualifierColumn ) )
                     {
-                        properties = new Dictionary<string, PropertyInfo>();
-                        foreach ( PropertyInfo propertyInfo in entity.GetType().GetProperties() )
+                        // Get and cache the properties https://lotsacode.wordpress.com/2010/04/13/reflection-type-getproperties-and-performance/
+                        // (Note: its possible that none of the triggers need them, so future TODO could be to
+                        // bypass all this in that case.
+                        if ( properties == null )
                         {
-                            properties.Add( propertyInfo.Name.ToLower(), propertyInfo );
+                            properties = new Dictionary<string, PropertyInfo>();
+                            foreach ( PropertyInfo propertyInfo in entity.GetType().GetProperties() )
+                            {
+                                properties.Add( propertyInfo.Name.ToLower(), propertyInfo );
+                            }
                         }
+
+                        return IsQualifierMatch( item, properties, trigger );
                     }
 
-                    match = IsQualifierMatch( item, properties, trigger );
-                }
+                    return true;
+                } );
 
-                // If we found a matching trigger, then fire it; otherwise do nothing.
-                if ( match )
+            // If we are doing immediate triggers then process now; otherwise queue them.
+            if ( isImmediate )
+            {
+                var entityTypeCache = EntityTypeCache.Get( entity.TypeId );
+
+                using ( var activity = Observability.ObservabilityHelper.StartActivity( $"WT: {entityTypeCache?.FriendlyName}" ) )
                 {
-                    // If it's one of the pre or immediate triggers, fire it immediately; otherwise queue it.
-                    if ( triggerType == WorkflowTriggerType.PreSave || triggerType == WorkflowTriggerType.PreDelete || triggerType == WorkflowTriggerType.ImmediatePostSave )
+                    activity?.SetTag( "rock.trigger.entity_type_id", entity.TypeId );
+                    activity?.SetTag( "rock.trigger.entity_type", entity.TypeName );
+                    activity?.SetTag( "rock.trigger.entity_id", entity.Id );
+
+                    foreach ( var trigger in matchingTriggers )
                     {
                         var workflowType = WorkflowTypeCache.Get( trigger.WorkflowTypeId );
                         if ( workflowType != null && ( workflowType.IsActive ?? true ) )
                         {
                             var workflow = Rock.Model.Workflow.Activate( workflowType, trigger.WorkflowName );
 
-                            List<string> workflowErrors;
-
                             using ( var rockContext = new RockContext() )
                             {
                                 var workflowService = new WorkflowService( rockContext );
-                                if ( !workflowService.Process( workflow, entity, out workflowErrors ) )
+                                if ( !workflowService.Process( workflow, entity, out var workflowErrors ) )
                                 {
                                     SaveErrorMessages.AddRange( workflowErrors );
                                     return false;
@@ -1179,20 +1215,19 @@ namespace Rock.Data
                             }
                         }
                     }
-                    else
-                    {
-                        var processWorkflowTriggerMsg = new ProcessWorkflowTrigger.Message
-                        {
-                            WorkflowTriggerGuid = trigger.Guid,
-                            EntityId = entity.Id,
-                            EntityTypeId = entity.TypeId
-                        };
-
-                        processWorkflowTriggerMsg.SendWhen( this.WrappedTransactionCompletedTask );
-                    }
                 }
             }
+            else
+            {
+                var processWorkflowTriggerMsg = new ProcessWorkflowTrigger.Message
+                {
+                    WorkflowTriggerGuids = matchingTriggers.Select( t => t.Guid ).ToList(),
+                    EntityId = entity.Id,
+                    EntityTypeId = entity.TypeId
+                };
 
+                processWorkflowTriggerMsg.SendWhen( this.WrappedTransactionCompletedTask );
+            }
 
             return true;
         }
@@ -1421,6 +1456,111 @@ namespace Rock.Data
             // Otherwise, make sure it is a real database field
             return Reflection.IsMappedDatabaseProperty( propertyInfo );
         }
+
+        #region WebForms
+
+#if WEBFORMS
+
+        /// <summary>
+        /// The reflected property that gives access to DbContext.InternalContext.
+        /// </summary>
+        private static PropertyInfo _dbContextInternalContextProperty;
+
+        /// <summary>
+        /// The reflected property that gives access to LazyInternalContext.ObjectContext.
+        /// </summary>
+        private static PropertyInfo _internalContextObjectContextProperty;
+
+        /// <summary>
+        /// <para>
+        /// Detects the implied relationship changes in the context. A many-to-many
+        /// relationship without an associated model is implied. Because there is
+        /// no model, Entity Framework does not report it in the list of changed
+        /// models.
+        /// </para>
+        /// <para>
+        /// This allows us to detect when one of these many-to-many relationships
+        /// is added or removed. When detected it updates the related entity
+        /// entries to mark them as modified. This allows our save hooks and
+        /// related code to properly run when the entity is indirectly modified.
+        /// </para>
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        private static void DetectImpliedRelationshipChanges( DbContext dbContext )
+        {
+            /*
+                 1/30/2024 - DSH
+
+                 This bit of code replaces the following line:
+
+                 var objectContext = ( ( IObjectContextAdapter ) this ).ObjectContext;
+
+                 The above line also eager initializes all the DbSet properties,
+                 which we don't need because we aren't going to access them.
+                 That eager initialization takes 80-100ms. If we later remove
+                 all, or most, of the DbSet properties from RockContext then
+                 we can switch away from reflection and use the standard call.
+
+                 Performance is very good. Assuming the ObjectContext property has
+                 already been accessed once to get the initialization out of the
+                 way:
+                 Direct property access: 0.1212ms
+                 Reflection access: 0.136ms
+
+                 Reason: To avoid 100ms penalty when detecting many-to-many
+                 relationship changes.
+            */
+            if ( _dbContextInternalContextProperty == null )
+            {
+                _dbContextInternalContextProperty = typeof( DbContext ).GetProperty( "InternalContext", BindingFlags.NonPublic | BindingFlags.Instance );
+                _internalContextObjectContextProperty = _dbContextInternalContextProperty.PropertyType.GetProperty( "ObjectContext" );
+            }
+            var internalContext = _dbContextInternalContextProperty.GetValue( dbContext, BindingFlags.Default, null, null, null );
+            var objectContext = ( ObjectContext ) _internalContextObjectContextProperty.GetValue( internalContext, BindingFlags.Default, null, null, null );
+
+            var addedItems = objectContext.ObjectStateManager.GetObjectStateEntries( EntityState.Added )
+                .Where( e => e.IsRelationship );
+
+            foreach ( var addedItem in addedItems )
+            {
+                MarkEntryAsModifiedByKey( dbContext, objectContext, addedItem.CurrentValues[0] );
+                MarkEntryAsModifiedByKey( dbContext, objectContext, addedItem.CurrentValues[1] );
+            }
+
+            var removedItems = objectContext.ObjectStateManager.GetObjectStateEntries( EntityState.Deleted )
+                .Where( e => e.IsRelationship );
+
+            foreach ( var removedItem in removedItems )
+            {
+                MarkEntryAsModifiedByKey( dbContext, objectContext, removedItem.OriginalValues[0] );
+                MarkEntryAsModifiedByKey( dbContext, objectContext, removedItem.OriginalValues[1] );
+            }
+        }
+
+        /// <summary>
+        /// Marks the entry as modified by its DbContext key. This is only meant to be used
+        /// by the <see cref="DetectImpliedRelationshipChanges(DbContext)"/> method.
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="objectContext">The object context.</param>
+        /// <param name="key">The key.</param>
+        [MethodImpl( MethodImplOptions.AggressiveInlining )]
+        private static void MarkEntryAsModifiedByKey( DbContext dbContext, ObjectContext objectContext, object key )
+        {
+            if ( key is EntityKey entityKey && objectContext.TryGetObjectByKey( entityKey, out var removedEntity ) )
+            {
+                var entry = dbContext.Entry( removedEntity );
+
+                if ( entry.State == EntityState.Unchanged )
+                {
+                    entry.State = EntityState.Modified;
+                }
+            }
+        }
+
+#endif
+
+        #endregion
 
         /// <summary>
         /// State of entity being changed during a context save

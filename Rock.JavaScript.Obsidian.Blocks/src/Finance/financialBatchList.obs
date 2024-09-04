@@ -17,6 +17,35 @@
           @selectedKeysChanged="onSelectedKeysChanged">
         <SelectColumn />
 
+        <!-- The following column is for the ID, but will only show up in the export -->
+        <Column name="id"
+                title="ID"
+                field="id"
+                :hideOnScreen="true" />
+
+        <!-- Name column that will always show in the CSV/Excel Export -->
+        <Column name="exportName"
+                title="Name"
+                field="name"
+                :hideOnScreen="true" />
+
+        <!-- Name column that will always show in the Grid -->
+        <HighlightDetailColumn name="name"
+                               title="Name"
+                               field="name"
+                               :filter="textValueFilter"
+                               :filterValuex="getRowNameFilterValue"
+                               :quickFilterValuex="getRowNameFilterValue"
+                               visiblePriority="xs"
+                               :hideOnScreen="false"
+                               :excludeFromExport="true">
+            <template #detailFormat="{ row }">
+                {{ row.batchId }}
+                <template v-if="!config.options?.showTransactionCountColumn">Transaction Count: {{ row.transactionCount }}</template>
+                <template v-if="row.note"><br>{{ row.note }}</template>
+            </template>
+        </HighlightDetailColumn>
+
         <DateColumn name="date"
                     title="Date"
                     field="startDateTime"
@@ -30,27 +59,14 @@
             </template>
         </DateColumn>
 
-        <Column name="name"
-                title="Name"
-                :filter="textValueFilter"
-                :filterValue="getRowNameFilterValue"
-                :quickFilterValue="getRowNameFilterValue"
-                visiblePriority="xs">
-            <template #format="{ row }">
-                <div>
-                    <div>
-                        <span class="text-semibold">{{ row.name }}</span> <span class="text-muted text-xs">{{ row.id }}</span>
-                    </div>
-                    <div v-if="row.note">
-                        {{ row.note }}
-                    </div>
-                </div>
-            </template>
-
-            <template #skeleton>
-                <div class="skeleton skeleton-text skeleton-rounded" />
-            </template>
-        </Column>
+        <NumberColumn name="transactionCount"
+                      title="Transaction Count"
+                      field="transactionCount"
+                      :filter="numberValueFilter"
+                      :sortField="'transactionCount'"
+                      :hideOnScreen="!config?.options?.showTransactionCountColumn"
+                      :width="'5%'"
+                      visiblePriority="md" />
 
         <TextColumn name="accountingSystemCode"
                     title="Accounting Code"
@@ -69,7 +85,7 @@
             <template #format="{ row }">
                 <div class="text-sm">
                     <div v-for="account in row.accounts">
-                        {{ account.name }}: {{ toCurrencyOrNull(account.amount) }}
+                        {{ account.name }}: {{ toCurrencyOrNull(account.amount, config.options?.currencyInfo) }}
                     </div>
                 </div>
             </template>
@@ -86,7 +102,7 @@
                 visiblePriority="md">
             <template #format="{ row }">
                 <span v-if="row.variance" class="label label-warning">
-                    {{ toCurrencyOrNull(row.variance.amount) }} | {{ row.variance.count }}
+                    {{ toCurrencyOrNull(row.variance.amount, config.options?.currencyInfo) }} | {{ row.variance.count }}
                 </span>
             </template>
         </Column>
@@ -146,12 +162,17 @@
                         visiblePriority="md">
             <template #format="{ row }">
                 <div class="flex-grow-1 text-right">
-                    {{ toCurrencyOrNull(row.totalAmount) }}
+                    {{ toCurrencyOrNull(row.totalAmount, config.options?.currencyInfo) }}
                 </div>
             </template>
         </CurrencyColumn>
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
+
+        <Column name="exportNote"
+                title="Note"
+                field="note"
+                :hideOnScreen="true" />
 
         <DeleteColumn v-if="config.isDeleteEnabled"
                       :rowDisabled="onDeleteRowDisabled"
@@ -174,11 +195,11 @@
                     <table>
                         <tr v-for="account in visibleAccountSummaries">
                             <td :class="{ 'font-italic': account.isOtherAccount }">{{ account.name }}</td>
-                            <td class="text-right" style="padding-left:52px;">{{ toCurrencyOrNull(account.amount) }}</td>
+                            <td class="text-right" style="padding-left:52px;">{{ toCurrencyOrNull(account.amount, config.options?.currencyInfo) }}</td>
                         </tr>
                         <tr>
                             <td class="text-bold">Total</td>
-                            <td class="text-bold text-right" style="padding-left:52px;">{{ toCurrencyOrNull(summaryTotal) }}</td>
+                            <td class="text-bold text-right" style="padding-left:52px;">{{ toCurrencyOrNull(summaryTotal, config.options?.currencyInfo) }}</td>
                         </tr>
                     </table>
                 </div>
@@ -195,7 +216,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, Column, DateColumn, dateValueFilter, LabelColumn, CurrencyColumn, numberValueFilter, TextColumn, textValueFilter, DeleteColumn, SelectColumn, pickExistingValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, Column, DateColumn, dateValueFilter, LabelColumn, CurrencyColumn, HighlightDetailColumn, numberValueFilter, TextColumn, textValueFilter, DeleteColumn, SelectColumn, pickExistingValueFilter, NumberColumn } from "@Obsidian/Controls/grid";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
     import { alert, confirm } from "@Obsidian/Utility/dialogs";
@@ -485,7 +506,7 @@
         let filterValue = "";
 
         for (const account of (row as Row).accounts) {
-            filterValue += ` ${account.name} ${toCurrencyOrNull(account.amount) ?? ""}`;
+            filterValue += ` ${account.name} ${toCurrencyOrNull(account.amount, config.options?.currencyInfo) ?? ""}`;
         }
 
         return filterValue;
@@ -607,7 +628,7 @@
      *
      * @param state The state object that describes the grid.
      */
-     async function onCloseSelectedBatches(state: IGridState): Promise<void> {
+    async function onCloseSelectedBatches(state: IGridState): Promise<void> {
         setBulkBatchStatus(state, false);
     }
 

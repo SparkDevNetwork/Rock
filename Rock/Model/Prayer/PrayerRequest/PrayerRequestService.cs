@@ -263,7 +263,7 @@ namespace Rock.Model
                         parameters.Add( "PrayerOfferedByPersonAliasGuid", currentPerson.PrimaryAlias.Guid.ToString() );
                     }
 
-                    prayerRequest.LaunchWorkflow( workflowTypeGuid, prayerRequest.Name, parameters, currentPerson.PrimaryAliasId );
+                    prayerRequest.LaunchWorkflow( workflowTypeGuid, prayerRequest.Name, parameters, currentPerson?.PrimaryAliasId );
                 }
                 catch ( Exception ex )
                 {
@@ -296,7 +296,7 @@ namespace Rock.Model
                         parameters.Add( "FlaggedByPersonAliasGuid", currentPerson.PrimaryAlias.Guid.ToString() );
                     }
 
-                    prayerRequest.LaunchWorkflow( workflowTypeGuid, prayerRequest.Name, parameters, currentPerson.PrimaryAliasId );
+                    prayerRequest.LaunchWorkflow( workflowTypeGuid, prayerRequest.Name, parameters, currentPerson?.PrimaryAliasId );
                 }
                 catch ( Exception ex )
                 {

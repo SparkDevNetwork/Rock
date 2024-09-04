@@ -113,6 +113,9 @@ namespace Rock.Client
         public bool IsRequired { get; set; }
 
         /// <summary />
+        public bool IsSuppressHistoryLogging { get; set; }
+
+        /// <summary />
         public bool IsSystem { get; set; }
 
         /// <summary />
@@ -197,6 +200,7 @@ namespace Rock.Client
             this.IsMultiValue = source.IsMultiValue;
             this.IsPublic = source.IsPublic;
             this.IsRequired = source.IsRequired;
+            this.IsSuppressHistoryLogging = source.IsSuppressHistoryLogging;
             this.IsSystem = source.IsSystem;
             this.Key = source.Key;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;

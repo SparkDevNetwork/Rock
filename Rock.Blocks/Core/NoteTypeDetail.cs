@@ -192,7 +192,7 @@ namespace Rock.Blocks.Core
                 IconCssClass = entity.IconCssClass,
                 IsMentionEnabled = entity.IsMentionEnabled,
                 IsSystem = entity.IsSystem,
-                MaxReplyDepth = entity.MaxReplyDepth,
+                MaxReplyDepth = entity.MaxReplyDepth.ToStringSafe(),
                 Name = entity.Name,
                 UserSelectable = entity.UserSelectable,
                 ShowEntityTypePicker = true
@@ -311,7 +311,7 @@ namespace Rock.Blocks.Core
                 () => entity.IsMentionEnabled = box.Entity.IsMentionEnabled );
 
             box.IfValidProperty( nameof( box.Entity.MaxReplyDepth ),
-                () => entity.MaxReplyDepth = box.Entity.MaxReplyDepth );
+                () => entity.MaxReplyDepth = int.TryParse( box.Entity.MaxReplyDepth, out int maxReplyDepth ) ? maxReplyDepth : ( int? ) null );
 
             box.IfValidProperty( nameof( box.Entity.Name ),
                 () => entity.Name = box.Entity.Name );

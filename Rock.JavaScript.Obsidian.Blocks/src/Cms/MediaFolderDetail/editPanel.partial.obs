@@ -49,14 +49,11 @@
                 </div>
             </TransitionVerticalCollapse>
         </div>
-
-        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
     </fieldset>
 </template>
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import Switch from "@Obsidian/Controls/switch.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";

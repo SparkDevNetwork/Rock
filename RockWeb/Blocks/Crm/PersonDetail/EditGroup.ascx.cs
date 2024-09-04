@@ -34,7 +34,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
     /// <summary>
-    /// The main Person Profile block the main information about a person 
+    /// The main Person Profile block the main information about a person
     /// </summary>
     [DisplayName( "Edit Group" )]
     [Category( "CRM > Person Detail" )]
@@ -337,8 +337,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             nbAddPerson.Visible = false;
 
             if ( Page.IsPostBack )
@@ -426,8 +424,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         }
 
                         // Does the family have any deceased members?
-                        var inactiveStatus = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
-                        if ( _group.Members.Where( m => m.Person.RecordStatusValueId == inactiveStatus ).Any() )
+                        if ( _group.Members.Where( m => m.Person.IsDeceased ).Any() )
                         {
                             HasDeceasedMembers = true;
                         }
@@ -480,6 +477,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     nbRoleLimitWarning.Text = roleLimitWarnings;
                 }
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -597,7 +596,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var inactiveStatus = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
             if ( HasDeceasedMembers && dvpRecordStatus.SelectedValueAsInt() != inactiveStatus )
             {
-                dvpRecordStatus.Warning = "Note: the status of deceased people will not be changed.";
+                dvpRecordStatus.Warning = "Note: The status of deceased people will not be changed";
             }
 
             dvpReason.Visible = dvpRecordStatus.SelectedValueAsInt() == inactiveStatus;
@@ -643,7 +642,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     HtmlControl divPersonImage = e.Item.FindControl( "divPersonImage" ) as HtmlControl;
                     if ( divPersonImage != null )
                     {
-                        divPersonImage.Style.Add( "background-image", @String.Format( @"url({0})", Person.GetPersonPhotoUrl( groupMember.PersonInitials, groupMember.PhotoId, groupMember.Age, groupMember.Gender, groupMember.RecordTypeValueId, groupMember.AgeClassification ) ) );
+                        divPersonImage.Style.Add( "background-image", @String.Format( @"url({0}&Style=icon&BackgroundColor=E4E4E7&ForegroundColor=A1A1AA)", Person.GetPersonPhotoUrl( groupMember.PersonInitials, groupMember.PhotoId, groupMember.Age, groupMember.Gender, groupMember.RecordTypeValueId, groupMember.AgeClassification, 400 ) ) );
                     }
 
                     var rblRole = e.Item.FindControl( "rblRole" ) as RadioButtonList;
@@ -1196,7 +1195,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 confirmExit.Enabled = true;
 
                 var rockContext = new RockContext();
-                
+
                 try
                 {
                     rockContext.WrapTransaction( () =>
@@ -1205,23 +1204,24 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 	                    var groupMemberService = new GroupMemberService( rockContext );
 	                    var personService = new PersonService( rockContext );
 	                    var historyService = new HistoryService( rockContext );
-	
+
 	                    // SAVE GROUP
 	                    _group = groupService.Get( _group.Id );
-	
+
 	                    _group.Name = tbGroupName.Text;
                         _group.CampusId = cpCampus.SelectedValueAsInt();
                         _group.StatusValueId = dvpGroupStatus.SelectedValueAsId();
-	
+
 	                    rockContext.SaveChanges();
-	
-	                    // SAVE GROUP MEMBERS
-	                    var recordStatusInactiveId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
+
+                        // SAVE GROUP MEMBERS
+                        var recordStatusActiveId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE ) ).Id;
+                        var recordStatusInactiveId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
 	                    var reasonStatusReasonDeceasedId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED ) ).Id;
 	                    int? recordStatusValueID = dvpRecordStatus.SelectedValueAsInt();
 	                    int? reasonValueId = dvpReason.SelectedValueAsInt();
 	                    var newGroups = new List<Group>();
-	
+
 	                    foreach ( var groupMemberInfo in GroupMembers )
 	                    {
 	                        var role = _groupType.Roles.Where( r => r.Guid.Equals( groupMemberInfo.RoleGuid ) ).FirstOrDefault();
@@ -1229,9 +1229,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 	                        {
 	                            role = _groupType.Roles.FirstOrDefault();
 	                        }
-	
+
 	                        bool isAdult = role != null && role.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() );
-	
+
 	                        // People added to group (new or from other group )
 	                        if ( !groupMemberInfo.ExistingGroupMember )
 	                        {
@@ -1239,14 +1239,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 	                            if ( groupMemberInfo.PersonId == -1 )
 	                            {
 	                                person = new Person();
-	
+
 	                                person.TitleValueId = groupMemberInfo.TitleValueId;
 	                                person.FirstName = groupMemberInfo.FirstName;
 	                                person.NickName = groupMemberInfo.NickName;
 	                                person.LastName = groupMemberInfo.LastName;
 	                                person.SuffixValueId = groupMemberInfo.SuffixValueId;
 	                                person.Gender = groupMemberInfo.Gender;
-	
+
 	                                DateTime? birthdate = groupMemberInfo.BirthDate;
 	                                if ( birthdate.HasValue )
 	                                {
@@ -1257,9 +1257,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 	                                        birthdate = birthdate.Value.AddYears( -100 );
 	                                    }
 	                                }
-	
+
 	                                person.SetBirthDate( birthdate );
-	
+
 	                                person.MaritalStatusValueId = groupMemberInfo.MaritalStatusValueId;
 	                                person.GradeOffset = groupMemberInfo.GradeOffset;
 	                                person.ConnectionStatusValueId = groupMemberInfo.ConnectionStatusValueId;
@@ -1278,7 +1278,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 	                                {
 	                                    person.GivingGroupId = _group.Id;
 	                                }
-	
+
 	                                person.IsEmailActive = true;
 	                                person.EmailPreference = EmailPreference.EmailAllowed;
 	                                person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
@@ -1287,7 +1287,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 	                            {
 	                                person = personService.Get( groupMemberInfo.PersonId );
 	                            }
-	
+
 	                            if ( person == null )
 	                            {
 	                                // shouldn't happen
@@ -1306,7 +1306,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                         person.RecordStatusReasonValueId = reasonValueId.Value;
                                     }
                                 }
-	
+
 	                            PersonService.AddPersonToGroup( person, person.Id == 0, _group.Id, role.Id, rockContext );
 	                            groupMemberInfo.PersonId = person.Id;
 	                        }
@@ -1317,7 +1317,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 	                                m.PersonId == groupMemberInfo.PersonId &&
 	                                m.Group.GroupTypeId == _groupType.Id &&
 	                                m.GroupId == _group.Id ).FirstOrDefault();
-	
+
 	                            if ( groupMember != null )
 	                            {
 	                                if ( groupMemberInfo.Removed )
@@ -1331,22 +1331,22 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 	                                        newGroup.CampusId = _group.CampusId;
 	                                        groupService.Add( newGroup );
 	                                        rockContext.SaveChanges();
-	
+
 	                                        // If person's previous giving group was this family, set it to their new family id
 	                                        if ( _isFamilyGroupType && groupMember.Person.GivingGroup != null && groupMember.Person.GivingGroupId == _group.Id )
 	                                        {
 	                                            groupMember.Person.GivingGroupId = newGroup.Id;
 	                                        }
-	
+
 	                                        groupMember.Group = newGroup;
-	                                        
+
 	                                        // If this person is 18 or older, create them as an Adult in their new group
 	                                        if ((groupMember.Person.Age ?? 0) >= 18)
 	                                        {
 	                                            var familyGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() );
 	                                            groupMember.GroupRoleId = familyGroupType.Roles.First( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).Id;
 	                                        }
-	
+
 	                                        rockContext.SaveChanges();
 
 	                                        newGroups.Add( newGroup );
@@ -1371,6 +1371,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                                 if ( recordStatusValueID.HasValue && recordStatusValueID.Value != 0 )
                                                 {
                                                     groupMember.Person.RecordStatusValueId = recordStatusValueID.Value;
+
+                                                    // If they are active, clear their RecordStatus Reason
+                                                    if ( recordStatusValueID.Value == recordStatusActiveId )
+                                                    {
+                                                        groupMember.Person.RecordStatusReasonValueId = null;
+                                                    }
                                                 }
 
                                                 if ( reasonValueId.HasValue && reasonValueId.Value != 0 )
@@ -1389,14 +1395,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 	                                }
 	                            }
 	                        }
-	
+
 	                        // Remove anyone that was moved from another family
 	                        if ( groupMemberInfo.RemoveFromOtherGroups )
 	                        {
 	                            PersonService.RemovePersonFromOtherFamilies( _group.Id, groupMemberInfo.PersonId, rockContext );
 	                        }
 	                    }
-	
+
 	                    // Now check if family group should be marked inactive or active
 	                    if ( _isFamilyGroupType )
 	                    {
@@ -1411,10 +1417,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 	                            _group.IsActive = true;
 	                        }
 	                    }
-	
+
 	                    // SAVE LOCATIONS
 	                    var groupLocationService = new GroupLocationService( rockContext );
-	
+
 	                    // delete any group locations that were removed
 	                    var remainingLocationIds = GroupAddresses.Where( a => a.Id > 0 ).Select( a => a.Id ).ToList();
 	                    foreach ( var removedLocation in groupLocationService.Queryable( "GroupLocationTypeValue,Location" )
@@ -1423,9 +1429,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 	                    {
 	                        groupLocationService.Delete( removedLocation );
 	                    }
-	
+
 	                    rockContext.SaveChanges();
-	
+
 	                    foreach ( var groupAddressInfo in GroupAddresses.Where( a => a.Id >= 0 ) )
 	                    {
 	                        Location updatedAddress = null;
@@ -1437,31 +1443,31 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                     updatedAddress.County = groupAddressInfo.County;
                                 }
                             }
-	
+
 	                        GroupLocation groupLocation = null;
 	                        if ( groupAddressInfo.Id > 0 )
 	                        {
 	                            groupLocation = groupLocationService.Get( groupAddressInfo.Id );
 	                        }
-	
+
 	                        if ( groupLocation == null )
 	                        {
 	                            groupLocation = new GroupLocation();
 	                            groupLocation.GroupId = _group.Id;
 	                            groupLocationService.Add( groupLocation );
 	                        }
-	
+
 	                        groupLocation.GroupLocationTypeValueId = groupAddressInfo.LocationTypeId;
 	                        groupLocation.IsMailingLocation = groupAddressInfo.IsMailing;
 	                        groupLocation.IsMappedLocation = groupAddressInfo.IsLocation;
-	
+
 	                        if ( updatedAddress != null )
 	                        {
 	                            groupLocation.Location = updatedAddress;
 	                        }
-	
+
 	                        rockContext.SaveChanges();
-	
+
 	                        // Add the same locations to any new families created by removing an existing family member
 	                        if ( newGroups.Any() )
 	                        {
@@ -1477,11 +1483,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 	                                newGroupLocation.IsMappedLocation = groupLocation.IsMappedLocation;
 	                                groupLocationService.Add( newGroupLocation );
 	                            }
-	
+
 	                            rockContext.SaveChanges();
 	                        }
 	                    }
-	
+
 	                    _group.LoadAttributes();
 
                         Dictionary<string, AttributeValueCache> originalGroupAttributes = new Dictionary<string, AttributeValueCache>();
@@ -1493,9 +1499,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         Rock.Attribute.Helper.GetEditValues( phGroupAttributes, _group );
 
 	                    _group.SaveAttributeValues( rockContext );
-	
+
 	                    Response.Redirect( string.Format( "~/Person/{0}", Person.Id ), false );
-	
+
 	                } );
 				}
                 catch ( GroupMemberValidationException gmvex )
@@ -1735,7 +1741,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [Serializable]
     public class GroupMemberInfo
@@ -1746,7 +1752,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
         public string PersonInitials { get; set; }
 
-        public bool ExistingGroupMember { get; set; }  // Is this person part of the original group 
+        public bool ExistingGroupMember { get; set; }  // Is this person part of the original group
 
         public bool Removed { get; set; } // Was an existing person removed from the group (to their own group)
 
@@ -1817,7 +1823,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 if ( BirthDate.HasValue )
                 {
-                    return BirthDate.Age();
+                    if ( BirthDate.Value.Year != DateTime.MinValue.Year )
+                    {
+                        return BirthDate.Age();
+                    }
                 }
 
                 return null;
@@ -1884,7 +1893,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [Serializable]
     public class GroupMemberPhoneInfo
@@ -1895,7 +1904,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     }
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [Serializable]
     public class GroupAddressInfo

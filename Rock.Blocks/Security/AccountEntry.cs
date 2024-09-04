@@ -30,6 +30,7 @@ using Rock.Security;
 using Rock.Security.Authentication;
 using Rock.Security.Authentication.Passwordless;
 using Rock.ViewModels.Blocks.Security.AccountEntry;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -46,7 +47,8 @@ namespace Rock.Blocks.Security
     [IconCssClass( "fa fa-user-lock" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
-    #region "Block Attributes"
+    #region Block Attributes
+
     [BooleanField(
         "Require Email For Username",
         Key = AttributeKey.RequireEmailForUsername,
@@ -243,19 +245,37 @@ namespace Rock.Blocks.Security
         DefaultValue = "Campus",
         Order = 23 )]
 
+    [DefinedValueField(
+        "Campus Types",
+        Key = AttributeKey.CampusTypes,
+        Description = "This setting filters the list of campuses by type that are displayed in the campus drop-down.",
+        IsRequired = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_TYPE,
+        AllowMultiple = true,
+        Order = 24 )]
+
+    [DefinedValueField(
+        "Campus Statuses",
+        Key = AttributeKey.CampusStatuses,
+        Description = "This setting filters the list of campuses by statuses that are displayed in the campus drop-down.",
+        IsRequired = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_STATUS,
+        AllowMultiple = true,
+        Order = 25 )]
+
     [BooleanField( "Save Communication History",
         Key = AttributeKey.CreateCommunicationRecord,
         Description = "Should a record of communication from this block be saved to the recipient's profile?",
         DefaultBooleanValue = false,
         ControlType = Rock.Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
-        Order = 24 )]
+        Order = 26 )]
 
     [BooleanField(
         "Show Gender",
         Key = AttributeKey.ShowGender,
         Description = "Determines if the gender selection field should be shown.",
         DefaultBooleanValue = true,
-        Order = 25 )]
+        Order = 27 )]
 
     [AttributeCategoryField(
         "Attribute Categories",
@@ -264,14 +284,14 @@ namespace Rock.Blocks.Security
         AllowMultiple = true,
         EntityTypeName = "Rock.Model.Person",
         IsRequired = false,
-        Order = 26 )]
+        Order = 28 )]
 
     [BooleanField(
         "Disable Username Availability Checking",
         Key = AttributeKey.DisableUsernameAvailabilityCheck,
         Description = "Disables username availability checking.",
         DefaultBooleanValue = false,
-        Order = 27 )]
+        Order = 29 )]
 
     [SystemCommunicationField(
         "Confirm Account (Passwordless)",
@@ -280,7 +300,7 @@ namespace Rock.Blocks.Security
         IsRequired = false,
         DefaultValue = Rock.SystemGuid.SystemCommunication.SECURITY_CONFIRM_ACCOUNT_PASSWORDLESS,
         Category = "Email Templates",
-        Order = 28 )]
+        Order = 30 )]
 
     [TextField(
         "Confirm Caption (Passwordless)",
@@ -288,7 +308,28 @@ namespace Rock.Blocks.Security
         IsRequired = false,
         DefaultValue = "Because you've selected an existing person, we need to have you confirm the email address you entered belongs to you. We’ve sent you an email that contains a code for confirming.  Please enter the code from your email to continue.",
         Category = "Captions",
-        Order = 29 )]
+        Order = 31 )]
+
+    [BooleanField(
+        "Disable Captcha Support",
+        Key = AttributeKey.DisableCaptchaSupport,
+        Description = "If set to 'Yes' the CAPTCHA verification step will not be performed.",
+        DefaultBooleanValue = false,
+        Order = 32 )]
+
+    [BooleanField(
+        "Require Campus",
+        Key = AttributeKey.RequireCampus,
+        Description = "Require that a campus be selected. The campus will not be displayed if there is only one available campus, in which case if this is set to true then the single campus is automatically used.",
+        DefaultBooleanValue = false,
+        Order = 33 )]
+
+    [BooleanField(
+        "Show Birth Date",
+        Key = AttributeKey.ShowBirthDate,
+        Description = "Determine if the birth date field should be shown.",
+        DefaultBooleanValue = false,
+        Order = 34 )]
 
     #endregion
 
@@ -324,12 +365,17 @@ namespace Rock.Blocks.Security
             public const string PhoneTypesRequired = "PhoneTypesRequired";
             public const string ShowCampusSelector = "ShowCampusSelector";
             public const string CampusSelectorLabel = "CampusSelectorLabel";
+            public const string CampusTypes = "CampusTypes";
+            public const string CampusStatuses = "CampusStatuses";
             public const string CreateCommunicationRecord = "CreateCommunicationRecord";
             public const string ShowGender = "ShowGender";
             public const string AttributeCategories = "AttributeCategories";
             public const string DisableUsernameAvailabilityCheck = "DisableUsernameAvailabilityCheck";
             public const string ConfirmAccountPasswordlessTemplate = "ConfirmAccountPasswordlessTemplate";
             public const string ConfirmCaptionPasswordless = "ConfirmCaptionPasswordless";
+            public const string DisableCaptchaSupport = "DisableCaptchaSupport";
+            public const string RequireCampus = "RequireCampus";
+            public const string ShowBirthDate = "ShowBirthDate";
         }
 
         private static class PageParameterKey
@@ -361,6 +407,13 @@ namespace Rock.Blocks.Security
         [BlockAction]
         public BlockActionResult ForgotUsername( AccountEntryForgotUsernameRequestBag bag )
         {
+            var disableCaptcha = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
+
+            if ( !disableCaptcha && !RequestContext.IsCaptchaValid )
+            {
+                return ActionBadRequest( "Captcha was not valid." );
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var person = GetSelectedDuplicatePerson( bag.PersonId, bag.Email, bag.LastName, rockContext );
@@ -423,6 +476,13 @@ namespace Rock.Blocks.Security
         [BlockAction]
         public BlockActionResult Register( AccountEntryRegisterRequestBox box )
         {
+            var disableCaptcha = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean();
+
+            if ( !disableCaptcha && !RequestContext.IsCaptchaValid )
+            {
+                return ActionBadRequest( "Captcha was not valid." );
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var config = GetInitializationBox( box.State );
@@ -602,14 +662,17 @@ namespace Rock.Blocks.Security
                 RecordStatusValueId = DefinedValueCache.Get( GetAttributeValue( AttributeKey.RecordStatus ).AsGuid() )?.Id
             };
 
-            var birthday = box.PersonInfo.Birthday;
-            if ( birthday != null )
+            if ( config.IsBirthDateShown )
             {
-                person.BirthMonth = birthday.Month;
-                person.BirthDay = birthday.Day;
-                if ( birthday.Year != DateTime.MinValue.Year )
+                var birthday = box.PersonInfo.Birthday;
+                if ( birthday != null )
                 {
-                    person.BirthYear = birthday.Year;
+                    person.BirthMonth = birthday.Month;
+                    person.BirthDay = birthday.Day;
+                    if ( birthday.Year != DateTime.MinValue.Year )
+                    {
+                        person.BirthYear = birthday.Year;
+                    }
                 }
             }
 
@@ -695,6 +758,36 @@ namespace Rock.Blocks.Security
                 // Do not enforce security; otherwise, some attribute values may not be set for unauthenticated users.
                 enforceSecurity: false,
                 attributeFilter: a1 => personAttributes.Any( a => a.Guid == a1.Guid ) );
+
+            /*
+                2024/02/27 - JSC
+
+                To prevent the DbContext from trying to save AttributeValues with
+	            both an empty and a DefaultValue we need to update the persons AttributeValue
+	            so that any values which are set to the default get replaced with an empty string.
+	            When person.SaveAttributeValues is called the empty value will not be persisted.
+	            We don't want to modify the behavior of Attribute/Helper.SaveAttributeValues
+	            as there are times when we DO want to persist default values 
+	            (e.g. when a user explicitly edits a page with those values shown).
+	
+                 Reason: New registration creates AttributeValues with configured DefaultValues.
+            */
+            var attributesWithDefaults = person.Attributes
+                .Where( a => a.Value.DefaultValue.IsNotNullOrWhiteSpace() )
+                .Select( a => a.Value );
+
+            foreach ( var attributeWithDefault in attributesWithDefaults )
+            {
+                var personAttributeValue = person.GetAttributeValue( attributeWithDefault.Key );
+
+                // If the cacheValue is null or the default then set an empty value for it
+                // Otherwise the default value will be returned and persisted in Attribute.Helper.SaveAttributeValues.
+                if ( personAttributeValue == null || personAttributeValue.Equals( attributeWithDefault.DefaultValue, StringComparison.OrdinalIgnoreCase ) )
+                {
+                    person.SetAttributeValue( attributeWithDefault.Key, string.Empty );
+                }
+            }
+
             person.SaveAttributeValues( rockContext );
 
             return person;
@@ -867,6 +960,7 @@ namespace Rock.Blocks.Security
             var currentPerson = GetCurrentPerson();
 
             var showPhoneNumbers = GetAttributeValue( AttributeKey.ShowPhoneNumbers ).AsBoolean();
+            var showBirthDate = GetAttributeValue( AttributeKey.ShowBirthDate ).AsBoolean();
             var requiredPhoneTypes = GetAttributeValue( AttributeKey.PhoneTypesRequired )
                 .Split( ',' )
                 .Where( guidString => guidString.IsNotNullOrWhiteSpace() )
@@ -931,35 +1025,43 @@ namespace Rock.Blocks.Security
 
             var areUsernameAndPasswordRequired = PageParameter( PageParameterKey.AreUsernameAndPasswordRequired ).AsBoolean();
 
-            AccountEntryPersonInfoBag accountEntryPersonInfoBag = null;
-
-            if ( currentPerson != null )
+            // Use an empty Person if none is available.
+            // We should always include an AccountEntryPersonInfoBag.
+            // The Obsidian block expects any configured attributes
+            // (in addition to other config values like phones & addresses)
+            // to be set in the AccountEntryPersonInfoBag.
+            if ( currentPerson == null )
             {
-                if ( showPhoneNumbers )
-                {
-                    foreach ( var bag in phoneNumberBags )
-                    {
-                        var phoneNumber = currentPerson.PhoneNumbers.FirstOrDefault( x => x.Number == bag.PhoneNumber );
+                currentPerson = new Person() { Email = passwordlessLoginState?.Email };
+            }
 
-                        if ( phoneNumber != null )
-                        {
-                            bag.PhoneNumber = phoneNumber.Number;
-                            bag.IsSmsEnabled = phoneNumber.IsMessagingEnabled;
-                            bag.IsUnlisted = phoneNumber.IsUnlisted;
-                        }
+            if ( showPhoneNumbers )
+            {
+                foreach ( var bag in phoneNumberBags )
+                {
+                    var phoneNumber = currentPerson.PhoneNumbers.FirstOrDefault( x => x.Number == bag.PhoneNumber );
+
+                    if ( phoneNumber != null )
+                    {
+                        bag.PhoneNumber = phoneNumber.Number;
+                        bag.IsSmsEnabled = phoneNumber.IsMessagingEnabled;
+                        bag.IsUnlisted = phoneNumber.IsUnlisted;
                     }
                 }
+            }
 
-                accountEntryPersonInfoBag = new AccountEntryPersonInfoBag
-                {
-                    FirstName = currentPerson.FirstName,
-                    Gender = currentPerson.Gender,
-                    Campus = currentPerson.PrimaryCampus?.Guid,
-                    Email = currentPerson.Email,
-                    LastName = currentPerson.LastName,
-                    PhoneNumbers = phoneNumberBags
-                };
+            var accountEntryPersonInfoBag = new AccountEntryPersonInfoBag
+            {
+                FirstName = currentPerson.FirstName,
+                Gender = currentPerson.Gender,
+                Campus = currentPerson.PrimaryCampus?.Guid,
+                Email = currentPerson.Email,
+                LastName = currentPerson.LastName,
+                PhoneNumbers = phoneNumberBags
+            };
 
+            if ( showBirthDate )
+            {
                 if ( currentPerson.BirthDate.HasValue )
                 {
                     accountEntryPersonInfoBag.Birthday = new ViewModels.Controls.BirthdayPickerBag()
@@ -969,40 +1071,38 @@ namespace Rock.Blocks.Security
                         Year = currentPerson.BirthDate.Value.Year,
                     };
                 }
-
-                var homeAddress = currentPerson.GetHomeLocation();
-                if ( homeAddress != null )
-                {
-                    accountEntryPersonInfoBag.Address = new ViewModels.Controls.AddressControlBag
-                    {
-                        Street1 = homeAddress.Street1,
-                        Street2 = homeAddress.Street2,
-                        City = homeAddress.City,
-                        State = homeAddress.State,
-                        PostalCode = homeAddress.PostalCode,
-                        Country = homeAddress.Country
-                    };
-                }
             }
-            
+
+            var homeAddress = currentPerson.GetHomeLocation();
+            if ( homeAddress != null )
+            {
+                accountEntryPersonInfoBag.Address = new ViewModels.Controls.AddressControlBag
+                {
+                    Street1 = homeAddress.Street1,
+                    Street2 = homeAddress.Street2,
+                    City = homeAddress.City,
+                    State = homeAddress.State,
+                    PostalCode = homeAddress.PostalCode,
+                    Country = homeAddress.Country
+                };
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var personAttributes = GetAttributeCategoryAttributes( rockContext );
 
                 // Load the attributes for the current person if possible.
-                var attributesForPerson = currentPerson ?? new Person();
-                attributesForPerson.LoadAttributes( rockContext );
+                currentPerson.LoadAttributes( rockContext );
 
-                accountEntryPersonInfoBag = new AccountEntryPersonInfoBag
-                {
-                    Attributes = attributesForPerson.GetPublicAttributesForEdit( attributesForPerson, attributeFilter: a1 => personAttributes.Any( a => a.Guid == a1.Guid ), enforceSecurity: false ),
-                    AttributeValues = attributesForPerson.GetPublicAttributeValuesForEdit( attributesForPerson, attributeFilter: a1 => personAttributes.Any( a => a.Guid == a1.Guid ), enforceSecurity: false ),
-                };
+                accountEntryPersonInfoBag = accountEntryPersonInfoBag ?? new AccountEntryPersonInfoBag();
+                accountEntryPersonInfoBag.Attributes = currentPerson.GetPublicAttributesForEdit( currentPerson, attributeFilter: a1 => personAttributes.Any( a => a.Guid == a1.Guid ), enforceSecurity: false );
+                accountEntryPersonInfoBag.AttributeValues = currentPerson.GetPublicAttributeValuesForEdit( currentPerson, attributeFilter: a1 => personAttributes.Any( a => a.Guid == a1.Guid ), enforceSecurity: false );
             }
 
             return new AccountEntryInitializationBox
             {
                 ArePhoneNumbersShown = GetAttributeValue( AttributeKey.ShowPhoneNumbers ).AsBoolean(),
+
                 CampusPickerLabel = GetAttributeValue( AttributeKey.CampusSelectorLabel ),
                 ConfirmationSentCaption = GetAttributeValue( AttributeKey.ConfirmCaption ),
                 Email = passwordlessLoginState?.Email,
@@ -1012,6 +1112,8 @@ namespace Rock.Blocks.Security
                 IsAccountInfoHidden = passwordlessLoginState != null && !areUsernameAndPasswordRequired,
                 IsAddressRequired = GetAttributeValue( AttributeKey.AddressRequired ).AsBoolean(),
                 IsAddressShown = GetAttributeValue( AttributeKey.ShowAddress ).AsBoolean(),
+                IsBirthDateShown = showBirthDate,
+                IsCampusRequired = GetAttributeValue( AttributeKey.RequireCampus ).AsBoolean(),
                 IsCampusPickerShown = GetAttributeValue( AttributeKey.ShowCampusSelector ).AsBoolean(),
                 IsEmailHidden = ( passwordlessLoginState?.Email.IsNotNullOrWhiteSpace() ?? false ) || isEmailRequiredForUsername,
                 IsEmailRequiredForUsername = isEmailRequiredForUsername,
@@ -1028,6 +1130,9 @@ namespace Rock.Blocks.Security
                 AccountEntryRegisterStepBox = accountEntryRegisterStepBox,
                 IsGenderPickerShown = GetAttributeValue( AttributeKey.ShowGender ).AsBoolean(),
                 AccountEntryPersonInfoBag = accountEntryPersonInfoBag,
+                DisableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean(),
+                CampusStatusFilter = GetAttributeValue( AttributeKey.CampusStatuses ).SplitDelimitedValues( true ).AsGuidList(),
+                CampusTypeFilter = GetAttributeValue( AttributeKey.CampusTypes ).SplitDelimitedValues( true ).AsGuidList()
             };
         }
 
@@ -1084,7 +1189,7 @@ namespace Rock.Blocks.Security
             // Remove the http and https schemes before checking if URL contains XSS objects.
             if ( decodedUrl.Replace( "https://", string.Empty )
                 .Replace( "http://", string.Empty )
-                .HasXssObjects() )
+                .RedirectUrlContainsXss() )
             {
                 return null;
             }
@@ -1153,6 +1258,29 @@ namespace Rock.Blocks.Security
         }
 
         /// <summary>
+        /// Determines if an campus is valid.
+        /// </summary>
+        /// <param name="box">The register request box.</param>
+        /// <param name="config">The block initialization box.</param>
+        /// <returns><c>true</c> if the address is not required or if it is valid; otherwise, <c>false</c>.</returns>
+        private bool IsCampusValidIfRequired( AccountEntryRegisterRequestBox box, AccountEntryInitializationBox config )
+        {
+            if ( !config.IsCampusPickerShown || !config.IsCampusRequired )
+            {
+                return true;
+            }
+
+            var campus = box.PersonInfo.Campus;
+
+            if ( !(campus.HasValue && campus.Value != Guid.Empty) )
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Determines whether the account entry is from passwordless authentication.
         /// </summary>
         /// <param name="bag">The bag.</param>
@@ -1169,28 +1297,6 @@ namespace Rock.Blocks.Security
         }
 
         /// <summary>
-        /// Determines if the full name is valid.
-        /// </summary>
-        /// <param name="box">The register request box.</param>
-        /// <returns><c>true</c> if valid; otherwise, <c>false</c>.</returns>
-        private static bool IsFullNameValid( AccountEntryRegisterRequestBox box )
-        {
-            /*
-                12/28/2022 - JMH
-             
-                See https://app.asana.com/0/1121505495628584/1200018171012738/f on why this is done
-
-                Reason: Passwordless Authentication
-             */
-            if ( box.FullName.IsNotNullOrWhiteSpace() )
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        /// <summary>
         /// Determines if the new person is old enough for a new account.
         /// </summary>
         /// <param name="box">The register request box.</param>
@@ -1198,6 +1304,11 @@ namespace Rock.Blocks.Security
         /// <returns><c>true</c> if valid; otherwise, <c>false</c>.</returns>
         private static bool IsOldEnough( AccountEntryRegisterRequestBox box, AccountEntryInitializationBox config )
         {
+            if ( !config.IsBirthDateShown )
+            {
+                return true;
+            }
+
             if ( config.MinimumAge < 1 )
             {
                 return true;
@@ -1276,12 +1387,6 @@ namespace Rock.Blocks.Security
                 return false;
             }
 
-            if ( !IsFullNameValid( box ) )
-            {
-                errorMessage = "Invalid Form Value";
-                return false;
-            }
-
             if ( !IsOldEnough( box, config ) )
             {
                 errorMessage = $"We are sorry, you must be at least {( config.MinimumAge == 1 ? "year" : "years" )} old to create an account.";
@@ -1315,6 +1420,12 @@ namespace Rock.Blocks.Security
             if ( !IsAddressValidIfRequired( box, config ) )
             {
                 errorMessage = "Address is required";
+                return false;
+            }
+
+            if ( !IsCampusValidIfRequired( box, config ) )
+            {
+                errorMessage = "Campus is required";
                 return false;
             }
 

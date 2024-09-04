@@ -15,11 +15,10 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using Rock;
+using Rock.Chart;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting.Dashboard;
@@ -28,7 +27,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Reporting.Dashboard
 {
     /// <summary>
-    /// 
+    /// A dashboard widget that displays a line chart based on one or more Metrics.
     /// </summary>
     [DisplayName( "Line Chart" )]
     [Category( "Reporting > Dashboard" )]
@@ -43,6 +42,7 @@ namespace RockWeb.Blocks.Reporting.Dashboard
 
         public override void OnLoadChart()
         {
+            // Configure the chart appearance and layout.
             lDashboardTitle.Text = this.Title;
             pnlDashboardTitle.Visible = !string.IsNullOrEmpty( this.Title );
 
@@ -55,83 +55,50 @@ namespace RockWeb.Blocks.Reporting.Dashboard
 
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( this.GetAttributeValue( "SlidingDateRange" ) ?? string.Empty );
 
-            var entityPartitionValues = this.GetPartitionEntityIdentifiers();
-            //var entityPartitionValues = new List<MetricService.EntityIdentifierByTypeAndId>();
+            nbMetricWarning.Visible = false;
 
-            //if ( this.GetEntityFromContextEnabled )
-            //{
-            //    var metricPartitionEntityIds = GetPrimaryMetricPartitionEntityIdFromContext();
-            //    metricPartitionEntityIds = metricPartitionEntityIds.Where( a => a.MetricPartition != null ).ToList();
-            //    if ( metricPartitionEntityIds.Any() )
-            //    {
-            //            entityPartitionValues = metricPartitionEntityIds
-            //                .Select( a => new MetricService.EntityIdentifierByTypeAndId
-            //                {
-            //                    EntityTypeId = a.MetricPartition.EntityTypeId.GetValueOrDefault(0),
-            //                    EntityId = a.EntityId.GetValueOrDefault(0)
-            //                } )
-            //                .ToList();
-
-            //    }
-            //}
-            //else
-            //{
-            //    var metricEntityIdList = GetAttributeValue( "MetricEntityTypeEntityIds" );
-            //    entityPartitionValues = metricEntityIdList.Split( ',' )
-            //        .Select( a => a.Split( '|' ) )
-            //        .Where( a => a.Length == 2 )
-            //        .Select( a => new MetricService.EntityIdentifierByTypeAndId
-            //        {
-            //            EntityTypeId = a[0].AsInteger(),
-            //            EntityId = a[1].AsInteger()
-            //        } )
-            //        .ToList();
-            //}
-
-
-            var metricValueType = this.MetricValueType;
-
-            //
-            // Get the data.
-            //
+            // Configure the chart for the specified Metric.
             var rockContext = new RockContext();
             var metricService = new MetricService( rockContext );
-            string metricName = null;
 
-            // Configure for Metric
             var metric = metricService.Get( this.MetricId.GetValueOrDefault( 0 ) );
 
-            if ( metric != null )
+            if ( metric == null )
             {
-                metricName = metric.Title;
-
-                if ( string.IsNullOrWhiteSpace( metricChart.XAxisLabel ) )
-                {
-                    // if XAxisLabel hasn't been set, and this is a metric, automatically set it to the metric.XAxisLabel
-                    metricChart.XAxisLabel = metric.XAxisLabel;
-                }
-
-                if ( string.IsNullOrWhiteSpace( metricChart.YAxisLabel ) )
-                {
-                    // if YAxisLabel hasn't been set, and this is a metric, automatically set it to the metric.YAxisLabel
-                    metricChart.YAxisLabel = metric.YAxisLabel;
-                }
+                nbMetricWarning.Visible = true;
+                return;
             }
 
-            // Add the Metric data.
-            var metricIdList = new List<int> { this.MetricId ?? 0 };
+            if ( string.IsNullOrWhiteSpace( metricChart.XAxisLabel ) )
+            {
+                // if XAxisLabel hasn't been set, and this is a metric, automatically set it to the metric.XAxisLabel
+                metricChart.XAxisLabel = metric.XAxisLabel;
+            }
 
-            var qryMetric = metricService.GetMetricValuesQuery( metricIdList,
-                metricValueType,
-                dateRange.Start,
-                dateRange.End,
-                entityPartitionValues);
+            if ( string.IsNullOrWhiteSpace( metricChart.YAxisLabel ) )
+            {
+                // if YAxisLabel hasn't been set, and this is a metric, automatically set it to the metric.YAxisLabel
+                metricChart.YAxisLabel = metric.YAxisLabel;
+            }
 
-            var metricItems = qryMetric.ToList();
+            // Build the chart data.
+            var builder = new MetricChartDataSourceBuilder();
+            builder.MetricIdList = new List<int> { this.MetricId ?? 0 };
+            builder.ValueType = this.MetricValueType ?? Rock.Model.MetricValueType.Measure;
+            builder.StartDate = dateRange.Start;
+            builder.EndDate = dateRange.End;
+            builder.PartitionValues = this.GetSelectedPartitionEntityIdentifiers();
+            builder.CombineValues = this.CombineValues;
+            builder.DefaultSeriesName = metric.Title;
 
-            metricChart.SetChartDataItems( metricItems, metricName );
+            var dataSets = builder.GetTimeSeriesDatasets();
+            if ( !dataSets.Any() )
+            {
+                nbMetricWarning.Visible = true;
+                return;
+            }
 
-            nbMetricWarning.Visible = !metricItems.Any();
+            metricChart.SetChartDataItems( dataSets );
         }
     }
 }

@@ -29,8 +29,10 @@ export const Layout = {
     FullWidth: "5FEAF34C-7FB6-4A11-8A1E-C452EC7849BD",
     /** Gets the Full Width layout (Internal Site) */
     FullWidthInternalSite: "D65F783D-87A9-4CC9-8110-E83466A0EADB",
-    /** Gets the Left Sidebar layout (Internal Site) */
+    /** Gets the Left Sidebar layout (External Site) */
     LeftSidebar: "325B7BFD-8B80-44FD-A951-4E4763DA6C0D",
+    /** Gets the Left Sidebar layout (Internal Site) */
+    LeftSidebarInternalSite: "0cb60906-6b74-44fd-ab25-026050ef70eb",
     /** Gets the Person Detail layout (Internal Site) */
     PersonDetail: "F66758C6-3E3D-4598-AF4C-B317047B5987",
     /** The Person Profile Detail layout GUID (Internal Site) */

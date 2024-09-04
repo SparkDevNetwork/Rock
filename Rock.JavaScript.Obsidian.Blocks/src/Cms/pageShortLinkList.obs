@@ -1,0 +1,187 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Shortened Links"
+          :entityTypeGuid="EntityType.PageShortLink"
+          stickyHeader
+          liveUpdates
+          gridSettings
+          :gridSettingsActive="hasSettingsFilters"
+          :onGridSettingsClick="onGridSettingsClick"
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          :showLaunchWorkflow="false"
+          @selectItem="onSelectItem">
+
+        <TextColumn name="shortLink"
+                    title="Shortened URL"
+                    field="shortLink"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <TextColumn name="site"
+                    title="Site"
+                    field="site"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <TextColumn name="token"
+                    title="Token"
+                    field="token"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <ButtonColumn name="copy"
+                    iconClass="fa fa-clipboard"
+                    visiblePriority="xs"
+                    @click="onCopyClick" />
+
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+    </Grid>
+
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible"
+                       :siteItems="siteItems"/>
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { TextColumn, textValueFilter, DeleteColumn, ButtonColumn,  } from "@Obsidian/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { PageShortLinkListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkList/pageShortLinkListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { NavigationUrlKey, GridSettingsOptions, PreferenceKey } from "./PageShortLinkList/types.partial";
+    import { reactive, ref, computed, watch } from "vue";
+    import { IGridState } from "@Obsidian/Types/Controls/grid";
+    import GridSettingsModal from "./PageShortLinkList/gridSettingsModal.partial.obs";
+
+    const config = useConfigurationValues<ListBlockBox<PageShortLinkListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const isGridSettingsVisible = ref(false);
+    const siteItems = ref(config.options?.siteItems ?? []);
+    const gridSettings = ref<GridSettingsOptions>({
+        site: preferences.getValue(PreferenceKey.FilterSite),
+        token: preferences.getValue(PreferenceKey.FilterToken)
+    });
+
+    // #endregion
+
+    // #region Computed Values
+    /** `true` if the grid settings is performing any filtering. */
+    const hasSettingsFilters = computed((): boolean => {
+        return !!(gridSettings.value.site || gridSettings.value.token);
+    });
+
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+        }
+    }
+
+    /**
+     * Called when a row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete page short link.");
+        }
+    }
+
+    /**
+     * Called when the Add button has been clicked by the indivual.
+     */
+    function onAddItem(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
+        }
+    }
+
+    /**
+    * The function to copy a specific website link to the clipboard.
+    *
+    * @param key The key of the row whose link is to be copied.
+    * @param grid The grid state.
+    */
+    async function onCopyClick(key: string, grid: IGridState): Promise<void> {
+        const row = grid.rows.find(r => r.idKey === key);
+        if (row) {
+            const shortLink = row.shortLink;
+            await navigator.clipboard.writeText(shortLink as string);
+            alert("Short link copied to clipboard.");
+        }
+    }
+
+    /**
+     * Called when the grid settings icon is clicked, displays the block filters..
+     */
+    function onGridSettingsClick(): void {
+        isGridSettingsVisible.value = true;
+    }
+
+      /**
+    * Watch for changes to the grid settings and update the preferences as needed.
+    */
+    watch(gridSettings, async () => {
+        preferences.setValue(PreferenceKey.FilterSite, gridSettings.value.site ?? "");
+        preferences.setValue(PreferenceKey.FilterToken, gridSettings.value.token ?? "");
+
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
+    });
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>

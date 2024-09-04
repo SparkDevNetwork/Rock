@@ -194,7 +194,7 @@ namespace Rock.Blocks.Types.Mobile.Security
     [TextField( "Code Sent Screen Subtitle",
         Description = "The text to display at the top of the Code Sent screen underneath the title. <span class='tip tip-lava'></span>",
         IsRequired = true,
-        DefaultValue = "You should be recieving a verification code from us shortly. When it arrives type or paste it below.",
+        DefaultValue = "You should be receiving a verification code from us shortly. When it arrives type or paste it below.",
         Category = AttributeCategories.Titles,
         Key = AttributeKeys.CodeSentScreenSubtitle,
         Order = 3 )]
@@ -413,7 +413,7 @@ namespace Rock.Blocks.Types.Mobile.Security
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_SECURITY_ONBOARD_PERSON )]
-    [Rock.SystemGuid.BlockTypeGuid( "9544EE9E-07C2-4F14-9C93-3B16EBF0CC47")]
+    [Rock.SystemGuid.BlockTypeGuid( "9544EE9E-07C2-4F14-9C93-3B16EBF0CC47" )]
     public class OnboardPerson : RockBlockType
     {
         #region Block Attributes
@@ -1056,6 +1056,7 @@ namespace Rock.Blocks.Types.Mobile.Security
                     DoNotAttendCampusGuid = DoNotAttendCampusGuid,
                     CreateLoginVisibility = CreateLoginVisibility,
                     ScreenSettings = GetScreenSettings(),
+                    HideCampusIfKnown = HideCampusIfKnown,
                     HeaderXaml = null
                 };
             }
@@ -1241,9 +1242,23 @@ namespace Rock.Blocks.Types.Mobile.Security
         {
             int mobileNumberValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Id;
 
+            string providedName = null;
+
+            if( person != null )
+            {
+                if( person.NickName.IsNotNullOrWhiteSpace() )
+                {
+                    providedName = person.NickName;
+                }
+                else if( person.FirstName.IsNotNullOrWhiteSpace() )
+                {
+                    providedName = person.FirstName;
+                }
+            }
+
             return new OnboardDetails
             {
-                FirstName = person?.FirstName,
+                FirstName = providedName,
                 LastName = person?.LastName,
                 BirthDate = person?.BirthDate,
                 CampusGuid = person?.GetCampus()?.Guid,
@@ -1349,6 +1364,10 @@ namespace Rock.Blocks.Types.Mobile.Security
         /// <param name="rockContext">The rock context.</param>
         private void UpdateExistingPerson( Person person, OnboardDetails details, RockContext rockContext )
         {
+            // This method purposefully does not update the person's name.
+            // The OnboardDetails object could either contain the NickName
+            // or the FirstName in the FirstName property.
+
             // Update the BirthDate value if they provided one. The user
             // will always provide a year to this method.
             if ( details.BirthDate.HasValue )
@@ -1401,7 +1420,7 @@ namespace Rock.Blocks.Types.Mobile.Security
             person.Email = details.Email;
 
             var familyGroup = person.GetFamily( rockContext );
-            if ( familyGroup != null && details.CampusGuid.HasValue )
+            if ( familyGroup != null && details.CampusGuid.HasValue && details.CampusGuid != Guid.Empty )
             {
                 familyGroup.CampusId = CampusCache.Get( details.CampusGuid.Value ).Id;
             }
@@ -1786,6 +1805,11 @@ namespace Rock.Blocks.Types.Mobile.Security
                 // values now before we start creating the person.
                 if ( request.Details.UserName.IsNotNullOrWhiteSpace() )
                 {
+                    if ( !UserLoginService.IsUsernameValid( request.Details.UserName ) )
+                    {
+                        return ActionBadRequest( UserLoginService.FriendlyUsernameRules() );
+                    }
+
                     if ( !UserLoginService.IsPasswordValid( request.Details.Password ) )
                     {
                         return ActionBadRequest( UserLoginService.FriendlyPasswordRules() );
@@ -1809,9 +1833,21 @@ namespace Rock.Blocks.Types.Mobile.Security
                 // been changed then the record is no longer the same.
                 bool isSamePerson = person != null;
 
-                if ( isSamePerson && ( person.FirstName != request.Details.FirstName || person.LastName != request.Details.LastName ) )
+                if ( isSamePerson )
                 {
-                    isSamePerson = false;
+                    // We want to catch the edge case where the provided value
+                    // matches either the first name or the nickname. If it
+                    // doesn't match either then we can assume it's a different
+                    // person.
+                    if ( person.FirstName != request.Details.FirstName && person.NickName != request.Details.FirstName )
+                    {
+                        isSamePerson = false;
+                    }
+
+                    if( person.LastName != request.Details.LastName )
+                    {
+                        isSamePerson = false;
+                    }
                 }
 
                 if ( isSamePerson && person.Gender != Rock.Model.Gender.Unknown && person.Gender != ToWeb( request.Details.Gender ) )

@@ -29,6 +29,7 @@ using Rock.Lava;
 using Rock.Model;
 using Rock.Pdf;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -90,8 +91,6 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             nbEditModeMessage.Visible = false;
 
             if ( !Page.IsPostBack )
@@ -99,6 +98,8 @@ namespace RockWeb.Blocks.Core
                 LoadDropDowns();
                 ShowDetail( PageParameter( "SignatureDocumentTemplateId" ).AsInteger() );
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -177,6 +178,11 @@ namespace RockWeb.Blocks.Core
             signatureDocumentTemplate.LavaTemplate = ceESignatureLavaTemplate.Text;
             signatureDocumentTemplate.DocumentTerm = tbDocumentTerm.Text;
             signatureDocumentTemplate.IsActive = cbIsActive.Checked;
+            signatureDocumentTemplate.IsValidInFuture = cbValidInFuture.Checked;
+            if ( cbValidInFuture.Checked )
+            {
+                signatureDocumentTemplate.ValidityDurationInDays = nbValidDurationDays.IntegerValue;
+            }
 
             if ( !signatureDocumentTemplate.IsValid )
             {
@@ -309,6 +315,16 @@ namespace RockWeb.Blocks.Core
             rblSignatureType.SetValue( signatureDocumentTemplate.SignatureType.ConvertToInt() );
             tbDocumentTerm.Text = signatureDocumentTemplate.DocumentTerm;
             ddlCompletionSystemCommunication.SetValue( signatureDocumentTemplate.CompletionSystemCommunicationId );
+            cbValidInFuture.Checked = signatureDocumentTemplate.IsValidInFuture;
+
+            // If the Is Valid In Future is set to true, enable and make mandatory the NumberBox for Valid Duration Days.
+            if ( signatureDocumentTemplate.IsValidInFuture )
+            {
+                nbValidDurationDays.Enabled = true;
+                nbValidDurationDays.Visible = true;
+                nbValidDurationDays.Required = true;
+            }
+            nbValidDurationDays.IntegerValue = signatureDocumentTemplate.ValidityDurationInDays;
         }
 
         /// <summary>
@@ -432,7 +448,7 @@ namespace RockWeb.Blocks.Core
                 bool readOnly = false;
 
                 nbEditModeMessage.Text = string.Empty;
-                bool canEdit = UserCanEdit || signatureDocumentTemplate.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                bool canEdit = signatureDocumentTemplate.IsAuthorized( Authorization.EDIT, CurrentPerson );
                 bool canView = canEdit || signatureDocumentTemplate.IsAuthorized( Authorization.VIEW, CurrentPerson );
 
                 if ( !canView )
@@ -500,6 +516,28 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
+        /// Handles the CheckChanged event of the cbValidInFuture CheckBox Control
+        /// When the Checkbox is checked, we need to display the ValidDurationDays NumberBox and make it a required control
+        /// Otherwise, the NumberBox needs to be hidden.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void cbValidInFuture_CheckChanged( object sender, EventArgs e )
+        {
+            if ( cbValidInFuture.Checked )
+            {
+                nbValidDurationDays.Visible = true;
+                nbValidDurationDays.Enabled = true;
+                nbValidDurationDays.Required = true;
+            }
+            else
+            {
+                nbValidDurationDays.Visible = false;
+                nbValidDurationDays.Enabled = false;
+            }
+        }
+
+        /// <summary>
         /// Gets the PDF preview URL.
         /// </summary>
         /// <returns>System.String.</returns>
@@ -536,7 +574,7 @@ namespace RockWeb.Blocks.Core
                     rockContext.SaveChanges();
                 }
 
-                pdfPreviewUrl = string.Format( "{0}GetFile.ashx?guid={1}", System.Web.VirtualPathUtility.ToAbsolute( "~" ), binaryFile.Guid );
+                pdfPreviewUrl = FileUrlHelper.GetFileUrl( binaryFile.Guid );
 
             }
 

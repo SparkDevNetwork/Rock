@@ -31,7 +31,7 @@ namespace Rock.Field.Types
     /// Field used to save and display a text value
     /// </summary>
     [Serializable]
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.ENCRYPTED_TEXT )]
     public class EncryptedTextFieldType : TextFieldType
     {
@@ -46,16 +46,25 @@ namespace Rock.Field.Types
         #region Formatting
 
         /// <inheritdoc/>
-        public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
         {
-            if ( privateConfigurationValues != null &&
-                privateConfigurationValues.ContainsKey( IS_PASSWORD_KEY ) &&
-                privateConfigurationValues[IS_PASSWORD_KEY].AsBoolean() )
+            if ( configurationValues?.ContainsKey( IS_PASSWORD_KEY ) == true && configurationValues[IS_PASSWORD_KEY].AsBoolean() )
             {
                 return "********";
             }
 
-            return Encryption.DecryptString( privateValue );
+            return Encryption.DecryptString( value );
+        }
+
+        /// <inheritdoc/>
+        public override string GetCondensedTextValue( string value, Dictionary<string, string> configurationValues )
+        {
+            if ( configurationValues?.ContainsKey( IS_PASSWORD_KEY ) == true && configurationValues[IS_PASSWORD_KEY].AsBoolean() )
+            {
+                return "********";
+            }
+
+            return base.GetCondensedTextValue( Encryption.DecryptString( value ), configurationValues );
         }
 
         /// <summary>
@@ -73,6 +82,24 @@ namespace Rock.Field.Types
         #endregion
 
         #region Edit Control
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return Encryption.DecryptString( privateValue );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return Encryption.EncryptString( publicValue );
+        }
 
         #endregion
 

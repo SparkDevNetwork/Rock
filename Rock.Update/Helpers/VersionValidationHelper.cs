@@ -15,11 +15,12 @@
 // </copyright>
 
 using System;
+
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Update.Enum;
 using Rock.Update.Exceptions;
-using Rock.Utility.Settings;
 using Rock.Web.Cache;
 
 namespace Rock.Update.Helpers
@@ -63,6 +64,8 @@ namespace Rock.Update.Helpers
             public const int v2012 = 110;
         }
 
+        private const int dotNet472ReleaseNumber = 461808;
+
         /// <summary>
         /// Checks the .NET Framework version and returns Pass, Fail, or Unknown which can be
         /// used to determine if it's safe to proceed.
@@ -74,7 +77,15 @@ namespace Rock.Update.Helpers
             try
             {
                 // Once we get to 4.5 Microsoft recommends we test via the Registry...
-                result = RockUpdateHelper.CheckDotNetVersionFromRegistry();
+                // Check if Release is >= 461808 (4.7.2)
+                if ( HostingSettings.GetDotNetReleaseNumber() >= dotNet472ReleaseNumber )
+                {
+                    return DotNetVersionCheckResult.Pass;
+                }
+                else
+                {
+                    return DotNetVersionCheckResult.Fail;
+                }
             }
             catch
             {
@@ -105,39 +116,6 @@ namespace Rock.Update.Helpers
             }
 
             return true;
-        }
-
-        /// <summary>
-        /// Checks the SQL server version and returns false if not at the needed
-        /// level to proceed.
-        /// </summary>
-        /// <returns></returns>
-        [Obsolete( "No longer required after successful update to v1.11.0" )]
-        [RockObsolete( "1.11.1" )]
-        public static bool CheckSqlServerVersionGreaterThenSqlServer2012()
-        {
-            var isOk = false;
-            var sqlVersion = string.Empty;
-
-            try
-            {
-                sqlVersion = DbService.ExecuteScaler( "SELECT SERVERPROPERTY('productversion')" ).ToString();
-                var versionParts = sqlVersion.Split( '.' );
-
-                int.TryParse( versionParts[0], out var majorVersion );
-
-                if ( majorVersion > 11 )
-                {
-                    isOk = true;
-                }
-            }
-            catch
-            {
-                // This would be pretty bad, but regardless we'll just
-                // return the isOk (not) and let the caller proceed.
-            }
-
-            return isOk;
         }
 
         /// <summary>
@@ -177,7 +155,7 @@ namespace Rock.Update.Helpers
             }
 
             var isTargetVersionGreaterThan16 = targetVersion.Major > 1 || targetVersion.Minor > 16;
-            if ( isTargetVersionGreaterThan16 && RockInstanceConfig.LavaEngineName != "Fluid" )
+            if ( isTargetVersionGreaterThan16 && RockApp.Current.GetCurrentLavaEngineName() != "Fluid" )
             {
                 throw new VersionValidationException( $"Version {targetVersion} requires the 'Fluid' Lava Engine Liquid Framework." );
             }
@@ -200,7 +178,9 @@ namespace Rock.Update.Helpers
         /// <returns></returns>
         public static bool CheckSqlServerCompatibilityLevel( int compatibiltyLevel )
         {
-            var isOk = RockInstanceConfig.Database.CompatibilityLevel >= compatibiltyLevel;
+            var database = RockApp.Current.GetDatabaseConfiguration();
+
+            var isOk = database.CompatibilityLevel >= compatibiltyLevel;
             return isOk;
         }
     }

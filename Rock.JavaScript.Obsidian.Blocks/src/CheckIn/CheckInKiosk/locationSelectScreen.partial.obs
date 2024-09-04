@@ -1,0 +1,112 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="location-select-screen">
+        <MainPanel :title="title"
+                   :subtitle="subtitle"
+                   :person="session.getCurrentAttendee()?.person">
+            <div class="button-list">
+                <RockButton v-for="location in locations"
+                            btnType="primary"
+                            class="location-button"
+                            :disabled="isProcessing"
+                            @click="onLocationClick(location)">
+                    {{ location.name }}
+                </RockButton>
+            </div>
+        </MainPanel>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import MainPanel from "./mainPanel.partial.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { computed, onBeforeUnmount, PropType, ref } from "vue";
+    import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
+    import { CancellationTokenSource } from "@Obsidian/Utility/cancellation";
+    import { CheckInSession } from "./checkInSession.partial";
+    import { alert, UnexpectedErrorMessage } from "./utils.partial";
+    import { KioskButton } from "./types.partial";
+    import { LocationOpportunityBag } from "@Obsidian/ViewModels/CheckIn/locationOpportunityBag";
+
+    const props = defineProps({
+        configuration: {
+            type: Object as PropType<KioskConfigurationBag>,
+            required: true
+        },
+
+        session: {
+            type: Object as PropType<CheckInSession>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (event: "next", session: CheckInSession): void;
+        (event: "updateActions", actions: KioskButton[]): void;
+    }>();
+
+    // #region Values
+
+    const isProcessing = ref(false);
+    const cancellationTokenSource = new CancellationTokenSource();
+
+    // #endregion
+
+    // #region Computed Values
+
+    const title = computed((): string => {
+        return props.session.appendScheduleName(props.session.selectedGroup?.name ?? "Location");
+    });
+
+    const subtitle = computed((): string => {
+        return `Select the location you would like to check ${props.session.getCurrentAttendee()?.person?.nickName} into`;
+    });
+
+    const locations = computed((): LocationOpportunityBag[] => {
+        return props.session.getAvailableLocations();
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Update the actions supported by this screen.
+     */
+    function updateActions(): void {
+        const actions: KioskButton[] = [];
+
+        emit("updateActions", actions);
+    }
+
+    /**
+     * Handles the click event for an location button.
+     *
+     * @param location The location that was selected.
+     */
+    async function onLocationClick(location: LocationOpportunityBag): Promise<void> {
+        if (!location.id) {
+            return;
+        }
+
+        try {
+            isProcessing.value = true;
+
+            const newSession = props.session.withSelectedLocation(location.id);
+
+            emit("next", await newSession.withNextScreen());
+        }
+        catch (error) {
+            await alert(error instanceof Error ? error.message : UnexpectedErrorMessage, cancellationTokenSource.token);
+        }
+        finally {
+            isProcessing.value = false;
+        }
+    }
+
+    // #endregion
+
+    onBeforeUnmount(() => cancellationTokenSource.cancel());
+
+    updateActions();
+</script>

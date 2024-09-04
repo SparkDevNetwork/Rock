@@ -23,6 +23,10 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Cms.AdaptiveMessageDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="Rock.ViewModels.Utility.EntityBagBase" />
     public class AdaptiveMessageBag : EntityBagBase
     {
         /// <summary>

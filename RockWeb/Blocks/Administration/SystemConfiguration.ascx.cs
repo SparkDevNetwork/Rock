@@ -102,14 +102,14 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 ShowDetails();
             }
 
             lTitle.Text = ( "Edit System Configuration" ).FormatAsHtmlTitle();
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -280,6 +280,12 @@ namespace RockWeb.Blocks.Administration
             urlObservabilityEndpoint.Text = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT );
 
             kvlEndpointHeaders.Value = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT_HEADERS );
+
+            nbObservabilitySpanCountLimit.IntegerValue = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_SPAN_COUNT_LIMIT ).AsIntegerOrNull();
+
+            nbObservabilityMaxAttributeLength.IntegerValue = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_MAX_ATTRIBUTE_LENGTH ).AsIntegerOrNull();
+
+            cbObservabilityIncludeQueryStatements.Checked = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_INCLUDE_QUERY_STATEMENTS ).AsBoolean();
 
             vlTargetedQueries.Value = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_TARGETED_QUERIES );
         }
@@ -561,6 +567,9 @@ namespace RockWeb.Blocks.Administration
             Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_ENDPOINT_PROTOCOL, ddlEndpointProtocol.SelectedValue );
             Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_ENDPOINT_HEADERS, kvlEndpointHeaders.Value );
             Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_ENDPOINT, urlObservabilityEndpoint.Text );
+            Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_SPAN_COUNT_LIMIT, nbObservabilitySpanCountLimit.Text );
+            Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_MAX_ATTRIBUTE_LENGTH, nbObservabilityMaxAttributeLength.Text );
+            Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_INCLUDE_QUERY_STATEMENTS, cbObservabilityIncludeQueryStatements.Checked.ToString() );
             Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_TARGETED_QUERIES, vlTargetedQueries.Value );
 
             nbObservabilityMessages.NotificationBoxType = NotificationBoxType.Success;

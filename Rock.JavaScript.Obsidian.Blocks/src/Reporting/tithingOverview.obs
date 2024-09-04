@@ -1,0 +1,526 @@
+<template>
+    <div class="tithing-overview">
+        <NotificationBox v-if="!config.hasData" alertType="info">There are no computed tithing metrics available.</NotificationBox>
+        <Panel v-else title="Tithing Overview By Campus" type="block">
+            <template #headerActions>
+                <div class="control-wrapper mr-3">
+                    <div class="toggle-container">
+                        <div class="btn-group btn-toggle btn-group-sm">
+                            <RockButton :class="isToggled ? onButtonSelectedClasses : unselectedClasses" @click="onChartTypeClick(ChartTypeKey.BarChart)">
+                                <i class="icon-fw fa fa-chart-bar"></i>
+                            </RockButton>
+                            <RockButton :class="isToggled ? unselectedClasses : offButtonSelectedClasses" @click="onChartTypeClick(ChartTypeKey.LineChart)">
+                                <i class="icon-fw fa fa-chart-area"></i>
+                            </RockButton>
+                        </div>
+                    </div>
+                </div>
+            </template>
+            <template #default>
+                <div class="chart-container" style="height: 500px; width: 98%;">
+                    <canvas ref="canvasElement"></canvas>
+                </div>
+            </template>
+        </Panel>
+    </div>
+</template>
+<style scoped>
+.tithing-overview :deep(.panel-heading) {
+    background-color: var(--theme-white)
+}
+</style>
+<script setup lang="ts">
+    import { computed, onMounted, ref, shallowRef } from "vue";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { ChartData, ChartOptions, ChartEvent, LegendElement, LegendItem, Chart, ChartType, ChartTypeRegistry, ChartConfiguration, AnnotationPluginOptions } from "@Obsidian/Libs/chart";
+    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
+    import { TithingOverviewInitializationBox } from "@Obsidian/ViewModels/Blocks/Reporting/TithingOverview/tithingOverviewInitializationBox";
+    import { ChartTypeValue, ChartTypeKey, CampusAgeRangeKey } from "./TithingOverview/types.partial";
+    import { TithingOverviewToolTipBag } from "@Obsidian/ViewModels/Blocks/Reporting/TithingOverview/tithingOverviewToolTipBag";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
+
+    declare module "@Obsidian/Libs/chart" {
+        // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-unused-vars
+        interface PluginOptionsByType<TType extends ChartType = ChartType> {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            annotation: AnnotationPluginOptions;
+        }
+    }
+
+    const config = useConfigurationValues<TithingOverviewInitializationBox>();
+
+    // #region Values
+
+    const chartData = ref<ChartData<keyof ChartTypeRegistry, number[]>>(JSON.parse(config.chartDataJson || "{}"));
+    const chartType = ref<ChartTypeValue>(config.chartType as ChartTypeValue);
+    const toolTipData = ref(config.toolTipData ?? {});
+    const legendLabelColorMap = ref(config.legendData ?? {
+        "0-2 yrs": "#BAE6FD",
+        "3-6 yrs": "#38BDF8",
+        "7-11 yrs": "#0284C7",
+        "11+": "#075985",
+        "Unknown": "#A3A3A3",
+    });
+
+    const canvasElement = shallowRef<HTMLCanvasElement | null>(null);
+    let chart: Chart<keyof ChartTypeRegistry, number[]> | null = null;
+
+    const options = ref<ChartOptions>({
+        responsive: true,
+        maintainAspectRatio: false,
+        datasets: {
+            bar: {
+                barPercentage: 0.4,
+                categoryPercentage: 1
+            },
+            line: {
+                fill: false,
+            }
+        },
+        animation: {
+            duration: 1000
+        },
+        plugins: {
+            legend: {
+                position: "bottom",
+                align: "start",
+                display: true,
+                title: {
+                    display: true,
+                    color: "black",
+                    text: "Campus Age",
+                    position: "start",
+                    font: {
+                        size: 14
+                    }
+                },
+                labels: {
+                    generateLabels: generateLegendLabels
+                }
+            },
+            tooltip: {
+                enabled: false,
+                external: createToolTip,
+            },
+            annotation: {
+                annotations: {
+                    averageAnnotation: {
+                        type: "line",
+                        borderColor: "gray",
+                        borderDash: [6, 6],
+                        borderDashOffset: 0,
+                        borderWidth: 3,
+                        scaleID: "y",
+                        value: (ctx) => average(ctx),
+                        drawTime: "beforeDatasetsDraw",
+                        label: {
+                            content: (ctx, _options) => `Avg: ${average(ctx)}%`,
+                            position: "start"
+                        },
+                        enter({ element }, _event) {
+                            if (element?.label?.options) {
+                                element.label.options.display = true;
+                                return true;
+                            }
+
+                            return false;
+                        },
+                        leave({ element }, _event) {
+                            if (element?.label?.options) {
+                                element.label.options.display = false;
+                                return true;
+                            }
+                            return false;
+                        }
+                    }
+                }
+            }
+        },
+        scales: {
+            y: {
+                ticks: {
+                    callback: function (label, _index, _labels) {
+                        const number = Number(label);
+                        if (number) {
+                            return Intl.NumberFormat().format(number);
+                        }
+                        else {
+                            return label;
+                        }
+                    },
+                    stepSize: 1
+                },
+                stacked: false,
+                beginAtZero: true,
+
+                title: {
+                    display: true,
+                    text: "Tithing Households (%)"
+                }
+            },
+            x: {
+                ticks: {
+                    callback: function (val, _index, _labels) {
+                        const numberValue = val as number;
+                        const label = this.getLabelForValue(numberValue);
+                        if (chartType.value === ChartTypeKey.LineChart) {
+                            if (isValidDate(label)) {
+                                // If we're still in current month, do not display the label.
+                                const previousLabel = this.getLabelForValue(numberValue - 1);
+                                var currentLabelMonth = new Date(label).toLocaleString("default", { month: "short" });
+                                var previousLabelMonth = new Date(previousLabel).toLocaleString("default", { month: "short" });
+                                return currentLabelMonth === previousLabelMonth ? "" : currentLabelMonth;
+                            }
+                            else {
+                                return label;
+                            }
+                        }
+                        else {
+                            return label;
+                        }
+                    },
+                    showLabelBackdrop: true,
+                    font: {
+                        size: 16,
+                        weight: "bold"
+                    }
+                }
+            }
+        }
+    });
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const selectedClasses = "active btn btn-default";
+    const unselectedClasses = "btn btn-default";
+    const onButtonSelectedClasses = `${selectedClasses}`;
+    const offButtonSelectedClasses = `${selectedClasses}`;
+
+    // #endregion
+
+    // #region Computed Values
+
+    const isToggled = computed((): boolean => {
+        return chartType.value == ChartTypeKey.BarChart;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Switches the Chart Type from Bar to Line based on the selected button.
+     * @param selectedChartType
+     */
+    async function onChartTypeClick(selectedChartType: ChartTypeValue): Promise<void> {
+        if (chartType.value !== selectedChartType) {
+            const result = await invokeBlockAction<TithingOverviewInitializationBox>("ChartData", {
+                chartType: selectedChartType
+            });
+
+            if (!chart) {
+                return;
+            }
+
+            if (result.isSuccess && result.data && canvasElement.value) {
+                chartData.value = JSON.parse(result.data.chartDataJson || "{}") as ChartData<keyof ChartTypeRegistry, number[]>;
+                chartType.value = selectedChartType;
+                toolTipData.value = result.data.toolTipData ?? {};
+
+                // Since Chart Type has changes we recreate the chart.
+                chart.destroy();
+                chart = new Chart(canvasElement.value, getChartConfig());
+            }
+            else {
+                chartData.value = {} as ChartData<keyof ChartTypeRegistry, number[]>;
+                chartType.value = selectedChartType;
+
+                chart.data = chartData.value;
+                chart.options = options.value;
+                chart.update();
+            }
+        }
+    }
+
+    /**
+     * Creates the tool tip html element for the chart data points.
+     * @param context The tool tip context.
+     */
+    function createToolTip(context): void {
+
+        // Tooltip Element
+        let tooltipEl = document.getElementById("chartjs-tooltip");
+
+        // Create element on first render
+        if (!tooltipEl) {
+            tooltipEl = document.createElement("div");
+            tooltipEl.id = "chartjs-tooltip";
+            tooltipEl.innerHTML = "<table></table>";
+            document.body.appendChild(tooltipEl);
+        }
+
+        // Hide if no tooltip
+        const tooltipModel = context.tooltip;
+
+        if (tooltipModel.opacity === 0) {
+            tooltipEl.style.opacity = "0";
+            return;
+        }
+
+        tooltipEl.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
+        tooltipEl.style.borderRadius = "10px";
+        tooltipEl.style.padding = "20px";
+        tooltipEl.style.color = "white";
+        // Set caret Position
+        tooltipEl.classList.remove("above", "below", "no-transform");
+        if (tooltipModel.yAlign) {
+            tooltipEl.classList.add(tooltipModel.yAlign);
+        }
+        else {
+            tooltipEl.classList.add("no-transform");
+        }
+
+        // Set Text
+        if (tooltipModel.body) {
+            const dataPoint = tooltipModel.dataPoints[0];
+            const label = chartType.value == ChartTypeKey.BarChart ? dataPoint?.label ?? "" : dataPoint?.dataset?.label ?? "";
+
+            let innerHtml = "";
+            if (config.toolTipData) {
+                const toolTipInfo = toolTipData.value[label];
+                innerHtml += `<thead><tr><th>${toolTipInfo.campus}</th></tr></thead><tbody>`;
+
+                if (chartType.value == ChartTypeKey.BarChart) {
+                    const titheMetric = toolTipInfo.titheMetric ? `${toCurrencyOrNull(toolTipInfo.titheMetric, toolTipInfo.currencyInfo)}` : "N/A";
+                    innerHtml += `<tr><td><span style="border-width: 2px">Tithe Metric : ${titheMetric}</span></td><tr>`;
+                    innerHtml += `<tr><td><span style="border-width: 2px">Campus Age : ${formatAge(toolTipInfo.campusOpenedDate, toolTipInfo.campusClosedDate)}</span></td><tr>`;
+                    innerHtml += `<tr><td><span style="border-width: 2px">Giving Households : ${toolTipInfo.givingHouseHolds}</span></td><tr>`;
+                    innerHtml += `<tr><td><span style="border-width: 2px">Tithing Households : ${toolTipInfo.tithingHouseHolds} | ${toolTipInfo.value}%</span></td><tr>`;
+                }
+                else {
+                    innerHtml += `<tr><td><span style="border-width: 2px">Tithe Metric : ${dataPoint?.label} - ${dataPoint?.formattedValue}%</span></td><tr>`;
+                }
+
+                innerHtml += "</tbody>";
+            }
+
+            let tableRoot = tooltipEl.querySelector("table");
+            if (tableRoot) {
+                tableRoot.innerHTML = innerHtml;
+            }
+        }
+
+        const position = context.chart.canvas.getBoundingClientRect();
+
+        // Display, position, and set styles for font
+        tooltipEl.style.opacity = "1";
+        tooltipEl.style.position = "absolute";
+        tooltipEl.style.left = position.left + window.pageXOffset + tooltipModel.caretX + "px";
+        tooltipEl.style.top = position.top + window.pageYOffset + tooltipModel.caretY + "px";
+        tooltipEl.style.pointerEvents = "none";
+    }
+
+    /**
+     * Generates legend Items based on the Chart Type, in Bar mode campus age ranges are used as legend items,
+     * in Line mode the Campuses are used as legend items.
+     * @param chart
+     */
+    function generateLegendLabels(chart: Chart): LegendItem[] {
+        let legendItems = [] as LegendItem[];
+
+        if (chartType.value == ChartTypeKey.BarChart) {
+            for (const label in legendLabelColorMap.value) {
+                let legendItem = {
+                    text: label,
+                    fillStyle: legendLabelColorMap.value[label],
+                    lineWidth: 0
+                } as LegendItem;
+
+                legendItems.push(legendItem);
+            }
+        }
+        else {
+            const datasets = chart.data.datasets ?? [];
+
+            for (const dataset of datasets) {
+                let legendItem = {
+                    text: dataset.label ?? "Unknown",
+                    fillStyle: dataset.borderColor,
+                    datasetIndex: datasets.indexOf(dataset),
+                    lineWidth: 0
+                } as LegendItem;
+
+                legendItems.push(legendItem);
+            }
+        }
+
+        return legendItems;
+    }
+
+    /**
+     * Handles the legend click event by toggling the visibility of bars/lines in the chart that match the selected legend.
+     * @param e The ChartEvent
+     * @param legendItem The selected LegendItem
+     * @param legend The LegendElement
+     */
+    function legendClickHandler(e: ChartEvent, legendItem: LegendItem, legend: LegendElement<ChartType>): void {
+        const chart = legend.chart as Chart;
+        const labels = chart.data.labels as string[];
+        const legendLabel = legendItem.text as CampusAgeRangeKey;
+
+        if (chartType.value === ChartTypeKey.BarChart) {
+            // Filter datasets based on campus age range
+            for (const key in toolTipData.value) {
+                const data = toolTipData.value[key] as TithingOverviewToolTipBag;
+                const campusAge = data.campusAge;
+                const index = labels.findIndex(d => d === data.campus || d === data.campusShortCode);
+                // The legendLabel in bar mode is a range of ages, if the campus's age falls within the selected range
+                // select that dataset for hiding.
+                if (campusAgeInRange(campusAge, legendLabel) || data.campusShortCode === legendLabel || data.campus === legendLabel) {
+                    if (chart.isDatasetVisible(index)) {
+                        chart.hide(index);
+                        legendItem.hidden = true;
+                    }
+                    else {
+                        chart.show(index);
+                        legendItem.hidden = false;
+                    }
+                }
+            }
+        }
+        else {
+            // For line charts, directly filter by label
+            const datasets = chart.data.datasets;
+            const index = datasets.findIndex(d => d.label === legendLabel);
+            if (chart.isDatasetVisible(index)) {
+                chart.hide(index);
+                legendItem.hidden = true;
+            }
+            else {
+                chart.show(index);
+                legendItem.hidden = false;
+            }
+        }
+    }
+
+    /**
+     * Checks if the campus age is within the specified range.
+     */
+    function campusAgeInRange(age: number | null | undefined, range: CampusAgeRangeKey): boolean {
+
+        if (age == null || age == undefined) {
+            return range == CampusAgeRangeKey.Unknown ? true : false;
+        }
+
+        switch (range) {
+            case CampusAgeRangeKey.ZeroToTwo:
+                return age >= 0 && age <= 2;
+            case CampusAgeRangeKey.ThreeToSix:
+                return age >= 3 && age <= 6;
+            case CampusAgeRangeKey.SevenToEleven:
+                return age >= 7 && age <= 11;
+            case CampusAgeRangeKey.ElevenPlus:
+                return age >= 11;
+            case CampusAgeRangeKey.Unknown:
+                return age == null || age == undefined;
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Creates a readble text version of the campus age in years.
+     * @param age
+     */
+    function formatAge(openedDate: string | null | undefined, closedDate: string | null | undefined): string {
+
+        if (!openedDate) {
+            return "Unknown";
+        }
+
+        const startDate = RockDateTime.parseISO(openedDate);
+        const endDate = !closedDate ? RockDateTime.now() : RockDateTime.parseISO(closedDate) ?? RockDateTime.now();
+
+        if (!startDate) {
+            return "Unknown";
+        }
+
+        const diffInMilliseconds = Math.abs(endDate.toMilliseconds() - startDate.toMilliseconds());
+        const diffInSeconds = diffInMilliseconds / 1000;
+        const diffInMinutes = diffInSeconds / 60;
+        const diffInHours = diffInMinutes / 60;
+        const diffInDays = diffInHours / 24;
+        const diffInWeeks = diffInDays / 7;
+        const diffInMonths = diffInDays / 30;
+        const diffInYears = diffInDays / 365;
+
+        if (diffInDays < 7) {
+            return `${Math.floor(diffInDays)} days`;
+        }
+        else if (diffInDays < 30) {
+            return `${Math.floor(diffInWeeks)} weeks`;
+        }
+        else if (diffInDays < 365) {
+            return `${Math.floor(diffInMonths)} months`;
+        }
+        else {
+            return `${Math.floor(diffInYears)} years`;
+        }
+    }
+
+    /**
+    * Gets the configuration data that will be used to draw the chart.
+    *
+    * @returns The chart configuration data that can be passed to Chart.JS.
+    */
+    function getChartConfig(): ChartConfiguration<keyof ChartTypeRegistry, number[]> {
+
+        if (options.value.plugins?.legend?.title) {
+            options.value.plugins.legend.title.text = chartType.value == ChartTypeKey.BarChart ? "Campus Age" : "Campus";
+        }
+
+        const config: ChartConfiguration<keyof ChartTypeRegistry, number[]> = {
+            type: chartType.value,
+            data: chartData.value,
+            options: options.value
+        };
+
+        return config;
+    }
+
+    /**
+     * Calculates the average value of the charts datasets.
+     * @param ctx The Chart context
+     */
+    function average(ctx): string {
+        const values = ctx.chart.data.datasets[0].data;
+        const average = Math.round(values.reduce((a, b) => a + b, 0)) / values.length;
+        return average.toFixed(2);
+    }
+
+    /**
+     * Checks if the string is a valid date string.
+     * @param dateString the date string
+     */
+    function isValidDate(dateString: string): boolean {
+        const timestamp = Date.parse(dateString);
+        return !isNaN(timestamp);
+    }
+
+    // #endregion
+
+    onMounted(() => {
+        if (!canvasElement.value) {
+            return;
+        }
+
+        chart = new Chart(canvasElement.value, getChartConfig());
+    });
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+</script>

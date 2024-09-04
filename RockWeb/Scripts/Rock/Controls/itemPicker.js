@@ -76,6 +76,76 @@
                     treeOptions.expandedCategoryIds = $hfExpandedCategoryIds.val().split(',');
                 }
 
+                if (this.options.universalItemPicker) {
+                    function mapUniversalItems(data) {
+                        return data.map(item => {
+                            const treeItem = {
+                                id: item.value,
+                                name: item.text,
+                                iconCssClass: item.iconCssClass,
+                                hasChildren: item.hasChildren,
+                                isCategory: false,
+                                isSelectionDisabled: item.isSelectionDisabled,
+                                childrenUrl: item.childrenUrl
+                            };
+
+                            if (Array.isArray(item.children)) {
+                                treeItem.children = mapUniversalItems(item.children);
+                            }
+
+                            return treeItem;
+                        });
+                    }
+
+                    treeOptions.universalItemPicker = true;
+                    treeOptions.expandedIds = (treeOptions.expandedIds || []).filter(id => id !== 0);
+
+                    treeOptions.getNodes = (parentId, parentNode, selectedIds, toExpandIds) => {
+                        const req = {
+                        };
+
+                        if (!parentId) {
+                            req.expandToValues = (selectedIds || []).filter(a => a !== "0");
+                        }
+                        else {
+                            req.parentValue = parentId;
+                        }
+
+                        return $.ajax({
+                            method: 'POST',
+                            data: JSON.stringify(req),
+                            url: treeOptions.restUrl,
+                            dataType: 'json',
+                            contentType: 'application/json'
+                        })
+                            .then(data => {
+                                function checkItemsForExpansion(items, path) {
+                                    for (let i = 0; i < items.length; i++) {
+                                        if (selectedIds.some(id => id === items[i].value)) {
+                                            for (let p = 0; p < path.length; p++) {
+                                                if (!toExpandIds.includes(path[p])) {
+                                                    toExpandIds.push(path[p]);
+                                                }
+                                            }
+                                        }
+
+                                        if (Array.isArray(items[i].children)) {
+                                            checkItemsForExpansion(items[i].children, [...path, items[i].value]);
+                                        }
+                                    }
+                                }
+
+                                checkItemsForExpansion(data, []);
+
+                                return data;
+                            });
+                    };
+
+                    treeOptions.mapping = {
+                        mapData: mapUniversalItems
+                    };
+                }
+
                 $tree.rockTree(treeOptions);
                 this.updateScrollbar();
             },
@@ -248,6 +318,7 @@
             defaults: {
                 id: 0,
                 controlId: null,
+                universalItemPicker: false,
                 restUrl: null,
                 restParams: null,
                 allowCategorySelection: false,

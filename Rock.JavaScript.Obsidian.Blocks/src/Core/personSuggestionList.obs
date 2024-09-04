@@ -1,0 +1,252 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          personKeyField="personIdKey"
+          title="Your Following Suggestions"
+          itemTerm="Following Suggestion"
+          :showCommunicate="true"
+          :showPersonMerge="true"
+          :showBulkUpdate="true"
+          :showLaunchWorkflow="false"
+          :entityTypeGuid="EntityType.FollowingSuggested"
+          stickyHeader
+          liveUpdates
+          gridSettings
+          :gridSettingsActive="hasSettingsFilters"
+          @gridSettingsClick="isGridSettingsVisible = true"
+          @selectedKeysChanged="onSelectedKeysChanged">
+        <SelectColumn />
+
+        <PersonColumn name="person"
+                      title="Name"
+                      field="person"
+                      :showAsLink="true"
+                      :hideAvatar="true"
+                      :filter="pickExistingValueFilter"
+                      :filterValue="getPersonRowValue"
+                      visiblePriority="xs"
+                      width="20%"/>
+
+        <DateColumn name="lastPromotedDateTime"
+                    title="Last Suggested"
+                    field="lastPromotedDateTime"
+                    :filter="dateValueFilter"
+                    visiblePriority="md"
+                    itemClass="grid-item-pull-left"
+                    width="170" />
+
+        <TextColumn name="reasonNote"
+                    title="Reason"
+                    field="reasonNote"
+                    :filter="textValueFilter"
+                    visiblePriority="xs"
+                    width="5%"/>
+
+        <Column name="status"
+                title="Status"
+                field="status"
+                :filter="pickExistingValueFilter"
+                :filterValue="getStatusRowFilterValue"
+                visiblePriority="xs">
+            <template #format="{ row }">
+                <div v-html="getStatusLabel(row.status)" />
+            </template>
+        </Column>
+
+        <DateTimeColumn name="statusChangedDateTime"
+                        title="Status Changed"
+                        field="statusChangedDateTime"
+                        :filter="dateValueFilter"
+                        visiblePriority="md"
+                        itemClass="grid-item-pull-left"
+                        width="200"/>
+
+        <template #gridFooterAppend>
+            <div class="d-flex" style="padding: var(--table-cell-padding-y) var(--table-cell-padding-x) var(--table-cell-padding-y) var(--table-cell-padding-x);">
+                <RockButton @click="onFollowClick" :btnType="BtnType.Primary" :btnSize="BtnSize.Small" class="mr-2">
+                    <i class='fa fa-flag'></i> Follow
+                </RockButton>
+
+                <RockButton @click="onIgnoreClick" :btnSize="BtnSize.Small">
+                    <i class='fa fa-flag-o'></i> Ignore
+                </RockButton>
+            </div>
+        </template>
+    </Grid>
+
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible" />
+</template>
+
+<style>
+.grid-item-pull-left {
+    flex-direction: column;
+    align-items: end;
+}
+</style>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { PersonColumn, pickExistingValueFilter, dateValueFilter, textValueFilter, SelectColumn, DateColumn, TextColumn, Column, DateTimeColumn } from "@Obsidian/Controls/grid";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { confirm } from "@Obsidian/Utility/dialogs";
+    import { PersonSuggestionListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/PersonSuggestionList/personSuggestionListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { FollowingSuggestedStatus, FollowingSuggestedStatusDescription } from "@Obsidian/Enums/Core/followingSuggestedStatus";
+    import { computed, reactive, ref, watch } from "vue";
+    import { IGridState } from "@Obsidian/Types/Controls/grid";
+    import { Guid } from "@Obsidian/Types";
+    import { PreferenceKey, GridSettingsOptions } from "./PersonSuggestionList/types.partial";
+    import GridSettingsModal from "./PersonSuggestionList/gridSettingsModal.partial.obs";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+
+    const config = useConfigurationValues<ListBlockBox<PersonSuggestionListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+    const selectedKeys = ref<string[]>([]);
+
+    const isGridSettingsVisible = ref(false);
+    const gridSettings = ref<GridSettingsOptions>({
+        includeIgnored: preferences.getValue(PreferenceKey.FilterIncludeIgnored)
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** `true` if the grid settings is performing any filtering. */
+    const hasSettingsFilters = computed((): boolean => {
+        return !!gridSettings.value.includeIgnored;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    function getStatusRowFilterValue(row: Record<string, unknown>): string {
+        const status = row["status"] as number;
+        return FollowingSuggestedStatusDescription[status];
+    }
+
+    function getPersonRowValue(row: Record<string, unknown>): string {
+        const person = row["person"] as PersonFieldBag;
+        return `${person?.nickName} ${person.lastName}`;
+    }
+
+    function getStatusLabel(status: number): string {
+        return status == FollowingSuggestedStatus.Ignored ? "<span class='label label-warning'>Ignored</span>" : "<span class='label label-success'>Suggested</span>";
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+    * Called when the individual changes which rows are selected.
+    *
+    * @param state The state object that describes the grid.
+    */
+    function onSelectedKeysChanged(state: IGridState): void {
+        selectedKeys.value = [...state.selectedKeys];
+    }
+
+    /**
+     * Called when the individual clicks the Ignore button, sends a request to the server
+     * with the selected suggestions(s) to be ignored.
+     */
+    async function onIgnoreClick(): Promise<void> {
+        let selectedGuids: string[] = [];
+        if (selectedKeys.value.length > 0) {
+
+            const confirmed = await confirm("Are you sure you want to ignore the selected people?");
+
+            if (!confirmed) {
+                return;
+            }
+
+            for (const key of selectedKeys.value) {
+                const row = gridData?.rows?.find(r => r.idKey === key);
+                if (row) {
+                    const guid = row["guid"] as Guid;
+                    selectedGuids.push(guid);
+                }
+            }
+
+            if (selectedGuids.length > 0) {
+                const result = await invokeBlockAction("Ignore", {
+                    selectedItems: selectedGuids
+                });
+
+                if (result.isSuccess) {
+                    gridDataSource.value = loadGridData();
+                }
+            }
+        }
+    }
+
+    /**
+    * Called when the individual clicks the Follow button, sends a request to the server
+    * with the selected person(s) to be followed.
+    */
+    async function onFollowClick(): Promise<void> {
+        let selectedGuids: string[] = [];
+        if (selectedKeys.value.length > 0) {
+
+            for (const key of selectedKeys.value) {
+                const row = gridData?.rows?.find(r => r.idKey === key);
+                if (row) {
+                    const guid = row["guid"] as Guid;
+                    selectedGuids.push(guid);
+                }
+            }
+
+            if (selectedGuids.length > 0) {
+                const result = await invokeBlockAction("Follow", {
+                    selectedItems: selectedGuids
+                });
+
+                if (result.isSuccess) {
+                    gridDataSource.value = loadGridData();
+                }
+            }
+        }
+    }
+
+    // #endregion
+
+    watch(gridSettings, async () => {
+        preferences.setValue(PreferenceKey.FilterIncludeIgnored, gridSettings.value.includeIgnored ?? "");
+
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
+    });
+
+    gridDataSource.value = loadGridData();
+</script>

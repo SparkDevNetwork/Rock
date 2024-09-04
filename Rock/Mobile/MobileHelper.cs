@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using System.Web;
 
 using Rock.Attribute;
@@ -29,6 +30,7 @@ using Rock.DownhillCss;
 using Rock.Mobile.JsonFields;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 using Authorization = Rock.Security.Authorization;
@@ -188,12 +190,14 @@ namespace Rock.Mobile
                 HomeAddress = GetMobileAddress( person.GetHomeLocation() ),
                 CampusGuid = person.GetCampus()?.Guid,
                 PersonAliasId = person.PrimaryAliasId.Value,
+                PersonAliasGuid = person.PrimaryAlias.Guid,
                 PhotoUrl = ( person.PhotoId.HasValue ? $"{baseUrl}{person.PhotoUrl}" : null ),
                 SecurityGroupGuids = roleGuids,
                 PersonalizationSegmentGuids = new List<Guid>(),
                 PersonGuid = person.Guid,
                 PersonId = person.Id,
                 AlternateId = alternateId,
+                IdKey = person.IdKey,
                 AttributeValues = GetMobileAttributeValues( person, personAttributes )
             };
         }
@@ -274,12 +278,15 @@ namespace Rock.Mobile
         /// </summary>
         /// <param name="applicationId">The application identifier.</param>
         /// <param name="deviceType">The type of device to build for.</param>
+        /// <param name="versionId">The version identifier to use on this package.</param>
         /// <returns>An update package for the specified application and device type.</returns>
-        /// <remarks>This is a backwards compatible method that can be removed at any time, this method shouldn't be used by any plugins.</remarks>
-        [RockObsolete( "1.12" )]
-        public static UpdatePackage BuildMobilePackage( int applicationId, DeviceType deviceType )
+        [Obsolete( "Use BuildMobilePackageAsync() instead." )]
+        [RockObsolete( "1.16.4" )]
+        public static UpdatePackage BuildMobilePackage( int applicationId, DeviceType deviceType, int versionId )
         {
-            return BuildMobilePackage( applicationId, deviceType, ( int ) ( RockDateTime.Now.ToJavascriptMilliseconds() / 1000 ) );
+            var task = Task.Run( async () => await BuildMobilePackageAsync( applicationId, deviceType, versionId ) );
+
+            return task.Result;
         }
 
         /// <summary>
@@ -289,7 +296,7 @@ namespace Rock.Mobile
         /// <param name="deviceType">The type of device to build for.</param>
         /// <param name="versionId">The version identifier to use on this package.</param>
         /// <returns>An update package for the specified application and device type.</returns>
-        public static UpdatePackage BuildMobilePackage( int applicationId, DeviceType deviceType, int versionId )
+        public static async Task<UpdatePackage> BuildMobilePackageAsync( int applicationId, DeviceType deviceType, int versionId )
         {
             var site = SiteCache.Get( applicationId );
             string applicationRoot = GlobalAttributesCache.Value( "PublicApplicationRoot" );
@@ -351,12 +358,7 @@ namespace Rock.Mobile
 
             settings.AdditionalCssToParse = additionalDownhill;
 
-            var cssStyles = CssUtilities.BuildFramework( settings ); // append custom css but parse it for downhill variables
-
-            if ( additionalSettings.CssStyle.IsNotNullOrWhiteSpace() )
-            {
-                cssStyles += CssUtilities.ParseCss( additionalSettings.CssStyle, settings );
-            }
+            var cssStyles = CssUtilities.BuildFramework( settings, additionalSettings.CssStyle );
 
             // Run Lava on CSS to enable color utilities
             cssStyles = cssStyles.ResolveMergeFields( Lava.LavaHelper.GetCommonMergeFields( null, null, new Lava.CommonMergeFieldsOptions() ) );
@@ -388,8 +390,13 @@ namespace Rock.Mobile
                 TimeZone = timeZoneName,
                 PushTokenUpdateValue = additionalSettings.PushTokenUpdateValue,
                 Auth0ClientId = additionalSettings.Auth0ClientId,
-                Auth0ClientDomain = additionalSettings.Auth0Domain
+                Auth0ClientDomain = additionalSettings.Auth0Domain,
+                EntraTenantId = additionalSettings.EntraTenantId,
+                EntraClientId = additionalSettings.EntraClientId,
             };
+
+            package.UseStandardStyles = additionalSettings.DownhillSettings.MobileStyleFramework == MobileStyleFramework.Standard || additionalSettings.DownhillSettings.MobileStyleFramework == MobileStyleFramework.Blended;
+            package.UseLegacyStyles = additionalSettings.DownhillSettings.MobileStyleFramework == MobileStyleFramework.Legacy || additionalSettings.DownhillSettings.MobileStyleFramework == MobileStyleFramework.Blended;
 
             //
             // Setup the appearance settings.
@@ -404,18 +411,51 @@ namespace Rock.Mobile
             package.AppearanceSettings.NavigationBarActionsXaml = additionalSettings.NavigationBarActionXaml;
             package.AppearanceSettings.LockedPhoneOrientation = additionalSettings.LockedPhoneOrientation;
             package.AppearanceSettings.LockedTabletOrientation = additionalSettings.LockedTabletOrientation;
+
+            var applicationColors = additionalSettings.DownhillSettings.ApplicationColors;
+
+            // Interface Colors
+            package.AppearanceSettings.PaletteColors.Add( "interface-strongest", applicationColors.InterfaceStrongest );
+            package.AppearanceSettings.PaletteColors.Add( "interface-stronger", applicationColors.InterfaceStronger );
+            package.AppearanceSettings.PaletteColors.Add( "interface-strong", applicationColors.InterfaceStrong );
+            package.AppearanceSettings.PaletteColors.Add( "interface-medium", applicationColors.InterfaceMedium );
+            package.AppearanceSettings.PaletteColors.Add( "interface-soft", applicationColors.InterfaceSoft );
+            package.AppearanceSettings.PaletteColors.Add( "interface-softer", applicationColors.InterfaceSofter );
+            package.AppearanceSettings.PaletteColors.Add( "interface-softest", applicationColors.InterfaceSoftest );
+
+            // Accent Colors
+            package.AppearanceSettings.PaletteColors.Add( "app-primary-soft", applicationColors.PrimarySoft );
+            package.AppearanceSettings.PaletteColors.Add( "app-primary-strong", applicationColors.PrimaryStrong );
+            package.AppearanceSettings.PaletteColors.Add( "app-secondary-soft", applicationColors.SecondarySoft );
+            package.AppearanceSettings.PaletteColors.Add( "app-secondary-strong", applicationColors.SecondaryStrong );
+            package.AppearanceSettings.PaletteColors.Add( "app-brand-soft", applicationColors.BrandSoft );
+            package.AppearanceSettings.PaletteColors.Add( "app-brand-strong", applicationColors.BrandStrong );
+
+            // Functional Colors
+            package.AppearanceSettings.PaletteColors.Add( "app-success-soft", applicationColors.SuccessSoft );
+            package.AppearanceSettings.PaletteColors.Add( "app-success-strong", applicationColors.SuccessStrong );
+            package.AppearanceSettings.PaletteColors.Add( "app-info-soft", applicationColors.InfoSoft );
+            package.AppearanceSettings.PaletteColors.Add( "app-info-strong", applicationColors.InfoStrong );
+            package.AppearanceSettings.PaletteColors.Add( "app-danger-soft", applicationColors.DangerSoft );
+            package.AppearanceSettings.PaletteColors.Add( "app-danger-strong", applicationColors.DangerStrong );
+            package.AppearanceSettings.PaletteColors.Add( "app-warning-soft", applicationColors.WarningSoft );
+            package.AppearanceSettings.PaletteColors.Add( "app-warning-strong", applicationColors.WarningStrong );
+
+            //
+            // Legacy colors.
+            //
             package.AppearanceSettings.PaletteColors.Add( "text-color", additionalSettings.DownhillSettings.TextColor );
             package.AppearanceSettings.PaletteColors.Add( "heading-color", additionalSettings.DownhillSettings.HeadingColor );
             package.AppearanceSettings.PaletteColors.Add( "background-color", additionalSettings.DownhillSettings.BackgroundColor );
-            package.AppearanceSettings.PaletteColors.Add( "app-primary", additionalSettings.DownhillSettings.ApplicationColors.Primary );
-            package.AppearanceSettings.PaletteColors.Add( "app-secondary", additionalSettings.DownhillSettings.ApplicationColors.Secondary );
-            package.AppearanceSettings.PaletteColors.Add( "app-success", additionalSettings.DownhillSettings.ApplicationColors.Success );
-            package.AppearanceSettings.PaletteColors.Add( "app-info", additionalSettings.DownhillSettings.ApplicationColors.Info );
-            package.AppearanceSettings.PaletteColors.Add( "app-danger", additionalSettings.DownhillSettings.ApplicationColors.Danger );
-            package.AppearanceSettings.PaletteColors.Add( "app-warning", additionalSettings.DownhillSettings.ApplicationColors.Warning );
-            package.AppearanceSettings.PaletteColors.Add( "app-light", additionalSettings.DownhillSettings.ApplicationColors.Light );
-            package.AppearanceSettings.PaletteColors.Add( "app-dark", additionalSettings.DownhillSettings.ApplicationColors.Dark );
-            package.AppearanceSettings.PaletteColors.Add( "app-brand", additionalSettings.DownhillSettings.ApplicationColors.Brand );
+            package.AppearanceSettings.PaletteColors.Add( "app-primary", additionalSettings.DownhillSettings.ApplicationColors.PrimaryStrong );
+            package.AppearanceSettings.PaletteColors.Add( "app-secondary", additionalSettings.DownhillSettings.ApplicationColors.SecondaryStrong );
+            package.AppearanceSettings.PaletteColors.Add( "app-success", additionalSettings.DownhillSettings.ApplicationColors.SuccessStrong );
+            package.AppearanceSettings.PaletteColors.Add( "app-info", additionalSettings.DownhillSettings.ApplicationColors.InfoStrong );
+            package.AppearanceSettings.PaletteColors.Add( "app-danger", additionalSettings.DownhillSettings.ApplicationColors.DangerStrong );
+            package.AppearanceSettings.PaletteColors.Add( "app-warning", additionalSettings.DownhillSettings.ApplicationColors.WarningStrong );
+            package.AppearanceSettings.PaletteColors.Add( "app-light", additionalSettings.DownhillSettings.ApplicationColors.InterfaceSoftest );
+            package.AppearanceSettings.PaletteColors.Add( "app-dark", additionalSettings.DownhillSettings.ApplicationColors.InterfaceStrongest );
+            package.AppearanceSettings.PaletteColors.Add( "app-brand", additionalSettings.DownhillSettings.ApplicationColors.BrandStrong );
 
             //
             // Setup the deep link settings.
@@ -424,7 +464,7 @@ namespace Rock.Mobile
 
             if ( site.FavIconBinaryFileId.HasValue )
             {
-                package.AppearanceSettings.LogoUrl = $"{applicationRoot}/GetImage.ashx?Id={site.FavIconBinaryFileId.Value}";
+                package.AppearanceSettings.LogoUrl = FileUrlHelper.GetImageUrl( site.FavIconBinaryFileId.Value );
             }
 
             //
@@ -501,7 +541,7 @@ namespace Rock.Mobile
                         RequiredAbiVersion = mobileBlockEntity.RequiredMobileAbiVersion,
                         BlockType = mobileBlockTypeClass,
 #pragma warning restore CS0618 // Type or member is obsolete
-                        ConfigurationValues = mobileBlockEntity.GetBlockInitialization( Blocks.RockClientType.Mobile ),
+                        ConfigurationValues = await mobileBlockEntity.GetBlockInitializationAsync( Blocks.RockClientType.Mobile ),
                         Order = block.Order,
                         AttributeValues = GetMobileAttributeValues( block, attributes ),
                         PreXaml = block.PreHtml,
@@ -527,7 +567,8 @@ namespace Rock.Mobile
                 var mobileCampus = new MobileCampus
                 {
                     Guid = campus.Guid,
-                    Name = campus.Name
+                    Name = campus.Name,
+                    Id = campus.IdKey
                 };
 
                 if ( campus.Location != null )
@@ -573,8 +614,12 @@ namespace Rock.Mobile
         {
             foreach ( var page in pages )
             {
-                var additionalPageSettings = page.AdditionalSettings.FromJsonOrNull<AdditionalPageSettings>() ?? new AdditionalPageSettings();
+                var additionalPageSettings = page.GetAdditionalSettings<AdditionalPageSettings>();
 
+                var imageUrlOptions = new GetImageUrlOptions
+                {
+                    PublicAppRoot = applicationRoot
+                };
 
                 var mobilePage = new MobilePage
                 {
@@ -591,7 +636,7 @@ namespace Rock.Mobile
                     PageGuid = page.Guid,
                     Order = page.Order,
                     ParentPageGuid = page.ParentPage?.Guid,
-                    IconUrl = page.IconBinaryFileId.HasValue ? $"{applicationRoot}GetImage.ashx?Id={page.IconBinaryFileId.Value}" : null,
+                    IconUrl = page.IconBinaryFileId.HasValue ? FileUrlHelper.GetImageUrl( page.IconBinaryFileId.Value, imageUrlOptions ) : null,
                     LavaEventHandler = additionalPageSettings.LavaEventHandler,
                     DepthLevel = depth,
                     CssClasses = page.BodyCssClass,
@@ -600,7 +645,7 @@ namespace Rock.Mobile
                     HideNavigationBar = additionalPageSettings.HideNavigationBar,
                     ShowFullScreen = additionalPageSettings.ShowFullScreen,
                     AutoRefresh = additionalPageSettings.AutoRefresh,
-                    PageType = additionalPageSettings.PageType,
+                    PageType = additionalPageSettings.PageType.ToMobile(),
                     WebPageUrl = additionalPageSettings.WebPageUrl
                 };
 

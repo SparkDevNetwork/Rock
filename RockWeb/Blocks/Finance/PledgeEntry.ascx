@@ -18,8 +18,8 @@
                     <Rock:RockLiteral ID="lName" runat="server" Label="Name" />
                     <Rock:RockDropDownList ID="ddlGroup" runat="server" Visible="false" DataTextField="Name" DataValueField="GroupId" />
 
-                    <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" />
-                    <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" />
+                    <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" NoSpecialCharacters="true" NoEmojisOrSpecialFonts="true" />
+                    <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" NoSpecialCharacters="true" NoEmojisOrSpecialFonts="true" />
                     <Rock:EmailBox ID="tbEmail" runat="server" Label="Email" Required="true" />
 
                     <Rock:DateRangePicker ID="drpDateRange" runat="server" Label="Date Range" />
@@ -27,7 +27,7 @@
                     <Rock:RockDropDownList ID="ddlFrequency" runat="server" Label="Gift Frequency" Help="How often you expect to be making gifts towards the total amount." />
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnSave" AccessKey="s" runat="server" ToolTip="Alt+s" Text="Save" OnClick="btnSave_Click" CssClass="btn btn-primary" />
+                        <asp:LinkButton ID="btnSave" data-shortcut-key="s" runat="server" ToolTip="Alt+s" Text="Save" OnClick="btnSave_Click" CssClass="btn btn-primary" />
                     </div>
 
                     <Rock:RockLiteral ID="lNote" runat="server" />

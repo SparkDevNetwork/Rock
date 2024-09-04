@@ -40,7 +40,7 @@ export type InteractionChannelBag = {
     channelListTemplate?: string | null;
 
     /** Gets or sets the length of time (in minutes) that components of this channel should be cached */
-    componentCacheDuration?: number | null;
+    componentCacheDuration?: string | null;
 
     /** Gets or sets the component detail template. */
     componentDetailTemplate?: string | null;
@@ -55,7 +55,7 @@ export type InteractionChannelBag = {
     content?: string | null;
 
     /** Gets or sets the engagement strength. */
-    engagementStrength?: number | null;
+    engagementStrength?: string | null;
 
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
@@ -82,7 +82,7 @@ export type InteractionChannelBag = {
     name?: string | null;
 
     /** Gets or sets the retention days. */
-    retentionDuration?: number | null;
+    retentionDuration?: string | null;
 
     /** Gets or sets the session list template. */
     sessionListTemplate?: string | null;

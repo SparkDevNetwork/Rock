@@ -75,48 +75,24 @@ namespace Rock.Jobs
                 throw new Exception( "Data view not selected" );
             }
 
-            var rockContext = new RockContext();
-            var dataViewService = new DataViewService( rockContext );
-            var dataView = dataViewService.Get( dataViewGuid.Value );
-
+            var dataView = DataViewCache.Get( dataViewGuid.Value );
             if ( dataView == null )
             {
                 throw new Exception( "Data view not found" );
             }
 
             // Get the set of entity key values returned by the Data View.
-            Stopwatch stopwatch = Stopwatch.StartNew();
-            var qry = dataView.GetQuery();
-
-            var modelType = dataView.EntityType.GetType();
-
-            if ( qry == null )
-            {
-                throw new Exception( "Data view results not found" );
-            }
-
-            if ( modelType == null )
-            {
-                throw new Exception( "Entity type of data view not found" );
-            }
-
-            var entityIds = qry.Select( e => e.Id ).ToList();
-            stopwatch.Stop();
-            DataViewService.AddRunDataViewTransaction( dataView.Id,
-                                                        Convert.ToInt32( stopwatch.Elapsed.TotalMilliseconds ) );
-
             var entityTypeId = dataView.EntityTypeId.Value;
-            var entityTypeName = modelType.GetFriendlyTypeName();
 
-            int workflowsLaunched = 0;
+            var entityIds = dataView.GetEntityIds();
 
             // For each entity, create a new transaction to launch a workflow.
+            var workflowsLaunched = 0;
             foreach ( var entityId in entityIds )
             {
                 var transaction = new LaunchEntityWorkflowTransaction( workflowTypeGuid.Value, string.Empty, entityTypeId, entityId );
 
                 transaction.Enqueue();
-
 
                 workflowsLaunched++;
             }

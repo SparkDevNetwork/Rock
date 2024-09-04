@@ -14,11 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 namespace Rock.Logging
 {
     /// <summary>
     /// A list of Rock log domains that can be used with the RockLogger.
     /// </summary>
+    [Obsolete( "This is not used and will be removed in the future." )]
+    [RockObsolete( "1.17" )]
     public class RockLogDomains
     {
         /// <summary>

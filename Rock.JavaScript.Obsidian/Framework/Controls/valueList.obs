@@ -1,7 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField
-                   :modelValue="internalValues"
+    <RockFormField :modelValue="internalValues"
                    formGroupClasses="value-list"
                    name="value-list">
         <template #default="{ uniqueId }">
@@ -12,7 +11,7 @@
                             <select v-if="hasValues" v-model="value.value" :class="valueInputClasses">
                                 <option v-for="option in options" :value="option.value" :key="option.value ?? 0">{{ option.text }}</option>
                             </select>
-                            <input v-else v-model="value.value" :class="valueInputClasses" type="text" :placeholder="valuePrompt">
+                            <TextBox v-else v-model="value.value" :inputClasses="valueInputClasses" :placeholder="valuePrompt" :allowHtml="allowHtml" />
                             <a href="#" @click.prevent="onRemoveClick(valueIndex)" class="btn btn-sm btn-danger"><i class="fa fa-times"></i></a>
                         </div>
                     </span>
@@ -28,12 +27,14 @@
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
     import RockFormField from "./rockFormField.obs";
+    import TextBox from "./textBox.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { Guid } from "@Obsidian/Types";
     import { DefinedValuePickerGetDefinedValuesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/definedValuePickerGetDefinedValuesOptionsBag";
     import { useHttp } from "@Obsidian/Utility/http";
     import { useSecurityGrantToken } from "@Obsidian/Utility/block";
     import { updateRefValue } from "@Obsidian/Utility/component";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 
     export type ValueItem = {
         value: string;
@@ -61,8 +62,13 @@
         },
 
         definedTypeGuid: {
-            type: String as PropType<Guid>,
+            type: String as PropType<Guid | undefined>,
             required: false
+        },
+
+        allowHtml: {
+            type: Boolean,
+            default: false
         }
     });
 
@@ -128,13 +134,19 @@
             defaultValue = options.value[0].value ?? "";
         }
 
-        internalValues.value.push({ value: defaultValue });
+        internalValues.value = [
+            ...internalValues.value,
+            {
+                value: defaultValue
+            }
+        ];
     };
 
     async function loadDefinedValues(): Promise<void> {
-        const options: Partial<DefinedValuePickerGetDefinedValuesOptionsBag> = {
-            definedTypeGuid: props.definedTypeGuid,
-            securityGrantToken: securityGrantToken.value
+        const options: DefinedValuePickerGetDefinedValuesOptionsBag = {
+            definedTypeGuid: toGuidOrNull(props.definedTypeGuid) ?? emptyGuid,
+            securityGrantToken: securityGrantToken.value,
+            includeInactive: false,
         };
         const url = "/api/v2/Controls/DefinedValuePickerGetDefinedValues";
         const result = await http.post<ListItemBag[]>(url, undefined, options);
@@ -148,6 +160,8 @@
     }
 
     const onRemoveClick = (index: number): void => {
-        internalValues.value.splice(index, 1);
+        const newValues = [...internalValues.value];
+        newValues.splice(index, 1);
+        internalValues.value = newValues;
     };
 </script>

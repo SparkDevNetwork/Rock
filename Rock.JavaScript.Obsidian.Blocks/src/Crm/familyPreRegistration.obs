@@ -50,7 +50,7 @@
                                     </div>
                                     <div class="col-sm-6">
                                         <DropDownList
-                                                      v-model="scheduleGuid"
+                                                      v-model="scheduleGuidOrEmptyString"
                                                       :disabled="isSaving || isNavigating"
                                                       :items="scheduleTimeItems"
                                                       label="Planned Visit Time"
@@ -62,28 +62,21 @@
                         </div>
                     </Panel>
 
-                    <Panel title="Adult Information">
+                    <Panel :title="`${pluralize(adultLabel)} Information`">
                         <template #default>
-                            <h4 class="heading-individual">First Adult</h4>
+                            <h4 class="heading-individual">First {{ adultLabel }}</h4>
 
                             <div class="row">
-                                <TextBox
-                                         v-model="fullName"
-                                         autocomplete="new-password"
-                                         class="rock-fullname"
-                                         :disabled="isSaving || isNavigating"
-                                         placeholder="Please enter name (Required)" />
-
                                 <div class="col-sm-6">
                                     <StaticFormControl
                                                        v-if="adult1.isFirstNameReadOnly"
                                                        label="First Name"
                                                        :modelValue="adult1.firstName" />
-                                    <TextBox v-else
-                                             v-model="adult1.firstName"
-                                             :disabled="isSaving || isNavigating"
-                                             label="First Name"
-                                             :rules="[atLeastOneAdultFirstNameRule, adult1FirstNameRule]" />
+                                    <FirstNameTextBox v-else
+                                                      v-model="adult1.firstName"
+                                                      :disabled="isSaving || isNavigating"
+                                                      label="First Name"
+                                                      :rules="[...adult1RequiredRules, ...adult1NoSpecialCharactersRules, ...adult1NoEmojisOrSpecialFontsRules]" />
                                 </div>
                                 <div class="col-sm-6">
                                     <StaticFormControl
@@ -94,7 +87,7 @@
                                              v-model="adult1.lastName"
                                              :disabled="isSaving || isNavigating"
                                              label="Last Name"
-                                             :rules="[adult1LastNameRule]" />
+                                             :rules="[...adult1RequiredRules, ...adult1NoSpecialCharactersRules, ...adult1NoEmojisOrSpecialFontsRules]" />
                                 </div>
                             </div>
                             <div class="row">
@@ -273,7 +266,7 @@
 
                             <hr />
 
-                            <h4 class="heading-individual">Second Adult</h4>
+                            <h4 class="heading-individual">Second {{ adultLabel }}</h4>
 
                             <div class="adult-2-fields">
                                 <div class="row">
@@ -282,11 +275,11 @@
                                                            v-if="adult2.isFirstNameReadOnly"
                                                            label="First Name"
                                                            :modelValue="adult2.firstName" />
-                                        <TextBox v-else
-                                                 v-model="adult2.firstName"
-                                                 :disabled="isSaving || isNavigating"
-                                                 label="First Name"
-                                                 :rules="[adult2FirstNameRule]" />
+                                        <FirstNameTextBox v-else
+                                                          v-model="adult2.firstName"
+                                                          :disabled="isSaving || isNavigating"
+                                                          label="First Name"
+                                                          :rules="isAdult2Entered ? [...adult2RequiredRules, ...adult2NoSpecialCharactersRules, ...adult2NoEmojisOrSpecialFontsRules] : ''" />
                                     </div>
                                     <div class="col-sm-6">
                                         <StaticFormControl
@@ -297,7 +290,7 @@
                                                  v-model="adult2.lastName"
                                                  :disabled="isSaving || isNavigating"
                                                  label="Last Name"
-                                                 :rules="[adult2LastNameRule]" />
+                                                 :rules="isAdult2Entered ? [...adult2RequiredRules, ...adult2NoSpecialCharactersRules, ...adult2NoEmojisOrSpecialFontsRules] : ''" />
                                     </div>
                                 </div>
                                 <div class="row">
@@ -416,7 +409,7 @@
                                                               :attributes="adult2.attributes"
                                                               columnBreakpoint="sm"
                                                               :displayWithinExistingRow="true"
-                                                              isEditMode
+                                                              :isEditMode="isAdult2Entered"
                                                               :numberOfColumns="2"
                                                               :showCategoryLabel="true" />
                                 </div>
@@ -449,14 +442,18 @@
                         </template>
                     </Panel>
 
-                    <Panel type="default" title="Children">
+                    <Panel type="default" :title="pluralize(childLabel)">
                         <PreRegistrationChildren
                                                  v-model="children"
                                                  :disabled="isSaving || isNavigating"
                                                  :lastName="adult1.lastName"
+                                                 :childLabel="childLabel"
+                                                 :adultLabel="adultLabel"
                                                  @addChild="onAddChild"
                                                  @removeChild="onRemoveChild" />
                     </Panel>
+
+                    <Captcha v-if="!disableCaptcha" ref="captchaElement"></Captcha>
                 </template>
 
                 <template #footerActions>
@@ -479,7 +476,7 @@
     import { computed, nextTick, ref } from "vue";
     import PreRegistrationChildren from "./FamilyPreRegistration/preRegistrationChildren.partial.obs";
     import { ChildRequestBag, CreateAccountRequest, PersonRequestBag } from "./FamilyPreRegistration/types.partial";
-    import { convertPersonToChildRequest, convertPersonToPersonRequest, createNotEqualRule, createPersonViewModel, createRuleWithReplacement, createRuleWithSuffix, monthAndDayAndYearRequiredRule, monthAndDayRequiredRule, required, } from "./FamilyPreRegistration/utils.partial";
+    import { convertPersonToChildRequest, convertPersonToPersonRequest, createNotEqualRule, createPersonViewModel, createRuleWithReplacement, createRuleWithSuffix, monthAndDayAndYearRequiredRule, monthAndDayRequiredRule, required, noSpecialCharacters, noEmojisOrSpecialFonts } from "./FamilyPreRegistration/utils.partial";
     import AddressControl from "@Obsidian/Controls/addressControl.obs";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
@@ -501,6 +498,8 @@
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import FirstNameTextBox from "@Obsidian/Controls/firstNameTextBox.obs";
+    import Captcha from "@Obsidian/Controls/captcha.obs";
     import { CommunicationPreference } from "@Obsidian/Enums/Blocks/Crm/FamilyPreRegistration/communicationPreference";
     import { Gender } from "@Obsidian/Enums/Crm/gender";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
@@ -508,7 +507,7 @@
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { FormError } from "@Obsidian/Utility/form";
     import { useHttp } from "@Obsidian/Utility/http";
-    import { ValidationResult, ValidationRule } from "@Obsidian/ValidationRules";
+    import { ValidationRule } from "@Obsidian/ValidationRules";
     import { FamilyPreRegistrationGetScheduleDatesRequestBag } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationGetScheduleDatesRequestBag";
     import { FamilyPreRegistrationGetScheduleDatesResponseBag } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationGetScheduleDatesResponseBag";
     import { FamilyPreRegistrationInitializationBox } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationInitializationBox";
@@ -517,6 +516,9 @@
     import { FamilyPreRegistrationScheduleDateBag } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationScheduleDateBag";
     import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { pluralize } from "@Obsidian/Utility/stringUtils";
+    import { BlockActionContextBag } from "@Obsidian/ViewModels/Blocks/blockActionContextBag";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const config = useConfigurationValues<FamilyPreRegistrationInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -534,17 +536,20 @@
     const isCampusPickerVisible = ref(false);
     const internalCampusListItemBag = ref<ListItemBag | null | undefined>(config.campusGuid ? { value: config.campusGuid } : undefined);
     const plannedVisitDate = ref<string>("");
-    const scheduleGuid = ref<string>("");
+    const scheduleGuidOrEmptyString = ref<string>("");
     const scheduleDateItems = ref<FamilyPreRegistrationScheduleDateBag[]>([]);
     const isUsernameAvailable = ref<boolean | null | undefined>();
     const confirmPassword = ref<string>("");
     const address = ref<AddressControlBag | undefined>(config.address ?? undefined);
-    const fullName = ref<string>("");
     const familyAttributeValues = ref<Record<string, string>>(config.familyAttributeValues || {});
     const createAccount = ref<CreateAccountRequest>({
         username: "",
         password: ""
     });
+    const disableCaptcha = ref(config.disableCaptchaSupport);
+    const captchaElement = ref<InstanceType<typeof Captcha> | undefined>();
+    const adultLabel = config.adultLabel || "Adult";
+    const childLabel = config.childLabel || "Child";
 
     // Create the request bags that will be used to pre-register the adults and children.
     const adult1Request = ref<PersonRequestBag>(convertPersonToPersonRequest(config.adult1));
@@ -563,31 +568,49 @@
 
     const isAdult1Entered = computed<boolean>(() => !!adult1.firstName.trim());
     const isAdult2Entered = computed<boolean>(() => !!adult2.firstName.trim());
-    const isAdult2FirstNameEntered = computed<boolean>(() => !!adult2.firstName.trim());
-    const isAdult2LastNameEntered = computed<boolean>(() => !!adult2.lastName.trim());
 
     // Validation rules are executed in order and stop on the first failure.
     // Even though the first rule is a required rule,
     // we need to add the special "required" rule to get the required indicator to display.
     const adult1RequiredRules = computed<ValidationRule[]>(() => [
-        createRuleWithSuffix(required, `for First Adult`),
+        createRuleWithSuffix(required, `for First ${adultLabel}`),
         "required"
     ]);
 
+    const adult1NoSpecialCharactersRules = computed<ValidationRule[]>(() => [
+        createRuleWithSuffix(noSpecialCharacters, `for First Adult`),
+        "nospecialcharacters"
+    ]);
+
+    const adult1NoEmojisOrSpecialFontsRules = computed<ValidationRule[]>(() => [
+        createRuleWithSuffix(noEmojisOrSpecialFonts, `for First Adult`),
+        "noemojisorspecialfonts"
+    ]);
+
     const adult1RequiredGenderRules = computed<ValidationRule[]>(() => [
-        createRuleWithSuffix(required, `for First Adult`),
-        createRuleWithReplacement(createNotEqualRule(Gender.Unknown), "is required for First Adult"),
+        createRuleWithSuffix(required, `for First ${adultLabel}`),
+        createRuleWithReplacement(createNotEqualRule(Gender.Unknown), `is required for First ${adultLabel}`),
         "required"
     ]);
 
     const adult2RequiredRules = computed<ValidationRule[]>(() => [
-        createRuleWithSuffix(required, `for Second Adult`),
+        createRuleWithSuffix(required, `for Second ${adultLabel}`),
         "required"
     ]);
 
+    const adult2NoSpecialCharactersRules = computed<ValidationRule[]>(() => [
+        createRuleWithSuffix(noSpecialCharacters, `for Second Adult`),
+        "nospecialcharacters"
+    ]);
+
+    const adult2NoEmojisOrSpecialFontsRules = computed<ValidationRule[]>(() => [
+        createRuleWithSuffix(noEmojisOrSpecialFonts, `for Second Adult`),
+        "noemojisorspecialfonts"
+    ]);
+
     const adult2RequiredGenderRules = computed<ValidationRule[]>(() => [
-        createRuleWithSuffix(required, `for Second Adult`),
-        createRuleWithReplacement(createNotEqualRule(Gender.Unknown), "is required for Second Adult"),
+        createRuleWithSuffix(required, `for Second ${adultLabel}`),
+        createRuleWithReplacement(createNotEqualRule(Gender.Unknown), `is required for Second ${adultLabel}`),
         "required"
     ]);
 
@@ -642,19 +665,25 @@
                 address: address.value,
                 adult1: isAdult1Entered.value ? adult1Request.value : undefined,
                 adult2: isAdult2Entered.value ? adult2Request.value : undefined,
-                campusGuid: internalCampusListItemBag.value?.value || null,
+                campusGuid: toGuidOrNull(internalCampusListItemBag.value?.value),
                 children: children.value,
                 createAccount: createAccount.value,
                 familyAttributeValues: familyAttributeValues.value,
-                familyGuid: config.familyGuid,
-                fullName: fullName.value,
+                familyGuid: toGuidOrNull(config.familyGuid),
                 plannedVisitDate: plannedVisitDate.value,
-                scheduleGuid: scheduleGuid.value
+                scheduleGuid: toGuidOrNull(scheduleGuidOrEmptyString.value)
             };
 
             clearErrors();
 
-            const result = await invokeBlockAction<FamilyPreRegistrationSaveResponseBag>("Save", { bag });
+            const actionContext: BlockActionContextBag = {};
+
+            if (captchaElement.value) {
+                actionContext.captcha = await captchaElement.value.getToken();
+                captchaElement.value.refreshToken();
+            }
+
+            const result = await invokeBlockAction<FamilyPreRegistrationSaveResponseBag>("Save", { bag }, actionContext);
 
             if (result.isSuccess && result?.data) {
                 if (result.data.errors?.length) {
@@ -700,76 +729,6 @@
     //#endregion
 
     //#region Functions
-
-    /**
-     * Validates whether adult1 has a first name and a last name.
-     */
-    function adult1FirstNameRule(): ValidationResult {
-        const adult1FirstName = adult1.firstName?.trim();
-        const adult1LastName = adult1.lastName?.trim();
-
-        if (!adult1FirstName && adult1LastName) {
-            return "is invalid. First and Last Name are required.";
-        }
-
-        return true;
-    }
-
-    /**
-     * Validates whether adult1 has a first name and a last name.
-     */
-    function adult1LastNameRule(): ValidationResult {
-        const adult1FirstName = adult1.firstName?.trim();
-        const adult1LastName = adult1.lastName?.trim();
-
-        if (adult1FirstName && !adult1LastName) {
-            return "is invalid. First and Last Name are required.";
-        }
-
-        return true;
-    }
-
-    /**
-     * Validates whether adult2 has a first name and a last name.
-     */
-    function adult2FirstNameRule(): ValidationResult {
-        const adult2FirstName = adult2.firstName?.trim();
-        const adult2LastName = adult2.lastName?.trim();
-
-        if (!adult2FirstName && adult2LastName) {
-            return "is invalid. First and Last Name are required.";
-        }
-
-        return true;
-    }
-
-    /**
-     * Validates whether adult2 has a first name and a last name.
-     */
-    function adult2LastNameRule(): ValidationResult {
-        const adult2FirstName = adult2.firstName?.trim();
-        const adult2LastName = adult2.lastName?.trim();
-
-        if (adult2FirstName && !adult2LastName) {
-            return "is invalid. First and Last Name are required.";
-        }
-
-        return true;
-    }
-
-    /**
-     * Validates whether at least one adult has a first name.
-     */
-    function atLeastOneAdultFirstNameRule(): ValidationResult {
-        const adult1FirstName = adult1.firstName?.trim();
-        const adult2FirstName = adult2.firstName?.trim();
-
-        if (!adult1FirstName && !adult2FirstName) {
-            return "is invalid. The name of at least one adult needs to be entered.";
-        }
-
-        return true;
-    }
 
     /**
      * Checks availability of the username.
@@ -840,7 +799,7 @@
         }
 
         const bag: FamilyPreRegistrationGetScheduleDatesRequestBag = {
-            campusGuid: campusListItemBag.value?.value
+            campusGuid: toGuidOrNull(campusListItemBag.value?.value)
         };
 
         clearErrors();

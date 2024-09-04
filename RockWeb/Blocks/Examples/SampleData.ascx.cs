@@ -26,6 +26,7 @@ using System.Web.UI;
 using System.Xml.Linq;
 
 using Microsoft.AspNet.SignalR;
+using Microsoft.Extensions.Logging;
 
 using Rock;
 using Rock.Attribute;
@@ -163,8 +164,6 @@ namespace RockWeb.Blocks.Examples
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             // Set timeout for up to 30 minutes (just like installer)
             Server.ScriptTimeout = 1800;
             ScriptManager.GetCurrent( Page ).AsyncPostBackTimeout = 1800;
@@ -181,6 +180,8 @@ namespace RockWeb.Blocks.Examples
                     messageContainer.Attributes["style"] = "visibility: visible";
                 }
             }
+
+            base.OnLoad( e );
         }
 
         #endregion Base Control Methods
@@ -307,18 +308,14 @@ namespace RockWeb.Blocks.Examples
         private SampleDataManager GetConfiguredSampleDataManager()
         {
             // Configure a log device for the SampleDataManager.
-            var configuration = new RockLoggerInMemoryConfiguration();
+            LogLevel logLevel = LogLevel.Information;
 
             if ( GetAttributeValue( AttributeKey.EnableStopwatch ).AsBoolean() )
             {
-                configuration.LogLevel = RockLogLevel.All;
-            }
-            else
-            {
-                configuration.LogLevel = RockLogLevel.Info;
+                logLevel = LogLevel.Trace;
             }
 
-            _logger = new RockLoggerMemoryBuffer( configuration );
+            _logger = new RockLoggerMemoryBuffer( logLevel );
             _logger.EventLogged += EventLoggedHandler;
 
             var manager = new SampleDataManager( _logger );

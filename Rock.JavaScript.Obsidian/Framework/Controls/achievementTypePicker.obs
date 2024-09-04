@@ -53,8 +53,7 @@
      * Loads the items from the server.
      */
     const loadOptions = async (): Promise<ListItemBag[]> => {
-        const options: Partial<AchievementTypePickerGetAchievementTypesOptionsBag> = {
-        };
+        const options: AchievementTypePickerGetAchievementTypesOptionsBag = {};
         const result = await http.post<ListItemBag[]>("/api/v2/Controls/AchievementTypePickerGetAchievementTypes", undefined, options);
 
         if (result.isSuccess && result.data) {

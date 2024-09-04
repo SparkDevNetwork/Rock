@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,14 +18,14 @@
 namespace Rock.ViewModels.Blocks.Finance.FinancialPledgeList
 {
     /// <summary>
-    /// The additional configuration options for the Financial Pledge List block.
+    /// 
     /// </summary>
     public class FinancialPledgeListOptionsBag
     {
         /// <summary>
         /// Determines if the accounts column should be displayed.
         /// </summary>
-        public bool ShowAccountsColumn { get; set; }
+        public bool ShowAccountColumn { get; set; }
 
         /// <summary>
         /// Determines if the last modified date column should be displayed.
@@ -46,5 +46,30 @@ namespace Rock.ViewModels.Blocks.Finance.FinancialPledgeList
         /// Determines if the account summary should be displayed at the bottom of the list.
         /// </summary>
         public bool ShowAccountSummary { get; set; }
+
+        /// <summary>
+        /// Determines if the amount column should be displayed.
+        /// </summary>
+        public bool HideAmount { get; set; }
+
+        /// <summary>
+        /// Determines if the person filter should be displayed.
+        /// </summary>
+        public bool ShowPersonFilter { get; set; }
+
+        /// <summary>
+        /// Determines if the account filter should be displayed.
+        /// </summary>
+        public bool ShowAccountFilter { get; set; }
+
+        /// <summary>
+        /// Determines if the date range filter should be displayed.
+        /// </summary>
+        public bool ShowDateRangeFilter { get; set; }
+
+        /// <summary>
+        /// Determines if the last modified date range filter should be displayed.
+        /// </summary>
+        public bool ShowLastModifiedFilter { get; set; }
     }
 }

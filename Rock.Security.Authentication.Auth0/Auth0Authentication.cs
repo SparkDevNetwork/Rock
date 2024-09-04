@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Net;
 using System.Web;
+
 using RestSharp;
 
 using Rock.Attribute;
@@ -38,13 +39,15 @@ namespace Rock.Security.Authentication.Auth0
     [Export( typeof( AuthenticationComponent ) )]
     [ExportMetadata( "ComponentName", "Auth0" )]
 
-    [TextField( "Client Domain", "The Auth0 Domain", order: 0 )]
-    [TextField( "Client ID", "The Auth0 Client ID", order: 1 )]
-    [TextField( "Client Secret", "The Auth0 Client Secret", order: 2 )]
+    [TextField( "Tenant Domain", "The tenant domain of your Auth0 application.", key: "ClientDomain", order: 0 )]
+    [TextField( "Custom Domain", "If utilizing a custom domain in your Auth0 application, set that here.", order: 1, required: false, key: "CustomDomain" )]
 
-    [TextField( "Login Button Text", "The text shown on the log in button.", defaultValue: "Auth0 Login", required: false, order: 3 )]
-    [TextField( "Login Button CSS Class", "The CSS class applied to the log in button.", required: false, order: 4 )]
-    [Rock.SystemGuid.EntityTypeGuid( "9D2EDAC7-1051-40A1-BE28-32C0ABD1B28F")]
+    [TextField( "Client ID", "The Auth0 Client ID", order: 2 )]
+    [TextField( "Client Secret", "The Auth0 Client Secret", order: 3 )]
+
+    [TextField( "Login Button Text", "The text shown on the log in button.", defaultValue: "Auth0 Login", required: false, order: 4 )]
+    [TextField( "Login Button CSS Class", "The CSS class applied to the log in button.", required: false, order: 5 )]
+    [Rock.SystemGuid.EntityTypeGuid( "9D2EDAC7-1051-40A1-BE28-32C0ABD1B28F" )]
     public class Auth0Authentication : AuthenticationComponent, IExternalRedirectAuthentication
     {
         /// <summary>
@@ -341,6 +344,8 @@ namespace Rock.Security.Authentication.Auth0
         public ExternalRedirectAuthenticationResult Authenticate( ExternalRedirectAuthenticationOptions options )
         {
             var authDomain = this.GetAttributeValue( "ClientDomain" );
+            var customDomain = this.GetAttributeValue( "CustomDomain" );
+
             var clientId = this.GetAttributeValue( "ClientID" );
             var clientSecret = this.GetAttributeValue( "ClientSecret" );
 
@@ -350,8 +355,12 @@ namespace Rock.Security.Authentication.Auth0
                 ReturnUrl = options.Parameters.GetValueOrNull( "state" )
             };
 
+            // If there is a custom domain set, use that instead of the
+            // tenant domain.
+            string requestDomain = customDomain.IsNullOrWhiteSpace() ? authDomain : customDomain;
+
             // see: https://auth0.com/docs/api/authentication#support
-            var restClient = new RestClient( $"https://{authDomain}" );
+            var restClient = new RestClient( $"https://{requestDomain}" );
             var authTokenRequest = new RestRequest( "oauth/token", Method.POST );
             var authTokenRequestBody = new
             {
@@ -383,6 +392,8 @@ namespace Rock.Security.Authentication.Auth0
                             grant_type = "client_credentials",
                             client_id = clientId,
                             client_secret = clientSecret,
+
+                            // The audience value should always use the tenant domain, not the custom domain.
                             audience = $"https://{authDomain}/api/v2/"
                         };
 
@@ -434,11 +445,17 @@ namespace Rock.Security.Authentication.Auth0
             // see: https://auth0.com/docs/api/authentication#support
             successfulAuthenticationRedirectUrl = successfulAuthenticationRedirectUrl ?? System.Web.Security.FormsAuthentication.DefaultUrl;
             var authDomain = this.GetAttributeValue( "ClientDomain" );
+            var customDomain = this.GetAttributeValue( "CustomDomain" );
+
+            // If there is a custom domain set, use that instead of the
+            // tenant domain.
+            string requestDomain = customDomain.IsNullOrWhiteSpace() ? authDomain : customDomain;
+
             var scope = HttpUtility.UrlEncode( "openid profile email phone_number birthdate" );
             var audience = $"https://{authDomain}/userinfo";
             var clientId = this.GetAttributeValue( "ClientID" );
 
-            var authorizeUrl = $"https://{authDomain}/authorize?response_type=code&scope={scope}&audience={audience}&client_id={clientId}&redirect_uri={externalProviderReturnUrl}&state={successfulAuthenticationRedirectUrl}";
+            var authorizeUrl = $"https://{requestDomain}/authorize?response_type=code&scope={scope}&audience={audience}&client_id={clientId}&redirect_uri={externalProviderReturnUrl}&state={successfulAuthenticationRedirectUrl}";
 
             return new Uri( authorizeUrl );
         }

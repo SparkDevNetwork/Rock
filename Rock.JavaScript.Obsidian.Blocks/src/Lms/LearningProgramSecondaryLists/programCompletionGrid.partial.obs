@@ -1,0 +1,226 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+
+    <Grid :data="gridDataSource"
+          keyField="idKey"
+          :entityTypeGuid="EntityType.LearningProgramCompletion"
+          :expectedRowCount="10"
+          :isTitleHidden="true"
+          :isCountMessageVisible="false"
+          :isSearchVisible="false"
+          :hideFilterHeaderRow="true"
+          :showMergeTemplate="false"
+          :showLaunchWorkflow="false"
+          :showExport="false"
+          stickyHeader
+          liveUpdates
+          @selectItem="onSelectItem">
+
+        <template #gridHeaderPrepend>
+            <div class="grid-title-heading">
+                <div class="grid-title">
+                    {{ entityName }}
+                </div>
+
+                <div class="grid-badges mr-3">
+                    <span v-for="label in labels" :class="'mr-2 label label-' + label.type">
+                        {{ label.title }}
+                    </span>
+                </div>
+
+            </div>
+            <div class="grid-custom-tab-bar">
+                <TabbedBar :tabs="tabs" v-model="selectedTab" v-on:update:modelValue="onSelectTab" />
+            </div>
+
+            <!-- This causes a break on extra small and small devices. -->
+            <div style="height: 0; border-bottom: 1px solid #dfe0e1; flex-basis: 100%;" class="d-md-none grid-header-separator"></div>
+            <div class="flex-grow-1 d-md-none grid-header-fill" style="min-width: 1px;"></div>
+        </template>
+        <SelectColumn />
+
+        <PersonColumn
+                      name="individual"
+                      title="Individual"
+                      field="individual"
+                      :filter="pickExistingValueFilter"
+                      :filterValue="getPersonNameFilterValue"
+                      visiblePriority="xs" />
+
+        <TextColumn
+                    name="campus"
+                    title="Campus"
+                    field="campus"
+                    :filter="textValueFilter"
+                    visiblePriority="sm" />
+
+        <TextColumn v-if="showSemesterColumn"
+                    name="semester"
+                    title="Semester"
+                    field="semester"
+                    :filter="textValueFilter"
+                    visiblePriority="sm" />
+
+        <DateColumn
+                    name="startDate"
+                    title="Start Date"
+                    field="startDate"
+                    :filter="dateValueFilter"
+                    visiblePriority="xs" />
+
+        <DateColumn
+                    name="endDate"
+                    title="End Date"
+                    field="endDate"
+                    :filter="dateValueFilter"
+                    visiblePriority="xs" />
+
+        <Column
+                name="status"
+                title="Status"
+                field="status"
+                :filter="pickExistingValueFilter"
+                width="10%"
+                visiblePriority="xs">
+            <template #format="{ row }">
+                <span :class="'label label-' + statusLabelTypeMap[row.status] + ' category-label'">
+                    {{ CompletionStatusDescription[row.status] }}
+                </span>
+            </template>
+        </Column>
+
+        <Column
+                name="profile"
+                title=""
+                width="48px"
+                visiblePriority="md">
+            <template #format="{ row }">
+                <i class="fa fa-user pr-3" @click="onPersonProfileClick(row.individual?.idKey)"></i>
+            </template>
+        </Column>
+    </Grid>
+</template>
+<style scoped>
+    .grid-custom-tab-bar {
+        background-color: #efefef;
+    }
+</style>
+
+<script setup lang="ts">
+    import { PropType, reactive, ref } from "vue";
+    import TabbedBar from "@Obsidian/Controls/tabbedBar.obs";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { Column, dateValueFilter, pickExistingValueFilter, TextColumn, textValueFilter, PersonColumn, DateColumn, SelectColumn } from "@Obsidian/Controls/grid";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+    import { CompletionStatusDescription } from "@Obsidian/Enums/Lms/completionStatus";
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const selectedTab = ref("Completions");
+
+    const emit = defineEmits<{
+        (e: "rowClick", idKey: string): void;
+        (e: "tabChange", tabIndex: number): void;
+    }>();
+
+    const props = defineProps({
+
+        /** The name of the entity to show in the grid title. */
+        entityName: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        /** The labels to show in the grid header. */
+        labels: {
+            type: Array as PropType<PanelAction[]>,
+            required: false
+        },
+
+        /** Whether or not to show the Semester column. */
+        showSemesterColumn: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** The list of tabs to show in the grid header. */
+        tabs: {
+            type: Array as PropType<string[]>,
+            default: []
+        }
+    });
+
+    // #region Values
+
+    const statusLabelTypeMap: Array<string> = ["default", "success", "warning"];
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const entityName = ref(props.entityName);
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        emit("rowClick", key);
+    }
+
+    /**
+    * Gets the filter value text to use for the name column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getPersonNameFilterValue(row: Record<string, unknown>): string {
+        const person = row["individual"] as PersonFieldBag;
+        return !person ? "" : `${person.nickName} ${person.lastName}`;
+    }
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetCompletions");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load program completion grid data.");
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onPersonProfileClick(idKey: string): void {
+        if (idKey?.length > 0) {
+            window.location.href = `/person/${idKey}`;
+        }
+    }
+
+    function onSelectTab(tabName: string): void {
+        const queryParams = new URLSearchParams(window.location.search);
+        const newTabName = tabName.toString() ?? "";
+        queryParams.set("tab", newTabName);
+        history.pushState(null, "", "?" + queryParams.toString());
+
+        const newTabIndex = (props.tabs ?? []).findIndex(t => t === newTabName);
+        emit("tabChange", newTabIndex);
+    }
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>

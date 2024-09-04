@@ -102,13 +102,13 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 BindFilter();
                 BindGrid();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -244,7 +244,7 @@ namespace RockWeb.Blocks.Cms
 
             var anonymousVisitorPersonGuid = Rock.SystemGuid.Person.ANONYMOUS_VISITOR.AsGuid();
 
-            var personAliasPersonalizationsQry = rockContext.PersonAliasPersonalizations;
+            var personAliasPersonalizationsQry = rockContext.Set<PersonAliasPersonalization>();
 
             var requestFilterQuery = requestFilterService.Queryable();
 

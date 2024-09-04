@@ -20,14 +20,20 @@ namespace Rock.Utility.Settings
     /// <summary>
     /// A wrapper for the RockInstanceConfigurationService that provides a global shared instance of the service.
     /// </summary>
+    [Obsolete( "Use RockApp to get to Rock instance configuration." )]
+    [RockObsolete( "1.16.6" )]
     public static class RockInstanceConfig
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         private static RockInstanceConfigurationService _serviceInstance = new RockInstanceConfigurationService();
+#pragma warning restore CS0618 // Type or member is obsolete
 
         /// <summary>
         /// Sets the application started date time.
         /// </summary>
         /// <param name="rockDateTime">The date time.</param>
+        [Obsolete( "This method will be removed in the future." )]
+        [RockObsolete( "1.16.6" )]
         public static void SetApplicationStartedDateTime( DateTime rockDateTime )
         {
             ApplicationStartedDateTime = rockDateTime;
@@ -36,21 +42,32 @@ namespace Rock.Utility.Settings
         /// <summary>
         /// The time that Rock started
         /// </summary>
+        [Obsolete( "Use RockApp.Current.HostingSettings.ApplicationStartDateTime instead." )]
+        [RockObsolete( "1.16.6" )]
         public static DateTime ApplicationStartedDateTime { get; private set; }
 
         static RockInstanceConfig()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             // Create an instance of the configuration service using the database connection stored in the configuration file.
             _serviceInstance = new RockInstanceConfigurationService();
 
             var connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["RockContext"];
-
             _serviceInstance.Database.SetConnectionString( connectionString.ToStringSafe() );
+
+            connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["RockContextReadOnly"];
+            _serviceInstance.Database.SetReadOnlyConnectionString( connectionString?.ConnectionString );
+
+            connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["RockContextAnalytics"];
+            _serviceInstance.Database.SetAnalyticsConnectionString( connectionString?.ConnectionString );
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         /// <summary>
         /// Returns the virtual path of the Rock application on the host.
         /// </summary>
+        [Obsolete( "Use RockApp.Current.HostingSettings.VirtualRootPath instead." )]
+        [RockObsolete( "1.16.6" )]
         public static string ApplicationDirectory
         {
             get
@@ -65,6 +82,8 @@ namespace Rock.Utility.Settings
         /// <value>
         /// The name of the machine.
         /// </value>
+        [Obsolete( "Use RockApp.Current.HostingSettings.MachineName instead." )]
+        [RockObsolete( "1.16.6" )]
         public static string MachineName
         {
             get
@@ -76,6 +95,8 @@ namespace Rock.Utility.Settings
         /// <summary>
         /// Returns the install path of the Rock application on the host.
         /// </summary>
+        [Obsolete( "Use RockApp.Current.HostingSettings.WebRootPath instead." )]
+        [RockObsolete( "1.16.6" )]
         public static string PhysicalDirectory
         {
             get
@@ -87,6 +108,8 @@ namespace Rock.Utility.Settings
         /// <summary>
         /// Returns the date and time of the application host server, localised according to the timezone specified in the Rock application settings.
         /// </summary>
+        [Obsolete( "This will be removed in the future." )]
+        [RockObsolete( "1.16.6" )]
         public static DateTime RockDateTime
         {
             get
@@ -98,6 +121,8 @@ namespace Rock.Utility.Settings
         /// <summary>
         /// Returns the date and time of the application host server, localised according to the timezone specified in the Rock application settings.
         /// </summary>
+        [Obsolete( "Use RockDateTime.Now.ToRockDateTimeOffset() instead." )]
+        [RockObsolete( "1.16.6" )]
         public static DateTimeOffset RockDateTimeOffset
         {
             get
@@ -109,6 +134,8 @@ namespace Rock.Utility.Settings
         /// <summary>
         /// Returns the date and time of the application host server.
         /// </summary>
+        [Obsolete( "Use RockDateTime.SystemDateTime instead." )]
+        [RockObsolete( "1.16.6" )]
         public static DateTime SystemDateTime
         {
             get
@@ -123,6 +150,8 @@ namespace Rock.Utility.Settings
         /// <value>
         /// The ASP net version.
         /// </value>
+        [Obsolete( "Use RockApp.Current.HostingSettings.DotNetVersion instead." )]
+        [RockObsolete( "1.16.6" )]
         public static string AspNetVersion
         {
             get
@@ -134,6 +163,8 @@ namespace Rock.Utility.Settings
         /// <summary>
         /// Gets information about the database configuration for the current Rock instance.
         /// </summary>
+        [Obsolete( "Use RockApp.Current.GetDatabaseConfiguration() instead." )]
+        [RockObsolete( "1.16.6" )]
         public static RockInstanceDatabaseConfiguration Database
         {
             get
@@ -145,12 +176,16 @@ namespace Rock.Utility.Settings
         /// <summary>
         /// Gets a flag indicating if the database is currently available.
         /// </summary>
+        [Obsolete( "Use RockApp.Current.GetDatabaseConfiguration() instead." )]
+        [RockObsolete( "1.16.6" )]
         public static bool DatabaseIsAvailable { get; private set; } = false;
 
         /// <summary>
         /// Sets a flag indicating if a database connection is available.
         /// </summary>
         /// <param name="isAvailable"></param>
+        [Obsolete( "This method will be removed in the future." )]
+        [RockObsolete( "1.16.6" )]
         public static void SetDatabaseIsAvailable( bool isAvailable )
         {
             DatabaseIsAvailable = isAvailable;
@@ -162,6 +197,8 @@ namespace Rock.Utility.Settings
         /// <value>
         ///   <c>true</c> if this instance is clustered; otherwise, <c>false</c>.
         /// </value>
+        [Obsolete( "Use Rock.WebFarm.RockWebFarm.IsEnabled() instead." )]
+        [RockObsolete( "1.16.6" )]
         public static bool IsClustered
         {
             get
@@ -173,6 +210,8 @@ namespace Rock.Utility.Settings
         /// <summary>
         /// Gets the name of the rendering engine that is currently used to render Lava templates.
         /// </summary>
+        [Obsolete( "Use RockApp.Current.GetCurrentLavaEngineName() instead." )]
+        [RockObsolete( "1.16.6" )]
         public static string LavaEngineName
         {
             get

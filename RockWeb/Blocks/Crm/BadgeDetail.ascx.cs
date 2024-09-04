@@ -56,8 +56,6 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 BindEntityTypes();
@@ -103,6 +101,8 @@ namespace RockWeb.Blocks.Crm
                     }
                 }
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -164,6 +164,10 @@ namespace RockWeb.Blocks.Crm
             badge.EntityTypeQualifierColumn = rtbQualifierColumn.Text;
             badge.EntityTypeQualifierValue = rtbQualifierValue.Text;
             badge.EntityTypeId = etpEntityType.SelectedEntityTypeId;
+            if ( etpEntityType.SelectedEntityTypeId == default( int ) )
+            {
+                badge.EntityTypeId = null;
+            }
 
             if ( !string.IsNullOrWhiteSpace( compBadgeType.SelectedValue ) )
             {

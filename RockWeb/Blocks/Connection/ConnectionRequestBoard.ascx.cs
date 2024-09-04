@@ -643,6 +643,7 @@ namespace RockWeb.Blocks.Connection
             var badgeTypes = delimitedBadgeGuids.SplitDelimitedValues()
                 .AsGuidList()
                 .Select( BadgeCache.Get )
+                .Where( b => b != null ) // exclude the badge in case it has been deleted
                 .ToList();
 
             blRequestModalViewModeBadges.BadgeTypes.AddRange( badgeTypes );
@@ -651,12 +652,29 @@ namespace RockWeb.Blocks.Connection
 
         private void LbUpdateConnections_Click( object sender, EventArgs e )
         {
-            var selectedItems = new List<int>();
-            gRequests.SelectedKeys.ToList().ForEach( k => selectedItems.Add( k.ToString().AsInteger() ) );
+            var selectedItems = new List<int>();          
+
+            if ( gRequests.SelectedKeys.Count == 0 )
+            {
+                foreach ( var dataKeyObject in gRequests.DataKeys )
+                {
+                    var dataKey = dataKeyObject as DataKey;
+                    var selectedItem = dataKey?.Value?.ToString()?.AsIntegerOrNull();
+
+                    if ( selectedItem.HasValue )
+                    {
+                        selectedItems.Add( selectedItem.Value );
+                    }
+                }
+            }
+            else
+            {
+                gRequests.SelectedKeys.ToList().ForEach( k => selectedItems.Add( k.ToString().AsInteger() ) );
+            }
 
             if ( selectedItems.Count == 0 )
             {
-                gRequests.ShowModalAlertMessage( "No requests selected", ModalAlertType.Information );
+                gRequests.ShowModalAlertMessage( "Grid has no Connection Requests", ModalAlertType.Warning );
             }
             else
             {
@@ -706,8 +724,6 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 LoadSettings();
@@ -720,7 +736,7 @@ namespace RockWeb.Blocks.Connection
 
                 if ( causingControlClientId == lbJavaScriptCommand.ClientID )
                 {
-                    // Handle card commands that are sent via JavaScript
+                    // Handle commands that are sent via JavaScript
                     ProcessJavaScriptCommand();
                 }
                 else if ( causingControl != null &&
@@ -731,6 +747,8 @@ namespace RockWeb.Blocks.Connection
                     divFilterDrawer.Style.Clear();
                 }
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -765,10 +783,10 @@ namespace RockWeb.Blocks.Connection
 
         #endregion Base Control Methods
 
-        #region Card Drag
+        #region JavaScript Postbacks
 
         /// <summary>
-        /// Processes the drag event.
+        /// Processes the JavaScript event.
         /// </summary>
         private void ProcessJavaScriptCommand()
         {
@@ -778,6 +796,26 @@ namespace RockWeb.Blocks.Connection
             int? newStatusId;
             int? requestId;
             int? newIndex;
+
+            /*
+                4/30/2024 - JPH
+
+                This is an unconventional way of handling a grid row's delete action, but this
+                block has a pretty complex combination of child controls (to make up its "board"
+                and "list" view modes), which leads to a complicated control lifecycle. This fix
+                will properly support deletes from list view mode until we rewrite the block
+                using the new, Obsidian framework.
+
+                Reason: [Sometimes] Can't delete requests in list view.
+                https://github.com/SparkDevNetwork/Rock/issues/5720
+             */
+            ParseDeleteEventArgument( argument, out requestId );
+            if ( requestId.HasValue )
+            {
+                DeleteGridRequest( requestId.Value );
+                return;
+            }
+
             ParseDragEventArgument( argument, out action, out newStatusId, out requestId, out newIndex );
 
             if ( action == "on-following-change" )
@@ -822,6 +860,22 @@ namespace RockWeb.Blocks.Connection
         }
 
         /// <summary>
+        /// Parses the delete event.
+        /// </summary>
+        /// <param name="argument">The argument.</param>
+        /// <param name="requestId">The request identifier.</param>
+        private void ParseDeleteEventArgument( string argument, out int? requestId )
+        {
+            requestId = null;
+
+            var segments = argument.SplitDelimitedValues();
+            if ( segments.Length == 2 && segments[0] == "on-request-delete" )
+            {
+                requestId = segments[1].AsIntegerOrNull();
+            }
+        }
+
+        /// <summary>
         /// Processes the confirmed drag event.
         /// </summary>
         /// <param name="newStatusId">The new status identifier.</param>
@@ -837,70 +891,92 @@ namespace RockWeb.Blocks.Connection
                 return;
             }
 
-            // Update the dragged request to the new status
+            var oldStatusId = request.ConnectionStatusId;
+            var oldIndex = request.Order;
+
+            // Update the dragged request to the new status.
             request.ConnectionStatusId = newStatusId;
-            rockContext.SaveChanges();
 
             // Reordering is only allowed when the cards are sorted by order
             if ( CurrentSortProperty == ConnectionRequestViewModelSortProperty.Order )
             {
-                if ( request.ConnectionStatusId == newStatusId )
-                {
-                    var requestsOfStatus = service.Queryable()
+                request.Order = newIndex;
+
+                var requestsOfStatus = service.Queryable()
                     .Where( r =>
                         r.ConnectionStatusId == newStatusId &&
-                        r.ConnectionOpportunityId == request.ConnectionOpportunityId )
-                    .ToList()
-                    .OrderBy( r => r.Order )
-                    .ThenBy( r => r.Id )
-                    .ToList();
+                        r.ConnectionOpportunityId == request.ConnectionOpportunityId &&
+                        r.Id != ConnectionRequestId.Value );
 
-                    // There may be filters applied so we do not want to change what might have
-                    // been 4, 9, 12 to 1, 2, 3.  Instead we want to keep 4, 9, 12, and reapply
-                    // those order values to the requests in their new order. There could be a problem
-                    // if some of the orders match (like initially they are all 0). So, we do a
-                    // slight adjustment top ensure uniqueness in this set.
-                    var orderValues = requestsOfStatus.Select( r => r.Order ).ToList();
-                    var previousValue = -1;
+                // A Connection Request is moved to a new status.
+                if ( oldStatusId != newStatusId)
+                {
+                    var requestsOfOldStatus = service.Queryable()
+                        .Where( r =>
+                            r.ConnectionStatusId == oldStatusId &&
+                            r.ConnectionOpportunityId == request.ConnectionOpportunityId &&
+                            r.Order > oldIndex );
 
-                    for ( var i = 0; i < orderValues.Count; i++ )
-                    {
-                        if ( orderValues[i] <= previousValue )
-                        {
-                            orderValues[i] = previousValue + 1;
-                        }
-
-                        previousValue = orderValues[i];
-                    }
-
-                    requestsOfStatus.Remove( request );
-                    requestsOfStatus.Insert( newIndex, request );
-
-                    for ( var i = 0; i < orderValues.Count; i++ )
-                    {
-                        requestsOfStatus[i].Order = orderValues[i];
-                    }
-
-                    if ( orderValues.Count < requestsOfStatus.Count )
-                    {
-                        // This happens if the card came from another column. The remove did nothing, but
-                        // we added the new request. Therefore we need to set the last request to the
-                        // last order value + 1.
-                        requestsOfStatus.Last().Order = previousValue + 1;
-                    }
-
-                    /*
-                     SK - 03/29/2023
-                     Presave Changes is disabled in case of reordering as it updates Modified DateTime of many other connection requests
-                     where slight adjustment is done.
-                     */
-                    rockContext.SaveChanges( true );
+                    rockContext.BulkUpdate( requestsOfOldStatus, r => new ConnectionRequest { Order = r.Order - 1, ModifiedDateTime = r.ModifiedDateTime } );
+                    IncrementRequestOrder( requestsOfStatus, newIndex, rockContext );
                 }
+                // A Connection Request remained in its original status and was moved up in order.
+                else if ( newIndex < oldIndex ) 
+                {
+                    IncrementRequestOrder( requestsOfStatus, newIndex, rockContext );
+                }
+                // A Connection Request remained in its original status and was moved down in order.
                 else
                 {
-                    RefreshRequestCard();
+                    requestsOfStatus = requestsOfStatus.Where( r => r.Order > oldIndex && r.Order <= newIndex );
+                    rockContext.BulkUpdate( requestsOfStatus, r => new ConnectionRequest { Order = r.Order - 1, ModifiedDateTime = r.ModifiedDateTime } );
                 }
             }
+            else if ( oldStatusId != newStatusId )
+            {
+                MaintainRequestOrder( request, service, oldIndex, oldStatusId, newStatusId, rockContext );
+            }
+
+            rockContext.SaveChanges();
+        }
+
+        /// <summary>
+        /// Increments the order of selected connection requests from a status.
+        /// </summary>
+        /// <param name="requestsOfStatus">The selected connection requests from a status.</param>
+        /// <param name="newIndex">The new index of the dropped connection request.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void IncrementRequestOrder( IQueryable<ConnectionRequest> requestsOfStatus, int newIndex, RockContext rockContext )
+        {
+            requestsOfStatus = requestsOfStatus.Where( r => r.Order >= newIndex );
+            rockContext.BulkUpdate( requestsOfStatus, r => new ConnectionRequest { Order = r.Order + 1, ModifiedDateTime = r.ModifiedDateTime } );
+        }
+
+        /// <summary>
+        /// Maintains the order of connection requests when they are moved to a new status and are not sorted by order.
+        /// </summary>
+        /// <param name="request">The moved connection request.</param>
+        /// <param name="service">The connection request service.</param>
+        /// <param name="oldIndex">The old order index of the moved connection request.</param>
+        /// <param name="oldStatusId">The old connection status id that the connection request was moved from.</param>
+        /// <param name="newStatusId">The new connection status id that the connection request was moved to.</param>
+        /// <param name="rockContext">The rock context.</param>
+        private void MaintainRequestOrder( ConnectionRequest request, ConnectionRequestService service, int oldIndex, int oldStatusId, int newStatusId, RockContext rockContext )
+        {
+            request.Order = 0;
+            var requestsOfOldStatus = service.Queryable()
+                .Where( r =>
+                    r.ConnectionStatusId == oldStatusId &&
+                    r.ConnectionOpportunityId == request.ConnectionOpportunityId &&
+                    r.Order > oldIndex );
+            var requestsOfStatus = service.Queryable()
+                .Where( r =>
+                    r.ConnectionStatusId == newStatusId &&
+                    r.ConnectionOpportunityId == request.ConnectionOpportunityId &&
+                    r.Id != ConnectionRequestId.Value );
+
+            rockContext.BulkUpdate( requestsOfOldStatus, r => new ConnectionRequest { Order = r.Order - 1, ModifiedDateTime = r.ModifiedDateTime } );
+            IncrementRequestOrder( requestsOfStatus, 0, rockContext );
         }
 
         /// <summary>
@@ -920,7 +996,7 @@ namespace RockWeb.Blocks.Connection
             newIndex = segments.Length >= 4 ? segments[3].AsIntegerOrNull() : null;
         }
 
-        #endregion Card Drag
+        #endregion JavaScript Postbacks
 
         #region Helper Methods
 
@@ -1424,6 +1500,11 @@ namespace RockWeb.Blocks.Connection
                 connectionRequest.ConnectionState = ConnectionState.Active;
             }
 
+            if ( connectionRequest.ConnectionStatusId != rblRequestModalAddEditModeStatus.SelectedValueAsInt().Value )
+            {
+                MaintainRequestOrder( connectionRequest, connectionRequestService, connectionRequest.Order, connectionRequest.ConnectionStatusId, rblRequestModalAddEditModeStatus.SelectedValueAsInt().Value, rockContext );
+            }
+
             connectionRequest.ConnectionStatusId = rblRequestModalAddEditModeStatus.SelectedValueAsInt().Value;
             connectionRequest.Comments = tbRequestModalAddEditModeComments.Text.SanitizeHtml();
 
@@ -1472,6 +1553,7 @@ namespace RockWeb.Blocks.Connection
             connectionRequest.SaveAttributeValues( rockContext );
 
             _connectionRequest = connectionRequest;
+            ConnectionRequestId = connectionRequest.Id;
 
             // Add an activity that the connector was assigned (or changed)
             if ( originalConnectorPersonAliasId != newConnectorPersonAliasId )
@@ -2371,11 +2453,10 @@ namespace RockWeb.Blocks.Connection
         /// <summary>
         /// Handles the Delete event of the gRequests control.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
-        protected void gRequests_Delete( object sender, RowEventArgs e )
+        /// <param name="connectionRequestId">The connection request identifier.</param>
+        private void DeleteGridRequest( int connectionRequestId )
         {
-            ConnectionRequestId = e.RowKeyId;
+            ConnectionRequestId = connectionRequestId;
             ViewAllActivities = false;
             DeleteRequest();
             BindRequestsGrid();
@@ -2516,7 +2597,7 @@ namespace RockWeb.Blocks.Connection
                     CurrentActivity = c.Workflow.ActiveActivityNames,
                     Date = c.Workflow.ActivatedDateTime.Value.ToShortDateString(),
                     OrderByDate = c.Workflow.ActivatedDateTime.Value,
-                    Status = c.Workflow.Status == "Completed" ? "<span class='label label-success'>Complete</span>" : "<span class='label label-info'>Running</span>"
+                    Status = $"<span class='label label-{( c.Workflow.CompletedDateTime.HasValue ? "success" : "info" )}'>{( c.Workflow.Status == "Active" ? "Running" : c.Workflow.Status )}</span>"
                 } )
                 .OrderByDescending( c => c.OrderByDate )
                 .ToList();
@@ -2670,6 +2751,13 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gRequestModalViewModeActivities_RowSelected( object sender, RowEventArgs e )
         {
+            var viewModel = GetActivityViewModelQuery().FirstOrDefault( a => a.Id == e.RowKeyId );
+
+            if ( viewModel?.CanEdit != true )
+            {
+                return;
+            }
+
             CurrentActivityId = e.RowKeyId;
             RequestModalViewModeSubMode = RequestModalViewModeSubMode_AddEditActivity;
             ShowRequestModal();
@@ -4025,7 +4113,7 @@ namespace RockWeb.Blocks.Connection
             foreach ( var campaignConnectionItem in campaignConnectionItems )
             {
                 int pendingCount = CampaignConnectionHelper.GetPendingConnectionCount( campaignConnectionItem, CurrentPerson );
-                campaignConnectionItemsPendingCount.AddOrIgnore( campaignConnectionItem, pendingCount );
+                campaignConnectionItemsPendingCount.TryAdd( campaignConnectionItem, pendingCount );
                 var listItem = new ListItem();
                 listItem.Text = string.Format( "{0} ({1} pending connections)", campaignConnectionItem.Name, pendingCount );
                 listItem.Value = campaignConnectionItem.Guid.ToString();
@@ -4350,13 +4438,13 @@ namespace RockWeb.Blocks.Connection
                         .AsNoTracking()
                         .ToList();
 
-                    connectionOpportunityConnectorPersonList.ForEach( p => connectors.AddOrIgnore( p.Id, p ) );
+                    connectionOpportunityConnectorPersonList.ForEach( p => connectors.TryAdd( p.Id, p ) );
                 }
 
                 // Add the current person as possible connector
                 if ( CurrentPerson != null )
                 {
-                    connectors.AddOrIgnore( CurrentPerson.Id, CurrentPerson );
+                    connectors.TryAdd( CurrentPerson.Id, CurrentPerson );
                 }
 
                 // Add connectors to dropdown list
@@ -4963,11 +5051,13 @@ namespace RockWeb.Blocks.Connection
 
             var rockContext = new RockContext();
             var connectionRequestService = new ConnectionRequestService( rockContext );
+
             _connectionRequestViewModel = connectionRequestService.GetConnectionRequestViewModel(
                 CurrentPersonAliasId.Value,
                 ConnectionRequestId.Value,
                 new ConnectionRequestViewModelQueryArgs(),
                 GetConnectionRequestStatusIconsTemplate() );
+
             return _connectionRequestViewModel;
         }
 
@@ -5166,7 +5256,7 @@ namespace RockWeb.Blocks.Connection
                 }
 
                 if ( _connectionTypeViewModels != null )
-                { 
+                {
                     _connectionTypeViewModels = _connectionTypeViewModels
                         .Where( vm => vm.ConnectionOpportunities.Any() )
                         .OrderBy( ct => ct.Order )
@@ -5486,7 +5576,7 @@ namespace RockWeb.Blocks.Connection
             var connectionRequestActivityService = new ConnectionRequestActivityService( rockContext );
             var query = connectionRequestActivityService.Queryable()
                 .AsNoTracking()
-                .Where( a => a.ConnectionRequest.PersonAliasId == connectionRequestViewModel.PersonAliasId );
+                .Where( a => a.ConnectionRequest.PersonAlias.PersonId == connectionRequestViewModel.PersonId );
 
             if ( connectionType.EnableFullActivityList )
             {
@@ -6162,7 +6252,6 @@ namespace RockWeb.Blocks.Connection
 
             // Hold a reference to the delete column
             var deleteField = new DeleteField();
-            deleteField.Click += gRequests_Delete;
             gRequests.Columns.Add( deleteField );
         }
 

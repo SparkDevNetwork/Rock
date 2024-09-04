@@ -9,6 +9,116 @@
 @color-base-primary: red(@brand-primary), green(@brand-primary), blue(@brand-primary);
 
 :root {
+  /*
+      NextGen CSS Variables
+      ---------------------------------------
+  */
+  /* INTERFACE COLORS  */
+  --color-interface-strongest: #000000;
+  --color-interface-stronger: #1C1C1E;
+  --color-interface-strong: #5D5D6F;
+  --color-interface-medium: #8B8BA7;
+  --color-interface-soft: #D9D9E3;
+  --color-interface-softer: #F2F2F7;
+  --color-interface-softest: #FFFFFF;
+
+  /* APPLICATION COLORS  */
+  --color-critical-soft: #FEDEC8;
+  --color-critical-strong: #EE7624;
+  --color-danger-soft: #FFCCD1;
+  --color-danger-strong: #D70015;
+  --color-info-soft: #D6EAFF;
+  --color-info-strong: #007AFF;
+  --color-success-soft: #D7F4DE;
+  --color-success-strong: #248A3D;
+  --color-warning-soft: #FFECD1;
+  --color-warning-strong: #E58600;
+
+  /* SYSTEM COLORS  */
+  --color-primary: #EE7725;
+  --color-campus: #83758f;
+  --color-link: #006DCC;
+  --color-link-hover: #003766;
+
+  /* CATEGORICAL COLORS  */
+  --color-categorial-1: #007aff;
+  --color-categorial-2: #5856D6;
+  --color-categorial-3: #4cd964;
+  --color-categorial-4: #ff2d55;
+  --color-categorial-5: #ff9500;
+  --color-categorial-6: #5ac8fa;
+  --color-categorial-7: #ffcc00;
+  --color-categorial-8: #8e8e93;
+
+  /* DIVERGING COLORS */
+  --color-diverging-1: #2507b7;
+  --color-diverging-2: #3109f5;
+  --color-diverging-3: #6447f7;
+  --color-diverging-4: #9884fa;
+  --color-diverging-5: #CBC1FC;
+  --color-diverging-6: #E5EEF9;
+  --color-diverging-7: #C8F5F0;
+  --color-diverging-8: #92ece2;
+  --color-diverging-9: #5be2d4;
+  --color-diverging-10: #22c8b7;
+  --color-diverging-11: #1ca394;
+
+  /* SEQUENTIAL COLORS */
+  --color-sequential-1: #1a844a;
+  --color-sequential-2: #209f58;
+  --color-sequential-3: #25b967;
+  --color-sequential-4: #2AD476;
+  --color-sequential-5: #45D987;
+  --color-sequential-6: #5FDE98;
+  --color-sequential-7: #7AE4A9;
+  --color-sequential-8: #94E9BA;
+  --color-sequential-9: #AFEECB;
+  --color-sequential-10: #C9F4DC;
+  --color-sequential-11: #E4F9ED;
+
+  /* FONT SIZES */
+  --font-size-xsmall: 12px;
+  --font-size-small: 14px;
+  --font-size-regular: 16px;
+  --font-size-h1: 44px;
+  --font-size-h2: 36px;
+  --font-size-h3: 28px;
+  --font-size-h4: 22px;
+  --font-size-h5: 18px;
+  --font-size-h6: 16px;
+
+  /* FONT WEIGHTS  */
+  --font-weight-light: 300;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-black: 900;
+
+  /* LINE HEIGHTS  */
+  --line-height-normal: 1.5;
+  --line-height-tight: 1.1;
+  --line-height-compact: 1.055;
+
+  /* SPACING */
+  --spacing-tiny: 4px;
+  --spacing-small: 8px;
+  --spacing-medium: 16px;
+  --spacing-large: 24px;
+  --spacing-xlarge: 48px;
+  --spacing-huge: 80px;
+
+  /* BORDER RADIUS */
+  --rounded-tiny: 2px;
+  --rounded-small: 6px;
+  --rounded-medium: 8px;
+  --rounded-large: 12px;
+  --rounded-xlarge: 16px;
+  --rounded-huge: 24px;
+  /*
+      Legacy CSS Variables Below
+      ---------------------------------------
+  */
   --theme-darkest: @gray-darker;
   --theme-dark: @gray-dark;
   --theme-medium: @gray;
@@ -557,7 +667,7 @@ th[align="right"] {
     color: #6f7782;
     font-size: @font-size-xs;
     font-weight: 600;
-    line-height: @line-height-small;
+    line-height: 24px;
     color: #6f7782;
     background: transparent;
     border: 1px solid transparent;
@@ -1037,6 +1147,7 @@ th[align="right"] {
     border-color: var(--btn-bg, @btn-default-border);
 
     &::before {
+      display: inline-block;
       margin-right: 12px;
       font-family: "@{fa-font-face} Brands";
       font-weight: 400;
@@ -1391,4 +1502,11 @@ div.aspNetDisabled {
     border: 1px solid @panel-border;
     flex: 1;
   }
+}
+
+
+/* Implement Bootstrap v4 borderless tables. */
+.table.table-borderless > tbody > tr > td,
+.table.table-borderless > tbody > tr > th {
+  border: 0;
 }

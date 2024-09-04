@@ -34,8 +34,8 @@ namespace Rock.Field.Types
     /// 
     /// </summary>
     /// <seealso cref="Rock.Field.FieldType" />
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
-    [Rock.SystemGuid.FieldTypeGuid( "E73B9F41-8325-4229-8EA5-75180066680C" )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian)]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CONDITIONAL_SCALE )]
     public class ConditionalScaleFieldType : DecimalFieldType
     {
         #region ConfigurationKeys
@@ -54,6 +54,49 @@ namespace Rock.Field.Types
         #endregion ConfigurationKeys
 
         #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string privateValue )
+        {
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
+
+            if ( publicConfigurationValues.ContainsKey( ConfigurationKey.ConfigurationJSON ) )
+            {
+                var configurationJson = publicConfigurationValues[ConfigurationKey.ConfigurationJSON];
+                if ( configurationJson.IsNotNullOrWhiteSpace() )
+                {
+                    var conditionalScaleRangeRuleList = configurationJson.FromJsonOrNull<List<ConditionalScaleRangeRule>>() ?? new List<ConditionalScaleRangeRule>();
+                    if ( conditionalScaleRangeRuleList != null )
+                    {
+                        publicConfigurationValues[ConfigurationKey.ConfigurationJSON] = conditionalScaleRangeRuleList.ToCamelCaseJson(false, false);
+                    }
+                }
+            }
+
+            return publicConfigurationValues;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            var privateConfigurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
+
+            if ( privateConfigurationValues.ContainsKey( ConfigurationKey.ConfigurationJSON ) )
+            {
+                var configurationJSON = privateConfigurationValues[ConfigurationKey.ConfigurationJSON];
+                if ( configurationJSON.IsNotNullOrWhiteSpace() )
+                {
+                    var conditionalScaleRangeRuleList = configurationJSON.FromJsonOrNull<List<ConditionalScaleRangeRule>>() ?? new List<ConditionalScaleRangeRule>();
+                    if ( conditionalScaleRangeRuleList != null )
+                    {
+                        conditionalScaleRangeRuleList.RemoveAll( a => a.Label.IsNullOrWhiteSpace() );
+                        privateConfigurationValues[ConfigurationKey.ConfigurationJSON] = conditionalScaleRangeRuleList.ToJson();
+                    }
+                }
+            }
+
+            return privateConfigurationValues;
+        }
 
         /// <inheritdoc />
         public override bool IsPersistedValueInvalidated( Dictionary<string, string> oldPrivateConfigurationValues, Dictionary<string, string> newPrivateConfigurationValues )
@@ -118,6 +161,18 @@ namespace Rock.Field.Types
                 // if out-of-range, display nothing
                 return string.Empty;
             }
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return privateValue;
         }
 
         #endregion

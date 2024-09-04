@@ -11,6 +11,7 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { computed, PropType, ref } from "vue";
     import BaseAsyncPicker from "./baseAsyncPicker.obs";
+    import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
 
     const props = defineProps({
         modelValue: {
@@ -18,7 +19,27 @@
             required: false
         },
 
-        ...standardAsyncPickerProps
+        ...standardAsyncPickerProps,
+
+        /**
+         * The following come with the standardAsyncPickerProps, but their
+         * defaults need to be changed to match how this picker is typically used.
+         **/
+
+        multiple: {
+            type: Boolean,
+            default: true
+        },
+
+        displayStyle: {
+            type: String as PropType<PickerDisplayStyle>,
+            default: PickerDisplayStyle.List
+        },
+
+        columnCount: {
+            type: Number,
+            default: 3
+        }
     });
 
     const emit = defineEmits<{

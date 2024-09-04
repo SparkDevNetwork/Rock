@@ -36,6 +36,8 @@
                         <div class="col-md-6">
                             <Rock:RockTextBox ID="tbDocumentTerm" runat="server" Label="Document Term" MaxLength="100" Help="How the document should be referred to (e.g Waiver, Contract, Statement, etc.)" />
                             <Rock:RockRadioButtonList ID="rblSignatureType" runat="server" Label="Signature Input Type" Help="The input type for the signature. Drawn will display an area where the individual can use the mouse or a finger to draw a representation of their signature. Typed will allow them to type their name as their digital signature. Both are legally acceptable in the US and Canada. The drawn value is considered Personally identifiable information (PII) and is more sensitive to keep. It is encrypted in the database." RepeatDirection="Horizontal" />
+                            <Rock:RockCheckBox ID="cbValidInFuture" runat="server" Label="Valid In Future" Help="Determines if documents of this type should be considered valid for future eligibility needs." OnCheckedChanged="cbValidInFuture_CheckChanged" AutoPostBack="true" />
+                            <Rock:NumberBox runat="server" ID="nbValidDurationDays" Label="Valid Duration Days" Visible="False" HelpText="The number of days a signed document of this type will be considered valid." />
                         </div>
                         <div class="col-md-6">
                             <Rock:BinaryFileTypePicker ID="bftpFileType" runat="server" Label="File Type" Required="true" Help="Determines which file type is used when storing the signed document" />
@@ -152,8 +154,8 @@
 
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnSaveType" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSaveType_Click" />
-                        <asp:LinkButton ID="btnCancelType" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancelType_Click" />
+                        <asp:LinkButton ID="btnSaveType" runat="server" data-shortcut-key="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSaveType_Click" />
+                        <asp:LinkButton ID="btnCancelType" runat="server" data-shortcut-key="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancelType_Click" />
                     </div>
 
                 </div>
@@ -178,7 +180,7 @@
                     </div>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" ToolTip="Alt+m" Text="Edit" CssClass="btn btn-primary" CausesValidation="false" OnClick="btnEdit_Click" />
+                        <asp:LinkButton ID="btnEdit" runat="server" data-shortcut-key="e" AccessKey="m" ToolTip="Alt+e" Text="Edit" CssClass="btn btn-primary" CausesValidation="false" OnClick="btnEdit_Click" />
                         <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
                     </div>

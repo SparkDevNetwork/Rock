@@ -65,7 +65,7 @@
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import ComponentPicker from "@Obsidian/Controls/componentPicker.obs";
-    import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { setPropertiesBoxValue, watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import TimePicker from "@Obsidian/Controls/timePicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import DayOfWeekPicker from "@Obsidian/Controls/dayOfWeekPicker.obs";
@@ -75,10 +75,11 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { TimePickerValue } from "@Obsidian/ViewModels/Controls/timePickerValue";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<FinancialGatewayBag>,
+            type: Object as PropType<ValidPropertiesBox<FinancialGatewayBag>>,
             required: true
         },
 
@@ -89,7 +90,7 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: FinancialGatewayBag): void,
+        (e: "update:modelValue", value: ValidPropertiesBox<FinancialGatewayBag>): void,
         (e: "propertyChanged", value: string): void
     }>();
 
@@ -98,16 +99,16 @@
     const weeklySchedule = "Weekly";
     const dailySchedule = "Daily";
     const defaultInactiveMessage = "<strong>Important!</strong> An 'Inactive' status will prevent the gateway from being shown in the gateway picker for Registration templates if it is not already selected. An 'Inactive' status DOES NOT prevent charges from being processed for a registration where the gateway is already assigned.";
-    const attributes = ref(props.modelValue.attributes ?? {});
-    const attributeValues = ref(props.modelValue.attributeValues ?? {});
-    const description = propertyRef(props.modelValue.description ?? "", "Description");
-    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
-    const name = propertyRef(props.modelValue.name ?? "", "Name");
-    const batchTimeOffsetTicks = propertyRef(getTimePickerValue(props.modelValue.batchTimeOffsetTicks), "BatchTimeOffsetTicks");
-    const gatewayType = propertyRef(props.modelValue.entityType ?? {}, "EntityTypeId");
-    const batchSchedule = ref(props.modelValue.batchSchedule ?? "");
-    const dayOfWeek = ref(props.modelValue.batchStartDay ?? "");
-    const inactiveGatewayMessage = ref(props.modelValue.inactiveGatewayNotificationMessage ?? "");
+    const attributes = ref(props.modelValue?.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.bag?.attributeValues ?? {});
+    const description = propertyRef(props.modelValue?.bag?.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue?.bag?.isActive ?? false, "IsActive");
+    const name = propertyRef(props.modelValue?.bag?.name ?? "", "Name");
+    const batchTimeOffsetTicks = propertyRef(getTimePickerValue(props.modelValue?.bag?.batchTimeOffsetTicks), "BatchTimeOffsetTicks");
+    const gatewayType = propertyRef(props.modelValue?.bag?.entityType ?? {}, "EntityTypeId");
+    const batchSchedule = ref(props.modelValue?.bag?.batchSchedule ?? "");
+    const dayOfWeek = ref(props.modelValue?.bag?.batchStartDay ?? "");
+    const inactiveGatewayMessage = ref(defaultInactiveMessage);
     const scheduleOptions = ref([
         {
             text: dailySchedule,
@@ -164,13 +165,13 @@
         }
 
         // When in add mode don't send request at all, use default message.
-        if (props.modelValue?.idKey) {
+        if (props.modelValue?.bag?.idKey) {
             if (!isActive.value && !inactiveGatewayMessage.value) {
 
                 inactiveGatewayMessage.value = defaultInactiveMessage;
 
                 const result = await invokeBlockAction<{ inactiveGatewayMessage: string }>("GetInactiveGatewayMessage", {
-                    key: props.modelValue?.idKey
+                    key: props.modelValue?.bag?.idKey
                 });
 
                 if (result.isSuccess && result.data) {
@@ -206,31 +207,32 @@
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
-        updateRefValue(attributes, props.modelValue.attributes ?? {});
-        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
-        updateRefValue(description, props.modelValue.description ?? "");
-        updateRefValue(isActive, props.modelValue.isActive ?? false);
-        updateRefValue(name, props.modelValue.name ?? "");
-        updateRefValue(gatewayType, props.modelValue.entityType ?? {});
-        updateRefValue(batchTimeOffsetTicks, getTimePickerValue(props.modelValue.batchTimeOffsetTicks));
-        updateRefValue(dayOfWeek, props.modelValue.batchStartDay ?? "");
-        updateRefValue(batchSchedule, props.modelValue.batchSchedule ?? "");
+        updateRefValue(attributes, props.modelValue?.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue?.bag?.attributeValues ?? {});
+        updateRefValue(description, props.modelValue?.bag?.description ?? "");
+        updateRefValue(isActive, props.modelValue?.bag?.isActive ?? false);
+        updateRefValue(name, props.modelValue?.bag?.name ?? "");
+        updateRefValue(gatewayType, props.modelValue?.bag?.entityType ?? {});
+        updateRefValue(batchTimeOffsetTicks, getTimePickerValue(props.modelValue?.bag?.batchTimeOffsetTicks));
+        updateRefValue(dayOfWeek, props.modelValue?.bag?.batchStartDay ?? "");
+        updateRefValue(batchSchedule, props.modelValue?.bag?.batchSchedule ?? "");
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
     watch([attributeValues, dayOfWeek, batchSchedule, ...propRefs], () => {
-        const newValue: FinancialGatewayBag = {
-            ...props.modelValue,
-            attributeValues: attributeValues.value,
-            description: description.value,
-            isActive: isActive.value,
-            name: name.value,
-            entityType: gatewayType.value,
-            batchTimeOffsetTicks: getTimePickerValueString(batchTimeOffsetTicks.value),
-            batchStartDay: dayOfWeek.value,
-            batchSchedule: batchSchedule.value
+        const newValue: ValidPropertiesBox<FinancialGatewayBag> = {
+            bag: { ...props.modelValue.bag } as FinancialGatewayBag
         };
+        setPropertiesBoxValue(newValue, "attributes", attributes.value),
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value),
+        setPropertiesBoxValue(newValue, "description", description.value),
+        setPropertiesBoxValue(newValue, "isActive", isActive.value),
+        setPropertiesBoxValue(newValue, "name", name.value),
+        setPropertiesBoxValue(newValue, "entityType", gatewayType.value),
+        setPropertiesBoxValue(newValue, "batchTimeOffsetTicks", getTimePickerValueString(batchTimeOffsetTicks.value)),
+        setPropertiesBoxValue(newValue, "batchStartDay", dayOfWeek.value),
+        setPropertiesBoxValue(newValue, "batchSchedule", batchSchedule.value);
 
         emit("update:modelValue", newValue);
     });

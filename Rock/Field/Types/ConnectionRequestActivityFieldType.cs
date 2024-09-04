@@ -32,8 +32,8 @@ namespace Rock.Field.Types
     /// Field Type to select a single (or null) Connection Request Activity
     /// Stored as ConnectionRequestActivity.Guid
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
-    [Rock.SystemGuid.FieldTypeGuid( "10842787-7C17-413A-A562-9CA19E6FCE52" )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CONNECTION_REQUEST_ACTIVITY )]
     public class ConnectionRequestActivityFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
         #region Formatting
@@ -65,7 +65,17 @@ namespace Rock.Field.Types
 
         #region Edit Control
 
-        // simple text box implemented by base FieldType
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return privateValue;
+        }
 
         #endregion
 

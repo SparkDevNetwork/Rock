@@ -19,6 +19,8 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
+using Rock.Bus.Message;
+
 namespace Rock.Web.Cache
 {
     /// <summary>
@@ -82,34 +84,6 @@ namespace Rock.Web.Cache
         internal protected static T GetOrAddExisting( int key, Func<T> itemFactory, Func<List<string>> keyFactory = null )
         {
             return GetOrAddExisting( key.ToString(), itemFactory, keyFactory );
-        }
-
-        /// <summary>
-        /// Gets an item from cache, and if not found, executes the itemFactory to create item and add to cache with an expiration timespan.
-        /// </summary>
-        /// <param name="key">The key.</param>
-        /// <param name="itemFactory">The item factory.</param>
-        /// <param name="expiration">The expiration.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.11" )]
-        [Obsolete( "Use the Lifespan properties instead of the expiration parameter." )]
-        internal protected static T GetOrAddExisting( int key, Func<T> itemFactory, TimeSpan expiration )
-        {
-            return GetOrAddExisting( key, itemFactory );
-        }
-
-        /// <summary>
-        /// Gets an item from cache, and if not found, executes the itemFactory to create item and add to cache with an expiration timespan.
-        /// </summary>
-        /// <param name="key">The key.</param>
-        /// <param name="itemFactory">The item factory.</param>
-        /// <param name="expiration">The expiration.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.11" )]
-        [Obsolete( "Use the Lifespan properties instead of the expiration parameter." )]
-        internal protected static T GetOrAddExisting( string key, Func<T> itemFactory, TimeSpan expiration )
-        {
-            return GetOrAddExisting( key, itemFactory );
         }
 
         /// <summary>
@@ -178,6 +152,28 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// The purpose of this method is to Consume the NewEntityAddedMessage published by the
+        /// <see cref="AddToAllIds(string, Func{List{string}})"/> method in other Rock Nodes and add the provided Key to the Cache.
+        /// </summary>
+        /// <param name="key"></param>
+        internal static void ReceiveAddIdMessage( string key )
+        {
+            var allKeys = RockCacheManager<List<string>>.Instance.Get( AllKey, _AllRegion );
+
+            // Skip adding the key to the list if the list already has the entry or if the list itself is not present in the cache.
+            if ( allKeys == null || allKeys.Contains( key ) )
+            {
+                return;
+            }
+
+            // The key is not part of the list so add it and update the cache
+            lock ( _obj )
+            {
+                allKeys.Add( key, true );
+            }
+        }
+
+        /// <summary>
         /// Ensure that the Key is part of the AllIds list
         /// </summary>
         /// <param name="key">The key.</param>
@@ -201,6 +197,7 @@ namespace Rock.Web.Cache
                     if ( allKeys != null )
                     {
                         RockCacheManager<List<string>>.Instance.AddOrUpdate( AllKey, _AllRegion, allKeys );
+                        NewItemCacheAddedMessage.Publish<T>( key );
                     }
                 }
 
@@ -215,6 +212,8 @@ namespace Rock.Web.Cache
                 allKeys.Add( key, true );
                 RockCacheManager<List<string>>.Instance.AddOrUpdate( AllKey, _AllRegion, allKeys );
             }
+
+            NewItemCacheAddedMessage.Publish<T>( key );
         }
 
         /// <summary>
@@ -352,7 +351,6 @@ namespace Rock.Web.Cache
             RockCacheManager<T>.Instance.Clear();
             RockCacheManager<List<string>>.Instance.Remove( AllKey, _AllRegion );
         }
-
 
         /// <summary>
         /// Method that is called by the framework immediately after being added to cache

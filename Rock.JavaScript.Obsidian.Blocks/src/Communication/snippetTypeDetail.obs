@@ -1,8 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
 
-    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
 
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
@@ -10,13 +10,13 @@
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
-                 :entityTypeName="entityTypeName"
+                 entityTypeName="SnippetType"
                  :isAuditHidden="false"
                  :isBadgesVisible="true"
                  :isDeleteVisible="isEditable"
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
-                 :isSecurityHidden="false"
+                 :isSecurityHidden="!isSecurityVisible"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
                  @edit="onEdit"
@@ -26,7 +26,7 @@
         </template>
 
         <template #edit>
-            <EditPanel v-model="snippetTypeEditBag" :options="options" @propertyChanged="onPropertyChanged" />
+            <EditPanel v-model="snippetTypeEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
         </template>
     </DetailBlock>
 </template>
@@ -40,16 +40,16 @@
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import EditPanel from "./SnippetTypeDetail/editPanel.partial.obs";
     import ViewPanel from "./SnippetTypeDetail/viewPanel.partial.obs";
-    import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
-    import { debounce } from "@Obsidian/Utility/util";
+    import { useConfigurationValues, useInvokeBlockAction, useEntityDetailBlock } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./SnippetTypeDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { SnippetTypeBag } from "@Obsidian/ViewModels/Blocks/Communication/SnippetTypeDetail/snippetTypeBag";
     import { SnippetTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/SnippetTypeDetail/snippetTypeDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+
 
     const config = useConfigurationValues<DetailBlockBox<SnippetTypeBag, SnippetTypeDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const securityGrant = getSecurityGrant(config.securityGrantToken);
 
     // #region Values
 
@@ -57,24 +57,18 @@
     const errorMessage = ref("");
 
     const snippetTypeViewBag = ref(config.entity);
-    const snippetTypeEditBag = ref<SnippetTypeBag>({} as SnippetTypeBag);
+    const snippetTypeEditBag = ref<ValidPropertiesBox<SnippetTypeBag>>({
+        bag: {} as SnippetTypeBag
+    });
 
     const entityTypeGuid = EntityType.SnippetType;
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
-    // The properties that are being edited in the UI. This is used to
-    // inform the server which incoming values have valid data in them.
-    const validProperties = [
-        "attributeValues",
-        "description",
-        "helpText",
-        "isPersonalAllowed",
-        "isSharedAllowed",
-        "name"
-    ];
-
-    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(snippetTypeEditBag, validProperties, invokeBlockAction), undefined, true);
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: snippetTypeEditBag
+    });
 
     // #endregion
 
@@ -85,10 +79,6 @@
      */
     const panelName = computed((): string => {
         return snippetTypeViewBag.value?.name ?? "";
-    });
-
-    const entityTypeName = computed((): string => {
-        return snippetTypeViewBag.value?.name ?? "New Snippet Type";
     });
 
     /**
@@ -119,6 +109,10 @@
         return config.options ?? {};
     });
 
+    const isSecurityVisible = computed((): boolean => {
+        return config.entity?.canAdministrate === true;
+    });
+
     // #endregion
 
     // #region Functions
@@ -134,7 +128,7 @@
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
     async function onCancelEdit(): Promise<boolean | string> {
-        if (!snippetTypeEditBag.value?.idKey) {
+        if (!snippetTypeEditBag.value?.bag?.idKey) {
             if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
                 return config.navigationUrls[NavigationUrlKey.ParentPage];
             }
@@ -175,35 +169,21 @@
      * @returns true if the panel should enter edit mode; otherwise false.
      */
     async function onEdit(): Promise<boolean> {
-        const result = await invokeBlockAction<DetailBlockBox<SnippetTypeBag, SnippetTypeDetailOptionsBag>>("Edit", {
+        const result = await invokeBlockAction<ValidPropertiesBox<SnippetTypeBag>>("Edit", {
             key: snippetTypeViewBag.value?.idKey
         });
 
-        if (result.isSuccess && result.data && result.data.entity) {
-            snippetTypeEditBag.value = result.data.entity;
+        if (result.isSuccess && result.data && result.data.bag) {
+            snippetTypeEditBag.value = {
+                bag: result.data.bag,
+                validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
+            };
 
             return true;
         }
         else {
             return false;
         }
-    }
-
-    /**
-     * Event handler for when a value has changed that has an associated
-     * C# property name. This is used to detect changes to values that
-     * might cause qualified attributes to either show up or not show up.
-     *
-     * @param propertyName The name of the C# property that was changed.
-     */
-    function onPropertyChanged(propertyName: string): void {
-        // If we don't have any qualified attribute properties or this property
-        // is not one of them then do nothing.
-        if (!config.qualifiedAttributeProperties || !config.qualifiedAttributeProperties.some(n => n.toLowerCase() === propertyName.toLowerCase())) {
-            return;
-        }
-
-        refreshAttributesDebounce();
     }
 
     /**
@@ -215,19 +195,13 @@
     async function onSave(): Promise<boolean | string> {
         errorMessage.value = "";
 
-        const data: DetailBlockBox<SnippetTypeBag, SnippetTypeDetailOptionsBag> = {
-            entity: snippetTypeEditBag.value,
-            isEditable: true,
-            validProperties: validProperties
-        };
-
-        const result = await invokeBlockAction<SnippetTypeBag | string>("Save", {
-            box: data
+        const result = await invokeBlockAction<ValidPropertiesBox<SnippetTypeBag> | string>("Save", {
+            box: snippetTypeEditBag.value
         });
 
         if (result.isSuccess && result.data) {
             if (result.statusCode === 200 && typeof result.data === "object") {
-                snippetTypeViewBag.value = result.data;
+                snippetTypeViewBag.value = result.data.bag;
 
                 return true;
             }
@@ -243,8 +217,6 @@
 
     // #endregion
 
-    provideSecurityGrant(securityGrant);
-
     // Handle any initial error conditions or the need to go into edit mode.
     if (config.errorMessage) {
         blockError.value = config.errorMessage;
@@ -253,7 +225,7 @@
         blockError.value = "The specified snippet type could not be viewed.";
     }
     else if (!config.entity.idKey) {
-        snippetTypeEditBag.value = config.entity;
+        snippetTypeEditBag.value = { bag: config.entity };
         panelMode.value = DetailPanelMode.Add;
     }
 </script>

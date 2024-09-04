@@ -67,8 +67,6 @@ namespace RockWeb.Blocks.Follow
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             nbSaved.Visible = false;
             _rockContext = new RockContext();
 
@@ -76,6 +74,8 @@ namespace RockWeb.Blocks.Follow
             {
                 GetData();
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -110,7 +110,8 @@ namespace RockWeb.Blocks.Follow
                         f.FollowedEntityTypeId.HasValue &&
                         f.FollowedEntityTypeId.Value == followedEntityType.Id &&
                         f.IsActive )
-                    .OrderBy( f => f.Name ) )
+                    .OrderBy( f => f.Order )
+                    .ThenBy( f => f.Name ) )
                 {
                     if ( feType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                     {

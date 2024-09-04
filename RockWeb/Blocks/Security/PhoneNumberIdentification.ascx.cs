@@ -20,6 +20,9 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
+using Microsoft.Extensions.Logging;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Communication;
@@ -180,14 +183,14 @@ namespace RockWeb.Blocks.Security
 
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             ValidateBlockConfigured();
 
             if ( Page.IsPostBack )
             {
                 nbWarningMessage.Visible = false;
             }
+
+            base.OnLoad( e );
         }
 
         private void ValidateBlockConfigured()
@@ -251,7 +254,7 @@ namespace RockWeb.Blocks.Security
             catch ( Exception ex )
             {
                 ShowWarningMessage( ex.Message );
-                RockLogger.Log.Error( RockLogDomains.Core, ex );
+                Logger.LogError( ex, ex.Message );
                 ExceptionLogService.LogException( ex );
             }
         }
@@ -545,13 +548,12 @@ namespace RockWeb.Blocks.Security
             }
 
             var returnUrl = PageParameter( "returnUrl" );
-            if ( returnUrl.IsNullOrWhiteSpace() )
+            if ( returnUrl.IsNullOrWhiteSpace() || returnUrl.RedirectUrlContainsXss() )
             {
                 returnUrl = "/";
             }
             else
             {
-                returnUrl = returnUrl.ScrubEncodedStringForXSSObjects();
                 returnUrl = Server.UrlDecode( returnUrl );
             }
 

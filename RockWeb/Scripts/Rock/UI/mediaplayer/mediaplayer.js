@@ -20,6 +20,15 @@ var Rock;
             debug: false
         };
         class MediaPlayer {
+            get map() {
+                return MediaPlayer.toRle(this.watchBits);
+            }
+            get percentWatched() {
+                return this.percentWatchedInternal;
+            }
+            get duration() {
+                return this.player.duration;
+            }
             constructor(elementSelector, options = {}) {
                 this.timerId = null;
                 this.watchBits = Array();
@@ -48,15 +57,6 @@ var Rock;
                     this.element.removeChild(this.element.firstChild);
                 }
                 this.setupPlayer();
-            }
-            get map() {
-                return MediaPlayer.toRle(this.watchBits);
-            }
-            get percentWatched() {
-                return this.percentWatchedInternal;
-            }
-            get duration() {
-                return this.player.duration;
             }
             seek(positionInSeconds) {
                 this.player.currentTime = positionInSeconds;
@@ -125,6 +125,14 @@ var Rock;
                 hls.attachMedia(mediaElement);
             }
             initializePlayer(mediaElement, plyrOptions) {
+                if (this.isYouTubeEmbed(this.options.mediaUrl) || this.isVimeoEmbed(this.options.mediaUrl) || this.isHls(this.options.mediaUrl)) {
+                    var control = plyrOptions.controls;
+                    let index = control.findIndex(d => d === "download");
+                    if (index !== -1) {
+                        control.splice(index, 1);
+                    }
+                    plyrOptions.controls = control;
+                }
                 this.player = new Plyr(mediaElement, plyrOptions);
                 if (this.isYouTubeEmbed(this.options.mediaUrl)) {
                     let listenrsready = false;
@@ -306,11 +314,11 @@ var Rock;
             wireEvents() {
                 const self = this;
                 const pageHideHandler = function () {
-                    self.writeInteraction(false);
+                    self.writeInteraction(true);
                 };
                 const visibilityChangeHandler = function () {
                     if (document.visibilityState === "hidden") {
-                        self.writeInteraction(false);
+                        self.writeInteraction(true);
                     }
                 };
                 this.player.on("play", () => {
@@ -329,6 +337,10 @@ var Rock;
                     window.addEventListener("pagehide", pageHideHandler);
                     window.addEventListener("visibilitychange", visibilityChangeHandler);
                     this.writeDebugMessage("Event 'play' called.");
+                    if (!this.options.interactionGuid) {
+                        this.watchBitsDirty = true;
+                        this.writeInteraction(false);
+                    }
                 });
                 this.player.on("pause", () => {
                     if (this.timerId) {
@@ -338,7 +350,7 @@ var Rock;
                     window.removeEventListener("pagehide", pageHideHandler);
                     window.removeEventListener("visibilitychange", visibilityChangeHandler);
                     this.emit("pause");
-                    this.writeInteraction(true);
+                    this.writeInteraction(false);
                     this.writeDebugMessage("Event 'pause' called.");
                 });
                 this.player.on("ended", () => {
@@ -369,7 +381,7 @@ var Rock;
                     }
                 });
             }
-            writeInteraction(async) {
+            writeInteraction(beacon) {
                 if (this.options.writeInteraction === false || this.options.mediaElementGuid === undefined || this.options.mediaElementGuid.length === 0) {
                     return;
                 }
@@ -387,14 +399,14 @@ var Rock;
                     OriginalUrl: window.location.href,
                     PageId: Rock.settings.get("pageId")
                 };
-                if (typeof navigator.sendBeacon !== "undefined" && !async) {
+                if (typeof navigator.sendBeacon !== "undefined" && beacon && this.options.interactionGuid) {
                     var beaconData = new Blob([JSON.stringify(data)], { type: 'application/json; charset=UTF-8' });
                     navigator.sendBeacon("/api/MediaElements/WatchInteraction", beaconData);
                     return;
                 }
                 const xmlRequest = new XMLHttpRequest();
                 const self = this;
-                xmlRequest.open("POST", "/api/MediaElements/WatchInteraction", async);
+                xmlRequest.open("POST", "/api/MediaElements/WatchInteraction");
                 xmlRequest.setRequestHeader("Content-Type", "application/json");
                 xmlRequest.onreadystatechange = function () {
                     if (xmlRequest.readyState === 4) {

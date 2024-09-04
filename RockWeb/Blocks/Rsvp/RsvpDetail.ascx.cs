@@ -129,8 +129,6 @@ namespace RockWeb.Blocks.RSVP
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             int? groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
             if ( !Page.IsPostBack )
             {
@@ -154,6 +152,8 @@ namespace RockWeb.Blocks.RSVP
                     ShowDetails( rockContext, occurrenceId.Value, group );
                 }
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>

@@ -87,6 +87,13 @@ namespace RockWeb.Blocks.Security
         Key = AttributeKey.CreateCommunicationRecord,
         Order = 5 )]
 
+    [BooleanField(
+        "Disable Captcha Support",
+        Key = AttributeKey.DisableCaptchaSupport,
+        Description = "If set to 'Yes' the CAPTCHA verification step will not be performed.",
+        DefaultBooleanValue = false,
+        Order = 6 )]
+
     [Rock.SystemGuid.BlockTypeGuid( "02B3D7D1-23CE-4154-B602-F4A15B321757" )]
     public partial class ForgotUserName : Rock.Web.UI.RockBlock
     {
@@ -97,7 +104,8 @@ namespace RockWeb.Blocks.Security
             public const string SuccessCaption = "SuccessCaption";
             public const string ConfirmationPage = "ConfirmationPage";
             public const string EmailTemplate = "EmailTemplate";
-            public const string CreateCommunicationRecord = "CreateCommunicationRecord";
+            public const string CreateCommunicationRecord = "CreateCommunicationRecord"; 
+            public const string DisableCaptchaSupport = "DisableCaptchaSupport";
         }
         #region Base Control Methods
 
@@ -107,18 +115,25 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             pnlEntry.Visible = true;
             pnlWarning.Visible = false;
             pnlSuccess.Visible = false;
 
             if ( !Page.IsPostBack )
             {
+                var disableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || !cpCaptcha.IsAvailable;
+                if ( disableCaptchaSupport )
+                {
+                    pnlCaptcha.Visible = false;
+                    EnableForm();
+                }
+
                 lCaption.Text = GetAttributeValue( AttributeKey.HeadingCaption );
                 lWarning.Text = GetAttributeValue( AttributeKey.InvalidEmailCaption );
                 lSuccess.Text = GetAttributeValue( AttributeKey.SuccessCaption );
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -227,6 +242,8 @@ namespace RockWeb.Blocks.Security
             }
             else
             {
+                // Update the Warning text with the Invalid Email Caption attribute as it might have got changed.
+                lWarning.Text = GetAttributeValue( AttributeKey.InvalidEmailCaption );
                 pnlWarning.Visible = true;
             }
         }
@@ -249,6 +266,38 @@ namespace RockWeb.Blocks.Security
 
                 return siteHostNames.Contains( hostName );
             }
+        }
+
+        /// <summary>
+        /// Handles the TokenReceived event of the CpCaptcha control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="Captcha.TokenReceivedEventArgs"/> instance containing the event data.</param>
+        protected void cpCaptcha_TokenReceived( object sender, Rock.Web.UI.Controls.Captcha.TokenReceivedEventArgs e )
+        {
+            pnlCaptcha.Visible = false;
+
+            if ( e.IsValid )
+            {
+                EnableForm();
+            }
+            else
+            {
+                lWarning.Text = "There was an issue processing your request. Please reload this page to try again. If the issue persists please contact us.";
+                pnlWarning.Visible = true;
+            }
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Enables the form after CAPTCHA has been solved (or disabled).
+        /// </summary>
+        private void EnableForm()
+        {
+            btnSend.Visible = true;
         }
 
         #endregion

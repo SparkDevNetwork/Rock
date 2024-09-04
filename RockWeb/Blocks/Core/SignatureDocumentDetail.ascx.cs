@@ -26,6 +26,7 @@ using Rock.Data;
 using Rock.ElectronicSignature;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -80,14 +81,14 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             nbLegacyProviderErrorMessage.Visible = false;
 
             if ( !Page.IsPostBack )
             {
                 ShowDetail( PageParameter( "SignatureDocumentId" ).AsInteger() );
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -123,7 +124,7 @@ namespace RockWeb.Blocks.Core
 
             lAppliesTo.Text = signatureDocument.AppliesToPersonAlias?.Person.FullName ?? "-";
 
-            lSignedOnInformation.Text = $@"{signatureDocument.SignedDateTime?.ToString("f")}<br>
+            lSignedOnInformation.Text = $@"{signatureDocument.SignedDateTime?.ToString( "f" )}<br>
 {signatureDocument.GetFormattedUserAgent().ConvertCrLfToHtmlBr()}<br>
 {signatureDocument.SignedClientIp}<br>";
 
@@ -162,7 +163,7 @@ namespace RockWeb.Blocks.Core
 
             if ( signatureDocument.BinaryFile != null )
             {
-                var getFileUrl = string.Format( "{0}GetFile.ashx?guid={1}", System.Web.VirtualPathUtility.ToAbsolute( "~" ), signatureDocument.BinaryFile.Guid );
+                var getFileUrl = FileUrlHelper.GetFileUrl( signatureDocument.BinaryFile.Guid );
 
                 var usesLegacyDocumentProvider = signatureDocument.UsesLegacyDocumentProvider();
 
@@ -243,7 +244,7 @@ namespace RockWeb.Blocks.Core
                 hfSignatureDocumentId.SetValue( signatureDocument.Id );
 
                 nbEditModeMessage.Text = string.Empty;
-                bool canEdit = UserCanEdit || signatureDocument.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                bool canEdit = signatureDocument.IsAuthorized( Authorization.EDIT, CurrentPerson );
                 bool canView = canEdit || signatureDocument.IsAuthorized( Authorization.VIEW, CurrentPerson );
 
                 if ( !canView )
@@ -392,8 +393,18 @@ namespace RockWeb.Blocks.Core
             if ( signatureDocument.BinaryFileId.HasValue )
             {
                 var binaryFile = binaryFileService.Get( signatureDocument.BinaryFileId.Value );
-                if ( binaryFile != null && binaryFile.IsTemporary )
+                if ( binaryFile != null )
                 {
+                    /*
+                        10/25/2023 - PA
+                        Only the persons authorized to view the signature document template should be allowed to view the corresponding binary file of the signed documents created from that template.
+                        At the time of the writing the entity security could be set only on the template entities and not on the document entities. So for simplicity we are proceeding with setting
+                        the parent entity as the signature document template.
+
+                        Reason: Inherit the entity security of the Signature Document Template to the corresponding binary file
+                    */
+                    binaryFile.ParentEntityId = signatureDocument.SignatureDocumentTemplate.Id;
+                    binaryFile.ParentEntityTypeId = EntityTypeCache.Get<SignatureDocumentTemplate>().Id;
                     binaryFile.IsTemporary = false;
                 }
             }
