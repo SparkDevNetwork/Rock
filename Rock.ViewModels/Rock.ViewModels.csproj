@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -99,6 +99,8 @@
     <Compile Include="Blocks\Communication\CommunicationEntry\CommunicationEntryPushMediumOptionsBag.cs" />
     <Compile Include="Blocks\Communication\CommunicationEntry\CommunicationEntryPushNotificationOptionsBag.cs" />
     <Compile Include="Blocks\Communication\CommunicationEntry\CommunicationEntrySaveMetricsReminderRequestBag.cs" />
+    <Compile Include="Blocks\Cms\LogSettings\LogSettingsBag.cs" />
+    <Compile Include="Blocks\Cms\LogSettings\LogSettingsDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\PersonSuggestionList\PersonSuggestionListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageSearch\PageSearchPageBag.cs" />
     <Compile Include="Blocks\Cms\PageSearch\PageSearchBag.cs" />

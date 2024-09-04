@@ -75,7 +75,7 @@
         </div>
         <div class="row">
             <div class="col-md-12">
-                <Panel title="Allowed Scopes and Claims" :hasCollapse="true" :isDrawerOpen="true">
+                <Panel title="Allowed Scopes and Claims" :hasCollapse="true" :v-model="true" :isDrawerOpen="true">
 
                     <template #helpContent>
                         <div class="p-3 bg-white">

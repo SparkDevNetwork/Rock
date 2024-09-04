@@ -108,6 +108,7 @@
     <Compile Include="Cms\MediaFolderList.cs" />
     <Compile Include="Communication\CommunicationEntry\ValidationContext.cs" />
     <Compile Include="Communication\CommunicationEntry\ValidationContextExtensions.cs" />
+    <Compile Include="Cms\LogSettings.cs" />
     <Compile Include="Core\PersonSuggestionList.cs" />
     <Compile Include="Cms\PageSearch.cs" />
     <Compile Include="Core\DocumentTypeList.cs" />

@@ -1,0 +1,179 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <NotificationBox v-if="loggingMessage" alertType="warning">{{ loggingMessage }}</NotificationBox>
+
+        <RadioButtonList v-model="standardLogLevel"
+                         label="Verbosity Level"
+                         help="The specified value indicates which logging level events should be written to the log file."
+                         horizontal
+                         :items="props.options.verbosityLevels ?? []">
+        </RadioButtonList>
+
+        <DropDownList v-model="categories"
+                      label="Categories to Log"
+                      :items="props.options.standardCategories ?? []"
+                      :showBlankItem="true"
+                      :enhanceForLongLists="true"
+                      :multiple="true" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <CheckBox v-model="isLocalLoggingEnabled"
+                          label="Log to Local File System"
+                          help="Enables writing logs to the local file system of the Rock server." />
+            </div>
+
+            <div class="col-md-6">
+                <CheckBox v-model="isObservabilityLoggingEnabled"
+                          label="Log to Observability"
+                          help="Enables writing logs to the observability framework, this is recommended when running in a web farm." />
+            </div>
+        </div>
+
+        <Panel v-if="isLocalLoggingEnabled" :isDrawerOpen="false" title="Local File System Settings" :hasCollapse="true">
+            <div class="row">
+                <div class="col-md-6">
+                    <TextBox v-model="maxFileSize"
+                             label="Max File Size (MB)"
+                             :rules="validateNumberValue"
+                             help="The maximum size that the output file is allowed to reach before being rolled over to backup files."
+                             class="input-width-md js-max-file-size">
+                    </TextBox>
+                </div>
+
+                <div class="col-md-6">
+                    <TextBox v-model="numberOfLogFiles"
+                             label="Retained Backup Files"
+                             :rules="validateNumberValue"
+                             help="The maximum number of backup files that are kept before the oldest is erased."
+                             class="input-width-md js-files-to-retain">
+                    </TextBox>
+                </div>
+            </div>
+
+            <p>Logs could take up to <span id="maxLogSize">400</span> MB on the server's filesystem.</p>
+        </Panel>
+
+        <Panel :isDrawerOpen="false" title="Advanced" :hasCollapse="true">
+            <ValueList v-model="customCategories"
+                       label="Custom Categories"
+                       help="Enter any custom categories that should be included in the logged results." />
+
+            <CodeEditor v-model="advancedSettings"
+                        label="Custom Configuration"
+                        mode="javascript"
+                        help="This allows custom configuration by way of writing a JSON object that will be passed to the configuration parser. Example:<pre><small><small>{
+    &quot;LogLevel&quot;: {
+    &quot;CMS&quot;: &quot;Information&quot;,
+    &quot;org.rsc.MyClass&quot;: &quot;Error&quot;
+  }
+}</small></small></pre>" />
+        </Panel>
+
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
+    import { updateRefValue } from "@Obsidian/Utility/component";
+    import { LogSettingsBag } from "@Obsidian/ViewModels/Blocks/Cms/LogSettings/logSettingsBag";
+    import { LogSettingsDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/LogSettings/logSettingsDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import ValueList from "@Obsidian/Controls/valueList.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<LogSettingsBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<LogSettingsDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<LogSettingsBag>): void,
+    }>();
+
+    // #region Values
+
+    const standardLogLevel = ref(props.modelValue.bag?.standardLogLevel ?? "");
+    const categories = ref(props.modelValue.bag?.categories ?? []);
+    const isLocalLoggingEnabled = ref(props.modelValue.bag?.isLocalLoggingEnabled ?? false);
+    const isObservabilityLoggingEnabled = ref(props.modelValue.bag?.isObservabilityLoggingEnabled ?? false);
+    const maxFileSize = ref(props.modelValue.bag?.maxFileSize ?? "");
+    const numberOfLogFiles = ref(props.modelValue.bag?.numberOfLogFiles ?? "");
+    const customCategories = ref(props.modelValue.bag?.customCategories ?? []);
+    const advancedSettings = ref(props.modelValue.bag?.advancedSettings ?? "");
+    const loggingMessage = ref("");
+
+    const properties = [standardLogLevel, categories, isLocalLoggingEnabled, isObservabilityLoggingEnabled, maxFileSize, numberOfLogFiles, customCategories, advancedSettings];
+
+    // #endregion
+
+    // #region Functions
+    function validateNumberValue(value: unknown): string | boolean {
+
+        const stringValue = value as string;
+
+        if (stringValue) {
+            if (!isValidNumber(stringValue)) {
+                return "must be a valid number.";
+            }
+        }
+
+        return true;
+    }
+
+    function isValidNumber(value: string | null | undefined): boolean {
+        if (!value) {
+            return false;
+        }
+
+        const num = Number(value);
+        return !isNaN(num) && isFinite(num);
+    }
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(standardLogLevel, props.modelValue.bag?.standardLogLevel ?? "");
+        updateRefValue(categories, props.modelValue.bag?.categories ?? []);
+        updateRefValue(isLocalLoggingEnabled, props.modelValue.bag?.isLocalLoggingEnabled ?? false);
+        updateRefValue(isObservabilityLoggingEnabled, props.modelValue.bag?.isObservabilityLoggingEnabled ?? false);
+        updateRefValue(maxFileSize, props.modelValue.bag?.maxFileSize ?? "");
+        updateRefValue(numberOfLogFiles, props.modelValue.bag?.numberOfLogFiles ?? "");
+        updateRefValue(customCategories, props.modelValue.bag?.customCategories ?? []);
+        updateRefValue(advancedSettings, props.modelValue.bag?.advancedSettings ?? "");
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([...properties], () => {
+        const newValue: ValidPropertiesBox<LogSettingsBag> = {
+            bag: { ...props.modelValue.bag } as LogSettingsBag
+        };
+
+        setPropertiesBoxValue(newValue, "standardLogLevel", standardLogLevel.value);
+        setPropertiesBoxValue(newValue, "categories", categories.value);
+        setPropertiesBoxValue(newValue, "isLocalLoggingEnabled", isLocalLoggingEnabled.value);
+        setPropertiesBoxValue(newValue, "isObservabilityLoggingEnabled", isObservabilityLoggingEnabled.value);
+        setPropertiesBoxValue(newValue, "maxFileSize", maxFileSize.value);
+        setPropertiesBoxValue(newValue, "numberOfLogFiles", numberOfLogFiles.value);
+        setPropertiesBoxValue(newValue, "customCategories", customCategories.value);
+        setPropertiesBoxValue(newValue, "advancedSettings", advancedSettings.value);
+
+        emit("update:modelValue", newValue);
+    });
+</script>
